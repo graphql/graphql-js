@@ -39,14 +39,15 @@ export function graphql(
     var validationResult = validateDocument(schema, ast);
     if (!validationResult.isValid) {
       resolve({ errors: validationResult.errors });
+    } else {
+      resolve(execute(
+        schema,
+        rootObject,
+        ast,
+        operationName,
+        variableValues
+      ));
     }
-    resolve(execute(
-      schema,
-      rootObject,
-      ast,
-      operationName,
-      variableValues
-    ));
   }).catch(error => {
     return { errors: [ formatError(error) ] };
   });
