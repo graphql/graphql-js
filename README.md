@@ -35,7 +35,7 @@ marks the beginning of that process.
 ## Getting Started
 
 An overview of GraphQL in general is available in the
-[README](https://github.com/facebook/graphql/README) for the
+[README](https://github.com/facebook/graphql/blob/master/README.md) for the
 [Specification for GraphQL](https://github.com/facebook/graphql). That overview
 describes a simple set of GraphQL examples that exist as [tests](src/__tests__)
 in this repository. A good way to get started with this repository is to walk
