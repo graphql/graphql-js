@@ -22,9 +22,9 @@ many engineers used this information to implement the parts of the system that
 we discussed publically. We want to support those engineers by providing both a
 formal specification and a reference implementation for the system as a whole.
 
-To that end the target audience is not the client developer, but those who have
+To that end the target audience is not the client developer, but those who have built
 or are actively interested in building their own GraphQL implementations and
-tools. Critically we also want feedback on system and to incorporate that
+tools. Critically we also want feedback on the system and to incorporate that
 feedback in our final release.
 
 In order to be broadly adopted GraphQL will have to target a wide
