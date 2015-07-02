@@ -6,20 +6,20 @@ on complex application data models.
 
 ## Technical Preview Contents
 
-This technical preview contains a [draft specification for GraphQL](https://github.com/facebook/graphql)
-and a reference implementation in JavaScript that implements that draft,
-GraphQL.js.
+This technical preview contains a [draft specification for GraphQL]
+(https://github.com/facebook/graphql) and a reference implementation in
+JavaScript that implements that draft, GraphQL.js.
 
-The reference implemention provides base libraries in javascript that would
+The reference implementation provides base libraries in JavaScript that would
 provide the basis for full GraphQL implementations and tools. It is not a fully
 standalone GraphQL server that a client developer could use to start
 manipulating and querying data. Most importantly it provides no mapping to a
 functioning, production-ready backend. The only “backend” we have targeted for
 this early preview are in-memory stubs in test cases.
 
-We are releasing this now because after GraphQL was first discussed publically,
+We are releasing this now because after GraphQL was first discussed publicly,
 many engineers used this information to implement the parts of the system that
-we discussed publically. We want to support those engineers by providing both a
+we discussed publicly. We want to support those engineers by providing both a
 formal specification and a reference implementation for the system as a whole.
 
 To that end the target audience is not the client developer, but those who have built
@@ -49,7 +49,7 @@ Install GraphQL.js from npm
 npm install graphql
 ```
 
-GraphQL.js provides two important capabilites: building a type schema, and
+GraphQL.js provides two important capabilities: building a type schema, and
 serving queries against that type schema.
 
 First, build a GraphQL type schema which maps to your code base.
