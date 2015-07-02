@@ -22,27 +22,27 @@ import FieldsOnCorrectType from './rules/FieldsOnCorrectType';
 import KnownFragmentNames from './rules/KnownFragmentNames';
 // Spec Section: "Fragments must be used"
 import NoUnusedFragments from './rules/NoUnusedFragments';
-// Spec Section "Fragment spread is possible"
+// Spec Section: "Fragment spread is possible"
 import PossibleFragmentSpreads from './rules/PossibleFragmentSpreads';
-// Spec Section "Fragments must not form cycles"
+// Spec Section: "Fragments must not form cycles"
 import NoFragmentCycles from './rules/NoFragmentCycles';
-// Spec Section "All Variables Used"
+// Spec Section: "All Variables Used"
 import NoUnusedVariables from './rules/NoUnusedVariables';
-// Spec Section "All Variable Used Defined"
+// Spec Section: "All Variable Used Defined"
 import NoUndefinedVariables from './rules/NoUndefinedVariables';
 // Spec Section: "Argument Names"
 import KnownArgumentNames from './rules/KnownArgumentNames';
-// TODO
+// Spec Section: "Directives Are Defined"
 import KnownDirectives from './rules/KnownDirectives';
-// Spec Section "Argument Values Type Correctness"
+// Spec Section: "Argument Values Type Correctness"
 import ArgumentsOfCorrectType from './rules/ArgumentsOfCorrectType';
-// TODO
+// Spec Section: "Directive Arguments Are Of Correct Type"
 import DirectivesOfCorrectType from './rules/DirectivesOfCorrectType';
-// Spec Section "Variable Default Values Are Correctly Typed"
+// Spec Section: "Variable Default Values Are Correctly Typed"
 import DefaultValuesOfCorrectType from './rules/DefaultValuesOfCorrectType';
-// Spec Section "All Variable Usages Are Allowed"
+// Spec Section: "All Variable Usages Are Allowed"
 import VariablesInAllowedPosition from './rules/VariablesInAllowedPosition';
-// TODO
+// Spec Section: "Field Selection Merging"
 import OverlappingFieldsCanBeMerged from './rules/OverlappingFieldsCanBeMerged';
 
 /**
