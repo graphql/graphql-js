@@ -89,7 +89,7 @@ type ExecutionContext = {
 }
 
 /**
- * The result of exeution. `data` is the result of executing the
+ * The result of execution. `data` is the result of executing the
  * query, `errors` is null if no errors occurred, and is a
  * non-empty array if an error occurred.
  */
@@ -483,7 +483,7 @@ function resolveField(
 /**
  * Resolves the field on the given source object. In particular, this
  * figures out the object that the field returns using the resolve function,
- * then calls completeField to corece scalars or execute the sub
+ * then calls completeField to coerce scalars or execute the sub
  * selection set for objects.
  */
 function resolveFieldOrError(
@@ -666,7 +666,7 @@ function isThenable(value: any): boolean {
 /**
  * This method looks up the field on the given type defintion.
  * It has special casing for the two introspection fields, __schema
- * and __typename. __typename is special becuase it can always be
+ * and __typename. __typename is special because it can always be
  * queried as a field, even in situations where no other fields
  * are allowed, like on a Union. __schema could get automatically
  * added to the query type, but that would require mutating type
