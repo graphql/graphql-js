@@ -206,7 +206,7 @@ var droidType = new GraphQLObjectType({
       type: new GraphQLList(characterInterface),
       description: 'The friends of the droid, or an empty list if they ' +
                    'have none.',
-      resolve: (human) => getFriends(human),
+      resolve: (droid) => getFriends(droid),
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
