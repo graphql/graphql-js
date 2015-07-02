@@ -14,7 +14,8 @@ JavaScript can be produced by running:
 npm run build
 ```
 
-Once `npm run build` has run, you may `require()` directly from node.
+Once `npm run build` has run, you may `import` or `require()` directly from
+node.
 
 The full test suite can be evaluated by running:
 
