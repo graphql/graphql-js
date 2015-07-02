@@ -224,7 +224,7 @@ var droidType = new GraphQLObjectType({
  * This is the type that will be the root of our query, and the
  * entry point into our schema. It gives us the ability to fetch
  * objects by their IDs, as well as to fetch the undisputed hero
- * of the Star Wars triolgy, R2-D2, directly.
+ * of the Star Wars trilogy, R2-D2, directly.
  *
  * This implements the following type system shorthand:
  *   type Query {
