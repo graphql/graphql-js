@@ -55,15 +55,20 @@ serving queries against that type schema.
 First, build a GraphQL type schema which maps to your code base.
 
 ```js
-var GraphQL = require('graphql');
+import {
+  graphql,
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString
+} from 'graphql';
 
-var schema = new GraphQL.GraphQLSchema({
-  query: new GraphQL.GraphQLObjectType({
+var schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
       hello: {
-        type: GraphQL.GraphQLString,
-        resolve: function() { return 'world'; }
+        type: GraphQLString,
+        resolve: () => { return 'world'; }
       }
     }
   })
@@ -79,7 +84,7 @@ Then, serve the result of a query against that type schema.
 ```js
 var query = '{ hello }';
 
-GraphQL.graphql(schema, query).then(function (result) {
+graphql(schema, query).then(function (result) {
 
   // Prints
   // {
@@ -97,7 +102,7 @@ it, reporting errors otherwise.
 ```js
 var query = '{ boyhowdy }';
 
-GraphQL.graphql(schema, query).then(function (result) {
+graphql(schema, query).then(function (result) {
 
   // Prints
   // {
@@ -126,7 +131,8 @@ JavaScript can be produced by running:
 npm run build
 ```
 
-Once `npm run build` has run, you may `require()` directly from node.
+Once `npm run build` has run, you may `import` or `require()` directly from
+node.
 
 After developing, the full test suite can be evaluated by running:
 
