@@ -10,10 +10,10 @@ This technical preview contains a [draft specification for GraphQL](https://gith
 and a reference implementation in JavaScript that implements that draft,
 GraphQL.js.
 
-The reference implemention provides base libraries in javascript that would
+The reference implemention provides base libraries in JavaScript that would
 provide the basis for full GraphQL implementations and tools. It is not a fully
 standalone GraphQL server that a client developer could use to start
-manipulating and querying data. Most importantly it provides no mapping to a
+manipulating and querying data. Most importantly, it provides no mapping to a
 functioning, production-ready backend. The only “backend” we have targeted for
 this early preview are in-memory stubs in test cases.
 
@@ -22,12 +22,12 @@ many engineers used this information to implement the parts of the system that
 we discussed publically. We want to support those engineers by providing both a
 formal specification and a reference implementation for the system as a whole.
 
-To that end the target audience is not the client developer, but those who have
-or are actively interested in building their own GraphQL implementations and
-tools. Critically we also want feedback on system and to incorporate that
+To that end, the target audience is not the client developer, but those who have
+built or are actively interested in building their own GraphQL implementations and
+tools. Critically, we also want feedback on the system and to incorporate that
 feedback in our final release.
 
-In order to be broadly adopted GraphQL will have to target a wide
+In order to be broadly adopted, GraphQL will have to target a wide
 variety of backends, frameworks, and languages, which will necessitate a
 collaborative effort across projects and organizations. This technical preview
 marks the beginning of that process.
