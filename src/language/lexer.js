@@ -28,7 +28,7 @@ type Lexer = (resetPosition?: number) => Token;
  * Given a Source object, this returns a Lexer for that source.
  * A Lexer is a function that acts like a generator in that every time
  * it is called, it returns the next token in the Source. Assuming the
- * source lexes, the final Token omitted by the lexer will be of kind
+ * source lexes, the final Token emitted by the lexer will be of kind
  * EOF, after which the lexer will repeatedly return EOF tokens whenever
  * called.
  *
@@ -48,7 +48,7 @@ export function lex(source: Source): Lexer {
 }
 
 /**
- * An enum describing the different kinds of tokens that the lexer omits.
+ * An enum describing the different kinds of tokens that the lexer emits.
  */
 export var TokenKind = {
   EOF: 1,
