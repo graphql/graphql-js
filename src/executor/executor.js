@@ -596,12 +596,18 @@ function completeField(
       Array.isArray(result),
       'User Error: expected iterable, but did not find one.'
     );
-    return result.map(item => completeField(
+    var results = result.map(item => completeField(
       exeContext,
       itemType,
       fieldASTs,
       item
     ));
+
+    if (results.some(isThenable)) {
+      return Promise.all(results);
+    } else {
+      return results;
+    }
   }
 
   // If field type is Scalar or Enum, coerce to a valid value, returning null
