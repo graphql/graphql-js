@@ -2,8 +2,9 @@
 *~
 .*.haste_cache.*
 .DS_Store
+.idea
+
 lib
 node_modules
 npm-debug.log
 coverage
-.idea
