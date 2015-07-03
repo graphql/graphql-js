@@ -164,7 +164,11 @@ var humanType = new GraphQLObjectType({
       type: new GraphQLList(characterInterface),
       description: 'The friends of the human, or an empty list if they ' +
                    'have none.',
-      resolve: (human) => getFriends(human),
+      resolve: (human) => {
+        return new Promise((resolve) => {
+          resolve(getFriends(human));
+        });
+      }
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
