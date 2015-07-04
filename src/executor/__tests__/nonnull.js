@@ -13,7 +13,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../executor';
-import { GraphQLError } from '../../error';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -22,10 +21,10 @@ import {
   GraphQLNonNull
 } from '../../type';
 
-var syncError = new GraphQLError('sync');
-var nonNullSyncError = new GraphQLError('nonNullSync');
-var promiseError = new GraphQLError('promise');
-var nonNullPromiseError = new GraphQLError('nonNullPromise');
+var syncError = new Error('sync');
+var nonNullSyncError = new Error('nonNullSync');
+var promiseError = new Error('promise');
+var nonNullPromiseError = new Error('nonNullPromise');
 
 var throwingData = {
   sync() { throw syncError; },

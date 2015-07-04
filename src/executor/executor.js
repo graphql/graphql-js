@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { GraphQLError, formatError } from '../error';
+import { GraphQLError, locatedError, formatError } from '../error';
 import type { GraphQLFormattedError } from '../error';
 import invariant from '../utils/invariant';
 import typeFromAST from '../utils/typeFromAST';
@@ -431,8 +431,10 @@ function getFieldEntryKey(node: Field): string {
 }
 
 /**
- * A wrapper function for resolving the field, that catches the error
- * and adds it to the context's global if the error is not rethrowable.
+ * Resolves the field on the given source object. In particular, this
+ * figures out the value that the field returns by calling its resolve function,
+ * then calls completeValue to complete promises, coerce scalars, or execute
+ * the sub-selection-set for objects.
  */
 function resolveField(
   exeContext: ExecutionContext,
@@ -440,60 +442,13 @@ function resolveField(
   source: Object,
   fieldASTs: Array<Field>
 ): any {
-  var fieldDef = getFieldDef(exeContext.schema, parentType, fieldASTs[0]);
+  var fieldAST = fieldASTs[0];
+
+  var fieldDef = getFieldDef(exeContext.schema, parentType, fieldAST);
   if (!fieldDef) {
     return;
   }
 
-  // If the field type is non-nullable, then it is resolved without any
-  // protection from errors.
-  if (fieldDef.type instanceof GraphQLNonNull) {
-    return resolveFieldOrError(
-      exeContext,
-      parentType,
-      source,
-      fieldASTs,
-      fieldDef
-    );
-  }
-
-  // Otherwise, error protection is applied, logging the error and resolving
-  // a null value for this field if one is encountered.
-  try {
-    var result = resolveFieldOrError(
-      exeContext,
-      parentType,
-      source,
-      fieldASTs,
-      fieldDef
-    );
-    if (isThenable(result)) {
-      return result.then(undefined, error => {
-        exeContext.errors.push(error);
-        return Promise.resolve(null);
-      });
-    }
-    return result;
-  } catch (error) {
-    exeContext.errors.push(error);
-    return null;
-  }
-}
-
-/**
- * Resolves the field on the given source object. In particular, this
- * figures out the object that the field returns using the resolve function,
- * then calls completeField to coerce scalars or execute the sub
- * selection set for objects.
- */
-function resolveFieldOrError(
-  exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
-  source: Object,
-  fieldASTs: Array<Field>,
-  fieldDef: GraphQLFieldDefinition
-): any {
-  var fieldAST = fieldASTs[0];
   var fieldType = fieldDef.type;
   var resolveFn = fieldDef.resolve || defaultResolveFn;
 
@@ -506,6 +461,10 @@ function resolveFieldOrError(
     exeContext.variables
   );
 
+  // If an error occurs while calling the field `resolve` function, ensure that
+  // it is wrapped as a GraphQLError with locations. Log this error and return
+  // null if allowed, otherwise throw the error so the parent field can handle
+  // it.
   try {
     var result = resolveFn(
       source,
@@ -518,29 +477,46 @@ function resolveFieldOrError(
       exeContext.schema
     );
   } catch (error) {
-    throw new GraphQLError(error.message, [fieldAST], error.stack);
+    var reportedError = new GraphQLError(error.message, fieldASTs, error.stack);
+    if (fieldType instanceof GraphQLNonNull) {
+      throw reportedError;
+    }
+    exeContext.errors.push(reportedError);
+    return null;
   }
 
-  if (isThenable(result)) {
-    return result.then(
-      resolvedResult => completeField(
-        exeContext,
-        fieldType,
-        fieldASTs,
-        resolvedResult
-      ),
-      error => Promise.reject(
-        new GraphQLError(error.message, [fieldAST], error.stack)
-      )
-    );
+  return completeValueCatchingError(exeContext, fieldType, fieldASTs, result);
+}
+
+function completeValueCatchingError(
+  exeContext: ExecutionContext,
+  fieldType: GraphQLType,
+  fieldASTs: Array<Field>,
+  result: any
+): any {
+  // If the field type is non-nullable, then it is resolved without any
+  // protection from errors.
+  if (fieldType instanceof GraphQLNonNull) {
+    return completeValue(exeContext, fieldType, fieldASTs, result);
   }
 
-  return completeField(
-    exeContext,
-    fieldType,
-    fieldASTs,
-    result
-  );
+  // Otherwise, error protection is applied, logging the error and resolving
+  // a null value for this field if one is encountered.
+  try {
+    var completed = completeValue(exeContext, fieldType, fieldASTs, result);
+    if (isThenable(completed)) {
+      // Note: we don't rely on a `catch` method, but we do expect "thenable"
+      // to take a second callback for the error case.
+      return completed.then(undefined, error => {
+        exeContext.errors.push(error);
+        return Promise.resolve(null);
+      });
+    }
+    return completed;
+  } catch (error) {
+    exeContext.errors.push(error);
+    return null;
+  }
 }
 
 /**
@@ -560,16 +536,25 @@ function resolveFieldOrError(
  * Otherwise, the field type expects a sub-selection set, and will complete the
  * value by evaluating all sub-selections.
  */
-function completeField(
+function completeValue(
   exeContext: ExecutionContext,
   fieldType: GraphQLType,
   fieldASTs: Array<Field>,
   result: any
 ): any {
+  // If result is a Promise, resolve it, if the Promise is rejected, construct
+  // a GraphQLError with proper locations.
+  if (isThenable(result)) {
+    return result.then(
+      resolved => completeValue(exeContext, fieldType, fieldASTs, resolved),
+      error => Promise.reject(locatedError(error, fieldASTs))
+    );
+  }
+
   // If field type is NonNull, complete for inner type, and throw field error
   // if result is null.
   if (fieldType instanceof GraphQLNonNull) {
-    var completed = completeField(
+    var completed = completeValue(
       exeContext,
       fieldType.ofType,
       fieldASTs,
@@ -591,17 +576,25 @@ function completeField(
 
   // If field type is List, complete each item in the list with the inner type
   if (fieldType instanceof GraphQLList) {
-    var itemType = fieldType.ofType;
     invariant(
       Array.isArray(result),
       'User Error: expected iterable, but did not find one.'
     );
-    return result.map(item => completeField(
-      exeContext,
-      itemType,
-      fieldASTs,
-      item
-    ));
+
+    // This is specified as a simple map, however we're optimizing the path
+    // where the list contains no Promises by avoiding creating another Promise.
+    var itemType = fieldType.ofType;
+    var containsPromise = false;
+    var completedResults = result.map(item => {
+      var completedItem =
+        completeValueCatchingError(exeContext, itemType, fieldASTs, item);
+      if (!containsPromise && isThenable(completedItem)) {
+        containsPromise = true;
+      }
+      return completedItem;
+    });
+
+    return containsPromise ? Promise.all(completedResults) : completedResults;
   }
 
   // If field type is Scalar or Enum, coerce to a valid value, returning null

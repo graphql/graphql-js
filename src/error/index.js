@@ -13,7 +13,7 @@ import { getLocation } from '../language';
 import type { Node } from '../language/ast';
 
 
-export class GraphQLError {
+export class GraphQLError extends Error {
   message: string;
   stack: string;
   nodes: ?Array<Node>;
@@ -27,6 +27,7 @@ export class GraphQLError {
     nodes?: Array<any/*Node*/>,
     stack?: any
   ) {
+    super(message);
     this.message = message;
     this.stack = stack || message;
     if (nodes) {
@@ -45,7 +46,16 @@ export class GraphQLError {
   }
 }
 
-(GraphQLError: any).prototype = Error.prototype;
+export function locatedError(error: any, nodes: Array<any>): GraphQLError {
+  if (error instanceof GraphQLError) {
+    return error;
+  }
+  return new GraphQLError(
+    error && error.message,
+    nodes,
+    error ? error.stack : null
+  );
+}
 
 export type GraphQLFormattedError = {
   message: string,

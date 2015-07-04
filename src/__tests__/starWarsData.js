@@ -88,13 +88,16 @@ var droidData = {
  * Helper function to get a character by ID.
  */
 function getCharacter(id) {
-  if (humanData[id] !== undefined) {
-    return humanData[id];
-  }
-  if (droidData[id] !== undefined) {
-    return droidData[id];
-  }
-  return null;
+  // Returning a promise just to illustrate GraphQL.js's support.
+  return new Promise(resolve => {
+    if (humanData[id] !== undefined) {
+      return resolve(humanData[id]);
+    }
+    if (droidData[id] !== undefined) {
+      return resolve(droidData[id]);
+    }
+    return resolve(null);
+  });
 }
 
 /**
@@ -108,4 +111,3 @@ export var starWarsData = {
   Humans: humanData,
   Droids: droidData,
 };
-

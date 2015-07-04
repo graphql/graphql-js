@@ -22,355 +22,372 @@ import {
   GraphQLNonNull
 } from '../../type';
 
-var data = {
-  list() { return [1, 2]; },
-  listOfNonNull() { return [1, 2]; },
-  nonNullList() { return [1, 2]; },
-  nonNullListOfNonNull() { return [1, 2]; },
-  listContainsNull() { return [1, null, 2]; },
-  listOfNonNullContainsNull() { return [1, null, 2]; },
-  nonNullListContainsNull() { return [1, null, 2]; },
-  nonNullListOfNonNullContainsNull() { return [1, null, 2]; },
-  listReturnsNull() { return null; },
-  listOfNonNullReturnsNull() { return null; },
-  nonNullListReturnsNull() { return null; },
-  nonNullListOfNonNullReturnsNull() { return null; },
-  nest() {
-    return data;
-  },
-};
+var resolve = Promise.resolve.bind(Promise);
+var reject = Promise.reject.bind(Promise);
 
-var dataType = new GraphQLObjectType({
-  name: 'DataType',
-  fields: () => ({
-    list: {
-      type: new GraphQLList(GraphQLInt)
-    },
-    listOfNonNull: {
-      type: new GraphQLList(new GraphQLNonNull(GraphQLInt))
-    },
-    nonNullList: {
-      type: new GraphQLNonNull(new GraphQLList(GraphQLInt))
-    },
-    nonNullListOfNonNull: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLInt)))
-    },
-    listContainsNull: {
-      type: new GraphQLList(GraphQLInt)
-    },
-    listOfNonNullContainsNull: {
-      type: new GraphQLList(new GraphQLNonNull(GraphQLInt))
-    },
-    nonNullListContainsNull: {
-      type: new GraphQLNonNull(new GraphQLList(GraphQLInt))
-    },
-    nonNullListOfNonNullContainsNull: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLInt)))
-    },
-    listReturnsNull: {
-      type: new GraphQLList(GraphQLInt)
-    },
-    listOfNonNullReturnsNull: {
-      type: new GraphQLList(new GraphQLNonNull(GraphQLInt))
-    },
-    nonNullListReturnsNull: {
-      type: new GraphQLNonNull(new GraphQLList(GraphQLInt))
-    },
-    nonNullListOfNonNullReturnsNull: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLInt)))
-    },
-    nest: { type: dataType },
-  })
-});
-var schema = new GraphQLSchema({
-  query: dataType
-});
+function check(testType, testData, expected) {
+  return function () {
+    var data = { test: testData };
+
+    var dataType = new GraphQLObjectType({
+      name: 'DataType',
+      fields: () => ({
+        test: { type: testType },
+        nest: { type: dataType, resolve: () => data },
+      })
+    });
+
+    var schema = new GraphQLSchema({ query: dataType });
+
+    var ast = parse('{ nest { test } }');
+
+    return expect(execute(schema, data, ast)).to.become(expected);
+  };
+}
 
 describe('Execute: Handles list nullability', () => {
 
-  it('handles lists when they return non-null values', () => {
-    var doc = `
-      query Q {
-        nest {
-          list,
-        }
-      }
-    `;
+  describe('[T]', () => {
+    var type = new GraphQLList(GraphQLInt);
 
-    var ast = parse(doc);
+    describe('Array<T>', () => {
 
-    var expected = {
-      data: {
-        nest: {
-          list: [1,2],
-        }
-      }
-    };
+      it('Contains values', check(type,
+        [1, 2],
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
 
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
+      it('Contains null', check(type,
+        [1, null, 2],
+        { data: { nest: { test: [ 1, null, 2 ] } } }
+      ));
+
+      it('Returns null', check(type,
+        null,
+        { data: { nest: { test: null } } }
+      ));
+
+    });
+
+    describe('Promise<Array<T>>', () => {
+
+      it('Contains values', check(type,
+        resolve([1, 2]),
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
+
+      it('Contains null', check(type,
+        resolve([1, null, 2]),
+        { data: { nest: { test: [ 1, null, 2 ] } } }
+      ));
+
+
+      it('Returns null', check(type,
+        resolve(null),
+        { data: { nest: { test: null } } }
+      ));
+
+      it('Rejected', check(type,
+        reject(new Error('bad')),
+        { data: { nest: { test: null } },
+          errors: [
+            { message: 'bad',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
+    describe('Array<Promise<T>>', () => {
+
+      it('Contains values', check(type,
+        [resolve(1), resolve(2)],
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
+
+      it('Contains null', check(type,
+        [resolve(1), resolve(null), resolve(2)],
+        { data: { nest: { test: [ 1, null, 2 ] } } }
+      ));
+
+      it('Contains reject', check(type,
+        [resolve(1), reject(new Error('bad')), resolve(2)],
+        { data: { nest: { test: [ 1, null, 2 ] } },
+          errors: [
+            { message: 'bad',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
   });
 
-  it('handles lists of non-nulls when they return non-null values', () => {
-    var doc = `
-      query Q {
-        nest {
-          listOfNonNull,
-        }
-      }
-    `;
+  describe('[T]!', () => {
+    var type = new GraphQLNonNull(new GraphQLList(GraphQLInt));
 
-    var ast = parse(doc);
+    describe('Array<T>', () => {
 
-    var expected = {
-      data: {
-        nest: {
-          listOfNonNull: [1,2],
-        }
-      }
-    };
+      it('Contains values', check(type,
+        [1, 2],
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
 
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
+      it('Contains null', check(type,
+        [1, null, 2],
+        { data: { nest: { test: [ 1, null, 2 ] } } }
+      ));
+
+      it('Returns null', check(type,
+        null,
+        { data: { nest: null },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
+    describe('Promise<Array<T>>', () => {
+
+      it('Contains values', check(type,
+        resolve([1, 2]),
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
+
+      it('Contains null', check(type,
+        resolve([1, null, 2]),
+        { data: { nest: { test: [ 1, null, 2 ] } } }
+      ));
+
+      it('Returns null', check(type,
+        resolve(null),
+        { data: { nest: null },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+      it('Rejected', check(type,
+        reject(new Error('bad')),
+        { data: { nest: null },
+          errors: [
+            { message: 'bad',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
+    describe('Array<Promise<T>>', () => {
+
+      it('Contains values', check(type,
+        [resolve(1), resolve(2)],
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
+
+      it('Contains null', check(type,
+        [resolve(1), resolve(null), resolve(2)],
+        { data: { nest: { test: [ 1, null, 2 ] } } }
+      ));
+
+      it('Contains reject', check(type,
+        [resolve(1), reject(new Error('bad')), resolve(2)],
+        { data: { nest: { test: [ 1, null, 2 ] } },
+          errors: [
+            { message: 'bad',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
   });
 
-  it('handles non-null lists of when they return non-null values', () => {
-    var doc = `
-      query Q {
-        nest {
-          nonNullList,
-        }
-      }
-    `;
+  describe('[T!]', () => {
+    var type = new GraphQLList(new GraphQLNonNull(GraphQLInt));
 
-    var ast = parse(doc);
+    describe('Array<T>', () => {
 
-    var expected = {
-      data: {
-        nest: {
-          nonNullList: [1,2],
-        }
-      }
-    };
+      it('Contains values', check(type,
+        [1, 2],
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
 
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
+      it('Contains null', check(type,
+        [1, null, 2],
+        { data: { nest: { test: null } },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+      it('Returns null', check(type,
+        null,
+        { data: { nest: { test: null } } }
+      ));
+
+    });
+
+    describe('Promise<Array<T>>', () => {
+
+      it('Contains values', check(type,
+        resolve([1, 2]),
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
+
+      it('Contains null', check(type,
+        resolve([1, null, 2]),
+        { data: { nest: { test: null } },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+      it('Returns null', check(type,
+        resolve(null),
+        { data: { nest: { test: null } } }
+      ));
+
+      it('Rejected', check(type,
+        reject(new Error('bad')),
+        { data: { nest: { test: null } },
+          errors: [
+            { message: 'bad',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
+    describe('Array<Promise<T>>', () => {
+
+      it('Contains values', check(type,
+        [resolve(1), resolve(2)],
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
+
+      it('Contains null', check(type,
+        [resolve(1), resolve(null), resolve(2)],
+        { data: { nest: { test: null } },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+      it('Contains reject', check(type,
+        [resolve(1), reject(new Error('bad')), resolve(2)],
+        { data: { nest: { test: null } },
+          errors: [
+            { message: 'bad',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
   });
 
-  it('handles non-null lists of non-nulls when they return non-null values', () => {
-    var doc = `
-      query Q {
-        nest {
-          nonNullListOfNonNull,
-        }
-      }
-    `;
+  describe('[T!]!', () => {
+    var type =
+      new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLInt)));
 
-    var ast = parse(doc);
+    describe('Array<T>', () => {
 
-    var expected = {
-      data: {
-        nest: {
-          nonNullListOfNonNull: [1,2],
-        }
-      }
-    };
+      it('Contains values', check(type,
+        [1, 2],
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
 
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
+
+      it('Contains null', check(type,
+        [1, null, 2],
+        { data: { nest: null },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+      it('Returns null', check(type,
+        null,
+        { data: { nest: null },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
+    describe('Promise<Array<T>>', () => {
+
+      it('Contains values', check(type,
+        resolve([1, 2]),
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
+
+      it('Contains null', check(type,
+        resolve([1, null, 2]),
+        { data: { nest: null },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+      it('Returns null', check(type,
+        resolve(null),
+        { data: { nest: null },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+      it('Rejected', check(type,
+        reject(new Error('bad')),
+        { data: { nest: null },
+          errors: [
+            { message: 'bad',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
+    describe('Array<Promise<T>>', () => {
+
+      it('Contains values', check(type,
+        [resolve(1), resolve(2)],
+        { data: { nest: { test: [ 1, 2 ] } } }
+      ));
+
+      it('Contains null', check(type,
+        [resolve(1), resolve(null), resolve(2)],
+        { data: { nest: null },
+          errors: [
+            { message: 'Cannot return null for non-nullable type.',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+      it('Contains reject', check(type,
+        [resolve(1), reject(new Error('bad')), resolve(2)],
+        { data: { nest: null },
+          errors: [
+            { message: 'bad',
+              locations: [ { line: 1, column: 10 } ] }
+          ] }
+      ));
+
+    });
+
   });
 
-  it('handles lists when they return null as a value', () => {
-    var doc = `
-      query Q {
-        nest {
-          listContainsNull,
-        }
-      }
-    `;
-
-    var ast = parse(doc);
-
-    var expected = {
-      data: {
-        nest: {
-          listContainsNull: [1,null,2],
-        }
-      }
-    };
-
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
-  });
-
-  it('handles lists of non-nulls when they return null as a value', () => {
-    var doc = `
-      query Q {
-        nest {
-          listOfNonNullContainsNull,
-        }
-      }
-    `;
-
-    var ast = parse(doc);
-
-    var expected = {
-      data: {
-        nest: {
-          listOfNonNullContainsNull: null
-        }
-      },
-      errors: [
-        { message: 'Cannot return null for non-nullable type.',
-          locations: [ { line: 4, column: 11 } ] }
-      ]
-    };
-
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
-  });
-
-  it('handles non-null lists of when they return null as a value', () => {
-    var doc = `
-      query Q {
-        nest {
-          nonNullListContainsNull,
-        }
-      }
-    `;
-
-    var ast = parse(doc);
-
-    var expected = {
-      data: {
-        nest: {
-          nonNullListContainsNull: [1,null,2],
-        }
-      }
-    };
-
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
-  });
-
-  it('handles non-null lists of non-nulls when they return null as a value', () => {
-    var doc = `
-      query Q {
-        nest {
-          nonNullListOfNonNullContainsNull,
-        }
-      }
-    `;
-
-    var ast = parse(doc);
-
-    var expected = {
-      data: {
-        nest: null
-      },
-      errors: [
-        { message: 'Cannot return null for non-nullable type.',
-          locations: [ { line: 4, column: 11 } ] }
-      ]
-    };
-
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
-  });
-
-  it('handles lists when they return null', () => {
-    var doc = `
-      query Q {
-        nest {
-          listReturnsNull,
-        }
-      }
-    `;
-
-    var ast = parse(doc);
-
-    var expected = {
-      data: {
-        nest: {
-          listReturnsNull: null
-        }
-      }
-    };
-
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
-  });
-
-  it('handles lists of non-nulls when they return null', () => {
-    var doc = `
-      query Q {
-        nest {
-          listOfNonNullReturnsNull,
-        }
-      }
-    `;
-
-    var ast = parse(doc);
-
-    var expected = {
-      data: {
-        nest: {
-          listOfNonNullReturnsNull: null
-        }
-      }
-    };
-
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
-  });
-
-  it('handles non-null lists of when they return null', () => {
-    var doc = `
-      query Q {
-        nest {
-          nonNullListReturnsNull,
-        }
-      }
-    `;
-
-    var ast = parse(doc);
-
-    var expected = {
-      data: {
-        nest: null,
-      },
-      errors: [
-        { message: 'Cannot return null for non-nullable type.',
-          locations: [ { line: 4, column: 11 } ] }
-      ]
-    };
-
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
-  });
-
-  it('handles non-null lists of non-nulls when they return null', () => {
-    var doc = `
-      query Q {
-        nest {
-          nonNullListOfNonNullReturnsNull,
-        }
-      }
-    `;
-
-    var ast = parse(doc);
-
-    var expected = {
-      data: {
-        nest: null
-      },
-      errors: [
-        { message: 'Cannot return null for non-nullable type.',
-          locations: [ { line: 4, column: 11 } ] }
-      ]
-    };
-
-    return expect(execute(schema, data, ast, 'Q', {}))
-                  .to.become(expected);
-  });
 });
