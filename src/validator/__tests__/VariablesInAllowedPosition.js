@@ -159,7 +159,7 @@ describe('Validate: Variables are in allowed positions', () => {
     expectPassesRule(VariablesInAllowedPosition, `
       query Query($boolVar: Boolean!)
       {
-        dog @if: $boolVar
+        dog @include(if: $boolVar)
       }
     `);
   });
@@ -168,7 +168,7 @@ describe('Validate: Variables are in allowed positions', () => {
     expectPassesRule(VariablesInAllowedPosition, `
       query Query($boolVar: Boolean = false)
       {
-        dog @if: $boolVar
+        dog @include(if: $boolVar)
       }
     `);
   });
@@ -259,11 +259,11 @@ describe('Validate: Variables are in allowed positions', () => {
     expectFailsRule(VariablesInAllowedPosition, `
       query Query($boolVar: Boolean)
       {
-        dog @if: $boolVar
+        dog @include(if: $boolVar)
       }
     `, [
       { message: badVarPosMessage('boolVar', 'Boolean', 'Boolean!'),
-        locations: [ { line: 4, column: 18 } ] }
+        locations: [ { line: 4, column: 26 } ] }
     ]);
   });
 
@@ -271,11 +271,11 @@ describe('Validate: Variables are in allowed positions', () => {
     expectFailsRule(VariablesInAllowedPosition, `
       query Query($stringVar: String)
       {
-        dog @if: $stringVar
+        dog @include(if: $stringVar)
       }
     `, [
       { message: badVarPosMessage('stringVar', 'String', 'Boolean!'),
-        locations: [ { line: 4, column: 18 } ] }
+        locations: [ { line: 4, column: 26 } ] }
     ]);
   });
 

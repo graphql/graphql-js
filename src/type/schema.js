@@ -16,7 +16,7 @@ import {
   GraphQLNonNull
 } from './definition';
 import type { GraphQLType } from './definition';
-import { GraphQLIfDirective, GraphQLUnlessDirective } from './directives';
+import { GraphQLIncludeDirective, GraphQLSkipDirective } from './directives';
 import type { GraphQLDirective } from './directives';
 import { __Schema } from './introspection';
 import find from '../utils/find';
@@ -68,8 +68,8 @@ export class GraphQLSchema {
 
   getDirectives(): Array<GraphQLDirective> {
     return this._directives || (this._directives = [
-      GraphQLIfDirective,
-      GraphQLUnlessDirective
+      GraphQLIncludeDirective,
+      GraphQLSkipDirective
     ]);
   }
 

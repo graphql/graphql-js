@@ -59,8 +59,8 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('identical fields with identical directives', () => {
     expectPassesRule(OverlappingFieldsCanBeMerged, `
       fragment mergeSameFieldsWithSameDirectives on Dog {
-        name @if:true
-        name @if:true
+        name @include(if: true)
+        name @include(if: true)
       }
     `);
   });
@@ -68,8 +68,8 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('different args with different aliases', () => {
     expectPassesRule(OverlappingFieldsCanBeMerged, `
       fragment differentArgsWithDifferentAliases on Dog {
-        knowsSit : doesKnowCommand(dogCommand: SIT)
-        knowsDown : doesKnowCommand(dogCommand: DOWN)
+        knowsSit: doesKnowCommand(dogCommand: SIT)
+        knowsDown: doesKnowCommand(dogCommand: DOWN)
       }
     `);
   });
@@ -77,8 +77,8 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('different directives with different aliases', () => {
     expectPassesRule(OverlappingFieldsCanBeMerged, `
       fragment differentDirectivesWithDifferentAliases on Dog {
-        nameIfTrue : name @if:true
-        nameIfFalse : name @if:false
+        nameIfTrue: name @include(if: true)
+        nameIfFalse: name @include(if: false)
       }
     `);
   });
@@ -86,8 +86,8 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('Same aliases with different field targets', () => {
     expectFailsRule(OverlappingFieldsCanBeMerged, `
       fragment sameAliasesWithDifferentFieldTargets on Dog {
-        fido : name
-        fido : nickname
+        fido: name
+        fido: nickname
       }
     `, [
       { message: fieldsConflictMessage(
@@ -101,7 +101,7 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('Alias masking direct field access', () => {
     expectFailsRule(OverlappingFieldsCanBeMerged, `
       fragment aliasMaskingDirectFieldAccess on Dog {
-        name : nickname
+        name: nickname
         name
       }
     `, [
@@ -131,8 +131,8 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('conflicting directives', () => {
     expectFailsRule(OverlappingFieldsCanBeMerged, `
       fragment conflictingDirectiveArgs on Dog {
-        name @if: true
-        name @unless: false
+        name @include(if: true)
+        name @skip(if: false)
       }
     `, [
       { message: fieldsConflictMessage(
@@ -146,8 +146,8 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('conflicting args with matching directives', () => {
     expectFailsRule(OverlappingFieldsCanBeMerged, `
       fragment conflictingArgsWithMatchingDirectiveArgs on Dog {
-        doesKnowCommand(dogCommand: SIT) @if:true
-        doesKnowCommand(dogCommand: HEEL) @if:true
+        doesKnowCommand(dogCommand: SIT) @include(if: true)
+        doesKnowCommand(dogCommand: HEEL) @include(if: true)
       }
     `, [
       { message: fieldsConflictMessage(
@@ -161,8 +161,8 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('conflicting directives with matching args', () => {
     expectFailsRule(OverlappingFieldsCanBeMerged, `
       fragment conflictingDirectiveArgsWithMatchingArgs on Dog {
-        doesKnowCommand(dogCommand: SIT) @if: true
-        doesKnowCommand(dogCommand: SIT) @unless: false
+        doesKnowCommand(dogCommand: SIT) @include(if: true)
+        doesKnowCommand(dogCommand: SIT) @skip(if: false)
       }
     `, [
       { message: fieldsConflictMessage(

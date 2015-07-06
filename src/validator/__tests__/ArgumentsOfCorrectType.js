@@ -10,12 +10,23 @@
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
 import ArgumentsOfCorrectType from '../rules/ArgumentsOfCorrectType';
-import { missingArgMessage, badValueMessage } from '../errors';
+import {
+  missingFieldArgMessage,
+  missingDirectiveArgMessage,
+  badValueMessage
+} from '../errors';
 
 
-function missingArg(fieldName, argName, typeName, line, column) {
+function missingFieldArg(fieldName, argName, typeName, line, column) {
   return {
-    message: missingArgMessage(fieldName, argName, typeName),
+    message: missingFieldArgMessage(fieldName, argName, typeName),
+    locations: [ { line: line, column: column } ],
+  };
+}
+
+function missingDirectiveArg(directiveName, argName, typeName, line, column) {
+  return {
+    message: missingDirectiveArgMessage(directiveName, argName, typeName),
     locations: [ { line: line, column: column } ],
   };
 }
@@ -636,7 +647,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        missingArg('multipleReqs', 'req1', 'Int!', 4, 13)
+        missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13)
       ]);
     });
 
@@ -648,8 +659,8 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        missingArg('multipleReqs', 'req1', 'Int!', 4, 13),
-        missingArg('multipleReqs', 'req2', 'Int!', 4, 13),
+        missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13),
+        missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13),
       ]);
     });
 
@@ -661,8 +672,8 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        missingArg('multipleReqs', 'req2', 'Int!', 4, 13),
         badValue('req1', 'Int!', '"one"', 4, 32),
+        missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13),
       ]);
     });
 
@@ -799,6 +810,49 @@ describe('Validate: Argument values of correct type', () => {
           4,
           41
         ),
+      ]);
+    });
+
+  });
+
+  describe('Directive arguments', () => {
+
+    it('with directives of valid types', () => {
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          dog @include(if: true) {
+            name
+          }
+          human @skip(if: false) {
+            name
+          }
+        }
+      `);
+    });
+
+    it('with directive with missing types', () => {
+      expectFailsRule(ArgumentsOfCorrectType, `
+        {
+          dog @include {
+            name @skip
+          }
+        }
+      `, [
+        missingDirectiveArg('include', 'if', 'Boolean!', 3, 15),
+        missingDirectiveArg('skip', 'if', 'Boolean!', 4, 18)
+      ]);
+    });
+
+    it('with directive with incorrect types', () => {
+      expectFailsRule(ArgumentsOfCorrectType, `
+        {
+          dog @include(if: "yes") {
+            name @skip(if: ENUM)
+          }
+        }
+      `, [
+        badValue('if', 'Boolean!', '"yes"', 3, 28),
+        badValue('if', 'Boolean!', 'ENUM', 4, 28),
       ]);
     });
 

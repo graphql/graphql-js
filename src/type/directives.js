@@ -9,7 +9,7 @@
  */
 
 import { GraphQLNonNull } from './definition';
-import type { GraphQLType } from './definition';
+import type { GraphQLFieldArgument } from './definition';
 import { GraphQLBoolean } from './scalars';
 
 
@@ -20,7 +20,7 @@ import { GraphQLBoolean } from './scalars';
 export class GraphQLDirective {
   name: string;
   description: ?string;
-  type: GraphQLType;
+  args: Array<GraphQLFieldArgument>;
   onOperation: boolean;
   onFragment: boolean;
   onField: boolean;
@@ -28,7 +28,7 @@ export class GraphQLDirective {
   constructor(config: GraphQLDirectiveConfig) {
     this.name = config.name;
     this.description = config.description;
-    this.type = config.type;
+    this.args = config.args;
     this.onOperation = config.onOperation;
     this.onFragment = config.onFragment;
     this.onField = config.onField;
@@ -38,34 +38,44 @@ export class GraphQLDirective {
 type GraphQLDirectiveConfig = {
   name: string;
   description?: string;
-  type: GraphQLType;
+  args: Array<GraphQLFieldArgument>;
   onOperation: boolean;
   onFragment: boolean;
   onField: boolean;
 }
 
 /**
- * Used to conditionally include fields
+ * Used to conditionally include fields or fragments
  */
-export var GraphQLIfDirective = new GraphQLDirective({
-  name: 'if',
-  description: 'Directs the executor to omit this field if the argument ' +
-               'provided is false.',
-  type: new GraphQLNonNull(GraphQLBoolean),
+export var GraphQLIncludeDirective = new GraphQLDirective({
+  name: 'include',
+  description:
+    'Directs the executor to include this field or fragment only when ' +
+    'the `if` argument is true.',
+  args: [
+    { name: 'if',
+      type: new GraphQLNonNull(GraphQLBoolean),
+      description: 'Included when true.' }
+  ],
   onOperation: false,
-  onFragment: false,
+  onFragment: true,
   onField: true
 });
 
 /**
- * Used to conditionally exclude fields
+ * Used to conditionally skip (exclude) fields or fragments
  */
-export var GraphQLUnlessDirective = new GraphQLDirective({
-  name: 'unless',
-  description: 'Directs the executor to omit this field if the argument ' +
-               'provided is true.',
-  type: new GraphQLNonNull(GraphQLBoolean),
+export var GraphQLSkipDirective = new GraphQLDirective({
+  name: 'skip',
+  description:
+    'Directs the executor to skip this field or fragment when the `if` ' +
+    'argument is true.',
+  args: [
+    { name: 'if',
+      type: new GraphQLNonNull(GraphQLBoolean),
+      description: 'Skipped when true.' }
+  ],
   onOperation: false,
-  onFragment: false,
+  onFragment: true,
   onField: true
 });

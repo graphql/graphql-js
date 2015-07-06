@@ -215,7 +215,7 @@ export type Directive = {
   kind: 'Directive';
   loc?: ?Location;
   name: Name;
-  value?: ?Value;
+  arguments?: ?Array<Argument>;
 }
 
 

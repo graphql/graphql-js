@@ -94,19 +94,19 @@ describe('Validate: Scalar leafs', () => {
   it('Scalar selection not allowed with directives', () => {
     expectFailsRule(ScalarLeafs, `
       fragment scalarSelectionsNotAllowedWithDirectives on Dog {
-        name @if: true { isAlsoHumanName }
+        name @include(if: true) { isAlsoHumanName }
       }
     `,
-    [noScalarSubselection('name', 'String', 3, 24)]);
+    [noScalarSubselection('name', 'String', 3, 33)]);
   });
 
   it('Scalar selection not allowed with directives and args', () => {
     expectFailsRule(ScalarLeafs, `
       fragment scalarSelectionsNotAllowedWithDirectivesAndArgs on Dog {
-        doesKnowCommand(dogCommand: SIT) @if: true { sinceWhen }
+        doesKnowCommand(dogCommand: SIT) @include(if: true) { sinceWhen }
       }
     `,
-    [noScalarSubselection('doesKnowCommand', 'Boolean', 3, 52)]);
+    [noScalarSubselection('doesKnowCommand', 'Boolean', 3, 61)]);
   });
 
 });

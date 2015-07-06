@@ -10,15 +10,12 @@
 
 import { GraphQLError, locatedError, formatError } from '../error';
 import type { GraphQLFormattedError } from '../error';
+import find from '../utils/find';
 import invariant from '../utils/invariant';
-import typeFromAST from '../utils/typeFromAST';
 import isNullish from '../utils/isNullish';
+import typeFromAST from '../utils/typeFromAST';
 import { Kind } from '../language';
-import {
-  getVariableValues,
-  getArgumentValues,
-  getDirectiveValue
-} from './values';
+import { getVariableValues, getArgumentValues } from './values';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -39,8 +36,8 @@ import {
   TypeNameMetaFieldDef
 } from '../type/introspection';
 import {
-  GraphQLIfDirective,
-  GraphQLUnlessDirective
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective
 } from '../type/directives';
 import type {
   Directive,
@@ -359,22 +356,37 @@ function collectFields(
 }
 
 /**
- * Determines if a field should be included based on @if and @unless directives.
+ * Determines if a field should be included based on the @include and @skip
+ * directives, where @skip has higher precidence than @include.
  */
 function shouldIncludeNode(
   exeContext: ExecutionContext,
   directives: ?Array<Directive>
 ): boolean {
-  var ifDirective =
-    getDirectiveValue(GraphQLIfDirective, directives, exeContext.variables);
-  if (ifDirective !== undefined) {
-    return ifDirective;
+  var skipAST = directives && find(
+    directives,
+    directive => directive.name.value === GraphQLSkipDirective.name
+  );
+  if (skipAST) {
+    var { if: skipIf } = getArgumentValues(
+      GraphQLSkipDirective.args,
+      skipAST.arguments,
+      exeContext.variables
+    );
+    return !skipIf;
   }
 
-  var unlessDirective =
-    getDirectiveValue(GraphQLUnlessDirective, directives, exeContext.variables);
-  if (unlessDirective !== undefined) {
-    return !unlessDirective;
+  var includeAST = directives && find(
+    directives,
+    directive => directive.name.value === GraphQLIncludeDirective.name
+  );
+  if (includeAST) {
+    var { if: includeIf } = getArgumentValues(
+      GraphQLIncludeDirective.args,
+      includeAST.arguments,
+      exeContext.variables
+    );
+    return !!includeIf;
   }
 
   return true;
@@ -455,11 +467,9 @@ function resolveField(
   // Build a JS object of arguments from the field.arguments AST, using the
   // variables scope to fulfill any variable references.
   // TODO: find a way to memoize, in case this field is within a Array type.
-  var args = getArgumentValues(
-    fieldDef.args,
-    fieldAST.arguments,
-    exeContext.variables
-  );
+  var args = fieldDef.args ?
+    getArgumentValues(fieldDef.args, fieldAST.arguments, exeContext.variables) :
+    null;
 
   // If an error occurs while calling the field `resolve` function, ensure that
   // it is wrapped as a GraphQLError with locations. Log this error and return

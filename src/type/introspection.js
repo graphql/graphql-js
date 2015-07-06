@@ -62,7 +62,11 @@ var __Directive = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     description: { type: GraphQLString },
-    type: { type: __Type },
+    args: {
+      type:
+        new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
+      resolve: directive => directive.args || []
+    },
     onOperation: { type: GraphQLBoolean },
     onFragment: { type: GraphQLBoolean },
     onField: { type: GraphQLBoolean },
@@ -172,7 +176,7 @@ var __Field = new GraphQLObjectType({
     args: {
       type:
         new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
-      resolve: field => field.args == null ? [] : field.args
+      resolve: field => field.args || []
     },
     type: { type: new GraphQLNonNull(__Type) },
     isDeprecated: {

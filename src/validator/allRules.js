@@ -26,18 +26,16 @@ import NoUnusedFragments from './rules/NoUnusedFragments';
 import PossibleFragmentSpreads from './rules/PossibleFragmentSpreads';
 // Spec Section: "Fragments must not form cycles"
 import NoFragmentCycles from './rules/NoFragmentCycles';
-// Spec Section: "All Variables Used"
-import NoUnusedVariables from './rules/NoUnusedVariables';
 // Spec Section: "All Variable Used Defined"
 import NoUndefinedVariables from './rules/NoUndefinedVariables';
-// Spec Section: "Argument Names"
-import KnownArgumentNames from './rules/KnownArgumentNames';
+// Spec Section: "All Variables Used"
+import NoUnusedVariables from './rules/NoUnusedVariables';
 // Spec Section: "Directives Are Defined"
 import KnownDirectives from './rules/KnownDirectives';
+// Spec Section: "Argument Names"
+import KnownArgumentNames from './rules/KnownArgumentNames';
 // Spec Section: "Argument Values Type Correctness"
 import ArgumentsOfCorrectType from './rules/ArgumentsOfCorrectType';
-// Spec Section: "Directive Arguments Are Of Correct Type"
-import DirectivesOfCorrectType from './rules/DirectivesOfCorrectType';
 // Spec Section: "Variable Default Values Are Correctly Typed"
 import DefaultValuesOfCorrectType from './rules/DefaultValuesOfCorrectType';
 // Spec Section: "All Variable Usages Are Allowed"
@@ -62,10 +60,9 @@ export var allRules = [
   NoFragmentCycles,
   NoUndefinedVariables,
   NoUnusedVariables,
+  KnownDirectives,
   KnownArgumentNames,
   ArgumentsOfCorrectType,
-  KnownDirectives,
-  DirectivesOfCorrectType,
   DefaultValuesOfCorrectType,
   VariablesInAllowedPosition,
   OverlappingFieldsCanBeMerged
