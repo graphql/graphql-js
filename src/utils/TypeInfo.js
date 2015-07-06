@@ -26,7 +26,9 @@ import type {
   GraphQLOutputType,
   GraphQLCompositeType,
   GraphQLFieldDefinition,
+  GraphQLFieldArgument
 } from '../type/definition';
+import type { GraphQLDirective } from '../type/directives';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
@@ -49,6 +51,8 @@ export default class TypeInfo {
   _parentTypeStack: Array<?GraphQLCompositeType>;
   _inputTypeStack: Array<?GraphQLInputType>;
   _fieldDefStack: Array<?GraphQLFieldDefinition>;
+  _directive: ?GraphQLDirective;
+  _argument: ?GraphQLFieldArgument;
 
   constructor(schema: GraphQLSchema) {
     this._schema = schema;
@@ -56,6 +60,8 @@ export default class TypeInfo {
     this._parentTypeStack = [];
     this._inputTypeStack = [];
     this._fieldDefStack = [];
+    this._directive = null;
+    this._argument = null;
   }
 
   getType(): ?GraphQLOutputType {
@@ -82,6 +88,14 @@ export default class TypeInfo {
     }
   }
 
+  getDirective(): ?GraphQLDirective {
+    return this._directive;
+  }
+
+  getArgument(): ?GraphQLFieldArgument {
+    return this._argument;
+  }
+
   // Flow does not yet handle this case.
   enter(node: any/*Node*/) {
     var schema = this._schema;
@@ -105,6 +119,9 @@ export default class TypeInfo {
         this._fieldDefStack.push(fieldDef);
         this._typeStack.push(fieldDef && fieldDef.type);
         break;
+      case Kind.DIRECTIVE:
+        this._directive = schema.getDirective(node.name.value);
+        break;
       case Kind.OPERATION_DEFINITION:
         if (node.operation === 'query') {
           type = schema.getQueryType();
@@ -122,19 +139,20 @@ export default class TypeInfo {
         this._inputTypeStack.push(typeFromAST(schema, node.type));
         break;
       case Kind.ARGUMENT:
-        var field = this.getFieldDef();
+        var argDef;
         var argType;
-        if (field) {
-          var argDef = find(field.args, arg => arg.name === node.name.value);
+        var fieldOrDirective = this.getDirective() || this.getFieldDef();
+        if (fieldOrDirective) {
+          argDef = find(
+            fieldOrDirective.args,
+            arg => arg.name === node.name.value
+          );
           if (argDef) {
             argType = argDef.type;
           }
         }
+        this._argument = argDef;
         this._inputTypeStack.push(argType);
-        break;
-      case Kind.DIRECTIVE:
-        var directive = schema.getDirective(node.name.value);
-        this._inputTypeStack.push(directive ? directive.type : undefined);
         break;
       case Kind.ARRAY:
         var arrayType = getNullableType(this.getInputType());
@@ -163,6 +181,9 @@ export default class TypeInfo {
         this._fieldDefStack.pop();
         this._typeStack.pop();
         break;
+      case Kind.DIRECTIVE:
+        this._directive = null;
+        break;
       case Kind.OPERATION_DEFINITION:
       case Kind.INLINE_FRAGMENT:
       case Kind.FRAGMENT_DEFINITION:
@@ -170,7 +191,8 @@ export default class TypeInfo {
         break;
       case Kind.VARIABLE_DEFINITION:
       case Kind.ARGUMENT:
-      case Kind.DIRECTIVE:
+        this._argument = null;
+        break;
       case Kind.ARRAY:
       case Kind.OBJECT_FIELD:
         this._inputTypeStack.pop();

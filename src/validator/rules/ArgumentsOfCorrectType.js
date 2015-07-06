@@ -15,7 +15,11 @@ import { print } from '../../language/printer';
 import { GraphQLNonNull } from '../../type/definition';
 import keyMap from '../../utils/keyMap';
 import isValidLiteralValue from '../../utils/isValidLiteralValue';
-import { missingArgMessage, badValueMessage } from '../errors';
+import {
+  missingFieldArgMessage,
+  missingDirectiveArgMessage,
+  badValueMessage
+} from '../errors';
 
 
 /**
@@ -28,47 +32,81 @@ export default function ArgumentsOfCorrectType(
   context: ValidationContext
 ): any {
   return {
-    Field(fieldAST) {
-      var fieldDef = context.getFieldDef();
-      if (!fieldDef) {
-        return false;
+    Field: {
+      // Validate on leave to allow for deeper errors to also appear
+      leave(fieldAST) {
+        var fieldDef = context.getFieldDef();
+        if (!fieldDef) {
+          return false;
+        }
+        var errors = [];
+        var argASTs = fieldAST.arguments || [];
+
+        var argASTMap = keyMap(argASTs, arg => arg.name.value);
+        fieldDef.args.forEach(argDef => {
+          var argAST = argASTMap[argDef.name];
+          if (!argAST && argDef.type instanceof GraphQLNonNull) {
+            errors.push(new GraphQLError(
+              missingFieldArgMessage(
+                fieldAST.name.value,
+                argDef.name,
+                argDef.type
+              ),
+              [fieldAST]
+            ));
+          }
+        });
+
+        if (errors.length > 0) {
+          return errors;
+        }
       }
-      var errors = [];
-      var argASTs = fieldAST.arguments || [];
+    },
 
-      var argASTMap = keyMap(argASTs, arg => arg.name.value);
-      fieldDef.args.forEach(argDef => {
-        var argAST = argASTMap[argDef.name];
-        if (!argAST && argDef.type instanceof GraphQLNonNull) {
-          errors.push(new GraphQLError(
-            missingArgMessage(
-              fieldAST.name.value,
-              argDef.name,
-              argDef.type
-            ),
-            [fieldAST]
-          ));
+    Directive: {
+      // Validate on leave to allow for deeper errors to also appear
+      leave(directiveAST) {
+        var directiveDef = context.getDirective();
+        if (!directiveDef) {
+          return false;
         }
-      });
+        var errors = [];
+        var argASTs = directiveAST.arguments || [];
 
-      var argDefMap = keyMap(fieldDef.args, def => def.name);
-      argASTs.forEach(argAST => {
-        var argDef = argDefMap[argAST.name.value];
-        if (argDef && !isValidLiteralValue(argAST.value, argDef.type)) {
-          errors.push(new GraphQLError(
-            badValueMessage(
-              argAST.name.value,
-              argDef.type,
-              print(argAST.value)
-            ),
-            [argAST.value]
-          ));
+        var argASTMap = keyMap(argASTs, arg => arg.name.value);
+        directiveDef.args.forEach(argDef => {
+          var argAST = argASTMap[argDef.name];
+          if (!argAST && argDef.type instanceof GraphQLNonNull) {
+            errors.push(new GraphQLError(
+              missingDirectiveArgMessage(
+                directiveAST.name.value,
+                argDef.name,
+                argDef.type
+              ),
+              [directiveAST]
+            ));
+          }
+        });
+
+        if (errors.length > 0) {
+          return errors;
         }
-      });
+      }
+    },
 
-      if (errors.length > 0) {
-        return errors;
+    Argument(argAST) {
+      var argDef = context.getArgument();
+      if (argDef && !isValidLiteralValue(argAST.value, argDef.type)) {
+        return new GraphQLError(
+          badValueMessage(
+            argAST.name.value,
+            argDef.type,
+            print(argAST.value)
+          ),
+          [argAST.value]
+        );
       }
     }
+
   };
 }

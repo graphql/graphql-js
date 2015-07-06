@@ -10,7 +10,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { missingArgMessage } from '../../validator/errors';
+import { missingFieldArgMessage } from '../../validator/errors';
 import {
   graphql,
   GraphQLSchema,
@@ -75,7 +75,12 @@ describe('Introspection', () => {
           directives {
             __typename
             name
-            type { ...TypeRef }
+            args {
+              __typename
+              name
+              type { ...TypeRef }
+              defaultValue
+            }
             onOperation
             onFragment
             onField
@@ -789,13 +794,27 @@ describe('Introspection', () => {
                 },
                 {
                   __typename: '__Field',
-                  name: 'type',
+                  name: 'args',
                   args: [],
                   type: {
                     __typename: '__Type',
-                    kind: 'OBJECT',
-                    name: '__Type',
-                    ofType: null,
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      __typename: '__Type',
+                      kind: 'LIST',
+                      name: null,
+                      ofType: {
+                        __typename: '__Type',
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          __typename: '__Type',
+                          kind: 'OBJECT',
+                          name: '__InputValue'
+                        }
+                      }
+                    }
                   },
                   isDeprecated: false,
                   deprecationReason: null
@@ -847,38 +866,52 @@ describe('Introspection', () => {
           directives: [
             {
               __typename: '__Directive',
-              name: 'if',
-              type: {
-                __typename: '__Type',
-                kind: 'NON_NULL',
-                name: null,
-                ofType: {
-                  __typename: '__Type',
-                  kind: 'SCALAR',
-                  name: 'Boolean',
-                  ofType: null,
+              name: 'include',
+              args: [
+                {
+                  __typename: '__InputValue',
+                  defaultValue: null,
+                  name: 'if',
+                  type: {
+                    __typename: '__Type',
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      __typename: '__Type',
+                      kind: 'SCALAR',
+                      name: 'Boolean',
+                      ofType: null
+                    }
+                  }
                 }
-              },
+              ],
               onOperation: false,
-              onFragment: false,
+              onFragment: true,
               onField: true
             },
             {
               __typename: '__Directive',
-              name: 'unless',
-              type: {
-                __typename: '__Type',
-                kind: 'NON_NULL',
-                name: null,
-                ofType: {
-                  __typename: '__Type',
-                  kind: 'SCALAR',
-                  name: 'Boolean',
-                  ofType: null,
+              name: 'skip',
+              args: [
+                {
+                  __typename: '__InputValue',
+                  defaultValue: null,
+                  name: 'if',
+                  type: {
+                    __typename: '__Type',
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      __typename: '__Type',
+                      kind: 'SCALAR',
+                      name: 'Boolean',
+                      ofType: null
+                    }
+                  }
                 }
-              },
+              ],
               onOperation: false,
-              onFragment: false,
+              onFragment: true,
               onField: true
             }
           ]
@@ -1274,7 +1307,7 @@ describe('Introspection', () => {
       graphql(schema, request)
     ).to.become({
       errors: [
-        { message: missingArgMessage('__type', 'name', 'String!'),
+        { message: missingFieldArgMessage('__type', 'name', 'String!'),
           locations: [ { line: 3, column: 9 } ] }
       ]
     });

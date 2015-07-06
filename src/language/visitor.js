@@ -32,7 +32,7 @@ export var VisitorKeys = {
   ObjectValue: ['fields'],
   ObjectField: ['name', 'value'],
 
-  Directive: ['name', 'value'],
+  Directive: ['name', 'arguments'],
 
   ListType: ['type'],
   NonNullType: ['type'],

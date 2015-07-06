@@ -45,10 +45,10 @@ describe('Validate: Known directives', () => {
   it('with known directives', () => {
     expectPassesRule(KnownDirectives, `
       {
-        dog @if: true {
+        dog @include(if: true) {
           name
         }
-        human @unless: false {
+        human @skip(if: false) {
           name
         }
       }
@@ -58,7 +58,7 @@ describe('Validate: Known directives', () => {
   it('with unknown directive', () => {
     expectFailsRule(KnownDirectives, `
       {
-        dog @unknown: "directive" {
+        dog @unknown(directive: "value") {
           name
         }
       }
@@ -70,12 +70,12 @@ describe('Validate: Known directives', () => {
   it('with many unknown directives', () => {
     expectFailsRule(KnownDirectives, `
       {
-        dog @unknown: "directive" {
+        dog @unknown(directive: "value") {
           name
         }
-        human @unknown: "directive" {
+        human @unknown(directive: "value") {
           name
-          pets @unknown: "directive" {
+          pets @unknown(directive: "value") {
             name
           }
         }
@@ -87,14 +87,25 @@ describe('Validate: Known directives', () => {
     ]);
   });
 
+  it('with well placed directives', () => {
+    expectPassesRule(KnownDirectives, `
+      query Foo {
+        name @include(if: true)
+        ...Frag @include(if: true)
+        skippedField @skip(if: true)
+        ...SkippedFrag @skip(if: true)
+      }
+    `);
+  });
+
   it('with misplaced directives', () => {
     expectFailsRule(KnownDirectives, `
-      query Foo @if: true {
+      query Foo @include(if: true) {
         name
         ...Frag
       }
     `, [
-      misplacedDirective('if', 'operation', 2, 17)
+      misplacedDirective('include', 'operation', 2, 17)
     ]);
   });
 

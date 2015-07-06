@@ -51,7 +51,7 @@ describe('Execute: handles directives', () => {
   describe('works on scalars', () => {
     it('if true includes scalar', () => {
       return expect(
-        executeTestQuery('{ a, b @if:true }')
+        executeTestQuery('{ a, b @include(if: true) }')
       ).to.become({
         data: { a: 'a', b: 'b'}
       });
@@ -59,7 +59,7 @@ describe('Execute: handles directives', () => {
 
     it('if false omits on scalar', () => {
       return expect(
-        executeTestQuery('{ a, b @if:false }')
+        executeTestQuery('{ a, b @include(if: false) }')
       ).to.become({
         data: { a: 'a' }
       });
@@ -67,7 +67,7 @@ describe('Execute: handles directives', () => {
 
     it('unless false includes scalar', () => {
       return expect(
-        executeTestQuery('{ a, b @unless:false }')
+        executeTestQuery('{ a, b @skip(if: false) }')
       ).to.become({
         data: { a: 'a', b: 'b'}
       });
@@ -75,7 +75,7 @@ describe('Execute: handles directives', () => {
 
     it('unless true omits scalar', () => {
       return expect(
-        executeTestQuery('{ a, b @unless:true}')
+        executeTestQuery('{ a, b @skip(if: true) }')
       ).to.become({
         data: { a: 'a' }
       });
@@ -87,7 +87,7 @@ describe('Execute: handles directives', () => {
       var q = `
         query Q {
           a
-          ...Frag @if:false
+          ...Frag @include(if: false)
         }
         fragment Frag on TestType {
           b
@@ -102,7 +102,7 @@ describe('Execute: handles directives', () => {
       var q = `
         query Q {
           a
-          ...Frag @if:true
+          ...Frag @include(if: true)
         }
         fragment Frag on TestType {
           b
@@ -117,7 +117,7 @@ describe('Execute: handles directives', () => {
       var q = `
         query Q {
           a
-          ...Frag @unless:false
+          ...Frag @skip(if: false)
         }
         fragment Frag on TestType {
           b
@@ -132,7 +132,7 @@ describe('Execute: handles directives', () => {
       var q = `
         query Q {
           a
-          ...Frag @unless:true
+          ...Frag @skip(if: true)
         }
         fragment Frag on TestType {
           b
@@ -149,7 +149,7 @@ describe('Execute: handles directives', () => {
       var q = `
         query Q {
           a
-          ... on TestType @if:false {
+          ... on TestType @include(if: false) {
             b
           }
         }
@@ -166,7 +166,7 @@ describe('Execute: handles directives', () => {
       var q = `
         query Q {
           a
-          ... on TestType @if:true {
+          ... on TestType @include(if: true) {
             b
           }
         }
@@ -182,7 +182,7 @@ describe('Execute: handles directives', () => {
       var q = `
         query Q {
           a
-          ... on TestType @unless:false {
+          ... on TestType @skip(if: false) {
             b
           }
         }
@@ -198,7 +198,7 @@ describe('Execute: handles directives', () => {
       var q = `
         query Q {
           a
-          ... on TestType @unless:true {
+          ... on TestType @skip(if: true) {
             b
           }
         }
@@ -219,7 +219,7 @@ describe('Execute: handles directives', () => {
           a
           ...Frag
         }
-        fragment Frag on TestType @if:false {
+        fragment Frag on TestType @include(if: false) {
           b
         }
       `;
@@ -233,7 +233,7 @@ describe('Execute: handles directives', () => {
           a
           ...Frag
         }
-        fragment Frag on TestType @if:true {
+        fragment Frag on TestType @include(if: true) {
           b
         }
       `;
@@ -247,7 +247,7 @@ describe('Execute: handles directives', () => {
           a
           ...Frag
         }
-        fragment Frag on TestType @unless:false {
+        fragment Frag on TestType @skip(if: false) {
           b
         }
       `;
@@ -261,7 +261,7 @@ describe('Execute: handles directives', () => {
           a
           ...Frag
         }
-        fragment Frag on TestType @unless:true {
+        fragment Frag on TestType @skip(if: true) {
           b
         }
       `;

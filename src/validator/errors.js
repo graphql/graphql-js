@@ -7,9 +7,14 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-export function missingArgMessage(fieldName, argName, typeName) {
-  return `Field ${fieldName} argument ${argName} of type ${typeName}, is ` +
+export function missingFieldArgMessage(fieldName, argName, typeName) {
+  return `Field ${fieldName} argument ${argName} of type ${typeName} is ` +
     `required but not provided.`;
+}
+
+export function missingDirectiveArgMessage(directiveName, argName, typeName) {
+  return `Directive @${directiveName} argument ${argName} of type ` +
+    `${typeName} is required but not provided.`;
 }
 
 export function badValueMessage(argName, typeName, value) {

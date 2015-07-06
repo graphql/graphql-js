@@ -83,7 +83,8 @@ export function print(ast) {
 
       // Directive
 
-      Directive: node => join(['@' + node.name, node.value], ': '),
+      Directive: node =>
+        join(['@' + node.name, manyList('(', node.arguments, ', ', ')')]),
 
       // Type
 

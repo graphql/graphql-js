@@ -581,7 +581,7 @@ function parseDirective(parser): Directive {
   return {
     kind: DIRECTIVE,
     name: parseName(parser),
-    value: skip(parser, TokenKind.COLON) ? parseValue(parser, false) : null,
+    arguments: parseArguments(parser),
     loc: loc(parser, start)
   };
 }

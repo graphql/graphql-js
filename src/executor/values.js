@@ -12,7 +12,6 @@ import { GraphQLError } from '../error';
 import keyMap from '../utils/keyMap';
 import typeFromAST from '../utils/typeFromAST';
 import isNullish from '../utils/isNullish';
-import find from '../utils/find';
 import { Kind } from '../language';
 import { print } from '../language/printer';
 import {
@@ -22,11 +21,9 @@ import {
   GraphQLList,
   GraphQLNonNull,
 } from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLFieldArgument, GraphQLType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 import type {
-  Directive,
   Argument,
   VariableDefinition,
   Variable,
@@ -58,13 +55,10 @@ export function getVariableValues(
  * definitions and list of argument AST nodes.
  */
 export function getArgumentValues(
-  argDefs: ?Array<GraphQLFieldArgument>,
+  argDefs: Array<GraphQLFieldArgument>,
   argASTs: ?Array<Argument>,
   variables: { [key: string]: any }
-): ?{ [key: string]: any } {
-  if (!argDefs || argDefs.length === 0) {
-    return null;
-  }
+): { [key: string]: any } {
   var argASTMap = argASTs ? keyMap(argASTs, arg => arg.name.value) : {};
   return argDefs.reduce((result, argDef) => {
     var name = argDef.name;
@@ -72,24 +66,6 @@ export function getArgumentValues(
     result[name] = coerceValueAST(argDef.type, valueAST, variables);
     return result;
   }, {});
-}
-
-
-export function getDirectiveValue(
-  directiveDef: GraphQLDirective,
-  directives: ?Array<Directive>,
-  variables: { [key: string]: any }
-): any {
-  var directiveAST = directives && find(
-    directives,
-    directive => directive.name.value === directiveDef.name
-  );
-  if (directiveAST) {
-    if (!directiveDef.type) {
-      return null;
-    }
-    return coerceValueAST(directiveDef.type, directiveAST.value, variables);
-  }
 }
 
 
