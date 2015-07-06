@@ -143,6 +143,21 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
+  it('conflicting directive args', () => {
+    expectFailsRule(OverlappingFieldsCanBeMerged, `
+      fragment conflictingDirectiveArgs on Dog {
+        name @include(if: true)
+        name @include(if: false)
+      }
+    `, [
+      { message: fieldsConflictMessage(
+          'name',
+          'they have differing directives'
+        ),
+        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] }
+    ]);
+  });
+
   it('conflicting args with matching directives', () => {
     expectFailsRule(OverlappingFieldsCanBeMerged, `
       fragment conflictingArgsWithMatchingDirectiveArgs on Dog {

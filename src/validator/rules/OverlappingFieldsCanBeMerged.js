@@ -90,9 +90,9 @@ export default function OverlappingFieldsCanBeMerged(
       ];
     }
 
-    var args1 = ast1.arguments || [];
-    var args2 = ast2.arguments || [];
-    if (!sameNameValuePairs(args1, args2)) {
+    var arguments1 = ast1.arguments || [];
+    var arguments2 = ast2.arguments || [];
+    if (!sameArguments(arguments1, arguments2)) {
       return [
         [responseName, 'they have differing arguments'],
         [ast1, ast2]
@@ -101,7 +101,7 @@ export default function OverlappingFieldsCanBeMerged(
 
     var directives1 = ast1.directives || [];
     var directives2 = ast2.directives || [];
-    if (!sameNameValuePairs(directives1, directives2)) {
+    if (!sameDirectives(directives1, directives2)) {
       return [
         [responseName, 'they have differing directives'],
         [ast1, ast2]
@@ -166,19 +166,41 @@ type Conflict = [ConflictReason, Array<Field>];
 // Field name and reason, or field name and list of sub-conflicts.
 type ConflictReason = [string, string] | [string, Array<ConflictReason>];
 
-function sameNameValuePairs(
-  pairs1: Array<Argument | Directive>,
-  pairs2: Array<Argument | Directive>
+function sameDirectives(
+  directives1: Array<Directive>,
+  directives2: Array<Directive>
 ): boolean {
-  if (pairs1.length !== pairs2.length) {
+  if (directives1.length !== directives2.length) {
     return false;
   }
-  return pairs1.every(pair1 => {
-    var pair2 = find(pairs2, pair => pair.name.value === pair1.name.value);
-    if (!pair2) {
+  return directives1.every(directive1 => {
+    var directive2 = find(
+      directives2,
+      directive => directive.name.value === directive1.name.value
+    );
+    if (!directive2) {
       return false;
     }
-    return sameValue(pair1.value, pair2.value);
+    return sameArguments(directive1.arguments, directive2.arguments);
+  });
+}
+
+function sameArguments(
+  arguments1: Array<Argument>,
+  arguments2: Array<Argument>
+): boolean {
+  if (arguments1.length !== arguments2.length) {
+    return false;
+  }
+  return arguments1.every(argument1 => {
+    var argument2 = find(
+      arguments2,
+      argument => argument.name.value === argument1.name.value
+    );
+    if (!argument2) {
+      return false;
+    }
+    return sameValue(argument1.value, argument2.value);
   });
 }
 
