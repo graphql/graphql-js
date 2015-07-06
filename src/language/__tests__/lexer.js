@@ -185,51 +185,6 @@ describe('Lexer', () => {
   it('lexes numbers', () => {
 
     expect(
-      lexOne('"simple"')
-    ).to.deep.equal({
-      kind: TokenKind.STRING,
-      start: 0,
-      end: 8,
-      value: 'simple'
-    });
-
-    expect(
-      lexOne('" white space "')
-    ).to.deep.equal({
-      kind: TokenKind.STRING,
-      start: 0,
-      end: 15,
-      value: ' white space '
-    });
-
-    expect(
-      lexOne('"escaped \\n\\r\\b\\t\\f"')
-    ).to.deep.equal({
-      kind: TokenKind.STRING,
-      start: 0,
-      end: 20,
-      value: 'escaped \n\r\b\t\f'
-    });
-
-    expect(
-      lexOne('"slashes \\\\ \\/"')
-    ).to.deep.equal({
-      kind: TokenKind.STRING,
-      start: 0,
-      end: 15,
-      value: 'slashes \\ \/'
-    });
-
-    expect(
-      lexOne('"unicode \\u1234\\u5678\\u90AB\\uCDEF"')
-    ).to.deep.equal({
-      kind: TokenKind.STRING,
-      start: 0,
-      end: 34,
-      value: 'unicode \u1234\u5678\u90AB\uCDEF'
-    });
-
-    expect(
       lexOne('4')
     ).to.deep.equal({
       kind: TokenKind.INT,
