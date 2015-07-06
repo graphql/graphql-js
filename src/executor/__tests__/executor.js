@@ -473,7 +473,7 @@ describe('Execute: Handles basic execution tasks', () => {
         ...Frag
       }
 
-      fragment Frag on DataType {
+      fragment Frag on Type {
         a,
         ...Frag
       }
