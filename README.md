@@ -4,6 +4,8 @@ This is a technical preview of the JavaScript reference implementation for
 GraphQL, a query language created by Facebook for describing data requirements
 on complex application data models.
 
+[![Build Status](https://travis-ci.org/graphql/graphql-js.svg)](https://travis-ci.org/graphql/graphql-js)
+
 ## Technical Preview Contents
 
 This technical preview contains a [draft specification for GraphQL]

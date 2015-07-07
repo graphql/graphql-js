@@ -1,0 +1,15 @@
+language: node_js
+
+node_js:
+- "iojs"
+- "0.12"
+- "0.10"
+- "0.8"
+
+notifications:
+  irc:
+    use_notice: true
+    on_success: change
+    on_failure: change
+    channels:
+    - chat.freenode.net#graphql
