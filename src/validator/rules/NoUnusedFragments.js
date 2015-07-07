@@ -8,8 +8,6 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import type { ValidationContext } from '../index';
-
 import { GraphQLError } from '../../error';
 import { unusedFragMessage } from '../errors';
 
@@ -19,7 +17,7 @@ import { unusedFragMessage } from '../errors';
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
  */
-export default function NoUnusedFragments(context: ValidationContext): any {
+export default function NoUnusedFragments(): any {
   var fragmentDefs = [];
   var spreadsWithinOperation = [];
   var fragAdjacencies = {};

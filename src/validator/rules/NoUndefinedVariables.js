@@ -8,7 +8,6 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { FRAGMENT_DEFINITION } from '../../language/kinds';
 import {
@@ -23,7 +22,7 @@ import {
  * A GraphQL operation is only valid if all variables encountered, both directly
  * and via fragment spreads, are defined by that operation.
  */
-export default function NoUndefinedVariables(context: ValidationContext): any {
+export default function NoUndefinedVariables(): any {
   var operation;
   var visitedFragmentNames = {};
   var definedVariableNames = {};

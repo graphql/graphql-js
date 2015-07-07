@@ -8,7 +8,6 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { unusedVariableMessage } from '../errors';
 
@@ -19,7 +18,7 @@ import { unusedVariableMessage } from '../errors';
  * A GraphQL operation is only valid if all variables defined by an operation
  * are used, either directly or within a spread fragment.
  */
-export default function NoUnusedVariables(context: ValidationContext): any {
+export default function NoUnusedVariables(): any {
   var visitedFragmentNames = {};
   var variableDefs = [];
   var variableNameUsed = {};
