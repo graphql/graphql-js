@@ -5,6 +5,7 @@ GraphQL, a query language created by Facebook for describing data requirements
 on complex application data models.
 
 [![Build Status](https://travis-ci.org/graphql/graphql-js.svg)](https://travis-ci.org/graphql/graphql-js)
+[![Coverage Status](https://coveralls.io/repos/graphql/graphql-js/badge.svg?branch=master)](https://coveralls.io/r/graphql/graphql-js?branch=master)
 
 ## Technical Preview Contents
 
