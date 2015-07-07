@@ -48,6 +48,7 @@
     "chai": "3.0.0",
     "chai-as-promised": "5.1.0",
     "chai-subset": "1.0.1",
+    "coveralls": "2.11.2",
     "eslint": "0.24.0",
     "flow-bin": "0.13.1",
     "isparta": "3.0.3",
