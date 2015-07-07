@@ -30,8 +30,9 @@
     "mocha": "--require scripts/mocha-bootload src/**/__tests__/**/*.js"
   },
   "scripts": {
-    "pretest": "npm run lint",
-    "test": "mocha $npm_package_options_mocha && npm run check",
+    "prepublish": "npm run build",
+    "test": "npm run lint && npm run check && mocha $npm_package_options_mocha",
+    "testonly": "mocha $npm_package_options_mocha",
     "lint": "eslint src",
     "check": "flow check",
     "cover": "babel-node node_modules/.bin/isparta cover --report html node_modules/.bin/_mocha -- $npm_package_options_mocha",
