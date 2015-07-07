@@ -30,7 +30,7 @@
     "mocha": "--require scripts/mocha-bootload src/**/__tests__/**/*.js"
   },
   "scripts": {
-    "prepublish": "npm run build",
+    "prepublish": "npm test && npm run build",
     "test": "npm run lint && npm run check && mocha $npm_package_options_mocha",
     "testonly": "mocha $npm_package_options_mocha",
     "lint": "eslint src",
