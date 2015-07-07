@@ -36,7 +36,8 @@
     "check": "flow check",
     "cover": "babel-node node_modules/.bin/isparta cover --report html node_modules/.bin/_mocha -- $npm_package_options_mocha",
     "build": "rm -rf lib/* && babel src --ignore __tests__ --optional runtime --out-dir lib",
-    "watch": "babel --optional runtime scripts/watch.js | node"
+    "watch": "babel --optional runtime scripts/watch.js | node",
+    "coveralls": "babel-node node_modules/.bin/isparta cover --report html node_modules/.bin/_mocha --report lcovonly -- $npm_package_options_mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "dependencies": {
     "babel-runtime": "5.6.12"
