@@ -153,8 +153,10 @@ describe('Execute: Handles execution with a complex schema', () => {
       }
     `;
 
+    // Note: this is intentionally not validating to ensure appropriate
+    // behavior occurs when executing an invalid query.
     return expect(
-      execute(BlogSchema, null, parse(request), '', {})
+      execute(BlogSchema, null, parse(request))
     ).to.become({
       data: {
         feed: [
