@@ -44,6 +44,7 @@ export class GraphQLSchema {
 
   constructor(config: GraphQLSchemaConfig) {
     this._schemaConfig = config;
+    this._typeMap = buildTypeMap(this);
   }
 
   getQueryType(): GraphQLObjectType {
@@ -55,11 +56,7 @@ export class GraphQLSchema {
   }
 
   getTypeMap(): TypeMap {
-    return this._typeMap || (this._typeMap = [
-      this.getQueryType(),
-      this.getMutationType(),
-      __Schema
-    ].reduce(typeMapReducer, {}));
+    return this._typeMap;
   }
 
   getType(name: string): ?GraphQLType {
@@ -85,11 +82,28 @@ type GraphQLSchemaConfig = {
   mutation?: ?GraphQLObjectType;
 }
 
+function buildTypeMap(schema: GraphQLSchema): TypeMap {
+  return [
+    schema.getQueryType(),
+    schema.getMutationType(),
+    __Schema
+  ].reduce(typeMapReducer, {});
+}
+
 export function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (type instanceof GraphQLList || type instanceof GraphQLNonNull) {
     return typeMapReducer(map, type.ofType);
   }
-  if (!type || map[type.name]) {
+  if (!type) {
+    return map;
+  }
+  var prevType = map[type.name];
+  if (prevType) {
+    if (prevType !== type) {
+      throw new Error(
+        `Schema cannot contain more than one type named ${type.name}.`
+      );
+    }
     return map;
   }
   map[type.name] = type;
