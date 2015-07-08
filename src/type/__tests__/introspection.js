@@ -21,11 +21,10 @@ import {
   GraphQLEnumType,
 } from '../../';
 
+import { introspectionQuery } from '../introspectionQuery';
 
 describe('Introspection', () => {
-
   it('executes an introspection query', () => {
-
     var EmptySchema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'QueryRoot',
@@ -33,92 +32,111 @@ describe('Introspection', () => {
       })
     });
 
-    var request = `
-      query IntrospectionTestQuery {
-        schemaType: __type(name: "__Schema") {
-          name
-        }
-        queryRootType: __type(name: "QueryRoot") {
-          name
-        }
-        __schema {
-          __typename
-          types {
-            __typename
-            kind
-            name
-            fields {
-              __typename
-              name
-              args {
-                __typename
-                name
-                type { ...TypeRef }
-                defaultValue
-              }
-              type {
-                ...TypeRef
-              }
-              isDeprecated
-              deprecationReason
-            }
-            interfaces {
-              ...TypeRef
-            }
-            enumValues {
-              __typename
-              name
-              isDeprecated
-              deprecationReason
-            }
-          }
-          directives {
-            __typename
-            name
-            args {
-              __typename
-              name
-              type { ...TypeRef }
-              defaultValue
-            }
-            onOperation
-            onFragment
-            onField
-          }
-        }
-      }
-
-      fragment TypeRef on __Type {
-        __typename
-        kind
-        name
-        ofType {
-          __typename
-          kind
-          name
-          ofType {
-            __typename
-            kind
-            name
-            ofType {
-              __typename
-              kind
-              name
-            }
-          }
-        }
-      }
-    `;
-
     return expect(
-      graphql(EmptySchema, request)
+      graphql(EmptySchema, introspectionQuery)
     ).to.become({
       data: {
         schemaType: {
-          name: '__Schema'
+          __typename: '__Type',
+          enumValues: null,
+          fields: [
+            {
+              __typename: '__Field',
+              args: [],
+              deprecationReason: null,
+              isDeprecated: false,
+              name: 'types',
+              type: {
+                __typename: '__Type',
+                kind: 'NON_NULL',
+                name: null,
+                ofType: {
+                  __typename: '__Type',
+                  kind: 'LIST',
+                  name: null,
+                  ofType: {
+                    __typename: '__Type',
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      __typename: '__Type',
+                      kind: 'OBJECT',
+                      name: '__Type',
+                    }
+                  }
+                }
+              }
+            },
+            {
+              __typename: '__Field',
+              args: [],
+              deprecationReason: null,
+              isDeprecated: false,
+              name: 'queryType',
+              type: {
+                __typename: '__Type',
+                kind: 'NON_NULL',
+                name: null,
+                ofType: {
+                  __typename: '__Type',
+                  kind: 'OBJECT',
+                  name: '__Type',
+                  ofType: null,
+                },
+              },
+            },
+            {
+              __typename: '__Field',
+              args: [],
+              deprecationReason: null,
+              isDeprecated: false,
+              name: 'mutationType',
+              type: {
+                __typename: '__Type',
+                kind: 'OBJECT',
+                name: '__Type',
+                ofType: null,
+              },
+            },
+            {
+              __typename: '__Field',
+              args: [],
+              deprecationReason: null,
+              isDeprecated: false,
+              name: 'directives',
+              type: {
+                __typename: '__Type',
+                kind: 'NON_NULL',
+                name: null,
+                ofType: {
+                  __typename: '__Type',
+                  kind: 'LIST',
+                  name: null,
+                  ofType: {
+                    __typename: '__Type',
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      __typename: '__Type',
+                      kind: 'OBJECT',
+                      name: '__Directive',
+                    },
+                  },
+                },
+              },
+            },
+          ],
+          interfaces: [],
+          kind: 'OBJECT',
+          name: '__Schema',
         },
         queryRootType: {
-          name: 'QueryRoot'
+          __typename: '__Type',
+          enumValues: null,
+          fields: [],
+          interfaces: [],
+          kind: 'OBJECT',
+          name: 'QueryRoot',
         },
         __schema: {
           __typename: '__Schema',
