@@ -134,7 +134,7 @@ var characterInterface = new GraphQLInterfaceType({
       return droidType;
     }
     return null;
-  },
+  }
 });
 
 /**
@@ -215,7 +215,7 @@ var droidType = new GraphQLObjectType({
     primaryFunction: {
       type: GraphQLString,
       description: 'The primary function of the droid.'
-    }
+    },
   }),
   interfaces: [characterInterface]
 });
@@ -250,7 +250,7 @@ var queryType = new GraphQLObjectType({
       type: droidType,
       args: {id: { name: 'id', type: new GraphQLNonNull(GraphQLString)}},
       resolve: (root, {id}) => starWarsData.Droids[id]
-    }
+    },
   })
 });
 
