@@ -80,15 +80,15 @@ var episodeEnum = new GraphQLEnumType({
   values: {
     NEWHOPE: {
       value: 4,
-      description: 'Released in 1977.'
+      description: 'Released in 1977.',
     },
     EMPIRE: {
       value: 5,
-      description: 'Released in 1980.'
+      description: 'Released in 1980.',
     },
     JEDI: {
       value: 6,
-      description: 'Released in 1983.'
+      description: 'Released in 1983.',
     },
   }
 });
@@ -114,7 +114,7 @@ var characterInterface = new GraphQLInterfaceType({
     },
     name: {
       type: GraphQLString,
-      description: 'The name of the character.'
+      description: 'The name of the character.',
     },
     friends: {
       type: new GraphQLList(characterInterface),
@@ -123,8 +123,8 @@ var characterInterface = new GraphQLInterfaceType({
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
-      description: 'Which movies they appear in.'
-    }
+      description: 'Which movies they appear in.',
+    },
   }),
   resolveType: (obj) => {
     if (starWarsData.Humans[obj.id] !== undefined) {
@@ -134,7 +134,7 @@ var characterInterface = new GraphQLInterfaceType({
       return droidType;
     }
     return null;
-  },
+  }
 });
 
 /**
@@ -168,11 +168,11 @@ var humanType = new GraphQLObjectType({
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
-      description: 'Which movies they appear in.'
+      description: 'Which movies they appear in.',
     },
     homePlanet: {
       type: GraphQLString,
-      description: 'The home planet of the human, or null if unknown.'
+      description: 'The home planet of the human, or null if unknown.',
     },
   }),
   interfaces: [characterInterface]
@@ -200,7 +200,7 @@ var droidType = new GraphQLObjectType({
     },
     name: {
       type: GraphQLString,
-      description: 'The name of the droid.'
+      description: 'The name of the droid.',
     },
     friends: {
       type: new GraphQLList(characterInterface),
@@ -210,12 +210,12 @@ var droidType = new GraphQLObjectType({
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
-      description: 'Which movies they appear in.'
+      description: 'Which movies they appear in.',
     },
     primaryFunction: {
       type: GraphQLString,
-      description: 'The primary function of the droid.'
-    }
+      description: 'The primary function of the droid.',
+    },
   }),
   interfaces: [characterInterface]
 });
@@ -244,13 +244,13 @@ var queryType = new GraphQLObjectType({
     human: {
       type: humanType,
       args: {id: { name: 'id', type: new GraphQLNonNull(GraphQLString)}},
-      resolve: (root, {id}) => starWarsData.Humans[id]
+      resolve: (root, {id}) => starWarsData.Humans[id],
     },
     droid: {
       type: droidType,
       args: {id: { name: 'id', type: new GraphQLNonNull(GraphQLString)}},
-      resolve: (root, {id}) => starWarsData.Droids[id]
-    }
+      resolve: (root, {id}) => starWarsData.Droids[id],
+    },
   })
 });
 
