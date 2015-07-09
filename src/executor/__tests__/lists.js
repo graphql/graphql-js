@@ -22,8 +22,10 @@ import {
   GraphQLNonNull
 } from '../../type';
 
-var resolve = Promise.resolve.bind(Promise);
-var reject = Promise.reject.bind(Promise);
+// resolved() is shorthand for Promise.resolve()
+var resolved = Promise.resolve.bind(Promise);
+// rejected() is shorthand for Promise.reject()
+var rejected = Promise.reject.bind(Promise);
 
 function check(testType, testData, expected) {
   return function () {
@@ -72,23 +74,23 @@ describe('Execute: Handles list nullability', () => {
     describe('Promise<Array<T>>', () => {
 
       it('Contains values', check(type,
-        resolve([1, 2]),
+        resolved([1, 2]),
         { data: { nest: { test: [ 1, 2 ] } } }
       ));
 
       it('Contains null', check(type,
-        resolve([1, null, 2]),
+        resolved([1, null, 2]),
         { data: { nest: { test: [ 1, null, 2 ] } } }
       ));
 
 
       it('Returns null', check(type,
-        resolve(null),
+        resolved(null),
         { data: { nest: { test: null } } }
       ));
 
       it('Rejected', check(type,
-        reject(new Error('bad')),
+        rejected(new Error('bad')),
         { data: { nest: { test: null } },
           errors: [
             { message: 'bad',
@@ -101,17 +103,17 @@ describe('Execute: Handles list nullability', () => {
     describe('Array<Promise<T>>', () => {
 
       it('Contains values', check(type,
-        [resolve(1), resolve(2)],
+        [resolved(1), resolved(2)],
         { data: { nest: { test: [ 1, 2 ] } } }
       ));
 
       it('Contains null', check(type,
-        [resolve(1), resolve(null), resolve(2)],
+        [resolved(1), resolved(null), resolved(2)],
         { data: { nest: { test: [ 1, null, 2 ] } } }
       ));
 
       it('Contains reject', check(type,
-        [resolve(1), reject(new Error('bad')), resolve(2)],
+        [resolved(1), rejected(new Error('bad')), resolved(2)],
         { data: { nest: { test: [ 1, null, 2 ] } },
           errors: [
             { message: 'bad',
@@ -152,17 +154,17 @@ describe('Execute: Handles list nullability', () => {
     describe('Promise<Array<T>>', () => {
 
       it('Contains values', check(type,
-        resolve([1, 2]),
+        resolved([1, 2]),
         { data: { nest: { test: [ 1, 2 ] } } }
       ));
 
       it('Contains null', check(type,
-        resolve([1, null, 2]),
+        resolved([1, null, 2]),
         { data: { nest: { test: [ 1, null, 2 ] } } }
       ));
 
       it('Returns null', check(type,
-        resolve(null),
+        resolved(null),
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable type.',
@@ -171,7 +173,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Rejected', check(type,
-        reject(new Error('bad')),
+        rejected(new Error('bad')),
         { data: { nest: null },
           errors: [
             { message: 'bad',
@@ -184,17 +186,17 @@ describe('Execute: Handles list nullability', () => {
     describe('Array<Promise<T>>', () => {
 
       it('Contains values', check(type,
-        [resolve(1), resolve(2)],
+        [resolved(1), resolved(2)],
         { data: { nest: { test: [ 1, 2 ] } } }
       ));
 
       it('Contains null', check(type,
-        [resolve(1), resolve(null), resolve(2)],
+        [resolved(1), resolved(null), resolved(2)],
         { data: { nest: { test: [ 1, null, 2 ] } } }
       ));
 
       it('Contains reject', check(type,
-        [resolve(1), reject(new Error('bad')), resolve(2)],
+        [resolved(1), rejected(new Error('bad')), resolved(2)],
         { data: { nest: { test: [ 1, null, 2 ] } },
           errors: [
             { message: 'bad',
@@ -235,12 +237,12 @@ describe('Execute: Handles list nullability', () => {
     describe('Promise<Array<T>>', () => {
 
       it('Contains values', check(type,
-        resolve([1, 2]),
+        resolved([1, 2]),
         { data: { nest: { test: [ 1, 2 ] } } }
       ));
 
       it('Contains null', check(type,
-        resolve([1, null, 2]),
+        resolved([1, null, 2]),
         { data: { nest: { test: null } },
           errors: [
             { message: 'Cannot return null for non-nullable type.',
@@ -249,12 +251,12 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Returns null', check(type,
-        resolve(null),
+        resolved(null),
         { data: { nest: { test: null } } }
       ));
 
       it('Rejected', check(type,
-        reject(new Error('bad')),
+        rejected(new Error('bad')),
         { data: { nest: { test: null } },
           errors: [
             { message: 'bad',
@@ -267,12 +269,12 @@ describe('Execute: Handles list nullability', () => {
     describe('Array<Promise<T>>', () => {
 
       it('Contains values', check(type,
-        [resolve(1), resolve(2)],
+        [resolved(1), resolved(2)],
         { data: { nest: { test: [ 1, 2 ] } } }
       ));
 
       it('Contains null', check(type,
-        [resolve(1), resolve(null), resolve(2)],
+        [resolved(1), resolved(null), resolved(2)],
         { data: { nest: { test: null } },
           errors: [
             { message: 'Cannot return null for non-nullable type.',
@@ -281,7 +283,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Contains reject', check(type,
-        [resolve(1), reject(new Error('bad')), resolve(2)],
+        [resolved(1), rejected(new Error('bad')), resolved(2)],
         { data: { nest: { test: null } },
           errors: [
             { message: 'bad',
@@ -328,12 +330,12 @@ describe('Execute: Handles list nullability', () => {
     describe('Promise<Array<T>>', () => {
 
       it('Contains values', check(type,
-        resolve([1, 2]),
+        resolved([1, 2]),
         { data: { nest: { test: [ 1, 2 ] } } }
       ));
 
       it('Contains null', check(type,
-        resolve([1, null, 2]),
+        resolved([1, null, 2]),
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable type.',
@@ -342,7 +344,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Returns null', check(type,
-        resolve(null),
+        resolved(null),
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable type.',
@@ -351,7 +353,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Rejected', check(type,
-        reject(new Error('bad')),
+        rejected(new Error('bad')),
         { data: { nest: null },
           errors: [
             { message: 'bad',
@@ -364,12 +366,12 @@ describe('Execute: Handles list nullability', () => {
     describe('Array<Promise<T>>', () => {
 
       it('Contains values', check(type,
-        [resolve(1), resolve(2)],
+        [resolved(1), resolved(2)],
         { data: { nest: { test: [ 1, 2 ] } } }
       ));
 
       it('Contains null', check(type,
-        [resolve(1), resolve(null), resolve(2)],
+        [resolved(1), resolved(null), resolved(2)],
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable type.',
@@ -378,7 +380,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Contains reject', check(type,
-        [resolve(1), reject(new Error('bad')), resolve(2)],
+        [resolved(1), rejected(new Error('bad')), resolved(2)],
         { data: { nest: null },
           errors: [
             { message: 'bad',
