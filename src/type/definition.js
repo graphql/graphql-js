@@ -300,6 +300,7 @@ function defineFieldMap(
         );
         return {
           name: argName,
+          description: arg.description === undefined ? null : arg.description,
           type: arg.type,
           defaultValue: arg.defaultValue === undefined ? null : arg.defaultValue
         };
