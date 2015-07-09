@@ -10,26 +10,8 @@
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
 import ArgumentsOfCorrectType from '../rules/ArgumentsOfCorrectType';
-import {
-  missingFieldArgMessage,
-  missingDirectiveArgMessage,
-  badValueMessage
-} from '../errors';
+import { badValueMessage } from '../errors';
 
-
-function missingFieldArg(fieldName, argName, typeName, line, column) {
-  return {
-    message: missingFieldArgMessage(fieldName, argName, typeName),
-    locations: [ { line: line, column: column } ],
-  };
-}
-
-function missingDirectiveArg(directiveName, argName, typeName, line, column) {
-  return {
-    message: missingDirectiveArgMessage(directiveName, argName, typeName),
-    locations: [ { line: line, column: column } ],
-  };
-}
 
 function badValue(argName, typeName, value, line, column) {
   return {
@@ -639,31 +621,6 @@ describe('Validate: Argument values of correct type', () => {
       ]);
     });
 
-    it('Missing one non-nullable argument', () => {
-      expectFailsRule(ArgumentsOfCorrectType, `
-        {
-          complicatedArgs {
-            multipleReqs(req2: 2)
-          }
-        }
-      `, [
-        missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13)
-      ]);
-    });
-
-    it('Missing multiple non-nullable arguments', () => {
-      expectFailsRule(ArgumentsOfCorrectType, `
-        {
-          complicatedArgs {
-            multipleReqs
-          }
-        }
-      `, [
-        missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13),
-        missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13),
-      ]);
-    });
-
     it('Incorrect value and missing argument', () => {
       expectFailsRule(ArgumentsOfCorrectType, `
         {
@@ -673,7 +630,6 @@ describe('Validate: Argument values of correct type', () => {
         }
       `, [
         badValue('req1', 'Int!', '"one"', 4, 32),
-        missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13),
       ]);
     });
 
@@ -828,19 +784,6 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `);
-    });
-
-    it('with directive with missing types', () => {
-      expectFailsRule(ArgumentsOfCorrectType, `
-        {
-          dog @include {
-            name @skip
-          }
-        }
-      `, [
-        missingDirectiveArg('include', 'if', 'Boolean!', 3, 15),
-        missingDirectiveArg('skip', 'if', 'Boolean!', 4, 18)
-      ]);
     });
 
     it('with directive with incorrect types', () => {

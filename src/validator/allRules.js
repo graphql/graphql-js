@@ -36,6 +36,8 @@ import KnownDirectives from './rules/KnownDirectives';
 import KnownArgumentNames from './rules/KnownArgumentNames';
 // Spec Section: "Argument Values Type Correctness"
 import ArgumentsOfCorrectType from './rules/ArgumentsOfCorrectType';
+// Spec Section: "Argument Optionality"
+import ProvidedNonNullArguments from './rules/ProvidedNonNullArguments';
 // Spec Section: "Variable Default Values Are Correctly Typed"
 import DefaultValuesOfCorrectType from './rules/DefaultValuesOfCorrectType';
 // Spec Section: "All Variable Usages Are Allowed"
@@ -63,6 +65,7 @@ export var allRules = [
   KnownDirectives,
   KnownArgumentNames,
   ArgumentsOfCorrectType,
+  ProvidedNonNullArguments,
   DefaultValuesOfCorrectType,
   VariablesInAllowedPosition,
   OverlappingFieldsCanBeMerged
