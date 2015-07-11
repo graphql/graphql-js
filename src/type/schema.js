@@ -111,7 +111,7 @@ export function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
     Object.keys(fieldMap).forEach(fieldName => {
       var field = fieldMap[fieldName];
       if (!field.args) {
-        console.log('WTF ' + field.name + ' has no args?');
+        console.log(field.name + ' has no args?');
       }
       var fieldArgTypes = field.args.map(arg => arg.type);
       reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
