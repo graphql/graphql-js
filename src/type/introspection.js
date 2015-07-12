@@ -60,7 +60,7 @@ export var __Schema = new GraphQLObjectType({
 var __Directive = new GraphQLObjectType({
   name: '__Directive',
   fields: () => ({
-    name: { type: GraphQLString },
+    name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
     args: {
       type:
