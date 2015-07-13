@@ -41,7 +41,7 @@ import find from './find';
 
 
 /**
- * FieldInfo is a utility class which, given a GraphQL schema, can keep track
+ * TypeInfo is a utility class which, given a GraphQL schema, can keep track
  * of the current field and type definitions at any point in a GraphQL document
  * AST during a recursive descent by calling `enter(node)` and `leave(node)`.
  */
