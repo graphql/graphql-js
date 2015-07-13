@@ -95,6 +95,12 @@ type ExecutionResult = {
   errors?: Array<GraphQLFormattedError>;
 }
 
+type CollectionResult = {
+  fields: Array<Field>;
+  children?: {[key: string]: CollectionResult};
+  data?: any;
+}
+
 /**
  * Implements the "Evaluating requests" section of the spec.
  */
@@ -187,7 +193,13 @@ function executeOperation(
   operation: OperationDefinition
 ): Object {
   var type = getOperationRootType(exeContext.schema, operation);
-  var fields = collectFields(exeContext, type, operation.selectionSet, {}, {});
+  var fields = collectFieldsDeep(
+    exeContext,
+    type,
+    operation.selectionSet,
+    {},
+    {}
+  );
   if (operation.operation === 'mutation') {
     return executeFieldsSerially(exeContext, type, root, fields);
   }
@@ -229,12 +241,12 @@ function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: Object,
-  fields: {[key: string]: Array<Field>}
+  fields: {[key: string]: CollectionResult}
 ): Promise<Object> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then((results) => {
-      var fieldASTs = fields[responseName];
-      var result = resolveField(exeContext, parentType, source, fieldASTs);
+      var collections = fields[responseName];
+      var result = resolveField(exeContext, parentType, source, collections);
       if (result === undefined) {
         return results;
       }
@@ -260,14 +272,14 @@ function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: Object,
-  fields: {[key: string]: Array<Field>}
+  fields: {[key: string]: CollectionResult}
 ): Object {
   var containsPromise = false;
 
   var finalResults = Object.keys(fields).reduce(
     (results, responseName) => {
-      var fieldASTs = fields[responseName];
-      var result = resolveField(exeContext, parentType, source, fieldASTs);
+      var collections = fields[responseName];
+      var result = resolveField(exeContext, parentType, source, collections);
       if (result === undefined) {
         return results;
       }
@@ -353,6 +365,77 @@ function collectFields(
     }
   }
   return fields;
+}
+
+function collectFieldsDeep(
+  exeContext: ExecutionContext,
+  type: GraphQLObjectType,
+  selectionSet: SelectionSet,
+  fields: {[key: string]: CollectionResult},
+  visitedFragmentNames: {[key: string]: boolean}
+): {[key: string]: CollectionResult} {
+  var key;
+  var pureFields = {};
+  for (key of Object.keys(fields)) {
+    pureFields[key] = fields[key].fields;
+  }
+
+  pureFields = collectFields(
+    exeContext,
+    type,
+    selectionSet,
+    pureFields,
+    visitedFragmentNames
+  );
+
+  for (key of Object.keys(pureFields)) {
+    var subFieldASTs = {};
+    var subVisitedFragmentNames = {};
+    var subFields = pureFields[key];
+    var collectFn = defaultCollectFn;
+    var fieldDef = getFieldDef(exeContext.schema, type, subFields[0]);
+    if (fieldDef != null) {
+      var children = null;
+      var args = fieldDef.args ?
+        getArgumentValues(
+          fieldDef.args,
+          subFields[0].arguments,
+          exeContext.variables
+        ) : null;
+      collectFn = fieldDef.collect || defaultCollectFn;
+      for (var field of subFields) {
+        var subSelectionSet = field.selectionSet;
+        if (subSelectionSet != null) {
+          children = collectFieldsDeep(
+            exeContext,
+            fieldDef.type,
+            subSelectionSet,
+            subFieldASTs,
+            subVisitedFragmentNames
+          );
+        }
+      }
+    }
+    fields[key] = {
+      fields: subFields,
+      children: children,
+      data: collectFn(
+        children,
+        args,
+        exeContext.root,
+        subFields[0],
+        fieldDef ? fieldDef.type : null,
+        type,
+        exeContext.schema
+      )
+    };
+  }
+
+  return fields;
+}
+
+function defaultCollectFn(): any {
+  return {};
 }
 
 /**
@@ -452,8 +535,9 @@ function resolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: Object,
-  fieldASTs: Array<Field>
+  collections: CollectionResult
 ): any {
+  var fieldASTs = collections.fields;
   var fieldAST = fieldASTs[0];
 
   var fieldDef = getFieldDef(exeContext.schema, parentType, fieldAST);
@@ -484,7 +568,8 @@ function resolveField(
       fieldAST,
       fieldType,
       parentType,
-      exeContext.schema
+      exeContext.schema,
+      collections.data
     );
   } catch (error) {
     var reportedError = new GraphQLError(error.message, fieldASTs, error.stack);
@@ -495,25 +580,25 @@ function resolveField(
     return null;
   }
 
-  return completeValueCatchingError(exeContext, fieldType, fieldASTs, result);
+  return completeValueCatchingError(exeContext, fieldType, collections, result);
 }
 
 function completeValueCatchingError(
   exeContext: ExecutionContext,
   fieldType: GraphQLType,
-  fieldASTs: Array<Field>,
+  collections: CollectionResult,
   result: any
 ): any {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
   if (fieldType instanceof GraphQLNonNull) {
-    return completeValue(exeContext, fieldType, fieldASTs, result);
+    return completeValue(exeContext, fieldType, collections, result);
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
   try {
-    var completed = completeValue(exeContext, fieldType, fieldASTs, result);
+    var completed = completeValue(exeContext, fieldType, collections, result);
     if (isThenable(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
@@ -549,15 +634,15 @@ function completeValueCatchingError(
 function completeValue(
   exeContext: ExecutionContext,
   fieldType: GraphQLType,
-  fieldASTs: Array<Field>,
+  collections: CollectionResult,
   result: any
 ): any {
   // If result is a Promise, resolve it, if the Promise is rejected, construct
   // a GraphQLError with proper locations.
   if (isThenable(result)) {
     return result.then(
-      resolved => completeValue(exeContext, fieldType, fieldASTs, resolved),
-      error => Promise.reject(locatedError(error, fieldASTs))
+      resolved => completeValue(exeContext, fieldType, collections, resolved),
+      error => Promise.reject(locatedError(error, collections.fields))
     );
   }
 
@@ -567,13 +652,13 @@ function completeValue(
     var completed = completeValue(
       exeContext,
       fieldType.ofType,
-      fieldASTs,
+      collections,
       result
     );
     if (completed === null) {
       throw new GraphQLError(
         'Cannot return null for non-nullable type.',
-        fieldASTs
+        collections.fields
       );
     }
     return completed;
@@ -597,7 +682,7 @@ function completeValue(
     var containsPromise = false;
     var completedResults = result.map(item => {
       var completedItem =
-        completeValueCatchingError(exeContext, itemType, fieldASTs, item);
+        completeValueCatchingError(exeContext, itemType, collections, item);
       if (!containsPromise && isThenable(completedItem)) {
         containsPromise = true;
       }
@@ -624,27 +709,16 @@ function completeValue(
     fieldType instanceof GraphQLUnionType ? fieldType.resolveType(result) :
     null;
 
-  if (!objectType) {
+  if (!objectType || objectType == null) {
     return null;
   }
 
-  // Collect sub-fields to execute to complete this value.
-  var subFieldASTs = {};
-  var visitedFragmentNames = {};
-  for (var i = 0; i < fieldASTs.length; i++) {
-    var selectionSet = fieldASTs[i].selectionSet;
-    if (selectionSet) {
-      subFieldASTs = collectFields(
-        exeContext,
-        objectType,
-        selectionSet,
-        subFieldASTs,
-        visitedFragmentNames
-      );
-    }
-  }
-
-  return executeFields(exeContext, objectType, result, subFieldASTs);
+  return executeFields(
+    exeContext,
+    objectType,
+    result,
+    collections.children || {}
+  );
 }
 
 /**

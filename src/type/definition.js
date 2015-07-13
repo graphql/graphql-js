@@ -13,7 +13,6 @@ import { ENUM } from '../language/kinds';
 import type { Value } from '../language/ast';
 import type { GraphQLSchema } from './schema';
 
-
 /**
  * These are all of the possible kinds of types.
  */
@@ -334,14 +333,24 @@ type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
 type GraphQLFieldConfig = {
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;
-    resolve?: (
-    source?: any,
+  collect?: (
+    childrenData?: any,
     args?: ?{[argName: string]: any},
-    context?: any,
+    root?: any,
     fieldAST?: any,
     fieldType?: any,
     parentType?: any,
     schema?: GraphQLSchema
+  ) => any;
+  resolve?: (
+    source?: any,
+    args?: ?{[argName: string]: any},
+    root?: any,
+    fieldAST?: any,
+    fieldType?: any,
+    parentType?: any,
+    schema?: GraphQLSchema,
+    collections?: any
   ) => any;
   deprecationReason?: string;
   description?: string;
@@ -365,14 +374,24 @@ export type GraphQLFieldDefinition = {
   description: ?string;
   type: GraphQLOutputType;
   args: Array<GraphQLFieldArgument>;
-  resolve?: (
-    source?: any,
+  collect?: (
+    childrenData?: any,
     args?: ?{[argName: string]: any},
-    context?: any,
+    root?: any,
     fieldAST?: any,
     fieldType?: any,
     parentType?: any,
     schema?: GraphQLSchema
+  ) => any;
+  resolve?: (
+    source?: any,
+    args?: ?{[argName: string]: any},
+    root?: any,
+    fieldAST?: any,
+    fieldType?: any,
+    parentType?: any,
+    schema?: GraphQLSchema,
+    collections?: any,
   ) => any;
   deprecationReason?: ?string;
 }
