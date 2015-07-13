@@ -790,9 +790,14 @@ describe('Introspection', () => {
                   args: [],
                   type: {
                     __typename: '__Type',
-                    kind: 'SCALAR',
-                    name: 'String',
-                    ofType: null,
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      __typename: '__Type',
+                      kind: 'SCALAR',
+                      name: 'String',
+                      ofType: null
+                    }
                   },
                   isDeprecated: false,
                   deprecationReason: null
