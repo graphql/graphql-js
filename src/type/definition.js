@@ -364,7 +364,7 @@ export type GraphQLFieldDefinition = {
   name: string;
   description: ?string;
   type: GraphQLOutputType;
-  args: Array<GraphQLFieldArgument>;
+  args: Array<GraphQLArgument>;
   resolve?: (
     source?: any,
     args?: ?{[argName: string]: any},
@@ -377,7 +377,7 @@ export type GraphQLFieldDefinition = {
   deprecationReason?: ?string;
 }
 
-export type GraphQLFieldArgument = {
+export type GraphQLArgument = {
   name: string;
   type: GraphQLInputType;
   defaultValue?: any;

@@ -9,7 +9,7 @@
  */
 
 import { GraphQLNonNull } from './definition';
-import type { GraphQLFieldArgument } from './definition';
+import type { GraphQLArgument } from './definition';
 import { GraphQLBoolean } from './scalars';
 
 
@@ -20,7 +20,7 @@ import { GraphQLBoolean } from './scalars';
 export class GraphQLDirective {
   name: string;
   description: ?string;
-  args: Array<GraphQLFieldArgument>;
+  args: Array<GraphQLArgument>;
   onOperation: boolean;
   onFragment: boolean;
   onField: boolean;
@@ -38,7 +38,7 @@ export class GraphQLDirective {
 type GraphQLDirectiveConfig = {
   name: string;
   description?: string;
-  args: Array<GraphQLFieldArgument>;
+  args: Array<GraphQLArgument>;
   onOperation: boolean;
   onFragment: boolean;
   onField: boolean;
