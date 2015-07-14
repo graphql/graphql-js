@@ -26,7 +26,7 @@ import type {
   GraphQLOutputType,
   GraphQLCompositeType,
   GraphQLFieldDefinition,
-  GraphQLFieldArgument
+  GraphQLArgument
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import {
@@ -52,7 +52,7 @@ export default class TypeInfo {
   _inputTypeStack: Array<?GraphQLInputType>;
   _fieldDefStack: Array<?GraphQLFieldDefinition>;
   _directive: ?GraphQLDirective;
-  _argument: ?GraphQLFieldArgument;
+  _argument: ?GraphQLArgument;
 
   constructor(schema: GraphQLSchema) {
     this._schema = schema;
@@ -92,7 +92,7 @@ export default class TypeInfo {
     return this._directive;
   }
 
-  getArgument(): ?GraphQLFieldArgument {
+  getArgument(): ?GraphQLArgument {
     return this._argument;
   }
 

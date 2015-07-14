@@ -21,7 +21,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
 } from '../type/definition';
-import type { GraphQLFieldArgument, GraphQLType } from '../type/definition';
+import type { GraphQLArgument, GraphQLType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 import type {
   Argument,
@@ -55,7 +55,7 @@ export function getVariableValues(
  * definitions and list of argument AST nodes.
  */
 export function getArgumentValues(
-  argDefs: Array<GraphQLFieldArgument>,
+  argDefs: Array<GraphQLArgument>,
   argASTs: ?Array<Argument>,
   variables: { [key: string]: any }
 ): { [key: string]: any } {
