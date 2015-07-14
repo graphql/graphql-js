@@ -8,3 +8,4 @@ lib
 node_modules
 npm-debug.log
 coverage
+*.iml
