@@ -41,7 +41,7 @@ type ValidationResult = {
 }
 
 /**
- * Implements the "Evaluating requests" section of the spec.
+ * Implements the "Validation" section of the spec.
  *
  * Rules is a list of function which return visitors
  * (see the language/visitor API)
