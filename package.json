@@ -8,13 +8,13 @@
     "Daniel Schafer <dschafer@fb.com>"
   ],
   "license": "BSD-3-Clause",
-  "homepage": "https://github.com/facebook/graphql",
+  "homepage": "https://github.com/graphql/graphql-js",
   "bugs": {
-    "url": "https://github.com/facebook/graphql/issues"
+    "url": "https://github.com/graphql/graphql-js/issues"
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/facebook/graphql.git"
+    "url": "http://github.com/graphql/graphql-js.git"
   },
   "main": "lib/index.js",
   "directories": {
