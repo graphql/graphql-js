@@ -298,6 +298,83 @@ describe('Star Wars Introspection Tests', () => {
       return testQuery(query, expected);
     });
 
+    it('Allows querying the schema for field args', () => {
+      var query = `
+        query IntrospectionQueryTypeQuery {
+          __schema {
+            queryType {
+              fields {
+                name
+                args {
+                  name
+                  description
+                  type {
+                    name
+                    kind
+                    ofType {
+                      name
+                      kind
+                    }
+                  }
+                  defaultValue
+                }
+              }
+            }
+          }
+        }
+      `;
+      var expected = {
+        __schema: {
+          queryType: {
+            fields: [
+              {
+                name: 'hero',
+                args: []
+              },
+              {
+                name: 'human',
+                args: [
+                  {
+                    name: 'id',
+                    description: 'id of the human',
+                    type: {
+                      kind: 'NON_NULL',
+                      name: null,
+                      ofType: {
+                        kind: 'SCALAR',
+                        name: 'String'
+                      }
+                    },
+                    defaultValue: null
+                  }
+                ]
+              },
+              {
+                name: 'droid',
+                args: [
+                  {
+                    name: 'id',
+                    description: 'id of the droid',
+                    type: {
+                      kind: 'NON_NULL',
+                      name: null,
+                      ofType: {
+                        kind: 'SCALAR',
+                        name: 'String'
+                      }
+                    },
+                    defaultValue: null
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      };
+
+      return testQuery(query, expected);
+    });
+
     it('Allows querying the schema for documentation', () => {
       var query = `
         query IntrospectionDroidDescriptionQuery {

@@ -243,12 +243,22 @@ var queryType = new GraphQLObjectType({
     },
     human: {
       type: humanType,
-      args: {id: { name: 'id', type: new GraphQLNonNull(GraphQLString)}},
+      args: {
+        id: {
+          description: 'id of the human',
+          type: new GraphQLNonNull(GraphQLString)
+        }
+      },
       resolve: (root, {id}) => starWarsData.Humans[id],
     },
     droid: {
       type: droidType,
-      args: {id: { name: 'id', type: new GraphQLNonNull(GraphQLString)}},
+      args: {
+        id: {
+          description: 'id of the droid',
+          type: new GraphQLNonNull(GraphQLString)
+        }
+      },
       resolve: (root, {id}) => starWarsData.Droids[id],
     },
   })
