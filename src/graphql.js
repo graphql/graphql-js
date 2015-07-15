@@ -36,9 +36,11 @@ export function graphql(
   return new Promise(resolve => {
     var source = new Source(requestString || '', 'GraphQL request');
     var ast = parse(source);
-    var validationResult = validateDocument(schema, ast);
-    if (!validationResult.isValid) {
-      resolve({ errors: validationResult.errors });
+    var validationErrors = validateDocument(schema, ast);
+    if (validationErrors.length > 0) {
+      resolve({
+        errors: validationErrors.map(formatError)
+      });
     } else {
       resolve(execute(
         schema,

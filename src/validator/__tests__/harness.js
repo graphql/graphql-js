@@ -9,6 +9,7 @@
 
 import { expect } from 'chai';
 import { parse } from '../../language';
+import { formatError } from '../../error';
 import { validateDocument } from '../';
 import { allRules } from '../allRules';
 import {
@@ -275,16 +276,14 @@ var defaultSchema = new GraphQLSchema({
 });
 
 function expectValid(schema, rules, queryString) {
-  expect(validateDocument(schema, parse(queryString), rules)).to.deep.equal(
-    { isValid: true, errors: null}
-  );
+  var errors = validateDocument(schema, parse(queryString), rules);
+  expect(errors).to.deep.equal([], 'Should validate');
 }
 
-function expectInvalid(schema, rules, queryString, errors) {
-  var result = validateDocument(schema, parse(queryString), rules);
-  expect(result.isValid).to.equal(false, 'GraphQL should not validate');
-  expect(result.errors).to.deep.equal(errors);
-  return result;
+function expectInvalid(schema, rules, queryString, expectedErrors) {
+  var errors = validateDocument(schema, parse(queryString), rules);
+  expect(errors).to.have.length.of.at.least(1, 'Should not validate');
+  expect(errors.map(formatError)).to.deep.equal(expectedErrors);
 }
 
 export function expectPassesRule(rule, queryString) {

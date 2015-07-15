@@ -14,14 +14,12 @@ import { Source } from '../language/source';
 import { parse } from '../language/parser';
 import { validateDocument } from '../validator';
 
-// 80+ char lines are useful in describe/it, so ignore in this file.
-/*eslint-disable max-len */
 
 /**
  * Helper function to test a query and the expected response.
  */
-function validationResult(query) {
-  var source = new Source(query || '', 'GraphQL request');
+function validationErrors(query) {
+  var source = new Source(query, 'StarWars.graphql');
   var ast = parse(source);
   return validateDocument(StarWarsSchema, ast);
 }
@@ -47,7 +45,7 @@ describe('Star Wars Validation Tests', () => {
           appearsIn
         }
       `;
-      return expect(validationResult(query).isValid).to.be.true;
+      return expect(validationErrors(query)).to.be.empty;
     });
 
     it('Notes that non-existent fields are invalid', () => {
@@ -58,7 +56,7 @@ describe('Star Wars Validation Tests', () => {
           }
         }
       `;
-      return expect(validationResult(query).isValid).to.be.false;
+      return expect(validationErrors(query)).to.not.be.empty;
     });
 
     it('Requires fields on objects', () => {
@@ -67,7 +65,7 @@ describe('Star Wars Validation Tests', () => {
           hero
         }
       `;
-      return expect(validationResult(query).isValid).to.be.false;
+      return expect(validationErrors(query)).to.not.be.empty;
     });
 
     it('Disallows fields on scalars', () => {
@@ -80,7 +78,7 @@ describe('Star Wars Validation Tests', () => {
           }
         }
       `;
-      return expect(validationResult(query).isValid).to.be.false;
+      return expect(validationErrors(query)).to.not.be.empty;
     });
 
     it('Disallows object fields on interfaces', () => {
@@ -92,7 +90,7 @@ describe('Star Wars Validation Tests', () => {
           }
         }
       `;
-      return expect(validationResult(query).isValid).to.be.false;
+      return expect(validationErrors(query)).to.not.be.empty;
     });
 
     it('Allows object fields in fragments', () => {
@@ -108,7 +106,7 @@ describe('Star Wars Validation Tests', () => {
           primaryFunction
         }
       `;
-      return expect(validationResult(query).isValid).to.be.true;
+      return expect(validationErrors(query)).to.be.empty;
     });
 
     it('Allows object fields in inline fragments', () => {
@@ -122,7 +120,7 @@ describe('Star Wars Validation Tests', () => {
           }
         }
       `;
-      return expect(validationResult(query).isValid).to.be.true;
+      return expect(validationErrors(query)).to.be.empty;
     });
   });
 });

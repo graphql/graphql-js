@@ -9,8 +9,7 @@
  */
 
 import invariant from '../utils/invariant';
-import { GraphQLError, formatError } from '../error';
-import type { GraphQLFormattedError } from '../error/formatError';
+import { GraphQLError } from '../error';
 import { visit, BREAK, getVisitFn } from '../language/visitor';
 import * as Kind from '../language/kinds';
 import type {
@@ -31,22 +30,17 @@ import { allRules } from './allRules';
 
 
 /**
- * The result of validation. `isValid` is true if validation is successful.
- * `errors` is null if no errors occurred, and is a non-empty array if any
- * validation errors occurred.
- */
-type ValidationResult = {
-  isValid: boolean;
-  errors: ?Array<GraphQLFormattedError>;
-}
-
-/**
  * Implements the "Validation" section of the spec.
  *
- * Rules is a list of function which return visitors
- * (see the language/visitor API)
+ * Validation runs synchronously, returning an array of encountered errors, or
+ * an empty array if no errors were encountered and the document is valid.
  *
- * Visitors are expected to return Error objects when invalid.
+ * A list of specific validation rules may be provided. If not provided, the
+ * default list of rules defined by the GraphQL specification will be used.
+ *
+ * Each validation rules is a function which returns a visitor
+ * (see the language/visitor API). Visitor methods are expected to return
+ * GraphQLErrors, or Arrays of GraphQLErrors when invalid.
  *
  * Visitors can also supply `visitSpreadFragments: true` which will alter the
  * behavior of the visitor to skip over top level defined fragments, and instead
@@ -56,12 +50,10 @@ export function validateDocument(
   schema: GraphQLSchema,
   ast: Document,
   rules?: Array<any>
-): ValidationResult {
+): Array<GraphQLError> {
   invariant(schema, 'Must provide schema');
   invariant(ast, 'Must provide document');
-  var errors = visitUsingRules(schema, ast, rules || allRules);
-  var isValid = errors.length === 0;
-  return { isValid, errors: isValid ? null : errors.map(formatError) };
+  return visitUsingRules(schema, ast, rules || allRules);
 }
 
 /**

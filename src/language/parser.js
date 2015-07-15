@@ -87,7 +87,8 @@ type ParseOptions = {
 }
 
 /**
- * Given a GraphQL source, parses it into a Document. Throws on error.
+ * Given a GraphQL source, parses it into a Document.
+ * Throws GraphQLError if a syntax error is encountered.
  */
 export function parse(
   source: Source | string,
