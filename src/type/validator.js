@@ -9,30 +9,21 @@
  */
 
 import invariant from '../utils/invariant';
-import { formatError } from '../error';
 import type { GraphQLError } from '../error/GraphQLError';
-import type { GraphQLFormattedError } from '../error/formatError';
 import { GraphQLSchema } from './schema';
 import { allRules } from './allRules';
 
 /**
- * The result of schema validation. `isValid` is true if validation is
- * successful. `errors` is null if no errors occurred, and is a non-empty array
- * if any validation errors occurred.
- */
-type ValidationResult = {
-  isValid: boolean;
-  errors: ?Array<GraphQLFormattedError>;
-}
-
-/**
- * Checks an input type system for conformance to the "Type System"
- * section of the spec.
+ * Checks an input type schema for conformance to the "Type System"
+ * section of the spec, returning an array of errors describing any encountered
+ * issues rendering the schema invalid.
+ *
+ * If the schema is valid, an empty array is returned.
  */
 export function validateSchema(
   schema: GraphQLSchema,
   argRules: ?Array<(context: ValidationContext) => ?Array<GraphQLError>>
-): ValidationResult {
+): Array<GraphQLError> {
   invariant(schema, 'Must provide schema');
   var context = new ValidationContext(schema);
   var errors = [];
@@ -45,8 +36,7 @@ export function validateSchema(
     }
   }
 
-  var isValid = errors.length === 0;
-  return { isValid, errors: isValid ? null : errors.map(formatError) };
+  return errors;
 }
 
 export class ValidationContext {
