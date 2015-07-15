@@ -13,7 +13,7 @@ import { parse } from './language/parser';
 import { validateDocument } from './validator';
 import { execute } from './executor/executor';
 import { formatError } from './error';
-import type { GraphQLFormattedError } from './error';
+import type { GraphQLFormattedError } from './error/formatError';
 import type { GraphQLSchema } from './type/schema';
 
 

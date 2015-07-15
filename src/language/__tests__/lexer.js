@@ -63,7 +63,7 @@ describe('Lexer', () => {
 
 
 `)).to.throw(
-      'Syntax Error GraphQL (3:5) Unexpected character "?"\n' +
+      'Syntax Error GraphQL (3:5) Unexpected character "?".\n' +
       '\n' +
       '2: \n' +
       '3:     ?\n' +

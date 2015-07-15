@@ -9,7 +9,7 @@
  */
 
 import { GraphQLError, locatedError, formatError } from '../error';
-import type { GraphQLFormattedError } from '../error';
+import type { GraphQLFormattedError } from '../error/formatError';
 import find from '../utils/find';
 import invariant from '../utils/invariant';
 import isNullish from '../utils/isNullish';
@@ -82,7 +82,7 @@ type ExecutionContext = {
   root: Object;
   operation: OperationDefinition;
   variables: {[key: string]: any};
-  errors: Array<Error>;
+  errors: Array<GraphQLError>;
 }
 
 /**
@@ -142,7 +142,7 @@ function buildExecutionContext(
   ast: Document,
   operationName?: ?string,
   args?: ?{[key: string]: string},
-  errors: Array<Error>
+  errors: Array<GraphQLError>
 ): ExecutionContext {
   var operations: {[name: string]: OperationDefinition} = {};
   var fragments: {[name: string]: FragmentDefinition} = {};

@@ -8,25 +8,35 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { getLocation } from './location';
-import type { Source } from './source';
+import { getLocation } from '../language/location';
+import type { Source } from '../language/source';
+import { GraphQLError } from './GraphQLError';
 
-export function error(
+/**
+ * Produces a GraphQLError representing a syntax error, containing useful
+ * descriptive information about the syntax error's position in the source.
+ */
+export function syntaxError(
   source: Source,
   position: number,
   description: string
-): Error {
+): GraphQLError {
   var location = getLocation(source, position);
-  var syntaxError: any = new Error(
+  var error = new GraphQLError(
     `Syntax Error ${source.name} (${location.line}:${location.column}) ` +
     description + '\n\n' + highlightSourceAtLocation(source, location)
   );
-  syntaxError.source = source;
-  syntaxError.position = position;
-  syntaxError.location = location;
-  return syntaxError;
+  error.nodes = null;
+  error.positions = [position];
+  error.locations = [location];
+  error.source = source;
+  return error;
 }
 
+/**
+ * Render a helpful description of the location of the error in the GraphQL
+ * Source document.
+ */
 function highlightSourceAtLocation(source, location) {
   var line = location.line;
   var prevLineNum = (line - 1).toString();

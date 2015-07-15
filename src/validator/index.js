@@ -9,8 +9,8 @@
  */
 
 import invariant from '../utils/invariant';
-import { formatError } from '../error';
-import type { GraphQLFormattedError } from '../error/index';
+import { GraphQLError, formatError } from '../error';
+import type { GraphQLFormattedError } from '../error/formatError';
 import { visit, BREAK, getVisitFn } from '../language/visitor';
 import * as Kind from '../language/kinds';
 import type {
@@ -72,7 +72,7 @@ function visitUsingRules(
   schema: GraphQLSchema,
   documentAST: Document,
   rules: Array<any>
-): Array<GraphQLFormattedError> {
+): Array<GraphQLError> {
   var typeInfo = new TypeInfo(schema);
   var context = new ValidationContext(schema, documentAST, typeInfo);
   var errors = [];
@@ -192,8 +192,8 @@ function visitUsingRules(
 
 function isError(value) {
   return Array.isArray(value) ?
-    value.every(item => item instanceof Error) :
-    value instanceof Error;
+    value.every(item => item instanceof GraphQLError) :
+    value instanceof GraphQLError;
 }
 
 function append(arr, items) {

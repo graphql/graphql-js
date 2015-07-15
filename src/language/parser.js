@@ -8,7 +8,7 @@
  */
 
 import { Source } from './source';
-import { error } from './error';
+import { syntaxError } from '../error';
 import { lex, TokenKind, getTokenKindDesc, getTokenDesc } from './lexer';
 import type { Token } from './lexer';
 import type {
@@ -172,7 +172,7 @@ function expect(parser, kind: string): Token {
     advance(parser);
     return token;
   }
-  throw error(
+  throw syntaxError(
     parser.source,
     token.start,
     `Expected ${getTokenKindDesc(kind)}, found ${getTokenDesc(token)}`
@@ -190,7 +190,7 @@ function expectKeyword(parser, value: string): Token {
     advance(parser);
     return token;
   }
-  throw error(
+  throw syntaxError(
     parser.source,
     token.start,
     `Expected "${value}", found ${getTokenDesc(token)}`
@@ -203,7 +203,7 @@ function expectKeyword(parser, value: string): Token {
  */
 function unexpected(parser, atToken?: ?Token): Error {
   var token = atToken || parser.token;
-  return error(
+  return syntaxError(
     parser.source,
     token.start,
     `Unexpected ${getTokenDesc(token)}`
@@ -550,7 +550,7 @@ function parseObjectField(
   var start = parser.token.start;
   var name = parseName(parser);
   if (fieldNames.hasOwnProperty(name.value)) {
-    throw error(
+    throw syntaxError(
       parser.source,
       start,
       `Duplicate input object field ${name.value}.`

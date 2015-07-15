@@ -10,7 +10,8 @@
 
 import invariant from '../utils/invariant';
 import { formatError } from '../error';
-import type { GraphQLError, GraphQLFormattedError } from '../error/index';
+import type { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLFormattedError } from '../error/formatError';
 import { GraphQLSchema } from './schema';
 import { allRules } from './allRules';
 

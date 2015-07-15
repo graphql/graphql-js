@@ -9,7 +9,7 @@
  */
 
 import type { Source } from './source';
-import { error } from './error';
+import { syntaxError } from '../error';
 
 /**
  * A representation of a lexed Token. Value is optional, is it is
@@ -198,7 +198,11 @@ function readToken(source: Source, fromPosition: number): Token {
     case 34: return readString(source, position);
   }
 
-  throw error(source, position, `Unexpected character "${fromCharCode(code)}"`);
+  throw syntaxError(
+    source,
+    position,
+    `Unexpected character "${fromCharCode(code)}".`
+  );
 }
 
 /**
@@ -262,7 +266,7 @@ function readNumber(source, start, firstCode) {
       code = charCodeAt.call(body, ++position);
     } while (code >= 48 && code <= 57); // 0 - 9
   } else {
-    throw error(source, position, 'Invalid number');
+    throw syntaxError(source, position, 'Invalid number.');
   }
 
   if (code === 46) { // .
@@ -274,7 +278,7 @@ function readNumber(source, start, firstCode) {
         code = charCodeAt.call(body, ++position);
       } while (code >= 48 && code <= 57); // 0 - 9
     } else {
-      throw error(source, position, 'Invalid number');
+      throw syntaxError(source, position, 'Invalid number.');
     }
 
     if (code === 101) { // e
@@ -287,7 +291,7 @@ function readNumber(source, start, firstCode) {
           code = charCodeAt.call(body, ++position);
         } while (code >= 48 && code <= 57); // 0 - 9
       } else {
-        throw error(source, position, 'Invalid number');
+        throw syntaxError(source, position, 'Invalid number.');
       }
     }
   }
@@ -339,13 +343,21 @@ function readString(source, start) {
             charCodeAt.call(body, position + 4)
           );
           if (charCode < 0) {
-            throw error(source, position, 'Bad character escape sequence');
+            throw syntaxError(
+              source,
+              position,
+              'Bad character escape sequence.'
+            );
           }
           value += fromCharCode(charCode);
           position += 4;
           break;
         default:
-          throw error(source, position, 'Bad character escape sequence');
+          throw syntaxError(
+            source,
+            position,
+            'Bad character escape sequence.'
+          );
       }
       ++position;
       chunkStart = position;
@@ -353,7 +365,7 @@ function readString(source, start) {
   }
 
   if (code !== 34) {
-    throw error(source, position, 'Unterminated string');
+    throw syntaxError(source, position, 'Unterminated string.');
   }
 
   value += slice.call(body, chunkStart, position);
