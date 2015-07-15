@@ -175,9 +175,8 @@ describe('Execute: Handles mutation execution ordering', () => {
     }`;
     var ast = parse(doc);
 
-    var mutationResult = execute(schema, new Root(6), ast, 'M');
-    return expect(mutationResult).to.become({
-      data: {
+    return execute(schema, new Root(6), ast, 'M').then(result => {
+      expect(result.data).to.deep.equal({
         first: {
           theNumber: 1
         },
@@ -192,13 +191,15 @@ describe('Execute: Handles mutation execution ordering', () => {
           theNumber: 5
         },
         sixth: null,
-      },
-      errors: [
+      });
+
+      expect(result.errors).to.have.length(2);
+      expect(result.errors).to.containSubset([
         { message: 'Cannot change the number',
           locations: [ { line: 8, column: 7 } ] },
         { message: 'Cannot change the number',
           locations: [ { line: 17, column: 7 } ] }
-      ]
+      ]);
     });
   });
 });

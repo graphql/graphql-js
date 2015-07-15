@@ -142,8 +142,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls a nullable field that throws in a promise', () => {
@@ -165,8 +166,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls a synchronously returned object that contains a non-nullable field that throws synchronously', () => {
@@ -190,8 +192,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls a synchronously returned object that contains a non-nullable field that throws in a promise', () => {
@@ -215,8 +218,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls an object returned in a promise that contains a non-nullable field that throws synchronously', () => {
@@ -240,8 +244,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls an object returned in a promise that contains a non-nullable field that throws in a promise', () => {
@@ -265,8 +270,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls a complex tree of nullable fields that throw', () => {
@@ -356,8 +362,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls the first nullable object after a field throws in a long chain of fields that are non-null', () => {
@@ -431,8 +438,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
 
@@ -451,8 +459,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     };
 
-    return expect(execute(schema, nullingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls a nullable field that returns null in a promise', () => {
@@ -470,8 +479,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     };
 
-    return expect(execute(schema, nullingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls a synchronously returned object that contains a non-nullable field that returns null synchronously', () => {
@@ -495,8 +505,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, nullingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls a synchronously returned object that contains a non-nullable field that returns null in a promise', () => {
@@ -520,8 +531,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, nullingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls an object returned in a promise that contains a non-nullable field that returns null synchronously', () => {
@@ -545,8 +557,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, nullingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls an object returned in a promise that contains a non-nullable field that returns null ina a promise', () => {
@@ -570,8 +583,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, nullingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls a complex tree of nullable fields that return null', () => {
@@ -635,8 +649,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     };
 
-    return expect(execute(schema, nullingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls the first nullable object after a field returns null in a long chain of fields that are non-null', () => {
@@ -710,8 +725,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, nullingData, ast, 'Q', {}))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, ast)
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls the top level if sync non-nullable field throws', () => {
@@ -727,8 +743,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, parse(doc)))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, parse(doc))
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls the top level if async non-nullable field errors', () => {
@@ -744,8 +761,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, throwingData, parse(doc)))
-                  .to.become(expected);
+    return expect(
+      execute(schema, throwingData, parse(doc))
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls the top level if sync non-nullable field returns null', () => {
@@ -761,8 +779,9 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, nullingData, parse(doc)))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, parse(doc))
+    ).to.eventually.containSubset(expected);
   });
 
   it('nulls the top level if async non-nullable field resolves null', () => {
@@ -778,7 +797,8 @@ describe('Execute: handles non-nullable types', () => {
       ]
     };
 
-    return expect(execute(schema, nullingData, parse(doc)))
-                  .to.become(expected);
+    return expect(
+      execute(schema, nullingData, parse(doc))
+    ).to.eventually.containSubset(expected);
   });
 });

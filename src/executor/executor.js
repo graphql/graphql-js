@@ -8,8 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { GraphQLError, locatedError, formatError } from '../error';
-import type { GraphQLFormattedError } from '../error/formatError';
+import { GraphQLError, locatedError } from '../error';
 import find from '../utils/find';
 import invariant from '../utils/invariant';
 import isNullish from '../utils/isNullish';
@@ -92,11 +91,16 @@ type ExecutionContext = {
  */
 type ExecutionResult = {
   data: ?Object;
-  errors?: Array<GraphQLFormattedError>;
+  errors?: Array<GraphQLError>;
 }
 
 /**
- * Implements the "Evaluating requests" section of the spec.
+ * Implements the "Evaluating requests" section of the GraphQL specification.
+ *
+ * Returns a Promise that will eventually be resolved and never rejected.
+ *
+ * If the arguments to this function do not result in a legal execution context,
+ * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(
   schema: GraphQLSchema,
@@ -106,44 +110,48 @@ export function execute(
   args?: ?{[key: string]: string}
 ): Promise<ExecutionResult> {
   invariant(schema, 'Must provide schema');
-  var errors = [];
 
+  // If a valid context cannot be created due to incorrect arguments,
+  // this will throw an error.
+  var context = buildExecutionContext(schema, root, ast, operationName, args);
+
+  // Return a Promise that will eventually resolve to the data described by
+  // The "Response" section of the GraphQL specification.
+  //
+  // If errors are encountered while executing a GraphQL field, only that
+  // field and it's descendents will be omitted, and sibling fields will still
+  // be executed. An execution which encounters errors will still result in a
+  // resolved Promise.
   return new Promise(resolve => {
-    var exeContext =
-      buildExecutionContext(schema, root, ast, operationName, args, errors);
-    resolve(
-      executeOperation(
-        exeContext,
-        root,
-        exeContext.operation
-      )
-    );
+    resolve(executeOperation(context, root, context.operation));
   }).catch(error => {
-    errors.push(error);
+    // Errors from sub-fields of a NonNull type may propagate to the top level,
+    // at which point we still log the error and null the parent field, which
+    // in this case is the entire response.
+    context.errors.push(error);
     return null;
   }).then(data => {
-    if (!errors.length) {
+    if (!context.errors.length) {
       return { data };
     }
-    return {
-      data: data,
-      errors: errors.map(formatError)
-    };
+    return { data, errors: context.errors };
   });
 }
 
 /**
  * Constructs a ExecutionContext object from the arguments passed to
  * execute, which we will pass throughout the other execution methods.
+ *
+ * Throws a GraphQLError if a valid execution context cannot be created.
  */
 function buildExecutionContext(
   schema: GraphQLSchema,
   root: Object,
   ast: Document,
   operationName?: ?string,
-  args?: ?{[key: string]: string},
-  errors: Array<GraphQLError>
+  args?: ?{[key: string]: string}
 ): ExecutionContext {
+  var errors: Array<GraphQLError> = [];
   var operations: {[name: string]: OperationDefinition} = {};
   var fragments: {[name: string]: FragmentDefinition} = {};
   ast.definitions.forEach(statement => {
@@ -158,15 +166,13 @@ function buildExecutionContext(
   });
   if (!operationName && Object.keys(operations).length !== 1) {
     throw new GraphQLError(
-      'Must provide operation name if query contains multiple operations'
+      'Must provide operation name if query contains multiple operations.'
     );
   }
   var opName = operationName || Object.keys(operations)[0];
   var operation = operations[opName];
   if (!operation) {
-    throw new GraphQLError(
-      'Unknown operation name: ' + opName
-    );
+    throw new GraphQLError(`Unknown operation named "${opName}".`);
   }
   var variables = getVariableValues(
     schema,

@@ -42,13 +42,23 @@ export function graphql(
         errors: validationErrors.map(formatError)
       });
     } else {
-      resolve(execute(
-        schema,
-        rootObject,
-        ast,
-        operationName,
-        variableValues
-      ));
+      resolve(
+        execute(
+          schema,
+          rootObject,
+          ast,
+          operationName,
+          variableValues
+        ).then(result => {
+          if (result.errors) {
+            return {
+              data: result.data,
+              errors: result.errors.map(formatError)
+            };
+          }
+          return result;
+        })
+      );
     }
   }).catch(error => {
     return { errors: [ formatError(error) ] };

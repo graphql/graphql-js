@@ -12,6 +12,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import { formatError } from '../../error';
 import { execute } from '../executor';
 import { parse } from '../../language';
 import {
@@ -43,7 +44,16 @@ function check(testType, testData, expected) {
 
     var ast = parse('{ nest { test } }');
 
-    return expect(execute(schema, data, ast)).to.become(expected);
+    return expect(execute(schema, data, ast).then(response => {
+      // Formatting errors for ease of test writing.
+      if (response.errors) {
+        return {
+          data: response.data,
+          errors: response.errors.map(formatError)
+        };
+      }
+      return response;
+    })).to.become(expected);
   };
 }
 

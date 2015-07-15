@@ -12,7 +12,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-
+import { formatError } from '../../error';
 import { execute } from '../executor';
 import { parse } from '../../language';
 import {
@@ -145,44 +145,37 @@ describe('Execute: Handles input objects', () => {
       it('errors on null for nested non-null', () => {
         var params = {input: {a: 'foo', b: 'bar', c: null}};
 
-        return expect(execute(schema, null, ast, null, params)).to.become({
-          data: null,
-          errors: [
-            {
-              locations: [
-                {
-                  column: 17,
-                  line: 2
-                }
-              ],
-              message: 'Variable $input expected value of type ' +
-                       'TestInputObject but got: ' +
-                       '{\"a\":\"foo\",\"b\":\"bar\",\"c\":null}.'
-            }
-          ]
-        });
+        try {
+          execute(schema, null, ast, null, params);
+        } catch (error) {
+          expect(formatError(error)).to.deep.equal({
+            locations: [ { line: 2, column: 17 } ],
+            message:
+              'Variable $input expected value of type TestInputObject but ' +
+              'got: {\"a\":\"foo\",\"b\":\"bar\",\"c\":null}.'
+          });
+          return;
+        }
+        throw new Error('Expected error.');
       });
 
       it('errors on omission of nested non-null', () => {
         var params = {input: {a: 'foo', b: 'bar'}};
 
-        return expect(execute(schema, null, ast, null, params)).to.become({
-          data: null,
-          errors: [
-            {
-              locations: [
-                {
-                  column: 17,
-                  line: 2
-                }
-              ],
-              message: 'Variable $input expected value of type ' +
-                       'TestInputObject but got: {\"a\":\"foo\",\"b\":\"bar\"}.'
-            }
-          ]
-
-        });
+        try {
+          execute(schema, null, ast, null, params);
+        } catch (error) {
+          expect(formatError(error)).to.deep.equal({
+            locations: [ { line: 2, column: 17 } ],
+            message:
+              'Variable $input expected value of type TestInputObject but ' +
+              'got: {\"a\":\"foo\",\"b\":\"bar\"}.'
+          });
+          return;
+        }
+        throw new Error('Expected error.');
       });
+
     });
   });
 
@@ -304,23 +297,18 @@ describe('Execute: Handles input objects', () => {
           fieldWithNonNullableStringInput(input: $value)
         }
       `;
-      var ast = parse(doc);
 
-      return expect(execute(schema, null, ast)).to.become({
-        data: null,
-        errors: [
-          {
-            locations: [
-              {
-                column: 31,
-                line: 2
-              }
-            ],
-            message: 'Variable $value expected value of type String! but ' +
-                     'got: undefined.'
-          }
-        ]
-      });
+      try {
+        execute(schema, null, parse(doc));
+      } catch (error) {
+        expect(formatError(error)).to.deep.equal({
+          locations: [ { line: 2, column: 31 } ],
+          message:
+            'Variable $value expected value of type String! but got: undefined.'
+        });
+        return;
+      }
+      throw new Error('Expected error.');
     });
 
     it('does not allow non-nullable inputs to be set to null in a variable', () => {
@@ -331,23 +319,17 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(
-        execute(schema, null, ast, null, {value: null})
-      ).to.become({
-        data: null,
-        errors: [
-          {
-            locations: [
-              {
-                column: 31,
-                line: 2
-              }
-            ],
-            message: 'Variable $value expected value of type String! but ' +
-                     'got: null.'
-          }
-        ]
-      });
+      try {
+        execute(schema, null, ast, null, {value: null});
+      } catch (error) {
+        expect(formatError(error)).to.deep.equal({
+          locations: [ { line: 2, column: 31 } ],
+          message:
+            'Variable $value expected value of type String! but got: null.'
+        });
+        return;
+      }
+      throw new Error('Expected error.');
     });
 
     it('allows non-nullable inputs to be set to a value in a variable', () => {
@@ -458,23 +440,17 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(
-        execute(schema, null, ast, null, {input: null})
-      ).to.become({
-        data: null,
-        errors: [
-          {
-            locations: [
-              {
-                column: 17,
-                line: 2
-              }
-            ],
-            message: 'Variable $input expected value of type [String]! but ' +
-                     'got: null.'
-          }
-        ]
-      });
+      try {
+        execute(schema, null, ast, null, {input: null});
+      } catch (error) {
+        expect(formatError(error)).to.deep.equal({
+          locations: [ { line: 2, column: 17 } ],
+          message:
+            'Variable $input expected value of type [String]! but got: null.'
+        });
+        return;
+      }
+      throw new Error('Expected error.');
     });
 
     it('allows non-null lists to contain values', () => {
@@ -552,24 +528,20 @@ describe('Execute: Handles input objects', () => {
         }
       `;
       var ast = parse(doc);
+      var vars = {input: ['A', null, 'B']};
 
-      return expect(
-        execute(schema, null, ast, null, {input: ['A',null,'B']})
-      ).to.become({
-        data: null,
-        errors: [
-          {
-            locations: [
-              {
-                column: 17,
-                line: 2
-              }
-            ],
-            message: 'Variable $input expected value of type [String!] but ' +
-                     'got: [\"A\",null,\"B\"].'
-          }
-        ]
-      });
+      try {
+        execute(schema, null, ast, null, vars);
+      } catch (error) {
+        expect(formatError(error)).to.deep.equal({
+          locations: [ { line: 2, column: 17 } ],
+          message:
+            'Variable $input expected value of type [String!] but got: ' +
+            '[\"A\",null,\"B\"].'
+        });
+        return;
+      }
+      throw new Error('Expected error.');
     });
 
     it('does not allow non-null lists of non-nulls to be null', () => {
@@ -580,23 +552,17 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(
-        execute(schema, null, ast, null, {input: null})
-      ).to.become({
-        data: null,
-        errors: [
-          {
-            locations: [
-              {
-                column: 17,
-                line: 2
-              }
-            ],
-            message: 'Variable $input expected value of type [String!]! but ' +
-                     'got: null.'
-          }
-        ]
-      });
+      try {
+        execute(schema, null, ast, null, {input: null});
+      } catch (error) {
+        expect(formatError(error)).to.deep.equal({
+          locations: [ { line: 2, column: 17 } ],
+            message:
+              'Variable $input expected value of type [String!]! but got: null.'
+        });
+        return;
+      }
+      throw new Error('Expected error.');
     });
 
     it('allows non-null lists of non-nulls to contain values', () => {
@@ -623,24 +589,21 @@ describe('Execute: Handles input objects', () => {
         }
       `;
       var ast = parse(doc);
+      var vars = { input: ['A', null, 'B'] };
 
-      return expect(
-        execute(schema, null, ast, null, {input: ['A',null,'B']})
-      ).to.become({
-        data: null,
-        errors: [
-          {
-            locations: [
-              {
-                column: 17,
-                line: 2
-              }
-            ],
-            message: 'Variable $input expected value of type [String!]! but ' +
-                     'got: [\"A\",null,\"B\"].'
-          }
-        ]
-      });
+      try {
+        execute(schema, null, ast, null, vars);
+      } catch (error) {
+        expect(formatError(error)).to.deep.equal({
+          locations: [ { line: 2, column: 17 } ],
+          message:
+            'Variable $input expected value of type [String!]! but got: ' +
+            '[\"A\",null,\"B\"].'
+        });
+        return;
+      }
+      throw new Error('Expected error.');
     });
+
   });
 });

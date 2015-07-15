@@ -10,6 +10,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../executor';
+import { formatError } from '../../error';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -287,22 +288,26 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       })
     });
-    return expect(execute(schema, data, docAst)).to.become({
-      data: {
+
+    return execute(schema, data, docAst).then(result => {
+
+      expect(result.data).to.deep.equal({
         sync: 'sync',
         syncError: null,
         async: 'async',
         asyncReject: null,
         asyncError: null,
-      },
-      errors: [
+      });
+
+      expect(result.errors && result.errors.map(formatError)).to.deep.equal([
         { message: 'Error getting syncError',
           locations: [ { line: 3, column: 7 } ] },
         { message: 'Error getting asyncReject',
           locations: [ { line: 5, column: 7 } ] },
         { message: 'Error getting asyncError',
           locations: [ { line: 6, column: 7 } ] },
-      ]
+      ]);
+
     });
   });
 
@@ -352,16 +357,10 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       })
     });
-    var ex = execute(schema, data, ast);
 
-    return expect(ex).to.become({
-      data: null,
-      errors: [
-        { message:
-            'Must provide operation name if query contains multiple operations'
-        }
-      ]
-    });
+    expect(() => execute(schema, data, ast)).to.throw(
+      'Must provide operation name if query contains multiple operations.'
+    );
   });
 
   it('uses the query schema for queries', () => {
@@ -408,7 +407,7 @@ describe('Execute: Handles basic execution tasks', () => {
     return expect(mutationResult).to.become({data: {c: 'd'}});
   });
 
-  it('responds with correct field ordering in presence of promises', (done) => {
+  it('responds with correct field ordering in presence of promises', () => {
     var doc = `{
       a,
       b,
@@ -460,9 +459,8 @@ describe('Execute: Handles basic execution tasks', () => {
           }
         });
         expect(Object.keys(result.data)).to.deep.equal(['a','b','c','d','e']);
-        done();
       }
-    ).catch(err => done(err));
+    );
   });
 
   it('Avoids recursion', () => {
