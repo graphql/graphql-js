@@ -33,7 +33,9 @@ export function print(ast) {
       },
       VariableDefinition: node =>
         join([node.variable + ': ' + node.type, node.defaultValue], ' = '),
-      SelectionSet: node => blockList(node.selections, ',\n'),
+      SelectionSet: node =>
+        length(node.selections) === 0 ? null :
+        indent('{\n' + join(node.selections, '\n')) + '\n}',
       Field: node =>
         join([
           join([
@@ -92,11 +94,6 @@ export function print(ast) {
       NonNullType: node => node.type + '!',
     }
   });
-}
-
-function blockList(list, separator) {
-  return length(list) === 0 ? null :
-    indent('{\n' + join(list, separator)) + '\n}';
 }
 
 function indent(maybeString) {

@@ -49,12 +49,12 @@ describe('Printer', () => {
     expect(printed).to.equal(
   `query queryName($foo: ComplexType, $site: Site = MOBILE) {
   whoever123is: node(id: [123, 456]) {
-    id,
+    id
     ... on User @defer {
       field2 {
-        id,
+        id
         alias: field1(first: 10, after: $foo) @include(if: $foo) {
-          id,
+          id
           ...frag
         }
       }
@@ -75,7 +75,7 @@ fragment frag on Friend {
 }
 
 {
-  unnamed(truthy: true, falsey: false),
+  unnamed(truthy: true, falsey: false)
   query
 }
 `);
