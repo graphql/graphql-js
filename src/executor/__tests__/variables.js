@@ -83,7 +83,7 @@ describe('Execute: Handles input objects', () => {
 
   describe('Handles objects and nullability', () => {
     describe('using inline structs', () => {
-      it('executes with complex input', () => {
+      it('executes with complex input', async () => {
         var doc = `
         {
           fieldWithObjectInput(input: {a: "foo", b: ["bar"], c: "baz"})
@@ -91,14 +91,14 @@ describe('Execute: Handles input objects', () => {
         `;
         var ast = parse(doc);
 
-        return expect(execute(schema, null, ast)).to.become({
+        return expect(await execute(schema, null, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
         });
       });
 
-      it('properly coerces single value to array', () => {
+      it('properly coerces single value to array', async () => {
         var doc = `
         {
           fieldWithObjectInput(input: {a: "foo", b: "bar", c: "baz"})
@@ -106,7 +106,7 @@ describe('Execute: Handles input objects', () => {
         `;
         var ast = parse(doc);
 
-        return expect(execute(schema, null, ast)).to.become({
+        return expect(await execute(schema, null, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
@@ -122,27 +122,27 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      it('executes with complex input', () => {
+      it('executes with complex input', async () => {
         var params = {input: {a: 'foo', b: ['bar'], c: 'baz'}};
 
-        return expect(execute(schema, null, ast, null, params)).to.become({
+        return expect(await execute(schema, null, ast, null, params)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
         });
       });
 
-      it('properly coerces single value to array', () => {
+      it('properly coerces single value to array', async () => {
         var params = {input: {a: 'foo', b: 'bar', c: 'baz'}};
 
-        return expect(execute(schema, null, ast, null, params)).to.become({
+        return expect(await execute(schema, null, ast, null, params)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
         });
       });
 
-      it('errors on null for nested non-null', () => {
+      it('errors on null for nested non-null', async () => {
         var params = {input: {a: 'foo', b: 'bar', c: null}};
 
         try {
@@ -159,7 +159,7 @@ describe('Execute: Handles input objects', () => {
         throw new Error('Expected error.');
       });
 
-      it('errors on omission of nested non-null', () => {
+      it('errors on omission of nested non-null', async () => {
         var params = {input: {a: 'foo', b: 'bar'}};
 
         try {
@@ -180,7 +180,7 @@ describe('Execute: Handles input objects', () => {
   });
 
   describe('Handles nullable scalars', () => {
-    it('allows nullable inputs to be omitted', () => {
+    it('allows nullable inputs to be omitted', async () => {
       var doc = `
       {
         fieldWithNullableStringInput
@@ -188,14 +188,14 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(execute(schema, null, ast)).to.become({
+      return expect(await execute(schema, null, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: 'null'
         }
       });
     });
 
-    it('allows nullable inputs to be omitted in a variable', () => {
+    it('allows nullable inputs to be omitted in a variable', async () => {
       var doc = `
       query SetsNullable($value: String) {
         fieldWithNullableStringInput(input: $value)
@@ -203,14 +203,14 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(execute(schema, null, ast)).to.become({
+      return expect(await execute(schema, null, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: 'null'
         }
       });
     });
 
-    it('allows nullable inputs to be omitted in an unlisted variable', () => {
+    it('allows nullable inputs to be omitted in an unlisted variable', async () => {
       var doc = `
       query SetsNullable {
         fieldWithNullableStringInput(input: $value)
@@ -218,14 +218,14 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(execute(schema, null, ast)).to.become({
+      return expect(await execute(schema, null, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: 'null'
         }
       });
     });
 
-    it('allows nullable inputs to be set to null in a variable', () => {
+    it('allows nullable inputs to be set to null in a variable', async () => {
       var doc = `
       query SetsNullable($value: String) {
         fieldWithNullableStringInput(input: $value)
@@ -234,15 +234,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {value: null})
-      ).to.become({
+        await execute(schema, null, ast, null, {value: null})
+      ).to.deep.equal({
         data: {
           fieldWithNullableStringInput: 'null'
         }
       });
     });
 
-    it('allows nullable inputs to be set to null directly', () => {
+    it('allows nullable inputs to be set to null directly', async () => {
       var doc = `
       {
         fieldWithNullableStringInput(input: null)
@@ -250,14 +250,14 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(execute(schema, null, ast)).to.become({
+      return expect(await execute(schema, null, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: 'null'
         }
       });
     });
 
-    it('allows nullable inputs to be set to a value in a variable', () => {
+    it('allows nullable inputs to be set to a value in a variable', async () => {
       var doc = `
       query SetsNullable($value: String) {
         fieldWithNullableStringInput(input: $value)
@@ -266,15 +266,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {value: 'a'})
-      ).to.become({
+        await execute(schema, null, ast, null, {value: 'a'})
+      ).to.deep.equal({
         data: {
           fieldWithNullableStringInput: '"a"'
         }
       });
     });
 
-    it('allows nullable inputs to be set to a value directly', () => {
+    it('allows nullable inputs to be set to a value directly', async () => {
       var doc = `
       {
         fieldWithNullableStringInput(input: "a")
@@ -282,7 +282,7 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(execute(schema, null, ast)).to.become({
+      return expect(await execute(schema, null, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: '"a"'
         }
@@ -291,7 +291,7 @@ describe('Execute: Handles input objects', () => {
   });
 
   describe('Handles non-nullable scalars', () => {
-    it('does not allow non-nullable inputs to be omitted in a variable', () => {
+    it('does not allow non-nullable inputs to be omitted in a variable', async () => {
       var doc = `
         query SetsNonNullable($value: String!) {
           fieldWithNonNullableStringInput(input: $value)
@@ -311,7 +311,7 @@ describe('Execute: Handles input objects', () => {
       throw new Error('Expected error.');
     });
 
-    it('does not allow non-nullable inputs to be set to null in a variable', () => {
+    it('does not allow non-nullable inputs to be set to null in a variable', async () => {
       var doc = `
         query SetsNonNullable($value: String!) {
           fieldWithNonNullableStringInput(input: $value)
@@ -332,7 +332,7 @@ describe('Execute: Handles input objects', () => {
       throw new Error('Expected error.');
     });
 
-    it('allows non-nullable inputs to be set to a value in a variable', () => {
+    it('allows non-nullable inputs to be set to a value in a variable', async () => {
       var doc = `
         query SetsNonNullable($value: String!) {
           fieldWithNonNullableStringInput(input: $value)
@@ -341,15 +341,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {value: 'a'})
-      ).to.become({
+        await execute(schema, null, ast, null, {value: 'a'})
+      ).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: '"a"'
         }
       });
     });
 
-    it('allows non-nullable inputs to be set to a value directly', () => {
+    it('allows non-nullable inputs to be set to a value directly', async () => {
       var doc = `
       {
         fieldWithNonNullableStringInput(input: "a")
@@ -357,14 +357,14 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(execute(schema, null, ast)).to.become({
+      return expect(await execute(schema, null, ast)).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: '"a"'
         }
       });
     });
 
-    it('passes along null for non-nullable inputs if explcitly set in the query', () => {
+    it('passes along null for non-nullable inputs if explcitly set in the query', async () => {
       var doc = `
       {
         fieldWithNonNullableStringInput
@@ -372,7 +372,7 @@ describe('Execute: Handles input objects', () => {
       `;
       var ast = parse(doc);
 
-      return expect(execute(schema, null, ast)).to.become({
+      return expect(await execute(schema, null, ast)).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: 'null'
         }
@@ -381,7 +381,7 @@ describe('Execute: Handles input objects', () => {
   });
 
   describe('Handles lists and nullability', () => {
-    it('allows lists to be null', () => {
+    it('allows lists to be null', async () => {
       var doc = `
         query q($input:[String]) {
           list(input: $input)
@@ -390,15 +390,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {input: null})
-      ).to.become({
+        await execute(schema, null, ast, null, {input: null})
+      ).to.deep.equal({
         data: {
           list: 'null'
         }
       });
     });
 
-    it('allows lists to contain values', () => {
+    it('allows lists to contain values', async () => {
       var doc = `
         query q($input:[String]) {
           list(input: $input)
@@ -407,15 +407,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {input: ['A']})
-      ).to.become({
+        await execute(schema, null, ast, null, {input: ['A']})
+      ).to.deep.equal({
         data: {
           list: '["A"]'
         }
       });
     });
 
-    it('allows lists to contain null', () => {
+    it('allows lists to contain null', async () => {
       var doc = `
         query q($input:[String]) {
           list(input: $input)
@@ -424,15 +424,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {input: ['A',null,'B']})
-      ).to.become({
+        await execute(schema, null, ast, null, {input: ['A',null,'B']})
+      ).to.deep.equal({
         data: {
           list: '["A",null,"B"]'
         }
       });
     });
 
-    it('does not allow non-null lists to be null', () => {
+    it('does not allow non-null lists to be null', async () => {
       var doc = `
         query q($input:[String]!) {
           nnList(input: $input)
@@ -453,7 +453,7 @@ describe('Execute: Handles input objects', () => {
       throw new Error('Expected error.');
     });
 
-    it('allows non-null lists to contain values', () => {
+    it('allows non-null lists to contain values', async () => {
       var doc = `
         query q($input:[String]!) {
           nnList(input: $input)
@@ -462,15 +462,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {input: ['A']})
-      ).to.become({
+        await execute(schema, null, ast, null, {input: ['A']})
+      ).to.deep.equal({
         data: {
           nnList: '["A"]'
         }
       });
     });
 
-    it('allows non-null lists to contain null', () => {
+    it('allows non-null lists to contain null', async () => {
       var doc = `
         query q($input:[String]!) {
           nnList(input: $input)
@@ -479,15 +479,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {input: ['A',null,'B']})
-      ).to.become({
+        await execute(schema, null, ast, null, {input: ['A',null,'B']})
+      ).to.deep.equal({
         data: {
           nnList: '["A",null,"B"]'
         }
       });
     });
 
-    it('allows lists of non-nulls to be null', () => {
+    it('allows lists of non-nulls to be null', async () => {
       var doc = `
         query q($input:[String!]) {
           listNN(input: $input)
@@ -496,15 +496,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {input: null})
-      ).to.become({
+        await execute(schema, null, ast, null, {input: null})
+      ).to.deep.equal({
         data: {
           listNN: 'null'
         }
       });
     });
 
-    it('allows lists of non-nulls to contain values', () => {
+    it('allows lists of non-nulls to contain values', async () => {
       var doc = `
         query q($input:[String!]) {
           listNN(input: $input)
@@ -513,15 +513,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {input: ['A']})
-      ).to.become({
+        await execute(schema, null, ast, null, {input: ['A']})
+      ).to.deep.equal({
         data: {
           listNN: '["A"]'
         }
       });
     });
 
-    it('does not allow lists of non-nulls to contain null', () => {
+    it('does not allow lists of non-nulls to contain null', async () => {
       var doc = `
         query q($input:[String!]) {
           listNN(input: $input)
@@ -544,7 +544,7 @@ describe('Execute: Handles input objects', () => {
       throw new Error('Expected error.');
     });
 
-    it('does not allow non-null lists of non-nulls to be null', () => {
+    it('does not allow non-null lists of non-nulls to be null', async () => {
       var doc = `
         query q($input:[String!]!) {
           nnListNN(input: $input)
@@ -565,7 +565,7 @@ describe('Execute: Handles input objects', () => {
       throw new Error('Expected error.');
     });
 
-    it('allows non-null lists of non-nulls to contain values', () => {
+    it('allows non-null lists of non-nulls to contain values', async () => {
       var doc = `
         query q($input:[String!]!) {
           nnListNN(input: $input)
@@ -574,15 +574,15 @@ describe('Execute: Handles input objects', () => {
       var ast = parse(doc);
 
       return expect(
-        execute(schema, null, ast, null, {input: ['A']})
-      ).to.become({
+        await execute(schema, null, ast, null, {input: ['A']})
+      ).to.deep.equal({
         data: {
           nnListNN: '["A"]'
         }
       });
     });
 
-    it('does not allow non-null lists of non-nulls to contain null', () => {
+    it('does not allow non-null lists of non-nulls to contain null', async () => {
       var doc = `
         query q($input:[String!]!) {
           nnListNN(input: $input)

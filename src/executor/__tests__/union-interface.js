@@ -107,7 +107,7 @@ var john = new Person('John', [ garfield, odie ], [ liz, odie ]);
 
 describe('Execute: Union and intersection types', () => {
 
-  it('can introspect on union and intersection types', () => {
+  it('can introspect on union and intersection types', async () => {
     var ast = parse(`
       {
         Named: __type(name: "Named") {
@@ -132,8 +132,8 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      execute(schema, null, ast)
-    ).to.become({
+      await execute(schema, null, ast)
+    ).to.deep.equal({
       data: {
         Named: {
           kind: 'INTERFACE',
@@ -166,7 +166,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('executes using union types', () => {
+  it('executes using union types', async () => {
 
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
     var ast = parse(`
@@ -183,8 +183,8 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      execute(schema, john, ast)
-    ).to.become({
+      await execute(schema, john, ast)
+    ).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -196,7 +196,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('executes union types with inline fragments', () => {
+  it('executes union types with inline fragments', async () => {
 
     // This is the valid version of the query in the above test.
     var ast = parse(`
@@ -218,8 +218,8 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      execute(schema, john, ast)
-    ).to.become({
+      await execute(schema, john, ast)
+    ).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -231,7 +231,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('executes using interface types', () => {
+  it('executes using interface types', async () => {
 
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
     var ast = parse(`
@@ -248,8 +248,8 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      execute(schema, john, ast)
-    ).to.become({
+      await execute(schema, john, ast)
+    ).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -261,7 +261,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('executes union types with inline fragments', () => {
+  it('executes union types with inline fragments', async () => {
 
     // This is the valid version of the query in the above test.
     var ast = parse(`
@@ -282,8 +282,8 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      execute(schema, john, ast)
-    ).to.become({
+      await execute(schema, john, ast)
+    ).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -295,7 +295,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('allows fragment conditions to be abstract types', () => {
+  it('allows fragment conditions to be abstract types', async () => {
 
     var ast = parse(`
       {
@@ -330,8 +330,8 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      execute(schema, john, ast)
-    ).to.become({
+      await execute(schema, john, ast)
+    ).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',

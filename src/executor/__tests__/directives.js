@@ -33,57 +33,57 @@ var data = {
   b() { return 'b'; }
 };
 
-function executeTestQuery(doc) {
-  return execute(schema, data, parse(doc));
+async function executeTestQuery(doc) {
+  return await execute(schema, data, parse(doc));
 }
 
 describe('Execute: handles directives', () => {
   describe('works without directives', () => {
-    it('basic query works', () => {
-      return expect(
-        executeTestQuery('{ a, b }')
-      ).to.become({
+    it('basic query works', async () => {
+      expect(
+        await executeTestQuery('{ a, b }')
+      ).to.deep.equal({
         data: { a: 'a', b: 'b'}
       });
     });
   });
 
   describe('works on scalars', () => {
-    it('if true includes scalar', () => {
+    it('if true includes scalar', async () => {
       return expect(
-        executeTestQuery('{ a, b @include(if: true) }')
-      ).to.become({
+        await executeTestQuery('{ a, b @include(if: true) }')
+      ).to.deep.equal({
         data: { a: 'a', b: 'b'}
       });
     });
 
-    it('if false omits on scalar', () => {
+    it('if false omits on scalar', async () => {
       return expect(
-        executeTestQuery('{ a, b @include(if: false) }')
-      ).to.become({
+        await executeTestQuery('{ a, b @include(if: false) }')
+      ).to.deep.equal({
         data: { a: 'a' }
       });
     });
 
-    it('unless false includes scalar', () => {
+    it('unless false includes scalar', async () => {
       return expect(
-        executeTestQuery('{ a, b @skip(if: false) }')
-      ).to.become({
+        await executeTestQuery('{ a, b @skip(if: false) }')
+      ).to.deep.equal({
         data: { a: 'a', b: 'b'}
       });
     });
 
-    it('unless true omits scalar', () => {
+    it('unless true omits scalar', async () => {
       return expect(
-        executeTestQuery('{ a, b @skip(if: true) }')
-      ).to.become({
+        await executeTestQuery('{ a, b @skip(if: true) }')
+      ).to.deep.equal({
         data: { a: 'a' }
       });
     });
   });
 
   describe('works on fragment spreads', () => {
-    it('if false omits fragment spread', () => {
+    it('if false omits fragment spread', async () => {
       var q = `
         query Q {
           a
@@ -93,12 +93,12 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a' }
       });
     });
 
-    it('if true includes fragment spread', () => {
+    it('if true includes fragment spread', async () => {
       var q = `
         query Q {
           a
@@ -108,12 +108,12 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a', b: 'b' }
       });
     });
 
-    it('unless false includes fragment spread', () => {
+    it('unless false includes fragment spread', async () => {
       var q = `
         query Q {
           a
@@ -123,12 +123,12 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a', b: 'b' }
       });
     });
 
-    it('unless true omits fragment spread', () => {
+    it('unless true omits fragment spread', async () => {
       var q = `
         query Q {
           a
@@ -138,14 +138,14 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a' }
       });
     });
   });
 
   describe('works on inline fragment', () => {
-    it('if false omits inline fragment', () => {
+    it('if false omits inline fragment', async () => {
       var q = `
         query Q {
           a
@@ -157,12 +157,12 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a' }
       });
     });
 
-    it('if true includes inline fragment', () => {
+    it('if true includes inline fragment', async () => {
       var q = `
         query Q {
           a
@@ -174,11 +174,11 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a', b: 'b' }
       });
     });
-    it('unless false includes inline fragment', () => {
+    it('unless false includes inline fragment', async () => {
       var q = `
         query Q {
           a
@@ -190,11 +190,11 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a', b: 'b' }
       });
     });
-    it('unless true includes inline fragment', () => {
+    it('unless true includes inline fragment', async () => {
       var q = `
         query Q {
           a
@@ -206,14 +206,14 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a' }
       });
     });
   });
 
   describe('works on fragment', () => {
-    it('if false omits fragment', () => {
+    it('if false omits fragment', async () => {
       var q = `
         query Q {
           a
@@ -223,11 +223,11 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a' }
       });
     });
-    it('if true includes fragment', () => {
+    it('if true includes fragment', async () => {
       var q = `
         query Q {
           a
@@ -237,11 +237,11 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a', b: 'b' }
       });
     });
-    it('unless false includes fragment', () => {
+    it('unless false includes fragment', async () => {
       var q = `
         query Q {
           a
@@ -251,11 +251,11 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a', b: 'b' }
       });
     });
-    it('unless true omits fragment', () => {
+    it('unless true omits fragment', async () => {
       var q = `
         query Q {
           a
@@ -265,7 +265,7 @@ describe('Execute: handles directives', () => {
           b
         }
       `;
-      return expect(executeTestQuery(q)).to.become({
+      return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a' }
       });
     });
