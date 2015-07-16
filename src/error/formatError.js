@@ -24,14 +24,11 @@ export function formatError(error: GraphQLError): GraphQLFormattedError {
       locations: error.locations
     };
   }
-  return {
-    message: error.message
-  };
 }
 
 export type GraphQLFormattedError = {
   message: string,
-  locations?: Array<GraphQLErrorLocation>
+  locations: ?Array<GraphQLErrorLocation>
 };
 
 export type GraphQLErrorLocation = {
