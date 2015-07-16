@@ -418,19 +418,15 @@ function doesFragmentConditionMatch(
 }
 
 /**
- * A wrapper around Promise.all that operates on an object rather than an
- * iterable.
- *
- * Effectively, this method transforms a `Map<string, Promise<T>>` into
- * a `Promise<Map<string, T>>`, in the same way that `Promise.all` transforms
- * a `Array<Promise<T>>` into a `Promise<Array<T>>`.
+ * This function transforms a JS object `{[key: string]: Promise<any>}` into
+ * a `Promise<{[key: string]: any}>`
  *
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
 function promiseForObject(
-  object: Object
-): Promise<Object> {
+  object: {[key: string]: Promise<any>}
+): Promise<{[key: string]: any}> {
   var keys = Object.keys(object);
   var valuesAndPromises = keys.map(name => object[name]);
   return Promise.all(valuesAndPromises).then(

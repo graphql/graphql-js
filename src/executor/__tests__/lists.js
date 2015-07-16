@@ -28,6 +28,12 @@ var resolved = Promise.resolve.bind(Promise);
 // rejected() is shorthand for Promise.reject()
 var rejected = Promise.reject.bind(Promise);
 
+/**
+ * This function creates a test case passed to "it", there's a time delay
+ * between when the test is created and when the test is run, so if testData
+ * contains a rejection, testData should be a function that returns that
+ * rejection so as not to trigger the "unhandled rejection" error watcher.
+ */
 function check(testType, testData, expected) {
   return function () {
     var data = { test: testData };
@@ -100,7 +106,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Rejected', check(type,
-        rejected(new Error('bad')),
+        () => rejected(new Error('bad')),
         { data: { nest: { test: null } },
           errors: [
             { message: 'bad',
@@ -123,7 +129,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Contains reject', check(type,
-        [resolved(1), rejected(new Error('bad')), resolved(2)],
+        () => [resolved(1), rejected(new Error('bad')), resolved(2)],
         { data: { nest: { test: [ 1, null, 2 ] } },
           errors: [
             { message: 'bad',
@@ -183,7 +189,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Rejected', check(type,
-        rejected(new Error('bad')),
+        () => rejected(new Error('bad')),
         { data: { nest: null },
           errors: [
             { message: 'bad',
@@ -206,7 +212,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Contains reject', check(type,
-        [resolved(1), rejected(new Error('bad')), resolved(2)],
+        () => [resolved(1), rejected(new Error('bad')), resolved(2)],
         { data: { nest: { test: [ 1, null, 2 ] } },
           errors: [
             { message: 'bad',
@@ -266,7 +272,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Rejected', check(type,
-        rejected(new Error('bad')),
+        () => rejected(new Error('bad')),
         { data: { nest: { test: null } },
           errors: [
             { message: 'bad',
@@ -293,7 +299,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Contains reject', check(type,
-        [resolved(1), rejected(new Error('bad')), resolved(2)],
+        () => [resolved(1), rejected(new Error('bad')), resolved(2)],
         { data: { nest: { test: null } },
           errors: [
             { message: 'bad',
@@ -363,7 +369,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Rejected', check(type,
-        rejected(new Error('bad')),
+        () => rejected(new Error('bad')),
         { data: { nest: null },
           errors: [
             { message: 'bad',
@@ -390,7 +396,7 @@ describe('Execute: Handles list nullability', () => {
       ));
 
       it('Contains reject', check(type,
-        [resolved(1), rejected(new Error('bad')), resolved(2)],
+        () => [resolved(1), rejected(new Error('bad')), resolved(2)],
         { data: { nest: null },
           errors: [
             { message: 'bad',
