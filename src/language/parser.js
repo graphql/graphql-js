@@ -501,21 +501,22 @@ function parseValue(parser, isConst: boolean): Value {
         loc: loc(parser, token.start)
       };
     case TokenKind.NAME:
-      advance(parser);
-      switch (token.value) {
-        case 'true':
-        case 'false':
-          return {
-            kind: BOOLEAN,
-            value: token.value === 'true',
-            loc: loc(parser, token.start)
-          };
+      if (token.value === 'true' || token.value === 'false') {
+        advance(parser);
+        return {
+          kind: BOOLEAN,
+          value: token.value === 'true',
+          loc: loc(parser, token.start)
+        };
+      } else if (token.value !== 'null') {
+        advance(parser);
+        return {
+          kind: ENUM,
+          value: token.value,
+          loc: loc(parser, token.start)
+        };
       }
-      return {
-        kind: ENUM,
-        value: token.value,
-        loc: loc(parser, token.start)
-      };
+      break;
     case TokenKind.DOLLAR:
       if (!isConst) {
         return parseVariable(parser);

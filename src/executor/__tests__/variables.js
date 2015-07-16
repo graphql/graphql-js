@@ -79,7 +79,7 @@ var TestType = new GraphQLObjectType({
 
 var schema = new GraphQLSchema({ query: TestType });
 
-describe('Execute: Handles input objects', () => {
+describe('Execute: Handles inputs', () => {
 
   describe('Handles objects and nullability', () => {
     describe('using inline structs', () => {
@@ -116,7 +116,7 @@ describe('Execute: Handles input objects', () => {
 
     describe('using variables', () => {
       var doc = `
-        query q($input:TestInputObject) {
+        query q($input: TestInputObject) {
           fieldWithObjectInput(input: $input)
         }
       `;
@@ -236,21 +236,6 @@ describe('Execute: Handles input objects', () => {
       return expect(
         await execute(schema, null, ast, null, {value: null})
       ).to.deep.equal({
-        data: {
-          fieldWithNullableStringInput: 'null'
-        }
-      });
-    });
-
-    it('allows nullable inputs to be set to null directly', async () => {
-      var doc = `
-      {
-        fieldWithNullableStringInput(input: null)
-      }
-      `;
-      var ast = parse(doc);
-
-      return expect(await execute(schema, null, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: 'null'
         }

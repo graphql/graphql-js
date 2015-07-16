@@ -104,6 +104,12 @@ fragment MissingOn Type
     ).to.throw('Syntax Error GraphQL (1:9) Expected Name, found }');
   });
 
+  it('does not allow null as value', async () => {
+    expect(
+      () => parse('{ fieldWithNullableStringInput(input: null) }')
+    ).to.throw('Syntax Error GraphQL (1:39) Unexpected Name "null"');
+  });
+
   var kitchenSink = readFileSync(
     join(__dirname, '/kitchen-sink.graphql'),
     { encoding: 'utf8' }
