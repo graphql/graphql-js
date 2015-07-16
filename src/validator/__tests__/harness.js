@@ -11,7 +11,6 @@ import { expect } from 'chai';
 import { parse } from '../../language';
 import { formatError } from '../../error';
 import { validateDocument } from '../';
-import { allRules } from '../allRules';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -99,7 +98,6 @@ var CatOrDog = new GraphQLUnionType({
   types: [Dog, Cat],
   resolveType(/*value*/) {
     // not used for validation
-    return null;
   }
 });
 
@@ -138,7 +136,6 @@ var DogOrHuman = new GraphQLUnionType({
   types: [Dog, Human],
   resolveType(/*value*/) {
     // not used for validation
-    return null;
   }
 });
 
@@ -147,7 +144,6 @@ var HumanOrAlien = new GraphQLUnionType({
   types: [Human, Alien],
   resolveType(/*value*/) {
     // not used for validation
-    return null;
   }
 });
 
@@ -300,12 +296,4 @@ export function expectPassesRuleWithSchema(schema, rule, queryString, errors) {
 
 export function expectFailsRuleWithSchema(schema, rule, queryString, errors) {
   return expectInvalid(schema, [rule], queryString, errors);
-}
-
-export function expectPassesCompleteValidation(queryString) {
-  return expectValid(defaultSchema, allRules, queryString);
-}
-
-export function expectFailsCompleteValidation(queryString, errors) {
-  return expectInvalid(defaultSchema, allRules, queryString, errors);
 }
