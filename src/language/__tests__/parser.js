@@ -104,6 +104,12 @@ fragment MissingOn Type
     ).to.throw('Syntax Error GraphQL (1:9) Expected Name, found }');
   });
 
+  it('does not accept exponents on integers', () => {
+    expect(
+      () => parse('{ f(arg:1e6) })')
+    ).to.throw('Syntax Error GraphQL (1:12) Expected :, found )');
+  });
+
   var kitchenSink = readFileSync(
     join(__dirname, '/kitchen-sink.graphql'),
     { encoding: 'utf8' }
