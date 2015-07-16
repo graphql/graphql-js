@@ -12,9 +12,7 @@ import type { ValidationContext } from '../index';
 
 import { GraphQLError } from '../../error';
 import {
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType
+  isCompositeType
 } from '../../type/definition';
 
 import { fragmentOnNonCompositeErrorMessage } from '../errors';
@@ -33,11 +31,7 @@ export default function FragmentsOnCompositeType(
     InlineFragment(node) {
       var typeName = node.typeCondition.value;
       var type = context.getSchema().getType(typeName);
-      var isCompositeType =
-        type instanceof GraphQLObjectType ||
-        type instanceof GraphQLInterfaceType ||
-        type instanceof GraphQLUnionType;
-      if (!isCompositeType) {
+      if (!isCompositeType(type)) {
         return new GraphQLError(
           `Fragment cannot condition on non composite type "${typeName}".`,
           [node.typeCondition]
@@ -47,11 +41,7 @@ export default function FragmentsOnCompositeType(
     FragmentDefinition(node) {
       var typeName = node.typeCondition.value;
       var type = context.getSchema().getType(typeName);
-      var isCompositeType =
-        type instanceof GraphQLObjectType ||
-        type instanceof GraphQLInterfaceType ||
-        type instanceof GraphQLUnionType;
-      if (!isCompositeType) {
+      if (!isCompositeType(type)) {
         return new GraphQLError(
           fragmentOnNonCompositeErrorMessage(node.name.value, typeName),
           [node.typeCondition]
