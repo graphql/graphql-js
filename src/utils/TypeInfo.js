@@ -190,8 +190,11 @@ export default class TypeInfo {
         this._typeStack.pop();
         break;
       case Kind.VARIABLE_DEFINITION:
+        this._inputTypeStack.pop();
+        break;
       case Kind.ARGUMENT:
         this._argument = null;
+        this._inputTypeStack.pop();
         break;
       case Kind.ARRAY:
       case Kind.OBJECT_FIELD:
