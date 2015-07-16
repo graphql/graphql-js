@@ -16,7 +16,7 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
-  GraphQLNonNull
+  GraphQLNonNull,
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import type { GraphQLFieldDefinition } from './definition';
