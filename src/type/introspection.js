@@ -16,7 +16,8 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
-  GraphQLNonNull
+  GraphQLNonNull,
+  typeHasFields,
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import type { GraphQLFieldDefinition } from './definition';
@@ -108,8 +109,7 @@ var __Type = new GraphQLObjectType({
         includeDeprecated: { type: GraphQLBoolean, defaultValue: false }
       },
       resolve(type, {includeDeprecated}) {
-        if (type instanceof GraphQLObjectType ||
-            type instanceof GraphQLInterfaceType) {
+        if (typeHasFields(type)) {
           var fieldMap = type.getFields();
           var fields =
             Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);

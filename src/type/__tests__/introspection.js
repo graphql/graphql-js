@@ -36,110 +36,12 @@ describe('Introspection', () => {
       await graphql(EmptySchema, introspectionQuery)
     ).to.deep.equal({
       data: {
-        schemaType: {
-          __typename: '__Type',
-          enumValues: null,
-          fields: [
-            {
-              __typename: '__Field',
-              args: [],
-              deprecationReason: null,
-              isDeprecated: false,
-              name: 'types',
-              type: {
-                __typename: '__Type',
-                kind: 'NON_NULL',
-                name: null,
-                ofType: {
-                  __typename: '__Type',
-                  kind: 'LIST',
-                  name: null,
-                  ofType: {
-                    __typename: '__Type',
-                    kind: 'NON_NULL',
-                    name: null,
-                    ofType: {
-                      __typename: '__Type',
-                      kind: 'OBJECT',
-                      name: '__Type',
-                    }
-                  }
-                }
-              }
-            },
-            {
-              __typename: '__Field',
-              args: [],
-              deprecationReason: null,
-              isDeprecated: false,
-              name: 'queryType',
-              type: {
-                __typename: '__Type',
-                kind: 'NON_NULL',
-                name: null,
-                ofType: {
-                  __typename: '__Type',
-                  kind: 'OBJECT',
-                  name: '__Type',
-                  ofType: null,
-                },
-              },
-            },
-            {
-              __typename: '__Field',
-              args: [],
-              deprecationReason: null,
-              isDeprecated: false,
-              name: 'mutationType',
-              type: {
-                __typename: '__Type',
-                kind: 'OBJECT',
-                name: '__Type',
-                ofType: null,
-              },
-            },
-            {
-              __typename: '__Field',
-              args: [],
-              deprecationReason: null,
-              isDeprecated: false,
-              name: 'directives',
-              type: {
-                __typename: '__Type',
-                kind: 'NON_NULL',
-                name: null,
-                ofType: {
-                  __typename: '__Type',
-                  kind: 'LIST',
-                  name: null,
-                  ofType: {
-                    __typename: '__Type',
-                    kind: 'NON_NULL',
-                    name: null,
-                    ofType: {
-                      __typename: '__Type',
-                      kind: 'OBJECT',
-                      name: '__Directive',
-                    },
-                  },
-                },
-              },
-            },
-          ],
-          interfaces: [],
-          kind: 'OBJECT',
-          name: '__Schema',
-        },
-        queryRootType: {
-          __typename: '__Type',
-          enumValues: null,
-          fields: [],
-          interfaces: [],
-          kind: 'OBJECT',
-          name: 'QueryRoot',
-        },
         __schema: {
           __typename: '__Schema',
+          mutationType: null,
+          queryType: {
+            name: 'QueryRoot',
+          },
           types: [
             {
               __typename: '__Type',
@@ -147,7 +49,8 @@ describe('Introspection', () => {
               name: 'QueryRoot',
               fields: [],
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
               __typename: '__Type',
@@ -241,7 +144,8 @@ describe('Introspection', () => {
                 }
               ],
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
               __typename: '__Type',
@@ -446,7 +350,8 @@ describe('Introspection', () => {
                 }
               ],
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
               __typename: '__Type',
@@ -503,7 +408,8 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null
                 }
-              ]
+              ],
+              possibleTypes: null,
             },
             {
               __typename: '__Type',
@@ -511,7 +417,8 @@ describe('Introspection', () => {
               name: 'String',
               fields: null,
               interfaces: null,
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
               __typename: '__Type',
@@ -519,7 +426,8 @@ describe('Introspection', () => {
               name: 'Boolean',
               fields: null,
               interfaces: null,
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
               __typename: '__Type',
@@ -635,7 +543,8 @@ describe('Introspection', () => {
                 }
               ],
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
               __typename: '__Type',
@@ -706,7 +615,8 @@ describe('Introspection', () => {
                 }
               ],
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
               __typename: '__Type',
@@ -777,7 +687,8 @@ describe('Introspection', () => {
                 }
               ],
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
               __typename: '__Type',
@@ -884,6 +795,7 @@ describe('Introspection', () => {
               ],
               interfaces: [],
               enumValues: null,
+              possibleTypes: null,
             }
           ],
           directives: [

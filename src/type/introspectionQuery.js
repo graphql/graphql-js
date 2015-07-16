@@ -9,14 +9,10 @@
 
 export var introspectionQuery = `
   query IntrospectionTestQuery {
-    schemaType: __type(name: "__Schema") {
-      ...FullType
-    }
-    queryRootType: __type(name: "QueryRoot") {
-      ...FullType
-    }
     __schema {
       __typename
+      queryType { name }
+      mutationType { name }
       types {
         ...FullType
       }
@@ -63,6 +59,9 @@ export var introspectionQuery = `
       name
       isDeprecated
       deprecationReason
+    }
+    possibleTypes {
+      ...TypeRef
     }
   }
 
