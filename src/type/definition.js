@@ -102,6 +102,14 @@ export function isCompositeType(type: ?GraphQLType): boolean {
   );
 }
 
+export function typeHasFields(type: ?GraphQLType): boolean {
+  return (
+    type instanceof GraphQLObjectType ||
+    type instanceof GraphQLInterfaceType ||
+    type instanceof GraphQLInputObjectType
+  );
+}
+
 /**
  * These types may describe the parent context of a selection set.
  */
