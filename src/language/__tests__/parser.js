@@ -63,6 +63,12 @@ fragment MissingOn Type
     ).to.throw('Syntax Error GraphQL (1:22) Duplicate input object field a.');
   });
 
+  it('does not accept fragments named "on"', () => {
+    expect(
+      () => parse('fragment on on on { on }')
+    ).to.throw('Syntax Error GraphQL (1:10) Unexpected Name "on"');
+  });
+
   var kitchenSink = readFileSync(
     join(__dirname, '/kitchen-sink.graphql'),
     { encoding: 'utf8' }

@@ -435,10 +435,17 @@ function parseFragment(parser): FragmentSpread | InlineFragment {
   }
   return {
     kind: FRAGMENT_SPREAD,
-    name: parseName(parser),
+    name: parseFragmentName(parser),
     directives: parseDirectives(parser),
     loc: loc(parser, start)
   };
+}
+
+function parseFragmentName(parser): Name {
+  if (parser.token.value === 'on') {
+    throw unexpected(parser);
+  }
+  return parseName(parser);
 }
 
 function parseFragmentDefinition(parser): FragmentDefinition {
@@ -446,7 +453,7 @@ function parseFragmentDefinition(parser): FragmentDefinition {
   expectKeyword(parser, 'fragment');
   return {
     kind: FRAGMENT_DEFINITION,
-    name: parseName(parser),
+    name: parseFragmentName(parser),
     typeCondition: (expectKeyword(parser, 'on'), parseName(parser)),
     directives: parseDirectives(parser),
     selectionSet: parseSelectionSet(parser),
