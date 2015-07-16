@@ -127,13 +127,7 @@ var characterInterface = new GraphQLInterfaceType({
     },
   }),
   resolveType: (obj) => {
-    if (starWarsData.Humans[obj.id] !== undefined) {
-      return humanType;
-    }
-    if (starWarsData.Droids[obj.id] !== undefined) {
-      return droidType;
-    }
-    return null;
+    return starWarsData.Humans[obj.id] ? humanType : droidType;
   }
 });
 

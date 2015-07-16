@@ -89,15 +89,7 @@ var droidData = {
  */
 function getCharacter(id) {
   // Returning a promise just to illustrate GraphQL.js's support.
-  return new Promise(resolve => {
-    if (humanData[id] !== undefined) {
-      return resolve(humanData[id]);
-    }
-    if (droidData[id] !== undefined) {
-      return resolve(droidData[id]);
-    }
-    return resolve(null);
-  });
+  return Promise.resolve(humanData[id] || droidData[id]);
 }
 
 /**
