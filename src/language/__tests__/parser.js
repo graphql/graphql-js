@@ -69,6 +69,12 @@ fragment MissingOn Type
     ).to.throw('Syntax Error GraphQL (1:10) Unexpected Name "on"');
   });
 
+  it('does not accept fragments spread of "on"', () => {
+    expect(
+      () => parse('{ ...on }')
+    ).to.throw('Syntax Error GraphQL (1:9) Expected Name, found }');
+  });
+
   var kitchenSink = readFileSync(
     join(__dirname, '/kitchen-sink.graphql'),
     { encoding: 'utf8' }
