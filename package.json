@@ -40,7 +40,7 @@
     "check": "flow check",
     "build": "rm -rf lib/* && babel src --ignore __tests__ --out-dir lib",
     "watch": "babel scripts/watch.js | node",
-    "coveralls": "isparta cover --root src --report lcovonly node_modules/.bin/_mocha -- $npm_package_options_mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "coveralls": "babel-node node_modules/.bin/isparta cover --root src --report lcovonly node_modules/.bin/_mocha -- $npm_package_options_mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "dependencies": {
     "babel-runtime": "5.7.0"
