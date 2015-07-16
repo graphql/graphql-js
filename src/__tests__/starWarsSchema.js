@@ -17,7 +17,7 @@ import {
   GraphQLString,
 } from '../type';
 
-import { starWarsData, getFriends, artoo } from './starWarsData.js';
+import { starWarsData, getFriends, artoo, luke } from './starWarsData.js';
 
 /**
  * This is designed to be an end-to-end test, demonstrating
@@ -60,7 +60,7 @@ import { starWarsData, getFriends, artoo } from './starWarsData.js';
  * }
  *
  * type Query {
- *   hero: Character
+ *   hero(episode: Episode): Character
  *   human(id: String!): Human
  *   droid(id: String!): Droid
  * }
@@ -222,7 +222,7 @@ var droidType = new GraphQLObjectType({
  *
  * This implements the following type system shorthand:
  *   type Query {
- *     hero: Character
+ *     hero(episode: Episode): Character
  *     human(id: String!): Human
  *     droid(id: String!): Droid
  *   }
@@ -233,7 +233,21 @@ var queryType = new GraphQLObjectType({
   fields: () => ({
     hero: {
       type: characterInterface,
-      resolve: () => artoo,
+      args: {
+        episode: {
+          description: 'If omitted, returns the hero of the whole saga. If ' +
+                       'provided, returns the hero of that particular episode.',
+          type: episodeEnum
+        }
+      },
+      resolve: (root, {episode}) => {
+        if (episode === 5) {
+          // Luke is the hero of Episode V.
+          return luke;
+        }
+        // Artoo is the hero otherwise.
+        return artoo;
+      }
     },
     human: {
       type: humanType,

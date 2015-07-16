@@ -344,5 +344,24 @@ describe('Star Wars Query Tests', () => {
       var result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
+
+    it('Allows us to verify that Luke is a human', async () => {
+      var query = `
+        query CheckTypeOfLuke {
+          hero(episode: EMPIRE) {
+            __typename
+            name
+          }
+        }
+      `;
+      var expected = {
+        hero: {
+          __typename: 'Human',
+          name: 'Luke Skywalker'
+        },
+      };
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
+    });
   });
 });

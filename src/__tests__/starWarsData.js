@@ -13,7 +13,11 @@
  * JSON objects in a more complex demo.
  */
 
-var luke = {
+/**
+ * We export luke directly because the schema returns him
+ * from a root field, and hence needs to reference him.
+ */
+export var luke = {
   id: '1000',
   name: 'Luke Skywalker',
   friends: ['1002', '1003', '2000', '2001'],

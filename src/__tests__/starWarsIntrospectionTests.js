@@ -34,6 +34,9 @@ describe('Star Wars Introspection Tests', () => {
               name: 'Query'
             },
             {
+              name: 'Episode'
+            },
+            {
               name: 'Character'
             },
             {
@@ -41,9 +44,6 @@ describe('Star Wars Introspection Tests', () => {
             },
             {
               name: 'String'
-            },
-            {
-              name: 'Episode'
             },
             {
               name: 'Droid'
@@ -327,7 +327,20 @@ describe('Star Wars Introspection Tests', () => {
             fields: [
               {
                 name: 'hero',
-                args: []
+                args: [
+                  {
+                    defaultValue: null,
+                    description: 'If omitted, returns the hero of the whole ' +
+                                 'saga. If provided, returns the hero of ' +
+                                 'that particular episode.',
+                    name: 'episode',
+                    type: {
+                      kind: 'ENUM',
+                      name: 'Episode',
+                      ofType: null
+                    }
+                  }
+                ]
               },
               {
                 name: 'human',
