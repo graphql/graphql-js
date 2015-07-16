@@ -1,8 +1,6 @@
 {
   "parser": "babel-eslint",
   "arrowFunctions": true,
-  "asyncFunctions": true,
-  "es7.asyncFunctions": true,
   "blockBindings": true,
   "classes": true,
   "defaultParams": true,
@@ -15,7 +13,6 @@
   "objectLiteralShorthandProperties": true,
   "spread": true,
   "templateStrings": true,
-  "experimental" : true,
   "env": {
     "node": true,
     "es6": true
