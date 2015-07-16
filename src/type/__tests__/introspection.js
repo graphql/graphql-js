@@ -36,142 +36,38 @@ describe('Introspection', () => {
       await graphql(EmptySchema, introspectionQuery)
     ).to.deep.equal({
       data: {
-        schemaType: {
-          __typename: '__Type',
-          enumValues: null,
-          fields: [
-            {
-              __typename: '__Field',
-              args: [],
-              deprecationReason: null,
-              isDeprecated: false,
-              name: 'types',
-              type: {
-                __typename: '__Type',
-                kind: 'NON_NULL',
-                name: null,
-                ofType: {
-                  __typename: '__Type',
-                  kind: 'LIST',
-                  name: null,
-                  ofType: {
-                    __typename: '__Type',
-                    kind: 'NON_NULL',
-                    name: null,
-                    ofType: {
-                      __typename: '__Type',
-                      kind: 'OBJECT',
-                      name: '__Type',
-                    }
-                  }
-                }
-              }
-            },
-            {
-              __typename: '__Field',
-              args: [],
-              deprecationReason: null,
-              isDeprecated: false,
-              name: 'queryType',
-              type: {
-                __typename: '__Type',
-                kind: 'NON_NULL',
-                name: null,
-                ofType: {
-                  __typename: '__Type',
-                  kind: 'OBJECT',
-                  name: '__Type',
-                  ofType: null,
-                },
-              },
-            },
-            {
-              __typename: '__Field',
-              args: [],
-              deprecationReason: null,
-              isDeprecated: false,
-              name: 'mutationType',
-              type: {
-                __typename: '__Type',
-                kind: 'OBJECT',
-                name: '__Type',
-                ofType: null,
-              },
-            },
-            {
-              __typename: '__Field',
-              args: [],
-              deprecationReason: null,
-              isDeprecated: false,
-              name: 'directives',
-              type: {
-                __typename: '__Type',
-                kind: 'NON_NULL',
-                name: null,
-                ofType: {
-                  __typename: '__Type',
-                  kind: 'LIST',
-                  name: null,
-                  ofType: {
-                    __typename: '__Type',
-                    kind: 'NON_NULL',
-                    name: null,
-                    ofType: {
-                      __typename: '__Type',
-                      kind: 'OBJECT',
-                      name: '__Directive',
-                    },
-                  },
-                },
-              },
-            },
-          ],
-          interfaces: [],
-          kind: 'OBJECT',
-          name: '__Schema',
-        },
-        queryRootType: {
-          __typename: '__Type',
-          enumValues: null,
-          fields: [],
-          interfaces: [],
-          kind: 'OBJECT',
-          name: 'QueryRoot',
-        },
         __schema: {
-          __typename: '__Schema',
+          mutationType: null,
+          queryType: {
+            name: 'QueryRoot',
+          },
           types: [
             {
-              __typename: '__Type',
               kind: 'OBJECT',
               name: 'QueryRoot',
               fields: [],
+              inputFields: null,
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
-              __typename: '__Type',
               kind: 'OBJECT',
               name: '__Schema',
               fields: [
                 {
-                  __typename: '__Field',
                   name: 'types',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'LIST',
                       name: null,
                       ofType: {
-                        __typename: '__Type',
                         kind: 'NON_NULL',
                         name: null,
                         ofType: {
-                          __typename: '__Type',
                           kind: 'OBJECT',
                           name: '__Type'
                         }
@@ -182,15 +78,12 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'queryType',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'OBJECT',
                       name: '__Type',
                       ofType: null
@@ -200,11 +93,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'mutationType',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'OBJECT',
                     name: '__Type',
                     ofType: null
@@ -213,23 +104,18 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'directives',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'LIST',
                       name: null,
                       ofType: {
-                        __typename: '__Type',
                         kind: 'NON_NULL',
                         name: null,
                         ofType: {
-                          __typename: '__Type',
                           kind: 'OBJECT',
                           name: '__Directive'
                         }
@@ -240,24 +126,22 @@ describe('Introspection', () => {
                   deprecationReason: null
                 }
               ],
+              inputFields: null,
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
-              __typename: '__Type',
               kind: 'OBJECT',
               name: '__Type',
               fields: [
                 {
-                  __typename: '__Field',
                   name: 'kind',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'ENUM',
                       name: '__TypeKind',
                       ofType: null
@@ -267,11 +151,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'name',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null
@@ -280,11 +162,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'description',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null
@@ -293,14 +173,11 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'fields',
                   args: [
                     {
-                      __typename: '__InputValue',
                       name: 'includeDeprecated',
                       type: {
-                        __typename: '__Type',
                         kind: 'SCALAR',
                         name: 'Boolean',
                         ofType: null
@@ -309,15 +186,12 @@ describe('Introspection', () => {
                     }
                   ],
                   type: {
-                    __typename: '__Type',
                     kind: 'LIST',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'NON_NULL',
                       name: null,
                       ofType: {
-                        __typename: '__Type',
                         kind: 'OBJECT',
                         name: '__Field',
                         ofType: null
@@ -328,19 +202,15 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'interfaces',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'LIST',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'NON_NULL',
                       name: null,
                       ofType: {
-                        __typename: '__Type',
                         kind: 'OBJECT',
                         name: '__Type',
                         ofType: null
@@ -351,19 +221,15 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'possibleTypes',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'LIST',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'NON_NULL',
                       name: null,
                       ofType: {
-                        __typename: '__Type',
                         kind: 'OBJECT',
                         name: '__Type',
                         ofType: null
@@ -374,15 +240,12 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'enumValues',
                   args: [
                     {
-                      __typename: '__InputValue',
                       defaultValue: 'false',
                       name: 'includeDeprecated',
                       type: {
-                        __typename: '__Type',
                         kind: 'SCALAR',
                         name: 'Boolean',
                         ofType: null
@@ -390,15 +253,12 @@ describe('Introspection', () => {
                     }
                   ],
                   type: {
-                    __typename: '__Type',
                     kind: 'LIST',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'NON_NULL',
                       name: null,
                       ofType: {
-                        __typename: '__Type',
                         kind: 'OBJECT',
                         name: '__EnumValue',
                         ofType: null
@@ -409,19 +269,15 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'inputFields',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'LIST',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'NON_NULL',
                       name: null,
                       ofType: {
-                        __typename: '__Type',
                         kind: 'OBJECT',
                         name: '__InputValue',
                         ofType: null
@@ -432,11 +288,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'ofType',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'OBJECT',
                     name: '__Type',
                     ofType: null
@@ -445,97 +299,90 @@ describe('Introspection', () => {
                   deprecationReason: null
                 }
               ],
+              inputFields: null,
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
-              __typename: '__Type',
               kind: 'ENUM',
               name: '__TypeKind',
               fields: null,
+              inputFields: null,
               interfaces: null,
               enumValues: [
                 {
-                  __typename: '__EnumValue',
                   name: 'SCALAR',
                   isDeprecated: false,
                   deprecationReason: null
                 },
                 {
-                  __typename: '__EnumValue',
                   name: 'OBJECT',
                   isDeprecated: false,
                   deprecationReason: null
                 },
                 {
-                  __typename: '__EnumValue',
                   name: 'INTERFACE',
                   isDeprecated: false,
                   deprecationReason: null
                 },
                 {
-                  __typename: '__EnumValue',
                   name: 'UNION',
                   isDeprecated: false,
                   deprecationReason: null
                 },
                 {
-                  __typename: '__EnumValue',
                   name: 'ENUM',
                   isDeprecated: false,
                   deprecationReason: null
                 },
                 {
-                  __typename: '__EnumValue',
                   name: 'INPUT_OBJECT',
                   isDeprecated: false,
                   deprecationReason: null
                 },
                 {
-                  __typename: '__EnumValue',
                   name: 'LIST',
                   isDeprecated: false,
                   deprecationReason: null
                 },
                 {
-                  __typename: '__EnumValue',
                   name: 'NON_NULL',
                   isDeprecated: false,
                   deprecationReason: null
                 }
-              ]
+              ],
+              possibleTypes: null,
             },
             {
-              __typename: '__Type',
               kind: 'SCALAR',
               name: 'String',
               fields: null,
+              inputFields: null,
               interfaces: null,
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
-              __typename: '__Type',
               kind: 'SCALAR',
               name: 'Boolean',
               fields: null,
+              inputFields: null,
               interfaces: null,
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
-              __typename: '__Type',
               kind: 'OBJECT',
               name: '__Field',
               fields: [
                 {
-                  __typename: '__Field',
                   name: 'name',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'SCALAR',
                       name: 'String',
                       ofType: null
@@ -545,11 +392,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'description',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null
@@ -558,23 +403,18 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'args',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'LIST',
                       name: null,
                       ofType: {
-                        __typename: '__Type',
                         kind: 'NON_NULL',
                         name: null,
                         ofType: {
-                          __typename: '__Type',
                           kind: 'OBJECT',
                           name: '__InputValue'
                         }
@@ -585,15 +425,12 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'type',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'OBJECT',
                       name: '__Type',
                       ofType: null
@@ -603,15 +440,12 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'isDeprecated',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'SCALAR',
                       name: 'Boolean',
                       ofType: null
@@ -621,11 +455,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'deprecationReason',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null
@@ -634,24 +466,22 @@ describe('Introspection', () => {
                   deprecationReason: null
                 }
               ],
+              inputFields: null,
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
-              __typename: '__Type',
               kind: 'OBJECT',
               name: '__InputValue',
               fields: [
                 {
-                  __typename: '__Field',
                   name: 'name',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'SCALAR',
                       name: 'String',
                       ofType: null
@@ -661,11 +491,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'description',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null
@@ -674,15 +502,12 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'type',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'OBJECT',
                       name: '__Type',
                       ofType: null
@@ -692,11 +517,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'defaultValue',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null
@@ -705,24 +528,22 @@ describe('Introspection', () => {
                   deprecationReason: null
                 }
               ],
+              inputFields: null,
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
-              __typename: '__Type',
               kind: 'OBJECT',
               name: '__EnumValue',
               fields: [
                 {
-                  __typename: '__Field',
                   name: 'name',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'SCALAR',
                       name: 'String',
                       ofType: null
@@ -732,11 +553,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'description',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null
@@ -745,15 +564,12 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'isDeprecated',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'SCALAR',
                       name: 'Boolean',
                       ofType: null
@@ -763,11 +579,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'deprecationReason',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null
@@ -776,24 +590,22 @@ describe('Introspection', () => {
                   deprecationReason: null
                 }
               ],
+              inputFields: null,
               interfaces: [],
-              enumValues: null
+              enumValues: null,
+              possibleTypes: null,
             },
             {
-              __typename: '__Type',
               kind: 'OBJECT',
               name: '__Directive',
               fields: [
                 {
-                  __typename: '__Field',
                   name: 'name',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'SCALAR',
                       name: 'String',
                       ofType: null
@@ -803,11 +615,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'description',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'String',
                     ofType: null
@@ -816,23 +626,18 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'args',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'LIST',
                       name: null,
                       ofType: {
-                        __typename: '__Type',
                         kind: 'NON_NULL',
                         name: null,
                         ofType: {
-                          __typename: '__Type',
                           kind: 'OBJECT',
                           name: '__InputValue'
                         }
@@ -843,11 +648,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'onOperation',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'Boolean',
                     ofType: null,
@@ -856,11 +659,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'onFragment',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'Boolean',
                     ofType: null,
@@ -869,11 +670,9 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
-                  __typename: '__Field',
                   name: 'onField',
                   args: [],
                   type: {
-                    __typename: '__Type',
                     kind: 'SCALAR',
                     name: 'Boolean',
                     ofType: null,
@@ -882,25 +681,23 @@ describe('Introspection', () => {
                   deprecationReason: null
                 }
               ],
+              inputFields: null,
               interfaces: [],
               enumValues: null,
+              possibleTypes: null,
             }
           ],
           directives: [
             {
-              __typename: '__Directive',
               name: 'include',
               args: [
                 {
-                  __typename: '__InputValue',
                   defaultValue: null,
                   name: 'if',
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'SCALAR',
                       name: 'Boolean',
                       ofType: null
@@ -913,19 +710,15 @@ describe('Introspection', () => {
               onField: true
             },
             {
-              __typename: '__Directive',
               name: 'skip',
               args: [
                 {
-                  __typename: '__InputValue',
                   defaultValue: null,
                   name: 'if',
                   type: {
-                    __typename: '__Type',
                     kind: 'NON_NULL',
                     name: null,
                     ofType: {
-                      __typename: '__Type',
                       kind: 'SCALAR',
                       name: 'Boolean',
                       ofType: null

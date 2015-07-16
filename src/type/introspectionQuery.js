@@ -8,23 +8,16 @@
  */
 
 export var introspectionQuery = `
-  query IntrospectionTestQuery {
-    schemaType: __type(name: "__Schema") {
-      ...FullType
-    }
-    queryRootType: __type(name: "QueryRoot") {
-      ...FullType
-    }
+  query IntrospectionQuery {
     __schema {
-      __typename
+      queryType { name }
+      mutationType { name }
       types {
         ...FullType
       }
       directives {
-        __typename
         name
         args {
-          __typename
           name
           type { ...TypeRef }
           defaultValue
@@ -37,14 +30,11 @@ export var introspectionQuery = `
   }
 
   fragment FullType on __Type {
-    __typename
     kind
     name
     fields {
-      __typename
       name
       args {
-        __typename
         name
         type { ...TypeRef }
         defaultValue
@@ -55,31 +45,34 @@ export var introspectionQuery = `
       isDeprecated
       deprecationReason
     }
+    inputFields {
+      name
+      type { ...TypeRef }
+      defaultValue
+    }
     interfaces {
       ...TypeRef
     }
     enumValues {
-      __typename
       name
       isDeprecated
       deprecationReason
     }
+    possibleTypes {
+      ...TypeRef
+    }
   }
 
   fragment TypeRef on __Type {
-    __typename
     kind
     name
     ofType {
-      __typename
       kind
       name
       ofType {
-        __typename
         kind
         name
         ofType {
-          __typename
           kind
           name
         }
