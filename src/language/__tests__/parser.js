@@ -16,6 +16,35 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 describe('Parser', () => {
+
+  it('accepts option to not include source', () => {
+    expect(parse(`{ field }`, { noSource: true })).to.deep.equal({
+      kind: 'Document',
+      loc: { start: 0, end: 9 },
+      definitions:
+       [ { kind: 'OperationDefinition',
+           loc: { start: 0, end: 9 },
+           operation: 'query',
+           name: null,
+           variableDefinitions: null,
+           directives: [],
+           selectionSet: {
+             kind: 'SelectionSet',
+             loc: { start: 0, end: 9 },
+             selections:
+              [ { kind: 'Field',
+                  loc: { start: 2, end: 7 },
+                  alias: null,
+                  name:
+                   { kind: 'Name',
+                     loc: { start: 2, end: 7 },
+                     value: 'field' },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null } ] } } ]
+    });
+  });
+
   it('parse provides useful errors', () => {
 
     expect(
@@ -81,16 +110,7 @@ fragment MissingOn Type
   );
 
   it('parses kitchen sink', () => {
-
-    expect(() => {
-      try {
-        parse(kitchenSink);
-      } catch (e) {
-        console.log(e.stack);
-        throw e;
-      }
-    }).to.not.throw();
-
+    expect(() => parse(kitchenSink)).to.not.throw();
   });
 
   it('parse creates ast', () => {

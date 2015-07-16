@@ -251,9 +251,6 @@ function isNode(maybeNode) {
 }
 
 export function getVisitFn(visitor, isLeaving, kind) {
-  if (!visitor) {
-    return;
-  }
   var kindVisitor = visitor[kind];
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {
