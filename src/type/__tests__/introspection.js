@@ -24,7 +24,7 @@ import {
 import { introspectionQuery } from '../introspectionQuery';
 
 describe('Introspection', () => {
-  it('executes an introspection query', () => {
+  it('executes an introspection query', async () => {
     var EmptySchema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'QueryRoot',
@@ -33,8 +33,8 @@ describe('Introspection', () => {
     });
 
     return expect(
-      graphql(EmptySchema, introspectionQuery)
-    ).to.become({
+      await graphql(EmptySchema, introspectionQuery)
+    ).to.deep.equal({
       data: {
         schemaType: {
           __typename: '__Type',
@@ -943,7 +943,7 @@ describe('Introspection', () => {
     });
   });
 
-  it('introspects on input object', () => {
+  it('introspects on input object', async () => {
 
     var TestInputObject = new GraphQLInputObjectType({
       name: 'TestInputObject',
@@ -999,8 +999,8 @@ describe('Introspection', () => {
     `;
 
     return expect(
-      graphql(schema, request)
-    ).to.eventually.containSubset({
+      await graphql(schema, request)
+    ).to.containSubset({
       data:
        { __schema:
           { types:
@@ -1025,7 +1025,7 @@ describe('Introspection', () => {
     });
   });
 
-  it('supports the __type root field', () => {
+  it('supports the __type root field', async () => {
     var TestType = new GraphQLObjectType({
       name: 'TestType',
       fields: {
@@ -1045,8 +1045,8 @@ describe('Introspection', () => {
     `;
 
     return expect(
-      graphql(schema, request)
-    ).to.become({
+      await graphql(schema, request)
+    ).to.deep.equal({
       data: {
         __type: {
           name: 'TestType'
@@ -1055,7 +1055,7 @@ describe('Introspection', () => {
     });
   });
 
-  it('identifies deprecated fields', () => {
+  it('identifies deprecated fields', async () => {
 
     var TestType = new GraphQLObjectType({
       name: 'TestType',
@@ -1085,8 +1085,8 @@ describe('Introspection', () => {
     `;
 
     return expect(
-      graphql(schema, request)
-    ).to.become({
+      await graphql(schema, request)
+    ).to.deep.equal({
       data: {
         __type: {
           name: 'TestType',
@@ -1107,7 +1107,7 @@ describe('Introspection', () => {
     });
   });
 
-  it('respects the includeDeprecated parameter for fields', () => {
+  it('respects the includeDeprecated parameter for fields', async () => {
 
     var TestType = new GraphQLObjectType({
       name: 'TestType',
@@ -1141,8 +1141,8 @@ describe('Introspection', () => {
     `;
 
     return expect(
-      graphql(schema, request)
-    ).to.become({
+      await graphql(schema, request)
+    ).to.deep.equal({
       data: {
         __type: {
           name: 'TestType',
@@ -1169,7 +1169,7 @@ describe('Introspection', () => {
     });
   });
 
-  it('identifies deprecated enum values', () => {
+  it('identifies deprecated enum values', async () => {
 
     var TestEnum = new GraphQLEnumType({
       name: 'TestEnum',
@@ -1204,8 +1204,8 @@ describe('Introspection', () => {
     `;
 
     return expect(
-      graphql(schema, request)
-    ).to.become({
+      await graphql(schema, request)
+    ).to.deep.equal({
       data: {
         __type: {
           name: 'TestEnum',
@@ -1231,7 +1231,7 @@ describe('Introspection', () => {
     });
   });
 
-  it('respects the includeDeprecated parameter for enum values', () => {
+  it('respects the includeDeprecated parameter for enum values', async () => {
 
     var TestEnum = new GraphQLEnumType({
       name: 'TestEnum',
@@ -1270,8 +1270,8 @@ describe('Introspection', () => {
     `;
 
     return expect(
-      graphql(schema, request)
-    ).to.become({
+      await graphql(schema, request)
+    ).to.deep.equal({
       data: {
         __type: {
           name: 'TestEnum',
@@ -1307,7 +1307,7 @@ describe('Introspection', () => {
     });
   });
 
-  it('fails as expected on the __type root field without an arg', () => {
+  it('fails as expected on the __type root field without an arg', async () => {
     var TestType = new GraphQLObjectType({
       name: 'TestType',
       fields: {
@@ -1327,8 +1327,8 @@ describe('Introspection', () => {
     `;
 
     return expect(
-      graphql(schema, request)
-    ).to.become({
+      await graphql(schema, request)
+    ).to.deep.equal({
       errors: [
         { message: missingFieldArgMessage('__type', 'name', 'String!'),
           locations: [ { line: 3, column: 9 } ] }
@@ -1336,7 +1336,7 @@ describe('Introspection', () => {
     });
   });
 
-  it('exposes descriptions on types and fields', () => {
+  it('exposes descriptions on types and fields', async () => {
     var QueryRoot = new GraphQLObjectType({
       name: 'QueryRoot',
       fields: {}
@@ -1357,8 +1357,8 @@ describe('Introspection', () => {
     `;
 
     return expect(
-      graphql(schema, request)
-    ).to.become({
+      await graphql(schema, request)
+    ).to.deep.equal({
       data: {
         schemaType: {
           name: '__Schema',
@@ -1390,7 +1390,7 @@ describe('Introspection', () => {
     });
   });
 
-  it('exposes descriptions on enums', () => {
+  it('exposes descriptions on enums', async () => {
     var QueryRoot = new GraphQLObjectType({
       name: 'QueryRoot',
       fields: {}
@@ -1411,8 +1411,8 @@ describe('Introspection', () => {
     `;
 
     return expect(
-      graphql(schema, request)
-    ).to.become({
+      await graphql(schema, request)
+    ).to.deep.equal({
       data: {
         typeKindType: {
           name: '__TypeKind',

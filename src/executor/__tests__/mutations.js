@@ -111,7 +111,7 @@ var schema = new GraphQLSchema({
 
 describe('Execute: Handles mutation execution ordering', () => {
 
-  it('evaluates mutations serially', () => {
+  it('evaluates mutations serially', async () => {
     var doc = `mutation M {
       first: immediatelyChangeTheNumber(newNumber: 1) {
         theNumber
@@ -130,8 +130,8 @@ describe('Execute: Handles mutation execution ordering', () => {
       }
     }`;
     var ast = parse(doc);
-    var mutationResult = execute(schema, new Root(6), ast, 'M');
-    return expect(mutationResult).to.become({
+    var mutationResult = await execute(schema, new Root(6), ast, 'M');
+    return expect(mutationResult).to.deep.equal({
       data: {
         first: {
           theNumber: 1

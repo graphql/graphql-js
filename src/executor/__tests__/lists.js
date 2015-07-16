@@ -35,7 +35,7 @@ var rejected = Promise.reject.bind(Promise);
  * rejection so as not to trigger the "unhandled rejection" error watcher.
  */
 function check(testType, testData, expected) {
-  return function () {
+  return async () => {
     var data = { test: testData };
 
     var dataType = new GraphQLObjectType({
@@ -50,16 +50,18 @@ function check(testType, testData, expected) {
 
     var ast = parse('{ nest { test } }');
 
-    return expect(execute(schema, data, ast).then(response => {
-      // Formatting errors for ease of test writing.
-      if (response.errors) {
-        return {
-          data: response.data,
-          errors: response.errors.map(formatError)
-        };
-      }
-      return response;
-    })).to.become(expected);
+    var response = await execute(schema, data, ast);
+    // Formatting errors for ease of test writing.
+    var result = response.errors;
+    if (response.errors) {
+      result = {
+        data: response.data,
+        errors: response.errors.map(formatError)
+      };
+    } else {
+      result = response;
+    }
+    expect(result).to.deep.equal(expected);
   };
 }
 
