@@ -128,8 +128,9 @@ After cloning this repo, ensure dependencies are installed by running:
 npm install
 ```
 
-GraphQL is written in ES6 using [Babel](http://babeljs.io/), widely consumable
-JavaScript can be produced by running:
+GraphQL is written in ES6 and uses [Babel](http://babeljs.io/) for ES5
+transpilation and [Flow](http://flowtype.org/) for type safety. Widely
+consumable JavaScript can be produced by running:
 
 ```sh
 npm run build
