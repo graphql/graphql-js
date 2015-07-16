@@ -459,7 +459,7 @@ export class GraphQLInterfaceType {
 
 function getTypeOf(
   value: any,
-  abstractType: GraphQLInterfaceType | GraphQLUnionType
+  abstractType: GraphQLAbstractType
 ): ?GraphQLObjectType {
   var possibleTypes = abstractType.getPossibleTypes();
   for (var i = 0; i < possibleTypes.length; i++) {

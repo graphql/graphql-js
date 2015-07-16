@@ -18,15 +18,15 @@ import { getVariableValues, getArgumentValues } from './values';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLEnumType,
   GraphQLList,
-  GraphQLNonNull
+  GraphQLNonNull,
+  isAbstractType
 } from '../type/definition';
 import type {
   GraphQLFieldDefinition,
-  GraphQLType
+  GraphQLType,
+  GraphQLAbstractType
 } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 import {
@@ -410,9 +410,8 @@ function doesFragmentConditionMatch(
   if (conditionalType === type) {
     return true;
   }
-  if (conditionalType instanceof GraphQLInterfaceType ||
-      conditionalType instanceof GraphQLUnionType) {
-    return conditionalType.isPossibleType(type);
+  if (isAbstractType(conditionalType)) {
+    return ((conditionalType: any): GraphQLAbstractType).isPossibleType(type);
   }
   return false;
 }
@@ -622,8 +621,8 @@ function completeValue(
 
   var objectType: ?GraphQLObjectType =
     fieldType instanceof GraphQLObjectType ? fieldType :
-    fieldType instanceof GraphQLInterfaceType ||
-    fieldType instanceof GraphQLUnionType ? fieldType.resolveType(result) :
+    isAbstractType(fieldType) ?
+      ((fieldType: any): GraphQLAbstractType).resolveType(result) :
     null;
 
   if (!objectType) {
