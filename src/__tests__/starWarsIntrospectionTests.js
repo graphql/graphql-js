@@ -15,19 +15,9 @@ import { graphql } from '../graphql';
 // 80+ char lines are useful in describe/it, so ignore in this file.
 /*eslint-disable max-len */
 
-/**
- * Helper function to test a query and the expected response.
- */
-function testQuery(query, expected) {
-  return expect(
-    graphql(StarWarsSchema, query)
-  ).to.become({data: expected});
-}
-
-
 describe('Star Wars Introspection Tests', () => {
   describe('Basic Introspection', () => {
-    it('Allows querying the schema for types', () => {
+    it('Allows querying the schema for types', async () => {
       var query = `
         query IntrospectionTypeQuery {
           __schema {
@@ -85,10 +75,11 @@ describe('Star Wars Introspection Tests', () => {
           ]
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows querying the schema for query type', () => {
+    it('Allows querying the schema for query type', async () => {
       var query = `
         query IntrospectionQueryTypeQuery {
           __schema {
@@ -105,10 +96,11 @@ describe('Star Wars Introspection Tests', () => {
           },
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows querying the schema for a specific type', () => {
+    it('Allows querying the schema for a specific type', async () => {
       var query = `
         query IntrospectionDroidTypeQuery {
           __type(name: "Droid") {
@@ -121,10 +113,11 @@ describe('Star Wars Introspection Tests', () => {
           name: 'Droid'
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows querying the schema for an object kind', () => {
+    it('Allows querying the schema for an object kind', async () => {
       var query = `
         query IntrospectionDroidKindQuery {
           __type(name: "Droid") {
@@ -139,10 +132,11 @@ describe('Star Wars Introspection Tests', () => {
           kind: 'OBJECT'
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows querying the schema for an interface kind', () => {
+    it('Allows querying the schema for an interface kind', async () => {
       var query = `
         query IntrospectionCharacterKindQuery {
           __type(name: "Character") {
@@ -157,10 +151,11 @@ describe('Star Wars Introspection Tests', () => {
           kind: 'INTERFACE'
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows querying the schema for object fields', () => {
+    it('Allows querying the schema for object fields', async () => {
       var query = `
         query IntrospectionDroidFieldsQuery {
           __type(name: "Droid") {
@@ -217,10 +212,12 @@ describe('Star Wars Introspection Tests', () => {
           ]
         }
       };
-      return testQuery(query, expected);
+
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows querying the schema for nested object fields', () => {
+    it('Allows querying the schema for nested object fields', async () => {
       var query = `
         query IntrospectionDroidNestedFieldsQuery {
           __type(name: "Droid") {
@@ -295,10 +292,11 @@ describe('Star Wars Introspection Tests', () => {
           ]
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows querying the schema for field args', () => {
+    it('Allows querying the schema for field args', async () => {
       var query = `
         query IntrospectionQueryTypeQuery {
           __schema {
@@ -372,10 +370,12 @@ describe('Star Wars Introspection Tests', () => {
         }
       };
 
-      return testQuery(query, expected);
+
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows querying the schema for documentation', () => {
+    it('Allows querying the schema for documentation', async () => {
       var query = `
         query IntrospectionDroidDescriptionQuery {
           __type(name: "Droid") {
@@ -390,7 +390,8 @@ describe('Star Wars Introspection Tests', () => {
           description: 'A mechanical creature in the Star Wars universe.'
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
   });
 });

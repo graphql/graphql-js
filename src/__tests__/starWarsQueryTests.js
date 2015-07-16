@@ -15,27 +15,9 @@ import { graphql } from '../graphql';
 // 80+ char lines are useful in describe/it, so ignore in this file.
 /*eslint-disable max-len */
 
-/**
- * Helper function to test a query and the expected response.
- */
-function testQuery(query, expected) {
-  return expect(
-    graphql(StarWarsSchema, query)
-  ).to.become({data: expected});
-}
-
-/**
- * Helper function to test a query with params and the expected response.
- */
-function testQueryWithParams(query, params, expected) {
-  return expect(
-    graphql(StarWarsSchema, query, null, params)
-  ).to.become({data: expected});
-}
-
 describe('Star Wars Query Tests', () => {
   describe('Basic Queries', () => {
-    it('Correctly identifies R2-D2 as the hero of the Star Wars Saga', () => {
+    it('Correctly identifies R2-D2 as the hero of the Star Wars Saga', async () => {
       var query = `
         query HeroNameQuery {
           hero {
@@ -48,10 +30,11 @@ describe('Star Wars Query Tests', () => {
           name: 'R2-D2'
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows us to query for the ID and friends of R2-D2', () => {
+    it('Allows us to query for the ID and friends of R2-D2', async () => {
       var query = `
         query HeroNameAndFriendsQuery {
           hero {
@@ -80,12 +63,13 @@ describe('Star Wars Query Tests', () => {
           ]
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
   });
 
   describe('Nested Queries', () => {
-    it('Allows us to query for the friends of friends of R2-D2', () => {
+    it('Allows us to query for the friends of friends of R2-D2', async () => {
       var query = `
         query NestedQuery {
           hero {
@@ -158,12 +142,13 @@ describe('Star Wars Query Tests', () => {
           ]
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
   });
 
   describe('Using IDs and query parameters to refetch objects', () => {
-    it('Allows us to query for Luke Skywalker directly, using his ID', () => {
+    it('Allows us to query for Luke Skywalker directly, using his ID', async () => {
       var query = `
         query FetchLukeQuery {
           human(id: "1000") {
@@ -176,10 +161,11 @@ describe('Star Wars Query Tests', () => {
           name: 'Luke Skywalker'
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows us to create a generic query, then use it to fetch Luke Skywalker using his ID', () => {
+    it('Allows us to create a generic query, then use it to fetch Luke Skywalker using his ID', async () => {
       var query = `
         query FetchSomeIDQuery($someId: String!) {
           human(id: $someId) {
@@ -195,10 +181,11 @@ describe('Star Wars Query Tests', () => {
           name: 'Luke Skywalker'
         }
       };
-      return testQueryWithParams(query, params, expected);
+      var result = await graphql(StarWarsSchema, query, null, params);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows us to create a generic query, then use it to fetch Han Solo using his ID', () => {
+    it('Allows us to create a generic query, then use it to fetch Han Solo using his ID', async () => {
       var query = `
         query FetchSomeIDQuery($someId: String!) {
           human(id: $someId) {
@@ -214,10 +201,11 @@ describe('Star Wars Query Tests', () => {
           name: 'Han Solo'
         }
       };
-      return testQueryWithParams(query, params, expected);
+      var result = await graphql(StarWarsSchema, query, null, params);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows us to create a generic query, then pass an invalid ID to get null back', () => {
+    it('Allows us to create a generic query, then pass an invalid ID to get null back', async () => {
       var query = `
         query humanQuery($id: String!) {
           human(id: $id) {
@@ -231,12 +219,13 @@ describe('Star Wars Query Tests', () => {
       var expected = {
         human: null
       };
-      return testQueryWithParams(query, params, expected);
+      var result = await graphql(StarWarsSchema, query, null, params);
+      expect(result).to.deep.equal({ data: expected });
     });
   });
 
   describe('Using aliases to change the key in the response', () => {
-    it('Allows us to query for Luke, changing his key with an alias', () => {
+    it('Allows us to query for Luke, changing his key with an alias', async () => {
       var query = `
         query FetchLukeAliased {
           luke: human(id: "1000") {
@@ -249,10 +238,11 @@ describe('Star Wars Query Tests', () => {
           name: 'Luke Skywalker'
         },
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows us to query for both Luke and Leia, using two root fields and an alias', () => {
+    it('Allows us to query for both Luke and Leia, using two root fields and an alias', async () => {
       var query = `
         query FetchLukeAndLeiaAliased {
           luke: human(id: "1000") {
@@ -271,12 +261,13 @@ describe('Star Wars Query Tests', () => {
           name: 'Leia Organa'
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
   });
 
   describe('Uses fragments to express more complex queries', () => {
-    it('Allows us to query using duplicated content', () => {
+    it('Allows us to query using duplicated content', async() => {
       var query = `
         query DuplicateFields {
           luke: human(id: "1000") {
@@ -299,10 +290,11 @@ describe('Star Wars Query Tests', () => {
           homePlanet: 'Alderaan'
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
 
-    it('Allows us to use a fragment to avoid duplicating content', () => {
+    it('Allows us to use a fragment to avoid duplicating content', async () => {
       var query = `
         query UseFragment {
           luke: human(id: "1000") {
@@ -328,12 +320,13 @@ describe('Star Wars Query Tests', () => {
           homePlanet: 'Alderaan'
         }
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
   });
 
   describe('Using __typename to find the type of an object', () => {
-    it('Allows us to verify that R2-D2 is a droid', () => {
+    it('Allows us to verify that R2-D2 is a droid', async () => {
       var query = `
         query CheckTypeOfR2 {
           hero {
@@ -348,7 +341,8 @@ describe('Star Wars Query Tests', () => {
           name: 'R2-D2'
         },
       };
-      return testQuery(query, expected);
+      var result = await graphql(StarWarsSchema, query);
+      expect(result).to.deep.equal({ data: expected });
     });
   });
 });

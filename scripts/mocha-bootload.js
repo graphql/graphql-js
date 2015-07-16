@@ -8,7 +8,7 @@
  */
 
 require('babel/register')({
-  optional: ['runtime']
+  optional: ['runtime', 'es7.asyncFunctions']
 });
 
 var chai = require('chai');
