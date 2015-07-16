@@ -214,7 +214,7 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(gotHere).to.equal(true);
   });
 
-  it('correctly threads arguments', async() => {
+  it('correctly threads arguments', async () => {
     var doc = `
       query Example {
         b(numArg: 123, stringArg: "foo")
@@ -263,7 +263,7 @@ describe('Execute: Handles basic execution tasks', () => {
       syncError() {
         throw new Error('Error getting syncError');
       },
-      async() {
+      async () {
         return new Promise(resolve => resolve('async'));
       },
       asyncReject() {

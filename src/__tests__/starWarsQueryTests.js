@@ -267,7 +267,7 @@ describe('Star Wars Query Tests', () => {
   });
 
   describe('Uses fragments to express more complex queries', () => {
-    it('Allows us to query using duplicated content', async() => {
+    it('Allows us to query using duplicated content', async () => {
       var query = `
         query DuplicateFields {
           luke: human(id: "1000") {
