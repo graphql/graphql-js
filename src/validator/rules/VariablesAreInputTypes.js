@@ -9,16 +9,11 @@
  */
 
 import type { ValidationContext } from '../index';
-import type { Name, VariableDefinition, Type } from '../../language/ast';
-import invariant from '../../utils/invariant';
+import type { VariableDefinition } from '../../language/ast';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
 import { NAME } from '../../language/kinds';
-import {
-  GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLInputObjectType
-} from '../../type/definition';
+import { isInputType } from '../../type/definition';
 import { nonInputTypeOnVarMessage } from '../errors';
 
 
@@ -33,13 +28,18 @@ export default function VariablesAreInputTypes(
 ): any {
   return {
     VariableDefinition(node: VariableDefinition): ?GraphQLError {
-      var typeName = getTypeASTName(node.type);
-      var type = context.getSchema().getType(typeName);
-      var isInputType =
-        type instanceof GraphQLScalarType ||
-        type instanceof GraphQLEnumType ||
-        type instanceof GraphQLInputObjectType;
-      if (!isInputType) {
+      // Get the un-modified type from the variable definition, unwrapping
+      // List and NonNull.
+      var typeAST = node.type;
+      while (typeAST.kind !== NAME) {
+        typeAST = typeAST.type;
+      }
+
+      // Get the type definition from the Schema.
+      var typeDef = context.getSchema().getType(typeAST.value);
+
+      // If the variable type is not an input type, return an error.
+      if (!isInputType(typeDef)) {
         var variableName = node.variable.name.value;
         return new GraphQLError(
           nonInputTypeOnVarMessage(variableName, print(node.type)),
@@ -48,12 +48,4 @@ export default function VariablesAreInputTypes(
       }
     }
   };
-}
-
-function getTypeASTName(typeAST: Type): string {
-  if (typeAST.kind === NAME) {
-    return (typeAST: Name).value;
-  }
-  invariant(typeAST.type, 'Must be wrapping type');
-  return getTypeASTName(typeAST.type);
 }
