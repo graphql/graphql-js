@@ -263,7 +263,7 @@ describe('Execute: Handles basic execution tasks', () => {
       syncError() {
         throw new Error('Error getting syncError');
       },
-      async () {
+      async() {
         return new Promise(resolve => resolve('async'));
       },
       asyncReject() {
