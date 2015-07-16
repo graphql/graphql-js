@@ -257,6 +257,42 @@ describe('Lexer', () => {
     });
 
     expect(
+      lexOne('123e4')
+    ).to.deep.equal({
+      kind: TokenKind.FLOAT,
+      start: 0,
+      end: 5,
+      value: '123e4'
+    });
+
+    expect(
+      lexOne('123E4')
+    ).to.deep.equal({
+      kind: TokenKind.FLOAT,
+      start: 0,
+      end: 5,
+      value: '123E4'
+    });
+
+    expect(
+      lexOne('123e-4')
+    ).to.deep.equal({
+      kind: TokenKind.FLOAT,
+      start: 0,
+      end: 6,
+      value: '123e-4'
+    });
+
+    expect(
+      lexOne('123e+4')
+    ).to.deep.equal({
+      kind: TokenKind.FLOAT,
+      start: 0,
+      end: 6,
+      value: '123e+4'
+    });
+
+    expect(
       lexOne('-1.123e4')
     ).to.deep.equal({
       kind: TokenKind.FLOAT,
@@ -266,12 +302,30 @@ describe('Lexer', () => {
     });
 
     expect(
+      lexOne('-1.123E4')
+    ).to.deep.equal({
+      kind: TokenKind.FLOAT,
+      start: 0,
+      end: 8,
+      value: '-1.123E4'
+    });
+
+    expect(
       lexOne('-1.123e-4')
     ).to.deep.equal({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 9,
       value: '-1.123e-4'
+    });
+
+    expect(
+      lexOne('-1.123e+4')
+    ).to.deep.equal({
+      kind: TokenKind.FLOAT,
+      start: 0,
+      end: 9,
+      value: '-1.123e+4'
     });
 
     expect(
@@ -296,16 +350,16 @@ describe('Lexer', () => {
     ).to.throw('Syntax Error GraphQL (1:3) Invalid number');
 
     expect(
+      lexErr('.123')
+    ).to.throw('Syntax Error GraphQL (1:1) Unexpected character "."');
+
+    expect(
       lexErr('1.A')
     ).to.throw('Syntax Error GraphQL (1:3) Invalid number');
 
     expect(
       lexErr('-A')
     ).to.throw('Syntax Error GraphQL (1:2) Invalid number');
-
-    expect(
-      lexErr('1.0e+4')
-    ).to.throw('Syntax Error GraphQL (1:5) Invalid number');
 
     expect(
       lexErr('1.0e')

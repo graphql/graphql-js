@@ -247,7 +247,7 @@ function positionAfterWhitespace(body: string, startPosition: number): number {
  * or an int depending on whether a decimal point appears.
  *
  * Int:   -?(0|[1-9][0-9]*)
- * Float: -?(0|[1-9][0-9]*)\.[0-9]+(e-?[0-9]+)?
+ * Float: -?(0|[1-9][0-9]*)(\.[0-9]+)?((E|e)(+|-)?[0-9]+)?
  */
 function readNumber(source, start, firstCode) {
   var code = firstCode;
@@ -280,19 +280,21 @@ function readNumber(source, start, firstCode) {
     } else {
       throw syntaxError(source, position, 'Invalid number.');
     }
+  }
 
-    if (code === 101) { // e
+  if (code === 69 || code === 101) { // E e
+    isFloat = true;
+
+    code = charCodeAt.call(body, ++position);
+    if (code === 43 || code === 45) { // + -
       code = charCodeAt.call(body, ++position);
-      if (code === 45) { // -
+    }
+    if (code >= 48 && code <= 57) { // 0 - 9
+      do {
         code = charCodeAt.call(body, ++position);
-      }
-      if (code >= 48 && code <= 57) { // 0 - 9
-        do {
-          code = charCodeAt.call(body, ++position);
-        } while (code >= 48 && code <= 57); // 0 - 9
-      } else {
-        throw syntaxError(source, position, 'Invalid number.');
-      }
+      } while (code >= 48 && code <= 57); // 0 - 9
+    } else {
+      throw syntaxError(source, position, 'Invalid number.');
     }
   }
 
