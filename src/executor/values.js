@@ -10,18 +10,20 @@
 
 import { GraphQLError } from '../error';
 import keyMap from '../utils/keyMap';
+import invariant from '../utils/invariant';
 import typeFromAST from '../utils/typeFromAST';
 import isNullish from '../utils/isNullish';
 import { Kind } from '../language';
 import { print } from '../language/printer';
 import {
+  isInputType,
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
 } from '../type/definition';
-import type { GraphQLArgument, GraphQLType } from '../type/definition';
+import type { GraphQLInputType, GraphQLArgument } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 import type {
   Argument,
@@ -79,8 +81,12 @@ function getVariableValue(
   input: ?any
 ): any {
   var type = typeFromAST(schema, definitionAST.type);
-  if (!type) {
-    return null;
+  if (!type || !isInputType(type)) {
+    throw new GraphQLError(
+      `Variable $${definitionAST.variable.name.value} expected value of type ` +
+      `${print(definitionAST.type)} which cannot be used as an input type.`,
+      [definitionAST]
+    );
   }
   if (isValidValue(type, input)) {
     if (isNullish(input)) {
@@ -102,7 +108,7 @@ function getVariableValue(
 /**
  * Given a type and any value, return true if that value is valid.
  */
-function isValidValue(type: GraphQLType, value: any): boolean {
+function isValidValue(type: GraphQLInputType, value: any): boolean {
   if (type instanceof GraphQLNonNull) {
     if (isNullish(value)) {
       return false;
@@ -130,19 +136,19 @@ function isValidValue(type: GraphQLType, value: any): boolean {
     );
   }
 
-  if (type instanceof GraphQLScalarType ||
-      type instanceof GraphQLEnumType) {
-    return !isNullish(type.coerce(value));
-  }
+  invariant(
+    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
+    'Must be input type'
+  );
 
-  return false;
+  return !isNullish(type.coerce(value));
 }
 
 
 /**
  * Given a type and any value, return a runtime value coerced to match the type.
  */
-function coerceValue(type: GraphQLType, value: any): any {
+function coerceValue(type: GraphQLInputType, value: any): any {
   if (type instanceof GraphQLNonNull) {
     // Note: we're not checking that the result of coerceValue is non-null.
     // We only call this function after calling isValidValue.
@@ -173,15 +179,15 @@ function coerceValue(type: GraphQLType, value: any): any {
     }, {});
   }
 
-  if (type instanceof GraphQLScalarType ||
-      type instanceof GraphQLEnumType) {
-    var coerced = type.coerce(value);
-    if (!isNullish(coerced)) {
-      return coerced;
-    }
-  }
+  invariant(
+    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
+    'Must be input type'
+  );
 
-  return null;
+  var coerced = type.coerce(value);
+  if (!isNullish(coerced)) {
+    return coerced;
+  }
 }
 
 
@@ -190,7 +196,7 @@ function coerceValue(type: GraphQLType, value: any): any {
  * runtime value.
  */
 function coerceValueAST(
-  type: GraphQLType,
+  type: GraphQLInputType,
   valueAST: any,
   variables?: ?{ [key: string]: any }
 ) {
@@ -246,13 +252,13 @@ function coerceValueAST(
     }, {});
   }
 
-  if (type instanceof GraphQLScalarType ||
-      type instanceof GraphQLEnumType) {
-    var coerced = type.coerceLiteral(valueAST);
-    if (!isNullish(coerced)) {
-      return coerced;
-    }
-  }
+  invariant(
+    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
+    'Must be input type'
+  );
 
-  return null;
+  var coerced = type.coerceLiteral(valueAST);
+  if (!isNullish(coerced)) {
+    return coerced;
+  }
 }
