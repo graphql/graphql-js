@@ -35,6 +35,7 @@ import type {
   Directive,
 
   Type,
+  NamedType
 } from './ast';
 
 import {
@@ -63,6 +64,7 @@ import {
 
   DIRECTIVE,
 
+  NAMED_TYPE,
   LIST_TYPE,
   NON_NULL_TYPE,
 } from './kinds';
@@ -427,7 +429,7 @@ function parseFragment(parser): FragmentSpread | InlineFragment {
     advance(parser);
     return {
       kind: INLINE_FRAGMENT,
-      typeCondition: parseName(parser),
+      typeCondition: parseNamedType(parser),
       directives: parseDirectives(parser),
       selectionSet: parseSelectionSet(parser),
       loc: loc(parser, start)
@@ -454,7 +456,7 @@ function parseFragmentDefinition(parser): FragmentDefinition {
   return {
     kind: FRAGMENT_DEFINITION,
     name: parseFragmentName(parser),
-    typeCondition: (expectKeyword(parser, 'on'), parseName(parser)),
+    typeCondition: (expectKeyword(parser, 'on'), parseNamedType(parser)),
     directives: parseDirectives(parser),
     selectionSet: parseSelectionSet(parser),
     loc: loc(parser, start)
@@ -599,7 +601,7 @@ function parseDirective(parser): Directive {
 // Implements the parsing rules in the Types section.
 
 /**
- * Handles the Type: TypeName, ListType, and NonNullType parsing rules.
+ * Handles the Type: NamedType, ListType, and NonNullType parsing rules.
  */
 function parseType(parser): Type {
   var start = parser.token.start;
@@ -613,7 +615,7 @@ function parseType(parser): Type {
       loc: loc(parser, start)
     };
   } else {
-    type = parseName(parser);
+    type = parseNamedType(parser);
   }
   if (skip(parser, TokenKind.BANG)) {
     return {
@@ -623,4 +625,13 @@ function parseType(parser): Type {
     };
   }
   return type;
+}
+
+function parseNamedType(parser): NamedType {
+  var start = parser.token.start;
+  return {
+    kind: NAMED_TYPE,
+    name: parseName(parser),
+    loc: loc(parser, start)
+  };
 }

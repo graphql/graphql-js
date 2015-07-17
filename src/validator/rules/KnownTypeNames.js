@@ -22,13 +22,11 @@ import { unknownTypeMessage } from '../errors';
  */
 export default function KnownTypeNames(context: ValidationContext): any {
   return {
-    Name(node, key) {
-      if (key === 'type' || key === 'typeCondition') {
-        var typeName = node.value;
-        var type = context.getSchema().getType(typeName);
-        if (!type) {
-          return new GraphQLError(unknownTypeMessage(typeName), [node]);
-        }
+    NamedType(node) {
+      var typeName = node.name.value;
+      var type = context.getSchema().getType(typeName);
+      if (!type) {
+        return new GraphQLError(unknownTypeMessage(typeName), [node]);
       }
     }
   };

@@ -44,6 +44,6 @@ export const DIRECTIVE = 'Directive';
 
 // Types
 
-export const TYPE = 'Type';
+export const NAMED_TYPE = 'NamedType';
 export const LIST_TYPE = 'ListType';
 export const NON_NULL_TYPE = 'NonNullType';

@@ -11,11 +11,12 @@
 import type { ValidationContext } from '../index';
 
 import { GraphQLError } from '../../error';
+import { isCompositeType } from '../../type/definition';
+import { print } from '../../language/printer';
 import {
-  isCompositeType
-} from '../../type/definition';
-
-import { fragmentOnNonCompositeErrorMessage } from '../errors';
+  inlineFragmentOnNonCompositeErrorMessage,
+  fragmentOnNonCompositeErrorMessage
+} from '../errors';
 
 /**
  * Fragments on composite type
@@ -29,21 +30,22 @@ export default function FragmentsOnCompositeType(
 ): any {
   return {
     InlineFragment(node) {
-      var typeName = node.typeCondition.value;
-      var type = context.getSchema().getType(typeName);
-      if (!isCompositeType(type)) {
+      var type = context.getType();
+      if (type && !isCompositeType(type)) {
         return new GraphQLError(
-          `Fragment cannot condition on non composite type "${typeName}".`,
+          inlineFragmentOnNonCompositeErrorMessage(print(node.typeCondition)),
           [node.typeCondition]
         );
       }
     },
     FragmentDefinition(node) {
-      var typeName = node.typeCondition.value;
-      var type = context.getSchema().getType(typeName);
-      if (!isCompositeType(type)) {
+      var type = context.getType();
+      if (type && !isCompositeType(type)) {
         return new GraphQLError(
-          fragmentOnNonCompositeErrorMessage(node.name.value, typeName),
+          fragmentOnNonCompositeErrorMessage(
+            node.name.value,
+            print(node.typeCondition)
+          ),
           [node.typeCondition]
         );
       }

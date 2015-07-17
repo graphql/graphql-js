@@ -9,7 +9,7 @@
  */
 
 import invariant from './invariant';
-import { NAME, LIST_TYPE, NON_NULL_TYPE } from '../language/kinds';
+import { NAMED_TYPE, LIST_TYPE, NON_NULL_TYPE } from '../language/kinds';
 import type { Type } from '../language/ast';
 import { GraphQLList, GraphQLNonNull } from '../type/definition';
 import type { GraphQLType } from '../type/definition';
@@ -29,6 +29,6 @@ export default function typeFromAST(
     innerType = typeFromAST(schema, inputTypeAST.type);
     return innerType && new GraphQLNonNull(innerType);
   }
-  invariant(inputTypeAST.kind === NAME, 'Must be a type name.');
-  return schema.getType(inputTypeAST.value);
+  invariant(inputTypeAST.kind === NAMED_TYPE, 'Must be a named type.');
+  return schema.getType(inputTypeAST.name.value);
 }

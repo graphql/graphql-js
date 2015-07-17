@@ -90,6 +90,7 @@ export function print(ast) {
 
       // Type
 
+      NamedType: node => node.name,
       ListType: node => '[' + node.type + ']',
       NonNullType: node => node.type + '!',
     }
