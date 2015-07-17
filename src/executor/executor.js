@@ -488,7 +488,7 @@ function resolveField(
       exeContext.schema
     );
   } catch (error) {
-    var reportedError = new GraphQLError(error.message, fieldASTs, error.stack);
+    var reportedError = locatedError(error, fieldASTs);
     if (fieldType instanceof GraphQLNonNull) {
       throw reportedError;
     }
