@@ -247,9 +247,13 @@ describe('Execute: Handles basic execution tasks', () => {
     var doc = `{
       sync,
       syncError,
+      syncRawError,
       async,
       asyncReject,
-      asyncError
+      asyncRawReject,
+      asyncEmptyReject,
+      asyncError,
+      asyncRawError
     }`;
 
     var data = {
@@ -259,6 +263,11 @@ describe('Execute: Handles basic execution tasks', () => {
       syncError() {
         throw new Error('Error getting syncError');
       },
+      syncRawError() {
+        /* eslint-disable */
+        throw 'Error getting syncRawError';
+        /* eslint-enable */
+      },
       async() {
         return new Promise(resolve => resolve('async'));
       },
@@ -267,9 +276,22 @@ describe('Execute: Handles basic execution tasks', () => {
           reject(new Error('Error getting asyncReject'))
         );
       },
+      asyncRawReject() {
+        return Promise.reject('Error getting asyncRawReject');
+      },
+      asyncEmptyReject() {
+        return Promise.reject();
+      },
       asyncError() {
         return new Promise(() => {
           throw new Error('Error getting asyncError');
+        });
+      },
+      asyncRawError() {
+        return new Promise(() => {
+          /* eslint-disable */
+          throw 'Error getting asyncRawError';
+          /* eslint-enable */
         });
       }
     };
@@ -281,9 +303,13 @@ describe('Execute: Handles basic execution tasks', () => {
         fields: {
           sync: { type: GraphQLString },
           syncError: { type: GraphQLString },
+          syncRawError: { type: GraphQLString },
           async: { type: GraphQLString },
           asyncReject: { type: GraphQLString },
+          asyncRawReject: { type: GraphQLString },
+          asyncEmptyReject: { type: GraphQLString },
           asyncError: { type: GraphQLString },
+          asyncRawError: { type: GraphQLString },
         }
       })
     });
@@ -293,18 +319,30 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result.data).to.deep.equal({
       sync: 'sync',
       syncError: null,
+      syncRawError: null,
       async: 'async',
       asyncReject: null,
+      asyncRawReject: null,
+      asyncEmptyReject: null,
       asyncError: null,
+      asyncRawError: null,
     });
 
     expect(result.errors && result.errors.map(formatError)).to.deep.equal([
       { message: 'Error getting syncError',
         locations: [ { line: 3, column: 7 } ] },
+      { message: 'Error getting syncRawError',
+        locations: [ { line: 4, column: 7 } ] },
       { message: 'Error getting asyncReject',
-        locations: [ { line: 5, column: 7 } ] },
-      { message: 'Error getting asyncError',
         locations: [ { line: 6, column: 7 } ] },
+      { message: 'Error getting asyncRawReject',
+        locations: [ { line: 7, column: 7 } ] },
+      { message: 'An unknown error occurred.',
+        locations: [ { line: 8, column: 7 } ] },
+      { message: 'Error getting asyncError',
+        locations: [ { line: 9, column: 7 } ] },
+      { message: 'Error getting asyncRawError',
+        locations: [ { line: 10, column: 7 } ] },
     ]);
   });
 
