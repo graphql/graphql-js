@@ -106,19 +106,6 @@ export function misplacedDirectiveMessage(directiveName, placement) {
   return `Directive ${directiveName} may not be used on ${placement}.`;
 }
 
-export function missingDirectiveValueMessage(directiveName, typeName) {
-  return `Directive ${directiveName} expects a value of type ${typeName}.`;
-}
-
-export function noDirectiveValueMessage(directiveName) {
-  return `Directive ${directiveName} expects no value.`;
-}
-
-export function badDirectiveValueMessage(directiveName, typeName, value) {
-  return `Directive ${directiveName} expected type ${typeName} but ` +
-    `got: ${value}.`;
-}
-
 export function badVarPosMessage(varName, varType, expectedType) {
   return `Variable $${varName} of type ${varType} used in position expecting ` +
     `type ${expectedType}.`;
