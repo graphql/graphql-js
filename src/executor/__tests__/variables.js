@@ -51,6 +51,11 @@ var TestType = new GraphQLObjectType({
       args: { input: { type: new GraphQLNonNull(GraphQLString) } },
       resolve: (_, { input }) => input && JSON.stringify(input)
     },
+    fieldWithDefaultArgumentValue: {
+      type: GraphQLString,
+      args: { input: { type: GraphQLString, defaultValue: 'Hello World' } },
+      resolve: (_, { input }) => input && JSON.stringify(input)
+    },
     list: {
       type: GraphQLString,
       args: { input: { type: new GraphQLList(GraphQLString) } },
@@ -720,4 +725,45 @@ describe('Execute: Handles inputs', () => {
     });
 
   });
+
+  describe('Execute: Uses argument default values', () => {
+
+    it('when no argument provided', async () => {
+      var ast = parse(`{
+        fieldWithDefaultArgumentValue
+      }`);
+
+      return expect(await execute(schema, ast)).to.deep.equal({
+        data: {
+          fieldWithDefaultArgumentValue: '"Hello World"'
+        }
+      });
+    });
+
+    it('when nullable variable provided', async () => {
+      var ast = parse(`query optionalVariable($optional: String) {
+        fieldWithDefaultArgumentValue(input: $optional)
+      }`);
+
+      return expect(await execute(schema, ast)).to.deep.equal({
+        data: {
+          fieldWithDefaultArgumentValue: '"Hello World"'
+        }
+      });
+    });
+
+    it('when argument provided cannot be coerced', async () => {
+      var ast = parse(`{
+        fieldWithDefaultArgumentValue(input: WRONG_TYPE)
+      }`);
+
+      return expect(await execute(schema, ast)).to.deep.equal({
+        data: {
+          fieldWithDefaultArgumentValue: '"Hello World"'
+        }
+      });
+    });
+
+  });
+
 });
