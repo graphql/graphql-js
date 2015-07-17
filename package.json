@@ -1,6 +1,6 @@
 {
   "name": "graphql",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A Query Language and Runtime which can target any service.",
   "contributors": [
     "Lee Byron <lee@leebyron.com> (http://leebyron.com/)",
@@ -30,7 +30,10 @@
     "mocha": "--require scripts/mocha-bootload src/**/__tests__/**/*.js"
   },
   "babel": {
-    "optional": ["runtime", "es7.asyncFunctions"]
+    "optional": [
+      "runtime",
+      "es7.asyncFunctions"
+    ]
   },
   "scripts": {
     "prepublish": "npm test && npm run build",
