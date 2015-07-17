@@ -28,7 +28,7 @@ export default function ArgumentsOfCorrectType(
   return {
     Argument(argAST) {
       var argDef = context.getArgument();
-      if (argDef && !isValidLiteralValue(argAST.value, argDef.type)) {
+      if (argDef && !isValidLiteralValue(argDef.type, argAST.value)) {
         return new GraphQLError(
           badValueMessage(
             argAST.name.value,

@@ -193,7 +193,25 @@ describe('Execute: Handles inputs', () => {
           locations: [ { line: 2, column: 17 } ],
           message:
             'Variable $input expected value of type TestInputObject but ' +
-            'got: {\"a\":\"foo\",\"b\":\"bar\",\"c\":null}.'
+            'got: {"a":"foo","b":"bar","c":null}.'
+        });
+      });
+
+      it('errors on incorrect type', async () => {
+        var params = {input: 'foo bar'};
+
+        var caughtError;
+        try {
+          execute(schema, null, ast, null, params);
+        } catch (error) {
+          caughtError = error;
+        }
+
+        expect(caughtError).to.containSubset({
+          locations: [ { line: 2, column: 17 } ],
+          message:
+            'Variable $input expected value of type TestInputObject but ' +
+            'got: "foo bar".'
         });
       });
 
@@ -211,7 +229,25 @@ describe('Execute: Handles inputs', () => {
           locations: [ { line: 2, column: 17 } ],
           message:
             'Variable $input expected value of type TestInputObject but ' +
-            'got: {\"a\":\"foo\",\"b\":\"bar\"}.'
+            'got: {"a":"foo","b":"bar"}.'
+        });
+      });
+
+      it('errors on addition of unknown input field', async () => {
+        var params = {input: {a: 'foo', b: 'bar', c: 'baz', d: 'dog'}};
+
+        var caughtError;
+        try {
+          execute(schema, null, ast, null, params);
+        } catch (error) {
+          caughtError = error;
+        }
+
+        expect(caughtError).to.containSubset({
+          locations: [ { line: 2, column: 17 } ],
+          message:
+            'Variable $input expected value of type TestInputObject but ' +
+            'got: {"a":"foo","b":"bar","c":"baz","d":"dog"}.'
         });
       });
 
@@ -568,7 +604,7 @@ describe('Execute: Handles inputs', () => {
         locations: [ { line: 2, column: 17 } ],
         message:
           'Variable $input expected value of type [String!] but got: ' +
-          '[\"A\",null,\"B\"].'
+          '["A",null,"B"].'
       });
     });
 
@@ -631,7 +667,7 @@ describe('Execute: Handles inputs', () => {
         locations: [ { line: 2, column: 17 } ],
         message:
           'Variable $input expected value of type [String!]! but got: ' +
-          '[\"A\",null,\"B\"].'
+          '["A",null,"B"].'
       });
     });
 

@@ -21,7 +21,8 @@ import {
   GraphQLList,
   GraphQLNonNull
 } from '../type/definition';
-import type { GraphQLType } from '../type/definition';
+import type { GraphQLInputType } from '../type/definition';
+import invariant from './invariant';
 import keyMap from './keyMap';
 import isNullish from './isNullish';
 
@@ -34,17 +35,20 @@ import isNullish from './isNullish';
  * provide values of the correct type.
  */
 export default function isValidLiteralValue(
-  valueAST: Value,
-  type: GraphQLType
+  type: GraphQLInputType,
+  valueAST: Value
 ): boolean {
-  // A value can only be not provided if the type is nullable.
-  if (!valueAST) {
-    return !(type instanceof GraphQLNonNull);
+  // A value must be provided if the type is non-null.
+  if (type instanceof GraphQLNonNull) {
+    if (!valueAST) {
+      return false;
+    }
+    var ofType: GraphQLInputType = (type.ofType: any);
+    return isValidLiteralValue(ofType, valueAST);
   }
 
-  // Unwrap non-null.
-  if (type instanceof GraphQLNonNull) {
-    return isValidLiteralValue(valueAST, type.ofType);
+  if (!valueAST) {
+    return true;
   }
 
   // This function only tests literals, and assumes variables will provide
@@ -55,45 +59,43 @@ export default function isValidLiteralValue(
 
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
-    var itemType = type.ofType;
+    var itemType: GraphQLInputType = (type.ofType: any);
     if (valueAST.kind === ARRAY) {
       return (valueAST: ArrayValue).values.every(
-        itemAST => isValidLiteralValue(itemAST, itemType)
+        itemAST => isValidLiteralValue(itemType, itemAST)
       );
     } else {
-      return isValidLiteralValue(valueAST, itemType);
+      return isValidLiteralValue(itemType, valueAST);
     }
   }
 
-  // Scalar/Enum input checks to ensure the type can coerce the value to
-  // a non-null value.
-  if (type instanceof GraphQLScalarType ||
-      type instanceof GraphQLEnumType) {
-    return !isNullish(type.coerceLiteral(valueAST));
-  }
-
-  // Input objects check each defined field, ensuring it is of the correct
-  // type and provided if non-nullable.
+  // Input objects check each defined field and look for undefined fields.
   if (type instanceof GraphQLInputObjectType) {
-    var fields = type.getFields();
     if (valueAST.kind !== OBJECT) {
       return false;
     }
+    var fields = type.getFields();
+
+    // Ensure every provided field is defined.
     var fieldASTs = (valueAST: ObjectValue).fields;
-    var fieldASTMap = keyMap(fieldASTs, field => field.name.value);
-    var isMissingFields = Object.keys(fields).some(fieldName =>
-      !fieldASTMap[fieldName] &&
-      fields[fieldName].type instanceof GraphQLNonNull
-    );
-    if (isMissingFields) {
+    if (fieldASTs.some(fieldAST => !fields[fieldAST.name.value])) {
       return false;
     }
-    return fieldASTs.every(fieldAST =>
-      fields[fieldAST.name.value] &&
-      isValidLiteralValue(fieldAST.value, fields[fieldAST.name.value].type)
-    );
+
+    // Ensure every defined field is valid.
+    var fieldASTMap = keyMap(fieldASTs, fieldAST => fieldAST.name.value);
+    return Object.keys(fields).every(fieldName => isValidLiteralValue(
+      fields[fieldName].type,
+      fieldASTMap[fieldName] && fieldASTMap[fieldName].value
+    ));
   }
 
-  // Any other kind of type is not an input type, and a literal cannot be used.
-  return false;
+  invariant(
+    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
+    'Must be input type'
+  );
+
+  // Scalar/Enum input checks to ensure the type can coerce the value to
+  // a non-null value.
+  return !isNullish(type.coerceLiteral(valueAST));
 }

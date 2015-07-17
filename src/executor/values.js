@@ -109,6 +109,7 @@ function getVariableValue(
  * Given a type and any value, return true if that value is valid.
  */
 function isValidValue(type: GraphQLInputType, value: any): boolean {
+  // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
     if (isNullish(value)) {
       return false;
@@ -120,6 +121,7 @@ function isValidValue(type: GraphQLInputType, value: any): boolean {
     return true;
   }
 
+  // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
     var itemType = type.ofType;
     if (Array.isArray(value)) {
@@ -129,8 +131,19 @@ function isValidValue(type: GraphQLInputType, value: any): boolean {
     }
   }
 
+  // Input objects check each defined field.
   if (type instanceof GraphQLInputObjectType) {
+    if (typeof value !== 'object') {
+      return false;
+    }
     var fields = type.getFields();
+
+    // Ensure every provided field is defined.
+    if (Object.keys(value).some(fieldName => !fields[fieldName])) {
+      return false;
+    }
+
+    // Ensure every defined field is valid.
     return Object.keys(fields).every(
       fieldName => isValidValue(fields[fieldName].type, value[fieldName])
     );
@@ -141,6 +154,8 @@ function isValidValue(type: GraphQLInputType, value: any): boolean {
     'Must be input type'
   );
 
+  // Scalar/Enum input checks to ensure the type can coerce the value to
+  // a non-null value.
   return !isNullish(type.coerce(value));
 }
 

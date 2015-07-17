@@ -40,7 +40,7 @@ export default function DefaultValuesOfCorrectType(
           [defaultValue]
         );
       }
-      if (type && defaultValue && !isValidLiteralValue(defaultValue, type)) {
+      if (type && defaultValue && !isValidLiteralValue(type, defaultValue)) {
         return new GraphQLError(
           badValueForDefaultArgMessage(name, type, print(defaultValue)),
           [defaultValue]
