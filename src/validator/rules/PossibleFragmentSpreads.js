@@ -12,12 +12,12 @@ import type { ValidationContext } from '../index';
 
 import { GraphQLError } from '../../error';
 import {
-  getUnmodifiedType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType
 } from '../../type/definition';
 import keyMap from '../../utils/keyMap';
+import typeFromAST from '../../utils/typeFromAST';
 import {
   typeIncompatibleSpreadMessage,
   typeIncompatibleAnonSpreadMessage,
@@ -36,7 +36,7 @@ export default function PossibleFragmentSpreads(
 ): any {
   return {
     InlineFragment(node) {
-      var fragType = getUnmodifiedType(context.getType());
+      var fragType = context.getType();
       var parentType = context.getParentType();
       if (fragType && parentType && !doTypesOverlap(fragType, parentType)) {
         return new GraphQLError(
@@ -47,7 +47,7 @@ export default function PossibleFragmentSpreads(
     },
     FragmentSpread(node) {
       var fragName = node.name.value;
-      var fragType = getUnmodifiedType(getFragmentType(context, fragName));
+      var fragType = getFragmentType(context, fragName);
       var parentType = context.getParentType();
       if (fragType && parentType && !doTypesOverlap(fragType, parentType)) {
         return new GraphQLError(
@@ -61,7 +61,7 @@ export default function PossibleFragmentSpreads(
 
 function getFragmentType(context, name) {
   var frag = context.getFragment(name);
-  return frag && context.getSchema().getType(frag.typeCondition.value);
+  return frag && typeFromAST(context.getSchema(), frag.typeCondition);
 }
 
 function doTypesOverlap(t1, t2) {

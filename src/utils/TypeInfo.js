@@ -13,7 +13,7 @@ import type { Field } from '../language/ast';
 import {
   isCompositeType,
   getNullableType,
-  getUnmodifiedType,
+  getNamedType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -102,11 +102,11 @@ export default class TypeInfo {
     var type;
     switch (node.kind) {
       case Kind.SELECTION_SET:
+        var namedType = getNamedType(this.getType());
         var compositeType: ?GraphQLCompositeType;
-        var rawType = getUnmodifiedType(this.getType());
-        if (isCompositeType(rawType)) {
+        if (isCompositeType(namedType)) {
           // isCompositeType is a type refining predicate, so this is safe.
-          compositeType = ((rawType: any): GraphQLCompositeType);
+          compositeType = ((namedType: any): GraphQLCompositeType);
         }
         this._parentTypeStack.push(compositeType);
         break;
@@ -132,7 +132,7 @@ export default class TypeInfo {
         break;
       case Kind.INLINE_FRAGMENT:
       case Kind.FRAGMENT_DEFINITION:
-        type = schema.getType(node.typeCondition.value);
+        type = typeFromAST(schema, node.typeCondition);
         this._typeStack.push(type);
         break;
       case Kind.VARIABLE_DEFINITION:
@@ -161,7 +161,7 @@ export default class TypeInfo {
         );
         break;
       case Kind.OBJECT_FIELD:
-        var objectType = getUnmodifiedType(this.getInputType());
+        var objectType = getNamedType(this.getInputType());
         var fieldType;
         if (objectType instanceof GraphQLInputObjectType) {
           var inputField = objectType.getFields()[node.name.value];

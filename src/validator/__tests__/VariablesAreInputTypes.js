@@ -25,14 +25,14 @@ describe('Validate: Variables are input types', () => {
 
   it('output types are invalid', () => {
     expectFailsRule(VariablesAreInputTypes, `
-      query Foo($a: Dog, $b: [[DogOrCat!]]!, $c: Pet) {
+      query Foo($a: Dog, $b: [[CatOrDog!]]!, $c: Pet) {
         field(a: $a, b: $b, c: $c)
       }
     `, [
       { locations: [ { line: 2, column: 21 } ],
         message: nonInputTypeOnVarMessage('a', 'Dog') },
       { locations: [ { line: 2, column: 30 } ],
-        message: nonInputTypeOnVarMessage('b', '[[DogOrCat!]]!')},
+        message: nonInputTypeOnVarMessage('b', '[[CatOrDog!]]!')},
       { locations: [ { line: 2, column: 50 } ],
         message: nonInputTypeOnVarMessage('c', 'Pet')},
     ]);

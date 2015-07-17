@@ -34,6 +34,7 @@ export var VisitorKeys = {
 
   Directive: ['name', 'arguments'],
 
+  NamedType: ['name'],
   ListType: ['type'],
   NonNullType: ['type'],
 };

@@ -40,11 +40,11 @@ export type GraphQLInputType =
   GraphQLNonNull;
 
 export function isInputType(type: ?GraphQLType): boolean {
-  var nakedType = getUnmodifiedType(type);
+  var namedType = getNamedType(type);
   return (
-    nakedType instanceof GraphQLScalarType ||
-    nakedType instanceof GraphQLEnumType ||
-    nakedType instanceof GraphQLInputObjectType
+    namedType instanceof GraphQLScalarType ||
+    namedType instanceof GraphQLEnumType ||
+    namedType instanceof GraphQLInputObjectType
   );
 }
 
@@ -61,13 +61,13 @@ export type GraphQLOutputType =
   GraphQLNonNull;
 
 export function isOutputType(type: ?GraphQLType): boolean {
-  var nakedType = getUnmodifiedType(type);
+  var namedType = getNamedType(type);
   return (
-    nakedType instanceof GraphQLScalarType ||
-    nakedType instanceof GraphQLObjectType ||
-    nakedType instanceof GraphQLInterfaceType ||
-    nakedType instanceof GraphQLUnionType ||
-    nakedType instanceof GraphQLEnumType
+    namedType instanceof GraphQLScalarType ||
+    namedType instanceof GraphQLObjectType ||
+    namedType instanceof GraphQLInterfaceType ||
+    namedType instanceof GraphQLUnionType ||
+    namedType instanceof GraphQLEnumType
   );
 }
 
@@ -79,10 +79,10 @@ export type GraphQLLeafType =
   GraphQLEnumType;
 
 export function isLeafType(type: ?GraphQLType): boolean {
-  var nakedType = getUnmodifiedType(type);
+  var namedType = getNamedType(type);
   return (
-    nakedType instanceof GraphQLScalarType ||
-    nakedType instanceof GraphQLEnumType
+    namedType instanceof GraphQLScalarType ||
+    namedType instanceof GraphQLEnumType
   );
 }
 
@@ -133,9 +133,9 @@ export function getNullableType(type: ?GraphQLType): ?GraphQLNullableType {
 }
 
 /**
- * These types have no modifiers like List or NonNull.
+ * These named types do not include modifiers like List or NonNull.
  */
-export type GraphQLUnmodifiedType =
+export type GraphQLNamedType =
   GraphQLScalarType |
   GraphQLObjectType |
   GraphQLInterfaceType |
@@ -143,7 +143,7 @@ export type GraphQLUnmodifiedType =
   GraphQLEnumType |
   GraphQLInputObjectType;
 
-export function getUnmodifiedType(type: ?GraphQLType): ?GraphQLUnmodifiedType {
+export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
   var unmodifiedType = type;
   while (
     unmodifiedType instanceof GraphQLList ||

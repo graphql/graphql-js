@@ -12,8 +12,8 @@ import type { ValidationContext } from '../index';
 import type { VariableDefinition } from '../../language/ast';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
-import { NAME } from '../../language/kinds';
 import { isInputType } from '../../type/definition';
+import typeFromAST from '../../utils/typeFromAST';
 import { nonInputTypeOnVarMessage } from '../errors';
 
 
@@ -28,18 +28,10 @@ export default function VariablesAreInputTypes(
 ): any {
   return {
     VariableDefinition(node: VariableDefinition): ?GraphQLError {
-      // Get the un-modified type from the variable definition, unwrapping
-      // List and NonNull.
-      var typeAST = node.type;
-      while (typeAST.kind !== NAME) {
-        typeAST = typeAST.type;
-      }
-
-      // Get the type definition from the Schema.
-      var typeDef = context.getSchema().getType(typeAST.value);
+      var type = typeFromAST(context.getSchema(), node.type);
 
       // If the variable type is not an input type, return an error.
-      if (!isInputType(typeDef)) {
+      if (type && !isInputType(type)) {
         var variableName = node.variable.name.value;
         return new GraphQLError(
           nonInputTypeOnVarMessage(variableName, print(node.type)),

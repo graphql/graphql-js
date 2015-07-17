@@ -133,7 +133,7 @@ export type FragmentSpread = {
 export type InlineFragment = {
   kind: 'InlineFragment';
   loc?: ?Location;
-  typeCondition: Name;
+  typeCondition: NamedType;
   directives?: ?Array<Directive>;
   selectionSet: SelectionSet;
 }
@@ -142,7 +142,7 @@ export type FragmentDefinition = {
   kind: 'FragmentDefinition';
   loc?: ?Location;
   name: Name;
-  typeCondition: Name;
+  typeCondition: NamedType;
   directives?: ?Array<Directive>;
   selectionSet: SelectionSet;
 }
@@ -221,9 +221,15 @@ export type Directive = {
 
 // Types
 
-export type Type = Name
+export type Type = NamedType
                  | ListType
                  | NonNullType
+
+export type NamedType = {
+  kind: 'NamedType';
+  loc?: ?Location;
+  name: Name;
+};
 
 export type ListType = {
   kind: 'ListType';
@@ -234,5 +240,5 @@ export type ListType = {
 export type NonNullType = {
   kind: 'NonNullType';
   loc?: ?Location;
-  type: Name | ListType;
+  type: NamedType | ListType;
 }
