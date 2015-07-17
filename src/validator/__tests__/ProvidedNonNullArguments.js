@@ -29,6 +29,16 @@ function missingDirectiveArg(directiveName, argName, typeName, line, column) {
 
 describe('Validate: Provided required arguments', () => {
 
+  it('ignores unknown arguments', () => {
+    expectPassesRule(ProvidedNonNullArguments, `
+      {
+        dog {
+          isHousetrained(unknownArgument: true)
+        }
+      }
+    `);
+  });
+
   describe('Valid non-nullable value', () => {
 
     it('Arg on optional arg', () => {
@@ -176,6 +186,14 @@ describe('Validate: Provided required arguments', () => {
   });
 
   describe('Directive arguments', () => {
+
+    it('ignores unknown directives', () => {
+      expectPassesRule(ProvidedNonNullArguments, `
+        {
+          dog @unknown
+        }
+      `);
+    });
 
     it('with directives of valid types', () => {
       expectPassesRule(ProvidedNonNullArguments, `

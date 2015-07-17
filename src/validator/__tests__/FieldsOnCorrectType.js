@@ -64,6 +64,14 @@ describe('Validate: Fields on correct type', () => {
     `);
   });
 
+  it('Ignores fields on unknown type', () => {
+    expectPassesRule(FieldsOnCorrectType, `
+      fragment unknownSelection on UnknownType {
+        unknownField
+      }
+    `);
+  });
+
   it('Field not defined on fragment', () => {
     expectFailsRule(FieldsOnCorrectType, `
       fragment fieldNotDefined on Dog {

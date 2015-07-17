@@ -37,6 +37,14 @@ describe('Validate: Known argument names', () => {
     `);
   });
 
+  it('ignores args of unknown fields', () => {
+    expectPassesRule(KnownArgumentNames, `
+      fragment argOnUnknownField on Dog {
+        unknownField(unknownArg: SIT)
+      }
+    `);
+  });
+
   it('multiple args in reverse order are known', () => {
     expectPassesRule(KnownArgumentNames, `
       fragment multipleArgsReverseOrder on ComplicatedArgs {
