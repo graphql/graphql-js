@@ -17,12 +17,6 @@ import { GraphQLError } from './GraphQLError';
  * document responsible for the original Error.
  */
 export function locatedError(error: Error, nodes: Array<any>): GraphQLError {
-  // If the error is already a GraphQLError, do not overwrite it's existing
-  // location information.
-  if (error instanceof GraphQLError) {
-    return error;
-  }
-
   var message = error && error.message ? error.message : String(error);
   var stack = error ? error.stack : null;
   return new GraphQLError(message, nodes, stack);
