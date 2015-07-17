@@ -20,9 +20,6 @@ import {
   GraphQLString,
 } from '../../type';
 
-// 80+ char lines are useful in describe/it, so ignore in this file.
-/*eslint-disable max-len */
-
 describe('Execute: Handles basic execution tasks', () => {
   it('executes arbitrary code', async () => {
     var data = {
@@ -138,8 +135,9 @@ describe('Execute: Handles basic execution tasks', () => {
       query: DataType
     });
 
-    return expect(await execute(schema, data, ast, 'Example', { size: 100 }))
-                  .to.deep.equal(expected);
+    expect(
+      await execute(schema, data, ast, 'Example', { size: 100 })
+    ).to.deep.equal(expected);
   });
 
   it('merges parallel fragments', async () => {
@@ -168,7 +166,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
     var schema = new GraphQLSchema({ query: Type });
 
-    return expect(
+    expect(
       await execute(schema, null, ast)
     ).to.deep.equal({
       data: {
@@ -187,13 +185,12 @@ describe('Execute: Handles basic execution tasks', () => {
   it('threads context correctly', async () => {
     var doc = `query Example { a }`;
 
-    var gotHere = false;
-
     var data = {
       contextThing: 'thing',
     };
 
-    var ast = parse(doc);
+    var resolvedContext;
+
     var schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Type',
@@ -201,17 +198,16 @@ describe('Execute: Handles basic execution tasks', () => {
           a: {
             type: GraphQLString,
             resolve(context) {
-              expect(context.contextThing).to.equal('thing');
-              gotHere = true;
+              resolvedContext = context;
             }
           }
         }
       })
     });
 
-    execute(schema, data, ast, 'Example', {});
+    await execute(schema, data, parse(doc), 'Example', {});
 
-    expect(gotHere).to.equal(true);
+    expect(resolvedContext.contextThing).to.equal('thing');
   });
 
   it('correctly threads arguments', async () => {
@@ -221,9 +217,8 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     `;
 
-    var gotHere = false;
+    var resolvedArgs;
 
-    let docAst = parse(doc);
     var schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Type',
@@ -235,16 +230,17 @@ describe('Execute: Handles basic execution tasks', () => {
             },
             type: GraphQLString,
             resolve(_, args) {
-              expect(args.numArg).to.equal(123);
-              expect(args.stringArg).to.equal('foo');
-              gotHere = true;
+              resolvedArgs = args;
             }
           }
         }
       })
     });
-    execute(schema, null, docAst, 'Example', {});
-    expect(gotHere).to.equal(true);
+
+    await execute(schema, null, parse(doc), 'Example', {});
+
+    expect(resolvedArgs.numArg).to.equal(123);
+    expect(resolvedArgs.stringArg).to.equal('foo');
   });
 
   it('nulls out error subtrees', async () => {
@@ -292,26 +288,24 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    return execute(schema, data, docAst).then(result => {
+    var result = await execute(schema, data, docAst);
 
-      expect(result.data).to.deep.equal({
-        sync: 'sync',
-        syncError: null,
-        async: 'async',
-        asyncReject: null,
-        asyncError: null,
-      });
-
-      expect(result.errors && result.errors.map(formatError)).to.deep.equal([
-        { message: 'Error getting syncError',
-          locations: [ { line: 3, column: 7 } ] },
-        { message: 'Error getting asyncReject',
-          locations: [ { line: 5, column: 7 } ] },
-        { message: 'Error getting asyncError',
-          locations: [ { line: 6, column: 7 } ] },
-      ]);
-
+    expect(result.data).to.deep.equal({
+      sync: 'sync',
+      syncError: null,
+      async: 'async',
+      asyncReject: null,
+      asyncError: null,
     });
+
+    expect(result.errors && result.errors.map(formatError)).to.deep.equal([
+      { message: 'Error getting syncError',
+        locations: [ { line: 3, column: 7 } ] },
+      { message: 'Error getting asyncReject',
+        locations: [ { line: 5, column: 7 } ] },
+      { message: 'Error getting asyncError',
+        locations: [ { line: 6, column: 7 } ] },
+    ]);
   });
 
   it('uses the inline operation if no operation is provided', async () => {
@@ -326,9 +320,10 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       })
     });
-    var ex = execute(schema, data, ast);
 
-    return expect(await ex).to.deep.equal({data: {a: 'b'}});
+    var result = await execute(schema, data, ast);
+
+    expect(result).to.deep.equal({data: {a: 'b'}});
   });
 
   it('uses the only operation if no operation is provided', async () => {
@@ -343,11 +338,13 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       })
     });
+
     var result = await execute(schema, data, ast);
-    return expect(result).to.deep.equal({data: {a: 'b'}});
+
+    expect(result).to.deep.equal({data: {a: 'b'}});
   });
 
-  it('throws if no operation is provided with multiple operations', async () => {
+  it('throws if no operation is provided with multiple operations', () => {
     var doc = `query Example { a } query OtherExample { a }`;
     var data = { a: 'b' };
     var ast = parse(doc);
@@ -383,8 +380,10 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       })
     });
+
     var queryResult = await execute(schema, data, ast, 'Q');
-    return expect(queryResult).to.deep.equal({data: {a: 'b'}});
+
+    expect(queryResult).to.deep.equal({data: {a: 'b'}});
   });
 
   it('uses the mutation schema for mutations', async () => {
@@ -405,11 +404,13 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       })
     });
+
     var mutationResult = await execute(schema, data, ast, 'M');
-    return expect(mutationResult).to.deep.equal({data: {c: 'd'}});
+
+    expect(mutationResult).to.deep.equal({data: {c: 'd'}});
   });
 
-  it('responds with correct field ordering in presence of promises', async () => {
+  it('correct field ordering despite execution order', async () => {
     var doc = `{
       a,
       b,
@@ -449,20 +450,20 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       })
     });
-    return execute(schema, data, docAst).then(
-      result => {
-        expect(result).to.deep.equal({
-          data: {
-            a: 'a',
-            b: 'b',
-            c: 'c',
-            d: 'd',
-            e: 'e',
-          }
-        });
-        expect(Object.keys(result.data)).to.deep.equal(['a','b','c','d','e']);
+
+    var result = await execute(schema, data, docAst);
+
+    expect(result).to.deep.equal({
+      data: {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+        d: 'd',
+        e: 'e',
       }
-    );
+    });
+
+    expect(Object.keys(result.data)).to.deep.equal(['a','b','c','d','e']);
   });
 
   it('Avoids recursion', async () => {
@@ -488,8 +489,10 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }),
     });
+
     var queryResult = await execute(schema, data, ast, 'Q');
-    return expect(queryResult).to.deep.equal({data: {a: 'b'}});
+
+    expect(queryResult).to.deep.equal({data: {a: 'b'}});
   });
 
   it('does not include illegal fields in output', async () => {
@@ -511,8 +514,10 @@ describe('Execute: Handles basic execution tasks', () => {
         }
       }),
     });
+
     var mutationResult = await execute(schema, null, ast);
-    return expect(mutationResult).to.deep.equal({
+
+    expect(mutationResult).to.deep.equal({
       data: {
       }
     });
