@@ -41,6 +41,14 @@ describe('Type System: Scalar coercion', () => {
     expect(
       GraphQLInt.coerce(1e5)
     ).to.equal(100000);
+    // Bigger than 2^32, but still representable as an Int
+    expect(
+      GraphQLInt.coerce(9876504321)
+    ).to.equal(9876504321);
+    expect(
+      GraphQLInt.coerce(-9876504321)
+    ).to.equal(-9876504321);
+    // Too big to represent as an Int
     expect(
       GraphQLInt.coerce(1e100)
     ).to.equal(null);

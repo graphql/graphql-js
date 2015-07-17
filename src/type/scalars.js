@@ -21,7 +21,10 @@ export var GraphQLInt = new GraphQLScalarType({
   name: 'Int',
   coerce(value) {
     var num = +value;
-    return num === num && num <= MAX_INT && num >= MIN_INT ? num | 0 : null;
+    if (num === num && num <= MAX_INT && num >= MIN_INT) {
+      return (num < 0 ? Math.ceil : Math.floor)(num);
+    }
+    return null;
   },
   coerceLiteral(ast) {
     if (ast.kind === Kind.INT) {
@@ -30,6 +33,7 @@ export var GraphQLInt = new GraphQLScalarType({
         return num;
       }
     }
+    return null;
   }
 });
 
