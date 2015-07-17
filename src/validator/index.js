@@ -165,7 +165,7 @@ function visitUsingRules(
               instances[i] = null;
             } else if (isError(result)) {
               append(errors, result);
-            } else if (result !== undefined) {
+            } else if (result !== undefined && result !== false) {
               throw new Error('Validator cannot edit document.');
             }
           }

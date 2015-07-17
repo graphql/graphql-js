@@ -66,6 +66,7 @@ export const BREAK = {};
  *       leave(node, key, parent, path, ancestors) {
  *         // @return
  *         //   undefined: no action
+ *         //   false: no action
  *         //   visitor.BREAK: stop visiting altogether
  *         //   null: delete this node
  *         //   any value: replace this node with the returned value
@@ -203,12 +204,12 @@ export function visit(root, visitor) {
           break;
         }
 
-        if (!isLeaving && result === false) {
-          path.pop();
-          continue;
-        }
-
-        if (result !== undefined) {
+        if (result === false) {
+          if (!isLeaving) {
+            path.pop();
+            continue;
+          }
+        } else if (result !== undefined) {
           edits.push([key, result]);
           if (!isLeaving) {
             if (isNode(result)) {
