@@ -35,8 +35,7 @@ describe('Execute: Handles arguments', () => {
     }
     `;
     var ast = parse(doc);
-
-    return expect(await execute(schema, null, ast)).to.deep.equal({
+    return expect(await execute(schema, ast)).to.deep.equal({
       data: {
         fieldWithDefaultArgumentValue: 'Mainstreet'
       }
