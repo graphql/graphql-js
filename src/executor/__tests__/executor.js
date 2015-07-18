@@ -136,7 +136,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     expect(
-      await execute(schema, data, ast, 'Example', { size: 100 })
+      await execute(schema, ast, data, { size: 100 }, 'Example')
     ).to.deep.equal(expected);
   });
 
@@ -167,7 +167,7 @@ describe('Execute: Handles basic execution tasks', () => {
     var schema = new GraphQLSchema({ query: Type });
 
     expect(
-      await execute(schema, null, ast)
+      await execute(schema, ast)
     ).to.deep.equal({
       data: {
         a: 'Apple',
@@ -205,7 +205,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    await execute(schema, data, parse(doc), 'Example', {});
+    await execute(schema, parse(doc), data);
 
     expect(resolvedContext.contextThing).to.equal('thing');
   });
@@ -237,7 +237,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    await execute(schema, null, parse(doc), 'Example', {});
+    await execute(schema, parse(doc));
 
     expect(resolvedArgs.numArg).to.equal(123);
     expect(resolvedArgs.stringArg).to.equal('foo');
@@ -296,7 +296,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     };
 
-    let docAst = parse(doc);
+    let ast = parse(doc);
     var schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Type',
@@ -314,7 +314,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    var result = await execute(schema, data, docAst);
+    var result = await execute(schema, ast, data);
 
     expect(result.data).to.deep.equal({
       sync: 'sync',
@@ -359,7 +359,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    var result = await execute(schema, data, ast);
+    var result = await execute(schema, ast, data);
 
     expect(result).to.deep.equal({data: {a: 'b'}});
   });
@@ -377,7 +377,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    var result = await execute(schema, data, ast);
+    var result = await execute(schema, ast, data);
 
     expect(result).to.deep.equal({data: {a: 'b'}});
   });
@@ -395,7 +395,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    expect(() => execute(schema, data, ast)).to.throw(
+    expect(() => execute(schema, ast, data)).to.throw(
       'Must provide operation name if query contains multiple operations.'
     );
   });
@@ -419,7 +419,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    var queryResult = await execute(schema, data, ast, 'Q');
+    var queryResult = await execute(schema, ast, data, {}, 'Q');
 
     expect(queryResult).to.deep.equal({data: {a: 'b'}});
   });
@@ -443,7 +443,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    var mutationResult = await execute(schema, data, ast, 'M');
+    var mutationResult = await execute(schema, ast, data, {}, 'M');
 
     expect(mutationResult).to.deep.equal({data: {c: 'd'}});
   });
@@ -475,7 +475,7 @@ describe('Execute: Handles basic execution tasks', () => {
       },
     };
 
-    var docAst = parse(doc);
+    var ast = parse(doc);
     var schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Type',
@@ -489,7 +489,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    var result = await execute(schema, data, docAst);
+    var result = await execute(schema, ast, data);
 
     expect(result).to.deep.equal({
       data: {
@@ -528,7 +528,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }),
     });
 
-    var queryResult = await execute(schema, data, ast, 'Q');
+    var queryResult = await execute(schema, ast, data, {}, 'Q');
 
     expect(queryResult).to.deep.equal({data: {a: 'b'}});
   });
@@ -553,7 +553,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }),
     });
 
-    var mutationResult = await execute(schema, null, ast);
+    var mutationResult = await execute(schema, ast);
 
     expect(mutationResult).to.deep.equal({
       data: {

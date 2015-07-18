@@ -92,7 +92,7 @@ describe('Execute: Handles inputs', () => {
         `;
         var ast = parse(doc);
 
-        return expect(await execute(schema, null, ast)).to.deep.equal({
+        return expect(await execute(schema, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
@@ -107,7 +107,7 @@ describe('Execute: Handles inputs', () => {
         `;
         var ast = parse(doc);
 
-        return expect(await execute(schema, null, ast)).to.deep.equal({
+        return expect(await execute(schema, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
@@ -122,7 +122,7 @@ describe('Execute: Handles inputs', () => {
         `;
         var ast = parse(doc);
 
-        var result = await execute(schema, null, ast);
+        var result = await execute(schema, ast);
 
         expect(result).to.deep.equal({
           data: {
@@ -143,7 +143,7 @@ describe('Execute: Handles inputs', () => {
 
       it('executes with complex input', async () => {
         var params = {input: {a: 'foo', b: ['bar'], c: 'baz'}};
-        var result = await execute(schema, null, ast, null, params);
+        var result = await execute(schema, ast, null, params);
 
         return expect(result).to.deep.equal({
           data: {
@@ -159,7 +159,7 @@ describe('Execute: Handles inputs', () => {
           }
         `);
 
-        var result = await execute(schema, null, withDefaultsAST);
+        var result = await execute(schema, withDefaultsAST);
 
         return expect(result).to.deep.equal({
           data: {
@@ -170,7 +170,7 @@ describe('Execute: Handles inputs', () => {
 
       it('properly coerces single value to array', async () => {
         var params = {input: {a: 'foo', b: 'bar', c: 'baz'}};
-        var result = await execute(schema, null, ast, null, params);
+        var result = await execute(schema, ast, null, params);
 
         return expect(result).to.deep.equal({
           data: {
@@ -184,7 +184,7 @@ describe('Execute: Handles inputs', () => {
 
         var caughtError;
         try {
-          execute(schema, null, ast, null, params);
+          execute(schema, ast, null, params);
         } catch (error) {
           caughtError = error;
         }
@@ -202,7 +202,7 @@ describe('Execute: Handles inputs', () => {
 
         var caughtError;
         try {
-          execute(schema, null, ast, null, params);
+          execute(schema, ast, null, params);
         } catch (error) {
           caughtError = error;
         }
@@ -220,7 +220,7 @@ describe('Execute: Handles inputs', () => {
 
         var caughtError;
         try {
-          execute(schema, null, ast, null, params);
+          execute(schema, ast, null, params);
         } catch (error) {
           caughtError = error;
         }
@@ -238,7 +238,7 @@ describe('Execute: Handles inputs', () => {
 
         var caughtError;
         try {
-          execute(schema, null, ast, null, params);
+          execute(schema, ast, null, params);
         } catch (error) {
           caughtError = error;
         }
@@ -263,7 +263,7 @@ describe('Execute: Handles inputs', () => {
       `;
       var ast = parse(doc);
 
-      return expect(await execute(schema, null, ast)).to.deep.equal({
+      return expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: null
         }
@@ -278,7 +278,7 @@ describe('Execute: Handles inputs', () => {
       `;
       var ast = parse(doc);
 
-      return expect(await execute(schema, null, ast)).to.deep.equal({
+      return expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: null
         }
@@ -293,7 +293,7 @@ describe('Execute: Handles inputs', () => {
       `;
       var ast = parse(doc);
 
-      return expect(await execute(schema, null, ast)).to.deep.equal({
+      return expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: null
         }
@@ -309,7 +309,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {value: null})
+        await execute(schema, ast, null, {value: null})
       ).to.deep.equal({
         data: {
           fieldWithNullableStringInput: null
@@ -326,7 +326,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {value: 'a'})
+        await execute(schema, ast, null, {value: 'a'})
       ).to.deep.equal({
         data: {
           fieldWithNullableStringInput: '"a"'
@@ -342,7 +342,7 @@ describe('Execute: Handles inputs', () => {
       `;
       var ast = parse(doc);
 
-      return expect(await execute(schema, null, ast)).to.deep.equal({
+      return expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: '"a"'
         }
@@ -360,7 +360,7 @@ describe('Execute: Handles inputs', () => {
 
       var caughtError;
       try {
-        execute(schema, null, parse(doc));
+        execute(schema, parse(doc));
       } catch (error) {
         caughtError = error;
       }
@@ -382,7 +382,7 @@ describe('Execute: Handles inputs', () => {
 
       var caughtError;
       try {
-        execute(schema, null, ast, null, {value: null});
+        execute(schema, ast, null, {value: null});
       } catch (error) {
         caughtError = error;
       }
@@ -403,7 +403,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {value: 'a'})
+        await execute(schema, ast, null, {value: 'a'})
       ).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: '"a"'
@@ -419,7 +419,7 @@ describe('Execute: Handles inputs', () => {
       `;
       var ast = parse(doc);
 
-      return expect(await execute(schema, null, ast)).to.deep.equal({
+      return expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: '"a"'
         }
@@ -434,7 +434,7 @@ describe('Execute: Handles inputs', () => {
       `;
       var ast = parse(doc);
 
-      return expect(await execute(schema, null, ast)).to.deep.equal({
+      return expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: null
         }
@@ -452,7 +452,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {input: null})
+        await execute(schema, ast, null, {input: null})
       ).to.deep.equal({
         data: {
           list: null
@@ -469,7 +469,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {input: ['A']})
+        await execute(schema, ast, null, {input: ['A']})
       ).to.deep.equal({
         data: {
           list: '["A"]'
@@ -486,7 +486,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {input: ['A',null,'B']})
+        await execute(schema, ast, null, {input: ['A',null,'B']})
       ).to.deep.equal({
         data: {
           list: '["A",null,"B"]'
@@ -504,7 +504,7 @@ describe('Execute: Handles inputs', () => {
 
       var caughtError;
       try {
-        execute(schema, null, ast, null, {input: null});
+        execute(schema, ast, null, {input: null});
       } catch (error) {
         caughtError = error;
       }
@@ -525,7 +525,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {input: ['A']})
+        await execute(schema, ast, null, {input: ['A']})
       ).to.deep.equal({
         data: {
           nnList: '["A"]'
@@ -542,7 +542,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {input: ['A',null,'B']})
+        await execute(schema, ast, null, {input: ['A',null,'B']})
       ).to.deep.equal({
         data: {
           nnList: '["A",null,"B"]'
@@ -559,7 +559,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {input: null})
+        await execute(schema, ast, null, {input: null})
       ).to.deep.equal({
         data: {
           listNN: null
@@ -576,7 +576,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {input: ['A']})
+        await execute(schema, ast, null, {input: ['A']})
       ).to.deep.equal({
         data: {
           listNN: '["A"]'
@@ -595,7 +595,7 @@ describe('Execute: Handles inputs', () => {
 
       var caughtError;
       try {
-        execute(schema, null, ast, null, vars);
+        execute(schema, ast, null, vars);
       } catch (error) {
         caughtError = error;
       }
@@ -618,7 +618,7 @@ describe('Execute: Handles inputs', () => {
 
       var caughtError;
       try {
-        execute(schema, null, ast, null, {input: null});
+        execute(schema, ast, null, {input: null});
       } catch (error) {
         caughtError = error;
       }
@@ -639,7 +639,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, null, ast, null, {input: ['A']})
+        await execute(schema, ast, null, {input: ['A']})
       ).to.deep.equal({
         data: {
           nnListNN: '["A"]'
@@ -658,7 +658,7 @@ describe('Execute: Handles inputs', () => {
 
       var caughtError;
       try {
-        execute(schema, null, ast, null, vars);
+        execute(schema, ast, null, vars);
       } catch (error) {
         caughtError = error;
       }
@@ -682,7 +682,7 @@ describe('Execute: Handles inputs', () => {
 
       var caughtError;
       try {
-        execute(schema, null, ast, null, vars);
+        execute(schema, ast, null, vars);
       } catch (error) {
         caughtError = error;
       }
@@ -706,7 +706,7 @@ describe('Execute: Handles inputs', () => {
 
       var caughtError;
       try {
-        execute(schema, null, ast, null, vars);
+        execute(schema, ast, null, vars);
       } catch (error) {
         caughtError = error;
       }

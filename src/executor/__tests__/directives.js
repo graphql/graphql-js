@@ -34,7 +34,7 @@ var data = {
 };
 
 async function executeTestQuery(doc) {
-  return await execute(schema, data, parse(doc));
+  return await execute(schema, parse(doc), data);
 }
 
 describe('Execute: handles directives', () => {

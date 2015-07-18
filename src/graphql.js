@@ -29,14 +29,14 @@ import type { GraphQLSchema } from './type/schema';
 export function graphql(
   schema: GraphQLSchema,
   requestString: string,
-  rootObject?: ?any,
-  variableValues?: ?{[key: string]: string},
+  rootValue?: ?any,
+  variableValues?: ?{[key: string]: any},
   operationName?: ?string
 ): Promise<GraphQLResult> {
   return new Promise(resolve => {
     var source = new Source(requestString || '', 'GraphQL request');
-    var ast = parse(source);
-    var validationErrors = validateDocument(schema, ast);
+    var documentAST = parse(source);
+    var validationErrors = validateDocument(schema, documentAST);
     if (validationErrors.length > 0) {
       resolve({
         errors: validationErrors.map(formatError)
@@ -45,10 +45,10 @@ export function graphql(
       resolve(
         execute(
           schema,
-          rootObject,
-          ast,
-          operationName,
-          variableValues
+          documentAST,
+          rootValue,
+          variableValues,
+          operationName
         ).then(result => {
           if (result.errors) {
             return {

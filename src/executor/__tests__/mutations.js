@@ -129,8 +129,9 @@ describe('Execute: Handles mutation execution ordering', () => {
         theNumber
       }
     }`;
-    var ast = parse(doc);
-    var mutationResult = await execute(schema, new Root(6), ast, 'M');
+
+    var mutationResult = await execute(schema, parse(doc), new Root(6));
+
     return expect(mutationResult).to.deep.equal({
       data: {
         first: {
@@ -152,7 +153,7 @@ describe('Execute: Handles mutation execution ordering', () => {
     });
   });
 
-  it('evaluates mutations correctly in the presense of a failed mutation', () => {
+  it('evaluates mutations correctly in the presense of a failed mutation', async () => {
     var doc = `mutation M {
       first: immediatelyChangeTheNumber(newNumber: 1) {
         theNumber
@@ -173,33 +174,32 @@ describe('Execute: Handles mutation execution ordering', () => {
         theNumber
       }
     }`;
-    var ast = parse(doc);
 
-    return execute(schema, new Root(6), ast, 'M').then(result => {
-      expect(result.data).to.deep.equal({
-        first: {
-          theNumber: 1
-        },
-        second: {
-          theNumber: 2
-        },
-        third: null,
-        fourth: {
-          theNumber: 4
-        },
-        fifth: {
-          theNumber: 5
-        },
-        sixth: null,
-      });
+    var result = await execute(schema, parse(doc), new Root(6));
 
-      expect(result.errors).to.have.length(2);
-      expect(result.errors).to.containSubset([
-        { message: 'Cannot change the number',
-          locations: [ { line: 8, column: 7 } ] },
-        { message: 'Cannot change the number',
-          locations: [ { line: 17, column: 7 } ] }
-      ]);
+    expect(result.data).to.deep.equal({
+      first: {
+        theNumber: 1
+      },
+      second: {
+        theNumber: 2
+      },
+      third: null,
+      fourth: {
+        theNumber: 4
+      },
+      fifth: {
+        theNumber: 5
+      },
+      sixth: null,
     });
+
+    expect(result.errors).to.have.length(2);
+    expect(result.errors).to.containSubset([
+      { message: 'Cannot change the number',
+        locations: [ { line: 8, column: 7 } ] },
+      { message: 'Cannot change the number',
+        locations: [ { line: 17, column: 7 } ] }
+    ]);
   });
 });

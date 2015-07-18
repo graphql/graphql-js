@@ -50,7 +50,7 @@ function check(testType, testData, expected) {
 
     var ast = parse('{ nest { test } }');
 
-    var response = await execute(schema, data, ast);
+    var response = await execute(schema, ast, data);
     // Formatting errors for ease of test writing.
     var result = response.errors;
     if (response.errors) {

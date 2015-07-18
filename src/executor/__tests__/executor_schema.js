@@ -156,7 +156,7 @@ describe('Execute: Handles execution with a complex schema', () => {
     // Note: this is intentionally not validating to ensure appropriate
     // behavior occurs when executing an invalid query.
     return expect(
-      await execute(BlogSchema, null, parse(request))
+      await execute(BlogSchema, parse(request))
     ).to.deep.equal({
       data: {
         feed: [

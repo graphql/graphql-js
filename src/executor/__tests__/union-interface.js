@@ -132,7 +132,7 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      await execute(schema, null, ast)
+      await execute(schema, ast)
     ).to.deep.equal({
       data: {
         Named: {
@@ -183,7 +183,7 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      await execute(schema, john, ast)
+      await execute(schema, ast, john)
     ).to.deep.equal({
       data: {
         __typename: 'Person',
@@ -218,7 +218,7 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      await execute(schema, john, ast)
+      await execute(schema, ast, john)
     ).to.deep.equal({
       data: {
         __typename: 'Person',
@@ -248,7 +248,7 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      await execute(schema, john, ast)
+      await execute(schema, ast, john)
     ).to.deep.equal({
       data: {
         __typename: 'Person',
@@ -282,7 +282,7 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      await execute(schema, john, ast)
+      await execute(schema, ast, john)
     ).to.deep.equal({
       data: {
         __typename: 'Person',
@@ -330,7 +330,7 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     return expect(
-      await execute(schema, john, ast)
+      await execute(schema, ast, john)
     ).to.deep.equal({
       data: {
         __typename: 'Person',

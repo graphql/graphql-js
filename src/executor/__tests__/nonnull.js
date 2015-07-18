@@ -143,7 +143,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, ast)
+      await execute(schema, ast, throwingData)
     ).to.containSubset(expected);
   });
 
@@ -167,7 +167,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, ast)
+      await execute(schema, ast, throwingData)
     ).to.containSubset(expected);
   });
 
@@ -193,7 +193,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, ast)
+      await execute(schema, ast, throwingData)
     ).to.containSubset(expected);
   });
 
@@ -219,7 +219,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, ast)
+      await execute(schema, ast, throwingData)
     ).to.containSubset(expected);
   });
 
@@ -245,7 +245,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, ast)
+      await execute(schema, ast, throwingData)
     ).to.containSubset(expected);
   });
 
@@ -271,7 +271,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, ast)
+      await execute(schema, ast, throwingData)
     ).to.containSubset(expected);
   });
 
@@ -363,7 +363,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, ast)
+      await execute(schema, ast, throwingData)
     ).to.containSubset(expected);
   });
 
@@ -439,7 +439,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, ast)
+      await execute(schema, ast, throwingData)
     ).to.containSubset(expected);
   });
 
@@ -460,7 +460,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, ast)
+      await execute(schema, ast, nullingData)
     ).to.containSubset(expected);
   });
 
@@ -480,7 +480,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, ast)
+      await execute(schema, ast, nullingData)
     ).to.containSubset(expected);
   });
 
@@ -506,7 +506,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, ast)
+      await execute(schema, ast, nullingData)
     ).to.containSubset(expected);
   });
 
@@ -532,7 +532,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, ast)
+      await execute(schema, ast, nullingData)
     ).to.containSubset(expected);
   });
 
@@ -558,7 +558,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, ast)
+      await execute(schema, ast, nullingData)
     ).to.containSubset(expected);
   });
 
@@ -584,7 +584,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, ast)
+      await execute(schema, ast, nullingData)
     ).to.containSubset(expected);
   });
 
@@ -650,7 +650,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, ast)
+      await execute(schema, ast, nullingData)
     ).to.containSubset(expected);
   });
 
@@ -726,7 +726,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, ast)
+      await execute(schema, ast, nullingData)
     ).to.containSubset(expected);
   });
 
@@ -744,7 +744,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, parse(doc))
+      await execute(schema, parse(doc), throwingData)
     ).to.containSubset(expected);
   });
 
@@ -762,7 +762,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, throwingData, parse(doc))
+      await execute(schema, parse(doc), throwingData)
     ).to.containSubset(expected);
   });
 
@@ -780,7 +780,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, parse(doc))
+      await execute(schema, parse(doc), nullingData)
     ).to.containSubset(expected);
   });
 
@@ -798,7 +798,7 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(
-      await execute(schema, nullingData, parse(doc))
+      await execute(schema, parse(doc), nullingData)
     ).to.containSubset(expected);
   });
 });

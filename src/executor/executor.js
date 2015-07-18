@@ -78,7 +78,7 @@ import type {
 type ExecutionContext = {
   schema: GraphQLSchema;
   fragments: {[key: string]: FragmentDefinition};
-  root: Object;
+  rootValue: any;
   operation: OperationDefinition;
   variables: {[key: string]: any};
   errors: Array<GraphQLError>;
@@ -104,16 +104,22 @@ type ExecutionResult = {
  */
 export function execute(
   schema: GraphQLSchema,
-  root: any,
-  ast: Document,
-  operationName?: ?string,
-  args?: ?{[key: string]: string}
+  documentAST: Document,
+  rootValue?: any,
+  variableValues?: ?{[key: string]: any},
+  operationName?: ?string
 ): Promise<ExecutionResult> {
   invariant(schema, 'Must provide schema');
 
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
-  var context = buildExecutionContext(schema, root, ast, operationName, args);
+  var context = buildExecutionContext(
+    schema,
+    documentAST,
+    rootValue,
+    variableValues,
+    operationName
+  );
 
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
@@ -123,7 +129,7 @@ export function execute(
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
   return new Promise(resolve => {
-    resolve(executeOperation(context, root, context.operation));
+    resolve(executeOperation(context, context.operation, rootValue));
   }).catch(error => {
     // Errors from sub-fields of a NonNull type may propagate to the top level,
     // at which point we still log the error and null the parent field, which
@@ -146,15 +152,15 @@ export function execute(
  */
 function buildExecutionContext(
   schema: GraphQLSchema,
-  root: Object,
-  ast: Document,
-  operationName?: ?string,
-  args?: ?{[key: string]: string}
+  documentAST: Document,
+  rootValue: any,
+  variableValues: ?{[key: string]: any},
+  operationName: ?string
 ): ExecutionContext {
   var errors: Array<GraphQLError> = [];
   var operations: {[name: string]: OperationDefinition} = {};
   var fragments: {[name: string]: FragmentDefinition} = {};
-  ast.definitions.forEach(statement => {
+  documentAST.definitions.forEach(statement => {
     switch (statement.kind) {
       case Kind.OPERATION_DEFINITION:
         operations[statement.name ? statement.name.value : ''] = statement;
@@ -177,10 +183,10 @@ function buildExecutionContext(
   var variables = getVariableValues(
     schema,
     operation.variableDefinitions || [],
-    args || {}
+    variableValues || {}
   );
   var exeContext: ExecutionContext =
-    { schema, fragments, root, operation, variables, errors };
+    { schema, fragments, rootValue, operation, variables, errors };
   return exeContext;
 }
 
@@ -189,15 +195,15 @@ function buildExecutionContext(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-  root: Object,
-  operation: OperationDefinition
+  operation: OperationDefinition,
+  rootValue: any
 ): Object {
   var type = getOperationRootType(exeContext.schema, operation);
   var fields = collectFields(exeContext, type, operation.selectionSet, {}, {});
   if (operation.operation === 'mutation') {
-    return executeFieldsSerially(exeContext, type, root, fields);
+    return executeFieldsSerially(exeContext, type, rootValue, fields);
   }
-  return executeFields(exeContext, type, root, fields);
+  return executeFields(exeContext, type, rootValue, fields);
 }
 
 /**
@@ -234,13 +240,13 @@ function getOperationRootType(
 function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
-  source: Object,
+  sourceValue: any,
   fields: {[key: string]: Array<Field>}
 ): Promise<Object> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then((results) => {
       var fieldASTs = fields[responseName];
-      var result = resolveField(exeContext, parentType, source, fieldASTs);
+      var result = resolveField(exeContext, parentType, sourceValue, fieldASTs);
       if (result === undefined) {
         return results;
       }
@@ -265,7 +271,7 @@ function executeFieldsSerially(
 function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
-  source: Object,
+  sourceValue: any,
   fields: {[key: string]: Array<Field>}
 ): Object {
   var containsPromise = false;
@@ -273,7 +279,7 @@ function executeFields(
   var finalResults = Object.keys(fields).reduce(
     (results, responseName) => {
       var fieldASTs = fields[responseName];
-      var result = resolveField(exeContext, parentType, source, fieldASTs);
+      var result = resolveField(exeContext, parentType, sourceValue, fieldASTs);
       if (result === undefined) {
         return results;
       }
@@ -480,7 +486,7 @@ function resolveField(
     var result = resolveFn(
       source,
       args,
-      exeContext.root,
+      exeContext.rootValue,
       // TODO: provide all fieldASTs, not just the first field
       fieldAST,
       fieldType,
