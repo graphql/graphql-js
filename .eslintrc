@@ -156,7 +156,6 @@
         "properties": "always"
       }
     ],
-    "comma-spacing": 0,
     "comma-style": [
       2,
       "last"

@@ -501,7 +501,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     });
 
-    expect(Object.keys(result.data)).to.deep.equal(['a','b','c','d','e']);
+    expect(Object.keys(result.data)).to.deep.equal(['a', 'b', 'c', 'd', 'e']);
   });
 
   it('Avoids recursion', async () => {

@@ -486,7 +486,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, ast, null, {input: ['A',null,'B']})
+        await execute(schema, ast, null, {input: ['A', null, 'B']})
       ).to.deep.equal({
         data: {
           list: '["A",null,"B"]'
@@ -542,7 +542,7 @@ describe('Execute: Handles inputs', () => {
       var ast = parse(doc);
 
       return expect(
-        await execute(schema, ast, null, {input: ['A',null,'B']})
+        await execute(schema, ast, null, {input: ['A', null, 'B']})
       ).to.deep.equal({
         data: {
           nnList: '["A",null,"B"]'
