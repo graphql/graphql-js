@@ -214,7 +214,7 @@ function coerceValue(type: GraphQLInputType, value: any): any {
  * Given a type and a value AST node known to match this type, build a
  * runtime value.
  */
-function coerceValueAST(
+export function coerceValueAST(
   type: GraphQLInputType,
   valueAST: any,
   variables?: ?{ [key: string]: any }
