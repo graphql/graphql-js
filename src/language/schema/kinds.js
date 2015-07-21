@@ -10,13 +10,13 @@
 // Schema
 
 export const SCHEMA_DOCUMENT = 'SchemaDocument';
-export const FIELD_DEFINITION = 'FieldDefinition';
 export const TYPE_DEFINITION = 'TypeDefinition';
-export const INTERFACE_DEFINITION = 'InterfaceDefinition';
-export const ENUM_DEFINITION = 'EnumDefinition';
-export const ENUM_VALUE_DEFINITION = 'EnumValueDefinition';
+export const FIELD_DEFINITION = 'FieldDefinition';
 export const ARGUMENT_DEFINITION = 'ArgumentDefinition';
+export const INTERFACE_DEFINITION = 'InterfaceDefinition';
 export const UNION_DEFINITION = 'UnionDefinition';
 export const SCALAR_DEFINITION = 'ScalarDefinition';
+export const ENUM_DEFINITION = 'EnumDefinition';
+export const ENUM_VALUE_DEFINITION = 'EnumValueDefinition';
 export const INPUT_OBJECT_DEFINITION = 'InputObjectDefinition';
 export const INPUT_FIELD_DEFINITION = 'InputFieldDefinition';
