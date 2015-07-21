@@ -159,6 +159,26 @@ describe('Type System: Example', () => {
     expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);
   });
 
+  it('includes interfaces\' thunk subtypes in the type map', () => {
+    var SomeInterface = new GraphQLInterfaceType({
+      name: 'SomeInterface',
+      fields: {}
+    });
+
+    var SomeSubtype = new GraphQLObjectType({
+      name: 'SomeSubtype',
+      fields: {},
+      interfaces: () => [SomeInterface]
+    });
+
+    var schema = new GraphQLSchema({
+      query: SomeInterface
+    });
+
+    expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);
+  });
+
+
   it('stringifies simple types', () => {
 
     expect('' + GraphQLInt).to.equal('Int');

@@ -252,6 +252,7 @@ export class GraphQLObjectType {
 
   _typeConfig: GraphQLObjectTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
+  _interfaces: Array<GraphQLInterfaceType>;
 
   constructor(config: GraphQLObjectTypeConfig) {
     invariant(config.name, 'Type must be named.');
@@ -267,7 +268,8 @@ export class GraphQLObjectType {
   }
 
   getInterfaces(): Array<GraphQLInterfaceType> {
-    return this._typeConfig.interfaces || [];
+    return this._interfaces ||
+      (this._interfaces = defineInterfaces(this._typeConfig.interfaces || []));
   }
 
   isTypeOf(value: any): ?boolean {
@@ -282,10 +284,18 @@ export class GraphQLObjectType {
   }
 }
 
+function resolveMaybeThunk<T>(thingOrThunk: T | () => T): T {
+  return typeof thingOrThunk === 'function' ? thingOrThunk() : thingOrThunk;
+}
+
+function defineInterfaces(interfacesOrThunk): Array<GraphQLInterfaceType> {
+  return resolveMaybeThunk(interfacesOrThunk);
+}
+
 function defineFieldMap(
   fields: GraphQLFieldConfigMap
 ): GraphQLFieldDefinitionMap {
-  var fieldMap: any = typeof fields === 'function' ? fields() : fields;
+  var fieldMap: any = resolveMaybeThunk(fields);
   Object.keys(fieldMap).forEach(fieldName => {
     var field = fieldMap[fieldName];
     field.name = fieldName;
