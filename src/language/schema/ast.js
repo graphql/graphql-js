@@ -11,6 +11,7 @@
 import type {
   Location,
   Name,
+  Value,
   Type,
   NamedType
 } from '../ast';
@@ -41,8 +42,8 @@ export type FieldDefinition = {
   kind: 'FieldDefinition';
   loc?: ?Location;
   name: Name;
-  type: Type;
   arguments: Array<ArgumentDefinition>;
+  type: Type;
 }
 
 export type ArgumentDefinition = {
@@ -50,6 +51,7 @@ export type ArgumentDefinition = {
   loc?: ?Location;
   name: Name;
   type: Type;
+  defaultValue?: ?Value;
 }
 
 export type InterfaceDefinition = {
