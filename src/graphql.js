@@ -15,7 +15,7 @@ import { execute } from './executor/executor';
 import { formatError } from './error';
 import type { GraphQLFormattedError } from './error/formatError';
 import type { GraphQLSchema } from './type/schema';
-
+import { GraphQLError } from './error/GraphQLError';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -61,6 +61,9 @@ export function graphql(
       );
     }
   }).catch(error => {
+    if (!(error instanceof GraphQLError)) {
+      throw error;
+    }
     return { errors: [ formatError(error) ] };
   });
 }
