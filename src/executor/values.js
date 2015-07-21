@@ -64,8 +64,12 @@ export function getArgumentValues(
   var argASTMap = argASTs ? keyMap(argASTs, arg => arg.name.value) : {};
   return argDefs.reduce((result, argDef) => {
     var name = argDef.name;
-    var valueAST = argASTMap[name] && argASTMap[name].value;
-    result[name] = coerceValueAST(argDef.type, valueAST, variables);
+    if (argASTMap[name]) {
+      var valueAST = argASTMap[name].value;
+      result[name] = coerceValueAST(argDef.type, valueAST, variables);
+    }else {
+      result[name] = argDef.defaultValue;
+    }
     return result;
   }, {});
 }
