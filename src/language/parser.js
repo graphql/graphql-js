@@ -9,8 +9,7 @@
 
 import { Source } from './source';
 import { syntaxError } from '../error';
-import { lex, TokenKind, getTokenKindDesc, getTokenDesc } from './lexer';
-import type { Token } from './lexer';
+import { TokenKind } from './lexer';
 import type {
   Name,
   Variable,
@@ -35,7 +34,7 @@ import type {
   Directive,
 
   Type,
-  NamedType
+  NamedType,
 } from './ast';
 
 import {
@@ -69,24 +68,19 @@ import {
   NON_NULL_TYPE,
 } from './kinds';
 
-/**
- * Configuration options to control parser behavior
- */
-type ParseOptions = {
-  /**
-   * By default, the parser creates AST nodes that know the location
-   * in the source that they correspond to. This configuration flag
-   * disables that behavior for performance or testing.
-   */
-  noLocation?: boolean,
-
-  /**
-   * By default, the parser creates AST nodes that contain a reference
-   * to the source that they were created from. This configuration flag
-   * disables that behavior for performance or testing.
-   */
-  noSource?: boolean,
-}
+import {
+  makeParser,
+  peek,
+  skip,
+  loc,
+  any,
+  many,
+  expect,
+  unexpected,
+  expectKeyword,
+  advance,
+  ParseOptions,
+} from './parserCore';
 
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -102,161 +96,9 @@ export function parse(
 }
 
 /**
- * Returns the parser object that is used to store state throughout the
- * process of parsing.
- */
-function makeParser(source: Source, options: ParseOptions) {
-  var _lexToken = lex(source);
-  return {
-    _lexToken,
-    source,
-    options,
-    prevEnd: 0,
-    token: _lexToken(),
-  };
-}
-
-/**
- * Returns a location object, used to identify the place in
- * the source that created a given parsed object.
- */
-function loc(parser, start: number) {
-  if (parser.options.noLocation) {
-    return null;
-  }
-  if (parser.options.noSource) {
-    return {
-      start: start,
-      end: parser.prevEnd
-    };
-  }
-  return {
-    start: start,
-    end: parser.prevEnd,
-    source: parser.source
-  };
-}
-
-/**
- * Moves the internal parser object to the next lexed token.
- */
-function advance(parser): void {
-  var prevEnd = parser.token.end;
-  parser.prevEnd = prevEnd;
-  parser.token = parser._lexToken(prevEnd);
-}
-
-/**
- * Determines if the next token is of a given kind
- */
-function peek(parser, kind: string): boolean {
-  return parser.token.kind === kind;
-}
-
-/**
- * If the next token is of the given kind, return true after advancing
- * the parser. Otherwise, do not change the parser state and return false.
- */
-function skip(parser, kind: string): boolean {
-  var match = parser.token.kind === kind;
-  if (match) {
-    advance(parser);
-  }
-  return match;
-}
-
-/**
- * If the next token is of the given kind, return that token after advancing
- * the parser. Otherwise, do not change the parser state and return false.
- */
-function expect(parser, kind: string): Token {
-  var token = parser.token;
-  if (token.kind === kind) {
-    advance(parser);
-    return token;
-  }
-  throw syntaxError(
-    parser.source,
-    token.start,
-    `Expected ${getTokenKindDesc(kind)}, found ${getTokenDesc(token)}`
-  );
-}
-
-/**
- * If the next token is a keyword with the given value, return that token after
- * advancing the parser. Otherwise, do not change the parser state and return
- * false.
- */
-function expectKeyword(parser, value: string): Token {
-  var token = parser.token;
-  if (token.kind === TokenKind.NAME && token.value === value) {
-    advance(parser);
-    return token;
-  }
-  throw syntaxError(
-    parser.source,
-    token.start,
-    `Expected "${value}", found ${getTokenDesc(token)}`
-  );
-}
-
-/**
- * Helper function for creating an error when an unexpected lexed token
- * is encountered.
- */
-function unexpected(parser, atToken?: ?Token): Error {
-  var token = atToken || parser.token;
-  return syntaxError(
-    parser.source,
-    token.start,
-    `Unexpected ${getTokenDesc(token)}`
-  );
-}
-
-/**
- * Returns a possibly empty list of parse nodes, determined by
- * the parseFn. This list begins with a lex token of openKind
- * and ends with a lex token of closeKind. Advances the parser
- * to the next lex token after the closing token.
- */
-function any<T>(
-  parser,
-  openKind: number,
-  parseFn: (parser: any) => T,
-  closeKind: number
-): Array<T> {
-  expect(parser, openKind);
-  var nodes = [];
-  while (!skip(parser, closeKind)) {
-    nodes.push(parseFn(parser));
-  }
-  return nodes;
-}
-
-/**
- * Returns a non-empty list of parse nodes, determined by
- * the parseFn. This list begins with a lex token of openKind
- * and ends with a lex token of closeKind. Advances the parser
- * to the next lex token after the closing token.
- */
-function many<T>(
-  parser,
-  openKind: number,
-  parseFn: (parser: any) => T,
-  closeKind: number
-): Array<T> {
-  expect(parser, openKind);
-  var nodes = [parseFn(parser)];
-  while (!skip(parser, closeKind)) {
-    nodes.push(parseFn(parser));
-  }
-  return nodes;
-}
-
-/**
  * Converts a name lex token into a name parse node.
  */
-function parseName(parser): Name {
+export function parseName(parser): Name {
   var token = expect(parser, TokenKind.NAME);
   return {
     kind: NAME,
@@ -264,7 +106,6 @@ function parseName(parser): Name {
     loc: loc(parser, token.start)
   };
 }
-
 
 // Implements the parsing rules in the Document section.
 
@@ -603,7 +444,7 @@ function parseDirective(parser): Directive {
 /**
  * Handles the Type: NamedType, ListType, and NonNullType parsing rules.
  */
-function parseType(parser): Type {
+export function parseType(parser): Type {
   var start = parser.token.start;
   var type;
   if (skip(parser, TokenKind.BRACKET_L)) {
@@ -627,7 +468,7 @@ function parseType(parser): Type {
   return type;
 }
 
-function parseNamedType(parser): NamedType {
+export function parseNamedType(parser): NamedType {
   var start = parser.token.start;
   return {
     kind: NAMED_TYPE,
