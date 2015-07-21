@@ -1,7 +1,4 @@
 /* @flow */
-/* jshint ignore:start */
-/* eslint-disable */
-
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
