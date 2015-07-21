@@ -28,6 +28,7 @@ import {
 
 import {
   parseName,
+  parseConstValue,
   parseType,
   parseNamedType,
 } from '../parser';
@@ -72,6 +73,9 @@ export function parseSchema(
   return parseSchemaDocument(parser);
 }
 
+/**
+ * SchemaDocument : SchemaDefinition+
+ */
 function parseSchemaDocument(parser): SchemaDocument {
   var start = parser.token.start;
   var definitions = [];
@@ -86,6 +90,15 @@ function parseSchemaDocument(parser): SchemaDocument {
   };
 }
 
+/**
+ * SchemaDefinition :
+ *   - TypeDefinition
+ *   - InterfaceDefinition
+ *   - UnionDefinition
+ *   - ScalarDefinition
+ *   - EnumDefinition
+ *   - InputObjectDefinition
+ */
 function parseSchemaDefinition(parser): SchemaDefinition {
   if (!peek(parser, TokenKind.NAME)) {
     throw unexpected(parser);
@@ -108,26 +121,35 @@ function parseSchemaDefinition(parser): SchemaDefinition {
   }
 }
 
+/**
+ * TypeDefinition : TypeName ImplementsInterfaces? { FieldDefinition+ }
+ *
+ * TypeName : Name
+ */
 function parseTypeDefinition(parser): TypeDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'type');
   var name = parseName(parser);
-  var interfaces = parseInterfaces(parser);
+  var interfaces = parseImplementsInterfaces(parser);
   var fields = any(
     parser,
     TokenKind.BRACE_L,
     parseFieldDefinition,
-    TokenKind.BRACE_R);
+    TokenKind.BRACE_R
+  );
   return {
     kind: TYPE_DEFINITION,
     name,
-    interfaces: interfaces,
-    fields: fields,
+    interfaces,
+    fields,
     loc: loc(parser, start),
   };
 }
 
-function parseInterfaces(parser): Array<NamedType> {
+/**
+ * ImplementsInterfaces : `implements` NamedType+
+ */
+function parseImplementsInterfaces(parser): Array<NamedType> {
   var types = [];
   if (parser.token.value === 'implements') {
     advance(parser);
@@ -138,48 +160,64 @@ function parseInterfaces(parser): Array<NamedType> {
   return types;
 }
 
+/**
+ * FieldDefinition : FieldName ArgumentsDefinition? : Type
+ *
+ * FieldName : Name
+ */
 function parseFieldDefinition(parser): FieldDefinition {
   var start = parser.token.start;
   var name = parseName(parser);
   var args = parseArgumentDefs(parser);
   expect(parser, TokenKind.COLON);
   var type = parseType(parser);
-  var location = loc(parser, start);
   return {
     kind: FIELD_DEFINITION,
-    name: name,
-    type: type,
+    name,
     arguments: args,
-    loc: location,
+    type,
+    loc: loc(parser, start),
   };
 }
 
+/**
+ * ArgumentsDefinition : ( ArgumentDefinition+ )
+ */
 function parseArgumentDefs(parser): Array<ArgumentDefinition> {
   if (!peek(parser, TokenKind.PAREN_L)) {
     return [];
   }
-  return many(
-    parser,
-    TokenKind.PAREN_L,
-    parseArgumentDef,
-    TokenKind.PAREN_R
-  );
+  return many(parser, TokenKind.PAREN_L, parseArgumentDef, TokenKind.PAREN_R);
 }
 
+/**
+ * ArgumentDefinition : ArgumentName : Value[Const] DefaultValue?
+ *
+ * ArgumentName : Name
+ *
+ * DefaultValue : = Value[Const]
+ */
 function parseArgumentDef(parser): ArgumentDefinition {
   var start = parser.token.start;
   var name = parseName(parser);
   expect(parser, TokenKind.COLON);
   var type = parseType(parser, false);
-  var location = loc(parser, start);
+  var defaultValue = null;
+  if (skip(parser, TokenKind.EQUALS)) {
+    defaultValue = parseConstValue(parser);
+  }
   return {
     kind: ARGUMENT_DEFINITION,
-    name: name,
-    type: type,
-    loc: location,
+    name,
+    type,
+    defaultValue,
+    loc: loc(parser, start),
   };
 }
 
+/**
+ * InterfaceDefinition : `interface` TypeName { Fields+ }
+ */
 function parseInterfaceDefinition(parser): InterfaceDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'interface');
@@ -188,51 +226,63 @@ function parseInterfaceDefinition(parser): InterfaceDefinition {
     parser,
     TokenKind.BRACE_L,
     parseFieldDefinition,
-    TokenKind.BRACE_R);
+    TokenKind.BRACE_R
+  );
   return {
     kind: INTERFACE_DEFINITION,
     name,
-    fields: fields,
+    fields,
     loc: loc(parser, start),
   };
 }
 
+/**
+ * UnionDefinition : `union` TypeName = UnionMembers
+ */
 function parseUnionDefinition(parser): UnionDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'union');
   var name = parseName(parser);
+  expect(parser, TokenKind.EQUALS);
   var types = parseUnionMembers(parser);
-  var location = loc(parser, start);
   return {
     kind: UNION_DEFINITION,
-    name: name,
-    types: types,
-    loc: location,
+    name,
+    types,
+    loc: loc(parser, start),
   };
 }
 
-function parseUnionMembers(parser) {
-  expect(parser, TokenKind.BRACE_L);
-  var members = [(parseNamedType(parser))];
-  while (!skip(parser, TokenKind.BRACE_R)) {
-    expect(parser, TokenKind.PIPE);
-    members.push((parseNamedType(parser)));
-  }
+/**
+ * UnionMembers :
+ *   - NamedType
+ *   - UnionMembers | NamedType
+ */
+function parseUnionMembers(parser): Array<NamedType> {
+  var members = [];
+  do {
+    members.push(parseNamedType(parser));
+  } while (skip(parser, TokenKind.PIPE));
   return members;
 }
 
+/**
+ * ScalarDefinition : `scalar` TypeName
+ */
 function parseScalarDefinition(parser): ScalarDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'scalar');
   var name = parseName(parser);
-  var location = loc(parser, start);
   return {
     kind: SCALAR_DEFINITION,
-    name: name,
-    loc: location,
+    name,
+    loc: loc(parser, start),
   };
 }
 
+/**
+ * EnumDefinition : `enum` TypeName { EnumValueDefinition+ }
+ */
 function parseEnumDefinition(parser): EnumDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'enum');
@@ -241,27 +291,34 @@ function parseEnumDefinition(parser): EnumDefinition {
     parser,
     TokenKind.BRACE_L,
     parseEnumValueDefinition,
-    TokenKind.BRACE_R);
-  var location = loc(parser, start);
+    TokenKind.BRACE_R
+  );
   return {
     kind: ENUM_DEFINITION,
-    name: name,
-    values: values,
-    loc: location,
+    name,
+    values,
+    loc: loc(parser, start),
   };
 }
 
+/**
+ * EnumValueDefinition : EnumValue
+ *
+ * EnumValue : Name
+ */
 function parseEnumValueDefinition(parser) : EnumValueDefinition {
   var start = parser.token.start;
   var name = parseName(parser);
-  var location = loc(parser, start);
   return {
     kind: ENUM_VALUE_DEFINITION,
-    name: name,
-    loc: location,
+    name,
+    loc: loc(parser, start),
   };
 }
 
+/**
+ * InputObjectDefinition : `input` TypeName { InputFieldDefinition+ }
+ */
 function parseInputObjectDefinition(parser): InputObjectDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'input');
@@ -270,25 +327,28 @@ function parseInputObjectDefinition(parser): InputObjectDefinition {
     parser,
     TokenKind.BRACE_L,
     parseInputFieldDefinition,
-    TokenKind.BRACE_R);
+    TokenKind.BRACE_R
+  );
   return {
     kind: INPUT_OBJECT_DEFINITION,
     name,
-    fields: fields,
+    fields,
     loc: loc(parser, start),
   };
 }
 
+/**
+ * InputFieldDefinition : FieldName : Type
+ */
 function parseInputFieldDefinition(parser): InputFieldDefinition {
   var start = parser.token.start;
   var name = parseName(parser);
   expect(parser, TokenKind.COLON);
   var type = parseType(parser);
-  var location = loc(parser, start);
   return {
     kind: INPUT_FIELD_DEFINITION,
-    name: name,
-    type: type,
-    loc: location,
+    name,
+    type,
+    loc: loc(parser, start),
   };
 }

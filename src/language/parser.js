@@ -311,7 +311,7 @@ function parseVariableValue(parser): Value {
   return parseValue(parser, false);
 }
 
-function parseConstValue(parser): Value {
+export function parseConstValue(parser): Value {
   return parseValue(parser, true);
 }
 

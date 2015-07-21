@@ -50,8 +50,16 @@ function fieldNodeWithArgs(name, type, args, loc) {
   return {
     kind: 'FieldDefinition',
     name: name,
-    type: type,
     arguments: args,
+    type: type,
+    loc: loc,
+  };
+}
+
+function enumValueNode(name, loc) {
+  return {
+    kind: 'EnumValueDefinition',
+    name: nameNode(name, loc),
     loc: loc,
   };
 }
@@ -92,7 +100,7 @@ type Hello {
       ],
       loc: loc(1, 31),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Simple non-null type', () => {
@@ -125,7 +133,7 @@ type Hello {
       ],
       loc: loc(1, 32),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
 
@@ -171,14 +179,6 @@ type Hello {
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
-
-  function enumValueNode(name, loc) {
-    return {
-      kind: 'EnumValueDefinition',
-      name: nameNode(name, loc),
-      loc: loc,
-    };
-  }
 
   it('Single value enum', () => {
     var body = `enum Hello { WORLD }`;
@@ -246,7 +246,7 @@ interface Hello {
       ],
       loc: loc(1, 36),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Simple field with arg', () => {
@@ -272,6 +272,7 @@ type Hello {
                   kind: 'ArgumentDefinition',
                   name: nameNode('flag', loc(22, 26)),
                   type: typeNode('Boolean', loc(28, 35)),
+                  defaultValue: null,
                   loc: loc(22, 35),
                 }
               ],
@@ -283,7 +284,49 @@ type Hello {
       ],
       loc: loc(1, 46),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Simple field with arg with default value', () => {
+    var body = `
+type Hello {
+  world(flag: Boolean = true): String
+}`;
+    var doc = parseSchema(body);
+    var loc = createLocFn(body);
+    var expected = {
+      kind: 'SchemaDocument',
+      definitions: [
+        {
+          kind: 'TypeDefinition',
+          name: nameNode('Hello', loc(6, 11)),
+          interfaces: [],
+          fields: [
+            fieldNodeWithArgs(
+              nameNode('world', loc(16, 21)),
+              typeNode('String', loc(45, 51)),
+              [
+                {
+                  kind: 'ArgumentDefinition',
+                  name: nameNode('flag', loc(22, 26)),
+                  type: typeNode('Boolean', loc(28, 35)),
+                  defaultValue: {
+                    kind: 'BooleanValue',
+                    value: true,
+                    loc: loc(38, 42),
+                  },
+                  loc: loc(22, 42),
+                }
+              ],
+              loc(16, 51)
+            )
+          ],
+          loc: loc(1, 53),
+        }
+      ],
+      loc: loc(1, 53),
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Simple field with list arg', () => {
@@ -313,6 +356,7 @@ type Hello {
                     type: typeNode('String', loc(31, 37)),
                     loc: loc(30, 38)
                   },
+                  defaultValue: null,
                   loc: loc(22, 38),
                 }
               ],
@@ -324,7 +368,7 @@ type Hello {
       ],
       loc: loc(1, 49),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Simple field with two args', () => {
@@ -350,12 +394,14 @@ type Hello {
                   kind: 'ArgumentDefinition',
                   name: nameNode('argOne', loc(22, 28)),
                   type: typeNode('Boolean', loc(30, 37)),
+                  defaultValue: null,
                   loc: loc(22, 37),
                 },
                 {
                   kind: 'ArgumentDefinition',
                   name: nameNode('argTwo', loc(39, 45)),
                   type: typeNode('Int', loc(47, 50)),
+                  defaultValue: null,
                   loc: loc(39, 50),
                 },
               ],
@@ -367,11 +413,11 @@ type Hello {
       ],
       loc: loc(1, 61),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Simple union', () => {
-    var body = `union Hello { World }`;
+    var body = `union Hello = World`;
     var doc = parseSchema(body);
     var loc = createLocFn(body);
     var expected = {
@@ -381,16 +427,16 @@ type Hello {
           kind: 'UnionDefinition',
           name: nameNode('Hello', loc(6, 11)),
           types: [typeNode('World', loc(14, 19))],
-          loc: loc(0, 21),
+          loc: loc(0, 19),
         }
       ],
-      loc: loc(0, 21),
+      loc: loc(0, 19),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Union with two types', () => {
-    var body = `union Hello { Wo | Rld }`;
+    var body = `union Hello = Wo | Rld`;
     var doc = parseSchema(body);
     var loc = createLocFn(body);
     var expected = {
@@ -403,12 +449,12 @@ type Hello {
             typeNode('Wo', loc(14, 16)),
             typeNode('Rld', loc(19, 22)),
           ],
-          loc: loc(0, 24),
+          loc: loc(0, 22),
         }
       ],
-      loc: loc(0, 24),
+      loc: loc(0, 22),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Scalar', () => {
@@ -426,7 +472,7 @@ type Hello {
       ],
       loc: loc(0, 12),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Simple input object', () => {
@@ -454,7 +500,7 @@ input Hello {
       ],
       loc: loc(1, 32),
     };
-    expect(printJson(expected)).to.equal(printJson(doc));
+    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Simple input object with args should fail', () => {
