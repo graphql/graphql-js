@@ -67,9 +67,9 @@ var __Directive = new GraphQLObjectType({
         new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
       resolve: directive => directive.args || []
     },
-    onOperation: { type: GraphQLBoolean },
-    onFragment: { type: GraphQLBoolean },
-    onField: { type: GraphQLBoolean },
+    onOperation: { type: new GraphQLNonNull(GraphQLBoolean) },
+    onFragment: { type: new GraphQLNonNull(GraphQLBoolean) },
+    onField: { type: new GraphQLNonNull(GraphQLBoolean) },
   }),
 });
 
