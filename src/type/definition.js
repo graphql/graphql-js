@@ -334,11 +334,13 @@ function addImplementationToInterfaces(impl) {
 
 type GraphQLObjectTypeConfig = {
   name: string;
-  interfaces?: Array<GraphQLInterfaceType>;
+  interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap;
   isTypeOf?: (value: any) => boolean;
   description?: string
 }
+
+type GraphQLInterfacesThunk = () => Array<GraphQLInterfaceType>;
 
 type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
 
