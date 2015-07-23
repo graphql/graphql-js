@@ -53,12 +53,14 @@
     "babel": "5.8.3",
     "babel-core": "5.8.3",
     "babel-eslint": "3.1.26",
+    "bluebird": "2.9.34",
     "chai": "3.0.0",
     "chai-subset": "1.0.1",
     "coveralls": "2.11.2",
     "eslint": "0.24.0",
     "flow-bin": "0.13.1",
     "isparta": "3.0.3",
+    "minimist": "1.1.2",
     "mocha": "2.2.5",
     "sane": "1.1.3"
   }

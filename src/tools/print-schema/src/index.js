@@ -8,7 +8,7 @@
  */
 
 import { getIntrospectionResult }
-  from '../../../../src/language/schema/printer';
+  from '../../../language/schema/printer';
 
 var Promise = require('bluebird');
 var parseArgs = require('minimist');
