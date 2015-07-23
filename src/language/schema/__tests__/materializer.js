@@ -4,7 +4,7 @@
  *
  *  This source code is licensed under the BSD-style license found in the
  *  LICENSE file in the root directory of this source tree. An additional grant
-*  of patent rights can be found in the PATENTS file in the same directory.
+ *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
 import { expect } from 'chai';
@@ -12,8 +12,7 @@ import { describe, it } from 'mocha';
 import { parseSchema } from '../parser';
 import { materializeSchema } from '../materializer';
 import { printSchema } from '../../../type/printer';
-import { introspectionQuery } from '../../../type/introspectionQuery';
-import { graphql } from '../../../';
+import { getIntrospectionResult } from '../printer';
 
 // 80+ char lines are useful in describe/it, so ignore in this file.
 /*eslint-disable max-len */
@@ -23,9 +22,7 @@ function printForTest(result) {
 }
 
 async function getOutput(body, queryType) {
-  var doc = parseSchema(body);
-  var schema = materializeSchema(doc, queryType);
-  var result = await graphql(schema, introspectionQuery);
+  var result = await getIntrospectionResult(body, queryType);
   return await printForTest(result);
 }
 
@@ -272,6 +269,6 @@ type Hello {
 }
 `;
     var doc = parseSchema(body);
-    expect(() => materializeSchema(doc, 'Wat')).to.throw('Type Wat not found in document');
+    expect(() => materializeSchema(doc, 'Wat')).to.throw('Specified query type Wat not found in document');
   });
 });

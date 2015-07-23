@@ -111,6 +111,11 @@ export function materializeSchema(
 
   var astMap = makeDict(ast.definitions, d => d.name.value);
 
+  if (nullish(astMap[queryTypeName])) {
+    throw new Error('Specified query type ' + queryTypeName +
+      ' not found in document.');
+  }
+
   /**
    * This generates a function that allows you to produce
    * type definitions on demand. We produce the function
