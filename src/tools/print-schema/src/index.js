@@ -37,7 +37,7 @@ export async function executeTool() {
       process.exit(0);
     }
 
-    var body = await fs.readFileAsync(argDict.file);
+    var body = await fs.readFileAsync(argDict.file, 'utf8');
     var result = await getIntrospectionResult(body, argDict.query);
     var out = await JSON.stringify(result, null, 2);
     console.log(out);
