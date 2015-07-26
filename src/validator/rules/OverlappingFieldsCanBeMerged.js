@@ -227,7 +227,7 @@ function collectFieldASTsAndDefs(
   selectionSet: SelectionSet,
   visitedFragmentNames?: {[key: string]: boolean},
   astAndDefs?: {[key: string]: Array<[Field, GraphQLFieldDefinition]>}
-): {[key: string]: Array<Field>} {
+): {[key: string]: Array<[Field, GraphQLFieldDefinition]>} {
   var _visitedFragmentNames = visitedFragmentNames || {};
   var _astAndDefs = astAndDefs || {};
   for (var i = 0; i < selectionSet.selections.length; i++) {
