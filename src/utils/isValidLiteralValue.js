@@ -8,10 +8,10 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import type { Value, ArrayValue, ObjectValue } from '../language/ast';
+import type { Value, ListValue, ObjectValue } from '../language/ast';
 import {
   VARIABLE,
-  ARRAY,
+  LIST,
   OBJECT
 } from '../language/kinds';
 import {
@@ -60,8 +60,8 @@ export default function isValidLiteralValue(
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
     var itemType: GraphQLInputType = (type.ofType: any);
-    if (valueAST.kind === ARRAY) {
-      return (valueAST: ArrayValue).values.every(
+    if (valueAST.kind === LIST) {
+      return (valueAST: ListValue).values.every(
         itemAST => isValidLiteralValue(itemType, itemAST)
       );
     } else {

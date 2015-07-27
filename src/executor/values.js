@@ -29,7 +29,7 @@ import type {
   Argument,
   VariableDefinition,
   Variable,
-  ArrayValue,
+  ListValue,
   ObjectValue
 } from '../language/ast';
 
@@ -243,8 +243,8 @@ export function coerceValueAST(
 
   if (type instanceof GraphQLList) {
     var itemType = type.ofType;
-    if (valueAST.kind === Kind.ARRAY) {
-      return (valueAST: ArrayValue).values.map(
+    if (valueAST.kind === Kind.LIST) {
+      return (valueAST: ListValue).values.map(
         itemAST => coerceValueAST(itemType, itemAST, variables)
       );
     } else {

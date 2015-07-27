@@ -27,7 +27,7 @@ import type {
   FragmentDefinition,
 
   Value,
-  ArrayValue,
+  ListValue,
   ObjectValue,
   ObjectField,
 
@@ -57,7 +57,7 @@ import {
   STRING,
   BOOLEAN,
   ENUM,
-  ARRAY,
+  LIST,
   OBJECT,
   OBJECT_FIELD,
 
@@ -319,7 +319,7 @@ function parseValue(parser, isConst: boolean): Value {
   var token = parser.token;
   switch (token.kind) {
     case TokenKind.BRACKET_L:
-      return parseArray(parser, isConst);
+      return parseList(parser, isConst);
     case TokenKind.BRACE_L:
       return parseObject(parser, isConst);
     case TokenKind.INT:
@@ -369,11 +369,11 @@ function parseValue(parser, isConst: boolean): Value {
   throw unexpected(parser);
 }
 
-function parseArray(parser, isConst: boolean): ArrayValue {
+function parseList(parser, isConst: boolean): ListValue {
   var start = parser.token.start;
   var item = isConst ? parseConstValue : parseVariableValue;
   return {
-    kind: ARRAY,
+    kind: LIST,
     values: any(parser, TokenKind.BRACKET_L, item, TokenKind.BRACKET_R),
     loc: loc(parser, start)
   };

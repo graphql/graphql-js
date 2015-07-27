@@ -154,10 +154,10 @@ export default class TypeInfo {
         this._argument = argDef;
         this._inputTypeStack.push(argType);
         break;
-      case Kind.ARRAY:
-        var arrayType = getNullableType(this.getInputType());
+      case Kind.LIST:
+        var listType = getNullableType(this.getInputType());
         this._inputTypeStack.push(
-          arrayType instanceof GraphQLList ? arrayType.ofType : undefined
+          listType instanceof GraphQLList ? listType.ofType : undefined
         );
         break;
       case Kind.OBJECT_FIELD:
@@ -196,7 +196,7 @@ export default class TypeInfo {
         this._argument = null;
         this._inputTypeStack.pop();
         break;
-      case Kind.ARRAY:
+      case Kind.LIST:
       case Kind.OBJECT_FIELD:
         this._inputTypeStack.pop();
         break;

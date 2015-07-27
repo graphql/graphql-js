@@ -104,7 +104,7 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
-      it('properly coerces single value to array', async () => {
+      it('properly coerces single value to list', async () => {
         var doc = `
         {
           fieldWithObjectInput(input: {a: "foo", b: "bar", c: "baz"})
@@ -173,7 +173,7 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
-      it('properly coerces single value to array', async () => {
+      it('properly coerces single value to list', async () => {
         var params = {input: {a: 'foo', b: 'bar', c: 'baz'}};
         var result = await execute(schema, ast, null, params);
 

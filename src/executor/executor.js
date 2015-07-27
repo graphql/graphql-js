@@ -473,7 +473,7 @@ function resolveField(
 
   // Build a JS object of arguments from the field.arguments AST, using the
   // variables scope to fulfill any variable references.
-  // TODO: find a way to memoize, in case this field is within a Array type.
+  // TODO: find a way to memoize, in case this field is within a List type.
   var args = fieldDef.args ?
     getArgumentValues(fieldDef.args, fieldAST.arguments, exeContext.variables) :
     null;

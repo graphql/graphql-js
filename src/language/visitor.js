@@ -28,7 +28,7 @@ export var VisitorKeys = {
   StringValue: [],
   BooleanValue: [],
   EnumValue: [],
-  ArrayValue: ['values'],
+  ListValue: ['values'],
   ObjectValue: ['fields'],
   ObjectField: ['name', 'value'],
 

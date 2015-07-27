@@ -79,7 +79,7 @@ export function print(ast) {
       StringValue: node => JSON.stringify(node.value),
       BooleanValue: node => node.value ? 'true' : 'false',
       EnumValue: node => node.value,
-      ArrayValue: node => '[' + join(node.values, ', ') + ']',
+      ListValue: node => '[' + join(node.values, ', ') + ']',
       ObjectValue: node => '{' + join(node.fields, ', ') + '}',
       ObjectField: node => node.name + ': ' + node.value,
 

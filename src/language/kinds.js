@@ -34,7 +34,7 @@ export const FLOAT = 'FloatValue';
 export const STRING = 'StringValue';
 export const BOOLEAN = 'BooleanValue';
 export const ENUM = 'EnumValue';
-export const ARRAY = 'ArrayValue';
+export const LIST = 'ListValue';
 export const OBJECT = 'ObjectValue';
 export const OBJECT_FIELD = 'ObjectField';
 

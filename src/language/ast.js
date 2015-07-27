@@ -40,7 +40,7 @@ export type Node = Name
                  | StringValue
                  | BooleanValue
                  | EnumValue
-                 | ArrayValue
+                 | ListValue
                  | ObjectValue
                  | ObjectField
                  | Directive
@@ -153,7 +153,7 @@ export type Value = Variable
                   | StringValue
                   | BooleanValue
                   | EnumValue
-                  | ArrayValue
+                  | ListValue
                   | ObjectValue
 
 export type IntValue = {
@@ -186,8 +186,8 @@ export type EnumValue = {
   value: string;
 }
 
-export type ArrayValue = {
-  kind: 'ArrayValue';
+export type ListValue = {
+  kind: 'ListValue';
   loc?: ?Location;
   values: Array<Value>;
 }
