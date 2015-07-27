@@ -23,6 +23,7 @@ deploy:
   on:
     tags: true
     branch: master
+    node: "iojs"
 
 after_success:
   - npm run coveralls
