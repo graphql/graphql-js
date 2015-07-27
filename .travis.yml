@@ -11,7 +11,16 @@ notifications:
     on_success: change
     on_failure: change
     channels:
-      - chat.freenode.net#graphql
+      - "chat.freenode.net#graphql"
+
+deploy:
+  provider: npm
+  email: "lee@leebyron.com"
+  api_key:
+    secure: NefvASrtqfXoqcfQGgnsLb6mNdW+G0n2XebrmYd7tn4rpkYUQ2esuAOPj7ULBZ0VWUxEuvMB/OB6xHvGaTmYilsT80/+3PSp2LyvbHCxWSjcxweTqrcCi2ZIuOWvZ6L+XA0FpY5BVn6SLUgy++H4s+qfvVX7d9cV5ayQPCZOCheQ/HFatJ65m27o7Bxx3LDI/hZvbbYIReab4hOmzJ6Ci5Yzaw00aRNLaGu2Tsf7Vz0MjhIZ1U1+CE9Mj2/JGiEslBM4PnVA8JLp+suK0d7OPqtxBOJBe+DTjO6U2d3G5tD5eEjAz4wyLjkc2hWlEV4Nb8p/dhyZ88LrWgfXjT1S4bUF3VGJX2S7bnkhUrxg48M5bA5mJoNhJdg53xxjm5LeG6tEtzYcItVVjb19rWhBgb3wIkgNciVJEQaN+EVaGSLVoDUq+4GgqLzmbsuEsHEiVePeegQYvhgLYto5nn03UWRb46qH6dwF8Mtkv7eucxL/tw1LJI1Bz0UqakEFf3BHWJMrYkfMbikP3Bxp2N2QrieOkTKPi+suKOILpoOERt+eGJR4hsAg1R2isChYbMKoZy16aUVEqTklA3u2AeT54RAPXTbuYcvXZ3AHb9ACzEtRTYz5a6vQkkJHxemWxhJtF3HqLPE6nVM167B59swA09vWCQKSlXNDKBawV9R7O0E=
+  on:
+    tags: true
+    branch: master
 
 after_success:
   - npm run coveralls
