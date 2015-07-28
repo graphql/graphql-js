@@ -33,7 +33,8 @@
     "watch": "babel scripts/watch.js | node",
     "cover": "babel-node node_modules/.bin/isparta cover --root src --report html node_modules/.bin/_mocha -- $npm_package_options_mocha",
     "coveralls": "babel-node node_modules/.bin/isparta cover --root src --report lcovonly node_modules/.bin/_mocha -- $npm_package_options_mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "prepublish": "babel src --ignore __tests__ --out-dir ./"
+    "preversion": "npm test",
+    "prepublish": "if [ '$CI' = true ]; then babel src --ignore __tests__ --out-dir ./; else echo 'Only CI can publish. Read CONTRIBUTING.md' 1>&2; exit 1; fi;"
   },
   "dependencies": {
     "babel-runtime": "5.8.3"
