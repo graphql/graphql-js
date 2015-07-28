@@ -11,13 +11,8 @@ import { GraphQLSchema } from '../../type';
 import { parseSchemaIntoAST } from './parser';
 import { materializeSchemaAST } from './materializer';
 
-export {
-  // GraphQL Schema Instance --> DSL
-  printSchema,
-  printIntrospectionSchema,
-  // Introspection Result --> DSL
-  printSchemaFromResult,
-} from './printer';
+// DSL --> AST
+export { parseSchemaIntoAST };
 
 // DSL --> Schema
 export async function createSchemaFromDSL(

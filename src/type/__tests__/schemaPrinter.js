@@ -9,7 +9,7 @@
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { printSchema, printIntrospectionSchema } from '../printer';
+import { printSchema, printIntrospectionSchema } from '../schemaPrinter';
 
 import {
   GraphQLSchema,
@@ -24,7 +24,7 @@ import {
   GraphQLBoolean,
   GraphQLList,
   GraphQLNonNull,
-} from '../../../type';
+} from '../';
 
 // 80+ char lines are useful in describe/it, so ignore in this file.
 /*eslint-disable max-len */
