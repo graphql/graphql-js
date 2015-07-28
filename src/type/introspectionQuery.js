@@ -81,3 +81,47 @@ export var introspectionQuery = `
   }
 `;
 
+export type IntrospectionQueryResult = {
+  types: Array<FullType>;
+}
+
+export type FullType = {
+  kind: string;
+  name: string;
+  fields: Array<FieldResult>;
+  enumValues: Array<EnumValue>;
+  inputFields: Array<InputField>;
+  possibleTypes: Array<TypeRef>;
+  interfaces: Array<TypeRef>;
+}
+
+export type InputField = {
+  name: string;
+  type: TypeRef;
+  defaultValue: string;
+}
+
+export type TypeRef = {
+  kind: string;
+  name: string;
+  ofType: TypeRef;
+}
+
+export type FieldResult = {
+  name: string;
+  args: Array<ArgResult>;
+  type: TypeRef;
+}
+
+export type ArgResult = {
+  name: string;
+  type: TypeRef;
+  defaultValue: string;
+}
+
+export type EnumValue = {
+  name: string;
+  isDeprecated: boolean;
+  deprecationReason: string;
+}
+

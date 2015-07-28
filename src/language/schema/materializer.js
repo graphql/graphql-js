@@ -89,6 +89,7 @@ function getInnerTypeName(typeAST) {
   return typeAST.name.value;
 }
 
+
 /**
  * This takes the ast of a schema document produced by parseSchema in
  * src/language/schema/parser.js.
@@ -97,7 +98,7 @@ function getInnerTypeName(typeAST) {
  * they are not particularly useful for non-introspection queries
  * since they have no resolve methods.
  */
-export function materializeSchema(
+export function materializeSchemaAST(
   ast: SchemaDocument,
   queryTypeName: string,
   mutationTypeName: ?string): GraphQLSchema {

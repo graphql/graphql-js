@@ -36,3 +36,5 @@ export {
 
 // Produce and format errors.
 export { GraphQLError, formatError } from './error';
+
+export { printSchema } from './language/schema/printer';
