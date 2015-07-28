@@ -87,7 +87,15 @@ then use `npm version patch|minor|major` in order to increment the version in
 package.json and tag and commit a release. Then `git push --tags` this change so
 Travis CI can deploy to NPM. *Do not run `npm publish` directly.*
 Once published, add [release notes](https://github.com/graphql/graphql-js/tags).
-Use [semver](http://semver.org/) to determine which version to increment.
+Use [semver](http://semver.org/) to determine which version part to increment.
+
+Example for a patch release:
+
+```sh
+npm test
+npm version patch
+git push --tags
+```
 
 ## License
 
