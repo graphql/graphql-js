@@ -46,10 +46,10 @@ Complete your CLA here: <https://code.facebook.com/cla>
    git clone git@github.com:yournamehere/graphql-js.git
    ```
 
-3. Update or install all dependencies
+3. Install or Update all dependencies
 
    ```sh
-   npm update
+   npm install
    ```
 
 4. Get coding! If you've added code, add tests. If you've changed APIs, update

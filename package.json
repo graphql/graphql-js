@@ -34,7 +34,7 @@
     "cover": "babel-node node_modules/.bin/isparta cover --root src --report html node_modules/.bin/_mocha -- $npm_package_options_mocha",
     "coveralls": "babel-node node_modules/.bin/isparta cover --root src --report lcovonly node_modules/.bin/_mocha -- $npm_package_options_mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "preversion": "npm test",
-    "prepublish": "if [ '$CI' = true ]; then babel src --ignore __tests__ --out-dir ./; else echo 'Only CI can publish. Read CONTRIBUTING.md' 1>&2; exit 1; fi;"
+    "prepublish": "not-in-install && (if [ \"$CI\" = true ]; then babel src --ignore __tests__ --out-dir ./; else echo 'Only CI can publish. Read CONTRIBUTING.md' 1>&2; exit 1; fi) || in-install"
   },
   "dependencies": {
     "babel-runtime": "5.8.3"
@@ -49,6 +49,7 @@
     "coveralls": "2.11.2",
     "eslint": "0.24.0",
     "flow-bin": "0.13.1",
+    "in-publish": "2.0.0",
     "isparta": "3.0.3",
     "minimist": "1.1.2",
     "mocha": "2.2.5",
