@@ -30,11 +30,6 @@ export type SchemaDefinition =
   EnumDefinition |
   InputObjectDefinition
 
-export type CompositeDefinition =
-  TypeDefinition |
-  InterfaceDefinition |
-  UnionDefinition;
-
 export type TypeDefinition = {
   kind: 'TypeDefinition';
   loc?: ?Location;

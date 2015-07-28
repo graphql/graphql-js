@@ -38,7 +38,6 @@ import {
   InterfaceDefinition,
   UnionDefinition,
   TypeDefinition,
-  CompositeDefinition,
   ArgumentDefinition,
   ScalarDefinition,
   InputObjectDefinition,
@@ -52,6 +51,11 @@ import {
   LIST_TYPE,
   NON_NULL_TYPE,
 } from '../kinds';
+
+type CompositeDefinition =
+  TypeDefinition |
+  InterfaceDefinition |
+  UnionDefinition;
 
 function nullish(obj) {
   return obj === null || obj === undefined;
