@@ -16,16 +16,6 @@
     "type": "git",
     "url": "http://github.com/graphql/graphql-js.git"
   },
-  "main": "lib/index.js",
-  "directories": {
-    "lib": "./lib"
-  },
-  "files": [
-    "lib",
-    "README.md",
-    "LICENSE",
-    "PATENTS"
-  ],
   "options": {
     "mocha": "--require scripts/mocha-bootload src/**/__tests__/**/*.js"
   },
@@ -36,15 +26,14 @@
     ]
   },
   "scripts": {
-    "prepublish": "npm test && npm run build",
     "test": "npm run lint && npm run check && mocha $npm_package_options_mocha",
     "testonly": "mocha $npm_package_options_mocha",
     "lint": "eslint src",
     "check": "flow check",
-    "build": "rm -rf lib/* && babel src --ignore __tests__ --out-dir lib",
     "watch": "babel scripts/watch.js | node",
     "cover": "babel-node node_modules/.bin/isparta cover --root src --report html node_modules/.bin/_mocha -- $npm_package_options_mocha",
-    "coveralls": "babel-node node_modules/.bin/isparta cover --root src --report lcovonly node_modules/.bin/_mocha -- $npm_package_options_mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "coveralls": "babel-node node_modules/.bin/isparta cover --root src --report lcovonly node_modules/.bin/_mocha -- $npm_package_options_mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "prepublish": "babel src --ignore __tests__ --out-dir ./"
   },
   "dependencies": {
     "babel-runtime": "5.8.3"
