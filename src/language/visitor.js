@@ -7,7 +7,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-export var VisitorKeys = {
+export var QueryDocumentKeys = {
   Name: [],
 
   Document: ['definitions'],
@@ -127,8 +127,8 @@ export const BREAK = {};
  *       }
  *     })
  */
-export function visit(root, visitor) {
-  var visitorKeys = visitor.keys || VisitorKeys;
+export function visit(root, visitor, keyMap) {
+  var visitorKeys = keyMap || QueryDocumentKeys;
 
   var stack;
   var inArray = Array.isArray(root);
