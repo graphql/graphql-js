@@ -119,34 +119,6 @@ fragment MissingOn Type
     expect(() => parse(kitchenSink)).to.not.throw();
   });
 
-  it('allows non-keywords anywhere a Name is allowed', () => {
-    const nonKeywords = [
-      'on',
-      'fragment',
-      'query',
-      'mutation',
-      'true',
-      'false'
-    ];
-    nonKeywords.forEach((keyword) => {
-      let fragmentName = keyword;
-      // You can't define or reference a fragment named `on`.
-      if (keyword === 'on') {
-        fragmentName = 'a';
-      }
-      expect(() => {
-        parse(`query ${keyword} {
-  ... ${fragmentName}
-  ... on ${keyword} { field }
-}
-fragment ${fragmentName} on Type {
-  ${keyword}(${keyword}: $${keyword}) @${keyword}(${keyword}: ${keyword})
-}`
-        );
-      }).to.not.throw();
-    });
-  });
-
   it('parse creates ast', () => {
 
     var source = new Source(`{
