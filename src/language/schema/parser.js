@@ -64,7 +64,7 @@ import {
   INPUT_FIELD_DEFINITION,
 } from './kinds';
 
-export function parseSchema(
+export function parseSchemaIntoAST(
   source: Source | string,
   options?: ParseOptions
 ): SchemaDocument {

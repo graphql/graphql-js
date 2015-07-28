@@ -9,21 +9,24 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { parseSchema } from '../parser';
-import { materializeSchema } from '../materializer';
-import { printSchema } from '../../../type/printer';
-import { getIntrospectionResult } from '../printer';
+import { parseSchemaIntoAST } from '../parser';
+import { printSchema } from '../';
+import { materializeSchemaAST } from '../materializer';
+import { createSchemaFromDSL } from '../';
 
 // 80+ char lines are useful in describe/it, so ignore in this file.
 /*eslint-disable max-len */
 
-function printForTest(result) {
-  return '\n' + printSchema(result) + '\n';
-}
-
-async function getOutput(body, queryType) {
-  var result = await getIntrospectionResult(body, queryType);
-  return await printForTest(result);
+/**
+ * This function does a full cycle of going from a
+ * string with the contents of the DSL, parsed
+ * in a schema AST, materializing that schema ast
+ * into an in-memory GraphQLSchema, and then finally
+ * printing that GraphQL into the DSL
+ */
+async function cycleOutput(body, queryType) {
+  var schema = await createSchemaFromDSL(body, queryType);
+  return '\n' + await printSchema(schema) + '\n';
 }
 
 describe('Schema Materializer', () => {
@@ -35,7 +38,7 @@ type HelloScalars {
   bool: Boolean
 }
 `;
-    var output = await getOutput(body, 'HelloScalars');
+    var output = await cycleOutput(body, 'HelloScalars');
     expect(output).to.equal(body);
   });
 
@@ -49,7 +52,7 @@ type HelloScalars {
   nonNullListOfNonNullStrs: [String!]!
 }
 `;
-    var output = await getOutput(body, 'HelloScalars');
+    var output = await cycleOutput(body, 'HelloScalars');
     expect(output).to.equal(body);
   });
 
@@ -61,7 +64,7 @@ type Recurse {
   recurse: Recurse
 }
 `;
-    var output = await getOutput(body, 'Recurse');
+    var output = await cycleOutput(body, 'Recurse');
     expect(output).to.equal(body);
   });
 
@@ -77,7 +80,7 @@ type TypeTwo {
   typeOne: TypeOne
 }
 `;
-    var output = await getOutput(body, 'TypeOne');
+    var output = await cycleOutput(body, 'TypeOne');
     expect(output).to.equal(body);
   });
 
@@ -87,7 +90,7 @@ type Hello {
   str(int: Int): String
 }
 `;
-    var output = await getOutput(body, 'Hello');
+    var output = await cycleOutput(body, 'Hello');
     expect(output).to.equal(body);
   });
 
@@ -97,7 +100,7 @@ type Hello {
   str(int: Int, bool: Boolean): String
 }
 `;
-    var output = await getOutput(body, 'Hello');
+    var output = await cycleOutput(body, 'Hello');
     expect(output).to.equal(body);
   });
 
@@ -111,7 +114,7 @@ interface WorldInterface {
   str: String
 }
 `;
-    var output = await getOutput(body, 'HelloInterface');
+    var output = await cycleOutput(body, 'HelloInterface');
     expect(output).to.equal(body);
   });
 
@@ -125,7 +128,7 @@ type OutputEnumRoot {
   hello: Hello
 }
 `;
-    var output = await getOutput(body, 'OutputEnumRoot');
+    var output = await cycleOutput(body, 'OutputEnumRoot');
     expect(output).to.equal(body);
   });
 
@@ -139,7 +142,7 @@ type InputEnumRoot {
   str(hello: Hello): String
 }
 `;
-    var output = await getOutput(body, 'InputEnumRoot');
+    var output = await cycleOutput(body, 'InputEnumRoot');
     expect(output).to.equal(body);
   });
 
@@ -154,7 +157,7 @@ type OutputEnumRoot {
   hello: Hello
 }
 `;
-    var output = await getOutput(body, 'OutputEnumRoot');
+    var output = await cycleOutput(body, 'OutputEnumRoot');
     expect(output).to.equal(body);
   });
 
@@ -170,7 +173,7 @@ type World {
   str: String
 }
 `;
-    var output = await getOutput(body, 'Root');
+    var output = await cycleOutput(body, 'Root');
     expect(output).to.equal(body);
   });
 
@@ -190,7 +193,7 @@ type WorldTwo {
   str: String
 }
 `;
-    var output = await getOutput(body, 'Root');
+    var output = await cycleOutput(body, 'Root');
     expect(output).to.equal(body);
   });
 
@@ -203,7 +206,7 @@ type Root {
 }
 `;
 
-    var output = await getOutput(body, 'Root');
+    var output = await cycleOutput(body, 'Root');
     expect(output).to.equal(body);
   });
 
@@ -218,7 +221,7 @@ type Root {
 }
 `;
 
-    var output = await getOutput(body, 'Root');
+    var output = await cycleOutput(body, 'Root');
     expect(output).to.equal(body);
   });
 
@@ -228,7 +231,7 @@ type Hello {
   str(int: Int = 2): String
 }
 `;
-    var output = await getOutput(body, 'Hello');
+    var output = await cycleOutput(body, 'Hello');
     expect(output).to.equal(body);
   });
 });
@@ -240,16 +243,16 @@ type Hello {
   bar: Bar
 }
 `;
-    var doc = parseSchema(body);
-    expect(() => materializeSchema(doc, 'Hello')).to.throw('Type Bar not found in document');
+    var doc = parseSchemaIntoAST(body);
+    expect(() => materializeSchemaAST(doc, 'Hello')).to.throw('Type Bar not found in document');
   });
 
   it('Unknown type in interface list', () => {
     var body = `
 type Hello implements Bar { }
 `;
-    var doc = parseSchema(body);
-    expect(() => materializeSchema(doc, 'Hello')).to.throw('Type Bar not found in document');
+    var doc = parseSchemaIntoAST(body);
+    expect(() => materializeSchemaAST(doc, 'Hello')).to.throw('Type Bar not found in document');
   });
 
   it('Unknown type in union list', () => {
@@ -257,8 +260,8 @@ type Hello implements Bar { }
 union TestUnion = Bar
 type Hello { testUnion: TestUnion }
 `;
-    var doc = parseSchema(body);
-    expect(() => materializeSchema(doc, 'Hello')).to.throw('Type Bar not found in document');
+    var doc = parseSchemaIntoAST(body);
+    expect(() => materializeSchemaAST(doc, 'Hello')).to.throw('Type Bar not found in document');
   });
 
 
@@ -268,7 +271,7 @@ type Hello {
   str: String
 }
 `;
-    var doc = parseSchema(body);
-    expect(() => materializeSchema(doc, 'Wat')).to.throw('Specified query type Wat not found in document');
+    var doc = parseSchemaIntoAST(body);
+    expect(() => materializeSchemaAST(doc, 'Wat')).to.throw('Specified query type Wat not found in document');
   });
 });
