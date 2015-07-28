@@ -17,7 +17,7 @@ import type {
 } from '../ast';
 
 export type SchemaDocument = {
-  kind: 'Schema Document';
+  kind: 'SchemaDocument';
   loc?: ?Location;
   definitions: Array<SchemaDefinition>;
 }
