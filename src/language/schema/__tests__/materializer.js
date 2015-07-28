@@ -10,7 +10,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parseSchemaIntoAST } from '../parser';
-import { printSchema } from '../';
+import { printSchema } from '../../../type/schemaPrinter';
 import { materializeSchemaAST } from '../materializer';
 import { createSchemaFromDSL } from '../';
 

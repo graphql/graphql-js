@@ -8,8 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { introspectionQuery } from './../../type/introspectionQuery';
-import { graphql } from '../../';
+import { introspectionQuery } from './introspectionQuery';
+import { graphql } from '../';
 
 import type {
   IntrospectionQueryResult,
@@ -19,11 +19,9 @@ import type {
   FieldResult,
   ArgResult,
   EnumValue,
-} from '../../type/introspectionQuery';
+} from './introspectionQuery';
 
-import type {
-  GraphQLSchema
-} from '../../type';
+import type { GraphQLSchema } from './schema';
 
 var TypeKind = {
   SCALAR: 'SCALAR',

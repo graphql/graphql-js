@@ -37,4 +37,5 @@ export {
 // Produce and format errors.
 export { GraphQLError, formatError } from './error';
 
-export { printSchema } from './language/schema/printer';
+// Tools for printing a GraphQL type schema.
+export { printSchema } from './type/schemaPrinter';
