@@ -11,8 +11,11 @@ import { GraphQLSchema } from '../../type';
 import { parseSchemaIntoAST } from './parser';
 import { materializeSchemaAST } from './materializer';
 
-// DSL --> AST
-export { parseSchemaIntoAST };
+import * as Kind from './kinds';
+export { Kind };
+export { parseSchemaIntoAST } from './parser';
+export { printSchema } from './printer';
+export { visit } from './visitor';
 
 // DSL --> Schema
 export async function createSchemaFromDSL(

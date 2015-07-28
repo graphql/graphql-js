@@ -1,0 +1,33 @@
+# Copyright (c) 2015, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree. An additional grant
+# of patent rights can be found in the PATENTS file in the same directory.
+
+type Foo implements Bar {
+  one: Type
+  two(argument: InputType!): Type
+  three(argument: InputType, other: String): Int
+  four(argument: String = "string"): String
+  five(argument: [String] = ["string", "string"]): String
+  six(argument: InputType = {key: "value"}): Type
+}
+
+interface Bar {
+  one: Type
+  four(argument: String = "string"): String
+}
+
+union Feed = Story | Article | Advert
+
+scalar CustomScalar
+
+enum Site {
+  DESKTOP
+  MOBILE
+}
+
+input InputType {
+  key: String!
+}
