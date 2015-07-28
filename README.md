@@ -49,7 +49,7 @@ through that README and the corresponding tests in parallel.
 
 Install GraphQL.js from npm
 
-```
+```sh
 npm install graphql
 ```
 
@@ -122,36 +122,14 @@ graphql(schema, query).then(result => {
 
 ### Contributing
 
-After cloning this repo, ensure dependencies are installed by running:
+We actively welcome pull requests, learn how to
+[contribute](https://github.com/graphql/graphql-js/blob/master/CONTRIBUTING.md).
 
-```sh
-npm install
-```
+### Changelog
 
-GraphQL is written in ES6 and uses [Babel](http://babeljs.io/) for ES5
-transpilation and [Flow](http://flowtype.org/) for type safety. Widely
-consumable JavaScript can be produced by running:
+Changes are tracked as [Github releases](https://github.com/graphql/graphql-js/releases).
 
-```sh
-npm run build
-```
+### License
 
-Once `npm run build` has run, you may `import` or `require()` directly from
-node.
-
-After developing, the full test suite can be evaluated by running:
-
-```sh
-npm test
-```
-
-While actively developing, we recommend running
-
-```sh
-npm run watch
-```
-
-in a terminal. This will watch the file system run lint, tests, and type
-checking automatically whenever you save a js file.
-
-To lint the JS files and type interface checks run `npm run lint`.
+GraphQL is [BSD-licensed](https://github.com/graphql/graphql-js/blob/master/LICENSE).
+We also provide an additional [patent grant](https://github.com/graphql/graphql-js/blob/master/PATENTS).
