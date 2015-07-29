@@ -1,3 +1,4 @@
+/*@flow*/
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
@@ -17,10 +18,9 @@ export var introspectionQuery = `
       }
       directives {
         name
+        description
         args {
-          name
-          type { ...TypeRef }
-          defaultValue
+          ...InputValue
         }
         onOperation
         onFragment
@@ -32,12 +32,12 @@ export var introspectionQuery = `
   fragment FullType on __Type {
     kind
     name
+    description
     fields {
       name
+      description
       args {
-        name
-        type { ...TypeRef }
-        defaultValue
+        ...InputValue
       }
       type {
         ...TypeRef
@@ -46,21 +46,27 @@ export var introspectionQuery = `
       deprecationReason
     }
     inputFields {
-      name
-      type { ...TypeRef }
-      defaultValue
+      ...InputValue
     }
     interfaces {
       ...TypeRef
     }
     enumValues {
       name
+      description
       isDeprecated
       deprecationReason
     }
     possibleTypes {
       ...TypeRef
     }
+  }
+
+  fragment InputValue on __InputValue {
+    name
+    description
+    type { ...TypeRef }
+    defaultValue
   }
 
   fragment TypeRef on __Type {
@@ -81,47 +87,116 @@ export var introspectionQuery = `
   }
 `;
 
-export type IntrospectionQueryResult = {
-  types: Array<FullType>;
+export type IntrospectionQuery = {
+  __schema: IntrospectionSchema
 }
 
-export type FullType = {
+export type IntrospectionSchema = {
+  queryType: IntrospectionNamedTypeRef;
+  mutationType: ?IntrospectionNamedTypeRef;
+  types: Array<IntrospectionType>;
+  directives: Array<IntrospectionDirective>;
+}
+
+export type IntrospectionType =
+  IntrospectionScalarType |
+  IntrospectionObjectType |
+  IntrospectionInterfaceType |
+  IntrospectionUnionType |
+  IntrospectionEnumType |
+  IntrospectionInputObjectType
+
+export type IntrospectionScalarType = {
+  kind: 'SCALAR';
+  name: string;
+  description: ?string;
+}
+
+export type IntrospectionObjectType = {
+  kind: 'OBJECT';
+  name: string;
+  description: ?string;
+  fields: Array<IntrospectionField>;
+  interfaces: Array<IntrospectionNamedTypeRef>;
+}
+
+export type IntrospectionInterfaceType = {
+  kind: 'INTERFACE';
+  name: string;
+  description: ?string;
+  fields: Array<IntrospectionField>;
+  possibleTypes: Array<IntrospectionNamedTypeRef>;
+}
+
+export type IntrospectionUnionType = {
+  kind: 'UNION';
+  name: string;
+  description: ?string;
+  possibleTypes: Array<IntrospectionNamedTypeRef>;
+}
+
+export type IntrospectionEnumType = {
+  kind: 'ENUM';
+  name: string;
+  description: ?string;
+  enumValues: Array<IntrospectionEnumValue>;
+}
+
+export type IntrospectionInputObjectType = {
+  kind: 'INPUT_OBJECT';
+  name: string;
+  description: ?string;
+  inputFields: Array<IntrospectionInputValue>;
+}
+
+export type IntrospectionTypeRef =
+  IntrospectionNamedTypeRef |
+  IntrospectionListTypeRef |
+  IntrospectionNonNullTypeRef
+
+export type IntrospectionNamedTypeRef = {
   kind: string;
   name: string;
-  fields: Array<FieldResult>;
-  enumValues: Array<EnumValue>;
-  inputFields: Array<InputField>;
-  possibleTypes: Array<TypeRef>;
-  interfaces: Array<TypeRef>;
 }
 
-export type InputField = {
-  name: string;
-  type: TypeRef;
-  defaultValue: string;
+export type IntrospectionListTypeRef = {
+  kind: 'LIST';
+  ofType?: IntrospectionTypeRef;
 }
 
-export type TypeRef = {
-  kind: string;
-  name: string;
-  ofType: TypeRef;
+export type IntrospectionNonNullTypeRef = {
+  kind: 'NON_NULL';
+  ofType?: IntrospectionTypeRef;
 }
 
-export type FieldResult = {
+export type IntrospectionField = {
   name: string;
-  args: Array<ArgResult>;
-  type: TypeRef;
-}
-
-export type ArgResult = {
-  name: string;
-  type: TypeRef;
-  defaultValue: string;
-}
-
-export type EnumValue = {
-  name: string;
+  description: ?string;
+  args: Array<IntrospectionInputValue>;
+  type: IntrospectionTypeRef;
   isDeprecated: boolean;
-  deprecationReason: string;
+  deprecationReason: ?string;
 }
 
+export type IntrospectionInputValue = {
+  name: string;
+  description: ?string;
+  type: IntrospectionTypeRef;
+  defaultValue: ?string;
+}
+
+export type IntrospectionEnumValue = {
+  name: string;
+  description: ?string;
+  isDeprecated: boolean;
+  deprecationReason: ?string;
+}
+
+export type IntrospectionDirective = {
+  name: string;
+  description: ?string;
+  args: Array<IntrospectionInputValue>;
+  onOperation: boolean;
+  onFragment: boolean;
+  onField: boolean;
+}
