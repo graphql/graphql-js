@@ -34,7 +34,7 @@ describe('Introspection', () => {
 
     return expect(
       await graphql(EmptySchema, introspectionQuery)
-    ).to.deep.equal({
+    ).to.containSubset({
       data: {
         __schema: {
           mutationType: null,

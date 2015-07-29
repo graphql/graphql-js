@@ -12,13 +12,20 @@ import { introspectionQuery } from './introspectionQuery';
 import { graphql } from '../';
 
 import type {
-  IntrospectionQueryResult,
-  FullType,
-  InputField,
-  TypeRef,
-  FieldResult,
-  ArgResult,
-  EnumValue,
+  IntrospectionQuery,
+  IntrospectionType,
+  IntrospectionScalarType,
+  IntrospectionObjectType,
+  IntrospectionInterfaceType,
+  IntrospectionUnionType,
+  IntrospectionEnumType,
+  IntrospectionInputObjectType,
+  IntrospectionTypeRef,
+  IntrospectionListTypeRef,
+  IntrospectionNonNullTypeRef,
+  IntrospectionField,
+  IntrospectionInputValue,
+  IntrospectionEnumValue,
 } from './introspectionQuery';
 
 import type { GraphQLSchema } from './schema';
@@ -35,21 +42,29 @@ var TypeKind = {
 };
 
 // e.g Int, Int!, [Int!]!
-function printTypeDecl(type: TypeRef): string {
+function printTypeDecl(type: IntrospectionTypeRef): string {
   if (type.kind === TypeKind.LIST) {
-    return '[' + printTypeDecl(type.ofType) + ']';
+    var itemTypeRef = ((type: any): IntrospectionListTypeRef).ofType;
+    if (!itemTypeRef) {
+      throw new Error('Decorated type deeper than introspection query.');
+    }
+    return '[' + printTypeDecl(itemTypeRef) + ']';
   } else if (type.kind === TypeKind.NON_NULL) {
-    return printTypeDecl(type.ofType) + '!';
+    var nullableTypeRef = ((type: any): IntrospectionNonNullTypeRef).ofType;
+    if (!nullableTypeRef) {
+      throw new Error('Decorated type deeper than introspection query.');
+    }
+    return printTypeDecl(nullableTypeRef) + '!';
   } else {
     return type.name;
   }
 }
 
-function printField(field: FieldResult): string {
+function printField(field: IntrospectionField): string {
   return `${field.name}${printArgs(field)}: ${printTypeDecl(field.type)}`;
 }
 
-function printArg(arg: ArgResult): string {
+function printArg(arg: IntrospectionInputValue): string {
   var argDecl = `${arg.name}: ${printTypeDecl(arg.type)}`;
   if (arg.defaultValue !== null) {
     argDecl += ` = ${arg.defaultValue}`;
@@ -57,70 +72,70 @@ function printArg(arg: ArgResult): string {
   return argDecl;
 }
 
-function printArgs(field: FieldResult): string {
+function printArgs(field: IntrospectionField): string {
   if (field.args.length === 0) {
     return '';
   }
   return '(' + field.args.map(printArg).join(', ') + ')';
 }
 
-function printImplementedInterfaces(type: FullType) {
+function printImplementedInterfaces(type: IntrospectionObjectType) {
   if (type.interfaces.length === 0) {
     return '';
   }
   return ' implements ' + type.interfaces.map(i => i.name).join(', ');
 }
 
-function printObject(type: FullType) {
+function printObject(type: IntrospectionObjectType) {
   return `type ${type.name}${printImplementedInterfaces(type)} {` + '\n' +
     printFields(type.fields) + '\n' +
   '}';
 }
 
-function printInterface(type: FullType) {
+function printInterface(type: IntrospectionInterfaceType) {
   return `interface ${type.name} {` + '\n' +
     printFields(type.fields) + '\n' +
   '}';
 }
 
-function printInputObject(type: FullType) {
+function printInputObject(type: IntrospectionInputObjectType) {
   return `input ${type.name} {` + '\n' +
     printInputFields(type.inputFields) + '\n' +
   '}';
 }
 
-function printFields(fields: Array<FieldResult>) {
+function printFields(fields: Array<IntrospectionField>) {
   return fields.map(f => '  ' + printField(f)).join('\n');
 }
 
-function printInputFields(fields: Array<InputField>) {
+function printInputFields(fields: Array<IntrospectionInputValue>) {
   return fields.map(f => '  ' + printInputField(f)).join('\n');
 }
 
-function printInputField(field: InputField) {
+function printInputField(field: IntrospectionInputValue) {
   return `${field.name}: ${printTypeDecl(field.type)}`;
 }
 
-function printUnion(type: FullType) {
+function printUnion(type: IntrospectionUnionType) {
   var typeList = type.possibleTypes.map(t => t.name).join(' | ');
   return `union ${type.name} = ${typeList}`;
 }
 
-function printScalar(type: FullType) {
+function printScalar(type: IntrospectionScalarType) {
   return `scalar ${type.name}`;
 }
 
-function printEnumValues(values: Array<EnumValue>) {
+function printEnumValues(values: Array<IntrospectionEnumValue>) {
   return values.map(v => '  ' + v.name).join('\n');
 }
 
-function printEnum(type: FullType) {
+function printEnum(type: IntrospectionEnumType) {
   return `enum ${type.name} {
 ${printEnumValues(type.enumValues)}
 }`;
 }
 
-function printType(type: FullType) {
+function printType(type: IntrospectionType) {
   switch (type.kind) {
     case TypeKind.OBJECT:
       return printObject(type);
@@ -139,7 +154,7 @@ function printType(type: FullType) {
   }
 }
 
-function isBuiltInScalar(type) {
+function isBuiltInScalar(type: IntrospectionScalarType): boolean {
   return type.name === 'String' ||
     type.name === 'Boolean' ||
     type.name === 'Int' ||
@@ -147,11 +162,11 @@ function isBuiltInScalar(type) {
     type.name === 'ID';
 }
 
-function isIntrospectionType(type) {
+function isIntrospectionType(type: IntrospectionType): boolean {
   return type.name.startsWith('__');
 }
 
-function isBuiltIn(type) {
+function isBuiltIn(type: IntrospectionType): boolean {
   return isIntrospectionType(type) || isBuiltInScalar(type);
 }
 
@@ -160,23 +175,31 @@ export async function printSchema(schema: GraphQLSchema): Promise<string> {
 }
 
 export async function printIntrospectionSchema(
-  schema: GraphQLSchema): Promise<string> {
+  schema: GraphQLSchema
+): Promise<string> {
   return await printFilteredSchema(schema, isIntrospectionType);
 }
 
-export function printSchemaFromResult(result: any): string {
+export function printSchemaFromResult(
+  result: IntrospectionQuery
+): string {
   return printFilteredSchemaFromResult(result, t => !isBuiltIn(t));
 }
 
-function printFilteredSchemaFromResult(result, typeFilter) {
-  var schemaResult: IntrospectionQueryResult = result.data.__schema;
+function printFilteredSchemaFromResult(
+  result: IntrospectionQuery,
+  typeFilter: (type: IntrospectionType) => boolean
+): string {
+  var schemaResult = result.__schema;
   var types = schemaResult.types.filter(typeFilter);
   types = types.sort((t1, t2) => t1.name.localeCompare(t2.name));
   return types.map(printType).join('\n\n');
 }
 
-async function printFilteredSchema(schema, typeFilter) {
+async function printFilteredSchema(
+  schema: GraphQLSchema,
+  typeFilter: (type: IntrospectionType) => boolean
+): Promise<string> {
   var result = await graphql(schema, introspectionQuery);
-  return printFilteredSchemaFromResult(result, typeFilter);
+  return printFilteredSchemaFromResult(result.data, typeFilter);
 }
-
