@@ -8,198 +8,135 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { introspectionQuery } from './introspectionQuery';
-import { graphql } from '../';
-
-import type {
-  IntrospectionQuery,
-  IntrospectionType,
-  IntrospectionScalarType,
-  IntrospectionObjectType,
-  IntrospectionInterfaceType,
-  IntrospectionUnionType,
-  IntrospectionEnumType,
-  IntrospectionInputObjectType,
-  IntrospectionTypeRef,
-  IntrospectionListTypeRef,
-  IntrospectionNonNullTypeRef,
-  IntrospectionField,
-  IntrospectionInputValue,
-  IntrospectionEnumValue,
-} from './introspectionQuery';
-
+import invariant from '../utils/invariant';
+import isNullish from '../utils/isNullish';
+import astFromValue from '../utils/astFromValue';
+import { print } from '../language/printer';
 import type { GraphQLSchema } from './schema';
+import type { GraphQLNamedType } from './definition';
+import {
+  GraphQLScalarType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+} from './definition';
 
-var TypeKind = {
-  SCALAR: 'SCALAR',
-  OBJECT: 'OBJECT',
-  INTERFACE: 'INTERFACE',
-  UNION: 'UNION',
-  ENUM: 'ENUM',
-  INPUT_OBJECT: 'INPUT_OBJECT',
-  LIST: 'LIST',
-  NON_NULL: 'NON_NULL',
-};
 
-// e.g Int, Int!, [Int!]!
-function printTypeDecl(type: IntrospectionTypeRef): string {
-  if (type.kind === TypeKind.LIST) {
-    var itemTypeRef = ((type: any): IntrospectionListTypeRef).ofType;
-    if (!itemTypeRef) {
-      throw new Error('Decorated type deeper than introspection query.');
-    }
-    return '[' + printTypeDecl(itemTypeRef) + ']';
-  } else if (type.kind === TypeKind.NON_NULL) {
-    var nullableTypeRef = ((type: any): IntrospectionNonNullTypeRef).ofType;
-    if (!nullableTypeRef) {
-      throw new Error('Decorated type deeper than introspection query.');
-    }
-    return printTypeDecl(nullableTypeRef) + '!';
+export function printSchema(schema: GraphQLSchema): string {
+  return printFilteredSchema(schema, isDefinedType);
+}
+
+export function printIntrospectionSchema(schema: GraphQLSchema): string {
+  return printFilteredSchema(schema, isIntrospectionType);
+}
+
+function isDefinedType(typename: string): boolean {
+  return !isIntrospectionType(typename) && !isBuiltInScalar(typename);
+}
+
+function isIntrospectionType(typename: string): boolean {
+  return typename.startsWith('__');
+}
+
+function isBuiltInScalar(typename: string): boolean {
+  return (
+    typename === 'String' ||
+    typename === 'Boolean' ||
+    typename === 'Int' ||
+    typename === 'Float' ||
+    typename === 'ID'
+  );
+}
+
+function printFilteredSchema(
+  schema: GraphQLSchema,
+  typeFilter: (type: string) => boolean
+): string {
+  var typeMap = schema.getTypeMap();
+  var types = Object.keys(typeMap)
+    .filter(typeFilter)
+    .sort((name1, name2) => name1.localeCompare(name2))
+    .map(typeName => typeMap[typeName]);
+  return types.map(printType).join('\n\n') + '\n';
+}
+
+function printType(type: GraphQLNamedType): string {
+  if (type instanceof GraphQLScalarType) {
+    return printScalar(type);
+  } else if (type instanceof GraphQLObjectType) {
+    return printObject(type);
+  } else if (type instanceof GraphQLInterfaceType) {
+    return printInterface(type);
+  } else if (type instanceof GraphQLUnionType) {
+    return printUnion(type);
+  } else if (type instanceof GraphQLEnumType) {
+    return printEnum(type);
   } else {
-    return type.name;
+    invariant(type instanceof GraphQLInputObjectType);
+    return printInputObject(type);
   }
 }
 
-function printField(field: IntrospectionField): string {
-  return `${field.name}${printArgs(field)}: ${printTypeDecl(field.type)}`;
-}
-
-function printArg(arg: IntrospectionInputValue): string {
-  var argDecl = `${arg.name}: ${printTypeDecl(arg.type)}`;
-  if (arg.defaultValue !== null) {
-    argDecl += ` = ${arg.defaultValue}`;
-  }
-  return argDecl;
-}
-
-function printArgs(field: IntrospectionField): string {
-  if (field.args.length === 0) {
-    return '';
-  }
-  return '(' + field.args.map(printArg).join(', ') + ')';
-}
-
-function printImplementedInterfaces(type: IntrospectionObjectType) {
-  if (type.interfaces.length === 0) {
-    return '';
-  }
-  return ' implements ' + type.interfaces.map(i => i.name).join(', ');
-}
-
-function printObject(type: IntrospectionObjectType) {
-  return `type ${type.name}${printImplementedInterfaces(type)} {` + '\n' +
-    printFields(type.fields) + '\n' +
-  '}';
-}
-
-function printInterface(type: IntrospectionInterfaceType) {
-  return `interface ${type.name} {` + '\n' +
-    printFields(type.fields) + '\n' +
-  '}';
-}
-
-function printInputObject(type: IntrospectionInputObjectType) {
-  return `input ${type.name} {` + '\n' +
-    printInputFields(type.inputFields) + '\n' +
-  '}';
-}
-
-function printFields(fields: Array<IntrospectionField>) {
-  return fields.map(f => '  ' + printField(f)).join('\n');
-}
-
-function printInputFields(fields: Array<IntrospectionInputValue>) {
-  return fields.map(f => '  ' + printInputField(f)).join('\n');
-}
-
-function printInputField(field: IntrospectionInputValue) {
-  return `${field.name}: ${printTypeDecl(field.type)}`;
-}
-
-function printUnion(type: IntrospectionUnionType) {
-  var typeList = type.possibleTypes.map(t => t.name).join(' | ');
-  return `union ${type.name} = ${typeList}`;
-}
-
-function printScalar(type: IntrospectionScalarType) {
+function printScalar(type: GraphQLScalarType): string {
   return `scalar ${type.name}`;
 }
 
-function printEnumValues(values: Array<IntrospectionEnumValue>) {
-  return values.map(v => '  ' + v.name).join('\n');
+function printObject(type: GraphQLObjectType): string {
+  var interfaces = type.getInterfaces();
+  var implementedInterfaces = interfaces.length ?
+    ' implements ' + interfaces.map(i => i.name).join(', ') : '';
+  return `type ${type.name}${implementedInterfaces} {\n` +
+    printFields(type) + '\n' +
+  '}';
 }
 
-function printEnum(type: IntrospectionEnumType) {
-  return `enum ${type.name} {
-${printEnumValues(type.enumValues)}
-}`;
+function printInterface(type: GraphQLInterfaceType): string {
+  return `interface ${type.name} {\n` +
+    printFields(type) + '\n' +
+  '}';
 }
 
-function printType(type: IntrospectionType) {
-  switch (type.kind) {
-    case TypeKind.OBJECT:
-      return printObject(type);
-    case TypeKind.UNION:
-      return printUnion(type);
-    case TypeKind.INTERFACE:
-      return printInterface(type);
-    case TypeKind.INPUT_OBJECT:
-      return printInputObject(type);
-    case TypeKind.SCALAR:
-      return printScalar(type);
-    case TypeKind.ENUM:
-      return printEnum(type);
-    default:
-      throw new Error('Invalid kind: ' + type.kind);
+function printUnion(type: GraphQLUnionType): string {
+  return `union ${type.name} = ${type.getPossibleTypes().join(' | ')}`;
+}
+
+function printEnum(type: GraphQLEnumType): string {
+  var valueMap = type.getValues();
+  var values = Object.keys(valueMap).map(valueName => valueMap[valueName]);
+  return `enum ${type.name} {\n` +
+    values.map(v => '  ' + v.name).join('\n') + '\n' +
+  '}';
+}
+
+function printInputObject(type: GraphQLInputObjectType): string {
+  var fieldMap = type.getFields();
+  var fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
+  return `input ${type.name} {\n` +
+    fields.map(f => '  ' + printInputValue(f)).join('\n') + '\n' +
+  '}';
+}
+
+function printFields(type) {
+  var fieldMap = type.getFields();
+  var fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
+  return fields.map(
+    f => `  ${f.name}${printArgs(f)}: ${f.type}`
+  ).join('\n');
+}
+
+function printArgs(field) {
+  if (field.args.length === 0) {
+    return '';
   }
+  return '(' + field.args.map(printInputValue).join(', ') + ')';
 }
 
-function isBuiltInScalar(type: IntrospectionScalarType): boolean {
-  return type.name === 'String' ||
-    type.name === 'Boolean' ||
-    type.name === 'Int' ||
-    type.name === 'Float' ||
-    type.name === 'ID';
-}
-
-function isIntrospectionType(type: IntrospectionType): boolean {
-  return type.name.startsWith('__');
-}
-
-function isBuiltIn(type: IntrospectionType): boolean {
-  return isIntrospectionType(type) || isBuiltInScalar(type);
-}
-
-export async function printSchema(schema: GraphQLSchema): Promise<string> {
-  return await printFilteredSchema(schema, t => !isBuiltIn(t));
-}
-
-export async function printIntrospectionSchema(
-  schema: GraphQLSchema
-): Promise<string> {
-  return await printFilteredSchema(schema, isIntrospectionType);
-}
-
-export function printSchemaFromResult(
-  result: IntrospectionQuery
-): string {
-  return printFilteredSchemaFromResult(result, t => !isBuiltIn(t));
-}
-
-function printFilteredSchemaFromResult(
-  result: IntrospectionQuery,
-  typeFilter: (type: IntrospectionType) => boolean
-): string {
-  var schemaResult = result.__schema;
-  var types = schemaResult.types.filter(typeFilter);
-  types = types.sort((t1, t2) => t1.name.localeCompare(t2.name));
-  return types.map(printType).join('\n\n');
-}
-
-async function printFilteredSchema(
-  schema: GraphQLSchema,
-  typeFilter: (type: IntrospectionType) => boolean
-): Promise<string> {
-  var result = await graphql(schema, introspectionQuery);
-  return printFilteredSchemaFromResult(result.data, typeFilter);
+function printInputValue(arg) {
+  var argDecl = `${arg.name}: ${arg.type}`;
+  if (!isNullish(arg.defaultValue)) {
+    argDecl += ` = ${print(astFromValue(arg.defaultValue, arg.type))}`;
+  }
+  return argDecl;
 }

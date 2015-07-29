@@ -26,7 +26,7 @@ import { createSchemaFromDSL } from '../';
  */
 async function cycleOutput(body, queryType) {
   var schema = await createSchemaFromDSL(body, queryType);
-  return '\n' + await printSchema(schema) + '\n';
+  return '\n' + await printSchema(schema);
 }
 
 describe('Schema Materializer', () => {
