@@ -64,11 +64,12 @@ function enumValueNode(name, loc) {
   };
 }
 
-function inputFieldNode(name, type, loc) {
+function inputValueNode(name, type, defaultValue, loc) {
   return {
-    kind: 'InputFieldDefinition',
+    kind: 'InputValueDefinition',
     name: name,
     type: type,
+    defaultValue: defaultValue,
     loc: loc,
   };
 }
@@ -268,13 +269,12 @@ type Hello {
               nameNode('world', loc(16, 21)),
               typeNode('String', loc(38, 44)),
               [
-                {
-                  kind: 'ArgumentDefinition',
-                  name: nameNode('flag', loc(22, 26)),
-                  type: typeNode('Boolean', loc(28, 35)),
-                  defaultValue: null,
-                  loc: loc(22, 35),
-                }
+                inputValueNode(
+                  nameNode('flag', loc(22, 26)),
+                  typeNode('Boolean', loc(28, 35)),
+                  null,
+                  loc(22, 35)
+                )
               ],
               loc(16, 44)
             )
@@ -306,17 +306,16 @@ type Hello {
               nameNode('world', loc(16, 21)),
               typeNode('String', loc(45, 51)),
               [
-                {
-                  kind: 'ArgumentDefinition',
-                  name: nameNode('flag', loc(22, 26)),
-                  type: typeNode('Boolean', loc(28, 35)),
-                  defaultValue: {
+                inputValueNode(
+                  nameNode('flag', loc(22, 26)),
+                  typeNode('Boolean', loc(28, 35)),
+                  {
                     kind: 'BooleanValue',
                     value: true,
                     loc: loc(38, 42),
                   },
-                  loc: loc(22, 42),
-                }
+                  loc(22, 42)
+                )
               ],
               loc(16, 51)
             )
@@ -348,17 +347,16 @@ type Hello {
               nameNode('world', loc(16, 21)),
               typeNode('String', loc(41, 47)),
               [
-                {
-                  kind: 'ArgumentDefinition',
-                  name: nameNode('things', loc(22, 28)),
-                  type: {
+                inputValueNode(
+                  nameNode('things', loc(22, 28)),
+                  {
                     kind: 'ListType',
                     type: typeNode('String', loc(31, 37)),
                     loc: loc(30, 38)
                   },
-                  defaultValue: null,
-                  loc: loc(22, 38),
-                }
+                  null,
+                  loc(22, 38)
+                )
               ],
               loc(16, 47)
             )
@@ -390,20 +388,18 @@ type Hello {
               nameNode('world', loc(16, 21)),
               typeNode('String', loc(53, 59)),
               [
-                {
-                  kind: 'ArgumentDefinition',
-                  name: nameNode('argOne', loc(22, 28)),
-                  type: typeNode('Boolean', loc(30, 37)),
-                  defaultValue: null,
-                  loc: loc(22, 37),
-                },
-                {
-                  kind: 'ArgumentDefinition',
-                  name: nameNode('argTwo', loc(39, 45)),
-                  type: typeNode('Int', loc(47, 50)),
-                  defaultValue: null,
-                  loc: loc(39, 50),
-                },
+                inputValueNode(
+                  nameNode('argOne', loc(22, 28)),
+                  typeNode('Boolean', loc(30, 37)),
+                  null,
+                  loc(22, 37)
+                ),
+                inputValueNode(
+                  nameNode('argTwo', loc(39, 45)),
+                  typeNode('Int', loc(47, 50)),
+                  null,
+                  loc(39, 50)
+                ),
               ],
               loc(16, 59)
             )
@@ -489,9 +485,10 @@ input Hello {
           kind: 'InputObjectDefinition',
           name: nameNode('Hello', loc(7, 12)),
           fields: [
-            inputFieldNode(
+            inputValueNode(
               nameNode('world', loc(17, 22)),
               typeNode('String', loc(24, 30)),
+              null,
               loc(17, 30)
             )
           ],
