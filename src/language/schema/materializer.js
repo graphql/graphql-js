@@ -38,7 +38,7 @@ import {
   InterfaceDefinition,
   UnionDefinition,
   TypeDefinition,
-  ArgumentDefinition,
+  InputValueDefinition,
   ScalarDefinition,
   InputObjectDefinition,
 } from './ast';
@@ -217,7 +217,7 @@ export function materializeSchemaAST(
       field => field.name.value,
       field => ({
         type: produceTypeDef(field.type),
-        args: makeArgs(field.arguments),
+        args: makeInputValues(field.arguments),
       })
     );
   }
@@ -226,15 +226,15 @@ export function materializeSchemaAST(
     return def.interfaces.map(inter => produceTypeDef(inter));
   }
 
-  function makeArgs(args: Array<ArgumentDefinition>) {
+  function makeInputValues(values: Array<InputValueDefinition>) {
     return makeDict(
-      args,
-      arg => arg.name.value,
-      arg => {
-        var type = produceTypeDef(arg.type);
+      values,
+      value => value.name.value,
+      value => {
+        var type = produceTypeDef(value.type);
         return {
           type: type,
-          defaultValue: coerceValueAST(type, arg.defaultValue),
+          defaultValue: coerceValueAST(type, value.defaultValue),
         };
       }
     );
@@ -274,16 +274,7 @@ export function materializeSchemaAST(
   function makeInputObjectDef(def: InputObjectDefinition) {
     return new GraphQLInputObjectType({
       name: def.name.value,
-      fields: () => makeInputFieldDefMap(def),
+      fields: () => makeInputValues(def.fields),
     });
   }
-
-  function makeInputFieldDefMap(def: InputObjectDefinition) {
-    return makeDict(
-      def.fields,
-      field => field.name.value,
-      field => ({type: produceTypeDef(field.type)})
-    );
-  }
 }
-

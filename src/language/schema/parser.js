@@ -40,13 +40,12 @@ import type {
   SchemaDefinition,
   TypeDefinition,
   FieldDefinition,
-  ArgumentDefinition,
+  InputValueDefinition,
   EnumDefinition,
   EnumValueDefinition,
   InterfaceDefinition,
   UnionDefinition,
   InputObjectDefinition,
-  InputFieldDefinition,
   ScalarDefinition,
 } from './ast';
 
@@ -57,11 +56,10 @@ import {
   TYPE_DEFINITION,
   INTERFACE_DEFINITION,
   FIELD_DEFINITION,
-  ARGUMENT_DEFINITION,
+  INPUT_VALUE_DEFINITION,
   UNION_DEFINITION,
   SCALAR_DEFINITION,
   INPUT_OBJECT_DEFINITION,
-  INPUT_FIELD_DEFINITION,
 } from './kinds';
 
 export function parseSchemaIntoAST(
@@ -181,23 +179,21 @@ function parseFieldDefinition(parser): FieldDefinition {
 }
 
 /**
- * ArgumentsDefinition : ( ArgumentDefinition+ )
+ * ArgumentsDefinition : ( InputValueDefinition+ )
  */
-function parseArgumentDefs(parser): Array<ArgumentDefinition> {
+function parseArgumentDefs(parser): Array<InputValueDefinition> {
   if (!peek(parser, TokenKind.PAREN_L)) {
     return [];
   }
-  return many(parser, TokenKind.PAREN_L, parseArgumentDef, TokenKind.PAREN_R);
+  return many(parser, TokenKind.PAREN_L, parseInputValueDef, TokenKind.PAREN_R);
 }
 
 /**
- * ArgumentDefinition : ArgumentName : Value[Const] DefaultValue?
- *
- * ArgumentName : Name
+ * InputValueDefinition : Name : Value[Const] DefaultValue?
  *
  * DefaultValue : = Value[Const]
  */
-function parseArgumentDef(parser): ArgumentDefinition {
+function parseInputValueDef(parser): InputValueDefinition {
   var start = parser.token.start;
   var name = parseName(parser);
   expect(parser, TokenKind.COLON);
@@ -207,7 +203,7 @@ function parseArgumentDef(parser): ArgumentDefinition {
     defaultValue = parseConstValue(parser);
   }
   return {
-    kind: ARGUMENT_DEFINITION,
+    kind: INPUT_VALUE_DEFINITION,
     name,
     type,
     defaultValue,
@@ -317,7 +313,7 @@ function parseEnumValueDefinition(parser) : EnumValueDefinition {
 }
 
 /**
- * InputObjectDefinition : `input` TypeName { InputFieldDefinition+ }
+ * InputObjectDefinition : `input` TypeName { InputValueDefinition+ }
  */
 function parseInputObjectDefinition(parser): InputObjectDefinition {
   var start = parser.token.start;
@@ -326,29 +322,13 @@ function parseInputObjectDefinition(parser): InputObjectDefinition {
   var fields = any(
     parser,
     TokenKind.BRACE_L,
-    parseInputFieldDefinition,
+    parseInputValueDef,
     TokenKind.BRACE_R
   );
   return {
     kind: INPUT_OBJECT_DEFINITION,
     name,
     fields,
-    loc: loc(parser, start),
-  };
-}
-
-/**
- * InputFieldDefinition : FieldName : Type
- */
-function parseInputFieldDefinition(parser): InputFieldDefinition {
-  var start = parser.token.start;
-  var name = parseName(parser);
-  expect(parser, TokenKind.COLON);
-  var type = parseType(parser);
-  return {
-    kind: INPUT_FIELD_DEFINITION,
-    name,
-    type,
     loc: loc(parser, start),
   };
 }

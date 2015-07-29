@@ -34,7 +34,7 @@ export var printSchemaASTReducer = {
   FieldDefinition: ({name, arguments: args, type}) =>
     name + wrap('(', join(args, ', '), ')') + ': ' + type,
 
-  ArgumentDefinition: ({name, type, defaultValue}) =>
+  InputValueDefinition: ({name, type, defaultValue}) =>
     name + ': ' + type + wrap(' = ', defaultValue),
 
   InterfaceDefinition: ({name, fields}) => `interface ${name} ${block(fields)}`,
@@ -43,7 +43,6 @@ export var printSchemaASTReducer = {
   EnumDefinition: ({name, values}) => `enum ${name} ${block(values)}`,
   EnumValueDefinition: ({name}) => name,
   InputObjectDefinition: ({name, fields}) => `input ${name} ${block(fields)}`,
-  InputFieldDefinition: ({name, type}) => `${name}: ${type}`,
 
   // Value
 

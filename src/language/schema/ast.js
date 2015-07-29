@@ -42,12 +42,12 @@ export type FieldDefinition = {
   kind: 'FieldDefinition';
   loc?: ?Location;
   name: Name;
-  arguments: Array<ArgumentDefinition>;
+  arguments: Array<InputValueDefinition>;
   type: Type;
 }
 
-export type ArgumentDefinition = {
-  kind: 'ArgumentDefinition';
+export type InputValueDefinition = {
+  kind: 'InputValueDefinition';
   loc?: ?Location;
   name: Name;
   type: Type;
@@ -91,12 +91,5 @@ export type InputObjectDefinition = {
   kind: 'InputObjectDefinition';
   loc?: ?Location;
   name: Name;
-  fields: Array<InputFieldDefinition>;
-}
-
-export type InputFieldDefinition = {
-  kind: 'InputFieldDefinition';
-  loc?: ?Location;
-  name: Name;
-  type: Type;
+  fields: Array<InputValueDefinition>;
 }

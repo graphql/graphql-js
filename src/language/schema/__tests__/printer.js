@@ -75,6 +75,7 @@ enum Site {
 
 input InputType {
   key: String!
+  answer: Int = 42
 }
 `);
 
