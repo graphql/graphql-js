@@ -10,30 +10,28 @@
 
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
- * for each value in the array.
- *
- * This provides a convenient lookup for the array items if the key function
- * produces unique results.
+ * and a function to produce the values from each item in the array.
  *
  *     var phoneBook = [
  *       { name: 'Jon', num: '555-1234' },
  *       { name: 'Jenny', num: '857-6309' }
  *     ]
  *
- *     // { Jon: { name: 'Jon', num: '555-1234' },
- *     //   Jenny: { name: 'Jenny', num: '857-6309' } }
- *     var entriesByName = keyMap(
+ *     // { Jon: '555-1234', Jenny: '857-6309' }
+ *     var phonesByName = keyValMap(
  *       phoneBook,
- *       entry => entry.name
+ *       entry => entry.name,
+ *       entry => entry.num
  *     )
  *
- *     // { name: 'Jenny', num: '857-6309' }
- *     var jennyEntry = entriesByName['Jenny']
- *
  */
-export default function keyMap<T>(
+export default function keyValMap<T, V>(
   list: Array<T>,
-  keyFn: (item: T) => string
-): {[key: string]: T} {
-  return list.reduce((map, item) => ((map[keyFn(item)] = item), map), {});
+  keyFn: (item: T) => string,
+  valFn: (item: T) => V
+): {[key: string]: V} {
+  return list.reduce(
+    (map, item) => ((map[keyFn(item)] = valFn(item)), map),
+    {}
+  );
 }

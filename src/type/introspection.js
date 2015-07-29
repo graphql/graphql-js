@@ -219,15 +219,15 @@ var __EnumValue = new GraphQLObjectType({
   }
 });
 
-var TypeKind = {
-  SCALAR: 0,
-  OBJECT: 1,
-  INTERFACE: 2,
-  UNION: 3,
-  ENUM: 4,
-  INPUT_OBJECT: 5,
-  LIST: 6,
-  NON_NULL: 7,
+export var TypeKind = {
+  SCALAR: 'SCALAR',
+  OBJECT: 'OBJECT',
+  INTERFACE: 'INTERFACE',
+  UNION: 'UNION',
+  ENUM: 'ENUM',
+  INPUT_OBJECT: 'INPUT_OBJECT',
+  LIST: 'LIST',
+  NON_NULL: 'NON_NULL',
 };
 
 var __TypeKind = new GraphQLEnumType({

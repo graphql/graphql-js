@@ -202,7 +202,7 @@ export class GraphQLScalarType/*<T>*/ {
 
 type GraphQLScalarTypeConfig/*<T>*/ = {
   name: string;
-  description?: string;
+  description?: ?string;
   coerce: (value: any) => ?any/*T*/;
   coerceLiteral: (value: Value) => ?any/*T*/;
 }
@@ -337,7 +337,7 @@ type GraphQLObjectTypeConfig = {
   interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap;
   isTypeOf?: (value: any) => boolean;
-  description?: string
+  description?: ?string
 }
 
 type GraphQLInterfacesThunk = () => Array<GraphQLInterfaceType>;
@@ -357,7 +357,7 @@ type GraphQLFieldConfig = {
     schema?: GraphQLSchema
   ) => any;
   deprecationReason?: string;
-  description?: string;
+  description?: ?string;
 }
 
 type GraphQLFieldConfigArgumentMap = {
@@ -394,7 +394,7 @@ export type GraphQLArgument = {
   name: string;
   type: GraphQLInputType;
   defaultValue?: any;
-  description?: string;
+  description?: ?string;
 };
 
 type GraphQLFieldDefinitionMap = {
@@ -501,7 +501,7 @@ type GraphQLInterfaceTypeConfig = {
    * Object type.
    */
   resolveType?: (value: any) => ?GraphQLObjectType,
-  description?: string
+  description?: ?string
 };
 
 
@@ -593,7 +593,7 @@ type GraphQLUnionTypeConfig = {
    * Object type.
    */
   resolveType?: (value: any) => ?GraphQLObjectType;
-  description?: string;
+  description?: ?string;
 };
 
 
@@ -698,7 +698,7 @@ export class GraphQLEnumType/*<T>*/ {
 type GraphQLEnumTypeConfig/*<T>*/ = {
   name: string;
   values: GraphQLEnumValueConfigMap/*<T>*/;
-  description?: string;
+  description?: ?string;
 }
 
 type GraphQLEnumValueConfigMap/*<T>*/ = {
@@ -708,7 +708,7 @@ type GraphQLEnumValueConfigMap/*<T>*/ = {
 type GraphQLEnumValueConfig/*<T>*/ = {
   value?: any/*T*/;
   deprecationReason?: string;
-  description?: string;
+  description?: ?string;
 }
 
 type GraphQLEnumValueDefinitionMap/*<T>*/ = {
@@ -719,7 +719,7 @@ type GraphQLEnumValueDefinition/*<T>*/ = {
   name: string;
   value?: any/*T*/;
   deprecationReason?: string;
-  description?: string;
+  description?: ?string;
 }
 
 
@@ -780,7 +780,7 @@ export class GraphQLInputObjectType {
 type InputObjectConfig = {
   name: string;
   fields: InputObjectConfigFieldMapThunk | InputObjectConfigFieldMap;
-  description?: string;
+  description?: ?string;
 }
 
 type InputObjectConfigFieldMapThunk = () => InputObjectConfigFieldMap;
@@ -788,7 +788,7 @@ type InputObjectConfigFieldMapThunk = () => InputObjectConfigFieldMap;
 type InputObjectFieldConfig = {
   type: GraphQLInputType;
   defaultValue?: any;
-  description?: string;
+  description?: ?string;
 }
 
 type InputObjectConfigFieldMap = {
@@ -799,7 +799,7 @@ export type InputObjectField = {
   name: string;
   type: GraphQLInputType;
   defaultValue?: any;
-  description?: string;
+  description?: ?string;
 }
 
 type InputObjectFieldMap = {
