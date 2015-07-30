@@ -17,11 +17,11 @@
  *
  *     var phoneBook = [
  *       { name: 'Jon', num: '555-1234' },
- *       { name: 'Jenny', num: '857-6309' }
+ *       { name: 'Jenny', num: '867-5309' }
  *     ]
  *
  *     // { Jon: { name: 'Jon', num: '555-1234' },
- *     //   Jenny: { name: 'Jenny', num: '857-6309' } }
+ *     //   Jenny: { name: 'Jenny', num: '867-5309' } }
  *     var entriesByName = keyMap(
  *       phoneBook,
  *       entry => entry.name

@@ -14,10 +14,10 @@
  *
  *     var phoneBook = [
  *       { name: 'Jon', num: '555-1234' },
- *       { name: 'Jenny', num: '857-6309' }
+ *       { name: 'Jenny', num: '867-5309' }
  *     ]
  *
- *     // { Jon: '555-1234', Jenny: '857-6309' }
+ *     // { Jon: '555-1234', Jenny: '867-5309' }
  *     var phonesByName = keyValMap(
  *       phoneBook,
  *       entry => entry.name,
