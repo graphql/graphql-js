@@ -24,7 +24,7 @@ import {
   GraphQLBoolean,
   GraphQLList,
   GraphQLNonNull,
-} from '../';
+} from '../../';
 
 // 80+ char lines are useful in describe/it, so ignore in this file.
 /*eslint-disable max-len */

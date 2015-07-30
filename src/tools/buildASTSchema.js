@@ -7,6 +7,16 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import isNullish from '../utils/isNullish';
+import keyMap from '../utils/keyMap';
+import keyValMap from '../utils/keyValMap';
+import valueFromAST from '../utils/valueFromAST';
+
+import {
+  LIST_TYPE,
+  NON_NULL_TYPE,
+} from '../language/kinds';
+
 import {
   TYPE_DEFINITION,
   INTERFACE_DEFINITION,
@@ -14,12 +24,18 @@ import {
   UNION_DEFINITION,
   SCALAR_DEFINITION,
   INPUT_OBJECT_DEFINITION,
-} from './kinds';
+} from '../language/schema/kinds';
 
 import {
-  LIST_TYPE,
-  NON_NULL_TYPE,
-} from '../kinds';
+  SchemaDocument,
+  EnumDefinition,
+  InterfaceDefinition,
+  UnionDefinition,
+  TypeDefinition,
+  InputValueDefinition,
+  ScalarDefinition,
+  InputObjectDefinition,
+} from '../language/schema/ast';
 
 import {
   GraphQLSchema,
@@ -35,45 +51,13 @@ import {
   GraphQLID,
   GraphQLList,
   GraphQLNonNull,
-} from '../../type';
-
-import {
-  SchemaDocument,
-  EnumDefinition,
-  InterfaceDefinition,
-  UnionDefinition,
-  TypeDefinition,
-  InputValueDefinition,
-  ScalarDefinition,
-  InputObjectDefinition,
-} from './ast';
-
-import valueFromAST from '../../utils/valueFromAST';
+} from '../type';
 
 
 type CompositeDefinition =
   TypeDefinition |
   InterfaceDefinition |
   UnionDefinition;
-
-function nullish(obj) {
-  return obj === null || obj === undefined;
-}
-
-/**
- * Takes the array of N elements constructs an object.
- * For each elemenet sets obj[keyFnArg(e}] = valueFnArg
- * If they are not specified they default to the identity function
- */
-function makeDict(array, keyFnArg, valueFnArg) {
-  var map = {};
-  var keyFn = nullish(keyFnArg) ? t => t : keyFnArg;
-  var valueFn = nullish(valueFnArg) ? t => t : valueFnArg;
-  array.forEach((item) => {
-    map[keyFn(item)] = valueFn(item);
-  });
-  return map;
-}
 
 function buildWrappedType(innerType, inputTypeAST) {
   if (inputTypeAST.kind === LIST_TYPE) {
@@ -92,7 +76,6 @@ function getInnerTypeName(typeAST) {
   return typeAST.name.value;
 }
 
-
 /**
  * This takes the ast of a schema document produced by parseSchema in
  * src/language/schema/parser.js.
@@ -101,21 +84,22 @@ function getInnerTypeName(typeAST) {
  * they are not particularly useful for non-introspection queries
  * since they have no resolve methods.
  */
-export function materializeSchemaAST(
+export function buildASTSchema(
   ast: SchemaDocument,
   queryTypeName: string,
-  mutationTypeName: ?string): GraphQLSchema {
+  mutationTypeName: ?string
+): GraphQLSchema {
 
-  if (nullish(ast)) {
+  if (isNullish(ast)) {
     throw new Error('must pass in ast');
   }
-  if (nullish(queryTypeName)) {
+  if (isNullish(queryTypeName)) {
     throw new Error('must pass in query type');
   }
 
-  var astMap = makeDict(ast.definitions, d => d.name.value);
+  var astMap = keyMap(ast.definitions, d => d.name.value);
 
-  if (nullish(astMap[queryTypeName])) {
+  if (isNullish(astMap[queryTypeName])) {
     throw new Error('Specified query type ' + queryTypeName +
       ' not found in document.');
   }
@@ -137,16 +121,16 @@ export function materializeSchemaAST(
 
     return (typeAST) => {
       var typeName = getInnerTypeName(typeAST);
-      if (!nullish(innerTypeMap[typeName])) {
+      if (!isNullish(innerTypeMap[typeName])) {
         return buildWrappedType(innerTypeMap[typeName], typeAST);
       }
 
-      if (nullish(astMap[typeName])) {
+      if (isNullish(astMap[typeName])) {
         throw new Error(`Type ${typeName} not found in document`);
       }
 
       var innerTypeDef = makeSchemaDef(astMap[typeName]);
-      if (nullish(innerTypeDef)) {
+      if (isNullish(innerTypeDef)) {
         throw new Error('Nothing constructed for ' + typeName);
       }
       innerTypeMap[typeName] = innerTypeDef;
@@ -157,13 +141,13 @@ export function materializeSchemaAST(
 
   var produceTypeDef = getTypeDefProducer(ast);
 
-  if (nullish(astMap[queryTypeName])) {
+  if (isNullish(astMap[queryTypeName])) {
     throw new Error(`Type ${queryTypeName} not found in document`);
   }
 
   var queryType = produceTypeDef(astMap[queryTypeName]);
   var schema;
-  if (nullish(mutationTypeName)) {
+  if (isNullish(mutationTypeName)) {
     schema = new GraphQLSchema({query: queryType});
   } else {
     schema = new GraphQLSchema({
@@ -179,7 +163,7 @@ export function materializeSchemaAST(
   return schema;
 
   function makeSchemaDef(def) {
-    if (nullish(def)) {
+    if (isNullish(def)) {
       throw new Error('def must be defined');
     }
     switch (def.kind) {
@@ -211,7 +195,7 @@ export function materializeSchemaAST(
   }
 
   function makeFieldDefMap(def: CompositeDefinition) {
-    return makeDict(
+    return keyValMap(
       def.fields,
       field => field.name.value,
       field => ({
@@ -226,7 +210,7 @@ export function materializeSchemaAST(
   }
 
   function makeInputValues(values: Array<InputValueDefinition>) {
-    return makeDict(
+    return keyValMap(
       values,
       value => value.name.value,
       value => {
@@ -251,7 +235,7 @@ export function materializeSchemaAST(
   function makeEnumDef(def: EnumDefinition) {
     var enumType = new GraphQLEnumType({
       name: def.name.value,
-      values: makeDict(def.values, v => v.name.value, () => ({})),
+      values: keyValMap(def.values, v => v.name.value, () => ({})),
     });
 
     return enumType;

@@ -9,13 +9,9 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { parseSchemaIntoAST } from '../parser';
-import { printSchema } from '../../../type/schemaPrinter';
-import { materializeSchemaAST } from '../materializer';
-import { createSchemaFromDSL } from '../';
-
-// 80+ char lines are useful in describe/it, so ignore in this file.
-/*eslint-disable max-len */
+import { parseSchemaIntoAST } from '../../language/schema/parser';
+import { printSchema } from '../schemaPrinter';
+import { buildASTSchema } from '../buildASTSchema';
 
 /**
  * This function does a full cycle of going from a
@@ -24,13 +20,14 @@ import { createSchemaFromDSL } from '../';
  * into an in-memory GraphQLSchema, and then finally
  * printing that GraphQL into the DSL
  */
-async function cycleOutput(body, queryType) {
-  var schema = await createSchemaFromDSL(body, queryType);
-  return '\n' + await printSchema(schema);
+function cycleOutput(body, queryType) {
+  var ast = parseSchemaIntoAST(body);
+  var schema = buildASTSchema(ast, queryType);
+  return '\n' + printSchema(schema);
 }
 
 describe('Schema Materializer', () => {
-  it('Simple type', async () => {
+  it('Simple type', () => {
     var body = `
 type HelloScalars {
   str: String
@@ -38,11 +35,11 @@ type HelloScalars {
   bool: Boolean
 }
 `;
-    var output = await cycleOutput(body, 'HelloScalars');
+    var output = cycleOutput(body, 'HelloScalars');
     expect(output).to.equal(body);
   });
 
-  it('Type modifiers', async () => {
+  it('Type modifiers', () => {
     var body = `
 type HelloScalars {
   nonNullStr: String!
@@ -52,23 +49,23 @@ type HelloScalars {
   nonNullListOfNonNullStrs: [String!]!
 }
 `;
-    var output = await cycleOutput(body, 'HelloScalars');
+    var output = cycleOutput(body, 'HelloScalars');
     expect(output).to.equal(body);
   });
 
 
-  it('Recursive type', async () => {
+  it('Recursive type', () => {
     var body = `
 type Recurse {
   str: String
   recurse: Recurse
 }
 `;
-    var output = await cycleOutput(body, 'Recurse');
+    var output = cycleOutput(body, 'Recurse');
     expect(output).to.equal(body);
   });
 
-  it('Two types circular', async () => {
+  it('Two types circular', () => {
     var body = `
 type TypeOne {
   str: String
@@ -80,31 +77,31 @@ type TypeTwo {
   typeOne: TypeOne
 }
 `;
-    var output = await cycleOutput(body, 'TypeOne');
+    var output = cycleOutput(body, 'TypeOne');
     expect(output).to.equal(body);
   });
 
-  it('Single argument field', async () => {
+  it('Single argument field', () => {
     var body = `
 type Hello {
   str(int: Int): String
 }
 `;
-    var output = await cycleOutput(body, 'Hello');
+    var output = cycleOutput(body, 'Hello');
     expect(output).to.equal(body);
   });
 
-  it('Simple type with multiple arguments', async () => {
+  it('Simple type with multiple arguments', () => {
     var body = `
 type Hello {
   str(int: Int, bool: Boolean): String
 }
 `;
-    var output = await cycleOutput(body, 'Hello');
+    var output = cycleOutput(body, 'Hello');
     expect(output).to.equal(body);
   });
 
-  it('Simple type with interface', async () => {
+  it('Simple type with interface', () => {
     var body = `
 type HelloInterface implements WorldInterface {
   str: String
@@ -114,11 +111,11 @@ interface WorldInterface {
   str: String
 }
 `;
-    var output = await cycleOutput(body, 'HelloInterface');
+    var output = cycleOutput(body, 'HelloInterface');
     expect(output).to.equal(body);
   });
 
-  it('Simple output enum', async () => {
+  it('Simple output enum', () => {
     var body = `
 enum Hello {
   WORLD
@@ -128,11 +125,11 @@ type OutputEnumRoot {
   hello: Hello
 }
 `;
-    var output = await cycleOutput(body, 'OutputEnumRoot');
+    var output = cycleOutput(body, 'OutputEnumRoot');
     expect(output).to.equal(body);
   });
 
-  it('Simple input enum', async () => {
+  it('Simple input enum', () => {
     var body = `
 enum Hello {
   WORLD
@@ -142,11 +139,11 @@ type InputEnumRoot {
   str(hello: Hello): String
 }
 `;
-    var output = await cycleOutput(body, 'InputEnumRoot');
+    var output = cycleOutput(body, 'InputEnumRoot');
     expect(output).to.equal(body);
   });
 
-  it('Multiple value enum', async () => {
+  it('Multiple value enum', () => {
     var body = `
 enum Hello {
   WO
@@ -157,11 +154,11 @@ type OutputEnumRoot {
   hello: Hello
 }
 `;
-    var output = await cycleOutput(body, 'OutputEnumRoot');
+    var output = cycleOutput(body, 'OutputEnumRoot');
     expect(output).to.equal(body);
   });
 
-  it('Simple Union', async () => {
+  it('Simple Union', () => {
     var body = `
 union Hello = World
 
@@ -173,11 +170,11 @@ type World {
   str: String
 }
 `;
-    var output = await cycleOutput(body, 'Root');
+    var output = cycleOutput(body, 'Root');
     expect(output).to.equal(body);
   });
 
-  it('Multiple Union', async () => {
+  it('Multiple Union', () => {
     var body = `
 union Hello = WorldOne | WorldTwo
 
@@ -193,11 +190,11 @@ type WorldTwo {
   str: String
 }
 `;
-    var output = await cycleOutput(body, 'Root');
+    var output = cycleOutput(body, 'Root');
     expect(output).to.equal(body);
   });
 
-  it('Simple Union', async () => {
+  it('Simple Union', () => {
     var body = `
 scalar CustomScalar
 
@@ -206,7 +203,7 @@ type Root {
 }
 `;
 
-    var output = await cycleOutput(body, 'Root');
+    var output = cycleOutput(body, 'Root');
     expect(output).to.equal(body);
   });
 
@@ -221,17 +218,17 @@ type Root {
 }
 `;
 
-    var output = await cycleOutput(body, 'Root');
+    var output = cycleOutput(body, 'Root');
     expect(output).to.equal(body);
   });
 
-  it('Simple argument field with default', async () => {
+  it('Simple argument field with default', () => {
     var body = `
 type Hello {
   str(int: Int = 2): String
 }
 `;
-    var output = await cycleOutput(body, 'Hello');
+    var output = cycleOutput(body, 'Hello');
     expect(output).to.equal(body);
   });
 });
@@ -244,7 +241,8 @@ type Hello {
 }
 `;
     var doc = parseSchemaIntoAST(body);
-    expect(() => materializeSchemaAST(doc, 'Hello')).to.throw('Type Bar not found in document');
+    expect(() => buildASTSchema(doc, 'Hello'))
+      .to.throw('Type Bar not found in document');
   });
 
   it('Unknown type in interface list', () => {
@@ -252,7 +250,8 @@ type Hello {
 type Hello implements Bar { }
 `;
     var doc = parseSchemaIntoAST(body);
-    expect(() => materializeSchemaAST(doc, 'Hello')).to.throw('Type Bar not found in document');
+    expect(() => buildASTSchema(doc, 'Hello'))
+      .to.throw('Type Bar not found in document');
   });
 
   it('Unknown type in union list', () => {
@@ -261,7 +260,8 @@ union TestUnion = Bar
 type Hello { testUnion: TestUnion }
 `;
     var doc = parseSchemaIntoAST(body);
-    expect(() => materializeSchemaAST(doc, 'Hello')).to.throw('Type Bar not found in document');
+    expect(() => buildASTSchema(doc, 'Hello'))
+      .to.throw('Type Bar not found in document');
   });
 
 
@@ -272,6 +272,7 @@ type Hello {
 }
 `;
     var doc = parseSchemaIntoAST(body);
-    expect(() => materializeSchemaAST(doc, 'Wat')).to.throw('Specified query type Wat not found in document');
+    expect(() => buildASTSchema(doc, 'Wat'))
+      .to.throw('Specified query type Wat not found in document');
   });
 });

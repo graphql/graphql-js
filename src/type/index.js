@@ -29,9 +29,3 @@ export {
   GraphQLBoolean,
   GraphQLID
 } from './scalars';
-
-export {
-  printSchema,
-  printIntrospectionSchema,
-  printSchemaFromResult,
-} from './schemaPrinter';
