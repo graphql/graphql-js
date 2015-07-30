@@ -7,4 +7,4 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-export { execute } from './executor';
+export { execute } from './execute';

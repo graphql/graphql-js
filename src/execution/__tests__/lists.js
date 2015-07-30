@@ -13,7 +13,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { formatError } from '../../error';
-import { execute } from '../executor';
+import { execute } from '../execute';
 import { parse } from '../../language';
 import {
   GraphQLSchema,

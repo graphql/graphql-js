@@ -8,7 +8,7 @@
  */
 
 import { expect } from 'chai';
-import { execute } from '../executor';
+import { execute } from '../execute';
 import { describe, it } from 'mocha';
 import { parse } from '../../language';
 import {

@@ -10,7 +10,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { execute } from '../executor';
+import { execute } from '../execute';
 import { parse } from '../../language';
 import {
   GraphQLSchema,

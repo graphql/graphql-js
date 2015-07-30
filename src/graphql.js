@@ -11,7 +11,7 @@
 import { Source } from './language/source';
 import { parse } from './language/parser';
 import { validateDocument } from './validator';
-import { execute } from './executor/executor';
+import { execute } from './execution/execute';
 import { formatError } from './error';
 import type { GraphQLFormattedError } from './error/formatError';
 import type { GraphQLSchema } from './type/schema';
