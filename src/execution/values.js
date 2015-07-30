@@ -14,6 +14,7 @@ import isNullish from '../jsutils/isNullish';
 import keyMap from '../jsutils/keyMap';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
+import { isValidJSValue } from '../utilities/isValidJSValue';
 import { print } from '../language/printer';
 import {
   isInputType,
@@ -86,7 +87,7 @@ function getVariableValue(
       [definitionAST]
     );
   }
-  if (isValidValue(type, input)) {
+  if (isValidJSValue(input, type)) {
     if (isNullish(input)) {
       var defaultValue = definitionAST.defaultValue;
       if (defaultValue) {
@@ -102,70 +103,13 @@ function getVariableValue(
   );
 }
 
-
-/**
- * Given a type and any value, return true if that value is valid.
- */
-function isValidValue(type: GraphQLInputType, value: any): boolean {
-  // A value must be provided if the type is non-null.
-  if (type instanceof GraphQLNonNull) {
-    if (isNullish(value)) {
-      return false;
-    }
-    var nullableType: GraphQLInputType = (type.ofType: any);
-    return isValidValue(nullableType, value);
-  }
-
-  if (isNullish(value)) {
-    return true;
-  }
-
-  // Lists accept a non-list value as a list of one.
-  if (type instanceof GraphQLList) {
-    var itemType: GraphQLInputType = (type.ofType: any);
-    if (Array.isArray(value)) {
-      return value.every(item => isValidValue(itemType, item));
-    } else {
-      return isValidValue(itemType, value);
-    }
-  }
-
-  // Input objects check each defined field.
-  if (type instanceof GraphQLInputObjectType) {
-    if (typeof value !== 'object') {
-      return false;
-    }
-    var fields = type.getFields();
-
-    // Ensure every provided field is defined.
-    if (Object.keys(value).some(fieldName => !fields[fieldName])) {
-      return false;
-    }
-
-    // Ensure every defined field is valid.
-    return Object.keys(fields).every(
-      fieldName => isValidValue(fields[fieldName].type, value[fieldName])
-    );
-  }
-
-  invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type'
-  );
-
-  // Scalar/Enum input checks to ensure the type can coerce the value to
-  // a non-null value.
-  return !isNullish(type.coerce(value));
-}
-
-
 /**
  * Given a type and any value, return a runtime value coerced to match the type.
  */
 function coerceValue(type: GraphQLInputType, value: any): any {
   if (type instanceof GraphQLNonNull) {
     // Note: we're not checking that the result of coerceValue is non-null.
-    // We only call this function after calling isValidValue.
+    // We only call this function after calling isValidJSValue.
     var nullableType: GraphQLInputType = (type.ofType: any);
     return coerceValue(nullableType, value);
   }
