@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import astFromValue from '../utils/astFromValue';
+import { astFromValue } from '../tools/astFromValue';
 import { print } from '../language/printer';
 import {
   GraphQLScalarType,

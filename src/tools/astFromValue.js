@@ -47,7 +47,7 @@ import { GraphQLFloat } from '../type/scalars';
  * | Number        | Int / Float          |
  *
  */
-export default function astFromValue(
+export function astFromValue(
   value: any,
   type?: ?GraphQLType
 ): ?Value {

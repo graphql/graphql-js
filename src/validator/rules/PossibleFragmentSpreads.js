@@ -17,7 +17,7 @@ import {
   GraphQLUnionType
 } from '../../type/definition';
 import keyMap from '../../utils/keyMap';
-import typeFromAST from '../../utils/typeFromAST';
+import { typeFromAST } from '../../tools/typeFromAST';
 import {
   typeIncompatibleSpreadMessage,
   typeIncompatibleAnonSpreadMessage,

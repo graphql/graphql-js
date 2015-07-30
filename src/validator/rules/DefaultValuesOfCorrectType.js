@@ -13,7 +13,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
 import { GraphQLNonNull } from '../../type/definition';
-import isValidLiteralValue from '../../utils/isValidLiteralValue';
+import { isValidLiteralValue } from '../../tools/isValidLiteralValue';
 import {
   defaultForNonNullArgMessage,
   badValueForDefaultArgMessage,

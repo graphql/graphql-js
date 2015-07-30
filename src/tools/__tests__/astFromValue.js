@@ -9,13 +9,13 @@
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import astFromValue from '../astFromValue';
+import { astFromValue } from '../astFromValue';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList
-} from '../../type/definition';
-import { GraphQLFloat } from '../../type/scalars';
+  GraphQLList,
+  GraphQLFloat,
+} from '../../type';
 
 
 describe('astFromValue', () => {
