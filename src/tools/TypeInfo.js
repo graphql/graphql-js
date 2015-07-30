@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { Kind } from '../language';
+import * as Kind from '../language/kinds';
 import type { Field } from '../language/ast';
 import {
   isCompositeType,
@@ -36,8 +36,8 @@ import {
 } from '../type/introspection';
 import type { GraphQLSchema } from '../type/schema';
 import type { Node } from '../language/ast';
-import typeFromAST from './typeFromAST';
-import find from './find';
+import { typeFromAST } from './typeFromAST';
+import find from '../utils/find';
 
 
 /**
@@ -45,7 +45,7 @@ import find from './find';
  * of the current field and type definitions at any point in a GraphQL document
  * AST during a recursive descent by calling `enter(node)` and `leave(node)`.
  */
-export default class TypeInfo {
+export class TypeInfo {
   _schema: GraphQLSchema;
   _typeStack: Array<?GraphQLOutputType>;
   _parentTypeStack: Array<?GraphQLCompositeType>;

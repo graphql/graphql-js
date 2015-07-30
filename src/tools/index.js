@@ -22,3 +22,29 @@ export {
   printSchema,
   printIntrospectionSchema,
 } from './schemaPrinter';
+
+// Create a GraphQLType from a GraphQL language AST
+export {
+  typeFromAST
+} from './typeFromAST';
+
+// Create a JavaScript value from a GraphQL language AST
+export {
+  valueFromAST
+} from './valueFromAST';
+
+// Create a GraphQL language AST from a JavaScript value
+export {
+  astFromValue
+} from './astFromValue';
+
+// A helper to use within recursive-descent visitors which need to be aware of
+// the GraphQL type system.
+export {
+  TypeInfo
+} from './TypeInfo';
+
+// Determine if AST values adhere to a GraphQL type
+export {
+  isValidLiteralValue
+} from './isValidLiteralValue';

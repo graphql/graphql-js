@@ -11,10 +11,8 @@
 import invariant from '../utils/invariant';
 import keyMap from '../utils/keyMap';
 import keyValMap from '../utils/keyValMap';
-import valueFromAST from '../utils/valueFromAST';
-
+import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
-
 import { GraphQLSchema } from '../type/schema';
 
 import {

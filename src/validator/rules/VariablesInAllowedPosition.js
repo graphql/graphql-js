@@ -9,7 +9,7 @@
  */
 
 import type { ValidationContext } from '../index';
-import typeFromAST from '../../utils/typeFromAST';
+import { typeFromAST } from '../../tools/typeFromAST';
 import { GraphQLError } from '../../error';
 import { GraphQLList, GraphQLNonNull } from '../../type/definition';
 import { badVarPosMessage } from '../errors';

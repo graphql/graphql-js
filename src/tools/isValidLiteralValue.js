@@ -22,9 +22,9 @@ import {
   GraphQLNonNull
 } from '../type/definition';
 import type { GraphQLInputType } from '../type/definition';
-import invariant from './invariant';
-import keyMap from './keyMap';
-import isNullish from './isNullish';
+import invariant from '../utils/invariant';
+import keyMap from '../utils/keyMap';
+import isNullish from '../utils/isNullish';
 
 
 /**
@@ -34,7 +34,7 @@ import isNullish from './isNullish';
  * Note that this only validates literal values, variables are assumed to
  * provide values of the correct type.
  */
-export default function isValidLiteralValue(
+export function isValidLiteralValue(
   type: GraphQLInputType,
   valueAST: Value
 ): boolean {

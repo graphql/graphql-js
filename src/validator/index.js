@@ -25,7 +25,7 @@ import type {
   GraphQLArgument
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
-import TypeInfo from '../utils/TypeInfo';
+import { TypeInfo } from '../tools/TypeInfo';
 import { allRules } from './allRules';
 
 

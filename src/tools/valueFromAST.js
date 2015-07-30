@@ -8,10 +8,10 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import keyMap from './keyMap';
-import invariant from './invariant';
-import isNullish from './isNullish';
-import { Kind } from '../language';
+import keyMap from '../utils/keyMap';
+import invariant from '../utils/invariant';
+import isNullish from '../utils/isNullish';
+import * as Kind from '../language/kinds';
 import {
   GraphQLScalarType,
   GraphQLEnumType,
@@ -43,7 +43,7 @@ import type {
  * | Int / Float          | Number        |
  *
  */
-export default function valueFromAST(
+export function valueFromAST(
   valueAST: ?Value,
   type: GraphQLInputType,
   variables?: ?{ [key: string]: any }

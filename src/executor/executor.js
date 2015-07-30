@@ -12,7 +12,7 @@ import { GraphQLError, locatedError } from '../error';
 import find from '../utils/find';
 import invariant from '../utils/invariant';
 import isNullish from '../utils/isNullish';
-import typeFromAST from '../utils/typeFromAST';
+import { typeFromAST } from '../tools/typeFromAST';
 import { Kind } from '../language';
 import { getVariableValues, getArgumentValues } from './values';
 import {

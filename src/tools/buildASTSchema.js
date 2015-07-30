@@ -10,7 +10,7 @@
 import isNullish from '../utils/isNullish';
 import keyMap from '../utils/keyMap';
 import keyValMap from '../utils/keyValMap';
-import valueFromAST from '../utils/valueFromAST';
+import { valueFromAST } from './valueFromAST';
 
 import {
   LIST_TYPE,

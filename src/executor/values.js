@@ -12,8 +12,8 @@ import { GraphQLError } from '../error';
 import invariant from '../utils/invariant';
 import isNullish from '../utils/isNullish';
 import keyMap from '../utils/keyMap';
-import typeFromAST from '../utils/typeFromAST';
-import valueFromAST from '../utils/valueFromAST';
+import { typeFromAST } from '../tools/typeFromAST';
+import { valueFromAST } from '../tools/valueFromAST';
 import { print } from '../language/printer';
 import {
   isInputType,
@@ -112,7 +112,8 @@ function isValidValue(type: GraphQLInputType, value: any): boolean {
     if (isNullish(value)) {
       return false;
     }
-    return isValidValue(type.ofType, value);
+    var nullableType: GraphQLInputType = (type.ofType: any);
+    return isValidValue(nullableType, value);
   }
 
   if (isNullish(value)) {
@@ -121,7 +122,7 @@ function isValidValue(type: GraphQLInputType, value: any): boolean {
 
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
-    var itemType = type.ofType;
+    var itemType: GraphQLInputType = (type.ofType: any);
     if (Array.isArray(value)) {
       return value.every(item => isValidValue(itemType, item));
     } else {
@@ -165,7 +166,8 @@ function coerceValue(type: GraphQLInputType, value: any): any {
   if (type instanceof GraphQLNonNull) {
     // Note: we're not checking that the result of coerceValue is non-null.
     // We only call this function after calling isValidValue.
-    return coerceValue(type.ofType, value);
+    var nullableType: GraphQLInputType = (type.ofType: any);
+    return coerceValue(nullableType, value);
   }
 
   if (isNullish(value)) {
@@ -173,7 +175,7 @@ function coerceValue(type: GraphQLInputType, value: any): any {
   }
 
   if (type instanceof GraphQLList) {
-    var itemType = type.ofType;
+    var itemType: GraphQLInputType = (type.ofType: any);
     // TODO: support iterable input
     if (Array.isArray(value)) {
       return value.map(item => coerceValue(itemType, item));
