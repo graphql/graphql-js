@@ -201,7 +201,7 @@ var __InputValue = new GraphQLObjectType({
       type: GraphQLString,
       resolve: inputVal => inputVal.defaultValue == null ?
         null :
-        print(astFromValue(inputVal.defaultValue))
+        print(astFromValue(inputVal.defaultValue, inputVal))
     }
   })
 });
