@@ -14,7 +14,8 @@ Each sub directory within is a sub-module of graphql-js:
 * `graphql/language`: Parse and operate on the GraphQL language.
 * `graphql/language/schema`: Parsing and operate on the GraphQL Schema language.
 * `graphql/type`: Define GraphQL types and schema.
-* `graphql/validator`: Fulfill the Validation phase of fulfilling a GraphQL result.* `graphql/executor`: Fulfill the Execution phase of fulfilling a GraphQL request.
+* `graphql/validation`: The Validation phase of fulfilling a GraphQL result.
+* `graphql/execution`: The Execution phase of fulfilling a GraphQL request.
 * `graphql/error`: Creating and format GraphQL errors.
 * `graphql/utilities`: Common useful computations upon the GraphQL language and
   type objects.

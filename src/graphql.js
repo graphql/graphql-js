@@ -10,7 +10,7 @@
 
 import { Source } from './language/source';
 import { parse } from './language/parser';
-import { validateDocument } from './validator';
+import { validate } from './validation/validate';
 import { execute } from './execution/execute';
 import { formatError } from './error';
 import type { GraphQLFormattedError } from './error/formatError';
@@ -36,7 +36,7 @@ export function graphql(
   return new Promise(resolve => {
     var source = new Source(requestString || '', 'GraphQL request');
     var documentAST = parse(source);
-    var validationErrors = validateDocument(schema, documentAST);
+    var validationErrors = validate(schema, documentAST);
     if (validationErrors.length > 0) {
       resolve({
         errors: validationErrors.map(formatError)

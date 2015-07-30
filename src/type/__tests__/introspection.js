@@ -10,7 +10,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { missingFieldArgMessage } from '../../validator/errors';
+import { missingFieldArgMessage } from '../../validation/errors';
 import {
   graphql,
   GraphQLSchema,

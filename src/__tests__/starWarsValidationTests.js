@@ -12,7 +12,7 @@ import { describe, it } from 'mocha';
 import { StarWarsSchema } from './starWarsSchema.js';
 import { Source } from '../language/source';
 import { parse } from '../language/parser';
-import { validateDocument } from '../validator';
+import { validate } from '../validation/validate';
 
 
 /**
@@ -21,7 +21,7 @@ import { validateDocument } from '../validator';
 function validationErrors(query) {
   var source = new Source(query, 'StarWars.graphql');
   var ast = parse(source);
-  return validateDocument(StarWarsSchema, ast);
+  return validate(StarWarsSchema, ast);
 }
 
 describe('Star Wars Validation Tests', () => {

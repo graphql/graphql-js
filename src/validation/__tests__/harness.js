@@ -10,7 +10,7 @@
 import { expect } from 'chai';
 import { parse } from '../../language';
 import { formatError } from '../../error';
-import { validateDocument } from '../';
+import { validate } from '../validate';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -272,12 +272,12 @@ var defaultSchema = new GraphQLSchema({
 });
 
 function expectValid(schema, rules, queryString) {
-  var errors = validateDocument(schema, parse(queryString), rules);
+  var errors = validate(schema, parse(queryString), rules);
   expect(errors).to.deep.equal([], 'Should validate');
 }
 
 function expectInvalid(schema, rules, queryString, expectedErrors) {
-  var errors = validateDocument(schema, parse(queryString), rules);
+  var errors = validate(schema, parse(queryString), rules);
   expect(errors).to.have.length.of.at.least(1, 'Should not validate');
   expect(errors.map(formatError)).to.deep.equal(expectedErrors);
 }

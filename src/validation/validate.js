@@ -46,7 +46,7 @@ import { allRules } from './allRules';
  * behavior of the visitor to skip over top level defined fragments, and instead
  * visit those fragments at every point a spread is encountered.
  */
-export function validateDocument(
+export function validate(
   schema: GraphQLSchema,
   ast: Document,
   rules?: Array<any>
