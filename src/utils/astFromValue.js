@@ -12,6 +12,7 @@ import invariant from '../utils/invariant';
 import isNullish from '../utils/isNullish';
 import type { Value } from '../language/ast';
 import {
+  NAME,
   INT,
   FLOAT,
   STRING,
@@ -123,7 +124,7 @@ export default function astFromValue(
     if (fieldValue) {
       fields.push({
         kind: OBJECT_FIELD,
-        name: fieldName,
+        name: { kind: NAME, value: fieldName },
         value: fieldValue
       });
     }

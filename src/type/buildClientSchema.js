@@ -12,6 +12,9 @@ import invariant from '../utils/invariant';
 import keyMap from '../utils/keyMap';
 import keyValMap from '../utils/keyValMap';
 
+import { parseValue } from '../language/parser';
+import { coerceValueAST } from '../executor/values';
+
 import { GraphQLSchema } from './schema';
 
 import {
@@ -283,13 +286,15 @@ export function buildClientSchema(
   function buildInputValueDefMap(inputValueIntrospections) {
     return keyValMap(
       inputValueIntrospections,
-      inputValueIntrospection => inputValueIntrospection.name,
-      inputValueIntrospection => ({
-        description: inputValueIntrospection.description,
-        type: getInputType(inputValueIntrospection.type),
-        defaultValue: inputValueIntrospection.defaultValue &&
-          JSON.parse(inputValueIntrospection.defaultValue),
-      })
+      inputValue => inputValue.name,
+      inputValue => {
+        var description = inputValue.description;
+        var type = getInputType(inputValue.type);
+        var defaultValue = inputValue.defaultValue ?
+          coerceValueAST(type, parseValue(inputValue.defaultValue)) :
+          null;
+        return { description, type, defaultValue };
+      }
     );
   }
 

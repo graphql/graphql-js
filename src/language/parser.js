@@ -96,6 +96,22 @@ export function parse(
 }
 
 /**
+ * Given a string containing a GraphQL value, parse the AST for that value.
+ * Throws GraphQLError if a syntax error is encountered.
+ *
+ * This is useful within tools that operate upon GraphQL Values directly and
+ * in isolation of complete GraphQL documents.
+ */
+export function parseValue(
+  source: Source | string,
+  options?: ParseOptions
+): Value {
+  var sourceObj = source instanceof Source ? source : new Source(source);
+  var parser = makeParser(sourceObj, options || {});
+  return parseValueLiteral(parser);
+}
+
+/**
  * Converts a name lex token into a name parse node.
  */
 export function parseName(parser): Name {
@@ -181,7 +197,7 @@ function parseVariableDefinition(parser): VariableDefinition {
     variable: parseVariable(parser),
     type: (expect(parser, TokenKind.COLON), parseType(parser)),
     defaultValue:
-      skip(parser, TokenKind.EQUALS) ? parseValue(parser, true) : null,
+      skip(parser, TokenKind.EQUALS) ? parseValueLiteral(parser, true) : null,
     loc: loc(parser, start)
   };
 }
@@ -252,7 +268,7 @@ function parseArgument(parser): Argument {
   return {
     kind: ARGUMENT,
     name: parseName(parser),
-    value: (expect(parser, TokenKind.COLON), parseValue(parser, false)),
+    value: (expect(parser, TokenKind.COLON), parseValueLiteral(parser, false)),
     loc: loc(parser, start)
   };
 }
@@ -307,15 +323,15 @@ function parseFragmentDefinition(parser): FragmentDefinition {
 
 // Implements the parsing rules in the Values section.
 
-function parseVariableValue(parser): Value {
-  return parseValue(parser, false);
-}
-
 export function parseConstValue(parser): Value {
-  return parseValue(parser, true);
+  return parseValueLiteral(parser, true);
 }
 
-function parseValue(parser, isConst: boolean): Value {
+function parseVariableValue(parser): Value {
+  return parseValueLiteral(parser, false);
+}
+
+function parseValueLiteral(parser, isConst: boolean): Value {
   var token = parser.token;
   switch (token.kind) {
     case TokenKind.BRACKET_L:
@@ -412,7 +428,8 @@ function parseObjectField(
   return {
     kind: OBJECT_FIELD,
     name,
-    value: (expect(parser, TokenKind.COLON), parseValue(parser, isConst)),
+    value:
+      (expect(parser, TokenKind.COLON), parseValueLiteral(parser, isConst)),
     loc: loc(parser, start)
   };
 }

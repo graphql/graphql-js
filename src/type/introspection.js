@@ -8,6 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import astFromValue from '../utils/astFromValue';
+import { print } from '../language/printer';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -199,7 +201,7 @@ var __InputValue = new GraphQLObjectType({
       type: GraphQLString,
       resolve: inputVal => inputVal.defaultValue == null ?
         null :
-        JSON.stringify(inputVal.defaultValue)
+        print(astFromValue(inputVal.defaultValue))
     }
   })
 });

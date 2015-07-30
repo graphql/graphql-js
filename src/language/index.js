@@ -11,7 +11,7 @@ export { getLocation } from './location';
 import * as Kind from './kinds';
 export { Kind };
 export { lex } from './lexer';
-export { parse } from './parser';
+export { parse, parseValue } from './parser';
 export { print } from './printer';
 export { Source } from './source';
 export { visit, BREAK } from './visitor';

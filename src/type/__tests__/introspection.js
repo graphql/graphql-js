@@ -243,13 +243,13 @@ describe('Introspection', () => {
                   name: 'enumValues',
                   args: [
                     {
-                      defaultValue: 'false',
                       name: 'includeDeprecated',
                       type: {
                         kind: 'SCALAR',
                         name: 'Boolean',
                         ofType: null
-                      }
+                      },
+                      defaultValue: 'false'
                     }
                   ],
                   type: {

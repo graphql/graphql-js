@@ -155,10 +155,10 @@ describe('astFromValue', () => {
       { kind: 'ObjectValue',
         fields: [
          { kind: 'ObjectField',
-           name: 'foo',
+           name: { kind: 'Name', value: 'foo' },
            value: { kind: 'IntValue', value: '3' } },
          { kind: 'ObjectField',
-           name: 'bar',
+           name: { kind: 'Name', value: 'bar' },
            value: { kind: 'StringValue', value: 'HELLO' } } ] }
     );
 
@@ -177,10 +177,10 @@ describe('astFromValue', () => {
       { kind: 'ObjectValue',
         fields: [
           { kind: 'ObjectField',
-            name: 'foo',
+            name: { kind: 'Name', value: 'foo' },
             value: { kind: 'FloatValue', value: '3.0' } },
           { kind: 'ObjectField',
-            name: 'bar',
+            name: { kind: 'Name', value: 'bar' },
             value: { kind: 'EnumValue', value: 'HELLO' } } ] }
     );
   });
