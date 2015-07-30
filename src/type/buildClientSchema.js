@@ -11,9 +11,9 @@
 import invariant from '../utils/invariant';
 import keyMap from '../utils/keyMap';
 import keyValMap from '../utils/keyValMap';
+import valueFromAST from '../utils/valueFromAST';
 
 import { parseValue } from '../language/parser';
-import { coerceValueAST } from '../executor/values';
 
 import { GraphQLSchema } from './schema';
 
@@ -291,7 +291,7 @@ export function buildClientSchema(
         var description = inputValue.description;
         var type = getInputType(inputValue.type);
         var defaultValue = inputValue.defaultValue ?
-          coerceValueAST(type, parseValue(inputValue.defaultValue)) :
+          valueFromAST(parseValue(inputValue.defaultValue), type) :
           null;
         return { description, type, defaultValue };
       }

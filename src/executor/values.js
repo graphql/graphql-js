@@ -9,11 +9,11 @@
  */
 
 import { GraphQLError } from '../error';
-import keyMap from '../utils/keyMap';
 import invariant from '../utils/invariant';
-import typeFromAST from '../utils/typeFromAST';
 import isNullish from '../utils/isNullish';
-import { Kind } from '../language';
+import keyMap from '../utils/keyMap';
+import typeFromAST from '../utils/typeFromAST';
+import valueFromAST from '../utils/valueFromAST';
 import { print } from '../language/printer';
 import {
   isInputType,
@@ -25,13 +25,7 @@ import {
 } from '../type/definition';
 import type { GraphQLInputType, GraphQLArgument } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
-import type {
-  Argument,
-  VariableDefinition,
-  Variable,
-  ListValue,
-  ObjectValue
-} from '../language/ast';
+import type { Argument, VariableDefinition } from '../language/ast';
 
 
 /**
@@ -65,7 +59,7 @@ export function getArgumentValues(
   return argDefs.reduce((result, argDef) => {
     var name = argDef.name;
     var valueAST = argASTMap[name] ? argASTMap[name].value : null;
-    var value = coerceValueAST(argDef.type, valueAST, variables);
+    var value = valueFromAST(valueAST, argDef.type, variables);
     if (isNullish(value) && !isNullish(argDef.defaultValue)) {
       value = argDef.defaultValue;
     }
@@ -96,7 +90,7 @@ function getVariableValue(
     if (isNullish(input)) {
       var defaultValue = definitionAST.defaultValue;
       if (defaultValue) {
-        return coerceValueAST(type, defaultValue);
+        return valueFromAST(defaultValue, type);
       }
     }
     return coerceValue(type, input);
@@ -204,79 +198,6 @@ function coerceValue(type: GraphQLInputType, value: any): any {
   );
 
   var coerced = type.coerce(value);
-  if (!isNullish(coerced)) {
-    return coerced;
-  }
-}
-
-
-/**
- * Given a type and a value AST node known to match this type, build a
- * runtime value.
- */
-export function coerceValueAST(
-  type: GraphQLInputType,
-  valueAST: any,
-  variables?: ?{ [key: string]: any }
-) {
-  if (type instanceof GraphQLNonNull) {
-    // Note: we're not checking that the result of coerceValueAST is non-null.
-    // We're assuming that this query has been validated and the value used
-    // here is of the correct type.
-    return coerceValueAST(type.ofType, valueAST, variables);
-  }
-
-  if (!valueAST) {
-    return null;
-  }
-
-  if (valueAST.kind === Kind.VARIABLE) {
-    var variableName = (valueAST: Variable).name.value;
-    if (!variables || !variables.hasOwnProperty(variableName)) {
-      return null;
-    }
-    // Note: we're not doing any checking that this variable is correct. We're
-    // assuming that this query has been validated and the variable usage here
-    // is of the correct type.
-    return variables[variableName];
-  }
-
-  if (type instanceof GraphQLList) {
-    var itemType = type.ofType;
-    if (valueAST.kind === Kind.LIST) {
-      return (valueAST: ListValue).values.map(
-        itemAST => coerceValueAST(itemType, itemAST, variables)
-      );
-    } else {
-      return [coerceValueAST(itemType, valueAST, variables)];
-    }
-  }
-
-  if (type instanceof GraphQLInputObjectType) {
-    var fields = type.getFields();
-    if (valueAST.kind !== Kind.OBJECT) {
-      return null;
-    }
-    var fieldASTs = keyMap(
-      (valueAST: ObjectValue).fields,
-      field => field.name.value
-    );
-    return Object.keys(fields).reduce((obj, fieldName) => {
-      var field = fields[fieldName];
-      var fieldAST = fieldASTs[fieldName];
-      var fieldValue =
-        coerceValueAST(field.type, fieldAST && fieldAST.value, variables);
-      obj[fieldName] = fieldValue === null ? field.defaultValue : fieldValue;
-      return obj;
-    }, {});
-  }
-
-  invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type'
-  );
-
-  var coerced = type.coerceLiteral(valueAST);
   if (!isNullish(coerced)) {
     return coerced;
   }

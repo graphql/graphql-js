@@ -17,6 +17,11 @@ import {
 } from './kinds';
 
 import {
+  LIST_TYPE,
+  NON_NULL_TYPE,
+} from '../kinds';
+
+import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -43,14 +48,8 @@ import {
   InputObjectDefinition,
 } from './ast';
 
-import {
-  coerceValueAST
-} from '../../executor/values';
+import valueFromAST from '../../utils/valueFromAST';
 
-import {
-  LIST_TYPE,
-  NON_NULL_TYPE,
-} from '../kinds';
 
 type CompositeDefinition =
   TypeDefinition |
@@ -234,7 +233,7 @@ export function materializeSchemaAST(
         var type = produceTypeDef(value.type);
         return {
           type: type,
-          defaultValue: coerceValueAST(type, value.defaultValue),
+          defaultValue: valueFromAST(value.defaultValue, type),
         };
       }
     );
