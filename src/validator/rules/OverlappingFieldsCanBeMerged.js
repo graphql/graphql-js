@@ -26,8 +26,8 @@ import type {
   GraphQLType,
   GraphQLFieldDefinition
 } from '../../type/definition';
-import { typeFromAST } from '../../tools/typeFromAST';
-import find from '../../utils/find';
+import { typeFromAST } from '../../utilities/typeFromAST';
+import find from '../../jsutils/find';
 
 
 /**

@@ -8,9 +8,9 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import invariant from '../utils/invariant';
-import keyMap from '../utils/keyMap';
-import keyValMap from '../utils/keyValMap';
+import invariant from '../jsutils/invariant';
+import keyMap from '../jsutils/keyMap';
+import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
 import { GraphQLSchema } from '../type/schema';

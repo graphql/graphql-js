@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import invariant from '../utils/invariant';
+import invariant from '../jsutils/invariant';
 import { NAMED_TYPE, LIST_TYPE, NON_NULL_TYPE } from '../language/kinds';
 import type { Type } from '../language/ast';
 import { GraphQLList, GraphQLNonNull } from '../type/definition';

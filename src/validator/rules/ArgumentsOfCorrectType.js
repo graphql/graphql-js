@@ -12,7 +12,7 @@ import type { ValidationContext } from '../index';
 
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
-import { isValidLiteralValue } from '../../tools/isValidLiteralValue';
+import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 import { badValueMessage } from '../errors';
 
 

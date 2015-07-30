@@ -7,9 +7,9 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import isNullish from '../utils/isNullish';
-import keyMap from '../utils/keyMap';
-import keyValMap from '../utils/keyValMap';
+import isNullish from '../jsutils/isNullish';
+import keyMap from '../jsutils/keyMap';
+import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 
 import {

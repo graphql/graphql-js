@@ -13,7 +13,7 @@ import type { VariableDefinition } from '../../language/ast';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
 import { isInputType } from '../../type/definition';
-import { typeFromAST } from '../../tools/typeFromAST';
+import { typeFromAST } from '../../utilities/typeFromAST';
 import { nonInputTypeOnVarMessage } from '../errors';
 
 

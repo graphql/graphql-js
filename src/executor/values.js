@@ -9,11 +9,11 @@
  */
 
 import { GraphQLError } from '../error';
-import invariant from '../utils/invariant';
-import isNullish from '../utils/isNullish';
-import keyMap from '../utils/keyMap';
-import { typeFromAST } from '../tools/typeFromAST';
-import { valueFromAST } from '../tools/valueFromAST';
+import invariant from '../jsutils/invariant';
+import isNullish from '../jsutils/isNullish';
+import keyMap from '../jsutils/keyMap';
+import { typeFromAST } from '../utilities/typeFromAST';
+import { valueFromAST } from '../utilities/valueFromAST';
 import { print } from '../language/printer';
 import {
   isInputType,

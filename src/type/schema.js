@@ -19,7 +19,7 @@ import type { GraphQLType } from './definition';
 import { GraphQLIncludeDirective, GraphQLSkipDirective } from './directives';
 import type { GraphQLDirective } from './directives';
 import { __Schema } from './introspection';
-import find from '../utils/find';
+import find from '../jsutils/find';
 
 
 /**

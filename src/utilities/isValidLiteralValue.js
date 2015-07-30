@@ -22,9 +22,9 @@ import {
   GraphQLNonNull
 } from '../type/definition';
 import type { GraphQLInputType } from '../type/definition';
-import invariant from '../utils/invariant';
-import keyMap from '../utils/keyMap';
-import isNullish from '../utils/isNullish';
+import invariant from '../jsutils/invariant';
+import keyMap from '../jsutils/keyMap';
+import isNullish from '../jsutils/isNullish';
 
 
 /**

@@ -8,9 +8,9 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import keyMap from '../utils/keyMap';
-import invariant from '../utils/invariant';
-import isNullish from '../utils/isNullish';
+import keyMap from '../jsutils/keyMap';
+import invariant from '../jsutils/invariant';
+import isNullish from '../jsutils/isNullish';
 import * as Kind from '../language/kinds';
 import {
   GraphQLScalarType,

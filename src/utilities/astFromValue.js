@@ -8,8 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import invariant from '../utils/invariant';
-import isNullish from '../utils/isNullish';
+import invariant from '../jsutils/invariant';
+import isNullish from '../jsutils/isNullish';
 import type { Value } from '../language/ast';
 import {
   NAME,

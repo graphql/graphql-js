@@ -9,10 +9,10 @@
  */
 
 import { GraphQLError, locatedError } from '../error';
-import find from '../utils/find';
-import invariant from '../utils/invariant';
-import isNullish from '../utils/isNullish';
-import { typeFromAST } from '../tools/typeFromAST';
+import find from '../jsutils/find';
+import invariant from '../jsutils/invariant';
+import isNullish from '../jsutils/isNullish';
+import { typeFromAST } from '../utilities/typeFromAST';
 import { Kind } from '../language';
 import { getVariableValues, getArgumentValues } from './values';
 import {

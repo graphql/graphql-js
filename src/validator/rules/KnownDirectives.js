@@ -19,7 +19,7 @@ import {
   INLINE_FRAGMENT,
   FRAGMENT_DEFINITION
 } from '../../language/kinds';
-import find from '../../utils/find';
+import find from '../../jsutils/find';
 
 
 /**

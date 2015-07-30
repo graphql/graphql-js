@@ -37,7 +37,7 @@ import {
 import type { GraphQLSchema } from '../type/schema';
 import type { Node } from '../language/ast';
 import { typeFromAST } from './typeFromAST';
-import find from '../utils/find';
+import find from '../jsutils/find';
 
 
 /**

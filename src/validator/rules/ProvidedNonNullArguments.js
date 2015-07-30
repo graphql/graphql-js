@@ -12,7 +12,7 @@ import type { ValidationContext } from '../index';
 
 import { GraphQLError } from '../../error';
 import { GraphQLNonNull } from '../../type/definition';
-import keyMap from '../../utils/keyMap';
+import keyMap from '../../jsutils/keyMap';
 import { missingFieldArgMessage, missingDirectiveArgMessage } from '../errors';
 
 

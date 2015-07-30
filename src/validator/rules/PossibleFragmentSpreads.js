@@ -16,8 +16,8 @@ import {
   GraphQLInterfaceType,
   GraphQLUnionType
 } from '../../type/definition';
-import keyMap from '../../utils/keyMap';
-import { typeFromAST } from '../../tools/typeFromAST';
+import keyMap from '../../jsutils/keyMap';
+import { typeFromAST } from '../../utilities/typeFromAST';
 import {
   typeIncompatibleSpreadMessage,
   typeIncompatibleAnonSpreadMessage,
