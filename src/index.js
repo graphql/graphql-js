@@ -13,7 +13,7 @@ export { graphql } from './graphql';
 // Produce a GraphQL type schema.
 export { GraphQLSchema } from './type/schema';
 
-// Define Types.
+// Define GraphQL types.
 export {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -25,7 +25,7 @@ export {
   GraphQLNonNull
 } from './type/definition';
 
-// Use Pre-defined Scalar Types.
+// Use pre-defined GraphQL scalar types.
 export {
   GraphQLInt,
   GraphQLFloat,
@@ -33,6 +33,3 @@ export {
   GraphQLBoolean,
   GraphQLID
 } from './type/scalars';
-
-// Produce and format errors.
-export { GraphQLError, formatError } from './error';
