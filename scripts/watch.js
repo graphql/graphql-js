@@ -40,7 +40,7 @@ var flowServer = spawn(flowBinPath, ['server'], {
   env: process.env
 });
 
-var watcher = sane(srcDir, { glob: ['**/*.*'] })
+var watcher = sane(srcDir, { glob: ['**/*.js', '**/*.graphql'] })
   .on('ready', startWatch)
   .on('add', changeFile)
   .on('delete', deleteFile)
@@ -142,13 +142,16 @@ function lintFiles(filepaths) {
   console.log('Linting Code\n');
 
   return filepaths.reduce((prev, filepath) => prev.then(prevSuccess => {
-    process.stdout.write('  ' + filepath + ' ...');
-    return exec('eslint', [srcPath(filepath)])
-      .catch(() => false)
-      .then(success => {
-        console.log(CLEARLINE + '  ' + (success ? CHECK : X) + ' ' + filepath);
-        return prevSuccess && success;
-      });
+    if (isJS(filepath)) {
+      process.stdout.write('  ' + filepath + ' ...');
+      return exec('eslint', [srcPath(filepath)])
+        .catch(() => false)
+        .then(success => {
+          console.log(CLEARLINE + '  ' + (success ? CHECK : X) + ' ' + filepath);
+          return prevSuccess && success;
+        });
+    }
+    return prevSuccess;
   }), Promise.resolve(true));
 }
 
