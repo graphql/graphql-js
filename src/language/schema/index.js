@@ -7,21 +7,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { GraphQLSchema } from '../../type';
-import { parseSchemaIntoAST } from './parser';
-import { materializeSchemaAST } from './materializer';
-
 import * as Kind from './kinds';
 export { Kind };
 export { parseSchemaIntoAST } from './parser';
 export { printSchema } from './printer';
 export { visit } from './visitor';
-
-// DSL --> Schema
-export async function createSchemaFromDSL(
-  schemaDSL: string,
-  queryType: string
-) : GraphQLSchema {
-  var doc = parseSchemaIntoAST(schemaDSL);
-  return await materializeSchemaAST(doc, queryType);
-}

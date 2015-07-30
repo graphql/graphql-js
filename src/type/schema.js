@@ -85,7 +85,7 @@ type GraphQLSchemaConfig = {
   mutation?: ?GraphQLObjectType;
 }
 
-export function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
+function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (type instanceof GraphQLList || type instanceof GraphQLNonNull) {
     return typeMapReducer(map, type.ofType);
   }

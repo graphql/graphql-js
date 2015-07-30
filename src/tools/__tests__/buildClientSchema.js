@@ -10,7 +10,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { buildClientSchema } from '../buildClientSchema';
-import { introspectionQuery } from '../introspectionQuery';
+import { introspectionQuery } from '../../type/introspectionQuery';
 import {
   graphql,
   GraphQLSchema,

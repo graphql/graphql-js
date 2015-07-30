@@ -15,7 +15,7 @@ import valueFromAST from '../utils/valueFromAST';
 
 import { parseValue } from '../language/parser';
 
-import { GraphQLSchema } from './schema';
+import { GraphQLSchema } from '../type/schema';
 
 import {
   isInputType,
@@ -28,7 +28,7 @@ import {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
-} from './definition';
+} from '../type/definition';
 
 import {
   GraphQLInt,
@@ -36,16 +36,16 @@ import {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID
-} from './scalars';
+} from '../type/scalars';
 
-import { TypeKind } from './introspection';
+import { TypeKind } from '../type/introspection';
 
 import type {
   GraphQLType,
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLNamedType,
-} from './definition';
+} from '../type/definition';
 
 import type {
   IntrospectionQuery,
@@ -59,7 +59,7 @@ import type {
   IntrospectionTypeRef,
   IntrospectionListTypeRef,
   IntrospectionNonNullTypeRef,
-} from './introspectionQuery';
+} from '../type/introspectionQuery';
 
 
 /**

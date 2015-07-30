@@ -12,8 +12,8 @@ import invariant from '../utils/invariant';
 import isNullish from '../utils/isNullish';
 import astFromValue from '../utils/astFromValue';
 import { print } from '../language/printer';
-import type { GraphQLSchema } from './schema';
-import type { GraphQLNamedType } from './definition';
+import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLNamedType } from '../type/definition';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -21,7 +21,7 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-} from './definition';
+} from '../type/definition';
 
 
 export function printSchema(schema: GraphQLSchema): string {
