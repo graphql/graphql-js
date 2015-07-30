@@ -29,16 +29,16 @@ import {
 // 80+ char lines are useful in describe/it, so ignore in this file.
 /*eslint-disable max-len */
 
-async function printForTest(schema) {
-  return '\n' + await printSchema(schema) + '\n';
+function printForTest(schema) {
+  return '\n' + printSchema(schema);
 }
 
-async function printSingleFieldSchema(fieldConfig) {
+function printSingleFieldSchema(fieldConfig) {
   var Root = new GraphQLObjectType({
     name: 'Root',
     fields: { singleField: fieldConfig },
   });
-  return await printForTest(new GraphQLSchema({query: Root}));
+  return printForTest(new GraphQLSchema({query: Root}));
 }
 
 function listOf(type) {
@@ -50,8 +50,8 @@ function nonNull(type) {
 }
 
 describe('Type System Printer', () => {
-  it('Prints String Field', async () => {
-    var output = await printSingleFieldSchema({type: GraphQLString});
+  it('Prints String Field', () => {
+    var output = printSingleFieldSchema({type: GraphQLString});
     expect(output).to.equal(`
 type Root {
   singleField: String
@@ -60,8 +60,8 @@ type Root {
     );
   });
 
-  it('Prints [String] Field', async () => {
-    var output = await printSingleFieldSchema({type: listOf(GraphQLString)});
+  it('Prints [String] Field', () => {
+    var output = printSingleFieldSchema({type: listOf(GraphQLString)});
     expect(output).to.equal(`
 type Root {
   singleField: [String]
@@ -70,8 +70,8 @@ type Root {
     );
   });
 
-  it('Prints String! Field', async () => {
-    var output = await printSingleFieldSchema({type: nonNull(GraphQLString)});
+  it('Prints String! Field', () => {
+    var output = printSingleFieldSchema({type: nonNull(GraphQLString)});
     expect(output).to.equal(`
 type Root {
   singleField: String!
@@ -80,8 +80,8 @@ type Root {
     );
   });
 
-  it('Prints [String]! Field', async () => {
-    var output = await printSingleFieldSchema({type: nonNull(listOf(GraphQLString))});
+  it('Prints [String]! Field', () => {
+    var output = printSingleFieldSchema({type: nonNull(listOf(GraphQLString))});
     expect(output).to.equal(`
 type Root {
   singleField: [String]!
@@ -90,8 +90,8 @@ type Root {
     );
   });
 
-  it('Prints [String!] Field', async () => {
-    var output = await printSingleFieldSchema({type: listOf(nonNull(GraphQLString))});
+  it('Prints [String!] Field', () => {
+    var output = printSingleFieldSchema({type: listOf(nonNull(GraphQLString))});
     expect(output).to.equal(`
 type Root {
   singleField: [String!]
@@ -100,8 +100,8 @@ type Root {
     );
   });
 
-  it('Prints [String!]! Field', async () => {
-    var output = await printSingleFieldSchema({type: nonNull(listOf(nonNull(GraphQLString)))});
+  it('Prints [String!]! Field', () => {
+    var output = printSingleFieldSchema({type: nonNull(listOf(nonNull(GraphQLString)))});
     expect(output).to.equal(`
 type Root {
   singleField: [String!]!
@@ -110,7 +110,7 @@ type Root {
     );
   });
 
-  it('Print Object Field', async() => {
+  it('Print Object Field', () => {
     var FooType = new GraphQLObjectType({
       name: 'Foo',
       fields: { str: { type: GraphQLString } }
@@ -122,7 +122,7 @@ type Root {
     });
 
     var Schema = new GraphQLSchema({query: Root});
-    var output = await printForTest(Schema);
+    var output = printForTest(Schema);
     expect(output).to.equal(`
 type Foo {
   str: String
@@ -135,8 +135,8 @@ type Root {
     );
   });
 
-  it('Prints String Field With Int Arg', async () => {
-    var output = await printSingleFieldSchema(
+  it('Prints String Field With Int Arg', () => {
+    var output = printSingleFieldSchema(
       {
         type: GraphQLString,
         args: { argOne: { type: GraphQLInt } },
@@ -150,8 +150,8 @@ type Root {
     );
   });
 
-  it('Prints String Field With Int Arg With Default', async () => {
-    var output = await printSingleFieldSchema(
+  it('Prints String Field With Int Arg With Default', () => {
+    var output = printSingleFieldSchema(
       {
         type: GraphQLString,
         args: { argOne: { type: GraphQLInt, defaultValue: 2 } },
@@ -165,8 +165,8 @@ type Root {
     );
   });
 
-  it('Prints String Field With Int! Arg', async () => {
-    var output = await printSingleFieldSchema(
+  it('Prints String Field With Int! Arg', () => {
+    var output = printSingleFieldSchema(
       {
         type: GraphQLString,
         args: { argOne: { type: nonNull(GraphQLInt) } },
@@ -180,8 +180,8 @@ type Root {
     );
   });
 
-  it('Prints String Field With Multiple Args', async () => {
-    var output = await printSingleFieldSchema(
+  it('Prints String Field With Multiple Args', () => {
+    var output = printSingleFieldSchema(
       {
         type: GraphQLString,
         args: {
@@ -198,8 +198,8 @@ type Root {
     );
   });
 
-  it('Prints String Field With Multiple Args, First is Default', async () => {
-    var output = await printSingleFieldSchema(
+  it('Prints String Field With Multiple Args, First is Default', () => {
+    var output = printSingleFieldSchema(
       {
         type: GraphQLString,
         args: {
@@ -217,8 +217,8 @@ type Root {
     );
   });
 
-  it('Prints String Field With Multiple Args, Second is Default', async () => {
-    var output = await printSingleFieldSchema(
+  it('Prints String Field With Multiple Args, Second is Default', () => {
+    var output = printSingleFieldSchema(
       {
         type: GraphQLString,
         args: {
@@ -236,8 +236,8 @@ type Root {
     );
   });
 
-  it('Prints String Field With Multiple Args, Last is Default', async () => {
-    var output = await printSingleFieldSchema(
+  it('Prints String Field With Multiple Args, Last is Default', () => {
+    var output = printSingleFieldSchema(
       {
         type: GraphQLString,
         args: {
@@ -255,7 +255,7 @@ type Root {
     );
   });
 
-  it('Print Interface', async() => {
+  it('Print Interface', () => {
     var FooType = new GraphQLInterfaceType({
       name: 'Foo',
       fields: { str: { type: GraphQLString } },
@@ -273,7 +273,7 @@ type Root {
     });
 
     var Schema = new GraphQLSchema({query: Root});
-    var output = await printForTest(Schema);
+    var output = printForTest(Schema);
     expect(output).to.equal(`
 type Bar implements Foo {
   str: String
@@ -290,7 +290,7 @@ type Root {
     );
   });
 
-  it('Print Multiple Interface', async() => {
+  it('Print Multiple Interface', () => {
     var FooType = new GraphQLInterfaceType({
       name: 'Foo',
       fields: { str: { type: GraphQLString } },
@@ -316,7 +316,7 @@ type Root {
     });
 
     var Schema = new GraphQLSchema({query: Root});
-    var output = await printForTest(Schema);
+    var output = printForTest(Schema);
     expect(output).to.equal(`
 interface Baaz {
   int: Int
@@ -338,7 +338,7 @@ type Root {
     );
   });
 
-  it('Print Unions', async() => {
+  it('Print Unions', () => {
     var FooType = new GraphQLObjectType({
       name: 'Foo',
       fields: {
@@ -372,7 +372,7 @@ type Root {
     });
 
     var Schema = new GraphQLSchema({query: Root});
-    var output = await printForTest(Schema);
+    var output = printForTest(Schema);
     expect(output).to.equal(`
 type Bar {
   str: String
@@ -394,7 +394,7 @@ union SingleUnion = Foo
     );
   });
 
-  it('Print Input Type', async() => {
+  it('Print Input Type', () => {
     var InputType = new GraphQLInputObjectType({
       name: 'InputType',
       fields: {
@@ -413,7 +413,7 @@ union SingleUnion = Foo
     });
 
     var Schema = new GraphQLSchema({query: Root});
-    var output = await printForTest(Schema);
+    var output = printForTest(Schema);
     expect(output).to.equal(`
 input InputType {
   int: Int
@@ -425,7 +425,7 @@ type Root {
 `);
   });
 
-  it('Custom Scalar', async () => {
+  it('Custom Scalar', () => {
     var OddType = new GraphQLScalarType({
       name: 'Odd',
       coerce(value) {
@@ -441,7 +441,7 @@ type Root {
     });
 
     var Schema = new GraphQLSchema({query: Root});
-    var output = await printForTest(Schema);
+    var output = printForTest(Schema);
     expect(output).to.equal(`
 scalar Odd
 
@@ -452,7 +452,7 @@ type Root {
      );
   });
 
-  it('Enum', async() => {
+  it('Enum', () => {
     var RGBType = new GraphQLEnumType({
       name: 'RGB',
       values: {
@@ -470,7 +470,7 @@ type Root {
     });
 
     var Schema = new GraphQLSchema({query: Root});
-    var output = await printForTest(Schema);
+    var output = printForTest(Schema);
     expect(output).to.equal(`
 enum RGB {
   RED
@@ -484,13 +484,13 @@ type Root {
 `);
   });
 
-  it('Print Introspection Schema', async() => {
+  it('Print Introspection Schema', () => {
     var Root = new GraphQLObjectType({
       name: 'Root',
       fields: {},
     });
     var Schema = new GraphQLSchema({query: Root});
-    var output = '\n' + await printIntrospectionSchema(Schema) + '\n';
+    var output = '\n' + printIntrospectionSchema(Schema);
     var introspectionSchema = `
 type __Directive {
   name: String!
