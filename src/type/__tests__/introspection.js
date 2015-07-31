@@ -21,7 +21,7 @@ import {
   GraphQLEnumType,
 } from '../../';
 
-import { introspectionQuery } from '../introspectionQuery';
+import { introspectionQuery } from '../../utilities/introspectionQuery';
 
 describe('Introspection', () => {
   it('executes an introspection query', async () => {

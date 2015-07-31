@@ -7,6 +7,9 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+// The GraphQL query recommended for a full schema introspection.
+export { introspectionQuery } from './introspectionQuery';
+
 // Build a GraphQLSchema from an introspection result.
 export { buildClientSchema } from './buildClientSchema';
 

@@ -57,7 +57,7 @@ import type {
   IntrospectionTypeRef,
   IntrospectionListTypeRef,
   IntrospectionNonNullTypeRef,
-} from '../type/introspectionQuery';
+} from './introspectionQuery';
 
 
 /**
