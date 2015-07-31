@@ -23,12 +23,6 @@
     "optional": [
       "runtime",
       "es7.asyncFunctions"
-    ],
-    "plugins": [
-      "flow-comments"
-    ],
-    "blacklist": [
-      "flow"
     ]
   },
   "scripts": {
@@ -50,7 +44,6 @@
     "babel": "5.8.3",
     "babel-core": "5.8.3",
     "babel-eslint": "4.0.5",
-    "babel-plugin-flow-comments": "1.0.9",
     "bluebird": "2.9.34",
     "chai": "3.0.0",
     "chai-subset": "1.0.1",
