@@ -36,7 +36,7 @@
     "testonly": "mocha $npm_package_options_mocha",
     "lint": "eslint src",
     "check": "flow check",
-    "build": "mkdir dist && babel src --ignore __tests__ --out-dir dist/ && cp package.json dist/",
+    "build": "babel src --ignore __tests__ --out-dir dist/ && cp package.json dist/",
     "watch": "babel scripts/watch.js | node",
     "cover": "babel-node node_modules/.bin/isparta cover --root src --report html node_modules/.bin/_mocha -- $npm_package_options_mocha",
     "cover:lcov": "babel-node node_modules/.bin/isparta cover --root src --report lcovonly node_modules/.bin/_mocha -- $npm_package_options_mocha",
