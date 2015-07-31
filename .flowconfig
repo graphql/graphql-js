@@ -1,5 +1,6 @@
 [ignore]
 .*/lib/.*
+.*/dist/.*
 .*/coverage/.*
 .*/scripts/.*
 .*/node_modules/.*
