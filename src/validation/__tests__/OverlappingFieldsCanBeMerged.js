@@ -21,9 +21,11 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLUnionType,
+  GraphQLList,
   GraphQLNonNull,
   GraphQLInt,
-  GraphQLString
+  GraphQLString,
+  GraphQLID,
 } from '../../type';
 
 
@@ -382,11 +384,34 @@ describe('Validate: Overlapping fields can be merged', () => {
       types: [ StringBox, IntBox, NonNullStringBox1, NonNullStringBox2 ]
     });
 
+    var Connection = new GraphQLObjectType({
+      name: 'Connection',
+      fields: {
+        edges: {
+          type: new GraphQLList(new GraphQLObjectType({
+            name: 'Edge',
+            fields: {
+              node: {
+                type: new GraphQLObjectType({
+                  name: 'Node',
+                  fields: {
+                    id: { type: GraphQLID },
+                    name: { type: GraphQLString }
+                  }
+                })
+              }
+            }
+          }))
+        }
+      }
+    });
+
     var schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'QueryRoot',
         fields: () => ({
-          boxUnion: { type: BoxUnion }
+          boxUnion: { type: BoxUnion },
+          connection: { type: Connection }
         })
       })
     });
@@ -417,6 +442,53 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           boxUnion {
             ...on NonNullStringBox1 {
+              scalar
+            }
+            ...on NonNullStringBox2 {
+              scalar
+            }
+          }
+        }
+      `);
+    });
+
+    it('compares deep types including list', () => {
+      expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          connection {
+            ...edgeID
+            edges {
+              node {
+                id: name
+              }
+            }
+          }
+        }
+
+        fragment edgeID on Connection {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      `, [
+        { message: fieldsConflictMessage(
+            'edges', [['node', [['id', 'id and name are different fields']]]]
+          ),
+          locations: [
+            { line: 14, column: 11 }, { line: 5, column: 13 },
+            { line: 15, column: 13 }, { line: 6, column: 15 },
+            { line: 16, column: 15 }, { line: 7, column: 17 },
+          ] }
+      ]);
+    });
+
+    it('ignores unknown types', () => {
+      expectPassesRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          boxUnion {
+            ...on UnknownType {
               scalar
             }
             ...on NonNullStringBox2 {

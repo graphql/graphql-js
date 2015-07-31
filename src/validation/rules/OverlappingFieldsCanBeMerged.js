@@ -1,4 +1,4 @@
-// Flow currently disabled for this file.
+/*@flow*/
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
@@ -18,12 +18,16 @@ import type {
   SelectionSet,
   Field,
   Argument,
-  InlineFragment,
-  FragmentSpread,
   Directive
 } from '../../language/ast';
+import {
+  getNamedType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+} from '../../type/definition';
 import type {
   GraphQLType,
+  GraphQLNamedType,
   GraphQLFieldDefinition
 } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
@@ -83,25 +87,21 @@ export default function OverlappingFieldsCanBeMerged(
 
     var type1 = def1 && def1.type;
     var type2 = def2 && def2.type;
-    if (!sameType(type1, type2)) {
+    if (type1 && type2 && !sameType(type1, type2)) {
       return [
         [responseName, `they return differing types ${type1} and ${type2}`],
         [ast1, ast2]
       ];
     }
 
-    var arguments1 = ast1.arguments || [];
-    var arguments2 = ast2.arguments || [];
-    if (!sameArguments(arguments1, arguments2)) {
+    if (!sameArguments(ast1.arguments || [], ast2.arguments || [])) {
       return [
         [responseName, 'they have differing arguments'],
         [ast1, ast2]
       ];
     }
 
-    var directives1 = ast1.directives || [];
-    var directives2 = ast2.directives || [];
-    if (!sameDirectives(directives1, directives2)) {
+    if (!sameDirectives(ast1.directives || [], ast2.directives || [])) {
       return [
         [responseName, 'they have differing directives'],
         [ast1, ast2]
@@ -114,13 +114,13 @@ export default function OverlappingFieldsCanBeMerged(
       var visitedFragmentNames = {};
       var subfieldMap = collectFieldASTsAndDefs(
         context,
-        type1,
+        getNamedType(type1),
         selectionSet1,
         visitedFragmentNames
       );
       subfieldMap = collectFieldASTsAndDefs(
         context,
-        type2,
+        getNamedType(type2),
         selectionSet2,
         visitedFragmentNames,
         subfieldMap
@@ -130,7 +130,7 @@ export default function OverlappingFieldsCanBeMerged(
         return [
           [responseName, conflicts.map(([reason]) => reason)],
           conflicts.reduce(
-            (list: Array<Field>, [, blameNodes]) => list.concat(blameNodes),
+            (allFields, [, fields]) => allFields.concat(fields),
             [ast1, ast2]
           )
         ];
@@ -145,15 +145,15 @@ export default function OverlappingFieldsCanBeMerged(
       leave(selectionSet) {
         var fieldMap = collectFieldASTsAndDefs(
           context,
-          context.getType(),
+          context.getParentType(),
           selectionSet
         );
         var conflicts = findConflicts(fieldMap);
         if (conflicts.length) {
-          return conflicts.map(([[responseName, reason], blameNodes]) =>
+          return conflicts.map(([[responseName, reason], fields]) =>
             new GraphQLError(
               fieldsConflictMessage(responseName, reason),
-              blameNodes
+              fields
             )
           );
         }
@@ -164,7 +164,7 @@ export default function OverlappingFieldsCanBeMerged(
 
 type Conflict = [ConflictReason, Array<Field>];
 // Field name and reason, or field name and list of sub-conflicts.
-type ConflictReason = [string, string] | [string, Array<ConflictReason>];
+type ConflictReason = [string, string | Array<ConflictReason>];
 
 function sameDirectives(
   directives1: Array<Directive>,
@@ -181,7 +181,10 @@ function sameDirectives(
     if (!directive2) {
       return false;
     }
-    return sameArguments(directive1.arguments, directive2.arguments);
+    return sameArguments(
+      directive1.arguments || [],
+      directive2.arguments || []
+    );
   });
 }
 
@@ -208,8 +211,8 @@ function sameValue(value1, value2) {
   return (!value1 && !value2) || print(value1) === print(value2);
 }
 
-function sameType(type1, type2) {
-  return (!type1 && !type2) || String(type1) === String(type2);
+function sameType(type1: GraphQLType, type2: GraphQLType) {
+  return String(type1) === String(type2);
 }
 
 
@@ -223,40 +226,40 @@ function sameType(type1, type2) {
  */
 function collectFieldASTsAndDefs(
   context: ValidationContext,
-  parentType: ?GraphQLType,
+  parentType: ?GraphQLNamedType,
   selectionSet: SelectionSet,
   visitedFragmentNames?: {[key: string]: boolean},
-  astAndDefs?: {[key: string]: Array<[Field, GraphQLFieldDefinition]>}
-): {[key: string]: Array<[Field, GraphQLFieldDefinition]>} {
+  astAndDefs?: {[key: string]: Array<[Field, ?GraphQLFieldDefinition]>}
+): {[key: string]: Array<[Field, ?GraphQLFieldDefinition]>} {
   var _visitedFragmentNames = visitedFragmentNames || {};
   var _astAndDefs = astAndDefs || {};
   for (var i = 0; i < selectionSet.selections.length; i++) {
     var selection = selectionSet.selections[i];
     switch (selection.kind) {
       case FIELD:
-        var fieldAST = (selection: Field);
-        var fieldName = fieldAST.name.value;
-        var fieldDef = parentType && parentType.getFields &&
-          parentType.getFields()[fieldName];
-        var responseName = fieldAST.alias ? fieldAST.alias.value : fieldName;
+        var fieldName = selection.name.value;
+        var fieldDef;
+        if (parentType instanceof GraphQLObjectType ||
+            parentType instanceof GraphQLInterfaceType) {
+          fieldDef = parentType.getFields()[fieldName];
+        }
+        var responseName = selection.alias ? selection.alias.value : fieldName;
         if (!_astAndDefs[responseName]) {
           _astAndDefs[responseName] = [];
         }
-        _astAndDefs[responseName].push([fieldAST, fieldDef]);
+        _astAndDefs[responseName].push([selection, fieldDef]);
         break;
       case INLINE_FRAGMENT:
-        var inlineFragment = (selection: InlineFragment);
         _astAndDefs = collectFieldASTsAndDefs(
           context,
-          typeFromAST(context.getSchema(), inlineFragment.typeCondition),
-          inlineFragment.selectionSet,
+          typeFromAST(context.getSchema(), selection.typeCondition),
+          selection.selectionSet,
           _visitedFragmentNames,
           _astAndDefs
         );
         break;
       case FRAGMENT_SPREAD:
-        var fragmentSpread = (selection: FragmentSpread);
-        var fragName = fragmentSpread.name.value;
+        var fragName = selection.name.value;
         if (_visitedFragmentNames[fragName]) {
           continue;
         }
