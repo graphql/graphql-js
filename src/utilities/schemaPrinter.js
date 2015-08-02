@@ -37,7 +37,7 @@ function isDefinedType(typename: string): boolean {
 }
 
 function isIntrospectionType(typename: string): boolean {
-  return typename.startsWith('__');
+  return typename.indexOf('__') === 0;
 }
 
 function isBuiltInScalar(typename: string): boolean {
