@@ -20,9 +20,9 @@ import { buildASTSchema } from '../buildASTSchema';
  * into an in-memory GraphQLSchema, and then finally
  * printing that GraphQL into the DSL
  */
-function cycleOutput(body, queryType, mutationQuery) {
+function cycleOutput(body, queryType, mutationType) {
   var ast = parseSchemaIntoAST(body);
-  var schema = buildASTSchema(ast, queryType, mutationQuery);
+  var schema = buildASTSchema(ast, queryType, mutationType);
   return '\n' + printSchema(schema);
 }
 
