@@ -20,9 +20,9 @@ import { buildASTSchema } from '../buildASTSchema';
  * into an in-memory GraphQLSchema, and then finally
  * printing that GraphQL into the DSL
  */
-function cycleOutput(body, queryType) {
+function cycleOutput(body, queryType, mutationQuery) {
   var ast = parseSchemaIntoAST(body);
-  var schema = buildASTSchema(ast, queryType);
+  var schema = buildASTSchema(ast, queryType, mutationQuery);
   return '\n' + printSchema(schema);
 }
 
@@ -229,6 +229,22 @@ type Hello {
 }
 `;
     var output = cycleOutput(body, 'Hello');
+    expect(output).to.equal(body);
+  });
+
+  it('Simple type with mutation', () => {
+    var body = `
+type HelloScalars {
+  str: String
+  int: Int
+  bool: Boolean
+}
+
+type Mutation {
+  addHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
+}
+`;
+    var output = cycleOutput(body, 'HelloScalars', 'Mutation');
     expect(output).to.equal(body);
   });
 });
