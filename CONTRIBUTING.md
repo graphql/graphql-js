@@ -84,8 +84,8 @@ This will watch the file system run any relevant lint, tests, and type checks au
 
 To release a new version on NPM, first ensure all tests pass with `npm test`,
 then use `npm version patch|minor|major` in order to increment the version in
-package.json and tag and commit a release. Then `git push --tags` this change so
-Travis CI can deploy to NPM. *Do not run `npm publish` directly.*
+package.json and tag and commit a release. Then `git push && git push --tags`
+this change so Travis CI can deploy to NPM. *Do not run `npm publish` directly.*
 Once published, add [release notes](https://github.com/graphql/graphql-js/tags).
 Use [semver](http://semver.org/) to determine which version part to increment.
 
@@ -94,6 +94,7 @@ Example for a patch release:
 ```sh
 npm test
 npm version patch
+git push
 git push --tags
 ```
 
