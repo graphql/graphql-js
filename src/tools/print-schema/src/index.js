@@ -7,8 +7,12 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { getIntrospectionResult }
-  from '../../../language/schema/printer';
+import { parseSchemaIntoAST }
+  from '../../../language/schema/';
+import { buildASTSchema, introspectionQuery }
+  from '../../../utilities/';
+import { graphql }
+  from '../../../';
 
 var Promise = require('bluebird');
 var parseArgs = require('minimist');
@@ -38,7 +42,9 @@ export async function executeTool() {
     }
 
     var body = await fs.readFileAsync(argDict.file, 'utf8');
-    var result = await getIntrospectionResult(body, argDict.query);
+    var ast = parseSchemaIntoAST(body);
+    var astSchema = buildASTSchema(ast, argDict.query, argDict.mutation);
+    var result = await graphql(astSchema, introspectionQuery);
     var out = await JSON.stringify(result, null, 2);
     console.log(out);
   } catch (error) {
@@ -54,4 +60,8 @@ introspection query result from querying that schema.
 Required:
 
 --file <path>: The path to the input schema definition file.
---query <queryType>: The query type (root type) of the schema.`;
+--query <queryType>: The query type (root type) of the schema.
+
+Optional:
+
+--mutation <mutationType>: The mutation type (root type) of the schema.`;
