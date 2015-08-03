@@ -151,7 +151,7 @@ export function buildASTSchema(
     schema = new GraphQLSchema({query: queryType});
   } else {
     schema = new GraphQLSchema({
-      query: queryTypeName,
+      query: queryType,
       mutation: produceTypeDef(astMap[mutationTypeName]),
     });
   }
