@@ -32,6 +32,8 @@ describe('Schema Materializer', () => {
 type HelloScalars {
   str: String
   int: Int
+  float: Float
+  id: ID
   bool: Boolean
 }
 `;
@@ -85,6 +87,10 @@ type TypeTwo {
     var body = `
 type Hello {
   str(int: Int): String
+  floatToStr(float: Float): String
+  idToStr(id: ID): String
+  booleanToStr(bool: Boolean): String
+  strToStr(bool: String): String
 }
 `;
     var output = cycleOutput(body, 'Hello');
