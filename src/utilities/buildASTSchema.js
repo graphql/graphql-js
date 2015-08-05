@@ -47,6 +47,7 @@ import {
   GraphQLInputObjectType,
   GraphQLString,
   GraphQLInt,
+  GraphQLFloat,
   GraphQLBoolean,
   GraphQLID,
   GraphQLList,
@@ -115,6 +116,7 @@ export function buildASTSchema(
     var innerTypeMap = {
       String: GraphQLString,
       Int: GraphQLInt,
+      Float: GraphQLFloat,
       Boolean: GraphQLBoolean,
       ID: GraphQLID,
     };
