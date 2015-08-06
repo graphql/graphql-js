@@ -105,6 +105,11 @@ export function buildASTSchema(
       ' not found in document.');
   }
 
+  if (!isNullish(mutationTypeName) && isNullish(astMap[mutationTypeName])) {
+    throw new Error('Specified mutation type ' + mutationTypeName +
+      ' not found in document.');
+  }
+
   /**
    * This generates a function that allows you to produce
    * type definitions on demand. We produce the function
@@ -141,10 +146,6 @@ export function buildASTSchema(
   }
 
   var produceTypeDef = getTypeDefProducer(ast);
-
-  if (isNullish(astMap[queryTypeName])) {
-    throw new Error(`Type ${queryTypeName} not found in document`);
-  }
 
   ast.definitions.forEach(produceTypeDef);
 
