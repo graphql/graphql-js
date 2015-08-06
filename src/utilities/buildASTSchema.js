@@ -140,12 +140,13 @@ export function buildASTSchema(
     };
   }
 
-
   var produceTypeDef = getTypeDefProducer(ast);
 
   if (isNullish(astMap[queryTypeName])) {
     throw new Error(`Type ${queryTypeName} not found in document`);
   }
+
+  ast.definitions.forEach(produceTypeDef);
 
   var queryType = produceTypeDef(astMap[queryTypeName]);
   var schema;

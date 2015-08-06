@@ -253,6 +253,40 @@ type Mutation {
     var output = cycleOutput(body, 'HelloScalars', 'Mutation');
     expect(output).to.equal(body);
   });
+
+  it('Unreferenced type implementing referenced interface', () => {
+    var body = `
+type Concrete implements Iface {
+  key: String
+}
+
+interface Iface {
+  key: String
+}
+
+type Query {
+  iface: Iface
+}
+`;
+    var output = cycleOutput(body, 'Query');
+    expect(output).to.equal(body);
+  });
+
+  it('Unreferenced type implementing referenced union', () => {
+    var body = `
+type Concrete {
+  key: String
+}
+
+type Query {
+  union: Union
+}
+
+union Union = Concrete
+`;
+    var output = cycleOutput(body, 'Query');
+    expect(output).to.equal(body);
+  });
 });
 
 describe('Schema Parser Failures', () => {
