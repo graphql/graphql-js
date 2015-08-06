@@ -320,7 +320,6 @@ type Hello { testUnion: TestUnion }
       .to.throw('Type Bar not found in document');
   });
 
-
   it('Unknown query type', () => {
     var body = `
 type Hello {
@@ -330,5 +329,16 @@ type Hello {
     var doc = parseSchemaIntoAST(body);
     expect(() => buildASTSchema(doc, 'Wat'))
       .to.throw('Specified query type Wat not found in document');
+  });
+
+  it('Unknown mutation type', () => {
+    var body = `
+type Hello {
+  str: String
+}
+`;
+    var doc = parseSchemaIntoAST(body);
+    expect(() => buildASTSchema(doc, 'Hello', 'Wat'))
+      .to.throw('Specified mutation type Wat not found in document');
   });
 });
