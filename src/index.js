@@ -33,3 +33,6 @@ export {
   GraphQLBoolean,
   GraphQLID
 } from './type/scalars';
+
+// Format GraphQL errors.
+export { formatError } from './error/formatError';
