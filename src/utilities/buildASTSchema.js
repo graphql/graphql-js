@@ -136,6 +136,11 @@ export function buildASTSchema(
         throw new Error('Nothing constructed for ' + typeName);
       }
       innerTypeMap[typeName] = innerTypeDef;
+      if (astMap[typeName].kind === INTERFACE_DEFINITION) {
+        // Now that we've created and cached our interface, ensure
+        // we create all implementations to point to it.
+        makeInterfaceImplementations(astMap[typeName]);
+      }
       return buildWrappedType(innerTypeDef, typeAST);
     };
   }
@@ -209,6 +214,16 @@ export function buildASTSchema(
 
   function makeImplementedInterfaces(def: TypeDefinition) {
     return def.interfaces.map(inter => produceTypeDef(inter));
+  }
+
+  function makeInterfaceImplementations(inter: InterfaceDefinition) {
+    var interName = inter.name.value;
+    var types = ast.definitions.filter(def => def.kind === TYPE_DEFINITION);
+    var implementingTypes = types.filter(def => {
+      var names = def.interfaces.map(namedType => namedType.name.value);
+      return names.indexOf(interName) !== -1;
+    });
+    implementingTypes.forEach(produceTypeDef);
   }
 
   function makeInputValues(values: Array<InputValueDefinition>) {
