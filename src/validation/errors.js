@@ -118,6 +118,14 @@ export function duplicateFragmentNameMessage(fragName) {
   return `There can only be one fragment named "${fragName}".`;
 }
 
+export function duplicateOperationNameMessage(operationName) {
+  return `There can only be one operation named "${operationName}".`;
+}
+
+export function anonOperationNotAloneMessage() {
+  return `This anonymous operation must be the only defined operation.`;
+}
+
 export function fieldsConflictMessage(responseName, reason) {
   return `Fields "${responseName}" conflict because ${reasonMessage(reason)}.`;
 }

@@ -8,6 +8,10 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+// Spec Section: "Operation Name Uniqueness"
+import UniqueOperationNames from './rules/UniqueOperationNames';
+// Spec Section: "Lone Anonymous Operation"
+import LoneAnonymousOperation from './rules/LoneAnonymousOperation';
 // Spec Section: Fragment Spread Type Existence
 import KnownTypeNames from './rules/KnownTypeNames';
 // Spec Section: Fragments on Composite Types
@@ -53,6 +57,8 @@ import OverlappingFieldsCanBeMerged from './rules/OverlappingFieldsCanBeMerged';
  * earlier rules will skip later rules, leading to less noise in error output.
  */
 export var allRules = [
+  UniqueOperationNames,
+  LoneAnonymousOperation,
   KnownTypeNames,
   FragmentsOnCompositeTypes,
   VariablesAreInputTypes,

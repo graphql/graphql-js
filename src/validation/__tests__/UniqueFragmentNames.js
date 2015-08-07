@@ -73,6 +73,17 @@ describe('Validate: Unique fragment names', () => {
     `);
   });
 
+  it('fragment and operation named the same', () => {
+    expectPassesRule(UniqueFragmentNames, `
+      query Foo {
+        ...Foo
+      }
+      fragment Foo on Type {
+        field
+      }
+    `);
+  });
+
   it('fragments named the same', () => {
     expectFailsRule(UniqueFragmentNames, `
       {
