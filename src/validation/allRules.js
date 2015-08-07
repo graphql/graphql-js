@@ -18,6 +18,8 @@ import VariablesAreInputTypes from './rules/VariablesAreInputTypes';
 import ScalarLeafs from './rules/ScalarLeafs';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 import FieldsOnCorrectType from './rules/FieldsOnCorrectType';
+// Spec Section: "Fragment Name Uniqueness"
+import UniqueFragmentNames from './rules/UniqueFragmentNames';
 // Spec Section: "Fragment spread target defined"
 import KnownFragmentNames from './rules/KnownFragmentNames';
 // Spec Section: "Fragments must be used"
@@ -56,6 +58,7 @@ export var allRules = [
   VariablesAreInputTypes,
   ScalarLeafs,
   FieldsOnCorrectType,
+  UniqueFragmentNames,
   KnownFragmentNames,
   NoUnusedFragments,
   PossibleFragmentSpreads,

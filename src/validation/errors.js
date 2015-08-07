@@ -114,6 +114,10 @@ export function badVarPosMessage(varName, varType, expectedType) {
     `expecting type "${expectedType}".`;
 }
 
+export function duplicateFragmentNameMessage(fragName) {
+  return `There can only be one fragment named "${fragName}".`;
+}
+
 export function fieldsConflictMessage(responseName, reason) {
   return `Fields "${responseName}" conflict because ${reasonMessage(reason)}.`;
 }
