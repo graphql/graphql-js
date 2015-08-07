@@ -9,9 +9,9 @@
  */
 
 import type { ValidationContext } from '../index';
-
 import { GraphQLError } from '../../error';
 import { unknownFragmentMessage } from '../errors';
+
 
 /**
  * Known fragment names

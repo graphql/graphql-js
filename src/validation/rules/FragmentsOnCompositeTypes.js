@@ -9,14 +9,14 @@
  */
 
 import type { ValidationContext } from '../index';
-
 import { GraphQLError } from '../../error';
-import { isCompositeType } from '../../type/definition';
-import { print } from '../../language/printer';
 import {
   inlineFragmentOnNonCompositeErrorMessage,
   fragmentOnNonCompositeErrorMessage
 } from '../errors';
+import { print } from '../../language/printer';
+import { isCompositeType } from '../../type/definition';
+
 
 /**
  * Fragments on composite type

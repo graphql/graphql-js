@@ -9,10 +9,10 @@
  */
 
 import type { ValidationContext } from '../index';
-import type { Field } from '../../language/ast';
-
 import { GraphQLError } from '../../error';
 import { undefinedFieldMessage } from '../errors';
+import type { Field } from '../../language/ast';
+
 
 /**
  * Fields on correct type

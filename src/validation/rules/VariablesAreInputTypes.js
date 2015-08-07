@@ -9,12 +9,12 @@
  */
 
 import type { ValidationContext } from '../index';
-import type { VariableDefinition } from '../../language/ast';
 import { GraphQLError } from '../../error';
+import { nonInputTypeOnVarMessage } from '../errors';
+import type { VariableDefinition } from '../../language/ast';
 import { print } from '../../language/printer';
 import { isInputType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
-import { nonInputTypeOnVarMessage } from '../errors';
 
 
 /**

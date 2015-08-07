@@ -9,15 +9,14 @@
  */
 
 import type { ValidationContext } from '../index';
-
 import { GraphQLError } from '../../error';
-import { print } from '../../language/printer';
-import { GraphQLNonNull } from '../../type/definition';
-import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 import {
   defaultForNonNullArgMessage,
   badValueForDefaultArgMessage,
 } from '../errors';
+import { print } from '../../language/printer';
+import { GraphQLNonNull } from '../../type/definition';
+import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 
 
 /**

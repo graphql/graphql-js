@@ -9,14 +9,13 @@
  */
 
 import type { ValidationContext } from '../index';
-import type { Field } from '../../language/ast';
-
 import { GraphQLError } from '../../error';
-import { isLeafType } from '../../type/definition';
 import {
   noSubselectionAllowedMessage,
   requiredSubselectionMessage,
 } from '../errors';
+import type { Field } from '../../language/ast';
+import { isLeafType } from '../../type/definition';
 
 
 /**

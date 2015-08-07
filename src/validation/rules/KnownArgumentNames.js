@@ -11,8 +11,8 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { unknownArgMessage, unknownDirectiveArgMessage } from '../errors';
-import invariant from '../../jsutils/invariant';
 import find from '../../jsutils/find';
+import invariant from '../../jsutils/invariant';
 
 
 /**

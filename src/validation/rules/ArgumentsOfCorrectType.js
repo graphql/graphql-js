@@ -9,11 +9,10 @@
  */
 
 import type { ValidationContext } from '../index';
-
 import { GraphQLError } from '../../error';
+import { badValueMessage } from '../errors';
 import { print } from '../../language/printer';
 import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
-import { badValueMessage } from '../errors';
 
 
 /**

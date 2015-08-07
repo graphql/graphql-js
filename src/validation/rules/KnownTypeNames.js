@@ -9,7 +9,6 @@
  */
 
 import type { ValidationContext } from '../index';
-
 import { GraphQLError } from '../../error';
 import { unknownTypeMessage } from '../errors';
 

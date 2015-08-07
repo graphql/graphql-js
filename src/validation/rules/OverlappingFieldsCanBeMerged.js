@@ -9,17 +9,17 @@
  */
 
 import type { ValidationContext } from '../index';
-
 import { GraphQLError } from '../../error';
 import { fieldsConflictMessage } from '../errors';
-import { print } from '../../language/printer';
-import { FIELD, INLINE_FRAGMENT, FRAGMENT_SPREAD } from '../../language/kinds';
+import find from '../../jsutils/find';
 import type {
   SelectionSet,
   Field,
   Argument,
   Directive
 } from '../../language/ast';
+import { FIELD, INLINE_FRAGMENT, FRAGMENT_SPREAD } from '../../language/kinds';
+import { print } from '../../language/printer';
 import {
   getNamedType,
   GraphQLObjectType,
@@ -31,7 +31,6 @@ import type {
   GraphQLFieldDefinition
 } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
-import find from '../../jsutils/find';
 
 
 /**

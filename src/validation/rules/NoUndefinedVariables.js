@@ -9,11 +9,8 @@
  */
 
 import { GraphQLError } from '../../error';
+import { undefinedVarMessage, undefinedVarByOpMessage } from '../errors';
 import { FRAGMENT_DEFINITION } from '../../language/kinds';
-import {
-  undefinedVarMessage,
-  undefinedVarByOpMessage,
-} from '../errors';
 
 
 /**

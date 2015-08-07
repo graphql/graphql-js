@@ -9,9 +9,9 @@
  */
 
 import type { ValidationContext } from '../index';
-
 import { GraphQLError } from '../../error';
 import { unknownDirectiveMessage, misplacedDirectiveMessage } from '../errors';
+import find from '../../jsutils/find';
 import {
   OPERATION_DEFINITION,
   FIELD,
@@ -19,7 +19,6 @@ import {
   INLINE_FRAGMENT,
   FRAGMENT_DEFINITION
 } from '../../language/kinds';
-import find from '../../jsutils/find';
 
 
 /**

@@ -8,8 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { duplicateFragmentNameMessage } from '../errors';
 import { GraphQLError } from '../../error';
+import { duplicateFragmentNameMessage } from '../errors';
 
 
 /**

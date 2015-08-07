@@ -9,12 +9,11 @@
  */
 
 import type { ValidationContext } from '../index';
-
 import { GraphQLError } from '../../error';
-import { FRAGMENT_DEFINITION } from '../../language/kinds';
-import type { SelectionSet, FragmentSpread } from '../../language/ast';
-import { visit } from '../../language/visitor';
 import { cycleErrorMessage } from '../errors';
+import type { SelectionSet, FragmentSpread } from '../../language/ast';
+import { FRAGMENT_DEFINITION } from '../../language/kinds';
+import { visit } from '../../language/visitor';
 
 
 export default function NoFragmentCycles(context: ValidationContext): any {
