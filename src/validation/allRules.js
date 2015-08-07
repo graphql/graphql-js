@@ -40,6 +40,8 @@ import NoUnusedVariables from './rules/NoUnusedVariables';
 import KnownDirectives from './rules/KnownDirectives';
 // Spec Section: "Argument Names"
 import KnownArgumentNames from './rules/KnownArgumentNames';
+// Spec Section: "Argument Uniqueness"
+import UniqueArgumentNames from './rules/UniqueArgumentNames';
 // Spec Section: "Argument Values Type Correctness"
 import ArgumentsOfCorrectType from './rules/ArgumentsOfCorrectType';
 // Spec Section: "Argument Optionality"
@@ -73,6 +75,7 @@ export var allRules = [
   NoUnusedVariables,
   KnownDirectives,
   KnownArgumentNames,
+  UniqueArgumentNames,
   ArgumentsOfCorrectType,
   ProvidedNonNullArguments,
   DefaultValuesOfCorrectType,

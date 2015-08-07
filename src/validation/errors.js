@@ -54,6 +54,10 @@ export function unknownDirectiveArgMessage(argName, directiveName) {
   return `Unknown argument "${argName}" on directive "@${directiveName}".`;
 }
 
+export function duplicateArgMessage(argName) {
+  return `There can be only one argument named "${argName}".`;
+}
+
 export function unknownTypeMessage(type) {
   return `Unknown type "${type}".`;
 }
