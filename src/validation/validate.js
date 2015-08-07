@@ -10,7 +10,7 @@
 
 import invariant from '../jsutils/invariant';
 import { GraphQLError } from '../error';
-import { visit, BREAK, getVisitFn } from '../language/visitor';
+import { visit, getVisitFn } from '../language/visitor';
 import * as Kind from '../language/kinds';
 import type {
   Document,
@@ -69,115 +69,82 @@ function visitUsingRules(
   var context = new ValidationContext(schema, documentAST, typeInfo);
   var errors = [];
 
-  function visitInstances(ast, instances) {
-    var skipUntil = Array(instances.length);
-    var skipCount = 0;
+  function visitInstance(ast, instance) {
     visit(ast, {
       enter(node, key) {
+        // Collect type information about the current position in the AST.
         typeInfo.enter(node);
-        for (var i = 0; i < instances.length; i++) {
-          // Do not visit this instance if it returned false for a previous node
-          if (skipUntil[i]) {
-            continue;
-          }
 
-          var result;
+        // Do not visit top level fragment definitions if this instance will
+        // visit those fragments inline because it
+        // provided `visitSpreadFragments`.
+        var result;
+        if (
+          node.kind === Kind.FRAGMENT_DEFINITION &&
+          key !== undefined &&
+          instance.visitSpreadFragments
+        ) {
+          return false;
+        }
 
-          // Do not visit top level fragment definitions if this instance will
-          // visit those fragments inline because it
-          // provided `visitSpreadFragments`.
-          if (
-            node.kind === Kind.FRAGMENT_DEFINITION &&
-            key !== undefined &&
-            (instances[i]: any).visitSpreadFragments
-          ) {
-            result = false;
-          } else {
-            var enter = getVisitFn(instances[i], false, node.kind);
-            result = enter ? enter.apply(instances[i], arguments) : undefined;
-          }
+        // Get the visitor function from the validation instance, and if it
+        // exists, call it with the visitor arguments.
+        var enter = getVisitFn(instance, false, node.kind);
+        result = enter ? enter.apply(instance, arguments) : undefined;
 
-          if (result === false) {
-            skipUntil[i] = node;
-            skipCount++;
-            // If all instances are being skipped over, skip deeper traveral
-            if (skipCount === instances.length) {
-              for (var k = 0; k < instances.length; k++) {
-                if (skipUntil[k] === node) {
-                  skipUntil[k] = null;
-                  skipCount--;
-                }
-              }
-              return false;
-            }
-          } else if (result === BREAK) {
-            instances[i] = null;
-          } else if (result && isError(result)) {
-            append(errors, result);
-            for (var j = i - 1; j >= 0; j--) {
-              var leaveFn = getVisitFn(instances[j], true, node.kind);
-              if (leaveFn) {
-                result = leaveFn.apply(instances[j], arguments);
-                if (result === BREAK) {
-                  instances[j] = null;
-                } else if (isError(result)) {
-                  append(errors, result);
-                } else if (result !== undefined) {
-                  throw new Error('Validator cannot edit document.');
-                }
-              }
-            }
-            typeInfo.leave(node);
-            return false;
-          } else if (result !== undefined) {
-            throw new Error('Validator cannot edit document.');
-          }
+        // If the visitor returned an error, log it and do not visit any
+        // deeper nodes.
+        if (result && isError(result)) {
+          append(errors, result);
+          result = false;
         }
 
         // If any validation instances provide the flag `visitSpreadFragments`
-        // and this node is a fragment spread, validate the fragment from
-        // this point.
-        if (node.kind === Kind.FRAGMENT_SPREAD) {
+        // and this node is a fragment spread, visit the fragment definition
+        // from this point.
+        if (result === undefined &&
+            instance.visitSpreadFragments &&
+            node.kind === Kind.FRAGMENT_SPREAD) {
           var fragment = context.getFragment(node.name.value);
           if (fragment) {
-            var fragVisitingInstances = instances.filter(
-              (inst: any, idx) => inst.visitSpreadFragments && !skipUntil[idx]
-            );
-            if (fragVisitingInstances.length > 0) {
-              visitInstances(fragment, fragVisitingInstances);
-            }
+            visitInstance(fragment, instance);
           }
         }
+
+        // If the result is "false", we're not visiting any descendent nodes,
+        // but need to update typeInfo.
+        if (result === false) {
+          typeInfo.leave(node);
+        }
+
+        return result;
       },
       leave(node) {
-        for (var i = instances.length - 1; i >= 0; i--) {
-          if (skipUntil[i]) {
-            if (skipUntil[i] === node) {
-              skipUntil[i] = null;
-              skipCount--;
-            }
-            continue;
-          }
-          var leaveFn = getVisitFn(instances[i], true, node.kind);
-          if (leaveFn) {
-            var result = leaveFn.apply(instances[i], arguments);
-            if (result === BREAK) {
-              instances[i] = null;
-            } else if (isError(result)) {
-              append(errors, result);
-            } else if (result !== undefined && result !== false) {
-              throw new Error('Validator cannot edit document.');
-            }
-          }
+        // Get the visitor function from the validation instance, and if it
+        // exists, call it with the visitor arguments.
+        var leave = getVisitFn(instance, true, node.kind);
+        var result = leave ? leave.apply(instance, arguments) : undefined;
+
+        // If the visitor returned an error, log it and do not visit any
+        // deeper nodes.
+        if (result && isError(result)) {
+          append(errors, result);
+          result = false;
         }
+
+        // Update typeInfo.
         typeInfo.leave(node);
+
+        return result;
       }
     });
   }
 
-  // Visit the whole document with instances of all provided rules.
+  // Visit the whole document with each instance of all provided rules.
   var allRuleInstances = rules.map(rule => rule(context));
-  visitInstances(documentAST, allRuleInstances);
+  allRuleInstances.forEach(instance => {
+    visitInstance(documentAST, instance);
+  });
 
   return errors;
 }
