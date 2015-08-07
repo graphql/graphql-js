@@ -10,7 +10,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { unknownArgMessage } from '../errors';
+import { unknownArgMessage, unknownDirectiveArgMessage } from '../errors';
 import invariant from '../../jsutils/invariant';
 import find from '../../jsutils/find';
 
@@ -23,17 +23,41 @@ import find from '../../jsutils/find';
  */
 export default function KnownArgumentNames(context: ValidationContext): any {
   return {
-    Argument(node) {
-      var fieldDef = context.getFieldDef();
-      if (fieldDef) {
-        var argDef = find(fieldDef.args, arg => arg.name === node.name.value);
-        if (!argDef) {
-          var parentType = context.getParentType();
-          invariant(parentType);
-          return new GraphQLError(
-            unknownArgMessage(node.name.value, fieldDef.name, parentType.name),
-            [node]
+    Argument(node, key, parent, path, ancestors) {
+      var argumentOf = ancestors[ancestors.length - 1];
+      if (argumentOf.kind === 'Field') {
+        var fieldDef = context.getFieldDef();
+        if (fieldDef) {
+          var fieldArgDef = find(
+            fieldDef.args,
+            arg => arg.name === node.name.value
           );
+          if (!fieldArgDef) {
+            var parentType = context.getParentType();
+            invariant(parentType);
+            return new GraphQLError(
+              unknownArgMessage(
+                node.name.value,
+                fieldDef.name,
+                parentType.name
+              ),
+              [node]
+            );
+          }
+        }
+      } else if (argumentOf.kind === 'Directive') {
+        var directive = context.getDirective();
+        if (directive) {
+          var directiveArgDef = find(
+            directive.args,
+            arg => arg.name === node.name.value
+          );
+          if (!directiveArgDef) {
+            return new GraphQLError(
+              unknownDirectiveArgMessage(node.name.value, directive.name),
+              [node]
+            );
+          }
         }
       }
     }

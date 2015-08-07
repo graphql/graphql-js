@@ -50,6 +50,10 @@ export function unknownArgMessage(argName, fieldName, typeName) {
     `of type ${typeName}.`;
 }
 
+export function unknownDirectiveArgMessage(argName, fieldName) {
+  return `Unknown argument ${argName} on directive ${fieldName}.`;
+}
+
 export function unknownTypeMessage(typeName) {
   return `Unknown type ${typeName}.`;
 }

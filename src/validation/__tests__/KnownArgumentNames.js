@@ -10,11 +10,18 @@
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
 import KnownArgumentNames from '../rules/KnownArgumentNames';
-import { unknownArgMessage } from '../errors';
+import { unknownArgMessage, unknownDirectiveArgMessage } from '../errors';
 
 function unknownArg(argName, fieldName, typeName, line, column) {
   return {
     message: unknownArgMessage(argName, fieldName, typeName),
+    locations: [ { line, column } ],
+  };
+}
+
+function unknownDirectiveArg(argName, directiveName, line, column) {
+  return {
+    message: unknownDirectiveArgMessage(argName, directiveName),
     locations: [ { line, column } ],
   };
 }
@@ -76,6 +83,24 @@ describe('Validate: Known argument names', () => {
         }
       }
     `);
+  });
+
+  it('directive args are known', () => {
+    expectPassesRule(KnownArgumentNames, `
+      {
+        dog @skip(if: true)
+      }
+    `);
+  });
+
+  it('undirective args are invalid', () => {
+    expectFailsRule(KnownArgumentNames, `
+      {
+        dog @skip(unless: true)
+      }
+    `, [
+      unknownDirectiveArg('unless', 'skip', 3, 19),
+    ]);
   });
 
   it('invalid arg name', () => {
