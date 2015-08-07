@@ -10,10 +10,10 @@
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
 import {
+  DefaultValuesOfCorrectType,
   defaultForNonNullArgMessage,
   badValueForDefaultArgMessage,
-} from '../errors';
-import DefaultValuesOfCorrectType from '../rules/DefaultValuesOfCorrectType';
+} from '../rules/DefaultValuesOfCorrectType';
 
 
 function defaultForNonNullArg(varName, typeName, guessTypeName, line, column) {

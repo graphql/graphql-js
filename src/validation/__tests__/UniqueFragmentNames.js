@@ -9,8 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import UniqueFragmentNames from '../rules/UniqueFragmentNames';
-import { duplicateFragmentNameMessage } from '../errors';
+import {
+  UniqueFragmentNames,
+  duplicateFragmentNameMessage,
+} from '../rules/UniqueFragmentNames';
+
 
 function duplicateFrag(fragName, l1, c1, l2, c2) {
   return {

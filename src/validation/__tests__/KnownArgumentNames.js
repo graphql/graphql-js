@@ -9,8 +9,12 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import KnownArgumentNames from '../rules/KnownArgumentNames';
-import { unknownArgMessage, unknownDirectiveArgMessage } from '../errors';
+import {
+  KnownArgumentNames,
+  unknownArgMessage,
+  unknownDirectiveArgMessage,
+} from '../rules/KnownArgumentNames';
+
 
 function unknownArg(argName, fieldName, typeName, line, column) {
   return {

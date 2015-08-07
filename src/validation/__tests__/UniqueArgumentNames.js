@@ -9,8 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import UniqueArgumentNames from '../rules/UniqueArgumentNames';
-import { duplicateArgMessage } from '../errors';
+import {
+  UniqueArgumentNames,
+  duplicateArgMessage,
+} from '../rules/UniqueArgumentNames';
+
 
 function duplicateArg(argName, l1, c1, l2, c2) {
   return {

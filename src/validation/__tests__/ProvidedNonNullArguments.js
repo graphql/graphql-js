@@ -9,8 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import ProvidedNonNullArguments from '../rules/ProvidedNonNullArguments';
-import { missingFieldArgMessage, missingDirectiveArgMessage } from '../errors';
+import {
+  ProvidedNonNullArguments,
+  missingFieldArgMessage,
+  missingDirectiveArgMessage,
+} from '../rules/ProvidedNonNullArguments';
 
 
 function missingFieldArg(fieldName, argName, typeName, line, column) {

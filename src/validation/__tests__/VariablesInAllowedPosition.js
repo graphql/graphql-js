@@ -9,8 +9,10 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import VariablesInAllowedPosition from '../rules/VariablesInAllowedPosition';
-import { badVarPosMessage } from '../errors';
+import {
+  VariablesInAllowedPosition,
+  badVarPosMessage,
+} from '../rules/VariablesInAllowedPosition';
 
 
 describe('Validate: Variables are in allowed positions', () => {

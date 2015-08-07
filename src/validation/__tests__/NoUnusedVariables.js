@@ -9,8 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import NoUnusedVariables from '../rules/NoUnusedVariables';
-import { unusedVariableMessage } from '../errors';
+import {
+  NoUnusedVariables,
+  unusedVariableMessage,
+} from '../rules/NoUnusedVariables';
+
 
 function unusedVar(varName, line, column) {
   return {

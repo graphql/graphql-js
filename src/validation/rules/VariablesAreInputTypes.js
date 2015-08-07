@@ -10,12 +10,18 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { nonInputTypeOnVarMessage } from '../errors';
 import type { VariableDefinition } from '../../language/ast';
 import { print } from '../../language/printer';
 import { isInputType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
+
+export function nonInputTypeOnVarMessage(
+  variableName: any,
+  typeName: any
+): string {
+  return `Variable "$${variableName}" cannot be non-input type "${typeName}".`;
+}
 
 /**
  * Variables are input types
@@ -23,9 +29,7 @@ import { typeFromAST } from '../../utilities/typeFromAST';
  * A GraphQL operation is only valid if all the variables it defines are of
  * input types (scalar, enum, or input object).
  */
-export default function VariablesAreInputTypes(
-  context: ValidationContext
-): any {
+export function VariablesAreInputTypes(context: ValidationContext): any {
   return {
     VariableDefinition(node: VariableDefinition): ?GraphQLError {
       var type = typeFromAST(context.getSchema(), node.type);

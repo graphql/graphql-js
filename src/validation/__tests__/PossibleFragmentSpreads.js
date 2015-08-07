@@ -9,11 +9,12 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import PossibleFragmentSpreads from '../rules/PossibleFragmentSpreads';
 import {
+  PossibleFragmentSpreads,
   typeIncompatibleSpreadMessage,
   typeIncompatibleAnonSpreadMessage,
-} from '../errors';
+} from '../rules/PossibleFragmentSpreads';
+
 
 function error(fragName, parentType, fragType, line, column) {
   return {

@@ -9,8 +9,11 @@
  */
 
 import { GraphQLError } from '../../error';
-import { anonOperationNotAloneMessage } from '../errors';
 
+
+export function anonOperationNotAloneMessage(): string {
+  return `This anonymous operation must be the only defined operation.`;
+}
 
 /**
  * Lone anonymous operation
@@ -18,7 +21,7 @@ import { anonOperationNotAloneMessage } from '../errors';
  * A GraphQL document is only valid if when it contains an anonymous operation
  * (the query short-hand) that it contains only that one operation definition.
  */
-export default function LoneAnonymousOperation(): any {
+export function LoneAnonymousOperation(): any {
   var operationCount = 0;
   return {
     Document(node) {

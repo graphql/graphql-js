@@ -9,8 +9,10 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import UniqueOperationNames from '../rules/UniqueOperationNames';
-import { duplicateOperationNameMessage } from '../errors';
+import {
+  UniqueOperationNames,
+  duplicateOperationNameMessage,
+} from '../rules/UniqueOperationNames';
 
 
 function duplicateOp(opName, l1, c1, l2, c2) {

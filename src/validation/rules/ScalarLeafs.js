@@ -10,13 +10,17 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import {
-  noSubselectionAllowedMessage,
-  requiredSubselectionMessage,
-} from '../errors';
 import type { Field } from '../../language/ast';
 import { isLeafType } from '../../type/definition';
 
+
+export function noSubselectionAllowedMessage(field: any, type: any): string {
+  return `Field "${field}" of type "${type}" must not have a sub selection.`;
+}
+
+export function requiredSubselectionMessage(field: any, type: any): string {
+  return `Field "${field}" of type "${type}" must have a sub selection.`;
+}
 
 /**
  * Scalar leafs
@@ -24,7 +28,7 @@ import { isLeafType } from '../../type/definition';
  * A GraphQL document is valid only if all leaf fields (fields without
  * sub selections) are of scalar or enum types.
  */
-export default function ScalarLeafs(context: ValidationContext): any {
+export function ScalarLeafs(context: ValidationContext): any {
   return {
     Field(node: Field) {
       var type = context.getType();

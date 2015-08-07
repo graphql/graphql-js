@@ -10,9 +10,12 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { undefinedFieldMessage } from '../errors';
 import type { Field } from '../../language/ast';
 
+
+export function undefinedFieldMessage(fieldName: any, type: any): string {
+  return `Cannot query field "${fieldName}" on "${type}".`;
+}
 
 /**
  * Fields on correct type
@@ -20,7 +23,7 @@ import type { Field } from '../../language/ast';
  * A GraphQL document is only valid if all fields selected are defined by the
  * parent type, or are an allowed meta field such as __typenamme
  */
-export default function FieldsOnCorrectType(context: ValidationContext): any {
+export function FieldsOnCorrectType(context: ValidationContext): any {
   return {
     Field(node: Field) {
       var type = context.getParentType();

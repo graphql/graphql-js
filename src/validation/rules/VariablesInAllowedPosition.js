@@ -10,17 +10,23 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { badVarPosMessage } from '../errors';
 import { GraphQLList, GraphQLNonNull } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 
+export function badVarPosMessage(
+  varName: any,
+  varType: any,
+  expectedType: any
+): string {
+  return `Variable "$${varName}" of type "${varType}" used in position ` +
+    `expecting type "${expectedType}".`;
+}
+
 /**
  * Variables passed to field arguments conform to type
  */
-export default function VariablesInAllowedPosition(
-  context: ValidationContext
-): any {
+export function VariablesInAllowedPosition(context: ValidationContext): any {
   var varDefMap = {};
   var visitedFragmentNames = {};
 

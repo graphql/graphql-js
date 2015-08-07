@@ -9,8 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import KnownDirectives from '../rules/KnownDirectives';
-import { unknownDirectiveMessage, misplacedDirectiveMessage } from '../errors';
+import {
+  KnownDirectives,
+  unknownDirectiveMessage,
+  misplacedDirectiveMessage,
+} from '../rules/KnownDirectives';
 
 
 function unknownDirective(directiveName, line, column) {

@@ -10,7 +10,6 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { unknownDirectiveMessage, misplacedDirectiveMessage } from '../errors';
 import find from '../../jsutils/find';
 import {
   OPERATION_DEFINITION,
@@ -21,13 +20,24 @@ import {
 } from '../../language/kinds';
 
 
+export function unknownDirectiveMessage(directiveName: any): string {
+  return `Unknown directive "${directiveName}".`;
+}
+
+export function misplacedDirectiveMessage(
+  directiveName: any,
+  placement: any
+): string {
+  return `Directive "${directiveName}" may not be used on "${placement}".`;
+}
+
 /**
  * Known directives
  *
  * A GraphQL document is only valid if all `@directives` are known by the
  * schema and legally positioned.
  */
-export default function KnownDirectives(context: ValidationContext): any {
+export function KnownDirectives(context: ValidationContext): any {
   return {
     Directive(node, key, parent, path, ancestors) {
       var directiveDef = find(

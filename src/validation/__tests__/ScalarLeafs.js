@@ -9,11 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import ScalarLeafs from '../rules/ScalarLeafs';
 import {
+  ScalarLeafs,
   noSubselectionAllowedMessage,
   requiredSubselectionMessage,
-} from '../errors';
+} from '../rules/ScalarLeafs';
 
 
 function noScalarSubselection(field, type, line, column) {

@@ -14,9 +14,10 @@ import {
   expectFailsRuleWithSchema,
   expectPassesRuleWithSchema
 } from './harness';
-import OverlappingFieldsCanBeMerged
-  from '../rules/OverlappingFieldsCanBeMerged';
-import { fieldsConflictMessage } from '../errors';
+import {
+  OverlappingFieldsCanBeMerged,
+  fieldsConflictMessage,
+} from '../rules/OverlappingFieldsCanBeMerged';
 import {
   GraphQLSchema,
   GraphQLObjectType,

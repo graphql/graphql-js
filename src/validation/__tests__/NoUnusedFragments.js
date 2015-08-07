@@ -9,8 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import NoUnusedFragments from '../rules/NoUnusedFragments';
-import { unusedFragMessage } from '../errors';
+import {
+  NoUnusedFragments,
+  unusedFragMessage,
+} from '../rules/NoUnusedFragments';
+
 
 function unusedFrag(fragName, line, column) {
   return {

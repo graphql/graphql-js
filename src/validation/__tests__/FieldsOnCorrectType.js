@@ -9,8 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import FieldsOnCorrectType from '../rules/FieldsOnCorrectType';
-import { undefinedFieldMessage } from '../errors';
+import {
+  FieldsOnCorrectType,
+  undefinedFieldMessage,
+} from '../rules/FieldsOnCorrectType';
+
 
 function undefinedField(field, type, line, column) {
   return {

@@ -9,8 +9,11 @@
  */
 
 import { GraphQLError } from '../../error';
-import { unusedFragMessage } from '../errors';
 
+
+export function unusedFragMessage(fragName: any): string {
+  return `Fragment "${fragName}" is never used.`;
+}
 
 /**
  * No unused fragments
@@ -18,7 +21,7 @@ import { unusedFragMessage } from '../errors';
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
  */
-export default function NoUnusedFragments(): any {
+export function NoUnusedFragments(): any {
   var fragmentDefs = [];
   var spreadsWithinOperation = [];
   var fragAdjacencies = {};

@@ -10,10 +10,13 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { badValueMessage } from '../errors';
 import { print } from '../../language/printer';
 import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 
+
+export function badValueMessage(argName: any, type: any, value: any): string {
+  return `Argument "${argName}" expected type "${type}" but got: "${value}".`;
+}
 
 /**
  * Argument values of correct type
@@ -21,9 +24,7 @@ import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
  * A GraphQL document is only valid if all field argument literal values are
  * of the type expected by their position.
  */
-export default function ArgumentsOfCorrectType(
-  context: ValidationContext
-): any {
+export function ArgumentsOfCorrectType(context: ValidationContext): any {
   return {
     Argument(argAST) {
       var argDef = context.getArgument();

@@ -9,8 +9,11 @@
  */
 
 import { GraphQLError } from '../../error';
-import { unusedVariableMessage } from '../errors';
 
+
+export function unusedVariableMessage(varName: any): string {
+  return `Variable "$${varName}" is never used.`;
+}
 
 /**
  * No unused variables
@@ -18,7 +21,7 @@ import { unusedVariableMessage } from '../errors';
  * A GraphQL operation is only valid if all variables defined by an operation
  * are used, either directly or within a spread fragment.
  */
-export default function NoUnusedVariables(): any {
+export function NoUnusedVariables(): any {
   var visitedFragmentNames = {};
   var variableDefs = [];
   var variableNameUsed = {};

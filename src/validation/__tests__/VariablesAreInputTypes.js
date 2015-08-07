@@ -9,8 +9,10 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import VariablesAreInputTypes from '../rules/VariablesAreInputTypes';
-import { nonInputTypeOnVarMessage } from '../errors';
+import {
+  VariablesAreInputTypes,
+  nonInputTypeOnVarMessage,
+} from '../rules/VariablesAreInputTypes';
 
 
 describe('Validate: Variables are input types', () => {

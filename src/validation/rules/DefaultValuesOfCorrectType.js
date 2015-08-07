@@ -10,14 +10,28 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import {
-  defaultForNonNullArgMessage,
-  badValueForDefaultArgMessage,
-} from '../errors';
 import { print } from '../../language/printer';
 import { GraphQLNonNull } from '../../type/definition';
 import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 
+
+export function defaultForNonNullArgMessage(
+  varName: any,
+  type: any,
+  guessType: any
+): string {
+  return `Variable "$${varName}" of type "${type}" is required and will not ` +
+    `use the default value. Perhaps you meant to use type "${guessType}".`;
+}
+
+export function badValueForDefaultArgMessage(
+  varName: any,
+  type: any,
+  value: any
+): string {
+  return `Variable "$${varName}" of type "${type}" has invalid default ` +
+    `value: "${value}".`;
+}
 
 /**
  * Variable default values of correct type
@@ -25,9 +39,7 @@ import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
  * A GraphQL document is only valid if all variable default values are of the
  * type expected by their definition.
  */
-export default function DefaultValuesOfCorrectType(
-  context: ValidationContext
-): any {
+export function DefaultValuesOfCorrectType(context: ValidationContext): any {
   return {
     VariableDefinition(varDefAST) {
       var name = varDefAST.variable.name.value;

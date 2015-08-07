@@ -9,8 +9,10 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import ArgumentsOfCorrectType from '../rules/ArgumentsOfCorrectType';
-import { badValueMessage } from '../errors';
+import {
+  ArgumentsOfCorrectType,
+  badValueMessage
+} from '../rules/ArgumentsOfCorrectType';
 
 
 function badValue(argName, typeName, value, line, column) {

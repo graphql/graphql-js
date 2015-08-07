@@ -10,8 +10,11 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { unknownFragmentMessage } from '../errors';
 
+
+export function unknownFragmentMessage(fragName: any): string {
+  return `Unknown fragment "${fragName}".`;
+}
 
 /**
  * Known fragment names
@@ -19,7 +22,7 @@ import { unknownFragmentMessage } from '../errors';
  * A GraphQL document is only valid if all `...Fragment` fragment spreads refer
  * to fragments defined in the same document.
  */
-export default function KnownFragmentNames(context: ValidationContext): any {
+export function KnownFragmentNames(context: ValidationContext): any {
   return {
     FragmentSpread(node) {
       var fragmentName = node.name.value;

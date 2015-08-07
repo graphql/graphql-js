@@ -9,12 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import NoUndefinedVariables from '../rules/NoUndefinedVariables';
 import {
+  NoUndefinedVariables,
   undefinedVarMessage,
   undefinedVarByOpMessage,
-} from '../errors';
-
+} from '../rules/NoUndefinedVariables';
 
 
 function undefVar(varName, line, column) {

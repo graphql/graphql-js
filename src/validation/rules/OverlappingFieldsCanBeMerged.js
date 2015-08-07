@@ -10,7 +10,6 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { fieldsConflictMessage } from '../errors';
 import find from '../../jsutils/find';
 import type {
   SelectionSet,
@@ -33,6 +32,19 @@ import type {
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 
+export function fieldsConflictMessage(responseName: any, reason: any): string {
+  return `Fields "${responseName}" conflict because ${reasonMessage(reason)}.`;
+}
+
+function reasonMessage(reason: ConflictReasonMessage): string {
+  if (Array.isArray(reason)) {
+    return reason.map(([responseName, subreason]) =>
+      `subfields "${responseName}" conflict because ${reasonMessage(subreason)}`
+    ).join(' and ');
+  }
+  return reason;
+}
+
 /**
  * Overlapping fields can be merged
  *
@@ -40,9 +52,7 @@ import { typeFromAST } from '../../utilities/typeFromAST';
  * fragments) either correspond to distinct response names or can be merged
  * without ambiguity.
  */
-export default function OverlappingFieldsCanBeMerged(
-  context: ValidationContext
-): any {
+export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
   var comparedSet = new PairSet();
 
   function findConflicts(fieldMap): Array<Conflict> {
@@ -162,8 +172,10 @@ export default function OverlappingFieldsCanBeMerged(
 }
 
 type Conflict = [ConflictReason, Array<Field>];
-// Field name and reason, or field name and list of sub-conflicts.
-type ConflictReason = [string, string | Array<ConflictReason>];
+// Field name and reason.
+type ConflictReason = [string, ConflictReasonMessage];
+// Reason is a string, or a nested list of conflicts.
+type ConflictReasonMessage = string | Array<ConflictReason>;
 
 function sameDirectives(
   directives1: Array<Directive>,

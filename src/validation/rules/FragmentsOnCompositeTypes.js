@@ -10,13 +10,23 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import {
-  inlineFragmentOnNonCompositeErrorMessage,
-  fragmentOnNonCompositeErrorMessage
-} from '../errors';
 import { print } from '../../language/printer';
 import { isCompositeType } from '../../type/definition';
 
+
+export function inlineFragmentOnNonCompositeErrorMessage(
+  type: any
+): string {
+  return `Fragment cannot condition on non composite type "${type}".`;
+}
+
+export function fragmentOnNonCompositeErrorMessage(
+  fragName: any,
+  type: any
+): string {
+  return `Fragment "${fragName}" cannot condition on non composite ` +
+    `type "${type}".`;
+}
 
 /**
  * Fragments on composite type
@@ -25,9 +35,7 @@ import { isCompositeType } from '../../type/definition';
  * can only be spread into a composite type (object, interface, or union), the
  * type condition must also be a composite type.
  */
-export default function FragmentsOnCompositeType(
-  context: ValidationContext
-): any {
+export function FragmentsOnCompositeTypes(context: ValidationContext): any {
   return {
     InlineFragment(node) {
       var type = context.getType();

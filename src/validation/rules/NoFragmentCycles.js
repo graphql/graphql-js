@@ -10,13 +10,20 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { cycleErrorMessage } from '../errors';
 import type { SelectionSet, FragmentSpread } from '../../language/ast';
 import { FRAGMENT_DEFINITION } from '../../language/kinds';
 import { visit } from '../../language/visitor';
 
 
-export default function NoFragmentCycles(context: ValidationContext): any {
+export function cycleErrorMessage(
+  fragName: any,
+  spreadNames: Array<any>
+): string {
+  var via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
+  return `Cannot spread fragment "${fragName}" within itself${via}.`;
+}
+
+export function NoFragmentCycles(context: ValidationContext): any {
 
   // Gather all the fragment spreads ASTs for each fragment definition.
   // Importantly this does not include inline fragments.

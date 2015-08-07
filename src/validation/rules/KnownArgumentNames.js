@@ -10,10 +10,25 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { unknownArgMessage, unknownDirectiveArgMessage } from '../errors';
 import find from '../../jsutils/find';
 import invariant from '../../jsutils/invariant';
 
+
+export function unknownArgMessage(
+  argName: any,
+  fieldName: any,
+  type: any
+): string {
+  return `Unknown argument "${argName}" on field "${fieldName}" of ` +
+    `type "${type}".`;
+}
+
+export function unknownDirectiveArgMessage(
+  argName: any,
+  directiveName: any
+): string {
+  return `Unknown argument "${argName}" on directive "@${directiveName}".`;
+}
 
 /**
  * Known argument names
@@ -21,7 +36,7 @@ import invariant from '../../jsutils/invariant';
  * A GraphQL field is only valid if all supplied arguments are defined by
  * that field.
  */
-export default function KnownArgumentNames(context: ValidationContext): any {
+export function KnownArgumentNames(context: ValidationContext): any {
   return {
     Argument(node, key, parent, path, ancestors) {
       var argumentOf = ancestors[ancestors.length - 1];

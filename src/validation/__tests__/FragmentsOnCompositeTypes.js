@@ -9,11 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import FragmentsOnCompositeTypes from '../rules/FragmentsOnCompositeTypes';
 import {
-  fragmentOnNonCompositeErrorMessage,
+  FragmentsOnCompositeTypes,
   inlineFragmentOnNonCompositeErrorMessage,
-} from '../errors';
+  fragmentOnNonCompositeErrorMessage,
+} from '../rules/FragmentsOnCompositeTypes';
 
 function error(fragName, typeName, line, column) {
   return {

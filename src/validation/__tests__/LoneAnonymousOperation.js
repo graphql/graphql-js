@@ -9,8 +9,10 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import LoneAnonymousOperation from '../rules/LoneAnonymousOperation';
-import { anonOperationNotAloneMessage } from '../errors';
+import {
+  LoneAnonymousOperation,
+  anonOperationNotAloneMessage,
+} from '../rules/LoneAnonymousOperation';
 
 
 function anonNotAlone(line, column) {

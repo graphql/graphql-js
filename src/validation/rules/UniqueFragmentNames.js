@@ -9,15 +9,18 @@
  */
 
 import { GraphQLError } from '../../error';
-import { duplicateFragmentNameMessage } from '../errors';
 
+
+export function duplicateFragmentNameMessage(fragName: any): string {
+  return `There can only be one fragment named "${fragName}".`;
+}
 
 /**
  * Unique fragment names
  *
  * A GraphQL document is only valid if all defined fragments have unique names.
  */
-export default function UniqueFragmentNames(): any {
+export function UniqueFragmentNames(): any {
   var knownFragmentNames = Object.create(null);
   return {
     FragmentDefinition(node) {

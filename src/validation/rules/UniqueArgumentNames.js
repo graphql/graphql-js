@@ -9,8 +9,11 @@
  */
 
 import { GraphQLError } from '../../error';
-import { duplicateArgMessage } from '../errors';
 
+
+export function duplicateArgMessage(argName: any): string {
+  return `There can be only one argument named "${argName}".`;
+}
 
 /**
  * Unique argument names
@@ -18,7 +21,7 @@ import { duplicateArgMessage } from '../errors';
  * A GraphQL field or directive is only valid if all supplied arguments are
  * uniquely named.
  */
-export default function UniqueArgumentNames(): any {
+export function UniqueArgumentNames(): any {
   var knownArgNames = Object.create(null);
   return {
     Field() {

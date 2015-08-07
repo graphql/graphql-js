@@ -10,10 +10,6 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import {
-  typeIncompatibleSpreadMessage,
-  typeIncompatibleAnonSpreadMessage,
-} from '../errors';
 import keyMap from '../../jsutils/keyMap';
 import {
   GraphQLObjectType,
@@ -23,6 +19,23 @@ import {
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 
+export function typeIncompatibleSpreadMessage(
+  fragName: any,
+  parentType: any,
+  fragType: any
+): string {
+  return `Fragment "${fragName}" cannot be spread here as objects of ` +
+    `type "${parentType}" can never be of type "${fragType}".`;
+}
+
+export function typeIncompatibleAnonSpreadMessage(
+  parentType: any,
+  fragType: any
+): string {
+  return `Fragment cannot be spread here as objects of ` +
+    `type "${parentType}" can never be of type "${fragType}".`;
+}
+
 /**
  * Possible fragment spread
  *
@@ -30,9 +43,7 @@ import { typeFromAST } from '../../utilities/typeFromAST';
  * be true: if there is a non-empty intersection of the possible parent types,
  * and possible types which pass the type condition.
  */
-export default function PossibleFragmentSpreads(
-  context: ValidationContext
-): any {
+export function PossibleFragmentSpreads(context: ValidationContext): any {
   return {
     InlineFragment(node) {
       var fragType = context.getType();

@@ -9,8 +9,8 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import NoFragmentCycles from '../rules/NoFragmentCycles';
-import { cycleErrorMessage } from '../errors';
+import { NoFragmentCycles, cycleErrorMessage } from '../rules/NoFragmentCycles';
+
 
 describe('Validate: No circular fragment spreads', () => {
 

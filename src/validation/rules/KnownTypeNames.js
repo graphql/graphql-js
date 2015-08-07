@@ -10,8 +10,11 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { unknownTypeMessage } from '../errors';
 
+
+export function unknownTypeMessage(type: any): string {
+  return `Unknown type "${type}".`;
+}
 
 /**
  * Known type names
@@ -19,7 +22,7 @@ import { unknownTypeMessage } from '../errors';
  * A GraphQL document is only valid if referenced types (specifically
  * variable definitions and fragment conditions) are defined by the type schema.
  */
-export default function KnownTypeNames(context: ValidationContext): any {
+export function KnownTypeNames(context: ValidationContext): any {
   return {
     NamedType(node) {
       var typeName = node.name.value;

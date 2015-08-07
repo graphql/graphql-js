@@ -9,8 +9,11 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import KnownTypeNames from '../rules/KnownTypeNames';
-import { unknownTypeMessage } from '../errors';
+import {
+  KnownTypeNames,
+  unknownTypeMessage,
+} from '../rules/KnownTypeNames';
+
 
 function unknownType(typeName, line, column) {
   return {

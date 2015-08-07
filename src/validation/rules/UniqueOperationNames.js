@@ -9,15 +9,18 @@
  */
 
 import { GraphQLError } from '../../error';
-import { duplicateOperationNameMessage } from '../errors';
 
+
+export function duplicateOperationNameMessage(operationName: any): string {
+  return `There can only be one operation named "${operationName}".`;
+}
 
 /**
  * Unique operation names
  *
  * A GraphQL document is only valid if all defined operations have unique names.
  */
-export default function UniqueOperationNames(): any {
+export function UniqueOperationNames(): any {
   var knownOperationNames = Object.create(null);
   return {
     OperationDefinition(node) {

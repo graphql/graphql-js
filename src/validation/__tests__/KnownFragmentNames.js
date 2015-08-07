@@ -9,8 +9,10 @@
 
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
-import KnownFragmentNames from '../rules/KnownFragmentNames';
-import { unknownFragmentMessage } from '../errors';
+import {
+  KnownFragmentNames,
+  unknownFragmentMessage,
+} from '../rules/KnownFragmentNames';
 
 
 function undefFrag(fragName, line, column) {

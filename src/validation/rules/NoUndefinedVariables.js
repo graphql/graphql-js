@@ -9,9 +9,16 @@
  */
 
 import { GraphQLError } from '../../error';
-import { undefinedVarMessage, undefinedVarByOpMessage } from '../errors';
 import { FRAGMENT_DEFINITION } from '../../language/kinds';
 
+
+export function undefinedVarMessage(varName: any): string {
+  return `Variable "$${varName}" is not defined.`;
+}
+
+export function undefinedVarByOpMessage(varName: any, opName: any): string {
+  return `Variable "$${varName}" is not defined by operation "${opName}".`;
+}
 
 /**
  * No undefined variables
@@ -19,7 +26,7 @@ import { FRAGMENT_DEFINITION } from '../../language/kinds';
  * A GraphQL operation is only valid if all variables encountered, both directly
  * and via fragment spreads, are defined by that operation.
  */
-export default function NoUndefinedVariables(): any {
+export function NoUndefinedVariables(): any {
   var operation;
   var visitedFragmentNames = {};
   var definedVariableNames = {};
