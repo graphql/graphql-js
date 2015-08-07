@@ -8,3 +8,4 @@
  */
 
 export { validate } from './validate';
+export { specifiedRules } from './specifiedRules';

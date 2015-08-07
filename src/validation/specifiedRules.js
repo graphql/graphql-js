@@ -79,7 +79,7 @@ import OverlappingFieldsCanBeMerged from './rules/OverlappingFieldsCanBeMerged';
  * This default set of rules includes all validation rules defined by the
  * GraphQL spec.
  */
-export var allRules = [
+export var specifiedRules = [
   UniqueOperationNames,
   LoneAnonymousOperation,
   KnownTypeNames,

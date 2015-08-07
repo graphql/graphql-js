@@ -26,7 +26,7 @@ import type {
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import { TypeInfo } from '../utilities/TypeInfo';
-import { allRules } from './allRules';
+import { specifiedRules } from './specifiedRules';
 
 
 /**
@@ -53,7 +53,7 @@ export function validate(
 ): Array<GraphQLError> {
   invariant(schema, 'Must provide schema');
   invariant(ast, 'Must provide document');
-  return visitUsingRules(schema, ast, rules || allRules);
+  return visitUsingRules(schema, ast, rules || specifiedRules);
 }
 
 /**
@@ -141,8 +141,8 @@ function visitUsingRules(
   }
 
   // Visit the whole document with each instance of all provided rules.
-  var allRuleInstances = rules.map(rule => rule(context));
-  allRuleInstances.forEach(instance => {
+  var instances = rules.map(rule => rule(context));
+  instances.forEach(instance => {
     visitInstance(documentAST, instance);
   });
 
