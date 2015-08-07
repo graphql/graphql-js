@@ -7,71 +7,71 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-export function missingFieldArgMessage(fieldName, argName, typeName) {
-  return `Field ${fieldName} argument ${argName} of type ${typeName} is ` +
-    `required but not provided.`;
+export function missingFieldArgMessage(fieldName, argName, type) {
+  return `Field "${fieldName}" argument "${argName}" of type "${type}" ` +
+    `is required but not provided.`;
 }
 
-export function missingDirectiveArgMessage(directiveName, argName, typeName) {
-  return `Directive @${directiveName} argument ${argName} of type ` +
-    `${typeName} is required but not provided.`;
+export function missingDirectiveArgMessage(directiveName, argName, type) {
+  return `Directive "@${directiveName}" argument "${argName}" of type ` +
+    `"${type}" is required but not provided.`;
 }
 
-export function badValueMessage(argName, typeName, value) {
-  return `Argument ${argName} expected type ${typeName} but got: ${value}.`;
+export function badValueMessage(argName, type, value) {
+  return `Argument "${argName}" expected type "${type}" but ` +
+    `got: "${value}".`;
 }
 
-export function defaultForNonNullArgMessage(varName, typeName, guessTypeName) {
-  return `Variable $${varName} of type ${typeName} ` +
-    `is required and will never use the default value. ` +
-    `Perhaps you meant to use type ${guessTypeName}.`;
+export function defaultForNonNullArgMessage(varName, type, guessType) {
+  return `Variable "$${varName}" of type "${type}" is required and will not ` +
+    `use the default value. Perhaps you meant to use type "${guessType}".`;
 }
 
-export function badValueForDefaultArgMessage(varName, typeName, value) {
-  return `Variable $${varName} of type ${typeName} has invalid default ` +
-    `value: ${value}.`;
+export function badValueForDefaultArgMessage(varName, type, value) {
+  return `Variable "$${varName}" of type "${type}" has invalid default ` +
+    `value: "${value}".`;
 }
 
-export function undefinedFieldMessage(field, type) {
-  return 'Cannot query field ' + field + ' on ' + type;
+export function undefinedFieldMessage(fieldName, type) {
+  return `Cannot query field "${fieldName}" on "${type}".`;
 }
 
-export function fragmentOnNonCompositeErrorMessage(fragName, typeName) {
+export function fragmentOnNonCompositeErrorMessage(fragName, type) {
   return `Fragment "${fragName}" cannot condition on non composite ` +
-    `type "${typeName}".`;
+    `type "${type}".`;
 }
 
-export function inlineFragmentOnNonCompositeErrorMessage(typeName) {
-  return `Fragment cannot condition on non composite type "${typeName}".`;
+export function inlineFragmentOnNonCompositeErrorMessage(type) {
+  return `Fragment cannot condition on non composite type "${type}".`;
 }
 
-export function unknownArgMessage(argName, fieldName, typeName) {
-  return `Unknown argument ${argName} on field ${fieldName} ` +
-    `of type ${typeName}.`;
+export function unknownArgMessage(argName, fieldName, type) {
+  return `Unknown argument "${argName}" on field "${fieldName}" of ` +
+    `type "${type}".`;
 }
 
-export function unknownDirectiveArgMessage(argName, fieldName) {
-  return `Unknown argument ${argName} on directive ${fieldName}.`;
+export function unknownDirectiveArgMessage(argName, directiveName) {
+  return `Unknown argument "${argName}" on directive "@${directiveName}".`;
 }
 
-export function unknownTypeMessage(typeName) {
-  return `Unknown type ${typeName}.`;
+export function unknownTypeMessage(type) {
+  return `Unknown type "${type}".`;
 }
 
 export function undefinedVarMessage(varName) {
-  return `Variable $${varName} is not defined.`;
+  return `Variable "$${varName}" is not defined.`;
 }
 
 export function undefinedVarByOpMessage(varName, opName) {
-  return `Variable $${varName} is not defined by operation ${opName}.`;
+  return `Variable "$${varName}" is not defined by operation "${opName}".`;
 }
 
 export function unusedFragMessage(fragName) {
-  return `Fragment ${fragName} is not used.`;
+  return `Fragment "${fragName}" is not used.`;
 }
 
 export function unusedVariableMessage(varName) {
-  return `Variable $${varName} is not used.`;
+  return `Variable "$${varName}" is not used.`;
 }
 
 export function typeIncompatibleSpreadMessage(fragName, parentType, fragType) {
@@ -85,44 +85,43 @@ export function typeIncompatibleAnonSpreadMessage(parentType, fragType) {
 }
 
 export function noSubselectionAllowedMessage(field, type) {
-  return `Field "${field}" of type ${type} must not have a sub selection.`;
+  return `Field "${field}" of type "${type}" must not have a sub selection.`;
 }
 
 export function requiredSubselectionMessage(field, type) {
-  return `Field "${field}" of type ${type} must have a sub selection.`;
+  return `Field "${field}" of type "${type}" must have a sub selection.`;
 }
 
 export function nonInputTypeOnVarMessage(variableName, typeName) {
-  return `Variable $${variableName} cannot be non ` +
-    `input type ${typeName}.`;
+  return `Variable "$${variableName}" cannot be non-input type "${typeName}".`;
 }
 
-export function cycleErrorMessage(fragmentName, spreadNames) {
-  return `Cannot spread fragment ${fragmentName} within itself` +
-  (spreadNames.length ? ` via ${spreadNames.join(', ')}.` : '.');
+export function cycleErrorMessage(fragName, spreadNames) {
+  var via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
+  return `Cannot spread fragment "${fragName}" within itself${via}.`;
 }
 
 export function unknownDirectiveMessage(directiveName) {
-  return `Unknown directive ${directiveName}.`;
+  return `Unknown directive "${directiveName}".`;
 }
 
 export function misplacedDirectiveMessage(directiveName, placement) {
-  return `Directive ${directiveName} may not be used on ${placement}.`;
+  return `Directive "${directiveName}" may not be used on "${placement}".`;
 }
 
 export function badVarPosMessage(varName, varType, expectedType) {
-  return `Variable $${varName} of type ${varType} used in position expecting ` +
-    `type ${expectedType}.`;
+  return `Variable "$${varName}" of type "${varType}" used in position ` +
+    `expecting type "${expectedType}".`;
 }
 
 export function fieldsConflictMessage(responseName, reason) {
-  return `Fields ${responseName} conflict because ${reasonMessage(reason)}.`;
+  return `Fields "${responseName}" conflict because ${reasonMessage(reason)}.`;
 }
 
 function reasonMessage(reason) {
   if (Array.isArray(reason)) {
     return reason.map(([responseName, subreason]) =>
-      `subfields ${responseName} conflict because ${reasonMessage(subreason)}`
+      `subfields "${responseName}" conflict because ${reasonMessage(subreason)}`
     ).join(' and ');
   }
   return reason;

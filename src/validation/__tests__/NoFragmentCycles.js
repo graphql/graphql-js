@@ -153,9 +153,9 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragB on Dog { ...fragA }
       fragment fragC on Dog { ...fragA }
     `, [
-      { message: 'Cannot spread fragment fragA within itself via fragB.',
+      { message: cycleErrorMessage('fragA', ['fragB']),
         locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ] },
-      { message: 'Cannot spread fragment fragA within itself via fragC.',
+      { message: cycleErrorMessage('fragA', ['fragC']),
         locations: [ { line: 2, column: 41 }, { line: 4, column: 31 } ] }
     ]);
   });
