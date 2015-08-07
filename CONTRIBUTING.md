@@ -94,8 +94,7 @@ Example for a patch release:
 ```sh
 npm test
 npm version patch
-git push
-git push --tags
+git push --follow-tags
 ```
 
 ## License
