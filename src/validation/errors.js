@@ -70,6 +70,10 @@ export function unusedFragMessage(fragName) {
   return `Fragment "${fragName}" is not used.`;
 }
 
+export function unknownFragmentMessage(fragName) {
+  return `Unknown fragment "${fragName}".`;
+}
+
 export function unusedVariableMessage(varName) {
   return `Variable "$${varName}" is not used.`;
 }

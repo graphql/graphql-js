@@ -10,11 +10,12 @@
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
 import KnownFragmentNames from '../rules/KnownFragmentNames';
+import { unknownFragmentMessage } from '../errors';
 
 
 function undefFrag(fragName, line, column) {
   return {
-    message: `Undefined fragment ${fragName}.`,
+    message: unknownFragmentMessage(fragName),
     locations: [ { line, column } ]
   };
 }

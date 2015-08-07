@@ -11,7 +11,7 @@
 import type { ValidationContext } from '../index';
 
 import { GraphQLError } from '../../error';
-
+import { unknownFragmentMessage } from '../errors';
 
 /**
  * Known fragment names
@@ -26,7 +26,7 @@ export default function KnownFragmentNames(context: ValidationContext): any {
       var fragment = context.getFragment(fragmentName);
       if (!fragment) {
         return new GraphQLError(
-          `Undefined fragment ${fragmentName}.`,
+          unknownFragmentMessage(fragmentName),
           [node.name]
         );
       }
