@@ -48,7 +48,10 @@ export function NoUnusedFragments(): any {
           keys.forEach(fragName => {
             if (fragmentNameUsed[fragName] !== true) {
               fragmentNameUsed[fragName] = true;
-              reduceSpreadFragments(fragAdjacencies[fragName]);
+              var adjacencies = fragAdjacencies[fragName];
+              if (adjacencies) {
+                reduceSpreadFragments(adjacencies);
+              }
             }
           });
         };

@@ -143,4 +143,19 @@ describe('Validate: No unused fragments', () => {
     ]);
   });
 
+  it('contains unknown and undef fragments', () => {
+    expectFailsRule(NoUnusedFragments, `
+      query Foo {
+        human(id: 4) {
+          ...bar
+        }
+      }
+      fragment foo on Human {
+        name
+      }
+    `, [
+      unusedFrag('foo', 7, 7),
+    ]);
+  });
+
 });
