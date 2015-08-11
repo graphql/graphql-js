@@ -1135,7 +1135,7 @@ describe('Introspection', () => {
 
     return expect(
       await graphql(schema, request)
-    ).to.deep.equal({
+    ).to.containSubset({
       errors: [
         { message: missingFieldArgMessage('__type', 'name', 'String!'),
           locations: [ { line: 3, column: 9 } ] }
