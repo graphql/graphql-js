@@ -52,11 +52,11 @@ export function getVariableValues(
  * definitions and list of argument AST nodes.
  */
 export function getArgumentValues(
-  argDefs: Array<GraphQLArgument>,
+  argDefs: ?Array<GraphQLArgument>,
   argASTs: ?Array<Argument>,
   variables: { [key: string]: any }
 ): { [key: string]: any } {
-  if (!argASTs) {
+  if (!argDefs || !argASTs) {
     return {};
   }
   var argASTMap = keyMap(argASTs, arg => arg.name.value);

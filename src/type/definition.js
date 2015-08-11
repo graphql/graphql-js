@@ -10,7 +10,12 @@
 
 import invariant from '../jsutils/invariant';
 import { ENUM } from '../language/kinds';
-import type { Value } from '../language/ast';
+import type {
+  OperationDefinition,
+  Field,
+  FragmentDefinition,
+  Value,
+} from '../language/ast';
 import type { GraphQLSchema } from './schema';
 
 
@@ -350,18 +355,28 @@ type GraphQLInterfacesThunk = () => Array<GraphQLInterfaceType>;
 
 type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
 
+export type GraphQLFieldResolveFn = (
+  source?: any,
+  args?: {[argName: string]: any},
+  info?: GraphQLFieldExeInfo
+) => any
+
+export type GraphQLFieldExeInfo = {
+  fieldName: string,
+  fieldASTs: Array<Field>,
+  returnType: GraphQLOutputType,
+  parentType: GraphQLCompositeType,
+  schema: GraphQLSchema,
+  fragments: { [fragmentName: string]: FragmentDefinition },
+  rootValue: any,
+  operation: OperationDefinition,
+  variables: { [variableName: string]: any },
+}
+
 export type GraphQLFieldConfig = {
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;
-    resolve?: (
-    source?: any,
-    args?: ?{[argName: string]: any},
-    context?: any,
-    fieldAST?: any,
-    fieldType?: any,
-    parentType?: any,
-    schema?: GraphQLSchema
-  ) => any;
+  resolve?: GraphQLFieldResolveFn;
   deprecationReason?: string;
   description?: ?string;
 }
@@ -384,15 +399,7 @@ export type GraphQLFieldDefinition = {
   description: ?string;
   type: GraphQLOutputType;
   args: Array<GraphQLArgument>;
-  resolve?: (
-    source?: any,
-    args?: ?{[argName: string]: any},
-    context?: any,
-    fieldAST?: any,
-    fieldType?: any,
-    parentType?: any,
-    schema?: GraphQLSchema
-  ) => any;
+  resolve?: GraphQLFieldResolveFn;
   deprecationReason?: ?string;
 }
 
