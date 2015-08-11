@@ -218,13 +218,15 @@ describe('Rule: NoOutputTypesAsInputArgs', () => {
 
   it('accepts a schema with a list of input type as an input field arg', () => {
     testAcceptingFieldArgOfType(new GraphQLList(new GraphQLInputObjectType({
-      name: 'SomeInputType'
+      name: 'SomeInputType',
+      fields: {}
     })));
   });
 
   it('accepts a schema with a nonnull input type as an input field arg', () => {
     testAcceptingFieldArgOfType(new GraphQLNonNull(new GraphQLInputObjectType({
-      name: 'SomeInputType'
+      name: 'SomeInputType',
+      fields: {}
     })));
   });
 });

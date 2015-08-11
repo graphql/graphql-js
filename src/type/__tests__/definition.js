@@ -140,6 +140,31 @@ describe('Type System: Example', () => {
 
   });
 
+  it('includes nested input objects in the map', () => {
+    var NestedInputObject = new GraphQLInputObjectType({
+      name: 'NestedInputObject',
+      fields: { value: { type: GraphQLString } }
+    });
+    var SomeInputObject = new GraphQLInputObjectType({
+      name: 'SomeInputObject',
+      fields: { nested: { type: NestedInputObject } }
+    });
+    var SomeMutation = new GraphQLObjectType({
+      name: 'SomeMutation',
+      fields: {
+        mutateSomething: {
+          type: BlogArticle,
+          args: { input: { type: SomeInputObject } }
+        }
+      }
+    });
+    var schema = new GraphQLSchema({
+      query: BlogQuery,
+      mutation: SomeMutation,
+    });
+    expect(schema.getTypeMap().NestedInputObject).to.equal(NestedInputObject);
+  });
+
   it('includes interfaces\' subtypes in the type map', () => {
     var SomeInterface = new GraphQLInterfaceType({
       name: 'SomeInterface',

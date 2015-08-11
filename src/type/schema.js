@@ -10,6 +10,7 @@
 
 import {
   GraphQLObjectType,
+  GraphQLInputObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLList,
@@ -106,12 +107,15 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   if (type instanceof GraphQLObjectType ||
-      type instanceof GraphQLInterfaceType) {
+      type instanceof GraphQLInterfaceType ||
+      type instanceof GraphQLInputObjectType) {
     var fieldMap = type.getFields();
     Object.keys(fieldMap).forEach(fieldName => {
       var field = fieldMap[fieldName];
-      var fieldArgTypes = field.args.map(arg => arg.type);
-      reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
+      if (field.args) {
+        var fieldArgTypes = field.args.map(arg => arg.type);
+        reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
+      }
       reducedMap = typeMapReducer(reducedMap, field.type);
     });
   }
