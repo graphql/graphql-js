@@ -197,7 +197,7 @@ export class GraphQLScalarType/* <T> */ {
 
   parseLiteral(valueAST: Value): ?any/* T */ {
     var parser = this._scalarConfig.parseLiteral;
-    return parser ? parser(value) : null;
+    return parser ? parser(valueAST) : null;
   }
 
   toString(): string {
@@ -655,8 +655,8 @@ export class GraphQLEnumType/* <T> */ {
   }
 
   parseLiteral(valueAST: Value): ?any/* T */ {
-    if (value.kind === ENUM) {
-      var enumValue = this._getNameLookup().get(value.value);
+    if (valueAST.kind === ENUM) {
+      var enumValue = this._getNameLookup().get(valueAST.value);
       if (enumValue) {
         return enumValue.value;
       }

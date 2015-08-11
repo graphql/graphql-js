@@ -172,29 +172,29 @@ function parseOperationDefinition(parser): OperationDefinition {
     kind: OPERATION_DEFINITION,
     operation,
     name: parseName(parser),
-    variableDefinitions: parseValueDefinitions(parser),
+    variableDefinitions: parseVariableDefinitions(parser),
     directives: parseDirectives(parser),
     selectionSet: parseSelectionSet(parser),
     loc: loc(parser, start)
   };
 }
 
-function parseValueDefinitions(parser): Array<VariableDefinition> {
+function parseVariableDefinitions(parser): Array<VariableDefinition> {
   return peek(parser, TokenKind.PAREN_L) ?
     many(
       parser,
       TokenKind.PAREN_L,
-      parseValueDefinition,
+      parseVariableDefinition,
       TokenKind.PAREN_R
     ) :
     [];
 }
 
-function parseValueDefinition(parser): VariableDefinition {
+function parseVariableDefinition(parser): VariableDefinition {
   var start = parser.token.start;
   return {
     kind: VARIABLE_DEFINITION,
-    variable: parseValue(parser),
+    variable: parseVariable(parser),
     type: (expect(parser, TokenKind.COLON), parseType(parser)),
     defaultValue:
       skip(parser, TokenKind.EQUALS) ? parseValueLiteral(parser, true) : null,
@@ -202,7 +202,7 @@ function parseValueDefinition(parser): VariableDefinition {
   };
 }
 
-function parseValue(parser): Variable {
+function parseVariable(parser): Variable {
   var start = parser.token.start;
   expect(parser, TokenKind.DOLLAR);
   return {
@@ -378,7 +378,7 @@ function parseValueLiteral(parser, isConst: boolean): Value {
       break;
     case TokenKind.DOLLAR:
       if (!isConst) {
-        return parseValue(parser);
+        return parseVariable(parser);
       }
       break;
   }
