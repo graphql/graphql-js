@@ -66,8 +66,8 @@ import type {
  * Given the result of a client running the introspection query, creates and
  * returns a GraphQLSchema instance which can be then used with all graphql-js
  * tools, but cannot be used to execute a query, as introspection does not
- * represent the "resolver" or "coerce" functions or any other server-internal
- * mechanisms.
+ * represent the "resolver", "parse" or "serialize" functions or any other
+ * server-internal mechanisms.
  */
 export function buildClientSchema(
   introspection: IntrospectionQuery
@@ -200,12 +200,13 @@ export function buildClientSchema(
     return new GraphQLScalarType({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
-      // Note: validation calls the coerce functions to determine if a
+      // Note: validation calls the serialize functions to determine if a
       // query value is correct. Returning null would cause use of custom
       // scalars to always fail validation. Returning false causes them to
       // always pass validation.
-      coerce: () => false,
-      coerceLiteral: () => false,
+      serialize: () => false,
+      parseLiteral: () => false,
+      parseVariable: () => false,
     });
   }
 

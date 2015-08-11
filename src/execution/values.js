@@ -31,7 +31,7 @@ import type { Argument, VariableDefinition } from '../language/ast';
 
 /**
  * Prepares an object map of variables of the correct type based on the provided
- * variable definitions and arbitrary input. If the input cannot be coerced
+ * variable definitions and arbitrary input. If the input cannot be parsed
  * to match the variable definitions, a GraphQLError will be thrown.
  */
 export function getVariableValues(
@@ -142,8 +142,8 @@ function coerceValue(type: GraphQLInputType, value: any): any {
     'Must be input type'
   );
 
-  var coerced = type.coerce(value);
-  if (!isNullish(coerced)) {
-    return coerced;
+  var parsed = type.parseVariable(value);
+  if (!isNullish(parsed)) {
+    return parsed;
   }
 }

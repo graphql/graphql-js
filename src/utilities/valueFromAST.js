@@ -105,8 +105,8 @@ export function valueFromAST(
     'Must be input type'
   );
 
-  var coerced = type.coerceLiteral(valueAST);
-  if (!isNullish(coerced)) {
-    return coerced;
+  var parsed = type.parseLiteral(valueAST);
+  if (!isNullish(parsed)) {
+    return parsed;
   }
 }
