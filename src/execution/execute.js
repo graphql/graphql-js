@@ -451,7 +451,7 @@ function getFieldEntryKey(node: Field): string {
 /**
  * Resolves the field on the given source object. In particular, this
  * figures out the value that the field returns by calling its resolve function,
- * then calls completeValue to complete promises, coerce scalars, or execute
+ * then calls completeValue to complete promises, serialize scalars, or execute
  * the sub-selection-set for objects.
  */
 function resolveField(
@@ -547,7 +547,8 @@ function completeValueCatchingError(
  * for the inner type on each item in the list.
  *
  * If the field type is a Scalar or Enum, ensures the completed value is a legal
- * value of the type by calling the `coerce` method of GraphQL type definition.
+ * value of the type by calling the `serialize` method of GraphQL type
+ * definition.
  *
  * Otherwise, the field type expects a sub-selection set, and will complete the
  * value by evaluating all sub-selections.
@@ -613,13 +614,13 @@ function completeValue(
     return containsPromise ? Promise.all(completedResults) : completedResults;
   }
 
-  // If field type is Scalar or Enum, coerce to a valid value, returning null
-  // if coercion is not possible.
+  // If field type is Scalar or Enum, serialize to a valid value, returning
+  // null if serialization is not possible.
   if (fieldType instanceof GraphQLScalarType ||
       fieldType instanceof GraphQLEnumType) {
-    invariant(fieldType.coerce, 'Missing coerce method on type');
-    var coercedResult = fieldType.coerce(result);
-    return isNullish(coercedResult) ? null : coercedResult;
+    invariant(fieldType.serialize, 'Missing serialize method on type');
+    var serializedResult = fieldType.serialize(result);
+    return isNullish(serializedResult) ? null : serializedResult;
   }
 
   // Field type must be Object, Interface or Union and expect sub-selections.

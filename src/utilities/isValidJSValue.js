@@ -71,7 +71,7 @@ export function isValidJSValue(value: any, type: GraphQLInputType): boolean {
     'Must be input type'
   );
 
-  // Scalar/Enum input checks to ensure the type can coerce the value to
+  // Scalar/Enum input checks to ensure the type can parse the value to
   // a non-null value.
-  return !isNullish(type.coerce(value));
+  return !isNullish(type.parseVariable(value));
 }

@@ -21,15 +21,38 @@ import {
   GraphQLList,
   GraphQLString,
   GraphQLNonNull,
+  GraphQLScalarType
 } from '../../type';
 
+var TestComplexScalar = new GraphQLScalarType({
+  name: 'ComplexScalar',
+  serialize(value) {
+    if (value === 'DeserializedValue') {
+      return 'SerializedValue';
+    }
+    return null;
+  },
+  parseLiteral(ast) {
+    if (ast.value === 'SerializedValue') {
+      return 'DeserializedValue';
+    }
+    return null;
+  },
+  parseVariable(value) {
+    if (value === 'SerializedValue') {
+      return 'DeserializedValue';
+    }
+    return null;
+  },
+});
 
 var TestInputObject = new GraphQLInputObjectType({
   name: 'TestInputObject',
   fields: {
     a: { type: GraphQLString },
     b: { type: new GraphQLList(GraphQLString) },
-    c: { type: new GraphQLNonNull(GraphQLString) }
+    c: { type: new GraphQLNonNull(GraphQLString) },
+    d: { type: TestComplexScalar },
   }
 });
 
@@ -104,7 +127,7 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
-      it('properly coerces single value to list', async () => {
+      it('properly parses single value to list', async () => {
         var doc = `
         {
           fieldWithObjectInput(input: {a: "foo", b: "bar", c: "baz"})
@@ -173,13 +196,24 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
-      it('properly coerces single value to list', async () => {
+      it('properly parses single value to list', async () => {
         var params = { input: { a: 'foo', b: 'bar', c: 'baz' } };
         var result = await execute(schema, ast, null, params);
 
         return expect(result).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
+          }
+        });
+      });
+
+      it('executes with complex scalar input', async () => {
+        var params = { input: { c: 'foo', d: 'SerializedValue' } };
+        var result = await execute(schema, ast, null, params);
+
+        return expect(result).to.deep.equal({
+          data: {
+            fieldWithObjectInput: '{"c":"foo","d":"DeserializedValue"}'
           }
         });
       });
@@ -752,7 +786,7 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('when argument provided cannot be coerced', async () => {
+    it('when argument provided cannot be parsed', async () => {
       var ast = parse(`{
         fieldWithDefaultArgumentValue(input: WRONG_TYPE)
       }`);
