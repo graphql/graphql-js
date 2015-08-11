@@ -288,15 +288,7 @@ export var SchemaMetaFieldDef: GraphQLFieldDefinition = {
   type: new GraphQLNonNull(__Schema),
   description: 'Access the current type schema of this server.',
   args: [],
-  resolve: (
-    source,
-    args,
-    root,
-    fieldAST,
-    fieldType,
-    parentType,
-    schema
-  ) => schema
+  resolve: (source, args, { schema }) => schema
 };
 
 export var TypeMetaFieldDef: GraphQLFieldDefinition = {
@@ -306,15 +298,7 @@ export var TypeMetaFieldDef: GraphQLFieldDefinition = {
   args: [
     { name: 'name', type: new GraphQLNonNull(GraphQLString) }
   ],
-  resolve: (
-    source,
-    { name },
-    root,
-    fieldAST,
-    fieldType,
-    parentType,
-    schema
-  ) => schema.getType(name)
+  resolve: (source, { name }, { schema }) => schema.getType(name)
 };
 
 export var TypeNameMetaFieldDef: GraphQLFieldDefinition = {
@@ -322,12 +306,5 @@ export var TypeNameMetaFieldDef: GraphQLFieldDefinition = {
   type: new GraphQLNonNull(GraphQLString),
   description: 'The name of the current Object type at runtime.',
   args: [],
-  resolve: (
-    source,
-    args,
-    root,
-    fieldAST,
-    fieldType,
-    parentType
-  ) => parentType.name
+  resolve: (source, args, { parentType }) => parentType.name
 };

@@ -461,47 +461,55 @@ function resolveField(
   fieldASTs: Array<Field>
 ): any {
   var fieldAST = fieldASTs[0];
+  var fieldName = fieldAST.name.value;
 
-  var fieldDef = getFieldDef(exeContext.schema, parentType, fieldAST);
+  var fieldDef = getFieldDef(exeContext.schema, parentType, fieldName);
   if (!fieldDef) {
     return;
   }
 
-  var fieldType = fieldDef.type;
+  var returnType = fieldDef.type;
   var resolveFn = fieldDef.resolve || defaultResolveFn;
 
   // Build a JS object of arguments from the field.arguments AST, using the
   // variables scope to fulfill any variable references.
   // TODO: find a way to memoize, in case this field is within a List type.
-  var args = fieldDef.args ?
-    getArgumentValues(fieldDef.args, fieldAST.arguments, exeContext.variables) :
-    null;
+  var args = getArgumentValues(
+    fieldDef.args,
+    fieldAST.arguments,
+    exeContext.variables
+  );
+
+  // The resolve function's optional third argument is a collection of
+  // information about the current execution state.
+  var info = {
+    fieldName,
+    fieldASTs,
+    returnType,
+    parentType,
+    schema: exeContext.schema,
+    fragments: exeContext.fragments,
+    rootValue: exeContext.rootValue,
+    operation: exeContext.operation,
+    variables: exeContext.variables,
+  };
 
   // If an error occurs while calling the field `resolve` function, ensure that
   // it is wrapped as a GraphQLError with locations. Log this error and return
   // null if allowed, otherwise throw the error so the parent field can handle
   // it.
   try {
-    var result = resolveFn(
-      source,
-      args,
-      exeContext.rootValue,
-      // TODO: provide all fieldASTs, not just the first field
-      fieldAST,
-      fieldType,
-      parentType,
-      exeContext.schema
-    );
+    var result = resolveFn(source, args, info);
   } catch (error) {
     var reportedError = locatedError(error, fieldASTs);
-    if (fieldType instanceof GraphQLNonNull) {
+    if (returnType instanceof GraphQLNonNull) {
       throw reportedError;
     }
     exeContext.errors.push(reportedError);
     return null;
   }
 
-  return completeValueCatchingError(exeContext, fieldType, fieldASTs, result);
+  return completeValueCatchingError(exeContext, returnType, fieldASTs, result);
 }
 
 function completeValueCatchingError(
@@ -660,8 +668,8 @@ function completeValue(
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function.
  */
-function defaultResolveFn(source, args, root, fieldAST) {
-  var property = source[fieldAST.name.value];
+function defaultResolveFn(source, args, { fieldName }) {
+  var property = source[fieldName];
   return typeof property === 'function' ? property.call(source) : property;
 }
 
@@ -685,17 +693,16 @@ function isThenable(value: any): boolean {
 function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
-  fieldAST: Field
+  fieldName: string
 ): ?GraphQLFieldDefinition {
-  var name = fieldAST.name.value;
-  if (name === SchemaMetaFieldDef.name &&
+  if (fieldName === SchemaMetaFieldDef.name &&
       schema.getQueryType() === parentType) {
     return SchemaMetaFieldDef;
-  } else if (name === TypeMetaFieldDef.name &&
+  } else if (fieldName === TypeMetaFieldDef.name &&
              schema.getQueryType() === parentType) {
     return TypeMetaFieldDef;
-  } else if (name === TypeNameMetaFieldDef.name) {
+  } else if (fieldName === TypeNameMetaFieldDef.name) {
     return TypeNameMetaFieldDef;
   }
-  return parentType.getFields()[name];
+  return parentType.getFields()[fieldName];
 }
