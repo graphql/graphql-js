@@ -501,7 +501,7 @@ describe('Type System: build schema from introspection', () => {
       { foo: 'bar' },
       { v: 'baz' }
     );
-    expect(result).to.deep.equal({
+    expect(result).to.containSubset({
       data: {
         foo: null,
       },

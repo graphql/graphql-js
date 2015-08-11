@@ -12,8 +12,7 @@ import { Source } from './language/source';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
 import { execute } from './execution/execute';
-import { formatError } from './error';
-import type { GraphQLFormattedError } from './error/formatError';
+import type { GraphQLError } from './error/GraphQLError';
 import type { GraphQLSchema } from './type/schema';
 
 
@@ -38,9 +37,7 @@ export function graphql(
     var documentAST = parse(source);
     var validationErrors = validate(schema, documentAST);
     if (validationErrors.length > 0) {
-      resolve({
-        errors: validationErrors.map(formatError)
-      });
+      resolve({ errors: validationErrors });
     } else {
       resolve(
         execute(
@@ -49,19 +46,11 @@ export function graphql(
           rootValue,
           variableValues,
           operationName
-        ).then(result => {
-          if (result.errors) {
-            return {
-              data: result.data,
-              errors: result.errors.map(formatError)
-            };
-          }
-          return result;
-        })
+        )
       );
     }
   }).catch(error => {
-    return { errors: [ formatError(error) ] };
+    return { errors: [ error ] };
   });
 }
 
@@ -73,5 +62,5 @@ export function graphql(
  */
 type GraphQLResult = {
   data?: ?Object;
-  errors?: Array<GraphQLFormattedError>;
+  errors?: Array<GraphQLError>;
 }
