@@ -132,7 +132,12 @@ function coerceValue(type: GraphQLInputType, value: any): any {
     return Object.keys(fields).reduce((obj, fieldName) => {
       var field = fields[fieldName];
       var fieldValue = coerceValue(field.type, value[fieldName]);
-      obj[fieldName] = fieldValue === null ? field.defaultValue : fieldValue;
+      if (fieldValue === null && field.defaultValue !== undefined) {
+        fieldValue = field.defaultValue;
+      }
+      if (fieldValue !== null) {
+        obj[fieldName] = fieldValue;
+      }
       return obj;
     }, {});
   }

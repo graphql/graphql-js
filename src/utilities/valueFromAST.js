@@ -95,7 +95,12 @@ export function valueFromAST(
       var fieldAST = fieldASTs[fieldName];
       var fieldValue =
         valueFromAST(fieldAST && fieldAST.value, field.type, variables);
-      obj[fieldName] = fieldValue === null ? field.defaultValue : fieldValue;
+      if (fieldValue === null && field.defaultValue !== undefined) {
+        fieldValue = field.defaultValue;
+      }
+      if (fieldValue !== null) {
+        obj[fieldName] = fieldValue;
+      }
       return obj;
     }, {});
   }
