@@ -346,4 +346,47 @@ describe('Execute: Union and intersection types', () => {
       }
     });
   });
+
+  it('gets execution info in resolver', async () => {
+    var encounteredSchema;
+    var encounteredRootValue;
+
+    var NamedType2 = new GraphQLInterfaceType({
+      name: 'Named',
+      fields: {
+        name: { type: GraphQLString }
+      },
+      resolveType(obj, { schema: infoSchema, rootValue: infoRootValue }) {
+        encounteredSchema = infoSchema;
+        encounteredRootValue = infoRootValue;
+        return PersonType2;
+      }
+    });
+
+    var PersonType2 = new GraphQLObjectType({
+      name: 'Person',
+      interfaces: [ NamedType2 ],
+      fields: {
+        name: { type: GraphQLString },
+        friends: { type: new GraphQLList(NamedType2) },
+      },
+    });
+
+    var schema2 = new GraphQLSchema({
+      query: PersonType2
+    });
+
+    var john2 = new Person('John', [], [ liz ]);
+
+    var ast = parse(`{ name, friends { name } }`);
+
+    expect(
+      await execute(schema2, ast, john2)
+    ).to.deep.equal({
+      data: { name: 'John', friends: [ { name: 'Liz' } ] }
+    });
+
+    expect(encounteredSchema).to.equal(schema2);
+    expect(encounteredRootValue).to.equal(john2);
+  });
 });

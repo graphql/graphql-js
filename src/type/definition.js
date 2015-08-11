@@ -358,10 +358,10 @@ type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
 export type GraphQLFieldResolveFn = (
   source?: any,
   args?: {[argName: string]: any},
-  info?: GraphQLFieldExeInfo
+  info?: GraphQLResolveInfo
 ) => any
 
-export type GraphQLFieldExeInfo = {
+export type GraphQLResolveInfo = {
   fieldName: string,
   fieldASTs: Array<Field>,
   returnType: GraphQLOutputType,
@@ -472,9 +472,9 @@ export class GraphQLInterfaceType {
     return possibleTypeNames[type.name] === true;
   }
 
-  resolveType(value: any): ?GraphQLObjectType {
+  resolveType(value: any, info: GraphQLResolveInfo): ?GraphQLObjectType {
     var resolver = this._typeConfig.resolveType;
-    return resolver ? resolver(value) : getTypeOf(value, this);
+    return resolver ? resolver(value, info) : getTypeOf(value, this);
   }
 
   toString(): string {
@@ -513,7 +513,7 @@ export type GraphQLInterfaceTypeConfig = {
    * the default implemenation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: (value: any) => ?GraphQLObjectType,
+  resolveType?: (value: any, info?: GraphQLResolveInfo) => ?GraphQLObjectType,
   description?: ?string
 };
 
@@ -587,9 +587,9 @@ export class GraphQLUnionType {
     return possibleTypeNames[type.name] === true;
   }
 
-  resolveType(value: any): ?GraphQLObjectType {
+  resolveType(value: any, info: GraphQLResolveInfo): ?GraphQLObjectType {
     var resolver = this._typeConfig.resolveType;
-    return resolver ? resolver(value) : getTypeOf(value, this);
+    return resolver ? resolver(value, info) : getTypeOf(value, this);
   }
 
   toString(): string {
@@ -605,7 +605,7 @@ export type GraphQLUnionTypeConfig = {
    * the default implemenation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: (value: any) => ?GraphQLObjectType;
+  resolveType?: (value: any, info?: GraphQLResolveInfo) => ?GraphQLObjectType;
   description?: ?string;
 };
 

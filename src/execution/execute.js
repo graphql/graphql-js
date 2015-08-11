@@ -24,9 +24,10 @@ import {
   isAbstractType
 } from '../type/definition';
 import type {
-  GraphQLFieldDefinition,
   GraphQLType,
-  GraphQLAbstractType
+  GraphQLAbstractType,
+  GraphQLFieldDefinition,
+  GraphQLResolveInfo,
 } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 import {
@@ -482,7 +483,7 @@ function resolveField(
 
   // The resolve function's optional third argument is a collection of
   // information about the current execution state.
-  var info = {
+  var info: GraphQLResolveInfo = {
     fieldName,
     fieldASTs,
     returnType,
@@ -509,25 +510,38 @@ function resolveField(
     return null;
   }
 
-  return completeValueCatchingError(exeContext, returnType, fieldASTs, result);
+  return completeValueCatchingError(
+    exeContext,
+    returnType,
+    fieldASTs,
+    info,
+    result
+  );
 }
 
 function completeValueCatchingError(
   exeContext: ExecutionContext,
-  fieldType: GraphQLType,
+  returnType: GraphQLType,
   fieldASTs: Array<Field>,
+  info: GraphQLResolveInfo,
   result: any
 ): any {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
-  if (fieldType instanceof GraphQLNonNull) {
-    return completeValue(exeContext, fieldType, fieldASTs, result);
+  if (returnType instanceof GraphQLNonNull) {
+    return completeValue(exeContext, returnType, fieldASTs, info, result);
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
   try {
-    var completed = completeValue(exeContext, fieldType, fieldASTs, result);
+    var completed = completeValue(
+      exeContext,
+      returnType,
+      fieldASTs,
+      info,
+      result
+    );
     if (isThenable(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
@@ -563,26 +577,34 @@ function completeValueCatchingError(
  */
 function completeValue(
   exeContext: ExecutionContext,
-  fieldType: GraphQLType,
+  returnType: GraphQLType,
   fieldASTs: Array<Field>,
+  info: GraphQLResolveInfo,
   result: any
 ): any {
   // If result is a Promise, resolve it, if the Promise is rejected, construct
   // a GraphQLError with proper locations.
   if (isThenable(result)) {
     return result.then(
-      resolved => completeValue(exeContext, fieldType, fieldASTs, resolved),
+      resolved => completeValue(
+        exeContext,
+        returnType,
+        fieldASTs,
+        info,
+        resolved
+      ),
       error => Promise.reject(locatedError(error, fieldASTs))
     );
   }
 
   // If field type is NonNull, complete for inner type, and throw field error
   // if result is null.
-  if (fieldType instanceof GraphQLNonNull) {
+  if (returnType instanceof GraphQLNonNull) {
     var completed = completeValue(
       exeContext,
-      fieldType.ofType,
+      returnType.ofType,
       fieldASTs,
+      info,
       result
     );
     if (completed === null) {
@@ -600,7 +622,7 @@ function completeValue(
   }
 
   // If field type is List, complete each item in the list with the inner type
-  if (fieldType instanceof GraphQLList) {
+  if (returnType instanceof GraphQLList) {
     invariant(
       Array.isArray(result),
       'User Error: expected iterable, but did not find one.'
@@ -608,11 +630,11 @@ function completeValue(
 
     // This is specified as a simple map, however we're optimizing the path
     // where the list contains no Promises by avoiding creating another Promise.
-    var itemType = fieldType.ofType;
+    var itemType = returnType.ofType;
     var containsPromise = false;
     var completedResults = result.map(item => {
       var completedItem =
-        completeValueCatchingError(exeContext, itemType, fieldASTs, item);
+        completeValueCatchingError(exeContext, itemType, fieldASTs, info, item);
       if (!containsPromise && isThenable(completedItem)) {
         containsPromise = true;
       }
@@ -624,20 +646,19 @@ function completeValue(
 
   // If field type is Scalar or Enum, serialize to a valid value, returning
   // null if serialization is not possible.
-  if (fieldType instanceof GraphQLScalarType ||
-      fieldType instanceof GraphQLEnumType) {
-    invariant(fieldType.serialize, 'Missing serialize method on type');
-    var serializedResult = fieldType.serialize(result);
+  if (returnType instanceof GraphQLScalarType ||
+      returnType instanceof GraphQLEnumType) {
+    invariant(returnType.serialize, 'Missing serialize method on type');
+    var serializedResult = returnType.serialize(result);
     return isNullish(serializedResult) ? null : serializedResult;
   }
 
   // Field type must be Object, Interface or Union and expect sub-selections.
-
   var objectType: ?GraphQLObjectType =
-    fieldType instanceof GraphQLObjectType ? fieldType :
-    isAbstractType(fieldType) ?
-      ((fieldType: any): GraphQLAbstractType).resolveType(result) :
-    null;
+    returnType instanceof GraphQLObjectType ? returnType :
+    isAbstractType(returnType) ?
+      ((returnType: any): GraphQLAbstractType).resolveType(result, info) :
+      null;
 
   if (!objectType) {
     return null;
