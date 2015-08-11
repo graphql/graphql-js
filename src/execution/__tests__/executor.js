@@ -16,6 +16,7 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLList,
+  GraphQLBoolean,
   GraphQLInt,
   GraphQLString,
 } from '../../type';
@@ -560,4 +561,35 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     });
   });
+
+  it('does not include arguments that were not set', async () => {
+    var schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Type',
+        fields: {
+          field: {
+            type: GraphQLString,
+            resolve: (data, args) => args && JSON.stringify(args),
+            args: {
+              a: { type: GraphQLBoolean },
+              b: { type: GraphQLBoolean },
+              c: { type: GraphQLBoolean },
+              d: { type: GraphQLInt },
+              e: { type: GraphQLInt },
+            },
+          }
+        }
+      })
+    });
+
+    var query = parse('{ field(a: true, c: false, e: 0) }');
+    var result = await execute(schema, query);
+
+    expect(result).to.deep.equal({
+      data: {
+        field: '{"a":true,"c":false,"e":0}'
+      }
+    });
+  });
+
 });

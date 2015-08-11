@@ -56,15 +56,20 @@ export function getArgumentValues(
   argASTs: ?Array<Argument>,
   variables: { [key: string]: any }
 ): { [key: string]: any } {
-  var argASTMap = argASTs ? keyMap(argASTs, arg => arg.name.value) : {};
+  if (!argASTs) {
+    return {};
+  }
+  var argASTMap = keyMap(argASTs, arg => arg.name.value);
   return argDefs.reduce((result, argDef) => {
     var name = argDef.name;
     var valueAST = argASTMap[name] ? argASTMap[name].value : null;
     var value = valueFromAST(valueAST, argDef.type, variables);
-    if (isNullish(value) && !isNullish(argDef.defaultValue)) {
+    if (isNullish(value)) {
       value = argDef.defaultValue;
     }
-    result[name] = value;
+    if (!isNullish(value)) {
+      result[name] = value;
+    }
     return result;
   }, {});
 }
@@ -132,10 +137,10 @@ function coerceValue(type: GraphQLInputType, value: any): any {
     return Object.keys(fields).reduce((obj, fieldName) => {
       var field = fields[fieldName];
       var fieldValue = coerceValue(field.type, value[fieldName]);
-      if (fieldValue === null && field.defaultValue !== undefined) {
+      if (isNullish(fieldValue)) {
         fieldValue = field.defaultValue;
       }
-      if (fieldValue !== null) {
+      if (!isNullish(fieldValue)) {
         obj[fieldName] = fieldValue;
       }
       return obj;
