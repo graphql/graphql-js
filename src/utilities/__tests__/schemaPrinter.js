@@ -437,7 +437,7 @@ type Root {
   it('Custom Scalar', () => {
     var OddType = new GraphQLScalarType({
       name: 'Odd',
-      coerce(value) {
+      serialize(value) {
         return value % 2 === 1 ? value : null;
       }
     });

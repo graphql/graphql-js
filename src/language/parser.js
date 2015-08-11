@@ -172,29 +172,29 @@ function parseOperationDefinition(parser): OperationDefinition {
     kind: OPERATION_DEFINITION,
     operation,
     name: parseName(parser),
-    variableDefinitions: parseVariableDefinitions(parser),
+    variableDefinitions: parseValueDefinitions(parser),
     directives: parseDirectives(parser),
     selectionSet: parseSelectionSet(parser),
     loc: loc(parser, start)
   };
 }
 
-function parseVariableDefinitions(parser): Array<VariableDefinition> {
+function parseValueDefinitions(parser): Array<VariableDefinition> {
   return peek(parser, TokenKind.PAREN_L) ?
     many(
       parser,
       TokenKind.PAREN_L,
-      parseVariableDefinition,
+      parseValueDefinition,
       TokenKind.PAREN_R
     ) :
     [];
 }
 
-function parseVariableDefinition(parser): VariableDefinition {
+function parseValueDefinition(parser): VariableDefinition {
   var start = parser.token.start;
   return {
     kind: VARIABLE_DEFINITION,
-    variable: parseVariable(parser),
+    variable: parseValue(parser),
     type: (expect(parser, TokenKind.COLON), parseType(parser)),
     defaultValue:
       skip(parser, TokenKind.EQUALS) ? parseValueLiteral(parser, true) : null,
@@ -202,7 +202,7 @@ function parseVariableDefinition(parser): VariableDefinition {
   };
 }
 
-function parseVariable(parser): Variable {
+function parseValue(parser): Variable {
   var start = parser.token.start;
   expect(parser, TokenKind.DOLLAR);
   return {
@@ -327,7 +327,7 @@ export function parseConstValue(parser): Value {
   return parseValueLiteral(parser, true);
 }
 
-function parseVariableValue(parser): Value {
+function parseValueValue(parser): Value {
   return parseValueLiteral(parser, false);
 }
 
@@ -378,7 +378,7 @@ function parseValueLiteral(parser, isConst: boolean): Value {
       break;
     case TokenKind.DOLLAR:
       if (!isConst) {
-        return parseVariable(parser);
+        return parseValue(parser);
       }
       break;
   }
@@ -387,7 +387,7 @@ function parseValueLiteral(parser, isConst: boolean): Value {
 
 function parseList(parser, isConst: boolean): ListValue {
   var start = parser.token.start;
-  var item = isConst ? parseConstValue : parseVariableValue;
+  var item = isConst ? parseConstValue : parseValueValue;
   return {
     kind: LIST,
     values: any(parser, TokenKind.BRACKET_L, item, TokenKind.BRACKET_R),

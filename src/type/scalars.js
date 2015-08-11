@@ -17,16 +17,20 @@ import { Kind } from '../language';
 var MAX_INT = 9007199254740991;
 var MIN_INT = -9007199254740991;
 
+function coerceInt(value) {
+  var num = Number(value);
+  if (num === num && num <= MAX_INT && num >= MIN_INT) {
+    return (num < 0 ? Math.ceil : Math.floor)(num);
+  }
+  return null;
+
+}
+
 export var GraphQLInt = new GraphQLScalarType({
   name: 'Int',
-  coerce(value) {
-    var num = Number(value);
-    if (num === num && num <= MAX_INT && num >= MIN_INT) {
-      return (num < 0 ? Math.ceil : Math.floor)(num);
-    }
-    return null;
-  },
-  coerceLiteral(ast) {
+  serialize: coerceInt,
+  parseValue: coerceInt,
+  parseLiteral(ast) {
     if (ast.kind === Kind.INT) {
       var num = parseInt(ast.value, 10);
       if (num <= MAX_INT && num >= MIN_INT) {
@@ -37,13 +41,16 @@ export var GraphQLInt = new GraphQLScalarType({
   }
 });
 
+function coerceFloat(value) {
+  var num = Number(value);
+  return num === num ? num : null;
+}
+
 export var GraphQLFloat = new GraphQLScalarType({
   name: 'Float',
-  coerce(value) {
-    var num = Number(value);
-    return num === num ? num : null;
-  },
-  coerceLiteral(ast) {
+  serialize: coerceFloat,
+  parseValue: coerceFloat,
+  parseLiteral(ast) {
     return ast.kind === Kind.FLOAT || ast.kind === Kind.INT ?
       parseFloat(ast.value) :
       null;
@@ -52,24 +59,27 @@ export var GraphQLFloat = new GraphQLScalarType({
 
 export var GraphQLString = new GraphQLScalarType({
   name: 'String',
-  coerce: value => String(value),
-  coerceLiteral(ast) {
+  serialize: String,
+  parseValue: String,
+  parseLiteral(ast) {
     return ast.kind === Kind.STRING ? ast.value : null;
   }
 });
 
 export var GraphQLBoolean = new GraphQLScalarType({
   name: 'Boolean',
-  coerce: value => Boolean(value),
-  coerceLiteral(ast) {
+  serialize: Boolean,
+  parseValue: Boolean,
+  parseLiteral(ast) {
     return ast.kind === Kind.BOOLEAN ? ast.value : null;
   }
 });
 
 export var GraphQLID = new GraphQLScalarType({
   name: 'ID',
-  coerce: value => String(value),
-  coerceLiteral(ast) {
+  serialize: String,
+  parseValue: String,
+  parseLiteral(ast) {
     return ast.kind === Kind.STRING || ast.kind === Kind.INT ?
       ast.value :
       null;

@@ -19,125 +19,125 @@ import { expect } from 'chai';
 
 
 describe('Type System: Scalar coercion', () => {
-  it('coerces output int', () => {
+  it('serializes output int', () => {
     expect(
-      GraphQLInt.coerce(1)
+      GraphQLInt.serialize(1)
     ).to.equal(1);
     expect(
-      GraphQLInt.coerce(0)
+      GraphQLInt.serialize(0)
     ).to.equal(0);
     expect(
-      GraphQLInt.coerce(-1)
+      GraphQLInt.serialize(-1)
     ).to.equal(-1);
     expect(
-      GraphQLInt.coerce(0.1)
+      GraphQLInt.serialize(0.1)
     ).to.equal(0);
     expect(
-      GraphQLInt.coerce(1.1)
+      GraphQLInt.serialize(1.1)
     ).to.equal(1);
     expect(
-      GraphQLInt.coerce(-1.1)
+      GraphQLInt.serialize(-1.1)
     ).to.equal(-1);
     expect(
-      GraphQLInt.coerce(1e5)
+      GraphQLInt.serialize(1e5)
     ).to.equal(100000);
     // Bigger than 2^32, but still representable as an Int
     expect(
-      GraphQLInt.coerce(9876504321)
+      GraphQLInt.serialize(9876504321)
     ).to.equal(9876504321);
     expect(
-      GraphQLInt.coerce(-9876504321)
+      GraphQLInt.serialize(-9876504321)
     ).to.equal(-9876504321);
     // Too big to represent as an Int
     expect(
-      GraphQLInt.coerce(1e100)
+      GraphQLInt.serialize(1e100)
     ).to.equal(null);
     expect(
-      GraphQLInt.coerce(-1e100)
+      GraphQLInt.serialize(-1e100)
     ).to.equal(null);
     expect(
-      GraphQLInt.coerce('-1.1')
+      GraphQLInt.serialize('-1.1')
     ).to.equal(-1);
     expect(
-      GraphQLInt.coerce('one')
+      GraphQLInt.serialize('one')
     ).to.equal(null);
     expect(
-      GraphQLInt.coerce(false)
+      GraphQLInt.serialize(false)
     ).to.equal(0);
     expect(
-      GraphQLInt.coerce(true)
+      GraphQLInt.serialize(true)
     ).to.equal(1);
   });
 
-  it('coerces output float', () => {
+  it('serializes output float', () => {
     expect(
-      GraphQLFloat.coerce(1)
+      GraphQLFloat.serialize(1)
     ).to.equal(1.0);
     expect(
-      GraphQLFloat.coerce(0)
+      GraphQLFloat.serialize(0)
     ).to.equal(0.0);
     expect(
-      GraphQLFloat.coerce(-1)
+      GraphQLFloat.serialize(-1)
     ).to.equal(-1.0);
     expect(
-      GraphQLFloat.coerce(0.1)
+      GraphQLFloat.serialize(0.1)
     ).to.equal(0.1);
     expect(
-      GraphQLFloat.coerce(1.1)
+      GraphQLFloat.serialize(1.1)
     ).to.equal(1.1);
     expect(
-      GraphQLFloat.coerce(-1.1)
+      GraphQLFloat.serialize(-1.1)
     ).to.equal(-1.1);
     expect(
-      GraphQLFloat.coerce('-1.1')
+      GraphQLFloat.serialize('-1.1')
     ).to.equal(-1.1);
     expect(
-      GraphQLFloat.coerce('one')
+      GraphQLFloat.serialize('one')
     ).to.equal(null);
     expect(
-      GraphQLFloat.coerce(false)
+      GraphQLFloat.serialize(false)
     ).to.equal(0.0);
     expect(
-      GraphQLFloat.coerce(true)
+      GraphQLFloat.serialize(true)
     ).to.equal(1.0);
   });
 
-  it('coerces output strings', () => {
+  it('serializes output strings', () => {
     expect(
-      GraphQLString.coerce('string')
+      GraphQLString.serialize('string')
     ).to.equal('string');
     expect(
-      GraphQLString.coerce(1)
+      GraphQLString.serialize(1)
     ).to.equal('1');
     expect(
-      GraphQLString.coerce(-1.1)
+      GraphQLString.serialize(-1.1)
     ).to.equal('-1.1');
     expect(
-      GraphQLString.coerce(true)
+      GraphQLString.serialize(true)
     ).to.equal('true');
     expect(
-      GraphQLString.coerce(false)
+      GraphQLString.serialize(false)
     ).to.equal('false');
   });
 
-  it('coerces output boolean', () => {
+  it('serializes output boolean', () => {
     expect(
-      GraphQLBoolean.coerce('string')
+      GraphQLBoolean.serialize('string')
     ).to.equal(true);
     expect(
-      GraphQLBoolean.coerce('')
+      GraphQLBoolean.serialize('')
     ).to.equal(false);
     expect(
-      GraphQLBoolean.coerce(1)
+      GraphQLBoolean.serialize(1)
     ).to.equal(true);
     expect(
-      GraphQLBoolean.coerce(0)
+      GraphQLBoolean.serialize(0)
     ).to.equal(false);
     expect(
-      GraphQLBoolean.coerce(true)
+      GraphQLBoolean.serialize(true)
     ).to.equal(true);
     expect(
-      GraphQLBoolean.coerce(false)
+      GraphQLBoolean.serialize(false)
     ).to.equal(false);
   });
 });
