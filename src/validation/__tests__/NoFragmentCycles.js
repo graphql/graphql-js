@@ -86,7 +86,7 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragA on Dog { ...fragB }
       fragment fragB on Dog { ...fragA }
     `, [
-      { message: cycleErrorMessage('fragA', ['fragB']),
+      { message: cycleErrorMessage('fragA', [ 'fragB' ]),
         locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ] }
     ]);
   });
@@ -96,7 +96,7 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragB on Dog { ...fragA }
       fragment fragA on Dog { ...fragB }
     `, [
-      { message: cycleErrorMessage('fragB', ['fragA']),
+      { message: cycleErrorMessage('fragB', [ 'fragA' ]),
         locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ] }
     ]);
   });
@@ -115,7 +115,7 @@ describe('Validate: No circular fragment spreads', () => {
         }
       }
     `, [
-      { message: cycleErrorMessage('fragA', ['fragB']),
+      { message: cycleErrorMessage('fragA', [ 'fragB' ]),
         locations: [ { line: 4, column: 11 }, { line: 9, column: 11 } ] }
     ]);
   });
@@ -130,20 +130,18 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragZ on Dog { ...fragO }
       fragment fragO on Dog { ...fragA, ...fragX }
     `, [
-      { message: cycleErrorMessage('fragA', ['fragB', 'fragC', 'fragO']),
-        locations:
-         [ { line: 2, column: 31 },
-           { line: 3, column: 31 },
-           { line: 4, column: 31 },
-           { line: 8, column: 31 } ] },
-      { message: cycleErrorMessage('fragX', ['fragY', 'fragZ', 'fragO']),
-        locations:
-         [
-           { line: 5, column: 31 },
-           { line: 6, column: 31 },
-           { line: 7, column: 31 },
-           { line: 8, column: 41 },
-        ] }
+      { message: cycleErrorMessage('fragA', [ 'fragB', 'fragC', 'fragO' ]),
+        locations: [
+          { line: 2, column: 31 },
+          { line: 3, column: 31 },
+          { line: 4, column: 31 },
+          { line: 8, column: 31 } ] },
+      { message: cycleErrorMessage('fragX', [ 'fragY', 'fragZ', 'fragO' ]),
+        locations: [
+          { line: 5, column: 31 },
+          { line: 6, column: 31 },
+          { line: 7, column: 31 },
+          { line: 8, column: 41 } ] }
     ]);
   });
 
@@ -153,9 +151,9 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragB on Dog { ...fragA }
       fragment fragC on Dog { ...fragA }
     `, [
-      { message: cycleErrorMessage('fragA', ['fragB']),
+      { message: cycleErrorMessage('fragA', [ 'fragB' ]),
         locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ] },
-      { message: cycleErrorMessage('fragA', ['fragC']),
+      { message: cycleErrorMessage('fragA', [ 'fragC' ]),
         locations: [ { line: 2, column: 41 }, { line: 4, column: 31 } ] }
     ]);
   });

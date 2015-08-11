@@ -18,7 +18,7 @@ import {
 function undefinedField(field, type, line, column) {
   return {
     message: undefinedFieldMessage(field, type),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 
@@ -80,7 +80,7 @@ describe('Validate: Fields on correct type', () => {
       fragment fieldNotDefined on Dog {
         meowVolume
       }`,
-      [undefinedField('meowVolume', 'Dog', 3, 9)]
+      [ undefinedField('meowVolume', 'Dog', 3, 9) ]
     );
   });
 
@@ -91,7 +91,7 @@ describe('Validate: Fields on correct type', () => {
           deeper_unknown_field
         }
       }`,
-      [undefinedField('unknown_field', 'Dog', 3, 9)]
+      [ undefinedField('unknown_field', 'Dog', 3, 9) ]
     );
   });
 
@@ -102,7 +102,7 @@ describe('Validate: Fields on correct type', () => {
           unknown_field
         }
       }`,
-      [undefinedField('unknown_field', 'Pet', 4, 11)]
+      [ undefinedField('unknown_field', 'Pet', 4, 11) ]
     );
   });
 
@@ -113,7 +113,7 @@ describe('Validate: Fields on correct type', () => {
           meowVolume
         }
       }`,
-      [undefinedField('meowVolume', 'Dog', 4, 11)]
+      [ undefinedField('meowVolume', 'Dog', 4, 11) ]
     );
   });
 
@@ -122,7 +122,7 @@ describe('Validate: Fields on correct type', () => {
       fragment aliasedFieldTargetNotDefined on Dog {
         volume : mooVolume
       }`,
-      [undefinedField('mooVolume', 'Dog', 3, 9)]
+      [ undefinedField('mooVolume', 'Dog', 3, 9) ]
     );
   });
 
@@ -131,7 +131,7 @@ describe('Validate: Fields on correct type', () => {
       fragment aliasedLyingFieldTargetNotDefined on Dog {
         barkVolume : kawVolume
       }`,
-      [undefinedField('kawVolume', 'Dog', 3, 9)]
+      [ undefinedField('kawVolume', 'Dog', 3, 9) ]
     );
   });
 
@@ -140,7 +140,7 @@ describe('Validate: Fields on correct type', () => {
       fragment notDefinedOnInterface on Pet {
         tailLength
       }`,
-      [undefinedField('tailLength', 'Pet', 3, 9)]
+      [ undefinedField('tailLength', 'Pet', 3, 9) ]
     );
   });
 
@@ -149,7 +149,7 @@ describe('Validate: Fields on correct type', () => {
       fragment definedOnImplementorsButNotInterface on Pet {
         nickname
       }`,
-      [undefinedField('nickname', 'Pet', 3, 9)]
+      [ undefinedField('nickname', 'Pet', 3, 9) ]
     );
   });
 
@@ -166,7 +166,7 @@ describe('Validate: Fields on correct type', () => {
       fragment directFieldSelectionOnUnion on CatOrDog {
         directField
       }`,
-      [undefinedField('directField', 'CatOrDog', 3, 9)]
+      [ undefinedField('directField', 'CatOrDog', 3, 9) ]
     );
   });
 
@@ -175,7 +175,7 @@ describe('Validate: Fields on correct type', () => {
       fragment definedOnImplementorsQueriedOnUnion on CatOrDog {
         name
       }`,
-      [undefinedField('name', 'CatOrDog', 3, 9)]
+      [ undefinedField('name', 'CatOrDog', 3, 9) ]
     );
   });
 

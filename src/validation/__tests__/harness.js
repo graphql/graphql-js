@@ -90,13 +90,13 @@ var Cat = new GraphQLObjectType({
     meowVolume: { type: GraphQLInt },
     furColor: { type: FurColor },
   }),
-  interfaces: [ Being, Pet],
+  interfaces: [ Being, Pet ],
 });
 
 var CatOrDog = new GraphQLUnionType({
   name: 'CatOrDog',
-  types: [Dog, Cat],
-  resolveType(/*value*/) {
+  types: [ Dog, Cat ],
+  resolveType(/* value */) {
     // not used for validation
   }
 });
@@ -133,16 +133,16 @@ var Alien = new GraphQLObjectType({
 
 var DogOrHuman = new GraphQLUnionType({
   name: 'DogOrHuman',
-  types: [Dog, Human],
-  resolveType(/*value*/) {
+  types: [ Dog, Human ],
+  resolveType(/* value */) {
     // not used for validation
   }
 });
 
 var HumanOrAlien = new GraphQLUnionType({
   name: 'HumanOrAlien',
-  types: [Human, Alien],
-  resolveType(/*value*/) {
+  types: [ Human, Alien ],
+  resolveType(/* value */) {
     // not used for validation
   }
 });
@@ -283,17 +283,17 @@ function expectInvalid(schema, rules, queryString, expectedErrors) {
 }
 
 export function expectPassesRule(rule, queryString) {
-  return expectValid(defaultSchema, [rule], queryString);
+  return expectValid(defaultSchema, [ rule ], queryString);
 }
 
 export function expectFailsRule(rule, queryString, errors) {
-  return expectInvalid(defaultSchema, [rule], queryString, errors);
+  return expectInvalid(defaultSchema, [ rule ], queryString, errors);
 }
 
 export function expectPassesRuleWithSchema(schema, rule, queryString, errors) {
-  return expectValid(schema, [rule], queryString, errors);
+  return expectValid(schema, [ rule ], queryString, errors);
 }
 
 export function expectFailsRuleWithSchema(schema, rule, queryString, errors) {
-  return expectInvalid(schema, [rule], queryString, errors);
+  return expectInvalid(schema, [ rule ], queryString, errors);
 }

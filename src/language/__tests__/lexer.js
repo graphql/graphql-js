@@ -29,7 +29,8 @@ describe('Lexer', () => {
     foo
 
 
-`)).to.deep.equal({
+`)
+    ).to.deep.equal({
       kind: TokenKind.NAME,
       start: 6,
       end: 9,
@@ -39,7 +40,8 @@ describe('Lexer', () => {
     expect(lexOne(`
     #comment
     foo#comment
-`)).to.deep.equal({
+`)
+    ).to.deep.equal({
       kind: TokenKind.NAME,
       start: 18,
       end: 21,
@@ -62,7 +64,8 @@ describe('Lexer', () => {
     ?
 
 
-`)).to.throw(
+`)
+    ).to.throw(
       'Syntax Error GraphQL (3:5) Unexpected character "?".\n' +
       '\n' +
       '2: \n' +

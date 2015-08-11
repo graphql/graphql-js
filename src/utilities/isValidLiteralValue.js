@@ -64,9 +64,8 @@ export function isValidLiteralValue(
       return (valueAST: ListValue).values.every(
         itemAST => isValidLiteralValue(itemType, itemAST)
       );
-    } else {
-      return isValidLiteralValue(itemType, valueAST);
     }
+    return isValidLiteralValue(itemType, valueAST);
   }
 
   // Input objects check each defined field and look for undefined fields.

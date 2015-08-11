@@ -73,10 +73,9 @@ function printType(type: GraphQLNamedType): string {
     return printUnion(type);
   } else if (type instanceof GraphQLEnumType) {
     return printEnum(type);
-  } else {
-    invariant(type instanceof GraphQLInputObjectType);
-    return printInputObject(type);
   }
+  invariant(type instanceof GraphQLInputObjectType);
+  return printInputObject(type);
 }
 
 function printScalar(type: GraphQLScalarType): string {

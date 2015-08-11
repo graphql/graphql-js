@@ -28,7 +28,7 @@ export function UniqueFragmentNames(): any {
       if (knownFragmentNames[fragmentName]) {
         return new GraphQLError(
           duplicateFragmentNameMessage(fragmentName),
-          [knownFragmentNames[fragmentName], node.name]
+          [ knownFragmentNames[fragmentName], node.name ]
         );
       }
       knownFragmentNames[fragmentName] = node.name;

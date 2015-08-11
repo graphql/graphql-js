@@ -52,12 +52,12 @@ export function NoUndefinedVariables(): any {
         if (withinFragment && operation && operation.name) {
           return new GraphQLError(
             undefinedVarByOpMessage(varName, operation.name.value),
-            [variable, operation]
+            [ variable, operation ]
           );
         }
         return new GraphQLError(
           undefinedVarMessage(varName),
-          [variable]
+          [ variable ]
         );
       }
     },

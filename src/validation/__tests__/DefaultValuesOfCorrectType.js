@@ -19,14 +19,14 @@ import {
 function defaultForNonNullArg(varName, typeName, guessTypeName, line, column) {
   return {
     message: defaultForNonNullArgMessage(varName, typeName, guessTypeName),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 
 function badValue(varName, typeName, val, line, column) {
   return {
     message: badValueForDefaultArgMessage(varName, typeName, val),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 

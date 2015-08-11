@@ -221,14 +221,14 @@ function getOperationRootType(
       if (!mutationType) {
         throw new GraphQLError(
           'Schema is not configured for mutations',
-          [operation]
+          [ operation ]
         );
       }
       return mutationType;
     default:
       throw new GraphQLError(
         'Can only execute queries and mutations',
-        [operation]
+        [ operation ]
       );
   }
 }
@@ -255,9 +255,8 @@ function executeFieldsSerially(
           results[responseName] = resolvedResult;
           return results;
         });
-      } else {
-        results[responseName] = result;
       }
+      results[responseName] = result;
       return results;
     }),
     Promise.resolve({})
@@ -398,7 +397,7 @@ function shouldIncludeNode(
       includeAST.arguments,
       exeContext.variables
     );
-    return !!includeIf;
+    return Boolean(includeIf);
   }
 
   return true;

@@ -45,6 +45,8 @@ export { isValidLiteralValue } from './isValidLiteralValue';
 // Note: a future version of flow may support `export type {} from ''`, but
 // until then, this is a viable workaround.
 
+/* eslint-disable no-redeclare */
+
 // IntrospectionQuery is the type of the result expected by requesting
 // GraphQL with `introspectionQuery`.
 import type {

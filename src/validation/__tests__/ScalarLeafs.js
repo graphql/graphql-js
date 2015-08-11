@@ -19,14 +19,14 @@ import {
 function noScalarSubselection(field, type, line, column) {
   return {
     message: noSubselectionAllowedMessage(field, type),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 
 function missingObjSubselection(field, type, line, column) {
   return {
     message: requiredSubselectionMessage(field, type),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 
@@ -45,7 +45,7 @@ describe('Validate: Scalar leafs', () => {
       query directQueryOnObjectWithoutSubFields {
         human
       }
-    `, [missingObjSubselection('human', 'Human', 3, 9)]);
+    `, [ missingObjSubselection('human', 'Human', 3, 9) ]);
   });
 
   it('interface type missing selection', () => {
@@ -53,7 +53,7 @@ describe('Validate: Scalar leafs', () => {
       {
         human { pets }
       }
-    `, [missingObjSubselection('pets', '[Pet]', 3, 17)]);
+    `, [ missingObjSubselection('pets', '[Pet]', 3, 17) ]);
   });
 
   it('valid scalar selection with args', () => {
@@ -70,7 +70,7 @@ describe('Validate: Scalar leafs', () => {
         barks { sinceWhen }
       }
     `,
-    [noScalarSubselection('barks', 'Boolean', 3, 15)]);
+    [ noScalarSubselection('barks', 'Boolean', 3, 15) ] );
   });
 
   it('scalar selection not allowed on Enum', () => {
@@ -79,7 +79,7 @@ describe('Validate: Scalar leafs', () => {
         furColor { inHexdec }
       }
     `,
-    [noScalarSubselection('furColor', 'FurColor', 3, 18)]);
+    [ noScalarSubselection('furColor', 'FurColor', 3, 18) ] );
   });
 
   it('scalar selection not allowed with args', () => {
@@ -88,7 +88,7 @@ describe('Validate: Scalar leafs', () => {
         doesKnowCommand(dogCommand: SIT) { sinceWhen }
       }
     `,
-    [noScalarSubselection('doesKnowCommand', 'Boolean', 3, 42)]);
+    [ noScalarSubselection('doesKnowCommand', 'Boolean', 3, 42) ] );
   });
 
   it('Scalar selection not allowed with directives', () => {
@@ -97,7 +97,7 @@ describe('Validate: Scalar leafs', () => {
         name @include(if: true) { isAlsoHumanName }
       }
     `,
-    [noScalarSubselection('name', 'String', 3, 33)]);
+    [ noScalarSubselection('name', 'String', 3, 33) ] );
   });
 
   it('Scalar selection not allowed with directives and args', () => {
@@ -106,7 +106,7 @@ describe('Validate: Scalar leafs', () => {
         doesKnowCommand(dogCommand: SIT) @include(if: true) { sinceWhen }
       }
     `,
-    [noScalarSubselection('doesKnowCommand', 'Boolean', 3, 61)]);
+    [ noScalarSubselection('doesKnowCommand', 'Boolean', 3, 61) ] );
   });
 
 });

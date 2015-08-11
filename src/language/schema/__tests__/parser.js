@@ -13,10 +13,10 @@ import { parseSchemaIntoAST } from '../parser';
 
 function createLocFn(body) {
   return (start, end) => ({
-    start: start,
-    end: end,
+    start,
+    end,
     source: {
-      body: body,
+      body,
       name: 'GraphQL',
     },
   });
@@ -30,7 +30,7 @@ function typeNode(name, loc) {
   return {
     kind: 'NamedType',
     name: nameNode(name, loc),
-    loc: loc,
+    loc,
   };
 }
 
@@ -38,7 +38,7 @@ function nameNode(name, loc) {
   return {
     kind: 'Name',
     value: name,
-    loc: loc,
+    loc,
   };
 }
 
@@ -49,10 +49,10 @@ function fieldNode(name, type, loc) {
 function fieldNodeWithArgs(name, type, args, loc) {
   return {
     kind: 'FieldDefinition',
-    name: name,
+    name,
     arguments: args,
-    type: type,
-    loc: loc,
+    type,
+    loc,
   };
 }
 
@@ -60,17 +60,17 @@ function enumValueNode(name, loc) {
   return {
     kind: 'EnumValueDefinition',
     name: nameNode(name, loc),
-    loc: loc,
+    loc,
   };
 }
 
 function inputValueNode(name, type, defaultValue, loc) {
   return {
     kind: 'InputValueDefinition',
-    name: name,
-    type: type,
-    defaultValue: defaultValue,
-    loc: loc,
+    name,
+    type,
+    defaultValue,
+    loc,
   };
 }
 
@@ -148,7 +148,7 @@ type Hello {
         {
           kind: 'TypeDefinition',
           name: nameNode('Hello', loc(5, 10)),
-          interfaces: [typeNode('World', loc(22, 27))],
+          interfaces: [ typeNode('World', loc(22, 27)) ],
           fields: [],
           loc: loc(0, 31),
         }
@@ -191,7 +191,7 @@ type Hello {
         {
           kind: 'EnumDefinition',
           name: nameNode('Hello', loc(5, 10)),
-          values: [enumValueNode('WORLD', loc(13, 18))],
+          values: [ enumValueNode('WORLD', loc(13, 18)) ],
           loc: loc(0, 20),
         }
       ],
@@ -422,7 +422,7 @@ type Hello {
         {
           kind: 'UnionDefinition',
           name: nameNode('Hello', loc(6, 11)),
-          types: [typeNode('World', loc(14, 19))],
+          types: [ typeNode('World', loc(14, 19)) ],
           loc: loc(0, 19),
         }
       ],

@@ -42,8 +42,8 @@ export default function NoInputTypesAsOutputFields(
   }
 
   Object.keys(typeMap)
-    .map((typeName) => [typeName, typeMap[typeName]])
-    .forEach(([typeName, type]) => {
+    .map((typeName) => [ typeName, typeMap[typeName] ])
+    .forEach(([ typeName, type ]) => {
       if (!(type instanceof GraphQLObjectType) &&
           !(type instanceof GraphQLInterfaceType)) {
         return;

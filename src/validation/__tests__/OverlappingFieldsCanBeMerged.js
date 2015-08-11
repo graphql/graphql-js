@@ -254,7 +254,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     `, [
       { message: fieldsConflictMessage(
-          'field', [['x', 'a and b are different fields']]
+          'field', [ [ 'x', 'a and b are different fields' ] ]
         ),
         locations: [
           { line: 3, column: 9 },
@@ -279,8 +279,8 @@ describe('Validate: Overlapping fields can be merged', () => {
     `, [
       { message: fieldsConflictMessage(
           'field', [
-            ['x', 'a and b are different fields'],
-            ['y', 'c and d are different fields']
+            [ 'x', 'a and b are different fields' ],
+            [ 'y', 'c and d are different fields' ]
           ]
         ),
         locations: [
@@ -309,7 +309,8 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     `, [
       { message: fieldsConflictMessage(
-          'field', [['deepField', [['x', 'a and b are different fields']]]]
+          'field',
+          [ [ 'deepField', [ [ 'x', 'a and b are different fields' ] ] ] ]
         ),
         locations: [
           { line: 3, column: 9 },
@@ -340,7 +341,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     `, [
       { message: fieldsConflictMessage(
-          'deepField', [['x', 'a and b are different fields']]
+          'deepField', [ [ 'x', 'a and b are different fields' ] ]
         ),
         locations: [
           { line: 4, column: 11 },
@@ -475,7 +476,8 @@ describe('Validate: Overlapping fields can be merged', () => {
         }
       `, [
         { message: fieldsConflictMessage(
-            'edges', [['node', [['id', 'id and name are different fields']]]]
+            'edges',
+            [ [ 'node', [ [ 'id', 'id and name are different fields' ] ] ] ]
           ),
           locations: [
             { line: 14, column: 11 }, { line: 5, column: 13 },

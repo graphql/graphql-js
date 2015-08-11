@@ -27,8 +27,8 @@ export function syntaxError(
     description + '\n\n' + highlightSourceAtLocation(source, location)
   );
   error.nodes = null;
-  error.positions = [position];
-  error.locations = [location];
+  error.positions = [ position ];
+  error.locations = [ location ];
   error.source = source;
   return error;
 }

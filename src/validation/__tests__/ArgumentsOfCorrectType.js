@@ -18,7 +18,7 @@ import {
 function badValue(argName, typeName, value, line, column) {
   return {
     message: badValueMessage(argName, typeName, value),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 

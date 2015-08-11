@@ -68,7 +68,7 @@ describe('Execute: Handles execution with a complex schema', () => {
         article: {
           type: BlogArticle,
           args: { id: { type: GraphQLID } },
-          resolve: (_, {id}) => article(id)
+          resolve: (_, { id }) => article(id)
         },
         feed: {
           type: new GraphQLList(BlogArticle),
@@ -100,7 +100,7 @@ describe('Execute: Handles execution with a complex schema', () => {
         title: 'My Article ' + id,
         body: 'This is a post',
         hidden: 'This data is not exposed in the schema',
-        keywords: ['foo', 'bar', 1, true, null]
+        keywords: [ 'foo', 'bar', 1, true, null ]
       };
     }
 
@@ -199,7 +199,7 @@ describe('Execute: Handles execution with a complex schema', () => {
               isPublished: true,
               title: 'My Article 1',
               body: 'This is a post',
-              keywords: ['foo', 'bar', '1', 'true', null]
+              keywords: [ 'foo', 'bar', '1', 'true', null ]
             }
           }
         }

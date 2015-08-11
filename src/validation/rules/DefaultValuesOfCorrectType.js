@@ -48,13 +48,13 @@ export function DefaultValuesOfCorrectType(context: ValidationContext): any {
       if (type instanceof GraphQLNonNull && defaultValue) {
         return new GraphQLError(
           defaultForNonNullArgMessage(name, type, type.ofType),
-          [defaultValue]
+          [ defaultValue ]
         );
       }
       if (type && defaultValue && !isValidLiteralValue(type, defaultValue)) {
         return new GraphQLError(
           badValueForDefaultArgMessage(name, type, print(defaultValue)),
-          [defaultValue]
+          [ defaultValue ]
         );
       }
     }

@@ -31,7 +31,7 @@ export function LoneAnonymousOperation(): any {
     },
     OperationDefinition(node) {
       if (!node.name && operationCount > 1) {
-        return new GraphQLError(anonOperationNotAloneMessage(), [node]);
+        return new GraphQLError(anonOperationNotAloneMessage(), [ node ]);
       }
     }
   };

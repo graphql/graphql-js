@@ -77,9 +77,8 @@ export function valueFromAST(
       return (valueAST: ListValue).values.map(
         itemAST => valueFromAST(itemAST, itemType, variables)
       );
-    } else {
-      return [valueFromAST(valueAST, itemType, variables)];
     }
+    return [ valueFromAST(valueAST, itemType, variables) ];
   }
 
   if (type instanceof GraphQLInputObjectType) {

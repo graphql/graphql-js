@@ -51,7 +51,7 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
       if (fragType && parentType && !doTypesOverlap(fragType, parentType)) {
         return new GraphQLError(
           typeIncompatibleAnonSpreadMessage(parentType, fragType),
-          [node]
+          [ node ]
         );
       }
     },
@@ -62,7 +62,7 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
       if (fragType && parentType && !doTypesOverlap(fragType, parentType)) {
         return new GraphQLError(
           typeIncompatibleSpreadMessage(fragName, parentType, fragType),
-          [node]
+          [ node ]
         );
       }
     }

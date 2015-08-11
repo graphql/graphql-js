@@ -97,7 +97,7 @@ export class TypeInfo {
   }
 
   // Flow does not yet handle this case.
-  enter(node: any/*Node*/) {
+  enter(node: any/* Node */) {
     var schema = this._schema;
     var type;
     switch (node.kind) {

@@ -32,7 +32,7 @@ export function FieldsOnCorrectType(context: ValidationContext): any {
         if (!fieldDef) {
           return new GraphQLError(
             undefinedFieldMessage(node.name.value, type.name),
-            [node]
+            [ node ]
           );
         }
       }

@@ -172,25 +172,25 @@ export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
  *     });
  *
  */
-export class GraphQLScalarType/*<T>*/ {
+export class GraphQLScalarType/* <T> */ {
   name: string;
   description: ?string;
 
-  _scalarConfig: GraphQLScalarTypeConfig/*<T>*/;
+  _scalarConfig: GraphQLScalarTypeConfig/* <T> */;
 
-  constructor(config: GraphQLScalarTypeConfig/*<T>*/) {
+  constructor(config: GraphQLScalarTypeConfig/* <T> */) {
     invariant(config.name, 'Type must be named.');
     this.name = config.name;
     this.description = config.description;
     this._scalarConfig = config;
   }
 
-  coerce(value: any): ?any/*T*/ {
+  coerce(value: any): ?any/* T */ {
     var coercer = this._scalarConfig.coerce;
     return coercer(value);
   }
 
-  coerceLiteral(value: Value): ?any/*T*/ {
+  coerceLiteral(value: Value): ?any/* T */ {
     var coercer = this._scalarConfig.coerceLiteral;
     return coercer ? coercer(value) : null;
   }
@@ -200,11 +200,11 @@ export class GraphQLScalarType/*<T>*/ {
   }
 }
 
-export type GraphQLScalarTypeConfig/*<T>*/ = {
+export type GraphQLScalarTypeConfig/* <T> */ = {
   name: string;
   description?: ?string;
-  coerce: (value: any) => ?any/*T*/;
-  coerceLiteral: (value: Value) => ?any/*T*/;
+  coerce: (value: any) => ?any/* T */;
+  coerceLiteral: (value: Value) => ?any/* T */;
 }
 
 
@@ -619,31 +619,31 @@ export type GraphQLUnionTypeConfig = {
  * Note: If a value is not provided in a definition, the name of the enum value
  * will be used as it's internal value.
  */
-export class GraphQLEnumType/*<T>*/ {
+export class GraphQLEnumType/* <T> */ {
   name: string;
   description: ?string;
 
-  _enumConfig: GraphQLEnumTypeConfig/*<T>*/;
-  _values: GraphQLEnumValueDefinitionMap/*<T>*/;
-  _valueLookup: Map<any/*T*/, GraphQLEnumValueDefinition>;
+  _enumConfig: GraphQLEnumTypeConfig/* <T> */;
+  _values: GraphQLEnumValueDefinitionMap/* <T> */;
+  _valueLookup: Map<any/* T */, GraphQLEnumValueDefinition>;
   _nameLookup: Map<string, GraphQLEnumValueDefinition>;
 
-  constructor(config: GraphQLEnumTypeConfig/*<T>*/) {
+  constructor(config: GraphQLEnumTypeConfig/* <T> */) {
     this.name = config.name;
     this.description = config.description;
     this._enumConfig = config;
   }
 
-  getValues(): GraphQLEnumValueDefinitionMap/*<T>*/ {
+  getValues(): GraphQLEnumValueDefinitionMap/* <T> */ {
     return this._values || (this._values = this._defineValueMap());
   }
 
-  coerce(value: any/*T*/): ?string {
+  coerce(value: any/* T */): ?string {
     var enumValue = this._getValueLookup().get((value: any));
     return enumValue ? enumValue.name : null;
   }
 
-  coerceLiteral(value: Value): ?any/*T*/ {
+  coerceLiteral(value: Value): ?any/* T */ {
     if (value.kind === ENUM) {
       var enumValue = this._getNameLookup().get(value.value);
       if (enumValue) {
@@ -652,7 +652,7 @@ export class GraphQLEnumType/*<T>*/ {
     }
   }
 
-  _defineValueMap(): GraphQLEnumValueDefinitionMap/*<T>*/ {
+  _defineValueMap(): GraphQLEnumValueDefinitionMap/* <T> */ {
     var valueMap = (this._enumConfig.values: any);
     Object.keys(valueMap).forEach(valueName => {
       var value = valueMap[valueName];
@@ -664,7 +664,7 @@ export class GraphQLEnumType/*<T>*/ {
     return valueMap;
   }
 
-  _getValueLookup(): Map<any/*T*/, GraphQLEnumValueDefinition> {
+  _getValueLookup(): Map<any/* T */, GraphQLEnumValueDefinition> {
     if (!this._valueLookup) {
       var lookup = new Map();
       var values = this.getValues();
@@ -695,29 +695,29 @@ export class GraphQLEnumType/*<T>*/ {
   }
 }
 
-export type GraphQLEnumTypeConfig/*<T>*/ = {
+export type GraphQLEnumTypeConfig/* <T> */ = {
   name: string;
-  values: GraphQLEnumValueConfigMap/*<T>*/;
+  values: GraphQLEnumValueConfigMap/* <T> */;
   description?: ?string;
 }
 
-export type GraphQLEnumValueConfigMap/*<T>*/ = {
-  [valueName: string]: GraphQLEnumValueConfig/*<T>*/;
+export type GraphQLEnumValueConfigMap/* <T> */ = {
+  [valueName: string]: GraphQLEnumValueConfig/* <T> */;
 };
 
-export type GraphQLEnumValueConfig/*<T>*/ = {
-  value?: any/*T*/;
+export type GraphQLEnumValueConfig/* <T> */ = {
+  value?: any/* T */;
   deprecationReason?: string;
   description?: ?string;
 }
 
-export type GraphQLEnumValueDefinitionMap/*<T>*/ = {
-  [valueName: string]: GraphQLEnumValueDefinition/*<T>*/;
+export type GraphQLEnumValueDefinitionMap/* <T> */ = {
+  [valueName: string]: GraphQLEnumValueDefinition/* <T> */;
 };
 
-export type GraphQLEnumValueDefinition/*<T>*/ = {
+export type GraphQLEnumValueDefinition/* <T> */ = {
   name: string;
-  value?: any/*T*/;
+  value?: any/* T */;
   deprecationReason?: string;
   description?: ?string;
 }

@@ -84,7 +84,7 @@ function getVariableValue(
     throw new GraphQLError(
       `Variable $${definitionAST.variable.name.value} expected value of type ` +
       `${print(definitionAST.type)} which cannot be used as an input type.`,
-      [definitionAST]
+      [ definitionAST ]
     );
   }
   if (isValidJSValue(input, type)) {
@@ -99,7 +99,7 @@ function getVariableValue(
   throw new GraphQLError(
     `Variable $${definitionAST.variable.name.value} expected value of type ` +
     `${print(definitionAST.type)} but got: ${JSON.stringify(input)}.`,
-    [definitionAST]
+    [ definitionAST ]
   );
 }
 
@@ -123,9 +123,8 @@ function coerceValue(type: GraphQLInputType, value: any): any {
     // TODO: support iterable input
     if (Array.isArray(value)) {
       return value.map(item => coerceValue(itemType, item));
-    } else {
-      return [coerceValue(itemType, value)];
     }
+    return [ coerceValue(itemType, value) ];
   }
 
   if (type instanceof GraphQLInputObjectType) {

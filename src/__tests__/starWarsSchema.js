@@ -169,7 +169,7 @@ var humanType = new GraphQLObjectType({
       description: 'The home planet of the human, or null if unknown.',
     },
   }),
-  interfaces: [characterInterface]
+  interfaces: [ characterInterface ]
 });
 
 /**
@@ -211,7 +211,7 @@ var droidType = new GraphQLObjectType({
       description: 'The primary function of the droid.',
     },
   }),
-  interfaces: [characterInterface]
+  interfaces: [ characterInterface ]
 });
 
 /**
@@ -240,7 +240,7 @@ var queryType = new GraphQLObjectType({
           type: episodeEnum
         }
       },
-      resolve: (root, {episode}) => {
+      resolve: (root, { episode }) => {
         if (episode === 5) {
           // Luke is the hero of Episode V.
           return luke;
@@ -257,7 +257,7 @@ var queryType = new GraphQLObjectType({
           type: new GraphQLNonNull(GraphQLString)
         }
       },
-      resolve: (root, {id}) => starWarsData.Humans[id],
+      resolve: (root, { id }) => starWarsData.Humans[id],
     },
     droid: {
       type: droidType,
@@ -267,7 +267,7 @@ var queryType = new GraphQLObjectType({
           type: new GraphQLNonNull(GraphQLString)
         }
       },
-      resolve: (root, {id}) => starWarsData.Droids[id],
+      resolve: (root, { id }) => starWarsData.Droids[id],
     },
   })
 });

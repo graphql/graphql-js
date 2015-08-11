@@ -37,13 +37,13 @@ export function ScalarLeafs(context: ValidationContext): any {
           if (node.selectionSet) {
             return new GraphQLError(
               noSubselectionAllowedMessage(node.name.value, type),
-              [node.selectionSet]
+              [ node.selectionSet ]
             );
           }
         } else if (!node.selectionSet) {
           return new GraphQLError(
             requiredSubselectionMessage(node.name.value, type),
-            [node]
+            [ node ]
           );
         }
       }

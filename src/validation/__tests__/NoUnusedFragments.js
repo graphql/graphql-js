@@ -18,7 +18,7 @@ import {
 function unusedFrag(fragName, line, column) {
   return {
     message: unusedFragMessage(fragName),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 

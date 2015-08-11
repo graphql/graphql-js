@@ -60,8 +60,8 @@ function expectToAcceptSchemaWithNormalInputArg(rule) {
       }
     }
   });
-  var schema = new GraphQLSchema({query: SomeOutputType});
-  var validationErrors = validateSchema(schema, [rule]);
+  var schema = new GraphQLSchema({ query: SomeOutputType });
+  var validationErrors = validateSchema(schema, [ rule ]);
   expect(validationErrors).to.have.length(0);
 }
 
@@ -78,20 +78,20 @@ describe('Rule: NoInputTypesAsOutputFields', () => {
   }
 
   it('rejects a schema whose query or mutation type is an input type', () => {
-    let schema = new GraphQLSchema({query: SomeInputType});
+    let schema = new GraphQLSchema({ query: SomeInputType });
     let validationErrors = validateSchema(
       schema,
-      [NoInputTypesAsOutputFields]
+      [ NoInputTypesAsOutputFields ]
     );
     checkValidationResult(validationErrors, 'query');
 
-    schema = new GraphQLSchema({mutation: SomeInputType});
-    validationErrors = validateSchema(schema, [NoInputTypesAsOutputFields]);
+    schema = new GraphQLSchema({ mutation: SomeInputType });
+    validationErrors = validateSchema(schema, [ NoInputTypesAsOutputFields ]);
     checkValidationResult(validationErrors, 'mutation');
   });
 
   it('rejects a schema that uses an input type as a field', () => {
-    [GraphQLObjectType, GraphQLInterfaceType].forEach((kind) => {
+    [ GraphQLObjectType, GraphQLInterfaceType ].forEach((kind) => {
       var SomeOutputType = new kind({
         name: 'SomeOutputType',
         fields: {
@@ -99,10 +99,10 @@ describe('Rule: NoInputTypesAsOutputFields', () => {
         }
       });
 
-      var schema = new GraphQLSchema({query: SomeOutputType});
+      var schema = new GraphQLSchema({ query: SomeOutputType });
       var validationErrors = validateSchema(
         schema,
-        [NoInputTypesAsOutputFields]
+        [ NoInputTypesAsOutputFields ]
       );
       expect(validationErrors).to.have.length(1);
       expect(validationErrors[0].message).to.equal(
@@ -138,7 +138,7 @@ describe('Rule: NoOutputTypesAsInputArgs', () => {
       }
     });
 
-    return new GraphQLSchema({query: QueryType});
+    return new GraphQLSchema({ query: QueryType });
   }
 
   function expectRejectionBecauseFieldIsNotInputType(
@@ -154,13 +154,13 @@ describe('Rule: NoOutputTypesAsInputArgs', () => {
 
   function testAcceptingFieldArgOfType(fieldArgType) {
     var schema = schemaWithFieldArgOfType(fieldArgType);
-    var validationErrors = validateSchema(schema, [NoOutputTypesAsInputArgs]);
+    var validationErrors = validateSchema(schema, [ NoOutputTypesAsInputArgs ]);
     expect(validationErrors).to.have.length(0);
   }
 
   function testRejectingFieldArgOfType(fieldArgType) {
     var schema = schemaWithFieldArgOfType(fieldArgType);
-    var validationErrors = validateSchema(schema, [NoOutputTypesAsInputArgs]);
+    var validationErrors = validateSchema(schema, [ NoOutputTypesAsInputArgs ]);
     expectRejectionBecauseFieldIsNotInputType(
       validationErrors,
       fieldArgType
@@ -238,7 +238,7 @@ function testAcceptingAnInterfaceWithANormalSubtype(rule) {
   var SubType = new GraphQLObjectType({
     name: 'SubType',
     fields: {},
-    interfaces: [InterfaceType]
+    interfaces: [ InterfaceType ]
   });
 
   var schema = new GraphQLSchema({
@@ -247,7 +247,7 @@ function testAcceptingAnInterfaceWithANormalSubtype(rule) {
   });
   var validationErrors = validateSchema(
     schema,
-    [rule]
+    [ rule ]
   );
   expect(validationErrors).to.have.length(0);
 }
@@ -278,7 +278,7 @@ describe('Rule: InterfacePossibleTypesMustImplementTheInterface', () => {
     var schema = new GraphQLSchema({ query: InterfaceType });
     var validationErrors = validateSchema(
       schema,
-      [InterfacePossibleTypesMustImplementTheInterface]
+      [ InterfacePossibleTypesMustImplementTheInterface ]
     );
     expect(validationErrors).to.have.length(1);
     expect(validationErrors[0].message).to.equal(
@@ -309,7 +309,7 @@ describe('Rule: TypesInterfacesMustShowThemAsPossible', () => {
 
     SubType._typeConfig.interfaces.push(InterfaceType);
     // Sanity check the test.
-    expect(SubType.getInterfaces()).to.eql([InterfaceType]);
+    expect(SubType.getInterfaces()).to.eql([ InterfaceType ]);
     expect(InterfaceType.isPossibleType(SubType)).to.equal(false);
 
     var schema = new GraphQLSchema({
@@ -323,7 +323,7 @@ describe('Rule: TypesInterfacesMustShowThemAsPossible', () => {
 
     var validationErrors = validateSchema(
       schema,
-      [TypesInterfacesMustShowThemAsPossible]
+      [ TypesInterfacesMustShowThemAsPossible ]
     );
     expect(validationErrors).to.have.length(1);
     expect(validationErrors[0].message).to.equal(

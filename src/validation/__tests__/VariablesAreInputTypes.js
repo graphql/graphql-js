@@ -34,9 +34,9 @@ describe('Validate: Variables are input types', () => {
       { locations: [ { line: 2, column: 21 } ],
         message: nonInputTypeOnVarMessage('a', 'Dog') },
       { locations: [ { line: 2, column: 30 } ],
-        message: nonInputTypeOnVarMessage('b', '[[CatOrDog!]]!')},
+        message: nonInputTypeOnVarMessage('b', '[[CatOrDog!]]!') },
       { locations: [ { line: 2, column: 50 } ],
-        message: nonInputTypeOnVarMessage('c', 'Pet')},
+        message: nonInputTypeOnVarMessage('c', 'Pet') },
     ]);
   });
 

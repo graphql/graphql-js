@@ -39,8 +39,8 @@ describe('Execute: Handles basic execution tasks', () => {
     var deepData = {
       a() { return 'Already Been Done'; },
       b() { return 'Boring'; },
-      c() { return ['Contrived', undefined, 'Confusing']; },
-      deeper() { return [data, null, data]; }
+      c() { return [ 'Contrived', undefined, 'Confusing' ]; },
+      deeper() { return [ data, null, data ]; }
     };
 
     function promiseData() {
@@ -361,7 +361,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     var result = await execute(schema, ast, data);
 
-    expect(result).to.deep.equal({data: {a: 'b'}});
+    expect(result).to.deep.equal({ data: { a: 'b' } });
   });
 
   it('uses the only operation if no operation is provided', async () => {
@@ -379,7 +379,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     var result = await execute(schema, ast, data);
 
-    expect(result).to.deep.equal({data: {a: 'b'}});
+    expect(result).to.deep.equal({ data: { a: 'b' } });
   });
 
   it('throws if no operation is provided with multiple operations', () => {
@@ -421,7 +421,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     var queryResult = await execute(schema, ast, data, {}, 'Q');
 
-    expect(queryResult).to.deep.equal({data: {a: 'b'}});
+    expect(queryResult).to.deep.equal({ data: { a: 'b' } });
   });
 
   it('uses the mutation schema for mutations', async () => {
@@ -445,7 +445,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     var mutationResult = await execute(schema, ast, data, {}, 'M');
 
-    expect(mutationResult).to.deep.equal({data: {c: 'd'}});
+    expect(mutationResult).to.deep.equal({ data: { c: 'd' } });
   });
 
   it('correct field ordering despite execution order', async () => {
@@ -501,7 +501,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     });
 
-    expect(Object.keys(result.data)).to.deep.equal(['a', 'b', 'c', 'd', 'e']);
+    expect(Object.keys(result.data)).to.deep.equal([ 'a', 'b', 'c', 'd', 'e' ]);
   });
 
   it('Avoids recursion', async () => {
@@ -530,7 +530,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     var queryResult = await execute(schema, ast, data, {}, 'Q');
 
-    expect(queryResult).to.deep.equal({data: {a: 'b'}});
+    expect(queryResult).to.deep.equal({ data: { a: 'b' } });
   });
 
   it('does not include illegal fields in output', async () => {

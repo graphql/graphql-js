@@ -30,7 +30,7 @@ export function KnownFragmentNames(context: ValidationContext): any {
       if (!fragment) {
         return new GraphQLError(
           unknownFragmentMessage(fragmentName),
-          [node.name]
+          [ node.name ]
         );
       }
     }

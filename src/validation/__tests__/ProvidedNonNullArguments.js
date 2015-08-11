@@ -19,14 +19,14 @@ import {
 function missingFieldArg(fieldName, argName, typeName, line, column) {
   return {
     message: missingFieldArgMessage(fieldName, argName, typeName),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 
 function missingDirectiveArg(directiveName, argName, typeName, line, column) {
   return {
     message: missingDirectiveArgMessage(directiveName, argName, typeName),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 

@@ -18,7 +18,7 @@ import {
 function unusedVar(varName, line, column) {
   return {
     message: unusedVariableMessage(varName),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 

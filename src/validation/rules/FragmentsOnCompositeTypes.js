@@ -42,7 +42,7 @@ export function FragmentsOnCompositeTypes(context: ValidationContext): any {
       if (type && !isCompositeType(type)) {
         return new GraphQLError(
           inlineFragmentOnNonCompositeErrorMessage(print(node.typeCondition)),
-          [node.typeCondition]
+          [ node.typeCondition ]
         );
       }
     },
@@ -54,7 +54,7 @@ export function FragmentsOnCompositeTypes(context: ValidationContext): any {
             node.name.value,
             print(node.typeCondition)
           ),
-          [node.typeCondition]
+          [ node.typeCondition ]
         );
       }
     }

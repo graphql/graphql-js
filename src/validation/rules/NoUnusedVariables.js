@@ -41,7 +41,7 @@ export function NoUnusedVariables(): any {
           .filter(def => variableNameUsed[def.variable.name.value] !== true)
           .map(def => new GraphQLError(
             unusedVariableMessage(def.variable.name.value),
-            [def]
+            [ def ]
           ));
         if (errors.length > 0) {
           return errors;

@@ -56,16 +56,9 @@ export function loc(parser, start: number) {
     return null;
   }
   if (parser.options.noSource) {
-    return {
-      start: start,
-      end: parser.prevEnd
-    };
+    return { start, end: parser.prevEnd };
   }
-  return {
-    start: start,
-    end: parser.prevEnd,
-    source: parser.source
-  };
+  return { start, end: parser.prevEnd, source: parser.source };
 }
 
 /**
@@ -177,7 +170,7 @@ export function many<T>(
   closeKind: number
 ): Array<T> {
   expect(parser, openKind);
-  var nodes = [parseFn(parser)];
+  var nodes = [ parseFn(parser) ];
   while (!skip(parser, closeKind)) {
     nodes.push(parseFn(parser));
   }

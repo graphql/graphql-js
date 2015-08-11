@@ -44,9 +44,8 @@ export function isValidJSValue(value: any, type: GraphQLInputType): boolean {
     var itemType: GraphQLInputType = (type.ofType: any);
     if (Array.isArray(value)) {
       return value.every(item => isValidJSValue(item, itemType));
-    } else {
-      return isValidJSValue(value, itemType);
     }
+    return isValidJSValue(value, itemType);
   }
 
   // Input objects check each defined field.

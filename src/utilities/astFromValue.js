@@ -89,9 +89,8 @@ export function astFromValue(
     if (isIntValue) {
       if (type === GraphQLFloat) {
         return { kind: FLOAT, value: stringNum + '.0' };
-      } else {
-        return { kind: INT, value: stringNum };
       }
+      return { kind: INT, value: stringNum };
     }
     return { kind: FLOAT, value: stringNum };
   }

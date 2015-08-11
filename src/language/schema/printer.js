@@ -23,26 +23,36 @@ export var printSchemaASTReducer = {
 
   // Document
 
-  SchemaDocument: ({definitions}) =>
+  SchemaDocument: ({ definitions }) =>
     join(definitions, '\n\n') + '\n',
 
-  TypeDefinition: ({name, interfaces, fields}) =>
+  TypeDefinition: ({ name, interfaces, fields }) =>
     'type ' + name + ' ' +
     wrap('implements ', join(interfaces, ', '), ' ') +
     block(fields),
 
-  FieldDefinition: ({name, arguments: args, type}) =>
+  FieldDefinition: ({ name, arguments: args, type }) =>
     name + wrap('(', join(args, ', '), ')') + ': ' + type,
 
-  InputValueDefinition: ({name, type, defaultValue}) =>
+  InputValueDefinition: ({ name, type, defaultValue }) =>
     name + ': ' + type + wrap(' = ', defaultValue),
 
-  InterfaceDefinition: ({name, fields}) => `interface ${name} ${block(fields)}`,
-  UnionDefinition: ({name, types}) => `union ${name} = ${join(types, ' | ')}`,
-  ScalarDefinition: ({name}) => `scalar ${name}`,
-  EnumDefinition: ({name, values}) => `enum ${name} ${block(values)}`,
-  EnumValueDefinition: ({name}) => name,
-  InputObjectDefinition: ({name, fields}) => `input ${name} ${block(fields)}`,
+  InterfaceDefinition: ({ name, fields }) =>
+    `interface ${name} ${block(fields)}`,
+
+  UnionDefinition: ({ name, types }) =>
+    `union ${name} = ${join(types, ' | ')}`,
+
+  ScalarDefinition: ({ name }) =>
+    `scalar ${name}`,
+
+  EnumDefinition: ({ name, values }) =>
+    `enum ${name} ${block(values)}`,
+
+  EnumValueDefinition: ({ name }) => name,
+
+  InputObjectDefinition: ({ name, fields }) =>
+    `input ${name} ${block(fields)}`,
 
   // Value
 

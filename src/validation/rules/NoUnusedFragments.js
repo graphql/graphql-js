@@ -60,7 +60,7 @@ export function NoUnusedFragments(): any {
           .filter(def => fragmentNameUsed[def.name.value] !== true)
           .map(def => new GraphQLError(
             unusedFragMessage(def.name.value),
-            [def]
+            [ def ]
           ));
         if (errors.length > 0) {
           return errors;

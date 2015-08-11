@@ -81,11 +81,11 @@ var BlogMutation = new GraphQLObjectType({
   }
 });
 
-var ObjectType = new GraphQLObjectType({name: 'Object'});
-var InterfaceType = new GraphQLInterfaceType({name: 'Interface'});
-var UnionType = new GraphQLUnionType({name: 'Union', types: [ObjectType]});
-var EnumType = new GraphQLEnumType({name: 'Enum'});
-var InputObjectType = new GraphQLInputObjectType({name: 'InputObject'});
+var ObjectType = new GraphQLObjectType({ name: 'Object' });
+var InterfaceType = new GraphQLInterfaceType({ name: 'Interface' });
+var UnionType = new GraphQLUnionType({ name: 'Union', types: [ ObjectType ] });
+var EnumType = new GraphQLEnumType({ name: 'Enum' });
+var InputObjectType = new GraphQLInputObjectType({ name: 'InputObject' });
 
 describe('Type System: Example', () => {
   it('defines a query only schema', () => {
@@ -149,7 +149,7 @@ describe('Type System: Example', () => {
     var SomeSubtype = new GraphQLObjectType({
       name: 'SomeSubtype',
       fields: {},
-      interfaces: [SomeInterface]
+      interfaces: [ SomeInterface ]
     });
 
     var schema = new GraphQLSchema({
@@ -168,7 +168,7 @@ describe('Type System: Example', () => {
     var SomeSubtype = new GraphQLObjectType({
       name: 'SomeSubtype',
       fields: {},
-      interfaces: () => [SomeInterface]
+      interfaces: () => [ SomeInterface ]
     });
 
     var schema = new GraphQLSchema({
@@ -181,39 +181,39 @@ describe('Type System: Example', () => {
 
   it('stringifies simple types', () => {
 
-    expect('' + GraphQLInt).to.equal('Int');
-    expect('' + BlogArticle).to.equal('Article');
-    expect('' + InterfaceType).to.equal('Interface');
-    expect('' + UnionType).to.equal('Union');
-    expect('' + EnumType).to.equal('Enum');
-    expect('' + InputObjectType).to.equal('InputObject');
+    expect(String(GraphQLInt)).to.equal('Int');
+    expect(String(BlogArticle)).to.equal('Article');
+    expect(String(InterfaceType)).to.equal('Interface');
+    expect(String(UnionType)).to.equal('Union');
+    expect(String(EnumType)).to.equal('Enum');
+    expect(String(InputObjectType)).to.equal('InputObject');
     expect(
-      '' + new GraphQLNonNull(GraphQLInt)
+      String(new GraphQLNonNull(GraphQLInt))
     ).to.equal('Int!');
     expect(
-      '' + new GraphQLList(GraphQLInt)
+      String(new GraphQLList(GraphQLInt))
     ).to.equal('[Int]');
     expect(
-      '' + new GraphQLNonNull(new GraphQLList(GraphQLInt))
+      String(new GraphQLNonNull(new GraphQLList(GraphQLInt)))
     ).to.equal('[Int]!');
     expect(
-      '' + new GraphQLList(new GraphQLNonNull(GraphQLInt))
+      String(new GraphQLList(new GraphQLNonNull(GraphQLInt)))
     ).to.equal('[Int!]');
     expect(
-      '' + new GraphQLList(new GraphQLList(GraphQLInt))
+      String(new GraphQLList(new GraphQLList(GraphQLInt)))
     ).to.equal('[[Int]]');
   });
 
   it('identifies input types', () => {
     const expected = [
-      [GraphQLInt, true],
-      [ObjectType, false],
-      [InterfaceType, false],
-      [UnionType, false],
-      [EnumType, true],
-      [InputObjectType, true]
+      [ GraphQLInt, true ],
+      [ ObjectType, false ],
+      [ InterfaceType, false ],
+      [ UnionType, false ],
+      [ EnumType, true ],
+      [ InputObjectType, true ]
     ];
-    expected.forEach(([type, answer]) => {
+    expected.forEach(([ type, answer ]) => {
       expect(isInputType(type)).to.equal(answer);
       expect(isInputType(new GraphQLList(type))).to.equal(answer);
       expect(isInputType(new GraphQLNonNull(type))).to.equal(answer);
@@ -222,14 +222,14 @@ describe('Type System: Example', () => {
 
   it('identifies output types', () => {
     const expected = [
-      [GraphQLInt, true],
-      [ObjectType, true],
-      [InterfaceType, true],
-      [UnionType, true],
-      [EnumType, true],
-      [InputObjectType, false]
+      [ GraphQLInt, true ],
+      [ ObjectType, true ],
+      [ InterfaceType, true ],
+      [ UnionType, true ],
+      [ EnumType, true ],
+      [ InputObjectType, false ]
     ];
-    expected.forEach(([type, answer]) => {
+    expected.forEach(([ type, answer ]) => {
       expect(isOutputType(type)).to.equal(answer);
       expect(isOutputType(new GraphQLList(type))).to.equal(answer);
       expect(isOutputType(new GraphQLNonNull(type))).to.equal(answer);
@@ -253,7 +253,7 @@ describe('Type System: Example', () => {
     ];
     badUnionTypes.forEach((x) => {
       expect(() =>
-        new GraphQLUnionType({ name: 'BadUnion', types: [x] })
+        new GraphQLUnionType({ name: 'BadUnion', types: [ x ] })
       ).to.throw(
         `Union BadUnion may only contain object types, it cannot contain: ${x}.`
       );

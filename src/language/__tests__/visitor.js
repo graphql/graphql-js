@@ -72,7 +72,7 @@ describe('Visitor', () => {
         if (node.kind === 'Field' && node.name.value === 'a') {
           return {
             kind: 'Field',
-            selectionSet: [addedField].concat(node.selectionSet)
+            selectionSet: [ addedField ].concat(node.selectionSet)
           };
         }
         if (node === addedField) {
@@ -91,14 +91,14 @@ describe('Visitor', () => {
     var ast = parse('{ a, b { x }, c }');
     visit(ast, {
       enter(node) {
-        visited.push(['enter', node.kind, node.value]);
+        visited.push([ 'enter', node.kind, node.value ]);
         if (node.kind === 'Field' && node.name.value === 'b') {
           return false;
         }
       },
 
       leave(node) {
-        visited.push(['leave', node.kind, node.value]);
+        visited.push([ 'leave', node.kind, node.value ]);
       }
     });
 
@@ -128,14 +128,14 @@ describe('Visitor', () => {
     var ast = parse('{ a, b { x }, c }');
     visit(ast, {
       enter(node) {
-        visited.push(['enter', node.kind, node.value]);
+        visited.push([ 'enter', node.kind, node.value ]);
         if (node.kind === 'Name' && node.value === 'x') {
           return BREAK;
         }
       },
 
       leave(node) {
-        visited.push(['leave', node.kind, node.value]);
+        visited.push([ 'leave', node.kind, node.value ]);
       }
     });
 
@@ -163,14 +163,14 @@ describe('Visitor', () => {
     var ast = parse('{ a, b { x }, c }');
     visit(ast, {
       Name(node) {
-        visited.push(['enter', node.kind, node.value]);
+        visited.push([ 'enter', node.kind, node.value ]);
       },
       SelectionSet: {
         enter(node) {
-          visited.push(['enter', node.kind, node.value]);
+          visited.push([ 'enter', node.kind, node.value ]);
         },
         leave(node) {
-          visited.push(['leave', node.kind, node.value]);
+          visited.push([ 'leave', node.kind, node.value ]);
         }
       }
     });
@@ -201,11 +201,11 @@ describe('Visitor', () => {
 
     visit(ast, {
       enter(node, key, parent) {
-        visited.push(['enter', node.kind, key, parent && parent.kind]);
+        visited.push([ 'enter', node.kind, key, parent && parent.kind ]);
       },
 
       leave(node, key, parent) {
-        visited.push(['leave', node.kind, key, parent && parent.kind]);
+        visited.push([ 'leave', node.kind, key, parent && parent.kind ]);
       }
     });
 

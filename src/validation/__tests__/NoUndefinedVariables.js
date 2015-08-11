@@ -19,7 +19,7 @@ import {
 function undefVar(varName, line, column) {
   return {
     message: undefinedVarMessage(varName),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 

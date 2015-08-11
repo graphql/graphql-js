@@ -8,6 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import isNullish from '../jsutils/isNullish';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import {
@@ -97,9 +98,8 @@ var __Type = new GraphQLObjectType({
           return TypeKind.LIST;
         } else if (type instanceof GraphQLNonNull) {
           return TypeKind.NON_NULL;
-        } else {
-          throw new Error('Unknown kind of type: ' + type);
         }
+        throw new Error('Unknown kind of type: ' + type);
       }
     },
     name: { type: GraphQLString },
@@ -109,7 +109,7 @@ var __Type = new GraphQLObjectType({
       args: {
         includeDeprecated: { type: GraphQLBoolean, defaultValue: false }
       },
-      resolve(type, {includeDeprecated}) {
+      resolve(type, { includeDeprecated }) {
         if (type instanceof GraphQLObjectType ||
             type instanceof GraphQLInterfaceType) {
           var fieldMap = type.getFields();
@@ -145,7 +145,7 @@ var __Type = new GraphQLObjectType({
       args: {
         includeDeprecated: { type: GraphQLBoolean, defaultValue: false }
       },
-      resolve(type, {includeDeprecated}) {
+      resolve(type, { includeDeprecated }) {
         if (type instanceof GraphQLEnumType) {
           var valueMap = type.getValues();
           var values =
@@ -183,7 +183,7 @@ var __Field = new GraphQLObjectType({
     type: { type: new GraphQLNonNull(__Type) },
     isDeprecated: {
       type: new GraphQLNonNull(GraphQLBoolean),
-      resolve: field => !!field.deprecationReason
+      resolve: field => !isNullish(field.deprecationReason),
     },
     deprecationReason: {
       type: GraphQLString,
@@ -213,7 +213,7 @@ var __EnumValue = new GraphQLObjectType({
     description: { type: GraphQLString },
     isDeprecated: {
       type: new GraphQLNonNull(GraphQLBoolean),
-      resolve: enumValue => !!enumValue.deprecationReason
+      resolve: enumValue => !isNullish(enumValue.deprecationReason),
     },
     deprecationReason: {
       type: GraphQLString,

@@ -183,14 +183,14 @@ describe('Type System: build schema from introspection', () => {
     /* eslint-disable no-new */
     new GraphQLObjectType({
       name: 'Dog',
-      interfaces: [friendlyType],
+      interfaces: [ friendlyType ],
       fields: () => ({
         bestFriend: { type: friendlyType }
       })
     });
     new GraphQLObjectType({
       name: 'Human',
-      interfaces: [friendlyType],
+      interfaces: [ friendlyType ],
       fields: () => ({
         bestFriend: { type: friendlyType }
       })
@@ -223,7 +223,7 @@ describe('Type System: build schema from introspection', () => {
     });
     var friendlyType = new GraphQLUnionType({
       name: 'Friendly',
-      types: [dogType, humanType]
+      types: [ dogType, humanType ]
     });
     var schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -452,7 +452,7 @@ describe('Type System: build schema from introspection', () => {
             args: {
               listArg: {
                 type: new GraphQLList(GraphQLInt),
-                defaultValue: [1, 2, 3]
+                defaultValue: [ 1, 2, 3 ]
               }
             }
           },
@@ -461,7 +461,7 @@ describe('Type System: build schema from introspection', () => {
             args: {
               objArg: {
                 type: geoType,
-                defaultValue: {lat: 37.485, lon: -122.148}
+                defaultValue: { lat: 37.485, lon: -122.148 }
               }
             }
           }

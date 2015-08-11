@@ -29,7 +29,7 @@ export function UniqueOperationNames(): any {
         if (knownOperationNames[operationName.value]) {
           return new GraphQLError(
             duplicateOperationNameMessage(operationName.value),
-            [knownOperationNames[operationName.value], operationName]
+            [ knownOperationNames[operationName.value], operationName ]
           );
         }
         knownOperationNames[operationName.value] = operationName;

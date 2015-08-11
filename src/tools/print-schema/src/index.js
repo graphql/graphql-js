@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.

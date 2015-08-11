@@ -56,7 +56,7 @@ export function KnownArgumentNames(context: ValidationContext): any {
                 fieldDef.name,
                 parentType.name
               ),
-              [node]
+              [ node ]
             );
           }
         }
@@ -70,7 +70,7 @@ export function KnownArgumentNames(context: ValidationContext): any {
           if (!directiveArgDef) {
             return new GraphQLError(
               unknownDirectiveArgMessage(node.name.value, directive.name),
-              [node]
+              [ node ]
             );
           }
         }

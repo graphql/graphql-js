@@ -123,7 +123,7 @@ describe('astFromValue', () => {
   });
 
   it('converts array values to List ASTs', () => {
-    expect(astFromValue(['FOO', 'BAR'])).to.deep.equal(
+    expect(astFromValue([ 'FOO', 'BAR' ])).to.deep.equal(
       { kind: 'ListValue',
         values: [
           { kind: 'StringValue', value: 'FOO' },
@@ -131,13 +131,13 @@ describe('astFromValue', () => {
     );
 
     expect(
-      astFromValue(['FOO', 'BAR'],
+      astFromValue([ 'FOO', 'BAR' ],
       new GraphQLList(myEnum))
     ).to.deep.equal(
       { kind: 'ListValue',
         values: [
-         { kind: 'EnumValue', value: 'FOO' },
-         { kind: 'EnumValue', value: 'BAR' } ] }
+          { kind: 'EnumValue', value: 'FOO' },
+          { kind: 'EnumValue', value: 'BAR' } ] }
     );
   });
 
@@ -154,12 +154,12 @@ describe('astFromValue', () => {
     expect(astFromValue({ foo: 3, bar: 'HELLO' })).to.deep.equal(
       { kind: 'ObjectValue',
         fields: [
-         { kind: 'ObjectField',
-           name: { kind: 'Name', value: 'foo' },
-           value: { kind: 'IntValue', value: '3' } },
-         { kind: 'ObjectField',
-           name: { kind: 'Name', value: 'bar' },
-           value: { kind: 'StringValue', value: 'HELLO' } } ] }
+          { kind: 'ObjectField',
+            name: { kind: 'Name', value: 'foo' },
+            value: { kind: 'IntValue', value: '3' } },
+          { kind: 'ObjectField',
+            name: { kind: 'Name', value: 'bar' },
+            value: { kind: 'StringValue', value: 'HELLO' } } ] }
     );
 
     var inputObj = new GraphQLInputObjectType({

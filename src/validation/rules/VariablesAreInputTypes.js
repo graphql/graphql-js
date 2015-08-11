@@ -39,7 +39,7 @@ export function VariablesAreInputTypes(context: ValidationContext): any {
         var variableName = node.variable.name.value;
         return new GraphQLError(
           nonInputTypeOnVarMessage(variableName, print(node.type)),
-          [node.type]
+          [ node.type ]
         );
       }
     }

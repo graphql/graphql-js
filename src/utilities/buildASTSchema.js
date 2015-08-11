@@ -152,7 +152,7 @@ export function buildASTSchema(
   var queryType = produceTypeDef(astMap[queryTypeName]);
   var schema;
   if (isNullish(mutationTypeName)) {
-    schema = new GraphQLSchema({query: queryType});
+    schema = new GraphQLSchema({ query: queryType });
   } else {
     schema = new GraphQLSchema({
       query: queryType,
@@ -219,10 +219,7 @@ export function buildASTSchema(
       value => value.name.value,
       value => {
         var type = produceTypeDef(value.type);
-        return {
-          type: type,
-          defaultValue: valueFromAST(value.defaultValue, type),
-        };
+        return { type, defaultValue: valueFromAST(value.defaultValue, type) };
       }
     );
   }

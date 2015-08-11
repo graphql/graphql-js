@@ -28,7 +28,7 @@ export function KnownTypeNames(context: ValidationContext): any {
       var typeName = node.name.value;
       var type = context.getSchema().getType(typeName);
       if (!type) {
-        return new GraphQLError(unknownTypeMessage(typeName), [node]);
+        return new GraphQLError(unknownTypeMessage(typeName), [ node ]);
       }
     }
   };

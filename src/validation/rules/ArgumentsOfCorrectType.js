@@ -35,7 +35,7 @@ export function ArgumentsOfCorrectType(context: ValidationContext): any {
             argDef.type,
             print(argAST.value)
           ),
-          [argAST.value]
+          [ argAST.value ]
         );
       }
     }

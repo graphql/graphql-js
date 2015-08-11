@@ -19,14 +19,14 @@ import {
 function error(fragName, parentType, fragType, line, column) {
   return {
     message: typeIncompatibleSpreadMessage(fragName, parentType, fragType),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 
 function errorAnon(parentType, fragType, line, column) {
   return {
     message: typeIncompatibleAnonSpreadMessage(parentType, fragType),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 
@@ -111,9 +111,7 @@ describe('Validate: Possible fragment spreads', () => {
     expectFailsRule(PossibleFragmentSpreads, `
       fragment invalidObjectWithinObject on Cat { ...dogFragment }
       fragment dogFragment on Dog { barkVolume }
-    `,
-      [error('dogFragment', 'Cat', 'Dog', 2, 51)]
-    );
+    `, [ error('dogFragment', 'Cat', 'Dog', 2, 51) ]);
   });
 
   it('different object into object in inline fragment', () => {
@@ -121,63 +119,49 @@ describe('Validate: Possible fragment spreads', () => {
       fragment invalidObjectWithinObjectAnon on Cat {
         ... on Dog { barkVolume }
       }
-    `,
-      [errorAnon('Cat', 'Dog', 3, 9)]
-    );
+    `, [ errorAnon('Cat', 'Dog', 3, 9) ]);
   });
 
   it('object into not implementing interface', () => {
     expectFailsRule(PossibleFragmentSpreads, `
       fragment invalidObjectWithinInterface on Pet { ...humanFragment }
       fragment humanFragment on Human { pets { name } }
-    `,
-      [error('humanFragment', 'Pet', 'Human', 2, 54)]
-    );
+    `, [ error('humanFragment', 'Pet', 'Human', 2, 54) ]);
   });
 
   it('object into not containing union', () => {
     expectFailsRule(PossibleFragmentSpreads, `
       fragment invalidObjectWithinUnion on CatOrDog { ...humanFragment }
       fragment humanFragment on Human { pets { name } }
-    `,
-      [error('humanFragment', 'CatOrDog', 'Human', 2, 55)]
-    );
+    `, [ error('humanFragment', 'CatOrDog', 'Human', 2, 55) ]);
   });
 
   it('union into not contained object', () => {
     expectFailsRule(PossibleFragmentSpreads, `
       fragment invalidUnionWithinObject on Human { ...catOrDogFragment }
       fragment catOrDogFragment on CatOrDog { __typename }
-    `,
-      [error('catOrDogFragment', 'Human', 'CatOrDog', 2, 52)]
-    );
+    `, [ error('catOrDogFragment', 'Human', 'CatOrDog', 2, 52) ]);
   });
 
   it('union into non overlapping interface', () => {
     expectFailsRule(PossibleFragmentSpreads, `
       fragment invalidUnionWithinInterface on Pet { ...humanOrAlienFragment }
       fragment humanOrAlienFragment on HumanOrAlien { __typename }
-    `,
-      [error('humanOrAlienFragment', 'Pet', 'HumanOrAlien', 2, 53)]
-    );
+    `, [ error('humanOrAlienFragment', 'Pet', 'HumanOrAlien', 2, 53) ]);
   });
 
   it('union into non overlapping union', () => {
     expectFailsRule(PossibleFragmentSpreads, `
       fragment invalidUnionWithinUnion on CatOrDog { ...humanOrAlienFragment }
       fragment humanOrAlienFragment on HumanOrAlien { __typename }
-    `,
-      [error('humanOrAlienFragment', 'CatOrDog', 'HumanOrAlien', 2, 54)]
-    );
+    `, [ error('humanOrAlienFragment', 'CatOrDog', 'HumanOrAlien', 2, 54) ]);
   });
 
   it('interface into non implementing object', () => {
     expectFailsRule(PossibleFragmentSpreads, `
       fragment invalidInterfaceWithinObject on Cat { ...intelligentFragment }
       fragment intelligentFragment on Intelligent { iq }
-    `,
-      [error('intelligentFragment', 'Cat', 'Intelligent', 2, 54)]
-    );
+    `, [ error('intelligentFragment', 'Cat', 'Intelligent', 2, 54) ]);
   });
 
   it('interface into non overlapping interface', () => {
@@ -186,9 +170,7 @@ describe('Validate: Possible fragment spreads', () => {
         ...intelligentFragment
       }
       fragment intelligentFragment on Intelligent { iq }
-    `,
-      [error('intelligentFragment', 'Pet', 'Intelligent', 3, 9)]
-    );
+    `, [ error('intelligentFragment', 'Pet', 'Intelligent', 3, 9) ]);
   });
 
   it('interface into non overlapping interface in inline fragment', () => {
@@ -196,18 +178,14 @@ describe('Validate: Possible fragment spreads', () => {
       fragment invalidInterfaceWithinInterfaceAnon on Pet {
         ...on Intelligent { iq }
       }
-    `,
-      [errorAnon('Pet', 'Intelligent', 3, 9)]
-    );
+    `, [ errorAnon('Pet', 'Intelligent', 3, 9) ]);
   });
 
   it('interface into non overlapping union', () => {
     expectFailsRule(PossibleFragmentSpreads, `
       fragment invalidInterfaceWithinUnion on HumanOrAlien { ...petFragment }
       fragment petFragment on Pet { name }
-    `,
-      [error('petFragment', 'HumanOrAlien', 'Pet', 2, 62)]
-    );
+    `, [ error('petFragment', 'HumanOrAlien', 'Pet', 2, 62) ]);
   });
 
 });

@@ -47,7 +47,7 @@ export function KnownDirectives(context: ValidationContext): any {
       if (!directiveDef) {
         return new GraphQLError(
           unknownDirectiveMessage(node.name.value),
-          [node]
+          [ node ]
         );
       }
       var appliedTo = ancestors[ancestors.length - 1];
@@ -55,13 +55,13 @@ export function KnownDirectives(context: ValidationContext): any {
           !directiveDef.onOperation) {
         return new GraphQLError(
           misplacedDirectiveMessage(node.name.value, 'operation'),
-          [node]
+          [ node ]
         );
       }
       if (appliedTo.kind === FIELD && !directiveDef.onField) {
         return new GraphQLError(
           misplacedDirectiveMessage(node.name.value, 'field'),
-          [node]
+          [ node ]
         );
       }
       if ((appliedTo.kind === FRAGMENT_SPREAD ||
@@ -70,7 +70,7 @@ export function KnownDirectives(context: ValidationContext): any {
           !directiveDef.onFragment) {
         return new GraphQLError(
           misplacedDirectiveMessage(node.name.value, 'fragment'),
-          [node]
+          [ node ]
         );
       }
     }

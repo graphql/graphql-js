@@ -35,7 +35,7 @@ export function UniqueArgumentNames(): any {
       if (knownArgNames[argName]) {
         return new GraphQLError(
           duplicateArgMessage(argName),
-          [knownArgNames[argName], node.name]
+          [ knownArgNames[argName], node.name ]
         );
       }
       knownArgNames[argName] = node.name;

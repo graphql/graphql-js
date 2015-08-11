@@ -43,7 +43,7 @@ describe('Execute: handles directives', () => {
       expect(
         await executeTestQuery('{ a, b }')
       ).to.deep.equal({
-        data: { a: 'a', b: 'b'}
+        data: { a: 'a', b: 'b' }
       });
     });
   });
@@ -53,7 +53,7 @@ describe('Execute: handles directives', () => {
       return expect(
         await executeTestQuery('{ a, b @include(if: true) }')
       ).to.deep.equal({
-        data: { a: 'a', b: 'b'}
+        data: { a: 'a', b: 'b' }
       });
     });
 
@@ -69,7 +69,7 @@ describe('Execute: handles directives', () => {
       return expect(
         await executeTestQuery('{ a, b @skip(if: false) }')
       ).to.deep.equal({
-        data: { a: 'a', b: 'b'}
+        data: { a: 'a', b: 'b' }
       });
     });
 

@@ -23,7 +23,7 @@ export class GraphQLError extends Error {
   constructor(
     message: string,
     // A flow bug keeps us from declaring nodes as an array of Node
-    nodes?: Array<any/*Node*/>,
+    nodes?: Array<any/* Node */>,
     stack?: any
   ) {
     super(message);
@@ -32,7 +32,7 @@ export class GraphQLError extends Error {
     if (nodes) {
       this.nodes = nodes;
       var positions = nodes.map(node => node.loc && node.loc.start);
-      if (positions.some(p => !!p)) {
+      if (positions.some(p => p)) {
         this.positions = positions;
         var loc = nodes[0].loc;
         var source = loc && loc.source;

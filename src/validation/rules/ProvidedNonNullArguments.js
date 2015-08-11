@@ -60,7 +60,7 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
                 argDef.name,
                 argDef.type
               ),
-              [fieldAST]
+              [ fieldAST ]
             ));
           }
         });
@@ -91,7 +91,7 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
                 argDef.name,
                 argDef.type
               ),
-              [directiveAST]
+              [ directiveAST ]
             ));
           }
         });

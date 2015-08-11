@@ -13,7 +13,7 @@ import { StarWarsSchema } from './starWarsSchema.js';
 import { graphql } from '../graphql';
 
 // 80+ char lines are useful in describe/it, so ignore in this file.
-/*eslint-disable max-len */
+/* eslint-disable max-len */
 
 describe('Star Wars Query Tests', () => {
   describe('Basic Queries', () => {
@@ -90,7 +90,7 @@ describe('Star Wars Query Tests', () => {
           friends: [
             {
               name: 'Luke Skywalker',
-              appearsIn: ['NEWHOPE', 'EMPIRE', 'JEDI'],
+              appearsIn: [ 'NEWHOPE', 'EMPIRE', 'JEDI' ],
               friends: [
                 {
                   name: 'Han Solo',
@@ -108,7 +108,7 @@ describe('Star Wars Query Tests', () => {
             },
             {
               name: 'Han Solo',
-              appearsIn: ['NEWHOPE', 'EMPIRE', 'JEDI'],
+              appearsIn: [ 'NEWHOPE', 'EMPIRE', 'JEDI' ],
               friends: [
                 {
                   name: 'Luke Skywalker',
@@ -123,7 +123,7 @@ describe('Star Wars Query Tests', () => {
             },
             {
               name: 'Leia Organa',
-              appearsIn: ['NEWHOPE', 'EMPIRE', 'JEDI'],
+              appearsIn: [ 'NEWHOPE', 'EMPIRE', 'JEDI' ],
               friends: [
                 {
                   name: 'Luke Skywalker',

@@ -32,59 +32,59 @@ export var printDocASTReducer = {
     var directives = join(node.directives, ' ');
     var selectionSet = node.selectionSet;
     return !name ? selectionSet :
-      join([op, join([name, defs]), directives, selectionSet], ' ');
+      join([ op, join([ name, defs ]), directives, selectionSet ], ' ');
   },
 
-  VariableDefinition: ({variable, type, defaultValue}) =>
+  VariableDefinition: ({ variable, type, defaultValue }) =>
     variable + ': ' + type + wrap(' = ', defaultValue),
 
-  SelectionSet: ({selections}) => block(selections),
+  SelectionSet: ({ selections }) => block(selections),
 
-  Field: ({alias, name, arguments: args, directives, selectionSet}) =>
+  Field: ({ alias, name, arguments: args, directives, selectionSet }) =>
     join([
       wrap('', alias, ': ') + name + wrap('(', join(args, ', '), ')'),
       join(directives, ' '),
       selectionSet
     ], ' '),
 
-  Argument: ({name, value}) => name + ': ' + value,
+  Argument: ({ name, value }) => name + ': ' + value,
 
   // Fragments
 
-  FragmentSpread: ({name, directives}) =>
+  FragmentSpread: ({ name, directives }) =>
     '...' + name + wrap(' ', join(directives, ' ')),
 
-  InlineFragment: ({typeCondition, directives, selectionSet}) =>
+  InlineFragment: ({ typeCondition, directives, selectionSet }) =>
     `... on ${typeCondition} ` +
     wrap('', join(directives, ' '), ' ') +
     selectionSet,
 
-  FragmentDefinition: ({name, typeCondition, directives, selectionSet}) =>
+  FragmentDefinition: ({ name, typeCondition, directives, selectionSet }) =>
     `fragment ${name} on ${typeCondition} ` +
     wrap('', join(directives, ' '), ' ') +
     selectionSet,
 
   // Value
 
-  IntValue: ({value}) => value,
-  FloatValue: ({value}) => value,
-  StringValue: ({value}) => JSON.stringify(value),
-  BooleanValue: ({value}) => JSON.stringify(value),
-  EnumValue: ({value}) => value,
-  ListValue: ({values}) => '[' + join(values, ', ') + ']',
-  ObjectValue: ({fields}) => '{' + join(fields, ', ') + '}',
-  ObjectField: ({name, value}) => name + ': ' + value,
+  IntValue: ({ value }) => value,
+  FloatValue: ({ value }) => value,
+  StringValue: ({ value }) => JSON.stringify(value),
+  BooleanValue: ({ value }) => JSON.stringify(value),
+  EnumValue: ({ value }) => value,
+  ListValue: ({ values }) => '[' + join(values, ', ') + ']',
+  ObjectValue: ({ fields }) => '{' + join(fields, ', ') + '}',
+  ObjectField: ({ name, value }) => name + ': ' + value,
 
   // Directive
 
-  Directive: ({name, arguments: args}) =>
+  Directive: ({ name, arguments: args }) =>
     '@' + name + wrap('(', join(args, ', '), ')'),
 
   // Type
 
-  NamedType: ({name}) => name,
-  ListType: ({type}) => '[' + type + ']',
-  NonNullType: ({type}) => type + '!',
+  NamedType: ({ name }) => name,
+  ListType: ({ type }) => '[' + type + ']',
+  NonNullType: ({ type }) => type + '!',
 };
 
 /**
@@ -92,7 +92,7 @@ export var printDocASTReducer = {
  * print all items together separated by separator if provided
  */
 export function join(maybeArray, separator) {
-  return maybeArray ? maybeArray.filter(x => !!x).join(separator || '') : '';
+  return maybeArray ? maybeArray.filter(x => x).join(separator || '') : '';
 }
 
 /**

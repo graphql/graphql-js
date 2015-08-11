@@ -102,15 +102,15 @@ export function buildClientSchema(
         throw new Error('Decorated type deeper than introspection query.');
       }
       return new GraphQLList(getType(itemRef));
-    } else if (typeRef.kind === TypeKind.NON_NULL) {
+    }
+    if (typeRef.kind === TypeKind.NON_NULL) {
       var nullableRef = ((typeRef: any): IntrospectionNonNullTypeRef).ofType;
       if (!nullableRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
       return new GraphQLNonNull(getType(nullableRef));
-    } else {
-      return getNamedType(typeRef.name);
     }
+    return getNamedType(typeRef.name);
   }
 
   function getNamedType(typeName: string): GraphQLNamedType {

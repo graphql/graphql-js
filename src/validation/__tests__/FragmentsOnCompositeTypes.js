@@ -18,7 +18,7 @@ import {
 function error(fragName, typeName, line, column) {
   return {
     message: fragmentOnNonCompositeErrorMessage(fragName, typeName),
-    locations: [ { line: line, column: column } ],
+    locations: [ { line, column } ],
   };
 }
 
@@ -63,8 +63,7 @@ describe('Validate: Fragments on composite types', () => {
       fragment scalarFragment on Boolean {
         bad
       }
-    `,
-    [error('scalarFragment', 'Boolean', 2, 34)]);
+    `, [ error('scalarFragment', 'Boolean', 2, 34) ]);
   });
 
   it('enum is invalid fragment type', () => {
@@ -72,8 +71,7 @@ describe('Validate: Fragments on composite types', () => {
       fragment scalarFragment on FurColor {
         bad
       }
-    `,
-    [error('scalarFragment', 'FurColor', 2, 34)]);
+    `, [ error('scalarFragment', 'FurColor', 2, 34) ]);
   });
 
   it('input object is invalid fragment type', () => {
@@ -81,8 +79,7 @@ describe('Validate: Fragments on composite types', () => {
       fragment inputFragment on ComplexInput {
         stringField
       }
-    `,
-    [error('inputFragment', 'ComplexInput', 2, 33)]);
+    `, [ error('inputFragment', 'ComplexInput', 2, 33) ]);
   });
 
   it('scalar is invalid inline fragment type', () => {
@@ -92,8 +89,7 @@ describe('Validate: Fragments on composite types', () => {
           barks
         }
       }
-    `,
-    [
+    `, [
       { message: inlineFragmentOnNonCompositeErrorMessage('String'),
         locations: [ { line: 3, column: 16 } ] }
     ]);

@@ -10,33 +10,33 @@
 export var QueryDocumentKeys = {
   Name: [],
 
-  Document: ['definitions'],
+  Document: [ 'definitions' ],
   OperationDefinition:
-    ['name', 'variableDefinitions', 'directives', 'selectionSet'],
-  VariableDefinition: ['variable', 'type', 'defaultValue'],
-  Variable: ['name'],
-  SelectionSet: ['selections'],
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
-  Argument: ['name', 'value'],
+    [ 'name', 'variableDefinitions', 'directives', 'selectionSet' ],
+  VariableDefinition: [ 'variable', 'type', 'defaultValue' ],
+  Variable: [ 'name' ],
+  SelectionSet: [ 'selections' ],
+  Field: [ 'alias', 'name', 'arguments', 'directives', 'selectionSet' ],
+  Argument: [ 'name', 'value' ],
 
-  FragmentSpread: ['name', 'directives'],
-  InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
-  FragmentDefinition: ['name', 'typeCondition', 'directives', 'selectionSet'],
+  FragmentSpread: [ 'name', 'directives' ],
+  InlineFragment: [ 'typeCondition', 'directives', 'selectionSet' ],
+  FragmentDefinition: [ 'name', 'typeCondition', 'directives', 'selectionSet' ],
 
   IntValue: [],
   FloatValue: [],
   StringValue: [],
   BooleanValue: [],
   EnumValue: [],
-  ListValue: ['values'],
-  ObjectValue: ['fields'],
-  ObjectField: ['name', 'value'],
+  ListValue: [ 'values' ],
+  ObjectValue: [ 'fields' ],
+  ObjectField: [ 'name', 'value' ],
 
-  Directive: ['name', 'arguments'],
+  Directive: [ 'name', 'arguments' ],
 
-  NamedType: ['name'],
-  ListType: ['type'],
-  NonNullType: ['type'],
+  NamedType: [ 'name' ],
+  ListType: [ 'type' ],
+  NonNullType: [ 'type' ],
 };
 
 export const BREAK = {};
@@ -132,7 +132,7 @@ export function visit(root, visitor, keyMap) {
 
   var stack;
   var inArray = Array.isArray(root);
-  var keys = [root];
+  var keys = [ root ];
   var index = -1;
   var edits = [];
   var parent;
@@ -164,7 +164,7 @@ export function visit(root, visitor, keyMap) {
         }
         var editOffset = 0;
         for (var ii = 0; ii < edits.length; ii++) {
-          let [editKey, editValue] = edits[ii];
+          let [ editKey, editValue ] = edits[ii];
           if (inArray) {
             editKey -= editOffset;
           }
@@ -211,7 +211,7 @@ export function visit(root, visitor, keyMap) {
             continue;
           }
         } else if (result !== undefined) {
-          edits.push([key, result]);
+          edits.push([ key, result ]);
           if (!isLeaving) {
             if (isNode(result)) {
               node = result;
@@ -225,7 +225,7 @@ export function visit(root, visitor, keyMap) {
     }
 
     if (result === undefined && isEdited) {
-      edits.push([key, node]);
+      edits.push([ key, node ]);
     }
 
     if (!isLeaving) {

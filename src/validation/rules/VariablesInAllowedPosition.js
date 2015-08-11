@@ -57,7 +57,7 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
           !varTypeAllowedForType(effectiveType(varType, varDef), inputType)) {
         return new GraphQLError(
           badVarPosMessage(varName, varType, inputType),
-          [variableAST]
+          [ variableAST ]
         );
       }
     }

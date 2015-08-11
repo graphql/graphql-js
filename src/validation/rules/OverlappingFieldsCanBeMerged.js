@@ -1,4 +1,4 @@
-/*@flow*/
+/* @flow */
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
@@ -38,7 +38,7 @@ export function fieldsConflictMessage(responseName: any, reason: any): string {
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
-    return reason.map(([responseName, subreason]) =>
+    return reason.map(([ responseName, subreason ]) =>
       `subfields "${responseName}" conflict because ${reasonMessage(subreason)}`
     ).join(' and ');
   }
@@ -78,8 +78,8 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
     pair1: [Field, GraphQLFieldDefinition],
     pair2: [Field, GraphQLFieldDefinition]
   ): ?Conflict {
-    var [ast1, def1] = pair1;
-    var [ast2, def2] = pair2;
+    var [ ast1, def1 ] = pair1;
+    var [ ast2, def2 ] = pair2;
     if (ast1 === ast2 || comparedSet.has(ast1, ast2)) {
       return;
     }
@@ -89,8 +89,8 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
     var name2 = ast2.name.value;
     if (name1 !== name2) {
       return [
-        [responseName, `${name1} and ${name2} are different fields`],
-        [ast1, ast2]
+        [ responseName, `${name1} and ${name2} are different fields` ],
+        [ ast1, ast2 ]
       ];
     }
 
@@ -98,22 +98,22 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
     var type2 = def2 && def2.type;
     if (type1 && type2 && !sameType(type1, type2)) {
       return [
-        [responseName, `they return differing types ${type1} and ${type2}`],
-        [ast1, ast2]
+        [ responseName, `they return differing types ${type1} and ${type2}` ],
+        [ ast1, ast2 ]
       ];
     }
 
     if (!sameArguments(ast1.arguments || [], ast2.arguments || [])) {
       return [
-        [responseName, 'they have differing arguments'],
-        [ast1, ast2]
+        [ responseName, 'they have differing arguments' ],
+        [ ast1, ast2 ]
       ];
     }
 
     if (!sameDirectives(ast1.directives || [], ast2.directives || [])) {
       return [
-        [responseName, 'they have differing directives'],
-        [ast1, ast2]
+        [ responseName, 'they have differing directives' ],
+        [ ast1, ast2 ]
       ];
     }
 
@@ -137,10 +137,10 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
       var conflicts = findConflicts(subfieldMap);
       if (conflicts.length > 0) {
         return [
-          [responseName, conflicts.map(([reason]) => reason)],
+          [ responseName, conflicts.map(([ reason ]) => reason) ],
           conflicts.reduce(
-            (allFields, [, fields]) => allFields.concat(fields),
-            [ast1, ast2]
+            (allFields, [ , fields ]) => allFields.concat(fields),
+            [ ast1, ast2 ]
           )
         ];
       }
@@ -159,7 +159,7 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
         );
         var conflicts = findConflicts(fieldMap);
         if (conflicts.length) {
-          return conflicts.map(([[responseName, reason], fields]) =>
+          return conflicts.map(([ [ responseName, reason ], fields ]) =>
             new GraphQLError(
               fieldsConflictMessage(responseName, reason),
               fields
@@ -171,9 +171,9 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
   };
 }
 
-type Conflict = [ConflictReason, Array<Field>];
+type Conflict = [ ConflictReason, Array<Field> ];
 // Field name and reason.
-type ConflictReason = [string, ConflictReasonMessage];
+type ConflictReason = [ string, ConflictReasonMessage ];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
 
@@ -258,7 +258,7 @@ function collectFieldASTsAndDefs(
         if (!_astAndDefs[responseName]) {
           _astAndDefs[responseName] = [];
         }
-        _astAndDefs[responseName].push([selection, fieldDef]);
+        _astAndDefs[responseName].push([ selection, fieldDef ]);
         break;
       case INLINE_FRAGMENT:
         _astAndDefs = collectFieldASTsAndDefs(
