@@ -159,14 +159,14 @@ export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
  * Scalar Type Definition
  *
  * The leaf values of any request and input values to arguments are
- * Scalars (or Enums) and are defined with a name and a series of coercion
- * functions used to ensure validity.
+ * Scalars (or Enums) and are defined with a name and a series of functions
+ * used to parse input from ast or variables and to ensure validity.
  *
  * Example:
  *
  *     var OddType = new GraphQLScalarType({
  *       name: 'Odd',
- *       coerce(value) {
+ *       serialize(value) {
  *         return value % 2 === 1 ? value : null;
  *       }
  *     });
@@ -185,14 +185,19 @@ export class GraphQLScalarType/* <T> */ {
     this._scalarConfig = config;
   }
 
-  coerce(value: any): ?any/* T */ {
-    var coercer = this._scalarConfig.coerce;
-    return coercer(value);
+  serialize(value: any): ?any/* T */ {
+    var serializer = this._scalarConfig.serialize;
+    return serializer(value);
   }
 
-  coerceLiteral(value: Value): ?any/* T */ {
-    var coercer = this._scalarConfig.coerceLiteral;
-    return coercer ? coercer(value) : null;
+  parseValue(value: any): ?any/* T */ {
+    var parser = this._scalarConfig.parseValue;
+    return parser ? parser(value) : null;
+  }
+
+  parseLiteral(valueAST: Value): ?any/* T */ {
+    var parser = this._scalarConfig.parseLiteral;
+    return parser ? parser(value) : null;
   }
 
   toString(): string {
@@ -203,8 +208,9 @@ export class GraphQLScalarType/* <T> */ {
 export type GraphQLScalarTypeConfig/* <T> */ = {
   name: string;
   description?: ?string;
-  coerce: (value: any) => ?any/* T */;
-  coerceLiteral: (value: Value) => ?any/* T */;
+  serialize: (value: any) => ?any/* T */;
+  parseValue: (value: any) => ?any/* T */;
+  parseLiteral: (valueAST: Value) => ?any/* T */;
 }
 
 
@@ -638,12 +644,17 @@ export class GraphQLEnumType/* <T> */ {
     return this._values || (this._values = this._defineValueMap());
   }
 
-  coerce(value: any/* T */): ?string {
+  serialize(value: any/* T */): ?string {
     var enumValue = this._getValueLookup().get((value: any));
     return enumValue ? enumValue.name : null;
   }
 
-  coerceLiteral(value: Value): ?any/* T */ {
+  parseValue(value: any): ?any/* T */ {
+    var enumValue = this._getValueLookup().get((value: any));
+    return enumValue ? enumValue.name : null;
+  }
+
+  parseLiteral(valueAST: Value): ?any/* T */ {
     if (value.kind === ENUM) {
       var enumValue = this._getNameLookup().get(value.value);
       if (enumValue) {

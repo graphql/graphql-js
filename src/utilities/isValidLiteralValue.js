@@ -94,7 +94,7 @@ export function isValidLiteralValue(
     'Must be input type'
   );
 
-  // Scalar/Enum input checks to ensure the type can coerce the value to
+  // Scalar/Enum input checks to ensure the type can parse the value to
   // a non-null value.
-  return !isNullish(type.coerceLiteral(valueAST));
+  return !isNullish(type.parseLiteral(valueAST));
 }
