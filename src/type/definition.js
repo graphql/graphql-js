@@ -260,6 +260,7 @@ export type GraphQLScalarTypeConfig/* <T> */ = {
 export class GraphQLObjectType {
   name: string;
   description: ?string;
+  isTypeOf: ?(value: any, info?: GraphQLResolveInfo) => boolean;
 
   _typeConfig: GraphQLObjectTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
@@ -269,6 +270,7 @@ export class GraphQLObjectType {
     invariant(config.name, 'Type must be named.');
     this.name = config.name;
     this.description = config.description;
+    this.isTypeOf = config.isTypeOf;
     this._typeConfig = config;
     addImplementationToInterfaces(this);
   }
@@ -281,13 +283,6 @@ export class GraphQLObjectType {
   getInterfaces(): Array<GraphQLInterfaceType> {
     return this._interfaces ||
       (this._interfaces = defineInterfaces(this._typeConfig.interfaces || []));
-  }
-
-  isTypeOf(value: any): ?boolean {
-    var predicate = this._typeConfig.isTypeOf;
-    if (predicate) {
-      return predicate(value);
-    }
   }
 
   toString(): string {
@@ -347,7 +342,7 @@ export type GraphQLObjectTypeConfig = {
   name: string;
   interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap;
-  isTypeOf?: (value: any) => boolean;
+  isTypeOf?: (value: any, info?: GraphQLResolveInfo) => boolean;
   description?: ?string
 }
 
@@ -474,7 +469,7 @@ export class GraphQLInterfaceType {
 
   resolveType(value: any, info: GraphQLResolveInfo): ?GraphQLObjectType {
     var resolver = this._typeConfig.resolveType;
-    return resolver ? resolver(value, info) : getTypeOf(value, this);
+    return resolver ? resolver(value, info) : getTypeOf(value, info, this);
   }
 
   toString(): string {
@@ -484,13 +479,13 @@ export class GraphQLInterfaceType {
 
 function getTypeOf(
   value: any,
+  info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType
 ): ?GraphQLObjectType {
   var possibleTypes = abstractType.getPossibleTypes();
   for (var i = 0; i < possibleTypes.length; i++) {
     var type = possibleTypes[i];
-    var isTypeOf = type.isTypeOf(value);
-    if (isTypeOf === undefined) {
+    if (typeof type.isTypeOf !== 'function') {
       // TODO: move this to a JS impl specific type system validation step
       // so the error can be found before execution.
       throw new Error(
@@ -499,7 +494,7 @@ function getTypeOf(
         'isTypeOf. There is no way to determine if a value is of this type.'
       );
     }
-    if (isTypeOf) {
+    if (type.isTypeOf(value, info)) {
       return type;
     }
   }
@@ -589,7 +584,7 @@ export class GraphQLUnionType {
 
   resolveType(value: any, info: GraphQLResolveInfo): ?GraphQLObjectType {
     var resolver = this._typeConfig.resolveType;
-    return resolver ? resolver(value, info) : getTypeOf(value, this);
+    return resolver ? resolver(value, info) : getTypeOf(value, info, this);
   }
 
   toString(): string {

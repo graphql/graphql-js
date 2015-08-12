@@ -664,6 +664,16 @@ function completeValue(
     return null;
   }
 
+  // If there is an isTypeOf predicate function, call it with the
+  // current result. If isTypeOf returns false, then raise an error rather
+  // than continuing execution.
+  if (objectType.isTypeOf && !objectType.isTypeOf(result, info)) {
+    throw new GraphQLError(
+      `Expected value of type "${objectType}" but got: ${result}.`,
+      fieldASTs
+    );
+  }
+
   // Collect sub-fields to execute to complete this value.
   var subFieldASTs = {};
   var visitedFragmentNames = {};

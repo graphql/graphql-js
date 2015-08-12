@@ -592,4 +592,59 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('fails when an isTypeOf check is not met', async () => {
+    class Special {
+      constructor(value) {
+        this.value = value;
+      }
+    }
+
+    class NotSpecial {
+      constructor(value) {
+        this.value = value;
+      }
+    }
+
+    var SpecialType = new GraphQLObjectType({
+      name: 'SpecialType',
+      isTypeOf(obj) {
+        return obj instanceof Special;
+      },
+      fields: {
+        value: { type: GraphQLString }
+      }
+    });
+
+    var schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          specials: {
+            type: new GraphQLList(SpecialType),
+            resolve: rootValue => rootValue.specials
+          }
+        }
+      })
+    });
+
+    var query = parse('{ specials { value } }');
+    var value = {
+      specials: [ new Special('foo'), new NotSpecial('bar') ]
+    };
+    var result = await execute(schema, query, value);
+
+    expect(result.data).to.deep.equal({
+      specials: [
+        { value: 'foo' },
+        null
+      ]
+    });
+    expect(result.errors).to.have.lengthOf(1);
+    expect(result.errors).to.containSubset([
+      { message:
+          'Expected value of type "SpecialType" but got: [object Object].',
+        locations: [ { line: 1, column: 3 } ] }
+    ]);
+  });
+
 });
