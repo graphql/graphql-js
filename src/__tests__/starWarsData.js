@@ -13,11 +13,7 @@
  * JSON objects in a more complex demo.
  */
 
-/**
- * We export luke directly because the schema returns him
- * from a root field, and hence needs to reference him.
- */
-export var luke = {
+var luke = {
   id: '1000',
   name: 'Luke Skywalker',
   friends: [ '1002', '1003', '2000', '2001' ],
@@ -71,11 +67,7 @@ var threepio = {
   primaryFunction: 'Protocol',
 };
 
-/**
- * We export artoo directly because the schema returns him
- * from a root field, and hence needs to reference him.
- */
-export var artoo = {
+var artoo = {
   id: '2001',
   name: 'R2-D2',
   friends: [ '1000', '1002', '1003' ],
@@ -103,7 +95,28 @@ export function getFriends(character) {
   return character.friends.map(id => getCharacter(id));
 }
 
-export var starWarsData = {
-  Humans: humanData,
-  Droids: droidData,
-};
+/**
+ * Allows us to fetch the undisputed hero of the Star Wars trilogy, R2-D2.
+ */
+export function getHero(episode) {
+  if (episode === 5) {
+    // Luke is the hero of Episode V.
+    return luke;
+  }
+  // Artoo is the hero otherwise.
+  return artoo;
+}
+
+/**
+ * Allows us to query for the human with the given id.
+ */
+export function getHuman(id) {
+  return humanData[id];
+}
+
+/**
+ * Allows us to query for the droid with the given id.
+ */
+export function getDroid(id) {
+  return droidData[id];
+}
