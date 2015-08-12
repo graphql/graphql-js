@@ -30,9 +30,9 @@ import type { Argument, VariableDefinition } from '../language/ast';
 
 
 /**
- * Prepares an object map of variables of the correct type based on the provided
- * variable definitions and arbitrary input. If the input cannot be parsed
- * to match the variable definitions, a GraphQLError will be thrown.
+ * Prepares an object map of variableValues of the correct type based on the
+ * provided variable definitions and arbitrary input. If the input cannot be
+ * parsed to match the variable definitions, a GraphQLError will be thrown.
  */
 export function getVariableValues(
   schema: GraphQLSchema,
@@ -54,7 +54,7 @@ export function getVariableValues(
 export function getArgumentValues(
   argDefs: ?Array<GraphQLArgument>,
   argASTs: ?Array<Argument>,
-  variables: { [key: string]: any }
+  variableValues: { [key: string]: any }
 ): { [key: string]: any } {
   if (!argDefs || !argASTs) {
     return {};
@@ -63,7 +63,7 @@ export function getArgumentValues(
   return argDefs.reduce((result, argDef) => {
     var name = argDef.name;
     var valueAST = argASTMap[name] ? argASTMap[name].value : null;
-    var value = valueFromAST(valueAST, argDef.type, variables);
+    var value = valueFromAST(valueAST, argDef.type, variableValues);
     if (isNullish(value)) {
       value = argDef.defaultValue;
     }

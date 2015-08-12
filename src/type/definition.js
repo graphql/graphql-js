@@ -365,7 +365,7 @@ export type GraphQLResolveInfo = {
   fragments: { [fragmentName: string]: FragmentDefinition },
   rootValue: any,
   operation: OperationDefinition,
-  variables: { [variableName: string]: any },
+  variableValues: { [variableName: string]: any },
 }
 
 export type GraphQLFieldConfig = {

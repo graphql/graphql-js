@@ -81,7 +81,7 @@ type ExecutionContext = {
   fragments: {[key: string]: FragmentDefinition};
   rootValue: any;
   operation: OperationDefinition;
-  variables: {[key: string]: any};
+  variableValues: {[key: string]: any};
   errors: Array<GraphQLError>;
 }
 
@@ -155,7 +155,7 @@ function buildExecutionContext(
   schema: GraphQLSchema,
   documentAST: Document,
   rootValue: any,
-  variableValues: ?{[key: string]: any},
+  rawVariableValues: ?{[key: string]: any},
   operationName: ?string
 ): ExecutionContext {
   var errors: Array<GraphQLError> = [];
@@ -181,13 +181,13 @@ function buildExecutionContext(
   if (!operation) {
     throw new GraphQLError(`Unknown operation named "${opName}".`);
   }
-  var variables = getVariableValues(
+  var variableValues = getVariableValues(
     schema,
     operation.variableDefinitions || [],
-    variableValues || {}
+    rawVariableValues || {}
   );
   var exeContext: ExecutionContext =
-    { schema, fragments, rootValue, operation, variables, errors };
+    { schema, fragments, rootValue, operation, variableValues, errors };
   return exeContext;
 }
 
@@ -383,7 +383,7 @@ function shouldIncludeNode(
     var { if: skipIf } = getArgumentValues(
       GraphQLSkipDirective.args,
       skipAST.arguments,
-      exeContext.variables
+      exeContext.variableValues
     );
     return !skipIf;
   }
@@ -396,7 +396,7 @@ function shouldIncludeNode(
     var { if: includeIf } = getArgumentValues(
       GraphQLIncludeDirective.args,
       includeAST.arguments,
-      exeContext.variables
+      exeContext.variableValues
     );
     return Boolean(includeIf);
   }
@@ -478,7 +478,7 @@ function resolveField(
   var args = getArgumentValues(
     fieldDef.args,
     fieldAST.arguments,
-    exeContext.variables
+    exeContext.variableValues
   );
 
   // The resolve function's optional third argument is a collection of
@@ -492,7 +492,7 @@ function resolveField(
     fragments: exeContext.fragments,
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
-    variables: exeContext.variables,
+    variableValues: exeContext.variableValues,
   };
 
   // If an error occurs while calling the field `resolve` function, ensure that
