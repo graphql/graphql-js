@@ -17,7 +17,7 @@
     "url": "http://github.com/graphql/graphql-js.git"
   },
   "options": {
-    "mocha": "--require scripts/mocha-bootload src/**/__tests__/**/*.js"
+    "mocha": "--require resources/mocha-bootload src/**/__tests__/**/*.js"
   },
   "babel": {
     "optional": [
@@ -31,11 +31,11 @@
     "lint": "eslint src",
     "check": "flow check",
     "build": "babel src --ignore __tests__ --out-dir dist/ && cp package.json dist/",
-    "watch": "babel scripts/watch.js | node",
+    "watch": "babel resources/watch.js | node",
     "cover": "babel-node node_modules/.bin/isparta cover --root src --report html node_modules/.bin/_mocha -- $npm_package_options_mocha",
     "cover:lcov": "babel-node node_modules/.bin/isparta cover --root src --report lcovonly node_modules/.bin/_mocha -- $npm_package_options_mocha",
     "preversion": "npm test",
-    "prepublish": ". ./scripts/prepublish.sh"
+    "prepublish": ". ./resources/prepublish.sh"
   },
   "dependencies": {
     "babel-runtime": "^5.8.x"

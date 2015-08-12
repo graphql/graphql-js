@@ -22,11 +22,11 @@ script:
   - npm run lint && npm run check && (if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then npm run cover:lcov; else npm run testonly; fi)
 
 after_failure:
-  - (cd scripts; python travis_after_all.py)
+  - (cd resources; python travis_after_all.py)
 
 after_success:
-  - (cd scripts; python travis_after_all.py)
-  - export $(cat scripts/.to_export_back)
+  - (cd resources; python travis_after_all.py)
+  - export $(cat resources/.to_export_back)
   - if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js; fi
 
 deploy:

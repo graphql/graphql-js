@@ -2,7 +2,7 @@
 .*/lib/.*
 .*/dist/.*
 .*/coverage/.*
-.*/scripts/.*
+.*/resources/.*
 .*/node_modules/.*
 
 [include]
