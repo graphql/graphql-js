@@ -13,6 +13,7 @@ export { GraphQLSchema } from './schema';
 
 export {
   // Predicates
+  isType,
   isInputType,
   isOutputType,
   isLeafType,

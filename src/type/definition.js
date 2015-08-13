@@ -19,6 +19,8 @@ import type {
 import type { GraphQLSchema } from './schema';
 
 
+// Predicates
+
 /**
  * These are all of the possible kinds of types.
  */
@@ -32,7 +34,18 @@ export type GraphQLType =
   GraphQLList |
   GraphQLNonNull;
 
-// Predicates
+export function isType(type: any): boolean {
+  return (
+    type instanceof GraphQLScalarType ||
+    type instanceof GraphQLObjectType ||
+    type instanceof GraphQLInterfaceType ||
+    type instanceof GraphQLUnionType ||
+    type instanceof GraphQLEnumType ||
+    type instanceof GraphQLInputObjectType ||
+    type instanceof GraphQLList ||
+    type instanceof GraphQLNonNull
+  );
+}
 
 /**
  * These types may be used as input types for arguments and directives.
@@ -926,6 +939,10 @@ export class GraphQLList {
   ofType: GraphQLType;
 
   constructor(type: GraphQLType) {
+    invariant(
+      isType(type),
+      `Can only create List of a GraphQLType but got: ${type}.`
+    );
     this.ofType = type;
   }
 
@@ -960,8 +977,8 @@ export class GraphQLNonNull {
 
   constructor(type: GraphQLType) {
     invariant(
-      !(type instanceof GraphQLNonNull),
-      'Cannot nest NonNull inside NonNull.'
+      isType(type) && !(type instanceof GraphQLNonNull),
+      `Can only create NonNull of a Nullable GraphQLType but got: ${type}.`
     );
     this.ofType = type;
   }

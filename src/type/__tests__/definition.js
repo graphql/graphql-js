@@ -285,8 +285,11 @@ describe('Type System: Example', () => {
   });
 
   it('prohibits nesting NonNull inside NonNull', () => {
-    expect(() => new GraphQLNonNull(new GraphQLNonNull(GraphQLInt)))
-      .to.throw(Error, /nest/);
+    expect(() =>
+      new GraphQLNonNull(new GraphQLNonNull(GraphQLInt))
+    ).to.throw(
+      'Can only create NonNull of a Nullable GraphQLType but got: Int!.'
+    );
   });
 
   it('prohibits putting non-Object types in unions', () => {
