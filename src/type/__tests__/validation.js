@@ -598,6 +598,93 @@ describe('Type System: Union types must be resolvable', () => {
 });
 
 
+describe('Type System: Scalar types must be serializable', () => {
+
+  it('accepts a Scalar type defining serialize', () => {
+    expect(() =>
+      schemaWithFieldType(new GraphQLScalarType({
+        name: 'SomeScalar',
+        serialize: () => null,
+      }))
+    ).not.to.throw();
+  });
+
+  it('rejects a Scalar type not defining serialize', () => {
+    expect(() =>
+      schemaWithFieldType(new GraphQLScalarType({
+        name: 'SomeScalar',
+      }))
+    ).to.throw(
+      'SomeScalar must provide "serialize" function. If this custom Scalar ' +
+      'is also used as an input type, ensure "parseValue" and "parseLiteral" ' +
+      'functions are also provided.'
+    );
+  });
+
+  it('rejects a Scalar type defining serialize with an incorrect type', () => {
+    expect(() =>
+      schemaWithFieldType(new GraphQLScalarType({
+        name: 'SomeScalar',
+        serialize: {}
+      }))
+    ).to.throw(
+      'SomeScalar must provide "serialize" function. If this custom Scalar ' +
+      'is also used as an input type, ensure "parseValue" and "parseLiteral" ' +
+      'functions are also provided.'
+    );
+  });
+
+  it('accepts a Scalar type defining parseValue and parseLiteral', () => {
+    expect(() =>
+      schemaWithFieldType(new GraphQLScalarType({
+        name: 'SomeScalar',
+        serialize: () => null,
+        parseValue: () => null,
+        parseLiteral: () => null,
+      }))
+    ).not.to.throw();
+  });
+
+  it('rejects a Scalar type defining parseValue but not parseLiteral', () => {
+    expect(() =>
+      schemaWithFieldType(new GraphQLScalarType({
+        name: 'SomeScalar',
+        serialize: () => null,
+        parseValue: () => null,
+      }))
+    ).to.throw(
+      'SomeScalar must provide both "parseValue" and "parseLiteral" functions.'
+    );
+  });
+
+  it('rejects a Scalar type defining parseLiteral but not parseValue', () => {
+    expect(() =>
+      schemaWithFieldType(new GraphQLScalarType({
+        name: 'SomeScalar',
+        serialize: () => null,
+        parseLiteral: () => null,
+      }))
+    ).to.throw(
+      'SomeScalar must provide both "parseValue" and "parseLiteral" functions.'
+    );
+  });
+
+  it('rejects a Scalar type defining parseValue and parseLiteral with an incorrect type', () => {
+    expect(() =>
+      schemaWithFieldType(new GraphQLScalarType({
+        name: 'SomeScalar',
+        serialize: () => null,
+        parseValue: {},
+        parseLiteral: {},
+      }))
+    ).to.throw(
+      'SomeScalar must provide both "parseValue" and "parseLiteral" functions.'
+    );
+  });
+
+});
+
+
 describe('Type System: Object fields must have output types', () => {
 
   function schemaWithObjectFieldOfType(fieldType) {

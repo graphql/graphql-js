@@ -187,6 +187,19 @@ export class GraphQLScalarType/* <T> */ {
     invariant(config.name, 'Type must be named.');
     this.name = config.name;
     this.description = config.description;
+    invariant(
+      typeof config.serialize === 'function',
+      `${this} must provide "serialize" function. If this custom Scalar is ` +
+      `also used as an input type, ensure "parseValue" and "parseLiteral" ` +
+      `functions are also provided.`
+    );
+    if (config.parseValue || config.parseLiteral) {
+      invariant(
+        typeof config.parseValue === 'function' &&
+        typeof config.parseLiteral === 'function',
+        `${this} must provide both "parseValue" and "parseLiteral" functions.`
+      );
+    }
     this._scalarConfig = config;
   }
 

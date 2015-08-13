@@ -98,7 +98,8 @@ describe('Type System: build schema from introspection', () => {
 
   it('uses built-in scalars when possible', async () => {
     var customScalar = new GraphQLScalarType({
-      name: 'CustomScalar'
+      name: 'CustomScalar',
+      serialize: () => null,
     });
     var schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -476,7 +477,8 @@ describe('Type System: build schema from introspection', () => {
 
   it('cannot use client schema for general execution', async () => {
     var customScalar = new GraphQLScalarType({
-      name: 'CustomScalar'
+      name: 'CustomScalar',
+      serialize: () => null,
     });
 
     var schema = new GraphQLSchema({
