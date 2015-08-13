@@ -231,7 +231,7 @@ describe('Execute: Handles inputs', () => {
         expect(caughtError).to.containSubset({
           locations: [ { line: 2, column: 17 } ],
           message:
-            'Variable $input expected value of type TestInputObject but ' +
+            'Variable "$input" expected value of type "TestInputObject" but ' +
             'got: {"a":"foo","b":"bar","c":null}.'
         });
       });
@@ -249,7 +249,7 @@ describe('Execute: Handles inputs', () => {
         expect(caughtError).to.containSubset({
           locations: [ { line: 2, column: 17 } ],
           message:
-            'Variable $input expected value of type TestInputObject but ' +
+            'Variable "$input" expected value of type "TestInputObject" but ' +
             'got: "foo bar".'
         });
       });
@@ -267,7 +267,7 @@ describe('Execute: Handles inputs', () => {
         expect(caughtError).to.containSubset({
           locations: [ { line: 2, column: 17 } ],
           message:
-            'Variable $input expected value of type TestInputObject but ' +
+            'Variable "$input" expected value of type "TestInputObject" but ' +
             'got: {"a":"foo","b":"bar"}.'
         });
       });
@@ -285,7 +285,7 @@ describe('Execute: Handles inputs', () => {
         expect(caughtError).to.containSubset({
           locations: [ { line: 2, column: 17 } ],
           message:
-            'Variable $input expected value of type TestInputObject but ' +
+            'Variable "$input" expected value of type "TestInputObject" but ' +
             'got: {"a":"foo","b":"bar","c":"baz","d":"dog"}.'
         });
       });
@@ -407,7 +407,7 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 31 } ],
         message:
-          'Variable $value expected value of type String! but got: undefined.'
+          'Variable "$value" of required type "String!" was not provided.'
       });
     });
 
@@ -429,7 +429,7 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 31 } ],
         message:
-          'Variable $value expected value of type String! but got: null.'
+          'Variable "$value" of required type "String!" was not provided.'
       });
     });
 
@@ -551,7 +551,7 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable $input expected value of type [String]! but got: null.'
+          'Variable "$input" of required type "[String]!" was not provided.'
       });
     });
 
@@ -642,7 +642,7 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable $input expected value of type [String!] but got: ' +
+          'Variable "$input" expected value of type "[String!]" but got: ' +
           '["A",null,"B"].'
       });
     });
@@ -665,7 +665,7 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable $input expected value of type [String!]! but got: null.'
+          'Variable "$input" of required type "[String!]!" was not provided.'
       });
     });
 
@@ -705,7 +705,7 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable $input expected value of type [String!]! but got: ' +
+          'Variable "$input" expected value of type "[String!]!" but got: ' +
           '["A",null,"B"].'
       });
     });
@@ -729,7 +729,7 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable $input expected value of type TestType! which cannot ' +
+          'Variable "$input" expected value of type "TestType!" which cannot ' +
           'be used as an input type.'
       });
     });
@@ -753,8 +753,8 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable $input expected value of type UnknownType! which cannot ' +
-          'be used as an input type.'
+          'Variable "$input" expected value of type "UnknownType!" which ' +
+          'cannot be used as an input type.'
       });
     });
 

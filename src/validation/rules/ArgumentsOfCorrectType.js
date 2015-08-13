@@ -15,7 +15,7 @@ import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 
 
 export function badValueMessage(argName: any, type: any, value: any): string {
-  return `Argument "${argName}" expected type "${type}" but got: "${value}".`;
+  return `Argument "${argName}" expected type "${type}" but got: ${value}.`;
 }
 
 /**

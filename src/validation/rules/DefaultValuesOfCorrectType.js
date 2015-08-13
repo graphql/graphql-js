@@ -30,7 +30,7 @@ export function badValueForDefaultArgMessage(
   value: any
 ): string {
   return `Variable "$${varName}" of type "${type}" has invalid default ` +
-    `value: "${value}".`;
+    `value: ${value}.`;
 }
 
 /**

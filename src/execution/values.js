@@ -85,10 +85,11 @@ function getVariableValue(
   input: ?any
 ): any {
   var type = typeFromAST(schema, definitionAST.type);
+  var variable = definitionAST.variable;
   if (!type || !isInputType(type)) {
     throw new GraphQLError(
-      `Variable $${definitionAST.variable.name.value} expected value of type ` +
-      `${print(definitionAST.type)} which cannot be used as an input type.`,
+      `Variable "$${variable.name.value}" expected value of type ` +
+      `"${print(definitionAST.type)}" which cannot be used as an input type.`,
       [ definitionAST ]
     );
   }
@@ -101,9 +102,16 @@ function getVariableValue(
     }
     return coerceValue(type, input);
   }
+  if (isNullish(input)) {
+    throw new GraphQLError(
+      `Variable "$${variable.name.value}" of required type ` +
+      `"${print(definitionAST.type)}" was not provided.`,
+      [ definitionAST ]
+    );
+  }
   throw new GraphQLError(
-    `Variable $${definitionAST.variable.name.value} expected value of type ` +
-    `${print(definitionAST.type)} but got: ${JSON.stringify(input)}.`,
+    `Variable "$${variable.name.value}" expected value of type ` +
+    `"${print(definitionAST.type)}" but got: ${JSON.stringify(input)}.`,
     [ definitionAST ]
   );
 }
