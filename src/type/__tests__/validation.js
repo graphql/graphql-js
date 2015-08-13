@@ -116,9 +116,9 @@ function schemaWithFieldType(type) {
 }
 
 
-describe('Type System: A schema must have Object root types', () => {
+describe('Type System: A Schema must have Object root types', () => {
 
-  it('rejects a schema without a query type', () => {
+  it('rejects a Schema without a query type', () => {
     expect(
       () => new GraphQLSchema({ })
     ).to.throw(
@@ -126,7 +126,7 @@ describe('Type System: A schema must have Object root types', () => {
     );
   });
 
-  it('rejects a schema whose query type is an input type', () => {
+  it('rejects a Schema whose query type is an input type', () => {
     expect(
       () => new GraphQLSchema({ query: SomeInputObjectType })
     ).to.throw(
@@ -134,7 +134,7 @@ describe('Type System: A schema must have Object root types', () => {
     );
   });
 
-  it('rejects a schema whose mutation type is an input type', () => {
+  it('rejects a Schema whose mutation type is an input type', () => {
     expect(
       () => new GraphQLSchema({
         query: SomeObjectType,
@@ -150,7 +150,7 @@ describe('Type System: A schema must have Object root types', () => {
 
 describe('Type System: Objects must have fields', () => {
 
-  it('accepts a schema with an object type with fields', () => {
+  it('accepts an Object type with fields object', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -161,7 +161,7 @@ describe('Type System: Objects must have fields', () => {
     ).not.to.throw();
   });
 
-  it('accepts a schema with an object type with a field function', () => {
+  it('accepts an Object type with a field function', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -174,7 +174,7 @@ describe('Type System: Objects must have fields', () => {
     ).not.to.throw();
   });
 
-  it('rejects a schema with missing fields', () => {
+  it('rejects an Object type with missing fields', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -185,7 +185,7 @@ describe('Type System: Objects must have fields', () => {
     );
   });
 
-  it('rejects a schema with incorrectly typed fields', () => {
+  it('rejects an Object type with incorrectly typed fields', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -199,7 +199,7 @@ describe('Type System: Objects must have fields', () => {
     );
   });
 
-  it('rejects a schema with empty fields', () => {
+  it('rejects an Object type with empty fields', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -211,7 +211,7 @@ describe('Type System: Objects must have fields', () => {
     );
   });
 
-  it('rejects a schema with an object type with a field function that returns nothing', () => {
+  it('rejects an Object type with a field function that returns nothing', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -225,7 +225,7 @@ describe('Type System: Objects must have fields', () => {
     );
   });
 
-  it('rejects a schema with an object type with a field function that returns empty', () => {
+  it('rejects an Object type with a field function that returns empty', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -244,7 +244,7 @@ describe('Type System: Objects must have fields', () => {
 
 describe('Type System: Fields args must be objects', () => {
 
-  it('accepts a schema with an object type with field args', () => {
+  it('accepts an Object type with field args', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -260,7 +260,7 @@ describe('Type System: Fields args must be objects', () => {
     ).not.to.throw();
   });
 
-  it('rejects a schema with an object type with incorrectly typed field args', () => {
+  it('rejects an Object type with incorrectly typed field args', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -283,7 +283,7 @@ describe('Type System: Fields args must be objects', () => {
 
 describe('Type System: Object interfaces must be array', () => {
 
-  it('accepts a schema with an object type with array interfaces', () => {
+  it('accepts an Object type with array interfaces', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -293,7 +293,7 @@ describe('Type System: Object interfaces must be array', () => {
     ).not.to.throw();
   });
 
-  it('accepts a schema with an object type with interfaces as a function returning an array', () => {
+  it('accepts an Object type with interfaces as a function returning an array', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -305,7 +305,7 @@ describe('Type System: Object interfaces must be array', () => {
     ).not.to.throw();
   });
 
-  it('rejects a schema with an object type with incorrectly typed interfaces', () => {
+  it('rejects an Object type with incorrectly typed interfaces', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -319,7 +319,7 @@ describe('Type System: Object interfaces must be array', () => {
     );
   });
 
-  it('rejects a schema with an object type with interfaces as a function returning an incorrect type', () => {
+  it('rejects an Object type with interfaces as a function returning an incorrect type', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -339,7 +339,7 @@ describe('Type System: Object interfaces must be array', () => {
 
 describe('Type System: Union types must be array', () => {
 
-  it('accepts a schema with a union type with array types', () => {
+  it('accepts a Union type with array types', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
@@ -349,7 +349,7 @@ describe('Type System: Union types must be array', () => {
     ).not.to.throw();
   });
 
-  it('rejects a schema with a union type without types', () => {
+  it('rejects a Union type without types', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
@@ -360,7 +360,7 @@ describe('Type System: Union types must be array', () => {
     );
   });
 
-  it('rejects a schema with a union type with empty types', () => {
+  it('rejects a Union type with empty types', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
@@ -372,7 +372,7 @@ describe('Type System: Union types must be array', () => {
     );
   });
 
-  it('rejects a schema with a union type with incorrectly typed types', () => {
+  it('rejects a Union type with incorrectly typed types', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
@@ -407,7 +407,7 @@ describe('Type System: Input Objects must have fields', () => {
     });
   }
 
-  it('accepts a schema with an object type with fields', () => {
+  it('accepts an Input Object type with fields', () => {
     expect(
       () => schemaWithInputObject(new GraphQLInputObjectType({
         name: 'SomeInputObject',
@@ -418,7 +418,7 @@ describe('Type System: Input Objects must have fields', () => {
     ).not.to.throw();
   });
 
-  it('accepts a schema with an object type with a field function', () => {
+  it('accepts an Input Object type with a field function', () => {
     expect(
       () => schemaWithInputObject(new GraphQLInputObjectType({
         name: 'SomeInputObject',
@@ -431,7 +431,7 @@ describe('Type System: Input Objects must have fields', () => {
     ).not.to.throw();
   });
 
-  it('rejects a schema with missing fields', () => {
+  it('rejects an Input Object type with missing fields', () => {
     expect(
       () => schemaWithInputObject(new GraphQLInputObjectType({
         name: 'SomeInputObject',
@@ -442,7 +442,7 @@ describe('Type System: Input Objects must have fields', () => {
     );
   });
 
-  it('rejects a schema with incorrectly typed fields', () => {
+  it('rejects an Input Object type with incorrectly typed fields', () => {
     expect(
       () => schemaWithInputObject(new GraphQLInputObjectType({
         name: 'SomeInputObject',
@@ -456,7 +456,7 @@ describe('Type System: Input Objects must have fields', () => {
     );
   });
 
-  it('rejects a schema with empty fields', () => {
+  it('rejects an Input Object type with empty fields', () => {
     expect(
       () => schemaWithInputObject(new GraphQLInputObjectType({
         name: 'SomeInputObject',
@@ -468,7 +468,7 @@ describe('Type System: Input Objects must have fields', () => {
     );
   });
 
-  it('rejects a schema with an object type with a field function that returns nothing', () => {
+  it('rejects an Input Object type with a field function that returns nothing', () => {
     expect(
       () => schemaWithInputObject(new GraphQLInputObjectType({
         name: 'SomeInputObject',
@@ -482,7 +482,7 @@ describe('Type System: Input Objects must have fields', () => {
     );
   });
 
-  it('rejects a schema with an object type with a field function that returns empty', () => {
+  it('rejects an Input Object type with a field function that returns empty', () => {
     expect(
       () => schemaWithInputObject(new GraphQLInputObjectType({
         name: 'SomeInputObject',
@@ -501,7 +501,7 @@ describe('Type System: Input Objects must have fields', () => {
 
 describe('Type System: Interface types must be resolvable', () => {
 
-  it('accepts an interface type defining resolveType', () => {
+  it('accepts an Interface type defining resolveType', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -511,7 +511,7 @@ describe('Type System: Interface types must be resolvable', () => {
     ).not.to.throw();
   });
 
-  it('accepts an interface with implementing type defining isTypeOf', () => {
+  it('accepts an Interface with implementing type defining isTypeOf', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -522,7 +522,7 @@ describe('Type System: Interface types must be resolvable', () => {
     ).not.to.throw();
   });
 
-  it('accepts an interface type defining resolveType with implementing type defining isTypeOf', () => {
+  it('accepts an Interface type defining resolveType with implementing type defining isTypeOf', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -533,7 +533,7 @@ describe('Type System: Interface types must be resolvable', () => {
     ).not.to.throw();
   });
 
-  it('rejects an interface type not defining resolveType with implementing type not defining isTypeOf', () => {
+  it('rejects an Interface type not defining resolveType with implementing type not defining isTypeOf', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
@@ -553,7 +553,7 @@ describe('Type System: Interface types must be resolvable', () => {
 
 describe('Type System: Union types must be resolvable', () => {
 
-  it('accepts a union type defining resolveType', () => {
+  it('accepts a Union type defining resolveType', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
@@ -563,7 +563,7 @@ describe('Type System: Union types must be resolvable', () => {
     ).not.to.throw();
   });
 
-  it('accepts a union of object types defining isTypeOf', () => {
+  it('accepts a Union of Object types defining isTypeOf', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
@@ -572,7 +572,7 @@ describe('Type System: Union types must be resolvable', () => {
     ).not.to.throw();
   });
 
-  it('accepts a union type defining resolveType of object types defining isTypeOf', () => {
+  it('accepts a Union type defining resolveType of Object types defining isTypeOf', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
@@ -582,7 +582,7 @@ describe('Type System: Union types must be resolvable', () => {
     ).not.to.throw();
   });
 
-  it('rejects a union type not defining resolveType of object types not defining isTypeOf', () => {
+  it('rejects a Union type not defining resolveType of Object types not defining isTypeOf', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
@@ -619,19 +619,19 @@ describe('Type System: Object fields must have output types', () => {
   }
 
   outputTypes.forEach(type => {
-    it(`accepts a schema with an output type as a field type: ${type}`, () => {
+    it(`accepts an output type as an Object field type: ${type}`, () => {
       expect(() => schemaWithObjectFieldOfType(type)).not.to.throw();
     });
   });
 
-  it('rejects a schema with an empty field type', () => {
+  it('rejects an empty Object field type', () => {
     expect(() => schemaWithObjectFieldOfType(undefined)).to.throw(
       'BadObject.badField field type must be Output Type but got: undefined.'
     );
   });
 
   notOutputTypes.forEach(type => {
-    it(`rejects a schema with a non-output type as a field type: ${type}`, () => {
+    it(`rejects a non-output type as an Object field type: ${type}`, () => {
       expect(() => schemaWithObjectFieldOfType(type)).to.throw(
         `BadObject.badField field type must be Output Type but got: ${type}.`
       );
@@ -660,7 +660,7 @@ describe('Type System: Objects can only implement interfaces', () => {
     });
   }
 
-  it('accepts a schema with an Object implementing an Interface', () => {
+  it('accepts an Object implementing an Interface', () => {
     expect(() =>
       schemaWithObjectImplementingType(SomeInterfaceType)
     ).not.to.throw();
@@ -675,7 +675,7 @@ describe('Type System: Objects can only implement interfaces', () => {
   ]);
 
   notInterfaceTypes.forEach(type => {
-    it(`rejects a schema with a non-output type as a field type: ${type}`, () => {
+    it(`rejects an Object implementing a non-Interface type: ${type}`, () => {
       expect(() => schemaWithObjectImplementingType(type)).to.throw(
         `BadObject may only implement Interface types, it cannot implement: ${type}.`
       );
@@ -704,7 +704,7 @@ describe('Type System: Unions must represent Object types', () => {
     });
   }
 
-  it('accepts a schema with an Unions of an Object Type', () => {
+  it('accepts a Union of an Object Type', () => {
     expect(() =>
       schemaWithUnionOfType(SomeObjectType)
     ).not.to.throw();
@@ -719,7 +719,7 @@ describe('Type System: Unions must represent Object types', () => {
   ]);
 
   notObjectTypes.forEach(type => {
-    it(`rejects a schema with a non-Object type as a Union type: ${type}`, () => {
+    it(`rejects a Union of a non-Object type: ${type}`, () => {
       expect(() => schemaWithUnionOfType(type)).to.throw(
         `BadUnion may only contain Object types, it cannot contain: ${type}.`
       );
@@ -750,19 +750,19 @@ describe('Type System: Interface fields must have output types', () => {
   }
 
   outputTypes.forEach(type => {
-    it(`accepts a schema with an output type as a field type: ${type}`, () => {
+    it(`accepts an output type as an Interface field type: ${type}`, () => {
       expect(() => schemaWithInterfaceFieldOfType(type)).not.to.throw();
     });
   });
 
-  it('rejects a schema with an empty field type', () => {
+  it('rejects an empty Interface field type', () => {
     expect(() => schemaWithInterfaceFieldOfType(undefined)).to.throw(
       'BadInterface.badField field type must be Output Type but got: undefined.'
     );
   });
 
   notOutputTypes.forEach(type => {
-    it(`rejects a schema with a non-output type as a field type: ${type}`, () => {
+    it(`rejects a non-output type as an Interface field type: ${type}`, () => {
       expect(() => schemaWithInterfaceFieldOfType(type)).to.throw(
         `BadInterface.badField field type must be Output Type but got: ${type}.`
       );
@@ -798,19 +798,19 @@ describe('Type System: Field arguments must have input types', () => {
   }
 
   inputTypes.forEach(type => {
-    it(`accepts a schema with an input type as an arg type: ${type}`, () => {
+    it(`accepts an input type as a field arg type: ${type}`, () => {
       expect(() => schemaWithArgOfType(type)).not.to.throw();
     });
   });
 
-  it('rejects a schema with an empty arg type', () => {
+  it('rejects an empty field arg type', () => {
     expect(() => schemaWithArgOfType(undefined)).to.throw(
       'BadObject.badField(badArg:) argument type must be Input Type but got: undefined.'
     );
   });
 
   notInputTypes.forEach(type => {
-    it(`rejects a schema with a non-input type as an arg type: ${type}`, () => {
+    it(`rejects a non-input type as a field arg type: ${type}`, () => {
       expect(() => schemaWithArgOfType(type)).to.throw(
         `BadObject.badField(badArg:) argument type must be Input Type but got: ${type}.`
       );
@@ -820,7 +820,7 @@ describe('Type System: Field arguments must have input types', () => {
 });
 
 
-describe('Type System: Input object fields must have input types', () => {
+describe('Type System: Input Object fields must have input types', () => {
 
   function schemaWithInputFieldOfType(inputFieldType) {
     var BadInputObjectType = new GraphQLInputObjectType({
@@ -846,19 +846,19 @@ describe('Type System: Input object fields must have input types', () => {
   }
 
   inputTypes.forEach(type => {
-    it(`accepts a schema with an input type as an input field type: ${type}`, () => {
+    it(`accepts an input type as an input field type: ${type}`, () => {
       expect(() => schemaWithInputFieldOfType(type)).not.to.throw();
     });
   });
 
-  it('rejects a schema with an empty input field type', () => {
+  it('rejects an empty input field type', () => {
     expect(() => schemaWithInputFieldOfType(undefined)).to.throw(
       'BadInputObject.badField field type must be Input Type but got: undefined.'
     );
   });
 
   notInputTypes.forEach(type => {
-    it(`rejects a schema with a non-input type as an input field type: ${type}`, () => {
+    it(`rejects a non-input type as an input field type: ${type}`, () => {
       expect(() => schemaWithInputFieldOfType(type)).to.throw(
         `BadInputObject.badField field type must be Input Type but got: ${type}.`
       );
