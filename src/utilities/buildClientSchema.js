@@ -228,6 +228,9 @@ export function buildClientSchema(
       name: interfaceIntrospection.name,
       description: interfaceIntrospection.description,
       fields: () => buildFieldDefMap(interfaceIntrospection),
+      resolveType: () => {
+        throw new Error('Client Schema cannot be used for execution.');
+      }
     });
   }
 
@@ -238,6 +241,9 @@ export function buildClientSchema(
       name: unionIntrospection.name,
       description: unionIntrospection.description,
       types: unionIntrospection.possibleTypes.map(getObjectType),
+      resolveType: () => {
+        throw new Error('Client Schema cannot be used for execution.');
+      }
     });
   }
 

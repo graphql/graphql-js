@@ -224,6 +224,7 @@ export function buildASTSchema(
     var typeName = def.name.value;
     var config = {
       name: typeName,
+      resolveType: () => null,
       fields: () => makeFieldDefMap(def),
     };
     return new GraphQLInterfaceType(config);
@@ -241,6 +242,7 @@ export function buildASTSchema(
   function makeUnionDef(def: UnionDefinition) {
     return new GraphQLUnionType({
       name: def.name.value,
+      resolveType: () => null,
       types: def.types.map(t => produceTypeDef(t)),
     });
   }

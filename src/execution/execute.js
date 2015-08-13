@@ -662,7 +662,7 @@ function completeValue(
   var objectType: ?GraphQLObjectType =
     returnType instanceof GraphQLObjectType ? returnType :
     isAbstractType(returnType) ?
-      ((returnType: any): GraphQLAbstractType).resolveType(result, info) :
+      ((returnType: any): GraphQLAbstractType).getObjectType(result, info) :
       null;
 
   if (!objectType) {

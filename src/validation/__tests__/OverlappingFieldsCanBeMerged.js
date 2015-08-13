@@ -383,6 +383,7 @@ describe('Validate: Overlapping fields can be merged', () => {
 
     var BoxUnion = new GraphQLUnionType({
       name: 'BoxUnion',
+      resolveType: () => StringBox,
       types: [ StringBox, IntBox, NonNullStringBox1, NonNullStringBox2 ]
     });
 

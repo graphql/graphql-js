@@ -53,6 +53,7 @@ var DogCommand = new GraphQLEnumType({
 
 var Dog = new GraphQLObjectType({
   name: 'Dog',
+  isTypeOf: () => true,
   fields: () => ({
     name: { type: GraphQLString },
     nickname: { type: GraphQLString },
@@ -83,6 +84,7 @@ var Dog = new GraphQLObjectType({
 
 var Cat = new GraphQLObjectType({
   name: 'Cat',
+  isTypeOf: () => true,
   fields: () => ({
     name: { type: GraphQLString },
     nickname: { type: GraphQLString },
@@ -110,6 +112,7 @@ var Intelligent = new GraphQLInterfaceType({
 
 var Human = new GraphQLObjectType({
   name: 'Human',
+  isTypeOf: () => true,
   interfaces: [ Being, Intelligent ],
   fields: () => ({
     name: {
@@ -124,6 +127,7 @@ var Human = new GraphQLObjectType({
 
 var Alien = new GraphQLObjectType({
   name: 'Alien',
+  isTypeOf: () => true,
   interfaces: [ Being, Intelligent ],
   fields: {
     iq: { type: GraphQLInt },

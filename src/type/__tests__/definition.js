@@ -81,7 +81,10 @@ var BlogMutation = new GraphQLObjectType({
   }
 });
 
-var ObjectType = new GraphQLObjectType({ name: 'Object' });
+var ObjectType = new GraphQLObjectType({
+  name: 'Object',
+  isTypeOf: () => true
+});
 var InterfaceType = new GraphQLInterfaceType({ name: 'Interface' });
 var UnionType = new GraphQLUnionType({ name: 'Union', types: [ ObjectType ] });
 var EnumType = new GraphQLEnumType({ name: 'Enum' });
@@ -178,7 +181,8 @@ describe('Type System: Example', () => {
       fields: {
         f: { type: GraphQLInt }
       },
-      interfaces: [ SomeInterface ]
+      interfaces: [ SomeInterface ],
+      isTypeOf: () => true
     });
 
     var schema = new GraphQLSchema({
@@ -206,7 +210,8 @@ describe('Type System: Example', () => {
       fields: {
         f: { type: GraphQLInt }
       },
-      interfaces: () => [ SomeInterface ]
+      interfaces: () => [ SomeInterface ],
+      isTypeOf: () => true
     });
 
     var schema = new GraphQLSchema({
@@ -298,7 +303,7 @@ describe('Type System: Example', () => {
       expect(() =>
         new GraphQLUnionType({ name: 'BadUnion', types: [ x ] })
       ).to.throw(
-        `Union BadUnion may only contain object types, it cannot contain: ${x}.`
+        `BadUnion may only contain Object types, it cannot contain: ${x}.`
       );
     });
   });

@@ -276,13 +276,15 @@ export class GraphQLObjectType {
   }
 
   getFields(): GraphQLFieldDefinitionMap {
-    return this._fields ||
-      (this._fields = defineFieldMap(this, this._typeConfig.fields));
+    return this._fields || (this._fields =
+      defineFieldMap(this, this._typeConfig.fields)
+    );
   }
 
   getInterfaces(): Array<GraphQLInterfaceType> {
-    return this._interfaces ||
-      (this._interfaces = defineInterfaces(this._typeConfig.interfaces || []));
+    return this._interfaces || (this._interfaces =
+      defineInterfaces(this, this._typeConfig.interfaces)
+    );
   }
 
   toString(): string {
@@ -294,13 +296,40 @@ function resolveMaybeThunk<T>(thingOrThunk: T | () => T): T {
   return typeof thingOrThunk === 'function' ? thingOrThunk() : thingOrThunk;
 }
 
-function defineInterfaces(interfacesOrThunk): Array<GraphQLInterfaceType> {
-  return resolveMaybeThunk(interfacesOrThunk);
+function defineInterfaces(
+  type: GraphQLObjectType,
+  interfacesOrThunk: Array<GraphQLInterfaceType> | ?GraphQLInterfacesThunk
+): Array<GraphQLInterfaceType> {
+  var interfaces = resolveMaybeThunk(interfacesOrThunk);
+  if (!interfaces) {
+    return [];
+  }
+  invariant(
+    Array.isArray(interfaces),
+    `${type} interfaces must be an Array or a function which returns an Array.`
+  );
+  interfaces.forEach(iface => {
+    invariant(
+      iface instanceof GraphQLInterfaceType,
+      `${type} may only implement Interface types, it cannot ` +
+      `implement: ${iface}.`
+    );
+    if (typeof iface.resolveType !== 'function') {
+      invariant(
+        typeof type.isTypeOf === 'function',
+        `Interface Type ${iface} does not provide a "resolveType" function ` +
+        `and implementing Type ${type} does not provide a "isTypeOf" ` +
+        `function. There is no way to resolve this implementing type ` +
+        `during execution.`
+      );
+    }
+  });
+  return interfaces;
 }
 
 function defineFieldMap(
   type: GraphQLNamedType,
-  fields: GraphQLFieldConfigMap
+  fields: GraphQLFieldConfigMap | GraphQLFieldConfigMapThunk
 ): GraphQLFieldDefinitionMap {
   var fieldMap: any = resolveMaybeThunk(fields);
   invariant(
@@ -455,6 +484,7 @@ export type GraphQLFieldDefinitionMap = {
 export class GraphQLInterfaceType {
   name: string;
   description: ?string;
+  resolveType: ?(value: any, info?: GraphQLResolveInfo) => ?GraphQLObjectType;
 
   _typeConfig: GraphQLInterfaceTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
@@ -465,6 +495,7 @@ export class GraphQLInterfaceType {
     invariant(config.name, 'Type must be named.');
     this.name = config.name;
     this.description = config.description;
+    this.resolveType = config.resolveType;
     this._typeConfig = config;
     this._implementations = [];
   }
@@ -490,8 +521,8 @@ export class GraphQLInterfaceType {
     return possibleTypeNames[type.name] === true;
   }
 
-  resolveType(value: any, info: GraphQLResolveInfo): ?GraphQLObjectType {
-    var resolver = this._typeConfig.resolveType;
+  getObjectType(value: any, info: GraphQLResolveInfo): ?GraphQLObjectType {
+    var resolver = this.resolveType;
     return resolver ? resolver(value, info) : getTypeOf(value, info, this);
   }
 
@@ -508,16 +539,7 @@ function getTypeOf(
   var possibleTypes = abstractType.getPossibleTypes();
   for (var i = 0; i < possibleTypes.length; i++) {
     var type = possibleTypes[i];
-    if (typeof type.isTypeOf !== 'function') {
-      // TODO: move this to a JS impl specific type system validation step
-      // so the error can be found before execution.
-      throw new Error(
-        'Non-Object Type ' + abstractType.name + ' does not implement ' +
-        'resolveType and Object Type ' + type.name + ' does not implement ' +
-        'isTypeOf. There is no way to determine if a value is of this type.'
-      );
-    }
-    if (type.isTypeOf(value, info)) {
+    if (typeof type.isTypeOf === 'function' && type.isTypeOf(value, info)) {
       return type;
     }
   }
@@ -563,6 +585,7 @@ export type GraphQLInterfaceTypeConfig = {
 export class GraphQLUnionType {
   name: string;
   description: ?string;
+  resolveType: ?(value: any, info?: GraphQLResolveInfo) => ?GraphQLObjectType;
 
   _typeConfig: GraphQLUnionTypeConfig;
   _types: Array<GraphQLObjectType>;
@@ -572,19 +595,26 @@ export class GraphQLUnionType {
     invariant(config.name, 'Type must be named.');
     this.name = config.name;
     this.description = config.description;
+    this.resolveType = config.resolveType;
     invariant(
-      config.types && config.types.length,
-      `Must provide types for Union ${config.name}.`
+      Array.isArray(config.types) && config.types.length > 0,
+      `Must provide Array of types for Union ${config.name}.`
     );
-    if (!config.types.every(x => x instanceof GraphQLObjectType)) {
-      var nonObjectTypes = config.types.filter(
-        x => !(x instanceof GraphQLObjectType)
+    config.types.forEach(type => {
+      invariant(
+        type instanceof GraphQLObjectType,
+        `${this} may only contain Object types, it cannot contain: ${type}.`
       );
-      throw new Error(
-        `Union ${config.name} may only contain object types, it cannot ` +
-        `contain: ${nonObjectTypes.join(', ')}.`
-      );
-    }
+      if (typeof this.resolveType !== 'function') {
+        invariant(
+          typeof type.isTypeOf === 'function',
+          `Union Type ${this} does not provide a "resolveType" function ` +
+          `and possible Type ${type} does not provide a "isTypeOf" ` +
+          `function. There is no way to resolve this possible type ` +
+          `during execution.`
+        );
+      }
+    });
     this._types = config.types;
     this._typeConfig = config;
   }
@@ -605,7 +635,7 @@ export class GraphQLUnionType {
     return possibleTypeNames[type.name] === true;
   }
 
-  resolveType(value: any, info: GraphQLResolveInfo): ?GraphQLObjectType {
+  getObjectType(value: any, info: GraphQLResolveInfo): ?GraphQLObjectType {
     var resolver = this._typeConfig.resolveType;
     return resolver ? resolver(value, info) : getTypeOf(value, info, this);
   }

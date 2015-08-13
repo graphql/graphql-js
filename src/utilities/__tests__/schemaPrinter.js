@@ -267,6 +267,7 @@ type Root {
   it('Print Interface', () => {
     var FooType = new GraphQLInterfaceType({
       name: 'Foo',
+      resolveType: () => null,
       fields: { str: { type: GraphQLString } },
     });
 
@@ -302,11 +303,13 @@ type Root {
   it('Print Multiple Interface', () => {
     var FooType = new GraphQLInterfaceType({
       name: 'Foo',
+      resolveType: () => null,
       fields: { str: { type: GraphQLString } },
     });
 
     var BaazType = new GraphQLInterfaceType({
       name: 'Baaz',
+      resolveType: () => null,
       fields: { int: { type: GraphQLInt } },
     });
 
@@ -364,11 +367,13 @@ type Root {
 
     var SingleUnion = new GraphQLUnionType({
       name: 'SingleUnion',
+      resolveType: () => null,
       types: [ FooType ],
     });
 
     var MultipleUnion = new GraphQLUnionType({
       name: 'MultipleUnion',
+      resolveType: () => null,
       types: [ FooType, BarType ],
     });
 
