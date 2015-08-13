@@ -652,8 +652,10 @@ export class GraphQLEnumType/* <T> */ {
   }
 
   parseValue(value: any): ?any/* T */ {
-    var enumValue = this._getValueLookup().get((value: any));
-    return enumValue ? enumValue.name : null;
+    var enumValue = this._getNameLookup().get(value);
+    if (enumValue) {
+      return enumValue.value;
+    }
   }
 
   parseLiteral(valueAST: Value): ?any/* T */ {
