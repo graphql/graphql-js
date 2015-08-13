@@ -16,31 +16,52 @@ export class GraphQLError extends Error {
   message: string;
   stack: string;
   nodes: ?Array<Node>;
+  source: any;
   positions: any;
   locations: any;
-  source: any;
 
   constructor(
     message: string,
     // A flow bug keeps us from declaring nodes as an array of Node
     nodes?: Array<any/* Node */>,
-    stack?: any
+    stack?: ?string
   ) {
     super(message);
     this.message = message;
-    this.stack = stack || message;
+    Object.defineProperty(this, 'stack', { value: stack || message });
+    Object.defineProperty(this, 'nodes', { value: nodes });
+  }
+}
+
+// Note: flow does not yet know about Object.defineProperty with `get`.
+Object.defineProperty(GraphQLError.prototype, 'source', ({
+  get() {
+    var nodes = this.nodes;
+    if (nodes && nodes.length > 0) {
+      var node = nodes[0];
+      return node && node.loc && node.loc.source;
+    }
+  }
+}: any));
+
+Object.defineProperty(GraphQLError.prototype, 'positions', ({
+  get() {
+    var nodes = this.nodes;
     if (nodes) {
-      this.nodes = nodes;
       var positions = nodes.map(node => node.loc && node.loc.start);
       if (positions.some(p => p)) {
-        this.positions = positions;
-        var loc = nodes[0].loc;
-        var source = loc && loc.source;
-        if (source) {
-          this.locations = positions.map(pos => getLocation(source, pos));
-          this.source = source;
-        }
+        return positions;
       }
     }
   }
-}
+}: any));
+
+Object.defineProperty(GraphQLError.prototype, 'locations', ({
+  get() {
+    var positions = this.positions;
+    var source = this.source;
+    if (positions && source) {
+      return positions.map(pos => getLocation(source, pos));
+    }
+  }
+}: any));
