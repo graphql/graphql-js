@@ -277,7 +277,7 @@ export class GraphQLObjectType {
 
   getFields(): GraphQLFieldDefinitionMap {
     return this._fields ||
-      (this._fields = defineFieldMap(this._typeConfig.fields));
+      (this._fields = defineFieldMap(this, this._typeConfig.fields));
   }
 
   getInterfaces(): Array<GraphQLInterfaceType> {
@@ -299,20 +299,43 @@ function defineInterfaces(interfacesOrThunk): Array<GraphQLInterfaceType> {
 }
 
 function defineFieldMap(
+  type: GraphQLNamedType,
   fields: GraphQLFieldConfigMap
 ): GraphQLFieldDefinitionMap {
   var fieldMap: any = resolveMaybeThunk(fields);
-  Object.keys(fieldMap).forEach(fieldName => {
+  invariant(
+    typeof fieldMap === 'object' && !Array.isArray(fieldMap),
+    `${type} fields must be an object with field names as keys or a ` +
+    `function which returns such an object.`
+  );
+  var fieldNames = Object.keys(fieldMap);
+  invariant(
+    fieldNames.length > 0,
+    `${type} fields must be an object with field names as keys or a ` +
+    `function which returns such an object.`
+  );
+  fieldNames.forEach(fieldName => {
     var field = fieldMap[fieldName];
     field.name = fieldName;
+    invariant(
+      isOutputType(field.type),
+      `${type}.${fieldName} field type must be Output Type but ` +
+      `got: ${field.type}.`
+    );
     if (!field.args) {
       field.args = [];
     } else {
+      invariant(
+        typeof field.args === 'object' && !Array.isArray(field.args),
+        `${type}.${fieldName} args must be an object with argument names ` +
+        `as keys.`
+      );
       field.args = Object.keys(field.args).map(argName => {
         var arg = field.args[argName];
         invariant(
-          arg.type,
-          'Arg must supply type. ' + fieldName + '.' + argName
+          isInputType(arg.type),
+          `${type}.${fieldName}(${argName}:) argument type must be ` +
+          `Input Type but got: ${arg.type}.`
         );
         return {
           name: argName,
@@ -448,7 +471,7 @@ export class GraphQLInterfaceType {
 
   getFields(): GraphQLFieldDefinitionMap {
     return this._fields ||
-      (this._fields = defineFieldMap(this._typeConfig.fields));
+      (this._fields = defineFieldMap(this, this._typeConfig.fields));
   }
 
   getPossibleTypes(): Array<GraphQLObjectType> {
@@ -778,11 +801,26 @@ export class GraphQLInputObjectType {
   }
 
   _defineFieldMap(): InputObjectFieldMap {
-    var fields = this._typeConfig.fields;
-    var fieldMap: any = typeof fields === 'function' ? fields() : fields;
-    Object.keys(fieldMap).forEach(fieldName => {
+    var fieldMap: any = resolveMaybeThunk(this._typeConfig.fields);
+    invariant(
+      typeof fieldMap === 'object' && !Array.isArray(fieldMap),
+      `${this} fields must be an object with field names as keys or a ` +
+      `function which returns such an object.`
+    );
+    var fieldNames = Object.keys(fieldMap);
+    invariant(
+      fieldNames.length > 0,
+      `${this} fields must be an object with field names as keys or a ` +
+      `function which returns such an object.`
+    );
+    fieldNames.forEach(fieldName => {
       var field = fieldMap[fieldName];
       field.name = fieldName;
+      invariant(
+        isInputType(field.type),
+        `${this}.${fieldName} field type must be Input Type but ` +
+        `got: ${field.type}.`
+      );
     });
     return fieldMap;
   }
@@ -849,7 +887,7 @@ export class GraphQLList {
   }
 
   toString(): string {
-    return '[' + this.ofType.toString() + ']';
+    return '[' + String(this.ofType) + ']';
   }
 }
 
