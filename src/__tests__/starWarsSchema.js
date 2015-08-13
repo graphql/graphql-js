@@ -17,7 +17,7 @@ import {
   GraphQLString,
 } from '../type';
 
-import { starWarsData, getFriends, artoo, luke } from './starWarsData.js';
+import { getFriends, getHero, getHuman, getDroid } from './starWarsData.js';
 
 /**
  * This is designed to be an end-to-end test, demonstrating
@@ -126,8 +126,8 @@ var characterInterface = new GraphQLInterfaceType({
       description: 'Which movies they appear in.',
     },
   }),
-  resolveType: (obj) => {
-    return starWarsData.Humans[obj.id] ? humanType : droidType;
+  resolveType: (character) => {
+    return getHuman(character.id) ? humanType : droidType;
   }
 });
 
@@ -240,14 +240,7 @@ var queryType = new GraphQLObjectType({
           type: episodeEnum
         }
       },
-      resolve: (root, { episode }) => {
-        if (episode === 5) {
-          // Luke is the hero of Episode V.
-          return luke;
-        }
-        // Artoo is the hero otherwise.
-        return artoo;
-      }
+      resolve: (root, { episode }) => getHero(episode),
     },
     human: {
       type: humanType,
@@ -257,7 +250,7 @@ var queryType = new GraphQLObjectType({
           type: new GraphQLNonNull(GraphQLString)
         }
       },
-      resolve: (root, { id }) => starWarsData.Humans[id],
+      resolve: (root, { id }) => getHuman(id),
     },
     droid: {
       type: droidType,
@@ -267,7 +260,7 @@ var queryType = new GraphQLObjectType({
           type: new GraphQLNonNull(GraphQLString)
         }
       },
-      resolve: (root, { id }) => starWarsData.Droids[id],
+      resolve: (root, { id }) => getDroid(id),
     },
   })
 });
