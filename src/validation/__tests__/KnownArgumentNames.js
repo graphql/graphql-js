@@ -148,21 +148,4 @@ describe('Validate: Known argument names', () => {
     ]);
   });
 
-  it('args may be on object but not interface', () => {
-    expectFailsRule(KnownArgumentNames, `
-      fragment nameSometimesHasArg on Being {
-        name(surname: true)
-        ... on Human {
-          name(surname: true)
-        }
-        ... on Dog {
-          name(surname: true)
-        }
-      }
-    `, [
-      unknownArg('surname', 'name', 'Being', 3, 14),
-      unknownArg('surname', 'name', 'Dog', 8, 16)
-    ]);
-  });
-
 });

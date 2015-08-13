@@ -31,14 +31,20 @@ import {
 var Being = new GraphQLInterfaceType({
   name: 'Being',
   fields: () => ({
-    name: { type: GraphQLString }
+    name: {
+      type: GraphQLString,
+      args: { surname: { type: GraphQLBoolean } },
+    }
   }),
 });
 
 var Pet = new GraphQLInterfaceType({
   name: 'Pet',
   fields: () => ({
-    name: { type: GraphQLString }
+    name: {
+      type: GraphQLString,
+      args: { surname: { type: GraphQLBoolean } },
+    }
   }),
 });
 
@@ -55,7 +61,10 @@ var Dog = new GraphQLObjectType({
   name: 'Dog',
   isTypeOf: () => true,
   fields: () => ({
-    name: { type: GraphQLString },
+    name: {
+      type: GraphQLString,
+      args: { surname: { type: GraphQLBoolean } },
+    },
     nickname: { type: GraphQLString },
     barkVolume: { type: GraphQLInt },
     barks: { type: GraphQLBoolean },
@@ -86,7 +95,10 @@ var Cat = new GraphQLObjectType({
   name: 'Cat',
   isTypeOf: () => true,
   fields: () => ({
-    name: { type: GraphQLString },
+    name: {
+      type: GraphQLString,
+      args: { surname: { type: GraphQLBoolean } },
+    },
     nickname: { type: GraphQLString },
     meows: { type: GraphQLBoolean },
     meowVolume: { type: GraphQLInt },
@@ -116,8 +128,8 @@ var Human = new GraphQLObjectType({
   interfaces: [ Being, Intelligent ],
   fields: () => ({
     name: {
+      type: GraphQLString,
       args: { surname: { type: GraphQLBoolean } },
-      type: GraphQLString
     },
     pets: { type: new GraphQLList(Pet) },
     relatives: { type: new GraphQLList(Human) },
@@ -131,6 +143,10 @@ var Alien = new GraphQLObjectType({
   interfaces: [ Being, Intelligent ],
   fields: {
     iq: { type: GraphQLInt },
+    name: {
+      type: GraphQLString,
+      args: { surname: { type: GraphQLBoolean } },
+    },
     numEyes: { type: GraphQLInt },
   }
 });

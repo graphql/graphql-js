@@ -66,6 +66,16 @@ export class GraphQLSchema {
       this.getMutationType(),
       __Schema
     ].reduce(typeMapReducer, {});
+
+    // Enforce correct interface implementations
+    Object.keys(this._typeMap).forEach(typeName => {
+      var type = this._typeMap[typeName];
+      if (type instanceof GraphQLObjectType) {
+        type.getInterfaces().forEach(
+          iface => assertObjectImplementsInterface(type, iface)
+        );
+      }
+    });
   }
 
   getQueryType(): GraphQLObjectType {
@@ -146,4 +156,75 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   return reducedMap;
+}
+
+function assertObjectImplementsInterface(
+  object: GraphQLObjectType,
+  iface: GraphQLInterfaceType
+): void {
+  var objectFieldMap = object.getFields();
+  var ifaceFieldMap = iface.getFields();
+
+  // Assert each interface field is implemented.
+  Object.keys(ifaceFieldMap).forEach(fieldName => {
+    var objectField = objectFieldMap[fieldName];
+    var ifaceField = ifaceFieldMap[fieldName];
+
+    // Assert interface field exists on object.
+    invariant(
+      objectField,
+      `"${iface}" expects field "${fieldName}" but "${object}" does not ` +
+      `provide it.`
+    );
+
+    // Assert interface field type matches object field type. (invariant)
+    invariant(
+      isEqualType(ifaceField.type, objectField.type),
+      `${iface}.${fieldName} expects type "${ifaceField.type}" but ` +
+      `${object}.${fieldName} provides type "${objectField.type}".`
+    );
+
+    // Assert each interface field arg is implemented.
+    ifaceField.args.forEach(ifaceArg => {
+      var argName = ifaceArg.name;
+      var objectArg = find(objectField.args, arg => arg.name === argName);
+
+      // Assert interface field arg exists on object field.
+      invariant(
+        objectArg,
+        `${iface}.${fieldName} expects argument "${argName}" but ` +
+        `${object}.${fieldName} does not provide it.`
+      );
+
+      // Assert interface field arg type matches object field arg type.
+      // (invariant)
+      invariant(
+        isEqualType(ifaceArg.type, objectArg.type),
+        `${iface}.${fieldName}(${argName}:) expects type "${ifaceArg.type}" ` +
+        `but ${object}.${fieldName}(${argName}:) provides ` +
+        `type "${objectArg.type}".`
+      );
+    });
+
+    // Assert argument set invariance.
+    objectField.args.forEach(objectArg => {
+      var argName = objectArg.name;
+      var ifaceArg = find(ifaceField.args, arg => arg.name === argName);
+      invariant(
+        ifaceArg,
+        `${iface}.${fieldName} does not define argument "${argName}" but ` +
+        `${object}.${fieldName} provides it.`
+      );
+    });
+  });
+}
+
+function isEqualType(typeA: GraphQLType, typeB: GraphQLType): boolean {
+  if (typeA instanceof GraphQLNonNull && typeB instanceof GraphQLNonNull) {
+    return isEqualType(typeA.ofType, typeB.ofType);
+  }
+  if (typeA instanceof GraphQLList && typeB instanceof GraphQLList) {
+    return isEqualType(typeA.ofType, typeB.ofType);
+  }
+  return typeA === typeB;
 }
