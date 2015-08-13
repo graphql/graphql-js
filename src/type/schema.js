@@ -104,10 +104,18 @@ type GraphQLSchemaConfig = {
 }
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
+  if (!type) {
+    return map;
+  }
   if (type instanceof GraphQLList || type instanceof GraphQLNonNull) {
     return typeMapReducer(map, type.ofType);
   }
-  if (!type || map[type.name]) {
+  if (map[type.name]) {
+    invariant(
+      map[type.name] === type,
+      `Schema must contain unique named types but contains multiple ` +
+      `types named "${type}".`
+    );
     return map;
   }
   map[type.name] = type;

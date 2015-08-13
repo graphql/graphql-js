@@ -56,11 +56,6 @@ var SomeInterfaceType = new GraphQLInterfaceType({
   fields: { f: { type: GraphQLString } }
 });
 
-var InterfaceTypeWithoutResolveType = new GraphQLInterfaceType({
-  name: 'InterfaceTypeWithoutResolveType',
-  fields: { f: { type: GraphQLString } }
-});
-
 var SomeEnumType = new GraphQLEnumType({
   name: 'SomeEnum',
   values: {
@@ -120,6 +115,28 @@ function schemaWithFieldType(type) {
 
 describe('Type System: A Schema must have Object root types', () => {
 
+  it('accepts a Schema whose query type is an object type', () => {
+    expect(
+      () => new GraphQLSchema({
+        query: SomeObjectType
+      })
+    ).not.to.throw();
+  });
+
+  it('accepts a Schema whose query and mutation types are object types', () => {
+    expect(() => {
+      var MutationType = new GraphQLObjectType({
+        name: 'Mutation',
+        fields: { edit: { type: GraphQLString } }
+      });
+
+      return new GraphQLSchema({
+        query: SomeObjectType,
+        mutation: MutationType
+      });
+    }).not.to.throw();
+  });
+
   it('rejects a Schema without a query type', () => {
     expect(
       () => new GraphQLSchema({ })
@@ -149,6 +166,98 @@ describe('Type System: A Schema must have Object root types', () => {
 
 });
 
+describe('Type System: A Schema must contain uniquely named types', () => {
+
+  it('rejects a Schema which redefines a built-in type', () => {
+    expect(() => {
+      var FakeString = new GraphQLScalarType({
+        name: 'String',
+        serialize: () => null,
+      });
+
+      var QueryType = new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          normal: { type: GraphQLString },
+          fake: { type: FakeString },
+        }
+      });
+
+      return new GraphQLSchema({ query: QueryType });
+    }).to.throw(
+      'Schema must contain unique named types but contains multiple types ' +
+      'named "String".'
+    );
+  });
+
+  it('rejects a Schema which defines an object type twice', () => {
+    expect(() => {
+      var A = new GraphQLObjectType({
+        name: 'SameName',
+        fields: { f: { type: GraphQLString } },
+      });
+
+      var B = new GraphQLObjectType({
+        name: 'SameName',
+        fields: { f: { type: GraphQLString } },
+      });
+
+      var QueryType = new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          a: { type: A },
+          b: { type: B }
+        }
+      });
+
+      return new GraphQLSchema({ query: QueryType });
+    }).to.throw(
+      'Schema must contain unique named types but contains multiple types ' +
+      'named "SameName".'
+    );
+  });
+
+  it('rejects a Schema which have same named objects implementing an interface', () => {
+    expect(() => {
+      var AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: { f: { type: GraphQLString } },
+      });
+
+      /* eslint-disable no-unused-vars */
+
+      // Automatically included in Interface
+      var FirstBadObject = new GraphQLObjectType({
+        name: 'BadObject',
+        interfaces: [ AnotherInterface ],
+        fields: { f: { type: GraphQLString } },
+      });
+
+      // Automatically included in Interface
+      var SecondBadObject = new GraphQLObjectType({
+        name: 'BadObject',
+        interfaces: [ AnotherInterface ],
+        fields: { f: { type: GraphQLString } },
+      });
+
+      /* eslint-enable no-unused-vars */
+
+      var QueryType = new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          iface: { type: AnotherInterface },
+        }
+      });
+
+      return new GraphQLSchema({ query: QueryType });
+    }).to.throw(
+      'Schema must contain unique named types but contains multiple types ' +
+      'named "BadObject".'
+    );
+  });
+
+});
 
 describe('Type System: Objects must have fields', () => {
 
@@ -286,34 +395,44 @@ describe('Type System: Fields args must be objects', () => {
 describe('Type System: Object interfaces must be array', () => {
 
   it('accepts an Object type with array interfaces', () => {
-    expect(
-      () => schemaWithFieldType(new GraphQLObjectType({
-        name: 'SomeObject',
-        interfaces: [ SomeInterfaceType ],
+    expect(() => {
+      var AnotherInterfaceType = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
         fields: { f: { type: GraphQLString } }
-      }))
-    ).not.to.throw();
+      });
+
+      schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        interfaces: [ AnotherInterfaceType ],
+        fields: { f: { type: GraphQLString } }
+      }));
+    }).not.to.throw();
   });
 
   it('accepts an Object type with interfaces as a function returning an array', () => {
-    expect(
-      () => schemaWithFieldType(new GraphQLObjectType({
+    expect(() => {
+      var AnotherInterfaceType = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: { f: { type: GraphQLString } }
+      });
+
+      schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
         interfaces() {
-          return [ SomeInterfaceType ];
+          return [ AnotherInterfaceType ];
         },
         fields: { f: { type: GraphQLString } }
-      }))
-    ).not.to.throw();
+      }));
+    }).not.to.throw();
   });
 
   it('rejects an Object type with incorrectly typed interfaces', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
-        interfaces: {
-          SomeInterfaceType
-        },
+        interfaces: {},
         fields: { f: { type: GraphQLString } }
       }))
     ).to.throw(
@@ -326,9 +445,7 @@ describe('Type System: Object interfaces must be array', () => {
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
         interfaces() {
-          return {
-            SomeInterfaceType
-          };
+          return {};
         },
         fields: { f: { type: GraphQLString } }
       }))
@@ -504,45 +621,67 @@ describe('Type System: Input Objects must have fields', () => {
 describe('Type System: Interface types must be resolvable', () => {
 
   it('accepts an Interface type defining resolveType', () => {
-    expect(() =>
+    expect(() => {
+      var AnotherInterfaceType = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: { f: { type: GraphQLString } }
+      });
+
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
-        interfaces: [ SomeInterfaceType ],
+        interfaces: [ AnotherInterfaceType ],
         fields: { f: { type: GraphQLString } }
-      }))
-    ).not.to.throw();
+      }));
+    }).not.to.throw();
   });
 
   it('accepts an Interface with implementing type defining isTypeOf', () => {
-    expect(() =>
+    expect(() => {
+      var InterfaceTypeWithoutResolveType = new GraphQLInterfaceType({
+        name: 'InterfaceTypeWithoutResolveType',
+        fields: { f: { type: GraphQLString } }
+      });
+
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
         isTypeOf: () => true,
         interfaces: [ InterfaceTypeWithoutResolveType ],
         fields: { f: { type: GraphQLString } }
-      }))
-    ).not.to.throw();
+      }));
+    }).not.to.throw();
   });
 
   it('accepts an Interface type defining resolveType with implementing type defining isTypeOf', () => {
-    expect(() =>
+    expect(() => {
+      var AnotherInterfaceType = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: { f: { type: GraphQLString } }
+      });
+
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
         isTypeOf: () => true,
-        interfaces: [ SomeInterfaceType ],
+        interfaces: [ AnotherInterfaceType ],
         fields: { f: { type: GraphQLString } }
-      }))
-    ).not.to.throw();
+      }));
+    }).not.to.throw();
   });
 
   it('rejects an Interface type not defining resolveType with implementing type not defining isTypeOf', () => {
-    expect(() =>
+    expect(() => {
+      var InterfaceTypeWithoutResolveType = new GraphQLInterfaceType({
+        name: 'InterfaceTypeWithoutResolveType',
+        fields: { f: { type: GraphQLString } }
+      });
+
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
         interfaces: [ InterfaceTypeWithoutResolveType ],
         fields: { f: { type: GraphQLString } }
-      }))
-    ).to.throw(
+      }));
+    }).to.throw(
       'Interface Type InterfaceTypeWithoutResolveType does not provide a ' +
       '"resolveType" function and implementing Type SomeObject does not ' +
       'provide a "isTypeOf" function. ' +
@@ -750,9 +889,15 @@ describe('Type System: Objects can only implement interfaces', () => {
   }
 
   it('accepts an Object implementing an Interface', () => {
-    expect(() =>
-      schemaWithObjectImplementingType(SomeInterfaceType)
-    ).not.to.throw();
+    expect(() => {
+      var AnotherInterfaceType = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: { f: { type: GraphQLString } }
+      });
+
+      schemaWithObjectImplementingType(AnotherInterfaceType);
+    }).not.to.throw();
   });
 
   var notInterfaceTypes = withModifiers([
