@@ -132,7 +132,7 @@ function runTests(filepaths) {
 
   return exec('mocha', [
     '--reporter', 'progress',
-    '--require', 'scripts/mocha-bootload'
+    '--require', 'resources/mocha-bootload'
   ].concat(
     allTests(filepaths) ? filepaths.map(srcPath) : ['src/**/__tests__/**/*.js']
   )).catch(() => false);
