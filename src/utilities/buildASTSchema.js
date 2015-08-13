@@ -160,10 +160,6 @@ export function buildASTSchema(
     });
   }
 
-  // This actually constructs all the types by iterating over the schema
-  // This makes it so that errors actually get caught before this function
-  // exits.
-  schema.getTypeMap();
   return schema;
 
   function makeSchemaDef(def) {

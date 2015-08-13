@@ -496,7 +496,9 @@ type Root {
   it('Print Introspection Schema', () => {
     var Root = new GraphQLObjectType({
       name: 'Root',
-      fields: {},
+      fields: {
+        onlyField: { type: GraphQLString }
+      },
     });
     var Schema = new GraphQLSchema({ query: Root });
     var output = '\n' + printIntrospectionSchema(Schema);

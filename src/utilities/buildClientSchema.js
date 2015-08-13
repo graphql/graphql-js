@@ -318,10 +318,5 @@ export function buildClientSchema(
     mutation: (mutationType: any)
   });
 
-  // The schema is lazy by default, getting the type map will resolve any
-  // deferred functions, ensuring that any errors are presented before this
-  // function exits.
-  schema.getTypeMap();
-
   return schema;
 }

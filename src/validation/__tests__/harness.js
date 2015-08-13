@@ -111,7 +111,7 @@ var Intelligent = new GraphQLInterfaceType({
 var Human = new GraphQLObjectType({
   name: 'Human',
   interfaces: [ Being, Intelligent ],
-  fields: {
+  fields: () => ({
     name: {
       args: { surname: { type: GraphQLBoolean } },
       type: GraphQLString
@@ -119,7 +119,7 @@ var Human = new GraphQLObjectType({
     pets: { type: new GraphQLList(Pet) },
     relatives: { type: new GraphQLList(Human) },
     iq: { type: GraphQLInt },
-  }
+  })
 });
 
 var Alien = new GraphQLObjectType({
@@ -199,7 +199,7 @@ var ComplicatedArgs = new GraphQLObjectType({
       args: { floatArg: { type: GraphQLFloat } },
     },
     idArgField: {
-      tyoe: GraphQLString,
+      type: GraphQLString,
       args: { idArg: { type: GraphQLID } },
     },
     stringListArgField: {

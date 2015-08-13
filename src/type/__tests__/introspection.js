@@ -30,7 +30,9 @@ describe('Introspection', () => {
     var EmptySchema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'QueryRoot',
-        fields: {}
+        fields: {
+          onlyField: { type: GraphQLString }
+        }
       })
     });
 
@@ -47,7 +49,6 @@ describe('Introspection', () => {
             {
               kind: 'OBJECT',
               name: 'QueryRoot',
-              fields: [],
               inputFields: null,
               interfaces: [],
               enumValues: null,
@@ -1146,7 +1147,9 @@ describe('Introspection', () => {
   it('exposes descriptions on types and fields', async () => {
     var QueryRoot = new GraphQLObjectType({
       name: 'QueryRoot',
-      fields: {}
+      fields: {
+        onlyField: { type: GraphQLString }
+      }
     });
 
     var schema = new GraphQLSchema({ query: QueryRoot });
@@ -1200,7 +1203,9 @@ describe('Introspection', () => {
   it('exposes descriptions on enums', async () => {
     var QueryRoot = new GraphQLObjectType({
       name: 'QueryRoot',
-      fields: {}
+      fields: {
+        onlyField: { type: GraphQLString }
+      }
     });
 
     var schema = new GraphQLSchema({ query: QueryRoot });

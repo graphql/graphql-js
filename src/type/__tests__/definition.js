@@ -168,17 +168,26 @@ describe('Type System: Example', () => {
   it('includes interfaces\' subtypes in the type map', () => {
     var SomeInterface = new GraphQLInterfaceType({
       name: 'SomeInterface',
-      fields: {}
+      fields: {
+        f: { type: GraphQLInt }
+      }
     });
 
     var SomeSubtype = new GraphQLObjectType({
       name: 'SomeSubtype',
-      fields: {},
+      fields: {
+        f: { type: GraphQLInt }
+      },
       interfaces: [ SomeInterface ]
     });
 
     var schema = new GraphQLSchema({
-      query: SomeInterface
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          iface: { type: SomeInterface }
+        }
+      })
     });
 
     expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);
@@ -187,17 +196,26 @@ describe('Type System: Example', () => {
   it('includes interfaces\' thunk subtypes in the type map', () => {
     var SomeInterface = new GraphQLInterfaceType({
       name: 'SomeInterface',
-      fields: {}
+      fields: {
+        f: { type: GraphQLInt }
+      }
     });
 
     var SomeSubtype = new GraphQLObjectType({
       name: 'SomeSubtype',
-      fields: {},
+      fields: {
+        f: { type: GraphQLInt }
+      },
       interfaces: () => [ SomeInterface ]
     });
 
     var schema = new GraphQLSchema({
-      query: SomeInterface
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          iface: { type: SomeInterface }
+        }
+      })
     });
 
     expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);

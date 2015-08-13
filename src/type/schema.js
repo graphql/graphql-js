@@ -21,6 +21,7 @@ import { GraphQLIncludeDirective, GraphQLSkipDirective } from './directives';
 import type { GraphQLDirective } from './directives';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
+import invariant from '../jsutils/invariant';
 
 
 /**
@@ -44,7 +45,27 @@ export class GraphQLSchema {
   _directives: Array<GraphQLDirective>;
 
   constructor(config: GraphQLSchemaConfig) {
+    invariant(
+      typeof config === 'object',
+      'Must provide configuration object.'
+    );
+    invariant(
+      config.query instanceof GraphQLObjectType,
+      `Schema query must be Object Type but got: ${config.query}.`
+    );
+    invariant(
+      !config.mutation || config.mutation instanceof GraphQLObjectType,
+      `Schema mutation must be Object Type if provided but ` +
+      `got: ${config.mutation}.`
+    );
     this._schemaConfig = config;
+
+    // Build type map now to detect any errors within this schema.
+    this._typeMap = [
+      this.getQueryType(),
+      this.getMutationType(),
+      __Schema
+    ].reduce(typeMapReducer, {});
   }
 
   getQueryType(): GraphQLObjectType {
@@ -56,11 +77,7 @@ export class GraphQLSchema {
   }
 
   getTypeMap(): TypeMap {
-    return this._typeMap || (this._typeMap = [
-      this.getQueryType(),
-      this.getMutationType(),
-      __Schema
-    ].reduce(typeMapReducer, {}));
+    return this._typeMap;
   }
 
   getType(name: string): ?GraphQLType {
