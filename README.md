@@ -72,7 +72,9 @@ var schema = new GraphQLSchema({
     fields: {
       hello: {
         type: GraphQLString,
-        resolve: () => 'world'
+        resolve() {
+          return 'world';
+        }
       }
     }
   })
