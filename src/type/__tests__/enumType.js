@@ -113,19 +113,6 @@ describe('Type System: Enum Values', () => {
     });
   });
 
-  it('accepts enum literals as input arguments to mutations',
-    async () => {
-      expect(
-        await graphql(schema,
-          'mutation x($color:Color!) { favoriteEnum(color:$color) }',
-            null, {color: 'GREEN'})
-      ).to.deep.equal({
-        data: {
-          favoriteEnum: 'GREEN'
-        }
-      });
-    });
-
   it('does not accept incorrect internal value', async () => {
     expect(
       await graphql(schema, '{ colorEnum(fromString: "GREEN") }')
@@ -167,6 +154,21 @@ describe('Type System: Enum Values', () => {
     ).to.deep.equal({
       data: {
         colorEnum: 'BLUE'
+      }
+    });
+  });
+
+  it('accepts enum literals as input arguments to mutations', async () => {
+    expect(
+      await graphql(
+        schema,
+        'mutation x($color: Color!) { favoriteEnum(color: $color) }',
+        null,
+        { color: 'GREEN' }
+      )
+    ).to.deep.equal({
+      data: {
+        favoriteEnum: 'GREEN'
       }
     });
   });
