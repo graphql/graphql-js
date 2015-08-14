@@ -162,7 +162,7 @@ describe('Execute: Handles list nullability', () => {
         null,
         { data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
@@ -185,7 +185,7 @@ describe('Execute: Handles list nullability', () => {
         resolved(null),
         { data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
@@ -240,7 +240,7 @@ describe('Execute: Handles list nullability', () => {
         [ 1, null, 2 ],
         { data: { nest: { test: null } },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
@@ -263,7 +263,7 @@ describe('Execute: Handles list nullability', () => {
         resolved([ 1, null, 2 ]),
         { data: { nest: { test: null } },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
@@ -295,7 +295,7 @@ describe('Execute: Handles list nullability', () => {
         [ resolved(1), resolved(null), resolved(2) ],
         { data: { nest: { test: null } },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
@@ -329,7 +329,7 @@ describe('Execute: Handles list nullability', () => {
         [ 1, null, 2 ],
         { data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
@@ -338,7 +338,7 @@ describe('Execute: Handles list nullability', () => {
         null,
         { data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
@@ -356,7 +356,7 @@ describe('Execute: Handles list nullability', () => {
         resolved([ 1, null, 2 ]),
         { data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
@@ -365,7 +365,7 @@ describe('Execute: Handles list nullability', () => {
         resolved(null),
         { data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
@@ -392,7 +392,7 @@ describe('Execute: Handles list nullability', () => {
         [ resolved(1), resolved(null), resolved(2) ],
         { data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field "test" of type "DataType".',
+            { message: 'Cannot return null for non-nullable field DataType.test.',
               locations: [ { line: 1, column: 10 } ] }
           ] }
       ));
