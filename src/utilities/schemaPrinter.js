@@ -102,8 +102,7 @@ function printUnion(type: GraphQLUnionType): string {
 }
 
 function printEnum(type: GraphQLEnumType): string {
-  var valueMap = type.getValues();
-  var values = Object.keys(valueMap).map(valueName => valueMap[valueName]);
+  var values = type.getValues();
   return `enum ${type.name} {\n` +
     values.map(v => '  ' + v.name).join('\n') + '\n' +
   '}';

@@ -87,7 +87,7 @@ var ObjectType = new GraphQLObjectType({
 });
 var InterfaceType = new GraphQLInterfaceType({ name: 'Interface' });
 var UnionType = new GraphQLUnionType({ name: 'Union', types: [ ObjectType ] });
-var EnumType = new GraphQLEnumType({ name: 'Enum' });
+var EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
 var InputObjectType = new GraphQLInputObjectType({ name: 'InputObject' });
 
 describe('Type System: Example', () => {

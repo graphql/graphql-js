@@ -147,9 +147,7 @@ var __Type = new GraphQLObjectType({
       },
       resolve(type, { includeDeprecated }) {
         if (type instanceof GraphQLEnumType) {
-          var valueMap = type.getValues();
-          var values =
-            Object.keys(valueMap).map(valueName => valueMap[valueName]);
+          var values = type.getValues();
           if (!includeDeprecated) {
             values = values.filter(value => !value.deprecationReason);
           }

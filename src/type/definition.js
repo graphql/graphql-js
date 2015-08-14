@@ -9,6 +9,7 @@
  */
 
 import invariant from '../jsutils/invariant';
+import isNullish from '../jsutils/isNullish';
 import { ENUM } from '../language/kinds';
 import type {
   OperationDefinition,
@@ -296,6 +297,12 @@ export class GraphQLObjectType {
     invariant(config.name, 'Type must be named.');
     this.name = config.name;
     this.description = config.description;
+    if (config.isTypeOf) {
+      invariant(
+        typeof config.isTypeOf === 'function',
+        `${this} must provide "isTypeOf" as a function.`
+      );
+    }
     this.isTypeOf = config.isTypeOf;
     this._typeConfig = config;
     addImplementationToInterfaces(this);
@@ -359,7 +366,7 @@ function defineFieldMap(
 ): GraphQLFieldDefinitionMap {
   var fieldMap: any = resolveMaybeThunk(fields);
   invariant(
-    typeof fieldMap === 'object' && !Array.isArray(fieldMap),
+    isPlainObj(fieldMap),
     `${type} fields must be an object with field names as keys or a ` +
     `function which returns such an object.`
   );
@@ -381,7 +388,7 @@ function defineFieldMap(
       field.args = [];
     } else {
       invariant(
-        typeof field.args === 'object' && !Array.isArray(field.args),
+        isPlainObj(field.args),
         `${type}.${fieldName} args must be an object with argument names ` +
         `as keys.`
       );
@@ -402,6 +409,10 @@ function defineFieldMap(
     }
   });
   return fieldMap;
+}
+
+function isPlainObj(obj) {
+  return obj && typeof obj === 'object' && !Array.isArray(obj);
 }
 
 /**
@@ -521,6 +532,12 @@ export class GraphQLInterfaceType {
     invariant(config.name, 'Type must be named.');
     this.name = config.name;
     this.description = config.description;
+    if (config.resolveType) {
+      invariant(
+        typeof config.resolveType === 'function',
+        `${this} must provide "resolveType" as a function.`
+      );
+    }
     this.resolveType = config.resolveType;
     this._typeConfig = config;
     this._implementations = [];
@@ -621,6 +638,12 @@ export class GraphQLUnionType {
     invariant(config.name, 'Type must be named.');
     this.name = config.name;
     this.description = config.description;
+    if (config.resolveType) {
+      invariant(
+        typeof config.resolveType === 'function',
+        `${this} must provide "resolveType" as a function.`
+      );
+    }
     this.resolveType = config.resolveType;
     invariant(
       Array.isArray(config.types) && config.types.length > 0,
@@ -711,18 +734,19 @@ export class GraphQLEnumType/* <T> */ {
   description: ?string;
 
   _enumConfig: GraphQLEnumTypeConfig/* <T> */;
-  _values: GraphQLEnumValueDefinitionMap/* <T> */;
+  _values: Array<GraphQLEnumValueDefinition/* <T> */>;
   _valueLookup: Map<any/* T */, GraphQLEnumValueDefinition>;
-  _nameLookup: Map<string, GraphQLEnumValueDefinition>;
+  _nameLookup: { [valueName: string]: GraphQLEnumValueDefinition };
 
   constructor(config: GraphQLEnumTypeConfig/* <T> */) {
     this.name = config.name;
     this.description = config.description;
+    this._values = defineEnumValues(this, config.values);
     this._enumConfig = config;
   }
 
-  getValues(): GraphQLEnumValueDefinitionMap/* <T> */ {
-    return this._values || (this._values = this._defineValueMap());
+  getValues(): Array<GraphQLEnumValueDefinition/* <T> */> {
+    return this._values;
   }
 
   serialize(value: any/* T */): ?string {
@@ -731,7 +755,7 @@ export class GraphQLEnumType/* <T> */ {
   }
 
   parseValue(value: any): ?any/* T */ {
-    var enumValue = this._getNameLookup().get(value);
+    var enumValue = this._getNameLookup()[value];
     if (enumValue) {
       return enumValue.value;
     }
@@ -739,31 +763,17 @@ export class GraphQLEnumType/* <T> */ {
 
   parseLiteral(valueAST: Value): ?any/* T */ {
     if (valueAST.kind === ENUM) {
-      var enumValue = this._getNameLookup().get(valueAST.value);
+      var enumValue = this._getNameLookup()[valueAST.value];
       if (enumValue) {
         return enumValue.value;
       }
     }
   }
 
-  _defineValueMap(): GraphQLEnumValueDefinitionMap/* <T> */ {
-    var valueMap = (this._enumConfig.values: any);
-    Object.keys(valueMap).forEach(valueName => {
-      var value = valueMap[valueName];
-      value.name = valueName;
-      if (!value.hasOwnProperty('value')) {
-        value.value = valueName;
-      }
-    });
-    return valueMap;
-  }
-
   _getValueLookup(): Map<any/* T */, GraphQLEnumValueDefinition> {
     if (!this._valueLookup) {
       var lookup = new Map();
-      var values = this.getValues();
-      Object.keys(values).forEach(valueName => {
-        var value = values[valueName];
+      this.getValues().forEach(value => {
         lookup.set(value.value, value);
       });
       this._valueLookup = lookup;
@@ -771,13 +781,11 @@ export class GraphQLEnumType/* <T> */ {
     return this._valueLookup;
   }
 
-  _getNameLookup(): Map<string, GraphQLEnumValueDefinition> {
+  _getNameLookup(): { [valueName: string]: GraphQLEnumValueDefinition } {
     if (!this._nameLookup) {
-      var lookup = new Map();
-      var values = this.getValues();
-      Object.keys(values).forEach(valueName => {
-        var value = values[valueName];
-        lookup.set(value.name, value);
+      var lookup = Object.create(null);
+      this.getValues().forEach(value => {
+        lookup[value.name] = value;
       });
       this._nameLookup = lookup;
     }
@@ -787,6 +795,34 @@ export class GraphQLEnumType/* <T> */ {
   toString(): string {
     return this.name;
   }
+}
+
+function defineEnumValues(
+  type: GraphQLEnumType,
+  valueMap: GraphQLEnumValueConfigMap/* <T> */
+): Array<GraphQLEnumValueDefinition/* <T> */> {
+  invariant(
+    isPlainObj(valueMap),
+    `${type} values must be an object with value names as keys.`
+  );
+  var valueNames = Object.keys(valueMap);
+  invariant(
+    valueNames.length > 0,
+    `${type} values must be an object with value names as keys.`
+  );
+  return valueNames.map(valueName => {
+    var value = valueMap[valueName];
+    invariant(
+      isPlainObj(value),
+      `${type}.${valueName} must refer to an object with a "value" key ` +
+      `representing an internal value but got: ${value}.`
+    );
+    value.name = valueName;
+    if (isNullish(value.value)) {
+      value.value = valueName;
+    }
+    return value;
+  });
 }
 
 export type GraphQLEnumTypeConfig/* <T> */ = {
@@ -804,10 +840,6 @@ export type GraphQLEnumValueConfig/* <T> */ = {
   deprecationReason?: string;
   description?: ?string;
 }
-
-export type GraphQLEnumValueDefinitionMap/* <T> */ = {
-  [valueName: string]: GraphQLEnumValueDefinition/* <T> */;
-};
 
 export type GraphQLEnumValueDefinition/* <T> */ = {
   name: string;
@@ -859,7 +891,7 @@ export class GraphQLInputObjectType {
   _defineFieldMap(): InputObjectFieldMap {
     var fieldMap: any = resolveMaybeThunk(this._typeConfig.fields);
     invariant(
-      typeof fieldMap === 'object' && !Array.isArray(fieldMap),
+      isPlainObj(fieldMap),
       `${this} fields must be an object with field names as keys or a ` +
       `function which returns such an object.`
     );

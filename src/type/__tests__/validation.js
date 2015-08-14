@@ -618,6 +618,33 @@ describe('Type System: Input Objects must have fields', () => {
 });
 
 
+describe('Type System: Object types must be assertable', () => {
+
+  it('accepts an Object type with an isTypeOf function', () => {
+    expect(() => {
+      schemaWithFieldType(new GraphQLObjectType({
+        name: 'AnotherObject',
+        isTypeOf: () => true,
+        fields: { f: { type: GraphQLString } }
+      }));
+    }).not.to.throw();
+  });
+
+  it('rejects an Object type with an incorrect type for isTypeOf', () => {
+    expect(() => {
+      schemaWithFieldType(new GraphQLObjectType({
+        name: 'AnotherObject',
+        isTypeOf: {},
+        fields: { f: { type: GraphQLString } }
+      }));
+    }).to.throw(
+      'AnotherObject must provide "isTypeOf" as a function.'
+    );
+  });
+
+});
+
+
 describe('Type System: Interface types must be resolvable', () => {
 
   it('accepts an Interface type defining resolveType', () => {
@@ -667,6 +694,18 @@ describe('Type System: Interface types must be resolvable', () => {
         fields: { f: { type: GraphQLString } }
       }));
     }).not.to.throw();
+  });
+
+  it('rejects an Interface type with an incorrect type for resolveType', () => {
+    expect(() =>
+      new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: {},
+        fields: { f: { type: GraphQLString } }
+      })
+    ).to.throw(
+      'AnotherInterface must provide "resolveType" as a function.'
+    );
   });
 
   it('rejects an Interface type not defining resolveType with implementing type not defining isTypeOf', () => {
@@ -721,6 +760,18 @@ describe('Type System: Union types must be resolvable', () => {
         types: [ ObjectWithIsTypeOf ],
       }))
     ).not.to.throw();
+  });
+
+  it('rejects an Interface type with an incorrect type for resolveType', () => {
+    expect(() =>
+      schemaWithFieldType(new GraphQLUnionType({
+        name: 'SomeUnion',
+        resolveType: {},
+        types: [ ObjectWithIsTypeOf ],
+      }))
+    ).to.throw(
+      'SomeUnion must provide "resolveType" as a function.'
+    );
   });
 
   it('rejects a Union type not defining resolveType of Object types not defining isTypeOf', () => {
@@ -820,6 +871,97 @@ describe('Type System: Scalar types must be serializable', () => {
       }))
     ).to.throw(
       'SomeScalar must provide both "parseValue" and "parseLiteral" functions.'
+    );
+  });
+
+});
+
+
+describe('Type System: Enum types must be well defined', () => {
+
+  it('accepts a well defined Enum type with empty value definition', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          FOO: {},
+          BAR: {},
+        }
+      })
+    ).not.to.throw();
+  });
+
+  it('accepts a well defined Enum type with internal value definition', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          FOO: { value: 10 },
+          BAR: { value: 20 },
+        }
+      })
+    ).not.to.throw();
+  });
+
+  it('rejects an Enum type without values', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+      })
+    ).to.throw(
+      'SomeEnum values must be an object with value names as keys.'
+    );
+  });
+
+  it('rejects an Enum type with empty values', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {}
+      })
+    ).to.throw(
+      'SomeEnum values must be an object with value names as keys.'
+    );
+  });
+
+  it('rejects an Enum type with incorrectly typed values', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: [
+          { FOO: 10 }
+        ]
+      })
+    ).to.throw(
+      'SomeEnum values must be an object with value names as keys.'
+    );
+  });
+
+  it('rejects an Enum type with missing value definition', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          FOO: null
+        }
+      })
+    ).to.throw(
+      'SomeEnum.FOO must refer to an object with a "value" key representing ' +
+      'an internal value but got: null.'
+    );
+  });
+
+  it('rejects an Enum type with incorrectly typed value definition', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          FOO: 10
+        }
+      })
+    ).to.throw(
+      'SomeEnum.FOO must refer to an object with a "value" key representing ' +
+      'an internal value but got: 10.'
     );
   });
 

@@ -357,33 +357,23 @@ describe('Type System: build schema from introspection', () => {
 
     // Client types do not get server-only values, so `value` mirrors `name`,
     // rather than using the integers defined in the "server" schema.
-    expect(clientFoodEnum.getValues()).to.deep.equal({
-      DAIRY: {
-        description: 'Foods that are dairy.',
-        name: 'DAIRY',
-        value: 'DAIRY',
-      },
-      FRUITS: {
-        description: 'Foods that are fruits.',
-        name: 'FRUITS',
-        value: 'FRUITS',
-      },
-      MEAT: {
-        description: 'Foods that are meat.',
-        name: 'MEAT',
-        value: 'MEAT',
-      },
-      OILS: {
-        description: 'Foods that are oils.',
-        name: 'OILS',
-        value: 'OILS',
-      },
-      VEGETABLES: {
-        description: 'Foods that are vegetables.',
+    expect(clientFoodEnum.getValues()).to.deep.equal([
+      { description: 'Foods that are vegetables.',
         name: 'VEGETABLES',
-        value: 'VEGETABLES',
-      },
-    });
+        value: 'VEGETABLES' },
+      { description: 'Foods that are fruits.',
+        name: 'FRUITS',
+        value: 'FRUITS' },
+      { description: 'Foods that are oils.',
+        name: 'OILS',
+        value: 'OILS' },
+      { description: 'Foods that are dairy.',
+        name: 'DAIRY',
+        value: 'DAIRY' },
+      { description: 'Foods that are meat.',
+        name: 'MEAT',
+        value: 'MEAT' },
+    ]);
   });
 
   it('builds a schema with an input object', async () => {
