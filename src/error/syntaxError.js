@@ -24,12 +24,12 @@ export function syntaxError(
   var location = getLocation(source, position);
   var error = new GraphQLError(
     `Syntax Error ${source.name} (${location.line}:${location.column}) ` +
-    description + '\n\n' + highlightSourceAtLocation(source, location)
+    description + '\n\n' + highlightSourceAtLocation(source, location),
+    undefined,
+    undefined,
+    source,
+    [ position ]
   );
-  error.nodes = null;
-  error.positions = [ position ];
-  error.locations = [ location ];
-  error.source = source;
   return error;
 }
 

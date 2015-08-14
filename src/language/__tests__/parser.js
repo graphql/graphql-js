@@ -47,6 +47,27 @@ describe('Parser', () => {
 
   it('parse provides useful errors', () => {
 
+    var caughtError;
+    try {
+      parse('{');
+    } catch (error) {
+      caughtError = error;
+    }
+
+    expect(caughtError.message).to.equal(
+      `Syntax Error GraphQL (1:2) Expected Name, found EOF
+
+1: {
+    ^
+`
+    );
+
+    expect(caughtError.positions).to.deep.equal([ 1 ]);
+
+    expect(caughtError.locations).to.deep.equal([
+      { line: 1, column: 2 }
+    ]);
+
     expect(
       () => parse(
 `{ ...MissingOn }

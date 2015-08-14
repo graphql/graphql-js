@@ -10,58 +10,64 @@
 
 import { getLocation } from '../language';
 import type { Node } from '../language/ast';
+import type { Source } from '../language/source';
 
 
 export class GraphQLError extends Error {
   message: string;
   stack: string;
   nodes: ?Array<Node>;
-  source: any;
-  positions: any;
+  source: Source;
+  positions: Array<number>;
   locations: any;
 
   constructor(
     message: string,
     // A flow bug keeps us from declaring nodes as an array of Node
     nodes?: Array<any/* Node */>,
-    stack?: ?string
+    stack?: ?string,
+    source?: Source,
+    positions?: Array<number>
   ) {
     super(message);
     this.message = message;
+
     Object.defineProperty(this, 'stack', { value: stack || message });
     Object.defineProperty(this, 'nodes', { value: nodes });
+
+    // Note: flow does not yet know about Object.defineProperty with `get`.
+    Object.defineProperty(this, 'source', ({
+      get() {
+        if (source) {
+          return source;
+        }
+        if (nodes && nodes.length > 0) {
+          var node = nodes[0];
+          return node && node.loc && node.loc.source;
+        }
+      }
+    }: any));
+
+    Object.defineProperty(this, 'positions', ({
+      get() {
+        if (positions) {
+          return positions;
+        }
+        if (nodes) {
+          var nodePositions = nodes.map(node => node.loc && node.loc.start);
+          if (nodePositions.some(p => p)) {
+            return nodePositions;
+          }
+        }
+      }
+    }: any));
+
+    Object.defineProperty(this, 'locations', ({
+      get() {
+        if (this.positions && this.source) {
+          return this.positions.map(pos => getLocation(this.source, pos));
+        }
+      }
+    }: any));
   }
 }
-
-// Note: flow does not yet know about Object.defineProperty with `get`.
-Object.defineProperty(GraphQLError.prototype, 'source', ({
-  get() {
-    var nodes = this.nodes;
-    if (nodes && nodes.length > 0) {
-      var node = nodes[0];
-      return node && node.loc && node.loc.source;
-    }
-  }
-}: any));
-
-Object.defineProperty(GraphQLError.prototype, 'positions', ({
-  get() {
-    var nodes = this.nodes;
-    if (nodes) {
-      var positions = nodes.map(node => node.loc && node.loc.start);
-      if (positions.some(p => p)) {
-        return positions;
-      }
-    }
-  }
-}: any));
-
-Object.defineProperty(GraphQLError.prototype, 'locations', ({
-  get() {
-    var positions = this.positions;
-    var source = this.source;
-    if (positions && source) {
-      return positions.map(pos => getLocation(source, pos));
-    }
-  }
-}: any));
