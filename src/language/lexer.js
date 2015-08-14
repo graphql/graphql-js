@@ -130,7 +130,7 @@ function makeToken(
  *
  * This skips over whitespace and comments until it finds the next lexable
  * token, then lexes punctuators immediately or calls the appropriate helper
- * fucntion for more complicated tokens.
+ * function for more complicated tokens.
  */
 function readToken(source: Source, fromPosition: number): Token {
   var body = source.body;
