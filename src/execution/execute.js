@@ -614,7 +614,8 @@ function completeValue(
     );
     if (completed === null) {
       throw new GraphQLError(
-        'Cannot return null for non-nullable type.',
+        `Cannot return null for non-nullable field "${info.fieldName}" ` +
+        `of type "${info.parentType.name}".`,
         fieldASTs
       );
     }
