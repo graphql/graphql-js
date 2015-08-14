@@ -59,7 +59,18 @@ describe('Type System: Enum Values', () => {
     }
   });
 
-  var schema = new GraphQLSchema({ query: QueryType });
+  var MutationType = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: {
+      favoriteEnum: {
+        type: ColorType,
+        args: { color: { type: ColorType } },
+        resolve(value, { color }) { return color; }
+      }
+    }
+  });
+
+  var schema = new GraphQLSchema({ query: QueryType, mutation: MutationType });
 
   it('accepts enum literals as input', async () => {
     expect(
@@ -101,6 +112,19 @@ describe('Type System: Enum Values', () => {
       ]
     });
   });
+
+  it('accepts enum literals as input arguments to mutations',
+    async () => {
+      expect(
+        await graphql(schema,
+          'mutation x($color:Color!) { favoriteEnum(color:$color) }',
+            null, {color: 'GREEN'})
+      ).to.deep.equal({
+        data: {
+          favoriteEnum: 'GREEN'
+        }
+      });
+    });
 
   it('does not accept incorrect internal value', async () => {
     expect(
