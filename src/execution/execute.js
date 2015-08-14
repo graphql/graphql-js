@@ -660,11 +660,21 @@ function completeValue(
   }
 
   // Field type must be Object, Interface or Union and expect sub-selections.
-  var objectType: ?GraphQLObjectType =
-    returnType instanceof GraphQLObjectType ? returnType :
-    isAbstractType(returnType) ?
-      ((returnType: any): GraphQLAbstractType).getObjectType(result, info) :
-      null;
+  var objectType: ?GraphQLObjectType;
+
+  if (returnType instanceof GraphQLObjectType) {
+    objectType = returnType;
+  } else if (isAbstractType(returnType)) {
+    var abstractType: GraphQLAbstractType = (returnType: any);
+    objectType = abstractType.getObjectType(result, info);
+    if (objectType && !abstractType.isPossibleType(objectType)) {
+      throw new GraphQLError(
+        `Runtime Object type "${objectType}" is not a possible type ` +
+        `for "${abstractType}".`,
+        fieldASTs
+      );
+    }
+  }
 
   if (!objectType) {
     return null;

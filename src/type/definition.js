@@ -10,6 +10,7 @@
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import keyMap from '../jsutils/keyMap';
 import { ENUM } from '../language/kinds';
 import type {
   OperationDefinition,
@@ -526,7 +527,7 @@ export class GraphQLInterfaceType {
   _typeConfig: GraphQLInterfaceTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
   _implementations: Array<GraphQLObjectType>;
-  _possibleTypeNames: {[typeName: string]: boolean};
+  _possibleTypes: { [typeName: string]: GraphQLObjectType };
 
   constructor(config: GraphQLInterfaceTypeConfig) {
     invariant(config.name, 'Type must be named.');
@@ -553,15 +554,10 @@ export class GraphQLInterfaceType {
   }
 
   isPossibleType(type: GraphQLObjectType): boolean {
-    var possibleTypeNames = this._possibleTypeNames;
-    if (!possibleTypeNames) {
-      this._possibleTypeNames = possibleTypeNames =
-        this.getPossibleTypes().reduce(
-          (map, possibleType) => ((map[possibleType.name] = true), map),
-          {}
-        );
-    }
-    return possibleTypeNames[type.name] === true;
+    var possibleTypes = this._possibleTypes || (this._possibleTypes =
+      keyMap(this.getPossibleTypes(), possibleType => possibleType.name)
+    );
+    return Boolean(possibleTypes[type.name]);
   }
 
   getObjectType(value: any, info: GraphQLResolveInfo): ?GraphQLObjectType {
