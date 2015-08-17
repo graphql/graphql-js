@@ -310,4 +310,69 @@ describe('Type System: Example', () => {
       );
     });
   });
+
+  it('does not mutate passed field definitions', () => {
+    const fields = {
+      field1: {
+        type: GraphQLString,
+      },
+      field2: {
+        type: GraphQLString,
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        }
+      }
+    };
+    const testObject1 = new GraphQLObjectType({
+      name: 'Test1',
+      fields,
+    });
+    const testObject2 = new GraphQLObjectType({
+      name: 'Test2',
+      fields,
+    });
+
+    expect(testObject1.getFields()).to.deep.equal(testObject2.getFields());
+    expect(fields).to.deep.equal({
+      field1: {
+        type: GraphQLString,
+      },
+      field2: {
+        type: GraphQLString,
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        }
+      }
+    });
+
+    const testInputObject1 = new GraphQLInputObjectType({
+      name: 'Test1',
+      fields
+    });
+    const testInputObject2 = new GraphQLInputObjectType({
+      name: 'Test2',
+      fields
+    });
+
+    expect(testInputObject1.getFields()).to.deep.equal(
+      testInputObject2.getFields()
+    );
+    expect(fields).to.deep.equal({
+      field1: {
+        type: GraphQLString,
+      },
+      field2: {
+        type: GraphQLString,
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        }
+      }
+    });
+  });
 });
