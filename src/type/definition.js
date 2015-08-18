@@ -371,15 +371,20 @@ function defineFieldMap(
     `${type} fields must be an object with field names as keys or a ` +
     `function which returns such an object.`
   );
+
   var fieldNames = Object.keys(fieldMap);
   invariant(
     fieldNames.length > 0,
     `${type} fields must be an object with field names as keys or a ` +
     `function which returns such an object.`
   );
+
+  var resultFieldMap = {};
   fieldNames.forEach(fieldName => {
-    var field = fieldMap[fieldName];
-    field.name = fieldName;
+    var field = {
+      ...fieldMap[fieldName],
+      name: fieldName
+    };
     invariant(
       isOutputType(field.type),
       `${type}.${fieldName} field type must be Output Type but ` +
@@ -408,8 +413,9 @@ function defineFieldMap(
         };
       });
     }
+    resultFieldMap[fieldName] = field;
   });
-  return fieldMap;
+  return resultFieldMap;
 }
 
 function isPlainObj(obj) {
@@ -897,16 +903,20 @@ export class GraphQLInputObjectType {
       `${this} fields must be an object with field names as keys or a ` +
       `function which returns such an object.`
     );
+    var resultFieldMap = {};
     fieldNames.forEach(fieldName => {
-      var field = fieldMap[fieldName];
-      field.name = fieldName;
+      var field = {
+        ...fieldMap[fieldName],
+        name: fieldName
+      };
       invariant(
         isInputType(field.type),
         `${this}.${fieldName} field type must be Input Type but ` +
         `got: ${field.type}.`
       );
+      resultFieldMap[fieldName] = field;
     });
-    return fieldMap;
+    return resultFieldMap;
   }
 
   toString(): string {
