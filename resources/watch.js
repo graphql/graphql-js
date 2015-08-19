@@ -19,13 +19,13 @@ var cmd = resolvePath(__dirname);
 var srcDir = resolvePath(cmd, './src');
 
 function exec(command, options) {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     var child = spawn(command, options, {
       cmd: cmd,
       env: process.env,
       stdio: 'inherit'
     });
-    child.on('exit', function (code) {
+    child.on('exit', code => {
       if (code === 0) {
         resolve(true);
       } else {
@@ -46,7 +46,7 @@ var watcher = sane(srcDir, { glob: ['**/*.js', '**/*.graphql'] })
   .on('delete', deleteFile)
   .on('change', changeFile);
 
-process.on('SIGINT', function () {
+process.on('SIGINT', () => {
   watcher.close();
   flowServer.kill();
   console.log(CLEARLINE + yellow(invert('stopped watching')));
@@ -147,7 +147,8 @@ function lintFiles(filepaths) {
       return exec('eslint', [srcPath(filepath)])
         .catch(() => false)
         .then(success => {
-          console.log(CLEARLINE + '  ' + (success ? CHECK : X) + ' ' + filepath);
+          console.log(CLEARLINE + '  ' + (success ? CHECK : X)
+            + ' ' + filepath);
           return prevSuccess && success;
         });
     }
