@@ -126,7 +126,7 @@ export function buildASTSchema(
       ID: GraphQLID,
     };
 
-    return (typeAST) => {
+    return typeAST => {
       var typeName = getInnerTypeName(typeAST);
       if (!isNullish(innerTypeMap[typeName])) {
         return buildWrappedType(innerTypeMap[typeName], typeAST);

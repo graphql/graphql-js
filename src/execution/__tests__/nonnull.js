@@ -51,14 +51,14 @@ var throwingData = {
   },
   promiseNest() {
     return new Promise(
-      (resolve) => {
+      resolve => {
         resolve(throwingData);
       }
     );
   },
   nonNullPromiseNest() {
     return new Promise(
-      (resolve) => {
+      resolve => {
         resolve(throwingData);
       }
     );
@@ -70,14 +70,14 @@ var nullingData = {
   nonNullSync() { return null; },
   promise() {
     return new Promise(
-      (resolve) => {
+      resolve => {
         resolve(null);
       }
     );
   },
   nonNullPromise() {
     return new Promise(
-      (resolve) => {
+      resolve => {
         resolve(null);
       }
     );
@@ -90,14 +90,14 @@ var nullingData = {
   },
   promiseNest() {
     return new Promise(
-      (resolve) => {
+      resolve => {
         resolve(nullingData);
       }
     );
   },
   nonNullPromiseNest() {
     return new Promise(
-      (resolve) => {
+      resolve => {
         resolve(nullingData);
       }
     );

@@ -149,7 +149,7 @@ fragment MissingOn Type
       'true',
       'false'
     ];
-    nonKeywords.forEach((keyword) => {
+    nonKeywords.forEach(keyword => {
       let fragmentName = keyword;
       // You can't define or reference a fragment named `on`.
       if (keyword === 'on') {

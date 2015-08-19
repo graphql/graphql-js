@@ -302,7 +302,7 @@ describe('Type System: Example', () => {
       EnumType,
       InputObjectType
     ];
-    badUnionTypes.forEach((x) => {
+    badUnionTypes.forEach(x => {
       expect(() =>
         new GraphQLUnionType({ name: 'BadUnion', types: [ x ] })
       ).to.throw(

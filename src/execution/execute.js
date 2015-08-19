@@ -250,7 +250,7 @@ function executeFieldsSerially(
   fields: {[key: string]: Array<Field>}
 ): Promise<Object> {
   return Object.keys(fields).reduce(
-    (prevPromise, responseName) => prevPromise.then((results) => {
+    (prevPromise, responseName) => prevPromise.then(results => {
       var fieldASTs = fields[responseName];
       var result = resolveField(exeContext, parentType, sourceValue, fieldASTs);
       if (result === undefined) {
