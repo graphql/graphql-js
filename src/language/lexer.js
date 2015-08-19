@@ -261,25 +261,24 @@ function readNumber(source, start, firstCode) {
 
   if (code === 48) { // 0
     code = charCodeAt.call(body, ++position);
-  } else if (code >= 49 && code <= 57) { // 1 - 9
-    do {
-      code = charCodeAt.call(body, ++position);
-    } while (code >= 48 && code <= 57); // 0 - 9
+    if (code >= 48 && code <= 57) {
+      throw syntaxError(
+        source,
+        position,
+        `Invalid number, unexpected digit after 0: "${fromCharCode(code)}".`
+      );
+    }
   } else {
-    throw syntaxError(source, position, 'Invalid number.');
+    position = readDigits(source, position, code);
+    code = charCodeAt.call(body, position);
   }
 
   if (code === 46) { // .
     isFloat = true;
 
     code = charCodeAt.call(body, ++position);
-    if (code >= 48 && code <= 57) { // 0 - 9
-      do {
-        code = charCodeAt.call(body, ++position);
-      } while (code >= 48 && code <= 57); // 0 - 9
-    } else {
-      throw syntaxError(source, position, 'Invalid number.');
-    }
+    position = readDigits(source, position, code);
+    code = charCodeAt.call(body, position);
   }
 
   if (code === 69 || code === 101) { // E e
@@ -289,13 +288,8 @@ function readNumber(source, start, firstCode) {
     if (code === 43 || code === 45) { // + -
       code = charCodeAt.call(body, ++position);
     }
-    if (code >= 48 && code <= 57) { // 0 - 9
-      do {
-        code = charCodeAt.call(body, ++position);
-      } while (code >= 48 && code <= 57); // 0 - 9
-    } else {
-      throw syntaxError(source, position, 'Invalid number.');
-    }
+    position = readDigits(source, position, code);
+    code = charCodeAt.call(body, position);
   }
 
   return makeToken(
@@ -303,6 +297,27 @@ function readNumber(source, start, firstCode) {
     start,
     position,
     slice.call(body, start, position)
+  );
+}
+
+/**
+ * Returns the new position in the source after reading digits.
+ */
+function readDigits(source, start, firstCode) {
+  var body = source.body;
+  var position = start;
+  var code = firstCode;
+  if (code >= 48 && code <= 57) { // 0 - 9
+    do {
+      code = charCodeAt.call(body, ++position);
+    } while (code >= 48 && code <= 57); // 0 - 9
+    return position;
+  }
+  throw syntaxError(
+    source,
+    position,
+    'Invalid number, expected digit but got: ' +
+    (code ? `"${fromCharCode(code)}"` : 'EOF') + '.'
   );
 }
 
