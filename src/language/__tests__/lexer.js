@@ -233,15 +233,6 @@ describe('Lexer', () => {
     });
 
     expect(
-      lexOne('00')
-    ).to.deep.equal({
-      kind: TokenKind.INT,
-      start: 0,
-      end: 1,
-      value: '0'
-    });
-
-    expect(
       lexOne('-4.123')
     ).to.deep.equal({
       kind: TokenKind.FLOAT,
@@ -345,6 +336,13 @@ describe('Lexer', () => {
   it('lex reports useful number errors', () => {
 
     expect(
+      lexErr('00')
+    ).to.throw(
+      'Syntax Error GraphQL (1:2) Invalid number, ' +
+      'unexpected digit after 0: "0".'
+    );
+
+    expect(
       lexErr('+1')
     ).to.throw('Syntax Error GraphQL (1:1) Unexpected character "+"');
 
@@ -352,7 +350,8 @@ describe('Lexer', () => {
       lexErr('1.')
     ).to.throw(
       'Syntax Error GraphQL (1:3) Invalid number, ' +
-      'unexpected character "\u0000".');
+      'expected digit but got: EOF.'
+    );
 
     expect(
       lexErr('.123')
@@ -362,25 +361,28 @@ describe('Lexer', () => {
       lexErr('1.A')
     ).to.throw(
       'Syntax Error GraphQL (1:3) Invalid number, ' +
-      'unexpected character "A".');
+      'expected digit but got: "A".'
+    );
 
     expect(
       lexErr('-A')
     ).to.throw(
       'Syntax Error GraphQL (1:2) Invalid number, ' +
-      'unexpected character "A".');
+      'expected digit but got: "A".'
+    );
 
     expect(
       lexErr('1.0e')
     ).to.throw(
       'Syntax Error GraphQL (1:5) Invalid number, ' +
-      'unexpected character "\u0000".');
+      'expected digit but got: EOF.');
 
     expect(
       lexErr('1.0eA')
     ).to.throw(
       'Syntax Error GraphQL (1:5) Invalid number, ' +
-      'unexpected character "A".');
+      'expected digit but got: "A".'
+    );
   });
 
   it('lexes punctuation', () => {
@@ -532,7 +534,7 @@ describe('Lexer', () => {
     expect(
       () => lexer()
     ).to.throw(
-      'Syntax Error GraphQL (1:3) Invalid number, unexpected character "b".'
+      'Syntax Error GraphQL (1:3) Invalid number, expected digit but got: "b".'
     );
   });
 });
