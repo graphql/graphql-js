@@ -266,7 +266,11 @@ function readNumber(source, start, firstCode) {
       code = charCodeAt.call(body, ++position);
     } while (code >= 48 && code <= 57); // 0 - 9
   } else {
-    throw syntaxError(source, position, 'Invalid number.');
+    throw syntaxError(
+      source,
+      position,
+      `Invalid number, unexpected character "${fromCharCode(code)}".`
+    );
   }
 
   if (code === 46) { // .
@@ -278,7 +282,11 @@ function readNumber(source, start, firstCode) {
         code = charCodeAt.call(body, ++position);
       } while (code >= 48 && code <= 57); // 0 - 9
     } else {
-      throw syntaxError(source, position, 'Invalid number.');
+      throw syntaxError(
+        source,
+        position,
+        `Invalid number, unexpected character "${fromCharCode(code)}".`
+      );
     }
   }
 
@@ -294,7 +302,11 @@ function readNumber(source, start, firstCode) {
         code = charCodeAt.call(body, ++position);
       } while (code >= 48 && code <= 57); // 0 - 9
     } else {
-      throw syntaxError(source, position, 'Invalid number.');
+      throw syntaxError(
+        source,
+        position,
+        `Invalid number, unexpected character "${fromCharCode(code)}".`
+      );
     }
   }
 
