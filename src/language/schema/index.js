@@ -11,4 +11,4 @@ import * as Kind from './kinds';
 export { Kind };
 export { parseSchemaIntoAST } from './parser';
 export { printSchema } from './printer';
-export { visit } from './visitor';
+export { visitSchema } from './visitor';
