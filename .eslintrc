@@ -1,6 +1,10 @@
 {
   "parser": "babel-eslint",
 
+  "plugins": [
+    "babel"
+  ],
+
   "env": {
     "es6": true,
     "node": true
@@ -34,8 +38,9 @@
   },
 
   "rules": {
+    "babel/arrow-parens": [2, "as-needed"],
+
     "array-bracket-spacing": [2, "always"],
-    "arrow-parens": [0, "as-needed"],
     "arrow-spacing": 2,
     "block-scoped-var": 0,
     "brace-style": [2, "1tbs", {"allowSingleLine": true}],

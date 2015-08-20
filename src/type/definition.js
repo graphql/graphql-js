@@ -595,7 +595,7 @@ export type GraphQLInterfaceTypeConfig = {
   fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
-   * the default implemenation will call `isTypeOf` on each implementing
+   * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
   resolveType?: (value: any, info?: GraphQLResolveInfo) => ?GraphQLObjectType,
@@ -701,7 +701,7 @@ export type GraphQLUnionTypeConfig = {
   types: Array<GraphQLObjectType>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
-   * the default implemenation will call `isTypeOf` on each implementing
+   * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
   resolveType?: (value: any, info?: GraphQLResolveInfo) => ?GraphQLObjectType;
