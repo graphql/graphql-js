@@ -72,7 +72,7 @@ This will watch the file system run any relevant lint, tests, and type checks au
 * 2 spaces for indentation (no tabs)
 * 80 character line length strongly preferred.
 * Prefer `'` over `"`
-* ES6 syntax when possible.
+* ES6 syntax when possible. However do not rely on ES6-specific functions to be available.
 * Use [Flow types](http://flowtype.org/).
 * Use semicolons;
 * Trailing commas,
