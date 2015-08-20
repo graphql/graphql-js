@@ -20,10 +20,9 @@ var MIN_INT = -9007199254740991;
 function coerceInt(value) {
   var num = Number(value);
   if (num === num && num <= MAX_INT && num >= MIN_INT) {
-    return (num < 0 ? Math.ceil : Math.floor)(num);
+    return Math.trunc(num);
   }
   return null;
-
 }
 
 export var GraphQLInt = new GraphQLScalarType({
