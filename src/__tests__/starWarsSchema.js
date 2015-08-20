@@ -126,7 +126,7 @@ var characterInterface = new GraphQLInterfaceType({
       description: 'Which movies they appear in.',
     },
   }),
-  resolveType: (character) => {
+  resolveType: character => {
     return getHuman(character.id) ? humanType : droidType;
   }
 });
@@ -158,7 +158,7 @@ var humanType = new GraphQLObjectType({
       type: new GraphQLList(characterInterface),
       description: 'The friends of the human, or an empty list if they ' +
                    'have none.',
-      resolve: (human) => getFriends(human),
+      resolve: human => getFriends(human),
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
@@ -200,7 +200,7 @@ var droidType = new GraphQLObjectType({
       type: new GraphQLList(characterInterface),
       description: 'The friends of the droid, or an empty list if they ' +
                    'have none.',
-      resolve: (droid) => getFriends(droid),
+      resolve: droid => getFriends(droid),
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
