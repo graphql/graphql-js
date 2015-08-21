@@ -149,6 +149,14 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
       var field = fieldMap[fieldName];
       if (field.args) {
         var fieldArgTypes = field.args.map(arg => arg.type);
+
+        field.args.forEach(arg =>
+          invariant(
+            /^[_a-zA-Z][_a-zA-Z0-9]*$/.test(arg.name),
+            `Field arg names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ ` +
+            `but "${arg.name}" does not.`
+        ));
+
         reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       }
       reducedMap = typeMapReducer(reducedMap, field.type);
