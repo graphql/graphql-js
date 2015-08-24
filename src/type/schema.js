@@ -147,15 +147,12 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
     var fieldMap = type.getFields();
     Object.keys(fieldMap).forEach(fieldName => {
       var field = fieldMap[fieldName];
+      assertValidName(fieldName);
+
       if (field.args) {
         var fieldArgTypes = field.args.map(arg => arg.type);
 
-        field.args.forEach(arg =>
-          invariant(
-            /^[_a-zA-Z][_a-zA-Z0-9]*$/.test(arg.name),
-            `Field arg names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ ` +
-            `but "${arg.name}" does not.`
-        ));
+        field.args.forEach(arg => assertValidName(arg.name));
 
         reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       }
@@ -164,6 +161,13 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   return reducedMap;
+}
+
+function assertValidName(name: string): void {
+  invariant(
+  /^[_a-zA-Z][_a-zA-Z0-9]*$/.test(name),
+  `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ ` +
+  `but "${name}" does not.`);
 }
 
 function assertObjectImplementsInterface(
