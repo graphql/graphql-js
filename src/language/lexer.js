@@ -289,7 +289,6 @@ function readNumber(source, start, firstCode) {
       code = charCodeAt.call(body, ++position);
     }
     position = readDigits(source, position, code);
-    code = charCodeAt.call(body, position);
   }
 
   return makeToken(
