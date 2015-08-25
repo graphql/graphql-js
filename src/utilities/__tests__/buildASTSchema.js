@@ -16,7 +16,7 @@ import { buildASTSchema } from '../buildASTSchema';
 /**
  * This function does a full cycle of going from a
  * string with the contents of the DSL, parsed
- * in a schema AST, materializing that schema ast
+ * in a schema AST, materializing that schema AST
  * into an in-memory GraphQLSchema, and then finally
  * printing that GraphQL into the DSL
  */
