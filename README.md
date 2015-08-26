@@ -50,7 +50,7 @@ through that README and the corresponding tests in parallel.
 Install GraphQL.js from npm
 
 ```sh
-npm install graphql
+npm install --save graphql
 ```
 
 GraphQL.js provides two important capabilities: building a type schema, and
