@@ -1004,7 +1004,7 @@ export class GraphQLList {
  *     var RowType = new GraphQLObjectType({
  *       name: 'Row',
  *       fields: () => ({
- *         id: { type: new GraphQLNonNull(String) },
+ *         id: { type: new GraphQLNonNull(GraphQLString) },
  *       })
  *     })
  *
