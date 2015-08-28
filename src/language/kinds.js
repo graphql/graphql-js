@@ -11,9 +11,9 @@
 
 export const NAME = 'Name';
 
-// Document
+// Request Document
 
-export const DOCUMENT = 'Document';
+export const REQUEST_DOCUMENT = 'RequestDocument';
 export const OPERATION_DEFINITION = 'OperationDefinition';
 export const VARIABLE_DEFINITION = 'VariableDefinition';
 export const VARIABLE = 'Variable';

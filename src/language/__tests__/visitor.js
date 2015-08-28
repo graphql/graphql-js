@@ -103,7 +103,7 @@ describe('Visitor', () => {
     });
 
     expect(visited).to.deep.equal([
-      [ 'enter', 'Document', undefined ],
+      [ 'enter', 'RequestDocument', undefined ],
       [ 'enter', 'OperationDefinition', undefined ],
       [ 'enter', 'SelectionSet', undefined ],
       [ 'enter', 'Field', undefined ],
@@ -117,7 +117,7 @@ describe('Visitor', () => {
       [ 'leave', 'Field', undefined ],
       [ 'leave', 'SelectionSet', undefined ],
       [ 'leave', 'OperationDefinition', undefined ],
-      [ 'leave', 'Document', undefined ],
+      [ 'leave', 'RequestDocument', undefined ],
     ]);
   });
 
@@ -140,7 +140,7 @@ describe('Visitor', () => {
     });
 
     expect(visited).to.deep.equal([
-      [ 'enter', 'Document', undefined ],
+      [ 'enter', 'RequestDocument', undefined ],
       [ 'enter', 'OperationDefinition', undefined ],
       [ 'enter', 'SelectionSet', undefined ],
       [ 'enter', 'Field', undefined ],
@@ -210,7 +210,7 @@ describe('Visitor', () => {
     });
 
     expect(visited).to.deep.equal([
-      [ 'enter', 'Document', undefined, undefined ],
+      [ 'enter', 'RequestDocument', undefined, undefined ],
       [ 'enter', 'OperationDefinition', 0, undefined ],
       [ 'enter', 'Name', 'name', 'OperationDefinition' ],
       [ 'leave', 'Name', 'name', 'OperationDefinition' ],
@@ -423,7 +423,7 @@ describe('Visitor', () => {
       [ 'leave', 'Field', 1, undefined ],
       [ 'leave', 'SelectionSet', 'selectionSet', 'OperationDefinition' ],
       [ 'leave', 'OperationDefinition', 3, undefined ],
-      [ 'leave', 'Document', undefined, undefined ]
+      [ 'leave', 'RequestDocument', undefined, undefined ]
     ]);
   });
 });

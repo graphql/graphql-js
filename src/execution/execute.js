@@ -40,8 +40,8 @@ import {
   GraphQLSkipDirective
 } from '../type/directives';
 import type {
+  RequestDocument,
   Directive,
-  Document,
   OperationDefinition,
   SelectionSet,
   Field,
@@ -105,7 +105,7 @@ type ExecutionResult = {
  */
 export function execute(
   schema: GraphQLSchema,
-  documentAST: Document,
+  documentAST: RequestDocument,
   rootValue?: any,
   variableValues?: ?{[key: string]: any},
   operationName?: ?string
@@ -158,7 +158,7 @@ export function execute(
  */
 function buildExecutionContext(
   schema: GraphQLSchema,
-  documentAST: Document,
+  documentAST: RequestDocument,
   rootValue: any,
   rawVariableValues: ?{[key: string]: any},
   operationName: ?string

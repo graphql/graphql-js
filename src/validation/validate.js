@@ -13,7 +13,7 @@ import { GraphQLError } from '../error';
 import { visit, getVisitFn } from '../language/visitor';
 import * as Kind from '../language/kinds';
 import type {
-  Document,
+  RequestDocument,
   FragmentDefinition,
 } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
@@ -48,7 +48,7 @@ import { specifiedRules } from './specifiedRules';
  */
 export function validate(
   schema: GraphQLSchema,
-  ast: Document,
+  ast: RequestDocument,
   rules?: Array<any>
 ): Array<GraphQLError> {
   invariant(schema, 'Must provide schema');
@@ -67,7 +67,7 @@ export function validate(
  */
 function visitUsingRules(
   schema: GraphQLSchema,
-  documentAST: Document,
+  documentAST: RequestDocument,
   rules: Array<any>
 ): Array<GraphQLError> {
   var typeInfo = new TypeInfo(schema);
@@ -175,11 +175,11 @@ function append(arr, items) {
  */
 export class ValidationContext {
   _schema: GraphQLSchema;
-  _ast: Document;
+  _ast: RequestDocument;
   _typeInfo: TypeInfo;
   _fragments: {[name: string]: FragmentDefinition};
 
-  constructor(schema: GraphQLSchema, ast: Document, typeInfo: TypeInfo) {
+  constructor(schema: GraphQLSchema, ast: RequestDocument, typeInfo: TypeInfo) {
     this._schema = schema;
     this._ast = ast;
     this._typeInfo = typeInfo;
@@ -189,7 +189,7 @@ export class ValidationContext {
     return this._schema;
   }
 
-  getDocument(): Document {
+  getDocument(): RequestDocument {
     return this._ast;
   }
 

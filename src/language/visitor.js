@@ -10,7 +10,7 @@
 export var QueryDocumentKeys = {
   Name: [],
 
-  Document: [ 'definitions' ],
+  RequestDocument: [ 'definitions' ],
   OperationDefinition:
     [ 'name', 'variableDefinitions', 'directives', 'selectionSet' ],
   VariableDefinition: [ 'variable', 'type', 'defaultValue' ],

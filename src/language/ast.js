@@ -25,7 +25,7 @@ export type Location = {
  * The list of all possible AST node types.
  */
 export type Node = Name
-                 | Document
+                 | RequestDocument
                  | OperationDefinition
                  | VariableDefinition
                  | Variable
@@ -55,16 +55,16 @@ export type Name = {
   value: string;
 }
 
-// Document
+// RequestDocument
 
-export type Document = {
-  kind: 'Document';
+export type RequestDocument = {
+  kind: 'RequestDocument';
   loc?: ?Location;
-  definitions: Array<Definition>;
+  definitions: Array<RequestDefinition>;
 }
 
-export type Definition = OperationDefinition
-                       | FragmentDefinition
+export type RequestDefinition = OperationDefinition
+                              | FragmentDefinition
 
 export type OperationDefinition = {
   kind: 'OperationDefinition';
