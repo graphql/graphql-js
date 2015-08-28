@@ -40,7 +40,7 @@ export function NoUnusedFragments(): any {
     FragmentSpread(spread) {
       spreadNames[spread.name.value] = true;
     },
-    Document: {
+    RequestDocument: {
       leave() {
         var fragmentNameUsed = {};
         var reduceSpreadFragments = function (spreads) {

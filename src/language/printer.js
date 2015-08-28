@@ -21,9 +21,9 @@ export var printDocASTReducer = {
   Name: node => node.value,
   Variable: node => '$' + node.name,
 
-  // Document
+  // RequestDocument
 
-  Document: node => join(node.definitions, '\n\n') + '\n',
+  RequestDocument: node => join(node.definitions, '\n\n') + '\n',
 
   OperationDefinition(node) {
     var op = node.operation;

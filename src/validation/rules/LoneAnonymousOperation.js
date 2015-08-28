@@ -24,7 +24,7 @@ export function anonOperationNotAloneMessage(): string {
 export function LoneAnonymousOperation(): any {
   var operationCount = 0;
   return {
-    Document(node) {
+    RequestDocument(node) {
       operationCount = node.definitions.filter(
         definition => definition.kind === 'OperationDefinition'
       ).length;

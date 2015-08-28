@@ -19,7 +19,7 @@ describe('Parser', () => {
 
   it('accepts option to not include source', () => {
     expect(parse(`{ field }`, { noSource: true })).to.deep.equal({
-      kind: 'Document',
+      kind: 'RequestDocument',
       loc: { start: 0, end: 9 },
       definitions:
        [ { kind: 'OperationDefinition',
@@ -180,7 +180,7 @@ fragment ${fragmentName} on Type {
     var result = parse(source);
 
     expect(result).to.deep.equal(
-      { kind: Kind.DOCUMENT,
+      { kind: Kind.REQUEST_DOCUMENT,
         loc: { start: 0, end: 41, source },
         definitions:
          [ { kind: Kind.OPERATION_DEFINITION,

@@ -14,7 +14,7 @@ import type {
   Name,
   Variable,
 
-  Document,
+  RequestDocument,
   OperationDefinition,
   VariableDefinition,
   SelectionSet,
@@ -41,7 +41,7 @@ import {
   NAME,
   VARIABLE,
 
-  DOCUMENT,
+  REQUEST_DOCUMENT,
   OPERATION_DEFINITION,
   VARIABLE_DEFINITION,
   SELECTION_SET,
@@ -83,16 +83,16 @@ import {
 } from './parserCore';
 
 /**
- * Given a GraphQL source, parses it into a Document.
+ * Given a GraphQL source, parses it into a RequestDocument.
  * Throws GraphQLError if a syntax error is encountered.
  */
 export function parse(
   source: Source | string,
   options?: ParseOptions
-): Document {
+): RequestDocument {
   var sourceObj = source instanceof Source ? source : new Source(source);
   var parser = makeParser(sourceObj, options || {});
-  return parseDocument(parser);
+  return parseRequestDocument(parser);
 }
 
 /**
@@ -123,9 +123,9 @@ export function parseName(parser): Name {
   };
 }
 
-// Implements the parsing rules in the Document section.
+// Implements the parsing rules in the RequestDocument section.
 
-function parseDocument(parser): Document {
+function parseRequestDocument(parser): RequestDocument {
   var start = parser.token.start;
   var definitions = [];
   do {
@@ -144,7 +144,7 @@ function parseDocument(parser): Document {
     }
   } while (!skip(parser, TokenKind.EOF));
   return {
-    kind: DOCUMENT,
+    kind: REQUEST_DOCUMENT,
     definitions,
     loc: loc(parser, start)
   };
