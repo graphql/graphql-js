@@ -8,8 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { parseSchemaIntoAST }
-  from '../../../language/schema/';
+import { parse }
+  from '../../../language/';
 import { buildASTSchema, introspectionQuery }
   from '../../../utilities/';
 import { graphql }
@@ -43,7 +43,7 @@ export async function executeTool() {
     }
 
     var body = await fs.readFileAsync(argDict.file, 'utf8');
-    var ast = parseSchemaIntoAST(body);
+    var ast = parse(body);
     var astSchema = buildASTSchema(ast, argDict.query, argDict.mutation);
     var result = await graphql(astSchema, introspectionQuery);
     var out = await JSON.stringify(result, null, 2);

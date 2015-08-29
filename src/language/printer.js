@@ -17,7 +17,7 @@ export function print(ast) {
   return visit(ast, { leave: printDocASTReducer });
 }
 
-export var printDocASTReducer = {
+var printDocASTReducer = {
   Name: node => node.value,
   Variable: node => '$' + node.name,
 
@@ -85,13 +85,43 @@ export var printDocASTReducer = {
   NamedType: ({ name }) => name,
   ListType: ({ type }) => '[' + type + ']',
   NonNullType: ({ type }) => type + '!',
+
+  // Type Definitions
+
+  ObjectDefinition: ({ name, interfaces, fields }) =>
+    'type ' + name + ' ' +
+    wrap('implements ', join(interfaces, ', '), ' ') +
+    block(fields),
+
+  FieldDefinition: ({ name, arguments: args, type }) =>
+    name + wrap('(', join(args, ', '), ')') + ': ' + type,
+
+  InputValueDefinition: ({ name, type, defaultValue }) =>
+    name + ': ' + type + wrap(' = ', defaultValue),
+
+  InterfaceDefinition: ({ name, fields }) =>
+    `interface ${name} ${block(fields)}`,
+
+  UnionDefinition: ({ name, types }) =>
+    `union ${name} = ${join(types, ' | ')}`,
+
+  ScalarDefinition: ({ name }) =>
+    `scalar ${name}`,
+
+  EnumDefinition: ({ name, values }) =>
+    `enum ${name} ${block(values)}`,
+
+  EnumValueDefinition: ({ name }) => name,
+
+  InputObjectDefinition: ({ name, fields }) =>
+    `input ${name} ${block(fields)}`,
 };
 
 /**
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print all items together separated by separator if provided
  */
-export function join(maybeArray, separator) {
+function join(maybeArray, separator) {
   return maybeArray ? maybeArray.filter(x => x).join(separator || '') : '';
 }
 
@@ -99,7 +129,7 @@ export function join(maybeArray, separator) {
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print each item on it's own line, wrapped in an indented "{ }" block.
  */
-export function block(maybeArray) {
+function block(maybeArray) {
   return length(maybeArray) ?
     indent('{\n' + join(maybeArray, '\n')) + '\n}' :
     '';
@@ -109,7 +139,7 @@ export function block(maybeArray) {
  * If maybeString is not null or empty, then wrap with start and end, otherwise
  * print an empty string.
  */
-export function wrap(start, maybeString, end) {
+function wrap(start, maybeString, end) {
   return maybeString ?
     start + maybeString + (end || '') :
     '';

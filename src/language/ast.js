@@ -46,6 +46,15 @@ export type Node = Name
                  | Directive
                  | ListType
                  | NonNullType
+                 | ObjectDefinition
+                 | FieldDefinition
+                 | InputValueDefinition
+                 | InterfaceDefinition
+                 | UnionDefinition
+                 | ScalarDefinition
+                 | EnumDefinition
+                 | EnumValueDefinition
+                 | InputObjectDefinition
 
 // Name
 
@@ -65,6 +74,7 @@ export type Document = {
 
 export type Definition = OperationDefinition
                        | FragmentDefinition
+                       | TypeDefinition
 
 export type OperationDefinition = {
   kind: 'OperationDefinition';
@@ -216,7 +226,7 @@ export type Directive = {
 }
 
 
-// Types
+// Type Reference
 
 export type Type = NamedType
                  | ListType
@@ -238,4 +248,78 @@ export type NonNullType = {
   kind: 'NonNullType';
   loc?: ?Location;
   type: NamedType | ListType;
+}
+
+// Type Definition
+
+export type TypeDefinition =
+  ObjectDefinition |
+  InterfaceDefinition |
+  UnionDefinition |
+  ScalarDefinition |
+  EnumDefinition |
+  InputObjectDefinition
+
+export type ObjectDefinition = {
+  kind: 'ObjectDefinition';
+  loc?: ?Location;
+  name: Name;
+  interfaces?: ?Array<NamedType>;
+  fields: Array<FieldDefinition>;
+}
+
+export type FieldDefinition = {
+  kind: 'FieldDefinition';
+  loc?: ?Location;
+  name: Name;
+  arguments: Array<InputValueDefinition>;
+  type: Type;
+}
+
+export type InputValueDefinition = {
+  kind: 'InputValueDefinition';
+  loc?: ?Location;
+  name: Name;
+  type: Type;
+  defaultValue?: ?Value;
+}
+
+export type InterfaceDefinition = {
+  kind: 'InterfaceDefinition';
+  loc?: ?Location;
+  name: Name;
+  fields: Array<FieldDefinition>;
+}
+
+export type UnionDefinition = {
+  kind: 'UnionDefinition';
+  loc?: ?Location;
+  name: Name;
+  types: Array<NamedType>;
+}
+
+export type ScalarDefinition = {
+  kind: 'ScalarDefinition';
+  loc?: ?Location;
+  name: Name;
+}
+
+export type EnumDefinition = {
+  kind: 'EnumDefinition';
+  loc?: ?Location;
+  name: Name;
+  values: Array<EnumValueDefinition>;
+}
+
+export type EnumValueDefinition = {
+  kind: 'EnumValueDefinition';
+  loc?: ?Location;
+  name: Name;
+}
+
+export type InputObjectDefinition = {
+  kind: 'InputObjectDefinition';
+  loc?: ?Location;
+  name: Name;
+  fields: Array<InputValueDefinition>;
 }

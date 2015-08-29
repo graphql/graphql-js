@@ -174,6 +174,10 @@ function buildExecutionContext(
       case Kind.FRAGMENT_DEFINITION:
         fragments[statement.name.value] = statement;
         break;
+      default: throw new GraphQLError(
+        `GraphQL cannot execute a request containing a ${statement.kind}.`,
+        statement
+      );
     }
   });
   if (!operationName && Object.keys(operations).length !== 1) {

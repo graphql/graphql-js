@@ -9,7 +9,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { parseSchemaIntoAST } from '../parser';
+import { parse } from '../parser';
 
 function createLocFn(body) {
   return (start, end) => ({
@@ -80,13 +80,13 @@ describe('Schema Parser', () => {
 type Hello {
   world: String
 }`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
-          kind: 'TypeDefinition',
+          kind: 'ObjectDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -110,12 +110,12 @@ type Hello {
   world: String!
 }`;
     var loc = createLocFn(body);
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
-          kind: 'TypeDefinition',
+          kind: 'ObjectDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -141,12 +141,12 @@ type Hello {
   it('Simple type inheriting interface', () => {
     var body = `type Hello implements World { }`;
     var loc = createLocFn(body);
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
-          kind: 'TypeDefinition',
+          kind: 'ObjectDefinition',
           name: nameNode('Hello', loc(5, 10)),
           interfaces: [ typeNode('World', loc(22, 27)) ],
           fields: [],
@@ -161,12 +161,12 @@ type Hello {
   it('Simple type inheriting multiple interfaces', () => {
     var body = `type Hello implements Wo, rld { }`;
     var loc = createLocFn(body);
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
-          kind: 'TypeDefinition',
+          kind: 'ObjectDefinition',
           name: nameNode('Hello', loc(5, 10)),
           interfaces: [
             typeNode('Wo', loc(22, 24)),
@@ -184,9 +184,9 @@ type Hello {
   it('Single value enum', () => {
     var body = `enum Hello { WORLD }`;
     var loc = createLocFn(body);
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
           kind: 'EnumDefinition',
@@ -203,9 +203,9 @@ type Hello {
   it('Double value enum', () => {
     var body = `enum Hello { WO, RLD }`;
     var loc = createLocFn(body);
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
           kind: 'EnumDefinition',
@@ -227,10 +227,10 @@ type Hello {
 interface Hello {
   world: String
 }`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
           kind: 'InterfaceDefinition',
@@ -255,13 +255,13 @@ interface Hello {
 type Hello {
   world(flag: Boolean): String
 }`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
-          kind: 'TypeDefinition',
+          kind: 'ObjectDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -292,13 +292,13 @@ type Hello {
 type Hello {
   world(flag: Boolean = true): String
 }`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
-          kind: 'TypeDefinition',
+          kind: 'ObjectDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -333,13 +333,13 @@ type Hello {
 type Hello {
   world(things: [String]): String
 }`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
-          kind: 'TypeDefinition',
+          kind: 'ObjectDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -374,13 +374,13 @@ type Hello {
 type Hello {
   world(argOne: Boolean, argTwo: Int): String
 }`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
-          kind: 'TypeDefinition',
+          kind: 'ObjectDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -414,10 +414,10 @@ type Hello {
 
   it('Simple union', () => {
     var body = `union Hello = World`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
           kind: 'UnionDefinition',
@@ -433,10 +433,10 @@ type Hello {
 
   it('Union with two types', () => {
     var body = `union Hello = Wo | Rld`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
           kind: 'UnionDefinition',
@@ -455,10 +455,10 @@ type Hello {
 
   it('Scalar', () => {
     var body = `scalar Hello`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
           kind: 'ScalarDefinition',
@@ -476,10 +476,10 @@ type Hello {
 input Hello {
   world: String
 }`;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     var loc = createLocFn(body);
     var expected = {
-      kind: 'SchemaDocument',
+      kind: 'Document',
       definitions: [
         {
           kind: 'InputObjectDefinition',
@@ -505,16 +505,7 @@ input Hello {
 input Hello {
   world(foo: Int): String
 }`;
-    expect(() => parseSchemaIntoAST(body)).to.throw('Error');
+    expect(() => parse(body)).to.throw('Error');
   });
 
-  it('Reject query keywords', () => {
-    var body = `query Foo { field }`;
-    expect(() => parseSchemaIntoAST(body)).to.throw('Error');
-  });
-
-  it('Reject query shorthand', () => {
-    var body = `{ field }`;
-    expect(() => parseSchemaIntoAST(body)).to.throw('Error');
-  });
 });

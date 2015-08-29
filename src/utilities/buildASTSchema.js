@@ -18,24 +18,24 @@ import {
 } from '../language/kinds';
 
 import {
-  TYPE_DEFINITION,
+  OBJECT_DEFINITION,
   INTERFACE_DEFINITION,
   ENUM_DEFINITION,
   UNION_DEFINITION,
   SCALAR_DEFINITION,
   INPUT_OBJECT_DEFINITION,
-} from '../language/schema/kinds';
+} from '../language/kinds';
 
 import {
-  SchemaDocument,
-  EnumDefinition,
+  Document,
+  ObjectDefinition,
+  InputValueDefinition,
   InterfaceDefinition,
   UnionDefinition,
-  TypeDefinition,
-  InputValueDefinition,
   ScalarDefinition,
+  EnumDefinition,
   InputObjectDefinition,
-} from '../language/schema/ast';
+} from '../language/ast';
 
 import {
   GraphQLSchema,
@@ -56,7 +56,7 @@ import {
 
 
 type CompositeDefinition =
-  TypeDefinition |
+  ObjectDefinition |
   InterfaceDefinition |
   UnionDefinition;
 
@@ -86,7 +86,7 @@ function getInnerTypeName(typeAST) {
  * since they have no resolve methods.
  */
 export function buildASTSchema(
-  ast: SchemaDocument,
+  ast: Document,
   queryTypeName: string,
   mutationTypeName: ?string
 ): GraphQLSchema {
@@ -98,7 +98,18 @@ export function buildASTSchema(
     throw new Error('must pass in query type');
   }
 
-  var astMap = keyMap(ast.definitions, d => d.name.value);
+  var typeDefs = ast.definitions.filter(d => {
+    switch (d.kind) {
+      case OBJECT_DEFINITION:
+      case INTERFACE_DEFINITION:
+      case ENUM_DEFINITION:
+      case UNION_DEFINITION:
+      case SCALAR_DEFINITION:
+      case INPUT_OBJECT_DEFINITION: return true;
+    }
+  });
+
+  var astMap = keyMap(typeDefs, d => d.name.value);
 
   if (isNullish(astMap[queryTypeName])) {
     throw new Error('Specified query type ' + queryTypeName +
@@ -167,7 +178,7 @@ export function buildASTSchema(
       throw new Error('def must be defined');
     }
     switch (def.kind) {
-      case TYPE_DEFINITION:
+      case OBJECT_DEFINITION:
         return makeTypeDef(def);
       case INTERFACE_DEFINITION:
         return makeInterfaceDef(def);
@@ -184,7 +195,7 @@ export function buildASTSchema(
     }
   }
 
-  function makeTypeDef(def: TypeDefinition) {
+  function makeTypeDef(def: ObjectDefinition) {
     var typeName = def.name.value;
     var config = {
       name: typeName,
@@ -205,7 +216,7 @@ export function buildASTSchema(
     );
   }
 
-  function makeImplementedInterfaces(def: TypeDefinition) {
+  function makeImplementedInterfaces(def: ObjectDefinition) {
     return def.interfaces.map(inter => produceTypeDef(inter));
   }
 
