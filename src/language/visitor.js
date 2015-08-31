@@ -37,6 +37,16 @@ export var QueryDocumentKeys = {
   NamedType: [ 'name' ],
   ListType: [ 'type' ],
   NonNullType: [ 'type' ],
+
+  ObjectDefinition: [ 'name', 'interfaces', 'fields' ],
+  FieldDefinition: [ 'name', 'arguments', 'type' ],
+  InputValueDefinition: [ 'name', 'type', 'defaultValue' ],
+  InterfaceDefinition: [ 'name', 'fields' ],
+  UnionDefinition: [ 'name', 'types' ],
+  ScalarDefinition: [ 'name' ],
+  EnumDefinition: [ 'name', 'values' ],
+  EnumValueDefinition: [ 'name' ],
+  InputObjectDefinition: [ 'name', 'fields' ],
 };
 
 export const BREAK = {};

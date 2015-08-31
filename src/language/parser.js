@@ -9,12 +9,14 @@
 
 import { Source } from './source';
 import { syntaxError } from '../error';
-import { TokenKind } from './lexer';
+import { lex, TokenKind, getTokenKindDesc, getTokenDesc } from './lexer';
+import type { Token } from './lexer';
 import type {
   Name,
   Variable,
 
   Document,
+  Definition,
   OperationDefinition,
   VariableDefinition,
   SelectionSet,
@@ -35,6 +37,17 @@ import type {
 
   Type,
   NamedType,
+
+  TypeDefinition,
+  ObjectDefinition,
+  FieldDefinition,
+  InputValueDefinition,
+  InterfaceDefinition,
+  UnionDefinition,
+  ScalarDefinition,
+  EnumDefinition,
+  EnumValueDefinition,
+  InputObjectDefinition,
 } from './ast';
 
 import {
@@ -66,21 +79,37 @@ import {
   NAMED_TYPE,
   LIST_TYPE,
   NON_NULL_TYPE,
+
+  OBJECT_DEFINITION,
+  FIELD_DEFINITION,
+  INPUT_VALUE_DEFINITION,
+  INTERFACE_DEFINITION,
+  UNION_DEFINITION,
+  SCALAR_DEFINITION,
+  ENUM_DEFINITION,
+  ENUM_VALUE_DEFINITION,
+  INPUT_OBJECT_DEFINITION,
 } from './kinds';
 
-import {
-  makeParser,
-  peek,
-  skip,
-  loc,
-  any,
-  many,
-  expect,
-  unexpected,
-  expectKeyword,
-  advance,
-  ParseOptions,
-} from './parserCore';
+
+/**
+ * Configuration options to control parser behavior
+ */
+export type ParseOptions = {
+  /**
+   * By default, the parser creates AST nodes that know the location
+   * in the source that they correspond to. This configuration flag
+   * disables that behavior for performance or testing.
+   */
+  noLocation?: boolean,
+
+  /**
+   * By default, the parser creates AST nodes that contain a reference
+   * to the source that they were created from. This configuration flag
+   * disables that behavior for performance or testing.
+   */
+  noSource?: boolean,
+}
 
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -114,7 +143,7 @@ export function parseValue(
 /**
  * Converts a name lex token into a name parse node.
  */
-export function parseName(parser): Name {
+function parseName(parser): Name {
   var token = expect(parser, TokenKind.NAME);
   return {
     kind: NAME,
@@ -125,24 +154,17 @@ export function parseName(parser): Name {
 
 // Implements the parsing rules in the Document section.
 
+/**
+ * Document : Definition+
+ */
 function parseDocument(parser): Document {
   var start = parser.token.start;
+
   var definitions = [];
   do {
-    if (peek(parser, TokenKind.BRACE_L)) {
-      definitions.push(parseOperationDefinition(parser));
-    } else if (peek(parser, TokenKind.NAME)) {
-      if (parser.token.value === 'query' || parser.token.value === 'mutation') {
-        definitions.push(parseOperationDefinition(parser));
-      } else if (parser.token.value === 'fragment') {
-        definitions.push(parseFragmentDefinition(parser));
-      } else {
-        throw unexpected(parser);
-      }
-    } else {
-      throw unexpected(parser);
-    }
+    definitions.push(parseDefinition(parser));
   } while (!skip(parser, TokenKind.EOF));
+
   return {
     kind: DOCUMENT,
     definitions,
@@ -150,9 +172,46 @@ function parseDocument(parser): Document {
   };
 }
 
+/**
+ * Definition :
+ *   - OperationDefinition
+ *   - FragmentDefinition
+ *   - TypeDefinition
+ */
+function parseDefinition(parser): Definition {
+  if (peek(parser, TokenKind.BRACE_L)) {
+    return parseOperationDefinition(parser);
+  }
+
+  if (peek(parser, TokenKind.NAME)) {
+    switch (parser.token.value) {
+      case 'query':
+      case 'mutation': return parseOperationDefinition(parser);
+
+      case 'fragment': return parseFragmentDefinition(parser);
+
+      case 'type':
+      case 'interface':
+      case 'union':
+      case 'scalar':
+      case 'enum':
+      case 'input': return parseTypeDefinition(parser);
+    }
+  }
+
+  throw unexpected(parser);
+}
+
 
 // Implements the parsing rules in the Operations section.
 
+/**
+ * OperationDefinition :
+ *  - SelectionSet
+ *  - OperationType Name VariableDefinitions? Directives? SelectionSet
+ *
+ * OperationType : one of query mutation
+ */
 function parseOperationDefinition(parser): OperationDefinition {
   var start = parser.token.start;
   if (peek(parser, TokenKind.BRACE_L)) {
@@ -179,6 +238,9 @@ function parseOperationDefinition(parser): OperationDefinition {
   };
 }
 
+/**
+ * VariableDefinitions : ( VariableDefinition+ )
+ */
 function parseVariableDefinitions(parser): Array<VariableDefinition> {
   return peek(parser, TokenKind.PAREN_L) ?
     many(
@@ -190,6 +252,9 @@ function parseVariableDefinitions(parser): Array<VariableDefinition> {
     [];
 }
 
+/**
+ * VariableDefinition : Variable : Type DefaultValue?
+ */
 function parseVariableDefinition(parser): VariableDefinition {
   var start = parser.token.start;
   return {
@@ -202,6 +267,9 @@ function parseVariableDefinition(parser): VariableDefinition {
   };
 }
 
+/**
+ * Variable : $ Name
+ */
 function parseVariable(parser): Variable {
   var start = parser.token.start;
   expect(parser, TokenKind.DOLLAR);
@@ -212,6 +280,9 @@ function parseVariable(parser): Variable {
   };
 }
 
+/**
+ * SelectionSet : { Selection+ }
+ */
 function parseSelectionSet(parser): SelectionSet {
   var start = parser.token.start;
   return {
@@ -222,6 +293,12 @@ function parseSelectionSet(parser): SelectionSet {
   };
 }
 
+/**
+ * Selection :
+ *   - Field
+ *   - FragmentSpread
+ *   - InlineFragment
+ */
 function parseSelection(parser): Selection {
   return peek(parser, TokenKind.SPREAD) ?
     parseFragment(parser) :
@@ -229,7 +306,9 @@ function parseSelection(parser): Selection {
 }
 
 /**
- * Corresponds to both Field and Alias in the spec
+ * Field : Alias? Name Arguments? Directives? SelectionSet?
+ *
+ * Alias : Name :
  */
 function parseField(parser): Field {
   var start = parser.token.start;
@@ -257,12 +336,18 @@ function parseField(parser): Field {
   };
 }
 
+/**
+ * Arguments : ( Argument+ )
+ */
 function parseArguments(parser): Array<Argument> {
   return peek(parser, TokenKind.PAREN_L) ?
     many(parser, TokenKind.PAREN_L, parseArgument, TokenKind.PAREN_R) :
     [];
 }
 
+/**
+ * Argument : Name : Value
+ */
 function parseArgument(parser): Argument {
   var start = parser.token.start;
   return {
@@ -277,7 +362,11 @@ function parseArgument(parser): Argument {
 // Implements the parsing rules in the Fragments section.
 
 /**
- * Corresponds to both FragmentSpread and InlineFragment in the spec
+ * Corresponds to both FragmentSpread and InlineFragment in the spec.
+ *
+ * FragmentSpread : ... FragmentName Directives?
+ *
+ * InlineFragment : ... on TypeCondition Directives? SelectionSet
  */
 function parseFragment(parser): FragmentSpread | InlineFragment {
   var start = parser.token.start;
@@ -300,13 +389,12 @@ function parseFragment(parser): FragmentSpread | InlineFragment {
   };
 }
 
-function parseFragmentName(parser): Name {
-  if (parser.token.value === 'on') {
-    throw unexpected(parser);
-  }
-  return parseName(parser);
-}
-
+/**
+ * FragmentDefinition :
+ *   - fragment FragmentName on TypeCondition Directives? SelectionSet
+ *
+ * TypeCondition : NamedType
+ */
 function parseFragmentDefinition(parser): FragmentDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'fragment');
@@ -320,17 +408,34 @@ function parseFragmentDefinition(parser): FragmentDefinition {
   };
 }
 
+/**
+ * FragmentName : Name but not `on`
+ */
+function parseFragmentName(parser): Name {
+  if (parser.token.value === 'on') {
+    throw unexpected(parser);
+  }
+  return parseName(parser);
+}
+
 
 // Implements the parsing rules in the Values section.
 
-export function parseConstValue(parser): Value {
-  return parseValueLiteral(parser, true);
-}
-
-function parseValueValue(parser): Value {
-  return parseValueLiteral(parser, false);
-}
-
+/**
+ * Value[Const] :
+ *   - [~Const] Variable
+ *   - IntValue
+ *   - FloatValue
+ *   - StringValue
+ *   - BooleanValue
+ *   - EnumValue
+ *   - ListValue[?Const]
+ *   - ObjectValue[?Const]
+ *
+ * BooleanValue : one of `true` `false`
+ *
+ * EnumValue : Name but not `true`, `false` or `null`
+ */
 function parseValueLiteral(parser, isConst: boolean): Value {
   var token = parser.token;
   switch (token.kind) {
@@ -385,6 +490,19 @@ function parseValueLiteral(parser, isConst: boolean): Value {
   throw unexpected(parser);
 }
 
+export function parseConstValue(parser): Value {
+  return parseValueLiteral(parser, true);
+}
+
+function parseValueValue(parser): Value {
+  return parseValueLiteral(parser, false);
+}
+
+/**
+ * ListValue[Const] :
+ *   - [ ]
+ *   - [ Value[?Const]+ ]
+ */
 function parseList(parser, isConst: boolean): ListValue {
   var start = parser.token.start;
   var item = isConst ? parseConstValue : parseValueValue;
@@ -395,6 +513,11 @@ function parseList(parser, isConst: boolean): ListValue {
   };
 }
 
+/**
+ * ObjectValue[Const] :
+ *   - { }
+ *   - { ObjectField[?Const]+ }
+ */
 function parseObject(parser, isConst: boolean): ObjectValue {
   var start = parser.token.start;
   expect(parser, TokenKind.BRACE_L);
@@ -410,6 +533,9 @@ function parseObject(parser, isConst: boolean): ObjectValue {
   };
 }
 
+/**
+ * ObjectField[Const] : Name : Value[?Const]
+ */
 function parseObjectField(
   parser,
   isConst: boolean,
@@ -434,8 +560,12 @@ function parseObjectField(
   };
 }
 
+
 // Implements the parsing rules in the Directives section.
 
+/**
+ * Directives : Directive+
+ */
 function parseDirectives(parser): Array<Directive> {
   var directives = [];
   while (peek(parser, TokenKind.AT)) {
@@ -444,6 +574,9 @@ function parseDirectives(parser): Array<Directive> {
   return directives;
 }
 
+/**
+ * Directive : @ Name Arguments?
+ */
 function parseDirective(parser): Directive {
   var start = parser.token.start;
   expect(parser, TokenKind.AT);
@@ -459,7 +592,10 @@ function parseDirective(parser): Directive {
 // Implements the parsing rules in the Types section.
 
 /**
- * Handles the Type: NamedType, ListType, and NonNullType parsing rules.
+ * Type :
+ *   - NamedType
+ *   - ListType
+ *   - NonNullType
  */
 export function parseType(parser): Type {
   var start = parser.token.start;
@@ -485,6 +621,9 @@ export function parseType(parser): Type {
   return type;
 }
 
+/**
+ * NamedType : Name
+ */
 export function parseNamedType(parser): NamedType {
   var start = parser.token.start;
   return {
@@ -492,4 +631,400 @@ export function parseNamedType(parser): NamedType {
     name: parseName(parser),
     loc: loc(parser, start)
   };
+}
+
+
+// Implements the parsing rules in the Type Definition section.
+
+/**
+ * TypeDefinition :
+ *   - ObjectDefinition
+ *   - InterfaceDefinition
+ *   - UnionDefinition
+ *   - ScalarDefinition
+ *   - EnumDefinition
+ *   - InputObjectDefinition
+ */
+function parseTypeDefinition(parser): TypeDefinition {
+  if (!peek(parser, TokenKind.NAME)) {
+    throw unexpected(parser);
+  }
+  switch (parser.token.value) {
+    case 'type':
+      return parseObjectDefinition(parser);
+    case 'interface':
+      return parseInterfaceDefinition(parser);
+    case 'union':
+      return parseUnionDefinition(parser);
+    case 'scalar':
+      return parseScalarDefinition(parser);
+    case 'enum':
+      return parseEnumDefinition(parser);
+    case 'input':
+      return parseInputObjectDefinition(parser);
+    default:
+      throw unexpected(parser);
+  }
+}
+
+/**
+ * ObjectDefinition : type TypeName ImplementsInterfaces? { FieldDefinition+ }
+ *
+ * TypeName : Name
+ */
+function parseObjectDefinition(parser): ObjectDefinition {
+  var start = parser.token.start;
+  expectKeyword(parser, 'type');
+  var name = parseName(parser);
+  var interfaces = parseImplementsInterfaces(parser);
+  var fields = any(
+    parser,
+    TokenKind.BRACE_L,
+    parseFieldDefinition,
+    TokenKind.BRACE_R
+  );
+  return {
+    kind: OBJECT_DEFINITION,
+    name,
+    interfaces,
+    fields,
+    loc: loc(parser, start),
+  };
+}
+
+/**
+ * ImplementsInterfaces : `implements` NamedType+
+ */
+function parseImplementsInterfaces(parser): Array<NamedType> {
+  var types = [];
+  if (parser.token.value === 'implements') {
+    advance(parser);
+    do {
+      types.push(parseNamedType(parser));
+    } while (!peek(parser, TokenKind.BRACE_L));
+  }
+  return types;
+}
+
+/**
+ * FieldDefinition : FieldName ArgumentsDefinition? : Type
+ *
+ * FieldName : Name
+ */
+function parseFieldDefinition(parser): FieldDefinition {
+  var start = parser.token.start;
+  var name = parseName(parser);
+  var args = parseArgumentDefs(parser);
+  expect(parser, TokenKind.COLON);
+  var type = parseType(parser);
+  return {
+    kind: FIELD_DEFINITION,
+    name,
+    arguments: args,
+    type,
+    loc: loc(parser, start),
+  };
+}
+
+/**
+ * ArgumentsDefinition : ( InputValueDefinition+ )
+ */
+function parseArgumentDefs(parser): Array<InputValueDefinition> {
+  if (!peek(parser, TokenKind.PAREN_L)) {
+    return [];
+  }
+  return many(parser, TokenKind.PAREN_L, parseInputValueDef, TokenKind.PAREN_R);
+}
+
+/**
+ * InputValueDefinition : Name : Type DefaultValue?
+ *
+ * DefaultValue : = Value[Const]
+ */
+function parseInputValueDef(parser): InputValueDefinition {
+  var start = parser.token.start;
+  var name = parseName(parser);
+  expect(parser, TokenKind.COLON);
+  var type = parseType(parser, false);
+  var defaultValue = null;
+  if (skip(parser, TokenKind.EQUALS)) {
+    defaultValue = parseConstValue(parser);
+  }
+  return {
+    kind: INPUT_VALUE_DEFINITION,
+    name,
+    type,
+    defaultValue,
+    loc: loc(parser, start),
+  };
+}
+
+/**
+ * InterfaceDefinition : interface TypeName { Fields+ }
+ */
+function parseInterfaceDefinition(parser): InterfaceDefinition {
+  var start = parser.token.start;
+  expectKeyword(parser, 'interface');
+  var name = parseName(parser);
+  var fields = any(
+    parser,
+    TokenKind.BRACE_L,
+    parseFieldDefinition,
+    TokenKind.BRACE_R
+  );
+  return {
+    kind: INTERFACE_DEFINITION,
+    name,
+    fields,
+    loc: loc(parser, start),
+  };
+}
+
+/**
+ * UnionDefinition : union TypeName = UnionMembers
+ */
+function parseUnionDefinition(parser): UnionDefinition {
+  var start = parser.token.start;
+  expectKeyword(parser, 'union');
+  var name = parseName(parser);
+  expect(parser, TokenKind.EQUALS);
+  var types = parseUnionMembers(parser);
+  return {
+    kind: UNION_DEFINITION,
+    name,
+    types,
+    loc: loc(parser, start),
+  };
+}
+
+/**
+ * UnionMembers :
+ *   - NamedType
+ *   - UnionMembers | NamedType
+ */
+function parseUnionMembers(parser): Array<NamedType> {
+  var members = [];
+  do {
+    members.push(parseNamedType(parser));
+  } while (skip(parser, TokenKind.PIPE));
+  return members;
+}
+
+/**
+ * ScalarDefinition : scalar TypeName
+ */
+function parseScalarDefinition(parser): ScalarDefinition {
+  var start = parser.token.start;
+  expectKeyword(parser, 'scalar');
+  var name = parseName(parser);
+  return {
+    kind: SCALAR_DEFINITION,
+    name,
+    loc: loc(parser, start),
+  };
+}
+
+/**
+ * EnumDefinition : enum TypeName { EnumValueDefinition+ }
+ */
+function parseEnumDefinition(parser): EnumDefinition {
+  var start = parser.token.start;
+  expectKeyword(parser, 'enum');
+  var name = parseName(parser);
+  var values = many(
+    parser,
+    TokenKind.BRACE_L,
+    parseEnumValueDefinition,
+    TokenKind.BRACE_R
+  );
+  return {
+    kind: ENUM_DEFINITION,
+    name,
+    values,
+    loc: loc(parser, start),
+  };
+}
+
+/**
+ * EnumValueDefinition : EnumValue
+ *
+ * EnumValue : Name
+ */
+function parseEnumValueDefinition(parser) : EnumValueDefinition {
+  var start = parser.token.start;
+  var name = parseName(parser);
+  return {
+    kind: ENUM_VALUE_DEFINITION,
+    name,
+    loc: loc(parser, start),
+  };
+}
+
+/**
+ * InputObjectDefinition : input TypeName { InputValueDefinition+ }
+ */
+function parseInputObjectDefinition(parser): InputObjectDefinition {
+  var start = parser.token.start;
+  expectKeyword(parser, 'input');
+  var name = parseName(parser);
+  var fields = any(
+    parser,
+    TokenKind.BRACE_L,
+    parseInputValueDef,
+    TokenKind.BRACE_R
+  );
+  return {
+    kind: INPUT_OBJECT_DEFINITION,
+    name,
+    fields,
+    loc: loc(parser, start),
+  };
+}
+
+
+// Core parsing utility functions
+
+/**
+ * Returns the parser object that is used to store state throughout the
+ * process of parsing.
+ */
+function makeParser(source: Source, options: ParseOptions) {
+  var _lexToken = lex(source);
+  return {
+    _lexToken,
+    source,
+    options,
+    prevEnd: 0,
+    token: _lexToken(),
+  };
+}
+
+/**
+ * Returns a location object, used to identify the place in
+ * the source that created a given parsed object.
+ */
+function loc(parser, start: number) {
+  if (parser.options.noLocation) {
+    return null;
+  }
+  if (parser.options.noSource) {
+    return { start, end: parser.prevEnd };
+  }
+  return { start, end: parser.prevEnd, source: parser.source };
+}
+
+/**
+ * Moves the internal parser object to the next lexed token.
+ */
+function advance(parser): void {
+  var prevEnd = parser.token.end;
+  parser.prevEnd = prevEnd;
+  parser.token = parser._lexToken(prevEnd);
+}
+
+/**
+ * Determines if the next token is of a given kind
+ */
+function peek(parser, kind: string): boolean {
+  return parser.token.kind === kind;
+}
+
+/**
+ * If the next token is of the given kind, return true after advancing
+ * the parser. Otherwise, do not change the parser state and return false.
+ */
+function skip(parser, kind: string): boolean {
+  var match = parser.token.kind === kind;
+  if (match) {
+    advance(parser);
+  }
+  return match;
+}
+
+/**
+ * If the next token is of the given kind, return that token after advancing
+ * the parser. Otherwise, do not change the parser state and return false.
+ */
+function expect(parser, kind: string): Token {
+  var token = parser.token;
+  if (token.kind === kind) {
+    advance(parser);
+    return token;
+  }
+  throw syntaxError(
+    parser.source,
+    token.start,
+    `Expected ${getTokenKindDesc(kind)}, found ${getTokenDesc(token)}`
+  );
+}
+
+/**
+ * If the next token is a keyword with the given value, return that token after
+ * advancing the parser. Otherwise, do not change the parser state and return
+ * false.
+ */
+function expectKeyword(parser, value: string): Token {
+  var token = parser.token;
+  if (token.kind === TokenKind.NAME && token.value === value) {
+    advance(parser);
+    return token;
+  }
+  throw syntaxError(
+    parser.source,
+    token.start,
+    `Expected "${value}", found ${getTokenDesc(token)}`
+  );
+}
+
+/**
+ * Helper function for creating an error when an unexpected lexed token
+ * is encountered.
+ */
+function unexpected(parser, atToken?: ?Token): Error {
+  var token = atToken || parser.token;
+  return syntaxError(
+    parser.source,
+    token.start,
+    `Unexpected ${getTokenDesc(token)}`
+  );
+}
+
+/**
+ * Returns a possibly empty list of parse nodes, determined by
+ * the parseFn. This list begins with a lex token of openKind
+ * and ends with a lex token of closeKind. Advances the parser
+ * to the next lex token after the closing token.
+ */
+function any<T>(
+  parser,
+  openKind: string,
+  parseFn: (parser: any) => T,
+  closeKind: string
+): Array<T> {
+  expect(parser, openKind);
+  var nodes = [];
+  while (!skip(parser, closeKind)) {
+    nodes.push(parseFn(parser));
+  }
+  return nodes;
+}
+
+/**
+ * Returns a non-empty list of parse nodes, determined by
+ * the parseFn. This list begins with a lex token of openKind
+ * and ends with a lex token of closeKind. Advances the parser
+ * to the next lex token after the closing token.
+ */
+function many<T>(
+  parser,
+  openKind: string,
+  parseFn: (parser: any) => T,
+  closeKind: string
+): Array<T> {
+  expect(parser, openKind);
+  var nodes = [ parseFn(parser) ];
+  while (!skip(parser, closeKind)) {
+    nodes.push(parseFn(parser));
+  }
+  return nodes;
 }

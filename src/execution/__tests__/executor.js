@@ -647,4 +647,32 @@ describe('Execute: Handles basic execution tasks', () => {
     ]);
   });
 
+  it('fails to execute a query containing a type definition', async () => {
+    var query = parse(`
+      { foo }
+
+      type Query { foo: String }
+    `);
+
+    var schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          foo: { type: GraphQLString }
+        }
+      })
+    });
+
+    var caughtError;
+    try {
+      await execute(schema, query);
+    } catch (error) {
+      caughtError = error;
+    }
+
+    expect(caughtError).to.deep.equal({
+      message: 'GraphQL cannot execute a request containing a ObjectDefinition.'
+    });
+  });
+
 });

@@ -9,7 +9,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { parseSchemaIntoAST } from '../../language/schema/parser';
+import { parse } from '../../language';
 import { printSchema } from '../schemaPrinter';
 import { buildASTSchema } from '../buildASTSchema';
 
@@ -21,7 +21,7 @@ import { buildASTSchema } from '../buildASTSchema';
  * printing that GraphQL into the DSL
  */
 function cycleOutput(body, queryType, mutationType) {
-  var ast = parseSchemaIntoAST(body);
+  var ast = parse(body);
   var schema = buildASTSchema(ast, queryType, mutationType);
   return '\n' + printSchema(schema);
 }
@@ -296,7 +296,7 @@ type Hello {
   bar: Bar
 }
 `;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     expect(() => buildASTSchema(doc, 'Hello'))
       .to.throw('Type Bar not found in document');
   });
@@ -305,7 +305,7 @@ type Hello {
     var body = `
 type Hello implements Bar { }
 `;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     expect(() => buildASTSchema(doc, 'Hello'))
       .to.throw('Type Bar not found in document');
   });
@@ -315,7 +315,7 @@ type Hello implements Bar { }
 union TestUnion = Bar
 type Hello { testUnion: TestUnion }
 `;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     expect(() => buildASTSchema(doc, 'Hello'))
       .to.throw('Type Bar not found in document');
   });
@@ -326,7 +326,7 @@ type Hello {
   str: String
 }
 `;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     expect(() => buildASTSchema(doc, 'Wat'))
       .to.throw('Specified query type Wat not found in document');
   });
@@ -337,8 +337,23 @@ type Hello {
   str: String
 }
 `;
-    var doc = parseSchemaIntoAST(body);
+    var doc = parse(body);
     expect(() => buildASTSchema(doc, 'Hello', 'Wat'))
       .to.throw('Specified mutation type Wat not found in document');
   });
+
+  it('Rejects query names', () => {
+    var body = `query Foo { field }`;
+    var doc = parse(body);
+    expect(() => buildASTSchema(doc, 'Foo'))
+      .to.throw('Specified query type Foo not found in document.');
+  });
+
+  it('Rejects fragment names', () => {
+    var body = `fragment Foo on Type { field }`;
+    var doc = parse(body);
+    expect(() => buildASTSchema(doc, 'Foo'))
+      .to.throw('Specified query type Foo not found in document.');
+  });
+
 });

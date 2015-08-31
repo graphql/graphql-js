@@ -11,8 +11,8 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseSchemaIntoAST } from '../parser';
-import { printSchema } from '../printer';
+import { parse } from '../parser';
+import { print } from '../printer';
 
 describe('Printer', () => {
 
@@ -21,12 +21,12 @@ describe('Printer', () => {
       kind: 'ScalarDefinition',
       name: { kind: 'Name', value: 'foo' }
     };
-    expect(printSchema(ast)).to.equal('scalar foo');
+    expect(print(ast)).to.equal('scalar foo');
   });
 
   it('produces helpful error messages', () => {
     var badAst1 = { random: 'Data' };
-    expect(() => printSchema(badAst1)).to.throw(
+    expect(() => print(badAst1)).to.throw(
       'Invalid AST Node: {"random":"Data"}'
     );
   });
@@ -37,17 +37,17 @@ describe('Printer', () => {
   );
 
   it('does not alter ast', () => {
-    var ast = parseSchemaIntoAST(kitchenSink);
+    var ast = parse(kitchenSink);
     var astCopy = JSON.parse(JSON.stringify(ast));
-    printSchema(ast);
+    print(ast);
     expect(ast).to.deep.equal(astCopy);
   });
 
   it('prints kitchen sink', () => {
 
-    var ast = parseSchemaIntoAST(kitchenSink);
+    var ast = parse(kitchenSink);
 
-    var printed = printSchema(ast);
+    var printed = print(ast);
 
     expect(printed).to.equal(
 `type Foo implements Bar {
