@@ -18,7 +18,7 @@ describe('Printer', () => {
 
   it('prints minimal ast', () => {
     var ast = {
-      kind: 'ScalarDefinition',
+      kind: 'ScalarTypeDefinition',
       name: { kind: 'Name', value: 'foo' }
     };
     expect(print(ast)).to.equal('scalar foo');

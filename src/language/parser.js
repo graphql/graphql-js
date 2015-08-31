@@ -39,15 +39,15 @@ import type {
   NamedType,
 
   TypeDefinition,
-  ObjectDefinition,
+  ObjectTypeDefinition,
   FieldDefinition,
   InputValueDefinition,
-  InterfaceDefinition,
-  UnionDefinition,
-  ScalarDefinition,
-  EnumDefinition,
+  InterfaceTypeDefinition,
+  UnionTypeDefinition,
+  ScalarTypeDefinition,
+  EnumTypeDefinition,
   EnumValueDefinition,
-  InputObjectDefinition,
+  InputObjectTypeDefinition,
 } from './ast';
 
 import {
@@ -80,15 +80,15 @@ import {
   LIST_TYPE,
   NON_NULL_TYPE,
 
-  OBJECT_DEFINITION,
+  OBJECT_TYPE_DEFINITION,
   FIELD_DEFINITION,
   INPUT_VALUE_DEFINITION,
-  INTERFACE_DEFINITION,
-  UNION_DEFINITION,
-  SCALAR_DEFINITION,
-  ENUM_DEFINITION,
+  INTERFACE_TYPE_DEFINITION,
+  UNION_TYPE_DEFINITION,
+  SCALAR_TYPE_DEFINITION,
+  ENUM_TYPE_DEFINITION,
   ENUM_VALUE_DEFINITION,
-  INPUT_OBJECT_DEFINITION,
+  INPUT_OBJECT_TYPE_DEFINITION,
 } from './kinds';
 
 
@@ -638,12 +638,12 @@ export function parseNamedType(parser): NamedType {
 
 /**
  * TypeDefinition :
- *   - ObjectDefinition
- *   - InterfaceDefinition
- *   - UnionDefinition
- *   - ScalarDefinition
- *   - EnumDefinition
- *   - InputObjectDefinition
+ *   - ObjectTypeDefinition
+ *   - InterfaceTypeDefinition
+ *   - UnionTypeDefinition
+ *   - ScalarTypeDefinition
+ *   - EnumTypeDefinition
+ *   - InputObjectTypeDefinition
  */
 function parseTypeDefinition(parser): TypeDefinition {
   if (!peek(parser, TokenKind.NAME)) {
@@ -651,28 +651,29 @@ function parseTypeDefinition(parser): TypeDefinition {
   }
   switch (parser.token.value) {
     case 'type':
-      return parseObjectDefinition(parser);
+      return parseObjectTypeDefinition(parser);
     case 'interface':
-      return parseInterfaceDefinition(parser);
+      return parseInterfaceTypeDefinition(parser);
     case 'union':
-      return parseUnionDefinition(parser);
+      return parseUnionTypeDefinition(parser);
     case 'scalar':
-      return parseScalarDefinition(parser);
+      return parseScalarTypeDefinition(parser);
     case 'enum':
-      return parseEnumDefinition(parser);
+      return parseEnumTypeDefinition(parser);
     case 'input':
-      return parseInputObjectDefinition(parser);
+      return parseInputObjectTypeDefinition(parser);
     default:
       throw unexpected(parser);
   }
 }
 
 /**
- * ObjectDefinition : type TypeName ImplementsInterfaces? { FieldDefinition+ }
+ * ObjectTypeDefinition
+ *   - type TypeName ImplementsInterfaces? { FieldDefinition+ }
  *
  * TypeName : Name
  */
-function parseObjectDefinition(parser): ObjectDefinition {
+function parseObjectTypeDefinition(parser): ObjectTypeDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'type');
   var name = parseName(parser);
@@ -684,7 +685,7 @@ function parseObjectDefinition(parser): ObjectDefinition {
     TokenKind.BRACE_R
   );
   return {
-    kind: OBJECT_DEFINITION,
+    kind: OBJECT_TYPE_DEFINITION,
     name,
     interfaces,
     fields,
@@ -760,9 +761,9 @@ function parseInputValueDef(parser): InputValueDefinition {
 }
 
 /**
- * InterfaceDefinition : interface TypeName { Fields+ }
+ * InterfaceTypeDefinition : interface TypeName { Fields+ }
  */
-function parseInterfaceDefinition(parser): InterfaceDefinition {
+function parseInterfaceTypeDefinition(parser): InterfaceTypeDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'interface');
   var name = parseName(parser);
@@ -773,7 +774,7 @@ function parseInterfaceDefinition(parser): InterfaceDefinition {
     TokenKind.BRACE_R
   );
   return {
-    kind: INTERFACE_DEFINITION,
+    kind: INTERFACE_TYPE_DEFINITION,
     name,
     fields,
     loc: loc(parser, start),
@@ -781,16 +782,16 @@ function parseInterfaceDefinition(parser): InterfaceDefinition {
 }
 
 /**
- * UnionDefinition : union TypeName = UnionMembers
+ * UnionTypeDefinition : union TypeName = UnionMembers
  */
-function parseUnionDefinition(parser): UnionDefinition {
+function parseUnionTypeDefinition(parser): UnionTypeDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'union');
   var name = parseName(parser);
   expect(parser, TokenKind.EQUALS);
   var types = parseUnionMembers(parser);
   return {
-    kind: UNION_DEFINITION,
+    kind: UNION_TYPE_DEFINITION,
     name,
     types,
     loc: loc(parser, start),
@@ -811,23 +812,23 @@ function parseUnionMembers(parser): Array<NamedType> {
 }
 
 /**
- * ScalarDefinition : scalar TypeName
+ * ScalarTypeDefinition : scalar TypeName
  */
-function parseScalarDefinition(parser): ScalarDefinition {
+function parseScalarTypeDefinition(parser): ScalarTypeDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'scalar');
   var name = parseName(parser);
   return {
-    kind: SCALAR_DEFINITION,
+    kind: SCALAR_TYPE_DEFINITION,
     name,
     loc: loc(parser, start),
   };
 }
 
 /**
- * EnumDefinition : enum TypeName { EnumValueDefinition+ }
+ * EnumTypeDefinition : enum TypeName { EnumValueDefinition+ }
  */
-function parseEnumDefinition(parser): EnumDefinition {
+function parseEnumTypeDefinition(parser): EnumTypeDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'enum');
   var name = parseName(parser);
@@ -838,7 +839,7 @@ function parseEnumDefinition(parser): EnumDefinition {
     TokenKind.BRACE_R
   );
   return {
-    kind: ENUM_DEFINITION,
+    kind: ENUM_TYPE_DEFINITION,
     name,
     values,
     loc: loc(parser, start),
@@ -861,9 +862,9 @@ function parseEnumValueDefinition(parser) : EnumValueDefinition {
 }
 
 /**
- * InputObjectDefinition : input TypeName { InputValueDefinition+ }
+ * InputObjectTypeDefinition : input TypeName { InputValueDefinition+ }
  */
-function parseInputObjectDefinition(parser): InputObjectDefinition {
+function parseInputObjectTypeDefinition(parser): InputObjectTypeDefinition {
   var start = parser.token.start;
   expectKeyword(parser, 'input');
   var name = parseName(parser);
@@ -874,7 +875,7 @@ function parseInputObjectDefinition(parser): InputObjectDefinition {
     TokenKind.BRACE_R
   );
   return {
-    kind: INPUT_OBJECT_DEFINITION,
+    kind: INPUT_OBJECT_TYPE_DEFINITION,
     name,
     fields,
     loc: loc(parser, start),

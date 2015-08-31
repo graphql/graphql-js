@@ -88,7 +88,7 @@ var printDocASTReducer = {
 
   // Type Definitions
 
-  ObjectDefinition: ({ name, interfaces, fields }) =>
+  ObjectTypeDefinition: ({ name, interfaces, fields }) =>
     'type ' + name + ' ' +
     wrap('implements ', join(interfaces, ', '), ' ') +
     block(fields),
@@ -99,21 +99,21 @@ var printDocASTReducer = {
   InputValueDefinition: ({ name, type, defaultValue }) =>
     name + ': ' + type + wrap(' = ', defaultValue),
 
-  InterfaceDefinition: ({ name, fields }) =>
+  InterfaceTypeDefinition: ({ name, fields }) =>
     `interface ${name} ${block(fields)}`,
 
-  UnionDefinition: ({ name, types }) =>
+  UnionTypeDefinition: ({ name, types }) =>
     `union ${name} = ${join(types, ' | ')}`,
 
-  ScalarDefinition: ({ name }) =>
+  ScalarTypeDefinition: ({ name }) =>
     `scalar ${name}`,
 
-  EnumDefinition: ({ name, values }) =>
+  EnumTypeDefinition: ({ name, values }) =>
     `enum ${name} ${block(values)}`,
 
   EnumValueDefinition: ({ name }) => name,
 
-  InputObjectDefinition: ({ name, fields }) =>
+  InputObjectTypeDefinition: ({ name, fields }) =>
     `input ${name} ${block(fields)}`,
 };
 

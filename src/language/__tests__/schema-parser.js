@@ -86,7 +86,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'ObjectDefinition',
+          kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -115,7 +115,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'ObjectDefinition',
+          kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -146,7 +146,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'ObjectDefinition',
+          kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(5, 10)),
           interfaces: [ typeNode('World', loc(22, 27)) ],
           fields: [],
@@ -166,7 +166,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'ObjectDefinition',
+          kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(5, 10)),
           interfaces: [
             typeNode('Wo', loc(22, 24)),
@@ -189,7 +189,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'EnumDefinition',
+          kind: 'EnumTypeDefinition',
           name: nameNode('Hello', loc(5, 10)),
           values: [ enumValueNode('WORLD', loc(13, 18)) ],
           loc: loc(0, 20),
@@ -208,7 +208,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'EnumDefinition',
+          kind: 'EnumTypeDefinition',
           name: nameNode('Hello', loc(5, 10)),
           values: [
             enumValueNode('WO', loc(13, 15)),
@@ -233,7 +233,7 @@ interface Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'InterfaceDefinition',
+          kind: 'InterfaceTypeDefinition',
           name: nameNode('Hello', loc(11, 16)),
           fields: [
             fieldNode(
@@ -261,7 +261,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'ObjectDefinition',
+          kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -298,7 +298,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'ObjectDefinition',
+          kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -339,7 +339,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'ObjectDefinition',
+          kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -380,7 +380,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'ObjectDefinition',
+          kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
           fields: [
@@ -420,7 +420,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'UnionDefinition',
+          kind: 'UnionTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           types: [ typeNode('World', loc(14, 19)) ],
           loc: loc(0, 19),
@@ -439,7 +439,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'UnionDefinition',
+          kind: 'UnionTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           types: [
             typeNode('Wo', loc(14, 16)),
@@ -461,7 +461,7 @@ type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'ScalarDefinition',
+          kind: 'ScalarTypeDefinition',
           name: nameNode('Hello', loc(7, 12)),
           loc: loc(0, 12),
         }
@@ -482,7 +482,7 @@ input Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'InputObjectDefinition',
+          kind: 'InputObjectTypeDefinition',
           name: nameNode('Hello', loc(7, 12)),
           fields: [
             inputValueNode(

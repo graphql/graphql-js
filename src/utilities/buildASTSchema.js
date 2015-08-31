@@ -18,23 +18,23 @@ import {
 } from '../language/kinds';
 
 import {
-  OBJECT_DEFINITION,
-  INTERFACE_DEFINITION,
-  ENUM_DEFINITION,
-  UNION_DEFINITION,
-  SCALAR_DEFINITION,
-  INPUT_OBJECT_DEFINITION,
+  OBJECT_TYPE_DEFINITION,
+  INTERFACE_TYPE_DEFINITION,
+  ENUM_TYPE_DEFINITION,
+  UNION_TYPE_DEFINITION,
+  SCALAR_TYPE_DEFINITION,
+  INPUT_OBJECT_TYPE_DEFINITION,
 } from '../language/kinds';
 
 import {
   Document,
-  ObjectDefinition,
+  ObjectTypeDefinition,
   InputValueDefinition,
-  InterfaceDefinition,
-  UnionDefinition,
-  ScalarDefinition,
-  EnumDefinition,
-  InputObjectDefinition,
+  InterfaceTypeDefinition,
+  UnionTypeDefinition,
+  ScalarTypeDefinition,
+  EnumTypeDefinition,
+  InputObjectTypeDefinition,
 } from '../language/ast';
 
 import {
@@ -56,9 +56,9 @@ import {
 
 
 type CompositeDefinition =
-  ObjectDefinition |
-  InterfaceDefinition |
-  UnionDefinition;
+  ObjectTypeDefinition |
+  InterfaceTypeDefinition |
+  UnionTypeDefinition;
 
 function buildWrappedType(innerType, inputTypeAST) {
   if (inputTypeAST.kind === LIST_TYPE) {
@@ -100,12 +100,12 @@ export function buildASTSchema(
 
   var typeDefs = ast.definitions.filter(d => {
     switch (d.kind) {
-      case OBJECT_DEFINITION:
-      case INTERFACE_DEFINITION:
-      case ENUM_DEFINITION:
-      case UNION_DEFINITION:
-      case SCALAR_DEFINITION:
-      case INPUT_OBJECT_DEFINITION: return true;
+      case OBJECT_TYPE_DEFINITION:
+      case INTERFACE_TYPE_DEFINITION:
+      case ENUM_TYPE_DEFINITION:
+      case UNION_TYPE_DEFINITION:
+      case SCALAR_TYPE_DEFINITION:
+      case INPUT_OBJECT_TYPE_DEFINITION: return true;
     }
   });
 
@@ -178,24 +178,24 @@ export function buildASTSchema(
       throw new Error('def must be defined');
     }
     switch (def.kind) {
-      case OBJECT_DEFINITION:
+      case OBJECT_TYPE_DEFINITION:
         return makeTypeDef(def);
-      case INTERFACE_DEFINITION:
+      case INTERFACE_TYPE_DEFINITION:
         return makeInterfaceDef(def);
-      case ENUM_DEFINITION:
+      case ENUM_TYPE_DEFINITION:
         return makeEnumDef(def);
-      case UNION_DEFINITION:
+      case UNION_TYPE_DEFINITION:
         return makeUnionDef(def);
-      case SCALAR_DEFINITION:
+      case SCALAR_TYPE_DEFINITION:
         return makeScalarDef(def);
-      case INPUT_OBJECT_DEFINITION:
+      case INPUT_OBJECT_TYPE_DEFINITION:
         return makeInputObjectDef(def);
       default:
         throw new Error(def.kind + ' not supported');
     }
   }
 
-  function makeTypeDef(def: ObjectDefinition) {
+  function makeTypeDef(def: ObjectTypeDefinition) {
     var typeName = def.name.value;
     var config = {
       name: typeName,
@@ -216,7 +216,7 @@ export function buildASTSchema(
     );
   }
 
-  function makeImplementedInterfaces(def: ObjectDefinition) {
+  function makeImplementedInterfaces(def: ObjectTypeDefinition) {
     return def.interfaces.map(inter => produceTypeDef(inter));
   }
 
@@ -231,7 +231,7 @@ export function buildASTSchema(
     );
   }
 
-  function makeInterfaceDef(def: InterfaceDefinition) {
+  function makeInterfaceDef(def: InterfaceTypeDefinition) {
     var typeName = def.name.value;
     var config = {
       name: typeName,
@@ -241,7 +241,7 @@ export function buildASTSchema(
     return new GraphQLInterfaceType(config);
   }
 
-  function makeEnumDef(def: EnumDefinition) {
+  function makeEnumDef(def: EnumTypeDefinition) {
     var enumType = new GraphQLEnumType({
       name: def.name.value,
       values: keyValMap(def.values, v => v.name.value, () => ({})),
@@ -250,7 +250,7 @@ export function buildASTSchema(
     return enumType;
   }
 
-  function makeUnionDef(def: UnionDefinition) {
+  function makeUnionDef(def: UnionTypeDefinition) {
     return new GraphQLUnionType({
       name: def.name.value,
       resolveType: () => null,
@@ -258,7 +258,7 @@ export function buildASTSchema(
     });
   }
 
-  function makeScalarDef(def: ScalarDefinition) {
+  function makeScalarDef(def: ScalarTypeDefinition) {
     return new GraphQLScalarType({
       name: def.name.value,
       serialize: () => null,
@@ -271,7 +271,7 @@ export function buildASTSchema(
     });
   }
 
-  function makeInputObjectDef(def: InputObjectDefinition) {
+  function makeInputObjectDef(def: InputObjectTypeDefinition) {
     return new GraphQLInputObjectType({
       name: def.name.value,
       fields: () => makeInputValues(def.fields),

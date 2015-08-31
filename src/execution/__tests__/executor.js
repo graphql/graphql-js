@@ -671,7 +671,8 @@ describe('Execute: Handles basic execution tasks', () => {
     }
 
     expect(caughtError).to.deep.equal({
-      message: 'GraphQL cannot execute a request containing a ObjectDefinition.'
+      message:
+        'GraphQL cannot execute a request containing a ObjectTypeDefinition.'
     });
   });
 

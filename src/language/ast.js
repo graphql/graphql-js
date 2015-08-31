@@ -46,15 +46,15 @@ export type Node = Name
                  | Directive
                  | ListType
                  | NonNullType
-                 | ObjectDefinition
+                 | ObjectTypeDefinition
                  | FieldDefinition
                  | InputValueDefinition
-                 | InterfaceDefinition
-                 | UnionDefinition
-                 | ScalarDefinition
-                 | EnumDefinition
+                 | InterfaceTypeDefinition
+                 | UnionTypeDefinition
+                 | ScalarTypeDefinition
+                 | EnumTypeDefinition
                  | EnumValueDefinition
-                 | InputObjectDefinition
+                 | InputObjectTypeDefinition
 
 // Name
 
@@ -253,15 +253,15 @@ export type NonNullType = {
 // Type Definition
 
 export type TypeDefinition =
-  ObjectDefinition |
-  InterfaceDefinition |
-  UnionDefinition |
-  ScalarDefinition |
-  EnumDefinition |
-  InputObjectDefinition
+  ObjectTypeDefinition |
+  InterfaceTypeDefinition |
+  UnionTypeDefinition |
+  ScalarTypeDefinition |
+  EnumTypeDefinition |
+  InputObjectTypeDefinition
 
-export type ObjectDefinition = {
-  kind: 'ObjectDefinition';
+export type ObjectTypeDefinition = {
+  kind: 'ObjectTypeDefinition';
   loc?: ?Location;
   name: Name;
   interfaces?: ?Array<NamedType>;
@@ -284,28 +284,28 @@ export type InputValueDefinition = {
   defaultValue?: ?Value;
 }
 
-export type InterfaceDefinition = {
-  kind: 'InterfaceDefinition';
+export type InterfaceTypeDefinition = {
+  kind: 'InterfaceTypeDefinition';
   loc?: ?Location;
   name: Name;
   fields: Array<FieldDefinition>;
 }
 
-export type UnionDefinition = {
-  kind: 'UnionDefinition';
+export type UnionTypeDefinition = {
+  kind: 'UnionTypeDefinition';
   loc?: ?Location;
   name: Name;
   types: Array<NamedType>;
 }
 
-export type ScalarDefinition = {
-  kind: 'ScalarDefinition';
+export type ScalarTypeDefinition = {
+  kind: 'ScalarTypeDefinition';
   loc?: ?Location;
   name: Name;
 }
 
-export type EnumDefinition = {
-  kind: 'EnumDefinition';
+export type EnumTypeDefinition = {
+  kind: 'EnumTypeDefinition';
   loc?: ?Location;
   name: Name;
   values: Array<EnumValueDefinition>;
@@ -317,8 +317,8 @@ export type EnumValueDefinition = {
   name: Name;
 }
 
-export type InputObjectDefinition = {
-  kind: 'InputObjectDefinition';
+export type InputObjectTypeDefinition = {
+  kind: 'InputObjectTypeDefinition';
   loc?: ?Location;
   name: Name;
   fields: Array<InputValueDefinition>;

@@ -38,15 +38,15 @@ export var QueryDocumentKeys = {
   ListType: [ 'type' ],
   NonNullType: [ 'type' ],
 
-  ObjectDefinition: [ 'name', 'interfaces', 'fields' ],
+  ObjectTypeDefinition: [ 'name', 'interfaces', 'fields' ],
   FieldDefinition: [ 'name', 'arguments', 'type' ],
   InputValueDefinition: [ 'name', 'type', 'defaultValue' ],
-  InterfaceDefinition: [ 'name', 'fields' ],
-  UnionDefinition: [ 'name', 'types' ],
-  ScalarDefinition: [ 'name' ],
-  EnumDefinition: [ 'name', 'values' ],
+  InterfaceTypeDefinition: [ 'name', 'fields' ],
+  UnionTypeDefinition: [ 'name', 'types' ],
+  ScalarTypeDefinition: [ 'name' ],
+  EnumTypeDefinition: [ 'name', 'values' ],
   EnumValueDefinition: [ 'name' ],
-  InputObjectDefinition: [ 'name', 'fields' ],
+  InputObjectTypeDefinition: [ 'name', 'fields' ],
 };
 
 export const BREAK = {};
