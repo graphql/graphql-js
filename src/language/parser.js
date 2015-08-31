@@ -48,6 +48,8 @@ import type {
   EnumTypeDefinition,
   EnumValueDefinition,
   InputObjectTypeDefinition,
+
+  TypeExtensionDefinition,
 } from './ast';
 
 import {
@@ -89,6 +91,8 @@ import {
   ENUM_TYPE_DEFINITION,
   ENUM_VALUE_DEFINITION,
   INPUT_OBJECT_TYPE_DEFINITION,
+
+  TYPE_EXTENTION_DEFINITION,
 } from './kinds';
 
 
@@ -177,6 +181,7 @@ function parseDocument(parser): Document {
  *   - OperationDefinition
  *   - FragmentDefinition
  *   - TypeDefinition
+ *   - TypeExtensionDefinition
  */
 function parseDefinition(parser): Definition {
   if (peek(parser, TokenKind.BRACE_L)) {
@@ -196,6 +201,8 @@ function parseDefinition(parser): Definition {
       case 'scalar':
       case 'enum':
       case 'input': return parseTypeDefinition(parser);
+
+      case 'extend': return parseTypeExtensionDefinition(parser);
     }
   }
 
@@ -878,6 +885,23 @@ function parseInputObjectTypeDefinition(parser): InputObjectTypeDefinition {
     kind: INPUT_OBJECT_TYPE_DEFINITION,
     name,
     fields,
+    loc: loc(parser, start),
+  };
+}
+
+
+// Implements the parsing rules for Type Extension
+
+/**
+ * TypeExtensionDefinition : extend ObjectTypeDefinition
+ */
+function parseTypeExtensionDefinition(parser): TypeExtensionDefinition {
+  var start = parser.token.start;
+  expectKeyword(parser, 'extend');
+  var definition = parseObjectTypeDefinition(parser);
+  return {
+    kind: TYPE_EXTENTION_DEFINITION,
+    definition,
     loc: loc(parser, start),
   };
 }

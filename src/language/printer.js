@@ -115,6 +115,10 @@ var printDocASTReducer = {
 
   InputObjectTypeDefinition: ({ name, fields }) =>
     `input ${name} ${block(fields)}`,
+
+  // Type Extension Definition
+
+  TypeExtensionDefinition: ({ definition }) => `extend ${definition}`,
 };
 
 /**
