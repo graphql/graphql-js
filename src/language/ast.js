@@ -81,7 +81,8 @@ export type Definition = OperationDefinition
 export type OperationDefinition = {
   kind: 'OperationDefinition';
   loc?: ?Location;
-  operation: 'query' | 'mutation';
+  // Note: subscription is an experimental non-spec addition.
+  operation: 'query' | 'mutation' | 'subscription';
   name?: ?Name;
   variableDefinitions?: ?Array<VariableDefinition>;
   directives?: ?Array<Directive>;

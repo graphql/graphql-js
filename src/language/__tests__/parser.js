@@ -168,6 +168,14 @@ fragment ${fragmentName} on Type {
     });
   });
 
+  it('parses experimental subscription feature', () => {
+    expect(() => parse(`
+      subscription Foo {
+        subscriptionField
+      }
+    `)).to.not.throw();
+  });
+
   it('parse creates ast', () => {
 
     var source = new Source(`{
