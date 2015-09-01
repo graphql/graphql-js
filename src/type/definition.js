@@ -200,6 +200,7 @@ export class GraphQLScalarType/* <T> */ {
 
   constructor(config: GraphQLScalarTypeConfig/* <T> */) {
     invariant(config.name, 'Type must be named.');
+    assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
     invariant(
@@ -296,6 +297,7 @@ export class GraphQLObjectType {
 
   constructor(config: GraphQLObjectTypeConfig) {
     invariant(config.name, 'Type must be named.');
+    assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
     if (config.isTypeOf) {
@@ -381,6 +383,7 @@ function defineFieldMap(
 
   var resultFieldMap = {};
   fieldNames.forEach(fieldName => {
+    assertValidName(fieldName);
     var field = {
       ...fieldMap[fieldName],
       name: fieldName
@@ -399,6 +402,7 @@ function defineFieldMap(
         `as keys.`
       );
       field.args = Object.keys(field.args).map(argName => {
+        assertValidName(argName);
         var arg = field.args[argName];
         invariant(
           isInputType(arg.type),
@@ -537,6 +541,7 @@ export class GraphQLInterfaceType {
 
   constructor(config: GraphQLInterfaceTypeConfig) {
     invariant(config.name, 'Type must be named.');
+    assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
     if (config.resolveType) {
@@ -638,6 +643,7 @@ export class GraphQLUnionType {
 
   constructor(config: GraphQLUnionTypeConfig) {
     invariant(config.name, 'Type must be named.');
+    assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
     if (config.resolveType) {
@@ -742,6 +748,7 @@ export class GraphQLEnumType/* <T> */ {
 
   constructor(config: GraphQLEnumTypeConfig/* <T> */) {
     this.name = config.name;
+    assertValidName(config.name);
     this.description = config.description;
     this._values = defineEnumValues(this, config.values);
     this._enumConfig = config;
@@ -813,6 +820,7 @@ function defineEnumValues(
     `${type} values must be an object with value names as keys.`
   );
   return valueNames.map(valueName => {
+    assertValidName(valueName);
     var value = valueMap[valueName];
     invariant(
       isPlainObj(value),
@@ -881,6 +889,7 @@ export class GraphQLInputObjectType {
 
   constructor(config: InputObjectConfig) {
     invariant(config.name, 'Type must be named.');
+    assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
     this._typeConfig = config;
@@ -905,6 +914,7 @@ export class GraphQLInputObjectType {
     );
     var resultFieldMap = {};
     fieldNames.forEach(fieldName => {
+      assertValidName(fieldName);
       var field = {
         ...fieldMap[fieldName],
         name: fieldName
@@ -1024,4 +1034,14 @@ export class GraphQLNonNull {
   toString(): string {
     return this.ofType.toString() + '!';
   }
+}
+
+var NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
+
+// Helper to assert that provided names are valid.
+function assertValidName(name: string): void {
+  invariant(
+    NAME_RX.test(name),
+    `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`
+  );
 }
