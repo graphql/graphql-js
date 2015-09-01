@@ -55,6 +55,7 @@ export type Node = Name
                  | EnumTypeDefinition
                  | EnumValueDefinition
                  | InputObjectTypeDefinition
+                 | TypeExtensionDefinition
 
 // Name
 
@@ -75,6 +76,7 @@ export type Document = {
 export type Definition = OperationDefinition
                        | FragmentDefinition
                        | TypeDefinition
+                       | TypeExtensionDefinition
 
 export type OperationDefinition = {
   kind: 'OperationDefinition';
@@ -322,4 +324,12 @@ export type InputObjectTypeDefinition = {
   loc?: ?Location;
   name: Name;
   fields: Array<InputValueDefinition>;
+}
+
+// Type Extention
+
+export type TypeExtensionDefinition = {
+  kind: 'TypeExtensionDefinition';
+  loc?: ?Location;
+  definition: ObjectTypeDefinition;
 }

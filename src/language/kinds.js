@@ -59,3 +59,7 @@ export const SCALAR_TYPE_DEFINITION = 'ScalarTypeDefinition';
 export const ENUM_TYPE_DEFINITION = 'EnumTypeDefinition';
 export const ENUM_VALUE_DEFINITION = 'EnumValueDefinition';
 export const INPUT_OBJECT_TYPE_DEFINITION = 'InputObjectTypeDefinition';
+
+// Type Extension Definitions
+
+export const TYPE_EXTENSION_DEFINITION = 'TypeExtensionDefinition';
