@@ -76,7 +76,6 @@ export type Document = {
 export type Definition = OperationDefinition
                        | FragmentDefinition
                        | TypeDefinition
-                       | TypeExtensionDefinition
 
 export type OperationDefinition = {
   kind: 'OperationDefinition';
@@ -255,13 +254,13 @@ export type NonNullType = {
 
 // Type Definition
 
-export type TypeDefinition =
-  ObjectTypeDefinition |
-  InterfaceTypeDefinition |
-  UnionTypeDefinition |
-  ScalarTypeDefinition |
-  EnumTypeDefinition |
-  InputObjectTypeDefinition
+export type TypeDefinition = ObjectTypeDefinition
+                           | InterfaceTypeDefinition
+                           | UnionTypeDefinition
+                           | ScalarTypeDefinition
+                           | EnumTypeDefinition
+                           | InputObjectTypeDefinition
+                           | TypeExtensionDefinition
 
 export type ObjectTypeDefinition = {
   kind: 'ObjectTypeDefinition';
@@ -326,8 +325,6 @@ export type InputObjectTypeDefinition = {
   name: Name;
   fields: Array<InputValueDefinition>;
 }
-
-// Type Extention
 
 export type TypeExtensionDefinition = {
   kind: 'TypeExtensionDefinition';

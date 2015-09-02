@@ -181,7 +181,6 @@ function parseDocument(parser): Document {
  *   - OperationDefinition
  *   - FragmentDefinition
  *   - TypeDefinition
- *   - TypeExtensionDefinition
  */
 function parseDefinition(parser): Definition {
   if (peek(parser, TokenKind.BRACE_L)) {
@@ -202,9 +201,8 @@ function parseDefinition(parser): Definition {
       case 'union':
       case 'scalar':
       case 'enum':
-      case 'input': return parseTypeDefinition(parser);
-
-      case 'extend': return parseTypeExtensionDefinition(parser);
+      case 'input':
+      case 'extend': return parseTypeDefinition(parser);
     }
   }
 
@@ -653,6 +651,7 @@ export function parseNamedType(parser): NamedType {
  *   - ScalarTypeDefinition
  *   - EnumTypeDefinition
  *   - InputObjectTypeDefinition
+ *   - TypeExtensionDefinition
  */
 function parseTypeDefinition(parser): TypeDefinition {
   if (!peek(parser, TokenKind.NAME)) {
@@ -671,16 +670,15 @@ function parseTypeDefinition(parser): TypeDefinition {
       return parseEnumTypeDefinition(parser);
     case 'input':
       return parseInputObjectTypeDefinition(parser);
+    case 'extend':
+      return parseTypeExtensionDefinition(parser);
     default:
       throw unexpected(parser);
   }
 }
 
 /**
- * ObjectTypeDefinition
- *   - type TypeName ImplementsInterfaces? { FieldDefinition+ }
- *
- * TypeName : Name
+ * ObjectTypeDefinition : type Name ImplementsInterfaces? { FieldDefinition+ }
  */
 function parseObjectTypeDefinition(parser): ObjectTypeDefinition {
   var start = parser.token.start;
@@ -703,7 +701,7 @@ function parseObjectTypeDefinition(parser): ObjectTypeDefinition {
 }
 
 /**
- * ImplementsInterfaces : `implements` NamedType+
+ * ImplementsInterfaces : implements NamedType+
  */
 function parseImplementsInterfaces(parser): Array<NamedType> {
   var types = [];
@@ -717,9 +715,7 @@ function parseImplementsInterfaces(parser): Array<NamedType> {
 }
 
 /**
- * FieldDefinition : FieldName ArgumentsDefinition? : Type
- *
- * FieldName : Name
+ * FieldDefinition : Name ArgumentsDefinition? : Type
  */
 function parseFieldDefinition(parser): FieldDefinition {
   var start = parser.token.start;
@@ -748,8 +744,6 @@ function parseArgumentDefs(parser): Array<InputValueDefinition> {
 
 /**
  * InputValueDefinition : Name : Type DefaultValue?
- *
- * DefaultValue : = Value[Const]
  */
 function parseInputValueDef(parser): InputValueDefinition {
   var start = parser.token.start;
@@ -770,7 +764,7 @@ function parseInputValueDef(parser): InputValueDefinition {
 }
 
 /**
- * InterfaceTypeDefinition : interface TypeName { Fields+ }
+ * InterfaceTypeDefinition : interface Name { FieldDefinition+ }
  */
 function parseInterfaceTypeDefinition(parser): InterfaceTypeDefinition {
   var start = parser.token.start;
@@ -791,7 +785,7 @@ function parseInterfaceTypeDefinition(parser): InterfaceTypeDefinition {
 }
 
 /**
- * UnionTypeDefinition : union TypeName = UnionMembers
+ * UnionTypeDefinition : union Name = UnionMembers
  */
 function parseUnionTypeDefinition(parser): UnionTypeDefinition {
   var start = parser.token.start;
@@ -821,7 +815,7 @@ function parseUnionMembers(parser): Array<NamedType> {
 }
 
 /**
- * ScalarTypeDefinition : scalar TypeName
+ * ScalarTypeDefinition : scalar Name
  */
 function parseScalarTypeDefinition(parser): ScalarTypeDefinition {
   var start = parser.token.start;
@@ -835,7 +829,7 @@ function parseScalarTypeDefinition(parser): ScalarTypeDefinition {
 }
 
 /**
- * EnumTypeDefinition : enum TypeName { EnumValueDefinition+ }
+ * EnumTypeDefinition : enum Name { EnumValueDefinition+ }
  */
 function parseEnumTypeDefinition(parser): EnumTypeDefinition {
   var start = parser.token.start;
@@ -871,7 +865,7 @@ function parseEnumValueDefinition(parser) : EnumValueDefinition {
 }
 
 /**
- * InputObjectTypeDefinition : input TypeName { InputValueDefinition+ }
+ * InputObjectTypeDefinition : input Name { InputValueDefinition+ }
  */
 function parseInputObjectTypeDefinition(parser): InputObjectTypeDefinition {
   var start = parser.token.start;
@@ -890,9 +884,6 @@ function parseInputObjectTypeDefinition(parser): InputObjectTypeDefinition {
     loc: loc(parser, start),
   };
 }
-
-
-// Implements the parsing rules for Type Extension
 
 /**
  * TypeExtensionDefinition : extend ObjectTypeDefinition

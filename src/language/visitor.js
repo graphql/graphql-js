@@ -47,7 +47,6 @@ export var QueryDocumentKeys = {
   EnumTypeDefinition: [ 'name', 'values' ],
   EnumValueDefinition: [ 'name' ],
   InputObjectTypeDefinition: [ 'name', 'fields' ],
-
   TypeExtensionDefinition: [ 'definition' ],
 };
 
