@@ -127,6 +127,8 @@ export class TypeInfo {
           type = schema.getQueryType();
         } else if (node.operation === 'mutation') {
           type = schema.getMutationType();
+        } else if (node.operation === 'subscription') {
+          type = schema.getSubscriptionType();
         }
         this._typeStack.push(type);
         break;

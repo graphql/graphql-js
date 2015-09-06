@@ -51,6 +51,12 @@ export var __Schema = new GraphQLObjectType({
       type: __Type,
       resolve: schema => schema.getMutationType()
     },
+    subscriptionType: {
+      description: 'If this server support subscription, the type that ' +
+                   'subscription operations will be rooted at.',
+      type: __Type,
+      resolve: schema => schema.getSubscriptionType()
+    },
     directives: {
       description: 'A list of all directives supported by this server.',
       type:

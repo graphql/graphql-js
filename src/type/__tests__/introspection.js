@@ -1191,6 +1191,11 @@ describe('Introspection', () => {
                            'mutation operations will be rooted at.'
             },
             {
+              name: 'subscriptionType',
+              description: 'If this server support subscription, the type ' +
+                           'that subscription operations will be rooted at.',
+            },
+            {
               name: 'directives',
               description: 'A list of all directives supported by this server.'
             }
