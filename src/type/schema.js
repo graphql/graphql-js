@@ -60,15 +60,23 @@ export class GraphQLSchema {
     );
     this._schemaConfig = config;
 
-    // Build type map now to detect any errors within this schema.
-    this._typeMap = [
-      this.getQueryType(),
-      this.getMutationType(),
-      __Schema
-    ].reduce(typeMapReducer, {});
+    this._typeMap = {};
 
-    // Enforce correct interface implementations
-    Object.keys(this._typeMap).forEach(typeName => {
+    // Build type map now to detect any errors within this schema.
+    this.injectType(this.getQueryType());
+    this.injectType(this.getMutationType());
+    this.injectType(__Schema);
+  }
+
+  injectType(newType: ?GraphQLType): void {
+    var oldKeys = Object.keys(this._typeMap);
+
+    this._typeMap = typeMapReducer(this._typeMap, newType);
+
+    // Enforce correct interface implementations for new keys
+    Object.keys(this._typeMap).filter(typeName => {
+      return oldKeys.indexOf(typeName) === -1;
+    }).forEach(typeName => {
       var type = this._typeMap[typeName];
       if (type instanceof GraphQLObjectType) {
         type.getInterfaces().forEach(
