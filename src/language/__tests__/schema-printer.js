@@ -77,6 +77,10 @@ input InputType {
   key: String!
   answer: Int = 42
 }
+
+extend type Foo {
+  seven(argument: [String]): Type
+}
 `);
 
   });

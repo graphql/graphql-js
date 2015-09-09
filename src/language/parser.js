@@ -92,7 +92,7 @@ import {
   ENUM_VALUE_DEFINITION,
   INPUT_OBJECT_TYPE_DEFINITION,
 
-  TYPE_EXTENTION_DEFINITION,
+  TYPE_EXTENSION_DEFINITION,
 } from './kinds';
 
 
@@ -893,7 +893,7 @@ function parseTypeExtensionDefinition(parser): TypeExtensionDefinition {
   expectKeyword(parser, 'extend');
   var definition = parseObjectTypeDefinition(parser);
   return {
-    kind: TYPE_EXTENTION_DEFINITION,
+    kind: TYPE_EXTENSION_DEFINITION,
     definition,
     loc: loc(parser, start),
   };
