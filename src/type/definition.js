@@ -34,7 +34,8 @@ export type GraphQLType =
   GraphQLEnumType |
   GraphQLInputObjectType |
   GraphQLList |
-  GraphQLNonNull;
+  GraphQLNonNull |
+  GraphQLRawObjectType;
 
 export function isType(type: any): boolean {
   return (
@@ -163,7 +164,8 @@ export type GraphQLNamedType =
   GraphQLInterfaceType |
   GraphQLUnionType |
   GraphQLEnumType |
-  GraphQLInputObjectType;
+  GraphQLInputObjectType |
+  GraphQLRawObjectType;
 
 export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
   var unmodifiedType = type;

@@ -663,8 +663,10 @@ function completeValue(
     var serializedResult = returnType.serialize(result);
     return isNullish(serializedResult) ? null : serializedResult;
   }
-  
-  if (returnType instanceof GraphQLRawObjectType) return result;
+
+  if (returnType instanceof GraphQLRawObjectType) {
+    return result;
+  }
 
   // Field type must be Object, Interface or Union and expect sub-selections.
   var objectType: ?GraphQLObjectType;
