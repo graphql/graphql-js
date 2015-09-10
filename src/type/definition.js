@@ -87,7 +87,8 @@ export function isOutputType(type: ?GraphQLType): boolean {
     namedType instanceof GraphQLObjectType ||
     namedType instanceof GraphQLInterfaceType ||
     namedType instanceof GraphQLUnionType ||
-    namedType instanceof GraphQLEnumType
+    namedType instanceof GraphQLEnumType ||
+    namedType instanceof GraphQLRawObjectType
   );
 }
 
@@ -102,6 +103,7 @@ export function isLeafType(type: ?GraphQLType): boolean {
   var namedType = getNamedType(type);
   return (
     namedType instanceof GraphQLScalarType ||
+    namedType instanceof GraphQLRawObjectType ||
     namedType instanceof GraphQLEnumType
   );
 }
@@ -174,6 +176,22 @@ export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
   return unmodifiedType;
 }
 
+export class GraphQLRawObjectType {
+  name: string;
+  description: ?string;
+
+
+  constructor(config: GraphQLObjectTypeConfig) {
+    invariant(config.name, 'Type must be named.');
+    assertValidName(config.name);
+    this.name = config.name;
+    this.description = config.description;
+  }
+
+  toString(): string {
+    return this.name;
+  }
+}
 
 /**
  * Scalar Type Definition

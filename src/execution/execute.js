@@ -18,6 +18,7 @@ import { getVariableValues, getArgumentValues } from './values';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
+  GraphQLRawObjectType,
   GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
@@ -662,6 +663,8 @@ function completeValue(
     var serializedResult = returnType.serialize(result);
     return isNullish(serializedResult) ? null : serializedResult;
   }
+  
+  if (returnType instanceof GraphQLRawObjectType) return result;
 
   // Field type must be Object, Interface or Union and expect sub-selections.
   var objectType: ?GraphQLObjectType;

@@ -17,6 +17,7 @@ export { GraphQLSchema } from './type/schema';
 export {
   GraphQLScalarType,
   GraphQLObjectType,
+  GraphQLRawObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
