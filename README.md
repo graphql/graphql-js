@@ -4,6 +4,7 @@ This is a technical preview of the JavaScript reference implementation for
 GraphQL, a query language created by Facebook for describing data requirements
 on complex application data models.
 
+[![npm version](https://badge.fury.io/js/graphql.svg)](http://badge.fury.io/js/graphql)
 [![Build Status](https://travis-ci.org/graphql/graphql-js.svg)](https://travis-ci.org/graphql/graphql-js)
 [![Coverage Status](https://coveralls.io/repos/graphql/graphql-js/badge.svg?branch=master)](https://coveralls.io/r/graphql/graphql-js?branch=master)
 [![Public Slack Discussion](https://graphql-slack.herokuapp.com/badge.svg)](https://graphql-slack.herokuapp.com/)
