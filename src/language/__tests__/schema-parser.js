@@ -104,6 +104,39 @@ type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
+  it('Simple extension', () => {
+    var body = `
+extend type Hello {
+  world: String
+}`;
+    var doc = parse(body);
+    var loc = createLocFn(body);
+    var expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'TypeExtensionDefinition',
+          definition: {
+            kind: 'ObjectTypeDefinition',
+            name: nameNode('Hello', loc(13, 18)),
+            interfaces: [],
+            fields: [
+              fieldNode(
+                nameNode('world', loc(23, 28)),
+                typeNode('String', loc(30, 36)),
+                loc(23, 36)
+              )
+            ],
+            loc: loc(8, 38),
+          },
+          loc: loc(1, 38),
+        }
+      ],
+      loc: loc(1, 38)
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
   it('Simple non-null type', () => {
     var body = `
 type Hello {
