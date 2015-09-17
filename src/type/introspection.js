@@ -27,10 +27,10 @@ import type { GraphQLFieldDefinition } from './definition';
 
 export var __Schema = new GraphQLObjectType({
   name: '__Schema',
-  description: 'A GraphQL Schema defines the capabilities of a GraphQL ' +
-               'server. It exposes all available types and directives on ' +
-               'the server, as well as the entry points for query and ' +
-               'mutation operations.',
+  description:
+    'A GraphQL Schema defines the capabilities of a GraphQL server. It ' +
+    'exposes all available types and directives on the server, as well as ' +
+    'the entry points for query and mutation operations.',
   fields: () => ({
     types: {
       description: 'A list of all types supported by this server.',
@@ -62,6 +62,13 @@ export var __Schema = new GraphQLObjectType({
 
 var __Directive = new GraphQLObjectType({
   name: '__Directive',
+  description:
+    'A Directives provides a way to describe alternate runtime execution and ' +
+    'type validation behavior in a GraphQL document.' +
+    '\n\nIn some cases, you need to provide options to alter GraphQL’s ' +
+    'execution behavior in ways field arguments will not suffice, such as ' +
+    'conditionally including or skipping a field. Directives provide this by ' +
+    'describing additional information to the executor.',
   fields: () => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
@@ -78,6 +85,15 @@ var __Directive = new GraphQLObjectType({
 
 var __Type = new GraphQLObjectType({
   name: '__Type',
+  description:
+    'The fundamental unit of any GraphQL Schema is the type. There are ' +
+    'many kinds of types in GraphQL as represented by the `__TypeKind` enum.' +
+    '\n\nDepending on the kind of a type, certain fields describe ' +
+    'information about that type. Scalar types provide no information ' +
+    'beyond a name and description, while Enum types provide their values. ' +
+    'Object and Interface types provide the fields they describe. Abstract ' +
+    'types, Union and Interface, provide the Object types possible ' +
+    'at runtime. List and NonNull types compose other types.',
   fields: () => ({
     kind: {
       type: new GraphQLNonNull(__TypeKind),
@@ -170,6 +186,9 @@ var __Type = new GraphQLObjectType({
 
 var __Field = new GraphQLObjectType({
   name: '__Field',
+  description:
+    'Object and Interface types are described by a list of Fields, each of ' +
+    'which has a name, potentially a list of arguments, and a return type.',
   fields: () => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
@@ -191,12 +210,19 @@ var __Field = new GraphQLObjectType({
 
 var __InputValue = new GraphQLObjectType({
   name: '__InputValue',
+  description:
+    'Arguments provided to Fields or Directives and the input fields of an ' +
+    'InputObject are represented as Input Values which describe their type ' +
+    'and optionally a default value.',
   fields: () => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
     type: { type: new GraphQLNonNull(__Type) },
     defaultValue: {
       type: GraphQLString,
+      description:
+        'A GraphQL-formatted string representing the default value for this ' +
+        'input value.',
       resolve: inputVal => inputVal.defaultValue == null ?
         null :
         print(astFromValue(inputVal.defaultValue, inputVal))
@@ -206,6 +232,10 @@ var __InputValue = new GraphQLObjectType({
 
 var __EnumValue = new GraphQLObjectType({
   name: '__EnumValue',
+  description:
+    'One possible value for a given Enum. Enum values are unique values, not ' +
+    'a placeholder for a string or numeric value. However an Enum value is ' +
+    'returned in a JSON response as a string.',
   fields: {
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
@@ -232,7 +262,7 @@ export var TypeKind = {
 
 var __TypeKind = new GraphQLEnumType({
   name: '__TypeKind',
-  description: 'An enum describing what kind of type a given __Type is',
+  description: 'An enum describing what kind of type a given `__Type` is.',
   values: {
     SCALAR: {
       value: TypeKind.SCALAR,
