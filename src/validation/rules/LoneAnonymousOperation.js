@@ -9,6 +9,7 @@
  */
 
 import { GraphQLError } from '../../error';
+import { OPERATION_DEFINITION } from '../../language/kinds';
 
 
 export function anonOperationNotAloneMessage(): string {
@@ -26,7 +27,7 @@ export function LoneAnonymousOperation(): any {
   return {
     Document(node) {
       operationCount = node.definitions.filter(
-        definition => definition.kind === 'OperationDefinition'
+        definition => definition.kind === OPERATION_DEFINITION
       ).length;
     },
     OperationDefinition(node) {
