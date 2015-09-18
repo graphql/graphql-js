@@ -1228,7 +1228,8 @@ describe('Introspection', () => {
       data: {
         typeKindType: {
           name: '__TypeKind',
-          description: 'An enum describing what kind of type a given __Type is',
+          description:
+            'An enum describing what kind of type a given `__Type` is.',
           enumValues: [
             {
               description: 'Indicates this type is a scalar.',
