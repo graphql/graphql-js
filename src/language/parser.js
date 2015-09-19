@@ -719,6 +719,7 @@ function parseImplementsInterfaces(parser): Array<NamedType> {
  */
 function parseFieldDefinition(parser): FieldDefinition {
   var start = parser.token.start;
+  var directives = parseDirectives(parser);
   var name = parseName(parser);
   var args = parseArgumentDefs(parser);
   expect(parser, TokenKind.COLON);
@@ -728,6 +729,7 @@ function parseFieldDefinition(parser): FieldDefinition {
     name,
     arguments: args,
     type,
+    directives,
     loc: loc(parser, start),
   };
 }

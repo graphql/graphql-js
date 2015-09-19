@@ -276,6 +276,7 @@ export type FieldDefinition = {
   name: Name;
   arguments: Array<InputValueDefinition>;
   type: Type;
+  directives?: ?Array<Directive>;
 }
 
 export type InputValueDefinition = {
