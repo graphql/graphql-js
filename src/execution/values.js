@@ -93,14 +93,15 @@ function getVariableValue(
       [ definitionAST ]
     );
   }
-  if (isValidJSValue(input, type)) {
+  var inputType: GraphQLInputType = (type: any);
+  if (isValidJSValue(input, inputType)) {
     if (isNullish(input)) {
       var defaultValue = definitionAST.defaultValue;
       if (defaultValue) {
-        return valueFromAST(defaultValue, type);
+        return valueFromAST(defaultValue, inputType);
       }
     }
-    return coerceValue(type, input);
+    return coerceValue(inputType, input);
   }
   if (isNullish(input)) {
     throw new GraphQLError(
