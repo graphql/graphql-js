@@ -246,15 +246,18 @@ describe('Execute: Handles basic execution tasks', () => {
 
   it('nulls out error subtrees', async () => {
     var doc = `{
-      sync,
-      syncError,
-      syncRawError,
-      async,
-      asyncReject,
-      asyncRawReject,
-      asyncEmptyReject,
-      asyncError,
+      sync
+      syncError
+      syncRawError
+      syncReturnError
+      syncReturnErrorList
+      async
+      asyncReject
+      asyncRawReject
+      asyncEmptyReject
+      asyncError
       asyncRawError
+      asyncReturnError
     }`;
 
     var data = {
@@ -268,6 +271,17 @@ describe('Execute: Handles basic execution tasks', () => {
         /* eslint-disable */
         throw 'Error getting syncRawError';
         /* eslint-enable */
+      },
+      syncReturnError() {
+        return new Error('Error getting syncReturnError');
+      },
+      syncReturnErrorList() {
+        return [
+          'sync0',
+          new Error('Error getting syncReturnErrorList1'),
+          'sync2',
+          new Error('Error getting syncReturnErrorList3')
+        ];
       },
       async() {
         return new Promise(resolve => resolve('async'));
@@ -294,7 +308,10 @@ describe('Execute: Handles basic execution tasks', () => {
           throw 'Error getting asyncRawError';
           /* eslint-enable */
         });
-      }
+      },
+      asyncReturnError() {
+        return Promise.resolve(new Error('Error getting asyncReturnError'));
+      },
     };
 
     let ast = parse(doc);
@@ -305,12 +322,15 @@ describe('Execute: Handles basic execution tasks', () => {
           sync: { type: GraphQLString },
           syncError: { type: GraphQLString },
           syncRawError: { type: GraphQLString },
+          syncReturnError: { type: GraphQLString },
+          syncReturnErrorList: { type: new GraphQLList(GraphQLString) },
           async: { type: GraphQLString },
           asyncReject: { type: GraphQLString },
           asyncRawReject: { type: GraphQLString },
           asyncEmptyReject: { type: GraphQLString },
           asyncError: { type: GraphQLString },
           asyncRawError: { type: GraphQLString },
+          asyncReturnError: { type: GraphQLString },
         }
       })
     });
@@ -321,12 +341,15 @@ describe('Execute: Handles basic execution tasks', () => {
       sync: 'sync',
       syncError: null,
       syncRawError: null,
+      syncReturnError: null,
+      syncReturnErrorList: [ 'sync0', null, 'sync2', null ],
       async: 'async',
       asyncReject: null,
       asyncRawReject: null,
       asyncEmptyReject: null,
       asyncError: null,
       asyncRawError: null,
+      asyncReturnError: null,
     });
 
     expect(result.errors && result.errors.map(formatError)).to.deep.equal([
@@ -334,16 +357,24 @@ describe('Execute: Handles basic execution tasks', () => {
         locations: [ { line: 3, column: 7 } ] },
       { message: 'Error getting syncRawError',
         locations: [ { line: 4, column: 7 } ] },
-      { message: 'Error getting asyncReject',
+      { message: 'Error getting syncReturnError',
+        locations: [ { line: 5, column: 7 } ] },
+      { message: 'Error getting syncReturnErrorList1',
         locations: [ { line: 6, column: 7 } ] },
-      { message: 'Error getting asyncRawReject',
-        locations: [ { line: 7, column: 7 } ] },
-      { message: 'An unknown error occurred.',
+      { message: 'Error getting syncReturnErrorList3',
+        locations: [ { line: 6, column: 7 } ] },
+      { message: 'Error getting asyncReturnError',
+        locations: [ { line: 13, column: 7 } ] },
+      { message: 'Error getting asyncReject',
         locations: [ { line: 8, column: 7 } ] },
-      { message: 'Error getting asyncError',
+      { message: 'Error getting asyncRawReject',
         locations: [ { line: 9, column: 7 } ] },
-      { message: 'Error getting asyncRawError',
+      { message: 'An unknown error occurred.',
         locations: [ { line: 10, column: 7 } ] },
+      { message: 'Error getting asyncError',
+        locations: [ { line: 11, column: 7 } ] },
+      { message: 'Error getting asyncRawError',
+        locations: [ { line: 12, column: 7 } ] },
     ]);
   });
 

@@ -508,20 +508,9 @@ function resolveField(
     variableValues: exeContext.variableValues,
   };
 
-  // If an error occurs while calling the field `resolve` function, ensure that
-  // it is wrapped as a GraphQLError with locations. Log this error and return
-  // null if allowed, otherwise throw the error so the parent field can handle
-  // it.
-  try {
-    var result = resolveFn(source, args, info);
-  } catch (error) {
-    var reportedError = locatedError(error, fieldASTs);
-    if (returnType instanceof GraphQLNonNull) {
-      throw reportedError;
-    }
-    exeContext.errors.push(reportedError);
-    return null;
-  }
+  // Get the resolve function, regardless of if it's result is normal
+  // or abrupt (error).
+  var result = resolveOrError(resolveFn, source, args, info);
 
   return completeValueCatchingError(
     exeContext,
@@ -532,6 +521,29 @@ function resolveField(
   );
 }
 
+// Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
+// function. Returns the result of resolveFn or the abrupt-return Error object.
+function resolveOrError<T>(
+  resolveFn: (
+    source: any,
+    args: { [key: string]: any },
+    info: GraphQLResolveInfo
+  ) => T,
+  source: any,
+  args: { [key: string]: any },
+  info: GraphQLResolveInfo
+): Error | T {
+  try {
+    return resolveFn(source, args, info);
+  } catch (error) {
+    // Sometimes a non-error is thrown, wrap it as an Error for a
+    // consistent interface.
+    return error instanceof Error ? error : new Error(error);
+  }
+}
+
+// This is a small wrapper around completeValue which detects and logs errors
+// in the execution context.
 function completeValueCatchingError(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
@@ -556,6 +568,8 @@ function completeValueCatchingError(
       result
     );
     if (isThenable(completed)) {
+      // If `completeValue` returned a rejected promise, log the rejection
+      // error and resolve to null.
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, error => {
@@ -565,6 +579,8 @@ function completeValueCatchingError(
     }
     return completed;
   } catch (error) {
+    // If `completeValue` returned abruptly (threw an error), log the error
+    // and return null.
     exeContext.errors.push(error);
     return null;
   }
@@ -595,10 +611,10 @@ function completeValue(
   info: GraphQLResolveInfo,
   result: any
 ): any {
-  // If result is a Promise, resolve it, if the Promise is rejected, construct
-  // a GraphQLError with proper locations.
+  // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
     return result.then(
+      // Once resolved to a value, complete that value.
       resolved => completeValue(
         exeContext,
         returnType,
@@ -606,8 +622,14 @@ function completeValue(
         info,
         resolved
       ),
+      // If rejected, create a located error, and continue to reject.
       error => Promise.reject(locatedError(error, fieldASTs))
     );
+  }
+
+  // If result is an Error, throw a located error.
+  if (result instanceof Error) {
+    throw locatedError(result, fieldASTs);
   }
 
   // If field type is NonNull, complete for inner type, and throw field error
