@@ -107,12 +107,6 @@ fragment MissingOn Type
     ).to.throw('Syntax Error GraphQL (1:37) Unexpected $');
   });
 
-  it('duplicate keys in input object is syntax error', () => {
-    expect(
-      () => parse('{ field(arg: { a: 1, a: 2 }) }')
-    ).to.throw('Syntax Error GraphQL (1:22) Duplicate input object field a.');
-  });
-
   it('does not accept fragments named "on"', () => {
     expect(
       () => parse('fragment on on on { on }')

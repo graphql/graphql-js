@@ -76,6 +76,9 @@ import {
   OverlappingFieldsCanBeMerged
 } from './rules/OverlappingFieldsCanBeMerged';
 
+// Spec Section: "Input Object Field Uniqueness"
+import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
+
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.
@@ -103,4 +106,5 @@ export var specifiedRules = [
   DefaultValuesOfCorrectType,
   VariablesInAllowedPosition,
   OverlappingFieldsCanBeMerged,
+  UniqueInputFieldNames,
 ];
