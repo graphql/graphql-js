@@ -35,7 +35,7 @@ describe('Validate: Unique argument names', () => {
   it('no arguments on directive', () => {
     expectPassesRule(UniqueArgumentNames, `
       {
-        field
+        field @directive
       }
     `);
   });
