@@ -528,10 +528,9 @@ function parseList(parser, isConst: boolean): ListValue {
 function parseObject(parser, isConst: boolean): ObjectValue {
   var start = parser.token.start;
   expect(parser, TokenKind.BRACE_L);
-  var fieldNames = {};
   var fields = [];
   while (!skip(parser, TokenKind.BRACE_R)) {
-    fields.push(parseObjectField(parser, isConst, fieldNames));
+    fields.push(parseObjectField(parser, isConst));
   }
   return {
     kind: OBJECT,
@@ -543,24 +542,11 @@ function parseObject(parser, isConst: boolean): ObjectValue {
 /**
  * ObjectField[Const] : Name : Value[?Const]
  */
-function parseObjectField(
-  parser,
-  isConst: boolean,
-  fieldNames: {[name: string]: boolean}
-): ObjectField {
+function parseObjectField(parser, isConst: boolean): ObjectField {
   var start = parser.token.start;
-  var name = parseName(parser);
-  if (fieldNames.hasOwnProperty(name.value)) {
-    throw syntaxError(
-      parser.source,
-      start,
-      `Duplicate input object field ${name.value}.`
-    );
-  }
-  fieldNames[name.value] = true;
   return {
     kind: OBJECT_FIELD,
-    name,
+    name: parseName(parser),
     value:
       (expect(parser, TokenKind.COLON), parseValueLiteral(parser, isConst)),
     loc: loc(parser, start)
