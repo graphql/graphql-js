@@ -125,6 +125,29 @@ fragment MissingOn Type
     ).to.throw('Syntax Error GraphQL (1:39) Unexpected Name "null"');
   });
 
+  it('parses multi-byte characters', async () => {
+    // Note: \u0A0A could be naively interpretted as two line-feed chars.
+    expect(
+      parse(`
+        # This comment has a \u0A0A multi-byte character.
+        { field(arg: "Has a \u0A0A multi-byte character.") }
+      `)
+    ).to.containSubset({
+      definitions: [{
+        selectionSet: {
+          selections: [{
+            arguments: [{
+              value: {
+                kind: Kind.STRING,
+                value: 'Has a \u0A0A multi-byte character.'
+              }
+            }]
+          }]
+        }
+      }]
+    });
+  });
+
   var kitchenSink = readFileSync(
     join(__dirname, '/kitchen-sink.graphql'),
     { encoding: 'utf8' }
