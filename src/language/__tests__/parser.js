@@ -133,18 +133,18 @@ fragment MissingOn Type
         { field(arg: "Has a \u0A0A multi-byte character.") }
       `)
     ).to.containSubset({
-      definitions: [{
+      definitions: [ {
         selectionSet: {
-          selections: [{
-            arguments: [{
+          selections: [ {
+            arguments: [ {
               value: {
                 kind: Kind.STRING,
                 value: 'Has a \u0A0A multi-byte character.'
               }
-            }]
-          }]
+            } ]
+          } ]
         }
-      }]
+      } ]
     });
   });
 
