@@ -92,7 +92,7 @@ fragment MissingOn Type
   it('parse provides useful error when using source', () => {
     expect(
       () => parse(new Source('query', 'MyQuery.graphql'))
-    ).to.throw('Syntax Error MyQuery.graphql (1:6) Expected Name, found EOF');
+    ).to.throw('Syntax Error MyQuery.graphql (1:6) Expected {, found EOF');
   });
 
   it('parses variable inline values', () => {
@@ -189,6 +189,14 @@ fragment ${fragmentName} on Type {
     expect(() => parse(`
       subscription Foo {
         subscriptionField
+      }
+    `)).to.not.throw();
+  });
+
+  it('parses anonymous operations', () => {
+    expect(() => parse(`
+      mutation {
+        mutationField
       }
     `)).to.not.throw();
   });
