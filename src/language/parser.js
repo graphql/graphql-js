@@ -215,7 +215,7 @@ function parseDefinition(parser): Definition {
 /**
  * OperationDefinition :
  *  - SelectionSet
- *  - OperationType Name VariableDefinitions? Directives? SelectionSet
+ *  - OperationType Name? VariableDefinitions? Directives? SelectionSet
  *
  * OperationType : one of query mutation
  */
@@ -234,10 +234,14 @@ function parseOperationDefinition(parser): OperationDefinition {
   }
   var operationToken = expect(parser, TokenKind.NAME);
   var operation = operationToken.value;
+  var name;
+  if (peek(parser, TokenKind.NAME)) {
+    name = parseName(parser);
+  }
   return {
     kind: OPERATION_DEFINITION,
     operation,
-    name: parseName(parser),
+    name,
     variableDefinitions: parseVariableDefinitions(parser),
     directives: parseDirectives(parser),
     selectionSet: parseSelectionSet(parser),

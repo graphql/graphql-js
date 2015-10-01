@@ -33,7 +33,7 @@ export function getOperationAST(
           return null;
         }
         operation = definition;
-      } else if (definition.name.value === operationName) {
+      } else if (definition.name && definition.name.value === operationName) {
         return definition;
       }
     }
