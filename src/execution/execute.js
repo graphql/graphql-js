@@ -63,7 +63,7 @@ import type {
  * 1) query,
  * 2) mutation
  *
- * "Selections" are the statements that can appear legally and at
+ * "Selections" are the definitions that can appear legally and at
  * single level of the query. These include:
  * 1) field references e.g "a"
  * 2) fragment "spreads" e.g. "...c"
