@@ -164,31 +164,35 @@ function buildExecutionContext(
   operationName: ?string
 ): ExecutionContext {
   var errors: Array<GraphQLError> = [];
-  var operations: {[name: string]: OperationDefinition} = {};
+  var operation: ?OperationDefinition;
   var fragments: {[name: string]: FragmentDefinition} = {};
-  documentAST.definitions.forEach(statement => {
-    switch (statement.kind) {
+  documentAST.definitions.forEach(definition => {
+    switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
-        operations[statement.name ? statement.name.value : ''] = statement;
+        if (!operationName && operation) {
+          throw new GraphQLError(
+            'Must provide operation name if query contains multiple operations.'
+          );
+        }
+        if (!operationName || definition.name.value === operationName) {
+          operation = definition;
+        }
         break;
       case Kind.FRAGMENT_DEFINITION:
-        fragments[statement.name.value] = statement;
+        fragments[definition.name.value] = definition;
         break;
       default: throw new GraphQLError(
-        `GraphQL cannot execute a request containing a ${statement.kind}.`,
-        statement
+        `GraphQL cannot execute a request containing a ${definition.kind}.`,
+        definition
       );
     }
   });
-  if (!operationName && Object.keys(operations).length !== 1) {
-    throw new GraphQLError(
-      'Must provide operation name if query contains multiple operations.'
-    );
-  }
-  var opName = operationName || Object.keys(operations)[0];
-  var operation = operations[opName];
   if (!operation) {
-    throw new GraphQLError(`Unknown operation named "${opName}".`);
+    if (!operationName) {
+      throw new GraphQLError(`Unknown operation named "${operationName}".`);
+    } else {
+      throw new GraphQLError('Must provide an operation.');
+    }
   }
   var variableValues = getVariableValues(
     schema,
