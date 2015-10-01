@@ -1653,4 +1653,37 @@ describe('Objects must adhere to Interface they implement', () => {
     );
   });
 
+  it('does not allow isDeprecated without deprecationReason on field', () => {
+    expect(() => {
+      var OldObject = new GraphQLObjectType({
+        name: 'OldObject',
+        fields: {
+          field: {
+            type: GraphQLString,
+            isDeprecated: true
+          }
+        }
+      });
+
+      return schemaWithFieldType(OldObject);
+    }).to.throw(
+      'OldObject.field should provide "deprecationReason" instead ' +
+      'of "isDeprecated".'
+    );
+  });
+
+  it('does not allow isDeprecated without deprecationReason on enum', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          value: { isDeprecated: true }
+        }
+      })
+    ).to.throw(
+      'SomeEnum.value should provide "deprecationReason" instead ' +
+      'of "isDeprecated".'
+    );
+  });
+
 });

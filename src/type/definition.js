@@ -389,6 +389,11 @@ function defineFieldMap(
       name: fieldName
     };
     invariant(
+      !field.hasOwnProperty('isDeprecated'),
+      `${type}.${fieldName} should provide "deprecationReason" instead ` +
+      `of "isDeprecated".`
+    );
+    invariant(
       isOutputType(field.type),
       `${type}.${fieldName} field type must be Output Type but ` +
       `got: ${field.type}.`
@@ -826,6 +831,11 @@ function defineEnumValues(
       isPlainObj(value),
       `${type}.${valueName} must refer to an object with a "value" key ` +
       `representing an internal value but got: ${value}.`
+    );
+    invariant(
+      !value.hasOwnProperty('isDeprecated'),
+      `${type}.${valueName} should provide "deprecationReason" instead ` +
+      `of "isDeprecated".`
     );
     value.name = valueName;
     if (isNullish(value.value)) {
