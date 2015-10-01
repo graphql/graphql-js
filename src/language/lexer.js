@@ -125,7 +125,14 @@ function makeToken(
 }
 
 function printCharCode(code) {
-  return isNaN(code) ? 'EOF' : JSON.stringify(String.fromCharCode(code));
+  return (
+    // NaN/undefined represents access beyond the end of the file.
+    isNaN(code) ? '<EOF>' :
+    // Trust JSON for ASCII.
+    code < 0x007F ? JSON.stringify(String.fromCharCode(code)) :
+    // Otherwise print the escaped form.
+    `"\\u${('00' + code.toString(16).toUpperCase()).slice(-4)}"`
+  );
 }
 
 /**

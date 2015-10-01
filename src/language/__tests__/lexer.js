@@ -391,7 +391,7 @@ describe('Lexer', () => {
       lexErr('1.')
     ).to.throw(
       'Syntax Error GraphQL (1:3) Invalid number, ' +
-      'expected digit but got: EOF.'
+      'expected digit but got: <EOF>.'
     );
 
     expect(
@@ -416,7 +416,7 @@ describe('Lexer', () => {
       lexErr('1.0e')
     ).to.throw(
       'Syntax Error GraphQL (1:5) Invalid number, ' +
-      'expected digit but got: EOF.');
+      'expected digit but got: <EOF>.');
 
     expect(
       lexErr('1.0eA')
@@ -559,7 +559,11 @@ describe('Lexer', () => {
 
     expect(
       lexErr('\u203B')
-    ).to.throw('Syntax Error GraphQL (1:1) Unexpected character "\u203B"');
+    ).to.throw('Syntax Error GraphQL (1:1) Unexpected character "\\u203B"');
+
+    expect(
+      lexErr('\u200b')
+    ).to.throw('Syntax Error GraphQL (1:1) Unexpected character "\\u200B"');
   });
 
   it('lex reports useful information for dashes in names', () => {
