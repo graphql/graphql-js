@@ -377,25 +377,29 @@ function parseArgument(parser): Argument {
  *
  * FragmentSpread : ... FragmentName Directives?
  *
- * InlineFragment : ... on TypeCondition Directives? SelectionSet
+ * InlineFragment : ... TypeCondition? Directives? SelectionSet
  */
 function parseFragment(parser): FragmentSpread | InlineFragment {
   var start = parser.token.start;
   expect(parser, TokenKind.SPREAD);
-  if (parser.token.value === 'on') {
-    advance(parser);
+  if (peek(parser, TokenKind.NAME) && parser.token.value !== 'on') {
     return {
-      kind: INLINE_FRAGMENT,
-      typeCondition: parseNamedType(parser),
+      kind: FRAGMENT_SPREAD,
+      name: parseFragmentName(parser),
       directives: parseDirectives(parser),
-      selectionSet: parseSelectionSet(parser),
       loc: loc(parser, start)
     };
   }
+  var typeCondition = null;
+  if (parser.token.value === 'on') {
+    advance(parser);
+    typeCondition = parseNamedType(parser);
+  }
   return {
-    kind: FRAGMENT_SPREAD,
-    name: parseFragmentName(parser),
+    kind: INLINE_FRAGMENT,
+    typeCondition,
     directives: parseDirectives(parser),
+    selectionSet: parseSelectionSet(parser),
     loc: loc(parser, start)
   };
 }
