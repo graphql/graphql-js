@@ -59,6 +59,12 @@ describe('Printer', () => {
         }
       }
     }
+    ... @skip(unless: $foo) {
+      id
+    }
+    ... {
+      id
+    }
   }
 }
 

@@ -185,6 +185,9 @@ describe('Validate: Fields on correct type', () => {
         ... on Dog {
           name
         }
+        ... {
+          name
+        }
       }
     `);
   });

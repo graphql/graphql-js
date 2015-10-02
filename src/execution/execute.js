@@ -430,7 +430,11 @@ function doesFragmentConditionMatch(
   fragment: FragmentDefinition | InlineFragment,
   type: GraphQLObjectType
 ): boolean {
-  var conditionalType = typeFromAST(exeContext.schema, fragment.typeCondition);
+  var typeConditionAST = fragment.typeCondition;
+  if (!typeConditionAST) {
+    return true;
+  }
+  var conditionalType = typeFromAST(exeContext.schema, typeConditionAST);
   if (conditionalType === type) {
     return true;
   }

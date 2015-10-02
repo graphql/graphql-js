@@ -55,9 +55,12 @@ var printDocASTReducer = {
     '...' + name + wrap(' ', join(directives, ' ')),
 
   InlineFragment: ({ typeCondition, directives, selectionSet }) =>
-    `... on ${typeCondition} ` +
-    wrap('', join(directives, ' '), ' ') +
-    selectionSet,
+    join([
+      '...',
+      wrap('on ', typeCondition),
+      join(directives, ' '),
+      selectionSet
+    ], ' '),
 
   FragmentDefinition: ({ name, typeCondition, directives, selectionSet }) =>
     `fragment ${name} on ${typeCondition} ` +
