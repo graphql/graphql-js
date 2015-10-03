@@ -740,7 +740,7 @@ export type GraphQLUnionTypeConfig = {
  *     });
  *
  * Note: If a value is not provided in a definition, the name of the enum value
- * will be used as it's internal value.
+ * will be used as its internal value.
  */
 export class GraphQLEnumType/* <T> */ {
   name: string;

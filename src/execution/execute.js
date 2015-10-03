@@ -131,7 +131,7 @@ export function execute(
   // The "Response" section of the GraphQL specification.
   //
   // If errors are encountered while executing a GraphQL field, only that
-  // field and it's descendents will be omitted, and sibling fields will still
+  // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
   return new Promise(resolve => {
@@ -517,7 +517,7 @@ function resolveField(
     variableValues: exeContext.variableValues,
   };
 
-  // Get the resolve function, regardless of if it's result is normal
+  // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
   var result = resolveOrError(resolveFn, source, args, info);
 
