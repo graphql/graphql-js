@@ -36,6 +36,7 @@ var Being = new GraphQLInterfaceType({
       args: { surname: { type: GraphQLBoolean } },
     }
   }),
+  possibleTypes: () => [ Dog, Cat, Human, Alien ]
 });
 
 var Pet = new GraphQLInterfaceType({
@@ -46,6 +47,7 @@ var Pet = new GraphQLInterfaceType({
       args: { surname: { type: GraphQLBoolean } },
     }
   }),
+  possibleTypes: () => [ Dog, Cat ]
 });
 
 var DogCommand = new GraphQLEnumType({
@@ -119,7 +121,8 @@ var Intelligent = new GraphQLInterfaceType({
   name: 'Intelligent',
   fields: {
     iq: { type: GraphQLInt }
-  }
+  },
+  possibleTypes: () => [ Human, Alien ]
 });
 
 var Human = new GraphQLObjectType({

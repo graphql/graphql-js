@@ -49,7 +49,8 @@ var NamedType = new GraphQLInterfaceType({
   name: 'Named',
   fields: {
     name: { type: GraphQLString }
-  }
+  },
+  possibleTypes: () => [ PetType, PersonType ]
 });
 
 var DogType = new GraphQLObjectType({
@@ -360,7 +361,8 @@ describe('Execute: Union and intersection types', () => {
         encounteredSchema = infoSchema;
         encounteredRootValue = infoRootValue;
         return PersonType2;
-      }
+      },
+      possibleTypes: () => [ PersonType2 ]
     });
 
     var PersonType2 = new GraphQLObjectType({
