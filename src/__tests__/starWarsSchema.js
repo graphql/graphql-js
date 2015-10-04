@@ -128,7 +128,8 @@ var characterInterface = new GraphQLInterfaceType({
   }),
   resolveType: character => {
     return getHuman(character.id) ? humanType : droidType;
-  }
+  },
+  possibleTypes: () => [ humanType, droidType ]
 });
 
 /**

@@ -23,7 +23,6 @@ import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 
-
 /**
  * Schema Definition
  *

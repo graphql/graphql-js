@@ -173,7 +173,8 @@ describe('Type System: Example', () => {
       name: 'SomeInterface',
       fields: {
         f: { type: GraphQLInt }
-      }
+      },
+      possibleTypes: () => [ SomeSubtype ]
     });
 
     var SomeSubtype = new GraphQLObjectType({
@@ -202,7 +203,8 @@ describe('Type System: Example', () => {
       name: 'SomeInterface',
       fields: {
         f: { type: GraphQLInt }
-      }
+      },
+      possibleTypes: () => [ SomeSubtype ]
     });
 
     var SomeSubtype = new GraphQLObjectType({

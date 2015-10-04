@@ -237,8 +237,24 @@ export function buildASTSchema(
       name: typeName,
       resolveType: () => null,
       fields: () => makeFieldDefMap(def),
+      possibleTypes: () => extractPossibleTypes(typeName)
     };
     return new GraphQLInterfaceType(config);
+  }
+
+  function extractPossibleTypes(typeName) {
+    var possibleTypes = [];
+    Object.keys(astMap).forEach(type => {
+      var typeAST = astMap[type];
+      if (Array.isArray(typeAST.interfaces)) {
+        typeAST.interfaces.forEach(iface => {
+          if (iface.name.value === typeName) {
+            possibleTypes.push(produceTypeDef(typeAST));
+          }
+        });
+      }
+    });
+    return possibleTypes;
   }
 
   function makeEnumDef(def: EnumTypeDefinition) {

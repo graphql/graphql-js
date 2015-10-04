@@ -48,7 +48,8 @@ describe('Execute: Handles execution of abstract types', () => {
       name: 'Pet',
       fields: {
         name: { type: GraphQLString }
-      }
+      },
+      possibleTypes: () => [ DogType, CatType ]
     });
 
     // Added to interface type when defined
@@ -188,7 +189,8 @@ describe('Execute: Handles execution of abstract types', () => {
       },
       fields: {
         name: { type: GraphQLString }
-      }
+      },
+      possibleTypes: () => [ DogType, CatType ]
     });
 
     var HumanType = new GraphQLObjectType({

@@ -308,7 +308,6 @@ export class GraphQLObjectType {
     }
     this.isTypeOf = config.isTypeOf;
     this._typeConfig = config;
-    addImplementationToInterfaces(this);
   }
 
   getFields(): GraphQLFieldDefinitionMap {
@@ -431,18 +430,6 @@ function isPlainObj(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
 }
 
-/**
- * Update the interfaces to know about this implementation.
- * This is an rare and unfortunate use of mutation in the type definition
- * implementations, but avoids an expensive "getPossibleTypes"
- * implementation for Interface types.
- */
-function addImplementationToInterfaces(impl) {
-  impl.getInterfaces().forEach(type => {
-    type._implementations.push(impl);
-  });
-}
-
 export type GraphQLObjectTypeConfig = {
   name: string;
   interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
@@ -514,7 +501,9 @@ export type GraphQLFieldDefinitionMap = {
   [fieldName: string]: GraphQLFieldDefinition;
 };
 
-
+type PossibleTypeMap = {
+  [typeName: string]: GraphQLObjectType
+};
 
 /**
  * Interface Type Definition
@@ -541,8 +530,8 @@ export class GraphQLInterfaceType {
 
   _typeConfig: GraphQLInterfaceTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
-  _implementations: Array<GraphQLObjectType>;
-  _possibleTypes: { [typeName: string]: GraphQLObjectType };
+  _possibleTypes: Array<GraphQLObjectType>;
+  _possibleTypeMap: PossibleTypeMap;
 
   constructor(config: GraphQLInterfaceTypeConfig) {
     invariant(config.name, 'Type must be named.');
@@ -557,7 +546,6 @@ export class GraphQLInterfaceType {
     }
     this.resolveType = config.resolveType;
     this._typeConfig = config;
-    this._implementations = [];
   }
 
   getFields(): GraphQLFieldDefinitionMap {
@@ -566,11 +554,21 @@ export class GraphQLInterfaceType {
   }
 
   getPossibleTypes(): Array<GraphQLObjectType> {
-    return this._implementations;
+    if (!this._possibleTypes) {
+      var possibleTypes =
+        resolveMaybeThunk(this._typeConfig.possibleTypes || []);
+      this._possibleTypes = possibleTypes.reduce((types, type) => {
+        if (type instanceof GraphQLUnionType) {
+          return types.concat(type.getPossibleTypes());
+        }
+        return types.concat(type);
+      }, []);
+    }
+    return this._possibleTypes;
   }
 
   isPossibleType(type: GraphQLObjectType): boolean {
-    var possibleTypes = this._possibleTypes || (this._possibleTypes =
+    var possibleTypes = this._possibleTypeMap || (this._possibleTypeMap =
       keyMap(this.getPossibleTypes(), possibleType => possibleType.name)
     );
     return Boolean(possibleTypes[type.name]);
@@ -600,9 +598,13 @@ function getTypeOf(
   }
 }
 
+type GraphQLPossibleTypesThunk = () => Array<GraphQLObjectType>;
+
 export type GraphQLInterfaceTypeConfig = {
   name: string,
   fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap,
+  possibleTypes?: GraphQLPossibleTypesThunk | Array<GraphQLObjectType>,
+
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing

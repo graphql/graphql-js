@@ -223,6 +223,7 @@ describe('Type System: A Schema must contain uniquely named types', () => {
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: { f: { type: GraphQLString } },
+        possibleTypes: () => [ FirstBadObject, SecondBadObject ]
       });
 
       /* eslint-disable no-unused-vars */
