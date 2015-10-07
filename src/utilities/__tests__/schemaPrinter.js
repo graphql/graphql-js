@@ -282,7 +282,10 @@ type Root {
       fields: { bar: { type: BarType } },
     });
 
-    var Schema = new GraphQLSchema({ query: Root });
+    var Schema = new GraphQLSchema({
+      query: Root,
+      types: [ BarType ]
+    });
     var output = printForTest(Schema);
     expect(output).to.equal(`
 type Bar implements Foo {
@@ -327,7 +330,10 @@ type Root {
       fields: { bar: { type: BarType } },
     });
 
-    var Schema = new GraphQLSchema({ query: Root });
+    var Schema = new GraphQLSchema({
+      query: Root,
+      types: [ BarType ]
+    });
     var output = printForTest(Schema);
     expect(output).to.equal(`
 interface Baaz {

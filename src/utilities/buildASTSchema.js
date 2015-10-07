@@ -160,14 +160,31 @@ export function buildASTSchema(
 
   ast.definitions.forEach(produceTypeDef);
 
+  var types = [];
+
+  Object.keys(astMap)
+    .filter(typeName => (
+      typeName !== queryTypeName && typeName !== mutationTypeName
+    ))
+    .forEach(typeName => {
+      var type = produceTypeDef(astMap[typeName]);
+      if (type instanceof GraphQLObjectType) {
+        extractInterfaces(type);
+      }
+    });
+
   var queryType = produceTypeDef(astMap[queryTypeName]);
   var schema;
   if (isNullish(mutationTypeName)) {
-    schema = new GraphQLSchema({ query: queryType });
+    schema = new GraphQLSchema({
+      query: queryType,
+      types
+    });
   } else {
     schema = new GraphQLSchema({
       query: queryType,
       mutation: produceTypeDef(astMap[mutationTypeName]),
+      types
     });
   }
 
@@ -277,4 +294,15 @@ export function buildASTSchema(
       fields: () => makeInputValues(def.fields),
     });
   }
+
+  function extractInterfaces(type: GraphQLObjectType) {
+    type.getInterfaces().forEach(iface => {
+      if (!iface.isPossibleType(type)) {
+        iface._implementations.push(type);
+        iface._possibleTypes = null;
+      }
+    });
+    types.push(type);
+  }
+
 }

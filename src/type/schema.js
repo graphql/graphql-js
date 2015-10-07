@@ -58,14 +58,27 @@ export class GraphQLSchema {
       `Schema mutation must be Object Type if provided but ` +
       `got: ${config.mutation}.`
     );
+    invariant(
+      !config.types || Array.isArray(config.types),
+      `Schema types must be Array if provided but ` +
+      `got: ${config.types}.`
+    );
     this._schemaConfig = config;
+
+    var possibleTypeMap = [
+      this.getQueryType(),
+      this.getMutationType()
+    ].reduce(possibleTypeMapReducer, {});
+
+    possibleTypeMap = (config.types || [])
+      .reduce(possibleTypeMapReducer, possibleTypeMap);
 
     // Build type map now to detect any errors within this schema.
     this._typeMap = [
       this.getQueryType(),
       this.getMutationType(),
       __Schema
-    ].reduce(typeMapReducer, {});
+    ].reduce(makeTypeMapReducer(possibleTypeMap), {});
 
     // Enforce correct interface implementations
     Object.keys(this._typeMap).forEach(typeName => {
@@ -107,57 +120,106 @@ export class GraphQLSchema {
 }
 
 type TypeMap = { [typeName: string]: GraphQLType }
+type GraphQLObjectOrUnionType = GraphQLObjectType | GraphQLUnionType;
 
 type GraphQLSchemaConfig = {
   query: GraphQLObjectType;
   mutation?: ?GraphQLObjectType;
+  types?: Array<GraphQLObjectOrUnionType>
 }
 
-function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
+function possibleTypeMapReducer(
+  map: TypeMap,
+  type: ?GraphQLObjectOrUnionType
+): TypeMap {
   if (!type) {
     return map;
   }
-  if (type instanceof GraphQLList || type instanceof GraphQLNonNull) {
-    return typeMapReducer(map, type.ofType);
+  if (type instanceof GraphQLUnionType) {
+    return type.getPossibleTypes().reduce(possibleTypeMapReducer, map);
   }
-  if (map[type.name]) {
-    invariant(
-      map[type.name] === type,
-      `Schema must contain unique named types but contains multiple ` +
-      `types named "${type}".`
-    );
-    return map;
-  }
-  map[type.name] = type;
-
-  var reducedMap = map;
-
-  if (type instanceof GraphQLUnionType ||
-      type instanceof GraphQLInterfaceType) {
-    reducedMap = type.getPossibleTypes().reduce(typeMapReducer, reducedMap);
-  }
-
-  if (type instanceof GraphQLObjectType) {
-    reducedMap = type.getInterfaces().reduce(typeMapReducer, reducedMap);
-  }
-
-  if (type instanceof GraphQLObjectType ||
-      type instanceof GraphQLInterfaceType ||
-      type instanceof GraphQLInputObjectType) {
-    var fieldMap = type.getFields();
-    Object.keys(fieldMap).forEach(fieldName => {
-      var field = fieldMap[fieldName];
-
-      if (field.args) {
-        var fieldArgTypes = field.args.map(arg => arg.type);
-        reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
-      }
-      reducedMap = typeMapReducer(reducedMap, field.type);
-    });
-  }
-
-  return reducedMap;
+  invariant(
+    type instanceof GraphQLObjectType,
+    `Schema types must be GraphQLObject or GraphQLUnion types,` +
+    `found ${type}.`
+  );
+  return attachInterfaces(map, type);
 }
+
+function attachInterfaces(
+  map: TypeMap,
+  type: GraphQLObjectType
+): TypeMap {
+  type.getInterfaces().forEach(iface => {
+    if (!iface.isPossibleType(type)) {
+      iface._implementations.push(type);
+      iface._possibleTypes = null;
+    }
+  });
+  invariant(
+    !map[type.name] || map[type.name] === type,
+    `Schema must contain unique named types but contains multiple ` +
+    `types named "${type}".`
+  );
+  map[type.name] = type;
+  return map;
+}
+
+function makeTypeMapReducer(possibleTypes: TypeMap) {
+  return function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
+    if (!type) {
+      return map;
+    }
+    if (type instanceof GraphQLList || type instanceof GraphQLNonNull) {
+      return typeMapReducer(map, type.ofType);
+    }
+    if (map[type.name]) {
+      invariant(
+        map[type.name] === type,
+        `Schema must contain unique named types but contains multiple ` +
+        `types named "${type}".`
+      );
+      return map;
+    }
+    map[type.name] = type;
+
+    var reducedMap = map;
+
+    if (type instanceof GraphQLUnionType ||
+        type instanceof GraphQLInterfaceType) {
+      reducedMap = type.getPossibleTypes().reduce(typeMapReducer, reducedMap);
+    }
+
+    if (type instanceof GraphQLObjectType) {
+      if (type.getInterfaces().length > 0) {
+        invariant(
+          possibleTypes[type.name],
+          `Schema must define all Object or Union types implementing ` +
+          `Interfaces, missing: ${type.name}`
+        );
+      }
+      reducedMap = type.getInterfaces().reduce(typeMapReducer, reducedMap);
+    }
+
+    if (type instanceof GraphQLObjectType ||
+        type instanceof GraphQLInterfaceType ||
+        type instanceof GraphQLInputObjectType) {
+      var fieldMap = type.getFields();
+      Object.keys(fieldMap).forEach(fieldName => {
+        var field = fieldMap[fieldName];
+
+        if (field.args) {
+          var fieldArgTypes = field.args.map(arg => arg.type);
+          reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
+        }
+        reducedMap = typeMapReducer(reducedMap, field.type);
+      });
+    }
+
+    return reducedMap;
+  };
+}
+
 
 function assertObjectImplementsInterface(
   object: GraphQLObjectType,

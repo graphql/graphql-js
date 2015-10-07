@@ -288,7 +288,8 @@ var QueryRoot = new GraphQLObjectType({
 });
 
 var defaultSchema = new GraphQLSchema({
-  query: QueryRoot
+  query: QueryRoot,
+  types: [ Cat, Dog, Human, Alien ]
 });
 
 function expectValid(schema, rules, queryString) {

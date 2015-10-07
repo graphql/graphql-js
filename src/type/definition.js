@@ -308,7 +308,6 @@ export class GraphQLObjectType {
     }
     this.isTypeOf = config.isTypeOf;
     this._typeConfig = config;
-    addImplementationToInterfaces(this);
   }
 
   getFields(): GraphQLFieldDefinitionMap {
@@ -431,18 +430,6 @@ function isPlainObj(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
 }
 
-/**
- * Update the interfaces to know about this implementation.
- * This is an rare and unfortunate use of mutation in the type definition
- * implementations, but avoids an expensive "getPossibleTypes"
- * implementation for Interface types.
- */
-function addImplementationToInterfaces(impl) {
-  impl.getInterfaces().forEach(type => {
-    type._implementations.push(impl);
-  });
-}
-
 export type GraphQLObjectTypeConfig = {
   name: string;
   interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
@@ -542,7 +529,7 @@ export class GraphQLInterfaceType {
   _typeConfig: GraphQLInterfaceTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
   _implementations: Array<GraphQLObjectType>;
-  _possibleTypes: { [typeName: string]: GraphQLObjectType };
+  _possibleTypes: ?{ [typeName: string]: GraphQLObjectType };
 
   constructor(config: GraphQLInterfaceTypeConfig) {
     invariant(config.name, 'Type must be named.');
