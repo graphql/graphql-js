@@ -212,6 +212,62 @@ describe('Execute: handles directives', () => {
     });
   });
 
+  describe('works on anonymous inline fragment', () => {
+    it('if false omits anonymous inline fragment', async () => {
+      var q = `
+        query Q {
+          a
+          ... @include(if: false) {
+            b
+          }
+        }
+      `;
+      return expect(await executeTestQuery(q)).to.deep.equal({
+        data: { a: 'a' }
+      });
+    });
+
+    it('if true includes anonymous inline fragment', async () => {
+      var q = `
+        query Q {
+          a
+          ... @include(if: true) {
+            b
+          }
+        }
+      `;
+      return expect(await executeTestQuery(q)).to.deep.equal({
+        data: { a: 'a', b: 'b' }
+      });
+    });
+    it('unless false includes anonymous inline fragment', async () => {
+      var q = `
+        query Q {
+          a
+          ... @skip(if: false) {
+            b
+          }
+        }
+      `;
+      return expect(await executeTestQuery(q)).to.deep.equal({
+        data: { a: 'a', b: 'b' }
+      });
+    });
+    it('unless true includes anonymous inline fragment', async () => {
+      var q = `
+        query Q {
+          a
+          ... @skip(if: true) {
+            b
+          }
+        }
+      `;
+      return expect(await executeTestQuery(q)).to.deep.equal({
+        data: { a: 'a' }
+      });
+    });
+  });
+
   describe('works on fragment', () => {
     it('if false omits fragment', async () => {
       var q = `
@@ -253,20 +309,6 @@ describe('Execute: handles directives', () => {
       `;
       return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a', b: 'b' }
-      });
-    });
-    it('unless true omits fragment', async () => {
-      var q = `
-        query Q {
-          a
-          ...Frag
-        }
-        fragment Frag on TestType @skip(if: true) {
-          b
-        }
-      `;
-      return expect(await executeTestQuery(q)).to.deep.equal({
-        data: { a: 'a' }
       });
     });
   });
