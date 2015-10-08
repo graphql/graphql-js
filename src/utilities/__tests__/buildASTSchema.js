@@ -200,7 +200,7 @@ type WorldTwo {
     expect(output).to.equal(body);
   });
 
-  it('Simple Union', () => {
+  it('Custom Scalar', () => {
     var body = `
 scalar CustomScalar
 
