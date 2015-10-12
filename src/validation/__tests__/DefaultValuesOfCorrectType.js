@@ -23,9 +23,9 @@ function defaultForNonNullArg(varName, typeName, guessTypeName, line, column) {
   };
 }
 
-function badValue(varName, typeName, val, line, column) {
+function badValue(varName, typeName, val, line, column, errors) {
   return {
-    message: badValueForDefaultArgMessage(varName, typeName, val),
+    message: badValueForDefaultArgMessage(varName, typeName, val, errors),
     locations: [ { line, column } ],
   };
 }
@@ -83,7 +83,9 @@ describe('Validate: Variable default values of correct type', () => {
     `, [
       badValue('a', 'Int', '"one"', 3, 19),
       badValue('b', 'String', '4', 4, 22),
-      badValue('c', 'ComplexInput', '"notverycomplex"', 5, 28)
+      badValue('c', 'ComplexInput', '"notverycomplex"', 5, 28, [
+        'Not an object.'
+      ])
     ]);
   });
 
@@ -93,7 +95,9 @@ describe('Validate: Variable default values of correct type', () => {
         dog { name }
       }
     `, [
-      badValue('a', 'ComplexInput', '{intField: 3}', 2, 53)
+      badValue('a', 'ComplexInput', '{intField: 3}', 2, 53, [
+        'In field requiredField: Expected non-null value.'
+      ])
     ]);
   });
 

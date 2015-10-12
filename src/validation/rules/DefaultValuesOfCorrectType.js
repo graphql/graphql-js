@@ -27,10 +27,11 @@ export function defaultForNonNullArgMessage(
 export function badValueForDefaultArgMessage(
   varName: any,
   type: any,
-  value: any
+  value: any,
+  verboseErrors?: [any]
 ): string {
-  return `Variable "$${varName}" of type "${type}" has invalid default ` +
-    `value: ${value}.`;
+  var message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
+  return `Variable "$${varName} has invalid default value ${value}.${message}`;
 }
 
 /**
@@ -51,9 +52,13 @@ export function DefaultValuesOfCorrectType(context: ValidationContext): any {
           [ defaultValue ]
         );
       }
-      if (type && defaultValue && !isValidLiteralValue(type, defaultValue)) {
+      var errors;
+      if (type && defaultValue) {
+        errors = isValidLiteralValue(type, defaultValue);
+      }
+      if (errors && errors.length) {
         return new GraphQLError(
-          badValueForDefaultArgMessage(name, type, print(defaultValue)),
+          badValueForDefaultArgMessage(name, type, print(defaultValue), errors),
           [ defaultValue ]
         );
       }

@@ -56,6 +56,14 @@ var TestInputObject = new GraphQLInputObjectType({
   }
 });
 
+var TestNestedInputObject = new GraphQLInputObjectType({
+  name: 'TestNestedInputObject',
+  fields: {
+    na: { type: new GraphQLNonNull(TestInputObject) },
+    nb: { type: new GraphQLNonNull(GraphQLString) },
+  },
+});
+
 var TestType = new GraphQLObjectType({
   name: 'TestType',
   fields: {
@@ -77,6 +85,15 @@ var TestType = new GraphQLObjectType({
     fieldWithDefaultArgumentValue: {
       type: GraphQLString,
       args: { input: { type: GraphQLString, defaultValue: 'Hello World' } },
+      resolve: (_, { input }) => input && JSON.stringify(input)
+    },
+    fieldWithNestedInputObject: {
+      type: GraphQLString,
+      args: {
+        input: {
+          type: TestNestedInputObject, defaultValue: 'Hello World'
+        }
+      },
       resolve: (_, { input }) => input && JSON.stringify(input)
     },
     list: {
@@ -232,7 +249,8 @@ describe('Execute: Handles inputs', () => {
           locations: [ { line: 2, column: 17 } ],
           message:
             'Variable "$input" expected value of type "TestInputObject" but ' +
-            'got: {"a":"foo","b":"bar","c":null}.'
+            'got: {"a":"foo","b":"bar","c":null}. ' +
+            'In field c: Expected non-null value.'
         });
       });
 
@@ -250,7 +268,7 @@ describe('Execute: Handles inputs', () => {
           locations: [ { line: 2, column: 17 } ],
           message:
             'Variable "$input" expected value of type "TestInputObject" but ' +
-            'got: "foo bar".'
+            'got: "foo bar". Not an object.'
         });
       });
 
@@ -268,8 +286,35 @@ describe('Execute: Handles inputs', () => {
           locations: [ { line: 2, column: 17 } ],
           message:
             'Variable "$input" expected value of type "TestInputObject" but ' +
-            'got: {"a":"foo","b":"bar"}.'
+            'got: {"a":"foo","b":"bar"}. In field c: Expected non-null value.'
         });
+      });
+
+      it('errors on deep nested errors and with many errors', async () => {
+        var nestedDoc = `
+          query q($input: TestNestedInputObject) {
+            fieldWithNestedObjectInput(input: $input)
+          }
+        `;
+        var nestedAst = parse(nestedDoc);
+        var params = { input: { na: { a: 'foo' } } };
+
+        var caughtError;
+        try {
+          execute(schema, nestedAst, null, params);
+        } catch (error) {
+          caughtError = error;
+        }
+
+        expect(caughtError).to.containSubset({
+          locations: [ { line: 2, column: 19 } ],
+          message:
+            'Variable "$input" expected value of type "TestNestedInputObject" but ' +
+            'got: {"na":{"a":"foo"}}.' +
+            ' In field na: In field c: Expected non-null value.' +
+            ' In field nb: Expected non-null value.'
+        });
+
       });
 
       it('errors on addition of unknown input field', async () => {
@@ -643,7 +688,7 @@ describe('Execute: Handles inputs', () => {
         locations: [ { line: 2, column: 17 } ],
         message:
           'Variable "$input" expected value of type "[String!]" but got: ' +
-          '["A",null,"B"].'
+          '["A",null,"B"]. In element #1: Expected non-null value.'
       });
     });
 
@@ -706,7 +751,7 @@ describe('Execute: Handles inputs', () => {
         locations: [ { line: 2, column: 17 } ],
         message:
           'Variable "$input" expected value of type "[String!]!" but got: ' +
-          '["A",null,"B"].'
+          '["A",null,"B"]. In element #1: Expected non-null value.'
       });
     });
 

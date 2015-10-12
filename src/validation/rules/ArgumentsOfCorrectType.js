@@ -14,8 +14,16 @@ import { print } from '../../language/printer';
 import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 
 
-export function badValueMessage(argName: any, type: any, value: any): string {
-  return `Argument "${argName}" expected type "${type}" but got: ${value}.`;
+export function badValueMessage(
+  argName: any,
+  type: any,
+  value: any,
+  verboseErrors?: [any]
+): string {
+  var message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
+  return (
+    `Argument "${argName}" has invalid value ${value}.${message}`
+  );
 }
 
 /**
@@ -28,12 +36,16 @@ export function ArgumentsOfCorrectType(context: ValidationContext): any {
   return {
     Argument(argAST) {
       var argDef = context.getArgument();
-      if (argDef && !isValidLiteralValue(argDef.type, argAST.value)) {
+      if (argDef) {
+        var errors = isValidLiteralValue(argDef.type, argAST.value);
+      }
+      if (errors.length) {
         return new GraphQLError(
           badValueMessage(
             argAST.name.value,
             argDef.type,
-            print(argAST.value)
+            print(argAST.value),
+            errors
           ),
           [ argAST.value ]
         );

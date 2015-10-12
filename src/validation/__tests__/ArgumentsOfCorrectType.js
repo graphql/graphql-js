@@ -15,9 +15,9 @@ import {
 } from '../rules/ArgumentsOfCorrectType';
 
 
-function badValue(argName, typeName, value, line, column) {
+function badValue(argName, typeName, value, line, column, errors) {
   return {
-    message: badValueMessage(argName, typeName, value),
+    message: badValueMessage(argName, typeName, value, errors),
     locations: [ { line, column } ],
   };
 }
@@ -725,7 +725,9 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        badValue('complexArg', 'ComplexInput', '{intField: 4}', 4, 41),
+        badValue('complexArg', 'ComplexInput', '{intField: 4}', 4, 41, [
+          'In field requiredField: Expected non-null value.'
+        ]),
       ]);
     });
 
@@ -766,7 +768,8 @@ describe('Validate: Argument values of correct type', () => {
           'ComplexInput',
           '{requiredField: true, unknownField: "value"}',
           4,
-          41
+          41,
+          [ 'Unknown field unknownField.' ]
         ),
       ]);
     });
