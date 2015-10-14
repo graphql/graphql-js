@@ -132,7 +132,7 @@ function join(maybeArray, separator) {
 
 /**
  * Given maybeArray, print an empty string if it is null or empty, otherwise
- * print each item on it's own line, wrapped in an indented "{ }" block.
+ * print each item on its own line, wrapped in an indented "{ }" block.
  */
 function block(maybeArray) {
   return length(maybeArray) ?
