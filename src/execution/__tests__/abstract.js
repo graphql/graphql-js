@@ -87,7 +87,8 @@ describe('Execute: Handles execution of abstract types', () => {
             }
           }
         }
-      })
+      }),
+      types: [ CatType, DogType ]
     });
 
     var query = `{
@@ -231,7 +232,8 @@ describe('Execute: Handles execution of abstract types', () => {
             }
           }
         }
-      })
+      }),
+      types: [ CatType, DogType ]
     });
 
     var query = `{

@@ -191,7 +191,8 @@ describe('Type System: Example', () => {
         fields: {
           iface: { type: SomeInterface }
         }
-      })
+      }),
+      types: [ SomeSubtype ]
     });
 
     expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);
@@ -220,7 +221,8 @@ describe('Type System: Example', () => {
         fields: {
           iface: { type: SomeInterface }
         }
-      })
+      }),
+      types: [ SomeSubtype ]
     });
 
     expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);

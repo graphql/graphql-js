@@ -104,11 +104,16 @@ var notInputTypes = withModifiers([
 ]).concat(String);
 
 function schemaWithFieldType(type) {
+  var types = (
+    type instanceof GraphQLObjectType ||
+    type instanceof GraphQLUnionType
+  ) ? [ type ] : [];
   return new GraphQLSchema({
     query: new GraphQLObjectType({
       name: 'Query',
       fields: { f: { type } }
-    })
+    }),
+    types
   });
 }
 
@@ -250,7 +255,10 @@ describe('Type System: A Schema must contain uniquely named types', () => {
         }
       });
 
-      return new GraphQLSchema({ query: QueryType });
+      return new GraphQLSchema({
+        query: QueryType,
+        types: [ FirstBadObject, SecondBadObject ]
+      });
     }).to.throw(
       'Schema must contain unique named types but contains multiple types ' +
       'named "BadObject".'
@@ -1078,7 +1086,8 @@ describe('Type System: Objects can only implement interfaces', () => {
         fields: {
           f: { type: BadObjectType }
         }
-      })
+      }),
+      types: [ BadObjectType ]
     });
   }
 
