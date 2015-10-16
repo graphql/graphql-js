@@ -70,7 +70,22 @@ describe('Type System: Enum Values', () => {
     }
   });
 
-  var schema = new GraphQLSchema({ query: QueryType, mutation: MutationType });
+  var SubscriptionType = new GraphQLObjectType({
+    name: 'Subscription',
+    fields: {
+      subscribeToEnum: {
+        type: ColorType,
+        args: { color: { type: ColorType } },
+        resolve(value, { color }) { return color; }
+      }
+    }
+  });
+
+  var schema = new GraphQLSchema({
+    query: QueryType,
+    mutation: MutationType,
+    subscription: SubscriptionType
+  });
 
   it('accepts enum literals as input', async () => {
     expect(
@@ -169,6 +184,21 @@ describe('Type System: Enum Values', () => {
     ).to.deep.equal({
       data: {
         favoriteEnum: 'GREEN'
+      }
+    });
+  });
+
+  it('accepts enum literals as input arguments to subscriptions', async () => {
+    expect(
+      await graphql(
+        schema,
+        'subscription x($color: Color!) { subscribeToEnum(color: $color) }',
+        null,
+        { color: 'GREEN' }
+      )
+    ).to.deep.equal({
+      data: {
+        subscribeToEnum: 'GREEN'
       }
     });
   });

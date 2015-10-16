@@ -81,6 +81,16 @@ var BlogMutation = new GraphQLObjectType({
   }
 });
 
+var BlogSubscription = new GraphQLObjectType({
+  name: 'Subscription',
+  fields: {
+    articleSubscribe: {
+      args: { id: { type: GraphQLString } },
+      type: BlogArticle
+    }
+  }
+});
+
 var ObjectType = new GraphQLObjectType({
   name: 'Object',
   isTypeOf: () => true
@@ -143,6 +153,21 @@ describe('Type System: Example', () => {
 
   });
 
+  it('defines a subscription schema', () => {
+    var BlogSchema = new GraphQLSchema({
+      query: BlogQuery,
+      subscription: BlogSubscription
+    });
+
+    expect(BlogSchema.getSubscriptionType()).to.equal(BlogSubscription);
+
+    var sub = BlogSubscription.getFields()[('articleSubscribe' : string)];
+    expect(sub && sub.type).to.equal(BlogArticle);
+    expect(sub && sub.type.name).to.equal('Article');
+    expect(sub && sub.name).to.equal('articleSubscribe');
+
+  });
+
   it('includes nested input objects in the map', () => {
     var NestedInputObject = new GraphQLInputObjectType({
       name: 'NestedInputObject',
@@ -161,9 +186,19 @@ describe('Type System: Example', () => {
         }
       }
     });
+    var SomeSubscription = new GraphQLObjectType({
+      name: 'SomeSubscription',
+      fields: {
+        subscribeToSomething: {
+          type: BlogArticle,
+          args: { input: { type: SomeInputObject } }
+        }
+      }
+    });
     var schema = new GraphQLSchema({
       query: BlogQuery,
       mutation: SomeMutation,
+      subscription: SomeSubscription
     });
     expect(schema.getTypeMap().NestedInputObject).to.equal(NestedInputObject);
   });

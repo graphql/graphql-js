@@ -19,8 +19,13 @@ describe('getOperationAST', () => {
     expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
   });
 
-  it('Gets an operation from a document with named operation', () => {
+  it('Gets an operation from a document with named op (mutation)', () => {
     var doc = parse(`mutation Test { field }`);
+    expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
+  });
+
+  it('Gets an operation from a document with named op (subscription)', () => {
+    var doc = parse(`subscription Test { field }`);
     expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
   });
 
@@ -30,24 +35,37 @@ describe('getOperationAST', () => {
   });
 
   it('Does not get ambiguous unnamed operation', () => {
-    var doc = parse(`{ field } mutation Test { field }`);
+    var doc = parse(`
+      { field }
+      mutation Test { field }
+      subscription TestSub { field }`);
     expect(getOperationAST(doc)).to.equal(null);
   });
 
   it('Does not get ambiguous named operation', () => {
-    var doc = parse(`query TestQ { field } mutation TestM { field }`);
+    var doc = parse(`
+      query TestQ { field }
+      mutation TestM { field }
+      subscription TestS { field }`);
     expect(getOperationAST(doc)).to.equal(null);
   });
 
   it('Does not get misnamed operation', () => {
-    var doc = parse(`query TestQ { field } mutation TestM { field }`);
+    var doc = parse(`
+      query TestQ { field }
+      mutation TestM { field }
+      subscription TestS { field }`);
     expect(getOperationAST(doc, 'Unknown')).to.equal(null);
   });
 
   it('Gets named operation', () => {
-    var doc = parse(`query TestQ { field } mutation TestM { field }`);
+    var doc = parse(`
+      query TestQ { field }
+      mutation TestM { field }
+      subscription TestS { field }`);
     expect(getOperationAST(doc, 'TestQ')).to.equal(doc.definitions[0]);
     expect(getOperationAST(doc, 'TestM')).to.equal(doc.definitions[1]);
+    expect(getOperationAST(doc, 'TestS')).to.equal(doc.definitions[2]);
   });
 
 });

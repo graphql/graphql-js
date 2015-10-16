@@ -20,9 +20,9 @@ import { buildASTSchema } from '../buildASTSchema';
  * into an in-memory GraphQLSchema, and then finally
  * printing that GraphQL into the DSL
  */
-function cycleOutput(body, queryType, mutationType) {
+function cycleOutput(body, queryType, mutationType, subscriptionType) {
   var ast = parse(body);
-  var schema = buildASTSchema(ast, queryType, mutationType);
+  var schema = buildASTSchema(ast, queryType, mutationType, subscriptionType);
   return '\n' + printSchema(schema);
 }
 
@@ -254,6 +254,22 @@ type Mutation {
     expect(output).to.equal(body);
   });
 
+  it('Simple type with subscription', () => {
+    var body = `
+type HelloScalars {
+  str: String
+  int: Int
+  bool: Boolean
+}
+
+type Subscription {
+  subscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
+}
+`;
+    var output = cycleOutput(body, 'HelloScalars', null, 'Subscription');
+    expect(output).to.equal(body);
+  });
+
   it('Unreferenced type implementing referenced interface', () => {
     var body = `
 type Concrete implements Iface {
@@ -340,6 +356,21 @@ type Hello {
     var doc = parse(body);
     expect(() => buildASTSchema(doc, 'Hello', 'Wat'))
       .to.throw('Specified mutation type Wat not found in document');
+  });
+
+  it('Unknown subscription type', () => {
+    var body = `
+type Hello {
+  str: String
+}
+
+type Wat {
+  str: String
+}
+`;
+    var doc = parse(body);
+    expect(() => buildASTSchema(doc, 'Hello', 'Wat', 'Awesome'))
+      .to.throw('Specified subscription type Awesome not found in document');
   });
 
   it('Rejects query names', () => {

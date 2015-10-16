@@ -77,12 +77,25 @@ describe('Validate: Anonymous operation must be alone', () => {
     ]);
   });
 
-  it('anon operation with another operation', () => {
+  it('anon operation with a mutation', () => {
     expectFailsRule(LoneAnonymousOperation, `
       {
         fieldA
       }
       mutation Foo {
+        fieldB
+      }
+    `, [
+      anonNotAlone(2, 7)
+    ]);
+  });
+
+  it('anon operation with a subscription', () => {
+    expectFailsRule(LoneAnonymousOperation, `
+      {
+        fieldA
+      }
+      subscription Foo {
         fieldB
       }
     `, [

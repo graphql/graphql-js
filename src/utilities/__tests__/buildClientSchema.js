@@ -62,7 +62,7 @@ describe('Type System: build schema from introspection', () => {
     await testSchema(schema);
   });
 
-  it('builds a simple schema with a mutation type', async () => {
+  it('builds a simple schema with both operation types', async () => {
     var queryType = new GraphQLObjectType({
       name: 'QueryType',
       description: 'This is a simple query type',
@@ -88,9 +88,21 @@ describe('Type System: build schema from introspection', () => {
       }
     });
 
+    var subscriptionType = new GraphQLObjectType({
+      name: 'SubscriptionType',
+      description: 'This is a simple subscription type',
+      fields: {
+        string: {
+          type: GraphQLString,
+          description: 'This is a string field'
+        }
+      }
+    });
+
     var schema = new GraphQLSchema({
       query: queryType,
-      mutation: mutationType
+      mutation: mutationType,
+      subscription: subscriptionType
     });
 
     await testSchema(schema);
