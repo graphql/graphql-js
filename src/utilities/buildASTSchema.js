@@ -181,8 +181,7 @@ export function buildASTSchema(
     schemaBody.subscription = produceTypeDef(astMap[subscriptionTypeName]);
   }
 
-  var schema = new GraphQLSchema(schemaBody);
-  return schema;
+  return new GraphQLSchema(schemaBody);
 
   function makeSchemaDef(def) {
     if (isNullish(def)) {
