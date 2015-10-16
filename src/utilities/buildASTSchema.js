@@ -26,7 +26,7 @@ import {
   INPUT_OBJECT_TYPE_DEFINITION,
 } from '../language/kinds';
 
-import {
+import type {
   Document,
   ObjectTypeDefinition,
   InputValueDefinition,

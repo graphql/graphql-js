@@ -142,7 +142,7 @@ export type FragmentSpread = {
 export type InlineFragment = {
   kind: 'InlineFragment';
   loc?: ?Location;
-  typeCondition: NamedType;
+  typeCondition?: ?NamedType;
   directives?: ?Array<Directive>;
   selectionSet: SelectionSet;
 }

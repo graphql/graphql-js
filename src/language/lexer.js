@@ -110,7 +110,6 @@ tokenDescription[TokenKind.FLOAT] = 'Float';
 tokenDescription[TokenKind.STRING] = 'String';
 
 var charCodeAt = String.prototype.charCodeAt;
-var fromCharCode = String.fromCharCode;
 var slice = String.prototype.slice;
 
 /**
@@ -125,6 +124,17 @@ function makeToken(
   return { kind, start, end, value };
 }
 
+function printCharCode(code) {
+  return (
+    // NaN/undefined represents access beyond the end of the file.
+    isNaN(code) ? '<EOF>' :
+    // Trust JSON for ASCII.
+    code < 0x007F ? JSON.stringify(String.fromCharCode(code)) :
+    // Otherwise print the escaped form.
+    `"\\u${('00' + code.toString(16).toUpperCase()).slice(-4)}"`
+  );
+}
+
 /**
  * Gets the next token from the source starting at the given position.
  *
@@ -137,10 +147,20 @@ function readToken(source: Source, fromPosition: number): Token {
   var bodyLength = body.length;
 
   var position = positionAfterWhitespace(body, fromPosition);
-  var code = charCodeAt.call(body, position);
 
   if (position >= bodyLength) {
     return makeToken(TokenKind.EOF, position, position);
+  }
+
+  var code = charCodeAt.call(body, position);
+
+  // SourceCharacter
+  if (code < 0x0020 && code !== 0x0009 && code !== 0x000A && code !== 0x000D) {
+    throw syntaxError(
+      source,
+      position,
+      `Invalid character ${printCharCode(code)}.`
+    );
   }
 
   switch (code) {
@@ -201,7 +221,7 @@ function readToken(source: Source, fromPosition: number): Token {
   throw syntaxError(
     source,
     position,
-    `Unexpected character "${fromCharCode(code)}".`
+    `Unexpected character ${printCharCode(code)}.`
   );
 }
 
@@ -215,14 +235,18 @@ function positionAfterWhitespace(body: string, startPosition: number): number {
   var position = startPosition;
   while (position < bodyLength) {
     var code = charCodeAt.call(body, position);
-    // Skip whitespace
+    // Skip Ignored
     if (
-      code === 32 || // space
-      code === 44 || // comma
-      code === 160 || // '\xa0'
-      code === 0x2028 || // line separator
-      code === 0x2029 || // paragraph separator
-      code > 8 && code < 14 // whitespace
+      // BOM
+      code === 0xFEFF ||
+      // White Space
+      code === 0x0009 || // tab
+      code === 0x0020 || // space
+      // Line Terminator
+      code === 0x000A || // new line
+      code === 0x000D || // carriage return
+      // Comma
+      code === 0x002C
     ) {
       ++position;
     // Skip comments
@@ -230,8 +254,9 @@ function positionAfterWhitespace(body: string, startPosition: number): number {
       ++position;
       while (
         position < bodyLength &&
-        (code = charCodeAt.call(body, position)) &&
-        code !== 10 && code !== 13 && code !== 0x2028 && code !== 0x2029
+        (code = charCodeAt.call(body, position)) !== null &&
+        // SourceCharacter but not LineTerminator
+        (code > 0x001F || code === 0x0009) && code !== 0x000A && code !== 0x000D
       ) {
         ++position;
       }
@@ -265,7 +290,7 @@ function readNumber(source, start, firstCode) {
       throw syntaxError(
         source,
         position,
-        `Invalid number, unexpected digit after 0: "${fromCharCode(code)}".`
+        `Invalid number, unexpected digit after 0: ${printCharCode(code)}.`
       );
     }
   } else {
@@ -315,8 +340,7 @@ function readDigits(source, start, firstCode) {
   throw syntaxError(
     source,
     position,
-    'Invalid number, expected digit but got: ' +
-    (code ? `"${fromCharCode(code)}"` : 'EOF') + '.'
+    `Invalid number, expected digit but got: ${printCharCode(code)}.`
   );
 }
 
@@ -329,15 +353,26 @@ function readString(source, start) {
   var body = source.body;
   var position = start + 1;
   var chunkStart = position;
-  var code;
+  var code = 0;
   var value = '';
 
   while (
     position < body.length &&
-    (code = charCodeAt.call(body, position)) &&
-    code !== 34 &&
-    code !== 10 && code !== 13 && code !== 0x2028 && code !== 0x2029
+    (code = charCodeAt.call(body, position)) !== null &&
+    // not LineTerminator
+    code !== 0x000A && code !== 0x000D &&
+    // not Quote (")
+    code !== 34
   ) {
+    // SourceCharacter
+    if (code < 0x0020 && code !== 0x0009) {
+      throw syntaxError(
+        source,
+        position,
+        `Invalid character within String: ${printCharCode(code)}.`
+      );
+    }
+
     ++position;
     if (code === 92) { // \
       value += slice.call(body, chunkStart, position - 1);
@@ -351,7 +386,7 @@ function readString(source, start) {
         case 110: value += '\n'; break;
         case 114: value += '\r'; break;
         case 116: value += '\t'; break;
-        case 117:
+        case 117: // u
           var charCode = uniCharCode(
             charCodeAt.call(body, position + 1),
             charCodeAt.call(body, position + 2),
@@ -362,17 +397,18 @@ function readString(source, start) {
             throw syntaxError(
               source,
               position,
-              'Bad character escape sequence.'
+              `Invalid character escape sequence: ` +
+              `\\u${body.slice(position + 1, position + 5)}.`
             );
           }
-          value += fromCharCode(charCode);
+          value += String.fromCharCode(charCode);
           position += 4;
           break;
         default:
           throw syntaxError(
             source,
             position,
-            'Bad character escape sequence.'
+            `Invalid character escape sequence: \\${String.fromCharCode(code)}.`
           );
       }
       ++position;
@@ -380,7 +416,7 @@ function readString(source, start) {
     }
   }
 
-  if (code !== 34) {
+  if (code !== 34) { // quote (")
     throw syntaxError(source, position, 'Unterminated string.');
   }
 
@@ -428,10 +464,10 @@ function readName(source, position) {
   var body = source.body;
   var bodyLength = body.length;
   var end = position + 1;
-  var code;
+  var code = 0;
   while (
     end !== bodyLength &&
-    (code = charCodeAt.call(body, end)) &&
+    (code = charCodeAt.call(body, end)) !== null &&
     (
       code === 95 || // _
       code >= 48 && code <= 57 || // 0-9

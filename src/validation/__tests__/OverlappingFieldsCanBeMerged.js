@@ -455,6 +455,17 @@ describe('Validate: Overlapping fields can be merged', () => {
       `);
     });
 
+    it('allows inline typeless fragments', () => {
+      expectPassesRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          a
+          ... {
+            a
+          }
+        }
+      `);
+    });
+
     it('compares deep types including list', () => {
       expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
         {

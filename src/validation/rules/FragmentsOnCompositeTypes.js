@@ -39,7 +39,7 @@ export function FragmentsOnCompositeTypes(context: ValidationContext): any {
   return {
     InlineFragment(node) {
       var type = context.getType();
-      if (type && !isCompositeType(type)) {
+      if (node.typeCondition && type && !isCompositeType(type)) {
         return new GraphQLError(
           inlineFragmentOnNonCompositeErrorMessage(print(node.typeCondition)),
           [ node.typeCondition ]

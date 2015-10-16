@@ -92,7 +92,7 @@ fragment MissingOn Type
   it('parse provides useful error when using source', () => {
     expect(
       () => parse(new Source('query', 'MyQuery.graphql'))
-    ).to.throw('Syntax Error MyQuery.graphql (1:6) Expected Name, found EOF');
+    ).to.throw('Syntax Error MyQuery.graphql (1:6) Expected {, found EOF');
   });
 
   it('parses variable inline values', () => {
@@ -105,12 +105,6 @@ fragment MissingOn Type
     expect(
       () => parse('query Foo($x: Complex = { a: { b: [ $var ] } }) { field }')
     ).to.throw('Syntax Error GraphQL (1:37) Unexpected $');
-  });
-
-  it('duplicate keys in input object is syntax error', () => {
-    expect(
-      () => parse('{ field(arg: { a: 1, a: 2 }) }')
-    ).to.throw('Syntax Error GraphQL (1:22) Duplicate input object field a.');
   });
 
   it('does not accept fragments named "on"', () => {
@@ -129,6 +123,29 @@ fragment MissingOn Type
     expect(
       () => parse('{ fieldWithNullableStringInput(input: null) }')
     ).to.throw('Syntax Error GraphQL (1:39) Unexpected Name "null"');
+  });
+
+  it('parses multi-byte characters', async () => {
+    // Note: \u0A0A could be naively interpretted as two line-feed chars.
+    expect(
+      parse(`
+        # This comment has a \u0A0A multi-byte character.
+        { field(arg: "Has a \u0A0A multi-byte character.") }
+      `)
+    ).to.containSubset({
+      definitions: [ {
+        selectionSet: {
+          selections: [ {
+            arguments: [ {
+              value: {
+                kind: Kind.STRING,
+                value: 'Has a \u0A0A multi-byte character.'
+              }
+            } ]
+          } ]
+        }
+      } ]
+    });
   });
 
   var kitchenSink = readFileSync(
@@ -172,6 +189,14 @@ fragment ${fragmentName} on Type {
     expect(() => parse(`
       subscription Foo {
         subscriptionField
+      }
+    `)).to.not.throw();
+  });
+
+  it('parses anonymous operations', () => {
+    expect(() => parse(`
+      mutation {
+        mutationField
       }
     `)).to.not.throw();
   });

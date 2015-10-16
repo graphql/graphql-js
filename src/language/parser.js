@@ -92,7 +92,7 @@ import {
   ENUM_VALUE_DEFINITION,
   INPUT_OBJECT_TYPE_DEFINITION,
 
-  TYPE_EXTENTION_DEFINITION,
+  TYPE_EXTENSION_DEFINITION,
 } from './kinds';
 
 
@@ -215,7 +215,7 @@ function parseDefinition(parser): Definition {
 /**
  * OperationDefinition :
  *  - SelectionSet
- *  - OperationType Name VariableDefinitions? Directives? SelectionSet
+ *  - OperationType Name? VariableDefinitions? Directives? SelectionSet
  *
  * OperationType : one of query mutation
  */
@@ -234,10 +234,14 @@ function parseOperationDefinition(parser): OperationDefinition {
   }
   var operationToken = expect(parser, TokenKind.NAME);
   var operation = operationToken.value;
+  var name;
+  if (peek(parser, TokenKind.NAME)) {
+    name = parseName(parser);
+  }
   return {
     kind: OPERATION_DEFINITION,
     operation,
-    name: parseName(parser),
+    name,
     variableDefinitions: parseVariableDefinitions(parser),
     directives: parseDirectives(parser),
     selectionSet: parseSelectionSet(parser),
@@ -373,25 +377,29 @@ function parseArgument(parser): Argument {
  *
  * FragmentSpread : ... FragmentName Directives?
  *
- * InlineFragment : ... on TypeCondition Directives? SelectionSet
+ * InlineFragment : ... TypeCondition? Directives? SelectionSet
  */
 function parseFragment(parser): FragmentSpread | InlineFragment {
   var start = parser.token.start;
   expect(parser, TokenKind.SPREAD);
-  if (parser.token.value === 'on') {
-    advance(parser);
+  if (peek(parser, TokenKind.NAME) && parser.token.value !== 'on') {
     return {
-      kind: INLINE_FRAGMENT,
-      typeCondition: parseNamedType(parser),
+      kind: FRAGMENT_SPREAD,
+      name: parseFragmentName(parser),
       directives: parseDirectives(parser),
-      selectionSet: parseSelectionSet(parser),
       loc: loc(parser, start)
     };
   }
+  var typeCondition = null;
+  if (parser.token.value === 'on') {
+    advance(parser);
+    typeCondition = parseNamedType(parser);
+  }
   return {
-    kind: FRAGMENT_SPREAD,
-    name: parseFragmentName(parser),
+    kind: INLINE_FRAGMENT,
+    typeCondition,
     directives: parseDirectives(parser),
+    selectionSet: parseSelectionSet(parser),
     loc: loc(parser, start)
   };
 }
@@ -528,10 +536,9 @@ function parseList(parser, isConst: boolean): ListValue {
 function parseObject(parser, isConst: boolean): ObjectValue {
   var start = parser.token.start;
   expect(parser, TokenKind.BRACE_L);
-  var fieldNames = {};
   var fields = [];
   while (!skip(parser, TokenKind.BRACE_R)) {
-    fields.push(parseObjectField(parser, isConst, fieldNames));
+    fields.push(parseObjectField(parser, isConst));
   }
   return {
     kind: OBJECT,
@@ -543,24 +550,11 @@ function parseObject(parser, isConst: boolean): ObjectValue {
 /**
  * ObjectField[Const] : Name : Value[?Const]
  */
-function parseObjectField(
-  parser,
-  isConst: boolean,
-  fieldNames: {[name: string]: boolean}
-): ObjectField {
+function parseObjectField(parser, isConst: boolean): ObjectField {
   var start = parser.token.start;
-  var name = parseName(parser);
-  if (fieldNames.hasOwnProperty(name.value)) {
-    throw syntaxError(
-      parser.source,
-      start,
-      `Duplicate input object field ${name.value}.`
-    );
-  }
-  fieldNames[name.value] = true;
   return {
     kind: OBJECT_FIELD,
-    name,
+    name: parseName(parser),
     value:
       (expect(parser, TokenKind.COLON), parseValueLiteral(parser, isConst)),
     loc: loc(parser, start)
@@ -893,7 +887,7 @@ function parseTypeExtensionDefinition(parser): TypeExtensionDefinition {
   expectKeyword(parser, 'extend');
   var definition = parseObjectTypeDefinition(parser);
   return {
-    kind: TYPE_EXTENTION_DEFINITION,
+    kind: TYPE_EXTENSION_DEFINITION,
     definition,
     loc: loc(parser, start),
   };

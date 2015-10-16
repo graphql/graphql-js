@@ -32,6 +32,9 @@ describe('Validate: Known fragment names', () => {
           ... on Human {
             ...HumanFields2
           }
+          ... {
+            name
+          }
         }
       }
       fragment HumanFields1 on Human {

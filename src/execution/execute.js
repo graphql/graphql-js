@@ -63,7 +63,7 @@ import type {
  * 1) query,
  * 2) mutation
  *
- * "Selections" are the statements that can appear legally and at
+ * "Selections" are the definitions that can appear legally and at
  * single level of the query. These include:
  * 1) field references e.g "a"
  * 2) fragment "spreads" e.g. "...c"
@@ -131,7 +131,7 @@ export function execute(
   // The "Response" section of the GraphQL specification.
   //
   // If errors are encountered while executing a GraphQL field, only that
-  // field and it's descendents will be omitted, and sibling fields will still
+  // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
   return new Promise(resolve => {
@@ -164,31 +164,36 @@ function buildExecutionContext(
   operationName: ?string
 ): ExecutionContext {
   var errors: Array<GraphQLError> = [];
-  var operations: {[name: string]: OperationDefinition} = {};
+  var operation: ?OperationDefinition;
   var fragments: {[name: string]: FragmentDefinition} = {};
-  documentAST.definitions.forEach(statement => {
-    switch (statement.kind) {
+  documentAST.definitions.forEach(definition => {
+    switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
-        operations[statement.name ? statement.name.value : ''] = statement;
+        if (!operationName && operation) {
+          throw new GraphQLError(
+            'Must provide operation name if query contains multiple operations.'
+          );
+        }
+        if (!operationName ||
+            definition.name && definition.name.value === operationName) {
+          operation = definition;
+        }
         break;
       case Kind.FRAGMENT_DEFINITION:
-        fragments[statement.name.value] = statement;
+        fragments[definition.name.value] = definition;
         break;
       default: throw new GraphQLError(
-        `GraphQL cannot execute a request containing a ${statement.kind}.`,
-        statement
+        `GraphQL cannot execute a request containing a ${definition.kind}.`,
+        definition
       );
     }
   });
-  if (!operationName && Object.keys(operations).length !== 1) {
-    throw new GraphQLError(
-      'Must provide operation name if query contains multiple operations.'
-    );
-  }
-  var opName = operationName || Object.keys(operations)[0];
-  var operation = operations[opName];
   if (!operation) {
-    throw new GraphQLError(`Unknown operation named "${opName}".`);
+    if (!operationName) {
+      throw new GraphQLError(`Unknown operation named "${operationName}".`);
+    } else {
+      throw new GraphQLError('Must provide an operation.');
+    }
   }
   var variableValues = getVariableValues(
     schema,
@@ -325,10 +330,14 @@ function executeFields(
 /**
  * Given a selectionSet, adds all of the fields in that selection to
  * the passed in map of fields, and returns it at the end.
+ *
+ * CollectFields requires the "runtime type" of an object. For a field which
+ * returns and Interface or Union type, the "runtime type" will be the actual
+ * Object type returned by that field.
  */
 function collectFields(
   exeContext: ExecutionContext,
-  type: GraphQLObjectType,
+  runtimeType: GraphQLObjectType,
   selectionSet: SelectionSet,
   fields: {[key: string]: Array<Field>},
   visitedFragmentNames: {[key: string]: boolean}
@@ -348,12 +357,12 @@ function collectFields(
         break;
       case Kind.INLINE_FRAGMENT:
         if (!shouldIncludeNode(exeContext, selection.directives) ||
-            !doesFragmentConditionMatch(exeContext, selection, type)) {
+            !doesFragmentConditionMatch(exeContext, selection, runtimeType)) {
           continue;
         }
         collectFields(
           exeContext,
-          type,
+          runtimeType,
           selection.selectionSet,
           fields,
           visitedFragmentNames
@@ -369,12 +378,12 @@ function collectFields(
         var fragment = exeContext.fragments[fragName];
         if (!fragment ||
             !shouldIncludeNode(exeContext, fragment.directives) ||
-            !doesFragmentConditionMatch(exeContext, fragment, type)) {
+            !doesFragmentConditionMatch(exeContext, fragment, runtimeType)) {
           continue;
         }
         collectFields(
           exeContext,
-          type,
+          runtimeType,
           fragment.selectionSet,
           fields,
           visitedFragmentNames
@@ -430,7 +439,11 @@ function doesFragmentConditionMatch(
   fragment: FragmentDefinition | InlineFragment,
   type: GraphQLObjectType
 ): boolean {
-  var conditionalType = typeFromAST(exeContext.schema, fragment.typeCondition);
+  var typeConditionAST = fragment.typeCondition;
+  if (!typeConditionAST) {
+    return true;
+  }
+  var conditionalType = typeFromAST(exeContext.schema, typeConditionAST);
   if (conditionalType === type) {
     return true;
   }
@@ -513,20 +526,9 @@ function resolveField(
     variableValues: exeContext.variableValues,
   };
 
-  // If an error occurs while calling the field `resolve` function, ensure that
-  // it is wrapped as a GraphQLError with locations. Log this error and return
-  // null if allowed, otherwise throw the error so the parent field can handle
-  // it.
-  try {
-    var result = resolveFn(source, args, info);
-  } catch (error) {
-    var reportedError = locatedError(error, fieldASTs);
-    if (returnType instanceof GraphQLNonNull) {
-      throw reportedError;
-    }
-    exeContext.errors.push(reportedError);
-    return null;
-  }
+  // Get the resolve function, regardless of if its result is normal
+  // or abrupt (error).
+  var result = resolveOrError(resolveFn, source, args, info);
 
   return completeValueCatchingError(
     exeContext,
@@ -537,6 +539,29 @@ function resolveField(
   );
 }
 
+// Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
+// function. Returns the result of resolveFn or the abrupt-return Error object.
+function resolveOrError<T>(
+  resolveFn: (
+    source: any,
+    args: { [key: string]: any },
+    info: GraphQLResolveInfo
+  ) => T,
+  source: any,
+  args: { [key: string]: any },
+  info: GraphQLResolveInfo
+): Error | T {
+  try {
+    return resolveFn(source, args, info);
+  } catch (error) {
+    // Sometimes a non-error is thrown, wrap it as an Error for a
+    // consistent interface.
+    return error instanceof Error ? error : new Error(error);
+  }
+}
+
+// This is a small wrapper around completeValue which detects and logs errors
+// in the execution context.
 function completeValueCatchingError(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
@@ -561,6 +586,8 @@ function completeValueCatchingError(
       result
     );
     if (isThenable(completed)) {
+      // If `completeValue` returned a rejected promise, log the rejection
+      // error and resolve to null.
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, error => {
@@ -570,6 +597,8 @@ function completeValueCatchingError(
     }
     return completed;
   } catch (error) {
+    // If `completeValue` returned abruptly (threw an error), log the error
+    // and return null.
     exeContext.errors.push(error);
     return null;
   }
@@ -600,10 +629,10 @@ function completeValue(
   info: GraphQLResolveInfo,
   result: any
 ): any {
-  // If result is a Promise, resolve it, if the Promise is rejected, construct
-  // a GraphQLError with proper locations.
+  // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
     return result.then(
+      // Once resolved to a value, complete that value.
       resolved => completeValue(
         exeContext,
         returnType,
@@ -611,8 +640,14 @@ function completeValue(
         info,
         resolved
       ),
+      // If rejected, create a located error, and continue to reject.
       error => Promise.reject(locatedError(error, fieldASTs))
     );
+  }
+
+  // If result is an Error, throw a located error.
+  if (result instanceof Error) {
+    throw locatedError(result, fieldASTs);
   }
 
   // If field type is NonNull, complete for inner type, and throw field error
@@ -673,32 +708,32 @@ function completeValue(
   }
 
   // Field type must be Object, Interface or Union and expect sub-selections.
-  var objectType: ?GraphQLObjectType;
+  var runtimeType: ?GraphQLObjectType;
 
   if (returnType instanceof GraphQLObjectType) {
-    objectType = returnType;
+    runtimeType = returnType;
   } else if (isAbstractType(returnType)) {
     var abstractType: GraphQLAbstractType = (returnType: any);
-    objectType = abstractType.getObjectType(result, info);
-    if (objectType && !abstractType.isPossibleType(objectType)) {
+    runtimeType = abstractType.getObjectType(result, info);
+    if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
       throw new GraphQLError(
-        `Runtime Object type "${objectType}" is not a possible type ` +
+        `Runtime Object type "${runtimeType}" is not a possible type ` +
         `for "${abstractType}".`,
         fieldASTs
       );
     }
   }
 
-  if (!objectType) {
+  if (!runtimeType) {
     return null;
   }
 
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
-  if (objectType.isTypeOf && !objectType.isTypeOf(result, info)) {
+  if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, info)) {
     throw new GraphQLError(
-      `Expected value of type "${objectType}" but got: ${result}.`,
+      `Expected value of type "${runtimeType}" but got: ${result}.`,
       fieldASTs
     );
   }
@@ -711,7 +746,7 @@ function completeValue(
     if (selectionSet) {
       subFieldASTs = collectFields(
         exeContext,
-        objectType,
+        runtimeType,
         selectionSet,
         subFieldASTs,
         visitedFragmentNames
@@ -719,7 +754,7 @@ function completeValue(
     }
   }
 
-  return executeFields(exeContext, objectType, result, subFieldASTs);
+  return executeFields(exeContext, runtimeType, result, subFieldASTs);
 }
 
 /**

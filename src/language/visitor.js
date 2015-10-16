@@ -55,7 +55,7 @@ export const BREAK = {};
 /**
  * visit() will walk through an AST using a depth first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the
- * leave function after visiting that node and all of it's child nodes.
+ * leave function after visiting that node and all of its child nodes.
  *
  * By returning different values from the enter and leave functions, the
  * behavior of the visitor can be altered, including skipping over a sub-tree of

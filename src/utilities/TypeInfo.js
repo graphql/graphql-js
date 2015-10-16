@@ -134,7 +134,10 @@ export class TypeInfo {
         break;
       case Kind.INLINE_FRAGMENT:
       case Kind.FRAGMENT_DEFINITION:
-        type = typeFromAST(schema, node.typeCondition);
+        var typeConditionAST = node.typeCondition;
+        type = typeConditionAST ?
+          typeFromAST(schema, typeConditionAST) :
+          this.getType();
         this._typeStack.push(type);
         break;
       case Kind.VARIABLE_DEFINITION:

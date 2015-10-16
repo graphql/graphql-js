@@ -261,9 +261,13 @@ function collectFieldASTsAndDefs(
         _astAndDefs[responseName].push([ selection, fieldDef ]);
         break;
       case INLINE_FRAGMENT:
+        var typeCondition = selection.typeCondition;
+        var inlineFragmentType = typeCondition ?
+          typeFromAST(context.getSchema(), selection.typeCondition) :
+          parentType;
         _astAndDefs = collectFieldASTsAndDefs(
           context,
-          typeFromAST(context.getSchema(), selection.typeCondition),
+          inlineFragmentType,
           selection.selectionSet,
           _visitedFragmentNames,
           _astAndDefs

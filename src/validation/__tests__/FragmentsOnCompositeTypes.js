@@ -50,6 +50,16 @@ describe('Validate: Fragments on composite types', () => {
     `);
   });
 
+  it('inline fragment without type is valid', () => {
+    expectPassesRule(FragmentsOnCompositeTypes, `
+      fragment validFragment on Pet {
+        ... {
+          name
+        }
+      }
+    `);
+  });
+
   it('union is valid fragment type', () => {
     expectPassesRule(FragmentsOnCompositeTypes, `
       fragment validFragment on CatOrDog {
