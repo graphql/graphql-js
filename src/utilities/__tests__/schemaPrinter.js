@@ -544,6 +544,7 @@ type __Schema {
   types: [__Type!]!
   queryType: __Type!
   mutationType: __Type
+  subscriptionType: __Type
   directives: [__Directive!]!
 }
 

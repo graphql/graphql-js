@@ -240,9 +240,18 @@ function getOperationRootType(
         );
       }
       return mutationType;
+    case 'subscription':
+      var subscriptionType = schema.getSubscriptionType();
+      if (!subscriptionType) {
+        throw new GraphQLError(
+          'Schema is not configured for subscriptions',
+          [ operation ]
+        );
+      }
+      return subscriptionType;
     default:
       throw new GraphQLError(
-        'Can only execute queries and mutations',
+        'Can only execute queries, mutations and subscriptions',
         [ operation ]
       );
   }

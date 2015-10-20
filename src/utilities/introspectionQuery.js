@@ -13,6 +13,7 @@ export var introspectionQuery = `
     __schema {
       queryType { name }
       mutationType { name }
+      subscriptionType { name }
       types {
         ...FullType
       }
@@ -94,6 +95,7 @@ export type IntrospectionQuery = {
 export type IntrospectionSchema = {
   queryType: IntrospectionNamedTypeRef;
   mutationType: ?IntrospectionNamedTypeRef;
+  subscriptionType: ?IntrospectionNamedTypeRef;
   types: Array<IntrospectionType>;
   directives: Array<IntrospectionDirective>;
 }

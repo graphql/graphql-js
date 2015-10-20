@@ -30,7 +30,7 @@ export var __Schema = new GraphQLObjectType({
   description:
     'A GraphQL Schema defines the capabilities of a GraphQL server. It ' +
     'exposes all available types and directives on the server, as well as ' +
-    'the entry points for query and mutation operations.',
+    'the entry points for query, mutation, and subscription operations.',
   fields: () => ({
     types: {
       description: 'A list of all types supported by this server.',
@@ -50,6 +50,12 @@ export var __Schema = new GraphQLObjectType({
                    'mutation operations will be rooted at.',
       type: __Type,
       resolve: schema => schema.getMutationType()
+    },
+    subscriptionType: {
+      description: 'If this server support subscription, the type that ' +
+                   'subscription operations will be rooted at.',
+      type: __Type,
+      resolve: schema => schema.getSubscriptionType()
     },
     directives: {
       description: 'A list of all directives supported by this server.',

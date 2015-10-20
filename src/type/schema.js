@@ -58,12 +58,18 @@ export class GraphQLSchema {
       `Schema mutation must be Object Type if provided but ` +
       `got: ${config.mutation}.`
     );
+    invariant(
+      !config.subscription || config.subscription instanceof GraphQLObjectType,
+      `Schema subscription must be Object Type if provided but ` +
+      `got: ${config.subscription}.`
+    );
     this._schemaConfig = config;
 
     // Build type map now to detect any errors within this schema.
     this._typeMap = [
       this.getQueryType(),
       this.getMutationType(),
+      this.getSubscriptionType(),
       __Schema
     ].reduce(typeMapReducer, {});
 
@@ -84,6 +90,10 @@ export class GraphQLSchema {
 
   getMutationType(): ?GraphQLObjectType {
     return this._schemaConfig.mutation;
+  }
+
+  getSubscriptionType(): ?GraphQLObjectType {
+    return this._schemaConfig.subscription;
   }
 
   getTypeMap(): TypeMap {
@@ -111,6 +121,7 @@ type TypeMap = { [typeName: string]: GraphQLType }
 type GraphQLSchemaConfig = {
   query: GraphQLObjectType;
   mutation?: ?GraphQLObjectType;
+  subscription?: ?GraphQLObjectType;
 }
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {

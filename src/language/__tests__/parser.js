@@ -163,6 +163,7 @@ fragment MissingOn Type
       'fragment',
       'query',
       'mutation',
+      'subscription',
       'true',
       'false'
     ];
@@ -185,18 +186,34 @@ fragment ${fragmentName} on Type {
     });
   });
 
-  it('parses experimental subscription feature', () => {
+  it('parses anonymous mutation operations', () => {
     expect(() => parse(`
-      subscription Foo {
+      mutation {
+        mutationField
+      }
+    `)).to.not.throw();
+  });
+
+  it('parses anonymous subscription operations', () => {
+    expect(() => parse(`
+      subscription {
         subscriptionField
       }
     `)).to.not.throw();
   });
 
-  it('parses anonymous operations', () => {
+  it('parses named mutation operations', () => {
     expect(() => parse(`
-      mutation {
+      mutation Foo {
         mutationField
+      }
+    `)).to.not.throw();
+  });
+
+  it('parses named subscription operations', () => {
+    expect(() => parse(`
+      subscription Foo {
+        subscriptionField
       }
     `)).to.not.throw();
   });

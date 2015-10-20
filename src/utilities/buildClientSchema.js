@@ -312,16 +312,20 @@ export function buildClientSchema(
     typeIntrospection => getNamedType(typeIntrospection.name)
   );
 
-  // Get the root Query and Mutation types.
+  // Get the root Query, Mutation, and Subscription types.
   var queryType = getType(schemaIntrospection.queryType);
   var mutationType = schemaIntrospection.mutationType ?
     getType(schemaIntrospection.mutationType) :
+    null;
+  var subscriptionType = schemaIntrospection.subscriptionType ?
+    getType(schemaIntrospection.subscriptionType) :
     null;
 
   // Then produce and return a Schema with these types.
   var schema = new GraphQLSchema({
     query: (queryType: any),
-    mutation: (mutationType: any)
+    mutation: (mutationType: any),
+    subscription: (subscriptionType: any)
   });
 
   return schema;

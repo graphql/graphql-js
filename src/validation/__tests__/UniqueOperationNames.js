@@ -69,6 +69,10 @@ describe('Validate: Unique operation names', () => {
       mutation Bar {
         field
       }
+
+      subscription Baz {
+        field
+      }
     `);
   });
 
@@ -96,7 +100,7 @@ describe('Validate: Unique operation names', () => {
     ]);
   });
 
-  it('multiple operations of same name of different types', () => {
+  it('multiple ops of same name of different types (mutation)', () => {
     expectFailsRule(UniqueOperationNames, `
       query Foo {
         fieldA
@@ -106,6 +110,19 @@ describe('Validate: Unique operation names', () => {
       }
     `, [
       duplicateOp('Foo', 2, 13, 5, 16)
+    ]);
+  });
+
+  it('multiple ops of same name of different types (subscription)', () => {
+    expectFailsRule(UniqueOperationNames, `
+      query Foo {
+        fieldA
+      }
+      subscription Foo {
+        fieldB
+      }
+    `, [
+      duplicateOp('Foo', 2, 13, 5, 20)
     ]);
   });
 

@@ -42,6 +42,7 @@ describe('Introspection', () => {
       data: {
         __schema: {
           mutationType: null,
+          subscriptionType: null,
           queryType: {
             name: 'QueryRoot',
           },
@@ -97,6 +98,17 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'mutationType',
+                  args: [],
+                  type: {
+                    kind: 'OBJECT',
+                    name: '__Type',
+                    ofType: null
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null
+                },
+                {
+                  name: 'subscriptionType',
                   args: [],
                   type: {
                     kind: 'OBJECT',
@@ -1175,7 +1187,8 @@ describe('Introspection', () => {
           description: 'A GraphQL Schema defines the capabilities of a ' +
                        'GraphQL server. It exposes all available types and ' +
                        'directives on the server, as well as the entry ' +
-                       'points for query and mutation operations.',
+                       'points for query, mutation, ' +
+                       'and subscription operations.',
           fields: [
             {
               name: 'types',
@@ -1189,6 +1202,11 @@ describe('Introspection', () => {
               name: 'mutationType',
               description: 'If this server supports mutation, the type that ' +
                            'mutation operations will be rooted at.'
+            },
+            {
+              name: 'subscriptionType',
+              description: 'If this server support subscription, the type ' +
+                           'that subscription operations will be rooted at.',
             },
             {
               name: 'directives',

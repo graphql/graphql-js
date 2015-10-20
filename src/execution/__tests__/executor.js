@@ -433,7 +433,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('uses the query schema for queries', async () => {
-    var doc = `query Q { a } mutation M { c }`;
+    var doc = `query Q { a } mutation M { c } subscription S { a }`;
     var data = { a: 'b', c: 'd' };
     var ast = parse(doc);
     var schema = new GraphQLSchema({
@@ -447,6 +447,12 @@ describe('Execute: Handles basic execution tasks', () => {
         name: 'M',
         fields: {
           c: { type: GraphQLString },
+        }
+      }),
+      subscription: new GraphQLObjectType({
+        name: 'S',
+        fields: {
+          a: { type: GraphQLString },
         }
       })
     });
@@ -478,6 +484,30 @@ describe('Execute: Handles basic execution tasks', () => {
     var mutationResult = await execute(schema, ast, data, {}, 'M');
 
     expect(mutationResult).to.deep.equal({ data: { c: 'd' } });
+  });
+
+  it('uses the subscription schema for subscriptions', async () => {
+    var doc = `query Q { a } subscription S { a }`;
+    var data = { a: 'b', c: 'd' };
+    var ast = parse(doc);
+    var schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Q',
+        fields: {
+          a: { type: GraphQLString },
+        }
+      }),
+      subscription: new GraphQLObjectType({
+        name: 'S',
+        fields: {
+          a: { type: GraphQLString },
+        }
+      })
+    });
+
+    var subscriptionResult = await execute(schema, ast, data, {}, 'S');
+
+    expect(subscriptionResult).to.deep.equal({ data: { a: 'b' } });
   });
 
   it('correct field ordering despite execution order', async () => {

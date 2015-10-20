@@ -137,6 +137,20 @@ describe('Type System: A Schema must have Object root types', () => {
     }).not.to.throw();
   });
 
+  it('accepts a Schema whose query and subscription types are object types', () => {
+    expect(() => {
+      var SubscriptionType = new GraphQLObjectType({
+        name: 'Subscription',
+        fields: { subscribe: { type: GraphQLString } }
+      });
+
+      return new GraphQLSchema({
+        query: SomeObjectType,
+        subscription: SubscriptionType
+      });
+    }).not.to.throw();
+  });
+
   it('rejects a Schema without a query type', () => {
     expect(
       () => new GraphQLSchema({ })
@@ -161,6 +175,17 @@ describe('Type System: A Schema must have Object root types', () => {
       })
     ).to.throw(
       'Schema mutation must be Object Type if provided but got: SomeInputObject.'
+    );
+  });
+
+  it('rejects a Schema whose subscription type is an input type', () => {
+    expect(
+      () => new GraphQLSchema({
+        query: SomeObjectType,
+        subscription: SomeInputObjectType
+      })
+    ).to.throw(
+      'Schema subscription must be Object Type if provided but got: SomeInputObject.'
     );
   });
 

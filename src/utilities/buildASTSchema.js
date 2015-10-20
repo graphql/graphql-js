@@ -88,7 +88,8 @@ function getInnerTypeName(typeAST) {
 export function buildASTSchema(
   ast: Document,
   queryTypeName: string,
-  mutationTypeName: ?string
+  mutationTypeName: ?string,
+  subscriptionTypeName: ?string
 ): GraphQLSchema {
 
   if (isNullish(ast)) {
@@ -118,6 +119,12 @@ export function buildASTSchema(
 
   if (!isNullish(mutationTypeName) && isNullish(astMap[mutationTypeName])) {
     throw new Error('Specified mutation type ' + mutationTypeName +
+      ' not found in document.');
+  }
+
+  if (!isNullish(subscriptionTypeName) &&
+       isNullish(astMap[subscriptionTypeName])) {
+    throw new Error('Specified subscription type ' + subscriptionTypeName +
       ' not found in document.');
   }
 
@@ -161,17 +168,20 @@ export function buildASTSchema(
   ast.definitions.forEach(produceTypeDef);
 
   var queryType = produceTypeDef(astMap[queryTypeName]);
-  var schema;
-  if (isNullish(mutationTypeName)) {
-    schema = new GraphQLSchema({ query: queryType });
-  } else {
-    schema = new GraphQLSchema({
-      query: queryType,
-      mutation: produceTypeDef(astMap[mutationTypeName]),
-    });
+
+  var schemaBody = {
+    query: queryType
+  };
+
+  if (!isNullish(mutationTypeName)) {
+    schemaBody.mutation = produceTypeDef(astMap[mutationTypeName]);
   }
 
-  return schema;
+  if (!isNullish(subscriptionTypeName)) {
+    schemaBody.subscription = produceTypeDef(astMap[subscriptionTypeName]);
+  }
+
+  return new GraphQLSchema(schemaBody);
 
   function makeSchemaDef(def) {
     if (isNullish(def)) {
