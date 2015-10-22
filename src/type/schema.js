@@ -218,15 +218,18 @@ function assertObjectImplementsInterface(
       );
     });
 
-    // Assert argument set invariance.
+    // Assert additional arguments must not be required.
     objectField.args.forEach(objectArg => {
       var argName = objectArg.name;
       var ifaceArg = find(ifaceField.args, arg => arg.name === argName);
-      invariant(
-        ifaceArg,
-        `${iface}.${fieldName} does not define argument "${argName}" but ` +
-        `${object}.${fieldName} provides it.`
-      );
+      if (!ifaceArg) {
+        invariant(
+          !(objectArg.type instanceof GraphQLNonNull),
+          `${object}.${fieldName}(${argName}:) is of required type ` +
+          `"${objectArg.type}" but is not also provided by the ` +
+          `interface ${iface}.${fieldName}.`
+        );
+      }
     });
   });
 }

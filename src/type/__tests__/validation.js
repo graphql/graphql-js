@@ -1463,7 +1463,7 @@ describe('Objects must adhere to Interface they implement', () => {
     }).not.to.throw();
   });
 
-  it('rejects an Object which implements an Interface field along with more arguments', () => {
+  it('accepts an Object which implements an Interface field along with additional optional arguments', () => {
     expect(() => {
       var AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
@@ -1493,9 +1493,42 @@ describe('Objects must adhere to Interface they implement', () => {
       });
 
       return schemaWithFieldType(AnotherObject);
+    }).not.to.throw();
+  });
+
+  it('rejects an Object which implements an Interface field along with additional required arguments', () => {
+    expect(() => {
+      var AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: {
+              input: { type: GraphQLString },
+            }
+          }
+        }
+      });
+
+      var AnotherObject = new GraphQLObjectType({
+        name: 'AnotherObject',
+        interfaces: [ AnotherInterface ],
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: {
+              input: { type: GraphQLString },
+              anotherInput: { type: new GraphQLNonNull(GraphQLString) },
+            }
+          }
+        }
+      });
+
+      return schemaWithFieldType(AnotherObject);
     }).to.throw(
-      'AnotherInterface.field does not define argument "anotherInput" but ' +
-      'AnotherObject.field provides it.'
+      'AnotherObject.field(anotherInput:) is of required type "String!" but ' +
+      'is not also provided by the interface AnotherInterface.field.'
     );
   });
 
