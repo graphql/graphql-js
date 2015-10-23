@@ -99,7 +99,7 @@ export function astFromValue(
   // GraphQLType to differentiate if possible.
   if (typeof value === 'string') {
     if (type instanceof GraphQLEnumType &&
-        /^[_a-zA-Z][_a-zA-Z0-9]*$/.test(value)) {
+        /^[_a-zA-Z][-_a-zA-Z0-9]*$/.test(value)) {
       return { kind: ENUM, value };
     }
     // Use JSON stringify, which uses the same string encoding as GraphQL,

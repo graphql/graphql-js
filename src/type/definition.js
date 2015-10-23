@@ -1046,12 +1046,12 @@ export class GraphQLNonNull {
   }
 }
 
-var NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
+var NAME_RX = /^[_a-zA-Z][-_a-zA-Z0-9]*$/;
 
 // Helper to assert that provided names are valid.
 function assertValidName(name: string): void {
   invariant(
     NAME_RX.test(name),
-    `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`
+    `Names must match /^[_a-zA-Z][-_a-zA-Z0-9]*$/ but "${name}" does not.`
   );
 }
