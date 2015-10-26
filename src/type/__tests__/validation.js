@@ -189,6 +189,17 @@ describe('Type System: A Schema must have Object root types', () => {
     );
   });
 
+  it('rejects a Schema whose directives are incorrectly typed', () => {
+    expect(
+      () => new GraphQLSchema({
+        query: SomeObjectType,
+        directives: [ 'somedirective' ]
+      })
+    ).to.throw(
+      'Schema directives must be Array<GraphQLDirective> if provided but got: somedirective.'
+    );
+  });
+
 });
 
 describe('Type System: A Schema must contain uniquely named types', () => {

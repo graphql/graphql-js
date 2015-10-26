@@ -104,11 +104,13 @@ describe('Validate: Known directives', () => {
   it('with misplaced directives', () => {
     expectFailsRule(KnownDirectives, `
       query Foo @include(if: true) {
-        name
-        ...Frag
+        name @operationOnly
+        ...Frag @operationOnly
       }
     `, [
-      misplacedDirective('include', 'operation', 2, 17)
+      misplacedDirective('include', 'operation', 2, 17),
+      misplacedDirective('operationOnly', 'field', 3, 14),
+      misplacedDirective('operationOnly', 'fragment', 4, 17),
     ]);
   });
 

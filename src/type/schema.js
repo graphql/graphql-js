@@ -17,8 +17,11 @@ import {
   GraphQLNonNull
 } from './definition';
 import type { GraphQLType } from './definition';
-import { GraphQLIncludeDirective, GraphQLSkipDirective } from './directives';
-import type { GraphQLDirective } from './directives';
+import {
+  GraphQLDirective,
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective
+} from './directives';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
@@ -40,30 +43,51 @@ import invariant from '../jsutils/invariant';
  *
  */
 export class GraphQLSchema {
-  _schemaConfig: GraphQLSchemaConfig;
-  _typeMap: TypeMap;
+  _queryType: GraphQLObjectType;
+  _mutationType: ?GraphQLObjectType;
+  _subscriptionType: ?GraphQLObjectType;
   _directives: Array<GraphQLDirective>;
+  _typeMap: TypeMap;
 
   constructor(config: GraphQLSchemaConfig) {
     invariant(
       typeof config === 'object',
       'Must provide configuration object.'
     );
+
     invariant(
       config.query instanceof GraphQLObjectType,
       `Schema query must be Object Type but got: ${config.query}.`
     );
+    this._queryType = config.query;
+
     invariant(
       !config.mutation || config.mutation instanceof GraphQLObjectType,
       `Schema mutation must be Object Type if provided but ` +
       `got: ${config.mutation}.`
     );
+    this._mutationType = config.mutation;
+
     invariant(
       !config.subscription || config.subscription instanceof GraphQLObjectType,
       `Schema subscription must be Object Type if provided but ` +
       `got: ${config.subscription}.`
     );
-    this._schemaConfig = config;
+    this._subscriptionType = config.subscription;
+
+    invariant(
+      !config.directives ||
+      Array.isArray(config.directives) && config.directives.every(
+        directive => directive instanceof GraphQLDirective
+      ),
+      `Schema directives must be Array<GraphQLDirective> if provided but ` +
+      `got: ${config.directives}.`
+    );
+    // Provide `@include() and `@skip()` directives by default.
+    this._directives = config.directives || [
+      GraphQLIncludeDirective,
+      GraphQLSkipDirective
+    ];
 
     // Build type map now to detect any errors within this schema.
     this._typeMap = [
@@ -85,15 +109,15 @@ export class GraphQLSchema {
   }
 
   getQueryType(): GraphQLObjectType {
-    return this._schemaConfig.query;
+    return this._queryType;
   }
 
   getMutationType(): ?GraphQLObjectType {
-    return this._schemaConfig.mutation;
+    return this._mutationType;
   }
 
   getSubscriptionType(): ?GraphQLObjectType {
-    return this._schemaConfig.subscription;
+    return this._subscriptionType;
   }
 
   getTypeMap(): TypeMap {
@@ -105,10 +129,7 @@ export class GraphQLSchema {
   }
 
   getDirectives(): Array<GraphQLDirective> {
-    return this._directives || (this._directives = [
-      GraphQLIncludeDirective,
-      GraphQLSkipDirective
-    ]);
+    return this._directives;
   }
 
   getDirective(name: string): ?GraphQLDirective {
@@ -122,6 +143,7 @@ type GraphQLSchemaConfig = {
   query: GraphQLObjectType;
   mutation?: ?GraphQLObjectType;
   subscription?: ?GraphQLObjectType;
+  directives?: ?Array<GraphQLDirective>;
 }
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
