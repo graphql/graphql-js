@@ -41,3 +41,6 @@ export { isValidJSValue } from './isValidJSValue';
 
 // Determine if AST values adhere to a GraphQL type.
 export { isValidLiteralValue } from './isValidLiteralValue';
+
+// Concatenates multiple AST together.
+export { concatAST } from './concatAST';
