@@ -28,20 +28,20 @@ export class GraphQLDirective {
   constructor(config: GraphQLDirectiveConfig) {
     this.name = config.name;
     this.description = config.description;
-    this.args = config.args;
-    this.onOperation = config.onOperation;
-    this.onFragment = config.onFragment;
-    this.onField = config.onField;
+    this.args = config.args || [];
+    this.onOperation = Boolean(config.onOperation);
+    this.onFragment = Boolean(config.onFragment);
+    this.onField = Boolean(config.onField);
   }
 }
 
 type GraphQLDirectiveConfig = {
   name: string;
-  description?: string;
-  args: Array<GraphQLArgument>;
-  onOperation: boolean;
-  onFragment: boolean;
-  onField: boolean;
+  description?: ?string;
+  args?: ?Array<GraphQLArgument>;
+  onOperation?: ?boolean;
+  onFragment?: ?boolean;
+  onField?: ?boolean;
 }
 
 /**

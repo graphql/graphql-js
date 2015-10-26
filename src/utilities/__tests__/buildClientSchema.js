@@ -28,6 +28,7 @@ import {
   GraphQLBoolean,
   GraphQLID,
 } from '../../';
+import { GraphQLDirective } from '../../type/directives';
 
 
 // Test property:
@@ -472,6 +473,31 @@ describe('Type System: build schema from introspection', () => {
           }
         }
       })
+    });
+
+    await testSchema(schema);
+  });
+
+  it('builds a schema with custom directives', async () => {
+
+    var schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Simple',
+        description: 'This is a simple type',
+        fields: {
+          string: {
+            type: GraphQLString,
+            description: 'This is a string field'
+          }
+        }
+      }),
+      directives: [
+        new GraphQLDirective({
+          name: 'customDirective',
+          description: 'This is a custom directive',
+          onField: true,
+        })
+      ]
     });
 
     await testSchema(schema);

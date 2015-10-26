@@ -488,6 +488,7 @@ export type GraphQLFieldConfigArgumentMap = {
 export type GraphQLArgumentConfig = {
   type: GraphQLInputType;
   defaultValue?: any;
+  description?: ?string;
 }
 
 export type GraphQLFieldConfigMap = {
