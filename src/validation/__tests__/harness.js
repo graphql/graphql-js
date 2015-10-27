@@ -292,7 +292,7 @@ var QueryRoot = new GraphQLObjectType({
   })
 });
 
-var defaultSchema = new GraphQLSchema({
+export var testSchema = new GraphQLSchema({
   query: QueryRoot,
   directives: [
     new GraphQLDirective({
@@ -316,11 +316,11 @@ function expectInvalid(schema, rules, queryString, expectedErrors) {
 }
 
 export function expectPassesRule(rule, queryString) {
-  return expectValid(defaultSchema, [ rule ], queryString);
+  return expectValid(testSchema, [ rule ], queryString);
 }
 
 export function expectFailsRule(rule, queryString, errors) {
-  return expectInvalid(defaultSchema, [ rule ], queryString, errors);
+  return expectInvalid(testSchema, [ rule ], queryString, errors);
 }
 
 export function expectPassesRuleWithSchema(schema, rule, queryString, errors) {

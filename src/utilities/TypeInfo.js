@@ -53,8 +53,15 @@ export class TypeInfo {
   _fieldDefStack: Array<?GraphQLFieldDefinition>;
   _directive: ?GraphQLDirective;
   _argument: ?GraphQLArgument;
+  _getFieldDef: typeof getFieldDef;
 
-  constructor(schema: GraphQLSchema) {
+  constructor(
+    schema: GraphQLSchema,
+    // NOTE: this experimental optional second parameter is only needed in order
+    // to support non-spec-compliant codebases. You should never need to use it.
+    // It may disappear in the future.
+    getFieldDefFn?: typeof getFieldDef
+  ) {
     this._schema = schema;
     this._typeStack = [];
     this._parentTypeStack = [];
@@ -62,6 +69,7 @@ export class TypeInfo {
     this._fieldDefStack = [];
     this._directive = null;
     this._argument = null;
+    this._getFieldDef = getFieldDefFn || getFieldDef;
   }
 
   getType(): ?GraphQLOutputType {
@@ -114,7 +122,7 @@ export class TypeInfo {
         var parentType = this.getParentType();
         var fieldDef;
         if (parentType) {
-          fieldDef = getFieldDef(schema, parentType, node);
+          fieldDef = this._getFieldDef(schema, parentType, node);
         }
         this._fieldDefStack.push(fieldDef);
         this._typeStack.push(fieldDef && fieldDef.type);

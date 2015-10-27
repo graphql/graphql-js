@@ -58,19 +58,22 @@ export function validate(
     'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
     'not multiple versions of GraphQL installed in your node_modules directory.'
   );
-  return visitUsingRules(schema, ast, rules || specifiedRules);
+  var typeInfo = new TypeInfo(schema);
+  return visitUsingRules(schema, typeInfo, ast, rules || specifiedRules);
 }
 
 /**
  * This uses a specialized visitor which runs multiple visitors in parallel,
  * while maintaining the visitor skip and break API.
+ *
+ * @internal
  */
-function visitUsingRules(
+export function visitUsingRules(
   schema: GraphQLSchema,
+  typeInfo: TypeInfo,
   documentAST: Document,
   rules: Array<any>
 ): Array<GraphQLError> {
-  var typeInfo = new TypeInfo(schema);
   var context = new ValidationContext(schema, documentAST, typeInfo);
   var errors = [];
 
