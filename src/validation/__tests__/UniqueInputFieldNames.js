@@ -48,6 +48,22 @@ describe('Validate: Unique input field names', () => {
     `);
   });
 
+  it('allows for nested input objects with similar fields', () => {
+    expectPassesRule(UniqueInputFieldNames, `
+      {
+        field(arg: {
+          deep: {
+            deep: {
+              id: 1
+            }
+            id: 1
+          }
+          id: 1
+        })
+      }
+    `);
+  });
+
   it('duplicate input object fields', () => {
     expectFailsRule(UniqueInputFieldNames, `
       {

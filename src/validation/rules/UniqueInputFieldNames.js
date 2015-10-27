@@ -22,10 +22,18 @@ export function duplicateInputFieldMessage(fieldName: any): string {
  * uniquely named.
  */
 export function UniqueInputFieldNames(): any {
-  var knownNames = Object.create(null);
+  let knownNameStack = [];
+  let knownNames = Object.create(null);
+
   return {
-    ObjectValue() {
-      knownNames = Object.create(null);
+    ObjectValue: {
+      enter() {
+        knownNameStack.push(knownNames);
+        knownNames = Object.create(null);
+      },
+      leave() {
+        knownNames = knownNameStack.pop();
+      }
     },
     ObjectField(node) {
       var fieldName = node.name.value;
