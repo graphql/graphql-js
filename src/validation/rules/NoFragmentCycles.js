@@ -52,27 +52,32 @@ export function NoFragmentCycles(context: ValidationContext): any {
       // the graph to find all possible cycles.
       function detectCycleRecursive(fragmentName) {
         var spreadNodes = spreadsInFragment[fragmentName];
-        for (var i = 0; i < spreadNodes.length; ++i) {
-          var spreadNode = spreadNodes[i];
-          if (knownToLeadToCycle.has(spreadNode)) {
-            continue;
-          }
-          if (spreadNode.name.value === initialName) {
-            var cyclePath = spreadPath.concat(spreadNode);
-            cyclePath.forEach(spread => knownToLeadToCycle.add(spread));
-            errors.push(new GraphQLError(
-              cycleErrorMessage(initialName, spreadPath.map(s => s.name.value)),
-              cyclePath
-            ));
-            continue;
-          }
-          if (spreadPath.some(spread => spread === spreadNode)) {
-            continue;
-          }
+        if (spreadNodes) {
+          for (var i = 0; i < spreadNodes.length; ++i) {
+            var spreadNode = spreadNodes[i];
+            if (knownToLeadToCycle.has(spreadNode)) {
+              continue;
+            }
+            if (spreadNode.name.value === initialName) {
+              var cyclePath = spreadPath.concat(spreadNode);
+              cyclePath.forEach(spread => knownToLeadToCycle.add(spread));
+              errors.push(new GraphQLError(
+                cycleErrorMessage(
+                  initialName,
+                  spreadPath.map(s => s.name.value)
+                ),
+                cyclePath
+              ));
+              continue;
+            }
+            if (spreadPath.some(spread => spread === spreadNode)) {
+              continue;
+            }
 
-          spreadPath.push(spreadNode);
-          detectCycleRecursive(spreadNode.name.value);
-          spreadPath.pop();
+            spreadPath.push(spreadNode);
+            detectCycleRecursive(spreadNode.name.value);
+            spreadPath.pop();
+          }
         }
       }
 

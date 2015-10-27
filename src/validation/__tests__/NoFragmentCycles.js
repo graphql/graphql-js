@@ -50,6 +50,14 @@ describe('Validate: No circular fragment spreads', () => {
     `);
   });
 
+  it('does not false positive on unknown fragment', () => {
+    expectPassesRule(NoFragmentCycles, `
+      fragment nameFragment on Pet {
+        ...UnknownFragment
+      }
+    `);
+  });
+
   it('spreading recursively within field fails', () => {
     expectFailsRule(NoFragmentCycles, `
       fragment fragA on Human { relatives { ...fragA } },
