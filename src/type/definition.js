@@ -838,11 +838,12 @@ function defineEnumValues(
       `${type}.${valueName} should provide "deprecationReason" instead ` +
       `of "isDeprecated".`
     );
-    value.name = valueName;
-    if (isNullish(value.value)) {
-      value.value = valueName;
-    }
-    return value;
+    return {
+      name: valueName,
+      description: value.description,
+      deprecationReason: value.deprecationReason,
+      value: isNullish(value.value) ? valueName : value.value,
+    };
   });
 }
 
@@ -858,15 +859,15 @@ export type GraphQLEnumValueConfigMap/* <T> */ = {
 
 export type GraphQLEnumValueConfig/* <T> */ = {
   value?: any/* T */;
-  deprecationReason?: string;
+  deprecationReason?: ?string;
   description?: ?string;
 }
 
 export type GraphQLEnumValueDefinition/* <T> */ = {
   name: string;
-  value?: any/* T */;
-  deprecationReason?: string;
-  description?: ?string;
+  description: ?string;
+  deprecationReason: ?string;
+  value: any/* T */;
 }
 
 

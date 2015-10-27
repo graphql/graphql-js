@@ -371,21 +371,26 @@ describe('Type System: build schema from introspection', () => {
     // Client types do not get server-only values, so `value` mirrors `name`,
     // rather than using the integers defined in the "server" schema.
     expect(clientFoodEnum.getValues()).to.deep.equal([
-      { description: 'Foods that are vegetables.',
-        name: 'VEGETABLES',
-        value: 'VEGETABLES' },
-      { description: 'Foods that are fruits.',
-        name: 'FRUITS',
-        value: 'FRUITS' },
-      { description: 'Foods that are oils.',
-        name: 'OILS',
-        value: 'OILS' },
-      { description: 'Foods that are dairy.',
-        name: 'DAIRY',
-        value: 'DAIRY' },
-      { description: 'Foods that are meat.',
-        name: 'MEAT',
-        value: 'MEAT' },
+      { name: 'VEGETABLES',
+        value: 'VEGETABLES',
+        description: 'Foods that are vegetables.',
+        deprecationReason: null, },
+      { name: 'FRUITS',
+        value: 'FRUITS',
+        description: 'Foods that are fruits.',
+        deprecationReason: null, },
+      { name: 'OILS',
+        value: 'OILS',
+        description: 'Foods that are oils.',
+        deprecationReason: null, },
+      { name: 'DAIRY',
+        value: 'DAIRY',
+        description: 'Foods that are dairy.',
+        deprecationReason: null, },
+      { name: 'MEAT',
+        value: 'MEAT',
+        description: 'Foods that are meat.',
+        deprecationReason: null, },
     ]);
   });
 
@@ -498,6 +503,44 @@ describe('Type System: build schema from introspection', () => {
           onField: true,
         })
       ]
+    });
+
+    await testSchema(schema);
+  });
+
+
+  it('builds a schema aware of deprecation', async () => {
+
+    var schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Simple',
+        description: 'This is a simple type',
+        fields: {
+          shinyString: {
+            type: GraphQLString,
+            description: 'This is a shiny string field'
+          },
+          deprecatedString: {
+            type: GraphQLString,
+            description: 'This is a deprecated string field',
+            deprecationReason: 'Use shinyString',
+          },
+          color: {
+            type: new GraphQLEnumType({
+              name: 'Color',
+              values: {
+                RED: { description: 'So rosy' },
+                GREEN: { description: 'So grassy' },
+                BLUE: { description: 'So calming' },
+                MAUVE: {
+                  description: 'So sickening',
+                  deprecationReason: 'No longer in fashion'
+                },
+              }
+            })
+          }
+        }
+      })
     });
 
     await testSchema(schema);

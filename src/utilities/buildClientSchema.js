@@ -260,6 +260,7 @@ export function buildClientSchema(
         valueIntrospection => valueIntrospection.name,
         valueIntrospection => ({
           description: valueIntrospection.description,
+          deprecationReason: valueIntrospection.deprecationReason,
         })
       )
     });
@@ -281,6 +282,7 @@ export function buildClientSchema(
       fieldIntrospection => fieldIntrospection.name,
       fieldIntrospection => ({
         description: fieldIntrospection.description,
+        deprecationReason: fieldIntrospection.deprecationReason,
         type: getOutputType(fieldIntrospection.type),
         args: buildInputValueDefMap(fieldIntrospection.args),
         resolve: () => {
@@ -321,8 +323,6 @@ export function buildClientSchema(
       onField: directiveIntrospection.onField,
     });
   }
-
-  // TODO: deprecation
 
   // Iterate through all types, getting the type definition for each, ensuring
   // that any type not directly referenced by a field will get created.
