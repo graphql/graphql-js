@@ -107,8 +107,10 @@ describe('Type System: Enum Values', () => {
       await graphql(schema, '{ colorEnum(fromEnum: "GREEN") }')
     ).to.deep.equal({
       errors: [
-        { message:
-            'Argument "fromEnum" expected type "Color" but got: "GREEN".' }
+        {
+          message: 'Argument "fromEnum" has invalid value "GREEN".' +
+            '\nExpected type \"Color\", found "GREEN".'
+        }
       ]
     });
   });
@@ -128,7 +130,8 @@ describe('Type System: Enum Values', () => {
       await graphql(schema, '{ colorEnum(fromEnum: 1) }')
     ).to.deep.equal({
       errors: [
-        { message: 'Argument "fromEnum" expected type "Color" but got: 1.' }
+        { message: 'Argument "fromEnum" has invalid value 1.' +
+            '\nExpected type "Color", found 1.' }
       ]
     });
   });
@@ -138,7 +141,8 @@ describe('Type System: Enum Values', () => {
       await graphql(schema, '{ colorEnum(fromInt: GREEN) }')
     ).to.deep.equal({
       errors: [
-        { message: 'Argument "fromInt" expected type "Int" but got: GREEN.' }
+        { message: 'Argument "fromInt" has invalid value GREEN.' +
+            '\nExpected type "Int", found GREEN.' }
       ]
     });
   });
@@ -183,8 +187,11 @@ describe('Type System: Enum Values', () => {
       )
     ).to.deep.equal({
       errors: [
-        { message:
-            'Variable "$color" expected value of type "Color!" but got: 2.' }
+        {
+          message:
+            'Variable "\$color" got invalid value 2.' +
+            '\nExpected type "Color", found 2.'
+        }
       ]
     });
   });

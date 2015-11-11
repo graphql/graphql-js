@@ -113,9 +113,8 @@ function getVariableValue(
   }
   var message = errors ? '\n' + errors.join('\n') : '';
   throw new GraphQLError(
-    `Variable "$${variable.name.value}" expected value of type ` +
-    `"${print(definitionAST.type)}" but got: ${JSON.stringify(input)}.` +
-    `${message}`,
+    `Variable "$${variable.name.value}" got invalid value ` +
+    `${JSON.stringify(input)}.${message}`,
     [ definitionAST ]
   );
 }

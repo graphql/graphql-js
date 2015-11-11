@@ -28,11 +28,14 @@ import type { GraphQLInputType } from '../type/definition';
 export function isValidJSValue(value: any, type: GraphQLInputType): [ string ] {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
+    var ofType: GraphQLInputType = (type.ofType: any);
     if (isNullish(value)) {
-      return [ 'Expected non-null value.' ];
+      if (ofType.name) {
+        return [ `Expected "${ofType.name}!", found null.` ];
+      }
+      return [ 'Expected non-null value, found null.' ];
     }
-    var nullableType: GraphQLInputType = (type.ofType: any);
-    return isValidJSValue(value, nullableType);
+    return isValidJSValue(value, ofType);
   }
 
   if (isNullish(value)) {
@@ -56,7 +59,7 @@ export function isValidJSValue(value: any, type: GraphQLInputType): [ string ] {
   // Input objects check each defined field.
   if (type instanceof GraphQLInputObjectType) {
     if (typeof value !== 'object') {
-      return [ 'Not an object.' ];
+      return [ `Expected "${type.name}", found not an object.` ];
     }
     var fields = type.getFields();
 
@@ -88,7 +91,9 @@ export function isValidJSValue(value: any, type: GraphQLInputType): [ string ] {
   // a non-null value.
   var parseResult = type.parseValue(value);
   if (isNullish(parseResult)) {
-    return [ `Expected type "${type.name}", found "{JSON.strigify(value)}".` ];
+    return [
+      `Expected type "${type.name}", found ${JSON.stringify(value)}.`
+    ];
   }
 
   return [];

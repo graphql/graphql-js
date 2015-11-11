@@ -41,10 +41,13 @@ export function isValidLiteralValue(
 ): [ string ] {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
-    if (!valueAST) {
-      return [ 'Expected non-null value.' ];
-    }
     var ofType: GraphQLInputType = (type.ofType: any);
+    if (!valueAST) {
+      if (ofType.name) {
+        return [ `Expected "${ofType.name}!", found null.` ];
+      }
+      return [ 'Expected non-null value, found null.' ];
+    }
     return isValidLiteralValue(ofType, valueAST);
   }
 
@@ -75,7 +78,7 @@ export function isValidLiteralValue(
   // Input objects check each defined field and look for undefined fields.
   if (type instanceof GraphQLInputObjectType) {
     if (valueAST.kind !== OBJECT) {
-      return [ 'Not an object.' ];
+      return [ `Expected "${type.name}", found not an object.` ];
     }
     var fields = type.getFields();
 
