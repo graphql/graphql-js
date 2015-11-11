@@ -68,7 +68,7 @@ export function isValidJSValue(value: any, type: GraphQLInputType): [ string ] {
     // Ensure every provided field is defined.
     for (var providedField of Object.keys(value)) {
       if (!fields[providedField]) {
-        errors.push('Unknown field "${providedField}".');
+        errors.push('In field "${providedField}": Unknown field.');
       }
     }
 

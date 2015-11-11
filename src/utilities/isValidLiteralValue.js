@@ -88,7 +88,9 @@ export function isValidLiteralValue(
     var fieldASTs = (valueAST: ObjectValue).fields;
     for (var providedFieldAST of fieldASTs) {
       if (!fields[providedFieldAST.name.value]) {
-        errors.push(`Unknown field "${providedFieldAST.name.value}".`);
+        errors.push(
+          `In field "${providedFieldAST.name.value}": Unknown field.`
+        );
       }
     }
 

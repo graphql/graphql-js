@@ -782,7 +782,7 @@ describe('Validate: Argument values of correct type', () => {
           '{requiredField: true, unknownField: "value"}',
           4,
           41,
-          [ 'Unknown field "unknownField".' ]
+          [ 'In field "unknownField": Unknown field.' ]
         ),
       ]);
     });
