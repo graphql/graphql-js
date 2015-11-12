@@ -38,17 +38,17 @@ export function ArgumentsOfCorrectType(context: ValidationContext): any {
       var argDef = context.getArgument();
       if (argDef) {
         var errors = isValidLiteralValue(argDef.type, argAST.value);
-      }
-      if (errors.length) {
-        return new GraphQLError(
-          badValueMessage(
-            argAST.name.value,
-            argDef.type,
-            print(argAST.value),
-            errors
-          ),
-          [ argAST.value ]
-        );
+        if (errors.length) {
+          return new GraphQLError(
+            badValueMessage(
+              argAST.name.value,
+              argDef.type,
+              print(argAST.value),
+              errors
+            ),
+            [ argAST.value ]
+          );
+        }
       }
     }
   };
