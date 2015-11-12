@@ -1,7 +1,7 @@
 GraphQL Utilities
 -----------------
 
-The `graphql/utilites` module contains common useful computations to use with
+The `graphql/utilities` module contains common useful computations to use with
 the GraphQL language and type objects.
 
 ```js
