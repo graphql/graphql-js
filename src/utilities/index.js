@@ -20,6 +20,9 @@ export { buildClientSchema } from './buildClientSchema';
 // Build a GraphQLSchema from a parsed GraphQL Schema language AST.
 export { buildASTSchema } from './buildASTSchema';
 
+// Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
+export { extendSchema } from './extendSchema';
+
 // Print a GraphQLSchema to GraphQL Schema language.
 export { printSchema, printIntrospectionSchema } from './schemaPrinter';
 
