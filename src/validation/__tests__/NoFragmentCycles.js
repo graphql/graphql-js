@@ -136,24 +136,29 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragX on Dog { ...fragY }
       fragment fragY on Dog { ...fragZ }
       fragment fragZ on Dog { ...fragO }
-      fragment fragO on Dog { ...fragA, ...fragX }
+      fragment fragO on Dog { ...fragP }
+      fragment fragP on Dog { ...fragA, ...fragX }
     `, [
-      { message: cycleErrorMessage('fragA', [ 'fragB', 'fragC', 'fragO' ]),
+      { message:
+          cycleErrorMessage('fragA', [ 'fragB', 'fragC', 'fragO', 'fragP' ]),
         locations: [
           { line: 2, column: 31 },
           { line: 3, column: 31 },
           { line: 4, column: 31 },
-          { line: 8, column: 31 } ] },
-      { message: cycleErrorMessage('fragX', [ 'fragY', 'fragZ', 'fragO' ]),
+          { line: 8, column: 31 },
+          { line: 9, column: 31 } ] },
+      { message:
+          cycleErrorMessage('fragO', [ 'fragP', 'fragX', 'fragY', 'fragZ' ]),
         locations: [
+          { line: 8, column: 31 },
+          { line: 9, column: 41 },
           { line: 5, column: 31 },
           { line: 6, column: 31 },
-          { line: 7, column: 31 },
-          { line: 8, column: 41 } ] }
+          { line: 7, column: 31 } ] }
     ]);
   });
 
-  it('no spreading itself deeply two paths -- new rule', () => {
+  it('no spreading itself deeply two paths', () => {
     expectFailsRule(NoFragmentCycles, `
       fragment fragA on Dog { ...fragB, ...fragC }
       fragment fragB on Dog { ...fragA }
@@ -163,6 +168,37 @@ describe('Validate: No circular fragment spreads', () => {
         locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ] },
       { message: cycleErrorMessage('fragA', [ 'fragC' ]),
         locations: [ { line: 2, column: 41 }, { line: 4, column: 31 } ] }
+    ]);
+  });
+
+  it('no spreading itself deeply two paths -- alt traverse order', () => {
+    expectFailsRule(NoFragmentCycles, `
+      fragment fragA on Dog { ...fragC }
+      fragment fragB on Dog { ...fragC }
+      fragment fragC on Dog { ...fragA, ...fragB }
+    `, [
+      { message: cycleErrorMessage('fragA', [ 'fragC' ]),
+        locations: [ { line: 2, column: 31 }, { line: 4, column: 31 } ] },
+      { message: cycleErrorMessage('fragC', [ 'fragB' ]),
+        locations: [ { line: 4, column: 41 }, { line: 3, column: 31 } ] }
+    ]);
+  });
+
+  it('no spreading itself deeply and immediately', () => {
+    expectFailsRule(NoFragmentCycles, `
+      fragment fragA on Dog { ...fragB }
+      fragment fragB on Dog { ...fragB, ...fragC }
+      fragment fragC on Dog { ...fragA, ...fragB }
+    `, [
+      { message: cycleErrorMessage('fragB', []),
+        locations: [ { line: 3, column: 31 } ] },
+      { message: cycleErrorMessage('fragA', [ 'fragB', 'fragC' ]),
+        locations: [
+          { line: 2, column: 31 },
+          { line: 3, column: 41 },
+          { line: 4, column: 31 } ] },
+      { message: cycleErrorMessage('fragB', [ 'fragC' ]),
+        locations: [ { line: 3, column: 41 }, { line: 4, column: 41 } ] }
     ]);
   });
 
