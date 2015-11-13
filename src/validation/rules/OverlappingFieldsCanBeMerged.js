@@ -90,7 +90,8 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
     if (name1 !== name2) {
       return [
         [ responseName, `${name1} and ${name2} are different fields` ],
-        [ ast1, ast2 ]
+        [ ast1 ],
+        [ ast2 ]
       ];
     }
 
@@ -99,21 +100,24 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
     if (type1 && type2 && !sameType(type1, type2)) {
       return [
         [ responseName, `they return differing types ${type1} and ${type2}` ],
-        [ ast1, ast2 ]
+        [ ast1 ],
+        [ ast2 ]
       ];
     }
 
     if (!sameArguments(ast1.arguments || [], ast2.arguments || [])) {
       return [
         [ responseName, 'they have differing arguments' ],
-        [ ast1, ast2 ]
+        [ ast1 ],
+        [ ast2 ]
       ];
     }
 
     if (!sameDirectives(ast1.directives || [], ast2.directives || [])) {
       return [
         [ responseName, 'they have differing directives' ],
-        [ ast1, ast2 ]
+        [ ast1 ],
+        [ ast2 ]
       ];
     }
 
@@ -139,8 +143,12 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
         return [
           [ responseName, conflicts.map(([ reason ]) => reason) ],
           conflicts.reduce(
-            (allFields, [ , fields ]) => allFields.concat(fields),
-            [ ast1, ast2 ]
+            (allFields, [ , fields1 ]) => allFields.concat(fields1),
+            [ ast1 ]
+          ),
+          conflicts.reduce(
+            (allFields, [ , , fields2 ]) => allFields.concat(fields2),
+            [ ast2 ]
           )
         ];
       }
@@ -159,11 +167,12 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
         );
         var conflicts = findConflicts(fieldMap);
         if (conflicts.length) {
-          return conflicts.map(([ [ responseName, reason ], fields ]) =>
-            new GraphQLError(
-              fieldsConflictMessage(responseName, reason),
-              fields
-            )
+          return conflicts.map(
+            ([ [ responseName, reason ], fields1, fields2 ]) =>
+              new GraphQLError(
+                fieldsConflictMessage(responseName, reason),
+                fields1.concat(fields2)
+              )
           );
         }
       }
@@ -171,7 +180,7 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
   };
 }
 
-type Conflict = [ ConflictReason, Array<Field> ];
+type Conflict = [ ConflictReason, Array<Field>, Array<Field> ];
 // Field name and reason.
 type ConflictReason = [ string, ConflictReasonMessage ];
 // Reason is a string, or a nested list of conflicts.

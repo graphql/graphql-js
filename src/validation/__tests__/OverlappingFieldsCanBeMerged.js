@@ -258,8 +258,8 @@ describe('Validate: Overlapping fields can be merged', () => {
         ),
         locations: [
           { line: 3, column: 9 },
-          { line: 6, column: 9 },
           { line: 4, column: 11 },
+          { line: 6, column: 9 },
           { line: 7, column: 11 } ] },
     ]);
   });
@@ -285,10 +285,10 @@ describe('Validate: Overlapping fields can be merged', () => {
         ),
         locations: [
           { line: 3, column: 9 },
-          { line: 7, column: 9 },
           { line: 4, column: 11 },
-          { line: 8, column: 11 },
           { line: 5, column: 11 },
+          { line: 7, column: 9 },
+          { line: 8, column: 11 },
           { line: 9, column: 11 } ] },
     ]);
   });
@@ -314,10 +314,10 @@ describe('Validate: Overlapping fields can be merged', () => {
         ),
         locations: [
           { line: 3, column: 9 },
-          { line: 8, column: 9 },
           { line: 4, column: 11 },
-          { line: 9, column: 11 },
           { line: 5, column: 13 },
+          { line: 8, column: 9 },
+          { line: 9, column: 11 },
           { line: 10, column: 13 } ] },
     ]);
   });
@@ -345,8 +345,8 @@ describe('Validate: Overlapping fields can be merged', () => {
         ),
         locations: [
           { line: 4, column: 11 },
-          { line: 7, column: 11 },
           { line: 5, column: 13 },
+          { line: 7, column: 11 },
           { line: 8, column: 13 } ] },
     ]);
   });
@@ -492,9 +492,12 @@ describe('Validate: Overlapping fields can be merged', () => {
             [ [ 'node', [ [ 'id', 'id and name are different fields' ] ] ] ]
           ),
           locations: [
-            { line: 14, column: 11 }, { line: 5, column: 13 },
-            { line: 15, column: 13 }, { line: 6, column: 15 },
-            { line: 16, column: 15 }, { line: 7, column: 17 },
+            { line: 14, column: 11 },
+            { line: 15, column: 13 },
+            { line: 16, column: 15 },
+            { line: 5, column: 13 },
+            { line: 6, column: 15 },
+            { line: 7, column: 17 },
           ] }
       ]);
     });
