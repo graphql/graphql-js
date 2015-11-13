@@ -27,6 +27,7 @@ import {
 import type {
   GraphQLType,
   GraphQLNamedType,
+  GraphQLCompositeType,
   GraphQLFieldDefinition
 } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
@@ -75,12 +76,32 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
 
   function findConflict(
     responseName: string,
-    pair1: [Field, GraphQLFieldDefinition],
-    pair2: [Field, GraphQLFieldDefinition]
+    field1: [ GraphQLCompositeType, Field, GraphQLFieldDefinition ],
+    field2: [ GraphQLCompositeType, Field, GraphQLFieldDefinition ]
   ): ?Conflict {
-    var [ ast1, def1 ] = pair1;
-    var [ ast2, def2 ] = pair2;
-    if (ast1 === ast2 || comparedSet.has(ast1, ast2)) {
+    var [ parentType1, ast1, def1 ] = field1;
+    var [ parentType2, ast2, def2 ] = field2;
+
+    // Not a pair.
+    if (ast1 === ast2) {
+      return;
+    }
+
+    // If the statically known parent types could not possibly apply at the same
+    // time, then it is safe to permit them to diverge as they will not present
+    // any ambiguity by differing.
+    // It is known that two parent types could never overlap if they are
+    // different Object types. Interface or Union types might overlap - if not
+    // in the current state of the schema, then perhaps in some future version,
+    // thus may not safely diverge.
+    if (parentType1 !== parentType2 &&
+        parentType1 instanceof GraphQLObjectType &&
+        parentType2 instanceof GraphQLObjectType) {
+      return;
+    }
+
+    // Memoize, do not report the same issue twice.
+    if (comparedSet.has(ast1, ast2)) {
       return;
     }
     comparedSet.add(ast1, ast2);
@@ -267,7 +288,7 @@ function collectFieldASTsAndDefs(
         if (!_astAndDefs[responseName]) {
           _astAndDefs[responseName] = [];
         }
-        _astAndDefs[responseName].push([ selection, fieldDef ]);
+        _astAndDefs[responseName].push([ parentType, selection, fieldDef ]);
         break;
       case INLINE_FRAGMENT:
         var typeCondition = selection.typeCondition;
