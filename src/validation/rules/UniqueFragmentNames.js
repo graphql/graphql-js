@@ -23,6 +23,7 @@ export function duplicateFragmentNameMessage(fragName: any): string {
 export function UniqueFragmentNames(): any {
   var knownFragmentNames = Object.create(null);
   return {
+    OperationDefinition: () => false,
     FragmentDefinition(node) {
       var fragmentName = node.name.value;
       if (knownFragmentNames[fragmentName]) {
@@ -32,6 +33,7 @@ export function UniqueFragmentNames(): any {
         );
       }
       knownFragmentNames[fragmentName] = node.name;
+      return false;
     }
   };
 }

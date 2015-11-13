@@ -34,6 +34,8 @@ export function UniqueOperationNames(): any {
         }
         knownOperationNames[operationName.value] = operationName;
       }
-    }
+      return false;
+    },
+    FragmentDefinition: () => false,
   };
 }

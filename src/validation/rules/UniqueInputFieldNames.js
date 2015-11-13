@@ -44,6 +44,7 @@ export function UniqueInputFieldNames(): any {
         );
       }
       knownNames[fieldName] = node.name;
+      return false;
     }
   };
 }

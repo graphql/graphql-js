@@ -8,6 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
@@ -21,36 +22,30 @@ export function unusedFragMessage(fragName: any): string {
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
  */
-export function NoUnusedFragments(): any {
-  var fragmentDefs = [];
+export function NoUnusedFragments(context: ValidationContext): any {
   var spreadsWithinOperation = [];
-  var fragAdjacencies = {};
-  var spreadNames = {};
+  var fragmentDefs = [];
 
   return {
-    OperationDefinition() {
-      spreadNames = {};
-      spreadsWithinOperation.push(spreadNames);
+    OperationDefinition(node) {
+      spreadsWithinOperation.push(context.getFragmentSpreads(node));
+      return false;
     },
     FragmentDefinition(def) {
       fragmentDefs.push(def);
-      spreadNames = {};
-      fragAdjacencies[def.name.value] = spreadNames;
-    },
-    FragmentSpread(spread) {
-      spreadNames[spread.name.value] = true;
+      return false;
     },
     Document: {
       leave() {
         var fragmentNameUsed = {};
         var reduceSpreadFragments = function (spreads) {
-          var keys = Object.keys(spreads);
-          keys.forEach(fragName => {
+          spreads.forEach(spread => {
+            const fragName = spread.name.value;
             if (fragmentNameUsed[fragName] !== true) {
               fragmentNameUsed[fragName] = true;
-              var adjacencies = fragAdjacencies[fragName];
-              if (adjacencies) {
-                reduceSpreadFragments(adjacencies);
+              const fragment = context.getFragment(fragName);
+              if (fragment) {
+                reduceSpreadFragments(context.getFragmentSpreads(fragment));
               }
             }
           });

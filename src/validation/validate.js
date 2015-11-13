@@ -14,6 +14,9 @@ import { visit, getVisitFn } from '../language/visitor';
 import * as Kind from '../language/kinds';
 import type {
   Document,
+  OperationDefinition,
+  SelectionSet,
+  FragmentSpread,
   FragmentDefinition,
 } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
@@ -171,6 +174,8 @@ function append(arr, items) {
   }
 }
 
+type HasSelectionSet = OperationDefinition | FragmentDefinition;
+
 /**
  * An instance of this class is passed as the "this" context to all validators,
  * allowing access to commonly useful contextual information from within a
@@ -181,11 +186,13 @@ export class ValidationContext {
   _ast: Document;
   _typeInfo: TypeInfo;
   _fragments: {[name: string]: FragmentDefinition};
+  _fragmentSpreads: Map<HasSelectionSet, Array<FragmentSpread>>;
 
   constructor(schema: GraphQLSchema, ast: Document, typeInfo: TypeInfo) {
     this._schema = schema;
     this._ast = ast;
     this._typeInfo = typeInfo;
+    this._fragmentSpreads = new Map();
   }
 
   getSchema(): GraphQLSchema {
@@ -210,6 +217,16 @@ export class ValidationContext {
     return fragments[name];
   }
 
+  getFragmentSpreads(node: HasSelectionSet): Array<FragmentSpread> {
+    let spreads = this._fragmentSpreads.get(node);
+    if (!spreads) {
+      spreads = [];
+      gatherSpreads(spreads, node.selectionSet);
+      this._fragmentSpreads.set(node, spreads);
+    }
+    return spreads;
+  }
+
   getType(): ?GraphQLOutputType {
     return this._typeInfo.getType();
   }
@@ -232,5 +249,19 @@ export class ValidationContext {
 
   getArgument(): ?GraphQLArgument {
     return this._typeInfo.getArgument();
+  }
+}
+
+/**
+ * Given a selection set, gather all the named spreads defined within.
+ */
+function gatherSpreads(spreads: Array<FragmentSpread>, node: SelectionSet) {
+  for (let i = 0; i < node.selections.length; i++) {
+    const selection = node.selections[i];
+    if (selection.kind === Kind.FRAGMENT_SPREAD) {
+      spreads.push(selection);
+    } else if (selection.selectionSet) {
+      gatherSpreads(spreads, selection.selectionSet);
+    }
   }
 }
