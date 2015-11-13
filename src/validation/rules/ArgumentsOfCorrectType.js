@@ -38,6 +38,7 @@ export function ArgumentsOfCorrectType(context: ValidationContext): any {
           [ argAST.value ]
         );
       }
+      return false;
     }
   };
 }

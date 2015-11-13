@@ -10,12 +10,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { FRAGMENT_SPREAD } from '../../language/kinds';
-import type {
-  SelectionSet,
-  FragmentSpread,
-  FragmentDefinition
-} from '../../language/ast';
+import type { FragmentDefinition } from '../../language/ast';
 
 
 export function cycleErrorMessage(
@@ -63,8 +58,7 @@ export function NoFragmentCycles(context: ValidationContext): any {
     const fragmentName = fragment.name.value;
     visitedFrags[fragmentName] = true;
 
-    const spreadNodes = [];
-    gatherSpreads(spreadNodes, fragment.selectionSet);
+    const spreadNodes = context.getFragmentSpreads(fragment);
     if (spreadNodes.length === 0) {
       return;
     }
@@ -98,21 +92,5 @@ export function NoFragmentCycles(context: ValidationContext): any {
     }
 
     spreadPathIndexByName[fragmentName] = undefined;
-  }
-}
-
-/**
- * Given an operation or fragment AST node, gather all the
- * named spreads defined within the scope of the fragment
- * or operation
- */
-function gatherSpreads(spreads: Array<FragmentSpread>, node: SelectionSet) {
-  for (let i = 0; i < node.selections.length; i++) {
-    const selection = node.selections[i];
-    if (selection.kind === FRAGMENT_SPREAD) {
-      spreads.push(selection);
-    } else if (selection.selectionSet) {
-      gatherSpreads(spreads, selection.selectionSet);
-    }
   }
 }

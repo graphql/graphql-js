@@ -57,6 +57,9 @@ export function DefaultValuesOfCorrectType(context: ValidationContext): any {
           [ defaultValue ]
         );
       }
-    }
+      return false;
+    },
+    SelectionSet: () => false,
+    FragmentDefinition: () => false,
   };
 }

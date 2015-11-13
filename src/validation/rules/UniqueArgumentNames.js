@@ -39,6 +39,7 @@ export function UniqueArgumentNames(): any {
         );
       }
       knownArgNames[argName] = node.name;
+      return false;
     }
   };
 }
