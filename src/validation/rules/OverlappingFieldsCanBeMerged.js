@@ -15,7 +15,6 @@ import type {
   SelectionSet,
   Field,
   Argument,
-  Directive
 } from '../../language/ast';
 import { FIELD, INLINE_FRAGMENT, FRAGMENT_SPREAD } from '../../language/kinds';
 import { print } from '../../language/printer';
@@ -136,14 +135,6 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
       ];
     }
 
-    if (!sameDirectives(ast1.directives || [], ast2.directives || [])) {
-      return [
-        [ responseName, 'they have differing directives' ],
-        [ ast1 ],
-        [ ast2 ]
-      ];
-    }
-
     var selectionSet1 = ast1.selectionSet;
     var selectionSet2 = ast2.selectionSet;
     if (selectionSet1 && selectionSet2) {
@@ -208,28 +199,6 @@ type Conflict = [ ConflictReason, Array<Field>, Array<Field> ];
 type ConflictReason = [ string, ConflictReasonMessage ];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
-
-function sameDirectives(
-  directives1: Array<Directive>,
-  directives2: Array<Directive>
-): boolean {
-  if (directives1.length !== directives2.length) {
-    return false;
-  }
-  return directives1.every(directive1 => {
-    var directive2 = find(
-      directives2,
-      directive => directive.name.value === directive1.name.value
-    );
-    if (!directive2) {
-      return false;
-    }
-    return sameArguments(
-      directive1.arguments || [],
-      directive2.arguments || []
-    );
-  });
-}
 
 function sameArguments(
   arguments1: Array<Argument>,

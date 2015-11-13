@@ -86,6 +86,18 @@ describe('Validate: Overlapping fields can be merged', () => {
     `);
   });
 
+  it('different skip/include directives accepted', () => {
+    // Note: Differing skip/include directives don't create an ambiguous return
+    // value and are acceptable in conditions where differing runtime values
+    // may have the same desired effect of including or skipping a field.
+    expectPassesRule(OverlappingFieldsCanBeMerged, `
+      fragment differentDirectivesWithDifferentAliases on Dog {
+        name @include(if: true)
+        name @include(if: false)
+      }
+    `);
+  });
+
   it('Same aliases with different field targets', () => {
     expectFailsRule(OverlappingFieldsCanBeMerged, `
       fragment sameAliasesWithDifferentFieldTargets on Dog {
@@ -189,66 +201,6 @@ describe('Validate: Overlapping fields can be merged', () => {
         }
       }
     `);
-  });
-
-  it('conflicting directives', () => {
-    expectFailsRule(OverlappingFieldsCanBeMerged, `
-      fragment conflictingDirectiveArgs on Dog {
-        name @include(if: true)
-        name @skip(if: false)
-      }
-    `, [
-      { message: fieldsConflictMessage(
-          'name',
-          'they have differing directives'
-        ),
-        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] }
-    ]);
-  });
-
-  it('conflicting directive args', () => {
-    expectFailsRule(OverlappingFieldsCanBeMerged, `
-      fragment conflictingDirectiveArgs on Dog {
-        name @include(if: true)
-        name @include(if: false)
-      }
-    `, [
-      { message: fieldsConflictMessage(
-          'name',
-          'they have differing directives'
-        ),
-        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] }
-    ]);
-  });
-
-  it('conflicting args with matching directives', () => {
-    expectFailsRule(OverlappingFieldsCanBeMerged, `
-      fragment conflictingArgsWithMatchingDirectiveArgs on Dog {
-        doesKnowCommand(dogCommand: SIT) @include(if: true)
-        doesKnowCommand(dogCommand: HEEL) @include(if: true)
-      }
-    `, [
-      { message: fieldsConflictMessage(
-          'doesKnowCommand',
-          'they have differing arguments'
-        ),
-        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] }
-    ]);
-  });
-
-  it('conflicting directives with matching args', () => {
-    expectFailsRule(OverlappingFieldsCanBeMerged, `
-      fragment conflictingDirectiveArgsWithMatchingArgs on Dog {
-        doesKnowCommand(dogCommand: SIT) @include(if: true)
-        doesKnowCommand(dogCommand: SIT) @skip(if: false)
-      }
-    `, [
-      { message: fieldsConflictMessage(
-          'doesKnowCommand',
-          'they have differing directives'
-        ),
-        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] }
-    ]);
   });
 
   it('encounters conflict in fragments', () => {
