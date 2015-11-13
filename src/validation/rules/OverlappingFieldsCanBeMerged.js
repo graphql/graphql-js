@@ -23,6 +23,8 @@ import {
   getNamedType,
   GraphQLObjectType,
   GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
 } from '../../type/definition';
 import type {
   GraphQLType,
@@ -253,7 +255,16 @@ function sameValue(value1, value2) {
 }
 
 function sameType(type1: GraphQLType, type2: GraphQLType) {
-  return String(type1) === String(type2);
+  if (type1 === type2) {
+    return true;
+  }
+  if (type1 instanceof GraphQLList && type2 instanceof GraphQLList) {
+    return sameType(type1.ofType, type2.ofType);
+  }
+  if (type1 instanceof GraphQLNonNull && type2 instanceof GraphQLNonNull) {
+    return sameType(type1.ofType, type2.ofType);
+  }
+  return false;
 }
 
 
