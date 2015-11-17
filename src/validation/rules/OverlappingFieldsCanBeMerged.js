@@ -22,15 +22,13 @@ import {
   getNamedType,
   GraphQLObjectType,
   GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
 } from '../../type/definition';
 import type {
-  GraphQLType,
   GraphQLNamedType,
   GraphQLCompositeType,
   GraphQLFieldDefinition
 } from '../../type/definition';
+import { isEqualType } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 
@@ -119,7 +117,7 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
 
     var type1 = def1 && def1.type;
     var type2 = def2 && def2.type;
-    if (type1 && type2 && !sameType(type1, type2)) {
+    if (type1 && type2 && !isEqualType(type1, type2)) {
       return [
         [ responseName, `they return differing types ${type1} and ${type2}` ],
         [ ast1 ],
@@ -219,19 +217,6 @@ function sameArguments(
 
 function sameValue(value1, value2) {
   return (!value1 && !value2) || print(value1) === print(value2);
-}
-
-function sameType(type1: GraphQLType, type2: GraphQLType) {
-  if (type1 === type2) {
-    return true;
-  }
-  if (type1 instanceof GraphQLList && type2 instanceof GraphQLList) {
-    return sameType(type1.ofType, type2.ofType);
-  }
-  if (type1 instanceof GraphQLNonNull && type2 instanceof GraphQLNonNull) {
-    return sameType(type1.ofType, type2.ofType);
-  }
-  return false;
 }
 
 

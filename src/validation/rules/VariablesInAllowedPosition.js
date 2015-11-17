@@ -10,7 +10,8 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { GraphQLList, GraphQLNonNull } from '../../type/definition';
+import { GraphQLNonNull } from '../../type/definition';
+import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 
@@ -41,9 +42,14 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
           const varName = node.name.value;
           const varDef = varDefMap[varName];
           if (varDef && type) {
+            // A var type is allowed if it is the same or more strict (e.g. is
+            // a subtype of) than the expected type. It can be more strict if
+            // the variable type is non-null when the expected type is nullable.
+            // If both are list types, the variable item type can be more strict
+            // than the expected item type (contravariant).
             const varType = typeFromAST(context.getSchema(), varDef.type);
             if (varType &&
-                !varTypeAllowedForType(effectiveType(varType, varDef), type)) {
+                !isTypeSubTypeOf(effectiveType(varType, varDef), type)) {
               context.reportError(new GraphQLError(
                 badVarPosMessage(varName, varType, type),
                 [ varDef, node ]
@@ -64,24 +70,4 @@ function effectiveType(varType, varDef) {
   return !varDef.defaultValue || varType instanceof GraphQLNonNull ?
     varType :
     new GraphQLNonNull(varType);
-}
-
-// A var type is allowed if it is the same or more strict than the expected
-// type. It can be more strict if the variable type is non-null when the
-// expected type is nullable. If both are list types, the variable item type can
-// be more strict than the expected item type.
-function varTypeAllowedForType(varType, expectedType): boolean {
-  if (expectedType instanceof GraphQLNonNull) {
-    if (varType instanceof GraphQLNonNull) {
-      return varTypeAllowedForType(varType.ofType, expectedType.ofType);
-    }
-    return false;
-  }
-  if (varType instanceof GraphQLNonNull) {
-    return varTypeAllowedForType(varType.ofType, expectedType);
-  }
-  if (varType instanceof GraphQLList && expectedType instanceof GraphQLList) {
-    return varTypeAllowedForType(varType.ofType, expectedType.ofType);
-  }
-  return varType === expectedType;
 }
