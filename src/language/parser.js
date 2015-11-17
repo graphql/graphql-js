@@ -743,7 +743,7 @@ function parseInputValueDef(parser): InputValueDefinition {
   var start = parser.token.start;
   var name = parseName(parser);
   expect(parser, TokenKind.COLON);
-  var type = parseType(parser, false);
+  var type = parseType(parser);
   var defaultValue = null;
   if (skip(parser, TokenKind.EQUALS)) {
     defaultValue = parseConstValue(parser);
