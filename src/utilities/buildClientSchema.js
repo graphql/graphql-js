@@ -42,6 +42,7 @@ import { TypeKind } from '../type/introspection';
 
 import type {
   GraphQLType,
+  GraphQLNullableType,
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLNamedType,
@@ -110,7 +111,8 @@ export function buildClientSchema(
       if (!nullableRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
-      return new GraphQLNonNull(getType(nullableRef));
+      let nullableType = getType(nullableRef);
+      return new GraphQLNonNull(((nullableType: any): GraphQLNullableType));
     }
     return getNamedType(typeRef.name);
   }
@@ -173,7 +175,7 @@ export function buildClientSchema(
 
   // Given a type's introspection result, construct the correct
   // GraphQLType instance.
-  function buildType(type: IntrospectionType): GraphQLType {
+  function buildType(type: IntrospectionType): GraphQLNamedType {
     switch (type.kind) {
       case TypeKind.SCALAR:
         return buildScalarDef(type);

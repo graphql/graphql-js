@@ -1033,9 +1033,9 @@ export class GraphQLList {
  * Note: the enforcement of non-nullability occurs within the executor.
  */
 export class GraphQLNonNull {
-  ofType: GraphQLType;
+  ofType: GraphQLNullableType;
 
-  constructor(type: GraphQLType) {
+  constructor(type: GraphQLNullableType) {
     invariant(
       isType(type) && !(type instanceof GraphQLNonNull),
       `Can only create NonNull of a Nullable GraphQLType but got: ${type}.`

@@ -12,7 +12,7 @@ import invariant from '../jsutils/invariant';
 import { NAMED_TYPE, LIST_TYPE, NON_NULL_TYPE } from '../language/kinds';
 import type { Type } from '../language/ast';
 import { GraphQLList, GraphQLNonNull } from '../type/definition';
-import type { GraphQLType } from '../type/definition';
+import type { GraphQLType, GraphQLNullableType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
 
@@ -27,7 +27,9 @@ export function typeFromAST(
   }
   if (inputTypeAST.kind === NON_NULL_TYPE) {
     innerType = typeFromAST(schema, inputTypeAST.type);
-    return innerType && new GraphQLNonNull(innerType);
+    return innerType && new GraphQLNonNull(
+      ((innerType: any): GraphQLNullableType)
+    );
   }
   invariant(inputTypeAST.kind === NAMED_TYPE, 'Must be a named type.');
   return schema.getType(inputTypeAST.name.value);

@@ -107,7 +107,6 @@ export class TypeInfo {
   // Flow does not yet handle this case.
   enter(node: any/* Node */) {
     var schema = this._schema;
-    var type;
     switch (node.kind) {
       case Kind.SELECTION_SET:
         var namedType = getNamedType(this.getType());
@@ -131,6 +130,7 @@ export class TypeInfo {
         this._directive = schema.getDirective(node.name.value);
         break;
       case Kind.OPERATION_DEFINITION:
+        let type;
         if (node.operation === 'query') {
           type = schema.getQueryType();
         } else if (node.operation === 'mutation') {
@@ -143,13 +143,14 @@ export class TypeInfo {
       case Kind.INLINE_FRAGMENT:
       case Kind.FRAGMENT_DEFINITION:
         var typeConditionAST = node.typeCondition;
-        type = typeConditionAST ?
+        let outputType = typeConditionAST ?
           typeFromAST(schema, typeConditionAST) :
           this.getType();
-        this._typeStack.push(type);
+        this._typeStack.push(((outputType: any): GraphQLOutputType));
         break;
       case Kind.VARIABLE_DEFINITION:
-        this._inputTypeStack.push(typeFromAST(schema, node.type));
+        let inputType = typeFromAST(schema, node.type);
+        this._inputTypeStack.push(((inputType: any): GraphQLInputType));
         break;
       case Kind.ARGUMENT:
         var argDef;
@@ -170,7 +171,9 @@ export class TypeInfo {
       case Kind.LIST:
         var listType = getNullableType(this.getInputType());
         this._inputTypeStack.push(
-          listType instanceof GraphQLList ? listType.ofType : undefined
+          listType instanceof GraphQLList ?
+            ((listType.ofType: any): GraphQLInputType) :
+            undefined
         );
         break;
       case Kind.OBJECT_FIELD:

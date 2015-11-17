@@ -277,7 +277,7 @@ function collectFieldASTsAndDefs(
           parentType;
         _astAndDefs = collectFieldASTsAndDefs(
           context,
-          inlineFragmentType,
+          ((inlineFragmentType: any): GraphQLNamedType),
           selection.selectionSet,
           _visitedFragmentNames,
           _astAndDefs
@@ -293,9 +293,11 @@ function collectFieldASTsAndDefs(
         if (!fragment) {
           continue;
         }
+        var fragmentType =
+          typeFromAST(context.getSchema(), fragment.typeCondition);
         _astAndDefs = collectFieldASTsAndDefs(
           context,
-          typeFromAST(context.getSchema(), fragment.typeCondition),
+          ((fragmentType: any): GraphQLNamedType),
           fragment.selectionSet,
           _visitedFragmentNames,
           _astAndDefs
