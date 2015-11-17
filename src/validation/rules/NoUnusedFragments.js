@@ -23,34 +23,27 @@ export function unusedFragMessage(fragName: any): string {
  * within operations, or spread within other fragments spread within operations.
  */
 export function NoUnusedFragments(context: ValidationContext): any {
-  var spreadsWithinOperation = [];
+  var operationDefs = [];
   var fragmentDefs = [];
 
   return {
     OperationDefinition(node) {
-      spreadsWithinOperation.push(context.getFragmentSpreads(node));
+      operationDefs.push(node);
       return false;
     },
-    FragmentDefinition(def) {
-      fragmentDefs.push(def);
+    FragmentDefinition(node) {
+      fragmentDefs.push(node);
       return false;
     },
     Document: {
       leave() {
-        var fragmentNameUsed = {};
-        var reduceSpreadFragments = function (spreads) {
-          spreads.forEach(spread => {
-            const fragName = spread.name.value;
-            if (fragmentNameUsed[fragName] !== true) {
-              fragmentNameUsed[fragName] = true;
-              const fragment = context.getFragment(fragName);
-              if (fragment) {
-                reduceSpreadFragments(context.getFragmentSpreads(fragment));
-              }
-            }
-          });
-        };
-        spreadsWithinOperation.forEach(reduceSpreadFragments);
+        const fragmentNameUsed = Object.create(null);
+        operationDefs.forEach(operation => {
+          context.getRecursivelyReferencedFragments(operation).forEach(
+            fragment => { fragmentNameUsed[fragment.name.value] = true; }
+          );
+        });
+
         var errors = fragmentDefs
           .filter(def => fragmentNameUsed[def.name.value] !== true)
           .map(def => new GraphQLError(
