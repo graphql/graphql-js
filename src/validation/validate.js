@@ -10,7 +10,7 @@
 
 import invariant from '../jsutils/invariant';
 import { GraphQLError } from '../error';
-import { visit, getVisitFn } from '../language/visitor';
+import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import * as Kind from '../language/kinds';
 import type {
   Document,
@@ -74,47 +74,10 @@ export function visitUsingRules(
   documentAST: Document,
   rules: Array<any>
 ): Array<GraphQLError> {
-  var context = new ValidationContext(schema, documentAST, typeInfo);
-
-  function visitInstance(ast, instance) {
-    visit(ast, {
-      enter(node) {
-        // Collect type information about the current position in the AST.
-        typeInfo.enter(node);
-
-        // Get the visitor function from the validation instance, and if it
-        // exists, call it with the visitor arguments.
-        var enter = getVisitFn(instance, false, node.kind);
-        var result = enter ? enter.apply(instance, arguments) : undefined;
-
-        // If the result is "false", we're not visiting any descendent nodes,
-        // but need to update typeInfo.
-        if (result === false) {
-          typeInfo.leave(node);
-        }
-
-        return result;
-      },
-      leave(node) {
-        // Get the visitor function from the validation instance, and if it
-        // exists, call it with the visitor arguments.
-        var leave = getVisitFn(instance, true, node.kind);
-        var result = leave ? leave.apply(instance, arguments) : undefined;
-
-        // Update typeInfo.
-        typeInfo.leave(node);
-
-        return result;
-      }
-    });
-  }
-
+  const context = new ValidationContext(schema, documentAST, typeInfo);
+  const visitors = rules.map(rule => rule(context));
   // Visit the whole document with each instance of all provided rules.
-  var instances = rules.map(rule => rule(context));
-  instances.forEach(instance => {
-    visitInstance(documentAST, instance);
-  });
-
+  visit(documentAST, visitWithTypeInfo(typeInfo, visitInParallel(visitors)));
   return context.getErrors();
 }
 
@@ -233,19 +196,12 @@ export class ValidationContext {
     if (!usages) {
       usages = [];
       const typeInfo = new TypeInfo(this._schema);
-      visit(node, {
-        enter(subnode) {
-          typeInfo.enter(subnode);
-          if (subnode.kind === Kind.VARIABLE_DEFINITION) {
-            return false;
-          } else if (subnode.kind === Kind.VARIABLE) {
-            usages.push({ node: subnode, type: typeInfo.getInputType() });
-          }
-        },
-        leave(subnode) {
-          typeInfo.leave(subnode);
+      visit(node, visitWithTypeInfo(typeInfo, {
+        VariableDefinition: () => false,
+        Variable(variable) {
+          usages.push({ node: variable, type: typeInfo.getInputType() });
         }
-      });
+      }));
       this._variableUsages.set(node, usages);
     }
     return usages;
