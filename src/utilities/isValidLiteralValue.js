@@ -8,6 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import { print } from '../language/printer';
 import type { Value, ListValue, ObjectValue } from '../language/ast';
 import {
   VARIABLE,
@@ -37,33 +38,39 @@ import isNullish from '../jsutils/isNullish';
 export function isValidLiteralValue(
   type: GraphQLInputType,
   valueAST: Value
-): boolean {
+): [ string ] {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
-    if (!valueAST) {
-      return false;
-    }
     var ofType: GraphQLInputType = (type.ofType: any);
+    if (!valueAST) {
+      if (ofType.name) {
+        return [ `Expected "${ofType.name}!", found null.` ];
+      }
+      return [ 'Expected non-null value, found null.' ];
+    }
     return isValidLiteralValue(ofType, valueAST);
   }
 
   if (!valueAST) {
-    return true;
+    return [];
   }
 
   // This function only tests literals, and assumes variables will provide
   // values of the correct type.
   if (valueAST.kind === VARIABLE) {
-    return true;
+    return [];
   }
 
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
     var itemType: GraphQLInputType = (type.ofType: any);
     if (valueAST.kind === LIST) {
-      return (valueAST: ListValue).values.every(
-        itemAST => isValidLiteralValue(itemType, itemAST)
-      );
+      return (valueAST: ListValue).values.reduce((acc, itemAST, index) => {
+        var errors = isValidLiteralValue(itemType, itemAST);
+        return acc.concat(errors.map(error =>
+          `In element #${index}: ${error}`
+        ));
+      }, []);
     }
     return isValidLiteralValue(itemType, valueAST);
   }
@@ -71,22 +78,35 @@ export function isValidLiteralValue(
   // Input objects check each defined field and look for undefined fields.
   if (type instanceof GraphQLInputObjectType) {
     if (valueAST.kind !== OBJECT) {
-      return false;
+      return [ `Expected "${type.name}", found not an object.` ];
     }
     var fields = type.getFields();
 
+    var errors = [];
+
     // Ensure every provided field is defined.
     var fieldASTs = (valueAST: ObjectValue).fields;
-    if (fieldASTs.some(fieldAST => !fields[fieldAST.name.value])) {
-      return false;
+    for (var providedFieldAST of fieldASTs) {
+      if (!fields[providedFieldAST.name.value]) {
+        errors.push(
+          `In field "${providedFieldAST.name.value}": Unknown field.`
+        );
+      }
     }
 
     // Ensure every defined field is valid.
     var fieldASTMap = keyMap(fieldASTs, fieldAST => fieldAST.name.value);
-    return Object.keys(fields).every(fieldName => isValidLiteralValue(
-      fields[fieldName].type,
-      fieldASTMap[fieldName] && fieldASTMap[fieldName].value
-    ));
+    for (var fieldName of Object.keys(fields)) {
+      var result = isValidLiteralValue(
+        fields[fieldName].type,
+        fieldASTMap[fieldName] && fieldASTMap[fieldName].value
+      );
+      errors.push(...(result.map(error =>
+        `In field "${fieldName}": ${error}`
+      )));
+    }
+
+    return errors;
   }
 
   invariant(
@@ -96,5 +116,10 @@ export function isValidLiteralValue(
 
   // Scalar/Enum input checks to ensure the type can parse the value to
   // a non-null value.
-  return !isNullish(type.parseLiteral(valueAST));
+  var parseResult = type.parseLiteral(valueAST);
+  if (isNullish(parseResult)) {
+    return [ `Expected type "${type.name}", found ${print(valueAST)}.` ];
+  }
+
+  return [];
 }
