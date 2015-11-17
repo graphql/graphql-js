@@ -187,12 +187,15 @@ export class ValidationContext {
   _typeInfo: TypeInfo;
   _fragments: {[name: string]: FragmentDefinition};
   _fragmentSpreads: Map<HasSelectionSet, Array<FragmentSpread>>;
+  _recursivelyReferencedFragments:
+    Map<OperationDefinition, Array<FragmentDefinition>>;
 
   constructor(schema: GraphQLSchema, ast: Document, typeInfo: TypeInfo) {
     this._schema = schema;
     this._ast = ast;
     this._typeInfo = typeInfo;
     this._fragmentSpreads = new Map();
+    this._recursivelyReferencedFragments = new Map();
   }
 
   getSchema(): GraphQLSchema {
@@ -225,6 +228,34 @@ export class ValidationContext {
       this._fragmentSpreads.set(node, spreads);
     }
     return spreads;
+  }
+
+  getRecursivelyReferencedFragments(
+    operation: OperationDefinition
+  ): Array<FragmentDefinition> {
+    let fragments = this._recursivelyReferencedFragments.get(operation);
+    if (!fragments) {
+      fragments = [];
+      const collectedNames = Object.create(null);
+      const nodesToVisit: Array<HasSelectionSet> = [ operation ];
+      while (nodesToVisit.length !== 0) {
+        const node = nodesToVisit.pop();
+        const spreads = this.getFragmentSpreads(node);
+        for (let i = 0; i < spreads.length; i++) {
+          const fragName = spreads[i].name.value;
+          if (collectedNames[fragName] !== true) {
+            collectedNames[fragName] = true;
+            const fragment = this.getFragment(fragName);
+            if (fragment) {
+              fragments.push(fragment);
+              nodesToVisit.push(fragment);
+            }
+          }
+        }
+      }
+      this._recursivelyReferencedFragments.set(operation, fragments);
+    }
+    return fragments;
   }
 
   getType(): ?GraphQLOutputType {
