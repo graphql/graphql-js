@@ -15,6 +15,7 @@ import * as Kind from '../language/kinds';
 import type {
   Document,
   OperationDefinition,
+  Variable,
   SelectionSet,
   FragmentSpread,
   FragmentDefinition,
@@ -175,6 +176,7 @@ function append(arr, items) {
 }
 
 type HasSelectionSet = OperationDefinition | FragmentDefinition;
+type VariableUsage = { node: Variable, type: ?GraphQLInputType };
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -189,6 +191,8 @@ export class ValidationContext {
   _fragmentSpreads: Map<HasSelectionSet, Array<FragmentSpread>>;
   _recursivelyReferencedFragments:
     Map<OperationDefinition, Array<FragmentDefinition>>;
+  _variableUsages: Map<HasSelectionSet, Array<VariableUsage>>;
+  _recursiveVariableUsages: Map<OperationDefinition, Array<VariableUsage>>;
 
   constructor(schema: GraphQLSchema, ast: Document, typeInfo: TypeInfo) {
     this._schema = schema;
@@ -196,6 +200,8 @@ export class ValidationContext {
     this._typeInfo = typeInfo;
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
+    this._variableUsages = new Map();
+    this._recursiveVariableUsages = new Map();
   }
 
   getSchema(): GraphQLSchema {
@@ -256,6 +262,47 @@ export class ValidationContext {
       this._recursivelyReferencedFragments.set(operation, fragments);
     }
     return fragments;
+  }
+
+  getVariableUsages(node: HasSelectionSet): Array<VariableUsage> {
+    let usages = this._variableUsages.get(node);
+    if (!usages) {
+      usages = [];
+      const typeInfo = new TypeInfo(this._schema);
+      visit(node, {
+        enter(subnode) {
+          typeInfo.enter(subnode);
+          if (subnode.kind === Kind.VARIABLE_DEFINITION) {
+            return false;
+          } else if (subnode.kind === Kind.VARIABLE) {
+            usages.push({ node: subnode, type: typeInfo.getInputType() });
+          }
+        },
+        leave(subnode) {
+          typeInfo.leave(subnode);
+        }
+      });
+      this._variableUsages.set(node, usages);
+    }
+    return usages;
+  }
+
+  getRecursiveVariableUsages(
+    operation: OperationDefinition
+  ): Array<VariableUsage> {
+    let usages = this._recursiveVariableUsages.get(operation);
+    if (!usages) {
+      usages = this.getVariableUsages(operation);
+      const fragments = this.getRecursivelyReferencedFragments(operation);
+      for (let i = 0; i < fragments.length; i++) {
+        Array.prototype.push.apply(
+          usages,
+          this.getVariableUsages(fragments[i])
+        );
+      }
+      this._recursiveVariableUsages.set(operation, usages);
+    }
+    return usages;
   }
 
   getType(): ?GraphQLOutputType {

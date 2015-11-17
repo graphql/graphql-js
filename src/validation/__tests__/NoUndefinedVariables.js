@@ -12,20 +12,12 @@ import { expectPassesRule, expectFailsRule } from './harness';
 import {
   NoUndefinedVariables,
   undefinedVarMessage,
-  undefinedVarByOpMessage,
 } from '../rules/NoUndefinedVariables';
 
 
-function undefVar(varName, line, column) {
+function undefVar(varName, l1, c1, opName, l2, c2) {
   return {
-    message: undefinedVarMessage(varName),
-    locations: [ { line, column } ],
-  };
-}
-
-function undefVarByOp(varName, l1, c1, opName, l2, c2) {
-  return {
-    message: undefinedVarByOpMessage(varName, opName),
+    message: undefinedVarMessage(varName, opName),
     locations: [ { line: l1, column: c1 }, { line: l2, column: c2 } ],
   };
 }
@@ -139,7 +131,7 @@ describe('Validate: No undefined variables', () => {
         field(a: $a, b: $b, c: $c, d: $d)
       }
     `, [
-      undefVar('d', 3, 39)
+      undefVar('d', 3, 39, 'Foo', 2, 7)
     ]);
   });
 
@@ -149,7 +141,7 @@ describe('Validate: No undefined variables', () => {
         field(a: $a)
       }
     `, [
-      undefVar('a', 3, 18)
+      undefVar('a', 3, 18, '', 2, 7)
     ]);
   });
 
@@ -159,8 +151,8 @@ describe('Validate: No undefined variables', () => {
         field(a: $a, b: $b, c: $c)
       }
     `, [
-      undefVar('a', 3, 18),
-      undefVar('c', 3, 32)
+      undefVar('a', 3, 18, 'Foo', 2, 7),
+      undefVar('c', 3, 32, 'Foo', 2, 7)
     ]);
   });
 
@@ -173,7 +165,7 @@ describe('Validate: No undefined variables', () => {
         field(a: $a)
       }
     `, [
-      undefVar('a', 6, 18)
+      undefVar('a', 6, 18, '', 2, 7)
     ]);
   });
 
@@ -196,7 +188,7 @@ describe('Validate: No undefined variables', () => {
         field(c: $c)
       }
     `, [
-      undefVarByOp('c', 16, 18, 'Foo', 2, 7)
+      undefVar('c', 16, 18, 'Foo', 2, 7)
     ]);
   });
 
@@ -219,8 +211,8 @@ describe('Validate: No undefined variables', () => {
         field(c: $c)
       }
     `, [
-      undefVarByOp('a', 6, 18, 'Foo', 2, 7),
-      undefVarByOp('c', 16, 18, 'Foo', 2, 7)
+      undefVar('a', 6, 18, 'Foo', 2, 7),
+      undefVar('c', 16, 18, 'Foo', 2, 7)
     ]);
   });
 
@@ -236,8 +228,8 @@ describe('Validate: No undefined variables', () => {
         field(a: $a, b: $b)
       }
     `, [
-      undefVarByOp('b', 9, 25, 'Foo', 2, 7),
-      undefVarByOp('b', 9, 25, 'Bar', 5, 7)
+      undefVar('b', 9, 25, 'Foo', 2, 7),
+      undefVar('b', 9, 25, 'Bar', 5, 7)
     ]);
   });
 
@@ -253,8 +245,8 @@ describe('Validate: No undefined variables', () => {
         field(a: $a, b: $b)
       }
     `, [
-      undefVarByOp('a', 9, 18, 'Foo', 2, 7),
-      undefVarByOp('b', 9, 25, 'Bar', 5, 7)
+      undefVar('a', 9, 18, 'Foo', 2, 7),
+      undefVar('b', 9, 25, 'Bar', 5, 7)
     ]);
   });
 
@@ -273,8 +265,8 @@ describe('Validate: No undefined variables', () => {
         field(b: $b)
       }
     `, [
-      undefVarByOp('a', 9, 18, 'Foo', 2, 7),
-      undefVarByOp('b', 12, 18, 'Bar', 5, 7)
+      undefVar('a', 9, 18, 'Foo', 2, 7),
+      undefVar('b', 12, 18, 'Bar', 5, 7)
     ]);
   });
 
@@ -295,12 +287,12 @@ describe('Validate: No undefined variables', () => {
         field2(c: $c)
       }
     `, [
-      undefVarByOp('a', 9, 19, 'Foo', 2, 7),
-      undefVarByOp('c', 14, 19, 'Foo', 2, 7),
-      undefVarByOp('a', 11, 19, 'Foo', 2, 7),
-      undefVarByOp('b', 9, 26, 'Bar', 5, 7),
-      undefVarByOp('c', 14, 19, 'Bar', 5, 7),
-      undefVarByOp('b', 11, 26, 'Bar', 5, 7),
+      undefVar('a', 9, 19, 'Foo', 2, 7),
+      undefVar('a', 11, 19, 'Foo', 2, 7),
+      undefVar('c', 14, 19, 'Foo', 2, 7),
+      undefVar('b', 9, 26, 'Bar', 5, 7),
+      undefVar('b', 11, 26, 'Bar', 5, 7),
+      undefVar('c', 14, 19, 'Bar', 5, 7),
     ]);
   });
 

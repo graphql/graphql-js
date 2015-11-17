@@ -27,39 +27,38 @@ export function badVarPosMessage(
  * Variables passed to field arguments conform to type
  */
 export function VariablesInAllowedPosition(context: ValidationContext): any {
-  var varDefMap = {};
-  var visitedFragmentNames = {};
+  let varDefMap = Object.create(null);
 
   return {
-    // Visit FragmentDefinition after visiting FragmentSpread
-    visitSpreadFragments: true,
+    OperationDefinition: {
+      enter() {
+        varDefMap = Object.create(null);
+      },
+      leave(operation) {
+        const usages = context.getRecursiveVariableUsages(operation);
+        const errors = [];
 
-    OperationDefinition() {
-      varDefMap = {};
-      visitedFragmentNames = {};
+        usages.forEach(({ node, type }) => {
+          const varName = node.name.value;
+          const varDef = varDefMap[varName];
+          const varType =
+            varDef && typeFromAST(context.getSchema(), varDef.type);
+          if (varType && type &&
+              !varTypeAllowedForType(effectiveType(varType, varDef), type)) {
+            errors.push(new GraphQLError(
+              badVarPosMessage(varName, varType, type),
+              [ node ]
+            ));
+          }
+        });
+
+        if (errors.length > 0) {
+          return errors;
+        }
+      }
     },
     VariableDefinition(varDefAST) {
       varDefMap[varDefAST.variable.name.value] = varDefAST;
-    },
-    FragmentSpread(spreadAST) {
-      // Only visit fragments of a particular name once per operation
-      if (visitedFragmentNames[spreadAST.name.value]) {
-        return false;
-      }
-      visitedFragmentNames[spreadAST.name.value] = true;
-    },
-    Variable(variableAST) {
-      var varName = variableAST.name.value;
-      var varDef = varDefMap[varName];
-      var varType = varDef && typeFromAST(context.getSchema(), varDef.type);
-      var inputType = context.getInputType();
-      if (varType && inputType &&
-          !varTypeAllowedForType(effectiveType(varType, varDef), inputType)) {
-        return new GraphQLError(
-          badVarPosMessage(varName, varType, inputType),
-          [ variableAST ]
-        );
-      }
     }
   };
 }

@@ -8,16 +8,14 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { FRAGMENT_DEFINITION } from '../../language/kinds';
 
 
-export function undefinedVarMessage(varName: any): string {
-  return `Variable "$${varName}" is not defined.`;
-}
-
-export function undefinedVarByOpMessage(varName: any, opName: any): string {
-  return `Variable "$${varName}" is not defined by operation "${opName}".`;
+export function undefinedVarMessage(varName: string, opName: ?string): string {
+  return opName ?
+    `Variable "$${varName}" is not defined by operation "${opName}".` :
+    `Variable "$${varName}" is not defined.`;
 }
 
 /**
@@ -26,47 +24,40 @@ export function undefinedVarByOpMessage(varName: any, opName: any): string {
  * A GraphQL operation is only valid if all variables encountered, both directly
  * and via fragment spreads, are defined by that operation.
  */
-export function NoUndefinedVariables(): any {
-  var operation;
-  var visitedFragmentNames = {};
-  var definedVariableNames = {};
+export function NoUndefinedVariables(context: ValidationContext): any {
+  let variableNameDefined = Object.create(null);
 
   return {
-    // Visit FragmentDefinition after visiting FragmentSpread
-    visitSpreadFragments: true,
+    OperationDefinition: {
+      enter() {
+        variableNameDefined = Object.create(null);
+      },
+      leave(operation) {
+        const usages = context.getRecursiveVariableUsages(operation);
+        const errors = [];
 
-    OperationDefinition(node) {
-      operation = node;
-      visitedFragmentNames = {};
-      definedVariableNames = {};
-    },
-    VariableDefinition(def) {
-      definedVariableNames[def.variable.name.value] = true;
-    },
-    Variable(variable, key, parent, path, ancestors) {
-      var varName = variable.name.value;
-      if (definedVariableNames[varName] !== true) {
-        var withinFragment = ancestors.some(
-          node => node.kind === FRAGMENT_DEFINITION
-        );
-        if (withinFragment && operation && operation.name) {
-          return new GraphQLError(
-            undefinedVarByOpMessage(varName, operation.name.value),
-            [ variable, operation ]
-          );
+        usages.forEach(({ node }) => {
+          var varName = node.name.value;
+          if (variableNameDefined[varName] !== true) {
+            errors.push(
+              new GraphQLError(
+                undefinedVarMessage(
+                  varName,
+                  operation.name && operation.name.value
+                ),
+                [ node, operation ]
+              )
+            );
+          }
+        });
+
+        if (errors.length > 0) {
+          return errors;
         }
-        return new GraphQLError(
-          undefinedVarMessage(varName),
-          [ variable ]
-        );
       }
     },
-    FragmentSpread(spreadAST) {
-      // Only visit fragments of a particular name once per operation
-      if (visitedFragmentNames[spreadAST.name.value] === true) {
-        return false;
-      }
-      visitedFragmentNames[spreadAST.name.value] = true;
+    VariableDefinition(varDefAST) {
+      variableNameDefined[varDefAST.variable.name.value] = true;
     }
   };
 }
