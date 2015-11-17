@@ -184,7 +184,7 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `, [
       { message: badVarPosMessage('intArg', 'Int', 'Int!'),
-        locations: [ { line: 4, column: 45 }, { line: 2, column: 19 } ] },
+        locations: [ { line: 2, column: 19 }, { line: 4, column: 45 } ] },
     ]);
   });
 
@@ -201,7 +201,7 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `, [
       { message: badVarPosMessage('intArg', 'Int', 'Int!'),
-        locations: [ { line: 3, column: 43 }, { line: 6, column: 19 } ] }
+        locations: [ { line: 6, column: 19 }, { line: 3, column: 43 } ] }
     ]);
   });
 
@@ -222,7 +222,7 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `, [
       { message: badVarPosMessage('intArg', 'Int', 'Int!'),
-        locations: [ { line: 7, column: 43 }, { line: 10, column: 19 } ] }
+        locations: [ { line: 10, column: 19 }, { line: 7, column: 43 } ] }
     ]);
   });
 
@@ -235,7 +235,7 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `, [
       { message: badVarPosMessage('stringVar', 'String', 'Boolean'),
-        locations: [ { line: 4, column: 39 }, { line: 2, column: 19 } ] }
+        locations: [ { line: 2, column: 19 }, { line: 4, column: 39 } ] }
     ]);
   });
 
@@ -248,7 +248,7 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `, [
       { message: badVarPosMessage('stringVar', 'String', '[String]'),
-        locations: [ { line: 4, column: 45 }, { line: 2, column: 19 } ] }
+        locations: [ { line: 2, column: 19 }, { line: 4, column: 45 } ] }
     ]);
   });
 
@@ -259,7 +259,7 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `, [
       { message: badVarPosMessage('boolVar', 'Boolean', 'Boolean!'),
-        locations: [ { line: 3, column: 26 }, { line: 2, column: 19 } ] }
+        locations: [ { line: 2, column: 19 }, { line: 3, column: 26 } ] }
     ]);
   });
 
@@ -270,7 +270,7 @@ describe('Validate: Variables are in allowed positions', () => {
       }
     `, [
       { message: badVarPosMessage('stringVar', 'String', 'Boolean!'),
-        locations: [ { line: 3, column: 26 }, { line: 2, column: 19 } ] }
+        locations: [ { line: 2, column: 19 }, { line: 3, column: 26 } ] }
     ]);
   });
 

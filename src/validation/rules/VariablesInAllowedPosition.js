@@ -46,7 +46,7 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
                 !varTypeAllowedForType(effectiveType(varType, varDef), type)) {
               context.reportError(new GraphQLError(
                 badVarPosMessage(varName, varType, type),
-                [ node, varDef ]
+                [ varDef, node ]
               ));
             }
           }
