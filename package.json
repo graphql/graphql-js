@@ -19,19 +19,13 @@
   "options": {
     "mocha": "--require resources/mocha-bootload src/**/__tests__/**/*.js"
   },
-  "babel": {
-    "optional": [
-      "runtime",
-      "es7.asyncFunctions"
-    ]
-  },
   "scripts": {
     "test": "npm run lint && npm run check && npm run testonly",
     "testonly": "mocha $npm_package_options_mocha",
     "lint": "eslint src",
     "check": "flow check",
-    "build": "babel src --ignore __tests__ --out-dir dist/ && cp package.json dist/",
-    "watch": "babel resources/watch.js | node",
+    "build": "babel src --optional runtime --ignore __tests__ --out-dir dist/ && cp package.json dist/",
+    "watch": "babel --optional runtime resources/watch.js | node",
     "cover": "babel-node node_modules/.bin/isparta cover --root src --report html node_modules/.bin/_mocha -- $npm_package_options_mocha",
     "cover:lcov": "babel-node node_modules/.bin/isparta cover --root src --report lcovonly node_modules/.bin/_mocha -- $npm_package_options_mocha",
     "preversion": ". ./resources/checkgit.sh && npm test",
