@@ -230,7 +230,18 @@ export class ValidationContext {
     let spreads = this._fragmentSpreads.get(node);
     if (!spreads) {
       spreads = [];
-      gatherSpreads(spreads, node.selectionSet);
+      const setsToVisit: Array<SelectionSet> = [ node.selectionSet ];
+      while (setsToVisit.length !== 0) {
+        const set = setsToVisit.pop();
+        for (let i = 0; i < set.selections.length; i++) {
+          const selection = set.selections[i];
+          if (selection.kind === Kind.FRAGMENT_SPREAD) {
+            spreads.push(selection);
+          } else if (selection.selectionSet) {
+            setsToVisit.push(selection.selectionSet);
+          }
+        }
+      }
       this._fragmentSpreads.set(node, spreads);
     }
     return spreads;
@@ -327,19 +338,5 @@ export class ValidationContext {
 
   getArgument(): ?GraphQLArgument {
     return this._typeInfo.getArgument();
-  }
-}
-
-/**
- * Given a selection set, gather all the named spreads defined within.
- */
-function gatherSpreads(spreads: Array<FragmentSpread>, node: SelectionSet) {
-  for (let i = 0; i < node.selections.length; i++) {
-    const selection = node.selections[i];
-    if (selection.kind === Kind.FRAGMENT_SPREAD) {
-      spreads.push(selection);
-    } else if (selection.selectionSet) {
-      gatherSpreads(spreads, selection.selectionSet);
-    }
   }
 }
