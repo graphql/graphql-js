@@ -49,10 +49,10 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
       var fragType = context.getType();
       var parentType = context.getParentType();
       if (fragType && parentType && !doTypesOverlap(fragType, parentType)) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           typeIncompatibleAnonSpreadMessage(parentType, fragType),
           [ node ]
-        );
+        ));
       }
     },
     FragmentSpread(node) {
@@ -60,10 +60,10 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
       var fragType = getFragmentType(context, fragName);
       var parentType = context.getParentType();
       if (fragType && parentType && !doTypesOverlap(fragType, parentType)) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           typeIncompatibleSpreadMessage(fragName, parentType, fragType),
           [ node ]
-        );
+        ));
       }
     }
   };

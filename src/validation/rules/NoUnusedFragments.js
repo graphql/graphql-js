@@ -44,15 +44,15 @@ export function NoUnusedFragments(context: ValidationContext): any {
           );
         });
 
-        var errors = fragmentDefs
-          .filter(def => fragmentNameUsed[def.name.value] !== true)
-          .map(def => new GraphQLError(
-            unusedFragMessage(def.name.value),
-            [ def ]
-          ));
-        if (errors.length > 0) {
-          return errors;
-        }
+        fragmentDefs.forEach(fragmentDef => {
+          const fragName = fragmentDef.name.value;
+          if (fragmentNameUsed[fragName] !== true) {
+            context.reportError(new GraphQLError(
+              unusedFragMessage(fragName),
+              [ fragmentDef ]
+            ));
+          }
+        });
       }
     }
   };

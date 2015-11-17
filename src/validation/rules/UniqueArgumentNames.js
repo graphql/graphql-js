@@ -8,6 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
@@ -21,7 +22,7 @@ export function duplicateArgMessage(argName: any): string {
  * A GraphQL field or directive is only valid if all supplied arguments are
  * uniquely named.
  */
-export function UniqueArgumentNames(): any {
+export function UniqueArgumentNames(context: ValidationContext): any {
   var knownArgNames = Object.create(null);
   return {
     Field() {
@@ -33,12 +34,13 @@ export function UniqueArgumentNames(): any {
     Argument(node) {
       var argName = node.name.value;
       if (knownArgNames[argName]) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           duplicateArgMessage(argName),
           [ knownArgNames[argName], node.name ]
-        );
+        ));
+      } else {
+        knownArgNames[argName] = node.name;
       }
-      knownArgNames[argName] = node.name;
       return false;
     }
   };

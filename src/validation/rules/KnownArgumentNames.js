@@ -54,14 +54,14 @@ export function KnownArgumentNames(context: ValidationContext): any {
           if (!fieldArgDef) {
             var parentType = context.getParentType();
             invariant(parentType);
-            return new GraphQLError(
+            context.reportError(new GraphQLError(
               unknownArgMessage(
                 node.name.value,
                 fieldDef.name,
                 parentType.name
               ),
               [ node ]
-            );
+            ));
           }
         }
       } else if (argumentOf.kind === DIRECTIVE) {
@@ -72,10 +72,10 @@ export function KnownArgumentNames(context: ValidationContext): any {
             arg => arg.name === node.name.value
           );
           if (!directiveArgDef) {
-            return new GraphQLError(
+            context.reportError(new GraphQLError(
               unknownDirectiveArgMessage(node.name.value, directive.name),
               [ node ]
-            );
+            ));
           }
         }
       }

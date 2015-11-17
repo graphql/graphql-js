@@ -180,15 +180,13 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
           selectionSet
         );
         var conflicts = findConflicts(fieldMap);
-        if (conflicts.length) {
-          return conflicts.map(
-            ([ [ responseName, reason ], fields1, fields2 ]) =>
-              new GraphQLError(
-                fieldsConflictMessage(responseName, reason),
-                fields1.concat(fields2)
-              )
-          );
-        }
+        conflicts.forEach(
+          ([ [ responseName, reason ], fields1, fields2 ]) =>
+            context.reportError(new GraphQLError(
+              fieldsConflictMessage(responseName, reason),
+              fields1.concat(fields2)
+            ))
+        );
       }
     }
   };

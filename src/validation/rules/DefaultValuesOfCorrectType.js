@@ -46,16 +46,16 @@ export function DefaultValuesOfCorrectType(context: ValidationContext): any {
       var defaultValue = varDefAST.defaultValue;
       var type = context.getInputType();
       if (type instanceof GraphQLNonNull && defaultValue) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           defaultForNonNullArgMessage(name, type, type.ofType),
           [ defaultValue ]
-        );
+        ));
       }
       if (type && defaultValue && !isValidLiteralValue(type, defaultValue)) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           badValueForDefaultArgMessage(name, type, print(defaultValue)),
           [ defaultValue ]
-        );
+        ));
       }
       return false;
     },

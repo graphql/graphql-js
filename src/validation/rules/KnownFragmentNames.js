@@ -28,10 +28,10 @@ export function KnownFragmentNames(context: ValidationContext): any {
       var fragmentName = node.name.value;
       var fragment = context.getFragment(fragmentName);
       if (!fragment) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           unknownFragmentMessage(fragmentName),
           [ node.name ]
-        );
+        ));
       }
     }
   };

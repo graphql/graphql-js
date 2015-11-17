@@ -31,7 +31,6 @@ export function NoUnusedVariables(context: ValidationContext): any {
         variableDefs = [];
       },
       leave(operation) {
-
         const variableNameUsed = Object.create(null);
         const usages = context.getRecursiveVariableUsages(operation);
 
@@ -39,15 +38,15 @@ export function NoUnusedVariables(context: ValidationContext): any {
           variableNameUsed[node.name.value] = true;
         });
 
-        var errors = variableDefs
-          .filter(def => variableNameUsed[def.variable.name.value] !== true)
-          .map(def => new GraphQLError(
-            unusedVariableMessage(def.variable.name.value),
-            [ def ]
-          ));
-        if (errors.length > 0) {
-          return errors;
-        }
+        variableDefs.forEach(variableDef => {
+          const variableName = variableDef.variable.name.value;
+          if (variableNameUsed[variableName] !== true) {
+            context.reportError(new GraphQLError(
+              unusedVariableMessage(variableName),
+              [ variableDef ]
+            ));
+          }
+        });
       }
     },
     VariableDefinition(def) {

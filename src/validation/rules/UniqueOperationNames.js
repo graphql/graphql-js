@@ -8,6 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
@@ -20,19 +21,20 @@ export function duplicateOperationNameMessage(operationName: any): string {
  *
  * A GraphQL document is only valid if all defined operations have unique names.
  */
-export function UniqueOperationNames(): any {
+export function UniqueOperationNames(context: ValidationContext): any {
   var knownOperationNames = Object.create(null);
   return {
     OperationDefinition(node) {
       var operationName = node.name;
       if (operationName) {
         if (knownOperationNames[operationName.value]) {
-          return new GraphQLError(
+          context.reportError(new GraphQLError(
             duplicateOperationNameMessage(operationName.value),
             [ knownOperationNames[operationName.value], operationName ]
-          );
+          ));
+        } else {
+          knownOperationNames[operationName.value] = operationName;
         }
-        knownOperationNames[operationName.value] = operationName;
       }
       return false;
     },

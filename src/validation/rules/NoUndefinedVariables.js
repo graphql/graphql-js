@@ -34,26 +34,19 @@ export function NoUndefinedVariables(context: ValidationContext): any {
       },
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
-        const errors = [];
 
         usages.forEach(({ node }) => {
           var varName = node.name.value;
           if (variableNameDefined[varName] !== true) {
-            errors.push(
-              new GraphQLError(
-                undefinedVarMessage(
-                  varName,
-                  operation.name && operation.name.value
-                ),
-                [ node, operation ]
-              )
-            );
+            context.reportError(new GraphQLError(
+              undefinedVarMessage(
+                varName,
+                operation.name && operation.name.value
+              ),
+              [ node, operation ]
+            ));
           }
         });
-
-        if (errors.length > 0) {
-          return errors;
-        }
       }
     },
     VariableDefinition(varDefAST) {

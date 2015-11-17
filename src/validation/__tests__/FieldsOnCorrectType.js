@@ -75,6 +75,20 @@ describe('Validate: Fields on correct type', () => {
     `);
   });
 
+  it('reports errors when type is known again', () => {
+    expectFailsRule(FieldsOnCorrectType, `
+      fragment typeKnownAgain on Pet {
+        unknown_pet_field {
+          ... on Cat {
+            unknown_cat_field
+          }
+        }
+      }`,
+      [ undefinedField('unknown_pet_field', 'Pet', 3, 9),
+        undefinedField('unknown_cat_field', 'Cat', 5, 13) ]
+    );
+  });
+
   it('Field not defined on fragment', () => {
     expectFailsRule(FieldsOnCorrectType, `
       fragment fieldNotDefined on Dog {
@@ -84,7 +98,7 @@ describe('Validate: Fields on correct type', () => {
     );
   });
 
-  it('Field not defined deeply, only reports first', () => {
+  it('Ignores deeply unknown field', () => {
     expectFailsRule(FieldsOnCorrectType, `
       fragment deepFieldNotDefined on Dog {
         unknown_field {

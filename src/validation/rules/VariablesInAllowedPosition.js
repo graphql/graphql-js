@@ -36,7 +36,6 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
       },
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
-        const errors = [];
 
         usages.forEach(({ node, type }) => {
           const varName = node.name.value;
@@ -45,16 +44,12 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
             varDef && typeFromAST(context.getSchema(), varDef.type);
           if (varType && type &&
               !varTypeAllowedForType(effectiveType(varType, varDef), type)) {
-            errors.push(new GraphQLError(
+            context.reportError(new GraphQLError(
               badVarPosMessage(varName, varType, type),
               [ node ]
             ));
           }
         });
-
-        if (errors.length > 0) {
-          return errors;
-        }
       }
     },
     VariableDefinition(varDefAST) {
