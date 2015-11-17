@@ -40,22 +40,22 @@ export function FragmentsOnCompositeTypes(context: ValidationContext): any {
     InlineFragment(node) {
       var type = context.getType();
       if (node.typeCondition && type && !isCompositeType(type)) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           inlineFragmentOnNonCompositeErrorMessage(print(node.typeCondition)),
           [ node.typeCondition ]
-        );
+        ));
       }
     },
     FragmentDefinition(node) {
       var type = context.getType();
       if (type && !isCompositeType(type)) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           fragmentOnNonCompositeErrorMessage(
             node.name.value,
             print(node.typeCondition)
           ),
           [ node.typeCondition ]
-        );
+        ));
       }
     }
   };

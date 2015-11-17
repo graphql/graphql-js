@@ -47,14 +47,13 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
         if (!fieldDef) {
           return false;
         }
-        var errors = [];
         var argASTs = fieldAST.arguments || [];
 
         var argASTMap = keyMap(argASTs, arg => arg.name.value);
         fieldDef.args.forEach(argDef => {
           var argAST = argASTMap[argDef.name];
           if (!argAST && argDef.type instanceof GraphQLNonNull) {
-            errors.push(new GraphQLError(
+            context.reportError(new GraphQLError(
               missingFieldArgMessage(
                 fieldAST.name.value,
                 argDef.name,
@@ -64,10 +63,6 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
             ));
           }
         });
-
-        if (errors.length > 0) {
-          return errors;
-        }
       }
     },
 
@@ -78,14 +73,13 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
         if (!directiveDef) {
           return false;
         }
-        var errors = [];
         var argASTs = directiveAST.arguments || [];
 
         var argASTMap = keyMap(argASTs, arg => arg.name.value);
         directiveDef.args.forEach(argDef => {
           var argAST = argASTMap[argDef.name];
           if (!argAST && argDef.type instanceof GraphQLNonNull) {
-            errors.push(new GraphQLError(
+            context.reportError(new GraphQLError(
               missingDirectiveArgMessage(
                 directiveAST.name.value,
                 argDef.name,
@@ -95,10 +89,6 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
             ));
           }
         });
-
-        if (errors.length > 0) {
-          return errors;
-        }
       }
     }
   };

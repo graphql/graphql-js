@@ -22,8 +22,6 @@ export function cycleErrorMessage(
 }
 
 export function NoFragmentCycles(context: ValidationContext): any {
-  var errors = [];
-
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
   var visitedFrags = Object.create(null);
@@ -35,13 +33,6 @@ export function NoFragmentCycles(context: ValidationContext): any {
   var spreadPathIndexByName = Object.create(null);
 
   return {
-    Document: {
-      leave() {
-        if (errors.length) {
-          return errors;
-        }
-      }
-    },
     OperationDefinition: () => false,
     FragmentDefinition(node) {
       if (!visitedFrags[node.name.value]) {
@@ -81,7 +72,7 @@ export function NoFragmentCycles(context: ValidationContext): any {
         spreadPath.pop();
       } else {
         const cyclePath = spreadPath.slice(cycleIndex);
-        errors.push(new GraphQLError(
+        context.reportError(new GraphQLError(
           cycleErrorMessage(
             spreadName,
             cyclePath.map(s => s.name.value)

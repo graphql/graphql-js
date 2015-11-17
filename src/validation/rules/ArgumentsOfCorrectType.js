@@ -29,14 +29,14 @@ export function ArgumentsOfCorrectType(context: ValidationContext): any {
     Argument(argAST) {
       var argDef = context.getArgument();
       if (argDef && !isValidLiteralValue(argDef.type, argAST.value)) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           badValueMessage(
             argAST.name.value,
             argDef.type,
             print(argAST.value)
           ),
           [ argAST.value ]
-        );
+        ));
       }
       return false;
     }

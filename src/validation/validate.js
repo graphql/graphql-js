@@ -79,7 +79,6 @@ export function visitUsingRules(
   rules: Array<any>
 ): Array<GraphQLError> {
   var context = new ValidationContext(schema, documentAST, typeInfo);
-  var errors = [];
 
   function visitInstance(ast, instance) {
     visit(ast, {
@@ -103,13 +102,6 @@ export function visitUsingRules(
         // exists, call it with the visitor arguments.
         var enter = getVisitFn(instance, false, node.kind);
         result = enter ? enter.apply(instance, arguments) : undefined;
-
-        // If the visitor returned an error, log it and do not visit any
-        // deeper nodes.
-        if (result && isError(result)) {
-          append(errors, result);
-          result = false;
-        }
 
         // If any validation instances provide the flag `visitSpreadFragments`
         // and this node is a fragment spread, visit the fragment definition
@@ -137,13 +129,6 @@ export function visitUsingRules(
         var leave = getVisitFn(instance, true, node.kind);
         var result = leave ? leave.apply(instance, arguments) : undefined;
 
-        // If the visitor returned an error, log it and do not visit any
-        // deeper nodes.
-        if (result && isError(result)) {
-          append(errors, result);
-          result = false;
-        }
-
         // Update typeInfo.
         typeInfo.leave(node);
 
@@ -158,21 +143,7 @@ export function visitUsingRules(
     visitInstance(documentAST, instance);
   });
 
-  return errors;
-}
-
-function isError(value) {
-  return Array.isArray(value) ?
-    value.every(item => item instanceof GraphQLError) :
-    value instanceof GraphQLError;
-}
-
-function append(arr, items) {
-  if (Array.isArray(items)) {
-    arr.push.apply(arr, items);
-  } else {
-    arr.push(items);
-  }
+  return context.getErrors();
 }
 
 type HasSelectionSet = OperationDefinition | FragmentDefinition;
@@ -187,6 +158,7 @@ export class ValidationContext {
   _schema: GraphQLSchema;
   _ast: Document;
   _typeInfo: TypeInfo;
+  _errors: Array<GraphQLError>;
   _fragments: {[name: string]: FragmentDefinition};
   _fragmentSpreads: Map<HasSelectionSet, Array<FragmentSpread>>;
   _recursivelyReferencedFragments:
@@ -198,10 +170,19 @@ export class ValidationContext {
     this._schema = schema;
     this._ast = ast;
     this._typeInfo = typeInfo;
+    this._errors = [];
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+  }
+
+  reportError(error: GraphQLError): void {
+    this._errors.push(error);
+  }
+
+  getErrors(): Array<GraphQLError> {
+    return this._errors;
   }
 
   getSchema(): GraphQLSchema {

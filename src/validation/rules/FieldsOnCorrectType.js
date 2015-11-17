@@ -30,10 +30,10 @@ export function FieldsOnCorrectType(context: ValidationContext): any {
       if (type) {
         var fieldDef = context.getFieldDef();
         if (!fieldDef) {
-          return new GraphQLError(
+          context.reportError(new GraphQLError(
             undefinedFieldMessage(node.name.value, type.name),
             [ node ]
-          );
+          ));
         }
       }
     }

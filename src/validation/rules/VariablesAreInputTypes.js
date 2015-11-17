@@ -37,10 +37,10 @@ export function VariablesAreInputTypes(context: ValidationContext): any {
       // If the variable type is not an input type, return an error.
       if (type && !isInputType(type)) {
         var variableName = node.variable.name.value;
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           nonInputTypeOnVarMessage(variableName, print(node.type)),
           [ node.type ]
-        );
+        ));
       }
     }
   };

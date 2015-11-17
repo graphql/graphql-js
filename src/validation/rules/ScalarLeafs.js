@@ -35,16 +35,16 @@ export function ScalarLeafs(context: ValidationContext): any {
       if (type) {
         if (isLeafType(type)) {
           if (node.selectionSet) {
-            return new GraphQLError(
+            context.reportError(new GraphQLError(
               noSubselectionAllowedMessage(node.name.value, type),
               [ node.selectionSet ]
-            );
+            ));
           }
         } else if (!node.selectionSet) {
-          return new GraphQLError(
+          context.reportError(new GraphQLError(
             requiredSubselectionMessage(node.name.value, type),
             [ node ]
-          );
+          ));
         }
       }
     }

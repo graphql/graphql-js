@@ -8,6 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { OPERATION_DEFINITION } from '../../language/kinds';
 
@@ -22,7 +23,7 @@ export function anonOperationNotAloneMessage(): string {
  * A GraphQL document is only valid if when it contains an anonymous operation
  * (the query short-hand) that it contains only that one operation definition.
  */
-export function LoneAnonymousOperation(): any {
+export function LoneAnonymousOperation(context: ValidationContext): any {
   var operationCount = 0;
   return {
     Document(node) {
@@ -32,7 +33,9 @@ export function LoneAnonymousOperation(): any {
     },
     OperationDefinition(node) {
       if (!node.name && operationCount > 1) {
-        return new GraphQLError(anonOperationNotAloneMessage(), [ node ]);
+        context.reportError(
+          new GraphQLError(anonOperationNotAloneMessage(), [ node ])
+        );
       }
     }
   };

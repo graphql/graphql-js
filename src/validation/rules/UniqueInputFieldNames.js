@@ -8,6 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
@@ -21,7 +22,7 @@ export function duplicateInputFieldMessage(fieldName: any): string {
  * A GraphQL input object value is only valid if all supplied fields are
  * uniquely named.
  */
-export function UniqueInputFieldNames(): any {
+export function UniqueInputFieldNames(context: ValidationContext): any {
   let knownNameStack = [];
   let knownNames = Object.create(null);
 
@@ -38,12 +39,13 @@ export function UniqueInputFieldNames(): any {
     ObjectField(node) {
       var fieldName = node.name.value;
       if (knownNames[fieldName]) {
-        return new GraphQLError(
+        context.reportError(new GraphQLError(
           duplicateInputFieldMessage(fieldName),
           [ knownNames[fieldName], node.name ]
-        );
+        ));
+      } else {
+        knownNames[fieldName] = node.name;
       }
-      knownNames[fieldName] = node.name;
       return false;
     }
   };
