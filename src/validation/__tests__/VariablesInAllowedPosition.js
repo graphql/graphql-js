@@ -177,15 +177,14 @@ describe('Validate: Variables are in allowed positions', () => {
 
   it('Int => Int!', () => {
     expectFailsRule(VariablesInAllowedPosition, `
-      query Query($intArg: Int)
-      {
+      query Query($intArg: Int) {
         complicatedArgs {
           nonNullIntArgField(nonNullIntArg: $intArg)
         }
       }
     `, [
       { message: badVarPosMessage('intArg', 'Int', 'Int!'),
-        locations: [ { line: 5, column: 45 } ] }
+        locations: [ { line: 4, column: 45 }, { line: 2, column: 19 } ] },
     ]);
   });
 
@@ -195,15 +194,14 @@ describe('Validate: Variables are in allowed positions', () => {
         nonNullIntArgField(nonNullIntArg: $intArg)
       }
 
-      query Query($intArg: Int)
-      {
+      query Query($intArg: Int) {
         complicatedArgs {
           ...nonNullIntArgFieldFrag
         }
       }
     `, [
       { message: badVarPosMessage('intArg', 'Int', 'Int!'),
-        locations: [ { line: 3, column: 43 } ] }
+        locations: [ { line: 3, column: 43 }, { line: 6, column: 19 } ] }
     ]);
   });
 
@@ -217,67 +215,62 @@ describe('Validate: Variables are in allowed positions', () => {
         nonNullIntArgField(nonNullIntArg: $intArg)
       }
 
-      query Query($intArg: Int)
-      {
+      query Query($intArg: Int) {
         complicatedArgs {
           ...outerFrag
         }
       }
     `, [
       { message: badVarPosMessage('intArg', 'Int', 'Int!'),
-        locations: [ { line: 7, column: 43 } ] }
+        locations: [ { line: 7, column: 43 }, { line: 10, column: 19 } ] }
     ]);
   });
 
   it('String over Boolean', () => {
     expectFailsRule(VariablesInAllowedPosition, `
-      query Query($stringVar: String)
-      {
+      query Query($stringVar: String) {
         complicatedArgs {
           booleanArgField(booleanArg: $stringVar)
         }
       }
     `, [
       { message: badVarPosMessage('stringVar', 'String', 'Boolean'),
-        locations: [ { line: 5, column: 39 } ] }
+        locations: [ { line: 4, column: 39 }, { line: 2, column: 19 } ] }
     ]);
   });
 
   it('String => [String]', () => {
     expectFailsRule(VariablesInAllowedPosition, `
-      query Query($stringVar: String)
-      {
+      query Query($stringVar: String) {
         complicatedArgs {
           stringListArgField(stringListArg: $stringVar)
         }
       }
     `, [
       { message: badVarPosMessage('stringVar', 'String', '[String]'),
-        locations: [ { line: 5, column: 45 } ] }
+        locations: [ { line: 4, column: 45 }, { line: 2, column: 19 } ] }
     ]);
   });
 
   it('Boolean => Boolean! in directive', () => {
     expectFailsRule(VariablesInAllowedPosition, `
-      query Query($boolVar: Boolean)
-      {
+      query Query($boolVar: Boolean) {
         dog @include(if: $boolVar)
       }
     `, [
       { message: badVarPosMessage('boolVar', 'Boolean', 'Boolean!'),
-        locations: [ { line: 4, column: 26 } ] }
+        locations: [ { line: 3, column: 26 }, { line: 2, column: 19 } ] }
     ]);
   });
 
   it('String => Boolean! in directive', () => {
     expectFailsRule(VariablesInAllowedPosition, `
-      query Query($stringVar: String)
-      {
+      query Query($stringVar: String) {
         dog @include(if: $stringVar)
       }
     `, [
       { message: badVarPosMessage('stringVar', 'String', 'Boolean!'),
-        locations: [ { line: 4, column: 26 } ] }
+        locations: [ { line: 3, column: 26 }, { line: 2, column: 19 } ] }
     ]);
   });
 

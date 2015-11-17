@@ -40,14 +40,15 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
         usages.forEach(({ node, type }) => {
           const varName = node.name.value;
           const varDef = varDefMap[varName];
-          const varType =
-            varDef && typeFromAST(context.getSchema(), varDef.type);
-          if (varType && type &&
-              !varTypeAllowedForType(effectiveType(varType, varDef), type)) {
-            context.reportError(new GraphQLError(
-              badVarPosMessage(varName, varType, type),
-              [ node ]
-            ));
+          if (varDef && type) {
+            const varType = typeFromAST(context.getSchema(), varDef.type);
+            if (varType &&
+                !varTypeAllowedForType(effectiveType(varType, varDef), type)) {
+              context.reportError(new GraphQLError(
+                badVarPosMessage(varName, varType, type),
+                [ node, varDef ]
+              ));
+            }
           }
         });
       }
