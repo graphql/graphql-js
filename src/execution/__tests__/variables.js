@@ -56,6 +56,14 @@ var TestInputObject = new GraphQLInputObjectType({
   }
 });
 
+var TestNestedInputObject = new GraphQLInputObjectType({
+  name: 'TestNestedInputObject',
+  fields: {
+    na: { type: new GraphQLNonNull(TestInputObject) },
+    nb: { type: new GraphQLNonNull(GraphQLString) },
+  },
+});
+
 var TestType = new GraphQLObjectType({
   name: 'TestType',
   fields: {
@@ -77,6 +85,15 @@ var TestType = new GraphQLObjectType({
     fieldWithDefaultArgumentValue: {
       type: GraphQLString,
       args: { input: { type: GraphQLString, defaultValue: 'Hello World' } },
+      resolve: (_, { input }) => input && JSON.stringify(input)
+    },
+    fieldWithNestedInputObject: {
+      type: GraphQLString,
+      args: {
+        input: {
+          type: TestNestedInputObject, defaultValue: 'Hello World'
+        }
+      },
       resolve: (_, { input }) => input && JSON.stringify(input)
     },
     list: {
@@ -231,8 +248,9 @@ describe('Execute: Handles inputs', () => {
         expect(caughtError).to.containSubset({
           locations: [ { line: 2, column: 17 } ],
           message:
-            'Variable "$input" expected value of type "TestInputObject" but ' +
-            'got: {"a":"foo","b":"bar","c":null}.'
+            'Variable "$input" got invalid value ' +
+            '{"a":"foo","b":"bar","c":null}.' +
+            '\nIn field "c": Expected "String!", found null.'
         });
       });
 
@@ -249,8 +267,8 @@ describe('Execute: Handles inputs', () => {
         expect(caughtError).to.containSubset({
           locations: [ { line: 2, column: 17 } ],
           message:
-            'Variable "$input" expected value of type "TestInputObject" but ' +
-            'got: "foo bar".'
+            'Variable "$input" got invalid value "foo bar".' +
+            '\nExpected "TestInputObject", found not an object.'
         });
       });
 
@@ -267,9 +285,35 @@ describe('Execute: Handles inputs', () => {
         expect(caughtError).to.containSubset({
           locations: [ { line: 2, column: 17 } ],
           message:
-            'Variable "$input" expected value of type "TestInputObject" but ' +
-            'got: {"a":"foo","b":"bar"}.'
+            'Variable "$input" got invalid value {"a":"foo","b":"bar"}.' +
+            '\nIn field "c": Expected "String!", found null.'
         });
+      });
+
+      it('errors on deep nested errors and with many errors', async () => {
+        var nestedDoc = `
+          query q($input: TestNestedInputObject) {
+            fieldWithNestedObjectInput(input: $input)
+          }
+        `;
+        var nestedAst = parse(nestedDoc);
+        var params = { input: { na: { a: 'foo' } } };
+
+        var caughtError;
+        try {
+          execute(schema, nestedAst, null, params);
+        } catch (error) {
+          caughtError = error;
+        }
+
+        expect(caughtError).to.containSubset({
+          locations: [ { line: 2, column: 19 } ],
+          message:
+            'Variable "$input" got invalid value {"na":{"a":"foo"}}.' +
+            '\nIn field "na": In field "c": Expected "String!", found null.' +
+            '\nIn field "nb": Expected "String!", found null.'
+        });
+
       });
 
       it('errors on addition of unknown input field', async () => {
@@ -285,8 +329,10 @@ describe('Execute: Handles inputs', () => {
         expect(caughtError).to.containSubset({
           locations: [ { line: 2, column: 17 } ],
           message:
-            'Variable "$input" expected value of type "TestInputObject" but ' +
-            'got: {"a":"foo","b":"bar","c":"baz","d":"dog"}.'
+            'Variable "$input" got invalid value ' +
+             '{"a":"foo","b":"bar","c":"baz","d":"dog"}.' +
+             '\nIn field "d": Expected type "ComplexScalar", found "dog".'
+
         });
       });
 
@@ -642,8 +688,8 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable "$input" expected value of type "[String!]" but got: ' +
-          '["A",null,"B"].'
+          'Variable "$input" got invalid value ["A",null,"B"].' +
+          '\nIn element #1: Expected "String!", found null.'
       });
     });
 
@@ -705,8 +751,8 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable "$input" expected value of type "[String!]!" but got: ' +
-          '["A",null,"B"].'
+          'Variable "$input" got invalid value ["A",null,"B"].' +
+          '\nIn element #1: Expected "String!", found null.'
       });
     });
 

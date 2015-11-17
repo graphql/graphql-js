@@ -15,12 +15,21 @@ import {
 } from '../rules/ArgumentsOfCorrectType';
 
 
-function badValue(argName, typeName, value, line, column) {
+function badValue(argName, typeName, value, line, column, errors) {
+  var realErrors;
+  if (!errors) {
+    realErrors = [
+      `Expected type "${typeName}", found ${value}.`
+    ];
+  } else {
+    realErrors = errors;
+  }
   return {
-    message: badValueMessage(argName, typeName, value),
+    message: badValueMessage(argName, typeName, value, realErrors),
     locations: [ { line, column } ],
   };
 }
+
 
 describe('Validate: Argument values of correct type', () => {
 
@@ -484,7 +493,9 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        badValue('stringListArg', '[String]', '["one", 2]', 4, 47),
+        badValue('stringListArg', '[String]', '["one", 2]', 4, 47, [
+          'In element #1: Expected type "String", found 2.'
+        ]),
       ]);
     });
 
@@ -496,7 +507,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        badValue('stringListArg', '[String]', '1', 4, 47),
+        badValue('stringListArg', 'String', '1', 4, 47),
       ]);
     });
 
@@ -618,8 +629,8 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        badValue('req2', 'Int!', '"two"', 4, 32),
-        badValue('req1', 'Int!', '"one"', 4, 45),
+        badValue('req2', 'Int', '"two"', 4, 32),
+        badValue('req1', 'Int', '"one"', 4, 45),
       ]);
     });
 
@@ -631,7 +642,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        badValue('req1', 'Int!', '"one"', 4, 32),
+        badValue('req1', 'Int', '"one"', 4, 32),
       ]);
     });
 
@@ -725,7 +736,9 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        badValue('complexArg', 'ComplexInput', '{intField: 4}', 4, 41),
+        badValue('complexArg', 'ComplexInput', '{intField: 4}', 4, 41, [
+          'In field "requiredField": Expected "Boolean!", found null.'
+        ]),
       ]);
     });
 
@@ -745,7 +758,9 @@ describe('Validate: Argument values of correct type', () => {
           'ComplexInput',
           '{stringListField: ["one", 2], requiredField: true}',
           4,
-          41
+          41,
+          [ 'In field "stringListField": In element #1: ' +
+            'Expected type "String", found 2.' ]
         ),
       ]);
     });
@@ -766,7 +781,8 @@ describe('Validate: Argument values of correct type', () => {
           'ComplexInput',
           '{requiredField: true, unknownField: "value"}',
           4,
-          41
+          41,
+          [ 'In field "unknownField": Unknown field.' ]
         ),
       ]);
     });
@@ -796,8 +812,8 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `, [
-        badValue('if', 'Boolean!', '"yes"', 3, 28),
-        badValue('if', 'Boolean!', 'ENUM', 4, 28),
+        badValue('if', 'Boolean', '"yes"', 3, 28),
+        badValue('if', 'Boolean', 'ENUM', 4, 28),
       ]);
     });
 

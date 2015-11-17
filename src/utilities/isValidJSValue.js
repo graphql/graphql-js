@@ -25,25 +25,33 @@ import type { GraphQLInputType } from '../type/definition';
  * accepted for that type. This is primarily useful for validating the
  * runtime values of query variables.
  */
-export function isValidJSValue(value: any, type: GraphQLInputType): boolean {
+export function isValidJSValue(value: any, type: GraphQLInputType): [ string ] {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
+    var ofType: GraphQLInputType = (type.ofType: any);
     if (isNullish(value)) {
-      return false;
+      if (ofType.name) {
+        return [ `Expected "${ofType.name}!", found null.` ];
+      }
+      return [ 'Expected non-null value, found null.' ];
     }
-    var nullableType: GraphQLInputType = (type.ofType: any);
-    return isValidJSValue(value, nullableType);
+    return isValidJSValue(value, ofType);
   }
 
   if (isNullish(value)) {
-    return true;
+    return [];
   }
 
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
     var itemType: GraphQLInputType = (type.ofType: any);
     if (Array.isArray(value)) {
-      return value.every(item => isValidJSValue(item, itemType));
+      return value.reduce((acc, item, index) => {
+        var errors = isValidJSValue(item, itemType);
+        return acc.concat(errors.map(error =>
+          `In element #${index}: ${error}`
+        ));
+      }, []);
     }
     return isValidJSValue(value, itemType);
   }
@@ -51,19 +59,27 @@ export function isValidJSValue(value: any, type: GraphQLInputType): boolean {
   // Input objects check each defined field.
   if (type instanceof GraphQLInputObjectType) {
     if (typeof value !== 'object') {
-      return false;
+      return [ `Expected "${type.name}", found not an object.` ];
     }
     var fields = type.getFields();
 
+    var errors = [];
+
     // Ensure every provided field is defined.
-    if (Object.keys(value).some(fieldName => !fields[fieldName])) {
-      return false;
+    for (var providedField of Object.keys(value)) {
+      if (!fields[providedField]) {
+        errors.push('In field "${providedField}": Unknown field.');
+      }
     }
 
     // Ensure every defined field is valid.
-    return Object.keys(fields).every(
-      fieldName => isValidJSValue(value[fieldName], fields[fieldName].type)
-    );
+    for (var fieldName of Object.keys(fields)) {
+      var newErrors = isValidJSValue(value[fieldName], fields[fieldName].type);
+      errors.push(...(newErrors.map(error =>
+        `In field "${fieldName}": ${error}`
+      )));
+    }
+    return errors;
   }
 
   invariant(
@@ -73,5 +89,12 @@ export function isValidJSValue(value: any, type: GraphQLInputType): boolean {
 
   // Scalar/Enum input checks to ensure the type can parse the value to
   // a non-null value.
-  return !isNullish(type.parseValue(value));
+  var parseResult = type.parseValue(value);
+  if (isNullish(parseResult)) {
+    return [
+      `Expected type "${type.name}", found ${JSON.stringify(value)}.`
+    ];
+  }
+
+  return [];
 }

@@ -23,9 +23,17 @@ function defaultForNonNullArg(varName, typeName, guessTypeName, line, column) {
   };
 }
 
-function badValue(varName, typeName, val, line, column) {
+function badValue(varName, typeName, val, line, column, errors) {
+  var realErrors;
+  if (!errors) {
+    realErrors = [
+      `Expected type "${typeName}", found ${val}.`
+    ];
+  } else {
+    realErrors = errors;
+  }
   return {
-    message: badValueForDefaultArgMessage(varName, typeName, val),
+    message: badValueForDefaultArgMessage(varName, typeName, val, realErrors),
     locations: [ { line, column } ],
   };
 }
@@ -81,9 +89,15 @@ describe('Validate: Variable default values of correct type', () => {
         dog { name }
       }
     `, [
-      badValue('a', 'Int', '"one"', 3, 19),
-      badValue('b', 'String', '4', 4, 22),
-      badValue('c', 'ComplexInput', '"notverycomplex"', 5, 28)
+      badValue('a', 'Int', '"one"', 3, 19, [
+        'Expected type "Int", found "one".'
+      ]),
+      badValue('b', 'String', '4', 4, 22, [
+        'Expected type "String", found 4.'
+      ]),
+      badValue('c', 'ComplexInput', '"notverycomplex"', 5, 28, [
+        'Expected "ComplexInput", found not an object.'
+      ])
     ]);
   });
 
@@ -93,7 +107,9 @@ describe('Validate: Variable default values of correct type', () => {
         dog { name }
       }
     `, [
-      badValue('a', 'ComplexInput', '{intField: 3}', 2, 53)
+      badValue('a', 'ComplexInput', '{intField: 3}', 2, 53, [
+        'In field "requiredField": Expected "Boolean!", found null.'
+      ])
     ]);
   });
 
@@ -103,7 +119,9 @@ describe('Validate: Variable default values of correct type', () => {
         dog { name }
       }
     `, [
-      badValue('a', '[String]', '["one", 2]', 2, 40)
+      badValue('a', '[String]', '["one", 2]', 2, 40, [
+        'In element #1: Expected type "String", found 2.'
+      ])
     ]);
   });
 
