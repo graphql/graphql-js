@@ -45,10 +45,6 @@ import { specifiedRules } from './specifiedRules';
  * Each validation rules is a function which returns a visitor
  * (see the language/visitor API). Visitor methods are expected to return
  * GraphQLErrors, or Arrays of GraphQLErrors when invalid.
- *
- * Visitors can also supply `visitSpreadFragments: true` which will alter the
- * behavior of the visitor to skip over top level defined fragments, and instead
- * visit those fragments at every point a spread is encountered.
  */
 export function validate(
   schema: GraphQLSchema,
@@ -82,38 +78,14 @@ export function visitUsingRules(
 
   function visitInstance(ast, instance) {
     visit(ast, {
-      enter(node, key) {
+      enter(node) {
         // Collect type information about the current position in the AST.
         typeInfo.enter(node);
-
-        // Do not visit top level fragment definitions if this instance will
-        // visit those fragments inline because it
-        // provided `visitSpreadFragments`.
-        var result;
-        if (
-          node.kind === Kind.FRAGMENT_DEFINITION &&
-          key !== undefined &&
-          instance.visitSpreadFragments
-        ) {
-          return false;
-        }
 
         // Get the visitor function from the validation instance, and if it
         // exists, call it with the visitor arguments.
         var enter = getVisitFn(instance, false, node.kind);
-        result = enter ? enter.apply(instance, arguments) : undefined;
-
-        // If any validation instances provide the flag `visitSpreadFragments`
-        // and this node is a fragment spread, visit the fragment definition
-        // from this point.
-        if (result === undefined &&
-            instance.visitSpreadFragments &&
-            node.kind === Kind.FRAGMENT_SPREAD) {
-          var fragment = context.getFragment(node.name.value);
-          if (fragment) {
-            visitInstance(fragment, instance);
-          }
-        }
+        var result = enter ? enter.apply(instance, arguments) : undefined;
 
         // If the result is "false", we're not visiting any descendent nodes,
         // but need to update typeInfo.
