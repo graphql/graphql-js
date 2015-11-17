@@ -25,6 +25,7 @@ import {
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
+import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 
 /**
@@ -211,9 +212,10 @@ function assertObjectImplementsInterface(
       `provide it.`
     );
 
-    // Assert interface field type matches object field type. (invariant)
+    // Assert interface field type is satisfied by object field type, by being
+    // a valid subtype. (covariant)
     invariant(
-      isEqualType(ifaceField.type, objectField.type),
+      isTypeSubTypeOf(objectField.type, ifaceField.type),
       `${iface}.${fieldName} expects type "${ifaceField.type}" but ` +
       `${object}.${fieldName} provides type "${objectField.type}".`
     );
@@ -254,14 +256,4 @@ function assertObjectImplementsInterface(
       }
     });
   });
-}
-
-function isEqualType(typeA: GraphQLType, typeB: GraphQLType): boolean {
-  if (typeA instanceof GraphQLNonNull && typeB instanceof GraphQLNonNull) {
-    return isEqualType(typeA.ofType, typeB.ofType);
-  }
-  if (typeA instanceof GraphQLList && typeB instanceof GraphQLList) {
-    return isEqualType(typeA.ofType, typeB.ofType);
-  }
-  return typeA === typeB;
 }

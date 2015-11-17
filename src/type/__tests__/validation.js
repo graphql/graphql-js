@@ -1579,12 +1579,7 @@ describe('Objects must adhere to Interface they implement', () => {
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
-          field: {
-            type: GraphQLString,
-            args: {
-              input: { type: GraphQLString },
-            }
-          }
+          field: { type: GraphQLString }
         }
       });
 
@@ -1592,12 +1587,7 @@ describe('Objects must adhere to Interface they implement', () => {
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
-          field: {
-            type: SomeScalarType,
-            args: {
-              input: { type: GraphQLString },
-            }
-          }
+          field: { type: SomeScalarType }
         }
       });
 
@@ -1606,6 +1596,89 @@ describe('Objects must adhere to Interface they implement', () => {
       'AnotherInterface.field expects type "String" but ' +
       'AnotherObject.field provides type "SomeScalar".'
     );
+  });
+
+  it('rejects an Object with a differently typed Interface field', () => {
+    expect(() => {
+      var TypeA = new GraphQLObjectType({
+        name: 'A',
+        fields: {
+          foo: { type: GraphQLString }
+        }
+      });
+
+      var TypeB = new GraphQLObjectType({
+        name: 'B',
+        fields: {
+          foo: { type: GraphQLString }
+        }
+      });
+
+      var AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: {
+          field: { type: TypeA }
+        }
+      });
+
+      var AnotherObject = new GraphQLObjectType({
+        name: 'AnotherObject',
+        interfaces: [ AnotherInterface ],
+        fields: {
+          field: { type: TypeB }
+        }
+      });
+
+      return schemaWithFieldType(AnotherObject);
+    }).to.throw(
+      'AnotherInterface.field expects type "A" but ' +
+      'AnotherObject.field provides type "B".'
+    );
+  });
+
+  it('accepts an Object with a subtyped Interface field (interface)', () => {
+    expect(() => {
+      var AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: () => ({
+          field: { type: AnotherInterface }
+        })
+      });
+
+      var AnotherObject = new GraphQLObjectType({
+        name: 'AnotherObject',
+        interfaces: [ AnotherInterface ],
+        fields: () => ({
+          field: { type: AnotherObject }
+        })
+      });
+
+      return schemaWithFieldType(AnotherObject);
+    }).not.to.throw();
+  });
+
+  it('accepts an Object with a subtyped Interface field (union)', () => {
+    expect(() => {
+      var AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: {
+          field: { type: SomeUnionType }
+        }
+      });
+
+      var AnotherObject = new GraphQLObjectType({
+        name: 'AnotherObject',
+        interfaces: [ AnotherInterface ],
+        fields: {
+          field: { type: SomeObjectType }
+        }
+      });
+
+      return schemaWithFieldType(AnotherObject);
+    }).not.to.throw();
   });
 
   it('rejects an Object missing an Interface argument', () => {
@@ -1697,7 +1770,57 @@ describe('Objects must adhere to Interface they implement', () => {
     }).not.to.throw();
   });
 
-  it('rejects an Object with a differently modified Interface field type', () => {
+  it('rejects an Object with a non-list Interface field list type', () => {
+    expect(() => {
+      var AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: {
+          field: { type: new GraphQLList(GraphQLString) }
+        }
+      });
+
+      var AnotherObject = new GraphQLObjectType({
+        name: 'AnotherObject',
+        interfaces: [ AnotherInterface ],
+        fields: {
+          field: { type: GraphQLString }
+        }
+      });
+
+      return schemaWithFieldType(AnotherObject);
+    }).to.throw(
+      'AnotherInterface.field expects type "[String]" but ' +
+      'AnotherObject.field provides type "String".'
+    );
+  });
+
+  it('rejects an Object with a list Interface field non-list type', () => {
+    expect(() => {
+      var AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: {
+          field: { type: GraphQLString }
+        }
+      });
+
+      var AnotherObject = new GraphQLObjectType({
+        name: 'AnotherObject',
+        interfaces: [ AnotherInterface ],
+        fields: {
+          field: { type: new GraphQLList(GraphQLString) }
+        }
+      });
+
+      return schemaWithFieldType(AnotherObject);
+    }).to.throw(
+      'AnotherInterface.field expects type "String" but ' +
+      'AnotherObject.field provides type "[String]".'
+    );
+  });
+
+  it('accepts an Object with a subset non-null Interface field type', () => {
     expect(() => {
       var AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
@@ -1716,9 +1839,31 @@ describe('Objects must adhere to Interface they implement', () => {
       });
 
       return schemaWithFieldType(AnotherObject);
+    }).not.to.throw();
+  });
+
+  it('rejects an Object with a superset nullable Interface field type', () => {
+    expect(() => {
+      var AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: {
+          field: { type: new GraphQLNonNull(GraphQLString) }
+        }
+      });
+
+      var AnotherObject = new GraphQLObjectType({
+        name: 'AnotherObject',
+        interfaces: [ AnotherInterface ],
+        fields: {
+          field: { type: GraphQLString }
+        }
+      });
+
+      return schemaWithFieldType(AnotherObject);
     }).to.throw(
-      'AnotherInterface.field expects type "String" but ' +
-      'AnotherObject.field provides type "String!".'
+      'AnotherInterface.field expects type "String!" but ' +
+      'AnotherObject.field provides type "String".'
     );
   });
 
