@@ -105,3 +105,35 @@ export var GraphQLID = new GraphQLScalarType({
       null;
   }
 });
+
+var astToJson = {};
+astToJson[Kind.INT] = ast => GraphQLInt.parseLiteral(ast);
+astToJson[Kind.FLOAT] = ast => GraphQLFloat.parseLiteral(ast);
+astToJson[Kind.BOOLEAN] = ast => GraphQLBoolean.parseLiteral(ast);
+astToJson[Kind.STRING] = ast => GraphQLString.parseLiteral(ast);
+astToJson[Kind.ENUM] = ast => String(ast.value);
+astToJson[Kind.LIST] = ast => ast.values.map(astItem => {
+  return GraphQLJson.parseLiteral(astItem);
+});
+astToJson[Kind.OBJECT] = ast => {
+  var obj = {};
+  ast.fields.forEach(field => {
+    obj[field.name.value] = GraphQLJson.parseLiteral(field.value);
+  });
+  return obj;
+};
+
+function jsonValue(value) {
+  return value;
+}
+
+export var GraphQLJson = new GraphQLScalarType({
+  name: 'JSON',
+  description: 'The `JSON` scalar type represents raw JSON as values.',
+  serialize: jsonValue,
+  parseValue: jsonValue,
+  parseLiteral(ast) {
+    var parser = astToJson[ast.kind];
+    return parser ? parser.call(this, ast) : null;
+  }
+});
