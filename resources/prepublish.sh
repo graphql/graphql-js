@@ -21,4 +21,4 @@ fi;
 #
 #    var language = require('graphql/language');
 #
-babel src --ignore __tests__ --out-dir ./;
+babel --optional runtime src --ignore __tests__ --out-dir ./;
