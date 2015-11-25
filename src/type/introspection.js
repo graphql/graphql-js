@@ -229,7 +229,7 @@ var __InputValue = new GraphQLObjectType({
       description:
         'A GraphQL-formatted string representing the default value for this ' +
         'input value.',
-      resolve: inputVal => inputVal.defaultValue == null ?
+      resolve: inputVal => isNullish(inputVal.defaultValue) ?
         null :
         print(astFromValue(inputVal.defaultValue, inputVal))
     }
