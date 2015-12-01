@@ -9,6 +9,9 @@ on complex application data models.
 [![Coverage Status](https://coveralls.io/repos/graphql/graphql-js/badge.svg?branch=master)](https://coveralls.io/r/graphql/graphql-js?branch=master)
 [![Public Slack Discussion](https://graphql-slack.herokuapp.com/badge.svg)](https://graphql-slack.herokuapp.com/)
 
+See more complete documentation at http://graphql.org/ and
+http://graphql.org/docs/api-reference-graphql/.
+
 ## Technical Preview Contents
 
 This technical preview contains a [draft specification for GraphQL]
