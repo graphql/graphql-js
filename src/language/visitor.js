@@ -295,7 +295,7 @@ export function visitInParallel(visitors) {
           if (fn) {
             fn.apply(visitors[i], arguments);
           }
-        } else {
+        } else if (skipping[i] === node) {
           skipping[i] = null;
         }
       }

@@ -11,7 +11,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parse } from '../parser';
 import { readFileSync } from 'fs';
-import { visit, BREAK } from '../visitor';
+import { visit, visitInParallel, BREAK } from '../visitor';
 import { join } from 'path';
 
 
@@ -509,4 +509,115 @@ describe('Visitor', () => {
       [ 'leave', 'OperationDefinition', 4, undefined ],
       [ 'leave', 'Document', undefined, undefined ] ]);
   });
+
+  describe('visitInParallel', () => {
+
+    // Note: nearly identical to the above test of the same test but
+    // using visitInParallel.
+    it('allows skipping a sub-tree', () => {
+
+      var visited = [];
+
+      var ast = parse('{ a, b { x }, c }');
+      visit(ast, visitInParallel([ {
+        enter(node) {
+          visited.push([ 'enter', node.kind, node.value ]);
+          if (node.kind === 'Field' && node.name.value === 'b') {
+            return false;
+          }
+        },
+
+        leave(node) {
+          visited.push([ 'leave', node.kind, node.value ]);
+        }
+      } ]));
+
+      expect(visited).to.deep.equal([
+        [ 'enter', 'Document', undefined ],
+        [ 'enter', 'OperationDefinition', undefined ],
+        [ 'enter', 'SelectionSet', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'a' ],
+        [ 'leave', 'Name', 'a' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'c' ],
+        [ 'leave', 'Name', 'c' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'leave', 'SelectionSet', undefined ],
+        [ 'leave', 'OperationDefinition', undefined ],
+        [ 'leave', 'Document', undefined ],
+      ]);
+    });
+
+    it('allows skipping different sub-trees', () => {
+      var visited = [];
+
+      var ast = parse('{ a { x }, b { y} }');
+      visit(ast, visitInParallel([
+        {
+          enter(node) {
+            visited.push([ 'no-a', 'enter', node.kind, node.value ]);
+            if (node.kind === 'Field' && node.name.value === 'a') {
+              return false;
+            }
+          },
+          leave(node) {
+            visited.push([ 'no-a', 'leave', node.kind, node.value ]);
+          }
+        },
+        {
+          enter(node) {
+            visited.push([ 'no-b', 'enter', node.kind, node.value ]);
+            if (node.kind === 'Field' && node.name.value === 'b') {
+              return false;
+            }
+          },
+          leave(node) {
+            visited.push([ 'no-b', 'leave', node.kind, node.value ]);
+          }
+        }
+      ]));
+
+      expect(visited).to.deep.equal([
+        [ 'no-a', 'enter', 'Document', undefined ],
+        [ 'no-b', 'enter', 'Document', undefined ],
+        [ 'no-a', 'enter', 'OperationDefinition', undefined ],
+        [ 'no-b', 'enter', 'OperationDefinition', undefined ],
+        [ 'no-a', 'enter', 'SelectionSet', undefined ],
+        [ 'no-b', 'enter', 'SelectionSet', undefined ],
+        [ 'no-a', 'enter', 'Field', undefined ],
+        [ 'no-b', 'enter', 'Field', undefined ],
+        [ 'no-b', 'enter', 'Name', 'a' ],
+        [ 'no-b', 'leave', 'Name', 'a' ],
+        [ 'no-b', 'enter', 'SelectionSet', undefined ],
+        [ 'no-b', 'enter', 'Field', undefined ],
+        [ 'no-b', 'enter', 'Name', 'x' ],
+        [ 'no-b', 'leave', 'Name', 'x' ],
+        [ 'no-b', 'leave', 'Field', undefined ],
+        [ 'no-b', 'leave', 'SelectionSet', undefined ],
+        [ 'no-b', 'leave', 'Field', undefined ],
+        [ 'no-a', 'enter', 'Field', undefined ],
+        [ 'no-b', 'enter', 'Field', undefined ],
+        [ 'no-a', 'enter', 'Name', 'b' ],
+        [ 'no-a', 'leave', 'Name', 'b' ],
+        [ 'no-a', 'enter', 'SelectionSet', undefined ],
+        [ 'no-a', 'enter', 'Field', undefined ],
+        [ 'no-a', 'enter', 'Name', 'y' ],
+        [ 'no-a', 'leave', 'Name', 'y' ],
+        [ 'no-a', 'leave', 'Field', undefined ],
+        [ 'no-a', 'leave', 'SelectionSet', undefined ],
+        [ 'no-a', 'leave', 'Field', undefined ],
+        [ 'no-a', 'leave', 'SelectionSet', undefined ],
+        [ 'no-b', 'leave', 'SelectionSet', undefined ],
+        [ 'no-a', 'leave', 'OperationDefinition', undefined ],
+        [ 'no-b', 'leave', 'OperationDefinition', undefined ],
+        [ 'no-a', 'leave', 'Document', undefined ],
+        [ 'no-b', 'leave', 'Document', undefined ],
+      ]);
+    });
+
+  });
+
 });
