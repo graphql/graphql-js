@@ -269,7 +269,7 @@ function isNode(maybeNode) {
  * parallel. Each visitor will be visited for each node before moving on.
  *
  * Visitors must not directly modify the AST nodes and only returning false to
- * skip sub-branches is supported.
+ * skip sub-branches or BREAK to exit early is supported.
  */
 export function visitInParallel(visitors) {
   const skipping = new Array(visitors.length);
@@ -283,6 +283,8 @@ export function visitInParallel(visitors) {
             const result = fn.apply(visitors[i], arguments);
             if (result === false) {
               skipping[i] = node;
+            } else if (result === BREAK) {
+              skipping[i] = BREAK;
             }
           }
         }
@@ -293,7 +295,10 @@ export function visitInParallel(visitors) {
         if (!skipping[i]) {
           const fn = getVisitFn(visitors[i], node.kind, /* isLeaving */ true);
           if (fn) {
-            fn.apply(visitors[i], arguments);
+            const result = fn.apply(visitors[i], arguments);
+            if (result === BREAK) {
+              skipping[i] = BREAK;
+            }
           }
         } else if (skipping[i] === node) {
           skipping[i] = null;

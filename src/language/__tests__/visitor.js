@@ -156,6 +156,42 @@ describe('Visitor', () => {
     ]);
   });
 
+  it('allows early exit while leaving', () => {
+
+    var visited = [];
+
+    var ast = parse('{ a, b { x }, c }');
+    visit(ast, {
+      enter(node) {
+        visited.push([ 'enter', node.kind, node.value ]);
+      },
+
+      leave(node) {
+        visited.push([ 'leave', node.kind, node.value ]);
+        if (node.kind === 'Name' && node.value === 'x') {
+          return BREAK;
+        }
+      }
+    });
+
+    expect(visited).to.deep.equal([
+      [ 'enter', 'Document', undefined ],
+      [ 'enter', 'OperationDefinition', undefined ],
+      [ 'enter', 'SelectionSet', undefined ],
+      [ 'enter', 'Field', undefined ],
+      [ 'enter', 'Name', 'a' ],
+      [ 'leave', 'Name', 'a' ],
+      [ 'leave', 'Field', undefined ],
+      [ 'enter', 'Field', undefined ],
+      [ 'enter', 'Name', 'b' ],
+      [ 'leave', 'Name', 'b' ],
+      [ 'enter', 'SelectionSet', undefined ],
+      [ 'enter', 'Field', undefined ],
+      [ 'enter', 'Name', 'x' ],
+      [ 'leave', 'Name', 'x' ]
+    ]);
+  });
+
   it('allows a named functions visitor API', () => {
 
     var visited = [];
@@ -615,6 +651,203 @@ describe('Visitor', () => {
         [ 'no-b', 'leave', 'OperationDefinition', undefined ],
         [ 'no-a', 'leave', 'Document', undefined ],
         [ 'no-b', 'leave', 'Document', undefined ],
+      ]);
+    });
+
+    // Note: nearly identical to the above test of the same test but
+    // using visitInParallel.
+    it('allows early exit while visiting', () => {
+
+      var visited = [];
+
+      var ast = parse('{ a, b { x }, c }');
+      visit(ast, visitInParallel([ {
+        enter(node) {
+          visited.push([ 'enter', node.kind, node.value ]);
+          if (node.kind === 'Name' && node.value === 'x') {
+            return BREAK;
+          }
+        },
+        leave(node) {
+          visited.push([ 'leave', node.kind, node.value ]);
+        }
+      } ]));
+
+      expect(visited).to.deep.equal([
+        [ 'enter', 'Document', undefined ],
+        [ 'enter', 'OperationDefinition', undefined ],
+        [ 'enter', 'SelectionSet', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'a' ],
+        [ 'leave', 'Name', 'a' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'b' ],
+        [ 'leave', 'Name', 'b' ],
+        [ 'enter', 'SelectionSet', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'x' ]
+      ]);
+    });
+
+    it('allows early exit from different points', () => {
+
+      var visited = [];
+
+      var ast = parse('{ a { y }, b { x } }');
+      visit(ast, visitInParallel([
+        {
+          enter(node) {
+            visited.push([ 'break-a', 'enter', node.kind, node.value ]);
+            if (node.kind === 'Name' && node.value === 'a') {
+              return BREAK;
+            }
+          },
+          leave(node) {
+            visited.push([ 'break-a', 'leave', node.kind, node.value ]);
+          }
+        },
+        {
+          enter(node) {
+            visited.push([ 'break-b', 'enter', node.kind, node.value ]);
+            if (node.kind === 'Name' && node.value === 'b') {
+              return BREAK;
+            }
+          },
+          leave(node) {
+            visited.push([ 'break-b', 'leave', node.kind, node.value ]);
+          }
+        },
+      ]));
+
+      expect(visited).to.deep.equal([
+        [ 'break-a', 'enter', 'Document', undefined ],
+        [ 'break-b', 'enter', 'Document', undefined ],
+        [ 'break-a', 'enter', 'OperationDefinition', undefined ],
+        [ 'break-b', 'enter', 'OperationDefinition', undefined ],
+        [ 'break-a', 'enter', 'SelectionSet', undefined ],
+        [ 'break-b', 'enter', 'SelectionSet', undefined ],
+        [ 'break-a', 'enter', 'Field', undefined ],
+        [ 'break-b', 'enter', 'Field', undefined ],
+        [ 'break-a', 'enter', 'Name', 'a' ],
+        [ 'break-b', 'enter', 'Name', 'a' ],
+        [ 'break-b', 'leave', 'Name', 'a' ],
+        [ 'break-b', 'enter', 'SelectionSet', undefined ],
+        [ 'break-b', 'enter', 'Field', undefined ],
+        [ 'break-b', 'enter', 'Name', 'y' ],
+        [ 'break-b', 'leave', 'Name', 'y' ],
+        [ 'break-b', 'leave', 'Field', undefined ],
+        [ 'break-b', 'leave', 'SelectionSet', undefined ],
+        [ 'break-b', 'leave', 'Field', undefined ],
+        [ 'break-b', 'enter', 'Field', undefined ],
+        [ 'break-b', 'enter', 'Name', 'b' ]
+      ]);
+    });
+
+    // Note: nearly identical to the above test of the same test but
+    // using visitInParallel.
+    it('allows early exit while leaving', () => {
+
+      var visited = [];
+
+      var ast = parse('{ a, b { x }, c }');
+      visit(ast, visitInParallel([ {
+        enter(node) {
+          visited.push([ 'enter', node.kind, node.value ]);
+        },
+        leave(node) {
+          visited.push([ 'leave', node.kind, node.value ]);
+          if (node.kind === 'Name' && node.value === 'x') {
+            return BREAK;
+          }
+        }
+      } ]));
+
+      expect(visited).to.deep.equal([
+        [ 'enter', 'Document', undefined ],
+        [ 'enter', 'OperationDefinition', undefined ],
+        [ 'enter', 'SelectionSet', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'a' ],
+        [ 'leave', 'Name', 'a' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'b' ],
+        [ 'leave', 'Name', 'b' ],
+        [ 'enter', 'SelectionSet', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'x' ],
+        [ 'leave', 'Name', 'x' ]
+      ]);
+    });
+
+    it('allows early exit from leaving different points', () => {
+
+      var visited = [];
+
+      var ast = parse('{ a { y }, b { x } }');
+      visit(ast, visitInParallel([
+        {
+          enter(node) {
+            visited.push([ 'break-a', 'enter', node.kind, node.value ]);
+          },
+          leave(node) {
+            visited.push([ 'break-a', 'leave', node.kind, node.value ]);
+            if (node.kind === 'Field' && node.name.value === 'a') {
+              return BREAK;
+            }
+          }
+        },
+        {
+          enter(node) {
+            visited.push([ 'break-b', 'enter', node.kind, node.value ]);
+          },
+          leave(node) {
+            visited.push([ 'break-b', 'leave', node.kind, node.value ]);
+            if (node.kind === 'Field' && node.name.value === 'b') {
+              return BREAK;
+            }
+          }
+        },
+      ]));
+
+      expect(visited).to.deep.equal([
+        [ 'break-a', 'enter', 'Document', undefined ],
+        [ 'break-b', 'enter', 'Document', undefined ],
+        [ 'break-a', 'enter', 'OperationDefinition', undefined ],
+        [ 'break-b', 'enter', 'OperationDefinition', undefined ],
+        [ 'break-a', 'enter', 'SelectionSet', undefined ],
+        [ 'break-b', 'enter', 'SelectionSet', undefined ],
+        [ 'break-a', 'enter', 'Field', undefined ],
+        [ 'break-b', 'enter', 'Field', undefined ],
+        [ 'break-a', 'enter', 'Name', 'a' ],
+        [ 'break-b', 'enter', 'Name', 'a' ],
+        [ 'break-a', 'leave', 'Name', 'a' ],
+        [ 'break-b', 'leave', 'Name', 'a' ],
+        [ 'break-a', 'enter', 'SelectionSet', undefined ],
+        [ 'break-b', 'enter', 'SelectionSet', undefined ],
+        [ 'break-a', 'enter', 'Field', undefined ],
+        [ 'break-b', 'enter', 'Field', undefined ],
+        [ 'break-a', 'enter', 'Name', 'y' ],
+        [ 'break-b', 'enter', 'Name', 'y' ],
+        [ 'break-a', 'leave', 'Name', 'y' ],
+        [ 'break-b', 'leave', 'Name', 'y' ],
+        [ 'break-a', 'leave', 'Field', undefined ],
+        [ 'break-b', 'leave', 'Field', undefined ],
+        [ 'break-a', 'leave', 'SelectionSet', undefined ],
+        [ 'break-b', 'leave', 'SelectionSet', undefined ],
+        [ 'break-a', 'leave', 'Field', undefined ],
+        [ 'break-b', 'leave', 'Field', undefined ],
+        [ 'break-b', 'enter', 'Field', undefined ],
+        [ 'break-b', 'enter', 'Name', 'b' ],
+        [ 'break-b', 'leave', 'Name', 'b' ],
+        [ 'break-b', 'enter', 'SelectionSet', undefined ],
+        [ 'break-b', 'enter', 'Field', undefined ],
+        [ 'break-b', 'enter', 'Name', 'x' ],
+        [ 'break-b', 'leave', 'Name', 'x' ],
+        [ 'break-b', 'leave', 'Field', undefined ],
+        [ 'break-b', 'leave', 'SelectionSet', undefined ],
+        [ 'break-b', 'leave', 'Field', undefined ]
       ]);
     });
 
