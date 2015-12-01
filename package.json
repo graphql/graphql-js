@@ -22,6 +22,7 @@
   "scripts": {
     "test": "npm run lint && npm run check && npm run testonly",
     "testonly": "mocha $npm_package_options_mocha",
+    "t": "mocha --require resources/mocha-bootload",
     "lint": "eslint src",
     "check": "flow check",
     "build": "babel src --optional runtime --ignore __tests__ --out-dir dist/ && cp package.json dist/",
