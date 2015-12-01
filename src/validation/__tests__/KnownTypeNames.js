@@ -8,7 +8,9 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { expectPassesRule, expectFailsRule, expectPassesRuleWithSchema, testSchema } from './harness';
+import { extendSchema } from '../../utilities/extendSchema';
+import { parse } from '../../language';
 import {
   KnownTypeNames,
   unknownTypeMessage,
@@ -53,6 +55,16 @@ describe('Validate: Known type names', () => {
       unknownType('Badger', 5, 25),
       unknownType('Peettt', 8, 29)
     ]);
+  });
+
+  it('types that are not in the schema don\'t need to be checked', () => {
+    // both types A and B are not part of the schema because nobody is
+    // referencing them
+    var clientSideTypes = `
+        type A { name: String }
+        type B { a: A }`;
+    var schema = extendSchema(testSchema, parse(clientSideTypes));
+    expectPassesRuleWithSchema(schema, KnownTypeNames, clientSideTypes);
   });
 
 });
