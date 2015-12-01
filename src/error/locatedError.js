@@ -16,10 +16,15 @@ import { GraphQLError } from './GraphQLError';
  * GraphQL operation, produce a new GraphQLError aware of the location in the
  * document responsible for the original Error.
  */
-export function locatedError(error: ?Error, nodes: Array<any>): GraphQLError {
-  var message = error ?
-    error.message || String(error) :
+export function locatedError(
+  originalError: ?Error,
+  nodes: Array<any>
+): GraphQLError {
+  const message = originalError ?
+    originalError.message || String(originalError) :
     'An unknown error occurred.';
-  var stack = error ? error.stack : null;
-  return new GraphQLError(message, nodes, stack);
+  const stack = originalError ? originalError.stack : null;
+  const error = new GraphQLError(message, nodes, stack);
+  error.originalError = originalError;
+  return error;
 }
