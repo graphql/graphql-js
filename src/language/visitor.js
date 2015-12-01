@@ -315,9 +315,6 @@ export function visitInParallel(visitors) {
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance
  * along with visiting visitor.
- *
- * Visitors must not directly modify the AST nodes and only returning false to
- * skip sub-branches is supported.
  */
 export function visitWithTypeInfo(typeInfo, visitor) {
   return {
@@ -326,18 +323,23 @@ export function visitWithTypeInfo(typeInfo, visitor) {
       const fn = getVisitFn(visitor, node.kind, /* isLeaving */ false);
       if (fn) {
         const result = fn.apply(visitor, arguments);
-        if (result === false) {
+        if (result !== undefined) {
           typeInfo.leave(node);
-          return false;
+          if (isNode(result)) {
+            typeInfo.enter(result);
+          }
         }
+        return result;
       }
     },
     leave(node) {
       const fn = getVisitFn(visitor, node.kind, /* isLeaving */ true);
+      let result;
       if (fn) {
-        fn.apply(visitor, arguments);
+        result = fn.apply(visitor, arguments);
       }
       typeInfo.leave(node);
+      return result;
     }
   };
 }
