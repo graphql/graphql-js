@@ -41,14 +41,15 @@ describe('Type System: Scalar coercion', () => {
     expect(
       GraphQLInt.serialize(1e5)
     ).to.equal(100000);
-    // Bigger than 2^32, but still representable as an Int
+    // Maybe a safe JavaScript int, but bigger than 2^32, so not
+    // representable as a GraphQL Int
     expect(
       GraphQLInt.serialize(9876504321)
-    ).to.equal(9876504321);
+    ).to.equal(null);
     expect(
       GraphQLInt.serialize(-9876504321)
-    ).to.equal(-9876504321);
-    // Too big to represent as an Int
+    ).to.equal(null);
+    // Too big to represent as an Int in JavaScript or GraphQL
     expect(
       GraphQLInt.serialize(1e100)
     ).to.equal(null);

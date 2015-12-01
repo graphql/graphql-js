@@ -11,11 +11,13 @@
 import { GraphQLScalarType } from './definition';
 import { Kind } from '../language';
 
-// Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
-// encoded in JavaScript and represented in JSON as double-precision floating
-// point numbers, as specified by IEEE 754.
-var MAX_INT = 9007199254740991;
-var MIN_INT = -9007199254740991;
+// As per the GraphQL Spec, Integers are only treated as valid when a valid
+// 32-bit signed integer, providing the broadest support across platforms.
+//
+// n.b. JavaScript's integers are safe between -(2^53 - 1) and 2^53 - 1 because
+// they are internally represented as IEEE 754 doubles.
+var MAX_INT = 2147483647;
+var MIN_INT = -2147483648;
 
 function coerceInt(value) {
   var num = Number(value);
