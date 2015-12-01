@@ -11,7 +11,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parse } from '../parser';
 import { readFileSync } from 'fs';
-import { visit, BREAK } from '../visitor';
+import { visit, visitInParallel, BREAK } from '../visitor';
 import { join } from 'path';
 
 
@@ -101,6 +101,43 @@ describe('Visitor', () => {
         visited.push([ 'leave', node.kind, node.value ]);
       }
     });
+
+    expect(visited).to.deep.equal([
+      [ 'enter', 'Document', undefined ],
+      [ 'enter', 'OperationDefinition', undefined ],
+      [ 'enter', 'SelectionSet', undefined ],
+      [ 'enter', 'Field', undefined ],
+      [ 'enter', 'Name', 'a' ],
+      [ 'leave', 'Name', 'a' ],
+      [ 'leave', 'Field', undefined ],
+      [ 'enter', 'Field', undefined ],
+      [ 'enter', 'Field', undefined ],
+      [ 'enter', 'Name', 'c' ],
+      [ 'leave', 'Name', 'c' ],
+      [ 'leave', 'Field', undefined ],
+      [ 'leave', 'SelectionSet', undefined ],
+      [ 'leave', 'OperationDefinition', undefined ],
+      [ 'leave', 'Document', undefined ],
+    ]);
+  });
+
+  it('visitInParallel allows skipping a sub-tree', () => {
+
+    var visited = [];
+
+    var ast = parse('{ a, b { x }, c }');
+    visit(ast, visitInParallel([{
+      enter(node) {
+        visited.push([ 'enter', node.kind, node.value ]);
+        if (node.kind === 'Field' && node.name.value === 'b') {
+          return false;
+        }
+      },
+
+      leave(node) {
+        visited.push([ 'leave', node.kind, node.value ]);
+      }
+    }]));
 
     expect(visited).to.deep.equal([
       [ 'enter', 'Document', undefined ],
