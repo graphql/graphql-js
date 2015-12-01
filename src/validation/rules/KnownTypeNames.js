@@ -24,6 +24,13 @@ export function unknownTypeMessage(type: any): string {
  */
 export function KnownTypeNames(context: ValidationContext): any {
   return {
+    // TODO: when validating IDL, re-enable these. Experimental version does not
+    // add unreferenced types, resulting in false-positive errors. Squelched
+    // errors for now.
+    ObjectTypeDefinition: () => false,
+    InterfaceTypeDefinition: () => false,
+    UnionTypeDefinition: () => false,
+    InputObjectTypeDefinition: () => false,
     NamedType(node) {
       var typeName = node.name.value;
       var type = context.getSchema().getType(typeName);

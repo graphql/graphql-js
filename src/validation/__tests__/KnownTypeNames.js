@@ -55,4 +55,26 @@ describe('Validate: Known type names', () => {
     ]);
   });
 
+  it('ignores type definitions', () => {
+    expectFailsRule(KnownTypeNames, `
+      type NotInTheSchema {
+        field: FooBar
+      }
+      interface FooBar {
+        field: NotInTheSchema
+      }
+      union U = A | B
+      input Blob {
+        field: UnknownType
+      }
+      query Foo($var: NotInTheSchema) {
+        user(id: $var) {
+          id
+        }
+      }
+    `, [
+      unknownType('NotInTheSchema', 12, 23),
+    ]);
+  });
+
 });
