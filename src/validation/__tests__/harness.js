@@ -315,6 +315,10 @@ function expectInvalid(schema, rules, queryString, expectedErrors) {
   expect(errors.map(formatError)).to.deep.equal(expectedErrors);
 }
 
+export function expectPassesRuleWithSchema(schema, rule, queryString) {
+  expectValid(schema, rule, queryString);
+}
+
 export function expectPassesRule(rule, queryString) {
   return expectValid(testSchema, [ rule ], queryString);
 }

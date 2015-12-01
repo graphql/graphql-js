@@ -77,7 +77,12 @@ export function visitUsingRules(
   const context = new ValidationContext(schema, documentAST, typeInfo);
   const visitors = rules.map(rule => rule(context));
   // Visit the whole document with each instance of all provided rules.
-  visit(documentAST, visitWithTypeInfo(typeInfo, visitInParallel(visitors)));
+  // TODO -- use visitInParallel() once
+  // https://github.com/graphql/graphql-js/pull/254 is fixed
+  //visit(documentAST, visitWithTypeInfo(typeInfo, visitInParallel(visitors)));
+  visitors.forEach(function (visitor) {
+    visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
+  });
   return context.getErrors();
 }
 
