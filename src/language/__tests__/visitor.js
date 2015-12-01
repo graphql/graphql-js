@@ -851,6 +851,128 @@ describe('Visitor', () => {
       ]);
     });
 
+    it('allows for editing on enter', () => {
+      var visited = [];
+
+      var ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
+      var editedAst = visit(ast, visitInParallel([
+        {
+          enter(node) {
+            if (node.kind === 'Field' && node.name.value === 'b') {
+              return null;
+            }
+          }
+        },
+        {
+          enter(node) {
+            visited.push([ 'enter', node.kind, node.value ]);
+          },
+          leave(node) {
+            visited.push([ 'leave', node.kind, node.value ]);
+          }
+        },
+      ]));
+
+      expect(ast).to.deep.equal(
+        parse('{ a, b, c { a, b, c } }', { noLocation: true })
+      );
+
+      expect(editedAst).to.deep.equal(
+        parse('{ a,    c { a,    c } }', { noLocation: true })
+      );
+
+      expect(visited).to.deep.equal([
+        [ 'enter', 'Document', undefined ],
+        [ 'enter', 'OperationDefinition', undefined ],
+        [ 'enter', 'SelectionSet', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'a' ],
+        [ 'leave', 'Name', 'a' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'c' ],
+        [ 'leave', 'Name', 'c' ],
+        [ 'enter', 'SelectionSet', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'a' ],
+        [ 'leave', 'Name', 'a' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'c' ],
+        [ 'leave', 'Name', 'c' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'leave', 'SelectionSet', undefined ],
+        [ 'leave', 'Field', undefined ],
+        [ 'leave', 'SelectionSet', undefined ],
+        [ 'leave', 'OperationDefinition', undefined ],
+        [ 'leave', 'Document', undefined ]
+      ]);
+    });
+
+    it('allows for editing on leave', () => {
+      var visited = [];
+
+      var ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
+      var editedAst = visit(ast, visitInParallel([
+        {
+          leave(node) {
+            if (node.kind === 'Field' && node.name.value === 'b') {
+              return null;
+            }
+          }
+        },
+        {
+          enter(node) {
+            visited.push([ 'enter', node.kind, node.value ]);
+          },
+          leave(node) {
+            visited.push([ 'leave', node.kind, node.value ]);
+          }
+        },
+      ]));
+
+      expect(ast).to.deep.equal(
+        parse('{ a, b, c { a, b, c } }', { noLocation: true })
+      );
+
+      expect(editedAst).to.deep.equal(
+        parse('{ a,    c { a,    c } }', { noLocation: true })
+      );
+
+      expect(visited).to.deep.equal([
+        [ 'enter', 'Document', undefined ],
+        [ 'enter', 'OperationDefinition', undefined ],
+        [ 'enter', 'SelectionSet', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'a' ],
+        [ 'leave', 'Name', 'a' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'b' ],
+        [ 'leave', 'Name', 'b' ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'c' ],
+        [ 'leave', 'Name', 'c' ],
+        [ 'enter', 'SelectionSet', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'a' ],
+        [ 'leave', 'Name', 'a' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'b' ],
+        [ 'leave', 'Name', 'b' ],
+        [ 'enter', 'Field', undefined ],
+        [ 'enter', 'Name', 'c' ],
+        [ 'leave', 'Name', 'c' ],
+        [ 'leave', 'Field', undefined ],
+        [ 'leave', 'SelectionSet', undefined ],
+        [ 'leave', 'Field', undefined ],
+        [ 'leave', 'SelectionSet', undefined ],
+        [ 'leave', 'OperationDefinition', undefined ],
+        [ 'leave', 'Document', undefined ]
+      ]);
+    });
+
   });
 
 });

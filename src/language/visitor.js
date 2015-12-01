@@ -268,8 +268,7 @@ function isNode(maybeNode) {
  * Creates a new visitor instance which delegates to many visitors to run in
  * parallel. Each visitor will be visited for each node before moving on.
  *
- * Visitors must not directly modify the AST nodes and only returning false to
- * skip sub-branches or BREAK to exit early is supported.
+ * If a prior visitor edits a node, no following visitors will see that node.
  */
 export function visitInParallel(visitors) {
   const skipping = new Array(visitors.length);
@@ -285,6 +284,8 @@ export function visitInParallel(visitors) {
               skipping[i] = node;
             } else if (result === BREAK) {
               skipping[i] = BREAK;
+            } else if (result !== undefined) {
+              return result;
             }
           }
         }
@@ -298,6 +299,8 @@ export function visitInParallel(visitors) {
             const result = fn.apply(visitors[i], arguments);
             if (result === BREAK) {
               skipping[i] = BREAK;
+            } else if (result !== undefined && result !== false) {
+              return result;
             }
           }
         } else if (skipping[i] === node) {
