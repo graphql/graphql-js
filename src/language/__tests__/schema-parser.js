@@ -47,11 +47,16 @@ function fieldNode(name, type, loc) {
 }
 
 function fieldNodeWithArgs(name, type, args, loc) {
+  return fieldNodeWithDirectives(name, type, args, [], loc);
+}
+
+function fieldNodeWithDirectives(name, type, args, directives, loc) {
   return {
     kind: 'FieldDefinition',
     name,
     arguments: args,
     type,
+    directives,
     loc,
   };
 }
@@ -441,6 +446,56 @@ type Hello {
         }
       ],
       loc: loc(1, 61),
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Simple field with a directive', () => {
+    var body = `
+type Hello {
+  @relatedField(name: "hellos")
+  world: World
+}`;
+    var doc = parse(body);
+    var loc = createLocFn(body);
+    var expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeDefinition',
+          name: nameNode('Hello', loc(6, 11)),
+          interfaces: [],
+          fields: [
+            fieldNodeWithDirectives(
+              nameNode('world', loc(48, 53)),
+              typeNode('World', loc(55, 60)),
+              [],
+              [
+                {
+                  kind: 'Directive',
+                  name: nameNode('relatedField', loc(17, 29)),
+                  arguments: [
+                    {
+                      kind: 'Argument',
+                      name: nameNode('name', loc(30, 34)),
+                      value: {
+                        kind: 'StringValue',
+                        value: 'hellos',
+                        loc: loc(36, 44),
+                      },
+                      loc: loc(30, 44)
+                    },
+                  ],
+                  loc: loc(16, 45),
+                },
+              ],
+              loc(16, 60)
+            )
+          ],
+          loc: loc(1, 62),
+        }
+      ],
+      loc: loc(1, 62),
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });

@@ -11,6 +11,7 @@ type Foo implements Bar {
   three(argument: InputType, other: String): Int
   four(argument: String = "string"): String
   five(argument: [String] = ["string", "string"]): String
+  @meta(value: 6)
   six(argument: InputType = {key: "value"}): Type
 }
 
