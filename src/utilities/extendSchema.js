@@ -323,6 +323,8 @@ export function extendSchema(
         type: extendFieldType(field.type),
         args: keyMap(field.args, arg => arg.name),
         resolve: throwClientSchemaExecutionError,
+        annotations: field.annotations &&
+          keyMap(field.annotations, annotation => annotation.name),
       };
     });
 
@@ -342,6 +344,7 @@ export function extendSchema(
           newFieldMap[fieldName] = {
             type: buildFieldType(field.type),
             args: buildInputValues(field.arguments),
+            annotations: buildAnnotations(field.annotations),
             resolve: throwClientSchemaExecutionError,
           };
         });
@@ -452,6 +455,27 @@ export function extendSchema(
       }
     );
   }
+
+  function buildAnnotations(annotations: Array<InputValueDefinition>) {
+    var wrap = function (left, str, right, condition) {
+      return condition ? `${left}${str}${right}` : str;
+    };
+    return keyValMap(
+      annotations,
+      annotation => annotation.name.value,
+      annotation => keyValMap(
+        annotation.arguments,
+        argument => argument.name.value,
+        argument => wrap(
+          '"',
+          argument.value.value,
+          '"',
+          argument.value.kind === 'StringValue'
+        )
+      )
+    );
+  }
+
 
   function buildFieldType(typeAST: Type): GraphQLType {
     if (typeAST.kind === LIST_TYPE) {

@@ -83,6 +83,11 @@ var printDocASTReducer = {
   Directive: ({ name, arguments: args }) =>
     '@' + name + wrap('(', join(args, ', '), ')'),
 
+  // Annotation
+
+  Annotation: ({ name, arguments: args }) =>
+    '@' + name + wrap('(', join(args, ', '), ')'),
+
   // Type
 
   NamedType: ({ name }) => name,
@@ -96,8 +101,10 @@ var printDocASTReducer = {
     wrap('implements ', join(interfaces, ', '), ' ') +
     block(fields),
 
-  FieldDefinition: ({ name, arguments: args, type }) =>
-    name + wrap('(', join(args, ', '), ')') + ': ' + type,
+  FieldDefinition: ({ name, arguments: args, type, annotations }) =>
+    wrap('', join(annotations, '\n'), '\n') +
+    name + wrap('(', join(args, ', '), ')') + ': ' +
+    type,
 
   InputValueDefinition: ({ name, type, defaultValue }) =>
     name + ': ' + type + wrap(' = ', defaultValue),

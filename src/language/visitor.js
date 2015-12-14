@@ -33,13 +33,14 @@ export var QueryDocumentKeys = {
   ObjectField: [ 'name', 'value' ],
 
   Directive: [ 'name', 'arguments' ],
+  Annotation: [ 'name', 'arguments' ],
 
   NamedType: [ 'name' ],
   ListType: [ 'type' ],
   NonNullType: [ 'type' ],
 
   ObjectTypeDefinition: [ 'name', 'interfaces', 'fields' ],
-  FieldDefinition: [ 'name', 'arguments', 'type' ],
+  FieldDefinition: [ 'name', 'arguments', 'type', 'annotations' ],
   InputValueDefinition: [ 'name', 'type', 'defaultValue' ],
   InterfaceTypeDefinition: [ 'name', 'fields' ],
   UnionTypeDefinition: [ 'name', 'types' ],

@@ -479,6 +479,22 @@ export type GraphQLFieldConfig = {
   resolve?: GraphQLFieldResolveFn;
   deprecationReason?: string;
   description?: ?string;
+  annotations?: GraphQLAnnotationsMap
+}
+
+export type GraphQLAnnotationArgumentMap = {
+  // TODO: not sure if this should be any, or we
+  // need to restrict it to be only a string
+  [argName: string]: any
+}
+
+export type GraphQLAnnotation = {
+  name: string,
+  args?: GraphQLAnnotationArgumentMap
+}
+
+export type GraphQLAnnotationsMap = {
+  [directiveName: string]: GraphQLAnnotation
 }
 
 export type GraphQLFieldConfigArgumentMap = {
@@ -502,6 +518,7 @@ export type GraphQLFieldDefinition = {
   args: Array<GraphQLArgument>;
   resolve?: GraphQLFieldResolveFn;
   deprecationReason?: ?string;
+  annotations?: GraphQLAnnotationsMap
 }
 
 export type GraphQLArgument = {

@@ -42,17 +42,31 @@ function nameNode(name, loc) {
   };
 }
 
+function annotationNode(name, args, loc) {
+  return {
+    kind: 'Annotation',
+    name,
+    arguments: args,
+    loc
+  };
+}
+
 function fieldNode(name, type, loc) {
   return fieldNodeWithArgs(name, type, [], loc);
 }
 
 function fieldNodeWithArgs(name, type, args, loc) {
+  return fieldNodeWithArgsAndAnnotations(name, type, args, [], loc);
+}
+
+function fieldNodeWithArgsAndAnnotations(name, type, args, annotations, loc) {
   return {
     kind: 'FieldDefinition',
     name,
     arguments: args,
     type,
     loc,
+    annotations,
   };
 }
 
@@ -540,5 +554,87 @@ input Hello {
 }`;
     expect(() => parse(body)).to.throw('Error');
   });
+
+  it('Simple fields with annotations', () => {
+    var body = `
+type Hello {
+  @mock(value: "hello")
+  world: String
+  @ignore
+  @mock(value: 2)
+  hello: Int
+}`;
+    var doc = parse(body);
+    var loc = createLocFn(body);
+    var expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeDefinition',
+          name: nameNode('Hello', loc(6, 11)),
+          interfaces: [],
+          fields: [
+            fieldNodeWithArgsAndAnnotations(
+              nameNode('world', loc(40, 45)),
+              typeNode('String', loc(47, 53)),
+              [],
+              [
+                annotationNode(
+                  nameNode('mock', loc(17, 21)),
+                  [
+                    {
+                      kind: 'Argument',
+                      name: nameNode('value', loc(22, 27)),
+                      value: {
+                        kind: 'StringValue',
+                        value: 'hello',
+                        loc: loc(29, 36),
+                      },
+                      loc: loc(22, 36),
+                    }
+                  ],
+                  loc(16, 37)
+                ),
+              ],
+              loc(16, 53)
+            ),
+            fieldNodeWithArgsAndAnnotations(
+              nameNode('hello', loc(84, 89)),
+              typeNode('Int', loc(91, 94)),
+              [],
+              [
+                annotationNode(
+                  nameNode('ignore', loc(57, 63)),
+                  [],
+                  loc(56, 63)
+                ),
+                annotationNode(
+                  nameNode('mock', loc(67, 71)),
+                  [
+                    {
+                      kind: 'Argument',
+                      name: nameNode('value', loc(72, 77)),
+                      value: {
+                        kind: 'IntValue',
+                        value: '2',
+                        loc: loc(79, 80),
+                      },
+                      loc: loc(72, 80),
+                    }
+                  ],
+                  loc(66, 81)
+                ),
+              ],
+              loc(56, 94)
+            )
+          ],
+          loc: loc(1, 96),
+        }
+      ],
+      loc: loc(1, 96),
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
 
 });

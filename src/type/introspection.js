@@ -89,6 +89,39 @@ var __Directive = new GraphQLObjectType({
   }),
 });
 
+var __AnnotationArgument = new GraphQLObjectType({
+  name: '__AnnotationArgument',
+  description:
+    'Arguments provided to annotations are represented as ' +
+    '__AnnotationArgument',
+  fields: () => ({
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    // TODO: value's type here could be any scalar I guess,
+    // is there any way we can encode that? If not, maybe
+    // we can restrict this to be a string.
+    value: { type: new GraphQLNonNull(GraphQLString) },
+  }),
+});
+
+var __Annotation = new GraphQLObjectType({
+  name: '__Annotation',
+  description:
+    'An Annotation provides a way to add metadata to ' +
+    'field definitions in the schema',
+  fields: () => ({
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    args: {
+      type:
+        new GraphQLNonNull(new GraphQLList(
+          new GraphQLNonNull(__AnnotationArgument)
+        )),
+      resolve: annotation => Object.keys(annotation.args).map(
+        name => ({name, value: annotation.args[name]})
+      ) || []
+    },
+  }),
+});
+
 var __Type = new GraphQLObjectType({
   name: '__Type',
   description:
@@ -210,7 +243,13 @@ var __Field = new GraphQLObjectType({
     },
     deprecationReason: {
       type: GraphQLString,
-    }
+    },
+    annotations: {
+      type: new GraphQLNonNull(new GraphQLList(__Annotation)),
+      resolve: field => Object.keys(field.annotations).map(
+        name => ({name, args: field.annotations[name]})
+      ) || []
+    },
   })
 });
 

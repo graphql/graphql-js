@@ -42,6 +42,10 @@ export const OBJECT_FIELD = 'ObjectField';
 
 export const DIRECTIVE = 'Directive';
 
+// Annotation
+
+export const ANNOTATION = 'Annotation';
+
 // Types
 
 export const NAMED_TYPE = 'NamedType';
