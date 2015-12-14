@@ -34,6 +34,7 @@ import type {
   ObjectField,
 
   Directive,
+  Annotation,
 
   Type,
   NamedType,
@@ -77,6 +78,7 @@ import {
   OBJECT_FIELD,
 
   DIRECTIVE,
+  ANNOTATION,
 
   NAMED_TYPE,
   LIST_TYPE,
@@ -589,6 +591,33 @@ function parseDirective(parser): Directive {
   };
 }
 
+// Implements the parsing rules in the Annotations section.
+
+/**
+ * Annotations : Annotation+
+ */
+function parseAnnotations(parser): Array<Annotation> {
+  var annotations = [];
+  while (peek(parser, TokenKind.AT)) {
+    annotations.push(parseAnnotation(parser));
+  }
+  return annotations;
+}
+
+/**
+ * Annotation : @ Name Arguments?
+ */
+function parseAnnotation(parser): Annotation {
+  var start = parser.token.start;
+  expect(parser, TokenKind.AT);
+  return {
+    kind: ANNOTATION,
+    name: parseName(parser),
+    arguments: parseArguments(parser),
+    loc: loc(parser, start)
+  };
+}
+
 
 // Implements the parsing rules in the Types section.
 
@@ -709,10 +738,11 @@ function parseImplementsInterfaces(parser): Array<NamedType> {
 }
 
 /**
- * FieldDefinition : Name ArgumentsDefinition? : Type
+ * FieldDefinition : Annotations? Name ArgumentsDefinition? : Type
  */
 function parseFieldDefinition(parser): FieldDefinition {
   var start = parser.token.start;
+  var annotations = parseAnnotations(parser);
   var name = parseName(parser);
   var args = parseArgumentDefs(parser);
   expect(parser, TokenKind.COLON);
@@ -723,6 +753,7 @@ function parseFieldDefinition(parser): FieldDefinition {
     arguments: args,
     type,
     loc: loc(parser, start),
+    annotations,
   };
 }
 
