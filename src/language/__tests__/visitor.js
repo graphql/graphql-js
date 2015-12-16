@@ -547,7 +547,42 @@ describe('Visitor', () => {
       [ 'leave', 'Field', 1, undefined ],
       [ 'leave', 'SelectionSet', 'selectionSet', 'OperationDefinition' ],
       [ 'leave', 'OperationDefinition', 4, undefined ],
-      [ 'leave', 'Document', undefined, undefined ] ]);
+      [ 'enter', 'TypeExtensionDefinition', 5, undefined ],
+      [
+        'enter',
+        'ObjectTypeDefinition',
+        'definition',
+        'TypeExtensionDefinition',
+      ],
+      [ 'enter', 'Name', 'name', 'ObjectTypeDefinition' ],
+      [ 'leave', 'Name', 'name', 'ObjectTypeDefinition' ],
+      [ 'enter', 'FieldDefinition', 0, undefined ],
+      [ 'enter', 'Name', 'name', 'FieldDefinition' ],
+      [ 'leave', 'Name', 'name', 'FieldDefinition' ],
+      [ 'enter', 'NamedType', 'type', 'FieldDefinition' ],
+      [ 'enter', 'Name', 'name', 'NamedType' ],
+      [ 'leave', 'Name', 'name', 'NamedType' ],
+      [ 'leave', 'NamedType', 'type', 'FieldDefinition' ],
+      [ 'enter', 'Annotation', 0, undefined ],
+      [ 'enter', 'Name', 'name', 'Annotation' ],
+      [ 'leave', 'Name', 'name', 'Annotation' ],
+      [ 'enter', 'Argument', 0, undefined ],
+      [ 'enter', 'Name', 'name', 'Argument' ],
+      [ 'leave', 'Name', 'name', 'Argument' ],
+      [ 'enter', 'StringValue', 'value', 'Argument' ],
+      [ 'leave', 'StringValue', 'value', 'Argument' ],
+      [ 'leave', 'Argument', 0, undefined ],
+      [ 'leave', 'Annotation', 0, undefined ],
+      [ 'leave', 'FieldDefinition', 0, undefined ],
+      [
+        'leave',
+        'ObjectTypeDefinition',
+        'definition',
+        'TypeExtensionDefinition',
+      ],
+      [ 'leave', 'TypeExtensionDefinition', 5, undefined ],
+      [ 'leave', 'Document', undefined, undefined ],
+    ]);
   });
 
   describe('visitInParallel', () => {

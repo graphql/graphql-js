@@ -44,6 +44,7 @@ export type Node = Name
                  | ObjectValue
                  | ObjectField
                  | Directive
+                 | Annotation
                  | ListType
                  | NonNullType
                  | ObjectTypeDefinition
@@ -227,6 +228,14 @@ export type Directive = {
   arguments?: ?Array<Argument>;
 }
 
+// Annotation
+
+export type Annotation = {
+  kind: 'Annotation';
+  loc?: ?Location;
+  name: Name;
+  arguments?: ?Array<Argument>;
+}
 
 // Type Reference
 
@@ -276,6 +285,7 @@ export type FieldDefinition = {
   name: Name;
   arguments: Array<InputValueDefinition>;
   type: Type;
+  annotations?: ?Array<Annotation>;
 }
 
 export type InputValueDefinition = {
