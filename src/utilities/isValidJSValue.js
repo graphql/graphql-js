@@ -33,7 +33,7 @@ export function isValidJSValue(value: any, type: GraphQLInputType): [ string ] {
       if (ofType.name) {
         return [ `Expected "${ofType.name}!", found null.` ];
       }
-      return [ 'Expected non-null value, found null.' ];
+      return [ `Expected non-null value, found null.` ];
     }
     return isValidJSValue(value, ofType);
   }
