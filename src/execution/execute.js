@@ -214,7 +214,7 @@ function executeOperation(
   rootValue: any
 ): Object {
   var type = getOperationRootType(exeContext.schema, operation);
-  var fields = collectFields(exeContext, type, operation.selectionSet, {}, {});
+  var fields = collectFields(exeContext, type, operation.selectionSet, {}, {}, operation);
   if (operation.operation === 'mutation') {
     return executeFieldsSerially(exeContext, type, rootValue, fields);
   }
@@ -340,7 +340,8 @@ function collectFields(
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSet,
   fields: {[key: string]: Array<Field>},
-  visitedFragmentNames: {[key: string]: boolean}
+  visitedFragmentNames: {[key: string]: boolean},
+  parentField: Field | OperationDefinition
 ): {[key: string]: Array<Field>} {
   for (var i = 0; i < selectionSet.selections.length; i++) {
     var selection = selectionSet.selections[i];
@@ -353,6 +354,7 @@ function collectFields(
         if (!fields[name]) {
           fields[name] = [];
         }
+        selection.parentField = parentField;
         fields[name].push(selection);
         break;
       case Kind.INLINE_FRAGMENT:
@@ -365,7 +367,8 @@ function collectFields(
           runtimeType,
           selection.selectionSet,
           fields,
-          visitedFragmentNames
+          visitedFragmentNames,
+          parentField
         );
         break;
       case Kind.FRAGMENT_SPREAD:
@@ -386,7 +389,8 @@ function collectFields(
           runtimeType,
           fragment.selectionSet,
           fields,
-          visitedFragmentNames
+          visitedFragmentNames,
+          parentField
         );
         break;
     }
@@ -749,7 +753,8 @@ function completeValue(
         runtimeType,
         selectionSet,
         subFieldASTs,
-        visitedFragmentNames
+        visitedFragmentNames,
+        fieldASTs[i]
       );
     }
   }
