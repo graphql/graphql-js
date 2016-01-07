@@ -20,6 +20,7 @@ export class GraphQLError extends Error {
   source: Source;
   positions: Array<number>;
   locations: any;
+  fields: string;
   originalError: ?Error;
 
   constructor(
@@ -67,6 +68,24 @@ export class GraphQLError extends Error {
       get() {
         if (this.positions && this.source) {
           return this.positions.map(pos => getLocation(this.source, pos));
+        }
+      }
+    }: any));
+
+    Object.defineProperty(this, 'fields', ({
+      get() {
+        if (nodes && nodes.length) {
+          var node = nodes[0];
+          var fields = [];
+          while (node) {
+            if (node.alias && node.alias.value) {
+              fields.unshift(node.alias.value);
+            } else if (node.name && node.name.value) {
+              fields.unshift(node.name.value);
+            }
+            node = node.parentField;
+          }
+          return fields.join('.');
         }
       }
     }: any));
