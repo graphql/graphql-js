@@ -120,7 +120,8 @@ function printFields(type) {
   var fieldMap = type.getFields();
   var fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
   return fields.map(
-    f => `  ${f.name}${printArgs(f)}: ${f.type}`
+    f => `${printAnnotations(f.annotations)}` +
+         `  ${f.name}${printArgs(f)}: ${f.type}`
   ).join('\n');
 }
 
@@ -137,4 +138,21 @@ function printInputValue(arg) {
     argDecl += ` = ${print(astFromValue(arg.defaultValue, arg.type))}`;
   }
   return argDecl;
+}
+
+function printAnnotations(annotations) {
+  if (!annotations || Object.keys(annotations).length === 0) {
+    return '';
+  }
+  var printAnnotationArgs = function (args) {
+    if (args.length === 0) {
+      return '';
+    }
+    return '(' +
+      Object.keys(args).map(name => `${name}: ${args[name]}`).join(', ') +
+      ')';
+  };
+  return Object.keys(annotations).map(
+    name => `  @${name}${printAnnotationArgs(annotations[name])}`
+  ).join('\n') + '\n';
 }

@@ -1294,4 +1294,75 @@ describe('Introspection', () => {
     });
   });
 
+  it('introspection of directives on fields', async () => {
+    var TestType = new GraphQLObjectType({
+      name: 'TestType',
+      fields: {
+        testString: {
+          type: GraphQLString,
+          annotations: {
+            iAmAnAnnotation: { a: '10' },
+            annotationWithTwoArguments: { arg1: 'a', arg2: 'b' }
+          },
+        },
+      }
+    });
+
+    var schema = new GraphQLSchema({ query: TestType });
+    var request = `
+      {
+        __type(name: "TestType") {
+          name
+          fields {
+            name
+            annotations {
+              name
+              args {
+                name
+                value
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    return expect(
+      await graphql(schema, request)
+    ).to.deep.equal({
+      data: {
+        __type: {
+          name: 'TestType',
+          fields: [ {
+            name: 'testString',
+            annotations: [
+              {
+                name: 'iAmAnAnnotation',
+                args: [
+                  {
+                    name: 'a',
+                    value: '10',
+                  },
+                ],
+              },
+              {
+                name: 'annotationWithTwoArguments',
+                args: [
+                  {
+                    name: 'arg1',
+                    value: 'a',
+                  },
+                  {
+                    name: 'arg2',
+                    value: 'b',
+                  },
+                ],
+              },
+            ]
+          } ]
+        }
+      }
+    });
+  });
+
 });

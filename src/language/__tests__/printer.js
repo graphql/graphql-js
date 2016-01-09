@@ -97,6 +97,11 @@ fragment frag on Friend {
   unnamed(truthy: true, falsey: false)
   query
 }
+
+extend type User {
+  @iAmAnAnnotation(default: "Foo")
+  name: String
+}
 `);
 
   });
