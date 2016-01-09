@@ -13,7 +13,7 @@ http://graphql.org/docs/api-reference-graphql/.
 
 For questions, ask [Stack Overflow](http://stackoverflow.com/questions/tagged/graphql).
 
-For discussion, join [#react on Discord](http://join.reactiflux.com/).
+For discussion, join [#graphql on Discord](http://join.reactiflux.com/).
 
 ## Technical Preview Contents
 
