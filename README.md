@@ -7,10 +7,13 @@ on complex application data models.
 [![npm version](https://badge.fury.io/js/graphql.svg)](http://badge.fury.io/js/graphql)
 [![Build Status](https://travis-ci.org/graphql/graphql-js.svg)](https://travis-ci.org/graphql/graphql-js)
 [![Coverage Status](https://coveralls.io/repos/graphql/graphql-js/badge.svg?branch=master)](https://coveralls.io/r/graphql/graphql-js?branch=master)
-[![Public Slack Discussion](https://graphql-slack.herokuapp.com/badge.svg)](https://graphql-slack.herokuapp.com/)
 
 See more complete documentation at http://graphql.org/ and
 http://graphql.org/docs/api-reference-graphql/.
+
+For questions, ask [Stack Overflow](http://stackoverflow.com/questions/tagged/graphql).
+
+For discussion, join [#react on Discord](http://join.reactiflux.com/).
 
 ## Technical Preview Contents
 
