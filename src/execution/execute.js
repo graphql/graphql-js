@@ -679,7 +679,8 @@ function completeValue(
   if (returnType instanceof GraphQLList) {
     invariant(
       Array.isArray(result),
-      'User Error: expected iterable, but did not find one.'
+      'User Error: expected iterable, but did not find one ' +
+      `for field ${info.parentType}.${info.fieldName}.
     );
 
     // This is specified as a simple map, however we're optimizing the path
