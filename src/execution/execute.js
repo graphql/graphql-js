@@ -680,7 +680,7 @@ function completeValue(
     invariant(
       Array.isArray(result),
       'User Error: expected iterable, but did not find one ' +
-      `for field ${info.parentType}.${info.fieldName}.
+      `for field ${info.parentType}.${info.fieldName}.`
     );
 
     // This is specified as a simple map, however we're optimizing the path
