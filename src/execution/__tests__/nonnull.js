@@ -21,12 +21,12 @@ import {
   GraphQLNonNull
 } from '../../type';
 
-var syncError = new Error('sync');
-var nonNullSyncError = new Error('nonNullSync');
-var promiseError = new Error('promise');
-var nonNullPromiseError = new Error('nonNullPromise');
+const syncError = new Error('sync');
+const nonNullSyncError = new Error('nonNullSync');
+const promiseError = new Error('promise');
+const nonNullPromiseError = new Error('nonNullPromise');
 
-var throwingData = {
+const throwingData = {
   sync() { throw syncError; },
   nonNullSync() { throw nonNullSyncError; },
   promise() {
@@ -65,7 +65,7 @@ var throwingData = {
   },
 };
 
-var nullingData = {
+const nullingData = {
   sync() { return null; },
   nonNullSync() { return null; },
   promise() {
@@ -104,7 +104,7 @@ var nullingData = {
   },
 };
 
-var dataType = new GraphQLObjectType({
+const dataType = new GraphQLObjectType({
   name: 'DataType',
   fields: () => ({
     sync: { type: GraphQLString },
@@ -117,22 +117,22 @@ var dataType = new GraphQLObjectType({
     nonNullPromiseNest: { type: new GraphQLNonNull(dataType) },
   })
 });
-var schema = new GraphQLSchema({
+const schema = new GraphQLSchema({
   query: dataType
 });
 
 describe('Execute: handles non-nullable types', () => {
 
   it('nulls a nullable field that throws synchronously', async () => {
-    var doc = `
+    const doc = `
       query Q {
         sync
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         sync: null,
       },
@@ -148,15 +148,15 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls a nullable field that throws in a promise', async () => {
-    var doc = `
+    const doc = `
       query Q {
         promise
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         promise: null,
       },
@@ -172,7 +172,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls a synchronously returned object that contains a non-nullable field that throws synchronously', async () => {
-    var doc = `
+    const doc = `
       query Q {
         nest {
           nonNullSync,
@@ -180,9 +180,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         nest: null
       },
@@ -198,7 +198,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls a synchronously returned object that contains a non-nullable field that throws in a promise', async () => {
-    var doc = `
+    const doc = `
       query Q {
         nest {
           nonNullPromise,
@@ -206,9 +206,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         nest: null
       },
@@ -224,7 +224,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls an object returned in a promise that contains a non-nullable field that throws synchronously', async () => {
-    var doc = `
+    const doc = `
       query Q {
         promiseNest {
           nonNullSync,
@@ -232,9 +232,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         promiseNest: null
       },
@@ -250,7 +250,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls an object returned in a promise that contains a non-nullable field that throws in a promise', async () => {
-    var doc = `
+    const doc = `
       query Q {
         promiseNest {
           nonNullPromise,
@@ -258,9 +258,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         promiseNest: null
       },
@@ -276,7 +276,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls a complex tree of nullable fields that throw', async () => {
-    var doc = `
+    const doc = `
       query Q {
         nest {
           sync
@@ -305,9 +305,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         nest: {
           sync: null,
@@ -368,7 +368,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls the first nullable object after a field throws in a long chain of fields that are non-null', async () => {
-    var doc = `
+    const doc = `
       query Q {
         nest {
           nonNullNest {
@@ -417,9 +417,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         nest: null,
         promiseNest: null,
@@ -445,15 +445,15 @@ describe('Execute: handles non-nullable types', () => {
 
 
   it('nulls a nullable field that synchronously returns null', async () => {
-    var doc = `
+    const doc = `
       query Q {
         sync
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         sync: null,
       }
@@ -465,15 +465,15 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls a nullable field that returns null in a promise', async () => {
-    var doc = `
+    const doc = `
       query Q {
         promise
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         promise: null,
       }
@@ -485,7 +485,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls a synchronously returned object that contains a non-nullable field that returns null synchronously', async () => {
-    var doc = `
+    const doc = `
       query Q {
         nest {
           nonNullSync,
@@ -493,9 +493,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         nest: null
       },
@@ -511,7 +511,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls a synchronously returned object that contains a non-nullable field that returns null in a promise', async () => {
-    var doc = `
+    const doc = `
       query Q {
         nest {
           nonNullPromise,
@@ -519,9 +519,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         nest: null
       },
@@ -537,7 +537,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls an object returned in a promise that contains a non-nullable field that returns null synchronously', async () => {
-    var doc = `
+    const doc = `
       query Q {
         promiseNest {
           nonNullSync,
@@ -545,9 +545,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         promiseNest: null
       },
@@ -563,7 +563,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls an object returned in a promise that contains a non-nullable field that returns null ina a promise', async () => {
-    var doc = `
+    const doc = `
       query Q {
         promiseNest {
           nonNullPromise,
@@ -571,9 +571,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         promiseNest: null
       },
@@ -589,7 +589,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls a complex tree of nullable fields that return null', async () => {
-    var doc = `
+    const doc = `
       query Q {
         nest {
           sync
@@ -618,9 +618,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         nest: {
           sync: null,
@@ -655,7 +655,7 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls the first nullable object after a field returns null in a long chain of fields that are non-null', async () => {
-    var doc = `
+    const doc = `
       query Q {
         nest {
           nonNullNest {
@@ -704,9 +704,9 @@ describe('Execute: handles non-nullable types', () => {
       }
     `;
 
-    var ast = parse(doc);
+    const ast = parse(doc);
 
-    var expected = {
+    const expected = {
       data: {
         nest: null,
         promiseNest: null,
@@ -731,11 +731,11 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls the top level if sync non-nullable field throws', async () => {
-    var doc = `
+    const doc = `
       query Q { nonNullSync }
     `;
 
-    var expected = {
+    const expected = {
       data: null,
       errors: [
         { message: nonNullSyncError.message,
@@ -749,11 +749,11 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls the top level if async non-nullable field errors', async () => {
-    var doc = `
+    const doc = `
       query Q { nonNullPromise }
     `;
 
-    var expected = {
+    const expected = {
       data: null,
       errors: [
         { message: nonNullPromiseError.message,
@@ -767,11 +767,11 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls the top level if sync non-nullable field returns null', async () => {
-    var doc = `
+    const doc = `
       query Q { nonNullSync }
     `;
 
-    var expected = {
+    const expected = {
       data: null,
       errors: [
         { message: 'Cannot return null for non-nullable field DataType.nonNullSync.',
@@ -785,11 +785,11 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   it('nulls the top level if async non-nullable field resolves null', async () => {
-    var doc = `
+    const doc = `
       query Q { nonNullPromise }
     `;
 
-    var expected = {
+    const expected = {
       data: null,
       errors: [
         { message: 'Cannot return null for non-nullable field DataType.nonNullPromise.',

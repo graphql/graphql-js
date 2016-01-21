@@ -567,9 +567,9 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful information for dashes in names', () => {
-    var q = 'a-b';
-    var lexer = lex(new Source(q));
-    var firstToken = lexer();
+    const q = 'a-b';
+    const lexer = lex(new Source(q));
+    const firstToken = lexer();
     expect(firstToken).to.deep.equal({
       kind: TokenKind.NAME,
       start: 0,

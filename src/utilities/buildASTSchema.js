@@ -100,7 +100,7 @@ export function buildASTSchema(
     throw new Error('must pass in query type');
   }
 
-  var typeDefs = ast.definitions.filter(d => {
+  const typeDefs = ast.definitions.filter(d => {
     switch (d.kind) {
       case OBJECT_TYPE_DEFINITION:
       case INTERFACE_TYPE_DEFINITION:
@@ -111,7 +111,7 @@ export function buildASTSchema(
     }
   });
 
-  var astMap = keyMap(typeDefs, d => d.name.value);
+  const astMap = keyMap(typeDefs, d => d.name.value);
 
   if (isNullish(astMap[queryTypeName])) {
     throw new Error('Specified query type ' + queryTypeName +
@@ -137,7 +137,7 @@ export function buildASTSchema(
    **/
   function getTypeDefProducer() {
 
-    var innerTypeMap = {
+    const innerTypeMap = {
       String: GraphQLString,
       Int: GraphQLInt,
       Float: GraphQLFloat,
@@ -146,7 +146,7 @@ export function buildASTSchema(
     };
 
     return typeAST => {
-      var typeName = getInnerTypeName(typeAST);
+      const typeName = getInnerTypeName(typeAST);
       if (!isNullish(innerTypeMap[typeName])) {
         return buildWrappedType(innerTypeMap[typeName], typeAST);
       }
@@ -155,7 +155,7 @@ export function buildASTSchema(
         throw new Error(`Type ${typeName} not found in document`);
       }
 
-      var innerTypeDef = makeSchemaDef(astMap[typeName]);
+      const innerTypeDef = makeSchemaDef(astMap[typeName]);
       if (isNullish(innerTypeDef)) {
         throw new Error('Nothing constructed for ' + typeName);
       }
@@ -164,13 +164,13 @@ export function buildASTSchema(
     };
   }
 
-  var produceTypeDef = getTypeDefProducer(ast);
+  const produceTypeDef = getTypeDefProducer(ast);
 
   ast.definitions.forEach(produceTypeDef);
 
-  var queryType = produceTypeDef(astMap[queryTypeName]);
+  const queryType = produceTypeDef(astMap[queryTypeName]);
 
-  var schemaBody = {
+  const schemaBody = {
     query: queryType
   };
 
@@ -207,8 +207,8 @@ export function buildASTSchema(
   }
 
   function makeTypeDef(def: ObjectTypeDefinition) {
-    var typeName = def.name.value;
-    var config = {
+    const typeName = def.name.value;
+    const config = {
       name: typeName,
       fields: () => makeFieldDefMap(def),
       interfaces: () => makeImplementedInterfaces(def),
@@ -236,15 +236,15 @@ export function buildASTSchema(
       values,
       value => value.name.value,
       value => {
-        var type = produceTypeDef(value.type);
+        const type = produceTypeDef(value.type);
         return { type, defaultValue: valueFromAST(value.defaultValue, type) };
       }
     );
   }
 
   function makeInterfaceDef(def: InterfaceTypeDefinition) {
-    var typeName = def.name.value;
-    var config = {
+    const typeName = def.name.value;
+    const config = {
       name: typeName,
       resolveType: () => null,
       fields: () => makeFieldDefMap(def),
@@ -253,7 +253,7 @@ export function buildASTSchema(
   }
 
   function makeEnumDef(def: EnumTypeDefinition) {
-    var enumType = new GraphQLEnumType({
+    const enumType = new GraphQLEnumType({
       name: def.name.value,
       values: keyValMap(def.values, v => v.name.value, () => ({})),
     });

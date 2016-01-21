@@ -15,20 +15,20 @@
  * This provides a convenient lookup for the array items if the key function
  * produces unique results.
  *
- *     var phoneBook = [
+ *     const phoneBook = [
  *       { name: 'Jon', num: '555-1234' },
  *       { name: 'Jenny', num: '867-5309' }
  *     ]
  *
  *     // { Jon: { name: 'Jon', num: '555-1234' },
  *     //   Jenny: { name: 'Jenny', num: '867-5309' } }
- *     var entriesByName = keyMap(
+ *     const entriesByName = keyMap(
  *       phoneBook,
  *       entry => entry.name
  *     )
  *
  *     // { name: 'Jenny', num: '857-6309' }
- *     var jennyEntry = entriesByName['Jenny']
+ *     const jennyEntry = entriesByName['Jenny']
  *
  */
 export default function keyMap<T>(

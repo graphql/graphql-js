@@ -43,7 +43,7 @@ export class GraphQLError extends Error {
           return source;
         }
         if (nodes && nodes.length > 0) {
-          var node = nodes[0];
+          const node = nodes[0];
           return node && node.loc && node.loc.source;
         }
       }
@@ -55,7 +55,7 @@ export class GraphQLError extends Error {
           return positions;
         }
         if (nodes) {
-          var nodePositions = nodes.map(node => node.loc && node.loc.start);
+          const nodePositions = nodes.map(node => node.loc && node.loc.start);
           if (nodePositions.some(p => p)) {
             return nodePositions;
           }

@@ -16,7 +16,7 @@ import {
 
 
 function badValue(argName, typeName, value, line, column, errors) {
-  var realErrors;
+  let realErrors;
   if (!errors) {
     realErrors = [
       `Expected type "${typeName}", found ${value}.`

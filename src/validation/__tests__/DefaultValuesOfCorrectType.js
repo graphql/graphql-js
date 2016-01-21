@@ -24,7 +24,7 @@ function defaultForNonNullArg(varName, typeName, guessTypeName, line, column) {
 }
 
 function badValue(varName, typeName, val, line, column, errors) {
-  var realErrors;
+  let realErrors;
   if (!errors) {
     realErrors = [
       `Expected type "${typeName}", found ${val}.`

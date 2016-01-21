@@ -64,7 +64,7 @@ export function astFromValue(
   // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
   // the value is not an array, convert the value using the list's item type.
   if (Array.isArray(value)) {
-    var itemType = type instanceof GraphQLList ? type.ofType : null;
+    const itemType = type instanceof GraphQLList ? type.ofType : null;
     return {
       kind: LIST,
       values: value.map(item => astFromValue(item, itemType))
@@ -84,8 +84,8 @@ export function astFromValue(
   // differentiate if available, otherwise prefer Int if the value is a
   // valid Int.
   if (typeof value === 'number') {
-    var stringNum = String(value);
-    var isIntValue = /^[0-9]+$/.test(stringNum);
+    const stringNum = String(value);
+    const isIntValue = /^[0-9]+$/.test(stringNum);
     if (isIntValue) {
       if (type === GraphQLFloat) {
         return { kind: FLOAT, value: stringNum + '.0' };
@@ -112,14 +112,14 @@ export function astFromValue(
 
   // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object.
-  var fields = [];
+  const fields = [];
   Object.keys(value).forEach(fieldName => {
-    var fieldType;
+    let fieldType;
     if (type instanceof GraphQLInputObjectType) {
-      var fieldDef = type.getFields()[fieldName];
+      const fieldDef = type.getFields()[fieldName];
       fieldType = fieldDef && fieldDef.type;
     }
-    var fieldValue = astFromValue(value[fieldName], fieldType);
+    const fieldValue = astFromValue(value[fieldName], fieldType);
     if (fieldValue) {
       fields.push({
         kind: OBJECT_FIELD,

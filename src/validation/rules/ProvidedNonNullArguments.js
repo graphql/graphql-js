@@ -43,15 +43,15 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
       leave(fieldAST) {
-        var fieldDef = context.getFieldDef();
+        const fieldDef = context.getFieldDef();
         if (!fieldDef) {
           return false;
         }
-        var argASTs = fieldAST.arguments || [];
+        const argASTs = fieldAST.arguments || [];
 
-        var argASTMap = keyMap(argASTs, arg => arg.name.value);
+        const argASTMap = keyMap(argASTs, arg => arg.name.value);
         fieldDef.args.forEach(argDef => {
-          var argAST = argASTMap[argDef.name];
+          const argAST = argASTMap[argDef.name];
           if (!argAST && argDef.type instanceof GraphQLNonNull) {
             context.reportError(new GraphQLError(
               missingFieldArgMessage(
@@ -69,15 +69,15 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
     Directive: {
       // Validate on leave to allow for deeper errors to appear first.
       leave(directiveAST) {
-        var directiveDef = context.getDirective();
+        const directiveDef = context.getDirective();
         if (!directiveDef) {
           return false;
         }
-        var argASTs = directiveAST.arguments || [];
+        const argASTs = directiveAST.arguments || [];
 
-        var argASTMap = keyMap(argASTs, arg => arg.name.value);
+        const argASTMap = keyMap(argASTs, arg => arg.name.value);
         directiveDef.args.forEach(argDef => {
-          var argAST = argASTMap[argDef.name];
+          const argAST = argASTMap[argDef.name];
           if (!argAST && argDef.type instanceof GraphQLNonNull) {
             context.reportError(new GraphQLError(
               missingDirectiveArgMessage(

@@ -31,7 +31,7 @@ export function requiredSubselectionMessage(field: any, type: any): string {
 export function ScalarLeafs(context: ValidationContext): any {
   return {
     Field(node: Field) {
-      var type = context.getType();
+      const type = context.getType();
       if (type) {
         if (isLeafType(type)) {
           if (node.selectionSet) {

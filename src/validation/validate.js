@@ -58,7 +58,7 @@ export function validate(
     'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
     'not multiple versions of GraphQL installed in your node_modules directory.'
   );
-  var typeInfo = new TypeInfo(schema);
+  const typeInfo = new TypeInfo(schema);
   return visitUsingRules(schema, typeInfo, ast, rules || specifiedRules);
 }
 
@@ -129,7 +129,7 @@ export class ValidationContext {
   }
 
   getFragment(name: string): ?FragmentDefinition {
-    var fragments = this._fragments;
+    let fragments = this._fragments;
     if (!fragments) {
       this._fragments = fragments =
         this.getDocument().definitions.reduce((frags, statement) => {

@@ -43,16 +43,16 @@ export function unknownDirectiveArgMessage(
 export function KnownArgumentNames(context: ValidationContext): any {
   return {
     Argument(node, key, parent, path, ancestors) {
-      var argumentOf = ancestors[ancestors.length - 1];
+      const argumentOf = ancestors[ancestors.length - 1];
       if (argumentOf.kind === FIELD) {
-        var fieldDef = context.getFieldDef();
+        const fieldDef = context.getFieldDef();
         if (fieldDef) {
-          var fieldArgDef = find(
+          const fieldArgDef = find(
             fieldDef.args,
             arg => arg.name === node.name.value
           );
           if (!fieldArgDef) {
-            var parentType = context.getParentType();
+            const parentType = context.getParentType();
             invariant(parentType);
             context.reportError(new GraphQLError(
               unknownArgMessage(
@@ -65,9 +65,9 @@ export function KnownArgumentNames(context: ValidationContext): any {
           }
         }
       } else if (argumentOf.kind === DIRECTIVE) {
-        var directive = context.getDirective();
+        const directive = context.getDirective();
         if (directive) {
-          var directiveArgDef = find(
+          const directiveArgDef = find(
             directive.args,
             arg => arg.name === node.name.value
           );

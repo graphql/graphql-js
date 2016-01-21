@@ -25,8 +25,8 @@ export function unknownFragmentMessage(fragName: any): string {
 export function KnownFragmentNames(context: ValidationContext): any {
   return {
     FragmentSpread(node) {
-      var fragmentName = node.name.value;
-      var fragment = context.getFragment(fragmentName);
+      const fragmentName = node.name.value;
+      const fragment = context.getFragment(fragmentName);
       if (!fragment) {
         context.reportError(new GraphQLError(
           unknownFragmentMessage(fragmentName),

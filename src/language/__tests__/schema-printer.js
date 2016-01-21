@@ -17,7 +17,7 @@ import { print } from '../printer';
 describe('Printer', () => {
 
   it('prints minimal ast', () => {
-    var ast = {
+    const ast = {
       kind: 'ScalarTypeDefinition',
       name: { kind: 'Name', value: 'foo' }
     };
@@ -25,29 +25,29 @@ describe('Printer', () => {
   });
 
   it('produces helpful error messages', () => {
-    var badAst1 = { random: 'Data' };
+    const badAst1 = { random: 'Data' };
     expect(() => print(badAst1)).to.throw(
       'Invalid AST Node: {"random":"Data"}'
     );
   });
 
-  var kitchenSink = readFileSync(
+  const kitchenSink = readFileSync(
     join(__dirname, '/schema-kitchen-sink.graphql'),
     { encoding: 'utf8' }
   );
 
   it('does not alter ast', () => {
-    var ast = parse(kitchenSink);
-    var astCopy = JSON.parse(JSON.stringify(ast));
+    const ast = parse(kitchenSink);
+    const astCopy = JSON.parse(JSON.stringify(ast));
     print(ast);
     expect(ast).to.deep.equal(astCopy);
   });
 
   it('prints kitchen sink', () => {
 
-    var ast = parse(kitchenSink);
+    const ast = parse(kitchenSink);
 
-    var printed = print(ast);
+    const printed = print(ast);
 
     expect(printed).to.equal(
 `type Foo implements Bar {

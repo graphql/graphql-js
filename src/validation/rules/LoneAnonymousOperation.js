@@ -24,7 +24,7 @@ export function anonOperationNotAloneMessage(): string {
  * (the query short-hand) that it contains only that one operation definition.
  */
 export function LoneAnonymousOperation(context: ValidationContext): any {
-  var operationCount = 0;
+  let operationCount = 0;
   return {
     Document(node) {
       operationCount = node.definitions.filter(

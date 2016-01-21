@@ -21,9 +21,9 @@ export function getOperationAST(
   documentAST: Document,
   operationName: ?string
 ): ?OperationDefinition {
-  var operation = null;
-  for (var i = 0; i < documentAST.definitions.length; i++) {
-    var definition = documentAST.definitions[i];
+  let operation = null;
+  for (let i = 0; i < documentAST.definitions.length; i++) {
+    const definition = documentAST.definitions[i];
     if (definition.kind === OPERATION_DEFINITION) {
       if (!operationName) {
         // If no operation name was provided, only return an Operation if there

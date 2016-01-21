@@ -53,16 +53,16 @@ function reasonMessage(reason: ConflictReasonMessage): string {
  * without ambiguity.
  */
 export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
-  var comparedSet = new PairSet();
+  const comparedSet = new PairSet();
 
   function findConflicts(fieldMap: AstAndDefCollection): Array<Conflict> {
-    var conflicts = [];
+    const conflicts = [];
     Object.keys(fieldMap).forEach(responseName => {
-      var fields = fieldMap[responseName];
+      const fields = fieldMap[responseName];
       if (fields.length > 1) {
-        for (var i = 0; i < fields.length; i++) {
-          for (var j = i; j < fields.length; j++) {
-            var conflict = findConflict(responseName, fields[i], fields[j]);
+        for (let i = 0; i < fields.length; i++) {
+          for (let j = i; j < fields.length; j++) {
+            const conflict = findConflict(responseName, fields[i], fields[j]);
             if (conflict) {
               conflicts.push(conflict);
             }
@@ -78,8 +78,8 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
     field1: AstAndDef,
     field2: AstAndDef
   ): ?Conflict {
-    var [ parentType1, ast1, def1 ] = field1;
-    var [ parentType2, ast2, def2 ] = field2;
+    const [ parentType1, ast1, def1 ] = field1;
+    const [ parentType2, ast2, def2 ] = field2;
 
     // Not a pair.
     if (ast1 === ast2) {
@@ -105,8 +105,8 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
     }
     comparedSet.add(ast1, ast2);
 
-    var name1 = ast1.name.value;
-    var name2 = ast2.name.value;
+    const name1 = ast1.name.value;
+    const name2 = ast2.name.value;
     if (name1 !== name2) {
       return [
         [ responseName, `${name1} and ${name2} are different fields` ],
@@ -115,8 +115,8 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
       ];
     }
 
-    var type1 = def1 && def1.type;
-    var type2 = def2 && def2.type;
+    const type1 = def1 && def1.type;
+    const type2 = def2 && def2.type;
     if (type1 && type2 && !isEqualType(type1, type2)) {
       return [
         [ responseName, `they return differing types ${type1} and ${type2}` ],
@@ -133,11 +133,11 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
       ];
     }
 
-    var selectionSet1 = ast1.selectionSet;
-    var selectionSet2 = ast2.selectionSet;
+    const selectionSet1 = ast1.selectionSet;
+    const selectionSet2 = ast2.selectionSet;
     if (selectionSet1 && selectionSet2) {
-      var visitedFragmentNames = {};
-      var subfieldMap = collectFieldASTsAndDefs(
+      const visitedFragmentNames = {};
+      let subfieldMap = collectFieldASTsAndDefs(
         context,
         getNamedType(type1),
         selectionSet1,
@@ -150,7 +150,7 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
         visitedFragmentNames,
         subfieldMap
       );
-      var conflicts = findConflicts(subfieldMap);
+      const conflicts = findConflicts(subfieldMap);
       if (conflicts.length > 0) {
         return [
           [ responseName, conflicts.map(([ reason ]) => reason) ],
@@ -172,12 +172,12 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
       // Note: we validate on the reverse traversal so deeper conflicts will be
       // caught first, for clearer error messages.
       leave(selectionSet) {
-        var fieldMap = collectFieldASTsAndDefs(
+        const fieldMap = collectFieldASTsAndDefs(
           context,
           context.getParentType(),
           selectionSet
         );
-        var conflicts = findConflicts(fieldMap);
+        const conflicts = findConflicts(fieldMap);
         conflicts.forEach(
           ([ [ responseName, reason ], fields1, fields2 ]) =>
             context.reportError(new GraphQLError(
@@ -208,7 +208,7 @@ function sameArguments(
     return false;
   }
   return arguments1.every(argument1 => {
-    var argument2 = find(
+    const argument2 = find(
       arguments2,
       argument => argument.name.value === argument1.name.value
     );
@@ -239,27 +239,28 @@ function collectFieldASTsAndDefs(
   visitedFragmentNames?: {[key: string]: boolean},
   astAndDefs?: AstAndDefCollection
 ): AstAndDefCollection {
-  var _visitedFragmentNames = visitedFragmentNames || {};
-  var _astAndDefs = astAndDefs || {};
-  for (var i = 0; i < selectionSet.selections.length; i++) {
-    var selection = selectionSet.selections[i];
+  const _visitedFragmentNames = visitedFragmentNames || {};
+  let _astAndDefs = astAndDefs || {};
+  for (let i = 0; i < selectionSet.selections.length; i++) {
+    const selection = selectionSet.selections[i];
     switch (selection.kind) {
       case FIELD:
-        var fieldName = selection.name.value;
-        var fieldDef;
+        const fieldName = selection.name.value;
+        let fieldDef;
         if (parentType instanceof GraphQLObjectType ||
             parentType instanceof GraphQLInterfaceType) {
           fieldDef = parentType.getFields()[fieldName];
         }
-        var responseName = selection.alias ? selection.alias.value : fieldName;
+        const responseName =
+          selection.alias ? selection.alias.value : fieldName;
         if (!_astAndDefs[responseName]) {
           _astAndDefs[responseName] = [];
         }
         _astAndDefs[responseName].push([ parentType, selection, fieldDef ]);
         break;
       case INLINE_FRAGMENT:
-        var typeCondition = selection.typeCondition;
-        var inlineFragmentType = typeCondition ?
+        const typeCondition = selection.typeCondition;
+        const inlineFragmentType = typeCondition ?
           typeFromAST(context.getSchema(), selection.typeCondition) :
           parentType;
         _astAndDefs = collectFieldASTsAndDefs(
@@ -271,16 +272,16 @@ function collectFieldASTsAndDefs(
         );
         break;
       case FRAGMENT_SPREAD:
-        var fragName = selection.name.value;
+        const fragName = selection.name.value;
         if (_visitedFragmentNames[fragName]) {
           continue;
         }
         _visitedFragmentNames[fragName] = true;
-        var fragment = context.getFragment(fragName);
+        const fragment = context.getFragment(fragName);
         if (!fragment) {
           continue;
         }
-        var fragmentType =
+        const fragmentType =
           typeFromAST(context.getSchema(), fragment.typeCondition);
         _astAndDefs = collectFieldASTsAndDefs(
           context,
@@ -307,7 +308,7 @@ class PairSet {
   }
 
   has(a, b) {
-    var first = this._data.get(a);
+    const first = this._data.get(a);
     return first && first.has(b);
   }
 
@@ -318,7 +319,7 @@ class PairSet {
 }
 
 function _pairSetAdd(data, a, b) {
-  var set = data.get(a);
+  let set = data.get(a);
   if (!set) {
     set = new Set();
     data.set(a, set);

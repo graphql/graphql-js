@@ -49,7 +49,7 @@ export function valueFromAST(
   variables?: ?{ [key: string]: any }
 ): any {
   if (type instanceof GraphQLNonNull) {
-    var nullableType: GraphQLInputType = (type.ofType: any);
+    const nullableType: GraphQLInputType = (type.ofType: any);
     // Note: we're not checking that the result of valueFromAST is non-null.
     // We're assuming that this query has been validated and the value used
     // here is of the correct type.
@@ -61,7 +61,7 @@ export function valueFromAST(
   }
 
   if (valueAST.kind === Kind.VARIABLE) {
-    var variableName = (valueAST: Variable).name.value;
+    const variableName = (valueAST: Variable).name.value;
     if (!variables || !variables.hasOwnProperty(variableName)) {
       return null;
     }
@@ -72,7 +72,7 @@ export function valueFromAST(
   }
 
   if (type instanceof GraphQLList) {
-    var itemType: GraphQLInputType = (type.ofType: any);
+    const itemType: GraphQLInputType = (type.ofType: any);
     if (valueAST.kind === Kind.LIST) {
       return (valueAST: ListValue).values.map(
         itemAST => valueFromAST(itemAST, itemType, variables)
@@ -82,18 +82,18 @@ export function valueFromAST(
   }
 
   if (type instanceof GraphQLInputObjectType) {
-    var fields = type.getFields();
+    const fields = type.getFields();
     if (valueAST.kind !== Kind.OBJECT) {
       return null;
     }
-    var fieldASTs = keyMap(
+    const fieldASTs = keyMap(
       (valueAST: ObjectValue).fields,
       field => field.name.value
     );
     return Object.keys(fields).reduce((obj, fieldName) => {
-      var field = fields[fieldName];
-      var fieldAST = fieldASTs[fieldName];
-      var fieldValue =
+      const field = fields[fieldName];
+      const fieldAST = fieldASTs[fieldName];
+      let fieldValue =
         valueFromAST(fieldAST && fieldAST.value, field.type, variables);
       if (isNullish(fieldValue)) {
         fieldValue = field.defaultValue;
@@ -110,7 +110,7 @@ export function valueFromAST(
     'Must be input type'
   );
 
-  var parsed = type.parseLiteral(valueAST);
+  const parsed = type.parseLiteral(valueAST);
   if (!isNullish(parsed)) {
     return parsed;
   }

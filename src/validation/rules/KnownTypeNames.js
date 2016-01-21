@@ -32,8 +32,8 @@ export function KnownTypeNames(context: ValidationContext): any {
     UnionTypeDefinition: () => false,
     InputObjectTypeDefinition: () => false,
     NamedType(node) {
-      var typeName = node.name.value;
-      var type = context.getSchema().getType(typeName);
+      const typeName = node.name.value;
+      const type = context.getSchema().getType(typeName);
       if (!type) {
         context.reportError(
           new GraphQLError(unknownTypeMessage(typeName), [ node ])

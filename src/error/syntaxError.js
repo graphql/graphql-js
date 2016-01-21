@@ -21,8 +21,8 @@ export function syntaxError(
   position: number,
   description: string
 ): GraphQLError {
-  var location = getLocation(source, position);
-  var error = new GraphQLError(
+  const location = getLocation(source, position);
+  const error = new GraphQLError(
     `Syntax Error ${source.name} (${location.line}:${location.column}) ` +
     description + '\n\n' + highlightSourceAtLocation(source, location),
     undefined,
@@ -38,12 +38,12 @@ export function syntaxError(
  * Source document.
  */
 function highlightSourceAtLocation(source, location) {
-  var line = location.line;
-  var prevLineNum = (line - 1).toString();
-  var lineNum = line.toString();
-  var nextLineNum = (line + 1).toString();
-  var padLen = nextLineNum.length;
-  var lines = source.body.split(/\r\n|[\n\r\u2028\u2029]/g);
+  const line = location.line;
+  const prevLineNum = (line - 1).toString();
+  const lineNum = line.toString();
+  const nextLineNum = (line + 1).toString();
+  const padLen = nextLineNum.length;
+  const lines = source.body.split(/\r\n|[\n\r\u2028\u2029]/g);
   return (
     (line >= 2 ?
       lpad(padLen, prevLineNum) + ': ' + lines[line - 2] + '\n' : '') +

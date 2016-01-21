@@ -16,35 +16,35 @@ import { join } from 'path';
 
 describe('Printer', () => {
   it('does not alter ast', () => {
-    var ast = parse(kitchenSink);
-    var astCopy = JSON.parse(JSON.stringify(ast));
+    const ast = parse(kitchenSink);
+    const astCopy = JSON.parse(JSON.stringify(ast));
     print(ast);
     expect(ast).to.deep.equal(astCopy);
   });
 
   it('prints minimal ast', () => {
-    var ast = { kind: 'Field', name: { kind: 'Name', value: 'foo' } };
+    const ast = { kind: 'Field', name: { kind: 'Name', value: 'foo' } };
     expect(print(ast)).to.equal('foo');
   });
 
   it('produces helpful error messages', () => {
-    var badAst1 = { random: 'Data' };
+    const badAst1 = { random: 'Data' };
     expect(() => print(badAst1)).to.throw(
       'Invalid AST Node: {"random":"Data"}'
     );
   });
 
 
-  var kitchenSink = readFileSync(
+  const kitchenSink = readFileSync(
     join(__dirname, '/kitchen-sink.graphql'),
     { encoding: 'utf8' }
   );
 
   it('prints kitchen sink', () => {
 
-    var ast = parse(kitchenSink);
+    const ast = parse(kitchenSink);
 
-    var printed = print(ast);
+    const printed = print(ast);
 
     expect(printed).to.equal(
   `query queryName($foo: ComplexType, $site: Site = MOBILE) {

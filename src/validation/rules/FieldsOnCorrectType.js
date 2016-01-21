@@ -26,9 +26,9 @@ export function undefinedFieldMessage(fieldName: any, type: any): string {
 export function FieldsOnCorrectType(context: ValidationContext): any {
   return {
     Field(node: Field) {
-      var type = context.getParentType();
+      const type = context.getParentType();
       if (type) {
-        var fieldDef = context.getFieldDef();
+        const fieldDef = context.getFieldDef();
         if (!fieldDef) {
           context.reportError(new GraphQLError(
             undefinedFieldMessage(node.name.value, type.name),

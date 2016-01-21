@@ -40,7 +40,7 @@ export function getVariableValues(
   inputs: { [key: string]: any }
 ): { [key: string]: any } {
   return definitionASTs.reduce((values, defAST) => {
-    var varName = defAST.variable.name.value;
+    const varName = defAST.variable.name.value;
     values[varName] = getVariableValue(schema, defAST, inputs[varName]);
     return values;
   }, {});
@@ -59,11 +59,11 @@ export function getArgumentValues(
   if (!argDefs || !argASTs) {
     return {};
   }
-  var argASTMap = keyMap(argASTs, arg => arg.name.value);
+  const argASTMap = keyMap(argASTs, arg => arg.name.value);
   return argDefs.reduce((result, argDef) => {
-    var name = argDef.name;
-    var valueAST = argASTMap[name] ? argASTMap[name].value : null;
-    var value = valueFromAST(valueAST, argDef.type, variableValues);
+    const name = argDef.name;
+    const valueAST = argASTMap[name] ? argASTMap[name].value : null;
+    let value = valueFromAST(valueAST, argDef.type, variableValues);
     if (isNullish(value)) {
       value = argDef.defaultValue;
     }
@@ -84,8 +84,8 @@ function getVariableValue(
   definitionAST: VariableDefinition,
   input: ?any
 ): any {
-  var type = typeFromAST(schema, definitionAST.type);
-  var variable = definitionAST.variable;
+  const type = typeFromAST(schema, definitionAST.type);
+  const variable = definitionAST.variable;
   if (!type || !isInputType(type)) {
     throw new GraphQLError(
       `Variable "$${variable.name.value}" expected value of type ` +
@@ -93,11 +93,11 @@ function getVariableValue(
       [ definitionAST ]
     );
   }
-  var inputType: GraphQLInputType = (type: any);
-  var errors = isValidJSValue(input, inputType);
+  const inputType: GraphQLInputType = (type: any);
+  const errors = isValidJSValue(input, inputType);
   if (!errors.length) {
     if (isNullish(input)) {
-      var defaultValue = definitionAST.defaultValue;
+      const defaultValue = definitionAST.defaultValue;
       if (defaultValue) {
         return valueFromAST(defaultValue, inputType);
       }
@@ -111,7 +111,7 @@ function getVariableValue(
       [ definitionAST ]
     );
   }
-  var message = errors ? '\n' + errors.join('\n') : '';
+  const message = errors ? '\n' + errors.join('\n') : '';
   throw new GraphQLError(
     `Variable "$${variable.name.value}" got invalid value ` +
     `${JSON.stringify(input)}.${message}`,
@@ -126,7 +126,7 @@ function coerceValue(type: GraphQLInputType, value: any): any {
   if (type instanceof GraphQLNonNull) {
     // Note: we're not checking that the result of coerceValue is non-null.
     // We only call this function after calling isValidJSValue.
-    var nullableType: GraphQLInputType = (type.ofType: any);
+    const nullableType: GraphQLInputType = (type.ofType: any);
     return coerceValue(nullableType, value);
   }
 
@@ -135,7 +135,7 @@ function coerceValue(type: GraphQLInputType, value: any): any {
   }
 
   if (type instanceof GraphQLList) {
-    var itemType: GraphQLInputType = (type.ofType: any);
+    const itemType: GraphQLInputType = (type.ofType: any);
     // TODO: support iterable input
     if (Array.isArray(value)) {
       return value.map(item => coerceValue(itemType, item));
@@ -144,10 +144,10 @@ function coerceValue(type: GraphQLInputType, value: any): any {
   }
 
   if (type instanceof GraphQLInputObjectType) {
-    var fields = type.getFields();
+    const fields = type.getFields();
     return Object.keys(fields).reduce((obj, fieldName) => {
-      var field = fields[fieldName];
-      var fieldValue = coerceValue(field.type, value[fieldName]);
+      const field = fields[fieldName];
+      let fieldValue = coerceValue(field.type, value[fieldName]);
       if (isNullish(fieldValue)) {
         fieldValue = field.defaultValue;
       }
@@ -163,7 +163,7 @@ function coerceValue(type: GraphQLInputType, value: any): any {
     'Must be input type'
   );
 
-  var parsed = type.parseValue(value);
+  const parsed = type.parseValue(value);
   if (!isNullish(parsed)) {
     return parsed;
   }

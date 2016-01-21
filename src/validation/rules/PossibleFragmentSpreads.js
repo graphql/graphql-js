@@ -46,8 +46,8 @@ export function typeIncompatibleAnonSpreadMessage(
 export function PossibleFragmentSpreads(context: ValidationContext): any {
   return {
     InlineFragment(node) {
-      var fragType = context.getType();
-      var parentType = context.getParentType();
+      const fragType = context.getType();
+      const parentType = context.getParentType();
       if (fragType && parentType && !doTypesOverlap(fragType, parentType)) {
         context.reportError(new GraphQLError(
           typeIncompatibleAnonSpreadMessage(parentType, fragType),
@@ -56,9 +56,9 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
       }
     },
     FragmentSpread(node) {
-      var fragName = node.name.value;
-      var fragType = getFragmentType(context, fragName);
-      var parentType = context.getParentType();
+      const fragName = node.name.value;
+      const fragType = getFragmentType(context, fragName);
+      const parentType = context.getParentType();
       if (fragType && parentType && !doTypesOverlap(fragType, parentType)) {
         context.reportError(new GraphQLError(
           typeIncompatibleSpreadMessage(fragName, parentType, fragType),
@@ -70,7 +70,7 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
 }
 
 function getFragmentType(context, name) {
-  var frag = context.getFragment(name);
+  const frag = context.getFragment(name);
   return frag && typeFromAST(context.getSchema(), frag.typeCondition);
 }
 
@@ -88,7 +88,7 @@ function doTypesOverlap(t1, t2) {
     if (t2 instanceof GraphQLObjectType) {
       return t1.getPossibleTypes().indexOf(t2) !== -1;
     }
-    var t1TypeNames = keyMap(t1.getPossibleTypes(), type => type.name);
+    const t1TypeNames = keyMap(t1.getPossibleTypes(), type => type.name);
     return t2.getPossibleTypes().some(type => t1TypeNames[type.name]);
   }
 }

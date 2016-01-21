@@ -15,27 +15,27 @@ import { getOperationAST } from '../getOperationAST';
 describe('getOperationAST', () => {
 
   it('Gets an operation from a simple document', () => {
-    var doc = parse(`{ field }`);
+    const doc = parse(`{ field }`);
     expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
   });
 
   it('Gets an operation from a document with named op (mutation)', () => {
-    var doc = parse(`mutation Test { field }`);
+    const doc = parse(`mutation Test { field }`);
     expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
   });
 
   it('Gets an operation from a document with named op (subscription)', () => {
-    var doc = parse(`subscription Test { field }`);
+    const doc = parse(`subscription Test { field }`);
     expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
   });
 
   it('Does not get missing operation', () => {
-    var doc = parse(`type Foo { field: String }`);
+    const doc = parse(`type Foo { field: String }`);
     expect(getOperationAST(doc)).to.equal(null);
   });
 
   it('Does not get ambiguous unnamed operation', () => {
-    var doc = parse(`
+    const doc = parse(`
       { field }
       mutation Test { field }
       subscription TestSub { field }`);
@@ -43,7 +43,7 @@ describe('getOperationAST', () => {
   });
 
   it('Does not get ambiguous named operation', () => {
-    var doc = parse(`
+    const doc = parse(`
       query TestQ { field }
       mutation TestM { field }
       subscription TestS { field }`);
@@ -51,7 +51,7 @@ describe('getOperationAST', () => {
   });
 
   it('Does not get misnamed operation', () => {
-    var doc = parse(`
+    const doc = parse(`
       query TestQ { field }
       mutation TestM { field }
       subscription TestS { field }`);
@@ -59,7 +59,7 @@ describe('getOperationAST', () => {
   });
 
   it('Gets named operation', () => {
-    var doc = parse(`
+    const doc = parse(`
       query TestQ { field }
       mutation TestM { field }
       subscription TestS { field }`);

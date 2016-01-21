@@ -21,7 +21,7 @@ import {
 
 describe('Type System: Enum Values', () => {
 
-  var ColorType = new GraphQLEnumType({
+  const ColorType = new GraphQLEnumType({
     name: 'Color',
     values: {
       RED: { value: 0 },
@@ -30,7 +30,7 @@ describe('Type System: Enum Values', () => {
     }
   });
 
-  var QueryType = new GraphQLObjectType({
+  const QueryType = new GraphQLObjectType({
     name: 'Query',
     fields: {
       colorEnum: {
@@ -59,7 +59,7 @@ describe('Type System: Enum Values', () => {
     }
   });
 
-  var MutationType = new GraphQLObjectType({
+  const MutationType = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
       favoriteEnum: {
@@ -70,7 +70,7 @@ describe('Type System: Enum Values', () => {
     }
   });
 
-  var SubscriptionType = new GraphQLObjectType({
+  const SubscriptionType = new GraphQLObjectType({
     name: 'Subscription',
     fields: {
       subscribeToEnum: {
@@ -81,7 +81,7 @@ describe('Type System: Enum Values', () => {
     }
   });
 
-  var schema = new GraphQLSchema({
+  const schema = new GraphQLSchema({
     query: QueryType,
     mutation: MutationType,
     subscription: SubscriptionType

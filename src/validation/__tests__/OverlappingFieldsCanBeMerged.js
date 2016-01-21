@@ -365,7 +365,7 @@ describe('Validate: Overlapping fields can be merged', () => {
 
   describe('return types must be unambiguous', () => {
 
-    var SomeBox = new GraphQLInterfaceType({
+    const SomeBox = new GraphQLInterfaceType({
       name: 'SomeBox',
       resolveType: () => StringBox,
       fields: {
@@ -374,7 +374,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     });
 
     /* eslint-disable no-unused-vars */
-    var StringBox = new GraphQLObjectType({
+    const StringBox = new GraphQLObjectType({
       name: 'StringBox',
       interfaces: [ SomeBox ],
       fields: {
@@ -383,7 +383,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     });
 
-    var IntBox = new GraphQLObjectType({
+    const IntBox = new GraphQLObjectType({
       name: 'IntBox',
       interfaces: [ SomeBox ],
       fields: {
@@ -392,7 +392,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     });
 
-    var NonNullStringBox1 = new GraphQLInterfaceType({
+    const NonNullStringBox1 = new GraphQLInterfaceType({
       name: 'NonNullStringBox1',
       resolveType: () => StringBox,
       fields: {
@@ -400,7 +400,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     });
 
-    var NonNullStringBox1Impl = new GraphQLObjectType({
+    const NonNullStringBox1Impl = new GraphQLObjectType({
       name: 'NonNullStringBox1Impl',
       interfaces: [ SomeBox, NonNullStringBox1 ],
       fields: {
@@ -409,7 +409,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     });
 
-    var NonNullStringBox2 = new GraphQLInterfaceType({
+    const NonNullStringBox2 = new GraphQLInterfaceType({
       name: 'NonNullStringBox2',
       resolveType: () => StringBox,
       fields: {
@@ -417,7 +417,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     });
 
-    var NonNullStringBox2Impl = new GraphQLObjectType({
+    const NonNullStringBox2Impl = new GraphQLObjectType({
       name: 'NonNullStringBox2Impl',
       interfaces: [ SomeBox, NonNullStringBox2 ],
       fields: {
@@ -427,7 +427,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     });
     /* eslint-enable no-unused-vars */
 
-    var Connection = new GraphQLObjectType({
+    const Connection = new GraphQLObjectType({
       name: 'Connection',
       fields: {
         edges: {
@@ -449,7 +449,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     });
 
-    var schema = new GraphQLSchema({
+    const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'QueryRoot',
         fields: () => ({

@@ -26,44 +26,44 @@ import {
 } from '../../';
 
 
-var SomeScalarType = new GraphQLScalarType({
+const SomeScalarType = new GraphQLScalarType({
   name: 'SomeScalar',
   serialize() {},
   parseValue() {},
   parseLiteral() {}
 });
 
-var SomeObjectType = new GraphQLObjectType({
+const SomeObjectType = new GraphQLObjectType({
   name: 'SomeObject',
   fields: { f: { type: GraphQLString } }
 });
 
-var ObjectWithIsTypeOf = new GraphQLObjectType({
+const ObjectWithIsTypeOf = new GraphQLObjectType({
   name: 'ObjectWithIsTypeOf',
   isTypeOf: () => true,
   fields: { f: { type: GraphQLString} }
 });
 
-var SomeUnionType = new GraphQLUnionType({
+const SomeUnionType = new GraphQLUnionType({
   name: 'SomeUnion',
   resolveType: () => null,
   types: [ SomeObjectType ]
 });
 
-var SomeInterfaceType = new GraphQLInterfaceType({
+const SomeInterfaceType = new GraphQLInterfaceType({
   name: 'SomeInterface',
   resolveType: () => null,
   fields: { f: { type: GraphQLString } }
 });
 
-var SomeEnumType = new GraphQLEnumType({
+const SomeEnumType = new GraphQLEnumType({
   name: 'SomeEnum',
   values: {
     ONLY: {}
   }
 });
 
-var SomeInputObjectType = new GraphQLInputObjectType({
+const SomeInputObjectType = new GraphQLInputObjectType({
   name: 'SomeInputObject',
   fields: {
     val: { type: GraphQLString, defaultValue: 'hello' }
@@ -77,7 +77,7 @@ function withModifiers(types) {
     .concat(types.map(type => new GraphQLNonNull(new GraphQLList(type))));
 }
 
-var outputTypes = withModifiers([
+const outputTypes = withModifiers([
   GraphQLString,
   SomeScalarType,
   SomeEnumType,
@@ -86,18 +86,18 @@ var outputTypes = withModifiers([
   SomeInterfaceType,
 ]);
 
-var notOutputTypes = withModifiers([
+const notOutputTypes = withModifiers([
   SomeInputObjectType,
 ]).concat(String);
 
-var inputTypes = withModifiers([
+const inputTypes = withModifiers([
   GraphQLString,
   SomeScalarType,
   SomeEnumType,
   SomeInputObjectType,
 ]);
 
-var notInputTypes = withModifiers([
+const notInputTypes = withModifiers([
   SomeObjectType,
   SomeUnionType,
   SomeInterfaceType,
@@ -125,7 +125,7 @@ describe('Type System: A Schema must have Object root types', () => {
 
   it('accepts a Schema whose query and mutation types are object types', () => {
     expect(() => {
-      var MutationType = new GraphQLObjectType({
+      const MutationType = new GraphQLObjectType({
         name: 'Mutation',
         fields: { edit: { type: GraphQLString } }
       });
@@ -139,7 +139,7 @@ describe('Type System: A Schema must have Object root types', () => {
 
   it('accepts a Schema whose query and subscription types are object types', () => {
     expect(() => {
-      var SubscriptionType = new GraphQLObjectType({
+      const SubscriptionType = new GraphQLObjectType({
         name: 'Subscription',
         fields: { subscribe: { type: GraphQLString } }
       });
@@ -206,12 +206,12 @@ describe('Type System: A Schema must contain uniquely named types', () => {
 
   it('rejects a Schema which redefines a built-in type', () => {
     expect(() => {
-      var FakeString = new GraphQLScalarType({
+      const FakeString = new GraphQLScalarType({
         name: 'String',
         serialize: () => null,
       });
 
-      var QueryType = new GraphQLObjectType({
+      const QueryType = new GraphQLObjectType({
         name: 'Query',
         fields: {
           normal: { type: GraphQLString },
@@ -228,17 +228,17 @@ describe('Type System: A Schema must contain uniquely named types', () => {
 
   it('rejects a Schema which defines an object type twice', () => {
     expect(() => {
-      var A = new GraphQLObjectType({
+      const A = new GraphQLObjectType({
         name: 'SameName',
         fields: { f: { type: GraphQLString } },
       });
 
-      var B = new GraphQLObjectType({
+      const B = new GraphQLObjectType({
         name: 'SameName',
         fields: { f: { type: GraphQLString } },
       });
 
-      var QueryType = new GraphQLObjectType({
+      const QueryType = new GraphQLObjectType({
         name: 'Query',
         fields: {
           a: { type: A },
@@ -255,7 +255,7 @@ describe('Type System: A Schema must contain uniquely named types', () => {
 
   it('rejects a Schema which have same named objects implementing an interface', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: { f: { type: GraphQLString } },
@@ -264,14 +264,14 @@ describe('Type System: A Schema must contain uniquely named types', () => {
       /* eslint-disable no-unused-vars */
 
       // Automatically included in Interface
-      var FirstBadObject = new GraphQLObjectType({
+      const FirstBadObject = new GraphQLObjectType({
         name: 'BadObject',
         interfaces: [ AnotherInterface ],
         fields: { f: { type: GraphQLString } },
       });
 
       // Automatically included in Interface
-      var SecondBadObject = new GraphQLObjectType({
+      const SecondBadObject = new GraphQLObjectType({
         name: 'BadObject',
         interfaces: [ AnotherInterface ],
         fields: { f: { type: GraphQLString } },
@@ -279,7 +279,7 @@ describe('Type System: A Schema must contain uniquely named types', () => {
 
       /* eslint-enable no-unused-vars */
 
-      var QueryType = new GraphQLObjectType({
+      const QueryType = new GraphQLObjectType({
         name: 'Query',
         fields: {
           iface: { type: AnotherInterface },
@@ -421,7 +421,7 @@ describe('Type System: Fields args must be properly named', () => {
   it('rejects field arg with invalid names', () => {
     expect(
       () => {
-        var QueryType = new GraphQLObjectType({
+        const QueryType = new GraphQLObjectType({
           name: 'SomeObject',
           fields: {
             badField: {
@@ -484,7 +484,7 @@ describe('Type System: Object interfaces must be array', () => {
 
   it('accepts an Object type with array interfaces', () => {
     expect(() => {
-      var AnotherInterfaceType = new GraphQLInterfaceType({
+      const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: { f: { type: GraphQLString } }
@@ -500,7 +500,7 @@ describe('Type System: Object interfaces must be array', () => {
 
   it('accepts an Object type with interfaces as a function returning an array', () => {
     expect(() => {
-      var AnotherInterfaceType = new GraphQLInterfaceType({
+      const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: { f: { type: GraphQLString } }
@@ -737,7 +737,7 @@ describe('Type System: Interface types must be resolvable', () => {
 
   it('accepts an Interface type defining resolveType', () => {
     expect(() => {
-      var AnotherInterfaceType = new GraphQLInterfaceType({
+      const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: { f: { type: GraphQLString } }
@@ -753,7 +753,7 @@ describe('Type System: Interface types must be resolvable', () => {
 
   it('accepts an Interface with implementing type defining isTypeOf', () => {
     expect(() => {
-      var InterfaceTypeWithoutResolveType = new GraphQLInterfaceType({
+      const InterfaceTypeWithoutResolveType = new GraphQLInterfaceType({
         name: 'InterfaceTypeWithoutResolveType',
         fields: { f: { type: GraphQLString } }
       });
@@ -769,7 +769,7 @@ describe('Type System: Interface types must be resolvable', () => {
 
   it('accepts an Interface type defining resolveType with implementing type defining isTypeOf', () => {
     expect(() => {
-      var AnotherInterfaceType = new GraphQLInterfaceType({
+      const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: { f: { type: GraphQLString } }
@@ -798,7 +798,7 @@ describe('Type System: Interface types must be resolvable', () => {
 
   it('rejects an Interface type not defining resolveType with implementing type not defining isTypeOf', () => {
     expect(() => {
-      var InterfaceTypeWithoutResolveType = new GraphQLInterfaceType({
+      const InterfaceTypeWithoutResolveType = new GraphQLInterfaceType({
         name: 'InterfaceTypeWithoutResolveType',
         fields: { f: { type: GraphQLString } }
       });
@@ -1059,7 +1059,7 @@ describe('Type System: Enum types must be well defined', () => {
 describe('Type System: Object fields must have output types', () => {
 
   function schemaWithObjectFieldOfType(fieldType) {
-    var BadObjectType = new GraphQLObjectType({
+    const BadObjectType = new GraphQLObjectType({
       name: 'BadObject',
       fields: {
         badField: { type: fieldType }
@@ -1102,7 +1102,7 @@ describe('Type System: Object fields must have output types', () => {
 describe('Type System: Objects can only implement interfaces', () => {
 
   function schemaWithObjectImplementingType(implementedType) {
-    var BadObjectType = new GraphQLObjectType({
+    const BadObjectType = new GraphQLObjectType({
       name: 'BadObject',
       interfaces: [ implementedType ],
       fields: { f: { type: GraphQLString } }
@@ -1120,7 +1120,7 @@ describe('Type System: Objects can only implement interfaces', () => {
 
   it('accepts an Object implementing an Interface', () => {
     expect(() => {
-      var AnotherInterfaceType = new GraphQLInterfaceType({
+      const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: { f: { type: GraphQLString } }
@@ -1130,7 +1130,7 @@ describe('Type System: Objects can only implement interfaces', () => {
     }).not.to.throw();
   });
 
-  var notInterfaceTypes = withModifiers([
+  const notInterfaceTypes = withModifiers([
     SomeScalarType,
     SomeEnumType,
     SomeObjectType,
@@ -1152,7 +1152,7 @@ describe('Type System: Objects can only implement interfaces', () => {
 describe('Type System: Unions must represent Object types', () => {
 
   function schemaWithUnionOfType(type) {
-    var BadUnionType = new GraphQLUnionType({
+    const BadUnionType = new GraphQLUnionType({
       name: 'BadUnion',
       resolveType: () => null,
       types: [ type ],
@@ -1174,7 +1174,7 @@ describe('Type System: Unions must represent Object types', () => {
     ).not.to.throw();
   });
 
-  var notObjectTypes = withModifiers([
+  const notObjectTypes = withModifiers([
     SomeScalarType,
     SomeEnumType,
     SomeInterfaceType,
@@ -1196,7 +1196,7 @@ describe('Type System: Unions must represent Object types', () => {
 describe('Type System: Interface fields must have output types', () => {
 
   function schemaWithInterfaceFieldOfType(fieldType) {
-    var BadInterfaceType = new GraphQLInterfaceType({
+    const BadInterfaceType = new GraphQLInterfaceType({
       name: 'BadInterface',
       fields: {
         badField: { type: fieldType }
@@ -1239,7 +1239,7 @@ describe('Type System: Interface fields must have output types', () => {
 describe('Type System: Field arguments must have input types', () => {
 
   function schemaWithArgOfType(argType) {
-    var BadObjectType = new GraphQLObjectType({
+    const BadObjectType = new GraphQLObjectType({
       name: 'BadObject',
       fields: {
         badField: {
@@ -1287,7 +1287,7 @@ describe('Type System: Field arguments must have input types', () => {
 describe('Type System: Input Object fields must have input types', () => {
 
   function schemaWithInputFieldOfType(inputFieldType) {
-    var BadInputObjectType = new GraphQLInputObjectType({
+    const BadInputObjectType = new GraphQLInputObjectType({
       name: 'BadInputObject',
       fields: {
         badField: { type: inputFieldType }
@@ -1334,7 +1334,7 @@ describe('Type System: Input Object fields must have input types', () => {
 
 describe('Type System: List must accept GraphQL types', () => {
 
-  var types = withModifiers([
+  const types = withModifiers([
     GraphQLString,
     SomeScalarType,
     SomeObjectType,
@@ -1344,7 +1344,7 @@ describe('Type System: List must accept GraphQL types', () => {
     SomeInputObjectType,
   ]);
 
-  var notTypes = [
+  const notTypes = [
     {},
     String,
     undefined,
@@ -1370,7 +1370,7 @@ describe('Type System: List must accept GraphQL types', () => {
 
 describe('Type System: NonNull must accept GraphQL types', () => {
 
-  var nullableTypes = [
+  const nullableTypes = [
     GraphQLString,
     SomeScalarType,
     SomeObjectType,
@@ -1382,7 +1382,7 @@ describe('Type System: NonNull must accept GraphQL types', () => {
     new GraphQLList(new GraphQLNonNull(GraphQLString)),
   ];
 
-  var notNullableTypes = [
+  const notNullableTypes = [
     new GraphQLNonNull(GraphQLString),
     {},
     String,
@@ -1411,7 +1411,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('accepts an Object which implements an Interface', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1424,7 +1424,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1443,7 +1443,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('accepts an Object which implements an Interface along with more fields', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1456,7 +1456,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1476,7 +1476,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('accepts an Object which implements an Interface field along with additional optional arguments', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1489,7 +1489,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1509,7 +1509,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('rejects an Object which implements an Interface field along with additional required arguments', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1522,7 +1522,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1545,7 +1545,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('rejects an Object missing an Interface field', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1558,7 +1558,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1575,7 +1575,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('rejects an Object with an incorrectly typed Interface field', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1583,7 +1583,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1600,21 +1600,21 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('rejects an Object with a differently typed Interface field', () => {
     expect(() => {
-      var TypeA = new GraphQLObjectType({
+      const TypeA = new GraphQLObjectType({
         name: 'A',
         fields: {
           foo: { type: GraphQLString }
         }
       });
 
-      var TypeB = new GraphQLObjectType({
+      const TypeB = new GraphQLObjectType({
         name: 'B',
         fields: {
           foo: { type: GraphQLString }
         }
       });
 
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1622,7 +1622,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1639,7 +1639,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('accepts an Object with a subtyped Interface field (interface)', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: () => ({
@@ -1647,7 +1647,7 @@ describe('Objects must adhere to Interface they implement', () => {
         })
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: () => ({
@@ -1661,7 +1661,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('accepts an Object with a subtyped Interface field (union)', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1669,7 +1669,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1683,7 +1683,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('rejects an Object missing an Interface argument', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1696,7 +1696,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1715,7 +1715,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('rejects an Object with an incorrectly typed Interface argument', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1728,7 +1728,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1750,7 +1750,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('accepts an Object with an equivalently modified Interface field type', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1758,7 +1758,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1772,7 +1772,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('rejects an Object with a non-list Interface field list type', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1780,7 +1780,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1797,7 +1797,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('rejects an Object with a list Interface field non-list type', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1805,7 +1805,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1822,7 +1822,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('accepts an Object with a subset non-null Interface field type', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1830,7 +1830,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1844,7 +1844,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('rejects an Object with a superset nullable Interface field type', () => {
     expect(() => {
-      var AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
@@ -1852,7 +1852,7 @@ describe('Objects must adhere to Interface they implement', () => {
         }
       });
 
-      var AnotherObject = new GraphQLObjectType({
+      const AnotherObject = new GraphQLObjectType({
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
@@ -1869,7 +1869,7 @@ describe('Objects must adhere to Interface they implement', () => {
 
   it('does not allow isDeprecated without deprecationReason on field', () => {
     expect(() => {
-      var OldObject = new GraphQLObjectType({
+      const OldObject = new GraphQLObjectType({
         name: 'OldObject',
         fields: {
           field: {

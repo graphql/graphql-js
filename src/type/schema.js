@@ -37,7 +37,7 @@ import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
  *
  * Example:
  *
- *     var MyAppSchema = new GraphQLSchema({
+ *     const MyAppSchema = new GraphQLSchema({
  *       query: MyAppQueryRootType
  *       mutation: MyAppMutationRootType
  *     });
@@ -164,7 +164,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
   map[type.name] = type;
 
-  var reducedMap = map;
+  let reducedMap = map;
 
   if (type instanceof GraphQLUnionType ||
       type instanceof GraphQLInterfaceType) {
@@ -178,12 +178,12 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (type instanceof GraphQLObjectType ||
       type instanceof GraphQLInterfaceType ||
       type instanceof GraphQLInputObjectType) {
-    var fieldMap = type.getFields();
+    const fieldMap = type.getFields();
     Object.keys(fieldMap).forEach(fieldName => {
-      var field = fieldMap[fieldName];
+      const field = fieldMap[fieldName];
 
       if (field.args) {
-        var fieldArgTypes = field.args.map(arg => arg.type);
+        const fieldArgTypes = field.args.map(arg => arg.type);
         reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       }
       reducedMap = typeMapReducer(reducedMap, field.type);
@@ -197,13 +197,13 @@ function assertObjectImplementsInterface(
   object: GraphQLObjectType,
   iface: GraphQLInterfaceType
 ): void {
-  var objectFieldMap = object.getFields();
-  var ifaceFieldMap = iface.getFields();
+  const objectFieldMap = object.getFields();
+  const ifaceFieldMap = iface.getFields();
 
   // Assert each interface field is implemented.
   Object.keys(ifaceFieldMap).forEach(fieldName => {
-    var objectField = objectFieldMap[fieldName];
-    var ifaceField = ifaceFieldMap[fieldName];
+    const objectField = objectFieldMap[fieldName];
+    const ifaceField = ifaceFieldMap[fieldName];
 
     // Assert interface field exists on object.
     invariant(
@@ -222,8 +222,8 @@ function assertObjectImplementsInterface(
 
     // Assert each interface field arg is implemented.
     ifaceField.args.forEach(ifaceArg => {
-      var argName = ifaceArg.name;
-      var objectArg = find(objectField.args, arg => arg.name === argName);
+      const argName = ifaceArg.name;
+      const objectArg = find(objectField.args, arg => arg.name === argName);
 
       // Assert interface field arg exists on object field.
       invariant(
@@ -244,8 +244,8 @@ function assertObjectImplementsInterface(
 
     // Assert additional arguments must not be required.
     objectField.args.forEach(objectArg => {
-      var argName = objectArg.name;
-      var ifaceArg = find(ifaceField.args, arg => arg.name === argName);
+      const argName = objectArg.name;
+      const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
       if (!ifaceArg) {
         invariant(
           !(objectArg.type instanceof GraphQLNonNull),

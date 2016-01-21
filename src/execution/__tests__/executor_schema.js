@@ -27,7 +27,7 @@ import {
 describe('Execute: Handles execution with a complex schema', () => {
   it('executes using a schema', async () => {
 
-    var BlogImage = new GraphQLObjectType({
+    const BlogImage = new GraphQLObjectType({
       name: 'Image',
       fields: {
         url: { type: GraphQLString },
@@ -36,7 +36,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       }
     });
 
-    var BlogAuthor = new GraphQLObjectType({
+    const BlogAuthor = new GraphQLObjectType({
       name: 'Author',
       fields: () => ({
         id: { type: GraphQLString },
@@ -50,7 +50,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       })
     });
 
-    var BlogArticle = new GraphQLObjectType({
+    const BlogArticle = new GraphQLObjectType({
       name: 'Article',
       fields: {
         id: { type: new GraphQLNonNull(GraphQLString) },
@@ -62,7 +62,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       }
     });
 
-    var BlogQuery = new GraphQLObjectType({
+    const BlogQuery = new GraphQLObjectType({
       name: 'Query',
       fields: {
         article: {
@@ -88,7 +88,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       }
     });
 
-    var BlogSchema = new GraphQLSchema({
+    const BlogSchema = new GraphQLSchema({
       query: BlogQuery
     });
 
@@ -104,7 +104,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       };
     }
 
-    var johnSmith = {
+    const johnSmith = {
       id: 123,
       name: 'John Smith',
       pic: (width, height) => getPic(123, width, height),
@@ -119,7 +119,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       };
     }
 
-    var request = `
+    const request = `
       {
         feed {
           id,

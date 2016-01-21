@@ -7,7 +7,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-export var QueryDocumentKeys = {
+export const QueryDocumentKeys = {
   Name: [],
 
   Document: [ 'definitions' ],
@@ -66,7 +66,7 @@ export const BREAK = {};
  * a new version of the AST with the changes applied will be returned from the
  * visit function.
  *
- *     var editedAST = visit(ast, {
+ *     const editedAST = visit(ast, {
  *       enter(node, key, parent, path, ancestors) {
  *         // @return
  *         //   undefined: no action
@@ -139,24 +139,24 @@ export const BREAK = {};
  *     })
  */
 export function visit(root, visitor, keyMap) {
-  var visitorKeys = keyMap || QueryDocumentKeys;
+  const visitorKeys = keyMap || QueryDocumentKeys;
 
-  var stack;
-  var inArray = Array.isArray(root);
-  var keys = [ root ];
-  var index = -1;
-  var edits = [];
-  var parent;
-  var path = [];
-  var ancestors = [];
-  var newRoot = root;
+  let stack;
+  let inArray = Array.isArray(root);
+  let keys = [ root ];
+  let index = -1;
+  let edits = [];
+  let parent;
+  const path = [];
+  const ancestors = [];
+  let newRoot = root;
 
   do {
     index++;
-    var isLeaving = index === keys.length;
-    var key;
-    var node;
-    var isEdited = isLeaving && edits.length !== 0;
+    const isLeaving = index === keys.length;
+    let key;
+    let node;
+    const isEdited = isLeaving && edits.length !== 0;
     if (isLeaving) {
       key = ancestors.length === 0 ? undefined : path.pop();
       node = parent;
@@ -165,16 +165,16 @@ export function visit(root, visitor, keyMap) {
         if (inArray) {
           node = node.slice();
         } else {
-          var clone = {};
-          for (var k in node) {
+          const clone = {};
+          for (const k in node) {
             if (node.hasOwnProperty(k)) {
               clone[k] = node[k];
             }
           }
           node = clone;
         }
-        var editOffset = 0;
-        for (var ii = 0; ii < edits.length; ii++) {
+        let editOffset = 0;
+        for (let ii = 0; ii < edits.length; ii++) {
           let [ editKey, editValue ] = edits[ii];
           if (inArray) {
             editKey -= editOffset;
@@ -208,7 +208,7 @@ export function visit(root, visitor, keyMap) {
       if (!isNode(node)) {
         throw new Error('Invalid AST Node: ' + JSON.stringify(node));
       }
-      var visitFn = getVisitFn(visitor, node.kind, isLeaving);
+      const visitFn = getVisitFn(visitor, node.kind, isLeaving);
       if (visitFn) {
         result = visitFn.call(visitor, node, key, parent, path, ancestors);
 
@@ -350,25 +350,26 @@ export function visitWithTypeInfo(typeInfo, visitor) {
  * the function the visitor runtime should call.
  */
 function getVisitFn(visitor, kind, isLeaving) {
-  var kindVisitor = visitor[kind];
+  const kindVisitor = visitor[kind];
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {
       // { Kind() {} }
       return kindVisitor;
     }
-    var kindSpecificVisitor = isLeaving ? kindVisitor.leave : kindVisitor.enter;
+    const kindSpecificVisitor =
+      isLeaving ? kindVisitor.leave : kindVisitor.enter;
     if (typeof kindSpecificVisitor === 'function') {
       // { Kind: { enter() {}, leave() {} } }
       return kindSpecificVisitor;
     }
   } else {
-    var specificVisitor = isLeaving ? visitor.leave : visitor.enter;
+    const specificVisitor = isLeaving ? visitor.leave : visitor.enter;
     if (specificVisitor) {
       if (typeof specificVisitor === 'function') {
         // { enter() {}, leave() {} }
         return specificVisitor;
       }
-      var specificKindVisitor = specificVisitor[kind];
+      const specificKindVisitor = specificVisitor[kind];
       if (typeof specificKindVisitor === 'function') {
         // { enter: { Kind() {} }, leave: { Kind() {} } }
         return specificKindVisitor;

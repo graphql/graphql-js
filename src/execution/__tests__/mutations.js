@@ -61,13 +61,13 @@ class Root {
   }
 }
 
-var numberHolderType = new GraphQLObjectType({
+const numberHolderType = new GraphQLObjectType({
   fields: {
     theNumber: { type: GraphQLInt },
   },
   name: 'NumberHolder',
 });
-var schema = new GraphQLSchema({
+const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     fields: {
       numberHolder: { type: numberHolderType },
@@ -112,7 +112,7 @@ var schema = new GraphQLSchema({
 describe('Execute: Handles mutation execution ordering', () => {
 
   it('evaluates mutations serially', async () => {
-    var doc = `mutation M {
+    const doc = `mutation M {
       first: immediatelyChangeTheNumber(newNumber: 1) {
         theNumber
       },
@@ -130,7 +130,7 @@ describe('Execute: Handles mutation execution ordering', () => {
       }
     }`;
 
-    var mutationResult = await execute(schema, parse(doc), new Root(6));
+    const mutationResult = await execute(schema, parse(doc), new Root(6));
 
     return expect(mutationResult).to.deep.equal({
       data: {
@@ -154,7 +154,7 @@ describe('Execute: Handles mutation execution ordering', () => {
   });
 
   it('evaluates mutations correctly in the presense of a failed mutation', async () => {
-    var doc = `mutation M {
+    const doc = `mutation M {
       first: immediatelyChangeTheNumber(newNumber: 1) {
         theNumber
       },
@@ -175,7 +175,7 @@ describe('Execute: Handles mutation execution ordering', () => {
       }
     }`;
 
-    var result = await execute(schema, parse(doc), new Root(6));
+    const result = await execute(schema, parse(doc), new Root(6));
 
     expect(result.data).to.deep.equal({
       first: {

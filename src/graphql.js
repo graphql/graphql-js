@@ -48,9 +48,9 @@ export function graphql(
   operationName?: ?string
 ): Promise<GraphQLResult> {
   return new Promise(resolve => {
-    var source = new Source(requestString || '', 'GraphQL request');
-    var documentAST = parse(source);
-    var validationErrors = validate(schema, documentAST);
+    const source = new Source(requestString || '', 'GraphQL request');
+    const documentAST = parse(source);
+    const validationErrors = validate(schema, documentAST);
     if (validationErrors.length > 0) {
       resolve({ errors: validationErrors });
     } else {

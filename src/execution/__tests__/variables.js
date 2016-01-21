@@ -24,7 +24,7 @@ import {
   GraphQLScalarType
 } from '../../type';
 
-var TestComplexScalar = new GraphQLScalarType({
+const TestComplexScalar = new GraphQLScalarType({
   name: 'ComplexScalar',
   serialize(value) {
     if (value === 'DeserializedValue') {
@@ -46,7 +46,7 @@ var TestComplexScalar = new GraphQLScalarType({
   },
 });
 
-var TestInputObject = new GraphQLInputObjectType({
+const TestInputObject = new GraphQLInputObjectType({
   name: 'TestInputObject',
   fields: {
     a: { type: GraphQLString },
@@ -56,7 +56,7 @@ var TestInputObject = new GraphQLInputObjectType({
   }
 });
 
-var TestNestedInputObject = new GraphQLInputObjectType({
+const TestNestedInputObject = new GraphQLInputObjectType({
   name: 'TestNestedInputObject',
   fields: {
     na: { type: new GraphQLNonNull(TestInputObject) },
@@ -64,7 +64,7 @@ var TestNestedInputObject = new GraphQLInputObjectType({
   },
 });
 
-var TestType = new GraphQLObjectType({
+const TestType = new GraphQLObjectType({
   name: 'TestType',
   fields: {
     fieldWithObjectInput: {
@@ -121,7 +121,7 @@ var TestType = new GraphQLObjectType({
   }
 });
 
-var schema = new GraphQLSchema({ query: TestType });
+const schema = new GraphQLSchema({ query: TestType });
 
 describe('Execute: Handles inputs', () => {
 
@@ -130,12 +130,12 @@ describe('Execute: Handles inputs', () => {
     describe('using inline structs', () => {
 
       it('executes with complex input', async () => {
-        var doc = `
+        const doc = `
         {
           fieldWithObjectInput(input: {a: "foo", b: ["bar"], c: "baz"})
         }
         `;
-        var ast = parse(doc);
+        const ast = parse(doc);
 
         return expect(await execute(schema, ast)).to.deep.equal({
           data: {
@@ -145,12 +145,12 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('properly parses single value to list', async () => {
-        var doc = `
+        const doc = `
         {
           fieldWithObjectInput(input: {a: "foo", b: "bar", c: "baz"})
         }
         `;
-        var ast = parse(doc);
+        const ast = parse(doc);
 
         return expect(await execute(schema, ast)).to.deep.equal({
           data: {
@@ -160,14 +160,14 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('does not use incorrect value', async () => {
-        var doc = `
+        const doc = `
         {
           fieldWithObjectInput(input: ["foo", "bar", "baz"])
         }
         `;
-        var ast = parse(doc);
+        const ast = parse(doc);
 
-        var result = await execute(schema, ast);
+        const result = await execute(schema, ast);
 
         expect(result).to.deep.equal({
           data: {
@@ -179,16 +179,16 @@ describe('Execute: Handles inputs', () => {
 
     describe('using variables', () => {
 
-      var doc = `
+      const doc = `
         query q($input: TestInputObject) {
           fieldWithObjectInput(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       it('executes with complex input', async () => {
-        var params = { input: { a: 'foo', b: [ 'bar' ], c: 'baz' } };
-        var result = await execute(schema, ast, null, params);
+        const params = { input: { a: 'foo', b: [ 'bar' ], c: 'baz' } };
+        const result = await execute(schema, ast, null, params);
 
         return expect(result).to.deep.equal({
           data: {
@@ -198,13 +198,13 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('uses default value when not provided', async () => {
-        var withDefaultsAST = parse(`
+        const withDefaultsAST = parse(`
           query q($input: TestInputObject = {a: "foo", b: ["bar"], c: "baz"}) {
             fieldWithObjectInput(input: $input)
           }
         `);
 
-        var result = await execute(schema, withDefaultsAST);
+        const result = await execute(schema, withDefaultsAST);
 
         return expect(result).to.deep.equal({
           data: {
@@ -214,8 +214,8 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('properly parses single value to list', async () => {
-        var params = { input: { a: 'foo', b: 'bar', c: 'baz' } };
-        var result = await execute(schema, ast, null, params);
+        const params = { input: { a: 'foo', b: 'bar', c: 'baz' } };
+        const result = await execute(schema, ast, null, params);
 
         return expect(result).to.deep.equal({
           data: {
@@ -225,8 +225,8 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('executes with complex scalar input', async () => {
-        var params = { input: { c: 'foo', d: 'SerializedValue' } };
-        var result = await execute(schema, ast, null, params);
+        const params = { input: { c: 'foo', d: 'SerializedValue' } };
+        const result = await execute(schema, ast, null, params);
 
         return expect(result).to.deep.equal({
           data: {
@@ -236,9 +236,9 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('errors on null for nested non-null', async () => {
-        var params = { input: { a: 'foo', b: 'bar', c: null } };
+        const params = { input: { a: 'foo', b: 'bar', c: null } };
 
-        var caughtError;
+        let caughtError;
         try {
           execute(schema, ast, null, params);
         } catch (error) {
@@ -255,9 +255,9 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('errors on incorrect type', async () => {
-        var params = { input: 'foo bar' };
+        const params = { input: 'foo bar' };
 
-        var caughtError;
+        let caughtError;
         try {
           execute(schema, ast, null, params);
         } catch (error) {
@@ -273,9 +273,9 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('errors on omission of nested non-null', async () => {
-        var params = { input: { a: 'foo', b: 'bar' } };
+        const params = { input: { a: 'foo', b: 'bar' } };
 
-        var caughtError;
+        let caughtError;
         try {
           execute(schema, ast, null, params);
         } catch (error) {
@@ -291,15 +291,15 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('errors on deep nested errors and with many errors', async () => {
-        var nestedDoc = `
+        const nestedDoc = `
           query q($input: TestNestedInputObject) {
             fieldWithNestedObjectInput(input: $input)
           }
         `;
-        var nestedAst = parse(nestedDoc);
-        var params = { input: { na: { a: 'foo' } } };
+        const nestedAst = parse(nestedDoc);
+        const params = { input: { na: { a: 'foo' } } };
 
-        var caughtError;
+        let caughtError;
         try {
           execute(schema, nestedAst, null, params);
         } catch (error) {
@@ -317,9 +317,9 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('errors on addition of unknown input field', async () => {
-        var params = { input: { a: 'foo', b: 'bar', c: 'baz', d: 'dog' } };
+        const params = { input: { a: 'foo', b: 'bar', c: 'baz', d: 'dog' } };
 
-        var caughtError;
+        let caughtError;
         try {
           execute(schema, ast, null, params);
         } catch (error) {
@@ -341,12 +341,12 @@ describe('Execute: Handles inputs', () => {
 
   describe('Handles nullable scalars', () => {
     it('allows nullable inputs to be omitted', async () => {
-      var doc = `
+      const doc = `
       {
         fieldWithNullableStringInput
       }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(await execute(schema, ast)).to.deep.equal({
         data: {
@@ -356,12 +356,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows nullable inputs to be omitted in a variable', async () => {
-      var doc = `
+      const doc = `
       query SetsNullable($value: String) {
         fieldWithNullableStringInput(input: $value)
       }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(await execute(schema, ast)).to.deep.equal({
         data: {
@@ -371,12 +371,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows nullable inputs to be omitted in an unlisted variable', async () => {
-      var doc = `
+      const doc = `
       query SetsNullable {
         fieldWithNullableStringInput(input: $value)
       }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(await execute(schema, ast)).to.deep.equal({
         data: {
@@ -386,12 +386,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows nullable inputs to be set to null in a variable', async () => {
-      var doc = `
+      const doc = `
       query SetsNullable($value: String) {
         fieldWithNullableStringInput(input: $value)
       }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { value: null })
@@ -403,12 +403,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows nullable inputs to be set to a value in a variable', async () => {
-      var doc = `
+      const doc = `
       query SetsNullable($value: String) {
         fieldWithNullableStringInput(input: $value)
       }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { value: 'a' })
@@ -420,12 +420,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows nullable inputs to be set to a value directly', async () => {
-      var doc = `
+      const doc = `
       {
         fieldWithNullableStringInput(input: "a")
       }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(await execute(schema, ast)).to.deep.equal({
         data: {
@@ -437,13 +437,13 @@ describe('Execute: Handles inputs', () => {
 
   describe('Handles non-nullable scalars', () => {
     it('does not allow non-nullable inputs to be omitted in a variable', async () => {
-      var doc = `
+      const doc = `
         query SetsNonNullable($value: String!) {
           fieldWithNonNullableStringInput(input: $value)
         }
       `;
 
-      var caughtError;
+      let caughtError;
       try {
         execute(schema, parse(doc));
       } catch (error) {
@@ -458,14 +458,14 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('does not allow non-nullable inputs to be set to null in a variable', async () => {
-      var doc = `
+      const doc = `
         query SetsNonNullable($value: String!) {
           fieldWithNonNullableStringInput(input: $value)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
-      var caughtError;
+      let caughtError;
       try {
         execute(schema, ast, null, { value: null });
       } catch (error) {
@@ -480,12 +480,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows non-nullable inputs to be set to a value in a variable', async () => {
-      var doc = `
+      const doc = `
         query SetsNonNullable($value: String!) {
           fieldWithNonNullableStringInput(input: $value)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { value: 'a' })
@@ -497,12 +497,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows non-nullable inputs to be set to a value directly', async () => {
-      var doc = `
+      const doc = `
       {
         fieldWithNonNullableStringInput(input: "a")
       }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(await execute(schema, ast)).to.deep.equal({
         data: {
@@ -512,12 +512,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('passes along null for non-nullable inputs if explcitly set in the query', async () => {
-      var doc = `
+      const doc = `
       {
         fieldWithNonNullableStringInput
       }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(await execute(schema, ast)).to.deep.equal({
         data: {
@@ -529,12 +529,12 @@ describe('Execute: Handles inputs', () => {
 
   describe('Handles lists and nullability', () => {
     it('allows lists to be null', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String]) {
           list(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { input: null })
@@ -546,12 +546,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows lists to contain values', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String]) {
           list(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { input: [ 'A' ] })
@@ -563,12 +563,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows lists to contain null', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String]) {
           list(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { input: [ 'A', null, 'B' ] })
@@ -580,14 +580,14 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('does not allow non-null lists to be null', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String]!) {
           nnList(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
-      var caughtError;
+      let caughtError;
       try {
         execute(schema, ast, null, { input: null });
       } catch (error) {
@@ -602,12 +602,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows non-null lists to contain values', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String]!) {
           nnList(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { input: [ 'A' ] })
@@ -619,12 +619,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows non-null lists to contain null', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String]!) {
           nnList(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { input: [ 'A', null, 'B' ] })
@@ -636,12 +636,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows lists of non-nulls to be null', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String!]) {
           listNN(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { input: null })
@@ -653,12 +653,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows lists of non-nulls to contain values', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String!]) {
           listNN(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { input: [ 'A' ] })
@@ -670,15 +670,15 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('does not allow lists of non-nulls to contain null', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String!]) {
           listNN(input: $input)
         }
       `;
-      var ast = parse(doc);
-      var vars = { input: [ 'A', null, 'B' ] };
+      const ast = parse(doc);
+      const vars = { input: [ 'A', null, 'B' ] };
 
-      var caughtError;
+      let caughtError;
       try {
         execute(schema, ast, null, vars);
       } catch (error) {
@@ -694,14 +694,14 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('does not allow non-null lists of non-nulls to be null', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String!]!) {
           nnListNN(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
-      var caughtError;
+      let caughtError;
       try {
         execute(schema, ast, null, { input: null });
       } catch (error) {
@@ -716,12 +716,12 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('allows non-null lists of non-nulls to contain values', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String!]!) {
           nnListNN(input: $input)
         }
       `;
-      var ast = parse(doc);
+      const ast = parse(doc);
 
       return expect(
         await execute(schema, ast, null, { input: [ 'A' ] })
@@ -733,15 +733,15 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('does not allow non-null lists of non-nulls to contain null', async () => {
-      var doc = `
+      const doc = `
         query q($input: [String!]!) {
           nnListNN(input: $input)
         }
       `;
-      var ast = parse(doc);
-      var vars = { input: [ 'A', null, 'B' ] };
+      const ast = parse(doc);
+      const vars = { input: [ 'A', null, 'B' ] };
 
-      var caughtError;
+      let caughtError;
       try {
         execute(schema, ast, null, vars);
       } catch (error) {
@@ -757,15 +757,15 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('does not allow invalid types to be used as values', async () => {
-      var doc = `
+      const doc = `
         query q($input: TestType!) {
           fieldWithObjectInput(input: $input)
         }
       `;
-      var ast = parse(doc);
-      var vars = { input: { list: [ 'A', 'B' ] } };
+      const ast = parse(doc);
+      const vars = { input: { list: [ 'A', 'B' ] } };
 
-      var caughtError;
+      let caughtError;
       try {
         execute(schema, ast, null, vars);
       } catch (error) {
@@ -781,15 +781,15 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('does not allow unknown types to be used as values', async () => {
-      var doc = `
+      const doc = `
         query q($input: UnknownType!) {
           fieldWithObjectInput(input: $input)
         }
       `;
-      var ast = parse(doc);
-      var vars = { input: 'whoknows' };
+      const ast = parse(doc);
+      const vars = { input: 'whoknows' };
 
-      var caughtError;
+      let caughtError;
       try {
         execute(schema, ast, null, vars);
       } catch (error) {
@@ -809,7 +809,7 @@ describe('Execute: Handles inputs', () => {
   describe('Execute: Uses argument default values', () => {
 
     it('when no argument provided', async () => {
-      var ast = parse(`{
+      const ast = parse(`{
         fieldWithDefaultArgumentValue
       }`);
 
@@ -821,7 +821,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when nullable variable provided', async () => {
-      var ast = parse(`query optionalVariable($optional: String) {
+      const ast = parse(`query optionalVariable($optional: String) {
         fieldWithDefaultArgumentValue(input: $optional)
       }`);
 
@@ -833,7 +833,7 @@ describe('Execute: Handles inputs', () => {
     });
 
     it('when argument provided cannot be parsed', async () => {
-      var ast = parse(`{
+      const ast = parse(`{
         fieldWithDefaultArgumentValue(input: WRONG_TYPE)
       }`);
 

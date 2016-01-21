@@ -23,8 +23,8 @@ export function unusedFragMessage(fragName: any): string {
  * within operations, or spread within other fragments spread within operations.
  */
 export function NoUnusedFragments(context: ValidationContext): any {
-  var operationDefs = [];
-  var fragmentDefs = [];
+  const operationDefs = [];
+  const fragmentDefs = [];
 
   return {
     OperationDefinition(node) {

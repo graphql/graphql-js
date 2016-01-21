@@ -38,7 +38,7 @@ export function fragmentOnNonCompositeErrorMessage(
 export function FragmentsOnCompositeTypes(context: ValidationContext): any {
   return {
     InlineFragment(node) {
-      var type = context.getType();
+      const type = context.getType();
       if (node.typeCondition && type && !isCompositeType(type)) {
         context.reportError(new GraphQLError(
           inlineFragmentOnNonCompositeErrorMessage(print(node.typeCondition)),
@@ -47,7 +47,7 @@ export function FragmentsOnCompositeTypes(context: ValidationContext): any {
       }
     },
     FragmentDefinition(node) {
-      var type = context.getType();
+      const type = context.getType();
       if (type && !isCompositeType(type)) {
         context.reportError(new GraphQLError(
           fragmentOnNonCompositeErrorMessage(

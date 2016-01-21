@@ -24,9 +24,10 @@ import {
 } from '../../type';
 
 // resolved() is shorthand for Promise.resolve()
-var resolved = Promise.resolve.bind(Promise);
+const resolved = Promise.resolve.bind(Promise);
+
 // rejected() is shorthand for Promise.reject()
-var rejected = Promise.reject.bind(Promise);
+const rejected = Promise.reject.bind(Promise);
 
 /**
  * This function creates a test case passed to "it", there's a time delay
@@ -36,9 +37,9 @@ var rejected = Promise.reject.bind(Promise);
  */
 function check(testType, testData, expected) {
   return async () => {
-    var data = { test: testData };
+    const data = { test: testData };
 
-    var dataType = new GraphQLObjectType({
+    const dataType = new GraphQLObjectType({
       name: 'DataType',
       fields: () => ({
         test: { type: testType },
@@ -46,13 +47,14 @@ function check(testType, testData, expected) {
       })
     });
 
-    var schema = new GraphQLSchema({ query: dataType });
+    const schema = new GraphQLSchema({ query: dataType });
 
-    var ast = parse('{ nest { test } }');
+    const ast = parse('{ nest { test } }');
 
-    var response = await execute(schema, ast, data);
+    const response = await execute(schema, ast, data);
+
     // Formatting errors for ease of test writing.
-    var result = response.errors;
+    let result;
     if (response.errors) {
       result = {
         data: response.data,
@@ -68,7 +70,7 @@ function check(testType, testData, expected) {
 describe('Execute: Handles list nullability', () => {
 
   describe('[T]', () => {
-    var type = new GraphQLList(GraphQLInt);
+    const type = new GraphQLList(GraphQLInt);
 
     describe('Array<T>', () => {
 
@@ -144,7 +146,7 @@ describe('Execute: Handles list nullability', () => {
   });
 
   describe('[T]!', () => {
-    var type = new GraphQLNonNull(new GraphQLList(GraphQLInt));
+    const type = new GraphQLNonNull(new GraphQLList(GraphQLInt));
 
     describe('Array<T>', () => {
 
@@ -227,7 +229,7 @@ describe('Execute: Handles list nullability', () => {
   });
 
   describe('[T!]', () => {
-    var type = new GraphQLList(new GraphQLNonNull(GraphQLInt));
+    const type = new GraphQLList(new GraphQLNonNull(GraphQLInt));
 
     describe('Array<T>', () => {
 
@@ -314,7 +316,7 @@ describe('Execute: Handles list nullability', () => {
   });
 
   describe('[T!]!', () => {
-    var type =
+    const type =
       new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLInt)));
 
     describe('Array<T>', () => {

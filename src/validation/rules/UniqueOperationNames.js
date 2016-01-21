@@ -22,10 +22,10 @@ export function duplicateOperationNameMessage(operationName: any): string {
  * A GraphQL document is only valid if all defined operations have unique names.
  */
 export function UniqueOperationNames(context: ValidationContext): any {
-  var knownOperationNames = Object.create(null);
+  const knownOperationNames = Object.create(null);
   return {
     OperationDefinition(node) {
-      var operationName = node.name;
+      const operationName = node.name;
       if (operationName) {
         if (knownOperationNames[operationName.value]) {
           context.reportError(new GraphQLError(

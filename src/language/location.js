@@ -23,10 +23,10 @@ type SourceLocation = {
  * line and column as a SourceLocation.
  */
 export function getLocation(source: Source, position: number): SourceLocation {
-  var line = 1;
-  var column = position + 1;
-  var lineRegexp = /\r\n|[\n\r\u2028\u2029]/g;
-  var match;
+  const lineRegexp = /\r\n|[\n\r\u2028\u2029]/g;
+  let line = 1;
+  let column = position + 1;
+  let match;
   while ((match = lineRegexp.exec(source.body)) && match.index < position) {
     line += 1;
     column = position + 1 - (match.index + match[0].length);

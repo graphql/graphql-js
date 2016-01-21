@@ -20,7 +20,7 @@ export function badValueMessage(
   value: any,
   verboseErrors?: [any]
 ): string {
-  var message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
+  const message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
   return (
     `Argument "${argName}" has invalid value ${value}.${message}`
   );
@@ -35,9 +35,9 @@ export function badValueMessage(
 export function ArgumentsOfCorrectType(context: ValidationContext): any {
   return {
     Argument(argAST) {
-      var argDef = context.getArgument();
+      const argDef = context.getArgument();
       if (argDef) {
-        var errors = isValidLiteralValue(argDef.type, argAST.value);
+        const errors = isValidLiteralValue(argDef.type, argAST.value);
         if (errors && errors.length > 0) {
           context.reportError(new GraphQLError(
             badValueMessage(

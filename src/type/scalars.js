@@ -16,11 +16,11 @@ import { Kind } from '../language';
 //
 // n.b. JavaScript's integers are safe between -(2^53 - 1) and 2^53 - 1 because
 // they are internally represented as IEEE 754 doubles.
-var MAX_INT = 2147483647;
-var MIN_INT = -2147483648;
+const MAX_INT = 2147483647;
+const MIN_INT = -2147483648;
 
 function coerceInt(value) {
-  var num = Number(value);
+  const num = Number(value);
   if (num === num && num <= MAX_INT && num >= MIN_INT) {
     return (num < 0 ? Math.ceil : Math.floor)(num);
   }
@@ -28,7 +28,7 @@ function coerceInt(value) {
 
 }
 
-export var GraphQLInt = new GraphQLScalarType({
+export const GraphQLInt = new GraphQLScalarType({
   name: 'Int',
   description:
     'The `Int` scalar type represents non-fractional signed whole numeric ' +
@@ -39,7 +39,7 @@ export var GraphQLInt = new GraphQLScalarType({
   parseValue: coerceInt,
   parseLiteral(ast) {
     if (ast.kind === Kind.INT) {
-      var num = parseInt(ast.value, 10);
+      const num = parseInt(ast.value, 10);
       if (num <= MAX_INT && num >= MIN_INT) {
         return num;
       }
@@ -49,11 +49,11 @@ export var GraphQLInt = new GraphQLScalarType({
 });
 
 function coerceFloat(value) {
-  var num = Number(value);
+  const num = Number(value);
   return num === num ? num : null;
 }
 
-export var GraphQLFloat = new GraphQLScalarType({
+export const GraphQLFloat = new GraphQLScalarType({
   name: 'Float',
   description:
     'The `Float` scalar type represents signed double-precision fractional ' +
@@ -68,7 +68,7 @@ export var GraphQLFloat = new GraphQLScalarType({
   }
 });
 
-export var GraphQLString = new GraphQLScalarType({
+export const GraphQLString = new GraphQLScalarType({
   name: 'String',
   description:
     'The `String` scalar type represents textual data, represented as UTF-8 ' +
@@ -81,7 +81,7 @@ export var GraphQLString = new GraphQLScalarType({
   }
 });
 
-export var GraphQLBoolean = new GraphQLScalarType({
+export const GraphQLBoolean = new GraphQLScalarType({
   name: 'Boolean',
   description: 'The `Boolean` scalar type represents `true` or `false`.',
   serialize: Boolean,
@@ -91,7 +91,7 @@ export var GraphQLBoolean = new GraphQLScalarType({
   }
 });
 
-export var GraphQLID = new GraphQLScalarType({
+export const GraphQLID = new GraphQLScalarType({
   name: 'ID',
   description:
     'The `ID` scalar type represents a unique identifier, often used to ' +

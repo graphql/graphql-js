@@ -17,20 +17,20 @@ export function cycleErrorMessage(
   fragName: any,
   spreadNames: Array<any>
 ): string {
-  var via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
+  const via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
   return `Cannot spread fragment "${fragName}" within itself${via}.`;
 }
 
 export function NoFragmentCycles(context: ValidationContext): any {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
-  var visitedFrags = Object.create(null);
+  const visitedFrags = Object.create(null);
 
   // Array of AST nodes used to produce meaningful errors
-  var spreadPath = [];
+  const spreadPath = [];
 
   // Position in the spread path
-  var spreadPathIndexByName = Object.create(null);
+  const spreadPathIndexByName = Object.create(null);
 
   return {
     OperationDefinition: () => false,

@@ -20,7 +20,7 @@ export function typeFromAST(
   schema: GraphQLSchema,
   inputTypeAST: Type
 ): ?GraphQLType {
-  var innerType;
+  let innerType;
   if (inputTypeAST.kind === LIST_TYPE) {
     innerType = typeFromAST(schema, inputTypeAST.type);
     return innerType && new GraphQLList(innerType);

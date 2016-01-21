@@ -84,7 +84,7 @@ import type { ValidationContext } from './index';
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  */
-export var specifiedRules: Array<(context: ValidationContext) => any> = [
+export const specifiedRules: Array<(context: ValidationContext) => any> = [
   UniqueOperationNames,
   LoneAnonymousOperation,
   KnownTypeNames,

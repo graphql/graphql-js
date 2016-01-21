@@ -54,8 +54,8 @@ function printFilteredSchema(
   schema: GraphQLSchema,
   typeFilter: (type: string) => boolean
 ): string {
-  var typeMap = schema.getTypeMap();
-  var types = Object.keys(typeMap)
+  const typeMap = schema.getTypeMap();
+  const types = Object.keys(typeMap)
     .filter(typeFilter)
     .sort((name1, name2) => name1.localeCompare(name2))
     .map(typeName => typeMap[typeName]);
@@ -83,8 +83,8 @@ function printScalar(type: GraphQLScalarType): string {
 }
 
 function printObject(type: GraphQLObjectType): string {
-  var interfaces = type.getInterfaces();
-  var implementedInterfaces = interfaces.length ?
+  const interfaces = type.getInterfaces();
+  const implementedInterfaces = interfaces.length ?
     ' implements ' + interfaces.map(i => i.name).join(', ') : '';
   return `type ${type.name}${implementedInterfaces} {\n` +
     printFields(type) + '\n' +
@@ -102,23 +102,23 @@ function printUnion(type: GraphQLUnionType): string {
 }
 
 function printEnum(type: GraphQLEnumType): string {
-  var values = type.getValues();
+  const values = type.getValues();
   return `enum ${type.name} {\n` +
     values.map(v => '  ' + v.name).join('\n') + '\n' +
   '}';
 }
 
 function printInputObject(type: GraphQLInputObjectType): string {
-  var fieldMap = type.getFields();
-  var fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
+  const fieldMap = type.getFields();
+  const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
   return `input ${type.name} {\n` +
     fields.map(f => '  ' + printInputValue(f)).join('\n') + '\n' +
   '}';
 }
 
 function printFields(type) {
-  var fieldMap = type.getFields();
-  var fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
+  const fieldMap = type.getFields();
+  const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
   return fields.map(
     f => `  ${f.name}${printArgs(f)}: ${f.type}`
   ).join('\n');
@@ -132,7 +132,7 @@ function printArgs(field) {
 }
 
 function printInputValue(arg) {
-  var argDecl = `${arg.name}: ${arg.type}`;
+  let argDecl = `${arg.name}: ${arg.type}`;
   if (!isNullish(arg.defaultValue)) {
     argDecl += ` = ${print(astFromValue(arg.defaultValue, arg.type))}`;
   }

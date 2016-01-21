@@ -18,7 +18,7 @@ import {
 } from '../../type';
 
 
-var schema = new GraphQLSchema({
+const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'TestType',
     fields: {
@@ -28,7 +28,7 @@ var schema = new GraphQLSchema({
   }),
 });
 
-var data = {
+const data = {
   a() { return 'a'; },
   b() { return 'b'; }
 };
@@ -84,7 +84,7 @@ describe('Execute: handles directives', () => {
 
   describe('works on fragment spreads', () => {
     it('if false omits fragment spread', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ...Frag @include(if: false)
@@ -99,7 +99,7 @@ describe('Execute: handles directives', () => {
     });
 
     it('if true includes fragment spread', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ...Frag @include(if: true)
@@ -114,7 +114,7 @@ describe('Execute: handles directives', () => {
     });
 
     it('unless false includes fragment spread', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ...Frag @skip(if: false)
@@ -129,7 +129,7 @@ describe('Execute: handles directives', () => {
     });
 
     it('unless true omits fragment spread', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ...Frag @skip(if: true)
@@ -146,7 +146,7 @@ describe('Execute: handles directives', () => {
 
   describe('works on inline fragment', () => {
     it('if false omits inline fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ... on TestType @include(if: false) {
@@ -163,7 +163,7 @@ describe('Execute: handles directives', () => {
     });
 
     it('if true includes inline fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ... on TestType @include(if: true) {
@@ -179,7 +179,7 @@ describe('Execute: handles directives', () => {
       });
     });
     it('unless false includes inline fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ... on TestType @skip(if: false) {
@@ -195,7 +195,7 @@ describe('Execute: handles directives', () => {
       });
     });
     it('unless true includes inline fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ... on TestType @skip(if: true) {
@@ -214,7 +214,7 @@ describe('Execute: handles directives', () => {
 
   describe('works on anonymous inline fragment', () => {
     it('if false omits anonymous inline fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ... @include(if: false) {
@@ -228,7 +228,7 @@ describe('Execute: handles directives', () => {
     });
 
     it('if true includes anonymous inline fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ... @include(if: true) {
@@ -241,7 +241,7 @@ describe('Execute: handles directives', () => {
       });
     });
     it('unless false includes anonymous inline fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ... @skip(if: false) {
@@ -254,7 +254,7 @@ describe('Execute: handles directives', () => {
       });
     });
     it('unless true includes anonymous inline fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ... @skip(if: true) {
@@ -270,7 +270,7 @@ describe('Execute: handles directives', () => {
 
   describe('works on fragment', () => {
     it('if false omits fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ...Frag
@@ -284,7 +284,7 @@ describe('Execute: handles directives', () => {
       });
     });
     it('if true includes fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ...Frag
@@ -298,7 +298,7 @@ describe('Execute: handles directives', () => {
       });
     });
     it('unless false includes fragment', async () => {
-      var q = `
+      const q = `
         query Q {
           a
           ...Frag

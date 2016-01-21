@@ -76,13 +76,13 @@ function inputValueNode(name, type, defaultValue, loc) {
 
 describe('Schema Parser', () => {
   it('Simple type', () => {
-    var body = `
+    const body = `
 type Hello {
   world: String
 }`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -105,13 +105,13 @@ type Hello {
   });
 
   it('Simple extension', () => {
-    var body = `
+    const body = `
 extend type Hello {
   world: String
 }`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -138,13 +138,13 @@ extend type Hello {
   });
 
   it('Simple non-null type', () => {
-    var body = `
+    const body = `
 type Hello {
   world: String!
 }`;
-    var loc = createLocFn(body);
-    var doc = parse(body);
-    var expected = {
+    const loc = createLocFn(body);
+    const doc = parse(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -172,10 +172,10 @@ type Hello {
 
 
   it('Simple type inheriting interface', () => {
-    var body = `type Hello implements World { }`;
-    var loc = createLocFn(body);
-    var doc = parse(body);
-    var expected = {
+    const body = `type Hello implements World { }`;
+    const loc = createLocFn(body);
+    const doc = parse(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -192,10 +192,10 @@ type Hello {
   });
 
   it('Simple type inheriting multiple interfaces', () => {
-    var body = `type Hello implements Wo, rld { }`;
-    var loc = createLocFn(body);
-    var doc = parse(body);
-    var expected = {
+    const body = `type Hello implements Wo, rld { }`;
+    const loc = createLocFn(body);
+    const doc = parse(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -215,10 +215,10 @@ type Hello {
   });
 
   it('Single value enum', () => {
-    var body = `enum Hello { WORLD }`;
-    var loc = createLocFn(body);
-    var doc = parse(body);
-    var expected = {
+    const body = `enum Hello { WORLD }`;
+    const loc = createLocFn(body);
+    const doc = parse(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -234,10 +234,10 @@ type Hello {
   });
 
   it('Double value enum', () => {
-    var body = `enum Hello { WO, RLD }`;
-    var loc = createLocFn(body);
-    var doc = parse(body);
-    var expected = {
+    const body = `enum Hello { WO, RLD }`;
+    const loc = createLocFn(body);
+    const doc = parse(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -256,13 +256,13 @@ type Hello {
   });
 
   it('Simple interface', () => {
-    var body = `
+    const body = `
 interface Hello {
   world: String
 }`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -284,13 +284,13 @@ interface Hello {
   });
 
   it('Simple field with arg', () => {
-    var body = `
+    const body = `
 type Hello {
   world(flag: Boolean): String
 }`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -321,13 +321,13 @@ type Hello {
   });
 
   it('Simple field with arg with default value', () => {
-    var body = `
+    const body = `
 type Hello {
   world(flag: Boolean = true): String
 }`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -362,13 +362,13 @@ type Hello {
   });
 
   it('Simple field with list arg', () => {
-    var body = `
+    const body = `
 type Hello {
   world(things: [String]): String
 }`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -403,13 +403,13 @@ type Hello {
   });
 
   it('Simple field with two args', () => {
-    var body = `
+    const body = `
 type Hello {
   world(argOne: Boolean, argTwo: Int): String
 }`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -446,10 +446,10 @@ type Hello {
   });
 
   it('Simple union', () => {
-    var body = `union Hello = World`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const body = `union Hello = World`;
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -465,10 +465,10 @@ type Hello {
   });
 
   it('Union with two types', () => {
-    var body = `union Hello = Wo | Rld`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const body = `union Hello = Wo | Rld`;
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -487,10 +487,10 @@ type Hello {
   });
 
   it('Scalar', () => {
-    var body = `scalar Hello`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const body = `scalar Hello`;
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -505,13 +505,13 @@ type Hello {
   });
 
   it('Simple input object', () => {
-    var body = `
+    const body = `
 input Hello {
   world: String
 }`;
-    var doc = parse(body);
-    var loc = createLocFn(body);
-    var expected = {
+    const doc = parse(body);
+    const loc = createLocFn(body);
+    const expected = {
       kind: 'Document',
       definitions: [
         {
@@ -534,7 +534,7 @@ input Hello {
   });
 
   it('Simple input object with args should fail', () => {
-    var body = `
+    const body = `
 input Hello {
   world(foo: Int): String
 }`;

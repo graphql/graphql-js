@@ -33,7 +33,7 @@ import {
 } from '../../type/directives';
 
 
-var Being = new GraphQLInterfaceType({
+const Being = new GraphQLInterfaceType({
   name: 'Being',
   fields: () => ({
     name: {
@@ -43,7 +43,7 @@ var Being = new GraphQLInterfaceType({
   }),
 });
 
-var Pet = new GraphQLInterfaceType({
+const Pet = new GraphQLInterfaceType({
   name: 'Pet',
   fields: () => ({
     name: {
@@ -53,7 +53,7 @@ var Pet = new GraphQLInterfaceType({
   }),
 });
 
-var DogCommand = new GraphQLEnumType({
+const DogCommand = new GraphQLEnumType({
   name: 'DogCommand',
   values: {
     SIT: { value: 0 },
@@ -62,7 +62,7 @@ var DogCommand = new GraphQLEnumType({
   },
 });
 
-var Dog = new GraphQLObjectType({
+const Dog = new GraphQLObjectType({
   name: 'Dog',
   isTypeOf: () => true,
   fields: () => ({
@@ -96,7 +96,7 @@ var Dog = new GraphQLObjectType({
   interfaces: [ Being, Pet ],
 });
 
-var Cat = new GraphQLObjectType({
+const Cat = new GraphQLObjectType({
   name: 'Cat',
   isTypeOf: () => true,
   fields: () => ({
@@ -112,7 +112,7 @@ var Cat = new GraphQLObjectType({
   interfaces: [ Being, Pet ],
 });
 
-var CatOrDog = new GraphQLUnionType({
+const CatOrDog = new GraphQLUnionType({
   name: 'CatOrDog',
   types: [ Dog, Cat ],
   resolveType(/* value */) {
@@ -120,14 +120,14 @@ var CatOrDog = new GraphQLUnionType({
   }
 });
 
-var Intelligent = new GraphQLInterfaceType({
+const Intelligent = new GraphQLInterfaceType({
   name: 'Intelligent',
   fields: {
     iq: { type: GraphQLInt }
   }
 });
 
-var Human = new GraphQLObjectType({
+const Human = new GraphQLObjectType({
   name: 'Human',
   isTypeOf: () => true,
   interfaces: [ Being, Intelligent ],
@@ -142,7 +142,7 @@ var Human = new GraphQLObjectType({
   })
 });
 
-var Alien = new GraphQLObjectType({
+const Alien = new GraphQLObjectType({
   name: 'Alien',
   isTypeOf: () => true,
   interfaces: [ Being, Intelligent ],
@@ -156,7 +156,7 @@ var Alien = new GraphQLObjectType({
   }
 });
 
-var DogOrHuman = new GraphQLUnionType({
+const DogOrHuman = new GraphQLUnionType({
   name: 'DogOrHuman',
   types: [ Dog, Human ],
   resolveType(/* value */) {
@@ -164,7 +164,7 @@ var DogOrHuman = new GraphQLUnionType({
   }
 });
 
-var HumanOrAlien = new GraphQLUnionType({
+const HumanOrAlien = new GraphQLUnionType({
   name: 'HumanOrAlien',
   types: [ Human, Alien ],
   resolveType(/* value */) {
@@ -172,7 +172,7 @@ var HumanOrAlien = new GraphQLUnionType({
   }
 });
 
-var FurColor = new GraphQLEnumType({
+const FurColor = new GraphQLEnumType({
   name: 'FurColor',
   values: {
     BROWN: { value: 0 },
@@ -182,7 +182,7 @@ var FurColor = new GraphQLEnumType({
   },
 });
 
-var ComplexInput = new GraphQLInputObjectType({
+const ComplexInput = new GraphQLInputObjectType({
   name: 'ComplexInput',
   fields: {
     requiredField: { type: new GraphQLNonNull(GraphQLBoolean) },
@@ -193,7 +193,7 @@ var ComplexInput = new GraphQLInputObjectType({
   }
 });
 
-var ComplicatedArgs = new GraphQLObjectType({
+const ComplicatedArgs = new GraphQLObjectType({
   name: 'ComplicatedArgs',
   // TODO List
   // TODO Coercion
@@ -274,7 +274,7 @@ var ComplicatedArgs = new GraphQLObjectType({
 });
 
 
-var QueryRoot = new GraphQLObjectType({
+const QueryRoot = new GraphQLObjectType({
   name: 'QueryRoot',
   fields: () => ({
     human: {
@@ -292,7 +292,7 @@ var QueryRoot = new GraphQLObjectType({
   })
 });
 
-export var testSchema = new GraphQLSchema({
+export const testSchema = new GraphQLSchema({
   query: QueryRoot,
   directives: [
     new GraphQLDirective({
@@ -305,12 +305,12 @@ export var testSchema = new GraphQLSchema({
 });
 
 function expectValid(schema, rules, queryString) {
-  var errors = validate(schema, parse(queryString), rules);
+  const errors = validate(schema, parse(queryString), rules);
   expect(errors).to.deep.equal([], 'Should validate');
 }
 
 function expectInvalid(schema, rules, queryString, expectedErrors) {
-  var errors = validate(schema, parse(queryString), rules);
+  const errors = validate(schema, parse(queryString), rules);
   expect(errors).to.have.length.of.at.least(1, 'Should not validate');
   expect(errors.map(formatError)).to.deep.equal(expectedErrors);
 }

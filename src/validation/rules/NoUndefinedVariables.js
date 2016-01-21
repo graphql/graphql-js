@@ -36,7 +36,7 @@ export function NoUndefinedVariables(context: ValidationContext): any {
         const usages = context.getRecursiveVariableUsages(operation);
 
         usages.forEach(({ node }) => {
-          var varName = node.name.value;
+          const varName = node.name.value;
           if (variableNameDefined[varName] !== true) {
             context.reportError(new GraphQLError(
               undefinedVarMessage(

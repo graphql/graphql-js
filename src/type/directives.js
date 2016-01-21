@@ -47,7 +47,7 @@ type GraphQLDirectiveConfig = {
 /**
  * Used to conditionally include fields or fragments
  */
-export var GraphQLIncludeDirective = new GraphQLDirective({
+export const GraphQLIncludeDirective = new GraphQLDirective({
   name: 'include',
   description:
     'Directs the executor to include this field or fragment only when ' +
@@ -65,7 +65,7 @@ export var GraphQLIncludeDirective = new GraphQLDirective({
 /**
  * Used to conditionally skip (exclude) fields or fragments
  */
-export var GraphQLSkipDirective = new GraphQLDirective({
+export const GraphQLSkipDirective = new GraphQLDirective({
   name: 'skip',
   description:
     'Directs the executor to skip this field or fragment when the `if` ' +

@@ -37,7 +37,7 @@ export function UniqueInputFieldNames(context: ValidationContext): any {
       }
     },
     ObjectField(node) {
-      var fieldName = node.name.value;
+      const fieldName = node.name.value;
       if (knownNames[fieldName]) {
         context.reportError(new GraphQLError(
           duplicateInputFieldMessage(fieldName),

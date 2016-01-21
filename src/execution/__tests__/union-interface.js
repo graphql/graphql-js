@@ -45,14 +45,14 @@ class Person {
   }
 }
 
-var NamedType = new GraphQLInterfaceType({
+const NamedType = new GraphQLInterfaceType({
   name: 'Named',
   fields: {
     name: { type: GraphQLString }
   }
 });
 
-var DogType = new GraphQLObjectType({
+const DogType = new GraphQLObjectType({
   name: 'Dog',
   interfaces: [ NamedType ],
   fields: {
@@ -62,7 +62,7 @@ var DogType = new GraphQLObjectType({
   isTypeOf: value => value instanceof Dog
 });
 
-var CatType = new GraphQLObjectType({
+const CatType = new GraphQLObjectType({
   name: 'Cat',
   interfaces: [ NamedType ],
   fields: {
@@ -72,7 +72,7 @@ var CatType = new GraphQLObjectType({
   isTypeOf: value => value instanceof Cat
 });
 
-var PetType = new GraphQLUnionType({
+const PetType = new GraphQLUnionType({
   name: 'Pet',
   types: [ DogType, CatType ],
   resolveType(value) {
@@ -85,7 +85,7 @@ var PetType = new GraphQLUnionType({
   }
 });
 
-var PersonType = new GraphQLObjectType({
+const PersonType = new GraphQLObjectType({
   name: 'Person',
   interfaces: [ NamedType ],
   fields: {
@@ -96,19 +96,19 @@ var PersonType = new GraphQLObjectType({
   isTypeOf: value => value instanceof Person
 });
 
-var schema = new GraphQLSchema({
+const schema = new GraphQLSchema({
   query: PersonType
 });
 
-var garfield = new Cat('Garfield', false);
-var odie = new Dog('Odie', true);
-var liz = new Person('Liz');
-var john = new Person('John', [ garfield, odie ], [ liz, odie ]);
+const garfield = new Cat('Garfield', false);
+const odie = new Dog('Odie', true);
+const liz = new Person('Liz');
+const john = new Person('John', [ garfield, odie ], [ liz, odie ]);
 
 describe('Execute: Union and intersection types', () => {
 
   it('can introspect on union and intersection types', async () => {
-    var ast = parse(`
+    const ast = parse(`
       {
         Named: __type(name: "Named") {
           kind
@@ -169,7 +169,7 @@ describe('Execute: Union and intersection types', () => {
   it('executes using union types', async () => {
 
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
-    var ast = parse(`
+    const ast = parse(`
       {
         __typename
         name
@@ -199,7 +199,7 @@ describe('Execute: Union and intersection types', () => {
   it('executes union types with inline fragments', async () => {
 
     // This is the valid version of the query in the above test.
-    var ast = parse(`
+    const ast = parse(`
       {
         __typename
         name
@@ -234,7 +234,7 @@ describe('Execute: Union and intersection types', () => {
   it('executes using interface types', async () => {
 
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
-    var ast = parse(`
+    const ast = parse(`
       {
         __typename
         name
@@ -264,7 +264,7 @@ describe('Execute: Union and intersection types', () => {
   it('executes union types with inline fragments', async () => {
 
     // This is the valid version of the query in the above test.
-    var ast = parse(`
+    const ast = parse(`
       {
         __typename
         name
@@ -297,7 +297,7 @@ describe('Execute: Union and intersection types', () => {
 
   it('allows fragment conditions to be abstract types', async () => {
 
-    var ast = parse(`
+    const ast = parse(`
       {
         __typename
         name
@@ -348,10 +348,10 @@ describe('Execute: Union and intersection types', () => {
   });
 
   it('gets execution info in resolver', async () => {
-    var encounteredSchema;
-    var encounteredRootValue;
+    let encounteredSchema;
+    let encounteredRootValue;
 
-    var NamedType2 = new GraphQLInterfaceType({
+    const NamedType2 = new GraphQLInterfaceType({
       name: 'Named',
       fields: {
         name: { type: GraphQLString }
@@ -363,7 +363,7 @@ describe('Execute: Union and intersection types', () => {
       }
     });
 
-    var PersonType2 = new GraphQLObjectType({
+    const PersonType2 = new GraphQLObjectType({
       name: 'Person',
       interfaces: [ NamedType2 ],
       fields: {
@@ -372,13 +372,13 @@ describe('Execute: Union and intersection types', () => {
       },
     });
 
-    var schema2 = new GraphQLSchema({
+    const schema2 = new GraphQLSchema({
       query: PersonType2
     });
 
-    var john2 = new Person('John', [], [ liz ]);
+    const john2 = new Person('John', [], [ liz ]);
 
-    var ast = parse(`{ name, friends { name } }`);
+    const ast = parse(`{ name, friends { name } }`);
 
     expect(
       await execute(schema2, ast, john2)

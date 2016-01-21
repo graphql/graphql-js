@@ -92,7 +92,7 @@ describe('astFromValue', () => {
     );
   });
 
-  var myEnum = new GraphQLEnumType({
+  const myEnum = new GraphQLEnumType({
     name: 'MyEnum',
     values: {
       HELLO: {},
@@ -162,7 +162,7 @@ describe('astFromValue', () => {
             value: { kind: 'StringValue', value: 'HELLO' } } ] }
     );
 
-    var inputObj = new GraphQLInputObjectType({
+    const inputObj = new GraphQLInputObjectType({
       name: 'MyInputObj',
       fields: {
         foo: { type: GraphQLFloat },

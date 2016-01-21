@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-export var introspectionQuery = `
+export const introspectionQuery = `
   query IntrospectionQuery {
     __schema {
       queryType { name }

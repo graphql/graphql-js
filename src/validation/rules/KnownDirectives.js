@@ -40,7 +40,7 @@ export function misplacedDirectiveMessage(
 export function KnownDirectives(context: ValidationContext): any {
   return {
     Directive(node, key, parent, path, ancestors) {
-      var directiveDef = find(
+      const directiveDef = find(
         context.getSchema().getDirectives(),
         def => def.name === node.name.value
       );
