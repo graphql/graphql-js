@@ -989,9 +989,9 @@ describe('Visitor', () => {
       const ast = parse('{ human(id: 4) { name, pets { name }, unknown } }');
       visit(ast, visitWithTypeInfo(typeInfo, {
         enter(node) {
-          let parentType = typeInfo.getParentType();
-          let type = typeInfo.getType();
-          let inputType = typeInfo.getInputType();
+          const parentType = typeInfo.getParentType();
+          const type = typeInfo.getType();
+          const inputType = typeInfo.getInputType();
           visited.push([
             'enter',
             node.kind,
@@ -1002,9 +1002,9 @@ describe('Visitor', () => {
           ]);
         },
         leave(node) {
-          let parentType = typeInfo.getParentType();
-          let type = typeInfo.getType();
-          let inputType = typeInfo.getInputType();
+          const parentType = typeInfo.getParentType();
+          const type = typeInfo.getType();
+          const inputType = typeInfo.getInputType();
           visited.push([
             'leave',
             node.kind,
@@ -1065,9 +1065,9 @@ describe('Visitor', () => {
       );
       const editedAst = visit(ast, visitWithTypeInfo(typeInfo, {
         enter(node) {
-          let parentType = typeInfo.getParentType();
-          let type = typeInfo.getType();
-          let inputType = typeInfo.getInputType();
+          const parentType = typeInfo.getParentType();
+          const type = typeInfo.getType();
+          const inputType = typeInfo.getInputType();
           visited.push([
             'enter',
             node.kind,
@@ -1102,9 +1102,9 @@ describe('Visitor', () => {
           }
         },
         leave(node) {
-          let parentType = typeInfo.getParentType();
-          let type = typeInfo.getType();
-          let inputType = typeInfo.getInputType();
+          const parentType = typeInfo.getParentType();
+          const type = typeInfo.getType();
+          const inputType = typeInfo.getInputType();
           visited.push([
             'leave',
             node.kind,

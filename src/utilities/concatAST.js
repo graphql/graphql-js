@@ -17,7 +17,7 @@ import type { Document } from '../language/ast';
  * GraphQL source files which together represent one conceptual application.
  */
 export function concatAST(asts: Array<Document>): Document {
-  let batchDefinitions = [];
+  const batchDefinitions = [];
   for (let i = 0; i < asts.length; i++) {
     const definitions = asts[i].definitions;
     for (let j = 0; j < definitions.length; j++) {

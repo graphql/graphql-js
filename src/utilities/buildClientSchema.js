@@ -111,7 +111,7 @@ export function buildClientSchema(
       if (!nullableRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
-      let nullableType = getType(nullableRef);
+      const nullableType = getType(nullableRef);
       return new GraphQLNonNull(((nullableType: any): GraphQLNullableType));
     }
     return getNamedType(typeRef.name);

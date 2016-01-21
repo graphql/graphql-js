@@ -184,7 +184,7 @@
     "operator-assignment": [2, "always"],
     "operator-linebreak": [2, "after"],
     "padded-blocks": 0,
-    "prefer-const": 0,
+    "prefer-const": 2,
     "prefer-reflect": 0,
     "prefer-spread": 0,
     "quote-props": [2, "as-needed"],

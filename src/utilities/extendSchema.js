@@ -157,7 +157,7 @@ export function extendSchema(
   // A cache to use to store the actual GraphQLType definition objects by name.
   // Initialize to the GraphQL built in scalars. All functions below are inline
   // so that this type def cache is within the scope of the closure.
-  let typeDefCache = {
+  const typeDefCache = {
     String: GraphQLString,
     Int: GraphQLInt,
     Float: GraphQLFloat,

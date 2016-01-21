@@ -143,13 +143,13 @@ export class TypeInfo {
       case Kind.INLINE_FRAGMENT:
       case Kind.FRAGMENT_DEFINITION:
         const typeConditionAST = node.typeCondition;
-        let outputType = typeConditionAST ?
+        const outputType = typeConditionAST ?
           typeFromAST(schema, typeConditionAST) :
           this.getType();
         this._typeStack.push(((outputType: any): GraphQLOutputType));
         break;
       case Kind.VARIABLE_DEFINITION:
-        let inputType = typeFromAST(schema, node.type);
+        const inputType = typeFromAST(schema, node.type);
         this._inputTypeStack.push(((inputType: any): GraphQLInputType));
         break;
       case Kind.ARGUMENT:

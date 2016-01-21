@@ -23,7 +23,7 @@ export function duplicateInputFieldMessage(fieldName: any): string {
  * uniquely named.
  */
 export function UniqueInputFieldNames(context: ValidationContext): any {
-  let knownNameStack = [];
+  const knownNameStack = [];
   let knownNames = Object.create(null);
 
   return {

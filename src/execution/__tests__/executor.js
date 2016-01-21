@@ -314,7 +314,7 @@ describe('Execute: Handles basic execution tasks', () => {
       },
     };
 
-    let ast = parse(doc);
+    const ast = parse(doc);
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Type',
