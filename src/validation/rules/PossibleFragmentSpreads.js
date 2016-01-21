@@ -17,20 +17,21 @@ import {
   GraphQLUnionType
 } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
+import type { GraphQLType } from '../../type/definition';
 
 
 export function typeIncompatibleSpreadMessage(
-  fragName: any,
-  parentType: any,
-  fragType: any
+  fragName: string,
+  parentType: GraphQLType,
+  fragType: GraphQLType
 ): string {
   return `Fragment "${fragName}" cannot be spread here as objects of ` +
     `type "${parentType}" can never be of type "${fragType}".`;
 }
 
 export function typeIncompatibleAnonSpreadMessage(
-  parentType: any,
-  fragType: any
+  parentType: GraphQLType,
+  fragType: GraphQLType
 ): string {
   return `Fragment cannot be spread here as objects of ` +
     `type "${parentType}" can never be of type "${fragType}".`;

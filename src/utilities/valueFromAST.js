@@ -46,8 +46,8 @@ import type {
 export function valueFromAST(
   valueAST: ?Value,
   type: GraphQLInputType,
-  variables?: ?{ [key: string]: any }
-): any {
+  variables?: ?{ [key: string]: mixed }
+): mixed {
   if (type instanceof GraphQLNonNull) {
     // Note: we're not checking that the result of valueFromAST is non-null.
     // We're assuming that this query has been validated and the value used

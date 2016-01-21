@@ -12,13 +12,20 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { Field } from '../../language/ast';
 import { isLeafType } from '../../type/definition';
+import type { GraphQLType } from '../../type/definition';
 
 
-export function noSubselectionAllowedMessage(field: any, type: any): string {
+export function noSubselectionAllowedMessage(
+  field: string,
+  type: GraphQLType
+): string {
   return `Field "${field}" of type "${type}" must not have a sub selection.`;
 }
 
-export function requiredSubselectionMessage(field: any, type: any): string {
+export function requiredSubselectionMessage(
+  field: string,
+  type: GraphQLType
+): string {
   return `Field "${field}" of type "${type}" must have a sub selection.`;
 }
 

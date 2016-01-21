@@ -12,7 +12,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
-export function unusedVariableMessage(varName: any): string {
+export function unusedVariableMessage(varName: string): string {
   return `Variable "$${varName}" is never used.`;
 }
 

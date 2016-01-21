@@ -10,9 +10,10 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { GraphQLType } from '../../type/definition';
 
 
-export function unknownTypeMessage(type: any): string {
+export function unknownTypeMessage(type: GraphQLType): string {
   return `Unknown type "${type}".`;
 }
 

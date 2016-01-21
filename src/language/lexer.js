@@ -119,7 +119,7 @@ function makeToken(
   kind: number,
   start: number,
   end: number,
-  value?: any
+  value?: string
 ): Token {
   return { kind, start, end, value };
 }

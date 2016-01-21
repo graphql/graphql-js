@@ -1011,7 +1011,7 @@ function unexpected(parser, atToken?: ?Token): Error {
 function any<T>(
   parser,
   openKind: string,
-  parseFn: (parser: any) => T,
+  parseFn: (parser: mixed) => T,
   closeKind: string
 ): Array<T> {
   expect(parser, openKind);
@@ -1031,7 +1031,7 @@ function any<T>(
 function many<T>(
   parser,
   openKind: string,
-  parseFn: (parser: any) => T,
+  parseFn: (parser: mixed) => T,
   closeKind: string
 ): Array<T> {
   expect(parser, openKind);

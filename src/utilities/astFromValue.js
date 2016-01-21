@@ -48,43 +48,50 @@ import { GraphQLFloat } from '../type/scalars';
  *
  */
 export function astFromValue(
-  value: any,
+  value: mixed,
   type?: ?GraphQLType
 ): ?Value {
+  // Ensure flow knows that we treat function params as const.
+  const _value = value;
+
   if (type instanceof GraphQLNonNull) {
     // Note: we're not checking that the result is non-null.
     // This function is not responsible for validating the input value.
-    return astFromValue(value, type.ofType);
+    return astFromValue(_value, type.ofType);
   }
 
-  if (isNullish(value)) {
+  if (isNullish(_value)) {
     return null;
   }
 
   // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
   // the value is not an array, convert the value using the list's item type.
-  if (Array.isArray(value)) {
+  if (Array.isArray(_value)) {
     const itemType = type instanceof GraphQLList ? type.ofType : null;
     return {
       kind: LIST,
-      values: value.map(item => astFromValue(item, itemType))
+      values: _value.map(item => {
+        const itemValue = astFromValue(item, itemType);
+        invariant(itemValue, 'Could not create AST item.');
+        return itemValue;
+      })
     };
   } else if (type instanceof GraphQLList) {
     // Because GraphQL will accept single values as a "list of one" when
     // expecting a list, if there's a non-array value and an expected list type,
     // create an AST using the list's item type.
-    return astFromValue(value, type.ofType);
+    return astFromValue(_value, type.ofType);
   }
 
-  if (typeof value === 'boolean') {
-    return { kind: BOOLEAN, value };
+  if (typeof _value === 'boolean') {
+    return { kind: BOOLEAN, value: _value };
   }
 
   // JavaScript numbers can be Float or Int values. Use the GraphQLType to
   // differentiate if available, otherwise prefer Int if the value is a
   // valid Int.
-  if (typeof value === 'number') {
-    const stringNum = String(value);
+  if (typeof _value === 'number') {
+    const stringNum = String(_value);
     const isIntValue = /^[0-9]+$/.test(stringNum);
     if (isIntValue) {
       if (type === GraphQLFloat) {
@@ -97,29 +104,29 @@ export function astFromValue(
 
   // JavaScript strings can be Enum values or String values. Use the
   // GraphQLType to differentiate if possible.
-  if (typeof value === 'string') {
+  if (typeof _value === 'string') {
     if (type instanceof GraphQLEnumType &&
-        /^[_a-zA-Z][_a-zA-Z0-9]*$/.test(value)) {
-      return { kind: ENUM, value };
+        /^[_a-zA-Z][_a-zA-Z0-9]*$/.test(_value)) {
+      return { kind: ENUM, value: _value };
     }
     // Use JSON stringify, which uses the same string encoding as GraphQL,
     // then remove the quotes.
-    return { kind: STRING, value: JSON.stringify(value).slice(1, -1) };
+    return { kind: STRING, value: JSON.stringify(_value).slice(1, -1) };
   }
 
   // last remaining possible typeof
-  invariant(typeof value === 'object');
+  invariant(typeof _value === 'object' && _value !== null);
 
   // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object.
   const fields = [];
-  Object.keys(value).forEach(fieldName => {
+  Object.keys(_value).forEach(fieldName => {
     let fieldType;
     if (type instanceof GraphQLInputObjectType) {
       const fieldDef = type.getFields()[fieldName];
       fieldType = fieldDef && fieldDef.type;
     }
-    const fieldValue = astFromValue(value[fieldName], fieldType);
+    const fieldValue = astFromValue(_value[fieldName], fieldType);
     if (fieldValue) {
       fields.push({
         kind: OBJECT_FIELD,

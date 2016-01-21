@@ -11,6 +11,6 @@
 /**
  * Returns true if a value is null, undefined, or NaN.
  */
-export default function isNullish(value: any): boolean {
+export default function isNullish(value: mixed): boolean {
   return value === null || value === undefined || value !== value;
 }

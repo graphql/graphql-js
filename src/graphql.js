@@ -43,8 +43,8 @@ import type { GraphQLSchema } from './type/schema';
 export function graphql(
   schema: GraphQLSchema,
   requestString: string,
-  rootValue?: ?any,
-  variableValues?: ?{[key: string]: any},
+  rootValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
 ): Promise<GraphQLResult> {
   return new Promise(resolve => {

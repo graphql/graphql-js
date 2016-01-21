@@ -12,7 +12,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
-export function duplicateOperationNameMessage(operationName: any): string {
+export function duplicateOperationNameMessage(operationName: string): string {
   return `There can only be one operation named "${operationName}".`;
 }
 

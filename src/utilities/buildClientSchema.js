@@ -278,7 +278,7 @@ export function buildClientSchema(
     });
   }
 
-  function buildFieldDefMap(typeIntrospection): any {
+  function buildFieldDefMap(typeIntrospection) {
     return keyValMap(
       typeIntrospection.fields,
       fieldIntrospection => fieldIntrospection.name,

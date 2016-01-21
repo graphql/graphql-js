@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-export default function invariant(condition: any, message: string) {
+export default function invariant(condition: mixed, message: string) {
   if (!condition) {
     throw new Error(message);
   }

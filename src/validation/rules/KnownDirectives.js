@@ -20,13 +20,13 @@ import {
 } from '../../language/kinds';
 
 
-export function unknownDirectiveMessage(directiveName: any): string {
+export function unknownDirectiveMessage(directiveName: string): string {
   return `Unknown directive "${directiveName}".`;
 }
 
 export function misplacedDirectiveMessage(
-  directiveName: any,
-  placement: any
+  directiveName: string,
+  placement: string
 ): string {
   return `Directive "${directiveName}" may not be used on "${placement}".`;
 }

@@ -11,9 +11,13 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { Field } from '../../language/ast';
+import type { GraphQLType } from '../../type/definition';
 
 
-export function undefinedFieldMessage(fieldName: any, type: any): string {
+export function undefinedFieldMessage(
+  fieldName: string,
+  type: GraphQLType
+): string {
   return `Cannot query field "${fieldName}" on "${type}".`;
 }
 

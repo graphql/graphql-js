@@ -14,8 +14,8 @@ import type { FragmentDefinition } from '../../language/ast';
 
 
 export function cycleErrorMessage(
-  fragName: any,
-  spreadNames: Array<any>
+  fragName: string,
+  spreadNames: Array<string>
 ): string {
   const via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
   return `Cannot spread fragment "${fragName}" within itself${via}.`;

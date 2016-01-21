@@ -12,7 +12,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
-export function duplicateFragmentNameMessage(fragName: any): string {
+export function duplicateFragmentNameMessage(fragName: string): string {
   return `There can only be one fragment named "${fragName}".`;
 }
 

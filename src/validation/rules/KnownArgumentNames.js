@@ -16,20 +16,21 @@ import {
   FIELD,
   DIRECTIVE
 } from '../../language/kinds';
+import type { GraphQLType } from '../../type/definition';
 
 
 export function unknownArgMessage(
-  argName: any,
-  fieldName: any,
-  type: any
+  argName: string,
+  fieldName: string,
+  type: GraphQLType
 ): string {
   return `Unknown argument "${argName}" on field "${fieldName}" of ` +
     `type "${type}".`;
 }
 
 export function unknownDirectiveArgMessage(
-  argName: any,
-  directiveName: any
+  argName: string,
+  directiveName: string
 ): string {
   return `Unknown argument "${argName}" on directive "@${directiveName}".`;
 }

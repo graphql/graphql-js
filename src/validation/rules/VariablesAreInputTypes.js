@@ -17,8 +17,8 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 
 
 export function nonInputTypeOnVarMessage(
-  variableName: any,
-  typeName: any
+  variableName: string,
+  typeName: string
 ): string {
   return `Variable "$${variableName}" cannot be non-input type "${typeName}".`;
 }

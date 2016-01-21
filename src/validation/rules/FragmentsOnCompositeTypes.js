@@ -12,17 +12,18 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
 import { isCompositeType } from '../../type/definition';
+import type { GraphQLType } from '../../type/definition';
 
 
 export function inlineFragmentOnNonCompositeErrorMessage(
-  type: any
+  type: GraphQLType
 ): string {
   return `Fragment cannot condition on non composite type "${type}".`;
 }
 
 export function fragmentOnNonCompositeErrorMessage(
-  fragName: any,
-  type: any
+  fragName: string,
+  type: GraphQLType
 ): string {
   return `Fragment "${fragName}" cannot condition on non composite ` +
     `type "${type}".`;

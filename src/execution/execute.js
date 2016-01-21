@@ -79,9 +79,9 @@ import type {
 type ExecutionContext = {
   schema: GraphQLSchema;
   fragments: {[key: string]: FragmentDefinition};
-  rootValue: any;
+  rootValue: mixed;
   operation: OperationDefinition;
-  variableValues: {[key: string]: any};
+  variableValues: {[key: string]: mixed};
   errors: Array<GraphQLError>;
 }
 
@@ -106,8 +106,8 @@ type ExecutionResult = {
 export function execute(
   schema: GraphQLSchema,
   documentAST: Document,
-  rootValue?: any,
-  variableValues?: ?{[key: string]: any},
+  rootValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
 ): Promise<ExecutionResult> {
   invariant(schema, 'Must provide schema');
@@ -159,8 +159,8 @@ export function execute(
 function buildExecutionContext(
   schema: GraphQLSchema,
   documentAST: Document,
-  rootValue: any,
-  rawVariableValues: ?{[key: string]: any},
+  rootValue: mixed,
+  rawVariableValues: ?{[key: string]: mixed},
   operationName: ?string
 ): ExecutionContext {
   const errors: Array<GraphQLError> = [];
@@ -211,7 +211,7 @@ function buildExecutionContext(
 function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinition,
-  rootValue: any
+  rootValue: mixed
 ): Object {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
@@ -271,7 +271,7 @@ function getOperationRootType(
 function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
-  sourceValue: any,
+  sourceValue: mixed,
   fields: {[key: string]: Array<Field>}
 ): Promise<Object> {
   return Object.keys(fields).reduce(
@@ -287,7 +287,7 @@ function executeFieldsSerially(
         return results;
       }
       if (isThenable(result)) {
-        return result.then(resolvedResult => {
+        return ((result: any): Promise).then(resolvedResult => {
           results[responseName] = resolvedResult;
           return results;
         });
@@ -306,7 +306,7 @@ function executeFieldsSerially(
 function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
-  sourceValue: any,
+  sourceValue: mixed,
   fields: {[key: string]: Array<Field>}
 ): Object {
   let containsPromise = false;
@@ -471,15 +471,15 @@ function doesFragmentConditionMatch(
 }
 
 /**
- * This function transforms a JS object `{[key: string]: Promise<any>}` into
- * a `Promise<{[key: string]: any}>`
+ * This function transforms a JS object `{[key: string]: Promise<T>}` into
+ * a `Promise<{[key: string]: T}>`
  *
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
-function promiseForObject(
-  object: {[key: string]: Promise<any>}
-): Promise<{[key: string]: any}> {
+function promiseForObject<T>(
+  object: {[key: string]: Promise<T>}
+): Promise<{[key: string]: T}> {
   const keys = Object.keys(object);
   const valuesAndPromises = keys.map(name => object[name]);
   return Promise.all(valuesAndPromises).then(
@@ -506,9 +506,9 @@ function getFieldEntryKey(node: Field): string {
 function resolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
-  source: Object,
+  source: mixed,
   fieldASTs: Array<Field>
-): any {
+): mixed {
   const fieldAST = fieldASTs[0];
   const fieldName = fieldAST.name.value;
 
@@ -560,12 +560,12 @@ function resolveField(
 // function. Returns the result of resolveFn or the abrupt-return Error object.
 function resolveOrError<T>(
   resolveFn: (
-    source: any,
-    args: { [key: string]: any },
+    source: mixed,
+    args: { [key: string]: mixed },
     info: GraphQLResolveInfo
   ) => T,
-  source: any,
-  args: { [key: string]: any },
+  source: mixed,
+  args: { [key: string]: mixed },
   info: GraphQLResolveInfo
 ): Error | T {
   try {
@@ -584,8 +584,8 @@ function completeValueCatchingError(
   returnType: GraphQLType,
   fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
-  result: any
-): any {
+  result: mixed
+): mixed {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
   if (returnType instanceof GraphQLNonNull) {
@@ -607,7 +607,7 @@ function completeValueCatchingError(
       // error and resolve to null.
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return completed.then(undefined, error => {
+      return ((completed: any): Promise).then(undefined, error => {
         exeContext.errors.push(error);
         return Promise.resolve(null);
       });
@@ -644,11 +644,11 @@ function completeValue(
   returnType: GraphQLType,
   fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
-  result: any
-): any {
+  result: mixed
+): mixed {
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
-    return result.then(
+    return ((result: any): Promise).then(
       // Once resolved to a value, complete that value.
       resolved => completeValue(
         exeContext,
@@ -730,7 +730,7 @@ function completeValue(
   if (returnType instanceof GraphQLObjectType) {
     runtimeType = returnType;
   } else if (isAbstractType(returnType)) {
-    const abstractType: GraphQLAbstractType = (returnType: any);
+    const abstractType = ((returnType: any): GraphQLAbstractType);
     runtimeType = abstractType.getObjectType(result, info);
     if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
       throw new GraphQLError(
@@ -781,18 +781,21 @@ function completeValue(
  * of calling that function.
  */
 function defaultResolveFn(source, args, { fieldName }) {
-  const property = source[fieldName];
-  return typeof property === 'function' ? property.call(source) : property;
+  // ensure source is a value for which property access is acceptable.
+  if (typeof source !== 'number' && typeof source !== 'string' && source) {
+    const property = (source: any)[fieldName];
+    return typeof property === 'function' ? property.call(source) : property;
+  }
 }
 
 /**
  * Checks to see if this object acts like a Promise, i.e. has a "then"
  * function.
  */
-function isThenable(value: any): boolean {
-  return Boolean(
-    value && typeof value === 'object' && typeof value.then === 'function'
-  );
+function isThenable(value: mixed): boolean {
+  return typeof value === 'object' &&
+    value !== null &&
+    typeof value.then === 'function';
 }
 
 /**

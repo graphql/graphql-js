@@ -32,7 +32,10 @@ import { isEqualType } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 
-export function fieldsConflictMessage(responseName: any, reason: any): string {
+export function fieldsConflictMessage(
+  responseName: string,
+  reason: ConflictReasonMessage
+): string {
   return `Fields "${responseName}" conflict because ${reasonMessage(reason)}.`;
 }
 

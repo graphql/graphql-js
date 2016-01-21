@@ -12,7 +12,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
-export function unknownFragmentMessage(fragName: any): string {
+export function unknownFragmentMessage(fragName: string): string {
   return `Unknown fragment "${fragName}".`;
 }
 

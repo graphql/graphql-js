@@ -13,12 +13,13 @@ import { GraphQLError } from '../../error';
 import { GraphQLNonNull } from '../../type/definition';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
+import type { GraphQLType } from '../../type/definition';
 
 
 export function badVarPosMessage(
-  varName: any,
-  varType: any,
-  expectedType: any
+  varName: string,
+  varType: GraphQLType,
+  expectedType: GraphQLType
 ): string {
   return `Variable "$${varName}" of type "${varType}" used in position ` +
     `expecting type "${expectedType}".`;

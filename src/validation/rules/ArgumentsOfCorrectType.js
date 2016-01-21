@@ -12,13 +12,14 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
 import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
+import type { GraphQLType } from '../../type/definition';
 
 
 export function badValueMessage(
-  argName: any,
-  type: any,
-  value: any,
-  verboseErrors?: [any]
+  argName: string,
+  type: GraphQLType,
+  value: string,
+  verboseErrors?: [string]
 ): string {
   const message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
   return (

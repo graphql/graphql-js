@@ -37,8 +37,8 @@ import type { Argument, VariableDefinition } from '../language/ast';
 export function getVariableValues(
   schema: GraphQLSchema,
   definitionASTs: Array<VariableDefinition>,
-  inputs: { [key: string]: any }
-): { [key: string]: any } {
+  inputs: { [key: string]: mixed }
+): { [key: string]: mixed } {
   return definitionASTs.reduce((values, defAST) => {
     const varName = defAST.variable.name.value;
     values[varName] = getVariableValue(schema, defAST, inputs[varName]);
@@ -54,8 +54,8 @@ export function getVariableValues(
 export function getArgumentValues(
   argDefs: ?Array<GraphQLArgument>,
   argASTs: ?Array<Argument>,
-  variableValues: { [key: string]: any }
-): { [key: string]: any } {
+  variableValues: { [key: string]: mixed }
+): { [key: string]: mixed } {
   if (!argDefs || !argASTs) {
     return {};
   }
@@ -82,8 +82,8 @@ export function getArgumentValues(
 function getVariableValue(
   schema: GraphQLSchema,
   definitionAST: VariableDefinition,
-  input: ?any
-): any {
+  input: mixed
+): mixed {
   const type = typeFromAST(schema, definitionAST.type);
   const variable = definitionAST.variable;
   if (!type || !isInputType(type)) {
@@ -93,7 +93,7 @@ function getVariableValue(
       [ definitionAST ]
     );
   }
-  const inputType: GraphQLInputType = (type: any);
+  const inputType = ((type: any): GraphQLInputType);
   const errors = isValidJSValue(input, inputType);
   if (!errors.length) {
     if (isNullish(input)) {
@@ -122,31 +122,37 @@ function getVariableValue(
 /**
  * Given a type and any value, return a runtime value coerced to match the type.
  */
-function coerceValue(type: GraphQLInputType, value: any): any {
+function coerceValue(type: GraphQLInputType, value: mixed): mixed {
+  // Ensure flow knows that we treat function params as const.
+  const _value = value;
+
   if (type instanceof GraphQLNonNull) {
     // Note: we're not checking that the result of coerceValue is non-null.
     // We only call this function after calling isValidJSValue.
-    return coerceValue(type.ofType, value);
+    return coerceValue(type.ofType, _value);
   }
 
-  if (isNullish(value)) {
+  if (isNullish(_value)) {
     return null;
   }
 
   if (type instanceof GraphQLList) {
     const itemType = type.ofType;
     // TODO: support iterable input
-    if (Array.isArray(value)) {
-      return value.map(item => coerceValue(itemType, item));
+    if (Array.isArray(_value)) {
+      return _value.map(item => coerceValue(itemType, item));
     }
-    return [ coerceValue(itemType, value) ];
+    return [ coerceValue(itemType, _value) ];
   }
 
   if (type instanceof GraphQLInputObjectType) {
+    if (typeof _value !== 'object' || _value === null) {
+      return null;
+    }
     const fields = type.getFields();
     return Object.keys(fields).reduce((obj, fieldName) => {
       const field = fields[fieldName];
-      let fieldValue = coerceValue(field.type, value[fieldName]);
+      let fieldValue = coerceValue(field.type, _value[fieldName]);
       if (isNullish(fieldValue)) {
         fieldValue = field.defaultValue;
       }
@@ -162,7 +168,7 @@ function coerceValue(type: GraphQLInputType, value: any): any {
     'Must be input type'
   );
 
-  const parsed = type.parseValue(value);
+  const parsed = type.parseValue(_value);
   if (!isNullish(parsed)) {
     return parsed;
   }

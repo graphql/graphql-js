@@ -12,7 +12,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
-export function unusedFragMessage(fragName: any): string {
+export function unusedFragMessage(fragName: string): string {
   return `Fragment "${fragName}" is never used.`;
 }
 

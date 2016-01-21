@@ -12,21 +12,22 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import keyMap from '../../jsutils/keyMap';
 import { GraphQLNonNull } from '../../type/definition';
+import type { GraphQLType } from '../../type/definition';
 
 
 export function missingFieldArgMessage(
-  fieldName: any,
-  argName: any,
-  type: any
+  fieldName: string,
+  argName: string,
+  type: GraphQLType
 ): string {
   return `Field "${fieldName}" argument "${argName}" of type "${type}" ` +
     `is required but not provided.`;
 }
 
 export function missingDirectiveArgMessage(
-  directiveName: any,
-  argName: any,
-  type: any
+  directiveName: string,
+  argName: string,
+  type: GraphQLType
 ): string {
   return `Directive "@${directiveName}" argument "${argName}" of type ` +
     `"${type}" is required but not provided.`;

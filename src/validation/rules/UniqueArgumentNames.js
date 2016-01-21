@@ -12,7 +12,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
 
-export function duplicateArgMessage(argName: any): string {
+export function duplicateArgMessage(argName: string): string {
   return `There can be only one argument named "${argName}".`;
 }
 
