@@ -204,13 +204,13 @@ export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
  *     });
  *
  */
-export class GraphQLScalarType/* <T> */ {
+export class GraphQLScalarType<InternalType> {
   name: string;
   description: ?string;
 
-  _scalarConfig: GraphQLScalarTypeConfig/* <T> */;
+  _scalarConfig: GraphQLScalarTypeConfig<InternalType>;
 
-  constructor(config: GraphQLScalarTypeConfig/* <T> */) {
+  constructor(config: GraphQLScalarTypeConfig<InternalType>) {
     invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
@@ -231,17 +231,17 @@ export class GraphQLScalarType/* <T> */ {
     this._scalarConfig = config;
   }
 
-  serialize(value: mixed): ?any/* T */ {
+  serialize(value: mixed): ?InternalType {
     const serializer = this._scalarConfig.serialize;
     return serializer(value);
   }
 
-  parseValue(value: mixed): ?any/* T */ {
+  parseValue(value: mixed): ?InternalType {
     const parser = this._scalarConfig.parseValue;
     return parser ? parser(value) : null;
   }
 
-  parseLiteral(valueAST: Value): ?any/* T */ {
+  parseLiteral(valueAST: Value): ?InternalType {
     const parser = this._scalarConfig.parseLiteral;
     return parser ? parser(valueAST) : null;
   }
@@ -251,12 +251,12 @@ export class GraphQLScalarType/* <T> */ {
   }
 }
 
-export type GraphQLScalarTypeConfig/* <T> */ = {
+export type GraphQLScalarTypeConfig<InternalType> = {
   name: string;
   description?: ?string;
-  serialize: (value: mixed) => ?any/* T */;
-  parseValue: (value: mixed) => ?any/* T */;
-  parseLiteral: (valueAST: Value) => ?any/* T */;
+  serialize: (value: mixed) => ?InternalType;
+  parseValue?: (value: mixed) => ?InternalType;
+  parseLiteral?: (valueAST: Value) => ?InternalType;
 }
 
 
