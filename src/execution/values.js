@@ -126,8 +126,7 @@ function coerceValue(type: GraphQLInputType, value: any): any {
   if (type instanceof GraphQLNonNull) {
     // Note: we're not checking that the result of coerceValue is non-null.
     // We only call this function after calling isValidJSValue.
-    const nullableType: GraphQLInputType = (type.ofType: any);
-    return coerceValue(nullableType, value);
+    return coerceValue(type.ofType, value);
   }
 
   if (isNullish(value)) {
@@ -135,7 +134,7 @@ function coerceValue(type: GraphQLInputType, value: any): any {
   }
 
   if (type instanceof GraphQLList) {
-    const itemType: GraphQLInputType = (type.ofType: any);
+    const itemType = type.ofType;
     // TODO: support iterable input
     if (Array.isArray(value)) {
       return value.map(item => coerceValue(itemType, item));

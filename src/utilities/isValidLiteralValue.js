@@ -41,14 +41,13 @@ export function isValidLiteralValue(
 ): [ string ] {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
-    const ofType: GraphQLInputType = (type.ofType: any);
     if (!valueAST) {
-      if (ofType.name) {
-        return [ `Expected "${ofType.name}!", found null.` ];
+      if (type.ofType.name) {
+        return [ `Expected "${type.ofType.name}!", found null.` ];
       }
       return [ 'Expected non-null value, found null.' ];
     }
-    return isValidLiteralValue(ofType, valueAST);
+    return isValidLiteralValue(type.ofType, valueAST);
   }
 
   if (!valueAST) {
@@ -63,7 +62,7 @@ export function isValidLiteralValue(
 
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
-    const itemType: GraphQLInputType = (type.ofType: any);
+    const itemType = type.ofType;
     if (valueAST.kind === LIST) {
       return (valueAST: ListValue).values.reduce((acc, itemAST, index) => {
         const errors = isValidLiteralValue(itemType, itemAST);

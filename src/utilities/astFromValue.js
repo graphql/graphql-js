@@ -73,7 +73,7 @@ export function astFromValue(
     // Because GraphQL will accept single values as a "list of one" when
     // expecting a list, if there's a non-array value and an expected list type,
     // create an AST using the list's item type.
-    return astFromValue(value, (type: any).ofType);
+    return astFromValue(value, type.ofType);
   }
 
   if (typeof value === 'boolean') {

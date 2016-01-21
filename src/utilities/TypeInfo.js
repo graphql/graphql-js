@@ -171,9 +171,7 @@ export class TypeInfo {
       case Kind.LIST:
         const listType = getNullableType(this.getInputType());
         this._inputTypeStack.push(
-          listType instanceof GraphQLList ?
-            ((listType.ofType: any): GraphQLInputType) :
-            undefined
+          listType instanceof GraphQLList ? listType.ofType : undefined
         );
         break;
       case Kind.OBJECT_FIELD:

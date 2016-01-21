@@ -49,11 +49,10 @@ export function valueFromAST(
   variables?: ?{ [key: string]: any }
 ): any {
   if (type instanceof GraphQLNonNull) {
-    const nullableType: GraphQLInputType = (type.ofType: any);
     // Note: we're not checking that the result of valueFromAST is non-null.
     // We're assuming that this query has been validated and the value used
     // here is of the correct type.
-    return valueFromAST(valueAST, nullableType, variables);
+    return valueFromAST(valueAST, type.ofType, variables);
   }
 
   if (!valueAST) {
@@ -72,7 +71,7 @@ export function valueFromAST(
   }
 
   if (type instanceof GraphQLList) {
-    const itemType: GraphQLInputType = (type.ofType: any);
+    const itemType = type.ofType;
     if (valueAST.kind === Kind.LIST) {
       return (valueAST: ListValue).values.map(
         itemAST => valueFromAST(itemAST, itemType, variables)

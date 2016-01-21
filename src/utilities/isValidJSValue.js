@@ -28,14 +28,13 @@ import type { GraphQLInputType } from '../type/definition';
 export function isValidJSValue(value: any, type: GraphQLInputType): [ string ] {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
-    const ofType: GraphQLInputType = (type.ofType: any);
     if (isNullish(value)) {
-      if (ofType.name) {
-        return [ `Expected "${ofType.name}!", found null.` ];
+      if (type.ofType.name) {
+        return [ `Expected "${type.ofType.name}!", found null.` ];
       }
       return [ 'Expected non-null value, found null.' ];
     }
-    return isValidJSValue(value, ofType);
+    return isValidJSValue(value, type.ofType);
   }
 
   if (isNullish(value)) {
@@ -44,7 +43,7 @@ export function isValidJSValue(value: any, type: GraphQLInputType): [ string ] {
 
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
-    const itemType: GraphQLInputType = (type.ofType: any);
+    const itemType = type.ofType;
     if (Array.isArray(value)) {
       return value.reduce((acc, item, index) => {
         const errors = isValidJSValue(item, itemType);

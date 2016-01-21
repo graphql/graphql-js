@@ -56,8 +56,13 @@ export type GraphQLInputType =
   GraphQLScalarType |
   GraphQLEnumType |
   GraphQLInputObjectType |
-  GraphQLList |
-  GraphQLNonNull;
+  GraphQLList<GraphQLInputType> |
+  GraphQLNonNull<
+    GraphQLScalarType |
+    GraphQLEnumType |
+    GraphQLInputObjectType |
+    GraphQLList<GraphQLInputType>
+  >;
 
 export function isInputType(type: ?GraphQLType): boolean {
   const namedType = getNamedType(type);
@@ -77,8 +82,15 @@ export type GraphQLOutputType =
   GraphQLInterfaceType |
   GraphQLUnionType |
   GraphQLEnumType |
-  GraphQLList |
-  GraphQLNonNull;
+  GraphQLList<GraphQLOutputType> |
+  GraphQLNonNull<
+    GraphQLScalarType |
+    GraphQLObjectType |
+    GraphQLInterfaceType |
+    GraphQLUnionType |
+    GraphQLEnumType |
+    GraphQLList<GraphQLOutputType>
+  >;
 
 export function isOutputType(type: ?GraphQLType): boolean {
   const namedType = getNamedType(type);
@@ -995,10 +1007,10 @@ export type InputObjectFieldMap = {
  *     })
  *
  */
-export class GraphQLList {
-  ofType: GraphQLType;
+export class GraphQLList<T: GraphQLType> {
+  ofType: T;
 
-  constructor(type: GraphQLType) {
+  constructor(type: T) {
     invariant(
       isType(type),
       `Can only create List of a GraphQLType but got: ${type}.`
@@ -1032,10 +1044,10 @@ export class GraphQLList {
  *
  * Note: the enforcement of non-nullability occurs within the executor.
  */
-export class GraphQLNonNull {
-  ofType: GraphQLNullableType;
+export class GraphQLNonNull<T: GraphQLNullableType> {
+  ofType: T;
 
-  constructor(type: GraphQLNullableType) {
+  constructor(type: T) {
     invariant(
       isType(type) && !(type instanceof GraphQLNonNull),
       `Can only create NonNull of a Nullable GraphQLType but got: ${type}.`
