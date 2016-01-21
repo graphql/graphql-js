@@ -13,7 +13,7 @@ import isNullish from '../jsutils/isNullish';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLNamedType } from '../type/definition';
+import type { GraphQLType } from '../type/definition';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -62,7 +62,7 @@ function printFilteredSchema(
   return types.map(printType).join('\n\n') + '\n';
 }
 
-function printType(type: GraphQLNamedType): string {
+function printType(type: GraphQLType): string {
   if (type instanceof GraphQLScalarType) {
     return printScalar(type);
   } else if (type instanceof GraphQLObjectType) {

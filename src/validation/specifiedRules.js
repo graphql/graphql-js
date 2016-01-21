@@ -79,11 +79,12 @@ import {
 // Spec Section: "Input Object Field Uniqueness"
 import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
 
+import type { ValidationContext } from './index';
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  */
-export var specifiedRules = [
+export var specifiedRules: Array<(context: ValidationContext) => any> = [
   UniqueOperationNames,
   LoneAnonymousOperation,
   KnownTypeNames,

@@ -100,7 +100,7 @@ export class GraphQLSchema {
 
     // Enforce correct interface implementations
     Object.keys(this._typeMap).forEach(typeName => {
-      var type = this._typeMap[typeName];
+      const type = this._typeMap[typeName];
       if (type instanceof GraphQLObjectType) {
         type.getInterfaces().forEach(
           iface => assertObjectImplementsInterface(type, iface)

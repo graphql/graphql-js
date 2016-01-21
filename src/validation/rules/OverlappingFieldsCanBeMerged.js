@@ -55,7 +55,7 @@ function reasonMessage(reason: ConflictReasonMessage): string {
 export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
   var comparedSet = new PairSet();
 
-  function findConflicts(fieldMap): Array<Conflict> {
+  function findConflicts(fieldMap: AstAndDefCollection): Array<Conflict> {
     var conflicts = [];
     Object.keys(fieldMap).forEach(responseName => {
       var fields = fieldMap[responseName];
@@ -75,8 +75,8 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
 
   function findConflict(
     responseName: string,
-    field1: [ GraphQLCompositeType, Field, GraphQLFieldDefinition ],
-    field2: [ GraphQLCompositeType, Field, GraphQLFieldDefinition ]
+    field1: AstAndDef,
+    field2: AstAndDef
   ): ?Conflict {
     var [ parentType1, ast1, def1 ] = field1;
     var [ parentType2, ast2, def2 ] = field2;
@@ -195,6 +195,10 @@ type Conflict = [ ConflictReason, Array<Field>, Array<Field> ];
 type ConflictReason = [ string, ConflictReasonMessage ];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
+// Tuple defining an AST in a context
+type AstAndDef = [ GraphQLCompositeType, Field, ?GraphQLFieldDefinition ];
+// Map of array of those.
+type AstAndDefCollection = { [key: string]: Array<AstAndDef> };
 
 function sameArguments(
   arguments1: Array<Argument>,
@@ -233,8 +237,8 @@ function collectFieldASTsAndDefs(
   parentType: ?GraphQLNamedType,
   selectionSet: SelectionSet,
   visitedFragmentNames?: {[key: string]: boolean},
-  astAndDefs?: {[key: string]: Array<[Field, ?GraphQLFieldDefinition]>}
-): {[key: string]: Array<[Field, ?GraphQLFieldDefinition]>} {
+  astAndDefs?: AstAndDefCollection
+): AstAndDefCollection {
   var _visitedFragmentNames = visitedFragmentNames || {};
   var _astAndDefs = astAndDefs || {};
   for (var i = 0; i < selectionSet.selections.length; i++) {

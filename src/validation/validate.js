@@ -194,14 +194,15 @@ export class ValidationContext {
   getVariableUsages(node: HasSelectionSet): Array<VariableUsage> {
     let usages = this._variableUsages.get(node);
     if (!usages) {
-      usages = [];
+      const newUsages = [];
       const typeInfo = new TypeInfo(this._schema);
       visit(node, visitWithTypeInfo(typeInfo, {
         VariableDefinition: () => false,
         Variable(variable) {
-          usages.push({ node: variable, type: typeInfo.getInputType() });
+          newUsages.push({ node: variable, type: typeInfo.getInputType() });
         }
       }));
+      usages = newUsages;
       this._variableUsages.set(node, usages);
     }
     return usages;
