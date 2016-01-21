@@ -1,4 +1,4 @@
-/* @flow weak */
+/* @flow */
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
@@ -242,7 +242,7 @@ const __EnumValue = new GraphQLObjectType({
     'One possible value for a given Enum. Enum values are unique values, not ' +
     'a placeholder for a string or numeric value. However an Enum value is ' +
     'returned in a JSON response as a string.',
-  fields: {
+  fields: () => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
     isDeprecated: {
@@ -252,7 +252,7 @@ const __EnumValue = new GraphQLObjectType({
     deprecationReason: {
       type: GraphQLString,
     }
-  }
+  })
 });
 
 export const TypeKind = {
@@ -332,7 +332,8 @@ export const TypeMetaFieldDef: GraphQLFieldDefinition = {
   args: [
     { name: 'name', type: new GraphQLNonNull(GraphQLString) }
   ],
-  resolve: (source, { name }, { schema }) => schema.getType(name)
+  resolve: (source, { name }: { name: string }, { schema }) =>
+    schema.getType(name)
 };
 
 export const TypeNameMetaFieldDef: GraphQLFieldDefinition = {

@@ -468,9 +468,9 @@ type GraphQLInterfacesThunk = () => Array<GraphQLInterfaceType>;
 type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
 
 export type GraphQLFieldResolveFn = (
-  source?: mixed,
-  args?: {[argName: string]: mixed},
-  info?: GraphQLResolveInfo
+  source: mixed,
+  args: {[argName: string]: mixed},
+  info: GraphQLResolveInfo
 ) => mixed
 
 export type GraphQLResolveInfo = {
