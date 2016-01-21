@@ -44,6 +44,7 @@ export type Node = Name
                  | ObjectValue
                  | ObjectField
                  | Directive
+                 | NamedType
                  | ListType
                  | NonNullType
                  | ObjectTypeDefinition
