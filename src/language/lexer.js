@@ -12,8 +12,8 @@ import type { Source } from './source';
 import { syntaxError } from '../error';
 
 /**
- * A representation of a lexed Token. Value is optional, is it is
- * not needed for punctuators like BANG or PAREN_L.
+ * A representation of a lexed Token. Value only appears for non-punctuation
+ * tokens: NAME, INT, FLOAT, and STRING.
  */
 export type Token = {
   kind: number;
@@ -66,10 +66,9 @@ export const TokenKind = {
   PIPE: 13,
   BRACE_R: 14,
   NAME: 15,
-  VARIABLE: 16,
-  INT: 17,
-  FLOAT: 18,
-  STRING: 19,
+  INT: 16,
+  FLOAT: 17,
+  STRING: 18,
 };
 
 /**
@@ -104,7 +103,6 @@ tokenDescription[TokenKind.BRACE_L] = '{';
 tokenDescription[TokenKind.PIPE] = '|';
 tokenDescription[TokenKind.BRACE_R] = '}';
 tokenDescription[TokenKind.NAME] = 'Name';
-tokenDescription[TokenKind.VARIABLE] = 'Variable';
 tokenDescription[TokenKind.INT] = 'Int';
 tokenDescription[TokenKind.FLOAT] = 'Float';
 tokenDescription[TokenKind.STRING] = 'String';
