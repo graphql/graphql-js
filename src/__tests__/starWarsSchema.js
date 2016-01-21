@@ -74,7 +74,7 @@ import { getFriends, getHero, getHuman, getDroid } from './starWarsData.js';
  * This implements the following type system shorthand:
  *   enum Episode { NEWHOPE, EMPIRE, JEDI }
  */
-var episodeEnum = new GraphQLEnumType({
+const episodeEnum = new GraphQLEnumType({
   name: 'Episode',
   description: 'One of the films in the Star Wars Trilogy',
   values: {
@@ -104,7 +104,7 @@ var episodeEnum = new GraphQLEnumType({
  *     appearsIn: [Episode]
  *   }
  */
-var characterInterface = new GraphQLInterfaceType({
+const characterInterface = new GraphQLInterfaceType({
   name: 'Character',
   description: 'A character in the Star Wars Trilogy',
   fields: () => ({
@@ -142,7 +142,7 @@ var characterInterface = new GraphQLInterfaceType({
  *     appearsIn: [Episode]
  *   }
  */
-var humanType = new GraphQLObjectType({
+const humanType = new GraphQLObjectType({
   name: 'Human',
   description: 'A humanoid creature in the Star Wars universe.',
   fields: () => ({
@@ -184,7 +184,7 @@ var humanType = new GraphQLObjectType({
  *     primaryFunction: String
  *   }
  */
-var droidType = new GraphQLObjectType({
+const droidType = new GraphQLObjectType({
   name: 'Droid',
   description: 'A mechanical creature in the Star Wars universe.',
   fields: () => ({
@@ -228,7 +228,7 @@ var droidType = new GraphQLObjectType({
  *   }
  *
  */
-var queryType = new GraphQLObjectType({
+const queryType = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
     hero: {
@@ -269,6 +269,6 @@ var queryType = new GraphQLObjectType({
  * Finally, we construct our schema (whose starting query type is the query
  * type we defined above) and export it.
  */
-export var StarWarsSchema = new GraphQLSchema({
+export const StarWarsSchema = new GraphQLSchema({
   query: queryType
 });

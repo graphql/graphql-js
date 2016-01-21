@@ -19,15 +19,15 @@ import { validate } from '../validation/validate';
  * Helper function to test a query and the expected response.
  */
 function validationErrors(query) {
-  var source = new Source(query, 'StarWars.graphql');
-  var ast = parse(source);
+  const source = new Source(query, 'StarWars.graphql');
+  const ast = parse(source);
   return validate(StarWarsSchema, ast);
 }
 
 describe('Star Wars Validation Tests', () => {
   describe('Basic Queries', () => {
     it('Validates a complex but valid query', () => {
-      var query = `
+      const query = `
         query NestedQueryWithFragment {
           hero {
             ...NameAndAppearances
@@ -49,7 +49,7 @@ describe('Star Wars Validation Tests', () => {
     });
 
     it('Notes that non-existent fields are invalid', () => {
-      var query = `
+      const query = `
         query HeroSpaceshipQuery {
           hero {
             favoriteSpaceship
@@ -60,7 +60,7 @@ describe('Star Wars Validation Tests', () => {
     });
 
     it('Requires fields on objects', () => {
-      var query = `
+      const query = `
         query HeroNoFieldsQuery {
           hero
         }
@@ -69,7 +69,7 @@ describe('Star Wars Validation Tests', () => {
     });
 
     it('Disallows fields on scalars', () => {
-      var query = `
+      const query = `
         query HeroFieldsOnScalarQuery {
           hero {
             name {
@@ -82,7 +82,7 @@ describe('Star Wars Validation Tests', () => {
     });
 
     it('Disallows object fields on interfaces', () => {
-      var query = `
+      const query = `
         query DroidFieldOnCharacter {
           hero {
             name
@@ -94,7 +94,7 @@ describe('Star Wars Validation Tests', () => {
     });
 
     it('Allows object fields in fragments', () => {
-      var query = `
+      const query = `
         query DroidFieldInFragment {
           hero {
             name
@@ -110,7 +110,7 @@ describe('Star Wars Validation Tests', () => {
     });
 
     it('Allows object fields in inline fragments', () => {
-      var query = `
+      const query = `
         query DroidFieldInFragment {
           hero {
             name

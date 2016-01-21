@@ -18,7 +18,7 @@ import { graphql } from '../graphql';
 describe('Star Wars Introspection Tests', () => {
   describe('Basic Introspection', () => {
     it('Allows querying the schema for types', async () => {
-      var query = `
+      const query = `
         query IntrospectionTypeQuery {
           __schema {
             types {
@@ -27,7 +27,7 @@ describe('Star Wars Introspection Tests', () => {
           }
         }
       `;
-      var expected = {
+      const expected = {
         __schema: {
           types: [
             {
@@ -75,12 +75,12 @@ describe('Star Wars Introspection Tests', () => {
           ]
         }
       };
-      var result = await graphql(StarWarsSchema, query);
+      const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
 
     it('Allows querying the schema for query type', async () => {
-      var query = `
+      const query = `
         query IntrospectionQueryTypeQuery {
           __schema {
             queryType {
@@ -89,36 +89,36 @@ describe('Star Wars Introspection Tests', () => {
           }
         }
       `;
-      var expected = {
+      const expected = {
         __schema: {
           queryType: {
             name: 'Query'
           },
         }
       };
-      var result = await graphql(StarWarsSchema, query);
+      const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
 
     it('Allows querying the schema for a specific type', async () => {
-      var query = `
+      const query = `
         query IntrospectionDroidTypeQuery {
           __type(name: "Droid") {
             name
           }
         }
       `;
-      var expected = {
+      const expected = {
         __type: {
           name: 'Droid'
         }
       };
-      var result = await graphql(StarWarsSchema, query);
+      const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
 
     it('Allows querying the schema for an object kind', async () => {
-      var query = `
+      const query = `
         query IntrospectionDroidKindQuery {
           __type(name: "Droid") {
             name
@@ -126,18 +126,18 @@ describe('Star Wars Introspection Tests', () => {
           }
         }
       `;
-      var expected = {
+      const expected = {
         __type: {
           name: 'Droid',
           kind: 'OBJECT'
         }
       };
-      var result = await graphql(StarWarsSchema, query);
+      const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
 
     it('Allows querying the schema for an interface kind', async () => {
-      var query = `
+      const query = `
         query IntrospectionCharacterKindQuery {
           __type(name: "Character") {
             name
@@ -145,18 +145,18 @@ describe('Star Wars Introspection Tests', () => {
           }
         }
       `;
-      var expected = {
+      const expected = {
         __type: {
           name: 'Character',
           kind: 'INTERFACE'
         }
       };
-      var result = await graphql(StarWarsSchema, query);
+      const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
 
     it('Allows querying the schema for object fields', async () => {
-      var query = `
+      const query = `
         query IntrospectionDroidFieldsQuery {
           __type(name: "Droid") {
             name
@@ -170,7 +170,7 @@ describe('Star Wars Introspection Tests', () => {
           }
         }
       `;
-      var expected = {
+      const expected = {
         __type: {
           name: 'Droid',
           fields: [
@@ -213,12 +213,12 @@ describe('Star Wars Introspection Tests', () => {
         }
       };
 
-      var result = await graphql(StarWarsSchema, query);
+      const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
 
     it('Allows querying the schema for nested object fields', async () => {
-      var query = `
+      const query = `
         query IntrospectionDroidNestedFieldsQuery {
           __type(name: "Droid") {
             name
@@ -236,7 +236,7 @@ describe('Star Wars Introspection Tests', () => {
           }
         }
       `;
-      var expected = {
+      const expected = {
         __type: {
           name: 'Droid',
           fields: [
@@ -292,12 +292,12 @@ describe('Star Wars Introspection Tests', () => {
           ]
         }
       };
-      var result = await graphql(StarWarsSchema, query);
+      const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
 
     it('Allows querying the schema for field args', async () => {
-      var query = `
+      const query = `
         query IntrospectionQueryTypeQuery {
           __schema {
             queryType {
@@ -321,7 +321,7 @@ describe('Star Wars Introspection Tests', () => {
           }
         }
       `;
-      var expected = {
+      const expected = {
         __schema: {
           queryType: {
             fields: [
@@ -384,12 +384,12 @@ describe('Star Wars Introspection Tests', () => {
       };
 
 
-      var result = await graphql(StarWarsSchema, query);
+      const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
 
     it('Allows querying the schema for documentation', async () => {
-      var query = `
+      const query = `
         query IntrospectionDroidDescriptionQuery {
           __type(name: "Droid") {
             name
@@ -397,13 +397,13 @@ describe('Star Wars Introspection Tests', () => {
           }
         }
       `;
-      var expected = {
+      const expected = {
         __type: {
           name: 'Droid',
           description: 'A mechanical creature in the Star Wars universe.'
         }
       };
-      var result = await graphql(StarWarsSchema, query);
+      const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
     });
   });
