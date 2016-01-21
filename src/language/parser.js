@@ -182,6 +182,7 @@ function parseDocument(parser: Parser): Document {
  *   - OperationDefinition
  *   - FragmentDefinition
  *   - TypeDefinition
+ *   - TypeExtensionDefinition
  */
 function parseDefinition(parser: Parser): Definition {
   if (peek(parser, TokenKind.BRACE_L)) {
@@ -202,8 +203,8 @@ function parseDefinition(parser: Parser): Definition {
       case 'union':
       case 'scalar':
       case 'enum':
-      case 'input':
-      case 'extend': return parseTypeDefinition(parser);
+      case 'input': return parseTypeDefinition(parser);
+      case 'extend': return parseTypeExtensionDefinition(parser);
     }
   }
 
@@ -650,7 +651,6 @@ export function parseNamedType(parser: Parser): NamedType {
  *   - ScalarTypeDefinition
  *   - EnumTypeDefinition
  *   - InputObjectTypeDefinition
- *   - TypeExtensionDefinition
  */
 function parseTypeDefinition(parser: Parser): TypeDefinition {
   if (!peek(parser, TokenKind.NAME)) {
@@ -669,8 +669,6 @@ function parseTypeDefinition(parser: Parser): TypeDefinition {
       return parseEnumTypeDefinition(parser);
     case 'input':
       return parseInputObjectTypeDefinition(parser);
-    case 'extend':
-      return parseTypeExtensionDefinition(parser);
     default:
       throw unexpected(parser);
   }
