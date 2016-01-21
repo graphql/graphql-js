@@ -42,7 +42,6 @@ import { TypeKind } from '../type/introspection';
 
 import type {
   GraphQLType,
-  GraphQLNullableType,
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLNamedType,
@@ -112,7 +111,11 @@ export function buildClientSchema(
         throw new Error('Decorated type deeper than introspection query.');
       }
       const nullableType = getType(nullableRef);
-      return new GraphQLNonNull(((nullableType: any): GraphQLNullableType));
+      invariant(
+        !(nullableType instanceof GraphQLNonNull),
+        'No nesting nonnull.'
+      );
+      return new GraphQLNonNull(nullableType);
     }
     return getNamedType(typeRef.name);
   }

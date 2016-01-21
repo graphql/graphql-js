@@ -1,4 +1,4 @@
-/* @noflow */
+/* @flow */
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import isNullish from '../jsutils/isNullish';
+import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
@@ -29,6 +29,9 @@ import {
 
 import type {
   Document,
+  Type,
+  NamedType,
+  TypeDefinition,
   ObjectTypeDefinition,
   InputValueDefinition,
   InterfaceTypeDefinition,
@@ -55,27 +58,38 @@ import {
   GraphQLNonNull,
 } from '../type';
 
+import type {
+  GraphQLType,
+  GraphQLNamedType
+} from '../type/definition';
+
 
 type CompositeDefinition =
   ObjectTypeDefinition |
   InterfaceTypeDefinition |
   UnionTypeDefinition;
 
-function buildWrappedType(innerType, inputTypeAST) {
+function buildWrappedType(
+  innerType: GraphQLType,
+  inputTypeAST: Type
+): GraphQLType {
   if (inputTypeAST.kind === LIST_TYPE) {
     return new GraphQLList(buildWrappedType(innerType, inputTypeAST.type));
   }
   if (inputTypeAST.kind === NON_NULL_TYPE) {
-    return new GraphQLNonNull(buildWrappedType(innerType, inputTypeAST.type));
+    const wrappedType = buildWrappedType(innerType, inputTypeAST.type);
+    invariant(!(wrappedType instanceof GraphQLNonNull), 'No nesting nonnull.');
+    return new GraphQLNonNull(wrappedType);
   }
   return innerType;
 }
 
-function getInnerTypeName(typeAST) {
-  if (typeAST.kind === LIST_TYPE || typeAST.kind === NON_NULL_TYPE) {
-    return getInnerTypeName(typeAST.type);
+function getNamedTypeAST(typeAST: Type): NamedType {
+  let namedType = typeAST;
+  while (namedType.kind === LIST_TYPE || namedType.kind === NON_NULL_TYPE) {
+    namedType = namedType.type;
   }
-  return typeAST.name.value;
+  return namedType;
 }
 
 /**
@@ -92,100 +106,97 @@ export function buildASTSchema(
   mutationTypeName: ?string,
   subscriptionTypeName: ?string
 ): GraphQLSchema {
-
-  if (isNullish(ast)) {
+  if (!ast) {
     throw new Error('must pass in ast');
   }
-  if (isNullish(queryTypeName)) {
+
+  if (!queryTypeName) {
     throw new Error('must pass in query type');
   }
 
-  const typeDefs = ast.definitions.filter(d => {
+  const typeDefs: Array<TypeDefinition> = [];
+  for (let i = 0; i < ast.definitions.length; i++) {
+    const d = ast.definitions[i];
     switch (d.kind) {
       case OBJECT_TYPE_DEFINITION:
       case INTERFACE_TYPE_DEFINITION:
       case ENUM_TYPE_DEFINITION:
       case UNION_TYPE_DEFINITION:
       case SCALAR_TYPE_DEFINITION:
-      case INPUT_OBJECT_TYPE_DEFINITION: return true;
+      case INPUT_OBJECT_TYPE_DEFINITION:
+        typeDefs.push(d);
     }
-  });
+  }
 
-  const astMap = keyMap(typeDefs, d => d.name.value);
+  const astMap: {[name: string]: TypeDefinition} =
+    keyMap(typeDefs, d => d.name.value);
 
-  if (isNullish(astMap[queryTypeName])) {
+  if (!astMap[queryTypeName]) {
     throw new Error('Specified query type ' + queryTypeName +
       ' not found in document.');
   }
 
-  if (!isNullish(mutationTypeName) && isNullish(astMap[mutationTypeName])) {
+  if (mutationTypeName && !astMap[mutationTypeName]) {
     throw new Error('Specified mutation type ' + mutationTypeName +
       ' not found in document.');
   }
 
-  if (!isNullish(subscriptionTypeName) &&
-       isNullish(astMap[subscriptionTypeName])) {
+  if (subscriptionTypeName && !astMap[subscriptionTypeName]) {
     throw new Error('Specified subscription type ' + subscriptionTypeName +
       ' not found in document.');
   }
 
-  /**
-   * This generates a function that allows you to produce
-   * type definitions on demand. We produce the function
-   * in order to close over the memoization dictionaries
-   * that need to be retained over multiple functions calls.
-   **/
-  function getTypeDefProducer() {
-
-    const innerTypeMap = {
-      String: GraphQLString,
-      Int: GraphQLInt,
-      Float: GraphQLFloat,
-      Boolean: GraphQLBoolean,
-      ID: GraphQLID,
-    };
-
-    return typeAST => {
-      const typeName = getInnerTypeName(typeAST);
-      if (!isNullish(innerTypeMap[typeName])) {
-        return buildWrappedType(innerTypeMap[typeName], typeAST);
-      }
-
-      if (isNullish(astMap[typeName])) {
-        throw new Error(`Type ${typeName} not found in document`);
-      }
-
-      const innerTypeDef = makeSchemaDef(astMap[typeName]);
-      if (isNullish(innerTypeDef)) {
-        throw new Error('Nothing constructed for ' + typeName);
-      }
-      innerTypeMap[typeName] = innerTypeDef;
-      return buildWrappedType(innerTypeDef, typeAST);
-    };
-  }
-
-  const produceTypeDef = getTypeDefProducer(ast);
-
-  ast.definitions.forEach(produceTypeDef);
-
-  const queryType = produceTypeDef(astMap[queryTypeName]);
-
-  const schemaBody = {
-    query: queryType
+  const innerTypeMap = {
+    String: GraphQLString,
+    Int: GraphQLInt,
+    Float: GraphQLFloat,
+    Boolean: GraphQLBoolean,
+    ID: GraphQLID,
   };
 
-  if (!isNullish(mutationTypeName)) {
-    schemaBody.mutation = produceTypeDef(astMap[mutationTypeName]);
+  typeDefs.forEach(def => typeDefNamed(def.name.value));
+
+  return new GraphQLSchema({
+    query: getObjectType(astMap[queryTypeName]),
+    mutation: mutationTypeName ? getObjectType(astMap[mutationTypeName]) : null,
+    subscription:
+      subscriptionTypeName ? getObjectType(astMap[subscriptionTypeName]) : null,
+  });
+
+  function getObjectType(typeAST: TypeDefinition): GraphQLObjectType {
+    const type = typeDefNamed(typeAST.name.value);
+    invariant(
+      type instanceof GraphQLObjectType,
+      `AST must provide object type.`
+    );
+    return (type: any);
   }
 
-  if (!isNullish(subscriptionTypeName)) {
-    schemaBody.subscription = produceTypeDef(astMap[subscriptionTypeName]);
+  function produceTypeDef(typeAST: Type): GraphQLType {
+    const typeName = getNamedTypeAST(typeAST).name.value;
+    const typeDef = typeDefNamed(typeName);
+    return buildWrappedType(typeDef, typeAST);
   }
 
-  return new GraphQLSchema(schemaBody);
+  function typeDefNamed(typeName: string): GraphQLNamedType {
+    if (innerTypeMap[typeName]) {
+      return innerTypeMap[typeName];
+    }
+
+    if (!astMap[typeName]) {
+      throw new Error(`Type ${typeName} not found in document`);
+    }
+
+    const innerTypeDef = makeSchemaDef(astMap[typeName]);
+    if (!innerTypeDef) {
+      throw new Error('Nothing constructed for ' + typeName);
+    }
+    innerTypeMap[typeName] = innerTypeDef;
+    return innerTypeDef;
+  }
 
   function makeSchemaDef(def) {
-    if (isNullish(def)) {
+    if (!def) {
       throw new Error('def must be defined');
     }
     switch (def.kind) {
