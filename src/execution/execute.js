@@ -790,7 +790,9 @@ function defaultResolveFn(source, args, { fieldName }) {
  * function.
  */
 function isThenable(value: any): boolean {
-  return value && typeof value === 'object' && typeof value.then === 'function';
+  return Boolean(
+    value && typeof value === 'object' && typeof value.then === 'function'
+  );
 }
 
 /**
