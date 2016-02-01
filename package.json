@@ -39,7 +39,7 @@
   "devDependencies": {
     "babel": "5.8.21",
     "babel-core": "5.8.22",
-    "babel-eslint": "4.1.6",
+    "babel-eslint": "4.1.7",
     "chai": "3.4.1",
     "chai-subset": "1.1.0",
     "coveralls": "2.11.4",
