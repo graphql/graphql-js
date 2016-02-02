@@ -53,6 +53,16 @@ const Pet = new GraphQLInterfaceType({
   }),
 });
 
+const Canine = new GraphQLInterfaceType({
+  name: 'Canine',
+  fields: () => ({
+    name: {
+      type: GraphQLString,
+      args: { surname: { type: GraphQLBoolean } },
+    }
+  }),
+});
+
 const DogCommand = new GraphQLEnumType({
   name: 'DogCommand',
   values: {
@@ -93,7 +103,7 @@ const Dog = new GraphQLObjectType({
       args: { x: { type: GraphQLInt }, y: { type: GraphQLInt } },
     },
   }),
-  interfaces: [ Being, Pet ],
+  interfaces: [ Being, Pet, Canine ],
 });
 
 const Cat = new GraphQLObjectType({
