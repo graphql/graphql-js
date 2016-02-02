@@ -32,9 +32,7 @@ export const GraphQLInt = new GraphQLScalarType({
   name: 'Int',
   description:
     'The `Int` scalar type represents non-fractional signed whole numeric ' +
-    'values. Int can represent values between -(2^53 - 1) and 2^53 - 1 since ' +
-    'represented in JSON as double-precision floating point numbers specified' +
-    'by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).',
+    'values. Int can represent values between -(2^31) and 2^31 - 1. ',
   serialize: coerceInt,
   parseValue: coerceInt,
   parseLiteral(ast) {
