@@ -15,9 +15,9 @@ import {
 } from '../rules/NoUnusedVariables';
 
 
-function unusedVar(varName, line, column) {
+function unusedVar(varName, opName, line, column) {
   return {
-    message: unusedVariableMessage(varName),
+    message: unusedVariableMessage(varName, opName),
     locations: [ { line, column } ],
   };
 }
@@ -26,7 +26,7 @@ describe('Validate: No unused variables', () => {
 
   it('uses all variables', () => {
     expectPassesRule(NoUnusedVariables, `
-      query Foo($a: String, $b: String, $c: String) {
+      query ($a: String, $b: String, $c: String) {
         field(a: $a, b: $b, c: $c)
       }
     `);
@@ -113,11 +113,11 @@ describe('Validate: No unused variables', () => {
 
   it('variable not used', () => {
     expectFailsRule(NoUnusedVariables, `
-      query Foo($a: String, $b: String, $c: String) {
+      query ($a: String, $b: String, $c: String) {
         field(a: $a, b: $b)
       }
     `, [
-      unusedVar('c', 2, 41)
+      unusedVar('c', null, 2, 38)
     ]);
   });
 
@@ -127,8 +127,8 @@ describe('Validate: No unused variables', () => {
         field(b: $b)
       }
     `, [
-      unusedVar('a', 2, 17),
-      unusedVar('c', 2, 41)
+      unusedVar('a', 'Foo', 2, 17),
+      unusedVar('c', 'Foo', 2, 41)
     ]);
   });
 
@@ -151,7 +151,7 @@ describe('Validate: No unused variables', () => {
         field
       }
     `, [
-      unusedVar('c', 2, 41)
+      unusedVar('c', 'Foo', 2, 41)
     ]);
   });
 
@@ -174,8 +174,8 @@ describe('Validate: No unused variables', () => {
         field
       }
     `, [
-      unusedVar('a', 2, 17),
-      unusedVar('c', 2, 41)
+      unusedVar('a', 'Foo', 2, 17),
+      unusedVar('c', 'Foo', 2, 41)
     ]);
   });
 
@@ -191,7 +191,7 @@ describe('Validate: No unused variables', () => {
         field(b: $b)
       }
     `, [
-      unusedVar('b', 2, 17)
+      unusedVar('b', 'Foo', 2, 17)
     ]);
   });
 
@@ -210,8 +210,8 @@ describe('Validate: No unused variables', () => {
         field(b: $b)
       }
     `, [
-      unusedVar('b', 2, 17),
-      unusedVar('a', 5, 17)
+      unusedVar('b', 'Foo', 2, 17),
+      unusedVar('a', 'Bar', 5, 17)
     ]);
   });
 
