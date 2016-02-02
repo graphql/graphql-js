@@ -140,7 +140,7 @@ describe('Validate: Variables are in allowed positions', () => {
       query Query($complexVar: ComplexInput)
       {
         complicatedArgs {
-          complexArgField(complexArg: $ComplexInput)
+          complexArgField(complexArg: $complexVar)
         }
       }
     `);
