@@ -165,7 +165,7 @@ function buildExecutionContext(
 ): ExecutionContext {
   const errors: Array<GraphQLError> = [];
   let operation: ?OperationDefinition;
-  const fragments: {[name: string]: FragmentDefinition} = {};
+  const fragments: {[name: string]: FragmentDefinition} = Object.create(null);
   documentAST.definitions.forEach(definition => {
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
@@ -218,8 +218,8 @@ function executeOperation(
     exeContext,
     type,
     operation.selectionSet,
-    {},
-    {}
+    Object.create(null),
+    Object.create(null)
   );
 
   if (operation.operation === 'mutation') {
@@ -329,7 +329,7 @@ function executeFields(
       }
       return results;
     },
-    {}
+    Object.create(null)
   );
 
   // If there are no promises, we can just return the object
@@ -486,7 +486,7 @@ function promiseForObject<T>(
     values => values.reduce((resolvedObject, value, i) => {
       resolvedObject[keys[i]] = value;
       return resolvedObject;
-    }, {})
+    }, Object.create(null))
   );
 }
 
@@ -757,8 +757,8 @@ function completeValue(
   }
 
   // Collect sub-fields to execute to complete this value.
-  let subFieldASTs = {};
-  const visitedFragmentNames = {};
+  let subFieldASTs = Object.create(null);
+  const visitedFragmentNames = Object.create(null);
   for (let i = 0; i < fieldASTs.length; i++) {
     const selectionSet = fieldASTs[i].selectionSet;
     if (selectionSet) {
