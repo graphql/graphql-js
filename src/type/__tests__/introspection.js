@@ -20,6 +20,7 @@ import {
   GraphQLList,
   GraphQLInputObjectType,
   GraphQLString,
+  GraphQLJson,
   GraphQLEnumType,
 } from '../../';
 
@@ -1294,4 +1295,229 @@ describe('Introspection', () => {
     });
   });
 
+  describe('JSON type', async () => {
+    // Schema that provide the argument as a value
+    var JsonWithArgRoot = new GraphQLObjectType({
+      name: 'JsonWithArgRoot',
+      fields: {
+        jsonField: {
+          type: GraphQLJson,
+          args: {
+            jsonArg: {
+              type: GraphQLJson
+            }
+          },
+          resolve(_, args) {
+            return args.jsonArg;
+          }
+        }
+      }
+    });
+    it('Resolve Type with JSON field', async () => {
+
+      var ObjectType = new GraphQLObjectType({
+        name: 'ObjectType',
+        fields: {
+          key: {
+            type: GraphQLString,
+          },
+          name: {
+            type: GraphQLString,
+          },
+          config: {
+            type: GraphQLJson,
+          }
+        }
+      });
+      var QueryRoot = new GraphQLObjectType({
+        name: 'QueryRoot',
+        fields: {
+          object: {
+            type: ObjectType,
+            resolve() {
+              return {
+                key: 'ffff-acde-876678',
+                name: 'Object Name',
+                config: {
+                  key1: 1,
+                  key2: 'value1',
+                  key3: [ 1, '2', true ]
+                }
+              };
+            }
+          }
+        }
+      });
+
+      var schema = new GraphQLSchema({ query: QueryRoot });
+      var request = `
+        {
+          object {
+            key,
+            name,
+            config
+          }
+        }
+      `;
+
+      return expect(
+        await graphql(schema, request)
+      ).to.deep.equal({
+        data: {
+          object: {
+            key: 'ffff-acde-876678',
+            name: 'Object Name',
+            config: {
+              key1: 1,
+              key2: 'value1',
+              key3: [ 1, '2', true ]
+            }
+          }
+        }
+      });
+    });
+
+    it('Arguments with String value', async () => {
+
+      var schema = new GraphQLSchema({ query: JsonWithArgRoot });
+      var request = `
+        {
+          jsonField(jsonArg: "arg string")
+        }
+      `;
+
+      return expect(
+        await graphql(schema, request)
+      ).to.deep.equal({
+        data: {
+          jsonField: 'arg string'
+        }
+      });
+    });
+    it('Arguments with Int value', async () => {
+
+      var schema = new GraphQLSchema({ query: JsonWithArgRoot });
+      var request = `
+        {
+          jsonField(jsonArg: 127)
+        }
+      `;
+
+      return expect(
+        await graphql(schema, request)
+      ).to.deep.equal({
+        data: {
+          jsonField: 127
+        }
+      });
+    });
+    it('Arguments with Float value', async () => {
+
+      var schema = new GraphQLSchema({ query: JsonWithArgRoot });
+      var request = `
+        {
+          jsonField(jsonArg: 3.14155962)
+        }
+      `;
+
+      return expect(
+        await graphql(schema, request)
+      ).to.deep.equal({
+        data: {
+          jsonField: 3.14155962
+        }
+      });
+    });
+    it('Arguments with Boolean value', async () => {
+
+      var schema = new GraphQLSchema({ query: JsonWithArgRoot });
+      var request = `
+        {
+          jsonField(jsonArg: true)
+        }
+      `;
+
+      return expect(
+        await graphql(schema, request)
+      ).to.deep.equal({
+        data: {
+          jsonField: true
+        }
+      });
+    });
+    it('Arguments with Enum value', async () => {
+
+      var schema = new GraphQLSchema({ query: JsonWithArgRoot });
+      var request = `
+        {
+          jsonField(jsonArg: SOME_ENUM)
+        }
+      `;
+
+      return expect(
+        await graphql(schema, request)
+      ).to.deep.equal({
+        data: {
+          jsonField: 'SOME_ENUM'
+        }
+      });
+    });
+    it('Arguments with Array value', async () => {
+
+      var schema = new GraphQLSchema({ query: JsonWithArgRoot });
+      var request = `
+        {
+          jsonField(jsonArg: [ 1, 2, 3 ])
+        }
+      `;
+
+      return expect(
+        await graphql(schema, request)
+      ).to.deep.equal({
+        data: {
+          jsonField: [ 1, 2, 3 ]
+        }
+      });
+    });
+    it('Arguments with Object value', async () => {
+
+      var schema = new GraphQLSchema({ query: JsonWithArgRoot });
+      var request = `
+        {
+          jsonField(jsonArg: {
+            stringValue: "some string"
+            arrayValue: [ 1, 2, 3 ]
+          })
+        }
+      `;
+
+      return expect(
+        await graphql(schema, request)
+      ).to.deep.equal({
+        data: {
+          jsonField: {
+            stringValue: 'some string',
+            arrayValue: [ 1, 2, 3 ]
+          }
+        }
+      });
+    });
+    it('Arguments with null value', async () => {
+
+      var schema = new GraphQLSchema({ query: JsonWithArgRoot });
+      var request = `
+        {
+          jsonField
+        }
+      `;
+
+      return expect(
+        await graphql(schema, request)
+      ).to.deep.equal({
+        data: {
+          jsonField: null
+        }
+      });
+    });
+  });
 });

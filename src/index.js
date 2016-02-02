@@ -31,7 +31,8 @@ export {
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
-  GraphQLID
+  GraphQLID,
+  GraphQLJson
 } from './type/scalars';
 
 // Format GraphQL errors.

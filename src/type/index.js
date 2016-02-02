@@ -42,4 +42,5 @@ export {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  GraphQLJson
 } from './scalars';

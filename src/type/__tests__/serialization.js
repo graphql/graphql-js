@@ -11,7 +11,8 @@ import {
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
-  GraphQLBoolean
+  GraphQLBoolean,
+  GraphQLJson
 } from '../';
 
 import { describe, it } from 'mocha';
@@ -140,5 +141,30 @@ describe('Type System: Scalar coercion', () => {
     expect(
       GraphQLBoolean.serialize(false)
     ).to.equal(false);
+  });
+
+  it('serializes output JSON', () => {
+    expect(
+      GraphQLJson.serialize('string')
+    ).to.equal('string');
+    expect(
+      GraphQLJson.serialize(127)
+    ).to.equal(127);
+    expect(
+      GraphQLJson.serialize(Math.PI)
+    ).to.equal(Math.PI);
+    expect(
+      GraphQLJson.serialize(true)
+    ).to.equal(true);
+    expect(
+      GraphQLJson.serialize([ 1, 2, 3 ])
+    ).to.deep.equal([ 1, 2, 3 ]);
+    expect(
+      GraphQLJson.serialize({
+        foo: 'bar'
+      })
+    ).to.deep.equal({
+      foo: 'bar'
+    });
   });
 });
