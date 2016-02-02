@@ -317,7 +317,9 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('errors on addition of unknown input field', async () => {
-        const params = { input: { a: 'foo', b: 'bar', c: 'baz', d: 'dog' } };
+        const params = {
+          input: { a: 'foo', b: 'bar', c: 'baz', extra: 'dog' }
+        };
 
         let caughtError;
         try {
@@ -330,9 +332,8 @@ describe('Execute: Handles inputs', () => {
           locations: [ { line: 2, column: 17 } ],
           message:
             'Variable "$input" got invalid value ' +
-             '{"a":"foo","b":"bar","c":"baz","d":"dog"}.' +
-             '\nIn field "d": Expected type "ComplexScalar", found "dog".'
-
+             '{"a":"foo","b":"bar","c":"baz","extra":"dog"}.' +
+             '\nIn field \"extra\": Unknown field.'
         });
       });
 
