@@ -345,7 +345,7 @@ function readDigits(source, start, firstCode) {
 /**
  * Reads a string token from the source file.
  *
- * "([^"\\\u000A\u000D\u2028\u2029]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
+ * "([^"\\\u000A\u000D]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
  */
 function readString(source, start) {
   const body = source.body;

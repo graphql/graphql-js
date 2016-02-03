@@ -43,7 +43,7 @@ function highlightSourceAtLocation(source, location) {
   const lineNum = line.toString();
   const nextLineNum = (line + 1).toString();
   const padLen = nextLineNum.length;
-  const lines = source.body.split(/\r\n|[\n\r\u2028\u2029]/g);
+  const lines = source.body.split(/\r\n|[\n\r]/g);
   return (
     (line >= 2 ?
       lpad(padLen, prevLineNum) + ': ' + lines[line - 2] + '\n' : '') +
