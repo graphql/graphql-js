@@ -10,12 +10,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import keyMap from '../../jsutils/keyMap';
-import {
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType
-} from '../../type/definition';
+import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import type { GraphQLType } from '../../type/definition';
 
@@ -73,23 +68,4 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
 function getFragmentType(context, name) {
   const frag = context.getFragment(name);
   return frag && typeFromAST(context.getSchema(), frag.typeCondition);
-}
-
-function doTypesOverlap(t1, t2) {
-  if (t1 === t2) {
-    return true;
-  }
-  if (t1 instanceof GraphQLObjectType) {
-    if (t2 instanceof GraphQLObjectType) {
-      return false;
-    }
-    return t2.getPossibleTypes().indexOf(t1) !== -1;
-  }
-  if (t1 instanceof GraphQLInterfaceType || t1 instanceof GraphQLUnionType) {
-    if (t2 instanceof GraphQLObjectType) {
-      return t1.getPossibleTypes().indexOf(t2) !== -1;
-    }
-    const t1TypeNames = keyMap(t1.getPossibleTypes(), type => type.name);
-    return t2.getPossibleTypes().some(type => t1TypeNames[type.name]);
-  }
 }

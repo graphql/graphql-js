@@ -11,10 +11,16 @@
 import {
   isAbstractType,
   GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
   GraphQLList,
   GraphQLNonNull,
 } from '../type/definition';
-import type { GraphQLType, GraphQLAbstractType } from '../type/definition';
+import type {
+  GraphQLType,
+  GraphQLCompositeType,
+  GraphQLAbstractType
+} from '../type/definition';
 
 
 /**
@@ -84,5 +90,48 @@ export function isTypeSubTypeOf(
   }
 
   // Otherwise, the child type is not a valid subtype of the parent type.
+  return false;
+}
+
+/**
+ * Provided two composite types, determine if they "overlap". Two composite
+ * types overlap when the Sets of possible concrete types for each intersect.
+ *
+ * This is often used to determine if a fragment of a given type could possibly
+ * be visited in a context of another type.
+ *
+ * This function is commutative.
+ */
+export function doTypesOverlap(
+  typeA: GraphQLCompositeType,
+  typeB: GraphQLCompositeType
+): boolean {
+  // So flow is aware this is constant
+  const _typeB = typeB;
+
+  // Equivalent types overlap
+  if (typeA === _typeB) {
+    return true;
+  }
+
+  if (typeA instanceof GraphQLInterfaceType ||
+      typeA instanceof GraphQLUnionType) {
+    if (_typeB instanceof GraphQLInterfaceType ||
+        _typeB instanceof GraphQLUnionType) {
+      // If both types are abstract, then determine if there is any intersection
+      // between possible concrete types of each.
+      return typeA.getPossibleTypes().some(type => _typeB.isPossibleType(type));
+    }
+    // Determine if the latter type is a possible concrete type of the former.
+    return typeA.isPossibleType(_typeB);
+  }
+
+  if (_typeB instanceof GraphQLInterfaceType ||
+      _typeB instanceof GraphQLUnionType) {
+    // Determine if the former type is a possible concrete type of the latter.
+    return _typeB.isPossibleType(typeA);
+  }
+
+  // Otherwise the types do not overlap.
   return false;
 }

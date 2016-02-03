@@ -47,3 +47,10 @@ export { isValidLiteralValue } from './isValidLiteralValue';
 
 // Concatenates multiple AST together.
 export { concatAST } from './concatAST';
+
+// Comparators for types
+export {
+  isEqualType,
+  isTypeSubTypeOf,
+  doTypesOverlap
+} from './typeComparators';

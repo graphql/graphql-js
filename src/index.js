@@ -154,4 +154,9 @@ export {
 
   // Concatenates multiple AST together.
   concatAST,
+
+  // Comparators for types
+  isEqualType,
+  isTypeSubTypeOf,
+  doTypesOverlap,
 } from './utilities';
