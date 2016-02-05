@@ -130,7 +130,7 @@ describe('extendSchema', () => {
     `);
     const originalPrint = printSchema(testSchema);
     const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendSchema).to.not.equal(testSchema);
+    expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
 `type Bar implements SomeInterface {
@@ -179,7 +179,7 @@ union SomeUnion = Foo | Biz
     `);
     const originalPrint = printSchema(testSchema);
     const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendSchema).to.not.equal(testSchema);
+    expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
 `type Bar implements SomeInterface {
@@ -229,7 +229,7 @@ union SomeUnion = Foo | Biz
     `);
     const originalPrint = printSchema(testSchema);
     const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendSchema).to.not.equal(testSchema);
+    expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
 `type Bar implements SomeInterface {
@@ -299,7 +299,7 @@ union SomeUnion = Foo | Biz
     `);
     const originalPrint = printSchema(testSchema);
     const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendSchema).to.not.equal(testSchema);
+    expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
 `type Bar implements SomeInterface {
@@ -372,7 +372,7 @@ union SomeUnion = Foo | Biz
     `);
     const originalPrint = printSchema(testSchema);
     const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendSchema).to.not.equal(testSchema);
+    expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
 `type Bar implements SomeInterface {
@@ -434,7 +434,7 @@ union SomeUnion = Foo | Biz
     `);
     const originalPrint = printSchema(testSchema);
     const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendSchema).to.not.equal(testSchema);
+    expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
 `type Bar implements SomeInterface {
@@ -514,7 +514,7 @@ union SomeUnion = Foo | Biz
     `);
     const originalPrint = printSchema(mutationSchema);
     const extendedSchema = extendSchema(mutationSchema, ast);
-    expect(extendSchema).to.not.equal(mutationSchema);
+    expect(extendedSchema).to.not.equal(mutationSchema);
     expect(printSchema(mutationSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
 `type Mutation {
