@@ -100,7 +100,7 @@ describe('extendSchema', () => {
     `);
     const originalPrint = printSchema(testSchema);
     const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendSchema).to.not.equal(testSchema);
+    expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.contain('newField');
     expect(printSchema(testSchema)).to.not.contain('newField');
