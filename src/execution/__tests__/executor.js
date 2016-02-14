@@ -23,6 +23,13 @@ import {
 
 describe('Execute: Handles basic execution tasks', () => {
   it('executes arbitrary code', async () => {
+    const deepData = {
+      a() { return 'Already Been Done'; },
+      b() { return 'Boring'; },
+      c() { return [ 'Contrived', undefined, 'Confusing' ]; },
+      deeper() { return [ data, null, data ]; }
+    };
+    
     const data = {
       a() { return 'Apple'; },
       b() { return 'Banana'; },
@@ -35,13 +42,6 @@ describe('Execute: Handles basic execution tasks', () => {
       },
       deep() { return deepData; },
       promise() { return promiseData(); }
-    };
-
-    const deepData = {
-      a() { return 'Already Been Done'; },
-      b() { return 'Boring'; },
-      c() { return [ 'Contrived', undefined, 'Confusing' ]; },
-      deeper() { return [ data, null, data ]; }
     };
 
     function promiseData() {
