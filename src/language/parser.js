@@ -968,7 +968,7 @@ function skip(parser: Parser, kind: number): boolean {
 
 /**
  * If the next token is of the given kind, return that token after advancing
- * the parser. Otherwise, do not change the parser state and return false.
+ * the parser. Otherwise, do not change the parser state and throw an error.
  */
 function expect(parser: Parser, kind: number): Token {
   const token = parser.token;
