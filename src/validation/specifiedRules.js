@@ -44,6 +44,9 @@ import { PossibleFragmentSpreads } from './rules/PossibleFragmentSpreads';
 // Spec Section: "Fragments must not form cycles"
 import { NoFragmentCycles } from './rules/NoFragmentCycles';
 
+// Spec Section: "Variable Uniqueness"
+import { UniqueVariableNames } from './rules/UniqueVariableNames';
+
 // Spec Section: "All Variable Used Defined"
 import { NoUndefinedVariables } from './rules/NoUndefinedVariables';
 
@@ -97,6 +100,7 @@ export const specifiedRules: Array<(context: ValidationContext) => any> = [
   NoUnusedFragments,
   PossibleFragmentSpreads,
   NoFragmentCycles,
+  UniqueVariableNames,
   NoUndefinedVariables,
   NoUnusedVariables,
   KnownDirectives,
