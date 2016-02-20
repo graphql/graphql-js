@@ -254,7 +254,7 @@ export function visit(root, visitor, keyMap) {
   } while (stack !== undefined);
 
   if (edits.length !== 0) {
-    newRoot = edits[0][1];
+    newRoot = edits[edits.length - 1][1];
   }
 
   return newRoot;
