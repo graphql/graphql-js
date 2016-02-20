@@ -20,6 +20,63 @@ import { getNamedType, isCompositeType } from '../../type';
 
 
 describe('Visitor', () => {
+
+  it('allows editing a node both on enter and on leave', () => {
+
+    const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
+
+    let selectionSet;
+
+    const editedAst = visit(ast, {
+      OperationDefinition: {
+        enter(node) {
+          selectionSet = node.selectionSet;
+          return {
+            ...node,
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: []
+            },
+          };
+        },
+        leave(node) {
+          return {
+            ...node,
+            selectionSet,
+          };
+        }
+      }
+    });
+
+    expect(editedAst).to.deep.equal(ast);
+  });
+
+  it('allows editing the root node on enter and on leave', () => {
+
+    const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
+
+    const { definitions } = ast;
+
+    const editedAst = visit(ast, {
+      Document: {
+        enter(node) {
+          return {
+            ...node,
+            definitions: []
+          };
+        },
+        leave(node) {
+          return {
+            ...node,
+            definitions,
+          };
+        }
+      }
+    });
+
+    expect(editedAst).to.deep.equal(ast);
+  });
+
   it('allows for editing on enter', () => {
 
     const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
