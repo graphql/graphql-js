@@ -37,18 +37,29 @@ describe('Visitor', () => {
               kind: 'SelectionSet',
               selections: []
             },
+            didEnter: true,
           };
         },
         leave(node) {
           return {
             ...node,
             selectionSet,
+            didLeave: true,
           };
         }
       }
     });
 
-    expect(editedAst).to.deep.equal(ast);
+    expect(editedAst).to.deep.equal({
+      ...ast,
+      definitions: [
+        {
+          ...ast.definitions[0],
+          didEnter: true,
+          didLeave: true
+        }
+      ]
+    });
   });
 
   it('allows editing the root node on enter and on leave', () => {
@@ -62,19 +73,25 @@ describe('Visitor', () => {
         enter(node) {
           return {
             ...node,
-            definitions: []
+            definitions: [],
+            didEnter: true,
           };
         },
         leave(node) {
           return {
             ...node,
             definitions,
+            didLeave: true,
           };
         }
       }
     });
 
-    expect(editedAst).to.deep.equal(ast);
+    expect(editedAst).to.deep.equal({
+      ...ast,
+      didEnter: true,
+      didLeave: true
+    });
   });
 
   it('allows for editing on enter', () => {
