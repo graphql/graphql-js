@@ -43,8 +43,12 @@ import {
 /**
  */
 export type FieldResolvingPlan = {
-    resolveFn: mixed;
-    args: { [key: string]: mixed },
+    resolveFn: (
+      source: mixed,
+      args: { [key: string]: mixed },
+      info: GraphQLResolveInfo
+    ) => mixed;
+    args: { [key: string]: mixed };
     info: GraphQLResolveInfo;
     returnType: GraphQLOutputType;
     fieldASTs: Array<Field>;

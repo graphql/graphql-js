@@ -37,6 +37,7 @@ import {
 import {
   planOperation,
   OperationExecutionPlan,
+  FieldResolvingPlan,
   defaultResolveFn,
   getFieldDef,
   collectFields
@@ -141,10 +142,16 @@ function executeOperation(
 
   invariant(plan.strategy === 'serial' || plan.strategy === 'parallel');
 
+
   if (plan.strategy === 'serial') {
-    return executeFieldsSerially(exeContext, plan.type, rootValue, plan.fields);
+    return executeFieldsSerially(
+      exeContext,
+      plan.type,
+      rootValue,
+      plan.fieldPlans
+    );
   }
-  return executeFields(exeContext, plan.type, rootValue, plan.fields);
+  return executeFieldsPlan(exeContext, plan.type, rootValue, plan.fieldPlans);
 }
 
 /**
@@ -155,16 +162,15 @@ function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  fields: {[key: string]: Array<Field>}
+  fields: {[key: string]: FieldResolvingPlan}
 ): Promise<Object> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
-      const fieldASTs = fields[responseName];
-      const result = resolveField(
+      const result = resolveFieldPlan(
         exeContext,
         parentType,
         sourceValue,
-        fieldASTs
+        fields[responseName]
       );
       if (result === undefined) {
         return results;
@@ -180,6 +186,50 @@ function executeFieldsSerially(
     }),
     Promise.resolve({})
   );
+}
+
+/**
+ * Implements the "Evaluating selection sets" section of the spec
+ * for "read" mode.
+ */
+function executeFieldsPlan(
+  exeContext: ExecutionContext,
+  parentType: GraphQLObjectType,
+  sourceValue: mixed,
+  fields: {[key: string]: FieldResolvingPlan}
+): Object {
+  let containsPromise = false;
+
+  const finalResults = Object.keys(fields).reduce(
+    (results, responseName) => {
+      const result = resolveFieldPlan(
+        exeContext,
+        parentType,
+        sourceValue,
+        fields[responseName]
+      );
+      if (result === undefined) {
+        return results;
+      }
+      results[responseName] = result;
+      if (isThenable(result)) {
+        containsPromise = true;
+      }
+      return results;
+    },
+    Object.create(null)
+  );
+
+  // If there are no promises, we can just return the object
+  if (!containsPromise) {
+    return finalResults;
+  }
+
+  // Otherwise, results is a map from field name to the result
+  // of resolving that field, which is possibly a promise. Return
+  // a promise that will return this same map, but with any
+  // promises replaced with the values they resolved to.
+  return promiseForObject(finalResults);
 }
 
 /**
@@ -244,6 +294,32 @@ function promiseForObject<T>(
       resolvedObject[keys[i]] = value;
       return resolvedObject;
     }, Object.create(null))
+  );
+}
+
+/**
+ * Resolves the field on the given source object. In particular, this
+ * figures out the value that the field returns by calling its resolve function,
+ * then calls completeValue to complete promises, serialize scalars, or execute
+ * the sub-selection-set for objects.
+ */
+function resolveFieldPlan(
+  exeContext: ExecutionContext,
+  parentType: GraphQLObjectType,
+  source: mixed,
+  plan: FieldResolvingPlan
+): mixed {
+
+  // Get the resolve function, regardless of if its result is normal
+  // or abrupt (error).
+  const result = resolveOrError(plan.resolveFn, source, plan.args, plan.info);
+
+  return completeValueCatchingError(
+    exeContext,
+    plan.returnType,
+    plan.fieldASTs,
+    plan.info,
+    result
   );
 }
 
