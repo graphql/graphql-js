@@ -23,15 +23,9 @@ import {
 import type {
   GraphQLType,
   GraphQLAbstractType,
-  GraphQLFieldDefinition,
   GraphQLResolveInfo,
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
-import {
-  SchemaMetaFieldDef,
-  TypeMetaFieldDef,
-  TypeNameMetaFieldDef
-} from '../type/introspection';
 import type {
   Document,
   Field,
@@ -43,6 +37,8 @@ import {
 import {
   planOperation,
   OperationExecutionPlan,
+  defaultResolveFn,
+  getFieldDef,
   collectFields
 } from './plan';
 
@@ -530,20 +526,6 @@ function completeValue(
 }
 
 /**
- * If a resolve function is not given, then a default resolve behavior is used
- * which takes the property of the source object of the same name as the field
- * and returns it as the result, or if it's a function, returns the result
- * of calling that function.
- */
-function defaultResolveFn(source, args, { fieldName }) {
-  // ensure source is a value for which property access is acceptable.
-  if (typeof source !== 'number' && typeof source !== 'string' && source) {
-    const property = (source: any)[fieldName];
-    return typeof property === 'function' ? property.call(source) : property;
-  }
-}
-
-/**
  * Checks to see if this object acts like a Promise, i.e. has a "then"
  * function.
  */
@@ -551,30 +533,4 @@ function isThenable(value: mixed): boolean {
   return typeof value === 'object' &&
     value !== null &&
     typeof value.then === 'function';
-}
-
-/**
- * This method looks up the field on the given type defintion.
- * It has special casing for the two introspection fields, __schema
- * and __typename. __typename is special because it can always be
- * queried as a field, even in situations where no other fields
- * are allowed, like on a Union. __schema could get automatically
- * added to the query type, but that would require mutating type
- * definitions, which would cause issues.
- */
-function getFieldDef(
-  schema: GraphQLSchema,
-  parentType: GraphQLObjectType,
-  fieldName: string
-): ?GraphQLFieldDefinition {
-  if (fieldName === SchemaMetaFieldDef.name &&
-      schema.getQueryType() === parentType) {
-    return SchemaMetaFieldDef;
-  } else if (fieldName === TypeMetaFieldDef.name &&
-             schema.getQueryType() === parentType) {
-    return TypeMetaFieldDef;
-  } else if (fieldName === TypeNameMetaFieldDef.name) {
-    return TypeNameMetaFieldDef;
-  }
-  return parentType.getFields()[fieldName];
 }
