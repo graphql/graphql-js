@@ -138,8 +138,7 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
 
   if (type instanceof GraphQLList) {
     const itemType = type.ofType;
-    // TODO: support iterable input
-    if (Array.isArray(_value)) {
+    if (typeof _value.map === 'function') {
       return _value.map(item => coerceValue(itemType, item));
     }
     return [ coerceValue(itemType, _value) ];
