@@ -14,7 +14,7 @@ import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { Kind } from '../language';
-import { getVariableValues, getArgumentValues } from './values';
+import { getArgumentValues } from './values';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -48,6 +48,7 @@ import type {
   InlineFragment,
   FragmentDefinition
 } from '../language/ast';
+import { ExecutionContext, buildExecutionContext } from './context';
 
 
 /**
@@ -69,21 +70,6 @@ import type {
  * 2) fragment "spreads" e.g. "...c"
  * 3) inline fragment "spreads" e.g. "...on Type { a }"
  */
-
-/**
- * Data that must be available at all points during query execution.
- *
- * Namely, schema of the type system that is currently executing,
- * and the fragments defined in the query document
- */
-type ExecutionContext = {
-  schema: GraphQLSchema;
-  fragments: {[key: string]: FragmentDefinition};
-  rootValue: mixed;
-  operation: OperationDefinition;
-  variableValues: {[key: string]: mixed};
-  errors: Array<GraphQLError>;
-}
 
 /**
  * The result of execution. `data` is the result of executing the
@@ -148,61 +134,6 @@ export function execute(
     }
     return { data, errors: context.errors };
   });
-}
-
-/**
- * Constructs a ExecutionContext object from the arguments passed to
- * execute, which we will pass throughout the other execution methods.
- *
- * Throws a GraphQLError if a valid execution context cannot be created.
- */
-function buildExecutionContext(
-  schema: GraphQLSchema,
-  documentAST: Document,
-  rootValue: mixed,
-  rawVariableValues: ?{[key: string]: mixed},
-  operationName: ?string
-): ExecutionContext {
-  const errors: Array<GraphQLError> = [];
-  let operation: ?OperationDefinition;
-  const fragments: {[name: string]: FragmentDefinition} = Object.create(null);
-  documentAST.definitions.forEach(definition => {
-    switch (definition.kind) {
-      case Kind.OPERATION_DEFINITION:
-        if (!operationName && operation) {
-          throw new GraphQLError(
-            'Must provide operation name if query contains multiple operations.'
-          );
-        }
-        if (!operationName ||
-            definition.name && definition.name.value === operationName) {
-          operation = definition;
-        }
-        break;
-      case Kind.FRAGMENT_DEFINITION:
-        fragments[definition.name.value] = definition;
-        break;
-      default: throw new GraphQLError(
-        `GraphQL cannot execute a request containing a ${definition.kind}.`,
-        definition
-      );
-    }
-  });
-  if (!operation) {
-    if (!operationName) {
-      throw new GraphQLError(`Unknown operation named "${operationName}".`);
-    } else {
-      throw new GraphQLError('Must provide an operation.');
-    }
-  }
-  const variableValues = getVariableValues(
-    schema,
-    operation.variableDefinitions || [],
-    rawVariableValues || {}
-  );
-  const exeContext: ExecutionContext =
-    { schema, fragments, rootValue, operation, variableValues, errors };
-  return exeContext;
 }
 
 /**
