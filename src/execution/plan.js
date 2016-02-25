@@ -33,12 +33,24 @@ import type {
 } from '../language/ast';
 
 /**
+ * Data that must be available at all points during query execution.
+ *
+ * Namely, schema of the type system that is currently executing,
+ * and the fragments defined in the query document
+ */
+export type OperationExecutionPlan = {
+	type: GraphQLObjectType;
+	fields: {[key: string]: Array<Field>};
+//	strategy:
+}
+
+/**
  * Create a plan based on the "Evaluating operations" section of the spec.
  */
 export function planOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinition
-): Object {
+): OperationExecutionPlan {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
@@ -47,12 +59,17 @@ export function planOperation(
     Object.create(null),
     Object.create(null)
   );
+
+  const plan: OperationExecutionPlan = {
+    type,
+    fields
+  };
   /*
   if (operation.operation === 'mutation') {
   } else {
   }
   */
-  return fields; // @TODO Fix
+  return plan;
 }
 
 /**
