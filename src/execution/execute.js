@@ -9,11 +9,8 @@
  */
 
 import { GraphQLError, locatedError } from '../error';
-import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
-import { typeFromAST } from '../utilities/typeFromAST';
-import { Kind } from '../language';
 import { getArgumentValues } from './values';
 import {
   GraphQLScalarType,
@@ -35,20 +32,18 @@ import {
   TypeMetaFieldDef,
   TypeNameMetaFieldDef
 } from '../type/introspection';
-import {
-  GraphQLIncludeDirective,
-  GraphQLSkipDirective
-} from '../type/directives';
 import type {
-  Directive,
   Document,
   OperationDefinition,
-  SelectionSet,
   Field,
-  InlineFragment,
-  FragmentDefinition
 } from '../language/ast';
-import { ExecutionContext, buildExecutionContext } from './context';
+import {
+  ExecutionContext,
+  buildExecutionContext
+} from './context';
+import {
+  collectFields
+} from './plan';
 
 
 /**
@@ -276,132 +271,6 @@ function executeFields(
 }
 
 /**
- * Given a selectionSet, adds all of the fields in that selection to
- * the passed in map of fields, and returns it at the end.
- *
- * CollectFields requires the "runtime type" of an object. For a field which
- * returns and Interface or Union type, the "runtime type" will be the actual
- * Object type returned by that field.
- */
-function collectFields(
-  exeContext: ExecutionContext,
-  runtimeType: GraphQLObjectType,
-  selectionSet: SelectionSet,
-  fields: {[key: string]: Array<Field>},
-  visitedFragmentNames: {[key: string]: boolean}
-): {[key: string]: Array<Field>} {
-  for (let i = 0; i < selectionSet.selections.length; i++) {
-    const selection = selectionSet.selections[i];
-    switch (selection.kind) {
-      case Kind.FIELD:
-        if (!shouldIncludeNode(exeContext, selection.directives)) {
-          continue;
-        }
-        const name = getFieldEntryKey(selection);
-        if (!fields[name]) {
-          fields[name] = [];
-        }
-        fields[name].push(selection);
-        break;
-      case Kind.INLINE_FRAGMENT:
-        if (!shouldIncludeNode(exeContext, selection.directives) ||
-            !doesFragmentConditionMatch(exeContext, selection, runtimeType)) {
-          continue;
-        }
-        collectFields(
-          exeContext,
-          runtimeType,
-          selection.selectionSet,
-          fields,
-          visitedFragmentNames
-        );
-        break;
-      case Kind.FRAGMENT_SPREAD:
-        const fragName = selection.name.value;
-        if (visitedFragmentNames[fragName] ||
-            !shouldIncludeNode(exeContext, selection.directives)) {
-          continue;
-        }
-        visitedFragmentNames[fragName] = true;
-        const fragment = exeContext.fragments[fragName];
-        if (!fragment ||
-            !shouldIncludeNode(exeContext, fragment.directives) ||
-            !doesFragmentConditionMatch(exeContext, fragment, runtimeType)) {
-          continue;
-        }
-        collectFields(
-          exeContext,
-          runtimeType,
-          fragment.selectionSet,
-          fields,
-          visitedFragmentNames
-        );
-        break;
-    }
-  }
-  return fields;
-}
-
-/**
- * Determines if a field should be included based on the @include and @skip
- * directives, where @skip has higher precidence than @include.
- */
-function shouldIncludeNode(
-  exeContext: ExecutionContext,
-  directives: ?Array<Directive>
-): boolean {
-  const skipAST = directives && find(
-    directives,
-    directive => directive.name.value === GraphQLSkipDirective.name
-  );
-  if (skipAST) {
-    const { if: skipIf } = getArgumentValues(
-      GraphQLSkipDirective.args,
-      skipAST.arguments,
-      exeContext.variableValues
-    );
-    return !skipIf;
-  }
-
-  const includeAST = directives && find(
-    directives,
-    directive => directive.name.value === GraphQLIncludeDirective.name
-  );
-  if (includeAST) {
-    const { if: includeIf } = getArgumentValues(
-      GraphQLIncludeDirective.args,
-      includeAST.arguments,
-      exeContext.variableValues
-    );
-    return Boolean(includeIf);
-  }
-
-  return true;
-}
-
-/**
- * Determines if a fragment is applicable to the given type.
- */
-function doesFragmentConditionMatch(
-  exeContext: ExecutionContext,
-  fragment: FragmentDefinition | InlineFragment,
-  type: GraphQLObjectType
-): boolean {
-  const typeConditionAST = fragment.typeCondition;
-  if (!typeConditionAST) {
-    return true;
-  }
-  const conditionalType = typeFromAST(exeContext.schema, typeConditionAST);
-  if (conditionalType === type) {
-    return true;
-  }
-  if (isAbstractType(conditionalType)) {
-    return ((conditionalType: any): GraphQLAbstractType).isPossibleType(type);
-  }
-  return false;
-}
-
-/**
  * This function transforms a JS object `{[key: string]: Promise<T>}` into
  * a `Promise<{[key: string]: T}>`
  *
@@ -419,13 +288,6 @@ function promiseForObject<T>(
       return resolvedObject;
     }, Object.create(null))
   );
-}
-
-/**
- * Implements the logic to compute the key of a given field’s entry
- */
-function getFieldEntryKey(node: Field): string {
-  return node.alias ? node.alias.value : node.name.value;
 }
 
 /**
