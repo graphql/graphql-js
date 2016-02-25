@@ -42,6 +42,8 @@ import {
   buildExecutionContext
 } from './context';
 import {
+  planOperation,
+  getOperationRootType,
   collectFields
 } from './plan';
 
@@ -108,6 +110,8 @@ export function execute(
     operationName
   );
 
+  planOperation(context, context.operation);
+
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
   //
@@ -152,42 +156,6 @@ function executeOperation(
     return executeFieldsSerially(exeContext, type, rootValue, fields);
   }
   return executeFields(exeContext, type, rootValue, fields);
-}
-
-/**
- * Extracts the root type of the operation from the schema.
- */
-function getOperationRootType(
-  schema: GraphQLSchema,
-  operation: OperationDefinition
-): GraphQLObjectType {
-  switch (operation.operation) {
-    case 'query':
-      return schema.getQueryType();
-    case 'mutation':
-      const mutationType = schema.getMutationType();
-      if (!mutationType) {
-        throw new GraphQLError(
-          'Schema is not configured for mutations',
-          [ operation ]
-        );
-      }
-      return mutationType;
-    case 'subscription':
-      const subscriptionType = schema.getSubscriptionType();
-      if (!subscriptionType) {
-        throw new GraphQLError(
-          'Schema is not configured for subscriptions',
-          [ operation ]
-        );
-      }
-      return subscriptionType;
-    default:
-      throw new GraphQLError(
-        'Can only execute queries, mutations and subscriptions',
-        [ operation ]
-      );
-  }
 }
 
 /**

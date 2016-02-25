@@ -58,7 +58,7 @@ export function planOperation(
 /**
  * Extracts the root type of the operation from the schema.
  */
-function getOperationRootType(
+export function getOperationRootType(
   schema: GraphQLSchema,
   operation: OperationDefinition
 ): GraphQLObjectType {
