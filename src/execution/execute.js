@@ -34,7 +34,6 @@ import {
 } from '../type/introspection';
 import type {
   Document,
-  OperationDefinition,
   Field,
 } from '../language/ast';
 import {
@@ -43,7 +42,7 @@ import {
 } from './context';
 import {
   planOperation,
-  getOperationRootType,
+  OperationExecutionPlan,
   collectFields
 } from './plan';
 
@@ -110,7 +109,7 @@ export function execute(
     operationName
   );
 
-  planOperation(context, context.operation);
+  const plan = planOperation(context, context.operation);
 
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
@@ -120,7 +119,7 @@ export function execute(
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
   return new Promise(resolve => {
-    resolve(executeOperation(context, context.operation, rootValue));
+    resolve(executeOperation(context, plan, rootValue));
   }).catch(error => {
     // Errors from sub-fields of a NonNull type may propagate to the top level,
     // at which point we still log the error and null the parent field, which
@@ -140,22 +139,16 @@ export function execute(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-  operation: OperationDefinition,
+  plan: OperationExecutionPlan,
   rootValue: mixed
 ): Object {
-  const type = getOperationRootType(exeContext.schema, operation);
-  const fields = collectFields(
-    exeContext,
-    type,
-    operation.selectionSet,
-    Object.create(null),
-    Object.create(null)
-  );
 
-  if (operation.operation === 'mutation') {
-    return executeFieldsSerially(exeContext, type, rootValue, fields);
+  invariant(plan.strategy === 'serial' || plan.strategy === 'parallel');
+
+  if (plan.strategy === 'serial') {
+    return executeFieldsSerially(exeContext, plan.type, rootValue, plan.fields);
   }
-  return executeFields(exeContext, type, rootValue, fields);
+  return executeFields(exeContext, plan.type, rootValue, plan.fields);
 }
 
 /**

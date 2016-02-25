@@ -41,7 +41,7 @@ import type {
 export type OperationExecutionPlan = {
 	type: GraphQLObjectType;
 	fields: {[key: string]: Array<Field>};
-//	strategy:
+	strategy: string;
 }
 
 /**
@@ -59,16 +59,14 @@ export function planOperation(
     Object.create(null),
     Object.create(null)
   );
+  const strategy = (operation.operation === 'mutation') ? 'serial' : 'parallel';
 
   const plan: OperationExecutionPlan = {
     type,
-    fields
+    fields,
+    strategy
   };
-  /*
-  if (operation.operation === 'mutation') {
-  } else {
-  }
-  */
+
   return plan;
 }
 
