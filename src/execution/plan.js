@@ -17,6 +17,7 @@ import { getArgumentValues } from './values';
 import { typeFromAST } from '../utilities/typeFromAST';
 import {
   GraphQLScalarType,
+  GraphQLNonNull,
   GraphQLEnumType,
   GraphQLObjectType,
   GraphQLAbstractType,
@@ -62,7 +63,7 @@ export type SerializationExecutionPlan = {
  */
 export type CoercionExecutionPlan = {
   kind: string;
-  typePlans: Array<ExecutionPlan>;
+  typePlans: {[key: string]:Array<ExecutionPlan>};
 }
 
 /**
@@ -307,6 +308,15 @@ function planCompleteValue(
   fieldASTs: Array<Field>
 ): ExecutionPlan {
 
+  // If field type is NonNull, complete for inner type
+  if (returnType instanceof GraphQLNonNull) {
+    return planCompleteValue(
+      exeContext,
+      returnType.ofType,
+      fieldASTs
+    );
+  }
+
   // If field type is List, complete each item in the list with the inner type
   if (returnType instanceof GraphQLList) {
     const innerType = returnType.ofType;
@@ -346,8 +356,20 @@ function planCompleteValue(
   if (isAbstractType(returnType)) {
     const abstractType = ((returnType: any): GraphQLAbstractType);
     const possibleTypes = abstractType.getPossibleTypes();
-    const typePlans = possibleTypes.map(possibleType => {
-      return planSelectionToo(
+
+    const typePlans = Object.create(null);
+    /**
+    const typePlans = possibleTypes.reduce((result, possibleType) => {
+      result[possibleType.name] = planSelectionToo(
+        exeContext,
+        possibleType,
+        fieldASTs
+      );
+    }, Object.create(null));
+    */
+
+    possibleTypes.forEach(possibleType => {
+      typePlans[possibleType.name] = planSelectionToo(
         exeContext,
         possibleType,
         fieldASTs
@@ -362,11 +384,8 @@ function planCompleteValue(
     return plan;
   }
 
-  const plan: IgnoringExecutionPlan = {
-    kind: 'ignore',
-  };
-
-  return plan;
+  // We have handled all possibilities.  Not reachable
+  invariant(false);
 }
 
 /**

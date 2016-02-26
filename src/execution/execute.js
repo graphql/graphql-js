@@ -11,11 +11,9 @@
 import { GraphQLError, locatedError } from '../error';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
-import { getArgumentValues } from './values';
+
 import {
-  GraphQLScalarType,
   GraphQLObjectType,
-  GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
   isAbstractType
@@ -38,10 +36,7 @@ import {
   planOperation,
   SelectionExecutionPlan,
   ExecutionPlan,
-  FieldResolvingPlan,
-  defaultResolveFn,
-  getFieldDef,
-  collectFields
+  FieldResolvingPlan
 } from './plan';
 
 
@@ -234,51 +229,6 @@ function executeFieldsPlan(
 }
 
 /**
- * Implements the "Evaluating selection sets" section of the spec
- * for "read" mode.
- */
-function executeFields(
-  exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
-  sourceValue: mixed,
-  fields: {[key: string]: Array<Field>}
-): Object {
-  let containsPromise = false;
-
-  const finalResults = Object.keys(fields).reduce(
-    (results, responseName) => {
-      const fieldASTs = fields[responseName];
-      const result = resolveField(
-        exeContext,
-        parentType,
-        sourceValue,
-        fieldASTs
-      );
-      if (result === undefined) {
-        return results;
-      }
-      results[responseName] = result;
-      if (isThenable(result)) {
-        containsPromise = true;
-      }
-      return results;
-    },
-    Object.create(null)
-  );
-
-  // If there are no promises, we can just return the object
-  if (!containsPromise) {
-    return finalResults;
-  }
-
-  // Otherwise, results is a map from field name to the result
-  // of resolving that field, which is possibly a promise. Return
-  // a promise that will return this same map, but with any
-  // promises replaced with the values they resolved to.
-  return promiseForObject(finalResults);
-}
-
-/**
  * This function transforms a JS object `{[key: string]: Promise<T>}` into
  * a `Promise<{[key: string]: T}>`
  *
@@ -315,8 +265,6 @@ function resolveFieldPlan(
   // or abrupt (error).
   const result = resolveOrError(plan.resolveFn, source, plan.args, plan.info);
 
-  // @TODO: CompleteValuePlan()
-
   return completeValueCatchingError(
     exeContext,
     plan.returnType,
@@ -324,65 +272,6 @@ function resolveFieldPlan(
     plan.info,
     result,
     plan.completionPlan
-  );
-}
-
-/**
- * Resolves the field on the given source object. In particular, this
- * figures out the value that the field returns by calling its resolve function,
- * then calls completeValue to complete promises, serialize scalars, or execute
- * the sub-selection-set for objects.
- */
-function resolveField(
-  exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
-  source: mixed,
-  fieldASTs: Array<Field>
-): mixed {
-  const fieldAST = fieldASTs[0];
-  const fieldName = fieldAST.name.value;
-
-  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldName);
-  if (!fieldDef) {
-    return;
-  }
-
-  const returnType = fieldDef.type;
-  const resolveFn = fieldDef.resolve || defaultResolveFn;
-
-  // Build a JS object of arguments from the field.arguments AST, using the
-  // variables scope to fulfill any variable references.
-  // TODO: find a way to memoize, in case this field is within a List type.
-  const args = getArgumentValues(
-    fieldDef.args,
-    fieldAST.arguments,
-    exeContext.variableValues
-  );
-
-  // The resolve function's optional third argument is a collection of
-  // information about the current execution state.
-  const info: GraphQLResolveInfo = {
-    fieldName,
-    fieldASTs,
-    returnType,
-    parentType,
-    schema: exeContext.schema,
-    fragments: exeContext.fragments,
-    rootValue: exeContext.rootValue,
-    operation: exeContext.operation,
-    variableValues: exeContext.variableValues,
-  };
-
-  // Get the resolve function, regardless of if its result is normal
-  // or abrupt (error).
-  const result = resolveOrError(resolveFn, source, args, info);
-
-  return completeValueCatchingError(
-    exeContext,
-    returnType,
-    fieldASTs,
-    info,
-    result
   );
 }
 
@@ -509,7 +398,8 @@ function completeValue(
       returnType.ofType,
       fieldASTs,
       info,
-      result
+      result,
+      plan
     );
     if (completed === null) {
       throw new GraphQLError(
@@ -593,90 +483,66 @@ function completeValue(
           result,
           fieldPlans
         );
+      case 'coerce':
+        // Field type must be Object, Interface or Union and expect
+        // sub-selections.
+        let runtimeType: ?GraphQLObjectType;
+
+        invariant(isAbstractType(returnType));
+
+        const abstractType = ((returnType: any): GraphQLAbstractType);
+        runtimeType = abstractType.getObjectType(result, info);
+
+        if (!runtimeType) {
+          return null;
+        }
+
+        // If there is an isTypeOf predicate function, call it with the
+        // current result. If isTypeOf returns false, then raise an error rather
+        // than continuing execution.
+        if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, info)) {
+          throw new GraphQLError(
+            `Expected value of type "${runtimeType}" but got: ${result}.`,
+            fieldASTs
+          );
+        }
+
+        if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
+          throw new GraphQLError(
+            `Runtime Object type "${runtimeType}" is not a possible type ` +
+            `for "${abstractType}".`,
+            fieldASTs
+          );
+        }
+
+        invariant(plan.typePlans !== null);
+        invariant(typeof plan.typePlans === 'object');
+
+        const typePlans = plan.typePlans;
+
+        const typePlan = typePlans[runtimeType.name];
+        if (!typePlan) {
+          // console.log(runtimeType.name, ':', Array.keys(typePlans));
+          throw new GraphQLError(
+            `Runtime Object type "${runtimeType}" ` +
+            `is not a possible coercion type for "${abstractType}".`,
+            fieldASTs
+          );
+        }
+
+        invariant(typePlan.fieldPlans !== null);
+        invariant(typeof typePlan.fieldPlans === 'object');
+
+        const typeFieldPlans = typePlan.fieldPlans;
+
+        return executeFieldsPlan(
+          exeContext,
+          runtimeType,
+          result,
+          typeFieldPlans
+        );
     }
   }
-
-  // If field type is List, complete each item in the list with the inner type
-  if (returnType instanceof GraphQLList) {
-    invariant(
-      Array.isArray(result),
-      'User Error: expected iterable, but did not find one ' +
-      `for field ${info.parentType}.${info.fieldName}.`
-    );
-
-    // This is specified as a simple map, however we're optimizing the path
-    // where the list contains no Promises by avoiding creating another Promise.
-    const itemType = returnType.ofType;
-    let containsPromise = false;
-    const completedResults = result.map(item => {
-      const completedItem =
-        completeValueCatchingError(exeContext, itemType, fieldASTs, info, item);
-      if (!containsPromise && isThenable(completedItem)) {
-        containsPromise = true;
-      }
-      return completedItem;
-    });
-
-    return containsPromise ? Promise.all(completedResults) : completedResults;
-  }
-
-  // If field type is Scalar or Enum, serialize to a valid value, returning
-  // null if serialization is not possible.
-  if (returnType instanceof GraphQLScalarType ||
-      returnType instanceof GraphQLEnumType) {
-    invariant(returnType.serialize, 'Missing serialize method on type');
-    const serializedResult = returnType.serialize(result);
-    return isNullish(serializedResult) ? null : serializedResult;
-  }
-
-  // Field type must be Object, Interface or Union and expect sub-selections.
-  let runtimeType: ?GraphQLObjectType;
-
-  if (returnType instanceof GraphQLObjectType) {
-    runtimeType = returnType;
-  } else if (isAbstractType(returnType)) {
-    const abstractType = ((returnType: any): GraphQLAbstractType);
-    runtimeType = abstractType.getObjectType(result, info);
-    if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
-      throw new GraphQLError(
-        `Runtime Object type "${runtimeType}" is not a possible type ` +
-        `for "${abstractType}".`,
-        fieldASTs
-      );
-    }
-  }
-
-  if (!runtimeType) {
-    return null;
-  }
-
-  // If there is an isTypeOf predicate function, call it with the
-  // current result. If isTypeOf returns false, then raise an error rather
-  // than continuing execution.
-  if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, info)) {
-    throw new GraphQLError(
-      `Expected value of type "${runtimeType}" but got: ${result}.`,
-      fieldASTs
-    );
-  }
-
-  // Collect sub-fields to execute to complete this value.
-  let subFieldASTs = Object.create(null);
-  const visitedFragmentNames = Object.create(null);
-  for (let i = 0; i < fieldASTs.length; i++) {
-    const selectionSet = fieldASTs[i].selectionSet;
-    if (selectionSet) {
-      subFieldASTs = collectFields(
-        exeContext,
-        runtimeType,
-        selectionSet,
-        subFieldASTs,
-        visitedFragmentNames
-      );
-    }
-  }
-
-  return executeFields(exeContext, runtimeType, result, subFieldASTs);
 }
 
 /**
