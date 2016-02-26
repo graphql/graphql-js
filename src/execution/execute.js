@@ -147,7 +147,7 @@ function executeOperation(
       plan.fieldPlans
     );
   }
-  return executeFieldsPlan(exeContext, plan.type, rootValue, plan.fieldPlans);
+  return executeFields(exeContext, plan.type, rootValue, plan.fieldPlans);
 }
 
 /**
@@ -162,7 +162,7 @@ function executeFieldsSerially(
 ): Promise<Object> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
-      const result = resolveFieldPlan(
+      const result = resolveField(
         exeContext,
         parentType,
         sourceValue,
@@ -188,7 +188,7 @@ function executeFieldsSerially(
  * Implements the "Evaluating selection sets" section of the spec
  * for "read" mode.
  */
-function executeFieldsPlan(
+function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
@@ -198,7 +198,7 @@ function executeFieldsPlan(
 
   const finalResults = Object.keys(fields).reduce(
     (results, responseName) => {
-      const result = resolveFieldPlan(
+      const result = resolveField(
         exeContext,
         parentType,
         sourceValue,
@@ -254,7 +254,7 @@ function promiseForObject<T>(
  * then calls completeValue to complete promises, serialize scalars, or execute
  * the sub-selection-set for objects.
  */
-function resolveFieldPlan(
+function resolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: mixed,
@@ -477,7 +477,7 @@ function completeValue(
           );
         }
 
-        return executeFieldsPlan(
+        return executeFields(
           exeContext,
           returnType,
           result,
@@ -535,7 +535,7 @@ function completeValue(
 
         const typeFieldPlans = typePlan.fieldPlans;
 
-        return executeFieldsPlan(
+        return executeFields(
           exeContext,
           runtimeType,
           result,
