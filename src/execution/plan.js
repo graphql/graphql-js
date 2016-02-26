@@ -52,6 +52,8 @@ import {
  */
 export type MappingExecutionPlan = {
   kind: 'map';
+  type: GraphQLType;
+  innerType: GraphQLType;
   innerCompletionPlan: CompletionExecutionPlan; // Is this really so broad?
 }
 
@@ -59,12 +61,14 @@ export type MappingExecutionPlan = {
  */
 export type SerializationExecutionPlan = {
   kind: 'serialize';
+  type: GraphQLType;
 }
 
 /**
  */
 export type CoercionExecutionPlan = {
   kind: 'coerce';
+  type: GraphQLType;
   typePlans: {[key: string]:SelectionExecutionPlan};
 }
 
@@ -319,6 +323,8 @@ function planCompleteValue(
 
     const plan: MappingExecutionPlan = {
       kind: 'map',
+      type: returnType,
+      innerType,
       innerCompletionPlan
     };
 
@@ -332,7 +338,8 @@ function planCompleteValue(
     invariant(returnType.serialize, 'Missing serialize method on type');
 
     const plan: SerializationExecutionPlan = {
-      kind: 'serialize'
+      kind: 'serialize',
+      type: returnType
     };
 
     return plan;
@@ -371,6 +378,7 @@ function planCompleteValue(
 
     const plan: CoercionExecutionPlan = {
       kind: 'coerce',
+      type: returnType,
       typePlans
     };
 
