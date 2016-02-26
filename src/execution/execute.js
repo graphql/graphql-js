@@ -432,7 +432,6 @@ function completeValue(
       );
 
       invariant(plan.innerCompletionPlan !== null);
-      invariant(typeof plan.innerCompletionPlan === 'object');
 
       const innerCompletionPlan = plan.innerCompletionPlan;
 
@@ -463,7 +462,6 @@ function completeValue(
         Promise.all(completedResults) : completedResults;
     case 'select':
       invariant(plan.fieldPlans !== null);
-      invariant(typeof plan.fieldPlans === 'object');
 
       const fieldPlans = plan.fieldPlans;
 
@@ -518,7 +516,6 @@ function completeValue(
       }
 
       invariant(plan.typePlans !== null);
-      invariant(typeof plan.typePlans === 'object');
 
       const typePlans = plan.typePlans;
 
