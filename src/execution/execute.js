@@ -10,7 +10,6 @@
 
 // @TODO: Eliminate the propagation of info and type to CompleteValue
 // @TODO: Merge GraphQLResolveInfo and ResolvingExecutionPlan
-// @TODO: Document parallels between CompleteValue and planCompletion
 // @TODO: Move Execution Plan Types to co-locate with GraphQLResolveInfo
 // @TODO: Create an example of prefetching based on Execution plan
 // @TODO: Add error messages for unreachable Conditions
@@ -18,15 +17,20 @@
 // @TODO: Debug the reduce code in plan.js
 // @TODO: Declare a resolveFn type
 // @TODO: Review against the specification
-// @TODO: Add invariants to execution for conditions tested during planning
 // @TODO: Review null bails to eliminate flowtype boilerplate
+
+// The Execution Plan Hierarchy mirrors the schema herarchy, not the
+// query result set, exactly what you would want when trying to pre-fetch
+// from a resolver.
 
 import { GraphQLError, locatedError } from '../error';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 
 import {
+  GraphQLScalarType,
   GraphQLObjectType,
+  GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
   isAbstractType
@@ -370,6 +374,8 @@ function completeValue(
   result: mixed,
   plan: CompletionExecutionPlan
 ): mixed {
+
+  // --- CASE A: Promise (Execution time only, no plan)
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
     return ((result: any): Promise).then(
@@ -386,11 +392,13 @@ function completeValue(
     );
   }
 
+  // --- CASE B: Error (Execution time only, no plan)
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw locatedError(result, plan.fieldASTs);
   }
 
+  // --- CASE C: GraphQLNonNull (No plan, structural. See planCompleteValue)
   // If field type is NonNull, complete for inner type, and throw field error
   // if result is null.
   if (returnType instanceof GraphQLNonNull) {
@@ -411,17 +419,32 @@ function completeValue(
     return completed;
   }
 
+  // --- CASE D: Nullish (Execution time only, no plan)
   // If result is null-like, return null.
   if (isNullish(result)) {
     return null;
   }
 
   switch (plan.kind) {
+
+    // --- CASE E: Serialize (run SerializationExecutionPlan)
+    // If result is null-like, return null.
     case 'serialize':
+      // Tested in planCompleteValue
+      invariant(returnType instanceof GraphQLScalarType ||
+        returnType instanceof GraphQLEnumType);
+
       invariant(returnType.serialize, 'Missing serialize method on type');
+
       const serializedResult = returnType.serialize(result);
       return isNullish(serializedResult) ? null : serializedResult;
+
+    // --- CASE F: GraphQLList (run MappingExecutionPlan)
+    // If result is null-like, return null.
     case 'map':
+      // Tested in planCompleteValue
+      invariant(returnType instanceof GraphQLList);
+
       invariant(
         Array.isArray(result),
         'User Error: expected iterable, but did not find one ' +
@@ -431,8 +454,6 @@ function completeValue(
       invariant(plan.innerCompletionPlan !== null);
 
       const innerCompletionPlan = plan.innerCompletionPlan;
-
-      invariant(returnType instanceof GraphQLList);
 
       // This is specified as a simple map, however we're optimizing the path
       // where the list contains no Promises by avoiding creating another
@@ -456,8 +477,10 @@ function completeValue(
 
       return containsPromise ?
         Promise.all(completedResults) : completedResults;
-    case 'select':
 
+    // --- CASE G: GraphQLObjectType (run SelectionExecutionPlan)
+    case 'select':
+      // Tested in planCompleteValue
       invariant(returnType instanceof GraphQLObjectType);
 
       // If there is an isTypeOf predicate function, call it with the
@@ -475,12 +498,15 @@ function completeValue(
         result,
         plan
       );
+
+    // --- CASE H: isAbstractType (run CoercionExecutionPlan)
     case 'coerce':
+      // Tested in planCompleteValue
+      invariant(isAbstractType(returnType));
+
       // Field type must be Object, Interface or Union and expect
       // sub-selections.
       let runtimeType: ?GraphQLObjectType;
-
-      invariant(isAbstractType(returnType));
 
       const abstractType = ((returnType: any): GraphQLAbstractType);
       runtimeType = abstractType.getObjectType(result, info);
@@ -526,7 +552,13 @@ function completeValue(
         result,
         typePlan
       );
+
+    // --- CASE Z: Unreachable
+    // We have handled all possibilities.  Not reachable
+    default:
+      invariant(false);
   }
+
 }
 
 /**

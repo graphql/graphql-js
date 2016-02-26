@@ -289,7 +289,7 @@ function planResolveField(
 }
 
 /**
- * Implements the instructions for completeValue as defined in the
+ * Plans the Execution of completeValue as defined in the
  * "Field entries" section of the spec.
  *
  * If the field type is Non-Null, then this recursively completes the value
@@ -312,6 +312,11 @@ function planCompleteValue(
   fieldASTs: Array<Field>
 ): CompletionExecutionPlan {
 
+  // --- CASE A: Promise (Execution time only, see completeValue)
+
+  // --- CASE B: Error (Execution time only, see completeValue)
+
+  // --- CASE C: GraphQLNonNull (Structural, see completeValue)
   // If field type is NonNull, complete for inner type
   if (returnType instanceof GraphQLNonNull) {
     return planCompleteValue(
@@ -321,6 +326,25 @@ function planCompleteValue(
     );
   }
 
+  // --- CASE D: Nullish (Execution time only, see completeValue)
+
+  // --- CASE E: Serialize (See completeValue for plan Execution)
+  // If field type is Scalar or Enum, serialize to a valid value, returning
+  // null if serialization is not possible.
+  if (returnType instanceof GraphQLScalarType ||
+      returnType instanceof GraphQLEnumType) {
+    invariant(returnType.serialize, 'Missing serialize method on type');
+
+    const plan: SerializationExecutionPlan = {
+      kind: 'serialize',
+      type: returnType,
+      fieldASTs
+    };
+
+    return plan;
+  }
+
+  // --- CASE F: GraphQLList (See completeValue for plan Execution)
   // If field type is List, complete each item in the list with the inner type
   if (returnType instanceof GraphQLList) {
     const innerType = returnType.ofType;
@@ -339,21 +363,7 @@ function planCompleteValue(
     return plan;
   }
 
-  // If field type is Scalar or Enum, serialize to a valid value, returning
-  // null if serialization is not possible.
-  if (returnType instanceof GraphQLScalarType ||
-      returnType instanceof GraphQLEnumType) {
-    invariant(returnType.serialize, 'Missing serialize method on type');
-
-    const plan: SerializationExecutionPlan = {
-      kind: 'serialize',
-      type: returnType,
-      fieldASTs
-    };
-
-    return plan;
-  }
-
+  // --- CASE G: GraphQLObjectType (See completeValue for plan Execution)
   if (returnType instanceof GraphQLObjectType) {
     return planSelectionToo(
       exeContext,
@@ -362,6 +372,7 @@ function planCompleteValue(
     );
   }
 
+  // --- CASE H: isAbstractType (run CoercionExecutionPlan)
   if (isAbstractType(returnType)) {
     const abstractType = ((returnType: any): GraphQLAbstractType);
     const possibleTypes = abstractType.getPossibleTypes();
@@ -395,6 +406,7 @@ function planCompleteValue(
     return plan;
   }
 
+  // --- CASE Z: Unreachable
   // We have handled all possibilities.  Not reachable
   invariant(false);
 }
