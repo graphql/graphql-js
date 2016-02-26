@@ -48,46 +48,52 @@ import {
 /**
  */
 export type MappingExecutionPlan = {
-    innerCompletionPlan: ExecutionPlan;
+  kind: string;
+  innerCompletionPlan: ExecutionPlan;
 }
 
 /**
  */
 export type SerializationExecutionPlan = {
+  kind: string;
 }
 
 /**
  */
-export type CoersionExecutionPlan = {
-    typePlans: Array<ExecutionPlan>;
+export type CoercionExecutionPlan = {
+  kind: string;
+  typePlans: Array<ExecutionPlan>;
 }
 
 /**
  */
 export type IgnoringExecutionPlan = {
+  kind: string;
 }
 
 /**
  */
 export type ExecutionPlan =
+  SelectionExecutionPlan |
   SerializationExecutionPlan |
   MappingExecutionPlan |
-  CoersionExecutionPlan |
+  CoercionExecutionPlan |
   IgnoringExecutionPlan;
 
 /**
  */
 export type FieldResolvingPlan = {
-    resolveFn: (
+  kind: string;
+  resolveFn: (
       source: mixed,
       args: { [key: string]: mixed },
       info: GraphQLResolveInfo
-    ) => mixed;
-    args: { [key: string]: mixed };
-    info: GraphQLResolveInfo;
-    returnType: GraphQLOutputType;
-    fieldASTs: Array<Field>;
-    completionPlan: ExecutionPlan;
+  ) => mixed;
+  args: { [key: string]: mixed };
+  info: GraphQLResolveInfo;
+  returnType: GraphQLOutputType;
+  fieldASTs: Array<Field>;
+  completionPlan: ExecutionPlan;
 }
 
 /**
@@ -132,6 +138,7 @@ function planSelection(
   const fieldPlans = planFields(exeContext, type, fields);
 
   const plan: SelectionExecutionPlan = {
+    kind: 'select',
     type,
     fields,
     strategy,
@@ -169,6 +176,7 @@ function planSelectionToo(
   const fieldPlans = planFields(exeContext, type, fields);
 
   const plan: SelectionExecutionPlan = {
+    kind: 'select',
     type,
     fields,
     strategy,
@@ -263,6 +271,7 @@ function planResolveField(
   const completionPlan = planCompleteValue(exeContext, returnType, fieldASTs);
 
   const plan: FieldResolvingPlan = {
+    kind: 'resolve',
     resolveFn,
     args,
     info,
@@ -306,6 +315,7 @@ function planCompleteValue(
       planCompleteValue(exeContext, innerType, fieldASTs);
 
     const plan: MappingExecutionPlan = {
+      kind: 'map',
       innerCompletionPlan
     };
 
@@ -319,6 +329,7 @@ function planCompleteValue(
     invariant(returnType.serialize, 'Missing serialize method on type');
 
     const plan: SerializationExecutionPlan = {
+      kind: 'serialize',
     };
 
     return plan;
@@ -343,7 +354,8 @@ function planCompleteValue(
       );
     });
 
-    const plan: CoersionExecutionPlan = {
+    const plan: CoercionExecutionPlan = {
+      kind: 'coerce',
       typePlans
     };
 
@@ -351,6 +363,7 @@ function planCompleteValue(
   }
 
   const plan: IgnoringExecutionPlan = {
+    kind: 'ignore',
   };
 
   return plan;
