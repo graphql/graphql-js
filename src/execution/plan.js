@@ -17,16 +17,18 @@ import { getArgumentValues } from './values';
 import { typeFromAST } from '../utilities/typeFromAST';
 import {
   GraphQLScalarType,
-  GraphQLNonNull,
-  GraphQLEnumType,
   GraphQLObjectType,
-  GraphQLAbstractType,
+  GraphQLEnumType,
   GraphQLList,
-  GraphQLResolveInfo,
-  GraphQLFieldDefinition,
-  GraphQLOutputType,
-  GraphQLType,
+  GraphQLNonNull,
   isAbstractType
+} from '../type/definition';
+import type {
+  GraphQLFieldDefinition,
+  GraphQLAbstractType,
+  GraphQLType,
+  GraphQLOutputType,
+  GraphQLResolveInfo
 } from '../type/definition';
 import {
   GraphQLIncludeDirective,
