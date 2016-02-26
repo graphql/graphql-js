@@ -8,6 +8,19 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+// @TODO: Eliminate the propagation of info and type to CompleteValue
+// @TODO: Merge GraphQLResolveInfo and ResolvingExecutionPlan
+// @TODO: Document parallels between CompleteValue and planCompletion
+// @TODO: Move Execution Plan Types to co-locate with GraphQLResolveInfo
+// @TODO: Create an example of prefetching based on Execution plan
+// @TODO: Add error messages for unreachable Conditions
+// @TODO: Refactor away planSelectionToo
+// @TODO: Debug the reduce code in plan.js
+// @TODO: Declare a resolveFn type
+// @TODO: Review against the specification
+// @TODO: Add invariants to execution for conditions tested during planning
+// @TODO: Review null bails to eliminate flowtype boilerplate
+
 import { GraphQLError, locatedError } from '../error';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';

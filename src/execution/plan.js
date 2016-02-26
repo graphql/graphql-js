@@ -55,7 +55,8 @@ export type MappingExecutionPlan = {
   type: GraphQLType;
   fieldASTs: Array<Field>;
   innerType: GraphQLType;
-  innerCompletionPlan: CompletionExecutionPlan; // Is this really so broad?
+  // @TODO Is this really so broad?
+  innerCompletionPlan: CompletionExecutionPlan;
 }
 
 /**
@@ -144,7 +145,7 @@ function planSelection(
   const plan: SelectionExecutionPlan = {
     kind: 'select',
     type,
-    fieldASTs: [],  // I don't know what to pass here
+    fieldASTs: [],  // @TODO: I don't know what to pass here
     strategy,
     fieldPlans
   };
