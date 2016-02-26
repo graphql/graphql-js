@@ -570,6 +570,29 @@ function completeValue(
         return containsPromise ?
           Promise.all(completedResults) : completedResults;
       case 'select':
+        invariant(plan.fieldPlans !== null);
+        invariant(typeof plan.fieldPlans === 'object');
+
+        const fieldPlans = plan.fieldPlans;
+
+        invariant(returnType instanceof GraphQLObjectType);
+
+        // If there is an isTypeOf predicate function, call it with the
+        // current result. If isTypeOf returns false, then raise an error rather
+        // than continuing execution.
+        if (returnType.isTypeOf && !returnType.isTypeOf(result, info)) {
+          throw new GraphQLError(
+            `Expected value of type "${returnType}" but got: ${result}.`,
+            fieldASTs
+          );
+        }
+
+        return executeFieldsPlan(
+          exeContext,
+          returnType,
+          result,
+          fieldPlans
+        );
     }
   }
 
