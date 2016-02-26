@@ -97,7 +97,6 @@ export type ResolvingExecutionPlan = {
 export type SelectionExecutionPlan = {
   kind: 'select';
 	type: GraphQLObjectType;
-	fields: {[key: string]: Array<Field>};
 	strategy: string;
 	fieldPlans: {[key: string]: ResolvingExecutionPlan};
 }
@@ -137,7 +136,6 @@ function planSelection(
   const plan: SelectionExecutionPlan = {
     kind: 'select',
     type,
-    fields,
     strategy,
     fieldPlans
   };
@@ -175,7 +173,6 @@ function planSelectionToo(
   const plan: SelectionExecutionPlan = {
     kind: 'select',
     type,
-    fields,
     strategy,
     fieldPlans
   };
