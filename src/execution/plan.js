@@ -54,7 +54,6 @@ export type MappingExecutionPlan = {
   kind: 'map';
   type: GraphQLType;
   fieldASTs: Array<Field>;
-  innerType: GraphQLType;
   // @TODO Is this really so broad?
   innerCompletionPlan: CompletionExecutionPlan;
 }
@@ -192,7 +191,7 @@ function planSelectionToo(
 }
 
 /**
- * Implements the "Evaluating selection sets" section of the spec
+ * Plan the "Evaluating selection sets" section of the spec
  */
 function planFields(
   exeContext: ExecutionContext,
@@ -232,7 +231,7 @@ function planFields(
 }
 
 /**
- * Plan how to a field.
+ * Plan how to resolve a field.
  */
 function planResolveField(
   exeContext: ExecutionContext,
@@ -356,7 +355,6 @@ function planCompleteValue(
       kind: 'map',
       type: returnType,
       fieldASTs,
-      innerType,
       innerCompletionPlan
     };
 
