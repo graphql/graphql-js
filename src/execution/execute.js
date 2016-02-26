@@ -37,7 +37,7 @@ import {
 } from './plan';
 
 import type {
-  ExecutionPlan,
+  CompletionExecutionPlan,
   SelectionExecutionPlan,
   ResolvingExecutionPlan
 } from './plan';
@@ -309,7 +309,7 @@ function completeValueCatchingError(
   fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
   result: mixed,
-  plan: ExecutionPlan
+  plan: CompletionExecutionPlan
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
@@ -371,7 +371,7 @@ function completeValue(
   fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
   result: mixed,
-  plan: ExecutionPlan
+  plan: CompletionExecutionPlan
 ): mixed {
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {

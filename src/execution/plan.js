@@ -52,7 +52,7 @@ import {
  */
 export type MappingExecutionPlan = {
   kind: 'map';
-  innerCompletionPlan: ExecutionPlan;
+  innerCompletionPlan: CompletionExecutionPlan; // Is this really so broad?
 }
 
 /**
@@ -70,7 +70,7 @@ export type CoercionExecutionPlan = {
 
 /**
  */
-export type ExecutionPlan =
+export type CompletionExecutionPlan =
   SelectionExecutionPlan |
   SerializationExecutionPlan |
   MappingExecutionPlan |
@@ -89,7 +89,7 @@ export type ResolvingExecutionPlan = {
   info: GraphQLResolveInfo;
   returnType: GraphQLOutputType;
   fieldASTs: Array<Field>;
-  completionPlan: ExecutionPlan;
+  completionPlan: CompletionExecutionPlan;
 }
 
 /**
@@ -299,7 +299,7 @@ function planCompleteValue(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
   fieldASTs: Array<Field>
-): ExecutionPlan {
+): CompletionExecutionPlan {
 
   // If field type is NonNull, complete for inner type
   if (returnType instanceof GraphQLNonNull) {
