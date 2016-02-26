@@ -87,6 +87,7 @@ export type CompletionExecutionPlan =
  */
 export type ResolvingExecutionPlan = {
   kind: 'resolve';
+  type: GraphQLOutputType;
   resolveFn: (
       source: mixed,
       args: { [key: string]: mixed },
@@ -94,7 +95,6 @@ export type ResolvingExecutionPlan = {
   ) => mixed;
   args: { [key: string]: mixed };
   info: GraphQLResolveInfo;
-  returnType: GraphQLOutputType;
   fieldASTs: Array<Field>;
   completionPlan: CompletionExecutionPlan;
 }
@@ -279,7 +279,7 @@ function planResolveField(
     resolveFn,
     args,
     info,
-    returnType,
+    type: returnType,
     fieldASTs,
     completionPlan
   };
