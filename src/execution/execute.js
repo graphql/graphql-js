@@ -15,7 +15,6 @@
 // @TODO: Eliminate the propagation of info and type to CompleteValue
 // @TODO: Move Execution Plan Types to co-locate with GraphQLResolveInfo
 // @TODO: Add error messages for unreachable Conditions
-// @TODO: Refactor away planSelectionToo
 // @TODO: Debug the reduce code in plan.js
 // @TODO: Review null bails to eliminate flowtype boilerplate
 // @TODO: Can Execution Context be eliminated in favor of only Plans

@@ -91,7 +91,6 @@ export type GraphQLSelectionCompletionPlan = {
   kind: 'select';
 	type: GraphQLObjectType;
   fieldASTs: Array<Field>;
-	strategy: string;
 	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
 }
 
@@ -173,8 +172,7 @@ export function planOperation(
 function planSelection(
   exeContext: ExecutionContext,
   type: GraphQLObjectType,
-  fieldASTs: Array<Field>,
-  strategy: string = 'parallel'
+  fieldASTs: Array<Field>
 ): GraphQLSelectionCompletionPlan {
 
   let fields = Object.create(null);
@@ -198,7 +196,6 @@ function planSelection(
     kind: 'select',
     type,
     fieldASTs,
-    strategy,
     fieldPlans
   };
 
