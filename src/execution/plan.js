@@ -276,10 +276,10 @@ function planResolveField(
 
   const plan: ResolvingExecutionPlan = {
     kind: 'resolve',
+    type: returnType,
     resolveFn,
     args,
     info,
-    type: returnType,
     fieldASTs,
     completionPlan
   };

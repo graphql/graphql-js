@@ -156,12 +156,10 @@ function executeFieldsSerially(
   plan: SelectionExecutionPlan
 ): Promise<Object> {
   const fields = plan.fieldPlans;
-  const parentType = plan.type;
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
       const result = resolveField(
         exeContext,
-        parentType,
         sourceValue,
         fields[responseName]
       );
@@ -191,14 +189,12 @@ function executeFields(
   plan: SelectionExecutionPlan
 ): Object {
   const fields = plan.fieldPlans;
-  const parentType = plan.type;
   let containsPromise = false;
 
   const finalResults = Object.keys(fields).reduce(
     (results, responseName) => {
       const result = resolveField(
         exeContext,
-        parentType,
         sourceValue,
         fields[responseName]
       );
@@ -254,7 +250,6 @@ function promiseForObject<T>(
  */
 function resolveField(
   exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
   source: mixed,
   plan: ResolvingExecutionPlan
 ): mixed {
