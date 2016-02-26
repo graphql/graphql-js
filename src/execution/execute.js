@@ -526,6 +526,53 @@ function completeValue(
     return null;
   }
 
+  if (plan && plan.kind) {
+    switch (plan.kind) {
+      case 'serialize':
+        invariant(returnType.serialize, 'Missing serialize method on type');
+        const serializedResult = returnType.serialize(result);
+        return isNullish(serializedResult) ? null : serializedResult;
+      case 'map':
+        invariant(
+          Array.isArray(result),
+          'User Error: expected iterable, but did not find one ' +
+          `for field ${info.parentType}.${info.fieldName}.`
+        );
+
+        invariant(plan.innerCompletionPlan !== null);
+        invariant(typeof plan.innerCompletionPlan === 'object');
+
+        const innerCompletionPlan = plan.innerCompletionPlan;
+
+        invariant(returnType instanceof GraphQLList);
+
+        // This is specified as a simple map, however we're optimizing the path
+        // where the list contains no Promises by avoiding creating another
+        // Promise.
+        const itemType = returnType.ofType;
+        let containsPromise = false;
+        const completedResults = result.map(item => {
+          const completedItem =
+            completeValueCatchingError(
+              exeContext,
+              itemType,
+              fieldASTs,
+              info,
+              item,
+              innerCompletionPlan
+            );
+          if (!containsPromise && isThenable(completedItem)) {
+            containsPromise = true;
+          }
+          return completedItem;
+        });
+
+        return containsPromise ?
+          Promise.all(completedResults) : completedResults;
+      case 'select':
+    }
+  }
+
   // If field type is List, complete each item in the list with the inner type
   if (returnType instanceof GraphQLList) {
     invariant(
