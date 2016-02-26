@@ -212,7 +212,7 @@ function planFields(
         parentType,
         fieldASTs
       );
-      if (result !== undefined) {
+      if (result) {
         results[responseName] = result;
       }
     }
@@ -233,7 +233,7 @@ function planResolveField(
 
   const fieldDef = getFieldDef(exeContext.schema, parentType, fieldName);
   if (!fieldDef) {
-    // @TODO is it intentional that this fails silently?  Should note that
+    // Omit requested fields that are not in our schema
     return;
   }
 
