@@ -532,9 +532,6 @@ function completeValue(
         );
       }
 
-      invariant(typePlan.fieldPlans !== null);
-      invariant(typeof typePlan.fieldPlans === 'object');
-
       const typeFieldPlans = typePlan.fieldPlans;
 
       return executeFields(

@@ -64,8 +64,8 @@ export type SerializationExecutionPlan = {
 /**
  */
 export type CoercionExecutionPlan = {
-  kind: 'coerce',
-  typePlans: {[key: string]:Array<ExecutionPlan>};
+  kind: 'coerce';
+  typePlans: {[key: string]:SelectionExecutionPlan};
 }
 
 /**
