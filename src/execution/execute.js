@@ -18,8 +18,10 @@
 // @TODO: Declare a resolveFn type
 // @TODO: Review against the specification
 // @TODO: Review null bails to eliminate flowtype boilerplate
+// @TODO: Resolve select and coerce discrepancy around calling isTypeOf
+// @TODO: Can Execution Context be eliminated in favor of only Plans
 
-// The Execution Plan Hierarchy mirrors the schema herarchy, not the
+// The Execution Plan Hierarchy mirrors the schema hierarchy, not the
 // query result set, exactly what you would want when trying to pre-fetch
 // from a resolver.
 
@@ -57,7 +59,6 @@ import type {
   SelectionExecutionPlan,
   ResolvingExecutionPlan
 } from './plan';
-
 
 /**
  * Terminology
@@ -121,6 +122,8 @@ export function execute(
     operationName
   );
 
+  // Create an Execution plan which will describe how we intend to execute
+  // The query.
   const plan = planOperation(context, context.operation);
 
   // Return a Promise that will eventually resolve to the data described by

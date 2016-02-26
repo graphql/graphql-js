@@ -49,41 +49,8 @@ import {
 } from '../type/introspection';
 
 /**
- */
-export type MappingExecutionPlan = {
-  kind: 'map';
-  type: GraphQLType;
-  fieldASTs: Array<Field>;
-  // @TODO Is this really so broad?
-  innerCompletionPlan: CompletionExecutionPlan;
-}
-
-/**
- */
-export type SerializationExecutionPlan = {
-  kind: 'serialize';
-  type: GraphQLType;
-  fieldASTs: Array<Field>;
-}
-
-/**
- */
-export type CoercionExecutionPlan = {
-  kind: 'coerce';
-  type: GraphQLType;
-  fieldASTs: Array<Field>;
-  typePlans: {[key: string]:SelectionExecutionPlan};
-}
-
-/**
- */
-export type CompletionExecutionPlan =
-  SelectionExecutionPlan |
-  SerializationExecutionPlan |
-  MappingExecutionPlan |
-  CoercionExecutionPlan;
-
-/**
+ * Describes how the execution engine plans to interact with the schema's
+ * resolve function to fetch field values indicated by the query
  */
 export type ResolvingExecutionPlan = {
   kind: 'resolve';
@@ -100,6 +67,8 @@ export type ResolvingExecutionPlan = {
 }
 
 /**
+ * Describes how the execution engine plans to perform a selection
+ * on a resolved value.
  */
 export type SelectionExecutionPlan = {
   kind: 'select';
@@ -108,6 +77,47 @@ export type SelectionExecutionPlan = {
 	strategy: string;
 	fieldPlans: {[key: string]: ResolvingExecutionPlan};
 }
+
+/**
+ * Indicates that the execution engine plans to call
+ * serialize for a value.
+ */
+export type SerializationExecutionPlan = {
+  kind: 'serialize';
+  type: GraphQLType;
+  fieldASTs: Array<Field>;
+}
+
+/**
+ * Describes how the execution engine plans to map list values
+ */
+export type MappingExecutionPlan = {
+  kind: 'map';
+  type: GraphQLType;
+  fieldASTs: Array<Field>;
+  // @TODO Is this really so broad?
+  innerCompletionPlan: CompletionExecutionPlan;
+}
+
+/**
+ * Describes plans which the execution engine may take
+ * based on the run time type of a value.
+ */
+export type CoercionExecutionPlan = {
+  kind: 'coerce';
+  type: GraphQLType;
+  fieldASTs: Array<Field>;
+  typePlans: {[key: string]:SelectionExecutionPlan};
+}
+
+/**
+ * Execution plans which might be executed to Complete a value.
+ */
+export type CompletionExecutionPlan =
+  SelectionExecutionPlan |
+  SerializationExecutionPlan |
+  MappingExecutionPlan |
+  CoercionExecutionPlan;
 
 /**
  * Create a plan based on the "Evaluating operations" section of the spec.
