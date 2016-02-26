@@ -304,7 +304,7 @@ function completeValueCatchingError(
   fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
   result: mixed,
-  plan: ?ExecutionPlan
+  plan: ExecutionPlan
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
@@ -366,7 +366,7 @@ function completeValue(
   fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
   result: mixed,
-  plan: ?ExecutionPlan
+  plan: ExecutionPlan
 ): mixed {
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
