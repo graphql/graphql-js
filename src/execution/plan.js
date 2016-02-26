@@ -49,20 +49,20 @@ import {
 /**
  */
 export type MappingExecutionPlan = {
-  kind: string;
+  kind: 'map';
   innerCompletionPlan: ExecutionPlan;
 }
 
 /**
  */
 export type SerializationExecutionPlan = {
-  kind: string;
+  kind: 'serialize';
 }
 
 /**
  */
 export type CoercionExecutionPlan = {
-  kind: string;
+  kind: 'coerce',
   typePlans: {[key: string]:Array<ExecutionPlan>};
 }
 
@@ -77,7 +77,7 @@ export type ExecutionPlan =
 /**
  */
 export type ResolvingExecutionPlan = {
-  kind: string;
+  kind: 'resolve';
   resolveFn: (
       source: mixed,
       args: { [key: string]: mixed },
@@ -93,6 +93,7 @@ export type ResolvingExecutionPlan = {
 /**
  */
 export type SelectionExecutionPlan = {
+  kind: 'select';
 	type: GraphQLObjectType;
 	fields: {[key: string]: Array<Field>};
 	strategy: string;
@@ -332,7 +333,7 @@ function planCompleteValue(
     invariant(returnType.serialize, 'Missing serialize method on type');
 
     const plan: SerializationExecutionPlan = {
-      kind: 'serialize',
+      kind: 'serialize'
     };
 
     return plan;

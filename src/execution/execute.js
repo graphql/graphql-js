@@ -419,9 +419,6 @@ function completeValue(
     return null;
   }
 
-  // @TODO: This doesn't say much; need typeflow lessons
-  invariant(plan && plan.kind);
-
   switch (plan.kind) {
     case 'serialize':
       invariant(returnType.serialize, 'Missing serialize method on type');
