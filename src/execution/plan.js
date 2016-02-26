@@ -54,7 +54,7 @@ import {
  * Describes how the execution engine plans to interact with the schema's
  * resolve function to fetch field values indicated by the query
  */
-export type ResolvingExecutionPlan = {
+export type GraphQLFieldResolvingPlan = {
   kind: 'resolve';
   fieldName: string,
   fieldASTs: Array<Field>;
@@ -68,26 +68,38 @@ export type ResolvingExecutionPlan = {
   resolveFn: GraphQLFieldResolveFn;
   args: { [key: string]: mixed };
   info: GraphQLResolveInfo;
-  completionPlan: CompletionExecutionPlan;
+  completionPlan: GraphQLCompletionPlan;
 }
 
 /**
  * Describes how the execution engine plans to perform a selection
  * on a resolved value.
  */
-export type SelectionExecutionPlan = {
+export type GraphQLOperationExecutionPlan = {
+  kind: 'operation';
+	type: GraphQLObjectType;
+  fieldASTs: Array<Field>;
+	strategy: string;
+	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
+}
+
+/**
+ * Describes how the execution engine plans to perform a selection
+ * on a resolved value.
+ */
+export type GraphQLSelectionCompletionPlan = {
   kind: 'select';
 	type: GraphQLObjectType;
   fieldASTs: Array<Field>;
 	strategy: string;
-	fieldPlans: {[key: string]: ResolvingExecutionPlan};
+	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
 }
 
 /**
  * Indicates that the execution engine plans to call
  * serialize for a value.
  */
-export type SerializationExecutionPlan = {
+export type GraphQLSerializationCompletionPlan = {
   kind: 'serialize';
   type: GraphQLType;
   fieldASTs: Array<Field>;
@@ -96,33 +108,33 @@ export type SerializationExecutionPlan = {
 /**
  * Describes how the execution engine plans to map list values
  */
-export type MappingExecutionPlan = {
+export type GraphQLListCompletionPlan = {
   kind: 'map';
   type: GraphQLType;
   fieldASTs: Array<Field>;
   // @TODO Is this really so broad?
-  innerCompletionPlan: CompletionExecutionPlan;
+  innerCompletionPlan: GraphQLCompletionPlan;
 }
 
 /**
  * Describes plans which the execution engine may take
  * based on the run time type of a value.
  */
-export type CoercionExecutionPlan = {
+export type GraphQLTypeResolvingPlan = {
   kind: 'coerce';
   type: GraphQLType;
   fieldASTs: Array<Field>;
-  typePlans: {[key: string]:SelectionExecutionPlan};
+  typePlans: {[key: string]:GraphQLSelectionCompletionPlan};
 }
 
 /**
  * Execution plans which might be executed to Complete a value.
  */
-export type CompletionExecutionPlan =
-  SelectionExecutionPlan |
-  SerializationExecutionPlan |
-  MappingExecutionPlan |
-  CoercionExecutionPlan;
+export type GraphQLCompletionPlan =
+  GraphQLSelectionCompletionPlan |
+  GraphQLSerializationCompletionPlan |
+  GraphQLListCompletionPlan |
+  GraphQLTypeResolvingPlan;
 
 /**
  * Create a plan based on the "Evaluating operations" section of the spec.
@@ -130,7 +142,7 @@ export type CompletionExecutionPlan =
 export function planOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinition
-): SelectionExecutionPlan {
+): GraphQLSelectionCompletionPlan {
   const type = getOperationRootType(exeContext.schema, operation);
   const strategy = (operation.operation === 'mutation') ? 'serial' : 'parallel';
 
@@ -145,7 +157,7 @@ function planSelection(
   type: GraphQLObjectType,
   selectionSet: SelectionSet,
   strategy: string = 'parallel'
-): SelectionExecutionPlan {
+): GraphQLSelectionCompletionPlan {
   const fields = collectFields(
     exeContext,
     type,
@@ -156,7 +168,7 @@ function planSelection(
 
   const fieldPlans = planFields(exeContext, type, fields);
 
-  const plan: SelectionExecutionPlan = {
+  const plan: GraphQLSelectionCompletionPlan = {
     kind: 'select',
     type,
     fieldASTs: [],  // @TODO: I don't know what to pass here
@@ -175,7 +187,7 @@ function planSelectionToo(
   type: GraphQLObjectType,
   fieldASTs: Array<Field>,
   strategy: string = 'parallel'
-): SelectionExecutionPlan {
+): GraphQLSelectionCompletionPlan {
 
   let fields = Object.create(null);
   const visitedFragmentNames = Object.create(null);
@@ -194,7 +206,7 @@ function planSelectionToo(
 
   const fieldPlans = planFields(exeContext, type, fields);
 
-  const plan: SelectionExecutionPlan = {
+  const plan: GraphQLSelectionCompletionPlan = {
     kind: 'select',
     type,
     fieldASTs,
@@ -212,7 +224,7 @@ function planFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   fields: {[key: string]: Array<Field>}
-): {[key: string]: ResolvingExecutionPlan} {
+): {[key: string]: GraphQLFieldResolvingPlan} {
 /*
   const finalResults = Object.keys(fields).reduce(
     (results, responseName) => {
@@ -252,7 +264,7 @@ function planResolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   fieldASTs: Array<Field>
-): ?ResolvingExecutionPlan {
+): ?GraphQLFieldResolvingPlan {
   const fieldAST = fieldASTs[0];
   const fieldName = fieldAST.name.value;
 
@@ -289,7 +301,7 @@ function planResolveField(
 
   const completionPlan = planCompleteValue(exeContext, returnType, fieldASTs);
 
-  const plan: ResolvingExecutionPlan = {
+  const plan: GraphQLFieldResolvingPlan = {
     kind: 'resolve',
     fieldName,
     fieldASTs,
@@ -331,7 +343,7 @@ function planCompleteValue(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
   fieldASTs: Array<Field>
-): CompletionExecutionPlan {
+): GraphQLCompletionPlan {
 
   // --- CASE A: Promise (Execution time only, see completeValue)
 
@@ -356,7 +368,7 @@ function planCompleteValue(
       returnType instanceof GraphQLEnumType) {
     invariant(returnType.serialize, 'Missing serialize method on type');
 
-    const plan: SerializationExecutionPlan = {
+    const plan: GraphQLSerializationCompletionPlan = {
       kind: 'serialize',
       type: returnType,
       fieldASTs
@@ -373,7 +385,7 @@ function planCompleteValue(
     const innerCompletionPlan =
       planCompleteValue(exeContext, innerType, fieldASTs);
 
-    const plan: MappingExecutionPlan = {
+    const plan: GraphQLListCompletionPlan = {
       kind: 'map',
       type: returnType,
       fieldASTs,
@@ -392,7 +404,7 @@ function planCompleteValue(
     );
   }
 
-  // --- CASE H: isAbstractType (run CoercionExecutionPlan)
+  // --- CASE H: isAbstractType (run GraphQLTypeResolvingPlan)
   if (isAbstractType(returnType)) {
     const abstractType = ((returnType: any): GraphQLAbstractType);
     const possibleTypes = abstractType.getPossibleTypes();
@@ -416,7 +428,7 @@ function planCompleteValue(
       );
     });
 
-    const plan: CoercionExecutionPlan = {
+    const plan: GraphQLTypeResolvingPlan = {
       kind: 'coerce',
       type: returnType,
       fieldASTs,

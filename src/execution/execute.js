@@ -8,10 +8,10 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: Remove resolveFn from ResolvingExecutionPlan
+// @TODO: Remove resolveFn from GraphQLFieldResolvingPlan
 // @TODO: Extract CheckType, ResolveType, CompleteList, CompleteSelect
-// @TODO: Merge GraphQLResolveInfo fields into CoercionExecutionPlan
-// @TODO: Merge GraphQLResolveInfo fields into SelectionExecutionPlan
+// @TODO: Merge GraphQLResolveInfo fields into GraphQLTypeResolvingPlan
+// @TODO: Merge GraphQLResolveInfo fields into GraphQLSelectionCompletionPlan
 // @TODO: Eliminate the propagation of info and type to CompleteValue
 // @TODO: Move Execution Plan Types to co-locate with GraphQLResolveInfo
 // @TODO: Add error messages for unreachable Conditions
@@ -59,9 +59,9 @@ import {
 } from './plan';
 
 import type {
-  CompletionExecutionPlan,
-  SelectionExecutionPlan,
-  ResolvingExecutionPlan
+  GraphQLCompletionPlan,
+  GraphQLSelectionCompletionPlan,
+  GraphQLFieldResolvingPlan
 } from './plan';
 
 /**
@@ -82,6 +82,32 @@ import type {
  * 1) field references e.g "a"
  * 2) fragment "spreads" e.g. "...c"
  * 3) inline fragment "spreads" e.g. "...on Type { a }"
+ */
+
+/**
+ * Queries are evaluated in two phases: planning and execution.
+ * The goal of planning is to precompute data needed for execution
+ * and to give resolvers insight into how the query will be
+ * executed
+ *
+ * Execution uses the following terms:
+ *
+ * "execute" indicates evaluating an operation
+ * "resolve" indicates resolving a field or type value
+ * "complete" indicates processing return values from the resolving process.
+ *
+ * The planning and execution phases are coupled in this way:
+ * +------------------+-------------------+------------------------------------+
+ * | Execution        | Planning          | Plan                               |
+ * +------------------+-------------------+------------------------------------+
+ * | executeOperation | planOperation     | GraphQLOperationExecutionPlan      |
+ * | resolveField     | planFields        | GraphQLFieldResolvingPlan          |
+ * | completeValue    | planCompleteValue | GraphQLCompletionPlan              |
+ * | resolveType      | planCompleteValue | GraphQLTypeResolvingPlan           |
+ * | completeList     | planCompleteValue | GraphQLListCompletionPlan          |
+ * | completeValue    | planCompleteValue | GraphQLSerializationCompletionPlan |
+ * | completeValue    | planSelection     | GraphQLSelectionCompletionPlan     |
+ * +------------------+-------------------+------------------------------------+
  */
 
 /**
@@ -158,7 +184,7 @@ export function execute(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-  plan: SelectionExecutionPlan,
+  plan: GraphQLSelectionCompletionPlan,
   rootValue: mixed
 ): Object {
 
@@ -177,7 +203,7 @@ function executeOperation(
 function executeFieldsSerially(
   exeContext: ExecutionContext,
   sourceValue: mixed,
-  plan: SelectionExecutionPlan
+  plan: GraphQLSelectionCompletionPlan
 ): Promise<Object> {
   const fields = plan.fieldPlans;
   return Object.keys(fields).reduce(
@@ -210,7 +236,7 @@ function executeFieldsSerially(
 function executeFields(
   exeContext: ExecutionContext,
   sourceValue: mixed,
-  plan: SelectionExecutionPlan
+  plan: GraphQLSelectionCompletionPlan
 ): Object {
   const fields = plan.fieldPlans;
   let containsPromise = false;
@@ -275,7 +301,7 @@ function promiseForObject<T>(
 function resolveField(
   exeContext: ExecutionContext,
   source: mixed,
-  plan: ResolvingExecutionPlan
+  plan: GraphQLFieldResolvingPlan
 ): mixed {
 
   // Get the resolve function, regardless of if its result is normal
@@ -319,7 +345,7 @@ function completeValueCatchingError(
   returnType: GraphQLType,
   info: GraphQLResolveInfo,
   result: mixed,
-  plan: CompletionExecutionPlan
+  plan: GraphQLCompletionPlan
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
@@ -357,6 +383,26 @@ function completeValueCatchingError(
 }
 
 /**
+ * Check that a value is of the expected type, raise an error if not
+ */
+/*
+function CheckType(
+  expectedType:GraphQLType,
+  value: mixed,
+  plan: GraphQLCompletionPlan
+) {
+	// If there is an isTypeOf predicate function, call it with the
+	// current result. If isTypeOf returns false, then raise an error rather
+	// than continuing execution.
+  if (expectedType.isTypeOf && !expectedType.isTypeOf(value, plan.info)) {
+    throw new GraphQLError(
+			`Expected value of type "${expectedType}" but got: ${value}.`,
+			plan.fieldASTs
+		);
+  }
+}
+*/
+/**
  * Implements the instructions for completeValue as defined in the
  * "Field entries" section of the spec.
  *
@@ -379,7 +425,7 @@ function completeValue(
   returnType: GraphQLType,
   info: GraphQLResolveInfo,
   result: mixed,
-  plan: CompletionExecutionPlan
+  plan: GraphQLCompletionPlan
 ): mixed {
 
   // --- CASE A: Promise (Execution time only, no plan)
@@ -435,9 +481,11 @@ function completeValue(
   // Execution Completion Plan
   switch (plan.kind) {
 
-    // --- CASE E: Serialize (run SerializationExecutionPlan)
+    // --- CASE E: Serialize (run GraphQLSerializationCompletionPlan)
     // If result is null-like, return null.
     case 'serialize':
+      // Intentionally first; will be evaluated often
+
       // Tested in planCompleteValue
       invariant(returnType instanceof GraphQLScalarType ||
         returnType instanceof GraphQLEnumType);
@@ -447,7 +495,7 @@ function completeValue(
       const serializedResult = returnType.serialize(result);
       return isNullish(serializedResult) ? null : serializedResult;
 
-    // --- CASE F: GraphQLList (run MappingExecutionPlan)
+    // --- CASE F: GraphQLList (run GraphQLListCompletionPlan)
     // If result is null-like, return null.
     case 'map':
       // Tested in planCompleteValue
@@ -486,7 +534,7 @@ function completeValue(
       return containsPromise ?
         Promise.all(completedResults) : completedResults;
 
-    // --- CASE G: GraphQLObjectType (run SelectionExecutionPlan)
+    // --- CASE G: GraphQLObjectType (run GraphQLSelectionCompletionPlan)
     case 'select':
       // Tested in planCompleteValue
       invariant(returnType instanceof GraphQLObjectType);
@@ -507,7 +555,7 @@ function completeValue(
         plan
       );
 
-    // --- CASE H: isAbstractType (run CoercionExecutionPlan)
+    // --- CASE H: isAbstractType (run GraphQLTypeResolvingPlan)
     case 'coerce':
       // Tested in planCompleteValue
       invariant(isAbstractType(returnType));
