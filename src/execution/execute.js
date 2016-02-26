@@ -33,9 +33,12 @@ import {
   buildExecutionContext
 } from './context';
 import {
-  planOperation,
-  SelectionExecutionPlan,
+  planOperation
+} from './plan';
+
+import type {
   ExecutionPlan,
+  SelectionExecutionPlan,
   ResolvingExecutionPlan
 } from './plan';
 
