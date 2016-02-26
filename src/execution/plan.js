@@ -64,7 +64,6 @@ export type ResolvingExecutionPlan = {
   rootValue: mixed,
   operation: OperationDefinition,
   variableValues: { [variableName: string]: mixed },
-
   resolveFn: (
       source: mixed,
       args: { [key: string]: mixed },
@@ -72,10 +71,7 @@ export type ResolvingExecutionPlan = {
   ) => mixed;
   args: { [key: string]: mixed };
   info: GraphQLResolveInfo;
-
   completionPlan: CompletionExecutionPlan;
-
-  type: GraphQLOutputType;
 }
 
 /**
@@ -307,7 +303,6 @@ function planResolveField(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
-    type: returnType,
     resolveFn,
     args,
     info,

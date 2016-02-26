@@ -280,7 +280,7 @@ function resolveField(
 
   return completeValueCatchingError(
     exeContext,
-    plan.type,
+    plan.returnType,
     plan.info,
     result,
     plan.completionPlan
