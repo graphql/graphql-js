@@ -29,6 +29,7 @@ import type {
   GraphQLType,
   GraphQLOutputType,
   GraphQLCompositeType,
+  GraphQLFieldResolveFn,
   GraphQLResolveInfo
 } from '../type/definition';
 import {
@@ -64,11 +65,7 @@ export type ResolvingExecutionPlan = {
   rootValue: mixed,
   operation: OperationDefinition,
   variableValues: { [variableName: string]: mixed },
-  resolveFn: (
-      source: mixed,
-      args: { [key: string]: mixed },
-      info: GraphQLResolveInfo
-  ) => mixed;
+  resolveFn: GraphQLFieldResolveFn;
   args: { [key: string]: mixed };
   info: GraphQLResolveInfo;
   completionPlan: CompletionExecutionPlan;

@@ -15,7 +15,6 @@
 // @TODO: Add error messages for unreachable Conditions
 // @TODO: Refactor away planSelectionToo
 // @TODO: Debug the reduce code in plan.js
-// @TODO: Declare a resolveFn type
 // @TODO: Review against the specification
 // @TODO: Review null bails to eliminate flowtype boilerplate
 // @TODO: Resolve select and coerce discrepancy around calling isTypeOf
