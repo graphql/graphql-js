@@ -37,6 +37,7 @@ import {
 import {
   planOperation,
   SelectionExecutionPlan,
+  ExecutionPlan,
   FieldResolvingPlan,
   defaultResolveFn,
   getFieldDef,
@@ -321,7 +322,8 @@ function resolveFieldPlan(
     plan.returnType,
     plan.fieldASTs,
     plan.info,
-    result
+    result,
+    plan.completionPlan
   );
 }
 
@@ -412,12 +414,13 @@ function completeValueCatchingError(
   returnType: GraphQLType,
   fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
-  result: mixed
+  result: mixed,
+  plan: ?ExecutionPlan
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
   if (returnType instanceof GraphQLNonNull) {
-    return completeValue(exeContext, returnType, fieldASTs, info, result);
+    return completeValue(exeContext, returnType, fieldASTs, info, result, plan);
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
@@ -428,7 +431,8 @@ function completeValueCatchingError(
       returnType,
       fieldASTs,
       info,
-      result
+      result,
+      plan
     );
     if (isThenable(completed)) {
       // If `completeValue` returned a rejected promise, log the rejection
@@ -472,7 +476,8 @@ function completeValue(
   returnType: GraphQLType,
   fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
-  result: mixed
+  result: mixed,
+  plan: ?ExecutionPlan
 ): mixed {
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
@@ -483,7 +488,8 @@ function completeValue(
         returnType,
         fieldASTs,
         info,
-        resolved
+        resolved,
+        plan
       ),
       // If rejected, create a located error, and continue to reject.
       error => Promise.reject(locatedError(error, fieldASTs))
