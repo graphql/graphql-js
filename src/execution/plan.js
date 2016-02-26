@@ -53,6 +53,7 @@ import {
 export type MappingExecutionPlan = {
   kind: 'map';
   type: GraphQLType;
+  fieldASTs: Array<Field>;
   innerType: GraphQLType;
   innerCompletionPlan: CompletionExecutionPlan; // Is this really so broad?
 }
@@ -62,6 +63,7 @@ export type MappingExecutionPlan = {
 export type SerializationExecutionPlan = {
   kind: 'serialize';
   type: GraphQLType;
+  fieldASTs: Array<Field>;
 }
 
 /**
@@ -69,6 +71,7 @@ export type SerializationExecutionPlan = {
 export type CoercionExecutionPlan = {
   kind: 'coerce';
   type: GraphQLType;
+  fieldASTs: Array<Field>;
   typePlans: {[key: string]:SelectionExecutionPlan};
 }
 
@@ -101,6 +104,7 @@ export type ResolvingExecutionPlan = {
 export type SelectionExecutionPlan = {
   kind: 'select';
 	type: GraphQLObjectType;
+  fieldASTs: Array<Field>;
 	strategy: string;
 	fieldPlans: {[key: string]: ResolvingExecutionPlan};
 }
@@ -140,6 +144,7 @@ function planSelection(
   const plan: SelectionExecutionPlan = {
     kind: 'select',
     type,
+    fieldASTs: [],  // I don't know what to pass here
     strategy,
     fieldPlans
   };
@@ -177,6 +182,7 @@ function planSelectionToo(
   const plan: SelectionExecutionPlan = {
     kind: 'select',
     type,
+    fieldASTs,
     strategy,
     fieldPlans
   };
@@ -324,6 +330,7 @@ function planCompleteValue(
     const plan: MappingExecutionPlan = {
       kind: 'map',
       type: returnType,
+      fieldASTs,
       innerType,
       innerCompletionPlan
     };
@@ -339,7 +346,8 @@ function planCompleteValue(
 
     const plan: SerializationExecutionPlan = {
       kind: 'serialize',
-      type: returnType
+      type: returnType,
+      fieldASTs
     };
 
     return plan;
@@ -379,6 +387,7 @@ function planCompleteValue(
     const plan: CoercionExecutionPlan = {
       kind: 'coerce',
       type: returnType,
+      fieldASTs,
       typePlans
     };
 

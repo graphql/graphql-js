@@ -25,8 +25,7 @@ import type {
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import type {
-  Document,
-  Field,
+  Document
 } from '../language/ast';
 import {
   ExecutionContext,
@@ -273,7 +272,6 @@ function resolveField(
   return completeValueCatchingError(
     exeContext,
     plan.returnType,
-    plan.fieldASTs,
     plan.info,
     result,
     plan.completionPlan
@@ -306,7 +304,6 @@ function resolveOrError<T>(
 function completeValueCatchingError(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
   result: mixed,
   plan: CompletionExecutionPlan
@@ -314,7 +311,7 @@ function completeValueCatchingError(
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
   if (returnType instanceof GraphQLNonNull) {
-    return completeValue(exeContext, returnType, fieldASTs, info, result, plan);
+    return completeValue(exeContext, returnType, info, result, plan);
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
@@ -323,7 +320,6 @@ function completeValueCatchingError(
     const completed = completeValue(
       exeContext,
       returnType,
-      fieldASTs,
       info,
       result,
       plan
@@ -368,7 +364,6 @@ function completeValueCatchingError(
 function completeValue(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
   result: mixed,
   plan: CompletionExecutionPlan
@@ -380,19 +375,18 @@ function completeValue(
       resolved => completeValue(
         exeContext,
         returnType,
-        fieldASTs,
         info,
         resolved,
         plan
       ),
       // If rejected, create a located error, and continue to reject.
-      error => Promise.reject(locatedError(error, fieldASTs))
+      error => Promise.reject(locatedError(error, plan.fieldASTs))
     );
   }
 
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
-    throw locatedError(result, fieldASTs);
+    throw locatedError(result, plan.fieldASTs);
   }
 
   // If field type is NonNull, complete for inner type, and throw field error
@@ -401,7 +395,6 @@ function completeValue(
     const completed = completeValue(
       exeContext,
       returnType.ofType,
-      fieldASTs,
       info,
       result,
       plan
@@ -410,7 +403,7 @@ function completeValue(
       throw new GraphQLError(
         `Cannot return null for non-nullable ` +
         `field ${info.parentType}.${info.fieldName}.`,
-        fieldASTs
+        plan.fieldASTs
       );
     }
     return completed;
@@ -449,7 +442,6 @@ function completeValue(
           completeValueCatchingError(
             exeContext,
             itemType,
-            fieldASTs,
             info,
             item,
             innerCompletionPlan
@@ -472,7 +464,7 @@ function completeValue(
       if (returnType.isTypeOf && !returnType.isTypeOf(result, info)) {
         throw new GraphQLError(
           `Expected value of type "${returnType}" but got: ${result}.`,
-          fieldASTs
+          plan.fieldASTs
         );
       }
 
@@ -502,7 +494,7 @@ function completeValue(
       if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, info)) {
         throw new GraphQLError(
           `Expected value of type "${runtimeType}" but got: ${result}.`,
-          fieldASTs
+          plan.fieldASTs
         );
       }
 
@@ -510,7 +502,7 @@ function completeValue(
         throw new GraphQLError(
           `Runtime Object type "${runtimeType}" is not a possible type ` +
           `for "${abstractType}".`,
-          fieldASTs
+          plan.fieldASTs
         );
       }
 
@@ -524,7 +516,7 @@ function completeValue(
         throw new GraphQLError(
           `Runtime Object type "${runtimeType}" ` +
           `is not a possible coercion type for "${abstractType}".`,
-          fieldASTs
+          plan.fieldASTs
         );
       }
 
