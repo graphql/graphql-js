@@ -28,6 +28,7 @@ import type {
   GraphQLAbstractType,
   GraphQLType,
   GraphQLOutputType,
+  GraphQLCompositeType,
   GraphQLResolveInfo
 } from '../type/definition';
 import {
@@ -54,7 +55,16 @@ import {
  */
 export type ResolvingExecutionPlan = {
   kind: 'resolve';
-  type: GraphQLOutputType;
+  fieldName: string,
+  fieldASTs: Array<Field>;
+  returnType: GraphQLOutputType,
+  parentType: GraphQLCompositeType,
+  schema: GraphQLSchema,
+  fragments: { [fragmentName: string]: FragmentDefinition },
+  rootValue: mixed,
+  operation: OperationDefinition,
+  variableValues: { [variableName: string]: mixed },
+
   resolveFn: (
       source: mixed,
       args: { [key: string]: mixed },
@@ -62,8 +72,10 @@ export type ResolvingExecutionPlan = {
   ) => mixed;
   args: { [key: string]: mixed };
   info: GraphQLResolveInfo;
-  fieldASTs: Array<Field>;
+
   completionPlan: CompletionExecutionPlan;
+
+  type: GraphQLOutputType;
 }
 
 /**
@@ -286,11 +298,19 @@ function planResolveField(
 
   const plan: ResolvingExecutionPlan = {
     kind: 'resolve',
+    fieldName,
+    fieldASTs,
+    returnType,
+    parentType,
+    schema: exeContext.schema,
+    fragments: exeContext.fragments,
+    rootValue: exeContext.rootValue,
+    operation: exeContext.operation,
+    variableValues: exeContext.variableValues,
     type: returnType,
     resolveFn,
     args,
     info,
-    fieldASTs,
     completionPlan
   };
 
