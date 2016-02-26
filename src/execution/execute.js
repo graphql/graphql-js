@@ -8,17 +8,22 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+// @TODO: Remove resolveFn from ResolvingExecutionPlan
+// @TODO: Extract CheckType, ResolveType, CompleteList, CompleteSelect
+// @TODO: Merge GraphQLResolveInfo fields into CoercionExecutionPlan
+// @TODO: Merge GraphQLResolveInfo fields into SelectionExecutionPlan
 // @TODO: Eliminate the propagation of info and type to CompleteValue
-// @TODO: Merge GraphQLResolveInfo and ResolvingExecutionPlan
 // @TODO: Move Execution Plan Types to co-locate with GraphQLResolveInfo
-// @TODO: Create an example of prefetching based on Execution plan
 // @TODO: Add error messages for unreachable Conditions
 // @TODO: Refactor away planSelectionToo
 // @TODO: Debug the reduce code in plan.js
-// @TODO: Review against the specification
 // @TODO: Review null bails to eliminate flowtype boilerplate
-// @TODO: Resolve select and coerce discrepancy around calling isTypeOf
 // @TODO: Can Execution Context be eliminated in favor of only Plans
+// @TODO: Review against the specification
+// @TODO: Create an example of prefetching based on Execution plan
+// @TODO: Undo file split?
+// @TODO: Distinction without a difference:
+// @TODO: Make the final pull diff easier to read
 
 // The Execution Plan Hierarchy mirrors the schema hierarchy, not the
 // query result set, exactly what you would want when trying to pre-fetch
@@ -427,6 +432,7 @@ function completeValue(
     return null;
   }
 
+  // Execution Completion Plan
   switch (plan.kind) {
 
     // --- CASE E: Serialize (run SerializationExecutionPlan)
