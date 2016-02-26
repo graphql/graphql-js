@@ -140,16 +140,10 @@ function executeOperation(
 
   invariant(plan.strategy === 'serial' || plan.strategy === 'parallel');
 
-
   if (plan.strategy === 'serial') {
-    return executeFieldsSerially(
-      exeContext,
-      plan.type,
-      rootValue,
-      plan
-    );
+    return executeFieldsSerially(exeContext, rootValue, plan);
   }
-  return executeFields(exeContext, plan.type, rootValue, plan);
+  return executeFields(exeContext, rootValue, plan);
 }
 
 /**
@@ -158,11 +152,11 @@ function executeOperation(
  */
 function executeFieldsSerially(
   exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
   sourceValue: mixed,
   plan: SelectionExecutionPlan
 ): Promise<Object> {
   const fields = plan.fieldPlans;
+  const parentType = plan.type;
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
       const result = resolveField(
@@ -193,11 +187,11 @@ function executeFieldsSerially(
  */
 function executeFields(
   exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
   sourceValue: mixed,
   plan: SelectionExecutionPlan
 ): Object {
   const fields = plan.fieldPlans;
+  const parentType = plan.type;
   let containsPromise = false;
 
   const finalResults = Object.keys(fields).reduce(
@@ -470,7 +464,6 @@ function completeValue(
 
       return executeFields(
         exeContext,
-        returnType,
         result,
         plan
       );
@@ -522,7 +515,6 @@ function completeValue(
 
       return executeFields(
         exeContext,
-        runtimeType,
         result,
         typePlan
       );
