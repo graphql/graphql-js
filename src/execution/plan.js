@@ -76,7 +76,7 @@ export type ExecutionPlan =
 
 /**
  */
-export type FieldResolvingPlan = {
+export type ResolvingExecutionPlan = {
   kind: string;
   resolveFn: (
       source: mixed,
@@ -96,7 +96,7 @@ export type SelectionExecutionPlan = {
 	type: GraphQLObjectType;
 	fields: {[key: string]: Array<Field>};
 	strategy: string;
-	fieldPlans: {[key: string]: FieldResolvingPlan};
+	fieldPlans: {[key: string]: ResolvingExecutionPlan};
 }
 
 /**
@@ -187,7 +187,7 @@ function planFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   fields: {[key: string]: Array<Field>}
-): {[key: string]: FieldResolvingPlan} {
+): {[key: string]: ResolvingExecutionPlan} {
 /*
   const finalResults = Object.keys(fields).reduce(
     (results, responseName) => {
@@ -227,7 +227,7 @@ function planResolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   fieldASTs: Array<Field>
-): ?FieldResolvingPlan {
+): ?ResolvingExecutionPlan {
   const fieldAST = fieldASTs[0];
   const fieldName = fieldAST.name.value;
 
@@ -264,7 +264,7 @@ function planResolveField(
 
   const completionPlan = planCompleteValue(exeContext, returnType, fieldASTs);
 
-  const plan: FieldResolvingPlan = {
+  const plan: ResolvingExecutionPlan = {
     kind: 'resolve',
     resolveFn,
     args,

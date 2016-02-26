@@ -36,7 +36,7 @@ import {
   planOperation,
   SelectionExecutionPlan,
   ExecutionPlan,
-  FieldResolvingPlan
+  ResolvingExecutionPlan
 } from './plan';
 
 
@@ -158,7 +158,7 @@ function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  fields: {[key: string]: FieldResolvingPlan}
+  fields: {[key: string]: ResolvingExecutionPlan}
 ): Promise<Object> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
@@ -192,7 +192,7 @@ function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  fields: {[key: string]: FieldResolvingPlan}
+  fields: {[key: string]: ResolvingExecutionPlan}
 ): Object {
   let containsPromise = false;
 
@@ -258,7 +258,7 @@ function resolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: mixed,
-  plan: FieldResolvingPlan
+  plan: ResolvingExecutionPlan
 ): mixed {
 
   // Get the resolve function, regardless of if its result is normal
