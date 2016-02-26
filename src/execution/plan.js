@@ -12,14 +12,19 @@ import { GraphQLSchema } from '../type/schema';
 import { ExecutionContext } from './context';
 import { Kind } from '../language';
 import find from '../jsutils/find';
+import invariant from '../jsutils/invariant';
 import { getArgumentValues } from './values';
 import { typeFromAST } from '../utilities/typeFromAST';
 import {
+  GraphQLScalarType,
+  GraphQLEnumType,
   GraphQLObjectType,
   GraphQLAbstractType,
+  GraphQLList,
   GraphQLResolveInfo,
   GraphQLFieldDefinition,
   GraphQLOutputType,
+  GraphQLType,
   isAbstractType
 } from '../type/definition';
 import {
@@ -42,6 +47,36 @@ import {
 
 /**
  */
+export type MappingExecutionPlan = {
+    innerCompletionPlan: ExecutionPlan;
+}
+
+/**
+ */
+export type SerializationExecutionPlan = {
+}
+
+/**
+ */
+export type CoersionExecutionPlan = {
+    typePlans: Array<ExecutionPlan>;
+}
+
+/**
+ */
+export type IgnoringExecutionPlan = {
+}
+
+/**
+ */
+export type ExecutionPlan =
+  SerializationExecutionPlan |
+  MappingExecutionPlan |
+  CoersionExecutionPlan |
+  IgnoringExecutionPlan;
+
+/**
+ */
 export type FieldResolvingPlan = {
     resolveFn: (
       source: mixed,
@@ -52,11 +87,12 @@ export type FieldResolvingPlan = {
     info: GraphQLResolveInfo;
     returnType: GraphQLOutputType;
     fieldASTs: Array<Field>;
+    completionPlan: ExecutionPlan;
 }
 
 /**
  */
-export type OperationExecutionPlan = {
+export type SelectionExecutionPlan = {
 	type: GraphQLObjectType;
 	fields: {[key: string]: Array<Field>};
 	strategy: string;
@@ -69,20 +105,70 @@ export type OperationExecutionPlan = {
 export function planOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinition
-): OperationExecutionPlan {
+): SelectionExecutionPlan {
   const type = getOperationRootType(exeContext.schema, operation);
+  const strategy = (operation.operation === 'mutation') ? 'serial' : 'parallel';
+
+  return planSelection(exeContext, type, operation.selectionSet, strategy);
+}
+
+/**
+ * Create a plan based on the "Evaluating operations" section of the spec.
+ */
+function planSelection(
+  exeContext: ExecutionContext,
+  type: GraphQLObjectType,
+  selectionSet: SelectionSet,
+  strategy: string = 'parallel'
+): SelectionExecutionPlan {
   const fields = collectFields(
     exeContext,
     type,
-    operation.selectionSet,
+    selectionSet,
     Object.create(null),
     Object.create(null)
   );
-  const strategy = (operation.operation === 'mutation') ? 'serial' : 'parallel';
 
   const fieldPlans = planFields(exeContext, type, fields);
 
-  const plan: OperationExecutionPlan = {
+  const plan: SelectionExecutionPlan = {
+    type,
+    fields,
+    strategy,
+    fieldPlans
+  };
+
+  return plan;
+}
+
+/**
+ * Create a plan based on the "Evaluating operations" section of the spec.
+ */
+function planSelectionToo(
+  exeContext: ExecutionContext,
+  type: GraphQLObjectType,
+  fieldASTs: Array<Field>,
+  strategy: string = 'parallel'
+): SelectionExecutionPlan {
+
+  let fields = Object.create(null);
+  const visitedFragmentNames = Object.create(null);
+  for (let i = 0; i < fieldASTs.length; i++) {
+    const selectionSet = fieldASTs[i].selectionSet;
+    if (selectionSet) {
+      fields = collectFields(
+        exeContext,
+        type,
+        selectionSet,
+        fields,
+        visitedFragmentNames
+      );
+    }
+  }
+
+  const fieldPlans = planFields(exeContext, type, fields);
+
+  const plan: SelectionExecutionPlan = {
     type,
     fields,
     strategy,
@@ -174,17 +260,101 @@ function planResolveField(
     variableValues: exeContext.variableValues,
   };
 
+  const completionPlan = planCompleteValue(exeContext, returnType, fieldASTs);
+
   const plan: FieldResolvingPlan = {
     resolveFn,
     args,
     info,
     returnType,
-    fieldASTs
+    fieldASTs,
+    completionPlan
   };
 
   return plan;
 }
 
+/**
+ * Implements the instructions for completeValue as defined in the
+ * "Field entries" section of the spec.
+ *
+ * If the field type is Non-Null, then this recursively completes the value
+ * for the inner type. It throws a field error if that completion returns null,
+ * as per the "Nullability" section of the spec.
+ *
+ * If the field type is a List, then this recursively completes the value
+ * for the inner type on each item in the list.
+ *
+ * If the field type is a Scalar or Enum, ensures the completed value is a legal
+ * value of the type by calling the `serialize` method of GraphQL type
+ * definition.
+ *
+ * Otherwise, the field type expects a sub-selection set, and will complete the
+ * value by evaluating all sub-selections.
+ */
+function planCompleteValue(
+  exeContext: ExecutionContext,
+  returnType: GraphQLType,
+  fieldASTs: Array<Field>
+): ExecutionPlan {
+
+  // If field type is List, complete each item in the list with the inner type
+  if (returnType instanceof GraphQLList) {
+    const innerType = returnType.ofType;
+
+    const innerCompletionPlan =
+      planCompleteValue(exeContext, innerType, fieldASTs);
+
+    const plan: MappingExecutionPlan = {
+      innerCompletionPlan
+    };
+
+    return plan;
+  }
+
+  // If field type is Scalar or Enum, serialize to a valid value, returning
+  // null if serialization is not possible.
+  if (returnType instanceof GraphQLScalarType ||
+      returnType instanceof GraphQLEnumType) {
+    invariant(returnType.serialize, 'Missing serialize method on type');
+
+    const plan: SerializationExecutionPlan = {
+    };
+
+    return plan;
+  }
+
+  if (returnType instanceof GraphQLObjectType) {
+    return planSelectionToo(
+      exeContext,
+      returnType,
+      fieldASTs
+    );
+  }
+
+  if (isAbstractType(returnType)) {
+    const abstractType = ((returnType: any): GraphQLAbstractType);
+    const possibleTypes = abstractType.getPossibleTypes();
+    const typePlans = possibleTypes.map(possibleType => {
+      return planSelectionToo(
+        exeContext,
+        possibleType,
+        fieldASTs
+      );
+    });
+
+    const plan: CoersionExecutionPlan = {
+      typePlans
+    };
+
+    return plan;
+  }
+
+  const plan: IgnoringExecutionPlan = {
+  };
+
+  return plan;
+}
 
 /**
  * Extracts the root type of the operation from the schema.

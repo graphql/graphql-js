@@ -36,7 +36,7 @@ import {
 } from './context';
 import {
   planOperation,
-  OperationExecutionPlan,
+  SelectionExecutionPlan,
   FieldResolvingPlan,
   defaultResolveFn,
   getFieldDef,
@@ -136,7 +136,7 @@ export function execute(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-  plan: OperationExecutionPlan,
+  plan: SelectionExecutionPlan,
   rootValue: mixed
 ): Object {
 
@@ -313,6 +313,8 @@ function resolveFieldPlan(
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
   const result = resolveOrError(plan.resolveFn, source, plan.args, plan.info);
+
+  // @TODO: CompleteValuePlan()
 
   return completeValueCatchingError(
     exeContext,
