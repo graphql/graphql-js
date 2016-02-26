@@ -60,7 +60,7 @@ import {
 
 import type {
   GraphQLCompletionPlan,
-  GraphQLSelectionCompletionPlan,
+  GraphQLOperationExecutionPlan,
   GraphQLFieldResolvingPlan
 } from './plan';
 
@@ -184,16 +184,16 @@ export function execute(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-  plan: GraphQLSelectionCompletionPlan,
+  plan: GraphQLOperationExecutionPlan,
   rootValue: mixed
 ): Object {
 
   invariant(plan.strategy === 'serial' || plan.strategy === 'parallel');
 
   if (plan.strategy === 'serial') {
-    return executeFieldsSerially(exeContext, rootValue, plan);
+    return executeFieldsSerially(exeContext, rootValue, plan.fieldPlans);
   }
-  return executeFields(exeContext, rootValue, plan);
+  return executeFields(exeContext, rootValue, plan.fieldPlans);
 }
 
 /**
@@ -203,9 +203,8 @@ function executeOperation(
 function executeFieldsSerially(
   exeContext: ExecutionContext,
   sourceValue: mixed,
-  plan: GraphQLSelectionCompletionPlan
+  fields: {[key: string]: GraphQLFieldResolvingPlan}
 ): Promise<Object> {
-  const fields = plan.fieldPlans;
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
       const result = resolveField(
@@ -236,9 +235,8 @@ function executeFieldsSerially(
 function executeFields(
   exeContext: ExecutionContext,
   sourceValue: mixed,
-  plan: GraphQLSelectionCompletionPlan
+  fields: {[key: string]: GraphQLFieldResolvingPlan}
 ): Object {
-  const fields = plan.fieldPlans;
   let containsPromise = false;
 
   const finalResults = Object.keys(fields).reduce(
@@ -552,7 +550,7 @@ function completeValue(
       return executeFields(
         exeContext,
         result,
-        plan
+        plan.fieldPlans
       );
 
     // --- CASE H: isAbstractType (run GraphQLTypeResolvingPlan)
@@ -606,7 +604,7 @@ function completeValue(
       return executeFields(
         exeContext,
         result,
-        typePlan
+        typePlan.fieldPlans
       );
 
     // --- CASE Z: Unreachable

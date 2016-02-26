@@ -142,34 +142,22 @@ export type GraphQLCompletionPlan =
 export function planOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinition
-): GraphQLSelectionCompletionPlan {
+): GraphQLOperationExecutionPlan {
   const type = getOperationRootType(exeContext.schema, operation);
   const strategy = (operation.operation === 'mutation') ? 'serial' : 'parallel';
 
-  return planSelection(exeContext, type, operation.selectionSet, strategy);
-}
-
-/**
- * Create a plan based on the "Evaluating operations" section of the spec.
- */
-function planSelection(
-  exeContext: ExecutionContext,
-  type: GraphQLObjectType,
-  selectionSet: SelectionSet,
-  strategy: string = 'parallel'
-): GraphQLSelectionCompletionPlan {
   const fields = collectFields(
     exeContext,
     type,
-    selectionSet,
+    operation.selectionSet,
     Object.create(null),
     Object.create(null)
   );
 
   const fieldPlans = planFields(exeContext, type, fields);
 
-  const plan: GraphQLSelectionCompletionPlan = {
-    kind: 'select',
+  const plan: GraphQLOperationExecutionPlan = {
+    kind: 'operation',
     type,
     fieldASTs: [],  // @TODO: I don't know what to pass here
     strategy,
@@ -182,7 +170,7 @@ function planSelection(
 /**
  * Create a plan based on the "Evaluating operations" section of the spec.
  */
-function planSelectionToo(
+function planSelection(
   exeContext: ExecutionContext,
   type: GraphQLObjectType,
   fieldASTs: Array<Field>,
@@ -397,7 +385,7 @@ function planCompleteValue(
 
   // --- CASE G: GraphQLObjectType (See completeValue for plan Execution)
   if (returnType instanceof GraphQLObjectType) {
-    return planSelectionToo(
+    return planSelection(
       exeContext,
       returnType,
       fieldASTs
@@ -412,7 +400,7 @@ function planCompleteValue(
     const typePlans = Object.create(null);
     /**
     const typePlans = possibleTypes.reduce((result, possibleType) => {
-      result[possibleType.name] = planSelectionToo(
+      result[possibleType.name] = planSelection(
         exeContext,
         possibleType,
         fieldASTs
@@ -421,7 +409,7 @@ function planCompleteValue(
     */
 
     possibleTypes.forEach(possibleType => {
-      typePlans[possibleType.name] = planSelectionToo(
+      typePlans[possibleType.name] = planSelection(
         exeContext,
         possibleType,
         fieldASTs
