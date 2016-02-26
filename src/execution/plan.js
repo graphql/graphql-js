@@ -68,18 +68,11 @@ export type CoercionExecutionPlan = {
 
 /**
  */
-export type IgnoringExecutionPlan = {
-  kind: string;
-}
-
-/**
- */
 export type ExecutionPlan =
   SelectionExecutionPlan |
   SerializationExecutionPlan |
   MappingExecutionPlan |
-  CoercionExecutionPlan |
-  IgnoringExecutionPlan;
+  CoercionExecutionPlan;
 
 /**
  */
