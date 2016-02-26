@@ -419,132 +419,133 @@ function completeValue(
     return null;
   }
 
-  if (plan && plan.kind) {
-    switch (plan.kind) {
-      case 'serialize':
-        invariant(returnType.serialize, 'Missing serialize method on type');
-        const serializedResult = returnType.serialize(result);
-        return isNullish(serializedResult) ? null : serializedResult;
-      case 'map':
-        invariant(
-          Array.isArray(result),
-          'User Error: expected iterable, but did not find one ' +
-          `for field ${info.parentType}.${info.fieldName}.`
+  // @TODO: This doesn't say much; need typeflow lessons
+  invariant(plan && plan.kind);
+
+  switch (plan.kind) {
+    case 'serialize':
+      invariant(returnType.serialize, 'Missing serialize method on type');
+      const serializedResult = returnType.serialize(result);
+      return isNullish(serializedResult) ? null : serializedResult;
+    case 'map':
+      invariant(
+        Array.isArray(result),
+        'User Error: expected iterable, but did not find one ' +
+        `for field ${info.parentType}.${info.fieldName}.`
+      );
+
+      invariant(plan.innerCompletionPlan !== null);
+      invariant(typeof plan.innerCompletionPlan === 'object');
+
+      const innerCompletionPlan = plan.innerCompletionPlan;
+
+      invariant(returnType instanceof GraphQLList);
+
+      // This is specified as a simple map, however we're optimizing the path
+      // where the list contains no Promises by avoiding creating another
+      // Promise.
+      const itemType = returnType.ofType;
+      let containsPromise = false;
+      const completedResults = result.map(item => {
+        const completedItem =
+          completeValueCatchingError(
+            exeContext,
+            itemType,
+            fieldASTs,
+            info,
+            item,
+            innerCompletionPlan
+          );
+        if (!containsPromise && isThenable(completedItem)) {
+          containsPromise = true;
+        }
+        return completedItem;
+      });
+
+      return containsPromise ?
+        Promise.all(completedResults) : completedResults;
+    case 'select':
+      invariant(plan.fieldPlans !== null);
+      invariant(typeof plan.fieldPlans === 'object');
+
+      const fieldPlans = plan.fieldPlans;
+
+      invariant(returnType instanceof GraphQLObjectType);
+
+      // If there is an isTypeOf predicate function, call it with the
+      // current result. If isTypeOf returns false, then raise an error rather
+      // than continuing execution.
+      if (returnType.isTypeOf && !returnType.isTypeOf(result, info)) {
+        throw new GraphQLError(
+          `Expected value of type "${returnType}" but got: ${result}.`,
+          fieldASTs
         );
+      }
 
-        invariant(plan.innerCompletionPlan !== null);
-        invariant(typeof plan.innerCompletionPlan === 'object');
+      return executeFields(
+        exeContext,
+        returnType,
+        result,
+        fieldPlans
+      );
+    case 'coerce':
+      // Field type must be Object, Interface or Union and expect
+      // sub-selections.
+      let runtimeType: ?GraphQLObjectType;
 
-        const innerCompletionPlan = plan.innerCompletionPlan;
+      invariant(isAbstractType(returnType));
 
-        invariant(returnType instanceof GraphQLList);
+      const abstractType = ((returnType: any): GraphQLAbstractType);
+      runtimeType = abstractType.getObjectType(result, info);
 
-        // This is specified as a simple map, however we're optimizing the path
-        // where the list contains no Promises by avoiding creating another
-        // Promise.
-        const itemType = returnType.ofType;
-        let containsPromise = false;
-        const completedResults = result.map(item => {
-          const completedItem =
-            completeValueCatchingError(
-              exeContext,
-              itemType,
-              fieldASTs,
-              info,
-              item,
-              innerCompletionPlan
-            );
-          if (!containsPromise && isThenable(completedItem)) {
-            containsPromise = true;
-          }
-          return completedItem;
-        });
+      if (!runtimeType) {
+        return null;
+      }
 
-        return containsPromise ?
-          Promise.all(completedResults) : completedResults;
-      case 'select':
-        invariant(plan.fieldPlans !== null);
-        invariant(typeof plan.fieldPlans === 'object');
-
-        const fieldPlans = plan.fieldPlans;
-
-        invariant(returnType instanceof GraphQLObjectType);
-
-        // If there is an isTypeOf predicate function, call it with the
-        // current result. If isTypeOf returns false, then raise an error rather
-        // than continuing execution.
-        if (returnType.isTypeOf && !returnType.isTypeOf(result, info)) {
-          throw new GraphQLError(
-            `Expected value of type "${returnType}" but got: ${result}.`,
-            fieldASTs
-          );
-        }
-
-        return executeFields(
-          exeContext,
-          returnType,
-          result,
-          fieldPlans
+      // If there is an isTypeOf predicate function, call it with the
+      // current result. If isTypeOf returns false, then raise an error rather
+      // than continuing execution.
+      if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, info)) {
+        throw new GraphQLError(
+          `Expected value of type "${runtimeType}" but got: ${result}.`,
+          fieldASTs
         );
-      case 'coerce':
-        // Field type must be Object, Interface or Union and expect
-        // sub-selections.
-        let runtimeType: ?GraphQLObjectType;
+      }
 
-        invariant(isAbstractType(returnType));
-
-        const abstractType = ((returnType: any): GraphQLAbstractType);
-        runtimeType = abstractType.getObjectType(result, info);
-
-        if (!runtimeType) {
-          return null;
-        }
-
-        // If there is an isTypeOf predicate function, call it with the
-        // current result. If isTypeOf returns false, then raise an error rather
-        // than continuing execution.
-        if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, info)) {
-          throw new GraphQLError(
-            `Expected value of type "${runtimeType}" but got: ${result}.`,
-            fieldASTs
-          );
-        }
-
-        if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
-          throw new GraphQLError(
-            `Runtime Object type "${runtimeType}" is not a possible type ` +
-            `for "${abstractType}".`,
-            fieldASTs
-          );
-        }
-
-        invariant(plan.typePlans !== null);
-        invariant(typeof plan.typePlans === 'object');
-
-        const typePlans = plan.typePlans;
-
-        const typePlan = typePlans[runtimeType.name];
-        if (!typePlan) {
-          // console.log(runtimeType.name, ':', Array.keys(typePlans));
-          throw new GraphQLError(
-            `Runtime Object type "${runtimeType}" ` +
-            `is not a possible coercion type for "${abstractType}".`,
-            fieldASTs
-          );
-        }
-
-        invariant(typePlan.fieldPlans !== null);
-        invariant(typeof typePlan.fieldPlans === 'object');
-
-        const typeFieldPlans = typePlan.fieldPlans;
-
-        return executeFields(
-          exeContext,
-          runtimeType,
-          result,
-          typeFieldPlans
+      if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
+        throw new GraphQLError(
+          `Runtime Object type "${runtimeType}" is not a possible type ` +
+          `for "${abstractType}".`,
+          fieldASTs
         );
-    }
+      }
+
+      invariant(plan.typePlans !== null);
+      invariant(typeof plan.typePlans === 'object');
+
+      const typePlans = plan.typePlans;
+
+      const typePlan = typePlans[runtimeType.name];
+      if (!typePlan) {
+        // console.log(runtimeType.name, ':', Array.keys(typePlans));
+        throw new GraphQLError(
+          `Runtime Object type "${runtimeType}" ` +
+          `is not a possible coercion type for "${abstractType}".`,
+          fieldASTs
+        );
+      }
+
+      invariant(typePlan.fieldPlans !== null);
+      invariant(typeof typePlan.fieldPlans === 'object');
+
+      const typeFieldPlans = typePlan.fieldPlans;
+
+      return executeFields(
+        exeContext,
+        runtimeType,
+        result,
+        typeFieldPlans
+      );
   }
 }
 
