@@ -147,10 +147,10 @@ function executeOperation(
       exeContext,
       plan.type,
       rootValue,
-      plan.fieldPlans
+      plan
     );
   }
-  return executeFields(exeContext, plan.type, rootValue, plan.fieldPlans);
+  return executeFields(exeContext, plan.type, rootValue, plan);
 }
 
 /**
@@ -161,8 +161,9 @@ function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  fields: {[key: string]: ResolvingExecutionPlan}
+  plan: SelectionExecutionPlan
 ): Promise<Object> {
+  const fields = plan.fieldPlans;
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
       const result = resolveField(
@@ -195,8 +196,9 @@ function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  fields: {[key: string]: ResolvingExecutionPlan}
+  plan: SelectionExecutionPlan
 ): Object {
+  const fields = plan.fieldPlans;
   let containsPromise = false;
 
   const finalResults = Object.keys(fields).reduce(
@@ -461,9 +463,6 @@ function completeValue(
       return containsPromise ?
         Promise.all(completedResults) : completedResults;
     case 'select':
-      invariant(plan.fieldPlans !== null);
-
-      const fieldPlans = plan.fieldPlans;
 
       invariant(returnType instanceof GraphQLObjectType);
 
@@ -481,7 +480,7 @@ function completeValue(
         exeContext,
         returnType,
         result,
-        fieldPlans
+        plan
       );
     case 'coerce':
       // Field type must be Object, Interface or Union and expect
@@ -529,13 +528,11 @@ function completeValue(
         );
       }
 
-      const typeFieldPlans = typePlan.fieldPlans;
-
       return executeFields(
         exeContext,
         runtimeType,
         result,
-        typeFieldPlans
+        typePlan
       );
   }
 }
