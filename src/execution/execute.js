@@ -8,10 +8,9 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: Remove resolveFn from GraphQLFieldResolvingPlan
-// @TODO: Extract CheckType, ResolveType, CompleteList, CompleteSelect
 // @TODO: Merge GraphQLResolveInfo fields into GraphQLTypeResolvingPlan
 // @TODO: Merge GraphQLResolveInfo fields into GraphQLSelectionCompletionPlan
+// @TODO: Extract CheckType, ResolveType, CompleteList, CompleteSelect
 // @TODO: Eliminate the propagation of info and type to CompleteValue
 // @TODO: Move Execution Plan Types to co-locate with GraphQLResolveInfo
 // @TODO: Add error messages for unreachable Conditions
@@ -23,6 +22,7 @@
 // @TODO: Undo file split?
 // @TODO: Distinction without a difference:
 // @TODO: Make the final pull diff easier to read
+// @TODO: Remove resolveFn from GraphQLFieldResolvingPlan
 
 // The Execution Plan Hierarchy mirrors the schema hierarchy, not the
 // query result set, exactly what you would want when trying to pre-fetch

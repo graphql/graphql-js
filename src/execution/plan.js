@@ -58,13 +58,13 @@ export type GraphQLFieldResolvingPlan = {
   kind: 'resolve';
   fieldName: string,
   fieldASTs: Array<Field>;
-  returnType: GraphQLOutputType,
-  parentType: GraphQLCompositeType,
-  schema: GraphQLSchema,
-  fragments: { [fragmentName: string]: FragmentDefinition },
-  rootValue: mixed,
-  operation: OperationDefinition,
-  variableValues: { [variableName: string]: mixed },
+  returnType: GraphQLOutputType;
+  parentType: GraphQLCompositeType;
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
   resolveFn: GraphQLFieldResolveFn;
   args: { [key: string]: mixed };
   info: GraphQLResolveInfo;
@@ -121,8 +121,17 @@ export type GraphQLListCompletionPlan = {
  */
 export type GraphQLTypeResolvingPlan = {
   kind: 'coerce';
-  type: GraphQLType;
+// @TODO
+//  fieldName: string,
   fieldASTs: Array<Field>;
+  returnType: GraphQLCompositeType;
+// @TODO
+//  parentType: GraphQLCompositeType,
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
   typePlans: {[key: string]:GraphQLSelectionCompletionPlan};
 }
 
@@ -413,10 +422,21 @@ function planCompleteValue(
       );
     });
 
+// @TODO: Still not sure what the right type is to return here
+// maybe returnType is actually Parent type?
     const plan: GraphQLTypeResolvingPlan = {
       kind: 'coerce',
-      type: returnType,
+// @TODO
+//      fieldName,
       fieldASTs,
+      returnType: abstractType,
+// @TODO
+//      parentType,
+      schema: exeContext.schema,
+      fragments: exeContext.fragments,
+      rootValue: exeContext.rootValue,
+      operation: exeContext.operation,
+      variableValues: exeContext.variableValues,
       typePlans
     };
 
