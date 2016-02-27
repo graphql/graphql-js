@@ -8,7 +8,6 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: Review null bails to eliminate flowtype boilerplate
 // @TODO: Review against the specification
 // @TODO: Create an example of prefetching based on Execution plan
 // @TODO: Undo file split?
@@ -456,16 +455,11 @@ function completeValue(
       // Tested in planCompleteValue
       invariant(returnType instanceof GraphQLList);
 
-      invariant(plan.parentType !== null);
-      invariant(plan.fieldName !== null);
-
       invariant(
         Array.isArray(result),
         'User Error: expected iterable, but did not find one ' +
         `for field ${plan.parentType}.${plan.fieldName}.`
       );
-
-      invariant(plan.innerCompletionPlan !== null);
 
       const innerCompletionPlan = plan.innerCompletionPlan;
 
@@ -552,7 +546,6 @@ function completeValue(
 
       const typePlan = typePlans[runtimeType.name];
       if (!typePlan) {
-        // console.log(runtimeType.name, ':', Array.keys(typePlans));
         throw new GraphQLError(
           `Runtime Object type "${runtimeType}" ` +
           `is not a possible coercion type for "${abstractType}".`,
