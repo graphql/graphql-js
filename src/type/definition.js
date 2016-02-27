@@ -505,7 +505,6 @@ export type GraphQLFieldResolvingPlan = {
 export type GraphQLOperationExecutionPlan = {
   kind: 'operation';
 	type: GraphQLObjectType;
-  fieldASTs: Array<Field>;
 	strategy: string;
 	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
 }
@@ -518,7 +517,6 @@ export type GraphQLSelectionCompletionPlan = {
   kind: 'select';
   fieldName: string;
   fieldASTs: Array<Field>;
-//  returnType: GraphQLOutputType;
   parentType: GraphQLCompositeType;
   schema: GraphQLSchema;
   fragments: { [fragmentName: string]: FragmentDefinition };
@@ -549,7 +547,6 @@ export type GraphQLListCompletionPlan = {
   fieldASTs: Array<Field>;
   parentType: GraphQLCompositeType;
   type: GraphQLType;
-  // @TODO Is this really so broad?
   innerCompletionPlan: GraphQLCompletionPlan;
 }
 
@@ -561,7 +558,6 @@ export type GraphQLTypeResolvingPlan = {
   kind: 'coerce';
   fieldName: string,
   fieldASTs: Array<Field>;
-  returnType: GraphQLCompositeType;
   parentType: GraphQLCompositeType,
   schema: GraphQLSchema;
   fragments: { [fragmentName: string]: FragmentDefinition };

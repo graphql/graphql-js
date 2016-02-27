@@ -10,13 +10,13 @@
 
 // @TODO: Review against the specification
 // @TODO: Create an example of prefetching based on Execution plan
-// @TODO: Distinction without a difference:
-// @TODO: Make the final pull diff easier to read
 // @TODO: Review Plan structures for consistency
-
-// The Execution Plan Hierarchy mirrors the schema hierarchy, not the
-// query result set, exactly what you would want when trying to pre-fetch
-// from a resolver.
+// @TODO: Change kind constants
+// @TODO: Sort out returnType in the various Plans
+// @TODO: Currently NOT providing returnType in GraphQLSelectionCompletionPlan
+// @TODO: Currently NOT providing returnType in GraphQLTypeResolvingPlan
+// @TODO: Re-approach plan design from the perspective:
+// @TODO: What does a resolver author need to know at this point in time
 
 import { GraphQLError, locatedError } from '../error';
 import find from '../jsutils/find';
@@ -31,7 +31,7 @@ import {
   GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
-	GraphQLCompositeType,
+  GraphQLCompositeType,
   isAbstractType
 } from '../type/definition';
 import type {
@@ -276,7 +276,6 @@ function planOperation(
   const plan: GraphQLOperationExecutionPlan = {
     kind: 'operation',
     type,
-    fieldASTs: [],  // @TODO: I don't know what to pass here
     strategy,
     fieldPlans
   };
@@ -316,9 +315,6 @@ function planSelection(
     kind: 'select',
     fieldName,
     fieldASTs,
-
-// @TODO
-//    returnType,
     parentType,
     schema: exeContext.schema,
     fragments: exeContext.fragments,
@@ -530,7 +526,6 @@ function planCompleteValue(
       fieldName,
       fieldASTs,
       parentType,
-      returnType: abstractType,
       schema: exeContext.schema,
       fragments: exeContext.fragments,
       rootValue: exeContext.rootValue,
