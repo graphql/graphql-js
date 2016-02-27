@@ -10,7 +10,6 @@
 
 // @TODO: Review against the specification
 // @TODO: Create an example of prefetching based on Execution plan
-// @TODO: Undo file split?
 // @TODO: Distinction without a difference:
 // @TODO: Make the final pull diff easier to read
 // @TODO: Review Plan structures for consistency
@@ -20,13 +19,12 @@
 // from a resolver.
 
 import { GraphQLError, locatedError } from '../error';
+import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
-import { Kind } from '../language';
-import find from '../jsutils/find';
-import { getVariableValues, getArgumentValues } from './values';
 import { typeFromAST } from '../utilities/typeFromAST';
-
+import { Kind } from '../language';
+import { getVariableValues, getArgumentValues } from './values';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -37,37 +35,38 @@ import {
   isAbstractType
 } from '../type/definition';
 import type {
-  GraphQLFieldDefinition,
   GraphQLType,
   GraphQLAbstractType,
+  GraphQLFieldDefinition,
+  GraphQLResolveInfo,
   GraphQLOperationExecutionPlan,
   GraphQLSelectionCompletionPlan,
   GraphQLFieldResolvingPlan,
   GraphQLCompletionPlan,
   GraphQLSerializationCompletionPlan,
   GraphQLListCompletionPlan,
-  GraphQLTypeResolvingPlan,
-  GraphQLResolveInfo
+  GraphQLTypeResolvingPlan
 } from '../type/definition';
-import {
-  GraphQLIncludeDirective,
-  GraphQLSkipDirective
-} from '../type/directives';
 import { GraphQLSchema } from '../type/schema';
-import type {
-  Directive,
-  OperationDefinition,
-  SelectionSet,
-  InlineFragment,
-  Document,
-  Field,
-  FragmentDefinition
-} from '../language/ast';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef
 } from '../type/introspection';
+import {
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective
+} from '../type/directives';
+import type {
+  Directive,
+  Document,
+  OperationDefinition,
+  SelectionSet,
+  Field,
+  InlineFragment,
+  FragmentDefinition
+} from '../language/ast';
+
 
 /**
  * Terminology
@@ -121,7 +120,7 @@ import {
  * Namely, schema of the type system that is currently executing,
  * and the fragments defined in the query document
  */
-export type ExecutionContext = {
+type ExecutionContext = {
   schema: GraphQLSchema;
   fragments: {[key: string]: FragmentDefinition};
   rootValue: mixed;
@@ -205,7 +204,7 @@ export function execute(
  *
  * Throws a GraphQLError if a valid execution context cannot be created.
  */
-export function buildExecutionContext(
+function buildExecutionContext(
   schema: GraphQLSchema,
   documentAST: Document,
   rootValue: mixed,
@@ -257,7 +256,7 @@ export function buildExecutionContext(
 /**
  * Create a plan based on the "Evaluating operations" section of the spec.
  */
-export function planOperation(
+function planOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinition
 ): GraphQLOperationExecutionPlan {
@@ -568,7 +567,7 @@ function executeOperation(
 /**
  * Extracts the root type of the operation from the schema.
  */
-export function getOperationRootType(
+function getOperationRootType(
   schema: GraphQLSchema,
   operation: OperationDefinition
 ): GraphQLObjectType {
@@ -683,7 +682,7 @@ function executeFields(
  * returns and Interface or Union type, the "runtime type" will be the actual
  * Object type returned by that field.
  */
-export function collectFields(
+function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSet,
@@ -1124,7 +1123,7 @@ function completeValue(
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function.
  */
-export function defaultResolveFn(
+function defaultResolveFn(
   source:mixed,
   args:{ [key: string]: mixed },
   info: GraphQLResolveInfo
