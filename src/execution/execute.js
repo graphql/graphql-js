@@ -11,12 +11,11 @@
 // @TODO: Review against the specification
 // @TODO: Create an example of prefetching based on Execution plan
 // @TODO: Review Plan structures for consistency
-// @TODO: Change kind constants
 // @TODO: Sort out returnType in the various Plans
 // @TODO: Currently NOT providing returnType in GraphQLSelectionCompletionPlan
 // @TODO: Currently NOT providing returnType in GraphQLTypeResolvingPlan
 // @TODO: Re-approach plan design from the perspective:
-// @TODO: What does a resolver author need to know at this point in time
+// @TODO: What does a resolver author need to know at this point in time?
 
 import { GraphQLError, locatedError } from '../error';
 import find from '../jsutils/find';
@@ -274,7 +273,7 @@ function planOperation(
   const fieldPlans = planFields(exeContext, type, fields);
 
   const plan: GraphQLOperationExecutionPlan = {
-    kind: 'operation',
+    kind: 'execute',
     type,
     strategy,
     fieldPlans
@@ -389,7 +388,7 @@ function planResolveField(
   );
 
   const plan: GraphQLFieldResolvingPlan = {
-    kind: 'resolve',
+    kind: 'resolveField',
     fieldName,
     fieldASTs,
     returnType,
@@ -522,7 +521,7 @@ function planCompleteValue(
     });
 
     const plan: GraphQLTypeResolvingPlan = {
-      kind: 'coerce',
+      kind: 'resolveType',
       fieldName,
       fieldASTs,
       parentType,
@@ -1053,7 +1052,7 @@ function completeValue(
       );
 
     // --- CASE H: isAbstractType (run GraphQLTypeResolvingPlan)
-    case 'coerce':
+    case 'resolveType':
       // Tested in planCompleteValue
       invariant(isAbstractType(returnType));
 

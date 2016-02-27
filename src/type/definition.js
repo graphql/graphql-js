@@ -483,7 +483,7 @@ export type GraphQLResolveInfo =
  * resolve function to fetch field values indicated by the query
  */
 export type GraphQLFieldResolvingPlan = {
-  kind: 'resolve';
+  kind: 'resolveField';
   fieldName: string,
   fieldASTs: Array<Field>;
   returnType: GraphQLOutputType;
@@ -503,7 +503,7 @@ export type GraphQLFieldResolvingPlan = {
  * on a resolved value.
  */
 export type GraphQLOperationExecutionPlan = {
-  kind: 'operation';
+  kind: 'execute';
 	type: GraphQLObjectType;
 	strategy: string;
 	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
@@ -555,7 +555,7 @@ export type GraphQLListCompletionPlan = {
  * based on the run time type of a value.
  */
 export type GraphQLTypeResolvingPlan = {
-  kind: 'coerce';
+  kind: 'resolveType';
   fieldName: string,
   fieldASTs: Array<Field>;
   parentType: GraphQLCompositeType,
