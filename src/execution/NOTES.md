@@ -2,14 +2,14 @@ Split Execution into two phases
 ===============================
 This is an attempt to address optmization concerns during query evaluation.
 
-https://github.com/graphql/graphql-js/issues/26
-https://github.com/graphql/graphql-js/issues/161
-https://github.com/graphql-dotnet/graphql-dotnet/issues/21
-https://github.com/graphql/graphql-js/issues/149
-https://github.com/graphql/graphql-js/issues/111
-https://github.com/graphql/graphql-js/pull/39
-https://github.com/graphql/graphql-js/issues/19
-https://github.com/rmosolgo/graphql-ruby/issues/6
+- https://github.com/graphql/graphql-js/issues/26
+- https://github.com/graphql/graphql-js/issues/161
+- https://github.com/graphql-dotnet/graphql-dotnet/issues/21
+- https://github.com/graphql/graphql-js/issues/149
+- https://github.com/graphql/graphql-js/issues/111
+- https://github.com/graphql/graphql-js/pull/39
+- https://github.com/graphql/graphql-js/issues/19
+- https://github.com/rmosolgo/graphql-ruby/issues/6
 
 This approach splits execution into two phases, a planning phase and an evaluation phase.
 
