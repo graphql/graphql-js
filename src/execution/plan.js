@@ -141,21 +141,6 @@ function planFields(
   parentType: GraphQLObjectType,
   fields: {[key: string]: Array<Field>}
 ): {[key: string]: GraphQLFieldResolvingPlan} {
-/*
-  const finalResults = Object.keys(fields).reduce(
-    (results, responseName) => {
-      const fieldASTs = fields[responseName];
-      const result = planResolveField(
-        exeContext,
-        parentType,
-        fieldASTs
-      );
-      results[responseName] = result;
-    },
-    Object.create(null)
-  );
-  return finalResults;
-*/
   const results = Object.create(null);
   Object.keys(fields).forEach(
     responseName => {
@@ -331,20 +316,7 @@ function planCompleteValue(
   if (isAbstractType(returnType)) {
     const abstractType = ((returnType: any): GraphQLAbstractType);
     const possibleTypes = abstractType.getPossibleTypes();
-
     const typePlans = Object.create(null);
-    /**
-    const typePlans = possibleTypes.reduce((result, possibleType) => {
-      result[possibleType.name] = planSelection(
-        exeContext,
-        possibleType,
-        fieldASTs,
-        fieldName,
-        parentType
-      );
-    }, Object.create(null));
-    */
-
     possibleTypes.forEach(possibleType => {
       typePlans[possibleType.name] = planSelection(
         exeContext,

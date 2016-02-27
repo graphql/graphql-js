@@ -8,7 +8,6 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: Debug the reduce code in plan.js
 // @TODO: Review null bails to eliminate flowtype boilerplate
 // @TODO: Review against the specification
 // @TODO: Create an example of prefetching based on Execution plan
