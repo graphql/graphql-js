@@ -19,6 +19,7 @@
 // @TODO: Collect resolution use cases
 // @TODO: Does isTypeOf really need a context parameter?
 // @TODO: Examine error handling paths
+// @TODO: Should we really be returning fieldASTs in error messages?
 
 import { GraphQLError, locatedError } from '../error';
 import find from '../jsutils/find';
