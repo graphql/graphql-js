@@ -37,7 +37,6 @@ import {
 import type {
   GraphQLType,
   GraphQLAbstractType,
-  GraphQLResolveInfo,
   GraphQLCompletionPlan,
   GraphQLOperationExecutionPlan,
   GraphQLFieldResolvingPlan
@@ -294,7 +293,7 @@ function resolveField(
 
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
-  const result = resolveOrError(plan, plan.resolveFn, source, plan.args);
+  const result = resolveOrError(plan, source);
 
   return completeValueCatchingError(
     exeContext,
@@ -306,16 +305,12 @@ function resolveField(
 
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
-function resolveOrError<T>(
+function resolveOrError(
   plan: GraphQLFieldResolvingPlan,
-  resolveFn: (
-    source: mixed,
-    args: { [key: string]: mixed },
-    info: GraphQLResolveInfo
-  ) => T,
-  source: mixed,
-  args: { [key: string]: mixed }
-): Error | T {
+  source: mixed
+): Error | mixed {
+  const resolveFn = plan.resolveFn;
+  const args = plan.args;
   try {
     return resolveFn(source, args, plan);
   } catch (error) {
