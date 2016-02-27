@@ -89,8 +89,18 @@ export type GraphQLOperationExecutionPlan = {
  */
 export type GraphQLSelectionCompletionPlan = {
   kind: 'select';
-	type: GraphQLObjectType;
+//  fieldName: string,
   fieldASTs: Array<Field>;
+//  returnType: GraphQLOutputType;
+//  parentType: GraphQLCompositeType;
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
+
+//	type: GraphQLObjectType;
+
 	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
 }
 
@@ -203,8 +213,22 @@ function planSelection(
 
   const plan: GraphQLSelectionCompletionPlan = {
     kind: 'select',
-    type,
+// @TODO
+// fieldName,
     fieldASTs,
+
+// @TODO
+//    returnType,
+// @TODO
+//    parentType,
+// @TODO
+//    type,
+
+    schema: exeContext.schema,
+    fragments: exeContext.fragments,
+    rootValue: exeContext.rootValue,
+    operation: exeContext.operation,
+    variableValues: exeContext.variableValues,
     fieldPlans
   };
 
