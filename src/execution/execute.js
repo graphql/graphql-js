@@ -12,13 +12,11 @@
 // @TODO: Add error messages for unreachable Conditions
 // @TODO: Debug the reduce code in plan.js
 // @TODO: Review null bails to eliminate flowtype boilerplate
-// @TODO: Can Execution Context be eliminated in favor of only Plans
 // @TODO: Review against the specification
 // @TODO: Create an example of prefetching based on Execution plan
 // @TODO: Undo file split?
 // @TODO: Distinction without a difference:
 // @TODO: Make the final pull diff easier to read
-// @TODO: Remove resolveFn from GraphQLFieldResolvingPlan
 
 // The Execution Plan Hierarchy mirrors the schema hierarchy, not the
 // query result set, exactly what you would want when trying to pre-fetch
@@ -201,8 +199,8 @@ function executeFieldsSerially(
     (prevPromise, responseName) => prevPromise.then(results => {
       const result = resolveField(
         exeContext,
-        sourceValue,
-        fields[responseName]
+        fields[responseName],
+        sourceValue
       );
       if (result === undefined) {
         return results;
@@ -235,8 +233,8 @@ function executeFields(
     (results, responseName) => {
       const result = resolveField(
         exeContext,
-        sourceValue,
-        fields[responseName]
+        fields[responseName],
+        sourceValue
       );
       if (result === undefined) {
         return results;
@@ -290,33 +288,33 @@ function promiseForObject<T>(
  */
 function resolveField(
   exeContext: ExecutionContext,
-  source: mixed,
-  plan: GraphQLFieldResolvingPlan
+  plan: GraphQLFieldResolvingPlan,
+  source: mixed
 ): mixed {
 
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
-  const result = resolveOrError(plan.resolveFn, source, plan.args, plan);
+  const result = resolveOrError(plan, plan.resolveFn, source, plan.args);
 
   return completeValueCatchingError(
     exeContext,
+    plan.completionPlan,
     plan.returnType,
-    result,
-    plan.completionPlan
+    result
   );
 }
 
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
 function resolveOrError<T>(
+  plan: GraphQLFieldResolvingPlan,
   resolveFn: (
     source: mixed,
     args: { [key: string]: mixed },
     info: GraphQLResolveInfo
   ) => T,
   source: mixed,
-  args: { [key: string]: mixed },
-  plan: GraphQLFieldResolvingPlan
+  args: { [key: string]: mixed }
 ): Error | T {
   try {
     return resolveFn(source, args, plan);
@@ -331,14 +329,14 @@ function resolveOrError<T>(
 // in the execution context.
 function completeValueCatchingError(
   exeContext: ExecutionContext,
+  plan: GraphQLCompletionPlan,
   returnType: GraphQLType,
-  result: mixed,
-  plan: GraphQLCompletionPlan
+  result: mixed
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
   if (returnType instanceof GraphQLNonNull) {
-    return completeValue(exeContext, returnType, result, plan);
+    return completeValue(exeContext, plan, returnType, result);
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
@@ -346,9 +344,9 @@ function completeValueCatchingError(
   try {
     const completed = completeValue(
       exeContext,
+      plan,
       returnType,
-      result,
-      plan
+      result
     );
     if (isThenable(completed)) {
       // If `completeValue` returned a rejected promise, log the rejection
@@ -409,9 +407,9 @@ function CheckType(
  */
 function completeValue(
   exeContext: ExecutionContext,
+  plan: GraphQLCompletionPlan,
   returnType: GraphQLType,
-  result: mixed,
-  plan: GraphQLCompletionPlan
+  result: mixed
 ): mixed {
 
   // --- CASE A: Promise (Execution time only, no plan)
@@ -421,9 +419,9 @@ function completeValue(
       // Once resolved to a value, complete that value.
       resolved => completeValue(
         exeContext,
+        plan,
         returnType,
-        resolved,
-        plan
+        resolved
       ),
       // If rejected, create a located error, and continue to reject.
       error => Promise.reject(locatedError(error, plan.fieldASTs))
@@ -442,9 +440,9 @@ function completeValue(
   if (returnType instanceof GraphQLNonNull) {
     const completed = completeValue(
       exeContext,
+      plan,
       returnType.ofType,
-      result,
-      plan
+      result
     );
     if (completed === null) {
       throw new GraphQLError(
@@ -507,9 +505,9 @@ function completeValue(
         const completedItem =
           completeValueCatchingError(
             exeContext,
+            innerCompletionPlan,
             itemType,
-            item,
-            innerCompletionPlan
+            item
           );
         if (!containsPromise && isThenable(completedItem)) {
           containsPromise = true;
