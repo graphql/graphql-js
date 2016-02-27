@@ -547,7 +547,7 @@ export type GraphQLListCompletionPlan = {
   fieldASTs: Array<Field>;
   parentType: GraphQLCompositeType;
   type: GraphQLType;
-  innerCompletionPlan: GraphQLCompletionPlan;
+  completionPlan: GraphQLCompletionPlan;
 }
 
 /**
