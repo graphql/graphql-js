@@ -473,17 +473,10 @@ export type GraphQLFieldResolveFn = (
   info: GraphQLResolveInfo
 ) => mixed
 
-export type GraphQLResolveInfo = {
-  fieldName: string,
-  fieldASTs: Array<Field>,
-  returnType: GraphQLOutputType,
-  parentType: GraphQLCompositeType,
-  schema: GraphQLSchema,
-  fragments: { [fragmentName: string]: FragmentDefinition },
-  rootValue: mixed,
-  operation: OperationDefinition,
-  variableValues: { [variableName: string]: mixed },
-}
+export type GraphQLResolveInfo =
+  GraphQLFieldResolvingPlan |
+  GraphQLTypeResolvingPlan |
+  GraphQLSelectionCompletionPlan;
 
 /**
  * Describes how the execution engine plans to interact with the schema's
@@ -502,7 +495,6 @@ export type GraphQLFieldResolvingPlan = {
   variableValues: { [variableName: string]: mixed };
   resolveFn: GraphQLFieldResolveFn;
   args: { [key: string]: mixed };
-  info: GraphQLResolveInfo;
   completionPlan: GraphQLCompletionPlan;
 }
 
@@ -524,18 +516,15 @@ export type GraphQLOperationExecutionPlan = {
  */
 export type GraphQLSelectionCompletionPlan = {
   kind: 'select';
-//  fieldName: string,
+  fieldName: string;
   fieldASTs: Array<Field>;
 //  returnType: GraphQLOutputType;
-//  parentType: GraphQLCompositeType;
+  parentType: GraphQLCompositeType;
   schema: GraphQLSchema;
   fragments: { [fragmentName: string]: FragmentDefinition };
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-
-//	type: GraphQLObjectType;
-
 	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
 }
 
@@ -545,8 +534,10 @@ export type GraphQLSelectionCompletionPlan = {
  */
 export type GraphQLSerializationCompletionPlan = {
   kind: 'serialize';
-  type: GraphQLType;
+  fieldName: string;
   fieldASTs: Array<Field>;
+  parentType: GraphQLCompositeType;
+  type: GraphQLType;
 }
 
 /**
@@ -554,8 +545,10 @@ export type GraphQLSerializationCompletionPlan = {
  */
 export type GraphQLListCompletionPlan = {
   kind: 'map';
-  type: GraphQLType;
+  fieldName: string;
   fieldASTs: Array<Field>;
+  parentType: GraphQLCompositeType;
+  type: GraphQLType;
   // @TODO Is this really so broad?
   innerCompletionPlan: GraphQLCompletionPlan;
 }
@@ -566,12 +559,10 @@ export type GraphQLListCompletionPlan = {
  */
 export type GraphQLTypeResolvingPlan = {
   kind: 'coerce';
-// @TODO
-//  fieldName: string,
+  fieldName: string,
   fieldASTs: Array<Field>;
   returnType: GraphQLCompositeType;
-// @TODO
-//  parentType: GraphQLCompositeType,
+  parentType: GraphQLCompositeType,
   schema: GraphQLSchema;
   fragments: { [fragmentName: string]: FragmentDefinition };
   rootValue: mixed;

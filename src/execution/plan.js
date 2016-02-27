@@ -21,6 +21,7 @@ import {
   GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
+	GraphQLCompositeType,
   isAbstractType
 } from '../type/definition';
 import type {
@@ -91,7 +92,9 @@ export function planOperation(
 function planSelection(
   exeContext: ExecutionContext,
   type: GraphQLObjectType,
-  fieldASTs: Array<Field>
+  fieldASTs: Array<Field>,
+  fieldName: string,
+  parentType: GraphQLCompositeType
 ): GraphQLSelectionCompletionPlan {
 
   let fields = Object.create(null);
@@ -113,17 +116,12 @@ function planSelection(
 
   const plan: GraphQLSelectionCompletionPlan = {
     kind: 'select',
-// @TODO
-// fieldName,
+    fieldName,
     fieldASTs,
 
 // @TODO
 //    returnType,
-// @TODO
-//    parentType,
-// @TODO
-//    type,
-
+    parentType,
     schema: exeContext.schema,
     fragments: exeContext.fragments,
     rootValue: exeContext.rootValue,
@@ -203,21 +201,13 @@ function planResolveField(
     exeContext.variableValues
   );
 
-  // The resolve function's optional third argument is a collection of
-  // information about the current execution state.
-  const info: GraphQLResolveInfo = {
-    fieldName,
-    fieldASTs,
+  const completionPlan = planCompleteValue(
+    exeContext,
     returnType,
-    parentType,
-    schema: exeContext.schema,
-    fragments: exeContext.fragments,
-    rootValue: exeContext.rootValue,
-    operation: exeContext.operation,
-    variableValues: exeContext.variableValues,
-  };
-
-  const completionPlan = planCompleteValue(exeContext, returnType, fieldASTs);
+    fieldASTs,
+    fieldName,
+    parentType
+  );
 
   const plan: GraphQLFieldResolvingPlan = {
     kind: 'resolve',
@@ -232,7 +222,6 @@ function planResolveField(
     variableValues: exeContext.variableValues,
     resolveFn,
     args,
-    info,
     completionPlan
   };
 
@@ -260,7 +249,9 @@ function planResolveField(
 function planCompleteValue(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  fieldASTs: Array<Field>
+  fieldASTs: Array<Field>,
+  fieldName: string,
+  parentType: GraphQLCompositeType
 ): GraphQLCompletionPlan {
 
   // --- CASE A: Promise (Execution time only, see completeValue)
@@ -273,7 +264,9 @@ function planCompleteValue(
     return planCompleteValue(
       exeContext,
       returnType.ofType,
-      fieldASTs
+      fieldASTs,
+      fieldName,
+      parentType
     );
   }
 
@@ -289,7 +282,9 @@ function planCompleteValue(
     const plan: GraphQLSerializationCompletionPlan = {
       kind: 'serialize',
       type: returnType,
-      fieldASTs
+      fieldASTs,
+      fieldName,
+      parentType
     };
 
     return plan;
@@ -301,12 +296,20 @@ function planCompleteValue(
     const innerType = returnType.ofType;
 
     const innerCompletionPlan =
-      planCompleteValue(exeContext, innerType, fieldASTs);
+      planCompleteValue(
+        exeContext,
+        innerType,
+        fieldASTs,
+        fieldName,
+        parentType
+      );
 
     const plan: GraphQLListCompletionPlan = {
       kind: 'map',
       type: returnType,
       fieldASTs,
+      fieldName,
+      parentType,
       innerCompletionPlan
     };
 
@@ -318,7 +321,9 @@ function planCompleteValue(
     return planSelection(
       exeContext,
       returnType,
-      fieldASTs
+      fieldASTs,
+      fieldName,
+      parentType
     );
   }
 
@@ -333,7 +338,9 @@ function planCompleteValue(
       result[possibleType.name] = planSelection(
         exeContext,
         possibleType,
-        fieldASTs
+        fieldASTs,
+        fieldName,
+        parentType
       );
     }, Object.create(null));
     */
@@ -342,20 +349,18 @@ function planCompleteValue(
       typePlans[possibleType.name] = planSelection(
         exeContext,
         possibleType,
-        fieldASTs
+        fieldASTs,
+        fieldName,
+        parentType
       );
     });
 
-// @TODO: Still not sure what the right type is to return here
-// maybe returnType is actually Parent type?
     const plan: GraphQLTypeResolvingPlan = {
       kind: 'coerce',
-// @TODO
-//      fieldName,
+      fieldName,
       fieldASTs,
+      parentType,
       returnType: abstractType,
-// @TODO
-//      parentType,
       schema: exeContext.schema,
       fragments: exeContext.fragments,
       rootValue: exeContext.rootValue,

@@ -8,10 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: Merge GraphQLResolveInfo fields into GraphQLTypeResolvingPlan
-// @TODO: Merge GraphQLResolveInfo fields into GraphQLSelectionCompletionPlan
 // @TODO: Extract CheckType, ResolveType, CompleteList, CompleteSelect
-// @TODO: Eliminate the propagation of info and type to CompleteValue
 // @TODO: Add error messages for unreachable Conditions
 // @TODO: Debug the reduce code in plan.js
 // @TODO: Review null bails to eliminate flowtype boilerplate
@@ -299,12 +296,11 @@ function resolveField(
 
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
-  const result = resolveOrError(plan.resolveFn, source, plan.args, plan.info);
+  const result = resolveOrError(plan.resolveFn, source, plan.args, plan);
 
   return completeValueCatchingError(
     exeContext,
     plan.returnType,
-    plan.info,
     result,
     plan.completionPlan
   );
@@ -320,10 +316,10 @@ function resolveOrError<T>(
   ) => T,
   source: mixed,
   args: { [key: string]: mixed },
-  info: GraphQLResolveInfo
+  plan: GraphQLFieldResolvingPlan
 ): Error | T {
   try {
-    return resolveFn(source, args, info);
+    return resolveFn(source, args, plan);
   } catch (error) {
     // Sometimes a non-error is thrown, wrap it as an Error for a
     // consistent interface.
@@ -336,14 +332,13 @@ function resolveOrError<T>(
 function completeValueCatchingError(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  info: GraphQLResolveInfo,
   result: mixed,
   plan: GraphQLCompletionPlan
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
   if (returnType instanceof GraphQLNonNull) {
-    return completeValue(exeContext, returnType, info, result, plan);
+    return completeValue(exeContext, returnType, result, plan);
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
@@ -352,7 +347,6 @@ function completeValueCatchingError(
     const completed = completeValue(
       exeContext,
       returnType,
-      info,
       result,
       plan
     );
@@ -416,7 +410,6 @@ function CheckType(
 function completeValue(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  info: GraphQLResolveInfo,
   result: mixed,
   plan: GraphQLCompletionPlan
 ): mixed {
@@ -429,7 +422,6 @@ function completeValue(
       resolved => completeValue(
         exeContext,
         returnType,
-        info,
         resolved,
         plan
       ),
@@ -451,14 +443,13 @@ function completeValue(
     const completed = completeValue(
       exeContext,
       returnType.ofType,
-      info,
       result,
       plan
     );
     if (completed === null) {
       throw new GraphQLError(
         `Cannot return null for non-nullable ` +
-        `field ${info.parentType}.${info.fieldName}.`,
+        `field ${plan.parentType}.${plan.fieldName}.`,
         plan.fieldASTs
       );
     }
@@ -494,10 +485,13 @@ function completeValue(
       // Tested in planCompleteValue
       invariant(returnType instanceof GraphQLList);
 
+      invariant(plan.parentType !== null);
+      invariant(plan.fieldName !== null);
+
       invariant(
         Array.isArray(result),
         'User Error: expected iterable, but did not find one ' +
-        `for field ${info.parentType}.${info.fieldName}.`
+        `for field ${plan.parentType}.${plan.fieldName}.`
       );
 
       invariant(plan.innerCompletionPlan !== null);
@@ -514,7 +508,6 @@ function completeValue(
           completeValueCatchingError(
             exeContext,
             itemType,
-            info,
             item,
             innerCompletionPlan
           );
@@ -535,7 +528,7 @@ function completeValue(
       // If there is an isTypeOf predicate function, call it with the
       // current result. If isTypeOf returns false, then raise an error rather
       // than continuing execution.
-      if (returnType.isTypeOf && !returnType.isTypeOf(result, info)) {
+      if (returnType.isTypeOf && !returnType.isTypeOf(result, plan)) {
         throw new GraphQLError(
           `Expected value of type "${returnType}" but got: ${result}.`,
           plan.fieldASTs
@@ -558,7 +551,7 @@ function completeValue(
       let runtimeType: ?GraphQLObjectType;
 
       const abstractType = ((returnType: any): GraphQLAbstractType);
-      runtimeType = abstractType.getObjectType(result, info);
+      runtimeType = abstractType.getObjectType(result, plan);
 
       if (!runtimeType) {
         return null;
@@ -567,7 +560,7 @@ function completeValue(
       // If there is an isTypeOf predicate function, call it with the
       // current result. If isTypeOf returns false, then raise an error rather
       // than continuing execution.
-      if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, info)) {
+      if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, plan)) {
         throw new GraphQLError(
           `Expected value of type "${runtimeType}" but got: ${result}.`,
           plan.fieldASTs
