@@ -374,7 +374,7 @@ function planCompleteValue(
 
   // --- CASE Z: Unreachable
   // We have handled all possibilities.  Not reachable
-  invariant(false);
+  invariant(false, `Cannot form plan for ${parentType}.${fieldName}`);
 }
 
 /**

@@ -8,8 +8,6 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: Extract CheckType, ResolveType, CompleteList, CompleteSelect
-// @TODO: Add error messages for unreachable Conditions
 // @TODO: Debug the reduce code in plan.js
 // @TODO: Review null bails to eliminate flowtype boilerplate
 // @TODO: Review against the specification
@@ -17,6 +15,7 @@
 // @TODO: Undo file split?
 // @TODO: Distinction without a difference:
 // @TODO: Make the final pull diff easier to read
+// @TODO: Review Plan structures for consistency
 
 // The Execution Plan Hierarchy mirrors the schema hierarchy, not the
 // query result set, exactly what you would want when trying to pre-fetch
@@ -92,8 +91,8 @@ import {
  * | executeOperation | planOperation     | GraphQLOperationExecutionPlan      |
  * | resolveField     | planFields        | GraphQLFieldResolvingPlan          |
  * | completeValue    | planCompleteValue | GraphQLCompletionPlan              |
- * | resolveType      | planCompleteValue | GraphQLTypeResolvingPlan           |
- * | completeList     | planCompleteValue | GraphQLListCompletionPlan          |
+ * | completeValue    | planCompleteValue | GraphQLTypeResolvingPlan           |
+ * | completeValue    | planCompleteValue | GraphQLListCompletionPlan          |
  * | completeValue    | planCompleteValue | GraphQLSerializationCompletionPlan |
  * | completeValue    | planSelection     | GraphQLSelectionCompletionPlan     |
  * +------------------+-------------------+------------------------------------+
@@ -363,26 +362,6 @@ function completeValueCatchingError(
 }
 
 /**
- * Check that a value is of the expected type, raise an error if not
- */
-/*
-function CheckType(
-  expectedType:GraphQLType,
-  value: mixed,
-  plan: GraphQLCompletionPlan
-) {
-	// If there is an isTypeOf predicate function, call it with the
-	// current result. If isTypeOf returns false, then raise an error rather
-	// than continuing execution.
-  if (expectedType.isTypeOf && !expectedType.isTypeOf(value, plan.info)) {
-    throw new GraphQLError(
-			`Expected value of type "${expectedType}" but got: ${value}.`,
-			plan.fieldASTs
-		);
-  }
-}
-*/
-/**
  * Implements the instructions for completeValue as defined in the
  * "Field entries" section of the spec.
  *
@@ -591,7 +570,7 @@ function completeValue(
     // --- CASE Z: Unreachable
     // We have handled all possibilities.  Not reachable
     default:
-      invariant(false);
+      invariant(false, 'No plan covers runtime conditions');
   }
 
 }
