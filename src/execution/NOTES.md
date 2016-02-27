@@ -29,21 +29,27 @@ The current interface for resolver authors
 
 
 GraphQLObjectType allows defining an isTypeOf function
+
 ` isTypeOf: ?(value: mixed, info?: GraphQLResolveInfo) => boolean;`
 
 A Default resolveType function is available in getTypeOf which may call isTypeOf
+
 `function getTypeOf(value: mixed, info: GraphQLResolveInfo, abstractType: GraphQLAbstractType): ?GraphQLObjectType`
 
 GraphQLInterfaceType and GraphQLUnionType allow defining a resolveType function
+
 `resolveType: ?(value: mixed, info?: GraphQLResolveInfo) => ?GraphQLObjectType;`
 
 GraphQLInterfaceType and GraphQLUnionType defines a getObjectType function which calls the resolveType or getTypeOf function
-``getObjectType(value: mixed, info: GraphQLResolveInfo): ?GraphQLObjectType`
+
+`getObjectType(value: mixed, info: GraphQLResolveInfo): ?GraphQLObjectType`
 
 A field definition defines a resolve function
+
 `resolve?: GraphQLFieldResolveFn;`
 
 (Why do GraphQLObjectType, GraphQLInterfaceType and GraphQLInterfaceType take their functions as config parameters, which field definition declares it directly?
 
 A GraphQLScalarType allows defining a serialize function
+
 `serialize: (value: mixed) => ?InternalType;`
