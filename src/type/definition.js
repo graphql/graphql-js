@@ -474,16 +474,16 @@ export type GraphQLFieldResolveFn = (
 ) => mixed
 
 export type GraphQLResolveInfo =
-  GraphQLFieldResolvingPlan |
-  GraphQLTypeResolvingPlan |
-  GraphQLSelectionCompletionPlan;
+  GraphQLResolvingPlan |
+  GraphQLSelectionPlan |
+  GraphQLCoercionPlan;
 
 /**
  * Describes how the execution engine plans to interact with the schema's
  * resolve function to fetch field values indicated by the query
  */
-export type GraphQLFieldResolvingPlan = {
-  kind: 'resolveField';
+export type GraphQLResolvingPlan = {
+  kind: 'resolve';
   fieldName: string,
   fieldASTs: Array<Field>;
   returnType: GraphQLOutputType;
@@ -499,21 +499,21 @@ export type GraphQLFieldResolvingPlan = {
 }
 
 /**
- * Describes how the execution engine plans to perform a selection
- * on a resolved value.
+ * Describes how the execution engine plans to perform
+ * an operation.
  */
-export type GraphQLOperationExecutionPlan = {
+export type GraphQLOperationPlan = {
   kind: 'execute';
 	type: GraphQLObjectType;
 	strategy: string;
-	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
+	fieldPlans: {[key: string]: GraphQLResolvingPlan};
 }
 
 /**
  * Describes how the execution engine plans to perform a selection
  * on a resolved value.
  */
-export type GraphQLSelectionCompletionPlan = {
+export type GraphQLSelectionPlan = {
   kind: 'select';
   fieldName: string;
   fieldASTs: Array<Field>;
@@ -523,14 +523,14 @@ export type GraphQLSelectionCompletionPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
+	fieldPlans: {[key: string]: GraphQLResolvingPlan};
 }
 
 /**
  * Indicates that the execution engine plans to call
  * serialize for a value.
  */
-export type GraphQLSerializationCompletionPlan = {
+export type GraphQLSerializationPlan = {
   kind: 'serialize';
   fieldName: string;
   fieldASTs: Array<Field>;
@@ -541,7 +541,7 @@ export type GraphQLSerializationCompletionPlan = {
 /**
  * Describes how the execution engine plans to map list values
  */
-export type GraphQLListCompletionPlan = {
+export type GraphQLMappingPlan = {
   kind: 'map';
   fieldName: string;
   fieldASTs: Array<Field>;
@@ -554,8 +554,8 @@ export type GraphQLListCompletionPlan = {
  * Describes plans which the execution engine may take
  * based on the run time type of a value.
  */
-export type GraphQLTypeResolvingPlan = {
-  kind: 'resolveType';
+export type GraphQLCoercionPlan = {
+  kind: 'coerce';
   fieldName: string,
   fieldASTs: Array<Field>;
   parentType: GraphQLCompositeType,
@@ -564,17 +564,17 @@ export type GraphQLTypeResolvingPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-  typePlans: {[key: string]:GraphQLSelectionCompletionPlan};
+  selectionPlansByType: {[key: string]:GraphQLSelectionPlan};
 }
 
 /**
  * Execution plans which might be executed to Complete a value.
  */
 export type GraphQLCompletionPlan =
-  GraphQLSelectionCompletionPlan |
-  GraphQLSerializationCompletionPlan |
-  GraphQLListCompletionPlan |
-  GraphQLTypeResolvingPlan;
+  GraphQLSelectionPlan |
+  GraphQLSerializationPlan |
+  GraphQLMappingPlan |
+  GraphQLCoercionPlan;
 
 export type GraphQLFieldConfig = {
   type: GraphQLOutputType;

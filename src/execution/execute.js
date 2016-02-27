@@ -8,14 +8,17 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: Review against the specification
 // @TODO: Create an example of prefetching based on Execution plan
 // @TODO: Review Plan structures for consistency
 // @TODO: Sort out returnType in the various Plans
-// @TODO: Currently NOT providing returnType in GraphQLSelectionCompletionPlan
-// @TODO: Currently NOT providing returnType in GraphQLTypeResolvingPlan
+// @TODO: Currently NOT providing returnType in GraphQLSelectionPlan
+// @TODO: Currently NOT providing returnType in GraphQLCoercionPlan
 // @TODO: Re-approach plan design from the perspective:
 // @TODO: What does a resolver author need to know at this point in time?
+// @TODO: Document plan fields
+// @TODO: Collect resolution use cases
+// @TODO: Does isTypeOf really need a context parameter?
+// @TODO: Examine error handling paths
 
 import { GraphQLError, locatedError } from '../error';
 import find from '../jsutils/find';
@@ -38,13 +41,13 @@ import type {
   GraphQLAbstractType,
   GraphQLFieldDefinition,
   GraphQLResolveInfo,
-  GraphQLOperationExecutionPlan,
-  GraphQLSelectionCompletionPlan,
-  GraphQLFieldResolvingPlan,
+  GraphQLOperationPlan,
+  GraphQLSelectionPlan,
+  GraphQLResolvingPlan,
   GraphQLCompletionPlan,
-  GraphQLSerializationCompletionPlan,
-  GraphQLListCompletionPlan,
-  GraphQLTypeResolvingPlan
+  GraphQLSerializationPlan,
+  GraphQLMappingPlan,
+  GraphQLCoercionPlan
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import {
@@ -100,17 +103,17 @@ import type {
  * "complete" indicates processing return values from the resolving process.
  *
  * The planning and execution phases are coupled in this way:
- * +------------------+-------------------+------------------------------------+
- * | Execution        | Planning          | Plan                               |
- * +------------------+-------------------+------------------------------------+
- * | executeOperation | planOperation     | GraphQLOperationExecutionPlan      |
- * | resolveField     | planFields        | GraphQLFieldResolvingPlan          |
- * | completeValue    | planCompleteValue | GraphQLCompletionPlan              |
- * | completeValue    | planCompleteValue | GraphQLTypeResolvingPlan           |
- * | completeValue    | planCompleteValue | GraphQLListCompletionPlan          |
- * | completeValue    | planCompleteValue | GraphQLSerializationCompletionPlan |
- * | completeValue    | planSelection     | GraphQLSelectionCompletionPlan     |
- * +------------------+-------------------+------------------------------------+
+ * +------------------+-------------------+---------------------------+
+ * | Execution        | Planning          | Plan                      |
+ * +------------------+-------------------+---------------------------+
+ * | executeOperation | planOperation     | GraphQLOperationPlan      |
+ * | resolveField     | planFields        | GraphQLResolvingPlan      |
+ * | completeValue    | planCompleteValue | GraphQLCompletionPlan     |
+ * | completeValue    | planCompleteValue | GraphQLCoercionPlan       |
+ * | completeValue    | planCompleteValue | GraphQLMappingPlan        |
+ * | completeValue    | planCompleteValue | GraphQLSerializationPlan  |
+ * | completeValue    | planSelection     | GraphQLSelectionPlan      |
+ * +------------------+-------------------+---------------------------+
  */
 
 /**
@@ -258,7 +261,7 @@ function buildExecutionContext(
 function planOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinition
-): GraphQLOperationExecutionPlan {
+): GraphQLOperationPlan {
   const type = getOperationRootType(exeContext.schema, operation);
   const strategy = (operation.operation === 'mutation') ? 'serial' : 'parallel';
 
@@ -272,7 +275,7 @@ function planOperation(
 
   const fieldPlans = planFields(exeContext, type, fields);
 
-  const plan: GraphQLOperationExecutionPlan = {
+  const plan: GraphQLOperationPlan = {
     kind: 'execute',
     type,
     strategy,
@@ -291,7 +294,7 @@ function planSelection(
   fieldASTs: Array<Field>,
   fieldName: string,
   parentType: GraphQLCompositeType
-): GraphQLSelectionCompletionPlan {
+): GraphQLSelectionPlan {
 
   let fields = Object.create(null);
   const visitedFragmentNames = Object.create(null);
@@ -310,7 +313,7 @@ function planSelection(
 
   const fieldPlans = planFields(exeContext, type, fields);
 
-  const plan: GraphQLSelectionCompletionPlan = {
+  const plan: GraphQLSelectionPlan = {
     kind: 'select',
     fieldName,
     fieldASTs,
@@ -333,7 +336,7 @@ function planFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   fields: {[key: string]: Array<Field>}
-): {[key: string]: GraphQLFieldResolvingPlan} {
+): {[key: string]: GraphQLResolvingPlan} {
   const results = Object.create(null);
   Object.keys(fields).forEach(
     responseName => {
@@ -358,7 +361,7 @@ function planResolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   fieldASTs: Array<Field>
-): ?GraphQLFieldResolvingPlan {
+): ?GraphQLResolvingPlan {
   const fieldAST = fieldASTs[0];
   const fieldName = fieldAST.name.value;
 
@@ -387,8 +390,8 @@ function planResolveField(
     parentType
   );
 
-  const plan: GraphQLFieldResolvingPlan = {
-    kind: 'resolveField',
+  const plan: GraphQLResolvingPlan = {
+    kind: 'resolve',
     fieldName,
     fieldASTs,
     returnType,
@@ -457,7 +460,7 @@ function planCompleteValue(
       returnType instanceof GraphQLEnumType) {
     invariant(returnType.serialize, 'Missing serialize method on type');
 
-    const plan: GraphQLSerializationCompletionPlan = {
+    const plan: GraphQLSerializationPlan = {
       kind: 'serialize',
       type: returnType,
       fieldASTs,
@@ -482,7 +485,7 @@ function planCompleteValue(
         parentType
       );
 
-    const plan: GraphQLListCompletionPlan = {
+    const plan: GraphQLMappingPlan = {
       kind: 'map',
       type: returnType,
       fieldASTs,
@@ -505,13 +508,13 @@ function planCompleteValue(
     );
   }
 
-  // --- CASE H: isAbstractType (run GraphQLTypeResolvingPlan)
+  // --- CASE H: isAbstractType (run GraphQLCoercionPlan)
   if (isAbstractType(returnType)) {
     const abstractType = ((returnType: any): GraphQLAbstractType);
     const possibleTypes = abstractType.getPossibleTypes();
-    const typePlans = Object.create(null);
+    const selectionPlansByType = Object.create(null);
     possibleTypes.forEach(possibleType => {
-      typePlans[possibleType.name] = planSelection(
+      selectionPlansByType[possibleType.name] = planSelection(
         exeContext,
         possibleType,
         fieldASTs,
@@ -520,8 +523,8 @@ function planCompleteValue(
       );
     });
 
-    const plan: GraphQLTypeResolvingPlan = {
-      kind: 'resolveType',
+    const plan: GraphQLCoercionPlan = {
+      kind: 'coerce',
       fieldName,
       fieldASTs,
       parentType,
@@ -530,7 +533,7 @@ function planCompleteValue(
       rootValue: exeContext.rootValue,
       operation: exeContext.operation,
       variableValues: exeContext.variableValues,
-      typePlans
+      selectionPlansByType
     };
 
     return plan;
@@ -546,7 +549,7 @@ function planCompleteValue(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-  plan: GraphQLOperationExecutionPlan,
+  plan: GraphQLOperationPlan,
   rootValue: mixed
 ): Object {
 
@@ -601,7 +604,7 @@ function getOperationRootType(
 function executeFieldsSerially(
   exeContext: ExecutionContext,
   sourceValue: mixed,
-  fields: {[key: string]: GraphQLFieldResolvingPlan}
+  fields: {[key: string]: GraphQLResolvingPlan}
 ): Promise<Object> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
@@ -633,7 +636,7 @@ function executeFieldsSerially(
 function executeFields(
   exeContext: ExecutionContext,
   sourceValue: mixed,
-  fields: {[key: string]: GraphQLFieldResolvingPlan}
+  fields: {[key: string]: GraphQLResolvingPlan}
 ): Object {
   let containsPromise = false;
 
@@ -829,7 +832,7 @@ function getFieldEntryKey(node: Field): string {
  */
 function resolveField(
   exeContext: ExecutionContext,
-  plan: GraphQLFieldResolvingPlan,
+  plan: GraphQLResolvingPlan,
   source: mixed
 ): mixed {
 
@@ -848,7 +851,7 @@ function resolveField(
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
 function resolveOrError(
-  plan: GraphQLFieldResolvingPlan,
+  plan: GraphQLResolvingPlan,
   source: mixed
 ): Error | mixed {
   const resolveFn = plan.resolveFn;
@@ -994,7 +997,7 @@ function completeValue(
       const serializedResult = returnType.serialize(result);
       return isNullish(serializedResult) ? null : serializedResult;
 
-    // --- CASE F: GraphQLList (run GraphQLListCompletionPlan)
+    // --- CASE F: GraphQLList (run GraphQLMappingPlan)
     // If result is null-like, return null.
     case 'map':
       // Tested in planCompleteValue
@@ -1030,7 +1033,7 @@ function completeValue(
       return containsPromise ?
         Promise.all(completedResults) : completedResults;
 
-    // --- CASE G: GraphQLObjectType (run GraphQLSelectionCompletionPlan)
+    // --- CASE G: GraphQLObjectType (run GraphQLSelectionPlan)
     case 'select':
       // Tested in planCompleteValue
       invariant(returnType instanceof GraphQLObjectType);
@@ -1051,8 +1054,8 @@ function completeValue(
         plan.fieldPlans
       );
 
-    // --- CASE H: isAbstractType (run GraphQLTypeResolvingPlan)
-    case 'resolveType':
+    // --- CASE H: isAbstractType (run GraphQLCoercionPlan)
+    case 'coerce':
       // Tested in planCompleteValue
       invariant(isAbstractType(returnType));
 
@@ -1085,12 +1088,12 @@ function completeValue(
         );
       }
 
-      invariant(plan.typePlans !== null);
+      invariant(plan.selectionPlansByType !== null);
 
-      const typePlans = plan.typePlans;
+      const selectionPlansByType = plan.selectionPlansByType;
 
-      const typePlan = typePlans[runtimeType.name];
-      if (!typePlan) {
+      const selectionPlan = selectionPlansByType[runtimeType.name];
+      if (!selectionPlan) {
         throw new GraphQLError(
           `Runtime Object type "${runtimeType}" ` +
           `is not a possible coercion type for "${abstractType}".`,
@@ -1101,7 +1104,7 @@ function completeValue(
       return executeFields(
         exeContext,
         result,
-        typePlan.fieldPlans
+        selectionPlan.fieldPlans
       );
 
     // --- CASE Z: Unreachable
