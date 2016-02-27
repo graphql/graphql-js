@@ -485,6 +485,110 @@ export type GraphQLResolveInfo = {
   variableValues: { [variableName: string]: mixed },
 }
 
+/**
+ * Describes how the execution engine plans to interact with the schema's
+ * resolve function to fetch field values indicated by the query
+ */
+export type GraphQLFieldResolvingPlan = {
+  kind: 'resolve';
+  fieldName: string,
+  fieldASTs: Array<Field>;
+  returnType: GraphQLOutputType;
+  parentType: GraphQLCompositeType;
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
+  resolveFn: GraphQLFieldResolveFn;
+  args: { [key: string]: mixed };
+  info: GraphQLResolveInfo;
+  completionPlan: GraphQLCompletionPlan;
+}
+
+/**
+ * Describes how the execution engine plans to perform a selection
+ * on a resolved value.
+ */
+export type GraphQLOperationExecutionPlan = {
+  kind: 'operation';
+	type: GraphQLObjectType;
+  fieldASTs: Array<Field>;
+	strategy: string;
+	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
+}
+
+/**
+ * Describes how the execution engine plans to perform a selection
+ * on a resolved value.
+ */
+export type GraphQLSelectionCompletionPlan = {
+  kind: 'select';
+//  fieldName: string,
+  fieldASTs: Array<Field>;
+//  returnType: GraphQLOutputType;
+//  parentType: GraphQLCompositeType;
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
+
+//	type: GraphQLObjectType;
+
+	fieldPlans: {[key: string]: GraphQLFieldResolvingPlan};
+}
+
+/**
+ * Indicates that the execution engine plans to call
+ * serialize for a value.
+ */
+export type GraphQLSerializationCompletionPlan = {
+  kind: 'serialize';
+  type: GraphQLType;
+  fieldASTs: Array<Field>;
+}
+
+/**
+ * Describes how the execution engine plans to map list values
+ */
+export type GraphQLListCompletionPlan = {
+  kind: 'map';
+  type: GraphQLType;
+  fieldASTs: Array<Field>;
+  // @TODO Is this really so broad?
+  innerCompletionPlan: GraphQLCompletionPlan;
+}
+
+/**
+ * Describes plans which the execution engine may take
+ * based on the run time type of a value.
+ */
+export type GraphQLTypeResolvingPlan = {
+  kind: 'coerce';
+// @TODO
+//  fieldName: string,
+  fieldASTs: Array<Field>;
+  returnType: GraphQLCompositeType;
+// @TODO
+//  parentType: GraphQLCompositeType,
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
+  typePlans: {[key: string]:GraphQLSelectionCompletionPlan};
+}
+
+/**
+ * Execution plans which might be executed to Complete a value.
+ */
+export type GraphQLCompletionPlan =
+  GraphQLSelectionCompletionPlan |
+  GraphQLSerializationCompletionPlan |
+  GraphQLListCompletionPlan |
+  GraphQLTypeResolvingPlan;
+
 export type GraphQLFieldConfig = {
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;

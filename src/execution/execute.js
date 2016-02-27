@@ -12,7 +12,6 @@
 // @TODO: Merge GraphQLResolveInfo fields into GraphQLSelectionCompletionPlan
 // @TODO: Extract CheckType, ResolveType, CompleteList, CompleteSelect
 // @TODO: Eliminate the propagation of info and type to CompleteValue
-// @TODO: Move Execution Plan Types to co-locate with GraphQLResolveInfo
 // @TODO: Add error messages for unreachable Conditions
 // @TODO: Debug the reduce code in plan.js
 // @TODO: Review null bails to eliminate flowtype boilerplate
@@ -44,6 +43,9 @@ import type {
   GraphQLType,
   GraphQLAbstractType,
   GraphQLResolveInfo,
+  GraphQLCompletionPlan,
+  GraphQLOperationExecutionPlan,
+  GraphQLFieldResolvingPlan
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import type {
@@ -55,12 +57,6 @@ import {
 } from './context';
 import {
   planOperation
-} from './plan';
-
-import type {
-  GraphQLCompletionPlan,
-  GraphQLOperationExecutionPlan,
-  GraphQLFieldResolvingPlan
 } from './plan';
 
 /**
