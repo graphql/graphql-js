@@ -981,6 +981,11 @@ function completeValue(
     return null;
   }
 
+  // Field type must be Object, Interface or Union and expect
+  // sub-selections.
+  let runtimeType: ?GraphQLObjectType;
+  let selectionPlan: ?GraphQLSelectionPlan;
+
   // Execution Completion Plan
   switch (plan.kind) {
 
@@ -1039,80 +1044,63 @@ function completeValue(
       // Tested in planCompleteValue
       invariant(returnType instanceof GraphQLObjectType);
 
-      // If there is an isTypeOf predicate function, call it with the
-      // current result. If isTypeOf returns false, then raise an error rather
-      // than continuing execution.
-      if (returnType.isTypeOf && !returnType.isTypeOf(result, plan)) {
-        throw new GraphQLError(
-          `Expected value of type "${returnType}" but got: ${result}.`,
-          plan.fieldASTs
-        );
-      }
+      selectionPlan = plan;
+      runtimeType = returnType;
 
-      return executeFields(
-        exeContext,
-        result,
-        plan.fieldPlans
-      );
+      break;
 
     // --- CASE H: isAbstractType (run GraphQLCoercionPlan)
     case 'coerce':
       // Tested in planCompleteValue
       invariant(isAbstractType(returnType));
 
-      // Field type must be Object, Interface or Union and expect
-      // sub-selections.
-      let runtimeType: ?GraphQLObjectType;
-
       const abstractType = ((returnType: any): GraphQLAbstractType);
       runtimeType = abstractType.getObjectType(result, plan);
 
       if (!runtimeType) {
+        // The type could not be resolved so omit from the results
         return null;
-      }
-
-      // If there is an isTypeOf predicate function, call it with the
-      // current result. If isTypeOf returns false, then raise an error rather
-      // than continuing execution.
-      if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, plan)) {
-        throw new GraphQLError(
-          `Expected value of type "${runtimeType}" but got: ${result}.`,
-          plan.fieldASTs
-        );
-      }
-
-      if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
-        throw new GraphQLError(
-          `Runtime Object type "${runtimeType}" is not a possible type ` +
-          `for "${abstractType}".`,
-          plan.fieldASTs
-        );
       }
 
       invariant(plan.selectionPlansByType !== null);
 
       const selectionPlansByType = plan.selectionPlansByType;
 
-      const selectionPlan = selectionPlansByType[runtimeType.name];
+      selectionPlan = selectionPlansByType[runtimeType.name];
       if (!selectionPlan) {
         throw new GraphQLError(
           `Runtime Object type "${runtimeType}" ` +
-          `is not a possible coercion type for "${abstractType}".`,
+          `is not a possible type for "${abstractType}".`,
           plan.fieldASTs
         );
       }
-
-      return executeFields(
-        exeContext,
-        result,
-        selectionPlan.fieldPlans
-      );
+      break;
 
     // --- CASE Z: Unreachable
     // We have handled all possibilities.  Not reachable
     default:
       invariant(false, 'No plan covers runtime conditions');
   }
+
+  invariant(selectionPlan);
+  invariant(runtimeType);
+
+  // If there is an isTypeOf predicate function, call it with the
+  // current result. If isTypeOf returns false, then raise an error rather
+  // than continuing execution.
+  if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, selectionPlan)) {
+    throw new GraphQLError(
+        `Expected value of type "${runtimeType}" but got: ${result}.`,
+        selectionPlan.fieldASTs
+    );
+  }
+
+  return executeFields(
+      exeContext,
+      result,
+      selectionPlan.fieldPlans
+  );
+
 }
 
 /**
