@@ -442,8 +442,8 @@ function planCompleteValue(
 
     const plan: GraphQLSerializationPlan = {
       kind: 'serialize',
-      type: returnType,
       fieldASTs,
+      returnType,
       fieldName,
       parentType
     };
@@ -467,8 +467,8 @@ function planCompleteValue(
 
     const plan: GraphQLMappingPlan = {
       kind: 'map',
-      type: returnType,
       fieldASTs,
+      returnType,
       fieldName,
       parentType,
       elementPlan

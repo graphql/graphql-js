@@ -537,8 +537,8 @@ export type GraphQLSerializationPlan = {
   kind: 'serialize';
   fieldName: string;
   fieldASTs: Array<Field>;
+  returnType: GraphQLType;
   parentType: GraphQLCompositeType;
-  type: GraphQLType;
 }
 
 /**
@@ -548,8 +548,8 @@ export type GraphQLMappingPlan = {
   kind: 'map';
   fieldName: string;
   fieldASTs: Array<Field>;
+  returnType: GraphQLType;
   parentType: GraphQLCompositeType;
-  type: GraphQLType;
   elementPlan: GraphQLCompletionPlan;
 }
 
