@@ -514,7 +514,7 @@ export type GraphQLResolvingPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-  resolveFn: GraphQLFieldResolveFn;
+  fieldDefinition: GraphQLFieldDefinition;
   args: { [key: string]: mixed };
   completionPlan: GraphQLCompletionPlan;
 }

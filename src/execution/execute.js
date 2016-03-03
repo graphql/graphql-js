@@ -354,7 +354,6 @@ function planResolveField(
   }
 
   const returnType = fieldDef.type;
-  const resolveFn = fieldDef.resolve || defaultResolveFn;
 
   // Build a JS object of arguments from the field.arguments AST, using the
   // variables scope to fulfill any variable references.
@@ -383,7 +382,7 @@ function planResolveField(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
-    resolveFn,
+    fieldDefinition: fieldDef,
     args,
     completionPlan
   };
@@ -805,9 +804,13 @@ function resolveField(
   source: mixed
 ): mixed {
 
+  const fieldDef = plan.fieldDefinition;
+  const resolveFn = fieldDef.resolve || defaultResolveFn;
+  const args = plan.args;
+
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
-  const result = resolveOrError(plan, source);
+  const result = resolveOrError(resolveFn, source, args, plan);
 
   return completeValueCatchingError(
     exeContext,
@@ -819,12 +822,16 @@ function resolveField(
 
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
-function resolveOrError(
-  plan: GraphQLResolvingPlan,
-  source: mixed
+function resolveOrError<T>(
+  resolveFn: (
+    source: mixed,
+    args: { [key: string]: mixed },
+    info: GraphQLResolvingPlan
+  ) => T,
+  source: mixed,
+  args: { [key: string]: mixed },
+  plan: GraphQLResolvingPlan
 ): Error | mixed {
-  const resolveFn = plan.resolveFn;
-  const args = plan.args;
   try {
     return resolveFn(source, args, plan);
   } catch (error) {
