@@ -456,7 +456,7 @@ function planCompleteValue(
   if (returnType instanceof GraphQLList) {
     const innerType = returnType.ofType;
 
-    const completionPlan =
+    const elementPlan =
       planCompleteValue(
         exeContext,
         innerType,
@@ -471,7 +471,7 @@ function planCompleteValue(
       fieldASTs,
       fieldName,
       parentType,
-      completionPlan
+      elementPlan
     };
 
     return plan;
@@ -1008,7 +1008,7 @@ function completeValue(
         `for field ${plan.parentType}.${plan.fieldName}.`
       );
 
-      const completionPlan = plan.completionPlan;
+      const elementPlan = plan.elementPlan;
 
       // This is specified as a simple map, however we're optimizing the path
       // where the list contains no Promises by avoiding creating another
@@ -1019,7 +1019,7 @@ function completeValue(
         const completedItem =
           completeValueCatchingError(
             exeContext,
-            completionPlan,
+            elementPlan,
             itemType,
             item
           );

@@ -542,6 +542,18 @@ export type GraphQLSerializationPlan = {
 }
 
 /**
+ * Describes how the execution engine plans to map list values
+ */
+export type GraphQLMappingPlan = {
+  kind: 'map';
+  fieldName: string;
+  fieldASTs: Array<Field>;
+  parentType: GraphQLCompositeType;
+  type: GraphQLType;
+  elementPlan: GraphQLCompletionPlan;
+}
+
+/**
  * Describes how the execution engine plans to perform a selection
  * on a resolved value.
  */
@@ -558,18 +570,6 @@ export type GraphQLSelectionPlan = {
   variableValues: { [variableName: string]: mixed };
   fieldList: {[fieldName: string]: [ string ]};
   fieldPlans: {[alias: string]: GraphQLResolvingPlan};
-}
-
-/**
- * Describes how the execution engine plans to map list values
- */
-export type GraphQLMappingPlan = {
-  kind: 'map';
-  fieldName: string;
-  fieldASTs: Array<Field>;
-  parentType: GraphQLCompositeType;
-  type: GraphQLType;
-  completionPlan: GraphQLCompletionPlan;
 }
 
 /**
