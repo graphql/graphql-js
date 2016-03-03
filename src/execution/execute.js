@@ -8,12 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: Review Plan structures for consistency
-// @TODO: Sort out returnType in the various Plans
-// @TODO: Currently NOT providing returnType in GraphQLCoercionPlan
-// @TODO: Re-approach plan design from the perspective:
-// @TODO: What does a resolver author need to know at this point in time?
-// @TODO: Document plan fields
+// @TODO: type vs returnType in non-resolving plans
+// @TODO: remove resolveFn from plan?
 // @TODO: Does isTypeOf really need a context parameter?
 // @TODO: Examine error handling paths
 // @TODO: Should we really be returning fieldASTs in error messages?
@@ -525,6 +521,7 @@ function planCompleteValue(
       kind: 'coerce',
       fieldName,
       fieldASTs,
+      returnType: abstractType,
       parentType,
       schema: exeContext.schema,
       fragments: exeContext.fragments,

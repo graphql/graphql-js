@@ -494,7 +494,7 @@ export type GraphQLResolveInfo =
  */
 export type GraphQLResolvingPlan = {
   kind: 'resolve';
-  fieldName: string,
+  fieldName: string;
   fieldASTs: Array<Field>;
   returnType: GraphQLOutputType;
   parentType: GraphQLCompositeType;
@@ -567,8 +567,9 @@ export type GraphQLMappingPlan = {
  */
 export type GraphQLCoercionPlan = {
   kind: 'coerce';
-  fieldName: string,
+  fieldName: string;
   fieldASTs: Array<Field>;
+  returnType: GraphQLAbstractType;
   parentType: GraphQLCompositeType,
   schema: GraphQLSchema;
   fragments: { [fragmentName: string]: FragmentDefinition };
