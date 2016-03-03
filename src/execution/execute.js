@@ -38,7 +38,6 @@ import type {
   GraphQLType,
   GraphQLAbstractType,
   GraphQLFieldDefinition,
-  GraphQLResolveInfo,
   GraphQLOperationPlan,
   GraphQLSelectionPlan,
   GraphQLResolvingPlan,
@@ -1115,7 +1114,7 @@ function completeValue(
 function defaultResolveFn(
   source:mixed,
   args:{ [key: string]: mixed },
-  info: GraphQLResolveInfo
+  info: GraphQLResolvingPlan
 ) {
   const fieldName = info.fieldName;
 

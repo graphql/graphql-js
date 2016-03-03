@@ -301,7 +301,7 @@ export type GraphQLScalarTypeConfig<InternalType> = {
 export class GraphQLObjectType {
   name: string;
   description: ?string;
-  isTypeOf: ?(value: mixed, info?: GraphQLResolveInfo) => boolean;
+  isTypeOf: ?GraphQLIsTypeOfFn;
 
   _typeConfig: GraphQLObjectTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
@@ -459,7 +459,7 @@ export type GraphQLObjectTypeConfig = {
   name: string;
   interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap;
-  isTypeOf?: (value: mixed, info?: GraphQLResolveInfo) => boolean;
+  isTypeOf?: GraphQLIsTypeOfFn;
   description?: ?string
 }
 
@@ -470,8 +470,18 @@ type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
 export type GraphQLFieldResolveFn = (
   source: mixed,
   args: {[argName: string]: mixed},
-  info: GraphQLResolveInfo
+  info: GraphQLResolvingPlan
 ) => mixed
+
+export type GraphQLTypeResolveFn = (
+  value: mixed,
+  info?: GraphQLCoercionPlan
+) => ?GraphQLObjectType
+
+export type GraphQLIsTypeOfFn = (
+  value: mixed,
+  info?: GraphQLSelectionPlan
+) => boolean
 
 export type GraphQLResolveInfo =
   GraphQLResolvingPlan |
@@ -642,7 +652,7 @@ export type GraphQLFieldDefinitionMap = {
 export class GraphQLInterfaceType {
   name: string;
   description: ?string;
-  resolveType: ?(value: mixed, info?: GraphQLResolveInfo) => ?GraphQLObjectType;
+  resolveType: ?GraphQLTypeResolveFn;
 
   _typeConfig: GraphQLInterfaceTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
@@ -694,7 +704,7 @@ export type GraphQLInterfaceTypeConfig = {
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: (value: mixed, info?: GraphQLResolveInfo) => ?GraphQLObjectType,
+  resolveType?: GraphQLTypeResolveFn,
   description?: ?string
 };
 
@@ -726,7 +736,7 @@ export type GraphQLInterfaceTypeConfig = {
 export class GraphQLUnionType {
   name: string;
   description: ?string;
-  resolveType: ?(value: mixed, info?: GraphQLResolveInfo) => ?GraphQLObjectType;
+  resolveType: ?GraphQLTypeResolveFn;
 
   _typeConfig: GraphQLUnionTypeConfig;
   _types: Array<GraphQLObjectType>;
@@ -796,7 +806,7 @@ export type GraphQLUnionTypeConfig = {
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: (value: mixed, info?: GraphQLResolveInfo) => ?GraphQLObjectType;
+  resolveType?: GraphQLTypeResolveFn;
   description?: ?string;
 };
 
