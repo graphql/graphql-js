@@ -317,8 +317,8 @@ function planSelection(
 function planFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
-  fields: {[key: string]: Array<Field>}
-): {[key: string]: GraphQLResolvingPlan} {
+  fields: {[alias: string]: Array<Field>}
+): {[alias: string]: GraphQLResolvingPlan} {
   const results = Object.create(null);
   Object.keys(fields).forEach(
     responseName => {
@@ -573,7 +573,7 @@ function getOperationRootType(
 function executeFieldsSerially(
   exeContext: ExecutionContext,
   sourceValue: mixed,
-  fields: {[key: string]: GraphQLResolvingPlan}
+  fields: {[alias: string]: GraphQLResolvingPlan}
 ): Promise<Object> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
@@ -605,7 +605,7 @@ function executeFieldsSerially(
 function executeFields(
   exeContext: ExecutionContext,
   sourceValue: mixed,
-  fields: {[key: string]: GraphQLResolvingPlan}
+  fields: {[alias: string]: GraphQLResolvingPlan}
 ): Object {
   let containsPromise = false;
 
@@ -652,9 +652,9 @@ function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSet,
-  fields: {[key: string]: Array<Field>},
+  fields: {[alias: string]: Array<Field>},
   visitedFragmentNames: {[key: string]: boolean}
-): {[key: string]: Array<Field>} {
+): {[alias: string]: Array<Field>} {
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
     switch (selection.kind) {
