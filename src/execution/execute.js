@@ -831,7 +831,7 @@ function resolveOrError<T>(
   source: mixed,
   args: { [key: string]: mixed },
   plan: GraphQLResolvingPlan
-): Error | mixed {
+): Error | T {
   try {
     return resolveFn(source, args, plan);
   } catch (error) {
