@@ -496,7 +496,7 @@ export type GraphQLOperationPlan = {
   kind: 'execute';
   type: GraphQLObjectType;
   strategy: string;
-  fieldPlans: {[key: string]: GraphQLResolvingPlan};
+  fieldPlans: {[alias: string]: GraphQLResolvingPlan};
 }
 
 /**
@@ -555,7 +555,7 @@ export type GraphQLSelectionPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-  fieldPlans: {[key: string]: GraphQLResolvingPlan};
+  fieldPlans: {[alias: string]: GraphQLResolvingPlan};
 }
 
 /**
@@ -585,7 +585,7 @@ export type GraphQLCoercionPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-  selectionPlansByType: {[key: string]:GraphQLSelectionPlan};
+  selectionPlansByType: {[typeName: string]:GraphQLSelectionPlan};
 }
 
 export type GraphQLFieldConfig = {
