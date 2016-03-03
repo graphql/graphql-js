@@ -84,29 +84,23 @@ import type {
  */
 
 /**
- * Queries are evaluated in two phases: planning and execution.
- * The goal of planning is to precompute data needed for execution
+ * Queries are execcuted in two phases: planning and evaluation.
+ * The goal of planning is to precompute data needed for evaluation
  * and to give resolvers insight into how the query will be
  * executed
  *
- * Execution uses the following terms:
- *
- * "execute" indicates evaluating an operation
- * "resolve" indicates resolving a field or type value
- * "complete" indicates processing return values from the resolving process.
- *
- * The planning and execution phases are coupled in this way:
- * +------------------+-------------------+---------------------------+
- * | Execution        | Planning          | Plan                      |
- * +------------------+-------------------+---------------------------+
- * | executeOperation | planOperation     | GraphQLOperationPlan      |
- * | resolveField     | planFields        | GraphQLResolvingPlan      |
- * | completeValue    | planCompleteValue | GraphQLCompletionPlan     |
- * | completeValue    | planCompleteValue | GraphQLCoercionPlan       |
- * | completeValue    | planCompleteValue | GraphQLMappingPlan        |
- * | completeValue    | planCompleteValue | GraphQLSerializationPlan  |
- * | completeValue    | planSelection     | GraphQLSelectionPlan      |
- * +------------------+-------------------+---------------------------+
+ * The planning and evaluation phases are coupled in this way:
+ * +-------------------+---------------------------+------------------+
+ * | Planning          | Plan                      | Evaluation       |
+ * +-------------------+---------------------------+------------------+
+ * | planOperation     | GraphQLOperationPlan      | executeOperation |
+ * | planFields        | GraphQLResolvingPlan      | resolveField     |
+ * | planCompleteValue | GraphQLCompletionPlan     | completeValue    |
+ * | planCompleteValue | GraphQLCoercionPlan       | completeValue    |
+ * | planCompleteValue | GraphQLMappingPlan        | completeValue    |
+ * | planCompleteValue | GraphQLSerializationPlan  | completeValue    |
+ * | planSelection     | GraphQLSelectionPlan      | completeValue    |
+ * +-------------------+---------------------------+------------------+
  */
 
 /**
@@ -166,7 +160,7 @@ export function execute(
     operationName
   );
 
-  // Create an Execution plan which will describe how we intend to execute
+  // Create an execution plan which will describe how we intend to evaluate
   // The query.
   const plan = planOperation(context, context.operation);
 
@@ -404,22 +398,8 @@ function planResolveField(
 }
 
 /**
- * Plans the Execution of completeValue as defined in the
+ * Plans the evaluation of completeValue as defined in the
  * "Field entries" section of the spec.
- *
- * If the field type is Non-Null, then this recursively completes the value
- * for the inner type. It throws a field error if that completion returns null,
- * as per the "Nullability" section of the spec.
- *
- * If the field type is a List, then this recursively completes the value
- * for the inner type on each item in the list.
- *
- * If the field type is a Scalar or Enum, ensures the completed value is a legal
- * value of the type by calling the `serialize` method of GraphQL type
- * definition.
- *
- * Otherwise, the field type expects a sub-selection set, and will complete the
- * value by evaluating all sub-selections.
  */
 function planCompleteValue(
   exeContext: ExecutionContext,
