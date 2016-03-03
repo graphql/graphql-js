@@ -496,6 +496,7 @@ export type GraphQLOperationPlan = {
   kind: 'execute';
   type: GraphQLObjectType;
   strategy: string;
+  fieldList: {[fieldName: string]: [ string ]};
   fieldPlans: {[alias: string]: GraphQLResolvingPlan};
 }
 
@@ -555,6 +556,7 @@ export type GraphQLSelectionPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
+  fieldList: {[fieldName: string]: [ string ]};
   fieldPlans: {[alias: string]: GraphQLResolvingPlan};
 }
 

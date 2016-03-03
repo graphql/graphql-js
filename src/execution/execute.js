@@ -254,12 +254,13 @@ function planOperation(
     Object.create(null)
   );
 
-  const fieldPlans = planFields(exeContext, type, fields);
+  const {fieldPlans, fieldList} = planFields(exeContext, type, fields);
 
   const plan: GraphQLOperationPlan = {
     kind: 'execute',
     type,
     strategy,
+    fieldList,
     fieldPlans
   };
 
@@ -292,7 +293,7 @@ function planSelection(
     }
   }
 
-  const fieldPlans = planFields(exeContext, type, fields);
+  const {fieldPlans, fieldList} = planFields(exeContext, type, fields);
 
   const plan: GraphQLSelectionPlan = {
     kind: 'select',
@@ -305,10 +306,16 @@ function planSelection(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
+    fieldList,
     fieldPlans
   };
 
   return plan;
+}
+
+type planFieldsResult = {
+  fieldPlans: {[alias: string]: GraphQLResolvingPlan};
+  fieldList: {[fieldName: string]: [ string ]};
 }
 
 /**
@@ -318,22 +325,28 @@ function planFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   fields: {[alias: string]: Array<Field>}
-): {[alias: string]: GraphQLResolvingPlan} {
-  const results = Object.create(null);
+): planFieldsResult {
+  const fieldPlans = Object.create(null);
+  const fieldList = Object.create(null);
   Object.keys(fields).forEach(
     responseName => {
       const fieldASTs = fields[responseName];
-      const result = planResolveField(
+      const fieldPlan = planResolveField(
         exeContext,
         parentType,
         fieldASTs
       );
-      if (result) {
-        results[responseName] = result;
+      if (fieldPlan) {
+        fieldPlans[responseName] = fieldPlan;
+        if (fieldList[fieldPlan.fieldName]) {
+          fieldList[fieldPlan.fieldName].push(responseName);
+        } else {
+          fieldList[fieldPlan.fieldName] = [ responseName ];
+        }
       }
     }
   );
-  return results;
+  return {fieldPlans, fieldList};
 }
 
 /**
