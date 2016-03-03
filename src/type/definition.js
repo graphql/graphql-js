@@ -489,6 +489,17 @@ export type GraphQLResolveInfo =
   GraphQLCoercionPlan;
 
 /**
+ * Describes how the execution engine plans to perform
+ * an operation.
+ */
+export type GraphQLOperationPlan = {
+  kind: 'execute';
+  type: GraphQLObjectType;
+  strategy: string;
+  fieldPlans: {[key: string]: GraphQLResolvingPlan};
+}
+
+/**
  * Describes how the execution engine plans to interact with the schema's
  * resolve function to fetch field values indicated by the query
  */
@@ -509,14 +520,24 @@ export type GraphQLResolvingPlan = {
 }
 
 /**
- * Describes how the execution engine plans to perform
- * an operation.
+ * Execution plans which might be executed to Complete a value.
  */
-export type GraphQLOperationPlan = {
-  kind: 'execute';
-  type: GraphQLObjectType;
-  strategy: string;
-  fieldPlans: {[key: string]: GraphQLResolvingPlan};
+export type GraphQLCompletionPlan =
+  GraphQLSerializationPlan |
+  GraphQLMappingPlan |
+  GraphQLSelectionPlan |
+  GraphQLCoercionPlan;
+
+/**
+ * Indicates that the execution engine plans to call
+ * serialize for a value.
+ */
+export type GraphQLSerializationPlan = {
+  kind: 'serialize';
+  fieldName: string;
+  fieldASTs: Array<Field>;
+  parentType: GraphQLCompositeType;
+  type: GraphQLType;
 }
 
 /**
@@ -535,18 +556,6 @@ export type GraphQLSelectionPlan = {
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
   fieldPlans: {[key: string]: GraphQLResolvingPlan};
-}
-
-/**
- * Indicates that the execution engine plans to call
- * serialize for a value.
- */
-export type GraphQLSerializationPlan = {
-  kind: 'serialize';
-  fieldName: string;
-  fieldASTs: Array<Field>;
-  parentType: GraphQLCompositeType;
-  type: GraphQLType;
 }
 
 /**
@@ -578,15 +587,6 @@ export type GraphQLCoercionPlan = {
   variableValues: { [variableName: string]: mixed };
   selectionPlansByType: {[key: string]:GraphQLSelectionPlan};
 }
-
-/**
- * Execution plans which might be executed to Complete a value.
- */
-export type GraphQLCompletionPlan =
-  GraphQLSelectionPlan |
-  GraphQLSerializationPlan |
-  GraphQLMappingPlan |
-  GraphQLCoercionPlan;
 
 export type GraphQLFieldConfig = {
   type: GraphQLOutputType;
