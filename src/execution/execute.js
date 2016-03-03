@@ -8,15 +8,12 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: Create an example of prefetching based on Execution plan
 // @TODO: Review Plan structures for consistency
 // @TODO: Sort out returnType in the various Plans
-// @TODO: Currently NOT providing returnType in GraphQLSelectionPlan
 // @TODO: Currently NOT providing returnType in GraphQLCoercionPlan
 // @TODO: Re-approach plan design from the perspective:
 // @TODO: What does a resolver author need to know at this point in time?
 // @TODO: Document plan fields
-// @TODO: Collect resolution use cases
 // @TODO: Does isTypeOf really need a context parameter?
 // @TODO: Examine error handling paths
 // @TODO: Should we really be returning fieldASTs in error messages?
@@ -318,6 +315,7 @@ function planSelection(
     kind: 'select',
     fieldName,
     fieldASTs,
+    returnType: type,
     parentType,
     schema: exeContext.schema,
     fragments: exeContext.fragments,
@@ -1055,7 +1053,12 @@ function completeValue(
       invariant(isAbstractType(returnType));
 
       const abstractType = ((returnType: any): GraphQLAbstractType);
-      runtimeType = abstractType.getObjectType(result, plan);
+
+      if (abstractType.resolveType) {
+        runtimeType = findTypeWithResolveType(abstractType, plan, result);
+      } else {
+        runtimeType = findTypeWithIsTypeOf(plan, result);
+      }
 
       if (!runtimeType) {
         // The type could not be resolved so omit from the results
@@ -1065,7 +1068,6 @@ function completeValue(
       invariant(plan.selectionPlansByType !== null);
 
       const selectionPlansByType = plan.selectionPlansByType;
-
       selectionPlan = selectionPlansByType[runtimeType.name];
       if (!selectionPlan) {
         throw new GraphQLError(
@@ -1074,6 +1076,7 @@ function completeValue(
           plan.fieldASTs
         );
       }
+
       break;
 
     // --- CASE Z: Unreachable
@@ -1121,6 +1124,42 @@ function defaultResolveFn(
     const property = (source: any)[fieldName];
     return typeof property === 'function' ? property.call(source) : property;
   }
+}
+
+/**
+ * Determine which type in a GraphQLCoercionPlan matches the type of result.
+ */
+function findTypeWithResolveType(
+    type:GraphQLAbstractType,
+    plan: GraphQLCoercionPlan,
+    result: mixed
+): ?GraphQLObjectType {
+  if (!type.resolveType) {
+    return null;
+  }
+  return type.resolveType(result, plan);
+}
+
+/**
+ * Determine which type in a GraphQLCoercionPlan matches the type of result.
+ */
+function findTypeWithIsTypeOf(
+    plan: GraphQLCoercionPlan,
+    result: mixed
+): ?GraphQLObjectType {
+  const plansByType = plan.selectionPlansByType;
+  // We constructed plansByType without a prototype
+  /* eslint guard-for-in:0 */
+  for (const typeName in plansByType) {
+    const candidatePlan = plansByType[typeName];
+    const type = candidatePlan.returnType;
+    if (type.isTypeOf && type.isTypeOf(result, candidatePlan)) {
+      return type;
+    }
+  }
+
+  // Not found
+  return null;
 }
 
 /**
