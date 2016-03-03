@@ -8,12 +8,6 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// @TODO: type vs returnType in non-resolving plans
-// @TODO: remove resolveFn from plan?
-// @TODO: Does isTypeOf really need a context parameter?
-// @TODO: Examine error handling paths
-// @TODO: Should we really be returning fieldASTs in error messages?
-
 import { GraphQLError, locatedError } from '../error';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
@@ -969,8 +963,10 @@ function completeValue(
       // Intentionally first; will be evaluated often
 
       // Tested in planCompleteValue
-      invariant(returnType instanceof GraphQLScalarType ||
-        returnType instanceof GraphQLEnumType);
+      invariant(
+        returnType instanceof GraphQLScalarType ||
+        returnType instanceof GraphQLEnumType,
+        'Type detected at runtime does not match type expected in planning');
 
       invariant(returnType.serialize, 'Missing serialize method on type');
 
@@ -981,7 +977,10 @@ function completeValue(
     // If result is null-like, return null.
     case 'map':
       // Tested in planCompleteValue
-      invariant(returnType instanceof GraphQLList);
+      invariant(
+        returnType instanceof GraphQLList,
+        'Type detected at runtime does not match type expected in planning'
+      );
 
       invariant(
         Array.isArray(result),
@@ -1016,7 +1015,10 @@ function completeValue(
     // --- CASE G: GraphQLObjectType (run GraphQLSelectionPlan)
     case 'select':
       // Tested in planCompleteValue
-      invariant(returnType instanceof GraphQLObjectType);
+      invariant(
+        returnType instanceof GraphQLObjectType,
+        'Type detected at runtime does not match type expected in planning'
+      );
 
       selectionPlan = plan;
       runtimeType = returnType;
@@ -1026,7 +1028,10 @@ function completeValue(
     // --- CASE H: isAbstractType (run GraphQLCoercionPlan)
     case 'coerce':
       // Tested in planCompleteValue
-      invariant(isAbstractType(returnType));
+      invariant(
+        isAbstractType(returnType),
+        'Type detected at runtime does not match type expected in planning'
+      );
 
       const abstractType = ((returnType: any): GraphQLAbstractType);
 
@@ -1036,10 +1041,11 @@ function completeValue(
         runtimeType = findTypeWithIsTypeOf(plan, result);
       }
 
-      if (!runtimeType) {
-        // The type could not be resolved so omit from the results
-        return null;
-      }
+      invariant(
+        runtimeType,
+        'Could not resolve type,' +
+        'probably an error in a resolveType or isTypeOf function in the schema'
+      );
 
       invariant(plan.selectionPlansByType !== null);
 
