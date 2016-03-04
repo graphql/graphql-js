@@ -489,18 +489,6 @@ export type GraphQLResolveInfo =
   GraphQLCoercionPlan;
 
 /**
- * Describes how the execution engine plans to perform
- * an operation.
- */
-export type GraphQLOperationPlan = {
-  kind: 'execute';
-  type: GraphQLObjectType;
-  strategy: string;
-  fieldList: {[fieldName: string]: [ string ]};
-  fieldPlans: {[alias: string]: GraphQLResolvingPlan};
-}
-
-/**
  * Describes how the execution engine plans to interact with the schema's
  * resolve function to fetch field values indicated by the query
  */

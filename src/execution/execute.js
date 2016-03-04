@@ -28,7 +28,6 @@ import type {
   GraphQLType,
   GraphQLAbstractType,
   GraphQLFieldDefinition,
-  GraphQLOperationPlan,
   GraphQLSelectionPlan,
   GraphQLResolvingPlan,
   GraphQLCompletionPlan,
@@ -120,6 +119,18 @@ type ExecutionContext = {
 type ExecutionResult = {
   data: ?Object;
   errors?: Array<GraphQLError>;
+}
+
+/**
+ * Describes how the execution engine plans to perform
+ * an operation.
+ */
+type GraphQLOperationPlan = {
+  kind: 'execute';
+  type: GraphQLObjectType;
+  strategy: string;
+  fieldList: {[fieldName: string]: [ string ]};
+  fieldPlans: {[alias: string]: GraphQLResolvingPlan};
 }
 
 /**
