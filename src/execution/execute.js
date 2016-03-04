@@ -507,6 +507,11 @@ function planCompleteValue(
     const possibleTypes = abstractType.getPossibleTypes();
     const selectionPlansByType = Object.create(null);
     possibleTypes.forEach(possibleType => {
+      invariant(
+        !selectionPlansByType[possibleType.name],
+        'Two types cannot have the same name "${possibleType.name}"' +
+        'as possible types of abstract type ${abstractType.name}'
+      );
       selectionPlansByType[possibleType.name] = planSelection(
         exeContext,
         possibleType,
