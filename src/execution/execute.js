@@ -128,7 +128,7 @@ type ExecutionResult = {
 type GraphQLOperationPlan = {
   kind: 'execute';
   type: GraphQLObjectType;
-  strategy: string;
+  concurrencyStrategy: string;
   fieldList: {[fieldName: string]: [ string ]};
   fieldPlans: {[alias: string]: GraphQLResolvingPlan};
 }
@@ -255,7 +255,8 @@ function planOperation(
   operation: OperationDefinition
 ): GraphQLOperationPlan {
   const type = getOperationRootType(exeContext.schema, operation);
-  const strategy = (operation.operation === 'mutation') ? 'serial' : 'parallel';
+  const concurrencyStrategy =
+    (operation.operation === 'mutation') ? 'serial' : 'parallel';
 
   const fields = collectFields(
     exeContext,
@@ -270,7 +271,7 @@ function planOperation(
   const plan: GraphQLOperationPlan = {
     kind: 'execute',
     type,
-    strategy,
+    concurrencyStrategy,
     fieldList,
     fieldPlans
   };
@@ -546,9 +547,12 @@ function executeOperation(
   rootValue: mixed
 ): Object {
 
-  invariant(plan.strategy === 'serial' || plan.strategy === 'parallel');
+  invariant(
+    plan.concurrencyStrategy === 'serial' ||
+    plan.concurrencyStrategy === 'parallel'
+  );
 
-  if (plan.strategy === 'serial') {
+  if (plan.concurrencyStrategy === 'serial') {
     return executeFieldsSerially(exeContext, rootValue, plan.fieldPlans);
   }
   return executeFields(exeContext, rootValue, plan.fieldPlans);
