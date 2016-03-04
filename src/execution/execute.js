@@ -433,25 +433,7 @@ function planCompleteValue(
 
   // --- CASE D: Nullish (Execution time only, see completeValue)
 
-  // --- CASE E: Serialize (See completeValue for plan Execution)
-  // If field type is Scalar or Enum, serialize to a valid value, returning
-  // null if serialization is not possible.
-  if (returnType instanceof GraphQLScalarType ||
-      returnType instanceof GraphQLEnumType) {
-    invariant(returnType.serialize, 'Missing serialize method on type');
-
-    const plan: GraphQLSerializationPlan = {
-      kind: 'serialize',
-      fieldASTs,
-      returnType,
-      fieldName,
-      parentType
-    };
-
-    return plan;
-  }
-
-  // --- CASE F: GraphQLList (See completeValue for plan Execution)
+  // --- CASE E: GraphQLList (See completeValue for plan Execution)
   // If field type is List, complete each item in the list with the inner type
   if (returnType instanceof GraphQLList) {
     const innerType = returnType.ofType;
@@ -476,6 +458,25 @@ function planCompleteValue(
 
     return plan;
   }
+
+  // --- CASE F: Serialize (See completeValue for plan Execution)
+  // If field type is Scalar or Enum, serialize to a valid value, returning
+  // null if serialization is not possible.
+  if (returnType instanceof GraphQLScalarType ||
+      returnType instanceof GraphQLEnumType) {
+    invariant(returnType.serialize, 'Missing serialize method on type');
+
+    const plan: GraphQLSerializationPlan = {
+      kind: 'serialize',
+      fieldASTs,
+      returnType,
+      fieldName,
+      parentType
+    };
+
+    return plan;
+  }
+
 
   // --- CASE G: GraphQLObjectType (See completeValue for plan Execution)
   if (returnType instanceof GraphQLObjectType) {
@@ -664,9 +665,9 @@ function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSet,
-  fields: {[alias: string]: Array<Field>},
+  fields: {[key: string]: Array<Field>},
   visitedFragmentNames: {[key: string]: boolean}
-): {[alias: string]: Array<Field>} {
+): {[key: string]: Array<Field>} {
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
     switch (selection.kind) {
@@ -977,23 +978,7 @@ function completeValue(
   // Execution Completion Plan
   switch (plan.kind) {
 
-    // --- CASE E: Serialize (run GraphQLSerializationCompletionPlan)
-    // If result is null-like, return null.
-    case 'serialize':
-      // Intentionally first; will be evaluated often
-
-      // Tested in planCompleteValue
-      invariant(
-        returnType instanceof GraphQLScalarType ||
-        returnType instanceof GraphQLEnumType,
-        'Type detected at runtime does not match type expected in planning');
-
-      invariant(returnType.serialize, 'Missing serialize method on type');
-
-      const serializedResult = returnType.serialize(result);
-      return isNullish(serializedResult) ? null : serializedResult;
-
-    // --- CASE F: GraphQLList (run GraphQLMappingPlan)
+    // --- CASE E: GraphQLList (run GraphQLMappingPlan)
     // If result is null-like, return null.
     case 'map':
       // Tested in planCompleteValue
@@ -1031,6 +1016,21 @@ function completeValue(
 
       return containsPromise ?
         Promise.all(completedResults) : completedResults;
+
+    // --- CASE F: Serialize (run GraphQLSerializationCompletionPlan)
+    // If result is null-like, return null.
+    case 'serialize':
+
+      // Tested in planCompleteValue
+      invariant(
+        returnType instanceof GraphQLScalarType ||
+        returnType instanceof GraphQLEnumType,
+        'Type detected at runtime does not match type expected in planning');
+
+      invariant(returnType.serialize, 'Missing serialize method on type');
+
+      const serializedResult = returnType.serialize(result);
+      return isNullish(serializedResult) ? null : serializedResult;
 
     // --- CASE G: GraphQLObjectType (run GraphQLSelectionPlan)
     case 'select':
@@ -1095,8 +1095,8 @@ function completeValue(
   // than continuing execution.
   if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, selectionPlan)) {
     throw new GraphQLError(
-        `Expected value of type "${runtimeType}" but got: ${result}.`,
-        selectionPlan.fieldASTs
+      `Expected value of type "${runtimeType}" but got: ${result}.`,
+      selectionPlan.fieldASTs
     );
   }
 
