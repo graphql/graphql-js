@@ -129,8 +129,8 @@ type GraphQLOperationPlan = {
   kind: 'execute';
   type: GraphQLObjectType;
   concurrencyStrategy: string;
-  fieldList: {[fieldName: string]: [ string ]};
-  fieldPlans: {[alias: string]: GraphQLResolvingPlan};
+  fieldPlans: {[fieldName: string]: [ string ]};
+  fieldPlansByAlias: {[alias: string]: GraphQLResolvingPlan};
 }
 
 /**
@@ -266,14 +266,14 @@ function planOperation(
     Object.create(null)
   );
 
-  const {fieldPlans, fieldList} = planFields(exeContext, type, fields);
+  const {fieldPlansByAlias, fieldPlans} = planFields(exeContext, type, fields);
 
   const plan: GraphQLOperationPlan = {
     kind: 'execute',
     type,
     concurrencyStrategy,
-    fieldList,
-    fieldPlans
+    fieldPlans,
+    fieldPlansByAlias
   };
 
   return plan;
@@ -305,7 +305,7 @@ function planSelection(
     }
   }
 
-  const {fieldPlans, fieldList} = planFields(exeContext, type, fields);
+  const {fieldPlansByAlias, fieldPlans} = planFields(exeContext, type, fields);
 
   const plan: GraphQLSelectionPlan = {
     kind: 'select',
@@ -318,16 +318,16 @@ function planSelection(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
-    fieldList,
-    fieldPlans
+    fieldPlans,
+    fieldPlansByAlias
   };
 
   return plan;
 }
 
 type planFieldsResult = {
-  fieldPlans: {[alias: string]: GraphQLResolvingPlan};
-  fieldList: {[fieldName: string]: [ string ]};
+  fieldPlansByAlias: {[alias: string]: GraphQLResolvingPlan};
+  fieldPlans: {[fieldName: string]: [ string ]};
 }
 
 /**
@@ -338,8 +338,8 @@ function planFields(
   parentType: GraphQLObjectType,
   fields: {[alias: string]: Array<Field>}
 ): planFieldsResult {
+  const fieldPlansByAlias = Object.create(null);
   const fieldPlans = Object.create(null);
-  const fieldList = Object.create(null);
   Object.keys(fields).forEach(
     responseName => {
       const fieldASTs = fields[responseName];
@@ -349,16 +349,16 @@ function planFields(
         fieldASTs
       );
       if (fieldPlan) {
-        fieldPlans[responseName] = fieldPlan;
-        if (fieldList[fieldPlan.fieldName]) {
-          fieldList[fieldPlan.fieldName].push(responseName);
+        fieldPlansByAlias[responseName] = fieldPlan;
+        if (fieldPlans[fieldPlan.fieldName]) {
+          fieldPlans[fieldPlan.fieldName].push(fieldPlan);
         } else {
-          fieldList[fieldPlan.fieldName] = [ responseName ];
+          fieldPlans[fieldPlan.fieldName] = [ fieldPlan ];
         }
       }
     }
   );
-  return {fieldPlans, fieldList};
+  return {fieldPlansByAlias, fieldPlans};
 }
 
 /**
@@ -558,9 +558,9 @@ function executeOperation(
   );
 
   if (plan.concurrencyStrategy === 'serial') {
-    return executeFieldsSerially(exeContext, rootValue, plan.fieldPlans);
+    return executeFieldsSerially(exeContext, rootValue, plan.fieldPlansByAlias);
   }
-  return executeFields(exeContext, rootValue, plan.fieldPlans);
+  return executeFields(exeContext, rootValue, plan.fieldPlansByAlias);
 }
 
 /**
@@ -1123,7 +1123,7 @@ function completeValue(
   return executeFields(
       exeContext,
       result,
-      selectionPlan.fieldPlans
+      selectionPlan.fieldPlansByAlias
   );
 
 }
