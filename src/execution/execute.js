@@ -129,7 +129,7 @@ type GraphQLOperationPlan = {
   kind: 'execute';
   type: GraphQLObjectType;
   concurrencyStrategy: string;
-  fieldPlans: {[fieldName: string]: [ string ]};
+  fieldPlans: {[fieldName: string]: [ GraphQLResolvingPlan ]};
   fieldPlansByAlias: {[alias: string]: GraphQLResolvingPlan};
 }
 
@@ -327,7 +327,7 @@ function planSelection(
 
 type planFieldsResult = {
   fieldPlansByAlias: {[alias: string]: GraphQLResolvingPlan};
-  fieldPlans: {[fieldName: string]: [ string ]};
+  fieldPlans: {[fieldName: string]: [ GraphQLResolvingPlan ]};
 }
 
 /**

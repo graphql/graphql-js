@@ -556,7 +556,7 @@ export type GraphQLSelectionPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-  fieldPlans: {[fieldName: string]: [ string ]};
+  fieldPlans: {[fieldName: string]: [ GraphQLResolvingPlan ]};
   fieldPlansByAlias: {[alias: string]: GraphQLResolvingPlan};
 }
 
