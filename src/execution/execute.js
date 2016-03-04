@@ -129,7 +129,7 @@ type GraphQLOperationPlan = {
   kind: 'execute';
   type: GraphQLObjectType;
   concurrencyStrategy: string;
-  fieldPlans: {[fieldName: string]: [ GraphQLResolvingPlan ]};
+  fields: {[fieldName: string]: [ GraphQLResolvingPlan ]};
   fieldPlansByAlias: {[alias: string]: GraphQLResolvingPlan};
 }
 
@@ -272,7 +272,7 @@ function planOperation(
     kind: 'execute',
     type,
     concurrencyStrategy,
-    fieldPlans,
+    fields: fieldPlans,
     fieldPlansByAlias
   };
 
@@ -318,7 +318,7 @@ function planSelection(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
-    fieldPlans,
+    fields: fieldPlans,
     fieldPlansByAlias
   };
 
@@ -409,7 +409,7 @@ function planResolveField(
     variableValues: exeContext.variableValues,
     fieldDefinition: fieldDef,
     args,
-    completionPlan
+    returned: completionPlan
   };
 
   return plan;
@@ -465,7 +465,7 @@ function planCompleteValue(
       returnType,
       fieldName,
       parentType,
-      elementPlan
+      listElement: elementPlan
     };
 
     return plan;
@@ -505,14 +505,14 @@ function planCompleteValue(
   if (isAbstractType(returnType)) {
     const abstractType = ((returnType: any): GraphQLAbstractType);
     const possibleTypes = abstractType.getPossibleTypes();
-    const selectionPlansByType = Object.create(null);
+    const typeChoices = Object.create(null);
     possibleTypes.forEach(possibleType => {
       invariant(
-        !selectionPlansByType[possibleType.name],
+        !typeChoices[possibleType.name],
         'Two types cannot have the same name "${possibleType.name}"' +
         'as possible types of abstract type ${abstractType.name}'
       );
-      selectionPlansByType[possibleType.name] = planSelection(
+      typeChoices[possibleType.name] = planSelection(
         exeContext,
         possibleType,
         fieldASTs,
@@ -532,7 +532,7 @@ function planCompleteValue(
       rootValue: exeContext.rootValue,
       operation: exeContext.operation,
       variableValues: exeContext.variableValues,
-      selectionPlansByType
+      typeChoices
     };
 
     return plan;
@@ -848,7 +848,7 @@ function resolveField(
 
   return completeValueCatchingError(
     exeContext,
-    plan.completionPlan,
+    plan.returned,
     plan.returnType,
     result
   );
@@ -1013,7 +1013,7 @@ function completeValue(
         `for field ${plan.parentType}.${plan.fieldName}.`
       );
 
-      const elementPlan = plan.elementPlan;
+      const elementPlan = plan.listElement;
 
       // This is specified as a simple map, however we're optimizing the path
       // where the list contains no Promises by avoiding creating another
@@ -1087,10 +1087,10 @@ function completeValue(
         'probably an error in a resolveType or isTypeOf function in the schema'
       );
 
-      invariant(plan.selectionPlansByType !== null);
+      invariant(plan.typeChoices !== null);
 
-      const selectionPlansByType = plan.selectionPlansByType;
-      selectionPlan = selectionPlansByType[runtimeType.name];
+      const typeChoices = plan.typeChoices;
+      selectionPlan = typeChoices[runtimeType.name];
       if (!selectionPlan) {
         throw new GraphQLError(
           `Runtime Object type "${runtimeType}" ` +
@@ -1169,7 +1169,7 @@ function findTypeWithIsTypeOf(
     plan: GraphQLCoercionPlan,
     result: mixed
 ): ?GraphQLObjectType {
-  const plansByType = plan.selectionPlansByType;
+  const plansByType = plan.typeChoices;
   // We constructed plansByType without a prototype
   /* eslint guard-for-in:0 */
   for (const typeName in plansByType) {

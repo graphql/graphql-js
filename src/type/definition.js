@@ -505,7 +505,7 @@ export type GraphQLResolvingPlan = {
   variableValues: { [variableName: string]: mixed };
   fieldDefinition: GraphQLFieldDefinition;
   args: { [key: string]: mixed };
-  completionPlan: GraphQLCompletionPlan;
+  returned: GraphQLCompletionPlan;
 }
 
 /**
@@ -538,7 +538,7 @@ export type GraphQLMappingPlan = {
   fieldASTs: Array<Field>;
   returnType: GraphQLType;
   parentType: GraphQLCompositeType;
-  elementPlan: GraphQLCompletionPlan;
+  listElement: GraphQLCompletionPlan;
 }
 
 /**
@@ -556,7 +556,7 @@ export type GraphQLSelectionPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-  fieldPlans: {[fieldName: string]: [ GraphQLResolvingPlan ]};
+  fields: {[fieldName: string]: [ GraphQLResolvingPlan ]};
   fieldPlansByAlias: {[alias: string]: GraphQLResolvingPlan};
 }
 
@@ -575,7 +575,7 @@ export type GraphQLCoercionPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-  selectionPlansByType: {[typeName: string]:GraphQLSelectionPlan};
+  typeChoices: {[typeName: string]:GraphQLSelectionPlan};
 }
 
 export type GraphQLFieldConfig = {
