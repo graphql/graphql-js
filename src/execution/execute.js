@@ -945,7 +945,7 @@ function evaluateSerializationPlan(
 }
 
 /**
- * Evaluate a slection plan
+ * Evaluate a selection plan
  */
 function evaluateSelectionPlan(
   exeContext: ExecutionContext,
@@ -969,6 +969,49 @@ function evaluateSelectionPlan(
       result,
       plan.fieldPlansByAlias
   );
+}
+
+/**
+ * Evaluate a coercion plan
+ */
+function evaluateCoercionPlan(
+  exeContext: ExecutionContext,
+  result: mixed,
+  plan: GraphQLCoercionPlan
+): mixed {
+  invariant(plan.kind === 'coerce');
+
+  // Field type must be Object, Interface or Union and expect
+  // sub-selections.
+  let runtimeType: ?GraphQLObjectType;
+
+  const abstractType = ((plan.returnType: any): GraphQLAbstractType);
+
+  if (abstractType.resolveType) {
+    runtimeType = findTypeWithResolveType(abstractType, plan, result);
+  } else {
+    runtimeType = findTypeWithIsTypeOf(plan, result);
+  }
+
+  invariant(
+    runtimeType,
+    'Could not resolve type,' +
+    'probably an error in a resolveType or isTypeOf function in the schema'
+  );
+
+  invariant(plan.typeChoices !== null);
+
+  const typeChoices = plan.typeChoices;
+  const selectionPlan = typeChoices[runtimeType.name];
+  if (!selectionPlan) {
+    throw new GraphQLError(
+      `Runtime Object type "${runtimeType}" ` +
+      `is not a possible type for "${abstractType}".`,
+      plan.fieldASTs
+    );
+  }
+
+  return evaluateSelectionPlan(exeContext, result, selectionPlan);
 }
 
 /**
@@ -1044,11 +1087,6 @@ function completeValue(
     return null;
   }
 
-  // Field type must be Object, Interface or Union and expect
-  // sub-selections.
-  let runtimeType: ?GraphQLObjectType;
-  let selectionPlan: ?GraphQLSelectionPlan;
-
   // Execution Completion Plan
   switch (plan.kind) {
 
@@ -1101,39 +1139,7 @@ function completeValue(
 
     // --- CASE H: isAbstractType (run GraphQLCoercionPlan)
     case 'coerce':
-      // Tested in planCompleteValue
-      invariant(
-        isAbstractType(returnType),
-        'Type detected at runtime does not match type expected in planning'
-      );
-
-      const abstractType = ((returnType: any): GraphQLAbstractType);
-
-      if (abstractType.resolveType) {
-        runtimeType = findTypeWithResolveType(abstractType, plan, result);
-      } else {
-        runtimeType = findTypeWithIsTypeOf(plan, result);
-      }
-
-      invariant(
-        runtimeType,
-        'Could not resolve type,' +
-        'probably an error in a resolveType or isTypeOf function in the schema'
-      );
-
-      invariant(plan.typeChoices !== null);
-
-      const typeChoices = plan.typeChoices;
-      selectionPlan = typeChoices[runtimeType.name];
-      if (!selectionPlan) {
-        throw new GraphQLError(
-          `Runtime Object type "${runtimeType}" ` +
-          `is not a possible type for "${abstractType}".`,
-          plan.fieldASTs
-        );
-      }
-
-      return evaluateSelectionPlan(exeContext, result, selectionPlan);
+      return evaluateCoercionPlan(exeContext, result, plan);
 
     // --- CASE Z: Unreachable
     // We have handled all possibilities.  Not reachable
