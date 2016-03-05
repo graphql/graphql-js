@@ -918,6 +918,21 @@ function completeValueCatchingError(
 }
 
 /**
+ * Evaluate a serialization plan
+ */
+function evaluateSerializationPlan(
+  result: mixed,
+  plan: GraphQLSerializationPlan
+): mixed {
+  invariant(plan.kind === 'serialize');
+  invariant(plan.returnType.serialize, 'Missing serialize method on type');
+
+  // If result is null-like, return null.
+  const serializedResult = plan.returnType.serialize(result);
+  return isNullish(serializedResult) ? null : serializedResult;
+}
+
+/**
  * Implements the instructions for completeValue as defined in the
  * "Field entries" section of the spec.
  *
@@ -1038,19 +1053,8 @@ function completeValue(
         Promise.all(completedResults) : completedResults;
 
     // --- CASE F: Serialize (run GraphQLSerializationCompletionPlan)
-    // If result is null-like, return null.
     case 'serialize':
-
-      // Tested in planCompleteValue
-      invariant(
-        returnType instanceof GraphQLScalarType ||
-        returnType instanceof GraphQLEnumType,
-        'Type detected at runtime does not match type expected in planning');
-
-      invariant(returnType.serialize, 'Missing serialize method on type');
-
-      const serializedResult = returnType.serialize(result);
-      return isNullish(serializedResult) ? null : serializedResult;
+      return evaluateSerializationPlan(result, plan);
 
     // --- CASE G: GraphQLObjectType (run GraphQLSelectionPlan)
     case 'select':
