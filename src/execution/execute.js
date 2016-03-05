@@ -305,6 +305,16 @@ function planSelection(
     }
   }
 
+  let isTypeOfOptimisticFn;
+  let isTypeOfPessimisticFn;
+  if (type.isTypeOf) {
+    isTypeOfOptimisticFn = type.isTypeOf;
+    isTypeOfPessimisticFn = type.isTypeOf;
+  } else {
+    isTypeOfOptimisticFn = () => true;
+    isTypeOfPessimisticFn = () => false;
+  }
+
   const {fieldPlansByAlias, fieldPlans} = planFields(exeContext, type, fields);
 
   const plan: GraphQLSelectionPlan = {
@@ -318,6 +328,8 @@ function planSelection(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
+    isTypeOfOptimisticFn,
+    isTypeOfPessimisticFn,
     fields: fieldPlans,
     fieldPlansByAlias
   };
@@ -933,6 +945,33 @@ function evaluateSerializationPlan(
 }
 
 /**
+ * Evaluate a slection plan
+ */
+function evaluateSelectionPlan(
+  exeContext: ExecutionContext,
+  result: mixed,
+  plan: GraphQLSelectionPlan
+): mixed {
+  invariant(plan.kind === 'select');
+
+  // If there is an isTypeOf predicate function, call it with the
+  // current result. If isTypeOf returns false, then raise an error rather
+  // than continuing execution.
+  if (!plan.isTypeOfOptimisticFn(result, plan)) {
+    throw new GraphQLError(
+      `Expected value of type "${plan.returnType}" but got: ${result}.`,
+      plan.fieldASTs
+    );
+  }
+
+  return executeFields(
+      exeContext,
+      result,
+      plan.fieldPlansByAlias
+  );
+}
+
+/**
  * Implements the instructions for completeValue as defined in the
  * "Field entries" section of the spec.
  *
@@ -1058,16 +1097,7 @@ function completeValue(
 
     // --- CASE G: GraphQLObjectType (run GraphQLSelectionPlan)
     case 'select':
-      // Tested in planCompleteValue
-      invariant(
-        returnType instanceof GraphQLObjectType,
-        'Type detected at runtime does not match type expected in planning'
-      );
-
-      selectionPlan = plan;
-      runtimeType = returnType;
-
-      break;
+      return evaluateSelectionPlan(exeContext, result, plan);
 
     // --- CASE H: isAbstractType (run GraphQLCoercionPlan)
     case 'coerce':
@@ -1103,32 +1133,13 @@ function completeValue(
         );
       }
 
-      break;
+      return evaluateSelectionPlan(exeContext, result, selectionPlan);
 
     // --- CASE Z: Unreachable
     // We have handled all possibilities.  Not reachable
     default:
       invariant(false, 'No plan covers runtime conditions');
   }
-
-  invariant(selectionPlan);
-  invariant(runtimeType);
-
-  // If there is an isTypeOf predicate function, call it with the
-  // current result. If isTypeOf returns false, then raise an error rather
-  // than continuing execution.
-  if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, selectionPlan)) {
-    throw new GraphQLError(
-      `Expected value of type "${runtimeType}" but got: ${result}.`,
-      selectionPlan.fieldASTs
-    );
-  }
-
-  return executeFields(
-      exeContext,
-      result,
-      selectionPlan.fieldPlansByAlias
-  );
 
 }
 
@@ -1179,7 +1190,7 @@ function findTypeWithIsTypeOf(
   for (const typeName in plansByType) {
     const candidatePlan = plansByType[typeName];
     const type = candidatePlan.returnType;
-    if (type.isTypeOf && type.isTypeOf(result, candidatePlan)) {
+    if (candidatePlan.isTypeOfPessimisticFn(result, candidatePlan)) {
       return type;
     }
   }

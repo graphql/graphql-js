@@ -556,6 +556,8 @@ export type GraphQLSelectionPlan = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
+  isTypeOfOptimisticFn: GraphQLIsTypeOfFn;
+  isTypeOfPessimisticFn: GraphQLIsTypeOfFn;
   fields: {[fieldName: string]: [ GraphQLResolvingPlan ]};
   fieldPlansByAlias: {[alias: string]: GraphQLResolvingPlan};
 }
