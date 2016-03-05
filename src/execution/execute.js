@@ -1015,6 +1015,47 @@ function evaluateCoercionPlan(
 }
 
 /**
+ * Evaluate a coercion plan
+ */
+function evaluateMappingPlan(
+  exeContext: ExecutionContext,
+  result: mixed,
+  plan: GraphQLMappingPlan
+): mixed {
+
+  invariant(
+    Array.isArray(result),
+    'User Error: expected iterable, but did not find one ' +
+    `for field ${plan.parentType}.${plan.fieldName}.`
+  );
+  invariant(plan.returnType.ofType);
+
+  const elementPlan = plan.listElement;
+
+  // This is specified as a simple map, however we're optimizing the path
+  // where the list contains no Promises by avoiding creating another
+  // Promise.
+  const itemType = plan.returnType.ofType;
+  let containsPromise = false;
+  const completedResults = result.map(item => {
+    const completedItem =
+      completeValueCatchingError(
+        exeContext,
+        elementPlan,
+        itemType,
+        item
+      );
+    if (!containsPromise && isThenable(completedItem)) {
+      containsPromise = true;
+    }
+    return completedItem;
+  });
+
+  return containsPromise ?
+    Promise.all(completedResults) : completedResults;
+}
+
+/**
  * Implements the instructions for completeValue as defined in the
  * "Field entries" section of the spec.
  *
@@ -1091,43 +1132,8 @@ function completeValue(
   switch (plan.kind) {
 
     // --- CASE E: GraphQLList (run GraphQLMappingPlan)
-    // If result is null-like, return null.
     case 'map':
-      // Tested in planCompleteValue
-      invariant(
-        returnType instanceof GraphQLList,
-        'Type detected at runtime does not match type expected in planning'
-      );
-
-      invariant(
-        Array.isArray(result),
-        'User Error: expected iterable, but did not find one ' +
-        `for field ${plan.parentType}.${plan.fieldName}.`
-      );
-
-      const elementPlan = plan.listElement;
-
-      // This is specified as a simple map, however we're optimizing the path
-      // where the list contains no Promises by avoiding creating another
-      // Promise.
-      const itemType = returnType.ofType;
-      let containsPromise = false;
-      const completedResults = result.map(item => {
-        const completedItem =
-          completeValueCatchingError(
-            exeContext,
-            elementPlan,
-            itemType,
-            item
-          );
-        if (!containsPromise && isThenable(completedItem)) {
-          containsPromise = true;
-        }
-        return completedItem;
-      });
-
-      return containsPromise ?
-        Promise.all(completedResults) : completedResults;
+      return evaluateMappingPlan(exeContext, result, plan);
 
     // --- CASE F: Serialize (run GraphQLSerializationCompletionPlan)
     case 'serialize':
