@@ -442,16 +442,6 @@ function planSelection(
     }
   }
 
-  let isTypeOfOptimisticFn;
-  let isTypeOfPessimisticFn;
-  if (type.isTypeOf) {
-    isTypeOfOptimisticFn = type.isTypeOf;
-    isTypeOfPessimisticFn = type.isTypeOf;
-  } else {
-    isTypeOfOptimisticFn = () => true;
-    isTypeOfPessimisticFn = () => false;
-  }
-
   const {fieldPlansByAlias, fieldPlans} = planFields(exeContext, type, fields);
 
   const plan: GraphQLSelectionPlan = {
@@ -465,8 +455,6 @@ function planSelection(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
-    isTypeOfOptimisticFn,
-    isTypeOfPessimisticFn,
     fields: fieldPlans,
     fieldPlansByAlias
   };
@@ -1120,10 +1108,12 @@ function evaluateSelectionPlan(
   result: mixed,
   plan: GraphQLSelectionPlan
 ): mixed {
+  const returnType = plan.returnType;
+
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
-  if (!plan.isTypeOfOptimisticFn(result, plan)) {
+  if (returnType.isTypeOf && !returnType.isTypeOf(result, plan)) {
     throw new GraphQLError(
       `Expected value of type "${plan.returnType}" but got: ${result}.`,
       plan.fieldASTs
@@ -1205,7 +1195,7 @@ function findTypeWithIsTypeOf(
   for (const typeName in plansByType) {
     const candidatePlan = plansByType[typeName];
     const type = candidatePlan.returnType;
-    if (candidatePlan.isTypeOfPessimisticFn(result, candidatePlan)) {
+    if (type.isTypeOf && type.isTypeOf(result, candidatePlan)) {
       return type;
     }
   }
