@@ -1064,7 +1064,6 @@ function evaluateSerializationPlan(
   result: mixed,
   plan: GraphQLSerializationPlan
 ): mixed {
-  invariant(plan.kind === 'serialize');
   invariant(plan.returnType.serialize, 'Missing serialize method on type');
 
   // If result is null-like, return null.
@@ -1121,8 +1120,6 @@ function evaluateSelectionPlan(
   result: mixed,
   plan: GraphQLSelectionPlan
 ): mixed {
-  invariant(plan.kind === 'select');
-
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
@@ -1148,8 +1145,6 @@ function evaluateCoercionPlan(
   result: mixed,
   plan: GraphQLCoercionPlan
 ): mixed {
-  invariant(plan.kind === 'coerce');
-
   // Field type must be Object, Interface or Union and expect
   // sub-selections.
   let runtimeType: ?GraphQLObjectType;
