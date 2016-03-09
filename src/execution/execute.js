@@ -721,7 +721,7 @@ function completeValue(
   if (returnType instanceof GraphQLScalarType ||
       returnType instanceof GraphQLEnumType) {
     invariant(returnType.serialize, 'Missing serialize method on type');
-    const serializedResult = returnType.serialize(result);
+    const serializedResult = returnType.serialize(result, info);
     return isNullish(serializedResult) ? null : serializedResult;
   }
 

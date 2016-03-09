@@ -231,9 +231,9 @@ export class GraphQLScalarType<InternalType> {
     this._scalarConfig = config;
   }
 
-  serialize(value: mixed): ?InternalType {
+  serialize(value: mixed, info?: GraphQLResolveInfo): ?InternalType {
     const serializer = this._scalarConfig.serialize;
-    return serializer(value);
+    return serializer(value, info);
   }
 
   parseValue(value: mixed): ?InternalType {
@@ -254,7 +254,7 @@ export class GraphQLScalarType<InternalType> {
 export type GraphQLScalarTypeConfig<InternalType> = {
   name: string;
   description?: ?string;
-  serialize: (value: mixed) => ?InternalType;
+  serialize: (value: mixed, info?: GraphQLResolveInfo) => ?InternalType;
   parseValue?: (value: mixed) => ?InternalType;
   parseLiteral?: (valueAST: Value) => ?InternalType;
 }
