@@ -695,7 +695,7 @@ function completeValue(
   // If field type is List, complete each item in the list with the inner type
   if (returnType instanceof GraphQLList) {
     invariant(
-      Array.isArray(result),
+      typeof result.map === 'function',
       'User Error: expected iterable, but did not find one ' +
       `for field ${info.parentType}.${info.fieldName}.`
     );
