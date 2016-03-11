@@ -13,6 +13,7 @@ import {
   graphql,
   GraphQLSchema,
   GraphQLObjectType,
+  GraphQLScalarType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLList,
@@ -349,6 +350,96 @@ describe('Execute: Handles execution of abstract types', () => {
             'Runtime Object type "Human" is not a possible type for "Pet".' }
       ]
     });
+  });
+
+  it('serialize on ScalarType has info', async () => {
+
+    const CompositeID = new GraphQLScalarType({
+      name: 'CompositeID',
+      serialize(value, info) {
+        return `${info.parentType.name}:${value}`;
+      }
+    });
+
+    const PetType = new GraphQLInterfaceType({
+      name: 'Pet',
+      fields: {
+        id: { type: CompositeID },
+        name: { type: GraphQLString }
+      }
+    });
+
+    // Added to interface type when defined
+    /* eslint-disable no-unused-vars */
+
+    const DogType = new GraphQLObjectType({
+      name: 'Dog',
+      interfaces: [ PetType ],
+      isTypeOf: obj => obj instanceof Dog,
+      fields: {
+        id: { type: CompositeID },
+        name: { type: GraphQLString },
+        woofs: { type: GraphQLBoolean },
+      }
+    });
+
+    const CatType = new GraphQLObjectType({
+      name: 'Cat',
+      interfaces: [ PetType ],
+      isTypeOf: obj => obj instanceof Cat,
+      fields: {
+        id: { type: CompositeID },
+        name: { type: GraphQLString },
+        meows: { type: GraphQLBoolean },
+      }
+    });
+
+    /* eslint-enable no-unused-vars */
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          pets: {
+            type: new GraphQLList(PetType),
+            resolve() {
+              const dog = new Dog('Odie', true);
+              const cat = new Cat('Garfield', false);
+              dog.id = 1;
+              cat.id = 2;
+              return [ dog, cat ];
+            }
+          }
+        }
+      })
+    });
+
+    const query = `{
+      pets {
+        id
+        name
+        ... on Dog {
+          woofs
+        }
+        ... on Cat {
+          meows
+        }
+      }
+    }`;
+
+    const result = await graphql(schema, query);
+
+    expect(result).to.deep.equal({
+      data: {
+        pets: [
+          { id: 'Dog:1',
+            name: 'Odie',
+            woofs: true },
+          { id: 'Cat:2',
+            name: 'Garfield',
+            meows: false } ] }
+    });
+
   });
 
 });
