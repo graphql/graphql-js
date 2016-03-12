@@ -35,7 +35,7 @@ describe('Printer', () => {
   });
 
   it('correctly prints non-query operations without name', () => {
-    const queryAstShorthanded = parse(`query { id, name }`);
+    const queryAstShorthanded = parse('query { id, name }');
     expect(print(queryAstShorthanded)).to.equal(
 `{
   id
@@ -43,7 +43,7 @@ describe('Printer', () => {
 }
 `);
 
-    const mutationAst = parse(`mutation { id, name }`);
+    const mutationAst = parse('mutation { id, name }');
     expect(print(mutationAst)).to.equal(
 `mutation {
   id
@@ -52,8 +52,8 @@ describe('Printer', () => {
 `);
 
     const queryAstWithArtifacts = parse(
-`query ($foo: TestType) @testDirective { id, name }`
-);
+      'query ($foo: TestType) @testDirective { id, name }'
+    );
     expect(print(queryAstWithArtifacts)).to.equal(
 `query ($foo: TestType) @testDirective {
   id
@@ -62,8 +62,8 @@ describe('Printer', () => {
 `);
 
     const mutationAstWithArtifacts = parse(
-`mutation ($foo: TestType) @testDirective { id, name }`
-);
+      'mutation ($foo: TestType) @testDirective { id, name }'
+    );
     expect(print(mutationAstWithArtifacts)).to.equal(
 `mutation ($foo: TestType) @testDirective {
   id

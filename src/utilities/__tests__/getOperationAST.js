@@ -15,22 +15,22 @@ import { getOperationAST } from '../getOperationAST';
 describe('getOperationAST', () => {
 
   it('Gets an operation from a simple document', () => {
-    const doc = parse(`{ field }`);
+    const doc = parse('{ field }');
     expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
   });
 
   it('Gets an operation from a document with named op (mutation)', () => {
-    const doc = parse(`mutation Test { field }`);
+    const doc = parse('mutation Test { field }');
     expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
   });
 
   it('Gets an operation from a document with named op (subscription)', () => {
-    const doc = parse(`subscription Test { field }`);
+    const doc = parse('subscription Test { field }');
     expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
   });
 
   it('Does not get missing operation', () => {
-    const doc = parse(`type Foo { field: String }`);
+    const doc = parse('type Foo { field: String }');
     expect(getOperationAST(doc)).to.equal(null);
   });
 

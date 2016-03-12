@@ -11,11 +11,9 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { Field } from '../../language/ast';
-import {
-  isAbstractType,
-  GraphQLAbstractType,
-  GraphQLObjectType,
-} from '../../type/definition';
+import type { GraphQLAbstractType } from '../../type/definition';
+import { isAbstractType, GraphQLObjectType } from '../../type/definition';
+
 
 export function undefinedFieldMessage(
   fieldName: string,
@@ -33,7 +31,7 @@ export function undefinedFieldMessage(
       suggestions += `, and ${suggestedTypes.length - MAX_LENGTH} other types`;
     }
     message += ` However, this field exists on ${suggestions}.`;
-    message += ` Perhaps you meant to use an inline fragment?`;
+    message += ' Perhaps you meant to use an inline fragment?';
   }
   return message;
 }

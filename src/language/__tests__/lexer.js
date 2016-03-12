@@ -67,7 +67,7 @@ describe('Lexer', () => {
       value: 'foo'
     });
 
-    expect(lexOne(`,,,foo,,,`)).to.deep.equal({
+    expect(lexOne(',,,foo,,,')).to.deep.equal({
       kind: TokenKind.NAME,
       start: 3,
       end: 6,

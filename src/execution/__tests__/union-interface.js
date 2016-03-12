@@ -378,7 +378,7 @@ describe('Execute: Union and intersection types', () => {
 
     const john2 = new Person('John', [], [ liz ]);
 
-    const ast = parse(`{ name, friends { name } }`);
+    const ast = parse('{ name, friends { name } }');
 
     expect(
       await execute(schema2, ast, john2)

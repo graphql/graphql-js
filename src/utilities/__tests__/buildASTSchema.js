@@ -374,14 +374,14 @@ type Wat {
   });
 
   it('Rejects query names', () => {
-    const body = `query Foo { field }`;
+    const body = 'query Foo { field }';
     const doc = parse(body);
     expect(() => buildASTSchema(doc, 'Foo'))
       .to.throw('Specified query type Foo not found in document.');
   });
 
   it('Rejects fragment names', () => {
-    const body = `fragment Foo on Type { field }`;
+    const body = 'fragment Foo on Type { field }';
     const doc = parse(body);
     expect(() => buildASTSchema(doc, 'Foo'))
       .to.throw('Specified query type Foo not found in document.');

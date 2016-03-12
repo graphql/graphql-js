@@ -132,18 +132,22 @@ export function buildASTSchema(
     keyMap(typeDefs, d => d.name.value);
 
   if (!astMap[queryTypeName]) {
-    throw new Error('Specified query type ' + queryTypeName +
-      ' not found in document.');
+    throw new Error(
+      `Specified query type ${queryTypeName} not found in document.`
+    );
   }
 
   if (mutationTypeName && !astMap[mutationTypeName]) {
-    throw new Error('Specified mutation type ' + mutationTypeName +
-      ' not found in document.');
+    throw new Error(
+      `Specified mutation type ${mutationTypeName} not found in document.`
+    );
   }
 
   if (subscriptionTypeName && !astMap[subscriptionTypeName]) {
-    throw new Error('Specified subscription type ' + subscriptionTypeName +
-      ' not found in document.');
+    throw new Error(
+      `Specified subscription type ${
+        subscriptionTypeName} not found in document.`
+    );
   }
 
   const innerTypeMap = {
@@ -167,7 +171,7 @@ export function buildASTSchema(
     const type = typeDefNamed(typeAST.name.value);
     invariant(
       type instanceof GraphQLObjectType,
-      `AST must provide object type.`
+      'AST must provide object type.'
     );
     return (type: any);
   }
@@ -189,7 +193,7 @@ export function buildASTSchema(
 
     const innerTypeDef = makeSchemaDef(astMap[typeName]);
     if (!innerTypeDef) {
-      throw new Error('Nothing constructed for ' + typeName);
+      throw new Error(`Nothing constructed for ${typeName}`);
     }
     innerTypeMap[typeName] = innerTypeDef;
     return innerTypeDef;
@@ -213,7 +217,7 @@ export function buildASTSchema(
       case INPUT_OBJECT_TYPE_DEFINITION:
         return makeInputObjectDef(def);
       default:
-        throw new Error(def.kind + ' not supported');
+        throw new Error(`${def.kind} not supported`);
     }
   }
 

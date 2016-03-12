@@ -184,7 +184,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('threads context correctly', async () => {
-    const doc = `query Example { a }`;
+    const doc = 'query Example { a }';
 
     const data = {
       contextThing: 'thing',
@@ -379,7 +379,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('uses the inline operation if no operation is provided', async () => {
-    const doc = `{ a }`;
+    const doc = '{ a }';
     const data = { a: 'b' };
     const ast = parse(doc);
     const schema = new GraphQLSchema({
@@ -397,7 +397,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('uses the only operation if no operation is provided', async () => {
-    const doc = `query Example { a }`;
+    const doc = 'query Example { a }';
     const data = { a: 'b' };
     const ast = parse(doc);
     const schema = new GraphQLSchema({
@@ -415,7 +415,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('throws if no operation is provided with multiple operations', () => {
-    const doc = `query Example { a } query OtherExample { a }`;
+    const doc = 'query Example { a } query OtherExample { a }';
     const data = { a: 'b' };
     const ast = parse(doc);
     const schema = new GraphQLSchema({
@@ -433,7 +433,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('uses the query schema for queries', async () => {
-    const doc = `query Q { a } mutation M { c } subscription S { a }`;
+    const doc = 'query Q { a } mutation M { c } subscription S { a }';
     const data = { a: 'b', c: 'd' };
     const ast = parse(doc);
     const schema = new GraphQLSchema({
@@ -463,7 +463,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('uses the mutation schema for mutations', async () => {
-    const doc = `query Q { a } mutation M { c }`;
+    const doc = 'query Q { a } mutation M { c }';
     const data = { a: 'b', c: 'd' };
     const ast = parse(doc);
     const schema = new GraphQLSchema({
@@ -487,7 +487,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('uses the subscription schema for subscriptions', async () => {
-    const doc = `query Q { a } subscription S { a }`;
+    const doc = 'query Q { a } subscription S { a }';
     const data = { a: 'b', c: 'd' };
     const ast = parse(doc);
     const schema = new GraphQLSchema({
@@ -731,10 +731,11 @@ describe('Execute: Handles basic execution tasks', () => {
       caughtError = error;
     }
 
-    expect(caughtError).to.deep.equal({
-      message:
+    expect(caughtError).to.deep.equal(
+      new Error(
         'GraphQL cannot execute a request containing a ObjectTypeDefinition.'
-    });
+      )
+    );
   });
 
 });
