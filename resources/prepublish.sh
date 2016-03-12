@@ -21,4 +21,10 @@ fi;
 #
 #    var language = require('graphql/language');
 #
-babel --optional runtime src --ignore __tests__ --out-dir ./;
+babel src --ignore __tests__ --out-dir ./
+
+# Ensure a vanilla package.json before deploying so other tools do not interpret
+# The built output as requiring any further transformation.
+node -e "var package = require('./package.json'); \
+  delete package.babel; delete package.scripts; delete package.options; \
+  require('fs').writeFileSync('package.json', JSON.stringify(package));"

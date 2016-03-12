@@ -218,8 +218,8 @@ export class GraphQLScalarType<InternalType> {
     invariant(
       typeof config.serialize === 'function',
       `${this} must provide "serialize" function. If this custom Scalar is ` +
-      `also used as an input type, ensure "parseValue" and "parseLiteral" ` +
-      `functions are also provided.`
+      'also used as an input type, ensure "parseValue" and "parseLiteral" ' +
+      'functions are also provided.'
     );
     if (config.parseValue || config.parseLiteral) {
       invariant(
@@ -367,8 +367,8 @@ function defineInterfaces(
         typeof type.isTypeOf === 'function',
         `Interface Type ${iface} does not provide a "resolveType" function ` +
         `and implementing Type ${type} does not provide a "isTypeOf" ` +
-        `function. There is no way to resolve this implementing type ` +
-        `during execution.`
+        'function. There is no way to resolve this implementing type ' +
+        'during execution.'
       );
     }
   });
@@ -383,14 +383,14 @@ function defineFieldMap(
   invariant(
     isPlainObj(fieldMap),
     `${type} fields must be an object with field names as keys or a ` +
-    `function which returns such an object.`
+    'function which returns such an object.'
   );
 
   const fieldNames = Object.keys(fieldMap);
   invariant(
     fieldNames.length > 0,
     `${type} fields must be an object with field names as keys or a ` +
-    `function which returns such an object.`
+    'function which returns such an object.'
   );
 
   const resultFieldMap = {};
@@ -403,7 +403,7 @@ function defineFieldMap(
     invariant(
       !field.hasOwnProperty('isDeprecated'),
       `${type}.${fieldName} should provide "deprecationReason" instead ` +
-      `of "isDeprecated".`
+      'of "isDeprecated".'
     );
     invariant(
       isOutputType(field.type),
@@ -416,7 +416,7 @@ function defineFieldMap(
       invariant(
         isPlainObj(field.args),
         `${type}.${fieldName} args must be an object with argument names ` +
-        `as keys.`
+        'as keys.'
       );
       field.args = Object.keys(field.args).map(argName => {
         assertValidName(argName);
@@ -685,8 +685,8 @@ export class GraphQLUnionType {
           typeof type.isTypeOf === 'function',
           `Union Type ${this} does not provide a "resolveType" function ` +
           `and possible Type ${type} does not provide a "isTypeOf" ` +
-          `function. There is no way to resolve this possible type ` +
-          `during execution.`
+          'function. There is no way to resolve this possible type ' +
+          'during execution.'
         );
       }
     });
@@ -850,7 +850,7 @@ function defineEnumValues(
     invariant(
       !value.hasOwnProperty('isDeprecated'),
       `${type}.${valueName} should provide "deprecationReason" instead ` +
-      `of "isDeprecated".`
+      'of "isDeprecated".'
     );
     return {
       name: valueName,
@@ -930,13 +930,13 @@ export class GraphQLInputObjectType {
     invariant(
       isPlainObj(fieldMap),
       `${this} fields must be an object with field names as keys or a ` +
-      `function which returns such an object.`
+      'function which returns such an object.'
     );
     const fieldNames = Object.keys(fieldMap);
     invariant(
       fieldNames.length > 0,
       `${this} fields must be an object with field names as keys or a ` +
-      `function which returns such an object.`
+      'function which returns such an object.'
     );
     const resultFieldMap = {};
     fieldNames.forEach(fieldName => {

@@ -679,8 +679,8 @@ function completeValue(
     );
     if (completed === null) {
       throw new GraphQLError(
-        `Cannot return null for non-nullable ` +
-        `field ${info.parentType}.${info.fieldName}.`,
+        `Cannot return null for non-nullable field ${
+          info.parentType}.${info.fieldName}.`,
         fieldASTs
       );
     }
@@ -696,8 +696,8 @@ function completeValue(
   if (returnType instanceof GraphQLList) {
     invariant(
       Array.isArray(result),
-      'User Error: expected iterable, but did not find one ' +
-      `for field ${info.parentType}.${info.fieldName}.`
+      `User Error: expected iterable, but did not find one for field ${
+        info.parentType}.${info.fieldName}.`
     );
 
     // This is specified as a simple map, however we're optimizing the path

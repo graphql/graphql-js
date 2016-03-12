@@ -172,7 +172,7 @@ type Hello {
 
 
   it('Simple type inheriting interface', () => {
-    const body = `type Hello implements World { }`;
+    const body = 'type Hello implements World { }';
     const loc = createLocFn(body);
     const doc = parse(body);
     const expected = {
@@ -192,7 +192,7 @@ type Hello {
   });
 
   it('Simple type inheriting multiple interfaces', () => {
-    const body = `type Hello implements Wo, rld { }`;
+    const body = 'type Hello implements Wo, rld { }';
     const loc = createLocFn(body);
     const doc = parse(body);
     const expected = {
@@ -215,7 +215,7 @@ type Hello {
   });
 
   it('Single value enum', () => {
-    const body = `enum Hello { WORLD }`;
+    const body = 'enum Hello { WORLD }';
     const loc = createLocFn(body);
     const doc = parse(body);
     const expected = {
@@ -234,7 +234,7 @@ type Hello {
   });
 
   it('Double value enum', () => {
-    const body = `enum Hello { WO, RLD }`;
+    const body = 'enum Hello { WO, RLD }';
     const loc = createLocFn(body);
     const doc = parse(body);
     const expected = {
@@ -446,7 +446,7 @@ type Hello {
   });
 
   it('Simple union', () => {
-    const body = `union Hello = World`;
+    const body = 'union Hello = World';
     const doc = parse(body);
     const loc = createLocFn(body);
     const expected = {
@@ -465,7 +465,7 @@ type Hello {
   });
 
   it('Union with two types', () => {
-    const body = `union Hello = Wo | Rld`;
+    const body = 'union Hello = Wo | Rld';
     const doc = parse(body);
     const loc = createLocFn(body);
     const expected = {
@@ -487,7 +487,7 @@ type Hello {
   });
 
   it('Scalar', () => {
-    const body = `scalar Hello`;
+    const body = 'scalar Hello';
     const doc = parse(body);
     const loc = createLocFn(body);
     const expected = {

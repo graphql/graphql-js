@@ -22,8 +22,8 @@ import {
   OBJECT,
   OBJECT_FIELD,
 } from '../language/kinds';
+import type { GraphQLType } from '../type/definition';
 import {
-  GraphQLType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,

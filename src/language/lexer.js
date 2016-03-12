@@ -395,7 +395,7 @@ function readString(source, start) {
             throw syntaxError(
               source,
               position,
-              `Invalid character escape sequence: ` +
+              'Invalid character escape sequence: ' +
               `\\u${body.slice(position + 1, position + 5)}.`
             );
           }
