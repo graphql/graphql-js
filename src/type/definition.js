@@ -301,7 +301,7 @@ export type GraphQLScalarTypeConfig<InternalType> = {
 export class GraphQLObjectType {
   name: string;
   description: ?string;
-  isTypeOf: ?(value: mixed, info?: GraphQLResolveInfo) => boolean;
+  isTypeOf: ?GraphQLIsTypeOfFn;
 
   _typeConfig: GraphQLObjectTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
@@ -459,7 +459,7 @@ export type GraphQLObjectTypeConfig = {
   name: string;
   interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap;
-  isTypeOf?: (value: mixed, info?: GraphQLResolveInfo) => boolean;
+  isTypeOf?: GraphQLIsTypeOfFn;
   description?: ?string
 }
 
@@ -471,6 +471,11 @@ export type GraphQLTypeResolveFn = (
   value: mixed,
   info?: GraphQLResolveInfo
 ) => ?GraphQLObjectType
+
+export type GraphQLIsTypeOfFn = (
+  value: mixed,
+  info?: GraphQLResolveInfo
+) => boolean
 
 export type GraphQLFieldResolveFn = (
   source: mixed,
