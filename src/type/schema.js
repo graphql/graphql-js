@@ -64,15 +64,15 @@ export class GraphQLSchema {
 
     invariant(
       !config.mutation || config.mutation instanceof GraphQLObjectType,
-      `Schema mutation must be Object Type if provided but ` +
-      `got: ${config.mutation}.`
+      `Schema mutation must be Object Type if provided but got: ${
+        config.mutation}.`
     );
     this._mutationType = config.mutation;
 
     invariant(
       !config.subscription || config.subscription instanceof GraphQLObjectType,
-      `Schema subscription must be Object Type if provided but ` +
-      `got: ${config.subscription}.`
+      `Schema subscription must be Object Type if provided but got: ${
+        config.subscription}.`
     );
     this._subscriptionType = config.subscription;
 
@@ -81,8 +81,8 @@ export class GraphQLSchema {
       Array.isArray(config.directives) && config.directives.every(
         directive => directive instanceof GraphQLDirective
       ),
-      `Schema directives must be Array<GraphQLDirective> if provided but ` +
-      `got: ${config.directives}.`
+      `Schema directives must be Array<GraphQLDirective> if provided but got: ${
+        config.directives}.`
     );
     // Provide `@include() and `@skip()` directives by default.
     this._directives = config.directives || [
@@ -157,7 +157,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (map[type.name]) {
     invariant(
       map[type.name] === type,
-      `Schema must contain unique named types but contains multiple ` +
+      'Schema must contain unique named types but contains multiple ' +
       `types named "${type}".`
     );
     return map;
@@ -209,7 +209,7 @@ function assertObjectImplementsInterface(
     invariant(
       objectField,
       `"${iface}" expects field "${fieldName}" but "${object}" does not ` +
-      `provide it.`
+      'provide it.'
     );
 
     // Assert interface field type is satisfied by object field type, by being

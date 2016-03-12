@@ -87,6 +87,8 @@ export {
 
   // Visit
   visit,
+  visitInParallel,
+  visitWithTypeInfo,
   Kind,
   BREAK,
 } from './language';

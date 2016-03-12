@@ -1012,8 +1012,8 @@ function completeValue(
     );
     if (completed === null) {
       throw new GraphQLError(
-        `Cannot return null for non-nullable ` +
-        `field ${plan.parentType}.${plan.fieldName}.`,
+        `Cannot return null for non-nullable field ${
+          plan.parentType}.${plan.fieldName}.`,
         plan.fieldASTs
       );
     }
@@ -1070,8 +1070,8 @@ function evaluateMappingPlan(
 
   invariant(
     Array.isArray(result),
-    'User Error: expected iterable, but did not find one ' +
-    `for field ${plan.parentType}.${plan.fieldName}.`
+    `User Error: expected iterable, but did not find one for field ${
+      plan.parentType}.${plan.fieldName}.`
   );
   invariant(plan.returnType.ofType);
 

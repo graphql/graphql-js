@@ -128,8 +128,8 @@ export function buildClientSchema(
     if (!typeIntrospection) {
       throw new Error(
         `Invalid or incomplete schema, unknown type: ${typeName}. Ensure ` +
-        `that a full introspection query is used in order to build a ` +
-        `client schema.`
+        'that a full introspection query is used in order to build a ' +
+        'client schema.'
       );
     }
     const typeDef = buildType(typeIntrospection);
@@ -141,7 +141,7 @@ export function buildClientSchema(
     const type = getType(typeRef);
     invariant(
       isInputType(type),
-      `Introspection must provide input type for arguments.`
+      'Introspection must provide input type for arguments.'
     );
     return (type: any);
   }
@@ -150,7 +150,7 @@ export function buildClientSchema(
     const type = getType(typeRef);
     invariant(
       isOutputType(type),
-      `Introspection must provide output type for fields.`
+      'Introspection must provide output type for fields.'
     );
     return (type: any);
   }
@@ -159,7 +159,7 @@ export function buildClientSchema(
     const type = getType(typeRef);
     invariant(
       type instanceof GraphQLObjectType,
-      `Introspection must provide object type for possibleTypes.`
+      'Introspection must provide object type for possibleTypes.'
     );
     return (type: any);
   }
@@ -170,7 +170,7 @@ export function buildClientSchema(
     const type = getType(typeRef);
     invariant(
       type instanceof GraphQLInterfaceType,
-      `Introspection must provide interface type for interfaces.`
+      'Introspection must provide interface type for interfaces.'
     );
     return (type: any);
   }
@@ -195,8 +195,8 @@ export function buildClientSchema(
       default:
         throw new Error(
           `Invalid or incomplete schema, unknown kind: ${type.kind}. Ensure ` +
-          `that a full introspection query is used in order to build a ` +
-          `client schema.`
+          'that a full introspection query is used in order to build a ' +
+          'client schema.'
         );
     }
   }

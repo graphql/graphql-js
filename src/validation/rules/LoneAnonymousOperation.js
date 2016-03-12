@@ -14,7 +14,7 @@ import { OPERATION_DEFINITION } from '../../language/kinds';
 
 
 export function anonOperationNotAloneMessage(): string {
-  return `This anonymous operation must be the only defined operation.`;
+  return 'This anonymous operation must be the only defined operation.';
 }
 
 /**

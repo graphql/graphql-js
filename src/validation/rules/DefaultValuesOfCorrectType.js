@@ -32,7 +32,7 @@ export function badValueForDefaultArgMessage(
   verboseErrors?: [string]
 ): string {
   const message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
-  return `Variable "$${varName} has invalid default value ${value}.${message}`;
+  return `Variable "$${varName}" has invalid default value ${value}.${message}`;
 }
 
 /**

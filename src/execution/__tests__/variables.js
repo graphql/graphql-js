@@ -175,6 +175,22 @@ describe('Execute: Handles inputs', () => {
           }
         });
       });
+
+      it('properly runs parseLiteral on complex scalar types', async () => {
+        const doc = `
+        {
+          fieldWithObjectInput(input: {a: "foo", d: "SerializedValue"})
+        }
+        `;
+        const ast = parse(doc);
+
+        return expect(await execute(schema, ast)).to.deep.equal({
+          data: {
+            fieldWithObjectInput: '{"a":"foo","d":"DeserializedValue"}',
+          }
+        });
+      });
+
     });
 
     describe('using variables', () => {

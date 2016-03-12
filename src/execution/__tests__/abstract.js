@@ -259,8 +259,9 @@ describe('Execute: Handles execution of abstract types', () => {
         ]
       },
       errors: [
-        { message:
-            'Runtime Object type "Human" is not a possible type for "Pet".' }
+        new Error(
+          'Runtime Object type "Human" is not a possible type for "Pet".'
+        )
       ]
     });
   });
@@ -345,8 +346,9 @@ describe('Execute: Handles execution of abstract types', () => {
         ]
       },
       errors: [
-        { message:
-            'Runtime Object type "Human" is not a possible type for "Pet".' }
+        new Error(
+          'Runtime Object type "Human" is not a possible type for "Pet".'
+        )
       ]
     });
   });

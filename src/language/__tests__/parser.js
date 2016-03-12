@@ -18,7 +18,7 @@ import { join } from 'path';
 describe('Parser', () => {
 
   it('accepts option to not include source', () => {
-    expect(parse(`{ field }`, { noSource: true })).to.deep.equal({
+    expect(parse('{ field }', { noSource: true })).to.deep.equal({
       kind: 'Document',
       loc: { start: 0, end: 9 },
       definitions:

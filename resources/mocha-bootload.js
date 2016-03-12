@@ -7,10 +7,6 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-require('babel/register')({
-  optional: ['runtime', 'es7.asyncFunctions']
-});
-
 var chai = require('chai');
 
 var chaiSubset = require('chai-subset');

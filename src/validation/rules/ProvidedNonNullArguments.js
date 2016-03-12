@@ -21,7 +21,7 @@ export function missingFieldArgMessage(
   type: GraphQLType
 ): string {
   return `Field "${fieldName}" argument "${argName}" of type "${type}" ` +
-    `is required but not provided.`;
+    'is required but not provided.';
 }
 
 export function missingDirectiveArgMessage(

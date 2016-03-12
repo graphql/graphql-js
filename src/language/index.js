@@ -14,4 +14,4 @@ export { lex } from './lexer';
 export { parse, parseValue } from './parser';
 export { print } from './printer';
 export { Source } from './source';
-export { visit, BREAK } from './visitor';
+export { visit, visitInParallel, visitWithTypeInfo, BREAK } from './visitor';
