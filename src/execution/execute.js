@@ -694,26 +694,7 @@ function completeValue(
 
   // If field type is List, complete each item in the list with the inner type
   if (returnType instanceof GraphQLList) {
-    invariant(
-      Array.isArray(result),
-      `User Error: expected iterable, but did not find one for field ${
-        info.parentType}.${info.fieldName}.`
-    );
-
-    // This is specified as a simple map, however we're optimizing the path
-    // where the list contains no Promises by avoiding creating another Promise.
-    const itemType = returnType.ofType;
-    let containsPromise = false;
-    const completedResults = result.map(item => {
-      const completedItem =
-        completeValueCatchingError(exeContext, itemType, fieldASTs, info, item);
-      if (!containsPromise && isThenable(completedItem)) {
-        containsPromise = true;
-      }
-      return completedItem;
-    });
-
-    return containsPromise ? Promise.all(completedResults) : completedResults;
+    return completeListValue(exeContext, returnType, fieldASTs, info, result);
   }
 
   // If field type is Scalar or Enum, serialize to a valid value, returning
@@ -773,6 +754,39 @@ function completeValue(
   }
 
   return executeFields(exeContext, runtimeType, result, subFieldASTs);
+}
+
+/**
+ * Complete a list value by completing each item in the list with the
+ * inner type
+ */
+function completeListValue(
+  exeContext: ExecutionContext,
+  returnType: GraphQLList,
+  fieldASTs: Array<Field>,
+  info: GraphQLResolveInfo,
+  result: mixed
+): mixed {
+  invariant(
+    Array.isArray(result),
+    `User Error: expected iterable, but did not find one for field ${
+      info.parentType}.${info.fieldName}.`
+  );
+
+  // This is specified as a simple map, however we're optimizing the path
+  // where the list contains no Promises by avoiding creating another Promise.
+  const itemType = returnType.ofType;
+  let containsPromise = false;
+  const completedResults = result.map(item => {
+    const completedItem =
+      completeValueCatchingError(exeContext, itemType, fieldASTs, info, item);
+    if (!containsPromise && isThenable(completedItem)) {
+      containsPromise = true;
+    }
+    return completedItem;
+  });
+
+  return containsPromise ? Promise.all(completedResults) : completedResults;
 }
 
 /**
