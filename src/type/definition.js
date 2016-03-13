@@ -34,7 +34,8 @@ export type GraphQLType =
   GraphQLEnumType |
   GraphQLInputObjectType |
   GraphQLList |
-  GraphQLNonNull;
+  GraphQLNonNull |
+  GraphQLRawObjectType;
 
 export function isType(type: mixed): boolean {
   return (
@@ -99,7 +100,8 @@ export function isOutputType(type: ?GraphQLType): boolean {
     namedType instanceof GraphQLObjectType ||
     namedType instanceof GraphQLInterfaceType ||
     namedType instanceof GraphQLUnionType ||
-    namedType instanceof GraphQLEnumType
+    namedType instanceof GraphQLEnumType ||
+    namedType instanceof GraphQLRawObjectType
   );
 }
 
@@ -114,6 +116,7 @@ export function isLeafType(type: ?GraphQLType): boolean {
   const namedType = getNamedType(type);
   return (
     namedType instanceof GraphQLScalarType ||
+    namedType instanceof GraphQLRawObjectType ||
     namedType instanceof GraphQLEnumType
   );
 }
@@ -173,7 +176,8 @@ export type GraphQLNamedType =
   GraphQLInterfaceType |
   GraphQLUnionType |
   GraphQLEnumType |
-  GraphQLInputObjectType;
+  GraphQLInputObjectType |
+  GraphQLRawObjectType;
 
 export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
   let unmodifiedType = type;
@@ -186,6 +190,22 @@ export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
   return unmodifiedType;
 }
 
+export class GraphQLRawObjectType {
+  name: string;
+  description: ?string;
+
+
+  constructor(config: GraphQLObjectTypeConfig) {
+    invariant(config.name, 'Type must be named.');
+    assertValidName(config.name);
+    this.name = config.name;
+    this.description = config.description;
+  }
+
+  toString(): string {
+    return this.name;
+  }
+}
 
 /**
  * Scalar Type Definition

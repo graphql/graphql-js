@@ -18,6 +18,7 @@ import { getVariableValues, getArgumentValues } from './values';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
+  GraphQLRawObjectType,
   GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
@@ -723,6 +724,10 @@ function completeValue(
     invariant(returnType.serialize, 'Missing serialize method on type');
     const serializedResult = returnType.serialize(result);
     return isNullish(serializedResult) ? null : serializedResult;
+  }
+
+  if (returnType instanceof GraphQLRawObjectType) {
+    return result;
   }
 
   // Field type must be Object, Interface or Union and expect sub-selections.

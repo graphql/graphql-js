@@ -45,6 +45,7 @@ export {
   // Definitions
   GraphQLScalarType,
   GraphQLObjectType,
+  GraphQLRawObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
