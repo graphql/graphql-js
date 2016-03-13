@@ -21,6 +21,8 @@ import {
   GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
   isAbstractType
 } from '../type/definition';
 import type {
@@ -637,6 +639,9 @@ function completeValueCatchingError(
  * value of the type by calling the `serialize` method of GraphQL type
  * definition.
  *
+ * If the field is an abstract type, determine the runtime type of the value
+ * and then complete based on that type
+ *
  * Otherwise, the field type expects a sub-selection set, and will complete the
  * value by evaluating all sub-selections.
  */
@@ -715,32 +720,19 @@ function completeValue(
     );
   }
 
-  // Field type must be Object, Interface or Union and expect sub-selections.
-  let runtimeType: ?GraphQLObjectType;
-
-  if (isAbstractType(returnType)) {
-    const abstractType = ((returnType: any): GraphQLAbstractType);
-    runtimeType = abstractType.getObjectType(result, info);
-    if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
-      throw new GraphQLError(
-        `Runtime Object type "${runtimeType}" is not a possible type ` +
-        `for "${abstractType}".`,
-        fieldASTs
-      );
-    }
+  if (returnType instanceof GraphQLInterfaceType ||
+      returnType instanceof GraphQLUnionType) {
+    return completeAbstractValue(
+      exeContext,
+      returnType,
+      fieldASTs,
+      info,
+      result
+    );
   }
 
-  if (!runtimeType) {
-    return null;
-  }
-
-  return completeObjectValue(
-    exeContext,
-    runtimeType,
-    fieldASTs,
-    info,
-    result
-  );
+  // Not reachable
+  return null;
 }
 
 /**
@@ -829,6 +821,40 @@ function completeObjectValue(
   }
 
   return executeFields(exeContext, returnType, result, subFieldASTs);
+}
+
+/**
+ * Complete an value of an abstract type by determining the runtime type of
+ * that value, then completing based on that type.
+ */
+function completeAbstractValue(
+  exeContext: ExecutionContext,
+  returnType: GraphQLAbstractType,
+  fieldASTs: Array<Field>,
+  info: GraphQLResolveInfo,
+  result: mixed
+): mixed {
+  const abstractType = ((returnType: any): GraphQLAbstractType);
+  const runtimeType = abstractType.getObjectType(result, info);
+  if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
+    throw new GraphQLError(
+      `Runtime Object type "${runtimeType}" is not a possible type ` +
+      `for "${abstractType}".`,
+      fieldASTs
+    );
+  }
+
+  if (!runtimeType) {
+    return null;
+  }
+
+  return completeObjectValue(
+    exeContext,
+    runtimeType,
+    fieldASTs,
+    info,
+    result
+  );
 }
 
 /**
