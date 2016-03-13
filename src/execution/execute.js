@@ -705,12 +705,20 @@ function completeValue(
     return completeLeafValue(exeContext, returnType, fieldASTs, info, result);
   }
 
+  if (returnType instanceof GraphQLObjectType) {
+    return completeObjectValue(
+      exeContext,
+      returnType,
+      fieldASTs,
+      info,
+      result
+    );
+  }
+
   // Field type must be Object, Interface or Union and expect sub-selections.
   let runtimeType: ?GraphQLObjectType;
 
-  if (returnType instanceof GraphQLObjectType) {
-    runtimeType = returnType;
-  } else if (isAbstractType(returnType)) {
+  if (isAbstractType(returnType)) {
     const abstractType = ((returnType: any): GraphQLAbstractType);
     runtimeType = abstractType.getObjectType(result, info);
     if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
@@ -726,33 +734,13 @@ function completeValue(
     return null;
   }
 
-  // If there is an isTypeOf predicate function, call it with the
-  // current result. If isTypeOf returns false, then raise an error rather
-  // than continuing execution.
-  if (runtimeType.isTypeOf && !runtimeType.isTypeOf(result, info)) {
-    throw new GraphQLError(
-      `Expected value of type "${runtimeType}" but got: ${result}.`,
-      fieldASTs
-    );
-  }
-
-  // Collect sub-fields to execute to complete this value.
-  let subFieldASTs = Object.create(null);
-  const visitedFragmentNames = Object.create(null);
-  for (let i = 0; i < fieldASTs.length; i++) {
-    const selectionSet = fieldASTs[i].selectionSet;
-    if (selectionSet) {
-      subFieldASTs = collectFields(
-        exeContext,
-        runtimeType,
-        selectionSet,
-        subFieldASTs,
-        visitedFragmentNames
-      );
-    }
-  }
-
-  return executeFields(exeContext, runtimeType, result, subFieldASTs);
+  return completeObjectValue(
+    exeContext,
+    runtimeType,
+    fieldASTs,
+    info,
+    result
+  );
 }
 
 /**
@@ -802,6 +790,45 @@ function completeLeafValue(
   invariant(returnType.serialize, 'Missing serialize method on type');
   const serializedResult = returnType.serialize(result);
   return isNullish(serializedResult) ? null : serializedResult;
+}
+
+/**
+ * Complete an Object value by evaluating all sub-selections.
+ */
+function completeObjectValue(
+  exeContext: ExecutionContext,
+  returnType: GraphQLObjectType,
+  fieldASTs: Array<Field>,
+  info: GraphQLResolveInfo,
+  result: mixed
+): mixed {
+  // If there is an isTypeOf predicate function, call it with the
+  // current result. If isTypeOf returns false, then raise an error rather
+  // than continuing execution.
+  if (returnType.isTypeOf && !returnType.isTypeOf(result, info)) {
+    throw new GraphQLError(
+      `Expected value of type "${returnType}" but got: ${result}.`,
+      fieldASTs
+    );
+  }
+
+  // Collect sub-fields to execute to complete this value.
+  let subFieldASTs = Object.create(null);
+  const visitedFragmentNames = Object.create(null);
+  for (let i = 0; i < fieldASTs.length; i++) {
+    const selectionSet = fieldASTs[i].selectionSet;
+    if (selectionSet) {
+      subFieldASTs = collectFields(
+        exeContext,
+        returnType,
+        selectionSet,
+        subFieldASTs,
+        visitedFragmentNames
+      );
+    }
+  }
+
+  return executeFields(exeContext, returnType, result, subFieldASTs);
 }
 
 /**
