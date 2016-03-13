@@ -732,7 +732,10 @@ function completeValue(
   }
 
   // Not reachable
-  return null;
+  invariant(
+    false,
+    `Cannot complete value of unexpected type "${returnType}".`
+  );
 }
 
 /**
