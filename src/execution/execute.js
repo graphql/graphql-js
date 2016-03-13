@@ -25,6 +25,7 @@ import {
 } from '../type/definition';
 import type {
   GraphQLType,
+  GraphQLLeafType,
   GraphQLAbstractType,
   GraphQLFieldDefinition,
   GraphQLResolveInfo,
@@ -701,9 +702,7 @@ function completeValue(
   // null if serialization is not possible.
   if (returnType instanceof GraphQLScalarType ||
       returnType instanceof GraphQLEnumType) {
-    invariant(returnType.serialize, 'Missing serialize method on type');
-    const serializedResult = returnType.serialize(result);
-    return isNullish(serializedResult) ? null : serializedResult;
+    return completeLeafValue(exeContext, returnType, fieldASTs, info, result);
   }
 
   // Field type must be Object, Interface or Union and expect sub-selections.
@@ -787,6 +786,22 @@ function completeListValue(
   });
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+
+/**
+ * Complete a Scalar or Enum by serializing to a valid value, returning
+ * null if serialization is not possible.
+ */
+function completeLeafValue(
+  exeContext: ExecutionContext,
+  returnType: GraphQLLeafType,
+  fieldASTs: Array<Field>,
+  info: GraphQLResolveInfo,
+  result: mixed
+): mixed {
+  invariant(returnType.serialize, 'Missing serialize method on type');
+  const serializedResult = returnType.serialize(result);
+  return isNullish(serializedResult) ? null : serializedResult;
 }
 
 /**
