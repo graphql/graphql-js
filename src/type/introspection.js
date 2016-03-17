@@ -22,6 +22,7 @@ import {
   GraphQLNonNull,
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
+import { DirectiveLocation } from './directives';
 import type { GraphQLFieldDefinition } from './definition';
 
 
@@ -78,15 +79,77 @@ const __Directive = new GraphQLObjectType({
   fields: () => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
+    locations: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(
+        __DirectiveLocation
+      )))
+    },
     args: {
       type:
         new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
       resolve: directive => directive.args || []
     },
-    onOperation: { type: new GraphQLNonNull(GraphQLBoolean) },
-    onFragment: { type: new GraphQLNonNull(GraphQLBoolean) },
-    onField: { type: new GraphQLNonNull(GraphQLBoolean) },
+    // NOTE: the following three fields are deprecated and are no longer part
+    // of the GraphQL specification.
+    onOperation: {
+      deprecationReason: 'Use `locations`.',
+      type: new GraphQLNonNull(GraphQLBoolean),
+      resolve: d =>
+        d.locations.indexOf(DirectiveLocation.QUERY) !== -1 ||
+        d.locations.indexOf(DirectiveLocation.MUTATION) !== -1 ||
+        d.locations.indexOf(DirectiveLocation.SUBSCRIPTION) !== -1
+    },
+    onFragment: {
+      deprecationReason: 'Use `locations`.',
+      type: new GraphQLNonNull(GraphQLBoolean),
+      resolve: d =>
+        d.locations.indexOf(DirectiveLocation.FRAGMENT_SPREAD) !== -1 ||
+        d.locations.indexOf(DirectiveLocation.INLINE_FRAGMENT) !== -1 ||
+        d.locations.indexOf(DirectiveLocation.FRAGMENT_DEFINITION) !== -1
+    },
+    onField: {
+      deprecationReason: 'Use `locations`.',
+      type: new GraphQLNonNull(GraphQLBoolean),
+      resolve: d => d.locations.indexOf(DirectiveLocation.FIELD) !== -1
+    },
   }),
+});
+
+const __DirectiveLocation = new GraphQLEnumType({
+  name: '__DirectiveLocation',
+  description:
+    'A Directive can be adjacent to many parts of the GraphQL language, a ' +
+    '__DirectiveLocation describes one such possible adjacencies.',
+  values: {
+    QUERY: {
+      value: DirectiveLocation.QUERY,
+      description: 'Location adjacent to a query operation.'
+    },
+    MUTATION: {
+      value: DirectiveLocation.MUTATION,
+      description: 'Location adjacent to a mutation operation.'
+    },
+    SUBSCRIPTION: {
+      value: DirectiveLocation.SUBSCRIPTION,
+      description: 'Location adjacent to a subscription operation.'
+    },
+    FIELD: {
+      value: DirectiveLocation.FIELD,
+      description: 'Location adjacent to a field.'
+    },
+    FRAGMENT_DEFINITION: {
+      value: DirectiveLocation.FRAGMENT_DEFINITION,
+      description: 'Location adjacent to a fragment definition.'
+    },
+    FRAGMENT_SPREAD: {
+      value: DirectiveLocation.FRAGMENT_SPREAD,
+      description: 'Location adjacent to a fragment spread.'
+    },
+    INLINE_FRAGMENT: {
+      value: DirectiveLocation.INLINE_FRAGMENT,
+      description: 'Location adjacent to an inline fragment.'
+    },
+  }
 });
 
 const __Type = new GraphQLObjectType({

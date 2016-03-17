@@ -18,6 +18,7 @@ import {
   INLINE_FRAGMENT,
   FRAGMENT_DEFINITION
 } from '../../language/kinds';
+import { DirectiveLocation } from '../../type/directives';
 
 
 export function unknownDirectiveMessage(directiveName: string): string {
@@ -26,9 +27,9 @@ export function unknownDirectiveMessage(directiveName: string): string {
 
 export function misplacedDirectiveMessage(
   directiveName: string,
-  placement: string
+  location: string
 ): string {
-  return `Directive "${directiveName}" may not be used on "${placement}".`;
+  return `Directive "${directiveName}" may not be used on ${location}.`;
 }
 
 /**
@@ -52,34 +53,34 @@ export function KnownDirectives(context: ValidationContext): any {
         return;
       }
       const appliedTo = ancestors[ancestors.length - 1];
-      switch (appliedTo.kind) {
-        case OPERATION_DEFINITION:
-          if (!directiveDef.onOperation) {
-            context.reportError(new GraphQLError(
-              misplacedDirectiveMessage(node.name.value, 'operation'),
-              [ node ]
-            ));
-          }
-          break;
-        case FIELD:
-          if (!directiveDef.onField) {
-            context.reportError(new GraphQLError(
-              misplacedDirectiveMessage(node.name.value, 'field'),
-              [ node ]
-            ));
-          }
-          break;
-        case FRAGMENT_SPREAD:
-        case INLINE_FRAGMENT:
-        case FRAGMENT_DEFINITION:
-          if (!directiveDef.onFragment) {
-            context.reportError(new GraphQLError(
-              misplacedDirectiveMessage(node.name.value, 'fragment'),
-              [ node ]
-            ));
-          }
-          break;
+      const candidateLocation = getLocationForAppliedNode(appliedTo);
+      if (!candidateLocation) {
+        context.reportError(new GraphQLError(
+          misplacedDirectiveMessage(node.name.value, node.type),
+          [ node ]
+        ));
+      } else if (directiveDef.locations.indexOf(candidateLocation) === -1) {
+        context.reportError(new GraphQLError(
+          misplacedDirectiveMessage(node.name.value, candidateLocation),
+          [ node ]
+        ));
       }
     }
   };
+}
+
+function getLocationForAppliedNode(appliedTo) {
+  switch (appliedTo.kind) {
+    case OPERATION_DEFINITION:
+      switch (appliedTo.operation) {
+        case 'query': return DirectiveLocation.QUERY;
+        case 'mutation': return DirectiveLocation.MUTATION;
+        case 'subscription': return DirectiveLocation.SUBSCRIPTION;
+      }
+      break;
+    case FIELD: return DirectiveLocation.FIELD;
+    case FRAGMENT_SPREAD: return DirectiveLocation.FRAGMENT_SPREAD;
+    case INLINE_FRAGMENT: return DirectiveLocation.INLINE_FRAGMENT;
+    case FRAGMENT_DEFINITION: return DirectiveLocation.FRAGMENT_DEFINITION;
+  }
 }

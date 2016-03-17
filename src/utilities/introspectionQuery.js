@@ -8,6 +8,9 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import type { DirectiveLocationEnum } from '../type/directives';
+
+
 export const introspectionQuery = `
   query IntrospectionQuery {
     __schema {
@@ -20,12 +23,10 @@ export const introspectionQuery = `
       directives {
         name
         description
+        locations
         args {
           ...InputValue
         }
-        onOperation
-        onFragment
-        onField
       }
     }
   }
@@ -197,8 +198,6 @@ export type IntrospectionEnumValue = {
 export type IntrospectionDirective = {
   name: string;
   description: ?string;
+  locations: Array<DirectiveLocationEnum>;
   args: Array<IntrospectionInputValue>;
-  onOperation: boolean;
-  onFragment: boolean;
-  onField: boolean;
 }

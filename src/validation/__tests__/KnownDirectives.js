@@ -108,9 +108,9 @@ describe('Validate: Known directives', () => {
         ...Frag @operationOnly
       }
     `, [
-      misplacedDirective('include', 'operation', 2, 17),
-      misplacedDirective('operationOnly', 'field', 3, 14),
-      misplacedDirective('operationOnly', 'fragment', 4, 17),
+      misplacedDirective('include', 'QUERY', 2, 17),
+      misplacedDirective('operationOnly', 'FIELD', 3, 14),
+      misplacedDirective('operationOnly', 'FRAGMENT_SPREAD', 4, 17),
     ]);
   });
 

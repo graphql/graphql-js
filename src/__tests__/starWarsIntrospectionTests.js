@@ -71,6 +71,9 @@ describe('Star Wars Introspection Tests', () => {
             },
             {
               name: '__Directive'
+            },
+            {
+              name: '__DirectiveLocation'
             }
           ]
         }

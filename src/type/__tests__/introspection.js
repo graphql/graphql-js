@@ -641,6 +641,28 @@ describe('Introspection', () => {
                   deprecationReason: null
                 },
                 {
+                  name: 'locations',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'LIST',
+                      name: null,
+                      ofType: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'ENUM',
+                          name: '__DirectiveLocation'
+                        }
+                      }
+                    }
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null
+                },
+                {
                   name: 'args',
                   args: [],
                   type: {
@@ -674,8 +696,8 @@ describe('Introspection', () => {
                       ofType: null,
                     },
                   },
-                  isDeprecated: false,
-                  deprecationReason: null
+                  isDeprecated: true,
+                  deprecationReason: 'Use `locations`.'
                 },
                 {
                   name: 'onFragment',
@@ -689,8 +711,8 @@ describe('Introspection', () => {
                       ofType: null,
                     },
                   },
-                  isDeprecated: false,
-                  deprecationReason: null
+                  isDeprecated: true,
+                  deprecationReason: 'Use `locations`.'
                 },
                 {
                   name: 'onField',
@@ -704,19 +726,58 @@ describe('Introspection', () => {
                       ofType: null,
                     },
                   },
-                  isDeprecated: false,
-                  deprecationReason: null
+                  isDeprecated: true,
+                  deprecationReason: 'Use `locations`.'
                 }
               ],
               inputFields: null,
               interfaces: [],
               enumValues: null,
               possibleTypes: null,
+            },
+            {
+              kind: 'ENUM',
+              name: '__DirectiveLocation',
+              fields: null,
+              inputFields: null,
+              interfaces: null,
+              enumValues: [
+                {
+                  name: 'QUERY',
+                  isDeprecated: false
+                },
+                {
+                  name: 'MUTATION',
+                  isDeprecated: false
+                },
+                {
+                  name: 'SUBSCRIPTION',
+                  isDeprecated: false
+                },
+                {
+                  name: 'FIELD',
+                  isDeprecated: false
+                },
+                {
+                  name: 'FRAGMENT_DEFINITION',
+                  isDeprecated: false
+                },
+                {
+                  name: 'FRAGMENT_SPREAD',
+                  isDeprecated: false
+                },
+                {
+                  name: 'INLINE_FRAGMENT',
+                  isDeprecated: false
+                },
+              ],
+              possibleTypes: null,
             }
           ],
           directives: [
             {
               name: 'include',
+              locations: [ 'FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT' ],
               args: [
                 {
                   defaultValue: null,
@@ -732,12 +793,10 @@ describe('Introspection', () => {
                   }
                 }
               ],
-              onOperation: false,
-              onFragment: true,
-              onField: true
             },
             {
               name: 'skip',
+              locations: [ 'FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT' ],
               args: [
                 {
                   defaultValue: null,
@@ -753,9 +812,6 @@ describe('Introspection', () => {
                   }
                 }
               ],
-              onOperation: false,
-              onFragment: true,
-              onField: true
             }
           ]
         }
