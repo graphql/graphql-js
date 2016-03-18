@@ -51,6 +51,8 @@ import type {
   InputObjectTypeDefinition,
 
   TypeExtensionDefinition,
+
+  DirectiveDefinition,
 } from './ast';
 
 import {
@@ -94,6 +96,8 @@ import {
   INPUT_OBJECT_TYPE_DEFINITION,
 
   TYPE_EXTENSION_DEFINITION,
+
+  DIRECTIVE_DEFINITION,
 } from './kinds';
 
 
@@ -205,6 +209,7 @@ function parseDefinition(parser: Parser): Definition {
       case 'enum':
       case 'input': return parseTypeDefinition(parser);
       case 'extend': return parseTypeExtensionDefinition(parser);
+      case 'directive': return parseDirectiveDefinition(parser);
     }
   }
 
@@ -898,6 +903,39 @@ function parseTypeExtensionDefinition(parser: Parser): TypeExtensionDefinition {
   };
 }
 
+/**
+ * DirectiveDefinition :
+ *   - directive @ Name ArgumentsDefinition? on DirectiveLocations
+ */
+function parseDirectiveDefinition(parser: Parser): DirectiveDefinition {
+  const start = parser.token.start;
+  expectKeyword(parser, 'directive');
+  expect(parser, TokenKind.AT);
+  const name = parseName(parser);
+  const args = parseArgumentDefs(parser);
+  expectKeyword(parser, 'on');
+  const locations = parseDirectiveLocations(parser);
+  return {
+    kind: DIRECTIVE_DEFINITION,
+    name,
+    arguments: args,
+    locations,
+    loc: loc(parser, start)
+  };
+}
+
+/**
+ * DirectiveLocations :
+ *   - Name
+ *   - DirectiveLocations | Name
+ */
+function parseDirectiveLocations(parser: Parser): Array<Name> {
+  const locations = [];
+  do {
+    locations.push(parseName(parser));
+  } while (skip(parser, TokenKind.PIPE));
+  return locations;
+}
 
 // Core parsing utility functions
 

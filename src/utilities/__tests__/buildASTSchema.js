@@ -41,6 +41,18 @@ type HelloScalars {
     expect(output).to.equal(body);
   });
 
+  it('With directives', () => {
+    const body = `
+directive @foo(arg: Int) on FIELD
+
+type Hello {
+  str: String
+}
+`;
+    const output = cycleOutput(body, 'Hello');
+    expect(output).to.equal(body);
+  });
+
   it('Type modifiers', () => {
     const body = `
 type HelloScalars {

@@ -342,7 +342,7 @@ export function buildClientSchema(
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,
       locations,
-      args: directiveIntrospection.args.map(buildInputValue),
+      args: buildInputValueDefMap(directiveIntrospection.args),
     });
   }
 

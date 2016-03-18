@@ -25,11 +25,15 @@ import {
 
 
 export function printSchema(schema: GraphQLSchema): string {
-  return printFilteredSchema(schema, isDefinedType);
+  return printFilteredSchema(schema, n => !isSpecDirective(n), isDefinedType);
 }
 
 export function printIntrospectionSchema(schema: GraphQLSchema): string {
-  return printFilteredSchema(schema, isIntrospectionType);
+  return printFilteredSchema(schema, isSpecDirective, isIntrospectionType);
+}
+
+function isSpecDirective(directiveName: string): boolean {
+  return directiveName === 'skip' || directiveName === 'include';
 }
 
 function isDefinedType(typename: string): boolean {
@@ -52,14 +56,19 @@ function isBuiltInScalar(typename: string): boolean {
 
 function printFilteredSchema(
   schema: GraphQLSchema,
+  directiveFilter: (type: string) => boolean,
   typeFilter: (type: string) => boolean
 ): string {
+  const directives = schema.getDirectives()
+    .filter(directive => directiveFilter(directive.name));
   const typeMap = schema.getTypeMap();
   const types = Object.keys(typeMap)
     .filter(typeFilter)
     .sort((name1, name2) => name1.localeCompare(name2))
     .map(typeName => typeMap[typeName]);
-  return types.map(printType).join('\n\n') + '\n';
+  return directives.map(printDirective).concat(
+    types.map(printType)
+  ).join('\n\n') + '\n';
 }
 
 function printType(type: GraphQLType): string {
@@ -124,11 +133,11 @@ function printFields(type) {
   ).join('\n');
 }
 
-function printArgs(field) {
-  if (field.args.length === 0) {
+function printArgs(fieldOrDirectives) {
+  if (fieldOrDirectives.args.length === 0) {
     return '';
   }
-  return '(' + field.args.map(printInputValue).join(', ') + ')';
+  return '(' + fieldOrDirectives.args.map(printInputValue).join(', ') + ')';
 }
 
 function printInputValue(arg) {
@@ -137,4 +146,9 @@ function printInputValue(arg) {
     argDecl += ` = ${print(astFromValue(arg.defaultValue, arg.type))}`;
   }
   return argDecl;
+}
+
+function printDirective(directive) {
+  return 'directive @' + directive.name + printArgs(directive) +
+    ' on ' + directive.locations.join(' | ');
 }

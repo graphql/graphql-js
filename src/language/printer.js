@@ -123,6 +123,10 @@ const printDocASTReducer = {
     `input ${name} ${block(fields)}`,
 
   TypeExtensionDefinition: ({ definition }) => `extend ${definition}`,
+
+  DirectiveDefinition: ({ name, arguments: args, locations }) =>
+    'directive @' + name + wrap('(', join(args, ', '), ')') +
+    ' on ' + join(locations, ' | '),
 };
 
 /**

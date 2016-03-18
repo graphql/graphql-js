@@ -57,6 +57,7 @@ export type Node = Name
                  | EnumValueDefinition
                  | InputObjectTypeDefinition
                  | TypeExtensionDefinition
+                 | DirectiveDefinition
 
 // Name
 
@@ -78,6 +79,7 @@ export type Definition = OperationDefinition
                        | FragmentDefinition
                        | TypeDefinition
                        | TypeExtensionDefinition
+                       | DirectiveDefinition
 
 export type OperationDefinition = {
   kind: 'OperationDefinition';
@@ -331,4 +333,12 @@ export type TypeExtensionDefinition = {
   kind: 'TypeExtensionDefinition';
   loc?: ?Location;
   definition: ObjectTypeDefinition;
+}
+
+export type DirectiveDefinition = {
+  kind: 'DirectiveDefinition';
+  loc?: ?Location;
+  name: Name;
+  arguments?: ?Array<InputValueDefinition>;
+  locations: Array<Name>;
 }
