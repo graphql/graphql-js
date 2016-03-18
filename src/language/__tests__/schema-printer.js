@@ -49,6 +49,7 @@ describe('Printer', () => {
 
     const printed = print(ast);
 
+    /* eslint-disable max-len */
     expect(printed).to.equal(
 `type Foo implements Bar {
   one: Type
@@ -81,6 +82,10 @@ input InputType {
 extend type Foo {
   seven(argument: [String]): Type
 }
+
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 `);
 
   });

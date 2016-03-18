@@ -25,6 +25,7 @@ import {
   UNION_TYPE_DEFINITION,
   SCALAR_TYPE_DEFINITION,
   INPUT_OBJECT_TYPE_DEFINITION,
+  DIRECTIVE_DEFINITION,
 } from '../language/kinds';
 
 import type {
@@ -39,6 +40,7 @@ import type {
   ScalarTypeDefinition,
   EnumTypeDefinition,
   InputObjectTypeDefinition,
+  DirectiveDefinition,
 } from '../language/ast';
 
 import {
@@ -57,6 +59,8 @@ import {
   GraphQLList,
   GraphQLNonNull,
 } from '../type';
+
+import { GraphQLDirective } from '../type/directives';
 
 import type {
   GraphQLType,
@@ -115,6 +119,7 @@ export function buildASTSchema(
   }
 
   const typeDefs: Array<TypeDefinition> = [];
+  const directiveDefs: Array<DirectiveDefinition> = [];
   for (let i = 0; i < ast.definitions.length; i++) {
     const d = ast.definitions[i];
     switch (d.kind) {
@@ -125,6 +130,10 @@ export function buildASTSchema(
       case SCALAR_TYPE_DEFINITION:
       case INPUT_OBJECT_TYPE_DEFINITION:
         typeDefs.push(d);
+        break;
+      case DIRECTIVE_DEFINITION:
+        directiveDefs.push(d);
+        break;
     }
   }
 
@@ -160,12 +169,23 @@ export function buildASTSchema(
 
   typeDefs.forEach(def => typeDefNamed(def.name.value));
 
+  const directives = directiveDefs.map(getDirective);
+
   return new GraphQLSchema({
+    directives,
     query: getObjectType(astMap[queryTypeName]),
     mutation: mutationTypeName ? getObjectType(astMap[mutationTypeName]) : null,
     subscription:
       subscriptionTypeName ? getObjectType(astMap[subscriptionTypeName]) : null,
   });
+
+  function getDirective(directiveAST: DirectiveDefinition): GraphQLDirective {
+    return new GraphQLDirective({
+      name: directiveAST.name.value,
+      locations: directiveAST.locations.map(node => node.value),
+      args: makeInputValues(directiveAST.arguments),
+    });
+  }
 
   function getObjectType(typeAST: TypeDefinition): GraphQLObjectType {
     const type = typeDefNamed(typeAST.name.value);

@@ -8,8 +8,11 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { GraphQLNonNull } from './definition';
-import type { GraphQLArgument } from './definition';
+import { isInputType, GraphQLNonNull } from './definition';
+import type {
+  GraphQLFieldConfigArgumentMap,
+  GraphQLArgument
+} from './definition';
 import { GraphQLBoolean } from './scalars';
 import invariant from '../jsutils/invariant';
 import { assertValidName } from '../utilities/assertValidName';
@@ -47,7 +50,31 @@ export class GraphQLDirective {
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
-    this.args = config.args || [];
+
+    const args = config.args;
+    if (!args) {
+      this.args = [];
+    } else {
+      invariant(
+        !Array.isArray(args),
+        `@${config.name} args must be an object with argument names as keys.`
+      );
+      this.args = Object.keys(args).map(argName => {
+        assertValidName(argName);
+        const arg = args[argName];
+        invariant(
+          isInputType(arg.type),
+          `@${config.name}(${argName}:) argument type must be ` +
+          `Input Type but got: ${arg.type}.`
+        );
+        return {
+          name: argName,
+          description: arg.description === undefined ? null : arg.description,
+          type: arg.type,
+          defaultValue: arg.defaultValue === undefined ? null : arg.defaultValue
+        };
+      });
+    }
   }
 }
 
@@ -55,7 +82,7 @@ type GraphQLDirectiveConfig = {
   name: string;
   description?: ?string;
   locations: Array<DirectiveLocationEnum>;
-  args?: ?Array<GraphQLArgument>;
+  args?: ?GraphQLFieldConfigArgumentMap;
 }
 
 /**
@@ -71,11 +98,12 @@ export const GraphQLIncludeDirective = new GraphQLDirective({
     DirectiveLocation.FRAGMENT_SPREAD,
     DirectiveLocation.INLINE_FRAGMENT,
   ],
-  args: [
-    { name: 'if',
+  args: {
+    if: {
       type: new GraphQLNonNull(GraphQLBoolean),
-      description: 'Included when true.' }
-  ],
+      description: 'Included when true.'
+    }
+  },
 });
 
 /**
@@ -91,9 +119,10 @@ export const GraphQLSkipDirective = new GraphQLDirective({
     DirectiveLocation.FRAGMENT_SPREAD,
     DirectiveLocation.INLINE_FRAGMENT,
   ],
-  args: [
-    { name: 'if',
+  args: {
+    if: {
       type: new GraphQLNonNull(GraphQLBoolean),
-      description: 'Skipped when true.' }
-  ],
+      description: 'Skipped when true.'
+    }
+  },
 });

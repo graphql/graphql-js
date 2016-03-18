@@ -48,6 +48,7 @@ export const QueryDocumentKeys = {
   EnumValueDefinition: [ 'name' ],
   InputObjectTypeDefinition: [ 'name', 'fields' ],
   TypeExtensionDefinition: [ 'definition' ],
+  DirectiveDefinition: [ 'name', 'arguments', 'locations' ],
 };
 
 export const BREAK = {};
