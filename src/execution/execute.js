@@ -174,7 +174,7 @@ function buildExecutionContext(
             'Must provide operation name if query contains multiple operations.'
           );
         }
-        if (!operationName ||
+        if (operationName ||
             definition.name && definition.name.value === operationName) {
           operation = definition;
         }
