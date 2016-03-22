@@ -12,6 +12,7 @@ import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import keyMap from '../jsutils/keyMap';
 import { ENUM } from '../language/kinds';
+import { assertValidName } from '../utilities/assertValidName';
 import type {
   OperationDefinition,
   Field,
@@ -1060,14 +1061,4 @@ export class GraphQLNonNull<T: GraphQLNullableType> {
   toString(): string {
     return this.ofType.toString() + '!';
   }
-}
-
-const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
-
-// Helper to assert that provided names are valid.
-function assertValidName(name: string): void {
-  invariant(
-    NAME_RX.test(name),
-    `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`
-  );
 }

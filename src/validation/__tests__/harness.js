@@ -307,7 +307,7 @@ export const testSchema = new GraphQLSchema({
   directives: [
     new GraphQLDirective({
       name: 'operationOnly',
-      onOperation: true
+      locations: [ 'QUERY' ],
     }),
     GraphQLIncludeDirective,
     GraphQLSkipDirective,

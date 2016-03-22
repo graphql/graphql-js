@@ -161,4 +161,7 @@ export {
   isEqualType,
   isTypeSubTypeOf,
   doTypesOverlap,
+
+  // Asserts a string is a valid GraphQL name.
+  assertValidName,
 } from './utilities';

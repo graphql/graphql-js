@@ -500,7 +500,7 @@ describe('Type System: build schema from introspection', () => {
         new GraphQLDirective({
           name: 'customDirective',
           description: 'This is a custom directive',
-          onField: true,
+          locations: [ 'FIELD' ],
         })
       ]
     });
@@ -508,6 +508,75 @@ describe('Type System: build schema from introspection', () => {
     await testSchema(schema);
   });
 
+  it('builds a schema with legacy directives', async () => {
+
+    const oldIntrospection = {
+      __schema: {
+        // Minimum required schema.
+        queryType: {
+          name: 'Simple'
+        },
+        types: [ {
+          name: 'Simple',
+          kind: 'OBJECT',
+          fields: [ {
+            name: 'simple',
+            args: [],
+            type: { name: 'Simple' }
+          } ],
+          interfaces: []
+        } ],
+        // Test old directive introspection results.
+        directives: [
+          { name: 'Old1', args: [], onField: true },
+          { name: 'Old2', args: [], onFragment: true },
+          { name: 'Old3', args: [], onOperation: true },
+          { name: 'Old4', args: [], onField: true, onFragment: true },
+        ]
+      }
+    };
+
+    // New introspection produces correct new format.
+    const newIntrospection = {
+      __schema: {
+        directives: [
+          {
+            name: 'Old1',
+            args: [],
+            locations: [ 'FIELD' ]
+          },
+          {
+            name: 'Old2',
+            args: [],
+            locations: [
+              'FRAGMENT_DEFINITION',
+              'FRAGMENT_SPREAD',
+              'INLINE_FRAGMENT'
+            ]
+          },
+          {
+            name: 'Old3',
+            args: [],
+            locations: [ 'QUERY', 'MUTATION', 'SUBSCRIPTION' ]
+          },
+          {
+            name: 'Old4',
+            args: [],
+            locations: [
+              'FIELD',
+              'FRAGMENT_DEFINITION',
+              'FRAGMENT_SPREAD',
+              'INLINE_FRAGMENT'
+            ]
+          },
+        ]
+      }
+    };
+
+    const clientSchema = buildClientSchema(oldIntrospection);
+    const secondIntrospection = await graphql(clientSchema, introspectionQuery);
+    expect(secondIntrospection.data).to.containSubset(newIntrospection);
+  });
 
   it('builds a schema aware of deprecation', async () => {
 

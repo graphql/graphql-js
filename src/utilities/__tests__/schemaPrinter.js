@@ -511,10 +511,21 @@ type Root {
 type __Directive {
   name: String!
   description: String
+  locations: [__DirectiveLocation!]!
   args: [__InputValue!]!
   onOperation: Boolean!
   onFragment: Boolean!
   onField: Boolean!
+}
+
+enum __DirectiveLocation {
+  QUERY
+  MUTATION
+  SUBSCRIPTION
+  FIELD
+  FRAGMENT_DEFINITION
+  FRAGMENT_SPREAD
+  INLINE_FRAGMENT
 }
 
 type __EnumValue {

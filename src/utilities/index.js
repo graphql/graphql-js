@@ -54,3 +54,6 @@ export {
   isTypeSubTypeOf,
   doTypesOverlap
 } from './typeComparators';
+
+// Asserts that a string is a valid GraphQL name
+export { assertValidName } from './assertValidName';
