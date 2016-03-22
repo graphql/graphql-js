@@ -77,9 +77,7 @@ export type Document = {
 
 export type Definition = OperationDefinition
                        | FragmentDefinition
-                       | TypeDefinition
-                       | TypeExtensionDefinition
-                       | DirectiveDefinition
+                       | TypeSystemDefinition
 
 export type OperationDefinition = {
   kind: 'OperationDefinition';
@@ -256,14 +254,24 @@ export type NonNullType = {
   type: NamedType | ListType;
 }
 
-// Type Definition
+// Type System Definition
 
-export type TypeDefinition = ObjectTypeDefinition
+export type TypeSystemDefinition = TypeDefinition
+                                 | TypeExtensionDefinition
+                                 | DirectiveDefinition
+
+export type TypeDefinition = ScalarTypeDefinition
+                           | ObjectTypeDefinition
                            | InterfaceTypeDefinition
                            | UnionTypeDefinition
-                           | ScalarTypeDefinition
                            | EnumTypeDefinition
                            | InputObjectTypeDefinition
+
+export type ScalarTypeDefinition = {
+  kind: 'ScalarTypeDefinition';
+  loc?: ?Location;
+  name: Name;
+}
 
 export type ObjectTypeDefinition = {
   kind: 'ObjectTypeDefinition';
@@ -301,12 +309,6 @@ export type UnionTypeDefinition = {
   loc?: ?Location;
   name: Name;
   types: Array<NamedType>;
-}
-
-export type ScalarTypeDefinition = {
-  kind: 'ScalarTypeDefinition';
-  loc?: ?Location;
-  name: Name;
 }
 
 export type EnumTypeDefinition = {

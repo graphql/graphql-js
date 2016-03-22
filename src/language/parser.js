@@ -39,13 +39,14 @@ import type {
   Type,
   NamedType,
 
-  TypeDefinition,
+  TypeSystemDefinition,
+
+  ScalarTypeDefinition,
   ObjectTypeDefinition,
   FieldDefinition,
   InputValueDefinition,
   InterfaceTypeDefinition,
   UnionTypeDefinition,
-  ScalarTypeDefinition,
   EnumTypeDefinition,
   EnumValueDefinition,
   InputObjectTypeDefinition,
@@ -85,12 +86,12 @@ import {
   LIST_TYPE,
   NON_NULL_TYPE,
 
+  SCALAR_TYPE_DEFINITION,
   OBJECT_TYPE_DEFINITION,
   FIELD_DEFINITION,
   INPUT_VALUE_DEFINITION,
   INTERFACE_TYPE_DEFINITION,
   UNION_TYPE_DEFINITION,
-  SCALAR_TYPE_DEFINITION,
   ENUM_TYPE_DEFINITION,
   ENUM_VALUE_DEFINITION,
   INPUT_OBJECT_TYPE_DEFINITION,
@@ -185,8 +186,7 @@ function parseDocument(parser: Parser): Document {
  * Definition :
  *   - OperationDefinition
  *   - FragmentDefinition
- *   - TypeDefinition
- *   - TypeExtensionDefinition
+ *   - TypeSystemDefinition
  */
 function parseDefinition(parser: Parser): Definition {
   if (peek(parser, TokenKind.BRACE_L)) {
@@ -202,14 +202,15 @@ function parseDefinition(parser: Parser): Definition {
 
       case 'fragment': return parseFragmentDefinition(parser);
 
+      // Note: the Type System IDL is an experimental non-spec addition.
+      case 'scalar':
       case 'type':
       case 'interface':
       case 'union':
-      case 'scalar':
       case 'enum':
-      case 'input': return parseTypeDefinition(parser);
-      case 'extend': return parseTypeExtensionDefinition(parser);
-      case 'directive': return parseDirectiveDefinition(parser);
+      case 'input':
+      case 'extend':
+      case 'directive': return parseTypeSystemDefinition(parser);
     }
   }
 
@@ -649,34 +650,48 @@ export function parseNamedType(parser: Parser): NamedType {
 // Implements the parsing rules in the Type Definition section.
 
 /**
+ * TypeSystemDefinition :
+ *   - TypeDefinition
+ *   - TypeExtensionDefinition
+ *   - DirectiveDefinition
+ *
  * TypeDefinition :
+ *   - ScalarTypeDefinition
  *   - ObjectTypeDefinition
  *   - InterfaceTypeDefinition
  *   - UnionTypeDefinition
- *   - ScalarTypeDefinition
  *   - EnumTypeDefinition
  *   - InputObjectTypeDefinition
  */
-function parseTypeDefinition(parser: Parser): TypeDefinition {
-  if (!peek(parser, TokenKind.NAME)) {
-    throw unexpected(parser);
+function parseTypeSystemDefinition(parser: Parser): TypeSystemDefinition {
+  if (peek(parser, TokenKind.NAME)) {
+    switch (parser.token.value) {
+      case 'scalar': return parseScalarTypeDefinition(parser);
+      case 'type': return parseObjectTypeDefinition(parser);
+      case 'interface': return parseInterfaceTypeDefinition(parser);
+      case 'union': return parseUnionTypeDefinition(parser);
+      case 'enum': return parseEnumTypeDefinition(parser);
+      case 'input': return parseInputObjectTypeDefinition(parser);
+      case 'extend': return parseTypeExtensionDefinition(parser);
+      case 'directive': return parseDirectiveDefinition(parser);
+    }
   }
-  switch (parser.token.value) {
-    case 'type':
-      return parseObjectTypeDefinition(parser);
-    case 'interface':
-      return parseInterfaceTypeDefinition(parser);
-    case 'union':
-      return parseUnionTypeDefinition(parser);
-    case 'scalar':
-      return parseScalarTypeDefinition(parser);
-    case 'enum':
-      return parseEnumTypeDefinition(parser);
-    case 'input':
-      return parseInputObjectTypeDefinition(parser);
-    default:
-      throw unexpected(parser);
-  }
+
+  throw unexpected(parser);
+}
+
+/**
+ * ScalarTypeDefinition : scalar Name
+ */
+function parseScalarTypeDefinition(parser: Parser): ScalarTypeDefinition {
+  const start = parser.token.start;
+  expectKeyword(parser, 'scalar');
+  const name = parseName(parser);
+  return {
+    kind: SCALAR_TYPE_DEFINITION,
+    name,
+    loc: loc(parser, start),
+  };
 }
 
 /**
@@ -814,20 +829,6 @@ function parseUnionMembers(parser: Parser): Array<NamedType> {
     members.push(parseNamedType(parser));
   } while (skip(parser, TokenKind.PIPE));
   return members;
-}
-
-/**
- * ScalarTypeDefinition : scalar Name
- */
-function parseScalarTypeDefinition(parser: Parser): ScalarTypeDefinition {
-  const start = parser.token.start;
-  expectKeyword(parser, 'scalar');
-  const name = parseName(parser);
-  return {
-    kind: SCALAR_TYPE_DEFINITION,
-    name,
-    loc: loc(parser, start),
-  };
 }
 
 /**

@@ -48,14 +48,16 @@ export const NAMED_TYPE = 'NamedType';
 export const LIST_TYPE = 'ListType';
 export const NON_NULL_TYPE = 'NonNullType';
 
+// Type System Definitions
+
 // Type Definitions
 
+export const SCALAR_TYPE_DEFINITION = 'ScalarTypeDefinition';
 export const OBJECT_TYPE_DEFINITION = 'ObjectTypeDefinition';
 export const FIELD_DEFINITION = 'FieldDefinition';
 export const INPUT_VALUE_DEFINITION = 'InputValueDefinition';
 export const INTERFACE_TYPE_DEFINITION = 'InterfaceTypeDefinition';
 export const UNION_TYPE_DEFINITION = 'UnionTypeDefinition';
-export const SCALAR_TYPE_DEFINITION = 'ScalarTypeDefinition';
 export const ENUM_TYPE_DEFINITION = 'EnumTypeDefinition';
 export const ENUM_VALUE_DEFINITION = 'EnumValueDefinition';
 export const INPUT_OBJECT_TYPE_DEFINITION = 'InputObjectTypeDefinition';
