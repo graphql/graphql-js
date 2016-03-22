@@ -481,19 +481,112 @@ export type GraphQLIsTypeOfFn = (
 export type GraphQLFieldResolveFn = (
   source: mixed,
   args: {[argName: string]: mixed},
-  info: GraphQLResolveInfo
+  info: GraphQLResolvingPlan
 ) => mixed
 
-export type GraphQLResolveInfo = {
-  fieldName: string,
-  fieldASTs: Array<Field>,
-  returnType: GraphQLOutputType,
+export type GraphQLTypeResolveFn = (
+  value: mixed,
+  info?: GraphQLCoercionPlan
+) => ?GraphQLObjectType
+
+export type GraphQLIsTypeOfFn = (
+  value: mixed,
+  info?: GraphQLSelectionPlan
+) => boolean
+
+export type GraphQLResolveInfo =
+  GraphQLResolvingPlan |
+  GraphQLSelectionPlan |
+  GraphQLCoercionPlan;
+
+/**
+ * Describes how the execution engine plans to interact with the schema's
+ * resolve function to fetch field values indicated by the query
+ */
+export type GraphQLResolvingPlan = {
+  kind: 'resolve';
+  fieldName: string;
+  fieldASTs: Array<Field>;
+  returnType: GraphQLOutputType;
+  parentType: GraphQLCompositeType;
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
+  fieldDefinition: GraphQLFieldDefinition;
+  args: { [key: string]: mixed };
+  returned: GraphQLCompletionPlan;
+}
+
+/**
+ * Execution plans which might be executed to Complete a value.
+ */
+export type GraphQLCompletionPlan =
+  GraphQLSerializationPlan |
+  GraphQLMappingPlan |
+  GraphQLSelectionPlan |
+  GraphQLCoercionPlan;
+
+/**
+ * Indicates that the execution engine plans to call
+ * serialize for a value.
+ */
+export type GraphQLSerializationPlan = {
+  kind: 'serialize';
+  fieldName: string;
+  fieldASTs: Array<Field>;
+  returnType: GraphQLType;
+  parentType: GraphQLCompositeType;
+}
+
+/**
+ * Describes how the execution engine plans to map list values
+ */
+export type GraphQLMappingPlan = {
+  kind: 'map';
+  fieldName: string;
+  fieldASTs: Array<Field>;
+  returnType: GraphQLType;
+  parentType: GraphQLCompositeType;
+  listElement: GraphQLCompletionPlan;
+}
+
+/**
+ * Describes how the execution engine plans to perform a selection
+ * on a resolved value.
+ */
+export type GraphQLSelectionPlan = {
+  kind: 'select';
+  fieldName: string;
+  fieldASTs: Array<Field>;
+  returnType: GraphQLObjectType;
+  parentType: GraphQLCompositeType;
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
+  fields: {[fieldName: string]: [ GraphQLResolvingPlan ]};
+  fieldPlansByAlias: {[alias: string]: GraphQLResolvingPlan};
+}
+
+/**
+ * Describes plans which the execution engine may take
+ * based on the run time type of a value.
+ */
+export type GraphQLCoercionPlan = {
+  kind: 'coerce';
+  fieldName: string;
+  fieldASTs: Array<Field>;
+  returnType: GraphQLAbstractType;
   parentType: GraphQLCompositeType,
-  schema: GraphQLSchema,
-  fragments: { [fragmentName: string]: FragmentDefinition },
-  rootValue: mixed,
-  operation: OperationDefinition,
-  variableValues: { [variableName: string]: mixed },
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
+  typeChoices: {[typeName: string]:GraphQLSelectionPlan};
 }
 
 export type GraphQLFieldConfig = {
@@ -600,27 +693,8 @@ export class GraphQLInterfaceType {
     return Boolean(possibleTypes[type.name]);
   }
 
-  getObjectType(value: mixed, info: GraphQLResolveInfo): ?GraphQLObjectType {
-    const resolver = this.resolveType;
-    return resolver ? resolver(value, info) : getTypeOf(value, info, this);
-  }
-
   toString(): string {
     return this.name;
-  }
-}
-
-function getTypeOf(
-  value: mixed,
-  info: GraphQLResolveInfo,
-  abstractType: GraphQLAbstractType
-): ?GraphQLObjectType {
-  const possibleTypes = abstractType.getPossibleTypes();
-  for (let i = 0; i < possibleTypes.length; i++) {
-    const type = possibleTypes[i];
-    if (typeof type.isTypeOf === 'function' && type.isTypeOf(value, info)) {
-      return type;
-    }
   }
 }
 
@@ -719,11 +793,6 @@ export class GraphQLUnionType {
         );
     }
     return possibleTypeNames[type.name] === true;
-  }
-
-  getObjectType(value: mixed, info: GraphQLResolveInfo): ?GraphQLObjectType {
-    const resolver = this._typeConfig.resolveType;
-    return resolver ? resolver(value, info) : getTypeOf(value, info, this);
   }
 
   toString(): string {
