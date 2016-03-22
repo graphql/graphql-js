@@ -89,8 +89,9 @@ var schema = new GraphQLSchema({
 ```
 
 This defines a simple schema with one type and one field, that resolves
-to a fixed value. A more complex example is included in the top level
-[tests](src/__tests__) directory.
+to a fixed value. The `resolve` function can return a value, a promise, 
+or an array of promises. A more complex example is included in the top 
+level [tests](src/__tests__) directory.
 
 Then, serve the result of a query against that type schema.
 
