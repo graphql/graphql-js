@@ -189,7 +189,7 @@ function buildExecutionContext(
     }
   });
   if (!operation) {
-    if (!operationName) {
+    if (operationName) {
       throw new GraphQLError(`Unknown operation named "${operationName}".`);
     } else {
       throw new GraphQLError('Must provide an operation.');
