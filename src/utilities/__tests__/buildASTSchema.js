@@ -20,15 +20,19 @@ import { buildASTSchema } from '../buildASTSchema';
  * into an in-memory GraphQLSchema, and then finally
  * printing that GraphQL into the DSL
  */
-function cycleOutput(body, queryType, mutationType, subscriptionType) {
+function cycleOutput(body) {
   const ast = parse(body);
-  const schema = buildASTSchema(ast, queryType, mutationType, subscriptionType);
+  const schema = buildASTSchema(ast);
   return '\n' + printSchema(schema);
 }
 
-describe('Schema Materializer', () => {
+describe('Schema Builder', () => {
   it('Simple type', () => {
     const body = `
+schema {
+  query: HelloScalars
+}
+
 type HelloScalars {
   str: String
   int: Int
@@ -37,24 +41,32 @@ type HelloScalars {
   bool: Boolean
 }
 `;
-    const output = cycleOutput(body, 'HelloScalars');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('With directives', () => {
     const body = `
+schema {
+  query: Hello
+}
+
 directive @foo(arg: Int) on FIELD
 
 type Hello {
   str: String
 }
 `;
-    const output = cycleOutput(body, 'Hello');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Type modifiers', () => {
     const body = `
+schema {
+  query: HelloScalars
+}
+
 type HelloScalars {
   nonNullStr: String!
   listOfStrs: [String]
@@ -63,24 +75,32 @@ type HelloScalars {
   nonNullListOfNonNullStrs: [String!]!
 }
 `;
-    const output = cycleOutput(body, 'HelloScalars');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
 
   it('Recursive type', () => {
     const body = `
+schema {
+  query: Recurse
+}
+
 type Recurse {
   str: String
   recurse: Recurse
 }
 `;
-    const output = cycleOutput(body, 'Recurse');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Two types circular', () => {
     const body = `
+schema {
+  query: TypeOne
+}
+
 type TypeOne {
   str: String
   typeTwo: TypeTwo
@@ -91,12 +111,16 @@ type TypeTwo {
   typeOne: TypeOne
 }
 `;
-    const output = cycleOutput(body, 'TypeOne');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Single argument field', () => {
     const body = `
+schema {
+  query: Hello
+}
+
 type Hello {
   str(int: Int): String
   floatToStr(float: Float): String
@@ -105,12 +129,16 @@ type Hello {
   strToStr(bool: String): String
 }
 `;
-    const output = cycleOutput(body, 'Hello');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple type with multiple arguments', () => {
     const body = `
+schema {
+  query: Hello
+}
+
 type Hello {
   str(int: Int, bool: Boolean): String
 }
@@ -121,7 +149,11 @@ type Hello {
 
   it('Simple type with interface', () => {
     const body = `
-type HelloInterface implements WorldInterface {
+schema {
+  query: Hello
+}
+
+type Hello implements WorldInterface {
   str: String
 }
 
@@ -129,12 +161,16 @@ interface WorldInterface {
   str: String
 }
 `;
-    const output = cycleOutput(body, 'HelloInterface');
+    const output = cycleOutput(body, 'Hello');
     expect(output).to.equal(body);
   });
 
   it('Simple output enum', () => {
     const body = `
+schema {
+  query: OutputEnumRoot
+}
+
 enum Hello {
   WORLD
 }
@@ -143,12 +179,16 @@ type OutputEnumRoot {
   hello: Hello
 }
 `;
-    const output = cycleOutput(body, 'OutputEnumRoot');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple input enum', () => {
     const body = `
+schema {
+  query: InputEnumRoot
+}
+
 enum Hello {
   WORLD
 }
@@ -157,12 +197,16 @@ type InputEnumRoot {
   str(hello: Hello): String
 }
 `;
-    const output = cycleOutput(body, 'InputEnumRoot');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Multiple value enum', () => {
     const body = `
+schema {
+  query: OutputEnumRoot
+}
+
 enum Hello {
   WO
   RLD
@@ -172,12 +216,16 @@ type OutputEnumRoot {
   hello: Hello
 }
 `;
-    const output = cycleOutput(body, 'OutputEnumRoot');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple Union', () => {
     const body = `
+schema {
+  query: Root
+}
+
 union Hello = World
 
 type Root {
@@ -188,12 +236,16 @@ type World {
   str: String
 }
 `;
-    const output = cycleOutput(body, 'Root');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Multiple Union', () => {
     const body = `
+schema {
+  query: Root
+}
+
 union Hello = WorldOne | WorldTwo
 
 type Root {
@@ -208,12 +260,16 @@ type WorldTwo {
   str: String
 }
 `;
-    const output = cycleOutput(body, 'Root');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Custom Scalar', () => {
     const body = `
+schema {
+  query: Root
+}
+
 scalar CustomScalar
 
 type Root {
@@ -221,12 +277,16 @@ type Root {
 }
 `;
 
-    const output = cycleOutput(body, 'Root');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Input Object', async() => {
     const body = `
+schema {
+  query: Root
+}
+
 input Input {
   int: Int
 }
@@ -236,22 +296,31 @@ type Root {
 }
 `;
 
-    const output = cycleOutput(body, 'Root');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple argument field with default', () => {
     const body = `
+schema {
+  query: Hello
+}
+
 type Hello {
   str(int: Int = 2): String
 }
 `;
-    const output = cycleOutput(body, 'Hello');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple type with mutation', () => {
     const body = `
+schema {
+  query: HelloScalars
+  mutation: Mutation
+}
+
 type HelloScalars {
   str: String
   int: Int
@@ -262,12 +331,17 @@ type Mutation {
   addHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
 }
 `;
-    const output = cycleOutput(body, 'HelloScalars', 'Mutation');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple type with subscription', () => {
     const body = `
+schema {
+  query: HelloScalars
+  subscription: Subscription
+}
+
 type HelloScalars {
   str: String
   int: Int
@@ -278,12 +352,16 @@ type Subscription {
   subscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
 }
 `;
-    const output = cycleOutput(body, 'HelloScalars', null, 'Subscription');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Unreferenced type implementing referenced interface', () => {
     const body = `
+schema {
+  query: Query
+}
+
 type Concrete implements Iface {
   key: String
 }
@@ -296,12 +374,16 @@ type Query {
   iface: Iface
 }
 `;
-    const output = cycleOutput(body, 'Query');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Unreferenced type implementing referenced union', () => {
     const body = `
+schema {
+  query: Query
+}
+
 type Concrete {
   key: String
 }
@@ -312,66 +394,139 @@ type Query {
 
 union Union = Concrete
 `;
-    const output = cycleOutput(body, 'Query');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 });
 
-describe('Schema Parser Failures', () => {
-  it('Unknown type referenced', () => {
+describe('Failures', () => {
+
+  it('Requires a schema definition', () => {
     const body = `
 type Hello {
   bar: Bar
 }
 `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc, 'Hello'))
-      .to.throw('Type Bar not found in document');
+    expect(() => buildASTSchema(doc))
+      .to.throw('Must provide a schema definition.');
+  });
+
+  it('Allows only a single schema definition', () => {
+    const body = `
+schema {
+  query: Hello
+}
+
+schema {
+  query: Hello
+}
+
+type Hello {
+  bar: Bar
+}
+`;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc))
+      .to.throw('Must provide only one schema definition.');
+  });
+
+  it('Requires a query type', () => {
+    const body = `
+schema {
+  mutation: Hello
+}
+
+type Hello {
+  bar: Bar
+}
+`;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc))
+      .to.throw('Must provide schema definition with query type.');
+  });
+
+  it('Unknown type referenced', () => {
+    const body = `
+schema {
+  query: Hello
+}
+
+type Hello {
+  bar: Bar
+}
+`;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc))
+      .to.throw('Type "Bar" not found in document.');
   });
 
   it('Unknown type in interface list', () => {
     const body = `
+schema {
+  query: Hello
+}
+
 type Hello implements Bar { }
 `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc, 'Hello'))
-      .to.throw('Type Bar not found in document');
+    expect(() => buildASTSchema(doc))
+      .to.throw('Type "Bar" not found in document.');
   });
 
   it('Unknown type in union list', () => {
     const body = `
+schema {
+  query: Hello
+}
+
 union TestUnion = Bar
 type Hello { testUnion: TestUnion }
 `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc, 'Hello'))
-      .to.throw('Type Bar not found in document');
+    expect(() => buildASTSchema(doc))
+      .to.throw('Type "Bar" not found in document.');
   });
 
   it('Unknown query type', () => {
     const body = `
+schema {
+  query: Wat
+}
+
 type Hello {
   str: String
 }
 `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc, 'Wat'))
-      .to.throw('Specified query type Wat not found in document');
+    expect(() => buildASTSchema(doc))
+      .to.throw('Specified query type "Wat" not found in document.');
   });
 
   it('Unknown mutation type', () => {
     const body = `
+schema {
+  query: Hello
+  mutation: Wat
+}
+
 type Hello {
   str: String
 }
 `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc, 'Hello', 'Wat'))
-      .to.throw('Specified mutation type Wat not found in document');
+    expect(() => buildASTSchema(doc))
+      .to.throw('Specified mutation type "Wat" not found in document.');
   });
 
   it('Unknown subscription type', () => {
     const body = `
+schema {
+  query: Hello
+  mutation: Wat
+  subscription: Awesome
+}
+
 type Hello {
   str: String
 }
@@ -381,22 +536,34 @@ type Wat {
 }
 `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc, 'Hello', 'Wat', 'Awesome'))
-      .to.throw('Specified subscription type Awesome not found in document');
+    expect(() => buildASTSchema(doc))
+      .to.throw('Specified subscription type "Awesome" not found in document.');
   });
 
-  it('Rejects query names', () => {
-    const body = 'query Foo { field }';
+  it('Does not consider operation names', () => {
+    const body = `
+schema {
+  query: Foo
+}
+
+query Foo { field }
+`;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc, 'Foo'))
-      .to.throw('Specified query type Foo not found in document.');
+    expect(() => buildASTSchema(doc))
+      .to.throw('Specified query type "Foo" not found in document.');
   });
 
-  it('Rejects fragment names', () => {
-    const body = 'fragment Foo on Type { field }';
+  it('Does not consider fragment names', () => {
+    const body = `
+schema {
+  query: Foo
+}
+
+fragment Foo on Type { field }
+`;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc, 'Foo'))
-      .to.throw('Specified query type Foo not found in document.');
+    expect(() => buildASTSchema(doc))
+      .to.throw('Specified query type "Foo" not found in document.');
   });
 
 });

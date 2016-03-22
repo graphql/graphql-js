@@ -52,6 +52,10 @@ describe('Type System Printer', () => {
       type: GraphQLString
     });
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField: String
 }
@@ -64,6 +68,10 @@ type Root {
       type: listOf(GraphQLString)
     });
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField: [String]
 }
@@ -76,6 +84,10 @@ type Root {
       type: nonNull(GraphQLString)
     });
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField: String!
 }
@@ -88,6 +100,10 @@ type Root {
       type: nonNull(listOf(GraphQLString))
     });
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField: [String]!
 }
@@ -100,6 +116,10 @@ type Root {
       type: listOf(nonNull(GraphQLString))
     });
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField: [String!]
 }
@@ -112,6 +132,10 @@ type Root {
       type: nonNull(listOf(nonNull(GraphQLString)))
     });
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField: [String!]!
 }
@@ -133,6 +157,10 @@ type Root {
     const Schema = new GraphQLSchema({ query: Root });
     const output = printForTest(Schema);
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Foo {
   str: String
 }
@@ -152,6 +180,10 @@ type Root {
       }
     );
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int): String
 }
@@ -167,6 +199,10 @@ type Root {
       }
     );
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int = 2): String
 }
@@ -182,6 +218,10 @@ type Root {
       }
     );
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int!): String
 }
@@ -200,6 +240,10 @@ type Root {
       }
     );
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int, argTwo: String): String
 }
@@ -219,6 +263,10 @@ type Root {
       }
     );
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int = 1, argTwo: String, argThree: Boolean): String
 }
@@ -238,6 +286,10 @@ type Root {
       }
     );
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int, argTwo: String = "foo", argThree: Boolean): String
 }
@@ -257,6 +309,10 @@ type Root {
       }
     );
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int, argTwo: String, argThree: Boolean = false): String
 }
@@ -285,6 +341,10 @@ type Root {
     const Schema = new GraphQLSchema({ query: Root });
     const output = printForTest(Schema);
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Bar implements Foo {
   str: String
 }
@@ -330,6 +390,10 @@ type Root {
     const Schema = new GraphQLSchema({ query: Root });
     const output = printForTest(Schema);
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 interface Baaz {
   int: Int
 }
@@ -388,6 +452,10 @@ type Root {
     const Schema = new GraphQLSchema({ query: Root });
     const output = printForTest(Schema);
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 type Bar {
   str: String
 }
@@ -429,6 +497,10 @@ union SingleUnion = Foo
     const Schema = new GraphQLSchema({ query: Root });
     const output = printForTest(Schema);
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 input InputType {
   int: Int
 }
@@ -457,6 +529,10 @@ type Root {
     const Schema = new GraphQLSchema({ query: Root });
     const output = printForTest(Schema);
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 scalar Odd
 
 type Root {
@@ -486,6 +562,10 @@ type Root {
     const Schema = new GraphQLSchema({ query: Root });
     const output = printForTest(Schema);
     expect(output).to.equal(`
+schema {
+  query: Root
+}
+
 enum RGB {
   RED
   GREEN
@@ -508,6 +588,10 @@ type Root {
     const Schema = new GraphQLSchema({ query: Root });
     const output = '\n' + printIntrospectionSchema(Schema);
     const introspectionSchema = `
+schema {
+  query: Root
+}
+
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT

@@ -47,12 +47,14 @@ export type Node = Name
                  | NamedType
                  | ListType
                  | NonNullType
+                 | SchemaDefinition
+                 | OperationTypeDefinition
+                 | ScalarTypeDefinition
                  | ObjectTypeDefinition
                  | FieldDefinition
                  | InputValueDefinition
                  | InterfaceTypeDefinition
                  | UnionTypeDefinition
-                 | ScalarTypeDefinition
                  | EnumTypeDefinition
                  | EnumValueDefinition
                  | InputObjectTypeDefinition
@@ -77,18 +79,20 @@ export type Document = {
 
 export type Definition = OperationDefinition
                        | FragmentDefinition
-                       | TypeSystemDefinition
+                       | TypeSystemDefinition // experimental non-spec addition.
 
 export type OperationDefinition = {
   kind: 'OperationDefinition';
   loc?: ?Location;
-  // Note: subscription is an experimental non-spec addition.
-  operation: 'query' | 'mutation' | 'subscription';
+  operation: OperationType;
   name?: ?Name;
   variableDefinitions?: ?Array<VariableDefinition>;
   directives?: ?Array<Directive>;
   selectionSet: SelectionSet;
 }
+
+// Note: subscription is an experimental non-spec addition.
+export type OperationType = 'query' | 'mutation' | 'subscription';
 
 export type VariableDefinition = {
   kind: 'VariableDefinition';
@@ -256,9 +260,23 @@ export type NonNullType = {
 
 // Type System Definition
 
-export type TypeSystemDefinition = TypeDefinition
+export type TypeSystemDefinition = SchemaDefinition
+                                 | TypeDefinition
                                  | TypeExtensionDefinition
                                  | DirectiveDefinition
+
+export type SchemaDefinition = {
+  kind: 'SchemaDefinition';
+  loc?: ?Location;
+  operationTypes: Array<OperationTypeDefinition>;
+}
+
+export type OperationTypeDefinition = {
+  kind: 'OperationTypeDefinition';
+  loc?: ?Location;
+  operation: OperationType;
+  type: NamedType;
+}
 
 export type TypeDefinition = ScalarTypeDefinition
                            | ObjectTypeDefinition

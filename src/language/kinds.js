@@ -50,6 +50,9 @@ export const NON_NULL_TYPE = 'NonNullType';
 
 // Type System Definitions
 
+export const SCHEMA_DEFINITION = 'SchemaDefinition';
+export const OPERATION_TYPE_DEFINITION = 'OperationTypeDefinition';
+
 // Type Definitions
 
 export const SCALAR_TYPE_DEFINITION = 'ScalarTypeDefinition';

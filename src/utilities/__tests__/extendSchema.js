@@ -133,7 +133,11 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -182,7 +186,11 @@ union SomeUnion = Foo | Biz
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -232,7 +240,11 @@ union SomeUnion = Foo | Biz
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -302,7 +314,11 @@ union SomeUnion = Foo | Biz
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -375,7 +391,11 @@ union SomeUnion = Foo | Biz
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -437,7 +457,11 @@ union SomeUnion = Foo | Biz
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -517,7 +541,13 @@ union SomeUnion = Foo | Biz
     expect(extendedSchema).to.not.equal(mutationSchema);
     expect(printSchema(mutationSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
-`type Mutation {
+`schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Mutation {
   mutationField: String
   newMutationField: Int
 }
