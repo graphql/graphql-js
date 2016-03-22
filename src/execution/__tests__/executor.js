@@ -378,7 +378,7 @@ describe('Execute: Handles basic execution tasks', () => {
     ]);
   });
 
-  it('uses the inline operation if no operation is provided', async () => {
+  it('uses the inline operation if no operation name is provided', async () => {
     const doc = '{ a }';
     const data = { a: 'b' };
     const ast = parse(doc);
@@ -396,7 +396,7 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result).to.deep.equal({ data: { a: 'b' } });
   });
 
-  it('uses the only operation if no operation is provided', async () => {
+  it('uses the only operation if no operation name is provided', async () => {
     const doc = 'query Example { a }';
     const data = { a: 'b' };
     const ast = parse(doc);
@@ -414,7 +414,43 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result).to.deep.equal({ data: { a: 'b' } });
   });
 
-  it('throws if no operation is provided with multiple operations', () => {
+  it('uses the named operation if operation name is provided', async () => {
+    const doc = 'query Example { first: a } query OtherExample { second: a }';
+    const data = { a: 'b' };
+    const ast = parse(doc);
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Type',
+        fields: {
+          a: { type: GraphQLString },
+        }
+      })
+    });
+
+    const result = await execute(schema, ast, data, null, 'OtherExample');
+
+    expect(result).to.deep.equal({ data: { second: 'b' } });
+  });
+
+  it('throws if no operation is provided', () => {
+    const doc = 'fragment Example on Type { a }';
+    const data = { a: 'b' };
+    const ast = parse(doc);
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Type',
+        fields: {
+          a: { type: GraphQLString },
+        }
+      })
+    });
+
+    expect(() => execute(schema, ast, data)).to.throw(
+      'Must provide an operation.'
+    );
+  });
+
+  it('throws if no operation name is provided with multiple operations', () => {
     const doc = 'query Example { a } query OtherExample { a }';
     const data = { a: 'b' };
     const ast = parse(doc);
@@ -429,6 +465,24 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(() => execute(schema, ast, data)).to.throw(
       'Must provide operation name if query contains multiple operations.'
+    );
+  });
+
+  it('throws if unknown operation name is provided', () => {
+    const doc = 'query Example { a } query OtherExample { a }';
+    const data = { a: 'b' };
+    const ast = parse(doc);
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Type',
+        fields: {
+          a: { type: GraphQLString },
+        }
+      })
+    });
+
+    expect(() => execute(schema, ast, data, null, 'UnknownExample')).to.throw(
+      'Unknown operation named "UnknownExample".'
     );
   });
 
