@@ -48,9 +48,12 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
             // the variable type is non-null when the expected type is nullable.
             // If both are list types, the variable item type can be more strict
             // than the expected item type (contravariant).
-            const varType = typeFromAST(context.getSchema(), varDef.type);
-            if (varType &&
-                !isTypeSubTypeOf(effectiveType(varType, varDef), type)) {
+            const schema = context.getSchema();
+            const varType = typeFromAST(schema, varDef.type);
+            if (
+              varType &&
+              !isTypeSubTypeOf(schema, effectiveType(varType, varDef), type)
+            ) {
               context.reportError(new GraphQLError(
                 badVarPosMessage(varName, varType, type),
                 [ varDef, node ]

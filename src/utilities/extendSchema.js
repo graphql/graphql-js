@@ -27,6 +27,17 @@ import {
 } from '../type/definition';
 
 import {
+  __Schema,
+  __Directive,
+  __DirectiveLocation,
+  __Type,
+  __Field,
+  __InputValue,
+  __EnumValue,
+  __TypeKind,
+} from '../type/introspection';
+
+import {
   GraphQLString,
   GraphQLInt,
   GraphQLFloat,
@@ -155,14 +166,23 @@ export function extendSchema(
   }
 
   // A cache to use to store the actual GraphQLType definition objects by name.
-  // Initialize to the GraphQL built in scalars. All functions below are inline
-  // so that this type def cache is within the scope of the closure.
+  // Initialize to the GraphQL built in scalars and introspection types. All
+  // functions below are inline so that this type def cache is within the scope
+  // of the closure.
   const typeDefCache = {
     String: GraphQLString,
     Int: GraphQLInt,
     Float: GraphQLFloat,
     Boolean: GraphQLBoolean,
     ID: GraphQLID,
+    __Schema,
+    __Directive,
+    __DirectiveLocation,
+    __Type,
+    __Field,
+    __InputValue,
+    __EnumValue,
+    __TypeKind,
   };
 
   // Get the root Query, Mutation, and Subscription types.
@@ -180,20 +200,21 @@ export function extendSchema(
 
   // Iterate through all types, getting the type definition for each, ensuring
   // that any type not directly referenced by a field will get created.
-  Object.keys(schema.getTypeMap()).forEach(
-    typeName => getTypeFromDef(schema.getType(typeName))
+  const types = Object.keys(schema.getTypeMap()).map(typeName =>
+    getTypeFromDef(schema.getType(typeName))
   );
 
-  // Do the same with new types.
-  Object.keys(typeDefinitionMap).forEach(
-    typeName => getTypeFromAST(typeDefinitionMap[typeName])
-  );
+  // Do the same with new types, appending to the list of defined types.
+  Object.keys(typeDefinitionMap).forEach(typeName => {
+    types.push(getTypeFromAST(typeDefinitionMap[typeName]));
+  });
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
     query: queryType,
     mutation: mutationType,
     subscription: subscriptionType,
+    types,
     // Copy directives.
     directives: schema.getDirectives(),
   });
@@ -281,7 +302,7 @@ export function extendSchema(
     return new GraphQLUnionType({
       name: type.name,
       description: type.description,
-      types: type.getPossibleTypes().map(getTypeFromDef),
+      types: type.getTypes().map(getTypeFromDef),
       resolveType: cannotExecuteClientSchema,
     });
   }

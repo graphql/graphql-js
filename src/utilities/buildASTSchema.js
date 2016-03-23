@@ -62,6 +62,17 @@ import {
 
 import { GraphQLDirective } from '../type/directives';
 
+import {
+  __Schema,
+  __Directive,
+  __DirectiveLocation,
+  __Type,
+  __Field,
+  __InputValue,
+  __EnumValue,
+  __TypeKind,
+} from '../type/introspection';
+
 import type {
   GraphQLType,
   GraphQLNamedType
@@ -165,18 +176,27 @@ export function buildASTSchema(
     Float: GraphQLFloat,
     Boolean: GraphQLBoolean,
     ID: GraphQLID,
+    __Schema,
+    __Directive,
+    __DirectiveLocation,
+    __Type,
+    __Field,
+    __InputValue,
+    __EnumValue,
+    __TypeKind,
   };
 
-  typeDefs.forEach(def => typeDefNamed(def.name.value));
+  const types = typeDefs.map(def => typeDefNamed(def.name.value));
 
   const directives = directiveDefs.map(getDirective);
 
   return new GraphQLSchema({
-    directives,
     query: getObjectType(astMap[queryTypeName]),
     mutation: mutationTypeName ? getObjectType(astMap[mutationTypeName]) : null,
     subscription:
       subscriptionTypeName ? getObjectType(astMap[subscriptionTypeName]) : null,
+    types,
+    directives,
   });
 
   function getDirective(directiveAST: DirectiveDefinition): GraphQLDirective {

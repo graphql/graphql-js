@@ -373,7 +373,6 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     });
 
-    /* eslint-disable no-unused-vars */
     const StringBox = new GraphQLObjectType({
       name: 'StringBox',
       interfaces: [ SomeBox ],
@@ -425,7 +424,6 @@ describe('Validate: Overlapping fields can be merged', () => {
         unrelatedField: { type: GraphQLString },
       }
     });
-    /* eslint-enable no-unused-vars */
 
     const Connection = new GraphQLObjectType({
       name: 'Connection',
@@ -456,7 +454,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           someBox: { type: SomeBox },
           connection: { type: Connection }
         })
-      })
+      }),
+      types: [ IntBox, NonNullStringBox1Impl, NonNullStringBox2Impl ]
     });
 
     it('conflicting return types which potentially overlap', () => {

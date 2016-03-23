@@ -40,10 +40,10 @@ describe('Star Wars Introspection Tests', () => {
               name: 'Character'
             },
             {
-              name: 'Human'
+              name: 'String'
             },
             {
-              name: 'String'
+              name: 'Human'
             },
             {
               name: 'Droid'

@@ -11,8 +11,9 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { Field } from '../../language/ast';
+import type { GraphQLSchema } from '../../type/schema';
 import type { GraphQLAbstractType } from '../../type/definition';
-import { isAbstractType, GraphQLObjectType } from '../../type/definition';
+import { isAbstractType } from '../../type/definition';
 
 
 export function undefinedFieldMessage(
@@ -52,10 +53,14 @@ export function FieldsOnCorrectType(context: ValidationContext): any {
           // This isn't valid. Let's find suggestions, if any.
           let suggestedTypes = [];
           if (isAbstractType(type)) {
-            suggestedTypes =
-              getSiblingInterfacesIncludingField(type, node.name.value);
+            const schema = context.getSchema();
+            suggestedTypes = getSiblingInterfacesIncludingField(
+              schema,
+              type,
+              node.name.value
+            );
             suggestedTypes = suggestedTypes.concat(
-              getImplementationsIncludingField(type, node.name.value)
+              getImplementationsIncludingField(schema, type, node.name.value)
             );
           }
           context.reportError(new GraphQLError(
@@ -72,10 +77,11 @@ export function FieldsOnCorrectType(context: ValidationContext): any {
  * Return implementations of `type` that include `fieldName` as a valid field.
  */
 function getImplementationsIncludingField(
+  schema: GraphQLSchema,
   type: GraphQLAbstractType,
   fieldName: string
 ): Array<string> {
-  return type.getPossibleTypes()
+  return schema.getPossibleTypes(type)
     .filter(t => t.getFields()[fieldName] !== undefined)
     .map(t => t.name)
     .sort();
@@ -88,13 +94,11 @@ function getImplementationsIncludingField(
  * interface.
  */
 function getSiblingInterfacesIncludingField(
+  schema: GraphQLSchema,
   type: GraphQLAbstractType,
   fieldName: string
 ): Array<string> {
-  const implementingObjects = type.getPossibleTypes()
-    .filter(t => t instanceof GraphQLObjectType);
-
-  const suggestedInterfaces = implementingObjects.reduce((acc, t) => {
+  const suggestedInterfaces = schema.getPossibleTypes(type).reduce((acc, t) => {
     t.getInterfaces().forEach(i => {
       if (i.getFields()[fieldName] === undefined) {
         return;

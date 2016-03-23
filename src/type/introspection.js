@@ -67,7 +67,7 @@ export const __Schema = new GraphQLObjectType({
   })
 });
 
-const __Directive = new GraphQLObjectType({
+export const __Directive = new GraphQLObjectType({
   name: '__Directive',
   description:
     'A Directive provides a way to describe alternate runtime execution and ' +
@@ -115,7 +115,7 @@ const __Directive = new GraphQLObjectType({
   }),
 });
 
-const __DirectiveLocation = new GraphQLEnumType({
+export const __DirectiveLocation = new GraphQLEnumType({
   name: '__DirectiveLocation',
   description:
     'A Directive can be adjacent to many parts of the GraphQL language, a ' +
@@ -152,7 +152,7 @@ const __DirectiveLocation = new GraphQLEnumType({
   }
 });
 
-const __Type = new GraphQLObjectType({
+export const __Type = new GraphQLObjectType({
   name: '__Type',
   description:
     'The fundamental unit of any GraphQL Schema is the type. There are ' +
@@ -218,10 +218,10 @@ const __Type = new GraphQLObjectType({
     },
     possibleTypes: {
       type: new GraphQLList(new GraphQLNonNull(__Type)),
-      resolve(type) {
+      resolve(type, args, { schema }) {
         if (type instanceof GraphQLInterfaceType ||
             type instanceof GraphQLUnionType) {
-          return type.getPossibleTypes();
+          return schema.getPossibleTypes(type);
         }
       }
     },
@@ -253,7 +253,7 @@ const __Type = new GraphQLObjectType({
   })
 });
 
-const __Field = new GraphQLObjectType({
+export const __Field = new GraphQLObjectType({
   name: '__Field',
   description:
     'Object and Interface types are described by a list of Fields, each of ' +
@@ -277,7 +277,7 @@ const __Field = new GraphQLObjectType({
   })
 });
 
-const __InputValue = new GraphQLObjectType({
+export const __InputValue = new GraphQLObjectType({
   name: '__InputValue',
   description:
     'Arguments provided to Fields or Directives and the input fields of an ' +
@@ -299,7 +299,7 @@ const __InputValue = new GraphQLObjectType({
   })
 });
 
-const __EnumValue = new GraphQLObjectType({
+export const __EnumValue = new GraphQLObjectType({
   name: '__EnumValue',
   description:
     'One possible value for a given Enum. Enum values are unique values, not ' +
@@ -329,7 +329,7 @@ export const TypeKind = {
   NON_NULL: 'NON_NULL',
 };
 
-const __TypeKind = new GraphQLEnumType({
+export const __TypeKind = new GraphQLEnumType({
   name: '__TypeKind',
   description: 'An enum describing what kind of type a given `__Type` is.',
   values: {

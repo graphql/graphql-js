@@ -468,7 +468,8 @@ function doesFragmentConditionMatch(
     return true;
   }
   if (isAbstractType(conditionalType)) {
-    return ((conditionalType: any): GraphQLAbstractType).isPossibleType(type);
+    const abstractType = ((conditionalType: any): GraphQLAbstractType);
+    return exeContext.schema.isPossibleType(abstractType, type);
   }
   return false;
 }
@@ -806,7 +807,8 @@ function completeAbstractValue(
     return null;
   }
 
-  if (runtimeType && !returnType.isPossibleType(runtimeType)) {
+  const schema = exeContext.schema;
+  if (runtimeType && !schema.isPossibleType(returnType, runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType}" is not a possible type ` +
       `for "${returnType}".`,
@@ -872,7 +874,7 @@ function defaultResolveTypeFn(
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType
 ): ?GraphQLObjectType {
-  const possibleTypes = abstractType.getPossibleTypes();
+  const possibleTypes = info.schema.getPossibleTypes(abstractType);
   for (let i = 0; i < possibleTypes.length; i++) {
     const type = possibleTypes[i];
     if (typeof type.isTypeOf === 'function' && type.isTypeOf(value, info)) {
