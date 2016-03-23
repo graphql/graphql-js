@@ -20,6 +20,7 @@ import {
   GraphQLUnionType,
   GraphQLID,
   GraphQLString,
+  GraphQLEnumType,
   GraphQLNonNull,
   GraphQLList,
 } from '../../type';
@@ -70,12 +71,21 @@ const SomeUnionType = new GraphQLUnionType({
   types: [ FooType, BizType ],
 });
 
+const SomeEnumType = new GraphQLEnumType({
+  name: 'SomeEnum',
+  values: {
+    'ONE': { value: 1 },
+    'TWO': { value: 2 },
+  }
+});
+
 const testSchema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
       foo: { type: FooType },
       someUnion: { type: SomeUnionType },
+      someEnum: { type: SomeEnumType },
       someInterface: {
         args: { id: { type: new GraphQLNonNull(GraphQLID) } },
         type: SomeInterfaceType
@@ -153,7 +163,13 @@ type Foo implements SomeInterface {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -208,7 +224,68 @@ input NewInputObj {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
+}
+
+interface SomeInterface {
+  name: String
+  some: SomeInterface
+}
+
+union SomeUnion = Foo | Biz
+`);
+  });
+
+  it('extends objects by adding new fields with existing types', () => {
+    const ast = parse(`
+      extend type Foo {
+        newField(arg1: SomeEnum!): SomeEnum
+      }
+
+      input NewInputObj {
+        field1: Int
+        field2: [Float]
+        field3: String!
+      }
+    `);
+    const originalPrint = printSchema(testSchema);
+    const extendedSchema = extendSchema(testSchema, ast);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printSchema(testSchema)).to.equal(originalPrint);
+    expect(printSchema(extendedSchema)).to.equal(
+`type Bar implements SomeInterface {
+  name: String
+  some: SomeInterface
+  foo: Foo
+}
+
+type Biz {
+  fizz: String
+}
+
+type Foo implements SomeInterface {
+  name: String
+  some: SomeInterface
+  tree: [Foo]!
+  newField(arg1: SomeEnum!): SomeEnum
+}
+
+type Query {
+  foo: Foo
+  someUnion: SomeUnion
+  someEnum: SomeEnum
+  someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -253,7 +330,13 @@ type Foo implements SomeInterface {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -348,7 +431,13 @@ union NewUnion = NewObject | NewOtherObject
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -399,7 +488,13 @@ interface NewInterface {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -465,7 +560,13 @@ interface NewInterface {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
