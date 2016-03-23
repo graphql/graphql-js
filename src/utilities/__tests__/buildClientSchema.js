@@ -223,6 +223,36 @@ describe('Type System: build schema from introspection', () => {
     await testSchema(schema);
   });
 
+  it('builds a schema with an implicit interface', async () => {
+    const friendlyType = new GraphQLInterfaceType({
+      name: 'Friendly',
+      resolveType: () => null,
+      fields: () => ({
+        bestFriend: {
+          type: friendlyType,
+          description: 'The best friend of this friendly thing'
+        }
+      })
+    });
+    const dogType = new GraphQLObjectType({
+      name: 'Dog',
+      interfaces: [ friendlyType ],
+      fields: () => ({
+        bestFriend: { type: dogType }
+      })
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'WithInterface',
+        fields: {
+          dog: { type: dogType }
+        }
+      })
+    });
+
+    await testSchema(schema);
+  });
+
   it('builds a schema with a union', async () => {
     const dogType = new GraphQLObjectType({
       name: 'Dog',
