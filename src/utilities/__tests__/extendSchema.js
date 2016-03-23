@@ -74,8 +74,8 @@ const SomeUnionType = new GraphQLUnionType({
 const SomeEnumType = new GraphQLEnumType({
   name: 'SomeEnum',
   values: {
-    'ONE': { value: 1 },
-    'TWO': { value: 2 },
+    ONE: { value: 1 },
+    TWO: { value: 2 },
   }
 });
 
