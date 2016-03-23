@@ -360,7 +360,8 @@ function collectFields(
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSet,
   fields: {[key: string]: Array<Field>},
-  visitedFragmentNames: {[key: string]: boolean}
+  visitedFragmentNames: {[key: string]: boolean},
+  parentField: ?Field
 ): {[key: string]: Array<Field>} {
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
@@ -373,6 +374,7 @@ function collectFields(
         if (!fields[name]) {
           fields[name] = [];
         }
+        selection.parentField = parentField;
         fields[name].push(selection);
         break;
       case Kind.INLINE_FRAGMENT:
@@ -385,7 +387,8 @@ function collectFields(
           runtimeType,
           selection.selectionSet,
           fields,
-          visitedFragmentNames
+          visitedFragmentNames,
+          parentField
         );
         break;
       case Kind.FRAGMENT_SPREAD:
@@ -406,7 +409,8 @@ function collectFields(
           runtimeType,
           fragment.selectionSet,
           fields,
-          visitedFragmentNames
+          visitedFragmentNames,
+          parentField
         );
         break;
     }
@@ -851,7 +855,8 @@ function completeObjectValue(
         returnType,
         selectionSet,
         subFieldASTs,
-        visitedFragmentNames
+        visitedFragmentNames,
+        fieldASTs[i]
       );
     }
   }

@@ -792,4 +792,68 @@ describe('Execute: Handles basic execution tasks', () => {
     );
   });
 
+  it('add fields in GraphQLError', async() => {
+    var query = parse(`
+      query withFragments {
+        user(id: 4) {
+          id
+          name
+          friends {
+            ...friendFields
+          }
+          mutualFriends {
+            ...friendFields
+          }
+        }
+      }
+
+      fragment friendFields on User {
+        id
+        name
+      }
+    `);
+
+    var User = new GraphQLObjectType({
+      name: 'User',
+      fields: () => ({
+        id: {type: GraphQLInt},
+        name: {type: GraphQLString},
+        friends: {type: new GraphQLList(User)},
+        mutualFriends: {type: new GraphQLList(User)}
+      })
+    });
+
+    var schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'withFragments',
+        fields: {
+          user: {
+            type: User,
+            args: {
+              id: { type: GraphQLInt}
+            },
+          }
+        }
+      })
+    });
+
+    var data = {
+      user() {
+        return {
+          id: 1,
+          name: 'user name1',
+          friends() { return friendsData(); },
+          mutualFriends() { return friendsData(); }
+        };
+      }
+    };
+
+    var friendsData = function () {
+      return [ Promise.reject('some error') ];
+    };
+
+    var result = await execute(schema, query, data);
+    expect(result.errors[0].fields).to.equal('user.friends');
+    expect(result.errors[1].fields).to.equal('user.mutualFriends');
+  });
 });
