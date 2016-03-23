@@ -693,7 +693,7 @@ function completeValue(
     return completed;
   }
 
-  // If result is null-like, return null.
+  // If result value is null-ish (null, undefined, or NaN) then return null.
   if (isNullish(result)) {
     return null;
   }
@@ -703,23 +703,15 @@ function completeValue(
     return completeListValue(exeContext, returnType, fieldASTs, info, result);
   }
 
-  // If field type is Scalar or Enum, serialize to a valid value, returning
-  // null if serialization is not possible.
+  // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
+  // returning null if serialization is not possible.
   if (returnType instanceof GraphQLScalarType ||
       returnType instanceof GraphQLEnumType) {
     return completeLeafValue(exeContext, returnType, fieldASTs, info, result);
   }
 
-  if (returnType instanceof GraphQLObjectType) {
-    return completeObjectValue(
-      exeContext,
-      returnType,
-      fieldASTs,
-      info,
-      result
-    );
-  }
-
+  // If field type is an abstract type, Interface or Union, determine the
+  // runtime Object type and complete for that type.
   if (returnType instanceof GraphQLInterfaceType ||
       returnType instanceof GraphQLUnionType) {
     return completeAbstractValue(
@@ -731,7 +723,18 @@ function completeValue(
     );
   }
 
-  // Not reachable
+  // If field type is Object, execute and complete all sub-selections.
+  if (returnType instanceof GraphQLObjectType) {
+    return completeObjectValue(
+      exeContext,
+      returnType,
+      fieldASTs,
+      info,
+      result
+    );
+  }
+
+  // Not reachable. All possible output types have been considered.
   invariant(
     false,
     `Cannot complete value of unexpected type "${returnType}".`
@@ -788,7 +791,40 @@ function completeLeafValue(
 }
 
 /**
- * Complete an Object value by evaluating all sub-selections.
+ * Complete a value of an abstract type by determining the runtime object type
+ * of that value, then complete the value for that type.
+ */
+function completeAbstractValue(
+  exeContext: ExecutionContext,
+  returnType: GraphQLAbstractType,
+  fieldASTs: Array<Field>,
+  info: GraphQLResolveInfo,
+  result: mixed
+): mixed {
+  const runtimeType = returnType.getObjectType(result, info);
+  if (runtimeType && !returnType.isPossibleType(runtimeType)) {
+    throw new GraphQLError(
+      `Runtime Object type "${runtimeType}" is not a possible type ` +
+      `for "${returnType}".`,
+      fieldASTs
+    );
+  }
+
+  if (!runtimeType) {
+    return null;
+  }
+
+  return completeObjectValue(
+    exeContext,
+    runtimeType,
+    fieldASTs,
+    info,
+    result
+  );
+}
+
+/**
+ * Complete an Object value by executing all sub-selections.
  */
 function completeObjectValue(
   exeContext: ExecutionContext,
@@ -824,40 +860,6 @@ function completeObjectValue(
   }
 
   return executeFields(exeContext, returnType, result, subFieldASTs);
-}
-
-/**
- * Complete an value of an abstract type by determining the runtime type of
- * that value, then completing based on that type.
- */
-function completeAbstractValue(
-  exeContext: ExecutionContext,
-  returnType: GraphQLAbstractType,
-  fieldASTs: Array<Field>,
-  info: GraphQLResolveInfo,
-  result: mixed
-): mixed {
-  const abstractType = ((returnType: any): GraphQLAbstractType);
-  const runtimeType = abstractType.getObjectType(result, info);
-  if (runtimeType && !abstractType.isPossibleType(runtimeType)) {
-    throw new GraphQLError(
-      `Runtime Object type "${runtimeType}" is not a possible type ` +
-      `for "${abstractType}".`,
-      fieldASTs
-    );
-  }
-
-  if (!runtimeType) {
-    return null;
-  }
-
-  return completeObjectValue(
-    exeContext,
-    runtimeType,
-    fieldASTs,
-    info,
-    result
-  );
 }
 
 /**
