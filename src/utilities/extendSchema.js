@@ -273,7 +273,7 @@ export function extendSchema(
       name: type.name,
       description: type.description,
       fields: () => extendFieldMap(type),
-      resolveType: throwClientSchemaExecutionError,
+      resolveType: cannotExecuteClientSchema,
     });
   }
 
@@ -282,7 +282,7 @@ export function extendSchema(
       name: type.name,
       description: type.description,
       types: type.getPossibleTypes().map(getTypeFromDef),
-      resolveType: throwClientSchemaExecutionError,
+      resolveType: cannotExecuteClientSchema,
     });
   }
 
@@ -322,7 +322,7 @@ export function extendSchema(
         deprecationReason: field.deprecationReason,
         type: extendFieldType(field.type),
         args: keyMap(field.args, arg => arg.name),
-        resolve: throwClientSchemaExecutionError,
+        resolve: cannotExecuteClientSchema,
       };
     });
 
@@ -342,7 +342,7 @@ export function extendSchema(
           newFieldMap[fieldName] = {
             type: buildFieldType(field.type),
             args: buildInputValues(field.arguments),
-            resolve: throwClientSchemaExecutionError,
+            resolve: cannotExecuteClientSchema,
           };
         });
       });
@@ -384,7 +384,7 @@ export function extendSchema(
     return new GraphQLInterfaceType({
       name: typeAST.name.value,
       fields: () => buildFieldMap(typeAST),
-      resolveType: throwClientSchemaExecutionError,
+      resolveType: cannotExecuteClientSchema,
     });
   }
 
@@ -392,7 +392,7 @@ export function extendSchema(
     return new GraphQLUnionType({
       name: typeAST.name.value,
       types: typeAST.types.map(getTypeFromAST),
-      resolveType: throwClientSchemaExecutionError,
+      resolveType: cannotExecuteClientSchema,
     });
   }
 
@@ -434,7 +434,7 @@ export function extendSchema(
       field => ({
         type: buildFieldType(field.type),
         args: buildInputValues(field.arguments),
-        resolve: throwClientSchemaExecutionError,
+        resolve: cannotExecuteClientSchema,
       })
     );
   }
@@ -464,6 +464,6 @@ export function extendSchema(
   }
 }
 
-function throwClientSchemaExecutionError() {
+function cannotExecuteClientSchema() {
   throw new Error('Client Schema cannot be used for execution.');
 }
