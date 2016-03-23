@@ -707,7 +707,7 @@ function completeValue(
   // returning null if serialization is not possible.
   if (returnType instanceof GraphQLScalarType ||
       returnType instanceof GraphQLEnumType) {
-    return completeLeafValue(exeContext, returnType, fieldASTs, info, result);
+    return completeLeafValue(returnType, result);
   }
 
   // If field type is an abstract type, Interface or Union, determine the
@@ -779,10 +779,7 @@ function completeListValue(
  * null if serialization is not possible.
  */
 function completeLeafValue(
-  exeContext: ExecutionContext,
   returnType: GraphQLLeafType,
-  fieldASTs: Array<Field>,
-  info: GraphQLResolveInfo,
   result: mixed
 ): mixed {
   invariant(returnType.serialize, 'Missing serialize method on type');
