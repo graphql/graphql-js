@@ -672,6 +672,7 @@ describe('Type System: build schema from introspection', () => {
       clientSchema,
       'query NoNo($v: CustomScalar) { foo(custom1: 123, custom2: $v) }',
       { foo: 'bar' },
+      null,
       { v: 'baz' }
     );
     expect(result).to.containSubset({

@@ -44,6 +44,7 @@ export function graphql(
   schema: GraphQLSchema,
   requestString: string,
   rootValue?: mixed,
+  contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
 ): Promise<GraphQLResult> {
@@ -59,6 +60,7 @@ export function graphql(
           schema,
           documentAST,
           rootValue,
+          contextValue,
           variableValues,
           operationName
         )

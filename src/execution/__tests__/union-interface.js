@@ -349,6 +349,7 @@ describe('Execute: Union and intersection types', () => {
   });
 
   it('gets execution info in resolver', async () => {
+    let encounteredContext;
     let encounteredSchema;
     let encounteredRootValue;
 
@@ -357,9 +358,10 @@ describe('Execute: Union and intersection types', () => {
       fields: {
         name: { type: GraphQLString }
       },
-      resolveType(obj, { schema: infoSchema, rootValue: infoRootValue }) {
-        encounteredSchema = infoSchema;
-        encounteredRootValue = infoRootValue;
+      resolveType(obj, context, { schema: _schema, rootValue }) {
+        encounteredContext = context;
+        encounteredSchema = _schema;
+        encounteredRootValue = rootValue;
         return PersonType2;
       }
     });
@@ -379,14 +381,17 @@ describe('Execute: Union and intersection types', () => {
 
     const john2 = new Person('John', [], [ liz ]);
 
+    const context = { authToken: '123abc' };
+
     const ast = parse('{ name, friends { name } }');
 
     expect(
-      await execute(schema2, ast, john2)
+      await execute(schema2, ast, john2, context)
     ).to.deep.equal({
       data: { name: 'John', friends: [ { name: 'Liz' } ] }
     });
 
+    expect(encounteredContext).to.equal(context);
     expect(encounteredSchema).to.equal(schema2);
     expect(encounteredRootValue).to.equal(john2);
   });

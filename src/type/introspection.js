@@ -218,7 +218,7 @@ export const __Type = new GraphQLObjectType({
     },
     possibleTypes: {
       type: new GraphQLList(new GraphQLNonNull(__Type)),
-      resolve(type, args, { schema }) {
+      resolve(type, args, context, { schema }) {
         if (type instanceof GraphQLInterfaceType ||
             type instanceof GraphQLUnionType) {
           return schema.getPossibleTypes(type);
@@ -385,7 +385,7 @@ export const SchemaMetaFieldDef: GraphQLFieldDefinition = {
   type: new GraphQLNonNull(__Schema),
   description: 'Access the current type schema of this server.',
   args: [],
-  resolve: (source, args, { schema }) => schema
+  resolve: (source, args, context, { schema }) => schema
 };
 
 export const TypeMetaFieldDef: GraphQLFieldDefinition = {
@@ -395,7 +395,7 @@ export const TypeMetaFieldDef: GraphQLFieldDefinition = {
   args: [
     { name: 'name', type: new GraphQLNonNull(GraphQLString) }
   ],
-  resolve: (source, { name }: { name: string }, { schema }) =>
+  resolve: (source, { name }: { name: string }, context, { schema }) =>
     schema.getType(name)
 };
 
@@ -404,5 +404,5 @@ export const TypeNameMetaFieldDef: GraphQLFieldDefinition = {
   type: new GraphQLNonNull(GraphQLString),
   description: 'The name of the current Object type at runtime.',
   args: [],
-  resolve: (source, args, { parentType }) => parentType.name
+  resolve: (source, args, context, { parentType }) => parentType.name
 };

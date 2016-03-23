@@ -181,7 +181,7 @@ describe('Star Wars Query Tests', () => {
           name: 'Luke Skywalker'
         }
       };
-      const result = await graphql(StarWarsSchema, query, null, params);
+      const result = await graphql(StarWarsSchema, query, null, null, params);
       expect(result).to.deep.equal({ data: expected });
     });
 
@@ -201,7 +201,7 @@ describe('Star Wars Query Tests', () => {
           name: 'Han Solo'
         }
       };
-      const result = await graphql(StarWarsSchema, query, null, params);
+      const result = await graphql(StarWarsSchema, query, null, null, params);
       expect(result).to.deep.equal({ data: expected });
     });
 
@@ -219,7 +219,7 @@ describe('Star Wars Query Tests', () => {
       const expected = {
         human: null
       };
-      const result = await graphql(StarWarsSchema, query, null, params);
+      const result = await graphql(StarWarsSchema, query, null, null, params);
       expect(result).to.deep.equal({ data: expected });
     });
   });
