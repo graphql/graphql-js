@@ -798,7 +798,13 @@ function completeAbstractValue(
   info: GraphQLResolveInfo,
   result: mixed
 ): mixed {
-  const runtimeType = returnType.getObjectType(result, info);
+  let runtimeType: ?GraphQLObjectType;
+  if (returnType.resolveType) {
+    runtimeType = returnType.resolveType(result, info);
+  } else {
+    runtimeType = defaultResolveTypeFn(result, info, returnType);
+  }
+
   if (runtimeType && !returnType.isPossibleType(runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType}" is not a possible type ` +
@@ -857,6 +863,25 @@ function completeObjectValue(
   }
 
   return executeFields(exeContext, returnType, result, subFieldASTs);
+}
+
+/**
+ * If a resolveType function is not given, then a default resolve behavior is
+ * used which tests each possible type for the abstract type by calling
+ * isTypeOf for the object being coerced, returning the first type that matches.
+ */
+function defaultResolveTypeFn(
+  value: mixed,
+  info: GraphQLResolveInfo,
+  abstractType: GraphQLAbstractType
+): ?GraphQLObjectType {
+  const possibleTypes = abstractType.getPossibleTypes();
+  for (let i = 0; i < possibleTypes.length; i++) {
+    const type = possibleTypes[i];
+    if (typeof type.isTypeOf === 'function' && type.isTypeOf(value, info)) {
+      return type;
+    }
+  }
 }
 
 /**

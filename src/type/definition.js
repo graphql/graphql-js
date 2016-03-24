@@ -600,27 +600,8 @@ export class GraphQLInterfaceType {
     return Boolean(possibleTypes[type.name]);
   }
 
-  getObjectType(value: mixed, info: GraphQLResolveInfo): ?GraphQLObjectType {
-    const resolver = this.resolveType;
-    return resolver ? resolver(value, info) : getTypeOf(value, info, this);
-  }
-
   toString(): string {
     return this.name;
-  }
-}
-
-function getTypeOf(
-  value: mixed,
-  info: GraphQLResolveInfo,
-  abstractType: GraphQLAbstractType
-): ?GraphQLObjectType {
-  const possibleTypes = abstractType.getPossibleTypes();
-  for (let i = 0; i < possibleTypes.length; i++) {
-    const type = possibleTypes[i];
-    if (typeof type.isTypeOf === 'function' && type.isTypeOf(value, info)) {
-      return type;
-    }
   }
 }
 
@@ -719,11 +700,6 @@ export class GraphQLUnionType {
         );
     }
     return possibleTypeNames[type.name] === true;
-  }
-
-  getObjectType(value: mixed, info: GraphQLResolveInfo): ?GraphQLObjectType {
-    const resolver = this._typeConfig.resolveType;
-    return resolver ? resolver(value, info) : getTypeOf(value, info, this);
   }
 
   toString(): string {
