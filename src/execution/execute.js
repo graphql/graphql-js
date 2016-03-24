@@ -798,11 +798,12 @@ function completeAbstractValue(
   info: GraphQLResolveInfo,
   result: mixed
 ): mixed {
-  let runtimeType: ?GraphQLObjectType;
-  if (returnType.resolveType) {
-    runtimeType = returnType.resolveType(result, info);
-  } else {
-    runtimeType = defaultResolveTypeFn(result, info, returnType);
+  const runtimeType = returnType.resolveType ?
+    returnType.resolveType(result, info) :
+    defaultResolveTypeFn(result, info, returnType);
+
+  if (!runtimeType) {
+    return null;
   }
 
   if (runtimeType && !returnType.isPossibleType(runtimeType)) {
@@ -811,10 +812,6 @@ function completeAbstractValue(
       `for "${returnType}".`,
       fieldASTs
     );
-  }
-
-  if (!runtimeType) {
-    return null;
   }
 
   return completeObjectValue(
