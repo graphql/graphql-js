@@ -470,12 +470,12 @@ type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
 
 export type GraphQLTypeResolveFn = (
   value: mixed,
-  info?: GraphQLResolveInfo
+  info: GraphQLResolveInfo
 ) => ?GraphQLObjectType
 
 export type GraphQLIsTypeOfFn = (
   value: mixed,
-  info?: GraphQLResolveInfo
+  info: GraphQLResolveInfo
 ) => boolean
 
 export type GraphQLFieldResolveFn = (
