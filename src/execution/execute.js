@@ -869,7 +869,7 @@ function defaultResolveFn(source, args, { fieldName }) {
   // ensure source is a value for which property access is acceptable.
   if (typeof source !== 'number' && typeof source !== 'string' && source) {
     const property = (source: any)[fieldName];
-    return typeof property === 'function' ? property.call(source) : property;
+    return typeof property === 'function' ? property(source) : property;
   }
 }
 
