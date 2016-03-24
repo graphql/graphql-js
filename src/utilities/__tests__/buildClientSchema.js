@@ -195,29 +195,28 @@ describe('Type System: build schema from introspection', () => {
         }
       })
     });
-    /* eslint-disable no-new */
-    new GraphQLObjectType({
+    const dogType = new GraphQLObjectType({
       name: 'Dog',
       interfaces: [ friendlyType ],
       fields: () => ({
         bestFriend: { type: friendlyType }
       })
     });
-    new GraphQLObjectType({
+    const humanType = new GraphQLObjectType({
       name: 'Human',
       interfaces: [ friendlyType ],
       fields: () => ({
         bestFriend: { type: friendlyType }
       })
     });
-    /* eslint-enable no-new */
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'WithInterface',
         fields: {
           friendly: { type: friendlyType }
         }
-      })
+      }),
+      types: [ dogType, humanType ]
     });
 
     await testSchema(schema);

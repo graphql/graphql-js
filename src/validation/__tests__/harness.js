@@ -304,6 +304,7 @@ const QueryRoot = new GraphQLObjectType({
 
 export const testSchema = new GraphQLSchema({
   query: QueryRoot,
+  types: [ Cat, Dog, Human, Alien ],
   directives: [
     new GraphQLDirective({
       name: 'operationOnly',

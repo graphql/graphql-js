@@ -10,7 +10,6 @@
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
-import keyMap from '../jsutils/keyMap';
 import { ENUM } from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
 import type {
@@ -321,7 +320,6 @@ export class GraphQLObjectType {
     }
     this.isTypeOf = config.isTypeOf;
     this._typeConfig = config;
-    addImplementationToInterfaces(this);
   }
 
   getFields(): GraphQLFieldDefinitionMap {
@@ -444,18 +442,6 @@ function isPlainObj(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
 }
 
-/**
- * Update the interfaces to know about this implementation.
- * This is an rare and unfortunate use of mutation in the type definition
- * implementations, but avoids an expensive "getPossibleTypes"
- * implementation for Interface types.
- */
-function addImplementationToInterfaces(impl) {
-  impl.getInterfaces().forEach(type => {
-    type._implementations.push(impl);
-  });
-}
-
 export type GraphQLObjectTypeConfig = {
   name: string;
   interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
@@ -565,8 +551,6 @@ export class GraphQLInterfaceType {
 
   _typeConfig: GraphQLInterfaceTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
-  _implementations: Array<GraphQLObjectType>;
-  _possibleTypes: { [typeName: string]: GraphQLObjectType };
 
   constructor(config: GraphQLInterfaceTypeConfig) {
     invariant(config.name, 'Type must be named.');
@@ -581,23 +565,11 @@ export class GraphQLInterfaceType {
     }
     this.resolveType = config.resolveType;
     this._typeConfig = config;
-    this._implementations = [];
   }
 
   getFields(): GraphQLFieldDefinitionMap {
     return this._fields ||
       (this._fields = defineFieldMap(this, this._typeConfig.fields));
-  }
-
-  getPossibleTypes(): Array<GraphQLObjectType> {
-    return this._implementations;
-  }
-
-  isPossibleType(type: GraphQLObjectType): boolean {
-    const possibleTypes = this._possibleTypes || (this._possibleTypes =
-      keyMap(this.getPossibleTypes(), possibleType => possibleType.name)
-    );
-    return Boolean(possibleTypes[type.name]);
   }
 
   toString(): string {
@@ -686,20 +658,8 @@ export class GraphQLUnionType {
     this._typeConfig = config;
   }
 
-  getPossibleTypes(): Array<GraphQLObjectType> {
+  getTypes(): Array<GraphQLObjectType> {
     return this._types;
-  }
-
-  isPossibleType(type: GraphQLObjectType): boolean {
-    let possibleTypeNames = this._possibleTypeNames;
-    if (!possibleTypeNames) {
-      this._possibleTypeNames = possibleTypeNames =
-        this.getPossibleTypes().reduce(
-          (map, possibleType) => ((map[possibleType.name] = true), map),
-          {}
-        );
-    }
-    return possibleTypeNames[type.name] === true;
   }
 
   toString(): string {

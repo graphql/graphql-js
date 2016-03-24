@@ -46,7 +46,6 @@ const FooType = new GraphQLObjectType({
   })
 });
 
-/* eslint-disable no-unused-vars */
 const BarType = new GraphQLObjectType({
   name: 'Bar',
   interfaces: [ SomeInterfaceType ],
@@ -56,7 +55,6 @@ const BarType = new GraphQLObjectType({
     foo: { type: FooType },
   })
 });
-/* eslint-enable no-unused-vars */
 
 const BizType = new GraphQLObjectType({
   name: 'Biz',
@@ -91,7 +89,8 @@ const testSchema = new GraphQLSchema({
         type: SomeInterfaceType
       },
     })
-  })
+  }),
+  types: [ FooType, BarType ]
 });
 
 describe('extendSchema', () => {
@@ -181,6 +180,58 @@ union SomeUnion = Foo | Biz
 `);
   });
 
+  it('extends objects by adding new unused types', () => {
+    const ast = parse(`
+      type Unused {
+        someField: String
+      }
+    `);
+    const originalPrint = printSchema(testSchema);
+    const extendedSchema = extendSchema(testSchema, ast);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printSchema(testSchema)).to.equal(originalPrint);
+    expect(printSchema(extendedSchema)).to.equal(
+`type Bar implements SomeInterface {
+  name: String
+  some: SomeInterface
+  foo: Foo
+}
+
+type Biz {
+  fizz: String
+}
+
+type Foo implements SomeInterface {
+  name: String
+  some: SomeInterface
+  tree: [Foo]!
+}
+
+type Query {
+  foo: Foo
+  someUnion: SomeUnion
+  someEnum: SomeEnum
+  someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
+}
+
+interface SomeInterface {
+  name: String
+  some: SomeInterface
+}
+
+union SomeUnion = Foo | Biz
+
+type Unused {
+  someField: String
+}
+`);
+  });
+
   it('extends objects by adding new fields with arguments', () => {
     const ast = parse(`
       extend type Foo {
@@ -246,12 +297,6 @@ union SomeUnion = Foo | Biz
     const ast = parse(`
       extend type Foo {
         newField(arg1: SomeEnum!): SomeEnum
-      }
-
-      input NewInputObj {
-        field1: Int
-        field2: [Float]
-        field3: String!
       }
     `);
     const originalPrint = printSchema(testSchema);

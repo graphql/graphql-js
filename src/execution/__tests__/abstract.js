@@ -51,9 +51,6 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     });
 
-    // Added to interface type when defined
-    /* eslint-disable no-unused-vars */
-
     const DogType = new GraphQLObjectType({
       name: 'Dog',
       interfaces: [ PetType ],
@@ -74,8 +71,6 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     });
 
-    /* eslint-enable no-unused-vars */
-
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -87,7 +82,8 @@ describe('Execute: Handles execution of abstract types', () => {
             }
           }
         }
-      })
+      }),
+      types: [ CatType, DogType ]
     });
 
     const query = `{
@@ -231,7 +227,8 @@ describe('Execute: Handles execution of abstract types', () => {
             }
           }
         }
-      })
+      }),
+      types: [ CatType, DogType ]
     });
 
     const query = `{

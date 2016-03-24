@@ -29,6 +29,17 @@ import {
 } from '../type/definition';
 
 import {
+  __Schema,
+  __Directive,
+  __DirectiveLocation,
+  __Type,
+  __Field,
+  __InputValue,
+  __EnumValue,
+  __TypeKind,
+} from '../type/introspection';
+
+import {
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
@@ -93,6 +104,14 @@ export function buildClientSchema(
     Float: GraphQLFloat,
     Boolean: GraphQLBoolean,
     ID: GraphQLID,
+    __Schema,
+    __Directive,
+    __DirectiveLocation,
+    __Type,
+    __Field,
+    __InputValue,
+    __EnumValue,
+    __TypeKind,
   };
 
   // Given a type reference in introspection, return the GraphQLType instance.
@@ -342,7 +361,7 @@ export function buildClientSchema(
 
   // Iterate through all types, getting the type definition for each, ensuring
   // that any type not directly referenced by a field will get created.
-  schemaIntrospection.types.forEach(
+  const types = schemaIntrospection.types.map(
     typeIntrospection => getNamedType(typeIntrospection.name)
   );
 
@@ -368,6 +387,7 @@ export function buildClientSchema(
     query: queryType,
     mutation: mutationType,
     subscription: subscriptionType,
+    types,
     directives,
   });
 }

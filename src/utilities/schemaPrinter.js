@@ -107,7 +107,7 @@ function printInterface(type: GraphQLInterfaceType): string {
 }
 
 function printUnion(type: GraphQLUnionType): string {
-  return `union ${type.name} = ${type.getPossibleTypes().join(' | ')}`;
+  return `union ${type.name} = ${type.getTypes().join(' | ')}`;
 }
 
 function printEnum(type: GraphQLEnumType): string {

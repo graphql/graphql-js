@@ -9,6 +9,7 @@
  */
 
 import {
+  GraphQLAbstractType,
   GraphQLObjectType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -49,6 +50,9 @@ export class GraphQLSchema {
   _subscriptionType: ?GraphQLObjectType;
   _directives: Array<GraphQLDirective>;
   _typeMap: TypeMap;
+  _implementations: { [interfaceName: string]: Array<GraphQLObjectType> };
+  _possibleTypeMap:
+    ?{ [abstractName: string]: { [possibleName: string]: boolean } };
 
   constructor(config: GraphQLSchemaConfig) {
     invariant(
@@ -77,6 +81,11 @@ export class GraphQLSchema {
     this._subscriptionType = config.subscription;
 
     invariant(
+      !config.types || Array.isArray(config.types),
+      `Schema types must be Array if provided but got: ${config.types}.`
+    );
+
+    invariant(
       !config.directives ||
       Array.isArray(config.directives) && config.directives.every(
         directive => directive instanceof GraphQLDirective
@@ -91,19 +100,45 @@ export class GraphQLSchema {
     ];
 
     // Build type map now to detect any errors within this schema.
-    this._typeMap = [
+    let initialTypes: Array<?GraphQLType> = [
       this.getQueryType(),
       this.getMutationType(),
       this.getSubscriptionType(),
       __Schema
-    ].reduce(typeMapReducer, {});
+    ];
 
-    // Enforce correct interface implementations
+    const types = config.types;
+    if (types) {
+      initialTypes = initialTypes.concat(types);
+    }
+
+    this._typeMap = initialTypes.reduce(
+      typeMapReducer,
+      (Object.create(null): TypeMap)
+    );
+
+    // Keep track of all implementations by interface name.
+    this._implementations = Object.create(null);
+    Object.keys(this._typeMap).forEach(typeName => {
+      const type = this._typeMap[typeName];
+      if (type instanceof GraphQLObjectType) {
+        type.getInterfaces().forEach(iface => {
+          const impls = this._implementations[iface.name];
+          if (impls) {
+            impls.push(type);
+          } else {
+            this._implementations[iface.name] = [ type ];
+          }
+        });
+      }
+    });
+
+    // Enforce correct interface implementations.
     Object.keys(this._typeMap).forEach(typeName => {
       const type = this._typeMap[typeName];
       if (type instanceof GraphQLObjectType) {
         type.getInterfaces().forEach(
-          iface => assertObjectImplementsInterface(type, iface)
+          iface => assertObjectImplementsInterface(this, type, iface)
         );
       }
     });
@@ -129,6 +164,36 @@ export class GraphQLSchema {
     return this.getTypeMap()[name];
   }
 
+  getPossibleTypes(
+    abstractType: GraphQLAbstractType
+  ): Array<GraphQLObjectType> {
+    if (abstractType instanceof GraphQLUnionType) {
+      return abstractType.getTypes();
+    }
+    invariant(abstractType instanceof GraphQLInterfaceType);
+    return this._implementations[abstractType.name];
+  }
+
+  isPossibleType(
+    abstractType: GraphQLAbstractType,
+    possibleType: GraphQLObjectType
+  ): boolean {
+    let possibleTypeMap = this._possibleTypeMap;
+    if (!possibleTypeMap) {
+      this._possibleTypeMap = possibleTypeMap = Object.create(null);
+    }
+
+    if (!possibleTypeMap[abstractType.name]) {
+      possibleTypeMap[abstractType.name] =
+        this.getPossibleTypes(abstractType).reduce(
+          (map, type) => ((map[type.name] = true), map),
+          Object.create(null)
+        );
+    }
+
+    return Boolean(possibleTypeMap[abstractType.name][possibleType.name]);
+  }
+
   getDirectives(): Array<GraphQLDirective> {
     return this._directives;
   }
@@ -144,6 +209,7 @@ type GraphQLSchemaConfig = {
   query: GraphQLObjectType;
   mutation?: ?GraphQLObjectType;
   subscription?: ?GraphQLObjectType;
+  types?: ?Array<GraphQLType>;
   directives?: ?Array<GraphQLDirective>;
 }
 
@@ -166,9 +232,8 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
 
   let reducedMap = map;
 
-  if (type instanceof GraphQLUnionType ||
-      type instanceof GraphQLInterfaceType) {
-    reducedMap = type.getPossibleTypes().reduce(typeMapReducer, reducedMap);
+  if (type instanceof GraphQLUnionType) {
+    reducedMap = type.getTypes().reduce(typeMapReducer, reducedMap);
   }
 
   if (type instanceof GraphQLObjectType) {
@@ -194,6 +259,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
 }
 
 function assertObjectImplementsInterface(
+  schema: GraphQLSchema,
   object: GraphQLObjectType,
   iface: GraphQLInterfaceType
 ): void {
@@ -215,7 +281,7 @@ function assertObjectImplementsInterface(
     // Assert interface field type is satisfied by object field type, by being
     // a valid subtype. (covariant)
     invariant(
-      isTypeSubTypeOf(objectField.type, ifaceField.type),
+      isTypeSubTypeOf(schema, objectField.type, ifaceField.type),
       `${iface}.${fieldName} expects type "${ifaceField.type}" but ` +
       `${object}.${fieldName} provides type "${objectField.type}".`
     );

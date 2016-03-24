@@ -108,7 +108,8 @@ function schemaWithFieldType(type) {
     query: new GraphQLObjectType({
       name: 'Query',
       fields: { f: { type } }
-    })
+    }),
+    types: [ type ],
   });
 }
 
@@ -261,23 +262,17 @@ describe('Type System: A Schema must contain uniquely named types', () => {
         fields: { f: { type: GraphQLString } },
       });
 
-      /* eslint-disable no-unused-vars */
-
-      // Automatically included in Interface
       const FirstBadObject = new GraphQLObjectType({
         name: 'BadObject',
         interfaces: [ AnotherInterface ],
         fields: { f: { type: GraphQLString } },
       });
 
-      // Automatically included in Interface
       const SecondBadObject = new GraphQLObjectType({
         name: 'BadObject',
         interfaces: [ AnotherInterface ],
         fields: { f: { type: GraphQLString } },
       });
-
-      /* eslint-enable no-unused-vars */
 
       const QueryType = new GraphQLObjectType({
         name: 'Query',
@@ -286,7 +281,10 @@ describe('Type System: A Schema must contain uniquely named types', () => {
         }
       });
 
-      return new GraphQLSchema({ query: QueryType });
+      return new GraphQLSchema({
+        query: QueryType,
+        types: [ FirstBadObject, SecondBadObject ]
+      });
     }).to.throw(
       'Schema must contain unique named types but contains multiple types ' +
       'named "BadObject".'
@@ -1114,7 +1112,8 @@ describe('Type System: Objects can only implement interfaces', () => {
         fields: {
           f: { type: BadObjectType }
         }
-      })
+      }),
+      types: [ BadObjectType ]
     });
   }
 

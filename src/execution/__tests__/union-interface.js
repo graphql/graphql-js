@@ -97,7 +97,8 @@ const PersonType = new GraphQLObjectType({
 });
 
 const schema = new GraphQLSchema({
-  query: PersonType
+  query: PersonType,
+  types: [ PetType ]
 });
 
 const garfield = new Cat('Garfield', false);
@@ -143,9 +144,9 @@ describe('Execute: Union and intersection types', () => {
           ],
           interfaces: null,
           possibleTypes: [
+            { name: 'Person' },
             { name: 'Dog' },
             { name: 'Cat' },
-            { name: 'Person' }
           ],
           enumValues: null,
           inputFields: null

@@ -21,6 +21,9 @@ import type {
   GraphQLCompositeType,
   GraphQLAbstractType
 } from '../type/definition';
+import type {
+  GraphQLSchema
+} from '../type/schema';
 
 
 /**
@@ -51,6 +54,7 @@ export function isEqualType(typeA: GraphQLType, typeB: GraphQLType): boolean {
  * equal or a subset of the second super type (covariant).
  */
 export function isTypeSubTypeOf(
+  schema: GraphQLSchema,
   maybeSubType: GraphQLType,
   superType: GraphQLType
 ): boolean {
@@ -62,18 +66,18 @@ export function isTypeSubTypeOf(
   // If superType is non-null, maybeSubType must also be nullable.
   if (superType instanceof GraphQLNonNull) {
     if (maybeSubType instanceof GraphQLNonNull) {
-      return isTypeSubTypeOf(maybeSubType.ofType, superType.ofType);
+      return isTypeSubTypeOf(schema, maybeSubType.ofType, superType.ofType);
     }
     return false;
   } else if (maybeSubType instanceof GraphQLNonNull) {
     // If superType is nullable, maybeSubType may be non-null.
-    return isTypeSubTypeOf(maybeSubType.ofType, superType);
+    return isTypeSubTypeOf(schema, maybeSubType.ofType, superType);
   }
 
   // If superType type is a list, maybeSubType type must also be a list.
   if (superType instanceof GraphQLList) {
     if (maybeSubType instanceof GraphQLList) {
-      return isTypeSubTypeOf(maybeSubType.ofType, superType.ofType);
+      return isTypeSubTypeOf(schema, maybeSubType.ofType, superType.ofType);
     }
     return false;
   } else if (maybeSubType instanceof GraphQLList) {
@@ -85,7 +89,10 @@ export function isTypeSubTypeOf(
   // possible object type.
   if (isAbstractType(superType) &&
       maybeSubType instanceof GraphQLObjectType &&
-      ((superType: any): GraphQLAbstractType).isPossibleType(maybeSubType)) {
+      schema.isPossibleType(
+        ((superType: any): GraphQLAbstractType),
+        maybeSubType
+      )) {
     return true;
   }
 
@@ -103,6 +110,7 @@ export function isTypeSubTypeOf(
  * This function is commutative.
  */
 export function doTypesOverlap(
+  schema: GraphQLSchema,
   typeA: GraphQLCompositeType,
   typeB: GraphQLCompositeType
 ): boolean {
@@ -120,16 +128,18 @@ export function doTypesOverlap(
         _typeB instanceof GraphQLUnionType) {
       // If both types are abstract, then determine if there is any intersection
       // between possible concrete types of each.
-      return typeA.getPossibleTypes().some(type => _typeB.isPossibleType(type));
+      return schema.getPossibleTypes(typeA).some(
+        type => schema.isPossibleType(_typeB, type)
+      );
     }
     // Determine if the latter type is a possible concrete type of the former.
-    return typeA.isPossibleType(_typeB);
+    return schema.isPossibleType(typeA, _typeB);
   }
 
   if (_typeB instanceof GraphQLInterfaceType ||
       _typeB instanceof GraphQLUnionType) {
     // Determine if the former type is a possible concrete type of the latter.
-    return _typeB.isPossibleType(typeA);
+    return schema.isPossibleType(_typeB, typeA);
   }
 
   // Otherwise the types do not overlap.
