@@ -865,11 +865,11 @@ function completeObjectValue(
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function.
  */
-function defaultResolveFn(source, args, { fieldName }) {
+function defaultResolveFn(source: any, args, { fieldName }) {
   // ensure source is a value for which property access is acceptable.
-  if (typeof source !== 'number' && typeof source !== 'string' && source) {
-    const property = (source: any)[fieldName];
-    return typeof property === 'function' ? property.call(source) : property;
+  if (typeof source === 'object' || typeof source === 'function') {
+    const property = source[fieldName];
+    return typeof property === 'function' ? source[fieldName]() : property;
   }
 }
 
