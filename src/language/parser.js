@@ -19,6 +19,7 @@ import type {
   Document,
   Definition,
   OperationDefinition,
+  OperationType,
   VariableDefinition,
   SelectionSet,
   Selection,
@@ -40,6 +41,9 @@ import type {
   NamedType,
 
   TypeSystemDefinition,
+
+  SchemaDefinition,
+  OperationTypeDefinition,
 
   ScalarTypeDefinition,
   ObjectTypeDefinition,
@@ -85,6 +89,9 @@ import {
   NAMED_TYPE,
   LIST_TYPE,
   NON_NULL_TYPE,
+
+  SCHEMA_DEFINITION,
+  OPERATION_TYPE_DEFINITION,
 
   SCALAR_TYPE_DEFINITION,
   OBJECT_TYPE_DEFINITION,
@@ -203,6 +210,7 @@ function parseDefinition(parser: Parser): Definition {
       case 'fragment': return parseFragmentDefinition(parser);
 
       // Note: the Type System IDL is an experimental non-spec addition.
+      case 'schema':
       case 'scalar':
       case 'type':
       case 'interface':
@@ -224,8 +232,6 @@ function parseDefinition(parser: Parser): Definition {
  * OperationDefinition :
  *  - SelectionSet
  *  - OperationType Name? VariableDefinitions? Directives? SelectionSet
- *
- * OperationType : one of query mutation
  */
 function parseOperationDefinition(parser: Parser): OperationDefinition {
   const start = parser.token.start;
@@ -240,12 +246,7 @@ function parseOperationDefinition(parser: Parser): OperationDefinition {
       loc: loc(parser, start)
     };
   }
-  const operationToken = expect(parser, TokenKind.NAME);
-  const operation =
-    operationToken.value === 'mutation' ? 'mutation' :
-    operationToken.value === 'subscription' ? 'subscription' :
-    operationToken.value === 'query' ? 'query' :
-    (() => { throw unexpected(parser, operationToken); })();
+  const operation = parseOperationType(parser);
   let name;
   if (peek(parser, TokenKind.NAME)) {
     name = parseName(parser);
@@ -259,6 +260,21 @@ function parseOperationDefinition(parser: Parser): OperationDefinition {
     selectionSet: parseSelectionSet(parser),
     loc: loc(parser, start)
   };
+}
+
+/**
+ * OperationType : one of query mutation subscription
+ */
+function parseOperationType(parser: Parser): OperationType {
+  const operationToken = expect(parser, TokenKind.NAME);
+  switch (operationToken.value) {
+    case 'query': return 'query';
+    case 'mutation': return 'mutation';
+    // Note: subscription is an experimental non-spec addition.
+    case 'subscription': return 'subscription';
+  }
+
+  throw unexpected(parser, operationToken);
 }
 
 /**
@@ -666,6 +682,7 @@ export function parseNamedType(parser: Parser): NamedType {
 function parseTypeSystemDefinition(parser: Parser): TypeSystemDefinition {
   if (peek(parser, TokenKind.NAME)) {
     switch (parser.token.value) {
+      case 'schema': return parseSchemaDefinition(parser);
       case 'scalar': return parseScalarTypeDefinition(parser);
       case 'type': return parseObjectTypeDefinition(parser);
       case 'interface': return parseInterfaceTypeDefinition(parser);
@@ -678,6 +695,40 @@ function parseTypeSystemDefinition(parser: Parser): TypeSystemDefinition {
   }
 
   throw unexpected(parser);
+}
+
+/**
+ * SchemaDefinition : schema { OperationTypeDefinition+ }
+ *
+ * OperationTypeDefinition : OperationType : NamedType
+ */
+function parseSchemaDefinition(parser: Parser): SchemaDefinition {
+  const start = parser.token.start;
+  expectKeyword(parser, 'schema');
+  const operationTypes = many(
+    parser,
+    TokenKind.BRACE_L,
+    parseOperationTypeDefinition,
+    TokenKind.BRACE_R
+  );
+  return {
+    kind: SCHEMA_DEFINITION,
+    operationTypes,
+    loc: loc(parser, start),
+  };
+}
+
+function parseOperationTypeDefinition(parser: Parser): OperationTypeDefinition {
+  const start = parser.token.start;
+  const operation = parseOperationType(parser);
+  expect(parser, TokenKind.COLON);
+  const type = parseNamedType(parser);
+  return {
+    kind: OPERATION_TYPE_DEFINITION,
+    operation,
+    type,
+    loc: loc(parser, start),
+  };
 }
 
 /**

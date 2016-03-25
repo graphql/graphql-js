@@ -51,7 +51,12 @@ describe('Printer', () => {
 
     /* eslint-disable max-len */
     expect(printed).to.equal(
-`type Foo implements Bar {
+`schema {
+  query: QueryType
+  mutation: MutationType
+}
+
+type Foo implements Bar {
   one: Type
   two(argument: InputType!): Type
   three(argument: InputType, other: String): Int

@@ -38,16 +38,21 @@ export const QueryDocumentKeys = {
   ListType: [ 'type' ],
   NonNullType: [ 'type' ],
 
+  SchemaDefinition: [ 'operationTypes' ],
+  OperationTypeDefinition: [ 'type' ],
+
+  ScalarTypeDefinition: [ 'name' ],
   ObjectTypeDefinition: [ 'name', 'interfaces', 'fields' ],
   FieldDefinition: [ 'name', 'arguments', 'type' ],
   InputValueDefinition: [ 'name', 'type', 'defaultValue' ],
   InterfaceTypeDefinition: [ 'name', 'fields' ],
   UnionTypeDefinition: [ 'name', 'types' ],
-  ScalarTypeDefinition: [ 'name' ],
   EnumTypeDefinition: [ 'name', 'values' ],
   EnumValueDefinition: [ 'name' ],
   InputObjectTypeDefinition: [ 'name', 'fields' ],
+
   TypeExtensionDefinition: [ 'definition' ],
+
   DirectiveDefinition: [ 'name', 'arguments', 'locations' ],
 };
 

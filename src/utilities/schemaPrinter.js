@@ -66,9 +66,31 @@ function printFilteredSchema(
     .filter(typeFilter)
     .sort((name1, name2) => name1.localeCompare(name2))
     .map(typeName => typeMap[typeName]);
-  return directives.map(printDirective).concat(
+  return [ printSchemaDefinition(schema) ].concat(
+    directives.map(printDirective),
     types.map(printType)
   ).join('\n\n') + '\n';
+}
+
+function printSchemaDefinition(schema: GraphQLSchema): string {
+  const operationTypes = [];
+
+  const queryType = schema.getQueryType();
+  if (queryType) {
+    operationTypes.push(`  query: ${queryType}`);
+  }
+
+  const mutationType = schema.getMutationType();
+  if (mutationType) {
+    operationTypes.push(`  mutation: ${mutationType}`);
+  }
+
+  const subscriptionType = schema.getSubscriptionType();
+  if (subscriptionType) {
+    operationTypes.push(`  subscription: ${subscriptionType}`);
+  }
+
+  return `schema {\n${operationTypes.join('\n')}\n}`;
 }
 
 function printType(type: GraphQLType): string {

@@ -94,6 +94,12 @@ const printDocASTReducer = {
 
   // Type System Definitions
 
+  SchemaDefinition: ({ operationTypes }) =>
+    'schema ' + block(operationTypes),
+
+  OperationTypeDefinition: ({ operation, type }) =>
+    operation + ': ' + type,
+
   ScalarTypeDefinition: ({ name }) =>
     `scalar ${name}`,
 
