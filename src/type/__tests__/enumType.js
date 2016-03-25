@@ -172,6 +172,7 @@ describe('Type System: Enum Values', () => {
         schema,
         'query test($color: Color!) { colorEnum(fromEnum: $color) }',
         null,
+        null,
         { color: 'BLUE' }
       )
     ).to.deep.equal({
@@ -186,6 +187,7 @@ describe('Type System: Enum Values', () => {
       await graphql(
         schema,
         'mutation x($color: Color!) { favoriteEnum(color: $color) }',
+        null,
         null,
         { color: 'GREEN' }
       )
@@ -202,6 +204,7 @@ describe('Type System: Enum Values', () => {
         schema,
         'subscription x($color: Color!) { subscribeToEnum(color: $color) }',
         null,
+        null,
         { color: 'GREEN' }
       )
     ).to.deep.equal({
@@ -216,6 +219,7 @@ describe('Type System: Enum Values', () => {
       await graphql(
         schema,
         'query test($color: Color!) { colorEnum(fromEnum: $color) }',
+        null,
         null,
         { color: 2 }
       )
@@ -235,6 +239,7 @@ describe('Type System: Enum Values', () => {
         schema,
         'query test($color: String!) { colorEnum(fromEnum: $color) }',
         null,
+        null,
         { color: 'BLUE' }
       )
     ).to.deep.equal({
@@ -252,6 +257,7 @@ describe('Type System: Enum Values', () => {
       await graphql(
         schema,
         'query test($color: Int!) { colorEnum(fromEnum: $color) }',
+        null,
         null,
         { color: 2 }
       )

@@ -137,7 +137,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     expect(
-      await execute(schema, ast, data, { size: 100 }, 'Example')
+      await execute(schema, ast, data, null, { size: 100 }, 'Example')
     ).to.deep.equal(expected);
   });
 
@@ -427,7 +427,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    const result = await execute(schema, ast, data, null, 'OtherExample');
+    const result = await execute(schema, ast, data, null, null, 'OtherExample');
 
     expect(result).to.deep.equal({ data: { second: 'b' } });
   });
@@ -481,7 +481,9 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    expect(() => execute(schema, ast, data, null, 'UnknownExample')).to.throw(
+    expect(() =>
+      execute(schema, ast, data, null, null, 'UnknownExample')
+    ).to.throw(
       'Unknown operation named "UnknownExample".'
     );
   });
@@ -511,7 +513,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    const queryResult = await execute(schema, ast, data, {}, 'Q');
+    const queryResult = await execute(schema, ast, data, null, {}, 'Q');
 
     expect(queryResult).to.deep.equal({ data: { a: 'b' } });
   });
@@ -535,7 +537,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    const mutationResult = await execute(schema, ast, data, {}, 'M');
+    const mutationResult = await execute(schema, ast, data, null, {}, 'M');
 
     expect(mutationResult).to.deep.equal({ data: { c: 'd' } });
   });
@@ -559,7 +561,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    const subscriptionResult = await execute(schema, ast, data, {}, 'S');
+    const subscriptionResult = await execute(schema, ast, data, null, {}, 'S');
 
     expect(subscriptionResult).to.deep.equal({ data: { a: 'b' } });
   });
@@ -644,7 +646,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }),
     });
 
-    const queryResult = await execute(schema, ast, data, {}, 'Q');
+    const queryResult = await execute(schema, ast, data, null, {}, 'Q');
 
     expect(queryResult).to.deep.equal({ data: { a: 'b' } });
   });
