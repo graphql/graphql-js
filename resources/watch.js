@@ -135,7 +135,9 @@ function runTests(filepaths) {
     '--reporter', 'progress',
     '--require', './resources/mocha-bootload',
   ].concat(
-    allTests(filepaths) ? filepaths.map(srcPath) : ['src/**/__tests__/**/*.js']
+    allTests(filepaths) ?
+      filepaths.map(srcPath) :
+      ['src/**/__tests__/**/*-test.js']
   )).catch(() => false);
 }
 
@@ -178,8 +180,10 @@ function allTests(filepaths) {
   return filepaths.length > 0 && filepaths.every(isTest);
 }
 
+var TEST_PATH_RX = /^(?:.*?\/)?__tests__\/.+?-test\.js$/;
+
 function isTest(filepath) {
-  return isJS(filepath) && ~filepath.indexOf('__tests__/');
+  return TEST_PATH_RX.test(filepath);
 }
 
 // Print helpers

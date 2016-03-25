@@ -18,7 +18,7 @@
     "url": "http://github.com/graphql/graphql-js.git"
   },
   "options": {
-    "mocha": "--require ./resources/mocha-bootload src/**/__tests__/**/*.js"
+    "mocha": "--require ./resources/mocha-bootload --check-leaks --full-trace src/**/__tests__/**/*-test.js"
   },
   "babel": {
     "presets": [
