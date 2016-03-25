@@ -195,7 +195,11 @@ union SomeUnion = Foo | Biz
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -312,7 +316,11 @@ union SomeUnion = Foo | Biz
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
