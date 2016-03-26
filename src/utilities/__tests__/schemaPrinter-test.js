@@ -143,6 +143,28 @@ type Root {
     );
   });
 
+  it('Prints Field With Annotations', () => {
+    const output = printSingleFieldSchema({
+      type: nonNull(listOf(nonNull(GraphQLString))),
+      annotations: {
+        fieldAnnotationNoArgs: undefined,
+        fieldAnnotation: {a: 'Foo', b: 'Bar'},
+      }
+    });
+    expect(output).to.equal(`
+schema {
+  query: Root
+}
+
+type Root {
+  @@fieldAnnotationNoArgs
+  @@fieldAnnotation(a: Foo, b: Bar)
+  singleField: [String!]!
+}
+`
+      );
+  });
+
   it('Print Object Field', () => {
     const FooType = new GraphQLObjectType({
       name: 'Foo',
@@ -602,6 +624,16 @@ directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
+type __Annotation {
+  name: String!
+  args: [__AnnotationArgument!]!
+}
+
+type __AnnotationArgument {
+  name: String!
+  value: String!
+}
+
 type __Directive {
   name: String!
   description: String
@@ -636,6 +668,7 @@ type __Field {
   type: __Type!
   isDeprecated: Boolean!
   deprecationReason: String
+  annotations: [__Annotation]!
 }
 
 type __InputValue {

@@ -12,16 +12,19 @@ export const QueryDocumentKeys = {
 
   Document: [ 'definitions' ],
   OperationDefinition:
-    [ 'name', 'variableDefinitions', 'directives', 'selectionSet' ],
+    [ 'annotations', 'name', 'variableDefinitions', 'directives',
+      'selectionSet' ],
   VariableDefinition: [ 'variable', 'type', 'defaultValue' ],
   Variable: [ 'name' ],
   SelectionSet: [ 'selections' ],
-  Field: [ 'alias', 'name', 'arguments', 'directives', 'selectionSet' ],
+  Field: [ 'annotations', 'alias', 'name', 'arguments', 'directives',
+           'selectionSet' ],
   Argument: [ 'name', 'value' ],
 
   FragmentSpread: [ 'name', 'directives' ],
   InlineFragment: [ 'typeCondition', 'directives', 'selectionSet' ],
-  FragmentDefinition: [ 'name', 'typeCondition', 'directives', 'selectionSet' ],
+  FragmentDefinition: [ 'annotations', 'name', 'typeCondition', 'directives',
+                        'selectionSet' ],
 
   IntValue: [],
   FloatValue: [],
@@ -33,6 +36,7 @@ export const QueryDocumentKeys = {
   ObjectField: [ 'name', 'value' ],
 
   Directive: [ 'name', 'arguments' ],
+  Annotation: [ 'name', 'arguments' ],
 
   NamedType: [ 'name' ],
   ListType: [ 'type' ],
@@ -43,7 +47,7 @@ export const QueryDocumentKeys = {
 
   ScalarTypeDefinition: [ 'name' ],
   ObjectTypeDefinition: [ 'name', 'interfaces', 'fields' ],
-  FieldDefinition: [ 'name', 'arguments', 'type' ],
+  FieldDefinition: [ 'name', 'arguments', 'type', 'annotations' ],
   InputValueDefinition: [ 'name', 'type', 'defaultValue' ],
   InterfaceTypeDefinition: [ 'name', 'fields' ],
   UnionTypeDefinition: [ 'name', 'types' ],

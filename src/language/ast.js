@@ -44,6 +44,7 @@ export type Node = Name
                  | ObjectValue
                  | ObjectField
                  | Directive
+                 | Annotation
                  | NamedType
                  | ListType
                  | NonNullType
@@ -89,6 +90,7 @@ export type OperationDefinition = {
   variableDefinitions?: ?Array<VariableDefinition>;
   directives?: ?Array<Directive>;
   selectionSet: SelectionSet;
+  annotations?: ?Array<Annotation>;
 }
 
 // Note: subscription is an experimental non-spec addition.
@@ -160,6 +162,7 @@ export type FragmentDefinition = {
   typeCondition: NamedType;
   directives?: ?Array<Directive>;
   selectionSet: SelectionSet;
+  annotations?: ?Array<Annotation>;
 }
 
 
@@ -228,6 +231,16 @@ export type ObjectField = {
 
 export type Directive = {
   kind: 'Directive';
+  loc?: ?Location;
+  name: Name;
+  arguments?: ?Array<Argument>;
+}
+
+
+// Annotations
+
+export type Annotation = {
+  kind: 'Annotation';
   loc?: ?Location;
   name: Name;
   arguments?: ?Array<Argument>;
@@ -305,6 +318,7 @@ export type FieldDefinition = {
   name: Name;
   arguments: Array<InputValueDefinition>;
   type: Type;
+  annotations?: ?Array<Annotation>;
 }
 
 export type InputValueDefinition = {

@@ -30,6 +30,8 @@ import {
 
 import {
   __Schema,
+  __Annotation,
+  __AnnotationArgument,
   __Directive,
   __DirectiveLocation,
   __Type,
@@ -105,6 +107,8 @@ export function buildClientSchema(
     Boolean: GraphQLBoolean,
     ID: GraphQLID,
     __Schema,
+    __Annotation,
+    __AnnotationArgument,
     __Directive,
     __DirectiveLocation,
     __Type,

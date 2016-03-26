@@ -67,6 +67,8 @@ import { GraphQLDirective } from '../type/directives';
 
 import {
   __Schema,
+  __Annotation,
+  __AnnotationArgument,
   __Directive,
   __DirectiveLocation,
   __Type,
@@ -201,6 +203,8 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     Boolean: GraphQLBoolean,
     ID: GraphQLID,
     __Schema,
+    __Annotation,
+    __AnnotationArgument,
     __Directive,
     __DirectiveLocation,
     __Type,

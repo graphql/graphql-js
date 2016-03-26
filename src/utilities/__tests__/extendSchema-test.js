@@ -718,6 +718,62 @@ type Subscription {
 `);
   });
 
+  it('type extension\'s fields can have annotations', () => {
+    const ast = parse(`
+      extend type Foo {
+        @@AnnotationOnFieldDefinition(a: 10, b: "c")
+        newField: String
+      }
+    `);
+    const originalPrint = printSchema(testSchema);
+    const extendedSchema = extendSchema(testSchema, ast);
+    expect(extendSchema).to.not.equal(testSchema);
+    expect(printSchema(testSchema)).to.equal(originalPrint);
+    expect(printSchema(extendedSchema)).to.equal(
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
+  name: String
+  some: SomeInterface
+  foo: Foo
+}
+
+type Biz {
+  fizz: String
+}
+
+type Foo implements SomeInterface {
+  name: String
+  some: SomeInterface
+  tree: [Foo]!
+  @@AnnotationOnFieldDefinition(a: 10, b: "c")
+  newField: String
+}
+
+type Query {
+  foo: Foo
+  someUnion: SomeUnion
+  someEnum: SomeEnum
+  someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
+}
+
+interface SomeInterface {
+  name: String
+  some: SomeInterface
+}
+
+union SomeUnion = Foo | Biz
+`);
+  });
+
+
   it('does not allow replacing an existing type', () => {
     const ast = parse(`
       type Bar {

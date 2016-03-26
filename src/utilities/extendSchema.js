@@ -28,6 +28,8 @@ import {
 
 import {
   __Schema,
+  __Annotation,
+  __AnnotationArgument,
   __Directive,
   __DirectiveLocation,
   __Type,
@@ -176,6 +178,8 @@ export function extendSchema(
     Boolean: GraphQLBoolean,
     ID: GraphQLID,
     __Schema,
+    __Annotation,
+    __AnnotationArgument,
     __Directive,
     __DirectiveLocation,
     __Type,
@@ -343,6 +347,8 @@ export function extendSchema(
         deprecationReason: field.deprecationReason,
         type: extendFieldType(field.type),
         args: keyMap(field.args, arg => arg.name),
+        annotations: field.annotations &&
+          keyMap(field.annotations, annotation => annotation.name),
         resolve: cannotExecuteClientSchema,
       };
     });
@@ -363,6 +369,7 @@ export function extendSchema(
           newFieldMap[fieldName] = {
             type: buildFieldType(field.type),
             args: buildInputValues(field.arguments),
+            annotations: buildAnnotations(field.annotations),
             resolve: cannotExecuteClientSchema,
           };
         });
@@ -471,6 +478,26 @@ export function extendSchema(
           defaultValue: valueFromAST(value.defaultValue, type)
         };
       }
+    );
+  }
+
+  function buildAnnotations(annotations: Array<InputValueDefinition>) {
+    const wrap = function (left, str, right, condition) {
+      return condition ? `${left}${str}${right}` : str;
+    };
+    return keyValMap(
+      annotations,
+      annotation => annotation.name.value,
+      annotation => keyValMap(
+        annotation.arguments,
+        argument => argument.name.value,
+        argument => wrap(
+          '"',
+          argument.value.value,
+          '"',
+          argument.value.kind === 'StringValue'
+        )
+      )
     );
   }
 

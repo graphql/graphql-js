@@ -27,6 +27,7 @@ describe('Parser', () => {
            operation: 'query',
            name: null,
            variableDefinitions: null,
+           annotations: [],
            directives: [],
            selectionSet: {
              kind: 'SelectionSet',
@@ -40,6 +41,7 @@ describe('Parser', () => {
                      loc: { start: 2, end: 7 },
                      value: 'field' },
                   arguments: [],
+                  annotations: [],
                   directives: [],
                   selectionSet: null } ] } } ]
     });
@@ -238,6 +240,7 @@ fragment ${fragmentName} on Type {
              operation: 'query',
              name: null,
              variableDefinitions: null,
+             annotations: [],
              directives: [],
              selectionSet:
               { kind: Kind.SELECTION_SET,
@@ -261,6 +264,7 @@ fragment ${fragmentName} on Type {
                              loc: { start: 13, end: 14, source },
                              value: '4' },
                           loc: { start: 9, end: 14, source } } ],
+                     annotations: [],
                      directives: [],
                      selectionSet:
                       { kind: Kind.SELECTION_SET,
@@ -274,6 +278,7 @@ fragment ${fragmentName} on Type {
                                 loc: { start: 22, end: 24, source },
                                 value: 'id' },
                              arguments: [],
+                             annotations: [],
                              directives: [],
                              selectionSet: null },
                            { kind: Kind.FIELD,
@@ -284,6 +289,7 @@ fragment ${fragmentName} on Type {
                                 loc: { start: 30, end: 34, source },
                                 value: 'name' },
                              arguments: [],
+                             annotations: [],
                              directives: [],
                              selectionSet: null } ] } } ] } } ] }
     );

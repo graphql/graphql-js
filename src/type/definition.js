@@ -485,9 +485,23 @@ export type GraphQLResolveInfo = {
   variableValues: { [variableName: string]: mixed },
 }
 
+export type GraphQLAnnotationArgumentMap = {
+  [argName: string]: any
+}
+
+export type GraphQLAnnotation = {
+  name: string,
+  args?: GraphQLAnnotationArgumentMap
+}
+
+export type GraphQLAnnotationsMap = {
+  [annotationName: string]: GraphQLAnnotation
+}
+
 export type GraphQLFieldConfig = {
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;
+  annotations?: GraphQLAnnotationsMap;
   resolve?: GraphQLFieldResolveFn;
   deprecationReason?: ?string;
   description?: ?string;
@@ -510,6 +524,7 @@ export type GraphQLFieldConfigMap = {
 export type GraphQLFieldDefinition = {
   name: string;
   description: ?string;
+  annotations?: GraphQLAnnotationsMap;
   type: GraphQLOutputType;
   args: Array<GraphQLArgument>;
   resolve?: GraphQLFieldResolveFn;
