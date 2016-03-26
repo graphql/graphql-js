@@ -178,7 +178,7 @@ function printDirective(directive) {
 
 // NOTE: @clintwood (flow noob) not sure how to fix flow error on annotations:
 // 'Computed property/element cannot be accessed on possibly undefined value'
-// so using 'any' to skip flow checking here
+// so using 'annotations: any' to skip flow checking here
 function printAnnotations(annotations: any) {
   if (!annotations || Object.keys(annotations).length === 0) {
     return '';

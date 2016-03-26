@@ -301,6 +301,7 @@ export type GraphQLScalarTypeConfig<InternalType> = {
 export class GraphQLObjectType {
   name: string;
   description: ?string;
+  annotations: ?GraphQLAnnotationsMap;
   isTypeOf: ?GraphQLIsTypeOfFn;
 
   _typeConfig: GraphQLObjectTypeConfig;
@@ -312,6 +313,7 @@ export class GraphQLObjectType {
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
+    this.annotations = config.annotations;
     if (config.isTypeOf) {
       invariant(
         typeof config.isTypeOf === 'function',
@@ -447,7 +449,8 @@ export type GraphQLObjectTypeConfig = {
   interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap;
   isTypeOf?: GraphQLIsTypeOfFn;
-  description?: ?string
+  description?: ?string;
+  annotations?: GraphQLAnnotationsMap;
 }
 
 type GraphQLInterfacesThunk = () => Array<GraphQLInterfaceType>;
