@@ -309,20 +309,6 @@ describe('Type System: Objects can have annotations', () => {
     ).not.to.throw();
   });
 
-  it('accepts an Object type with annotations with empty array annotation args', () => {
-    expect(
-      () => schemaWithFieldType(new GraphQLObjectType({
-        name: 'SomeObject',
-        annotations: {
-          someAnnotation: { key: [ 'foo', 2, true ] },
-        },
-        fields: {
-          f: { type: GraphQLString }
-        }
-      }))
-    ).not.to.throw();
-  });
-
   it('accepts an Object type with annotations with empty annotation args', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
@@ -331,6 +317,20 @@ describe('Type System: Objects can have annotations', () => {
           someAnnotation: { key: 'value' },
           someAnnotationNullArgs: null,
           someAnnotationUndefinedArgs: undefined,
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('accepts an Object type with annotations with array annotation arg of scalar elements', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          someAnnotation: { key: [ 'foo', 2, true ] },
         },
         fields: {
           f: { type: GraphQLString }
@@ -445,6 +445,7 @@ describe('Type System: Objects can have annotations', () => {
   });
 
 });
+
 
 describe('Type System: Objects must have fields', () => {
 
@@ -625,6 +626,178 @@ describe('Type System: Fields args must be objects', () => {
       }))
     ).to.throw(
       'SomeObject.badField args must be an object with argument names as keys.'
+    );
+  });
+
+});
+
+
+describe('Type System: Fields can have annotations', () => {
+
+  it('accepts a Field with annotations', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {
+              someAnnotation: { key: 'value' },
+            },
+          }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('accepts a Field with annotations with empty annotation args', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {
+              someAnnotation: { key: 'value' },
+              someAnnotationNullArgs: null,
+              someAnnotationUndefinedArgs: undefined,
+            },
+          }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('accepts a Field with annotations with array annotation arg of scalar elements', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {
+              someAnnotation: { key: [ 'foo', 2, true ] },
+            },
+          }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('rejects a Field with annotations with badly named annotation', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {
+              'bad-name-with-dashes': null,
+            },
+          }
+        }
+      }))
+    ).to.throw(
+      'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "bad-name-with-dashes" does not.'
+    );
+  });
+
+  it('rejects a Field with annotations with empty annotation map', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {},
+          }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations map must be an object with keys as annotation ' +
+      'names.'
+    );
+  });
+
+  it('rejects a Field with annotations with annotation with no arg value', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {
+              someAnnotation: {
+                key: undefined
+              }
+            },
+          }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation.key arg values must be a scalar ' +
+      'type or a non-empty array of scalar elements.'
+    );
+  });
+
+  it('rejects a Field with annotations with non-scalar arg values', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {
+              someAnnotation: {
+                key: new Date()
+              }
+            },
+          }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation.key arg values must be a scalar ' +
+      'type or a non-empty array of scalar elements.'
+    );
+  });
+
+  it('rejects a Field with annotations with annotation with empty array', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {
+              someAnnotation: {
+                key: []
+              }
+            },
+          }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation.key arg values must be a scalar ' +
+      'type or a non-empty array of scalar elements.'
+    );
+  });
+
+  it('rejects a Field with annotations with annotation with non-scalar array elements', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {
+              someAnnotation: { key: [ 'foo', 2, true, /regex/ ] },
+            },
+          }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation.key arg values must be a scalar ' +
+      'type or a non-empty array of scalar elements.'
     );
   });
 
