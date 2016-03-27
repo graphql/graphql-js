@@ -365,6 +365,7 @@ function assertValidAnnotationMap(
   );
 
   annotationKeys.forEach(annotationKey => {
+    assertValidName(annotationKey);
     const annotationValue = annotationsMap[annotationKey];
     // an annotation can be null or undefined (i.e. no arguments)
     if (typeof annotationValue !== 'undefined' && annotationValue !== null) {

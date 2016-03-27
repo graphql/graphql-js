@@ -339,6 +339,22 @@ describe('Type System: Objects can have annotations', () => {
     ).not.to.throw();
   });
 
+  it('rejects an Object type with annotations with badly named annotation', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          'bad-name-with-dashes': null,
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).to.throw(
+      'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "bad-name-with-dashes" does not.'
+    );
+  });
+
   it('rejects an Object type with annotations with empty annotation map', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
