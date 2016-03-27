@@ -482,6 +482,9 @@ export function extendSchema(
   }
 
   function buildAnnotations(annotations: Array<InputValueDefinition>) {
+    if (!annotations.length) {
+      return;
+    }
     const wrap = function (left, str, right, condition) {
       return condition ? `${left}${str}${right}` : str;
     };

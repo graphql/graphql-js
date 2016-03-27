@@ -378,8 +378,8 @@ function assertValidAnnotationMap(
       const argNames = Object.keys(annotationValue);
       invariant(
         argNames.length > 0,
-        `${type}.annotations.${annotationKey} must be an object with args as` +
-        'key value pairs.'
+        `${type}.annotations.${annotationKey} must be an object with ` +
+        'annotations names as keys.'
       );
 
       argNames.forEach(name => {

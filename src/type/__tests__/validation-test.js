@@ -370,6 +370,23 @@ describe('Type System: Objects can have annotations', () => {
     );
   });
 
+  it('rejects an Object type with annotations with annotation with no args', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          someAnnotation: {}
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation must be an object with ' +
+      'annotations names as keys.'
+    );
+  });
+
   it('rejects an Object type with annotations with annotation with no arg value', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
@@ -716,6 +733,25 @@ describe('Type System: Fields can have annotations', () => {
     ).to.throw(
       'SomeObject.annotations map must be an object with keys as annotation ' +
       'names.'
+    );
+  });
+
+  it('rejects a Field with annotations with annotation with no args', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            annotations: {
+              someAnnotation: {}
+            },
+          }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation must be an object with ' +
+      'annotations names as keys.'
     );
   });
 
