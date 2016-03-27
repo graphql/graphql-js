@@ -10,8 +10,12 @@
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import isScalarValue from '../jsutils/isScalarValue';
 import { ENUM } from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
+// import {
+//   assertValidAnnotationMap
+// } from '../utilities/assertValidAnnotationMap';
 import type {
   OperationDefinition,
   Field,
@@ -314,6 +318,7 @@ export class GraphQLObjectType {
     this.name = config.name;
     this.description = config.description;
     this.annotations = config.annotations;
+    assertValidAnnotationMap(this, config.annotations);
     if (config.isTypeOf) {
       invariant(
         typeof config.isTypeOf === 'function',
@@ -339,6 +344,70 @@ export class GraphQLObjectType {
   toString(): string {
     return this.name;
   }
+}
+
+function assertValidAnnotationMap(
+  type: GraphQLNamedType,
+  annotationsMap?: GraphQLAnnotationsMap
+): void {
+  if (isNullish(annotationsMap)) {
+    return;
+  }
+  invariant(
+    isPlainObj(annotationsMap),
+    `${type}.annotations field must be an object type.`
+  );
+
+  const annotationKeys = Object.keys(annotationsMap);
+  invariant(
+    annotationKeys.length > 0,
+    `${type}.annotations map must be an object with keys as annotation names.`
+  );
+
+  annotationKeys.forEach(annotationKey => {
+    const annotationValue = annotationsMap[annotationKey];
+    // an annotation can be null or undefined (i.e. no arguments)
+    if (typeof annotationValue !== 'undefined' && annotationValue !== null) {
+      // if provided must be a plain object with key value pairs as args
+      invariant(
+        isPlainObj(annotationValue),
+        `${type}.annotations.${annotationKey} must be an object.`
+      );
+
+      const argNames = Object.keys(annotationValue);
+      invariant(
+        argNames.length > 0,
+        `${type}.annotations.${annotationKey} must be an object with args as` +
+        'key value pairs.'
+      );
+
+      argNames.forEach(name => {
+        // TODO: ideally restrict to scalars - not sure how to do that for now
+        // restricting Javascript scalar values
+        const value = annotationValue[name];
+        if (Array.isArray(value)) {
+          invariant(
+            value.length > 0,
+            `${type}.annotations.${annotationKey}.${name} arg values must ` +
+            'be a scalar type or a non-empty array of scalar elements.'
+          );
+          value.forEach(element => {
+            invariant(
+              isScalarValue(element),
+              `${type}.annotations.${annotationKey}.${name} arg values must ` +
+              'be a scalar type or a non-empty array of scalar elements.'
+            );
+          });
+        } else {
+          invariant(
+            isScalarValue(value),
+            `${type}.annotations.${annotationKey}.${name} arg values must be ` +
+            'a scalar type or a non-empty array of scalar elements.'
+          );
+        }
+      });
+    }
+  });
 }
 
 function resolveMaybeThunk<T>(thingOrThunk: T | () => T): T {
@@ -401,6 +470,7 @@ function defineFieldMap(
       ...fieldMap[fieldName],
       name: fieldName
     };
+    assertValidAnnotationMap(type, field.annotations);
     invariant(
       !field.hasOwnProperty('isDeprecated'),
       `${type}.${fieldName} should provide "deprecationReason" instead ` +
@@ -489,6 +559,7 @@ export type GraphQLResolveInfo = {
 }
 
 export type GraphQLAnnotationArgumentMap = {
+  // TODO: ideally restrict to scalars - not sure how to do that
   [argName: string]: any
 }
 

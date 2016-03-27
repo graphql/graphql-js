@@ -293,6 +293,143 @@ describe('Type System: A Schema must contain uniquely named types', () => {
 
 });
 
+describe('Type System: Objects can have annotations', () => {
+
+  it('accepts an Object type with annotations', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          someAnnotation: { key: 'value' },
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('accepts an Object type with annotations with empty array annotation args', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          someAnnotation: { key: [ 'foo', 2, true ] },
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('accepts an Object type with annotations with empty annotation args', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          someAnnotation: { key: 'value' },
+          someAnnotationNullArgs: null,
+          someAnnotationUndefinedArgs: undefined,
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('rejects an Object type with annotations with empty annotation map', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {},
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations map must be an object with keys as annotation ' +
+      'names.'
+    );
+  });
+
+  it('rejects an Object type with annotations with annotation with no arg value', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          someAnnotation: {
+            key: undefined
+          }
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation.key arg values must be a scalar ' +
+      'type or a non-empty array of scalar elements.'
+    );
+  });
+
+  it('rejects an Object type with annotations with non-scalar arg values', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          someAnnotation: {
+            key: new Date()
+          }
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation.key arg values must be a scalar ' +
+      'type or a non-empty array of scalar elements.'
+    );
+  });
+
+  it('rejects an Object type with annotations with annotation with empty array', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          someAnnotation: {
+            key: []
+          }
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation.key arg values must be a scalar ' +
+      'type or a non-empty array of scalar elements.'
+    );
+  });
+
+  it('rejects an Object type with annotations with annotation with non-scalar array elements', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        annotations: {
+          someAnnotation: { key: [ 'foo', 2, true, /regex/ ] },
+        },
+        fields: {
+          f: { type: GraphQLString }
+        }
+      }))
+    ).to.throw(
+      'SomeObject.annotations.someAnnotation.key arg values must be a scalar ' +
+      'type or a non-empty array of scalar elements.'
+    );
+  });
+
+});
+
 describe('Type System: Objects must have fields', () => {
 
   it('accepts an Object type with fields object', () => {
