@@ -696,6 +696,7 @@ type __Type {
   enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
   inputFields: [__InputValue!]
   ofType: __Type
+  annotations: [__Annotation]!
 }
 
 enum __TypeKind {
