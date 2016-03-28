@@ -444,7 +444,9 @@ function shouldIncludeNode(
       skipAST.arguments,
       exeContext.variableValues
     );
-    return !skipIf;
+    if (skipIf) {
+      return false;
+    }
   }
 
   const includeAST = directives && find(
