@@ -1350,6 +1350,75 @@ describe('Introspection', () => {
     });
   });
 
+  it('introspection of annotations on type', async () => {
+    const TestType = new GraphQLObjectType({
+      name: 'TestType',
+      annotations: {
+        anAnnotation: { a: 10 },
+        annotationWithTwoArguments: { arg1: 'a', arg2: 'b' }
+      },
+      fields: {
+        testString: { type: GraphQLString },
+      }
+    });
+
+    const schema = new GraphQLSchema({ query: TestType });
+    const request = `
+    {
+      __type(name: "TestType") {
+        name
+        annotations {
+          name
+          args {
+            name
+            value
+          }
+        }
+        fields {
+          name
+        }
+      }
+    }
+    `;
+
+    return expect(
+      await graphql(schema, request)
+    ).to.deep.equal({
+      data: {
+        __type: {
+          name: 'TestType',
+          annotations: [
+            {
+              name: 'anAnnotation',
+              args: [
+                {
+                  name: 'a',
+                  value: '10',
+                },
+              ],
+            },
+            {
+              name: 'annotationWithTwoArguments',
+              args: [
+                {
+                  name: 'arg1',
+                  value: 'a',
+                },
+                {
+                  name: 'arg2',
+                  value: 'b',
+                },
+              ],
+            },
+          ],
+          fields: [ {
+            name: 'testString',
+          } ]
+        }
+      }
+    });
+  });
+
   it('introspection of annotations on fields', async () => {
     const TestType = new GraphQLObjectType({
       name: 'TestType',

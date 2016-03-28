@@ -283,7 +283,14 @@ export const __Type = new GraphQLObjectType({
         }
       }
     },
-    ofType: { type: __Type }
+    ofType: { type: __Type },
+    annotations: {
+      type: new GraphQLNonNull(new GraphQLList(__Annotation)),
+      resolve: field => field.annotations &&
+        Object.keys(field.annotations).map(
+          name => ({name, args: field.annotations[name]})
+        ) || []
+    },
   })
 });
 
