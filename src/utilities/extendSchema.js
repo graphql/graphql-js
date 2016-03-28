@@ -460,6 +460,7 @@ export function extendSchema(
       typeAST.fields,
       field => field.name.value,
       field => ({
+        annotations: buildAnnotations(field.annotations),
         type: buildFieldType(field.type),
         args: buildInputValues(field.arguments),
         resolve: cannotExecuteClientSchema,
@@ -488,11 +489,12 @@ export function extendSchema(
     const wrap = function (left, str, right, condition) {
       return condition ? `${left}${str}${right}` : str;
     };
-    return keyValMap(
-      annotations,
-      annotation => annotation.name.value,
-      annotation => keyValMap(
-        annotation.arguments,
+    const annotationArgs = function (args) {
+      if (!args.length) {
+        return;
+      }
+      return keyValMap(
+        args,
         argument => argument.name.value,
         argument => wrap(
           '"',
@@ -500,7 +502,12 @@ export function extendSchema(
           '"',
           argument.value.kind === 'StringValue'
         )
-      )
+      );
+    };
+    return keyValMap(
+      annotations,
+      annotation => annotation.name.value,
+      annotation => annotationArgs(annotation.arguments)
     );
   }
 

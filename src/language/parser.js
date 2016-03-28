@@ -218,19 +218,21 @@ function parseDefinition(parser: Parser): Definition {
       // Note: subscription is an experimental non-spec addition.
       case 'subscription': return parseOperationDefinition(parser, annotations);
       case 'fragment': return parseFragmentDefinition(parser, annotations);
+
+      case 'type':
+      case 'extend': return parseTypeSystemDefinition(parser, annotations);
     }
     // annotations are unexpected before TypeSystemDefinition
+    // except type and extend
     if (!annotations.length) {
       switch (parser.token.value) {
         // Note: the Type System IDL is an experimental non-spec addition.
         case 'schema':
         case 'scalar':
-        case 'type':
         case 'interface':
         case 'union':
         case 'enum':
         case 'input':
-        case 'extend':
         case 'directive': return parseTypeSystemDefinition(parser);
       }
     }
@@ -728,17 +730,20 @@ export function parseNamedType(parser: Parser): NamedType {
  *   - EnumTypeDefinition
  *   - InputObjectTypeDefinition
  */
-function parseTypeSystemDefinition(parser: Parser): TypeSystemDefinition {
+function parseTypeSystemDefinition(
+  parser: Parser,
+  annotations
+): TypeSystemDefinition {
   if (peek(parser, TokenKind.NAME)) {
     switch (parser.token.value) {
       case 'schema': return parseSchemaDefinition(parser);
       case 'scalar': return parseScalarTypeDefinition(parser);
-      case 'type': return parseObjectTypeDefinition(parser);
+      case 'type': return parseObjectTypeDefinition(parser, annotations);
       case 'interface': return parseInterfaceTypeDefinition(parser);
       case 'union': return parseUnionTypeDefinition(parser);
       case 'enum': return parseEnumTypeDefinition(parser);
       case 'input': return parseInputObjectTypeDefinition(parser);
-      case 'extend': return parseTypeExtensionDefinition(parser);
+      case 'extend': return parseTypeExtensionDefinition(parser, annotations);
       case 'directive': return parseDirectiveDefinition(parser);
     }
   }
@@ -795,9 +800,13 @@ function parseScalarTypeDefinition(parser: Parser): ScalarTypeDefinition {
 }
 
 /**
- * ObjectTypeDefinition : type Name ImplementsInterfaces? { FieldDefinition+ }
+ * ObjectTypeDefinition :
+ *  Annotations? type Name ImplementsInterfaces? { FieldDefinition+ }
  */
-function parseObjectTypeDefinition(parser: Parser): ObjectTypeDefinition {
+function parseObjectTypeDefinition(
+  parser: Parser,
+  annotations
+): ObjectTypeDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'type');
   const name = parseName(parser);
@@ -814,6 +823,7 @@ function parseObjectTypeDefinition(parser: Parser): ObjectTypeDefinition {
     interfaces,
     fields,
     loc: loc(parser, start),
+    annotations,
   };
 }
 
@@ -993,12 +1003,16 @@ function parseInputObjectTypeDefinition(
 }
 
 /**
- * TypeExtensionDefinition : extend ObjectTypeDefinition
+ * TypeExtensionDefinition :
+ *  Annotations? extend ObjectTypeDefinition
  */
-function parseTypeExtensionDefinition(parser: Parser): TypeExtensionDefinition {
+function parseTypeExtensionDefinition(
+  parser: Parser,
+  annotations
+): TypeExtensionDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'extend');
-  const definition = parseObjectTypeDefinition(parser);
+  const definition = parseObjectTypeDefinition(parser, annotations);
   return {
     kind: TYPE_EXTENSION_DEFINITION,
     definition,

@@ -317,8 +317,8 @@ export class GraphQLObjectType {
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
-    this.annotations = config.annotations;
     assertValidAnnotationMap(this, config.annotations);
+    this.annotations = config.annotations;
     if (config.isTypeOf) {
       invariant(
         typeof config.isTypeOf === 'function',
@@ -348,7 +348,7 @@ export class GraphQLObjectType {
 
 function assertValidAnnotationMap(
   type: GraphQLNamedType,
-  annotationsMap?: GraphQLAnnotationsMap
+  annotationsMap: GraphQLAnnotationsMap
 ): void {
   if (isNullish(annotationsMap)) {
     return;

@@ -518,6 +518,113 @@ union SomeUnion = Foo | Biz
 `);
   });
 
+  it('extends objects by including new types with annotations', () => {
+    const ast = parse(`
+      @@AnnotationOnExtendType(a: 1, b: "foo")
+      extend type Foo {
+        newObject: NewObject
+        newInterface: NewInterface
+        newUnion: NewUnion
+        newScalar: NewScalar
+        newEnum: NewEnum
+        newTree: [Foo]!
+      }
+
+      @@AnnotationOnObjectType(a: 1, b: "foo")
+      type NewObject implements NewInterface {
+        baz: String
+      }
+
+      type NewOtherObject {
+        fizz: Int
+      }
+
+      interface NewInterface {
+        baz: String
+      }
+
+      union NewUnion = NewObject | NewOtherObject
+
+      scalar NewScalar
+
+      enum NewEnum {
+        OPTION_A
+        OPTION_B
+      }
+    `);
+    const originalPrint = printSchema(testSchema);
+    const extendedSchema = extendSchema(testSchema, ast);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printSchema(testSchema)).to.equal(originalPrint);
+    expect(printSchema(extendedSchema)).to.equal(
+`schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
+  name: String
+  some: SomeInterface
+  foo: Foo
+}
+
+type Biz {
+  fizz: String
+}
+
+type Foo implements SomeInterface {
+  name: String
+  some: SomeInterface
+  tree: [Foo]!
+  newObject: NewObject
+  newInterface: NewInterface
+  newUnion: NewUnion
+  newScalar: NewScalar
+  newEnum: NewEnum
+  newTree: [Foo]!
+}
+
+enum NewEnum {
+  OPTION_A
+  OPTION_B
+}
+
+interface NewInterface {
+  baz: String
+}
+
+type NewObject implements NewInterface {
+  baz: String
+}
+
+type NewOtherObject {
+  fizz: Int
+}
+
+scalar NewScalar
+
+union NewUnion = NewObject | NewOtherObject
+
+type Query {
+  foo: Foo
+  someUnion: SomeUnion
+  someEnum: SomeEnum
+  someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
+}
+
+interface SomeInterface {
+  name: String
+  some: SomeInterface
+}
+
+union SomeUnion = Foo | Biz
+`);
+  });
+
   it('extends objects by adding implemented new interfaces', () => {
     const ast = parse(`
       extend type Foo implements NewInterface {
@@ -724,6 +831,12 @@ type Subscription {
         @@AnnotationOnFieldDefinition(a: 10, b: "c")
         newField: String
       }
+
+      type Unused {
+        @@AnnotationOnUnusedType(z: 42)
+        @@AnnotationWithNoArgsOnUnusedType
+        someField: String
+      }
     `);
     const originalPrint = printSchema(testSchema);
     const extendedSchema = extendSchema(testSchema, ast);
@@ -770,6 +883,12 @@ interface SomeInterface {
 }
 
 union SomeUnion = Foo | Biz
+
+type Unused {
+  @@AnnotationOnUnusedType(z: 42)
+  @@AnnotationWithNoArgsOnUnusedType
+  someField: String
+}
 `);
   });
 
