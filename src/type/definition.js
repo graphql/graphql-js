@@ -317,7 +317,11 @@ export class GraphQLObjectType {
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
-    assertValidAnnotationMap(this, config.annotations);
+    // TODO: not sure how to fix flow here, for now conditionally validate
+    // even though there is a check for nullish in assertValidAnnotationMap
+    if (config.annotations) {
+      assertValidAnnotationMap(this, config.annotations);
+    }
     this.annotations = config.annotations;
     if (config.isTypeOf) {
       invariant(
