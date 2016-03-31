@@ -446,6 +446,68 @@ type Hello {
       .to.throw('Must provide schema definition with query type.');
   });
 
+  it('Allows only a single query type', () => {
+    const body = `
+schema {
+  query: Hello
+  query: Yellow
+}
+
+type Hello {
+  bar: Bar
+}
+
+type Yellow {
+  isColor: Boolean
+}
+`;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc))
+      .to.throw('Must provide only one query type in schema.');
+  });
+
+  it('Allows only a single mutation type', () => {
+    const body = `
+schema {
+  query: Hello
+  mutation: Hello
+  mutation: Yellow
+}
+
+type Hello {
+  bar: Bar
+}
+
+type Yellow {
+  isColor: Boolean
+}
+`;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc))
+      .to.throw('Must provide only one mutation type in schema.');
+  });
+
+  it('Allows only a single subscription type', () => {
+    const body = `
+schema {
+  query: Hello
+  subscription: Hello
+  subscription: Yellow
+}
+
+type Hello {
+  bar: Bar
+}
+
+type Yellow {
+  isColor: Boolean
+}
+`;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc))
+      .to.throw('Must provide only one subscription type in schema.');
+  });
+
   it('Unknown type referenced', () => {
     const body = `
 schema {
