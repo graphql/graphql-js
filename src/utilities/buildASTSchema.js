@@ -111,8 +111,8 @@ function getNamedTypeAST(typeAST: Type): NamedType {
 }
 
 /**
- * This takes the ast of a schema document produced by parseSchema in
- * src/language/schema/parser.js.
+ * This takes the ast of a schema document produced by the parse function in
+ * src/language/parser.js.
  *
  * Given that AST it constructs a GraphQLSchema. As constructed
  * they are not particularly useful for non-introspection queries
@@ -160,10 +160,19 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
   schemaDef.operationTypes.forEach(operationType => {
     const typeName = operationType.type.name.value;
     if (operationType.operation === 'query') {
+      if (queryTypeName) {
+        throw new Error('Must provide only one query type in schema.');
+      }
       queryTypeName = typeName;
     } else if (operationType.operation === 'mutation') {
+      if (mutationTypeName) {
+        throw new Error('Must provide only one mutation type in schema.');
+      }
       mutationTypeName = typeName;
     } else if (operationType.operation === 'subscription') {
+      if (subscriptionTypeName) {
+        throw new Error('Must provide only one subscription type in schema.');
+      }
       subscriptionTypeName = typeName;
     }
   });
