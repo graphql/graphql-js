@@ -822,6 +822,11 @@ function completeAbstractValue(
     `Could not determine runtime type of value "${result}" for field ${
       info.parentType}.${info.fieldName}.`
   );
+  invariant(
+    runtimeType instanceof GraphQLObjectType,
+    `resolveType must return an instance of GraphQLObjectType for field ${
+      info.parentType}.${info.fieldName}, received "${runtimeType}".`
+  );
 
   const schema = exeContext.schema;
   if (!schema.isPossibleType(returnType, runtimeType)) {
