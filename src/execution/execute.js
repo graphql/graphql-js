@@ -822,7 +822,7 @@ function completeAbstractValue(
   }
 
   const schema = exeContext.schema;
-  if (runtimeType && !schema.isPossibleType(returnType, runtimeType)) {
+  if (!schema.isPossibleType(returnType, runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType}" is not a possible type ` +
       `for "${returnType}".`,
