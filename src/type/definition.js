@@ -859,6 +859,7 @@ export type GraphQLEnumValueDefinition/* <T> */ = {
 export class GraphQLInputObjectType {
   name: string;
   description: ?string;
+  tolerateAdditionalProps: ?boolean;
 
   _typeConfig: InputObjectConfig;
   _fields: InputObjectFieldMap;
@@ -868,6 +869,7 @@ export class GraphQLInputObjectType {
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
+    this.tolerateAdditionalProps = config.tolerateAdditionalProps;
     this._typeConfig = config;
   }
 
@@ -914,6 +916,7 @@ export type InputObjectConfig = {
   name: string;
   fields: InputObjectConfigFieldMapThunk | InputObjectConfigFieldMap;
   description?: ?string;
+  tolerateAdditionalProps?: ?boolean;
 }
 
 type InputObjectConfigFieldMapThunk = () => InputObjectConfigFieldMap;
