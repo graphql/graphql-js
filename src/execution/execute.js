@@ -817,9 +817,11 @@ function completeAbstractValue(
     returnType.resolveType(result, exeContext.contextValue, info) :
     defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
 
-  if (!runtimeType) {
-    return null;
-  }
+  invariant(
+    runtimeType,
+    `Could not determine runtime type of value "${result}" for field ${
+      info.parentType}.${info.fieldName}.`
+  );
 
   const schema = exeContext.schema;
   if (!schema.isPossibleType(returnType, runtimeType)) {
