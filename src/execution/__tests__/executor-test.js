@@ -198,7 +198,7 @@ describe('Execute: Handles basic execution tasks', () => {
         fields: {
           a: {
             type: GraphQLString,
-            resolve(context) {
+            resolve(rootValue, args, context) {
               resolvedContext = context;
             }
           }
@@ -206,7 +206,7 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    await execute(schema, parse(doc), data);
+    await execute(schema, parse(doc), null, data);
 
     expect(resolvedContext.contextThing).to.equal('thing');
   });
