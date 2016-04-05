@@ -312,4 +312,30 @@ describe('Execute: handles directives', () => {
       });
     });
   });
+
+  describe('works with skip and include directives', () => {
+    it('include and no skip', async () => {
+      return expect(
+        await executeTestQuery('{ a, b @include(if: true) @skip(if: false) }')
+      ).to.deep.equal({
+        data: { a: 'a', b: 'b' }
+      });
+    });
+
+    it('include and skip', async () => {
+      return expect(
+        await executeTestQuery('{ a, b @include(if: true) @skip(if: true) }')
+      ).to.deep.equal({
+        data: { a: 'a' }
+      });
+    });
+
+    it('no include or skip', async () => {
+      return expect(
+        await executeTestQuery('{ a, b @include(if: false) @skip(if: false) }')
+      ).to.deep.equal({
+        data: { a: 'a' }
+      });
+    });
+  });
 });
