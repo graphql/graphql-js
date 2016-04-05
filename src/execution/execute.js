@@ -824,7 +824,7 @@ function completeAbstractValue(
   );
   invariant(
     runtimeType instanceof GraphQLObjectType,
-    `${returnType}.resolveType must return an instance of GraphQLObjectType `+
+    `${returnType}.resolveType must return an instance of GraphQLObjectType ` +
     `for field ${info.parentType}.${info.fieldName}, received "${runtimeType}".`
   );
 
