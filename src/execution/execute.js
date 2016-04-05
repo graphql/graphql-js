@@ -821,7 +821,7 @@ function completeAbstractValue(
     defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
 
   invariant(
-    !runtimeType,
+    runtimeType,
     `Could not determine runtime type of value "${result}" for field ${
       info.parentType}.${info.fieldName}.`
   );
