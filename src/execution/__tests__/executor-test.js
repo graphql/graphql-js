@@ -183,14 +183,14 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
-  it('threads context correctly', async () => {
+  it('threads root value context correctly', async () => {
     const doc = 'query Example { a }';
 
     const data = {
       contextThing: 'thing',
     };
 
-    let resolvedContext;
+    let resolvedRootValue;
 
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -198,8 +198,8 @@ describe('Execute: Handles basic execution tasks', () => {
         fields: {
           a: {
             type: GraphQLString,
-            resolve(context) {
-              resolvedContext = context;
+            resolve(rootValue) {
+              resolvedRootValue = rootValue;
             }
           }
         }
@@ -208,7 +208,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     await execute(schema, parse(doc), data);
 
-    expect(resolvedContext.contextThing).to.equal('thing');
+    expect(resolvedRootValue.contextThing).to.equal('thing');
   });
 
   it('correctly threads arguments', async () => {
