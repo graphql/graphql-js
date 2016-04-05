@@ -268,47 +268,28 @@ describe('Execute: handles directives', () => {
     });
   });
 
-  describe('works on fragment', () => {
-    it('if false omits fragment', async () => {
-      const q = `
-        query Q {
-          a
-          ...Frag
-        }
-        fragment Frag on TestType @include(if: false) {
-          b
-        }
-      `;
-      return expect(await executeTestQuery(q)).to.deep.equal({
+  describe('works with skip and include directives', () => {
+    it('include and no skip', async () => {
+      return expect(
+        await executeTestQuery('{ a, b @include(if: true) @skip(if: false) }')
+      ).to.deep.equal({
+        data: { a: 'a', b: 'b' }
+      });
+    });
+
+    it('include and skip', async () => {
+      return expect(
+        await executeTestQuery('{ a, b @include(if: true) @skip(if: true) }')
+      ).to.deep.equal({
         data: { a: 'a' }
       });
     });
-    it('if true includes fragment', async () => {
-      const q = `
-        query Q {
-          a
-          ...Frag
-        }
-        fragment Frag on TestType @include(if: true) {
-          b
-        }
-      `;
-      return expect(await executeTestQuery(q)).to.deep.equal({
-        data: { a: 'a', b: 'b' }
-      });
-    });
-    it('unless false includes fragment', async () => {
-      const q = `
-        query Q {
-          a
-          ...Frag
-        }
-        fragment Frag on TestType @skip(if: false) {
-          b
-        }
-      `;
-      return expect(await executeTestQuery(q)).to.deep.equal({
-        data: { a: 'a', b: 'b' }
+
+    it('no include or skip', async () => {
+      return expect(
+        await executeTestQuery('{ a, b @include(if: false) @skip(if: false) }')
+      ).to.deep.equal({
+        data: { a: 'a' }
       });
     });
   });

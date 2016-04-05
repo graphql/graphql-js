@@ -409,7 +409,6 @@ function collectFields(
         visitedFragmentNames[fragName] = true;
         const fragment = exeContext.fragments[fragName];
         if (!fragment ||
-            !shouldIncludeNode(exeContext, fragment.directives) ||
             !doesFragmentConditionMatch(exeContext, fragment, runtimeType)) {
           continue;
         }
@@ -444,7 +443,9 @@ function shouldIncludeNode(
       skipAST.arguments,
       exeContext.variableValues
     );
-    return !skipIf;
+    if (skipIf === true) {
+      return false;
+    }
   }
 
   const includeAST = directives && find(
@@ -457,7 +458,9 @@ function shouldIncludeNode(
       includeAST.arguments,
       exeContext.variableValues
     );
-    return Boolean(includeIf);
+    if (includeIf === false) {
+      return false;
+    }
   }
 
   return true;
@@ -817,12 +820,18 @@ function completeAbstractValue(
     returnType.resolveType(result, exeContext.contextValue, info) :
     defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
 
-  if (!runtimeType) {
-    return null;
-  }
+  invariant(
+    runtimeType,
+    `Could not determine runtime type of value "${result}" for field ${
+      info.parentType}.${info.fieldName}.`
+  );
+  invariant(
+    runtimeType instanceof GraphQLObjectType,
+    `${returnType}.resolveType must return an instance of GraphQLObjectType ` +
+    `for field ${info.parentType}.${info.fieldName}, received "${runtimeType}".`
+  );
 
-  const schema = exeContext.schema;
-  if (runtimeType && !schema.isPossibleType(returnType, runtimeType)) {
+  if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType}" is not a possible type ` +
       `for "${returnType}".`,
