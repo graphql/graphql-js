@@ -409,7 +409,6 @@ function collectFields(
         visitedFragmentNames[fragName] = true;
         const fragment = exeContext.fragments[fragName];
         if (!fragment ||
-            !shouldIncludeNode(exeContext, fragment.directives) ||
             !doesFragmentConditionMatch(exeContext, fragment, runtimeType)) {
           continue;
         }
@@ -444,7 +443,7 @@ function shouldIncludeNode(
       skipAST.arguments,
       exeContext.variableValues
     );
-    if (skipIf) {
+    if (skipIf === true) {
       return false;
     }
   }
@@ -459,7 +458,9 @@ function shouldIncludeNode(
       includeAST.arguments,
       exeContext.variableValues
     );
-    return Boolean(includeIf);
+    if (includeIf === false) {
+      return false;
+    }
   }
 
   return true;
