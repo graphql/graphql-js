@@ -130,6 +130,20 @@ graphql(schema, query).then(result => {
 });
 ```
 
+### Want to ride the bleeding edge?
+
+The `npm` branch in this repository is automatically maintained to be the last
+commit to `master` to pass all tests, in the same form found on npm. It is
+recommend to use builds deployed npm for many reasons, but if you want to use
+the latest not-yet-released version of graphql-js, you can do so by depending
+directly on this branch:
+
+```js
+"dependencies": {
+  "graphql-js": "git://github.com/graphql/graphql-js.git#npm"
+}
+```
+
 ### Contributing
 
 We actively welcome pull requests, learn how to
