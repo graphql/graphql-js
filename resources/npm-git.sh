@@ -24,4 +24,4 @@ git config user.name "Travis CI"
 git config user.email "github@fb.com"
 git add .
 git commit -m "Deploy master to NPM branch"
-git push --force --quiet "https://${GH_TOKEN}@github.com/facebook/graphql.git" master:npm > /dev/null 2>&1
+git push --force --quiet "https://${GH_TOKEN}@github.com/graphql/graphql-js.git" master:npm
