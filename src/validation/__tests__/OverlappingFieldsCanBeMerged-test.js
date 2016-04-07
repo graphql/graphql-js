@@ -368,27 +368,36 @@ describe('Validate: Overlapping fields can be merged', () => {
     const SomeBox = new GraphQLInterfaceType({
       name: 'SomeBox',
       resolveType: () => StringBox,
-      fields: {
+      fields: () => ({
+        deepBox: { type: SomeBox },
         unrelatedField: { type: GraphQLString }
-      }
+      })
     });
 
     const StringBox = new GraphQLObjectType({
       name: 'StringBox',
       interfaces: [ SomeBox ],
-      fields: {
+      fields: () => ({
         scalar: { type: GraphQLString },
+        deepBox: { type: StringBox },
         unrelatedField: { type: GraphQLString },
-      }
+        listStringBox: { type: new GraphQLList(StringBox) },
+        stringBox: { type: StringBox },
+        intBox: { type: IntBox },
+      })
     });
 
     const IntBox = new GraphQLObjectType({
       name: 'IntBox',
       interfaces: [ SomeBox ],
-      fields: {
+      fields: () => ({
         scalar: { type: GraphQLInt },
+        deepBox: { type: IntBox },
         unrelatedField: { type: GraphQLString },
-      }
+        listStringBox: { type: new GraphQLList(StringBox) },
+        stringBox: { type: StringBox },
+        intBox: { type: IntBox },
+      })
     });
 
     const NonNullStringBox1 = new GraphQLInterfaceType({
@@ -405,6 +414,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       fields: {
         scalar: { type: new GraphQLNonNull(GraphQLString) },
         unrelatedField: { type: GraphQLString },
+        deepBox: { type: SomeBox },
       }
     });
 
@@ -422,6 +432,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       fields: {
         scalar: { type: new GraphQLNonNull(GraphQLString) },
         unrelatedField: { type: GraphQLString },
+        deepBox: { type: SomeBox },
       }
     });
 
@@ -455,7 +466,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           connection: { type: Connection }
         })
       }),
-      types: [ IntBox, NonNullStringBox1Impl, NonNullStringBox2Impl ]
+      types: [ IntBox, StringBox, NonNullStringBox1Impl, NonNullStringBox2Impl ]
     });
 
     it('conflicting return types which potentially overlap', () => {
@@ -477,21 +488,187 @@ describe('Validate: Overlapping fields can be merged', () => {
       `, [
         { message: fieldsConflictMessage(
             'scalar',
-            'they return differing types Int and String!'
+            'they return conflicting types Int and String!'
           ),
           locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ] }
       ]);
     });
 
-    it('allows differing return types which cannot overlap', () => {
-      // This is valid since an object cannot be both an IntBox and a StringBox.
+    it('compatible return shapes on different return types', () => {
+      // In this case `deepBox` returns `SomeBox` in the first usage, and
+      // `StringBox` in the second usage. These return types are not the same!
+      // however this is valid because the return *shapes* are compatible.
+      expectPassesRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+      {
+        someBox {
+          ... on SomeBox {
+            deepBox {
+              unrelatedField
+            }
+          }
+          ... on StringBox {
+            deepBox {
+              unrelatedField
+            }
+          }
+        }
+      }
+      `);
+    });
+
+    it('disallows differing return types despite no overlap', () => {
+      expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          someBox {
+            ... on IntBox {
+              scalar
+            }
+            ... on StringBox {
+              scalar
+            }
+          }
+        }
+      `, [
+        { message: fieldsConflictMessage(
+            'scalar',
+            'they return conflicting types Int and String'
+          ),
+          locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ] }
+      ]);
+    });
+
+    it('disallows differing return type nullability despite no overlap', () => {
+      expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          someBox {
+            ... on NonNullStringBox1 {
+              scalar
+            }
+            ... on StringBox {
+              scalar
+            }
+          }
+        }
+      `, [
+        { message: fieldsConflictMessage(
+            'scalar',
+            'they return conflicting types String! and String'
+          ),
+          locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ] }
+      ]);
+    });
+
+    it('disallows differing return type list despite no overlap', () => {
+      expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          someBox {
+            ... on IntBox {
+              box: listStringBox {
+                scalar
+              }
+            }
+            ... on StringBox {
+              box: stringBox {
+                scalar
+              }
+            }
+          }
+        }
+      `, [
+        { message: fieldsConflictMessage(
+            'box',
+            'they return conflicting types [StringBox] and StringBox'
+          ),
+          locations: [ { line: 5, column: 15 }, { line: 10, column: 15 } ] }
+      ]);
+
+      expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          someBox {
+            ... on IntBox {
+              box: stringBox {
+                scalar
+              }
+            }
+            ... on StringBox {
+              box: listStringBox {
+                scalar
+              }
+            }
+          }
+        }
+      `, [
+        { message: fieldsConflictMessage(
+            'box',
+            'they return conflicting types StringBox and [StringBox]'
+          ),
+          locations: [ { line: 5, column: 15 }, { line: 10, column: 15 } ] }
+      ]);
+    });
+
+    it('disallows differing subfields', () => {
+      expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          someBox {
+            ... on IntBox {
+              box: stringBox {
+                val: scalar
+                val: unrelatedField
+              }
+            }
+            ... on StringBox {
+              box: stringBox {
+                val: scalar
+              }
+            }
+          }
+        }
+      `, [
+        { message: fieldsConflictMessage(
+            'val',
+            'scalar and unrelatedField are different fields'
+          ),
+          locations: [ { line: 6, column: 17 }, { line: 7, column: 17 } ] }
+      ]);
+    });
+
+    it('disallows differing deep return types despite no overlap', () => {
+      expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          someBox {
+            ... on IntBox {
+              box: stringBox {
+                scalar
+              }
+            }
+            ... on StringBox {
+              box: intBox {
+                scalar
+              }
+            }
+          }
+        }
+      `, [
+        { message: fieldsConflictMessage(
+            'box',
+            [ [ 'scalar', 'they return conflicting types String and Int' ] ]
+          ),
+          locations: [
+            { line: 5, column: 15 },
+            { line: 6, column: 17 },
+            { line: 10, column: 15 },
+            { line: 11, column: 17 } ] }
+      ]);
+    });
+
+    it('allows non-conflicting overlaping types', () => {
       expectPassesRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
         {
           someBox {
-            ...on IntBox {
-              scalar
+            ... on IntBox {
+              scalar: unrelatedField
             }
-            ...on StringBox {
+            ... on StringBox {
               scalar
             }
           }
