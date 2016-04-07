@@ -33,6 +33,7 @@ after_success:
 
 deploy:
   - provider: script
+    skip_cleanup: true
     script: ./resources/npm-git.sh
     on:
       branch: master
