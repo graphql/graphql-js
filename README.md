@@ -139,7 +139,7 @@ the latest not-yet-released version of graphql-js, you can do so by depending
 directly on this branch:
 
 ```
-npm install graphql-js@git://github.com/graphql/graphql-js.git#npm
+npm install graphql@git://github.com/graphql/graphql-js.git#npm
 ```
 
 ### Contributing
