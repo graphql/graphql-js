@@ -16,9 +16,21 @@ import {
 } from '../rules/FieldsOnCorrectType';
 
 
-function undefinedField(field, type, suggestions, line, column) {
+function undefinedField(
+  field,
+  type,
+  suggestedTypes,
+  suggestedFields,
+  line,
+  column
+) {
   return {
-    message: undefinedFieldMessage(field, type, suggestions),
+    message: undefinedFieldMessage(
+      field,
+      type,
+      suggestedTypes,
+      suggestedFields
+    ),
     locations: [ { line, column } ],
   };
 }
@@ -85,8 +97,16 @@ describe('Validate: Fields on correct type', () => {
           }
         }
       }`,
-      [ undefinedField('unknown_pet_field', 'Pet', [], 3, 9),
-        undefinedField('unknown_cat_field', 'Cat', [], 5, 13) ]
+      [ undefinedField('unknown_pet_field', 'Pet', [], [ 'name' ], 3, 9),
+        undefinedField(
+          'unknown_cat_field',
+          'Cat',
+          [],
+          [ 'nickname', 'name', 'meowVolume', 'meows', 'furColor' ],
+          5,
+          13
+        )
+      ]
     );
   });
 
@@ -95,7 +115,22 @@ describe('Validate: Fields on correct type', () => {
       fragment fieldNotDefined on Dog {
         meowVolume
       }`,
-      [ undefinedField('meowVolume', 'Dog', [], 3, 9) ]
+      [ undefinedField(
+          'meowVolume',
+          'Dog',
+          [],
+          [ 'barkVolume',
+            'name',
+            'nickname',
+            'barks',
+            'doesKnowCommand',
+            'isAtLocation',
+            'isHousetrained',
+          ],
+          3,
+          9
+        )
+      ]
     );
   });
 
@@ -106,7 +141,22 @@ describe('Validate: Fields on correct type', () => {
           deeper_unknown_field
         }
       }`,
-      [ undefinedField('unknown_field', 'Dog', [], 3, 9) ]
+      [ undefinedField(
+          'unknown_field',
+          'Dog',
+          [],
+          [ 'nickname',
+            'name',
+            'barkVolume',
+            'doesKnowCommand',
+            'isHousetrained',
+            'isAtLocation',
+            'barks',
+          ],
+          3,
+          9
+        )
+      ]
     );
   });
 
@@ -117,7 +167,7 @@ describe('Validate: Fields on correct type', () => {
           unknown_field
         }
       }`,
-      [ undefinedField('unknown_field', 'Pet', [], 4, 11) ]
+      [ undefinedField('unknown_field', 'Pet', [], [ 'name' ], 4, 11) ]
     );
   });
 
@@ -128,7 +178,22 @@ describe('Validate: Fields on correct type', () => {
           meowVolume
         }
       }`,
-      [ undefinedField('meowVolume', 'Dog', [], 4, 11) ]
+      [ undefinedField(
+          'meowVolume',
+          'Dog',
+          [],
+          [ 'barkVolume',
+            'name',
+            'nickname',
+            'barks',
+            'doesKnowCommand',
+            'isAtLocation',
+            'isHousetrained',
+          ],
+          4,
+          11
+        )
+      ]
     );
   });
 
@@ -137,7 +202,22 @@ describe('Validate: Fields on correct type', () => {
       fragment aliasedFieldTargetNotDefined on Dog {
         volume : mooVolume
       }`,
-      [ undefinedField('mooVolume', 'Dog', [], 3, 9) ]
+      [ undefinedField(
+          'mooVolume',
+          'Dog',
+          [],
+          [ 'barkVolume',
+            'name',
+            'nickname',
+            'barks',
+            'isAtLocation',
+            'doesKnowCommand',
+            'isHousetrained',
+          ],
+          3,
+          9
+        )
+      ]
     );
   });
 
@@ -146,7 +226,22 @@ describe('Validate: Fields on correct type', () => {
       fragment aliasedLyingFieldTargetNotDefined on Dog {
         barkVolume : kawVolume
       }`,
-      [ undefinedField('kawVolume', 'Dog', [], 3, 9) ]
+      [ undefinedField(
+          'kawVolume',
+          'Dog',
+          [],
+          [ 'barkVolume',
+            'name',
+            'nickname',
+            'barks',
+            'isAtLocation',
+            'doesKnowCommand',
+            'isHousetrained',
+          ],
+          3,
+          9
+        )
+      ]
     );
   });
 
@@ -155,7 +250,7 @@ describe('Validate: Fields on correct type', () => {
       fragment notDefinedOnInterface on Pet {
         tailLength
       }`,
-      [ undefinedField('tailLength', 'Pet', [], 3, 9) ]
+      [ undefinedField('tailLength', 'Pet', [], [ 'name' ], 3, 9) ]
     );
   });
 
@@ -164,7 +259,7 @@ describe('Validate: Fields on correct type', () => {
       fragment definedOnImplementorsButNotInterface on Pet {
         nickname
       }`,
-      [ undefinedField('nickname', 'Pet', [ 'Cat', 'Dog' ], 3, 9) ]
+      [ undefinedField('nickname', 'Pet', [ 'Cat', 'Dog' ], [ 'name' ], 3, 9) ]
     );
   });
 
@@ -181,7 +276,7 @@ describe('Validate: Fields on correct type', () => {
       fragment directFieldSelectionOnUnion on CatOrDog {
         directField
       }`,
-      [ undefinedField('directField', 'CatOrDog', [], 3, 9) ]
+      [ undefinedField('directField', 'CatOrDog', [], [], 3, 9) ]
     );
   });
 
@@ -195,6 +290,7 @@ describe('Validate: Fields on correct type', () => {
           'name',
           'CatOrDog',
           [ 'Being', 'Pet', 'Canine', 'Cat', 'Dog' ],
+          [],
           3,
           9
         )
@@ -218,25 +314,33 @@ describe('Validate: Fields on correct type', () => {
   describe('Fields on correct type error message', () => {
     it('Works with no suggestions', () => {
       expect(
-        undefinedFieldMessage('T', 'f', [])
-      ).to.equal('Cannot query field "T" on type "f".');
+        undefinedFieldMessage('f', 'T', [], [])
+      ).to.equal('Cannot query field "f" on type "T".');
     });
 
     it('Works with no small numbers of suggestions', () => {
       expect(
-        undefinedFieldMessage('T', 'f', [ 'A', 'B' ])
-      ).to.equal('Cannot query field "T" on type "f". ' +
+        undefinedFieldMessage('f', 'T', [ 'A', 'B' ], [ 'z', 'y' ])
+      ).to.equal('Cannot query field "f" on type "T". ' +
         'However, this field exists on "A", "B". ' +
-        'Perhaps you meant to use an inline fragment?');
+        'Perhaps you meant to use an inline fragment? ' +
+        'Did you mean to query "z", "y"?');
     });
 
     it('Works with lots of suggestions', () => {
       expect(
-        undefinedFieldMessage('T', 'f', [ 'A', 'B', 'C', 'D', 'E', 'F' ])
-      ).to.equal('Cannot query field "T" on type "f". ' +
+        undefinedFieldMessage(
+          'f',
+          'T',
+          [ 'A', 'B', 'C', 'D', 'E', 'F' ],
+          [ 'z', 'y', 'x', 'w', 'v', 'u' ]
+        )
+      ).to.equal('Cannot query field "f" on type "T". ' +
         'However, this field exists on "A", "B", "C", "D", "E", ' +
         'and 1 other types. ' +
-        'Perhaps you meant to use an inline fragment?');
+        'Perhaps you meant to use an inline fragment? ' +
+        'Did you mean to query "z", "y", "x", "w", "v", or 1 other field?'
+      );
     });
   });
 });
