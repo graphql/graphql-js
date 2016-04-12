@@ -17,22 +17,42 @@ import {
   DIRECTIVE
 } from '../../language/kinds';
 import type { GraphQLType } from '../../type/definition';
-
+import { suggestionList } from '../../utilities/suggestionList';
 
 export function unknownArgMessage(
   argName: string,
   fieldName: string,
-  type: GraphQLType
+  type: GraphQLType,
+  suggestedArgs: Array<string>
 ): string {
-  return `Unknown argument "${argName}" on field "${fieldName}" of ` +
+  let message = `Unknown argument "${argName}" on field "${fieldName}" of ` +
     `type "${type}".`;
+  if (suggestedArgs.length) {
+    const suggestions = suggestedArgs
+      .map(t => `"${t}"`)
+      .join(', ');
+    message += ` Perhaps you meant ${suggestions}?`;
+  } else {
+    message += ' There is no known argument for this field.';
+  }
+  return message;
 }
 
 export function unknownDirectiveArgMessage(
   argName: string,
-  directiveName: string
+  directiveName: string,
+  suggestedArgs: Array<string>
 ): string {
-  return `Unknown argument "${argName}" on directive "@${directiveName}".`;
+  let message =
+    `Unknown argument "${argName}" on directive "@${directiveName}".`;
+  if (suggestedArgs.length) {
+    const suggestions = suggestedArgs
+      .map(t => `"${t}"`)
+      .join(', ');
+    message += ` Perhaps you meant ${suggestions}?`;
+  } else {
+    message += ' There is no known argument for this directive.';
+  }
 }
 
 /**
@@ -59,7 +79,11 @@ export function KnownArgumentNames(context: ValidationContext): any {
               unknownArgMessage(
                 node.name.value,
                 fieldDef.name,
-                parentType.name
+                parentType.name,
+                suggestionList(
+                  node.name.value,
+                  fieldDef.args.map(arg => arg.name)
+                )
               ),
               [ node ]
             ));
@@ -74,7 +98,14 @@ export function KnownArgumentNames(context: ValidationContext): any {
           );
           if (!directiveArgDef) {
             context.reportError(new GraphQLError(
-              unknownDirectiveArgMessage(node.name.value, directive.name),
+              unknownDirectiveArgMessage(
+                node.name.value,
+                directive.name,
+                suggestionList(
+                  node.name.value,
+                  directive.args.map(arg => arg.name)
+                )
+              ),
               [ node ]
             ));
           }
