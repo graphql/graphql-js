@@ -109,7 +109,7 @@ describe('Validate: Known argument names', () => {
         dog @skip(unless: true)
       }
     `, [
-      unknownDirectiveArg('unless', 'skip', [], 3, 19),
+      unknownDirectiveArg('unless', 'skip', [ 'if' ], 3, 19),
     ]);
   });
 

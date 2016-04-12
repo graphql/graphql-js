@@ -53,6 +53,7 @@ export function unknownDirectiveArgMessage(
   } else {
     message += ' There is no known argument for this directive.';
   }
+  return message;
 }
 
 /**

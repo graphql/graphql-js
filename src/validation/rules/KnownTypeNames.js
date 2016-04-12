@@ -15,7 +15,7 @@ import { suggestionList } from '../../utilities/suggestionList';
 
 export function unknownTypeMessage(
   type: GraphQLType,
-  suggestedTypes: Arrray<string>
+  suggestedTypes: Array<string>
 ): string {
   let message = `Unknown type "${type}".`;
   const MAX_LENGTH = 5;
