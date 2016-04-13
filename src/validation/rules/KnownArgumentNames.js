@@ -12,12 +12,13 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import find from '../../jsutils/find';
 import invariant from '../../jsutils/invariant';
+import { suggestionList } from '../../jsutils/suggestionList';
 import {
   FIELD,
   DIRECTIVE
 } from '../../language/kinds';
 import type { GraphQLType } from '../../type/definition';
-import { suggestionList } from '../../utilities/suggestionList';
+
 
 export function unknownArgMessage(
   argName: string,
@@ -32,8 +33,6 @@ export function unknownArgMessage(
       .map(t => `"${t}"`)
       .join(', ');
     message += ` Perhaps you meant ${suggestions}?`;
-  } else {
-    message += ' There is no known argument for this field.';
   }
   return message;
 }
@@ -50,8 +49,6 @@ export function unknownDirectiveArgMessage(
       .map(t => `"${t}"`)
       .join(', ');
     message += ` Perhaps you meant ${suggestions}?`;
-  } else {
-    message += ' There is no known argument for this directive.';
   }
   return message;
 }

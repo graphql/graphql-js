@@ -9,9 +9,8 @@
  */
 
 /**
- * Given a JavaScript value and a GraphQL type, determine if the value will be
- * accepted for that type. This is primarily useful for validating the
- * runtime values of query variables.
+ * Given an invalid input string and a list of valid options, returns a filtered
+ * list of valid options sorted based on their simularity with the input.
  */
 export function suggestionList(
     input: string,
@@ -20,10 +19,15 @@ export function suggestionList(
   let i;
   const d = {};
   const oLength = options.length;
+  const inputThreshold = input.length / 2;
   for (i = 0; i < oLength; i++) {
-    d[options[i]] = lexicalDistance(input, options[i]);
+    const distance = lexicalDistance(input, options[i]);
+    const threshold = Math.max(inputThreshold, options[i].length / 2, 1);
+    if (distance <= threshold) {
+      d[options[i]] = distance;
+    }
   }
-  const result = options.slice();
+  const result = Object.keys(d);
   return result.sort((a , b) => d[a] - d[b]);
 }
 

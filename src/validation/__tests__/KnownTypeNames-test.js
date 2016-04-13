@@ -51,34 +51,19 @@ describe('Validate: Known type names', () => {
     `, [
       unknownType(
         'JumbledUpLetters',
-        [ 'ComplexInput',
-          'ComplicatedArgs',
-          'QueryRoot',
-          'Intelligent',
-          'HumanOrAlien'
-        ],
+        [],
         2,
         23
       ),
       unknownType(
         'Badger',
-        [ 'Dog',
-          'Boolean',
-          'Pet',
-          'Alien',
-          'Being'
-        ],
+        [],
         5,
         25
       ),
       unknownType(
         'Peettt',
-        [ 'Pet',
-          'Float',
-          'Being',
-          'Cat',
-          'Int'
-        ],
+        [ 'Pet' ],
         8,
         29
       )
@@ -105,12 +90,7 @@ describe('Validate: Known type names', () => {
     `, [
       unknownType(
         'NotInTheSchema',
-        [ '__Schema',
-          'Intelligent',
-          'HumanOrAlien',
-          'Int',
-          'Canine'
-        ],
+        [],
         12,
         23
       ),

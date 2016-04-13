@@ -10,8 +10,9 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import { suggestionList } from '../../jsutils/suggestionList';
 import type { GraphQLType } from '../../type/definition';
-import { suggestionList } from '../../utilities/suggestionList';
+
 
 export function unknownTypeMessage(
   type: GraphQLType,

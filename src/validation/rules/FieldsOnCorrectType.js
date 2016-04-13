@@ -10,6 +10,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import { suggestionList } from '../../jsutils/suggestionList';
 import type { Field } from '../../language/ast';
 import type { GraphQLSchema } from '../../type/schema';
 import type { GraphQLAbstractType } from '../../type/definition';
@@ -19,7 +20,6 @@ import {
   GraphQLInputObjectType,
   GraphQLInterfaceType
 } from '../../type/definition';
-import { suggestionList } from '../../utilities/suggestionList';
 
 
 export function undefinedFieldMessage(
@@ -88,7 +88,7 @@ export function FieldsOnCorrectType(context: ValidationContext): any {
               type instanceof GraphQLInputObjectType) {
             suggestedFields = suggestionList(
               node.name.value,
-              Object.keys(schema.getType(type.name).getFields())
+              Object.keys(type.getFields())
             );
           }
           context.reportError(new GraphQLError(

@@ -97,12 +97,12 @@ describe('Validate: Fields on correct type', () => {
           }
         }
       }`,
-      [ undefinedField('unknown_pet_field', 'Pet', [], [ 'name' ], 3, 9),
+      [ undefinedField('unknown_pet_field', 'Pet', [], [], 3, 9),
         undefinedField(
           'unknown_cat_field',
           'Cat',
           [],
-          [ 'nickname', 'name', 'meowVolume', 'meows', 'furColor' ],
+          [],
           5,
           13
         )
@@ -119,14 +119,7 @@ describe('Validate: Fields on correct type', () => {
           'meowVolume',
           'Dog',
           [],
-          [ 'barkVolume',
-            'name',
-            'nickname',
-            'barks',
-            'doesKnowCommand',
-            'isAtLocation',
-            'isHousetrained',
-          ],
+          [ 'barkVolume' ],
           3,
           9
         )
@@ -145,14 +138,7 @@ describe('Validate: Fields on correct type', () => {
           'unknown_field',
           'Dog',
           [],
-          [ 'nickname',
-            'name',
-            'barkVolume',
-            'doesKnowCommand',
-            'isHousetrained',
-            'isAtLocation',
-            'barks',
-          ],
+          [],
           3,
           9
         )
@@ -167,7 +153,7 @@ describe('Validate: Fields on correct type', () => {
           unknown_field
         }
       }`,
-      [ undefinedField('unknown_field', 'Pet', [], [ 'name' ], 4, 11) ]
+      [ undefinedField('unknown_field', 'Pet', [], [], 4, 11) ]
     );
   });
 
@@ -182,14 +168,7 @@ describe('Validate: Fields on correct type', () => {
           'meowVolume',
           'Dog',
           [],
-          [ 'barkVolume',
-            'name',
-            'nickname',
-            'barks',
-            'doesKnowCommand',
-            'isAtLocation',
-            'isHousetrained',
-          ],
+          [ 'barkVolume' ],
           4,
           11
         )
@@ -206,14 +185,7 @@ describe('Validate: Fields on correct type', () => {
           'mooVolume',
           'Dog',
           [],
-          [ 'barkVolume',
-            'name',
-            'nickname',
-            'barks',
-            'isAtLocation',
-            'doesKnowCommand',
-            'isHousetrained',
-          ],
+          [ 'barkVolume' ],
           3,
           9
         )
@@ -230,14 +202,7 @@ describe('Validate: Fields on correct type', () => {
           'kawVolume',
           'Dog',
           [],
-          [ 'barkVolume',
-            'name',
-            'nickname',
-            'barks',
-            'isAtLocation',
-            'doesKnowCommand',
-            'isHousetrained',
-          ],
+          [ 'barkVolume' ],
           3,
           9
         )
@@ -250,7 +215,7 @@ describe('Validate: Fields on correct type', () => {
       fragment notDefinedOnInterface on Pet {
         tailLength
       }`,
-      [ undefinedField('tailLength', 'Pet', [], [ 'name' ], 3, 9) ]
+      [ undefinedField('tailLength', 'Pet', [], [], 3, 9) ]
     );
   });
 

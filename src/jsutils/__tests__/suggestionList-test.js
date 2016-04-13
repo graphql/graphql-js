@@ -23,6 +23,6 @@ describe('suggestionList', () => {
 
   it('Returns options sorted based on simularity', () => {
     expect(suggestionList('abc', [ 'a', 'ab', 'abc' ]))
-      .to.deep.equal([ 'abc', 'ab', 'a' ]);
+      .to.deep.equal([ 'abc', 'ab' ]);
   });
 });
