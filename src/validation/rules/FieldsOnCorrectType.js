@@ -49,9 +49,7 @@ export function undefinedFieldMessage(
     if (suggestedFields.length > MAX_LENGTH) {
       suggestions += `, or ${suggestedFields.length - MAX_LENGTH} other field`;
     }
-    message +=
-      ` Did you mean to query ${suggestions}?`;
-
+    message +=` Did you mean to query ${suggestions}?`;
   }
   return message;
 }

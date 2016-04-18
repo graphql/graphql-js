@@ -21,7 +21,7 @@ describe('suggestionList', () => {
     expect(suggestionList('input', [])).to.deep.equal([]);
   });
 
-  it('Returns options sorted based on simularity', () => {
+  it('Returns options sorted based on similarity', () => {
     expect(suggestionList('abc', [ 'a', 'ab', 'abc' ]))
       .to.deep.equal([ 'abc', 'ab' ]);
   });
