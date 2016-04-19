@@ -32,11 +32,21 @@ after_success:
   - if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js; fi
 
 deploy:
-  provider: npm
-  email: "lee@leebyron.com"
-  api_key:
-    secure: tCIGE/3CLOQlC49i/9ug42ILQjZnMOrSjyjdHkqmTVN5q9p9bljjziXQbNxYfVPYa9icICnVnI4c5psjktW+vwaz2WJAJhpWD6P3YGcpmKjjgPKKHKWOcXvq3HdIzH7DIbXyVtE0QLpV5zgbyxglD96vYScO9dvGeAhTGY/9qJaDvVkLOZ+6YpKiTwZlZcyPHlD1tbxzd4NytJgIsi7CedFdfATAmOyVsot1NRZr5q3oV0aXFjJRnhBQ3RtykGgGHtXEWYTNhAmYxcIwezYRYXLxtlkbrlwxixpKAdJr/UXHg6amplkaHtCopi+QChPQRmdndcDC6F+e2nFHut6BCi14Jnbvf7seaqWrmh0uqdopqMJFRP3OBc9lXZf3hljVKV9+iVbWNjxoUB7ezurOOEpgkXleJ5AO2o3u8oYh3OFfLYu7E1a4uSjfe4nP/zi+th+wvS4Wy2UWqErYFUMotMyStS/vllXUpK7pl+Qt59MUVHB8YzREyCVKxakQ/uvNvY+bzKf4sM8UJ/Dqnl3MaAjLG3rWZbFyzXdaJnRGdTeFK2lpz8nrfJEDzLIQX5ZC88yR30WahrRjAhLnnq0V1fYp0wLbLxs4SdN+tuMRlkzQhQEYYDYa5osgEo2C+O4D/H9F7GWHHJp9zPE+hMi5+ZwTPKHkln4/AqrABUKOk78=
-  on:
-    tags: true
-    branch: master
-    condition: "$BUILD_LEADER$BUILD_AGGREGATE_STATUS = YESothers_succeeded"
+  - provider: script
+    skip_cleanup: true
+    script: ./resources/npm-git.sh
+    on:
+      branch: master
+      condition: "$BUILD_LEADER$BUILD_AGGREGATE_STATUS = YESothers_succeeded"
+  - provider: npm
+    email: "lee@leebyron.com"
+    api_key:
+      secure: tCIGE/3CLOQlC49i/9ug42ILQjZnMOrSjyjdHkqmTVN5q9p9bljjziXQbNxYfVPYa9icICnVnI4c5psjktW+vwaz2WJAJhpWD6P3YGcpmKjjgPKKHKWOcXvq3HdIzH7DIbXyVtE0QLpV5zgbyxglD96vYScO9dvGeAhTGY/9qJaDvVkLOZ+6YpKiTwZlZcyPHlD1tbxzd4NytJgIsi7CedFdfATAmOyVsot1NRZr5q3oV0aXFjJRnhBQ3RtykGgGHtXEWYTNhAmYxcIwezYRYXLxtlkbrlwxixpKAdJr/UXHg6amplkaHtCopi+QChPQRmdndcDC6F+e2nFHut6BCi14Jnbvf7seaqWrmh0uqdopqMJFRP3OBc9lXZf3hljVKV9+iVbWNjxoUB7ezurOOEpgkXleJ5AO2o3u8oYh3OFfLYu7E1a4uSjfe4nP/zi+th+wvS4Wy2UWqErYFUMotMyStS/vllXUpK7pl+Qt59MUVHB8YzREyCVKxakQ/uvNvY+bzKf4sM8UJ/Dqnl3MaAjLG3rWZbFyzXdaJnRGdTeFK2lpz8nrfJEDzLIQX5ZC88yR30WahrRjAhLnnq0V1fYp0wLbLxs4SdN+tuMRlkzQhQEYYDYa5osgEo2C+O4D/H9F7GWHHJp9zPE+hMi5+ZwTPKHkln4/AqrABUKOk78=
+    on:
+      tags: true
+      branch: master
+      condition: "$BUILD_LEADER$BUILD_AGGREGATE_STATUS = YESothers_succeeded"
+
+env:
+  global:
+    secure: vs/YDHDlVY3apcWOWOyi01s2457uc19gfnZMWAc9RsTwaNrealbM7y2TTuakWj1eQQRU3hXvR4TFoqdJOKMk42avv4IxmCf0Gynf/4w8BFycfyLJwWfEvmBDYr4oMjjrX6t5ycTzACBXPGyi9Bpa1RJM2QIfujNtjtgaBTdrAQs5XZ+7l3giFhPLebWPnC0/CEhzZMKqiAID3z52SrR6RpxYDpQZcVuenXknIuG0WucbWd/XlHh6+upJxlc88pJsdNoDavDpQGcJZ5AUMD1ek8wsCo761lbPybryfeCN8qmMlTFkzRIpnGU28Q0RhqHuNq7tQJBPNIuc3MjTy5rR+7snvb1dXq9M3ut6D9UmsFvx3H2mNC4Ue8H2f2nS0Oy3HWY08v58gOvGpcKItndBsHmq9hPE3gK7Ea/UFH8GAtbXABhChO6dd7AY+CM7TOwfKyEx7y1kzBQ9snRpX9uEwGmRAXwRsvWeobtls/BevUfBGrBhgicd1BPhJzxeK447NHdELikgaCwldP3gdrrh1U7xmgaKO3MeM4Tpp+gMYUKoc/j6Pvcuq4/kNaiahnhW1SPUZJQmxIAnZjKOKmhm0WzmGC1RAvqvIVyqQa55CGuBr+fhWxWE2WB2tDcX5JSmwRASz9IOMd4mCxHM/maVlNaLfVYDQ2Fl1VHJ5MIES4s=

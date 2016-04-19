@@ -9,7 +9,6 @@
  */
 
 import {
-  GraphQLAbstractType,
   GraphQLObjectType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -17,7 +16,7 @@ import {
   GraphQLList,
   GraphQLNonNull
 } from './definition';
-import type { GraphQLType } from './definition';
+import type { GraphQLType, GraphQLAbstractType } from './definition';
 import {
   GraphQLDirective,
   GraphQLIncludeDirective,

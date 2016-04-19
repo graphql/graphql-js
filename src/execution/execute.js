@@ -820,16 +820,14 @@ function completeAbstractValue(
     returnType.resolveType(result, exeContext.contextValue, info) :
     defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
 
-  invariant(
-    runtimeType,
-    `Could not determine runtime type of value "${result}" for field ${
-      info.parentType}.${info.fieldName}.`
-  );
-  invariant(
-    runtimeType instanceof GraphQLObjectType,
-    `${returnType}.resolveType must return an instance of GraphQLObjectType ` +
-    `for field ${info.parentType}.${info.fieldName}, received "${runtimeType}".`
-  );
+  if (!(runtimeType instanceof GraphQLObjectType)) {
+    throw new GraphQLError(
+      `Abstract type ${returnType} must resolve to an Object type at runtime ` +
+      `for field ${info.parentType}.${info.fieldName} with value "${result}",` +
+      `received "${runtimeType}".`,
+      fieldASTs
+    );
+  }
 
   if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
     throw new GraphQLError(

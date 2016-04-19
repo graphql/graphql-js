@@ -40,6 +40,8 @@ import type {
 
   Type,
   NamedType,
+  ListType,
+  NonNullType,
 
   TypeSystemDefinition,
 
@@ -683,20 +685,20 @@ export function parseType(parser: Parser): Type {
   if (skip(parser, TokenKind.BRACKET_L)) {
     type = parseType(parser);
     expect(parser, TokenKind.BRACKET_R);
-    type = {
+    type = ({
       kind: LIST_TYPE,
       type,
       loc: loc(parser, start)
-    };
+    }: ListType);
   } else {
     type = parseNamedType(parser);
   }
   if (skip(parser, TokenKind.BANG)) {
-    return {
+    return ({
       kind: NON_NULL_TYPE,
       type,
       loc: loc(parser, start)
-    };
+    }: NonNullType);
   }
   return type;
 }

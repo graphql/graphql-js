@@ -20,15 +20,18 @@ import { FIELD, INLINE_FRAGMENT, FRAGMENT_SPREAD } from '../../language/kinds';
 import { print } from '../../language/printer';
 import {
   getNamedType,
+  isLeafType,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
 } from '../../type/definition';
 import type {
   GraphQLNamedType,
+  GraphQLOutputType,
   GraphQLCompositeType,
   GraphQLFieldDefinition
 } from '../../type/definition';
-import { isEqualType } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 
@@ -58,14 +61,22 @@ function reasonMessage(reason: ConflictReasonMessage): string {
 export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
   const comparedSet = new PairSet();
 
-  function findConflicts(fieldMap: AstAndDefCollection): Array<Conflict> {
+  function findConflicts(
+    parentFieldsAreMutuallyExclusive: boolean,
+    fieldMap: AstAndDefCollection
+  ): Array<Conflict> {
     const conflicts = [];
     Object.keys(fieldMap).forEach(responseName => {
       const fields = fieldMap[responseName];
       if (fields.length > 1) {
         for (let i = 0; i < fields.length; i++) {
           for (let j = i; j < fields.length; j++) {
-            const conflict = findConflict(responseName, fields[i], fields[j]);
+            const conflict = findConflict(
+              parentFieldsAreMutuallyExclusive,
+              responseName,
+              fields[i],
+              fields[j]
+            );
             if (conflict) {
               conflicts.push(conflict);
             }
@@ -77,6 +88,7 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
   }
 
   function findConflict(
+    parentFieldsAreMutuallyExclusive: boolean,
     responseName: string,
     field1: AstAndDef,
     field2: AstAndDef
@@ -89,53 +101,81 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
       return;
     }
 
-    // If the statically known parent types could not possibly apply at the same
-    // time, then it is safe to permit them to diverge as they will not present
-    // any ambiguity by differing.
-    // It is known that two parent types could never overlap if they are
-    // different Object types. Interface or Union types might overlap - if not
-    // in the current state of the schema, then perhaps in some future version,
-    // thus may not safely diverge.
-    if (parentType1 !== parentType2 &&
-        parentType1 instanceof GraphQLObjectType &&
-        parentType2 instanceof GraphQLObjectType) {
-      return;
-    }
-
     // Memoize, do not report the same issue twice.
+    // Note: Two overlapping ASTs could be encountered both when
+    // `parentFieldsAreMutuallyExclusive` is true and is false, which could
+    // produce different results (when `true` being a subset of `false`).
+    // However we do not need to include this piece of information when
+    // memoizing since this rule visits leaf fields before their parent fields,
+    // ensuring that `parentFieldsAreMutuallyExclusive` is `false` the first
+    // time two overlapping fields are encountered, ensuring that the full
+    // set of validation rules are always checked when necessary.
     if (comparedSet.has(ast1, ast2)) {
       return;
     }
     comparedSet.add(ast1, ast2);
 
-    const name1 = ast1.name.value;
-    const name2 = ast2.name.value;
-    if (name1 !== name2) {
-      return [
-        [ responseName, `${name1} and ${name2} are different fields` ],
-        [ ast1 ],
-        [ ast2 ]
-      ];
-    }
-
+    // The return type for each field.
     const type1 = def1 && def1.type;
     const type2 = def2 && def2.type;
-    if (type1 && type2 && !isEqualType(type1, type2)) {
+
+    // If it is known that two fields could not possibly apply at the same
+    // time, due to the parent types, then it is safe to permit them to diverge
+    // in aliased field or arguments used as they will not present any ambiguity
+    // by differing.
+    // It is known that two parent types could never overlap if they are
+    // different Object types. Interface or Union types might overlap - if not
+    // in the current state of the schema, then perhaps in some future version,
+    // thus may not safely diverge.
+    const fieldsAreMutuallyExclusive =
+      parentFieldsAreMutuallyExclusive ||
+      parentType1 !== parentType2 &&
+      parentType1 instanceof GraphQLObjectType &&
+      parentType2 instanceof GraphQLObjectType;
+
+    if (!fieldsAreMutuallyExclusive) {
+      // Two aliases must refer to the same field.
+      const name1 = ast1.name.value;
+      const name2 = ast2.name.value;
+      if (name1 !== name2) {
+        return [
+          [ responseName, `${name1} and ${name2} are different fields` ],
+          [ ast1 ],
+          [ ast2 ]
+        ];
+      }
+
+      // Two field calls must have the same arguments.
+      if (!sameArguments(ast1.arguments || [], ast2.arguments || [])) {
+        return [
+          [ responseName, 'they have differing arguments' ],
+          [ ast1 ],
+          [ ast2 ]
+        ];
+      }
+    }
+
+    if (type1 && type2 && doTypesConflict(type1, type2)) {
       return [
-        [ responseName, `they return differing types ${type1} and ${type2}` ],
+        [ responseName, `they return conflicting types ${type1} and ${type2}` ],
         [ ast1 ],
         [ ast2 ]
       ];
     }
 
-    if (!sameArguments(ast1.arguments || [], ast2.arguments || [])) {
-      return [
-        [ responseName, 'they have differing arguments' ],
-        [ ast1 ],
-        [ ast2 ]
-      ];
+    const subfieldMap = getSubfieldMap(ast1, type1, ast2, type2);
+    if (subfieldMap) {
+      const conflicts = findConflicts(fieldsAreMutuallyExclusive, subfieldMap);
+      return subfieldConflicts(conflicts, responseName, ast1, ast2);
     }
+  }
 
+  function getSubfieldMap(
+    ast1: Field,
+    type1: ?GraphQLOutputType,
+    ast2: Field,
+    type2: ?GraphQLOutputType
+  ): ?AstAndDefCollection {
     const selectionSet1 = ast1.selectionSet;
     const selectionSet2 = ast2.selectionSet;
     if (selectionSet1 && selectionSet2) {
@@ -153,34 +193,43 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
         visitedFragmentNames,
         subfieldMap
       );
-      const conflicts = findConflicts(subfieldMap);
-      if (conflicts.length > 0) {
-        return [
-          [ responseName, conflicts.map(([ reason ]) => reason) ],
-          conflicts.reduce(
-            (allFields, [ , fields1 ]) => allFields.concat(fields1),
-            [ ast1 ]
-          ),
-          conflicts.reduce(
-            (allFields, [ , , fields2 ]) => allFields.concat(fields2),
-            [ ast2 ]
-          )
-        ];
-      }
+      return subfieldMap;
+    }
+  }
+
+  function subfieldConflicts(
+    conflicts: Array<Conflict>,
+    responseName: string,
+    ast1: Field,
+    ast2: Field
+  ): ?Conflict {
+    if (conflicts.length > 0) {
+      return [
+        [ responseName, conflicts.map(([ reason ]) => reason) ],
+        conflicts.reduce(
+          (allFields, [ , fields1 ]) => allFields.concat(fields1),
+          [ ast1 ]
+        ),
+        conflicts.reduce(
+          (allFields, [ , , fields2 ]) => allFields.concat(fields2),
+          [ ast2 ]
+        )
+      ];
     }
   }
 
   return {
     SelectionSet: {
       // Note: we validate on the reverse traversal so deeper conflicts will be
-      // caught first, for clearer error messages.
+      // caught first, for correct calculation of mutual exclusivity and for
+      // clearer error messages.
       leave(selectionSet) {
         const fieldMap = collectFieldASTsAndDefs(
           context,
           context.getParentType(),
           selectionSet
         );
-        const conflicts = findConflicts(fieldMap);
+        const conflicts = findConflicts(false, fieldMap);
         conflicts.forEach(
           ([ [ responseName, reason ], fields1, fields2 ]) =>
             context.reportError(new GraphQLError(
@@ -226,6 +275,38 @@ function sameValue(value1, value2) {
   return (!value1 && !value2) || print(value1) === print(value2);
 }
 
+// Two types conflict if both types could not apply to a value simultaneously.
+// Composite types are ignored as their individual field types will be compared
+// later recursively. However List and Non-Null types must match.
+function doTypesConflict(
+  type1: GraphQLOutputType,
+  type2: GraphQLOutputType
+): boolean {
+  if (type1 instanceof GraphQLList) {
+    return type2 instanceof GraphQLList ?
+      doTypesConflict(type1.ofType, type2.ofType) :
+      true;
+  }
+  if (type2 instanceof GraphQLList) {
+    return type1 instanceof GraphQLList ?
+      doTypesConflict(type1.ofType, type2.ofType) :
+      true;
+  }
+  if (type1 instanceof GraphQLNonNull) {
+    return type2 instanceof GraphQLNonNull ?
+      doTypesConflict(type1.ofType, type2.ofType) :
+      true;
+  }
+  if (type2 instanceof GraphQLNonNull) {
+    return type1 instanceof GraphQLNonNull ?
+      doTypesConflict(type1.ofType, type2.ofType) :
+      true;
+  }
+  if (isLeafType(type1) || isLeafType(type2)) {
+    return type1 !== type2;
+  }
+  return false;
+}
 
 /**
  * Given a selectionSet, adds all of the fields in that selection to

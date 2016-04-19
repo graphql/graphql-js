@@ -10,7 +10,16 @@
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
-import type { Value } from '../language/ast';
+import type {
+  Value,
+  IntValue,
+  FloatValue,
+  StringValue,
+  BooleanValue,
+  EnumValue,
+  ListValue,
+  ObjectValue,
+} from '../language/ast';
 import {
   NAME,
   INT,
@@ -68,14 +77,14 @@ export function astFromValue(
   // the value is not an array, convert the value using the list's item type.
   if (Array.isArray(_value)) {
     const itemType = type instanceof GraphQLList ? type.ofType : null;
-    return {
+    return ({
       kind: LIST,
       values: _value.map(item => {
         const itemValue = astFromValue(item, itemType);
         invariant(itemValue, 'Could not create AST item.');
         return itemValue;
       })
-    };
+    }: ListValue);
   } else if (type instanceof GraphQLList) {
     // Because GraphQL will accept single values as a "list of one" when
     // expecting a list, if there's a non-array value and an expected list type,
@@ -84,7 +93,7 @@ export function astFromValue(
   }
 
   if (typeof _value === 'boolean') {
-    return { kind: BOOLEAN, value: _value };
+    return ({ kind: BOOLEAN, value: _value }: BooleanValue);
   }
 
   // JavaScript numbers can be Float or Int values. Use the GraphQLType to
@@ -95,11 +104,11 @@ export function astFromValue(
     const isIntValue = /^[0-9]+$/.test(stringNum);
     if (isIntValue) {
       if (type === GraphQLFloat) {
-        return { kind: FLOAT, value: stringNum + '.0' };
+        return ({ kind: FLOAT, value: stringNum + '.0' }: FloatValue);
       }
-      return { kind: INT, value: stringNum };
+      return ({ kind: INT, value: stringNum }: IntValue);
     }
-    return { kind: FLOAT, value: stringNum };
+    return ({ kind: FLOAT, value: stringNum }: FloatValue);
   }
 
   // JavaScript strings can be Enum values or String values. Use the
@@ -107,11 +116,14 @@ export function astFromValue(
   if (typeof _value === 'string') {
     if (type instanceof GraphQLEnumType &&
         /^[_a-zA-Z][_a-zA-Z0-9]*$/.test(_value)) {
-      return { kind: ENUM, value: _value };
+      return ({ kind: ENUM, value: _value }: EnumValue);
     }
     // Use JSON stringify, which uses the same string encoding as GraphQL,
     // then remove the quotes.
-    return { kind: STRING, value: JSON.stringify(_value).slice(1, -1) };
+    return ({
+      kind: STRING,
+      value: JSON.stringify(_value).slice(1, -1)
+    }: StringValue);
   }
 
   // last remaining possible typeof
@@ -135,5 +147,5 @@ export function astFromValue(
       });
     }
   });
-  return { kind: OBJECT, fields };
+  return ({ kind: OBJECT, fields }: ObjectValue);
 }
