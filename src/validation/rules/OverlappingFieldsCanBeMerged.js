@@ -39,14 +39,16 @@ export function fieldsConflictMessage(
   responseName: string,
   reason: ConflictReasonMessage
 ): string {
-  return `Fields "${responseName}" conflict because ${reasonMessage(reason)}.`;
+  return `Fields "${responseName}" conflict because ${reasonMessage(reason)}` +
+    '. Use aliases on the fields to fetch both if this was intentional.';
 }
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
     return reason.map(([ responseName, subreason ]) =>
       `subfields "${responseName}" conflict because ${reasonMessage(subreason)}`
-    ).join(' and ');
+    ).join(' and ') +
+      '. Use aliases on the fields to fetch both if this was intentional.';
   }
   return reason;
 }
