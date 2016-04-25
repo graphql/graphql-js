@@ -385,15 +385,8 @@ function defineFieldMap(
     'function which returns such an object.'
   );
 
-  const fieldNames = Object.keys(fieldMap);
-  invariant(
-    fieldNames.length > 0,
-    `${type} fields must be an object with field names as keys or a ` +
-    'function which returns such an object.'
-  );
-
   const resultFieldMap = {};
-  fieldNames.forEach(fieldName => {
+  Object.keys(fieldMap).forEach(fieldName => {
     assertValidName(fieldName);
     const field = {
       ...fieldMap[fieldName],

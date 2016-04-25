@@ -355,38 +355,12 @@ describe('Type System: Objects must have fields', () => {
     );
   });
 
-  it('rejects an Object type with empty fields', () => {
-    expect(
-      () => schemaWithFieldType(new GraphQLObjectType({
-        name: 'SomeObject',
-        fields: {}
-      }))
-    ).to.throw(
-      'SomeObject fields must be an object with field names as keys or a ' +
-      'function which returns such an object.'
-    );
-  });
-
   it('rejects an Object type with a field function that returns nothing', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
         fields() {
           return;
-        }
-      }))
-    ).to.throw(
-      'SomeObject fields must be an object with field names as keys or a ' +
-      'function which returns such an object.'
-    );
-  });
-
-  it('rejects an Object type with a field function that returns empty', () => {
-    expect(
-      () => schemaWithFieldType(new GraphQLObjectType({
-        name: 'SomeObject',
-        fields() {
-          return {};
         }
       }))
     ).to.throw(
