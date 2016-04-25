@@ -40,15 +40,15 @@ export function fieldsConflictMessage(
   reason: ConflictReasonMessage
 ): string {
   return `Fields "${responseName}" conflict because ${reasonMessage(reason)}` +
-    '. Use aliases on the fields to fetch both if this was intentional.';
+    '. Use different aliases on the fields to fetch both if this was ' +
+    'intentional.';
 }
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
     return reason.map(([ responseName, subreason ]) =>
       `subfields "${responseName}" conflict because ${reasonMessage(subreason)}`
-    ).join(' and ') +
-      '. Use aliases on the fields to fetch both if this was intentional.';
+    ).join(' and ');
   }
   return reason;
 }
