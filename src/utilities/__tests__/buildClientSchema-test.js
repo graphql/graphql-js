@@ -736,7 +736,7 @@ describe('Type System: build schema from introspection', () => {
             foo: {
               type: new GraphQLList(new GraphQLList(new GraphQLList(
                 new GraphQLList(new GraphQLList(new GraphQLList(
-                new GraphQLList(new GraphQLNonNull(GraphQLString))
+                new GraphQLList(new GraphQLList(GraphQLString))
               ))))))
             }
           }
@@ -755,8 +755,8 @@ describe('Type System: build schema from introspection', () => {
           name: 'Query',
           fields: {
             foo: {
-              type: new GraphQLList(new GraphQLList(new GraphQLList(
-                new GraphQLList(new GraphQLList(new GraphQLList(
+              type: new GraphQLList(new GraphQLNonNull(new GraphQLList(
+                new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(
                 new GraphQLList(new GraphQLNonNull(GraphQLString))
               ))))))
             }
