@@ -63,7 +63,7 @@ describe('Type System: build schema from introspection', () => {
     await testSchema(schema);
   });
 
-  it('builds a simple schema with both operation types', async () => {
+  it('builds a simple schema with all operation types', async () => {
     const queryType = new GraphQLObjectType({
       name: 'QueryType',
       description: 'This is a simple query type',
@@ -726,17 +726,18 @@ describe('Type System: build schema from introspection', () => {
 
   });
 
-  describe('KP: very deep decorators are not supported', () => {
+  describe('very deep decorators are not supported', () => {
 
-    it('fails on very deep lists', async () => {
+    it('fails on very deep (> 7 levels) lists', async () => {
       const schema = new GraphQLSchema({
         query: new GraphQLObjectType({
           name: 'Query',
           fields: {
             foo: {
               type: new GraphQLList(new GraphQLList(new GraphQLList(
-                new GraphQLList(GraphQLString)
-              )))
+                new GraphQLList(new GraphQLList(new GraphQLList(
+                new GraphQLList(new GraphQLNonNull(GraphQLString))
+              ))))))
             }
           }
         })
@@ -748,15 +749,16 @@ describe('Type System: build schema from introspection', () => {
       ).to.throw('Decorated type deeper than introspection query.');
     });
 
-    it('fails on a deep non-null', async () => {
+    it('fails on a very deep (> 7 levels) non-null', async () => {
       const schema = new GraphQLSchema({
         query: new GraphQLObjectType({
           name: 'Query',
           fields: {
             foo: {
               type: new GraphQLList(new GraphQLList(new GraphQLList(
-                new GraphQLNonNull(GraphQLString)
-              )))
+                new GraphQLList(new GraphQLList(new GraphQLList(
+                new GraphQLList(new GraphQLNonNull(GraphQLString))
+              ))))))
             }
           }
         })
@@ -766,6 +768,27 @@ describe('Type System: build schema from introspection', () => {
       expect(
         () => buildClientSchema(introspection.data)
       ).to.throw('Decorated type deeper than introspection query.');
+    });
+
+    it('succeeds on deep (<= 7 levels) types', async () => {
+      const schema = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'Query',
+          fields: {
+            foo: {
+              // e.g., fully non-null 3D matrix
+              type: new GraphQLNonNull(new GraphQLList(
+                new GraphQLNonNull(new GraphQLList(
+                new GraphQLNonNull(new GraphQLList(
+                new GraphQLNonNull(GraphQLString)
+              ))))))
+            }
+          }
+        })
+      });
+
+      const introspection = await graphql(schema, introspectionQuery);
+      buildClientSchema(introspection.data);
     });
 
   });
