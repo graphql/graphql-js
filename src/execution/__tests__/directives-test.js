@@ -153,9 +153,6 @@ describe('Execute: handles directives', () => {
             b
           }
         }
-        fragment Frag on TestType {
-          b
-        }
       `;
       return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a' }
@@ -170,9 +167,6 @@ describe('Execute: handles directives', () => {
             b
           }
         }
-        fragment Frag on TestType {
-          b
-        }
       `;
       return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a', b: 'b' }
@@ -186,9 +180,6 @@ describe('Execute: handles directives', () => {
             b
           }
         }
-        fragment Frag on TestType {
-          b
-        }
       `;
       return expect(await executeTestQuery(q)).to.deep.equal({
         data: { a: 'a', b: 'b' }
@@ -201,9 +192,6 @@ describe('Execute: handles directives', () => {
           ... on TestType @skip(if: true) {
             b
           }
-        }
-        fragment Frag on TestType {
-          b
         }
       `;
       return expect(await executeTestQuery(q)).to.deep.equal({
