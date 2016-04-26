@@ -39,7 +39,9 @@ export function fieldsConflictMessage(
   responseName: string,
   reason: ConflictReasonMessage
 ): string {
-  return `Fields "${responseName}" conflict because ${reasonMessage(reason)}.`;
+  return `Fields "${responseName}" conflict because ${reasonMessage(reason)}` +
+    '. Use different aliases on the fields to fetch both if this was ' +
+    'intentional.';
 }
 
 function reasonMessage(reason: ConflictReasonMessage): string {
