@@ -16,16 +16,22 @@ import {
 } from '../rules/KnownArgumentNames';
 
 
-function unknownArg(argName, fieldName, typeName, line, column) {
+function unknownArg(argName, fieldName, typeName, suggestedArgs, line, column) {
   return {
-    message: unknownArgMessage(argName, fieldName, typeName),
+    message: unknownArgMessage(argName, fieldName, typeName, suggestedArgs),
     locations: [ { line, column } ],
   };
 }
 
-function unknownDirectiveArg(argName, directiveName, line, column) {
+function unknownDirectiveArg(
+  argName,
+  directiveName,
+  suggestedArgs,
+  line,
+  column
+) {
   return {
-    message: unknownDirectiveArgMessage(argName, directiveName),
+    message: unknownDirectiveArgMessage(argName, directiveName, suggestedArgs),
     locations: [ { line, column } ],
   };
 }
@@ -103,7 +109,7 @@ describe('Validate: Known argument names', () => {
         dog @skip(unless: true)
       }
     `, [
-      unknownDirectiveArg('unless', 'skip', 3, 19),
+      unknownDirectiveArg('unless', 'skip', [], 3, 19),
     ]);
   });
 
@@ -113,7 +119,7 @@ describe('Validate: Known argument names', () => {
         doesKnowCommand(unknown: true)
       }
     `, [
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', 3, 25),
+      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 25),
     ]);
   });
 
@@ -123,8 +129,8 @@ describe('Validate: Known argument names', () => {
         doesKnowCommand(whoknows: 1, dogCommand: SIT, unknown: true)
       }
     `, [
-      unknownArg('whoknows', 'doesKnowCommand', 'Dog', 3, 25),
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', 3, 55),
+      unknownArg('whoknows', 'doesKnowCommand', 'Dog', [], 3, 25),
+      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 55),
     ]);
   });
 
@@ -143,8 +149,8 @@ describe('Validate: Known argument names', () => {
         }
       }
     `, [
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', 4, 27),
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', 9, 31),
+      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 4, 27),
+      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 9, 31),
     ]);
   });
 

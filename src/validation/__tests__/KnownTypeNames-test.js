@@ -15,9 +15,9 @@ import {
 } from '../rules/KnownTypeNames';
 
 
-function unknownType(typeName, line, column) {
+function unknownType(typeName, suggestedTypes, line, column) {
   return {
-    message: unknownTypeMessage(typeName),
+    message: unknownTypeMessage(typeName, suggestedTypes),
     locations: [ { line, column } ],
   };
 }
@@ -49,9 +49,24 @@ describe('Validate: Known type names', () => {
         name
       }
     `, [
-      unknownType('JumbledUpLetters', 2, 23),
-      unknownType('Badger', 5, 25),
-      unknownType('Peettt', 8, 29)
+      unknownType(
+        'JumbledUpLetters',
+        [],
+        2,
+        23
+      ),
+      unknownType(
+        'Badger',
+        [],
+        5,
+        25
+      ),
+      unknownType(
+        'Peettt',
+        [ 'Pet' ],
+        8,
+        29
+      )
     ]);
   });
 
@@ -73,7 +88,12 @@ describe('Validate: Known type names', () => {
         }
       }
     `, [
-      unknownType('NotInTheSchema', 12, 23),
+      unknownType(
+        'NotInTheSchema',
+        [],
+        12,
+        23
+      ),
     ]);
   });
 

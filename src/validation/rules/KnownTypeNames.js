@@ -10,11 +10,24 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import { suggestionList } from '../../jsutils/suggestionList';
 import type { GraphQLType } from '../../type/definition';
 
 
-export function unknownTypeMessage(type: GraphQLType): string {
-  return `Unknown type "${type}".`;
+export function unknownTypeMessage(
+  type: GraphQLType,
+  suggestedTypes: Array<string>
+): string {
+  let message = `Unknown type "${type}".`;
+  const MAX_LENGTH = 5;
+  if (suggestedTypes.length) {
+    const suggestions = suggestedTypes
+      .slice(0, MAX_LENGTH)
+      .map(t => `"${t}"`)
+      .join(', ');
+    message += ` Perhaps you meant one of the following: ${suggestions}.`;
+  }
+  return message;
 }
 
 /**
@@ -33,11 +46,18 @@ export function KnownTypeNames(context: ValidationContext): any {
     UnionTypeDefinition: () => false,
     InputObjectTypeDefinition: () => false,
     NamedType(node) {
+      const schema = context.getSchema();
       const typeName = node.name.value;
-      const type = context.getSchema().getType(typeName);
+      const type = schema.getType(typeName);
       if (!type) {
         context.reportError(
-          new GraphQLError(unknownTypeMessage(typeName), [ node ])
+          new GraphQLError(
+            unknownTypeMessage(
+              typeName,
+              suggestionList(typeName, Object.keys(schema.getTypeMap()))
+            ),
+            [ node ]
+          )
         );
       }
     }

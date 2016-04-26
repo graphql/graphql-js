@@ -10,16 +10,23 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import { suggestionList } from '../../jsutils/suggestionList';
 import type { Field } from '../../language/ast';
 import type { GraphQLSchema } from '../../type/schema';
 import type { GraphQLAbstractType } from '../../type/definition';
-import { isAbstractType } from '../../type/definition';
+import {
+  isAbstractType,
+  GraphQLObjectType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType
+} from '../../type/definition';
 
 
 export function undefinedFieldMessage(
   fieldName: string,
   type: string,
-  suggestedTypes: Array<string>
+  suggestedTypes: Array<string>,
+  suggestedFields: Array<string>
 ): string {
   let message = `Cannot query field "${fieldName}" on type "${type}".`;
   const MAX_LENGTH = 5;
@@ -33,6 +40,16 @@ export function undefinedFieldMessage(
     }
     message += ` However, this field exists on ${suggestions}.`;
     message += ' Perhaps you meant to use an inline fragment?';
+  }
+  if (suggestedFields.length !== 0) {
+    let suggestions = suggestedFields
+      .slice(0, MAX_LENGTH)
+      .map(t => `"${t}"`)
+      .join(', ');
+    if (suggestedFields.length > MAX_LENGTH) {
+      suggestions += `, or ${suggestedFields.length - MAX_LENGTH} other field`;
+    }
+    message += ` Did you mean to query ${suggestions}?`;
   }
   return message;
 }
@@ -50,10 +67,10 @@ export function FieldsOnCorrectType(context: ValidationContext): any {
       if (type) {
         const fieldDef = context.getFieldDef();
         if (!fieldDef) {
+          const schema = context.getSchema();
           // This isn't valid. Let's find suggestions, if any.
           let suggestedTypes = [];
           if (isAbstractType(type)) {
-            const schema = context.getSchema();
             suggestedTypes = getSiblingInterfacesIncludingField(
               schema,
               type,
@@ -63,8 +80,22 @@ export function FieldsOnCorrectType(context: ValidationContext): any {
               getImplementationsIncludingField(schema, type, node.name.value)
             );
           }
+          let suggestedFields = [];
+          if (type instanceof GraphQLObjectType ||
+              type instanceof GraphQLInterfaceType ||
+              type instanceof GraphQLInputObjectType) {
+            suggestedFields = suggestionList(
+              node.name.value,
+              Object.keys(type.getFields())
+            );
+          }
           context.reportError(new GraphQLError(
-            undefinedFieldMessage(node.name.value, type.name, suggestedTypes),
+            undefinedFieldMessage(
+              node.name.value,
+              type.name,
+              suggestedTypes,
+              suggestedFields
+            ),
             [ node ]
           ));
         }
@@ -113,4 +144,3 @@ function getSiblingInterfacesIncludingField(
   return Object.keys(suggestedInterfaces)
     .sort((a,b) => suggestedInterfaces[b] - suggestedInterfaces[a]);
 }
-
