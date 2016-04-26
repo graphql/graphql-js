@@ -29,10 +29,6 @@ import {
   GraphQLString,
   GraphQLID,
 } from '../../type';
-import chai from 'chai';
-import chaiString from 'chai-string';
-
-chai.use(chaiString);
 
 describe('Validate: Overlapping fields can be merged', () => {
 
@@ -761,9 +757,10 @@ describe('Validate: Overlapping fields can be merged', () => {
       // The error template should end with a hint for the user to try using
       // different aliases.
       const error = fieldsConflictMessage('x', 'a and b are different fields');
-      const hint = 'Use different aliases on the fields to fetch both ' +
-                   'if this was intentional.';
-      expect(error).to.endsWith(hint);
+      expect(error).to.equal(
+        'Fields "x" conflict because a and b are different fields. Use ' +
+        'different aliases on the fields to fetch both if this was intentional.'
+      );
     });
 
   });
