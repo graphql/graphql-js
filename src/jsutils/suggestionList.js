@@ -13,22 +13,22 @@
  * list of valid options sorted based on their similarity with the input.
  */
 export function suggestionList(
-    input: string,
-    options: Array<string>
-  ): Array<string> {
-  let i;
-  const d = {};
+  input: string,
+  options: Array<string>
+): Array<string> {
+  const optionsByDistance = Object.create(null);
   const oLength = options.length;
   const inputThreshold = input.length / 2;
-  for (i = 0; i < oLength; i++) {
+  for (let i = 0; i < oLength; i++) {
     const distance = lexicalDistance(input, options[i]);
     const threshold = Math.max(inputThreshold, options[i].length / 2, 1);
     if (distance <= threshold) {
-      d[options[i]] = distance;
+      optionsByDistance[options[i]] = distance;
     }
   }
-  const result = Object.keys(d);
-  return result.sort((a , b) => d[a] - d[b]);
+  return Object.keys(optionsByDistance).sort(
+    (a , b) => optionsByDistance[a] - optionsByDistance[b]
+  );
 }
 
 /**
