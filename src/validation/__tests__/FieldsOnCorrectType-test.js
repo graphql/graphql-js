@@ -224,7 +224,7 @@ describe('Validate: Fields on correct type', () => {
       fragment definedOnImplementorsButNotInterface on Pet {
         nickname
       }`,
-      [ undefinedField('nickname', 'Pet', [ 'Cat', 'Dog' ], [ 'name' ], 3, 9) ]
+      [ undefinedField('nickname', 'Pet', [ 'Dog', 'Cat' ], [ 'name' ], 3, 9) ]
     );
   });
 
@@ -254,7 +254,7 @@ describe('Validate: Fields on correct type', () => {
         undefinedField(
           'name',
           'CatOrDog',
-          [ 'Being', 'Pet', 'Canine', 'Cat', 'Dog' ],
+          [ 'Being', 'Pet', 'Canine', 'Dog', 'Cat' ],
           [],
           3,
           9
@@ -277,36 +277,60 @@ describe('Validate: Fields on correct type', () => {
   });
 
   describe('Fields on correct type error message', () => {
+
     it('Works with no suggestions', () => {
       expect(
         undefinedFieldMessage('f', 'T', [], [])
-      ).to.equal('Cannot query field "f" on type "T".');
-    });
-
-    it('Works with no small numbers of suggestions', () => {
-      expect(
-        undefinedFieldMessage('f', 'T', [ 'A', 'B' ], [ 'z', 'y' ])
-      ).to.equal('Cannot query field "f" on type "T". ' +
-        'However, this field exists on "A", "B". ' +
-        'Perhaps you meant to use an inline fragment? ' +
-        'Did you mean to query "z", "y"?');
-    });
-
-    it('Works with lots of suggestions', () => {
-      expect(
-        undefinedFieldMessage(
-          'f',
-          'T',
-          [ 'A', 'B', 'C', 'D', 'E', 'F' ],
-          [ 'z', 'y', 'x', 'w', 'v', 'u' ]
-        )
-      ).to.equal('Cannot query field "f" on type "T". ' +
-        'However, this field exists on "A", "B", "C", "D", "E", ' +
-        'and 1 other types. ' +
-        'Perhaps you meant to use an inline fragment? ' +
-        'Did you mean to query "z", "y", "x", "w", "v", or 1 other field?'
+      ).to.equal(
+        'Cannot query field "f" on type "T".'
       );
     });
+
+    it('Works with no small numbers of type suggestions', () => {
+      expect(
+        undefinedFieldMessage('f', 'T', [ 'A', 'B' ], [])
+      ).to.equal(
+        'Cannot query field "f" on type "T". ' +
+        'Did you mean to use an inline fragment on "A" or "B"?'
+      );
+    });
+
+    it('Works with no small numbers of field suggestions', () => {
+      expect(
+        undefinedFieldMessage('f', 'T', [], [ 'z', 'y' ])
+      ).to.equal(
+        'Cannot query field "f" on type "T". ' +
+        'Did you mean "z" or "y"?'
+      );
+    });
+
+    it('Only shows one set of suggestions at a time, preferring types', () => {
+      expect(
+        undefinedFieldMessage('f', 'T', [ 'A', 'B' ], [ 'z', 'y' ])
+      ).to.equal(
+        'Cannot query field "f" on type "T". ' +
+        'Did you mean to use an inline fragment on "A" or "B"?'
+      );
+    });
+
+    it('Limits lots of type suggestions', () => {
+      expect(
+        undefinedFieldMessage('f', 'T', [ 'A', 'B', 'C', 'D', 'E', 'F' ], [])
+      ).to.equal(
+        'Cannot query field "f" on type "T". ' +
+        'Did you mean to use an inline fragment on "A", "B", "C", "D", or "E"?'
+      );
+    });
+
+    it('Limits lots of field suggestions', () => {
+      expect(
+        undefinedFieldMessage('f', 'T', [], [ 'z', 'y', 'x', 'w', 'v', 'u' ])
+      ).to.equal(
+        'Cannot query field "f" on type "T". ' +
+        'Did you mean "z", "y", "x", "w", or "v"?'
+      );
+    });
+
   });
 });
 
