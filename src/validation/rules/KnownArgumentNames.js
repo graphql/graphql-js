@@ -12,7 +12,8 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import find from '../../jsutils/find';
 import invariant from '../../jsutils/invariant';
-import { suggestionList } from '../../jsutils/suggestionList';
+import suggestionList from '../../jsutils/suggestionList';
+import quotedOrList from '../../jsutils/quotedOrList';
 import {
   FIELD,
   DIRECTIVE
@@ -29,10 +30,7 @@ export function unknownArgMessage(
   let message = `Unknown argument "${argName}" on field "${fieldName}" of ` +
     `type "${type}".`;
   if (suggestedArgs.length) {
-    const suggestions = suggestedArgs
-      .map(t => `"${t}"`)
-      .join(', ');
-    message += ` Perhaps you meant ${suggestions}?`;
+    message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
   }
   return message;
 }
@@ -45,10 +43,7 @@ export function unknownDirectiveArgMessage(
   let message =
     `Unknown argument "${argName}" on directive "@${directiveName}".`;
   if (suggestedArgs.length) {
-    const suggestions = suggestedArgs
-      .map(t => `"${t}"`)
-      .join(', ');
-    message += ` Perhaps you meant ${suggestions}?`;
+    message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
   }
   return message;
 }

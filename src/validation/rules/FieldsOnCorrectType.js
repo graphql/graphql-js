@@ -10,7 +10,8 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { suggestionList } from '../../jsutils/suggestionList';
+import suggestionList from '../../jsutils/suggestionList';
+import quotedOrList from '../../jsutils/quotedOrList';
 import type { Field } from '../../language/ast';
 import type { GraphQLSchema } from '../../type/schema';
 import type { GraphQLOutputType } from '../../type/definition';
@@ -28,13 +29,11 @@ export function undefinedFieldMessage(
   suggestedFieldNames: Array<string>
 ): string {
   let message = `Cannot query field "${fieldName}" on type "${type}".`;
-  const MAX_LENGTH = 5;
   if (suggestedTypeNames.length !== 0) {
-    const suggestions = quotedOrList(suggestedTypeNames.slice(0, MAX_LENGTH));
+    const suggestions = quotedOrList(suggestedTypeNames);
     message += ` Did you mean to use an inline fragment on ${suggestions}?`;
   } else if (suggestedFieldNames.length !== 0) {
-    const suggestions = quotedOrList(suggestedFieldNames.slice(0, MAX_LENGTH));
-    message += ` Did you mean ${suggestions}?`;
+    message += ` Did you mean ${quotedOrList(suggestedFieldNames)}?`;
   }
   return message;
 }
@@ -138,16 +137,4 @@ function getSuggestedFieldNames(
   }
   // Otherwise, must be a Union type, which does not define fields.
   return [];
-}
-
-/**
- * Given [ A, B, C ] return '"A", "B", or "C"'.
- */
-function quotedOrList(items: Array<string>): string {
-  return items.map(item => `"${item}"`).reduce((list, quoted, index) =>
-    list +
-    (items.length > 2 ? ', ' : ' ') +
-    (index === items.length - 1 ? 'or ' : '') +
-    quoted
-  );
 }

@@ -10,7 +10,8 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { suggestionList } from '../../jsutils/suggestionList';
+import suggestionList from '../../jsutils/suggestionList';
+import quotedOrList from '../../jsutils/quotedOrList';
 import type { GraphQLType } from '../../type/definition';
 
 
@@ -19,13 +20,8 @@ export function unknownTypeMessage(
   suggestedTypes: Array<string>
 ): string {
   let message = `Unknown type "${type}".`;
-  const MAX_LENGTH = 5;
   if (suggestedTypes.length) {
-    const suggestions = suggestedTypes
-      .slice(0, MAX_LENGTH)
-      .map(t => `"${t}"`)
-      .join(', ');
-    message += ` Perhaps you meant one of the following: ${suggestions}.`;
+    message += ` Did you mean ${quotedOrList(suggestedTypes)}?`;
   }
   return message;
 }

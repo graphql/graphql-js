@@ -9,7 +9,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { suggestionList } from '../suggestionList';
+import suggestionList from '../suggestionList';
 
 describe('suggestionList', () => {
 
