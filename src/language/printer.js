@@ -144,13 +144,13 @@ function join(maybeArray, separator) {
 }
 
 /**
- * Given maybeArray, print an empty string if it is null or empty, otherwise
- * print each item on its own line, wrapped in an indented "{ }" block.
+ * Given array, print each item on its own line, wrapped in an
+ * indented "{ }" block.
  */
-function block(maybeArray) {
-  return length(maybeArray) ?
-    indent('{\n' + join(maybeArray, '\n')) + '\n}' :
-    '';
+function block(array) {
+  return array && array.length !== 0 ?
+    indent('{\n' + join(array, '\n')) + '\n}' :
+    '{}';
 }
 
 /**
@@ -165,8 +165,4 @@ function wrap(start, maybeString, end) {
 
 function indent(maybeString) {
   return maybeString && maybeString.replace(/\n/g, '\n  ');
-}
-
-function length(maybeArray) {
-  return maybeArray ? maybeArray.length : 0;
 }

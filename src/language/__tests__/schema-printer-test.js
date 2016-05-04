@@ -88,6 +88,8 @@ extend type Foo {
   seven(argument: [String]): Type
 }
 
+type NoFields {}
+
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
