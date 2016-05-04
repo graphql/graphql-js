@@ -149,6 +149,46 @@ export const __DirectiveLocation = new GraphQLEnumType({
       value: DirectiveLocation.INLINE_FRAGMENT,
       description: 'Location adjacent to an inline fragment.'
     },
+    SCALAR: {
+      value: DirectiveLocation.SCALAR,
+      description: 'Location adjacent to a scalar definition.'
+    },
+    OBJECT: {
+      value: DirectiveLocation.OBJECT,
+      description: 'Location adjacent to an object type definition.'
+    },
+    FIELD_DEFINITION: {
+      value: DirectiveLocation.FIELD_DEFINITION,
+      description: 'Location adjacent to a field definition.'
+    },
+    ARGUMENT_DEFINITION: {
+      value: DirectiveLocation.ARGUMENT_DEFINITION,
+      description: 'Location adjacent to an argument definition.'
+    },
+    INTERFACE: {
+      value: DirectiveLocation.INTERFACE,
+      description: 'Location adjacent to an interface definition.'
+    },
+    UNION: {
+      value: DirectiveLocation.UNION,
+      description: 'Location adjacent to a union definition.'
+    },
+    ENUM: {
+      value: DirectiveLocation.ENUM,
+      description: 'Location adjacent to an enum definition.'
+    },
+    ENUM_VALUE: {
+      value: DirectiveLocation.ENUM_VALUE,
+      description: 'Location adjacent to an enum value definition.'
+    },
+    INPUT_OBJECT: {
+      value: DirectiveLocation.INPUT_OBJECT,
+      description: 'Location adjacent to an input object type definition.'
+    },
+    INPUT_FIELD_DEFINITION: {
+      value: DirectiveLocation.INPUT_FIELD_DEFINITION,
+      description: 'Location adjacent to an input object field definition.'
+    },
   }
 });
 

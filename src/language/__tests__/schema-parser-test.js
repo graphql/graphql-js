@@ -52,6 +52,7 @@ function fieldNodeWithArgs(name, type, args, loc) {
     name,
     arguments: args,
     type,
+    directives: [],
     loc,
   };
 }
@@ -60,6 +61,7 @@ function enumValueNode(name, loc) {
   return {
     kind: 'EnumValueDefinition',
     name: nameNode(name, loc),
+    directives: [],
     loc,
   };
 }
@@ -70,6 +72,7 @@ function inputValueNode(name, type, defaultValue, loc) {
     name,
     type,
     defaultValue,
+    directives: [],
     loc,
   };
 }
@@ -89,6 +92,7 @@ type Hello {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
+          directives: [],
           fields: [
             fieldNode(
               nameNode('world', loc(16, 21)),
@@ -120,6 +124,7 @@ extend type Hello {
             kind: 'ObjectTypeDefinition',
             name: nameNode('Hello', loc(13, 18)),
             interfaces: [],
+            directives: [],
             fields: [
               fieldNode(
                 nameNode('world', loc(23, 28)),
@@ -151,6 +156,7 @@ type Hello {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
+          directives: [],
           fields: [
             fieldNode(
               nameNode('world', loc(16, 21)),
@@ -182,6 +188,7 @@ type Hello {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(5, 10)),
           interfaces: [ typeNode('World', loc(22, 27)) ],
+          directives: [],
           fields: [],
           loc: loc(0, 31),
         }
@@ -205,6 +212,7 @@ type Hello {
             typeNode('Wo', loc(22, 24)),
             typeNode('rld', loc(26, 29))
           ],
+          directives: [],
           fields: [],
           loc: loc(0, 33),
         }
@@ -224,6 +232,7 @@ type Hello {
         {
           kind: 'EnumTypeDefinition',
           name: nameNode('Hello', loc(5, 10)),
+          directives: [],
           values: [ enumValueNode('WORLD', loc(13, 18)) ],
           loc: loc(0, 20),
         }
@@ -243,6 +252,7 @@ type Hello {
         {
           kind: 'EnumTypeDefinition',
           name: nameNode('Hello', loc(5, 10)),
+          directives: [],
           values: [
             enumValueNode('WO', loc(13, 15)),
             enumValueNode('RLD', loc(17, 20)),
@@ -268,6 +278,7 @@ interface Hello {
         {
           kind: 'InterfaceTypeDefinition',
           name: nameNode('Hello', loc(11, 16)),
+          directives: [],
           fields: [
             fieldNode(
               nameNode('world', loc(21, 26)),
@@ -297,6 +308,7 @@ type Hello {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
+          directives: [],
           fields: [
             fieldNodeWithArgs(
               nameNode('world', loc(16, 21)),
@@ -334,6 +346,7 @@ type Hello {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
+          directives: [],
           fields: [
             fieldNodeWithArgs(
               nameNode('world', loc(16, 21)),
@@ -375,6 +388,7 @@ type Hello {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
+          directives: [],
           fields: [
             fieldNodeWithArgs(
               nameNode('world', loc(16, 21)),
@@ -416,6 +430,7 @@ type Hello {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
           interfaces: [],
+          directives: [],
           fields: [
             fieldNodeWithArgs(
               nameNode('world', loc(16, 21)),
@@ -455,6 +470,7 @@ type Hello {
         {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
+          directives: [],
           types: [ typeNode('World', loc(14, 19)) ],
           loc: loc(0, 19),
         }
@@ -474,6 +490,7 @@ type Hello {
         {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', loc(6, 11)),
+          directives: [],
           types: [
             typeNode('Wo', loc(14, 16)),
             typeNode('Rld', loc(19, 22)),
@@ -496,6 +513,7 @@ type Hello {
         {
           kind: 'ScalarTypeDefinition',
           name: nameNode('Hello', loc(7, 12)),
+          directives: [],
           loc: loc(0, 12),
         }
       ],
@@ -517,6 +535,7 @@ input Hello {
         {
           kind: 'InputObjectTypeDefinition',
           name: nameNode('Hello', loc(7, 12)),
+          directives: [],
           fields: [
             inputValueNode(
               nameNode('world', loc(17, 22)),
