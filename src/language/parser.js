@@ -669,6 +669,7 @@ export function parseNamedType(parser: Parser): NamedType {
 
 /**
  * TypeSystemDefinition :
+ *   - SchemaDefinition
  *   - TypeDefinition
  *   - TypeExtensionDefinition
  *   - DirectiveDefinition
