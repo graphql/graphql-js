@@ -94,10 +94,6 @@ export function extendSchema(
   schema: GraphQLSchema,
   documentAST: Document
 ): GraphQLSchema {
-  invariant(
-    schema instanceof GraphQLSchema,
-    'Must provide valid GraphQLSchema'
-  );
 
   invariant(
     documentAST && documentAST.kind === DOCUMENT,
