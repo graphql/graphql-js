@@ -117,6 +117,11 @@ export function execute(
   operationName?: ?string
 ): Promise<ExecutionResult> {
   invariant(schema, 'Must provide schema');
+  invariant(
+    schema instanceof GraphQLSchema,
+    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
+    'not multiple versions of GraphQL installed in your node_modules directory.'
+  );
 
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.

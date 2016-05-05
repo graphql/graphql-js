@@ -53,6 +53,11 @@ export function validate(
 ): Array<GraphQLError> {
   invariant(schema, 'Must provide schema');
   invariant(ast, 'Must provide document');
+  invariant(
+    schema instanceof GraphQLSchema,
+    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
+    'not multiple versions of GraphQL installed in your node_modules directory.'
+  );
   const typeInfo = new TypeInfo(schema);
   return visitUsingRules(schema, typeInfo, ast, rules || specifiedRules);
 }
