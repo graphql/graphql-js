@@ -28,6 +28,8 @@ import {
 
 import {
   __Schema,
+  __Annotation,
+  __AnnotationArgument,
   __Directive,
   __DirectiveLocation,
   __Type,
@@ -172,6 +174,8 @@ export function extendSchema(
     Boolean: GraphQLBoolean,
     ID: GraphQLID,
     __Schema,
+    __Annotation,
+    __AnnotationArgument,
     __Directive,
     __DirectiveLocation,
     __Type,
@@ -339,6 +343,8 @@ export function extendSchema(
         deprecationReason: field.deprecationReason,
         type: extendFieldType(field.type),
         args: keyMap(field.args, arg => arg.name),
+        annotations: field.annotations &&
+          keyMap(field.annotations, annotation => annotation.name),
         resolve: cannotExecuteClientSchema,
       };
     });
@@ -359,6 +365,7 @@ export function extendSchema(
           newFieldMap[fieldName] = {
             type: buildFieldType(field.type),
             args: buildInputValues(field.arguments),
+            annotations: buildAnnotations(field.annotations),
             resolve: cannotExecuteClientSchema,
           };
         });
@@ -449,6 +456,7 @@ export function extendSchema(
       typeAST.fields,
       field => field.name.value,
       field => ({
+        annotations: buildAnnotations(field.annotations),
         type: buildFieldType(field.type),
         args: buildInputValues(field.arguments),
         resolve: cannotExecuteClientSchema,
@@ -467,6 +475,35 @@ export function extendSchema(
           defaultValue: valueFromAST(value.defaultValue, type)
         };
       }
+    );
+  }
+
+  function buildAnnotations(annotations: Array<InputValueDefinition>) {
+    if (!annotations.length) {
+      return;
+    }
+    const wrap = function (left, str, right, condition) {
+      return condition ? `${left}${str}${right}` : str;
+    };
+    const annotationArgs = function (args) {
+      if (!args.length) {
+        return;
+      }
+      return keyValMap(
+        args,
+        argument => argument.name.value,
+        argument => wrap(
+          '"',
+          argument.value.value,
+          '"',
+          argument.value.kind === 'StringValue'
+        )
+      );
+    };
+    return keyValMap(
+      annotations,
+      annotation => annotation.name.value,
+      annotation => annotationArgs(annotation.arguments)
     );
   }
 

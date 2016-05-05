@@ -106,6 +106,7 @@ describe('Printer', () => {
   }
 }
 
+@@AnnotationOnOperationDefinition(value: "Foo")
 mutation likeStory {
   like(story: 123) @defer {
     story {
@@ -115,6 +116,7 @@ mutation likeStory {
 }
 
 subscription StoryLikeSubscription($input: StoryLikeSubscribeInput) {
+  @@AnnotationOnField(default: "Qux")
   storyLikeSubscribe(input: $input) {
     story {
       likers {
@@ -127,6 +129,7 @@ subscription StoryLikeSubscription($input: StoryLikeSubscribeInput) {
   }
 }
 
+@@AnnotationOnFragmentDefinition(value: "Bar")
 fragment frag on Friend {
   foo(size: $size, bar: $b, obj: {key: "value"})
 }
@@ -134,6 +137,11 @@ fragment frag on Friend {
 {
   unnamed(truthy: true, falsey: false)
   query
+}
+
+extend type User {
+  @@AnnotationOnFieldDefinition(default: "Baz")
+  name: String
 }
 `);
 

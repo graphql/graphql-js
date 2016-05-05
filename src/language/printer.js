@@ -28,13 +28,16 @@ const printDocASTReducer = {
   OperationDefinition(node) {
     const op = node.operation;
     const name = node.name;
+    const annotations = wrap('', join(node.annotations, '\n'), '\n');
     const varDefs = wrap('(', join(node.variableDefinitions, ', '), ')');
     const directives = join(node.directives, ' ');
     const selectionSet = node.selectionSet;
     // Anonymous queries with no directives or variable definitions can use
     // the query short form.
+
     return !name && !directives && !varDefs && op === 'query' ?
-      selectionSet :
+      annotations + selectionSet :
+      annotations +
       join([ op, join([ name, varDefs ]), directives, selectionSet ], ' ');
   },
 
@@ -43,7 +46,9 @@ const printDocASTReducer = {
 
   SelectionSet: ({ selections }) => block(selections),
 
-  Field: ({ alias, name, arguments: args, directives, selectionSet }) =>
+  Field: ({ alias, name, arguments: args, directives, annotations,
+            selectionSet }) =>
+    wrap('', join(annotations, '\n'), '\n') +
     join([
       wrap('', alias, ': ') + name + wrap('(', join(args, ', '), ')'),
       join(directives, ' '),
@@ -65,10 +70,11 @@ const printDocASTReducer = {
       selectionSet
     ], ' '),
 
-  FragmentDefinition: ({ name, typeCondition, directives, selectionSet }) =>
-    `fragment ${name} on ${typeCondition} ` +
-    wrap('', join(directives, ' '), ' ') +
-    selectionSet,
+  FragmentDefinition: node =>
+    wrap('', join(node.annotations, '\n'), '\n') +
+    `fragment ${node.name} on ${node.typeCondition} ` +
+    wrap('', join(node.directives, ' '), ' ') +
+    node.selectionSet,
 
   // Value
 
@@ -85,6 +91,11 @@ const printDocASTReducer = {
 
   Directive: ({ name, arguments: args }) =>
     '@' + name + wrap('(', join(args, ', '), ')'),
+
+  // Annotation
+
+  Annotation: ({ name, arguments: args }) =>
+    '@@' + name + wrap('(', join(args, ', '), ')'),
 
   // Type
 
@@ -108,7 +119,8 @@ const printDocASTReducer = {
     wrap('implements ', join(interfaces, ', '), ' ') +
     block(fields),
 
-  FieldDefinition: ({ name, arguments: args, type }) =>
+  FieldDefinition: ({ name, arguments: args, type, annotations }) =>
+    wrap('', join(annotations, '\n'), '\n') +
     name + wrap('(', join(args, ', '), ')') + ': ' + type,
 
   InputValueDefinition: ({ name, type, defaultValue }) =>

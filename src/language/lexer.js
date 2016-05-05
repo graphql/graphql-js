@@ -60,15 +60,16 @@ export const TokenKind = {
   COLON: 7,
   EQUALS: 8,
   AT: 9,
-  BRACKET_L: 10,
-  BRACKET_R: 11,
-  BRACE_L: 12,
-  PIPE: 13,
-  BRACE_R: 14,
-  NAME: 15,
-  INT: 16,
-  FLOAT: 17,
-  STRING: 18,
+  ATAT: 10,
+  BRACKET_L: 11,
+  BRACKET_R: 12,
+  BRACE_L: 13,
+  PIPE: 14,
+  BRACE_R: 15,
+  NAME: 16,
+  INT: 17,
+  FLOAT: 18,
+  STRING: 19,
 };
 
 /**
@@ -97,6 +98,7 @@ tokenDescription[TokenKind.SPREAD] = '...';
 tokenDescription[TokenKind.COLON] = ':';
 tokenDescription[TokenKind.EQUALS] = '=';
 tokenDescription[TokenKind.AT] = '@';
+tokenDescription[TokenKind.ATAT] = '@@';
 tokenDescription[TokenKind.BRACKET_L] = '[';
 tokenDescription[TokenKind.BRACKET_R] = ']';
 tokenDescription[TokenKind.BRACE_L] = '{';
@@ -181,8 +183,12 @@ function readToken(source: Source, fromPosition: number): Token {
     case 58: return makeToken(TokenKind.COLON, position, position + 1);
     // =
     case 61: return makeToken(TokenKind.EQUALS, position, position + 1);
-    // @
-    case 64: return makeToken(TokenKind.AT, position, position + 1);
+    // @@ or @
+    case 64:
+      if (charCodeAt.call(body, position + 1) === 64) {
+        return makeToken(TokenKind.ATAT, position, position + 2);
+      }
+      return makeToken(TokenKind.AT, position, position + 1);
     // [
     case 91: return makeToken(TokenKind.BRACKET_L, position, position + 1);
     // ]

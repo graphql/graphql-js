@@ -67,6 +67,12 @@ describe('Star Wars Introspection Tests', () => {
               name: '__InputValue'
             },
             {
+              name: '__Annotation'
+            },
+            {
+              name: '__AnnotationArgument'
+            },
+            {
               name: '__EnumValue'
             },
             {

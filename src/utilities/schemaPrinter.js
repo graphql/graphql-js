@@ -151,7 +151,8 @@ function printFields(type) {
   const fieldMap = type.getFields();
   const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
   return fields.map(
-    f => `  ${f.name}${printArgs(f)}: ${f.type}`
+    f => `${printAnnotations(f.annotations)}` +
+         `  ${f.name}${printArgs(f)}: ${f.type}`
   ).join('\n');
 }
 
@@ -172,5 +173,25 @@ function printInputValue(arg) {
 
 function printDirective(directive) {
   return 'directive @' + directive.name + printArgs(directive) +
-    ' on ' + directive.locations.join(' | ');
+  ' on ' + directive.locations.join(' | ');
+}
+
+// NOTE: @clintwood (flow noob) not sure how to fix flow error on annotations:
+// 'Computed property/element cannot be accessed on possibly undefined value'
+// so using 'annotations: any' to skip flow checking here
+function printAnnotations(annotations: any) {
+  if (!annotations || Object.keys(annotations).length === 0) {
+    return '';
+  }
+  const printAnnotationArgs = function (args) {
+    if (!args) {
+      return '';
+    }
+    return '(' +
+      Object.keys(args).map(name => `${name}: ${args[name]}`).join(', ') +
+      ')';
+  };
+  return Object.keys(annotations).map(
+    name => `  @@${name}${printAnnotationArgs(annotations[name])}`
+  ).join('\n') + '\n';
 }

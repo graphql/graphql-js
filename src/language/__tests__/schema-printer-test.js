@@ -67,6 +67,7 @@ type Foo implements Bar {
 
 interface Bar {
   one: Type
+  @@AnnotationOnFieldDefinition(value: "Foo")
   four(argument: String = "string"): String
 }
 

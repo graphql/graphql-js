@@ -36,6 +36,7 @@ import type {
   ObjectField,
 
   Directive,
+  Annotation,
 
   Type,
   NamedType,
@@ -87,6 +88,7 @@ import {
   OBJECT_FIELD,
 
   DIRECTIVE,
+  ANNOTATION,
 
   NAMED_TYPE,
   LIST_TYPE,
@@ -193,40 +195,53 @@ function parseDocument(parser: Parser): Document {
 
 /**
  * Definition :
- *   - OperationDefinition
- *   - FragmentDefinition
+ *   - Annotations? OperationDefinition
+ *   - Annotations? FragmentDefinition
  *   - TypeSystemDefinition
  */
 function parseDefinition(parser: Parser): Definition {
+  // could be preceeded by annotations (save token in case it's unexpected)
+  let token;
+  let annotations = [];
+  if (peek(parser, TokenKind.ATAT)) {
+    token = parser.token;
+    annotations = parseAnnotations(parser);
+  }
+  // shortform query
   if (peek(parser, TokenKind.BRACE_L)) {
-    return parseOperationDefinition(parser);
+    return parseOperationDefinition(parser, annotations);
   }
 
   if (peek(parser, TokenKind.NAME)) {
+    // OperationDefinition and FragmentDefinition kinds can have annotations
     switch (parser.token.value) {
       case 'query':
       case 'mutation':
       // Note: subscription is an experimental non-spec addition.
-      case 'subscription': return parseOperationDefinition(parser);
+      case 'subscription': return parseOperationDefinition(parser, annotations);
+      case 'fragment': return parseFragmentDefinition(parser, annotations);
 
-      case 'fragment': return parseFragmentDefinition(parser);
-
-      // Note: the Type System IDL is an experimental non-spec addition.
-      case 'schema':
-      case 'scalar':
       case 'type':
-      case 'interface':
-      case 'union':
-      case 'enum':
-      case 'input':
-      case 'extend':
-      case 'directive': return parseTypeSystemDefinition(parser);
+      case 'extend': return parseTypeSystemDefinition(parser, annotations);
+    }
+    // annotations are unexpected before TypeSystemDefinition
+    // except type and extend
+    if (!annotations.length) {
+      switch (parser.token.value) {
+        // Note: the Type System IDL is an experimental non-spec addition.
+        case 'schema':
+        case 'scalar':
+        case 'interface':
+        case 'union':
+        case 'enum':
+        case 'input':
+        case 'directive': return parseTypeSystemDefinition(parser);
+      }
     }
   }
 
-  throw unexpected(parser);
+  throw unexpected(parser, token);
 }
-
 
 // Implements the parsing rules in the Operations section.
 
@@ -235,7 +250,8 @@ function parseDefinition(parser: Parser): Definition {
  *  - SelectionSet
  *  - OperationType Name? VariableDefinitions? Directives? SelectionSet
  */
-function parseOperationDefinition(parser: Parser): OperationDefinition {
+function parseOperationDefinition(parser: Parser, annotations):
+  OperationDefinition {
   const start = parser.token.start;
   if (peek(parser, TokenKind.BRACE_L)) {
     return {
@@ -245,7 +261,8 @@ function parseOperationDefinition(parser: Parser): OperationDefinition {
       variableDefinitions: null,
       directives: [],
       selectionSet: parseSelectionSet(parser),
-      loc: loc(parser, start)
+      loc: loc(parser, start),
+      annotations,
     };
   }
   const operation = parseOperationType(parser);
@@ -260,7 +277,8 @@ function parseOperationDefinition(parser: Parser): OperationDefinition {
     variableDefinitions: parseVariableDefinitions(parser),
     directives: parseDirectives(parser),
     selectionSet: parseSelectionSet(parser),
-    loc: loc(parser, start)
+    loc: loc(parser, start),
+    annotations,
   };
 }
 
@@ -347,13 +365,14 @@ function parseSelection(parser: Parser): Selection {
 }
 
 /**
- * Field : Alias? Name Arguments? Directives? SelectionSet?
+ * Field : Annotations? Alias? Name Arguments? Directives? SelectionSet?
  *
  * Alias : Name :
  */
 function parseField(parser: Parser): Field {
   const start = parser.token.start;
 
+  const annotations = parseAnnotations(parser);
   const nameOrAlias = parseName(parser);
   let alias;
   let name;
@@ -371,6 +390,7 @@ function parseField(parser: Parser): Field {
     name,
     arguments: parseArguments(parser),
     directives: parseDirectives(parser),
+    annotations,
     selectionSet:
       peek(parser, TokenKind.BRACE_L) ? parseSelectionSet(parser) : null,
     loc: loc(parser, start)
@@ -436,11 +456,13 @@ function parseFragment(parser: Parser): FragmentSpread | InlineFragment {
 
 /**
  * FragmentDefinition :
- *   - fragment FragmentName on TypeCondition Directives? SelectionSet
+ *   - Annotations?
+ *    fragment FragmentName on TypeCondition Directives? SelectionSet
  *
  * TypeCondition : NamedType
  */
-function parseFragmentDefinition(parser: Parser): FragmentDefinition {
+function parseFragmentDefinition(parser: Parser, annotations):
+  FragmentDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'fragment');
   return {
@@ -449,7 +471,8 @@ function parseFragmentDefinition(parser: Parser): FragmentDefinition {
     typeCondition: (expectKeyword(parser, 'on'), parseNamedType(parser)),
     directives: parseDirectives(parser),
     selectionSet: parseSelectionSet(parser),
-    loc: loc(parser, start)
+    loc: loc(parser, start),
+    annotations,
   };
 }
 
@@ -620,6 +643,34 @@ function parseDirective(parser: Parser): Directive {
 }
 
 
+// Implements the parsing rules in the Annotations section.
+
+/**
+ * Annotations : Annotation+
+ */
+function parseAnnotations(parser: Parser): Array<Annotation> {
+  const annotations = [];
+  while (peek(parser, TokenKind.ATAT)) {
+    annotations.push(parseAnnotation(parser));
+  }
+  return annotations;
+}
+
+/**
+ * Annotation : @@ Name Arguments?
+ */
+function parseAnnotation(parser: Parser): Annotation {
+  const start = parser.token.start;
+  expect(parser, TokenKind.ATAT);
+  return {
+    kind: ANNOTATION,
+    name: parseName(parser),
+    arguments: parseArguments(parser),
+    loc: loc(parser, start)
+  };
+}
+
+
 // Implements the parsing rules in the Types section.
 
 /**
@@ -682,17 +733,20 @@ export function parseNamedType(parser: Parser): NamedType {
  *   - EnumTypeDefinition
  *   - InputObjectTypeDefinition
  */
-function parseTypeSystemDefinition(parser: Parser): TypeSystemDefinition {
+function parseTypeSystemDefinition(
+  parser: Parser,
+  annotations
+): TypeSystemDefinition {
   if (peek(parser, TokenKind.NAME)) {
     switch (parser.token.value) {
       case 'schema': return parseSchemaDefinition(parser);
       case 'scalar': return parseScalarTypeDefinition(parser);
-      case 'type': return parseObjectTypeDefinition(parser);
+      case 'type': return parseObjectTypeDefinition(parser, annotations);
       case 'interface': return parseInterfaceTypeDefinition(parser);
       case 'union': return parseUnionTypeDefinition(parser);
       case 'enum': return parseEnumTypeDefinition(parser);
       case 'input': return parseInputObjectTypeDefinition(parser);
-      case 'extend': return parseTypeExtensionDefinition(parser);
+      case 'extend': return parseTypeExtensionDefinition(parser, annotations);
       case 'directive': return parseDirectiveDefinition(parser);
     }
   }
@@ -749,9 +803,13 @@ function parseScalarTypeDefinition(parser: Parser): ScalarTypeDefinition {
 }
 
 /**
- * ObjectTypeDefinition : type Name ImplementsInterfaces? { FieldDefinition+ }
+ * ObjectTypeDefinition :
+ *  Annotations? type Name ImplementsInterfaces? { FieldDefinition+ }
  */
-function parseObjectTypeDefinition(parser: Parser): ObjectTypeDefinition {
+function parseObjectTypeDefinition(
+  parser: Parser,
+  annotations
+): ObjectTypeDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'type');
   const name = parseName(parser);
@@ -768,6 +826,7 @@ function parseObjectTypeDefinition(parser: Parser): ObjectTypeDefinition {
     interfaces,
     fields,
     loc: loc(parser, start),
+    annotations,
   };
 }
 
@@ -786,10 +845,11 @@ function parseImplementsInterfaces(parser: Parser): Array<NamedType> {
 }
 
 /**
- * FieldDefinition : Name ArgumentsDefinition? : Type
+ * FieldDefinition : Annotations? Name ArgumentsDefinition? : Type
  */
 function parseFieldDefinition(parser: Parser): FieldDefinition {
   const start = parser.token.start;
+  const annotations = parseAnnotations(parser);
   const name = parseName(parser);
   const args = parseArgumentDefs(parser);
   expect(parser, TokenKind.COLON);
@@ -800,6 +860,7 @@ function parseFieldDefinition(parser: Parser): FieldDefinition {
     arguments: args,
     type,
     loc: loc(parser, start),
+    annotations,
   };
 }
 
@@ -945,12 +1006,16 @@ function parseInputObjectTypeDefinition(
 }
 
 /**
- * TypeExtensionDefinition : extend ObjectTypeDefinition
+ * TypeExtensionDefinition :
+ *  Annotations? extend ObjectTypeDefinition
  */
-function parseTypeExtensionDefinition(parser: Parser): TypeExtensionDefinition {
+function parseTypeExtensionDefinition(
+  parser: Parser,
+  annotations
+): TypeExtensionDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'extend');
-  const definition = parseObjectTypeDefinition(parser);
+  const definition = parseObjectTypeDefinition(parser, annotations);
   return {
     kind: TYPE_EXTENSION_DEFINITION,
     definition,
