@@ -35,6 +35,15 @@ export {
   GraphQLNonNull,
 } from './definition';
 
+export {
+  // Directives Definition
+  GraphQLDirective,
+
+  // Built-in Directives
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
+} from './directives';
+
 // Common built-in scalar instances.
 export {
   GraphQLInt,

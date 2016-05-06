@@ -51,6 +51,7 @@ export {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
+  GraphQLDirective,
 
   // Scalars
   GraphQLInt,
@@ -58,6 +59,10 @@ export {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+
+  // Built-in Directives
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
 
   // Predicates
   isType,
