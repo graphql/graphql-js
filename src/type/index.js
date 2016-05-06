@@ -36,6 +36,9 @@ export {
 } from './definition';
 
 export {
+  // "Enum" of Directive Locations
+  DirectiveLocation,
+
   // Directives Definition
   GraphQLDirective,
 
@@ -52,3 +55,23 @@ export {
   GraphQLBoolean,
   GraphQLID,
 } from './scalars';
+
+export {
+  // "Enum" of Type Kinds
+  TypeKind,
+
+  // GraphQL Types for introspection.
+  __Schema,
+  __Directive,
+  __DirectiveLocation,
+  __Type,
+  __Field,
+  __InputValue,
+  __EnumValue,
+  __TypeKind,
+
+  // Meta-field definitions.
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+} from './introspection';

@@ -53,6 +53,12 @@ export {
   GraphQLNonNull,
   GraphQLDirective,
 
+  // "Enum" of Type Kinds
+  TypeKind,
+
+  // "Enum" of Directive Locations
+  DirectiveLocation,
+
   // Scalars
   GraphQLInt,
   GraphQLFloat,
@@ -63,6 +69,21 @@ export {
   // Built-in Directives
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+
+  // Meta-field definitions.
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+
+  // GraphQL Types for introspection.
+  __Schema,
+  __Directive,
+  __DirectiveLocation,
+  __Type,
+  __Field,
+  __InputValue,
+  __EnumValue,
+  __TypeKind,
 
   // Predicates
   isType,
