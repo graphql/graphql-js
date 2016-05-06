@@ -12,6 +12,10 @@ import { describe, it } from 'mocha';
 import { parse } from '../../language';
 import { printSchema } from '../schemaPrinter';
 import { buildASTSchema } from '../buildASTSchema';
+import {
+  GraphQLSkipDirective,
+  GraphQLIncludeDirective,
+} from '../../type/directives';
 
 /**
  * This function does a full cycle of going from a
@@ -59,6 +63,62 @@ type Hello {
 `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
+  });
+
+
+  it('Maintains @skip & @include', () => {
+    const body = `
+schema {
+  query: Hello
+}
+
+type Hello {
+  str: String
+}
+`;
+    const schema = buildASTSchema(parse(body));
+    expect(schema.getDirectives().length).to.equal(2);
+    expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
+    expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
+  });
+
+  it('Overriding directives excludes built-ins', () => {
+    const body = `
+schema {
+  query: Hello
+}
+
+directive @skip on FIELD
+directive @include on FIELD
+
+type Hello {
+  str: String
+}
+`;
+    const schema = buildASTSchema(parse(body));
+    expect(schema.getDirectives().length).to.equal(2);
+    expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
+    expect(
+      schema.getDirective('include')
+    ).to.not.equal(GraphQLIncludeDirective);
+  });
+
+  it('Adding directives maintains @skip & @include', () => {
+    const body = `
+schema {
+  query: Hello
+}
+
+directive @foo(arg: Int) on FIELD
+
+type Hello {
+  str: String
+}
+`;
+    const schema = buildASTSchema(parse(body));
+    expect(schema.getDirectives().length).to.equal(3);
+    expect(schema.getDirective('skip')).to.not.equal(undefined);
+    expect(schema.getDirective('include')).to.not.equal(undefined);
   });
 
   it('Type modifiers', () => {

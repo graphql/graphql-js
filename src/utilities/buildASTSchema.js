@@ -16,9 +16,6 @@ import { valueFromAST } from './valueFromAST';
 import {
   LIST_TYPE,
   NON_NULL_TYPE,
-} from '../language/kinds';
-
-import {
   DOCUMENT,
   SCHEMA_DEFINITION,
   SCALAR_TYPE_DEFINITION,
@@ -63,7 +60,11 @@ import {
   GraphQLNonNull,
 } from '../type';
 
-import { GraphQLDirective } from '../type/directives';
+import {
+  GraphQLDirective,
+  GraphQLSkipDirective,
+  GraphQLIncludeDirective,
+} from '../type/directives';
 
 import {
   __Schema,
@@ -222,6 +223,15 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
   const types = typeDefs.map(def => typeDefNamed(def.name.value));
 
   const directives = directiveDefs.map(getDirective);
+
+  // If skip and include were not explicitly declared, add them.
+  if (!directives.some(directive => directive.name === 'skip')) {
+    directives.push(GraphQLSkipDirective);
+  }
+
+  if (!directives.some(directive => directive.name === 'include')) {
+    directives.push(GraphQLIncludeDirective);
+  }
 
   return new GraphQLSchema({
     query: getObjectType(astMap[queryTypeName]),
