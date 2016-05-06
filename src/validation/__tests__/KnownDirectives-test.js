@@ -149,6 +149,10 @@ describe('Validate: Known directives', () => {
         input MyInput @onInputObject {
           myField: Int @onInputFieldDefinition
         }
+
+        schema @onSchema {
+          query: MyQuery
+        }
       `);
     });
 
@@ -173,6 +177,10 @@ describe('Validate: Known directives', () => {
         input MyInput @onEnum {
           myField: Int @onArgumentDefinition
         }
+
+        schema @onObject {
+          query: MyQuery
+        }
       `, [
         misplacedDirective('onInterface', 'OBJECT', 2, 43),
         misplacedDirective('onInputFieldDefinition', 'ARGUMENT_DEFINITION', 3, 30),
@@ -186,6 +194,7 @@ describe('Validate: Known directives', () => {
         misplacedDirective('onUnion', 'ENUM_VALUE', 15, 20),
         misplacedDirective('onEnum', 'INPUT_OBJECT', 18, 23),
         misplacedDirective('onArgumentDefinition', 'INPUT_FIELD_DEFINITION', 19, 24),
+        misplacedDirective('onObject', 'SCHEMA', 22, 16),
       ]);
     });
 

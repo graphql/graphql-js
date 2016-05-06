@@ -337,6 +337,10 @@ export const testSchema = new GraphQLSchema({
       locations: [ 'INLINE_FRAGMENT' ],
     }),
     new GraphQLDirective({
+      name: 'onSchema',
+      locations: [ 'SCHEMA' ],
+    }),
+    new GraphQLDirective({
       name: 'onScalar',
       locations: [ 'SCALAR' ],
     }),

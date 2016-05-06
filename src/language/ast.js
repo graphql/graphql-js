@@ -268,6 +268,7 @@ export type TypeSystemDefinition = SchemaDefinition
 export type SchemaDefinition = {
   kind: 'SchemaDefinition';
   loc?: ?Location;
+  directives: Array<Directive>;
   operationTypes: Array<OperationTypeDefinition>;
 }
 

@@ -701,13 +701,14 @@ function parseTypeSystemDefinition(parser: Parser): TypeSystemDefinition {
 }
 
 /**
- * SchemaDefinition : schema { OperationTypeDefinition+ }
+ * SchemaDefinition : schema Directives? { OperationTypeDefinition+ }
  *
  * OperationTypeDefinition : OperationType : NamedType
  */
 function parseSchemaDefinition(parser: Parser): SchemaDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'schema');
+  const directives = parseDirectives(parser);
   const operationTypes = many(
     parser,
     TokenKind.BRACE_L,
@@ -716,6 +717,7 @@ function parseSchemaDefinition(parser: Parser): SchemaDefinition {
   );
   return {
     kind: SCHEMA_DEFINITION,
+    directives,
     operationTypes,
     loc: loc(parser, start),
   };
