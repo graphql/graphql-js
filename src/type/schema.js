@@ -42,6 +42,18 @@ import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
  *       mutation: MyAppMutationRootType
  *     });
  *
+ * Note: If an array of `directives` are provided to GraphQLSchema, that will be
+ * the exact list of directives represented and allowed. If `directives` is not
+ * provided then a default set of the built-in `[ @include, @skip ]` directives
+ * will be used. If you wish to provide *additional* directives to these
+ * built-ins, you must explicitly declare them. Example:
+ *
+ *     directives: [
+ *       myCustomDirective,
+ *       GraphQLIncludeDirective,
+ *       GraphQLSkipDirective
+ *     ]
+ *
  */
 export class GraphQLSchema {
   _queryType: GraphQLObjectType;
