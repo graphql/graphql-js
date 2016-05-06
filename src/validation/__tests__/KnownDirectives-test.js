@@ -7,6 +7,9 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+// 80+ char lines are useful in tests, so ignore in this file.
+/* eslint-disable max-len */
+
 import { describe, it } from 'mocha';
 import { expectPassesRule, expectFailsRule } from './harness';
 import {
@@ -92,11 +95,15 @@ describe('Validate: Known directives', () => {
 
   it('with well placed directives', () => {
     expectPassesRule(KnownDirectives, `
-      query Foo {
+      query Foo @onQuery {
         name @include(if: true)
         ...Frag @include(if: true)
         skippedField @skip(if: true)
         ...SkippedFrag @skip(if: true)
+      }
+
+      mutation Bar @onMutation {
+        someField
       }
     `);
   });
@@ -104,14 +111,84 @@ describe('Validate: Known directives', () => {
   it('with misplaced directives', () => {
     expectFailsRule(KnownDirectives, `
       query Foo @include(if: true) {
-        name @operationOnly
-        ...Frag @operationOnly
+        name @onQuery
+        ...Frag @onQuery
+      }
+
+      mutation Bar @onQuery {
+        someField
       }
     `, [
       misplacedDirective('include', 'QUERY', 2, 17),
-      misplacedDirective('operationOnly', 'FIELD', 3, 14),
-      misplacedDirective('operationOnly', 'FRAGMENT_SPREAD', 4, 17),
+      misplacedDirective('onQuery', 'FIELD', 3, 14),
+      misplacedDirective('onQuery', 'FRAGMENT_SPREAD', 4, 17),
+      misplacedDirective('onQuery', 'MUTATION', 7, 20),
     ]);
+  });
+
+  describe('within schema language', () => {
+
+    it('with well placed directives', () => {
+      expectPassesRule(KnownDirectives, `
+        type MyObj implements MyInterface @onObject {
+          myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
+        }
+
+        scalar MyScalar @onScalar
+
+        interface MyInterface @onInterface {
+          myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
+        }
+
+        union MyUnion @onUnion = MyObj | Other
+
+        enum MyEnum @onEnum {
+          MY_VALUE @onEnumValue
+        }
+
+        input MyInput @onInputObject {
+          myField: Int @onInputFieldDefinition
+        }
+      `);
+    });
+
+    it('with misplaced directives', () => {
+      expectFailsRule(KnownDirectives, `
+        type MyObj implements MyInterface @onInterface {
+          myField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
+        }
+
+        scalar MyScalar @onEnum
+
+        interface MyInterface @onObject {
+          myField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
+        }
+
+        union MyUnion @onEnumValue = MyObj | Other
+
+        enum MyEnum @onScalar {
+          MY_VALUE @onUnion
+        }
+
+        input MyInput @onEnum {
+          myField: Int @onArgumentDefinition
+        }
+      `, [
+        misplacedDirective('onInterface', 'OBJECT', 2, 43),
+        misplacedDirective('onInputFieldDefinition', 'ARGUMENT_DEFINITION', 3, 30),
+        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 3, 63),
+        misplacedDirective('onEnum', 'SCALAR', 6, 25),
+        misplacedDirective('onObject', 'INTERFACE', 8, 31),
+        misplacedDirective('onInputFieldDefinition', 'ARGUMENT_DEFINITION', 9, 30),
+        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 9, 63),
+        misplacedDirective('onEnumValue', 'UNION', 12, 23),
+        misplacedDirective('onScalar', 'ENUM', 14, 21),
+        misplacedDirective('onUnion', 'ENUM_VALUE', 15, 20),
+        misplacedDirective('onEnum', 'INPUT_OBJECT', 18, 23),
+        misplacedDirective('onArgumentDefinition', 'INPUT_FIELD_DEFINITION', 19, 24),
+      ]);
+    });
+
   });
 
 });

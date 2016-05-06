@@ -100,33 +100,65 @@ const printDocASTReducer = {
   OperationTypeDefinition: ({ operation, type }) =>
     operation + ': ' + type,
 
-  ScalarTypeDefinition: ({ name }) =>
-    `scalar ${name}`,
+  ScalarTypeDefinition: ({ name, directives }) =>
+    join([ 'scalar', name, join(directives, ' ') ], ' '),
 
-  ObjectTypeDefinition: ({ name, interfaces, fields }) =>
-    'type ' + name + ' ' +
-    wrap('implements ', join(interfaces, ', '), ' ') +
-    block(fields),
+  ObjectTypeDefinition: ({ name, interfaces, directives, fields }) =>
+    join([
+      'type',
+      name,
+      wrap('implements ', join(interfaces, ', ')),
+      join(directives, ' '),
+      block(fields)
+    ], ' '),
 
-  FieldDefinition: ({ name, arguments: args, type }) =>
-    name + wrap('(', join(args, ', '), ')') + ': ' + type,
+  FieldDefinition: ({ name, arguments: args, type, directives }) =>
+    name +
+    wrap('(', join(args, ', '), ')') +
+    ': ' + type +
+    wrap(' ', join(directives, ' ')),
 
-  InputValueDefinition: ({ name, type, defaultValue }) =>
-    name + ': ' + type + wrap(' = ', defaultValue),
+  InputValueDefinition: ({ name, type, defaultValue, directives }) =>
+    join([
+      name + ': ' + type,
+      wrap('= ', defaultValue),
+      join(directives, ' ')
+    ], ' '),
 
-  InterfaceTypeDefinition: ({ name, fields }) =>
-    `interface ${name} ${block(fields)}`,
+  InterfaceTypeDefinition: ({ name, directives, fields }) =>
+    join([
+      'interface',
+      name,
+      join(directives, ' '),
+      block(fields)
+    ], ' '),
 
-  UnionTypeDefinition: ({ name, types }) =>
-    `union ${name} = ${join(types, ' | ')}`,
+  UnionTypeDefinition: ({ name, directives, types }) =>
+    join([
+      'union',
+      name,
+      join(directives, ' '),
+      '= ' + join(types, ' | ')
+    ], ' '),
 
-  EnumTypeDefinition: ({ name, values }) =>
-    `enum ${name} ${block(values)}`,
+  EnumTypeDefinition: ({ name, directives, values }) =>
+    join([
+      'enum',
+      name,
+      join(directives, ' '),
+      block(values)
+    ], ' '),
 
-  EnumValueDefinition: ({ name }) => name,
+  EnumValueDefinition: ({ name, directives }) =>
+    join([ name, join(directives, ' ') ], ' '),
 
-  InputObjectTypeDefinition: ({ name, fields }) =>
-    `input ${name} ${block(fields)}`,
+  InputObjectTypeDefinition: ({ name, directives, fields }) =>
+    join([
+      'input',
+      name,
+      join(directives, ' '),
+      block(fields)
+    ], ' '),
 
   TypeExtensionDefinition: ({ definition }) => `extend ${definition}`,
 
