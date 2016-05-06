@@ -149,6 +149,10 @@ export const __DirectiveLocation = new GraphQLEnumType({
       value: DirectiveLocation.INLINE_FRAGMENT,
       description: 'Location adjacent to an inline fragment.'
     },
+    SCHEMA: {
+      value: DirectiveLocation.SCHEMA,
+      description: 'Location adjacent to a schema definition.'
+    },
     SCALAR: {
       value: DirectiveLocation.SCALAR,
       description: 'Location adjacent to a scalar definition.'

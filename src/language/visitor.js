@@ -38,7 +38,7 @@ export const QueryDocumentKeys = {
   ListType: [ 'type' ],
   NonNullType: [ 'type' ],
 
-  SchemaDefinition: [ 'operationTypes' ],
+  SchemaDefinition: [ 'directives', 'operationTypes' ],
   OperationTypeDefinition: [ 'type' ],
 
   ScalarTypeDefinition: [ 'name', 'directives' ],
