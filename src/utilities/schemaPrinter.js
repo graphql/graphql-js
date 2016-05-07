@@ -22,6 +22,7 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
 } from '../type/definition';
+import { DEFAULT_DEPRECATION_REASON } from '../type/directives';
 
 
 export function printSchema(schema: GraphQLSchema): string {
@@ -33,7 +34,11 @@ export function printIntrospectionSchema(schema: GraphQLSchema): string {
 }
 
 function isSpecDirective(directiveName: string): boolean {
-  return directiveName === 'skip' || directiveName === 'include';
+  return (
+    directiveName === 'skip' ||
+    directiveName === 'include' ||
+    directiveName === 'deprecated'
+  );
 }
 
 function isDefinedType(typename: string): boolean {
@@ -135,7 +140,7 @@ function printUnion(type: GraphQLUnionType): string {
 function printEnum(type: GraphQLEnumType): string {
   const values = type.getValues();
   return `enum ${type.name} {\n` +
-    values.map(v => '  ' + v.name).join('\n') + '\n' +
+    values.map(v => '  ' + v.name + printDeprecated(v)).join('\n') + '\n' +
   '}';
 }
 
@@ -151,8 +156,22 @@ function printFields(type) {
   const fieldMap = type.getFields();
   const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
   return fields.map(
-    f => `  ${f.name}${printArgs(f)}: ${f.type}`
+    f => `  ${f.name}${printArgs(f)}: ${f.type}${printDeprecated(f)}`
   ).join('\n');
+}
+
+function printDeprecated(fieldOrEnumVal) {
+  const reason = fieldOrEnumVal.deprecationReason;
+  if (isNullish(reason)) {
+    return '';
+  }
+  if (
+    reason === '' ||
+    reason === DEFAULT_DEPRECATION_REASON
+  ) {
+    return ' @deprecated';
+  }
+  return ' @deprecated(reason: ' + print(astFromValue(reason)) + ')';
 }
 
 function printArgs(fieldOrDirectives) {

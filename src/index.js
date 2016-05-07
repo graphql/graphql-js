@@ -66,9 +66,14 @@ export {
   GraphQLBoolean,
   GraphQLID,
 
-  // Built-in Directives
+  // Built-in Directives defined by the Spec
+  specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+  GraphQLDeprecatedDirective,
+
+  // Constant Deprecation Reason
+  DEFAULT_DEPRECATION_REASON,
 
   // Meta-field definitions.
   SchemaMetaFieldDef,
