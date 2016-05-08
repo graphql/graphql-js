@@ -54,7 +54,7 @@ export function getVariableValues(
 export function getArgumentValues(
   argDefs: ?Array<GraphQLArgument>,
   argASTs: ?Array<Argument>,
-  variableValues: { [key: string]: mixed }
+  variableValues?: ?{ [key: string]: mixed }
 ): { [key: string]: mixed } {
   if (!argDefs || !argASTs) {
     return {};

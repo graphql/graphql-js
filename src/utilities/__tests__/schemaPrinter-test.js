@@ -7,6 +7,9 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+// 80+ char lines are useful in describe/it, so ignore in this file.
+/* eslint-disable max-len */
+
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { printSchema, printIntrospectionSchema } from '../schemaPrinter';
@@ -602,14 +605,16 @@ directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
+
 type __Directive {
   name: String!
   description: String
   locations: [__DirectiveLocation!]!
   args: [__InputValue!]!
-  onOperation: Boolean!
-  onFragment: Boolean!
-  onField: Boolean!
+  onOperation: Boolean! @deprecated(reason: "Use \`locations\`.")
+  onFragment: Boolean! @deprecated(reason: "Use \`locations\`.")
+  onField: Boolean! @deprecated(reason: "Use \`locations\`.")
 }
 
 enum __DirectiveLocation {
