@@ -63,115 +63,6 @@ function reasonMessage(reason: ConflictReasonMessage): string {
 export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
   const comparedSet = new PairSet();
 
-  function findConflicts(
-    parentFieldsAreMutuallyExclusive: boolean,
-    fieldMap: AstAndDefCollection
-  ): Array<Conflict> {
-    const conflicts = [];
-    Object.keys(fieldMap).forEach(responseName => {
-      const fields = fieldMap[responseName];
-      if (fields.length > 1) {
-        for (let i = 0; i < fields.length; i++) {
-          for (let j = i; j < fields.length; j++) {
-            const conflict = findConflict(
-              parentFieldsAreMutuallyExclusive,
-              responseName,
-              fields[i],
-              fields[j]
-            );
-            if (conflict) {
-              conflicts.push(conflict);
-            }
-          }
-        }
-      }
-    });
-    return conflicts;
-  }
-
-  function findConflict(
-    parentFieldsAreMutuallyExclusive: boolean,
-    responseName: string,
-    field1: AstAndDef,
-    field2: AstAndDef
-  ): ?Conflict {
-    const [ parentType1, ast1, def1 ] = field1;
-    const [ parentType2, ast2, def2 ] = field2;
-
-    // Not a pair.
-    if (ast1 === ast2) {
-      return;
-    }
-
-    // Memoize, do not report the same issue twice.
-    // Note: Two overlapping ASTs could be encountered both when
-    // `parentFieldsAreMutuallyExclusive` is true and is false, which could
-    // produce different results (when `true` being a subset of `false`).
-    // However we do not need to include this piece of information when
-    // memoizing since this rule visits leaf fields before their parent fields,
-    // ensuring that `parentFieldsAreMutuallyExclusive` is `false` the first
-    // time two overlapping fields are encountered, ensuring that the full
-    // set of validation rules are always checked when necessary.
-    if (comparedSet.has(ast1, ast2)) {
-      return;
-    }
-    comparedSet.add(ast1, ast2);
-
-    // The return type for each field.
-    const type1 = def1 && def1.type;
-    const type2 = def2 && def2.type;
-
-    // If it is known that two fields could not possibly apply at the same
-    // time, due to the parent types, then it is safe to permit them to diverge
-    // in aliased field or arguments used as they will not present any ambiguity
-    // by differing.
-    // It is known that two parent types could never overlap if they are
-    // different Object types. Interface or Union types might overlap - if not
-    // in the current state of the schema, then perhaps in some future version,
-    // thus may not safely diverge.
-    const fieldsAreMutuallyExclusive =
-      parentFieldsAreMutuallyExclusive ||
-      parentType1 !== parentType2 &&
-      parentType1 instanceof GraphQLObjectType &&
-      parentType2 instanceof GraphQLObjectType;
-
-    if (!fieldsAreMutuallyExclusive) {
-      // Two aliases must refer to the same field.
-      const name1 = ast1.name.value;
-      const name2 = ast2.name.value;
-      if (name1 !== name2) {
-        return [
-          [ responseName, `${name1} and ${name2} are different fields` ],
-          [ ast1 ],
-          [ ast2 ]
-        ];
-      }
-
-      // Two field calls must have the same arguments.
-      if (!sameArguments(ast1.arguments || [], ast2.arguments || [])) {
-        return [
-          [ responseName, 'they have differing arguments' ],
-          [ ast1 ],
-          [ ast2 ]
-        ];
-      }
-    }
-
-    if (type1 && type2 && doTypesConflict(type1, type2)) {
-      return [
-        [ responseName, `they return conflicting types ${type1} and ${type2}` ],
-        [ ast1 ],
-        [ ast2 ]
-      ];
-    }
-
-    const subfieldMap = getSubfieldMap(context, ast1, type1, ast2, type2);
-    if (subfieldMap) {
-      const conflicts = findConflicts(fieldsAreMutuallyExclusive, subfieldMap);
-      return subfieldConflicts(conflicts, responseName, ast1, ast2);
-    }
-  }
-
   return {
     SelectionSet: {
       // Note: we validate on the reverse traversal so deeper conflicts will be
@@ -183,7 +74,7 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
           context.getParentType(),
           selectionSet
         );
-        const conflicts = findConflicts(false, fieldMap);
+        const conflicts = findConflicts(context, false, fieldMap, comparedSet);
         conflicts.forEach(
           ([ [ responseName, reason ], fields1, fields2 ]) =>
             context.reportError(new GraphQLError(
@@ -205,6 +96,132 @@ type ConflictReasonMessage = string | Array<ConflictReason>;
 type AstAndDef = [ GraphQLCompositeType, Field, ?GraphQLFieldDefinition ];
 // Map of array of those.
 type AstAndDefCollection = { [key: string]: Array<AstAndDef> };
+
+/**
+ * Find all Conflicts within a collection of fields.
+ */
+function findConflicts(
+  context: ValidationContext,
+  parentFieldsAreMutuallyExclusive: boolean,
+  fieldMap: AstAndDefCollection,
+  comparedSet: PairSet
+): Array<Conflict> {
+  const conflicts = [];
+  Object.keys(fieldMap).forEach(responseName => {
+    const fields = fieldMap[responseName];
+    if (fields.length > 1) {
+      for (let i = 0; i < fields.length; i++) {
+        for (let j = i; j < fields.length; j++) {
+          const conflict = findConflict(
+            context,
+            parentFieldsAreMutuallyExclusive,
+            responseName,
+            fields[i],
+            fields[j],
+            comparedSet
+          );
+          if (conflict) {
+            conflicts.push(conflict);
+          }
+        }
+      }
+    }
+  });
+  return conflicts;
+}
+
+/**
+ * Determines if there is a conflict between two particular fields.
+ */
+function findConflict(
+  context: ValidationContext,
+  parentFieldsAreMutuallyExclusive: boolean,
+  responseName: string,
+  field1: AstAndDef,
+  field2: AstAndDef,
+  comparedSet: PairSet
+): ?Conflict {
+  const [ parentType1, ast1, def1 ] = field1;
+  const [ parentType2, ast2, def2 ] = field2;
+
+  // Not a pair.
+  if (ast1 === ast2) {
+    return;
+  }
+
+  // Memoize, do not report the same issue twice.
+  // Note: Two overlapping ASTs could be encountered both when
+  // `parentFieldsAreMutuallyExclusive` is true and is false, which could
+  // produce different results (when `true` being a subset of `false`).
+  // However we do not need to include this piece of information when
+  // memoizing since this rule visits leaf fields before their parent fields,
+  // ensuring that `parentFieldsAreMutuallyExclusive` is `false` the first
+  // time two overlapping fields are encountered, ensuring that the full
+  // set of validation rules are always checked when necessary.
+  if (comparedSet.has(ast1, ast2)) {
+    return;
+  }
+  comparedSet.add(ast1, ast2);
+
+  // The return type for each field.
+  const type1 = def1 && def1.type;
+  const type2 = def2 && def2.type;
+
+  // If it is known that two fields could not possibly apply at the same
+  // time, due to the parent types, then it is safe to permit them to diverge
+  // in aliased field or arguments used as they will not present any ambiguity
+  // by differing.
+  // It is known that two parent types could never overlap if they are
+  // different Object types. Interface or Union types might overlap - if not
+  // in the current state of the schema, then perhaps in some future version,
+  // thus may not safely diverge.
+  const fieldsAreMutuallyExclusive =
+    parentFieldsAreMutuallyExclusive ||
+    parentType1 !== parentType2 &&
+    parentType1 instanceof GraphQLObjectType &&
+    parentType2 instanceof GraphQLObjectType;
+
+  if (!fieldsAreMutuallyExclusive) {
+    // Two aliases must refer to the same field.
+    const name1 = ast1.name.value;
+    const name2 = ast2.name.value;
+    if (name1 !== name2) {
+      return [
+        [ responseName, `${name1} and ${name2} are different fields` ],
+        [ ast1 ],
+        [ ast2 ]
+      ];
+    }
+
+    // Two field calls must have the same arguments.
+    if (!sameArguments(ast1.arguments || [], ast2.arguments || [])) {
+      return [
+        [ responseName, 'they have differing arguments' ],
+        [ ast1 ],
+        [ ast2 ]
+      ];
+    }
+  }
+
+  if (type1 && type2 && doTypesConflict(type1, type2)) {
+    return [
+      [ responseName, `they return conflicting types ${type1} and ${type2}` ],
+      [ ast1 ],
+      [ ast2 ]
+    ];
+  }
+
+  const subfieldMap = getSubfieldMap(context, ast1, type1, ast2, type2);
+  if (subfieldMap) {
+    const conflicts = findConflicts(
+      context,
+      fieldsAreMutuallyExclusive,
+      subfieldMap,
+      comparedSet
+    );
+    return subfieldConflicts(conflicts, responseName, ast1, ast2);
+  }
+}
 
 function sameArguments(
   arguments1: Array<Argument>,
