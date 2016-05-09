@@ -165,58 +165,10 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
       ];
     }
 
-    const subfieldMap = getSubfieldMap(ast1, type1, ast2, type2);
+    const subfieldMap = getSubfieldMap(context, ast1, type1, ast2, type2);
     if (subfieldMap) {
       const conflicts = findConflicts(fieldsAreMutuallyExclusive, subfieldMap);
       return subfieldConflicts(conflicts, responseName, ast1, ast2);
-    }
-  }
-
-  function getSubfieldMap(
-    ast1: Field,
-    type1: ?GraphQLOutputType,
-    ast2: Field,
-    type2: ?GraphQLOutputType
-  ): ?AstAndDefCollection {
-    const selectionSet1 = ast1.selectionSet;
-    const selectionSet2 = ast2.selectionSet;
-    if (selectionSet1 && selectionSet2) {
-      const visitedFragmentNames = {};
-      let subfieldMap = collectFieldASTsAndDefs(
-        context,
-        getNamedType(type1),
-        selectionSet1,
-        visitedFragmentNames
-      );
-      subfieldMap = collectFieldASTsAndDefs(
-        context,
-        getNamedType(type2),
-        selectionSet2,
-        visitedFragmentNames,
-        subfieldMap
-      );
-      return subfieldMap;
-    }
-  }
-
-  function subfieldConflicts(
-    conflicts: Array<Conflict>,
-    responseName: string,
-    ast1: Field,
-    ast2: Field
-  ): ?Conflict {
-    if (conflicts.length > 0) {
-      return [
-        [ responseName, conflicts.map(([ reason ]) => reason) ],
-        conflicts.reduce(
-          (allFields, [ , fields1 ]) => allFields.concat(fields1),
-          [ ast1 ]
-        ),
-        conflicts.reduce(
-          (allFields, [ , , fields2 ]) => allFields.concat(fields2),
-          [ ast2 ]
-        )
-      ];
     }
   }
 
@@ -311,6 +263,37 @@ function doTypesConflict(
 }
 
 /**
+ * Given two overlapping fields, produce the combined collection of subfields.
+ */
+function getSubfieldMap(
+  context: ValidationContext,
+  ast1: Field,
+  type1: ?GraphQLOutputType,
+  ast2: Field,
+  type2: ?GraphQLOutputType
+): ?AstAndDefCollection {
+  const selectionSet1 = ast1.selectionSet;
+  const selectionSet2 = ast2.selectionSet;
+  if (selectionSet1 && selectionSet2) {
+    const visitedFragmentNames = {};
+    let subfieldMap = collectFieldASTsAndDefs(
+      context,
+      getNamedType(type1),
+      selectionSet1,
+      visitedFragmentNames
+    );
+    subfieldMap = collectFieldASTsAndDefs(
+      context,
+      getNamedType(type2),
+      selectionSet2,
+      visitedFragmentNames,
+      subfieldMap
+    );
+    return subfieldMap;
+  }
+}
+
+/**
  * Given a selectionSet, adds all of the fields in that selection to
  * the passed in map of fields, and returns it at the end.
  *
@@ -380,6 +363,31 @@ function collectFieldASTsAndDefs(
     }
   }
   return _astAndDefs;
+}
+
+/**
+ * Given a series of Conflicts which occurred between two sub-fields, generate
+ * a single Conflict.
+ */
+function subfieldConflicts(
+  conflicts: Array<Conflict>,
+  responseName: string,
+  ast1: Field,
+  ast2: Field
+): ?Conflict {
+  if (conflicts.length > 0) {
+    return [
+      [ responseName, conflicts.map(([ reason ]) => reason) ],
+      conflicts.reduce(
+        (allFields, [ , fields1 ]) => allFields.concat(fields1),
+        [ ast1 ]
+      ),
+      conflicts.reduce(
+        (allFields, [ , , fields2 ]) => allFields.concat(fields2),
+        [ ast2 ]
+      )
+    ];
+  }
 }
 
 /**
