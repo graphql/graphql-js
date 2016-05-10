@@ -1,6 +1,6 @@
 {
   "name": "graphql",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A Query Language and Runtime which can target any service.",
   "contributors": [
     "Lee Byron <lee@leebyron.com> (http://leebyron.com/)",
