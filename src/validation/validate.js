@@ -95,7 +95,7 @@ export class ValidationContext {
   _typeInfo: TypeInfo;
   _errors: Array<GraphQLError>;
   _fragments: {[name: string]: FragmentDefinition};
-  _fragmentSpreads: Map<HasSelectionSet, Array<FragmentSpread>>;
+  _fragmentSpreads: Map<SelectionSet, Array<FragmentSpread>>;
   _recursivelyReferencedFragments:
     Map<OperationDefinition, Array<FragmentDefinition>>;
   _variableUsages: Map<HasSelectionSet, Array<VariableUsage>>;
@@ -142,11 +142,11 @@ export class ValidationContext {
     return fragments[name];
   }
 
-  getFragmentSpreads(node: HasSelectionSet): Array<FragmentSpread> {
+  getFragmentSpreads(node: SelectionSet): Array<FragmentSpread> {
     let spreads = this._fragmentSpreads.get(node);
     if (!spreads) {
       spreads = [];
-      const setsToVisit: Array<SelectionSet> = [ node.selectionSet ];
+      const setsToVisit: Array<SelectionSet> = [ node ];
       while (setsToVisit.length !== 0) {
         const set = setsToVisit.pop();
         for (let i = 0; i < set.selections.length; i++) {
@@ -170,7 +170,7 @@ export class ValidationContext {
     if (!fragments) {
       fragments = [];
       const collectedNames = Object.create(null);
-      const nodesToVisit: Array<HasSelectionSet> = [ operation ];
+      const nodesToVisit: Array<SelectionSet> = [ operation.selectionSet ];
       while (nodesToVisit.length !== 0) {
         const node = nodesToVisit.pop();
         const spreads = this.getFragmentSpreads(node);
@@ -181,7 +181,7 @@ export class ValidationContext {
             const fragment = this.getFragment(fragName);
             if (fragment) {
               fragments.push(fragment);
-              nodesToVisit.push(fragment);
+              nodesToVisit.push(fragment.selectionSet);
             }
           }
         }

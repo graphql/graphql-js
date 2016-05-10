@@ -49,7 +49,7 @@ export function NoFragmentCycles(context: ValidationContext): any {
     const fragmentName = fragment.name.value;
     visitedFrags[fragmentName] = true;
 
-    const spreadNodes = context.getFragmentSpreads(fragment);
+    const spreadNodes = context.getFragmentSpreads(fragment.selectionSet);
     if (spreadNodes.length === 0) {
       return;
     }
