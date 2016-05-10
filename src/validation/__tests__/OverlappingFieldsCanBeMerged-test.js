@@ -247,10 +247,10 @@ describe('Validate: Overlapping fields can be merged', () => {
     `, [
       { message: fieldsConflictMessage('x', 'a and b are different fields'),
         locations: [ { line: 18, column: 9 }, { line: 21, column: 9 } ] },
-      { message: fieldsConflictMessage('x', 'a and c are different fields'),
-        locations: [ { line: 18, column: 9 }, { line: 14, column: 11 } ] },
-      { message: fieldsConflictMessage('x', 'b and c are different fields'),
-        locations: [ { line: 21, column: 9 }, { line: 14, column: 11 } ] }
+      { message: fieldsConflictMessage('x', 'c and a are different fields'),
+        locations: [ { line: 14, column: 11 }, { line: 18, column: 9 } ] },
+      { message: fieldsConflictMessage('x', 'c and b are different fields'),
+        locations: [ { line: 14, column: 11 }, { line: 21, column: 9 } ] }
     ]);
   });
 
@@ -361,6 +361,97 @@ describe('Validate: Overlapping fields can be merged', () => {
           { line: 7, column: 11 },
           { line: 8, column: 13 } ] },
     ]);
+  });
+
+  it('reports deep conflict to nearest common ancestor in fragments', () => {
+    expectFailsRule(OverlappingFieldsCanBeMerged, `
+      {
+        field {
+          ...F
+        }
+        field {
+          ...F
+        }
+      }
+      fragment F on T {
+        deepField {
+          deeperField {
+            x: a
+          }
+          deeperField {
+            x: b
+          }
+        },
+        deepField {
+          deeperField {
+            y
+          }
+        }
+      }
+    `, [
+      { message: fieldsConflictMessage(
+          'deeperField', [ [ 'x', 'a and b are different fields' ] ]
+        ),
+        locations: [
+          { line: 12, column: 11 },
+          { line: 13, column: 13 },
+          { line: 15, column: 11 },
+          { line: 16, column: 13 } ] },
+    ]);
+  });
+
+  it('reports deep conflict in nested fragments', () => {
+    expectFailsRule(OverlappingFieldsCanBeMerged, `
+      {
+        field {
+          ...F
+        }
+        field {
+          ...I
+        }
+      }
+      fragment F on T {
+        x: a
+        ...G
+      }
+      fragment G on T {
+        y: c
+      }
+      fragment I on T {
+        y: d
+        ...J
+      }
+      fragment J on T {
+        x: b
+      }
+    `, [
+      { message: fieldsConflictMessage(
+          'field', [ [ 'x', 'a and b are different fields' ],
+                     [ 'y', 'c and d are different fields' ] ]
+        ),
+        locations: [
+          { line: 3, column: 9 },
+          { line: 11, column: 9 },
+          { line: 15, column: 9 },
+          { line: 6, column: 9 },
+          { line: 22, column: 9 },
+          { line: 18, column: 9 } ] },
+    ]);
+  });
+
+  it('ignores unknown fragments', () => {
+    expectPassesRule(OverlappingFieldsCanBeMerged, `
+    {
+      field
+      ...Unknown
+      ...Known
+    }
+
+    fragment Known on T {
+      field
+      ...OtherUnknown
+    }
+    `);
   });
 
   describe('return types must be unambiguous', () => {
@@ -534,6 +625,64 @@ describe('Validate: Overlapping fields can be merged', () => {
             'they return conflicting types Int and String'
           ),
           locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ] }
+      ]);
+    });
+
+    it('reports correctly when a non-exclusive follows an exclusive', () => {
+      expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
+        {
+          someBox {
+            ... on IntBox {
+              deepBox {
+                ...X
+              }
+            }
+          }
+          someBox {
+            ... on StringBox {
+              deepBox {
+                ...Y
+              }
+            }
+          }
+          memoed: someBox {
+            ... on IntBox {
+              deepBox {
+                ...X
+              }
+            }
+          }
+          memoed: someBox {
+            ... on StringBox {
+              deepBox {
+                ...Y
+              }
+            }
+          }
+          other: someBox {
+            ...X
+          }
+          other: someBox {
+            ...Y
+          }
+        }
+        fragment X on SomeBox {
+          scalar
+        }
+        fragment Y on SomeBox {
+          scalar: unrelatedField
+        }
+      `, [
+        { message: fieldsConflictMessage(
+            'other',
+            [ [ 'scalar', 'scalar and unrelatedField are different fields' ] ]
+          ),
+          locations: [
+            { line: 31, column: 11 },
+            { line: 39, column: 11 },
+            { line: 34, column: 11 },
+            { line: 42, column: 11 },
+          ] }
       ]);
     });
 
@@ -725,15 +874,15 @@ describe('Validate: Overlapping fields can be merged', () => {
       `, [
         { message: fieldsConflictMessage(
             'edges',
-            [ [ 'node', [ [ 'id', 'id and name are different fields' ] ] ] ]
+            [ [ 'node', [ [ 'id', 'name and id are different fields' ] ] ] ]
           ),
           locations: [
-            { line: 14, column: 11 },
-            { line: 15, column: 13 },
-            { line: 16, column: 15 },
             { line: 5, column: 13 },
             { line: 6, column: 15 },
             { line: 7, column: 17 },
+            { line: 14, column: 11 },
+            { line: 15, column: 13 },
+            { line: 16, column: 15 },
           ] }
       ]);
     });
