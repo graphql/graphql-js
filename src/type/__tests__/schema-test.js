@@ -53,7 +53,7 @@ describe('Type System: Schema', () => {
       };
       expect(checkPossible).to.throw(
         'Could not find possible implementing types for Interface in schema. ' +
-        'Check that schema.types is defined and is an array ofall possible ' +
+        'Check that schema.types is defined and is an array of all possible ' +
         'types in the schema.'
       );
     });
