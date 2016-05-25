@@ -16,7 +16,7 @@
 const luke = {
   id: '1000',
   name: 'Luke Skywalker',
-  friends: [ '1002', '1003', '2000', '2001' ],
+  friends: [ '1002', '1003', '2000', '2001', '1001' ],
   appearsIn: [ 4, 5, 6 ],
   homePlanet: 'Tatooine',
 };
