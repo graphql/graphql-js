@@ -364,4 +364,107 @@ describe('Star Wars Query Tests', () => {
       expect(result).to.deep.equal({ data: expected });
     });
   });
+
+  describe('Reporting errors raised in resolvers', () => {
+    it('Correctly reports error on accessing secretBackstory', async () => {
+      const query = `
+        query HeroNameQuery {
+          hero {
+            name
+            secretBackstory
+          }
+        }
+      `;
+      const expected = {
+        hero: {
+          name: 'R2-D2',
+          secretBackstory: null
+        }
+      };
+      const expectedErrors = [ 'secretBackstory is secret.' ];
+      const result = await graphql(StarWarsSchema, query);
+      expect(result.data).to.deep.equal(expected);
+      expect(result.errors.map(e => e.message)).to.deep.equal(expectedErrors);
+      expect(
+        result.errors.map(e => e.originalError.executionPath)).to.deep.equal(
+          [ [ 'hero', 'secretBackstory' ] ]);
+    });
+
+    it('Correctly reports error on accessing secretBackstory in a list', async () => {
+      const query = `
+        query HeroNameQuery {
+          hero {
+            name
+            friends {
+              name
+              secretBackstory
+            }
+          }
+        }
+      `;
+      const expected = {
+        hero: {
+          name: 'R2-D2',
+          friends: [
+            {
+              name: 'Luke Skywalker',
+              secretBackstory: null,
+            },
+            {
+              name: 'Han Solo',
+              secretBackstory: null,
+            },
+            {
+              name: 'Leia Organa',
+              secretBackstory: null,
+            },
+          ]
+        }
+      };
+      const expectedErrors = [
+        'secretBackstory is secret.',
+        'secretBackstory is secret.',
+        'secretBackstory is secret.',
+      ];
+      const result = await graphql(StarWarsSchema, query);
+      expect(result.data).to.deep.equal(expected);
+      expect(result.errors.map(e => e.message)).to.deep.equal(expectedErrors);
+      expect(
+        result.errors.map(e => e.originalError.executionPath)
+      ).to.deep.equal(
+        [
+          [ 'hero', 'friends', 0, 'secretBackstory' ],
+          [ 'hero', 'friends', 1, 'secretBackstory' ],
+          [ 'hero', 'friends', 2, 'secretBackstory' ],
+        ]);
+    });
+
+    it('Correctly reports error on accessing through an alias', async () => {
+      const query = `
+        query HeroNameQuery {
+          mainHero: hero {
+            name
+            story: secretBackstory
+          }
+        }
+      `;
+      const expected = {
+        mainHero: {
+          name: 'R2-D2',
+          story: null,
+        }
+      };
+      const expectedErrors = [
+        'secretBackstory is secret.',
+      ];
+      const result = await graphql(StarWarsSchema, query);
+      expect(result.data).to.deep.equal(expected);
+      expect(result.errors.map(e => e.message)).to.deep.equal(expectedErrors);
+      expect(
+        result.errors.map(e => e.originalError.executionPath)
+      ).to.deep.equal([ [ 'mainHero', 'story' ] ]);
+    });
+
+
+  });
 });

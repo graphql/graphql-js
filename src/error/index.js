@@ -9,6 +9,7 @@
  */
 
 export { GraphQLError } from './GraphQLError';
+export { PathedError } from './PathedError';
 export { syntaxError } from './syntaxError';
 export { locatedError } from './locatedError';
 export { formatError } from './formatError';

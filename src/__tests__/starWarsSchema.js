@@ -102,6 +102,7 @@ const episodeEnum = new GraphQLEnumType({
  *     name: String
  *     friends: [Character]
  *     appearsIn: [Episode]
+ *     secretBackstory: String
  *   }
  */
 const characterInterface = new GraphQLInterfaceType({
@@ -125,6 +126,10 @@ const characterInterface = new GraphQLInterfaceType({
       type: new GraphQLList(episodeEnum),
       description: 'Which movies they appear in.',
     },
+    secretBackstory: {
+      type: GraphQLString,
+      description: 'All secrets about their past.',
+    },
   }),
   resolveType: character => {
     return getHuman(character.id) ? humanType : droidType;
@@ -140,6 +145,7 @@ const characterInterface = new GraphQLInterfaceType({
  *     name: String
  *     friends: [Character]
  *     appearsIn: [Episode]
+ *     secretBackstory: String
  *   }
  */
 const humanType = new GraphQLObjectType({
@@ -168,6 +174,13 @@ const humanType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The home planet of the human, or null if unknown.',
     },
+    secretBackstory: {
+      type: GraphQLString,
+      description: 'Where are they from and how they came to be who they are.',
+      resolve: () => {
+        throw new Error('secretBackstory is secret.');
+      },
+    },
   }),
   interfaces: [ characterInterface ]
 });
@@ -181,6 +194,7 @@ const humanType = new GraphQLObjectType({
  *     name: String
  *     friends: [Character]
  *     appearsIn: [Episode]
+ *     secretBackstory: String
  *     primaryFunction: String
  *   }
  */
@@ -205,6 +219,13 @@ const droidType = new GraphQLObjectType({
     appearsIn: {
       type: new GraphQLList(episodeEnum),
       description: 'Which movies they appear in.',
+    },
+    secretBackstory: {
+      type: GraphQLString,
+      description: 'Construction date and the name of the designer.',
+      resolve: () => {
+        throw new Error('secretBackstory is secret.');
+      },
     },
     primaryFunction: {
       type: GraphQLString,

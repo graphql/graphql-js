@@ -206,6 +206,13 @@ describe('Star Wars Introspection Tests', () => {
               }
             },
             {
+              name: 'secretBackstory',
+              type: {
+                name: 'String',
+                kind: 'SCALAR'
+              }
+            },
+            {
               name: 'primaryFunction',
               type: {
                 name: 'String',
@@ -282,6 +289,14 @@ describe('Star Wars Introspection Tests', () => {
                   name: 'Episode',
                   kind: 'ENUM'
                 }
+              }
+            },
+            {
+              name: 'secretBackstory',
+              type: {
+                name: 'String',
+                kind: 'SCALAR',
+                ofType: null
               }
             },
             {

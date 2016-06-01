@@ -9,6 +9,7 @@
  */
 
 import { GraphQLError } from './GraphQLError';
+import { PathedError } from './PathedError';
 
 
 /**
@@ -17,7 +18,7 @@ import { GraphQLError } from './GraphQLError';
  * document responsible for the original Error.
  */
 export function locatedError(
-  originalError: ?Error,
+  originalError: ?PathedError,
   nodes: Array<any>
 ): GraphQLError {
   const message = originalError ?
