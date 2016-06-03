@@ -39,6 +39,10 @@ import type { GraphQLSchema } from './type/schema';
  *    The name of the operation to use if requestString contains multiple
  *    possible operations. Can be omitted if requestString contains only
  *    one operation.
+ * logFn:
+ *    The function that is called with a tag of an event, an event payload
+ *    and other execution information.
+ *    The examples include: errors thrown, before and after the resolver call.
  */
 export function graphql(
   schema: GraphQLSchema,
@@ -46,7 +50,8 @@ export function graphql(
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
-  operationName?: ?string
+  operationName?: ?string,
+  logFn?: (tag: string, payload: mixed, info: mixed) => void
 ): Promise<GraphQLResult> {
   return new Promise(resolve => {
     const source = new Source(requestString || '', 'GraphQL request');
@@ -62,7 +67,8 @@ export function graphql(
           rootValue,
           contextValue,
           variableValues,
-          operationName
+          operationName,
+          logFn
         )
       );
     }

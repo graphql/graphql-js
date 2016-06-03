@@ -11,6 +11,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { StarWarsSchema } from './starWarsSchema.js';
 import { graphql } from '../graphql';
+import { TAG } from '../execution';
 import {
   GraphQLObjectType,
   GraphQLNonNull,
@@ -526,6 +527,61 @@ describe('Star Wars Query Tests', () => {
       expect(
         result.errors.map(e => e.path)).to.deep.equal(
           [ [ 'nullableA', 'nullableA', 'nonNullA', 'nonNullA', 'throws' ] ]);
+    });
+  });
+
+  describe('Allows to pass in a logger function', () => {
+    it('Logs on errors', async () => {
+      const query = `
+        query HeroNameQuery {
+          mainHero: hero {
+            name
+            story: secretBackstory
+          }
+        }
+      `;
+
+      const expected = {
+        mainHero: {
+          name: 'R2-D2',
+          story: null,
+        }
+      };
+
+      const logged = [];
+      const expectedLogged = [
+        [ TAG.RESOLVER_START, [ 'mainHero' ] ],
+        [ TAG.RESOLVER_END, [ 'mainHero' ] ],
+        [ TAG.SUBTREE_START, [ 'mainHero' ] ],
+        [ TAG.RESOLVER_START, [ 'mainHero', 'name' ] ],
+        [ TAG.RESOLVER_END, [ 'mainHero', 'name' ] ],
+        [ TAG.SUBTREE_START, [ 'mainHero', 'name' ] ],
+        [ TAG.SUBTREE_END, [ 'mainHero', 'name' ] ],
+        [ TAG.RESOLVER_START, [ 'mainHero', 'story' ] ],
+        [ TAG.RESOLVER_ERROR, [ 'mainHero', 'story' ] ],
+        [ TAG.RESOLVER_END, [ 'mainHero', 'story' ] ],
+        [ TAG.SUBTREE_START, [ 'mainHero', 'story' ] ],
+        [ TAG.SUBTREE_ERROR, [ 'mainHero', 'story' ] ],
+        [ TAG.SUBTREE_END, [ 'mainHero', 'story' ] ],
+        [ TAG.SUBTREE_END, [ 'mainHero' ] ],
+      ];
+
+      const result = await graphql(
+        StarWarsSchema,
+        query,
+        null,
+        null,
+        null,
+        null,
+        (tag, payload) => {
+          const path =
+          tag === TAG.SUBTREE_ERROR || tag === TAG.RESOLVER_ERROR ?
+          payload.executionPath : payload;
+          logged.push([ tag, path ]);
+        });
+
+      expect(result.data).to.deep.equal(expected);
+      expect(logged).to.deep.equal(expectedLogged);
     });
   });
 });

@@ -8,3 +8,4 @@
  */
 
 export { execute } from './execute';
+export { TAG } from './logging';

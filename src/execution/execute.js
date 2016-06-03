@@ -15,6 +15,7 @@ import isNullish from '../jsutils/isNullish';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { Kind } from '../language';
 import { getVariableValues, getArgumentValues } from './values';
+import { TAG, passThroughResultAndLog } from './logging';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -88,6 +89,7 @@ type ExecutionContext = {
   operation: OperationDefinition;
   variableValues: {[key: string]: mixed};
   errors: Array<GraphQLError>;
+  logFn?: (tag: string, payload: mixed, info: mixed) => void
 }
 
 /**
@@ -114,7 +116,8 @@ export function execute(
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
-  operationName?: ?string
+  operationName?: ?string,
+  logFn?: (tag: string, payload: mixed, info: mixed) => void
 ): Promise<ExecutionResult> {
   invariant(schema, 'Must provide schema');
   invariant(
@@ -131,7 +134,8 @@ export function execute(
     rootValue,
     contextValue,
     variableValues,
-    operationName
+    operationName,
+    logFn
   );
 
   // Return a Promise that will eventually resolve to the data described by
@@ -169,7 +173,8 @@ function buildExecutionContext(
   rootValue: mixed,
   contextValue: mixed,
   rawVariableValues: ?{[key: string]: mixed},
-  operationName: ?string
+  operationName: ?string,
+  logFn?: (tag: string, payload: mixed, info: mixed) => void
 ): ExecutionContext {
   const errors: Array<GraphQLError> = [];
   let operation: ?OperationDefinition;
@@ -216,7 +221,8 @@ function buildExecutionContext(
     contextValue,
     operation,
     variableValues,
-    errors
+    errors,
+    logFn,
   };
 }
 
@@ -577,9 +583,32 @@ function resolveField(
     variableValues: exeContext.variableValues,
   };
 
+  const logFn = exeContext.logFn || (() => {});
+  logFn(TAG.RESOLVER_START, path, info);
+
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
-  const result = resolveOrError(resolveFn, source, args, context, info);
+  let result = resolveOrError(resolveFn, source, args, context, info);
+
+  if (isThenable(result)) {
+    result = ((result: any): Promise).then(
+      passThroughResultAndLog(logFn, TAG.RESOLVER_END, path, info),
+      reason => {
+        logFn(TAG.RESOLVER_ERROR, {
+          error: reason,
+          executionPath: path,
+        }, info);
+        return Promise.reject(reason);
+      });
+  } else {
+    if (result instanceof Error) {
+      logFn(TAG.RESOLVER_ERROR, {
+        error: result,
+        executionPath: path,
+      }, info);
+    }
+    logFn(TAG.RESOLVER_END, path, info);
+  }
 
   return completeValueCatchingError(
     exeContext,
@@ -619,10 +648,13 @@ function completeValueCatchingError(
   path: Array<string | number>,
   result: mixed
 ): mixed {
+  const logFn = exeContext.logFn || (() => {});
+  logFn(TAG.SUBTREE_START, path, info);
+
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
   if (returnType instanceof GraphQLNonNull) {
-    return completeValue(
+    const completed = completeValue(
       exeContext,
       returnType,
       fieldASTs,
@@ -630,6 +662,22 @@ function completeValueCatchingError(
       path,
       result
     );
+
+    if (isThenable(completed)) {
+      return ((completed: any): Promise).then(
+        passThroughResultAndLog(logFn, TAG.SUBTREE_END, path, info),
+        reason => {
+          logFn(TAG.SUBTREE_ERROR, {
+            error: reason,
+            executionPath: path
+          }, info);
+          logFn(TAG.SUBTREE_END, path, info);
+          return Promise.reject(reason);
+        });
+    }
+
+    logFn(TAG.SUBTREE_END, path, info);
+    return completed;
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
@@ -648,16 +696,34 @@ function completeValueCatchingError(
       // error and resolve to null.
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return ((completed: any): Promise<*>).then(undefined, error => {
-        exeContext.errors.push(error);
-        return Promise.resolve(null);
-      });
+      return ((completed: any): Promise<*>).then(
+        passThroughResultAndLog(logFn, TAG.SUBTREE_END, path, info),
+        error => {
+          exeContext.errors.push(error);
+          logFn(TAG.SUBTREE_ERROR, {
+            error,
+            executionPath: path
+          }, info);
+          logFn(TAG.SUBTREE_END, path, info);
+
+          return Promise.resolve(null);
+        });
     }
+
+    logFn(TAG.SUBTREE_END, path, info);
+
     return completed;
   } catch (error) {
     // If `completeValue` returned abruptly (threw an error), log the error
     // and return null.
     exeContext.errors.push(error);
+
+    logFn(TAG.SUBTREE_ERROR, {
+      error,
+      executionPath: path
+    }, info);
+    logFn(TAG.SUBTREE_END, path, info);
+
     return null;
   }
 }

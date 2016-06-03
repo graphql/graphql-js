@@ -128,6 +128,7 @@ export {
 // Execute GraphQL queries.
 export {
   execute,
+  TAG
 } from './execution';
 
 
