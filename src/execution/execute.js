@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { GraphQLError, PathedError, locatedError } from '../error';
+import { GraphQLError, locatedError } from '../error';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
@@ -622,12 +622,7 @@ function resolveOrError(
   } catch (error) {
     // Sometimes a non-error is thrown, wrap it as an Error for a
     // consistent interface.
-    const wrappedError = error instanceof Error ? error : new Error(error);
-    const pathedError = new PathedError(
-      wrappedError.message,
-      wrappedError.stack,
-      info.executionPath);
-    return pathedError;
+    return error instanceof Error ? error : new Error(error);
   }
 }
 
@@ -720,13 +715,13 @@ function completeValue(
         resolved
       ),
       // If rejected, create a located error, and continue to reject.
-      error => Promise.reject(locatedError(error, fieldASTs))
+      error => Promise.reject(locatedError(error, fieldASTs, exePath))
     );
   }
 
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
-    throw locatedError(result, fieldASTs);
+    throw locatedError(result, fieldASTs, exePath);
   }
 
   // If field type is NonNull, complete for inner type, and throw field error

@@ -386,7 +386,7 @@ describe('Star Wars Query Tests', () => {
       expect(result.data).to.deep.equal(expected);
       expect(result.errors.map(e => e.message)).to.deep.equal(expectedErrors);
       expect(
-        result.errors.map(e => e.originalError.executionPath)).to.deep.equal(
+        result.errors.map(e => e.executionPath)).to.deep.equal(
           [ [ 'hero', 'secretBackstory' ] ]);
     });
 
@@ -430,7 +430,7 @@ describe('Star Wars Query Tests', () => {
       expect(result.data).to.deep.equal(expected);
       expect(result.errors.map(e => e.message)).to.deep.equal(expectedErrors);
       expect(
-        result.errors.map(e => e.originalError.executionPath)
+        result.errors.map(e => e.executionPath)
       ).to.deep.equal(
         [
           [ 'hero', 'friends', 0, 'secretBackstory' ],
@@ -461,7 +461,7 @@ describe('Star Wars Query Tests', () => {
       expect(result.data).to.deep.equal(expected);
       expect(result.errors.map(e => e.message)).to.deep.equal(expectedErrors);
       expect(
-        result.errors.map(e => e.originalError.executionPath)
+        result.errors.map(e => e.executionPath)
       ).to.deep.equal([ [ 'mainHero', 'story' ] ]);
     });
 
