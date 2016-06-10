@@ -20,19 +20,6 @@
   "options": {
     "mocha": "--require ./resources/mocha-bootload --check-leaks --full-trace src/**/__tests__/**/*-test.js"
   },
-  "babel": {
-    "presets": [
-      "es2015"
-    ],
-    "plugins": [
-      "syntax-async-functions",
-      "transform-class-properties",
-      "transform-flow-strip-types",
-      "transform-object-rest-spread",
-      "transform-regenerator",
-      "transform-runtime"
-    ]
-  },
   "scripts": {
     "test": "npm run lint && npm run check && npm run testonly",
     "testonly": "babel-node ./node_modules/.bin/_mocha $npm_package_options_mocha",
