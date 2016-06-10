@@ -191,7 +191,7 @@ export class GraphQLSchema {
       invariant(
         Array.isArray(possibleTypes),
         `Could not find possible implementing types for ${abstractType} in ` +
-        'schema. Check that schema.types is defined and is an array of' +
+        'schema. Check that schema.types is defined and is an array of ' +
         'all possible types in the schema.'
       );
       possibleTypeMap[abstractType.name] =
