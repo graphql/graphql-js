@@ -474,16 +474,16 @@ export type GraphQLFieldResolveFn = (
 ) => mixed
 
 export type GraphQLResolveInfo = {
-  fieldName: string,
-  fieldASTs: Array<Field>,
-  returnType: GraphQLOutputType,
-  parentType: GraphQLCompositeType,
-  schema: GraphQLSchema,
-  fragments: { [fragmentName: string]: FragmentDefinition },
-  rootValue: mixed,
-  operation: OperationDefinition,
-  variableValues: { [variableName: string]: mixed },
-  path: Array<string | number>
+  fieldName: string;
+  fieldASTs: Array<Field>;
+  returnType: GraphQLOutputType;
+  parentType: GraphQLCompositeType;
+  path: Array<string | number>;
+  schema: GraphQLSchema;
+  fragments: { [fragmentName: string]: FragmentDefinition };
+  rootValue: mixed;
+  operation: OperationDefinition;
+  variableValues: { [variableName: string]: mixed };
 }
 
 export type GraphQLFieldConfig = {
