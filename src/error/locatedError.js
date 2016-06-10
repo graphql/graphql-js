@@ -27,6 +27,6 @@ export function locatedError(
   const stack = originalError ? originalError.stack : null;
   const error = new GraphQLError(message, nodes, stack);
   error.originalError = originalError;
-  error.executionPath = path;
+  error.path = path;
   return error;
 }
