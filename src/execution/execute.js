@@ -590,7 +590,7 @@ function resolveField(
   // or abrupt (error).
   const result = resolveOrError(resolveFn, source, args, context, info);
 
-  const completed = completeValueCatchingError(
+  return completeValueCatchingError(
     exeContext,
     returnType,
     fieldASTs,
@@ -598,8 +598,6 @@ function resolveField(
     exePath,
     result
   );
-
-  return completed;
 }
 
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
@@ -634,7 +632,13 @@ function completeValueCatchingError(
   // protection from errors.
   if (returnType instanceof GraphQLNonNull) {
     return completeValue(
-      exeContext, returnType, fieldASTs, info, exePath, result);
+      exeContext,
+      returnType,
+      fieldASTs,
+      info,
+      exePath,
+      result
+    );
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
@@ -747,7 +751,13 @@ function completeValue(
   // If field type is List, complete each item in the list with the inner type
   if (returnType instanceof GraphQLList) {
     return completeListValue(
-      exeContext, returnType, fieldASTs, info, exePath, result);
+      exeContext,
+      returnType,
+      fieldASTs,
+      info,
+      exePath,
+      result
+    );
   }
 
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
@@ -819,7 +829,13 @@ function completeListValue(
     childExePath.push(index);
 
     const completedItem = completeValueCatchingError(
-      exeContext, itemType, fieldASTs, info, childExePath, item);
+      exeContext,
+      itemType,
+      fieldASTs,
+      info,
+      childExePath,
+      item
+    );
 
     if (!containsPromise && isThenable(completedItem)) {
       containsPromise = true;
