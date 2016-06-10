@@ -598,13 +598,6 @@ function resolveField(
     result
   );
 
-  if (isThenable(completed)) {
-    return ((completed: any): Promise).catch(error => {
-      error.executionPath = exePath;
-      return Promise.reject(error);
-    });
-  }
-
   return completed;
 }
 
