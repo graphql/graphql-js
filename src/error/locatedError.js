@@ -18,7 +18,8 @@ import { GraphQLError } from './GraphQLError';
  */
 export function locatedError(
   originalError: ?Error,
-  nodes: Array<any>
+  nodes: Array<any>,
+  path: Array<string | number>
 ): GraphQLError {
   const message = originalError ?
     originalError.message || String(originalError) :
@@ -26,5 +27,6 @@ export function locatedError(
   const stack = originalError ? originalError.stack : null;
   const error = new GraphQLError(message, nodes, stack);
   error.originalError = originalError;
+  error.path = path;
   return error;
 }

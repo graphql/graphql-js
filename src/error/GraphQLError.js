@@ -20,6 +20,7 @@ export class GraphQLError extends Error {
   source: Source;
   positions: Array<number>;
   locations: any;
+  path: Array<string | number>;
   originalError: ?Error;
 
   constructor(

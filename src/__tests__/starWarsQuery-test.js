@@ -11,6 +11,12 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { StarWarsSchema } from './starWarsSchema.js';
 import { graphql } from '../graphql';
+import {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLSchema,
+  GraphQLString,
+} from '../type';
 
 // 80+ char lines are useful in describe/it, so ignore in this file.
 /* eslint-disable max-len */
@@ -362,6 +368,164 @@ describe('Star Wars Query Tests', () => {
       };
       const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
+    });
+  });
+
+  describe('Reporting errors raised in resolvers', () => {
+    it('Correctly reports error on accessing secretBackstory', async () => {
+      const query = `
+        query HeroNameQuery {
+          hero {
+            name
+            secretBackstory
+          }
+        }
+      `;
+      const expected = {
+        hero: {
+          name: 'R2-D2',
+          secretBackstory: null
+        }
+      };
+      const expectedErrors = [ 'secretBackstory is secret.' ];
+      const result = await graphql(StarWarsSchema, query);
+      expect(result.data).to.deep.equal(expected);
+      expect(result.errors.map(e => e.message)).to.deep.equal(expectedErrors);
+      expect(
+        result.errors.map(e => e.path)).to.deep.equal(
+          [ [ 'hero', 'secretBackstory' ] ]);
+    });
+
+    it('Correctly reports error on accessing secretBackstory in a list', async () => {
+      const query = `
+        query HeroNameQuery {
+          hero {
+            name
+            friends {
+              name
+              secretBackstory
+            }
+          }
+        }
+      `;
+      const expected = {
+        hero: {
+          name: 'R2-D2',
+          friends: [
+            {
+              name: 'Luke Skywalker',
+              secretBackstory: null,
+            },
+            {
+              name: 'Han Solo',
+              secretBackstory: null,
+            },
+            {
+              name: 'Leia Organa',
+              secretBackstory: null,
+            },
+          ]
+        }
+      };
+      const expectedErrors = [
+        'secretBackstory is secret.',
+        'secretBackstory is secret.',
+        'secretBackstory is secret.',
+      ];
+      const result = await graphql(StarWarsSchema, query);
+      expect(result.data).to.deep.equal(expected);
+      expect(result.errors.map(e => e.message)).to.deep.equal(expectedErrors);
+      expect(
+        result.errors.map(e => e.path)
+      ).to.deep.equal(
+        [
+          [ 'hero', 'friends', 0, 'secretBackstory' ],
+          [ 'hero', 'friends', 1, 'secretBackstory' ],
+          [ 'hero', 'friends', 2, 'secretBackstory' ],
+        ]);
+    });
+
+    it('Correctly reports error on accessing through an alias', async () => {
+      const query = `
+        query HeroNameQuery {
+          mainHero: hero {
+            name
+            story: secretBackstory
+          }
+        }
+      `;
+      const expected = {
+        mainHero: {
+          name: 'R2-D2',
+          story: null,
+        }
+      };
+      const expectedErrors = [
+        'secretBackstory is secret.',
+      ];
+      const result = await graphql(StarWarsSchema, query);
+      expect(result.data).to.deep.equal(expected);
+      expect(result.errors.map(e => e.message)).to.deep.equal(expectedErrors);
+      expect(
+        result.errors.map(e => e.path)
+      ).to.deep.equal([ [ 'mainHero', 'story' ] ]);
+    });
+
+    it('Full response path is included when fields are non-nullable', async () => {
+      const A = new GraphQLObjectType({
+        name: 'A',
+        fields: () => ({
+          nullableA: {
+            type: A,
+            resolve: () => ({}),
+          },
+          nonNullA: {
+            type: new GraphQLNonNull(A),
+            resolve: () => ({}),
+          },
+          throws: {
+            type: new GraphQLNonNull(GraphQLString),
+            resolve: () => { throw new Error('Catch me if you can'); },
+          },
+        }),
+      });
+      const queryType = new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          nullableA: {
+            type: A,
+            resolve: () => ({})
+          }
+        }),
+      });
+      const schema = new GraphQLSchema({
+        query: queryType,
+      });
+
+      const query = `
+        query {
+          nullableA {
+            nullableA {
+              nonNullA {
+                nonNullA {
+                  throws
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      const result = await graphql(schema, query);
+      const expected = {
+        nullableA: {
+          nullableA: null
+        }
+      };
+      expect(result.data).to.deep.equal(expected);
+      expect(
+        result.errors.map(e => e.path)).to.deep.equal(
+          [ [ 'nullableA', 'nullableA', 'nonNullA', 'nonNullA', 'throws' ] ]);
     });
   });
 });
