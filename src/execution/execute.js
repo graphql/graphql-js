@@ -582,7 +582,7 @@ function resolveField(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
-    executionPath: exePath
+    path: exePath
   };
 
   // Get the resolve function, regardless of if its result is normal

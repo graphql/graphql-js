@@ -483,7 +483,7 @@ export type GraphQLResolveInfo = {
   rootValue: mixed,
   operation: OperationDefinition,
   variableValues: { [variableName: string]: mixed },
-  executionPath: Array<string | number>
+  path: Array<string | number>
 }
 
 export type GraphQLFieldConfig = {
