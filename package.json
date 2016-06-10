@@ -38,7 +38,7 @@
     "babel-runtime": ">=6.0.0"
   },
   "devDependencies": {
-    "babel-cli": "6.7.7",
+    "babel-cli": "6.6.5",
     "babel-eslint": "6.0.2",
     "babel-plugin-syntax-async-functions": "6.5.0",
     "babel-plugin-transform-class-properties": "6.6.0",
@@ -52,7 +52,7 @@
     "coveralls": "2.11.9",
     "eslint": "2.7.0",
     "eslint-plugin-babel": "3.2.0",
-    "flow-bin": "0.24.2",
+    "flow-bin": "0.22.1",
     "isparta": "4.0.0",
     "mocha": "2.4.5",
     "sane": "1.3.4"
