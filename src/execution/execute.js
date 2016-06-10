@@ -297,10 +297,11 @@ function executeFieldsSerially(
 ): Promise<Object> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
+      const fieldASTs = fields[responseName];
+
       const childExePath = exePath.slice();
       childExePath.push(responseName);
 
-      const fieldASTs = fields[responseName];
       const result = resolveField(
         exeContext,
         parentType,
