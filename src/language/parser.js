@@ -204,10 +204,11 @@ function parseDefinition(parser: Parser): Definition {
 
   if (peek(parser, TokenKind.NAME)) {
     switch (parser.token.value) {
+      // Note: subscription is an experimental non-spec addition.
       case 'query':
       case 'mutation':
-      // Note: subscription is an experimental non-spec addition.
-      case 'subscription': return parseOperationDefinition(parser);
+      case 'subscription':
+        return parseOperationDefinition(parser);
 
       case 'fragment': return parseFragmentDefinition(parser);
 
