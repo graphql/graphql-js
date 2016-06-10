@@ -813,15 +813,13 @@ function completeListValue(
   const itemType = returnType.ofType;
   let containsPromise = false;
   const completedResults = result.map((item, index) => {
+    // No need to modify the info object containing the path,
+    // since from here on it is not ever accessed by resolver functions.
     const childExePath = exePath.slice();
     childExePath.push(index);
 
-    const childInfo = Object.assign({}, info, {
-      executionPath: childExePath
-    });
-
     const completedItem = completeValueCatchingError(
-      exeContext, itemType, fieldASTs, childInfo, childExePath, item);
+      exeContext, itemType, fieldASTs, info, childExePath, item);
 
     if (!containsPromise && isThenable(completedItem)) {
       containsPromise = true;
