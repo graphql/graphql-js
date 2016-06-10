@@ -209,8 +209,6 @@ function buildExecutionContext(
     rawVariableValues || {}
   );
 
-  const executionPath = [];
-
   return {
     schema,
     fragments,
@@ -218,7 +216,6 @@ function buildExecutionContext(
     contextValue,
     operation,
     variableValues,
-    executionPath,
     errors
   };
 }
