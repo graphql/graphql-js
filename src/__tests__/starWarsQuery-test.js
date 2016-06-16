@@ -574,9 +574,7 @@ describe('Star Wars Query Tests', () => {
         null,
         null,
         (tag, payload) => {
-          const path =
-          tag === TAG.SUBTREE_ERROR || tag === TAG.RESOLVER_ERROR ?
-          payload.executionPath : payload;
+          const { path } = payload;
           logged.push([ tag, path ]);
         });
 

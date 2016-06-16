@@ -584,7 +584,7 @@ function resolveField(
   };
 
   const logFn = exeContext.logFn || (() => {});
-  logFn(TAG.RESOLVER_START, path, info);
+  logFn(TAG.RESOLVER_START, { path }, info);
 
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
@@ -592,11 +592,11 @@ function resolveField(
 
   if (isThenable(result)) {
     result = ((result: any): Promise).then(
-      passThroughResultAndLog(logFn, TAG.RESOLVER_END, path, info),
+      passThroughResultAndLog(logFn, TAG.RESOLVER_END, { path }, info),
       reason => {
         logFn(TAG.RESOLVER_ERROR, {
           error: reason,
-          executionPath: path,
+          path,
         }, info);
         return Promise.reject(reason);
       });
@@ -604,10 +604,10 @@ function resolveField(
     if (result instanceof Error) {
       logFn(TAG.RESOLVER_ERROR, {
         error: result,
-        executionPath: path,
+        path,
       }, info);
     }
-    logFn(TAG.RESOLVER_END, path, info);
+    logFn(TAG.RESOLVER_END, { path }, info);
   }
 
   return completeValueCatchingError(
@@ -649,7 +649,7 @@ function completeValueCatchingError(
   result: mixed
 ): mixed {
   const logFn = exeContext.logFn || (() => {});
-  logFn(TAG.SUBTREE_START, path, info);
+  logFn(TAG.SUBTREE_START, { path }, info);
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors.
@@ -665,18 +665,18 @@ function completeValueCatchingError(
 
     if (isThenable(completed)) {
       return ((completed: any): Promise).then(
-        passThroughResultAndLog(logFn, TAG.SUBTREE_END, path, info),
+        passThroughResultAndLog(logFn, TAG.SUBTREE_END, { path }, info),
         reason => {
           logFn(TAG.SUBTREE_ERROR, {
             error: reason,
-            executionPath: path
+            path,
           }, info);
-          logFn(TAG.SUBTREE_END, path, info);
+          logFn(TAG.SUBTREE_END, { path }, info);
           return Promise.reject(reason);
         });
     }
 
-    logFn(TAG.SUBTREE_END, path, info);
+    logFn(TAG.SUBTREE_END, { path }, info);
     return completed;
   }
 
@@ -697,20 +697,20 @@ function completeValueCatchingError(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return ((completed: any): Promise<*>).then(
-        passThroughResultAndLog(logFn, TAG.SUBTREE_END, path, info),
+        passThroughResultAndLog(logFn, TAG.SUBTREE_END, { path }, info),
         error => {
           exeContext.errors.push(error);
           logFn(TAG.SUBTREE_ERROR, {
             error,
-            executionPath: path
+            path
           }, info);
-          logFn(TAG.SUBTREE_END, path, info);
+          logFn(TAG.SUBTREE_END, { path }, info);
 
           return Promise.resolve(null);
         });
     }
 
-    logFn(TAG.SUBTREE_END, path, info);
+    logFn(TAG.SUBTREE_END, { path }, info);
 
     return completed;
   } catch (error) {
@@ -720,9 +720,9 @@ function completeValueCatchingError(
 
     logFn(TAG.SUBTREE_ERROR, {
       error,
-      executionPath: path
+      path
     }, info);
-    logFn(TAG.SUBTREE_END, path, info);
+    logFn(TAG.SUBTREE_END, { path }, info);
 
     return null;
   }
