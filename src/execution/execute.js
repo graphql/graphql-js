@@ -598,6 +598,7 @@ function resolveField(
           error: reason,
           path,
         }, info);
+        logFn(TAG.RESOLVER_END, { path });
         return Promise.reject(reason);
       });
   } else {
