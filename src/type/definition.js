@@ -304,7 +304,7 @@ export class GraphQLObjectType {
   isTypeOf: ?GraphQLIsTypeOfFn;
 
   _typeConfig: GraphQLObjectTypeConfig;
-  _fields: GraphQLFieldDefinitionMap;
+  _fields: ?GraphQLFieldDefinitionMap;
   _interfaces: Array<GraphQLInterfaceType>;
 
   constructor(config: GraphQLObjectTypeConfig) {
@@ -554,7 +554,7 @@ export class GraphQLInterfaceType {
   resolveType: ?GraphQLTypeResolveFn;
 
   _typeConfig: GraphQLInterfaceTypeConfig;
-  _fields: GraphQLFieldDefinitionMap;
+  _fields: ?GraphQLFieldDefinitionMap;
 
   constructor(config: GraphQLInterfaceTypeConfig) {
     invariant(config.name, 'Type must be named.');
@@ -862,7 +862,7 @@ export class GraphQLInputObjectType {
   description: ?string;
 
   _typeConfig: InputObjectConfig;
-  _fields: InputObjectFieldMap;
+  _fields: ?InputObjectFieldMap;
 
   constructor(config: InputObjectConfig) {
     invariant(config.name, 'Type must be named.');
