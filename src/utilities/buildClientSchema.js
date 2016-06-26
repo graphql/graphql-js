@@ -226,13 +226,13 @@ export function buildClientSchema(
     return new GraphQLScalarType({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
-      serialize: () => null,
+      serialize: (v) => v,
       // Note: validation calls the parse functions to determine if a
       // literal value is correct. Returning null would cause use of custom
       // scalars to always fail validation. Returning false causes them to
       // always pass validation.
-      parseValue: () => false,
-      parseLiteral: () => false,
+      parseValue: (v) => v,
+      parseLiteral: (ast) => ast.value,
     });
   }
 
