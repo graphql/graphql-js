@@ -917,7 +917,7 @@ export type InputObjectConfig = {
   description?: ?string;
 }
 
-type InputObjectConfigFieldMapThunk = () => InputObjectConfigFieldMap;
+export type InputObjectConfigFieldMapThunk = () => InputObjectConfigFieldMap;
 
 export type InputObjectFieldConfig = {
   type: GraphQLInputType;
