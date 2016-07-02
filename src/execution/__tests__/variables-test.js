@@ -56,6 +56,17 @@ const TestInputObject = new GraphQLInputObjectType({
   }
 });
 
+const TestFlexInputObject = new GraphQLInputObjectType({
+  name: 'TestFlexInputObject',
+  tolerateAdditionalProps: true,
+  fields: {
+    a: { type: GraphQLString },
+    b: { type: new GraphQLList(GraphQLString) },
+    c: { type: new GraphQLNonNull(GraphQLString) },
+    d: { type: TestComplexScalar },
+  }
+});
+
 const TestNestedInputObject = new GraphQLInputObjectType({
   name: 'TestNestedInputObject',
   fields: {
@@ -70,6 +81,11 @@ const TestType = new GraphQLObjectType({
     fieldWithObjectInput: {
       type: GraphQLString,
       args: { input: { type: TestInputObject } },
+      resolve: (_, { input }) => input && JSON.stringify(input)
+    },
+    fieldWithFlexObjectInput: {
+      type: GraphQLString,
+      args: { input: { type: TestFlexInputObject } },
       resolve: (_, { input }) => input && JSON.stringify(input)
     },
     fieldWithNullableStringInput: {
@@ -121,6 +137,7 @@ const TestType = new GraphQLObjectType({
   }
 });
 
+
 const schema = new GraphQLSchema({ query: TestType });
 
 describe('Execute: Handles inputs', () => {
@@ -140,6 +157,21 @@ describe('Execute: Handles inputs', () => {
         return expect(await execute(schema, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
+          }
+        });
+      });
+
+      it('allows additional input field when tolerateAdditionalProps is enabled', async () => {
+        const doc = `
+        {
+          fieldWithFlexObjectInput(input: {a: "foo", b: ["bar"], c: "baz", dog: "dog"})
+        }
+        `;
+        const ast = parse(doc);
+
+        return expect(await execute(schema, ast)).to.deep.equal({
+          data: {
+            fieldWithFlexObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
         });
       });
@@ -354,6 +386,30 @@ describe('Execute: Handles inputs', () => {
       });
 
     });
+
+    describe('using variables', () => {
+
+      const doc = `
+        query q($input: TestFlexInputObject) {
+          fieldWithFlexObjectInput(input: $input)
+        }
+      `;
+      const ast = parse(doc);
+
+      it('allows additional input field when tolerateAdditionalProps is enabled', async () => {
+        const params = {
+          input: { a: 'foo', b: 'bar', c: 'baz', extra: 'dog' }
+        };
+
+        return expect(await execute(schema, ast, null, null, params)).to.deep.equal({
+          data: {
+            fieldWithFlexObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
+          }
+        });
+      });
+
+    });
+
   });
 
   describe('Handles nullable scalars', () => {
