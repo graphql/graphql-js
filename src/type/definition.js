@@ -217,15 +217,16 @@ export class GraphQLScalarType<InternalType> {
     this.description = config.description;
     invariant(
       typeof config.serialize === 'function',
-      `${this} must provide "serialize" function. If this custom Scalar is ` +
-      'also used as an input type, ensure "parseValue" and "parseLiteral" ' +
+      `${this.name} must provide "serialize" function. If this custom Scalar ` +
+      'is also used as an input type, ensure "parseValue" and "parseLiteral" ' +
       'functions are also provided.'
     );
     if (config.parseValue || config.parseLiteral) {
       invariant(
         typeof config.parseValue === 'function' &&
         typeof config.parseLiteral === 'function',
-        `${this} must provide both "parseValue" and "parseLiteral" functions.`
+        `${this.name} must provide both "parseValue" and "parseLiteral" ` +
+        'functions.'
       );
     }
     this._scalarConfig = config;
@@ -315,7 +316,7 @@ export class GraphQLObjectType {
     if (config.isTypeOf) {
       invariant(
         typeof config.isTypeOf === 'function',
-        `${this} must provide "isTypeOf" as a function.`
+        `${this.name} must provide "isTypeOf" as a function.`
       );
     }
     this.isTypeOf = config.isTypeOf;
@@ -353,21 +354,22 @@ function defineInterfaces(
   }
   invariant(
     Array.isArray(interfaces),
-    `${type} interfaces must be an Array or a function which returns an Array.`
+    `${type.name} interfaces must be an Array or a function which returns ` +
+    'an Array.'
   );
   interfaces.forEach(iface => {
     invariant(
       iface instanceof GraphQLInterfaceType,
-      `${type} may only implement Interface types, it cannot ` +
-      `implement: ${iface}.`
+      `${type.name} may only implement Interface types, it cannot ` +
+      `implement: ${iface.name}.`
     );
     if (typeof iface.resolveType !== 'function') {
       invariant(
         typeof type.isTypeOf === 'function',
-        `Interface Type ${iface} does not provide a "resolveType" function ` +
-        `and implementing Type ${type} does not provide a "isTypeOf" ` +
-        'function. There is no way to resolve this implementing type ' +
-        'during execution.'
+        `Interface Type ${iface.name} does not provide a "resolveType" ` +
+        `function and implementing Type ${type.name} does not provide a ` +
+        '"isTypeOf" function. There is no way to resolve this implementing ' +
+        'type during execution.'
       );
     }
   });
@@ -381,14 +383,14 @@ function defineFieldMap(
   const fieldMap: any = resolveMaybeThunk(fields);
   invariant(
     isPlainObj(fieldMap),
-    `${type} fields must be an object with field names as keys or a ` +
+    `${type.name} fields must be an object with field names as keys or a ` +
     'function which returns such an object.'
   );
 
   const fieldNames = Object.keys(fieldMap);
   invariant(
     fieldNames.length > 0,
-    `${type} fields must be an object with field names as keys or a ` +
+    `${type.name} fields must be an object with field names as keys or a ` +
     'function which returns such an object.'
   );
 
@@ -401,29 +403,29 @@ function defineFieldMap(
     };
     invariant(
       !field.hasOwnProperty('isDeprecated'),
-      `${type}.${fieldName} should provide "deprecationReason" instead ` +
+      `${type.name}.${fieldName} should provide "deprecationReason" instead ` +
       'of "isDeprecated".'
     );
     invariant(
       isOutputType(field.type),
-      `${type}.${fieldName} field type must be Output Type but ` +
-      `got: ${field.type}.`
+      `${type.name}.${fieldName} field type must be Output Type but ` +
+      `got: ${String(field.type)}.`
     );
     if (!field.args) {
       field.args = [];
     } else {
       invariant(
         isPlainObj(field.args),
-        `${type}.${fieldName} args must be an object with argument names ` +
-        'as keys.'
+        `${type.name}.${fieldName} args must be an object with argument ` +
+        'names as keys.'
       );
       field.args = Object.keys(field.args).map(argName => {
         assertValidName(argName);
         const arg = field.args[argName];
         invariant(
           isInputType(arg.type),
-          `${type}.${fieldName}(${argName}:) argument type must be ` +
-          `Input Type but got: ${arg.type}.`
+          `${type.name}.${fieldName}(${argName}:) argument type must be ` +
+          `Input Type but got: ${String(arg.type)}.`
         );
         return {
           name: argName,
@@ -564,7 +566,7 @@ export class GraphQLInterfaceType {
     if (config.resolveType) {
       invariant(
         typeof config.resolveType === 'function',
-        `${this} must provide "resolveType" as a function.`
+        `${this.name} must provide "resolveType" as a function.`
       );
     }
     this.resolveType = config.resolveType;
@@ -635,7 +637,7 @@ export class GraphQLUnionType {
     if (config.resolveType) {
       invariant(
         typeof config.resolveType === 'function',
-        `${this} must provide "resolveType" as a function.`
+        `${this.name} must provide "resolveType" as a function.`
       );
     }
     this.resolveType = config.resolveType;
@@ -646,13 +648,14 @@ export class GraphQLUnionType {
     config.types.forEach(type => {
       invariant(
         type instanceof GraphQLObjectType,
-        `${this} may only contain Object types, it cannot contain: ${type}.`
+        `${this.name} may only contain Object types, it cannot contain: ` +
+        `${String(type)}.`
       );
       if (typeof this.resolveType !== 'function') {
         invariant(
           typeof type.isTypeOf === 'function',
-          `Union Type ${this} does not provide a "resolveType" function ` +
-          `and possible Type ${type} does not provide a "isTypeOf" ` +
+          `Union Type ${this.name} does not provide a "resolveType" function ` +
+          `and possible Type ${type.name} does not provide a "isTypeOf" ` +
           'function. There is no way to resolve this possible type ' +
           'during execution.'
         );
@@ -783,24 +786,24 @@ function defineEnumValues(
 ): Array<GraphQLEnumValueDefinition/* <T> */> {
   invariant(
     isPlainObj(valueMap),
-    `${type} values must be an object with value names as keys.`
+    `${type.name} values must be an object with value names as keys.`
   );
   const valueNames = Object.keys(valueMap);
   invariant(
     valueNames.length > 0,
-    `${type} values must be an object with value names as keys.`
+    `${type.name} values must be an object with value names as keys.`
   );
   return valueNames.map(valueName => {
     assertValidName(valueName);
     const value = valueMap[valueName];
     invariant(
       isPlainObj(value),
-      `${type}.${valueName} must refer to an object with a "value" key ` +
-      `representing an internal value but got: ${value}.`
+      `${type.name}.${valueName} must refer to an object with a "value" key ` +
+      `representing an internal value but got: ${String(value)}.`
     );
     invariant(
       !value.hasOwnProperty('isDeprecated'),
-      `${type}.${valueName} should provide "deprecationReason" instead ` +
+      `${type.name}.${valueName} should provide "deprecationReason" instead ` +
       'of "isDeprecated".'
     );
     return {
@@ -880,13 +883,13 @@ export class GraphQLInputObjectType {
     const fieldMap: any = resolveMaybeThunk(this._typeConfig.fields);
     invariant(
       isPlainObj(fieldMap),
-      `${this} fields must be an object with field names as keys or a ` +
+      `${this.name} fields must be an object with field names as keys or a ` +
       'function which returns such an object.'
     );
     const fieldNames = Object.keys(fieldMap);
     invariant(
       fieldNames.length > 0,
-      `${this} fields must be an object with field names as keys or a ` +
+      `${this.name} fields must be an object with field names as keys or a ` +
       'function which returns such an object.'
     );
     const resultFieldMap = {};
@@ -898,8 +901,8 @@ export class GraphQLInputObjectType {
       };
       invariant(
         isInputType(field.type),
-        `${this}.${fieldName} field type must be Input Type but ` +
-        `got: ${field.type}.`
+        `${this.name}.${fieldName} field type must be Input Type but ` +
+        `got: ${String(field.type)}.`
       );
       resultFieldMap[fieldName] = field;
     });
@@ -966,7 +969,7 @@ export class GraphQLList<T: GraphQLType> {
   constructor(type: T) {
     invariant(
       isType(type),
-      `Can only create List of a GraphQLType but got: ${type}.`
+      `Can only create List of a GraphQLType but got: ${String(type)}.`
     );
     this.ofType = type;
   }
@@ -1003,7 +1006,8 @@ export class GraphQLNonNull<T: GraphQLNullableType> {
   constructor(type: T) {
     invariant(
       isType(type) && !(type instanceof GraphQLNonNull),
-      `Can only create NonNull of a Nullable GraphQLType but got: ${type}.`
+      'Can only create NonNull of a Nullable GraphQLType but got: ' +
+      `${String(type)}.`
     );
     this.ofType = type;
   }

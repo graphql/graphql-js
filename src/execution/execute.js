@@ -307,7 +307,7 @@ function executeFieldsSerially(
         return results;
       }
       if (isThenable(result)) {
-        return ((result: any): Promise).then(resolvedResult => {
+        return ((result: any): Promise<*>).then(resolvedResult => {
           results[responseName] = resolvedResult;
           return results;
         });
@@ -648,7 +648,7 @@ function completeValueCatchingError(
       // error and resolve to null.
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return ((completed: any): Promise).then(undefined, error => {
+      return ((completed: any): Promise<*>).then(undefined, error => {
         exeContext.errors.push(error);
         return Promise.resolve(null);
       });
@@ -693,7 +693,7 @@ function completeValue(
 ): mixed {
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
-    return ((result: any): Promise).then(
+    return ((result: any): Promise<*>).then(
       // Once resolved to a value, complete that value.
       resolved => completeValue(
         exeContext,
@@ -727,7 +727,7 @@ function completeValue(
     if (completed === null) {
       throw new GraphQLError(
         `Cannot return null for non-nullable field ${
-          info.parentType}.${info.fieldName}.`,
+          info.parentType.name}.${info.fieldName}.`,
         fieldASTs
       );
     }
@@ -787,7 +787,7 @@ function completeValue(
   // Not reachable. All possible output types have been considered.
   invariant(
     false,
-    `Cannot complete value of unexpected type "${returnType}".`
+    `Cannot complete value of unexpected type "${String(returnType)}".`
   );
 }
 
@@ -797,7 +797,7 @@ function completeValue(
  */
 function completeListValue(
   exeContext: ExecutionContext,
-  returnType: GraphQLList,
+  returnType: GraphQLList<*>,
   fieldASTs: Array<Field>,
   info: GraphQLResolveInfo,
   path: Array<string | number>,
@@ -806,7 +806,7 @@ function completeListValue(
   invariant(
     Array.isArray(result),
     `User Error: expected iterable, but did not find one for field ${
-      info.parentType}.${info.fieldName}.`
+      info.parentType.name}.${info.fieldName}.`
   );
 
   // This is specified as a simple map, however we're optimizing the path
@@ -866,17 +866,17 @@ function completeAbstractValue(
 
   if (!(runtimeType instanceof GraphQLObjectType)) {
     throw new GraphQLError(
-      `Abstract type ${returnType} must resolve to an Object type at runtime ` +
-      `for field ${info.parentType}.${info.fieldName} with value "${result}",` +
-      `received "${runtimeType}".`,
+      `Abstract type ${returnType.name} must resolve to an Object type at ` +
+      `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
+      `value "${String(result)}", received "${String(runtimeType)}".`,
       fieldASTs
     );
   }
 
   if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
     throw new GraphQLError(
-      `Runtime Object type "${runtimeType}" is not a possible type ` +
-      `for "${returnType}".`,
+      `Runtime Object type "${runtimeType.name}" is not a possible type ` +
+      `for "${returnType.name}".`,
       fieldASTs
     );
   }
@@ -908,7 +908,7 @@ function completeObjectValue(
   if (returnType.isTypeOf &&
       !returnType.isTypeOf(result, exeContext.contextValue, info)) {
     throw new GraphQLError(
-      `Expected value of type "${returnType}" but got: ${result}.`,
+      `Expected value of type "${returnType.name}" but got: ${String(result)}.`,
       fieldASTs
     );
   }
