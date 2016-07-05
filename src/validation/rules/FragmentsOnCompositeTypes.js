@@ -18,7 +18,7 @@ import type { GraphQLType } from '../../type/definition';
 export function inlineFragmentOnNonCompositeErrorMessage(
   type: GraphQLType
 ): string {
-  return `Fragment cannot condition on non composite type "${type}".`;
+  return `Fragment cannot condition on non composite type "${String(type)}".`;
 }
 
 export function fragmentOnNonCompositeErrorMessage(
@@ -26,7 +26,7 @@ export function fragmentOnNonCompositeErrorMessage(
   type: GraphQLType
 ): string {
   return `Fragment "${fragName}" cannot condition on non composite ` +
-    `type "${type}".`;
+    `type "${String(type)}".`;
 }
 
 /**

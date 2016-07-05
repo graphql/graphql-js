@@ -19,7 +19,7 @@ export function unknownTypeMessage(
   type: GraphQLType,
   suggestedTypes: Array<string>
 ): string {
-  let message = `Unknown type "${type}".`;
+  let message = `Unknown type "${String(type)}".`;
   if (suggestedTypes.length) {
     message += ` Did you mean ${quotedOrList(suggestedTypes)}?`;
   }

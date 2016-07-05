@@ -571,7 +571,8 @@ function findConflict(
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
     return [
-      [ responseName, `they return conflicting types ${type1} and ${type2}` ],
+      [ responseName,
+        `they return conflicting types ${String(type1)} and ${String(type2)}` ],
       [ ast1 ],
       [ ast2 ]
     ];

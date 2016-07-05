@@ -71,6 +71,10 @@ import {
   GraphQLDeprecatedDirective,
 } from '../type/directives';
 
+import type {
+  DirectiveLocationEnum
+} from '../type/directives';
+
 import {
   __Schema,
   __Directive,
@@ -254,7 +258,9 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
   function getDirective(directiveAST: DirectiveDefinition): GraphQLDirective {
     return new GraphQLDirective({
       name: directiveAST.name.value,
-      locations: directiveAST.locations.map(node => node.value),
+      locations: directiveAST.locations.map(
+        node => (node.value: DirectiveLocationEnum)
+      ),
       args: makeInputValues(directiveAST.arguments),
     });
   }

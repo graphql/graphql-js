@@ -28,7 +28,7 @@ export function unknownArgMessage(
   suggestedArgs: Array<string>
 ): string {
   let message = `Unknown argument "${argName}" on field "${fieldName}" of ` +
-    `type "${type}".`;
+    `type "${String(type)}".`;
   if (suggestedArgs.length) {
     message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
   }

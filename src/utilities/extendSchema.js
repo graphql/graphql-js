@@ -185,17 +185,17 @@ export function extendSchema(
     __TypeKind,
   };
 
-  // Get the root Query, Mutation, and Subscription types.
-  const queryType = getTypeFromDef(schema.getQueryType());
+  // Get the root Query, Mutation, and Subscription object types.
+  const queryType = getObjectTypeFromDef(schema.getQueryType());
 
   const existingMutationType = schema.getMutationType();
   const mutationType = existingMutationType ?
-    getTypeFromDef(existingMutationType) :
+    getObjectTypeFromDef(existingMutationType) :
     null;
 
   const existingSubscriptionType = schema.getSubscriptionType();
   const subscriptionType = existingSubscriptionType ?
-    getTypeFromDef(existingSubscriptionType) :
+    getObjectTypeFromDef(existingSubscriptionType) :
     null;
 
   // Iterate through all types, getting the type definition for each, ensuring
@@ -225,6 +225,12 @@ export function extendSchema(
   function getTypeFromDef(typeDef: GraphQLNamedType): GraphQLNamedType {
     const type = _getNamedType(typeDef.name);
     invariant(type, 'Invalid schema');
+    return type;
+  }
+
+  function getObjectTypeFromDef(typeDef: GraphQLObjectType): GraphQLObjectType {
+    const type = _getNamedType(typeDef.name);
+    invariant(type instanceof GraphQLObjectType, 'Invalid schema');
     return type;
   }
 
@@ -302,7 +308,7 @@ export function extendSchema(
     return new GraphQLUnionType({
       name: type.name,
       description: type.description,
-      types: type.getTypes().map(getTypeFromDef),
+      types: type.getTypes().map(getObjectTypeFromDef),
       resolveType: cannotExecuteClientSchema,
     });
   }

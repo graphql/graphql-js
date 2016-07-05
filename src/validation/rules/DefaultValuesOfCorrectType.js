@@ -21,8 +21,9 @@ export function defaultForNonNullArgMessage(
   type: GraphQLType,
   guessType: GraphQLType
 ): string {
-  return `Variable "$${varName}" of type "${type}" is required and will not ` +
-    `use the default value. Perhaps you meant to use type "${guessType}".`;
+  return `Variable "$${varName}" of type "${String(type)}" is required and ` +
+    'will not use the default value. ' +
+    `Perhaps you meant to use type "${String(guessType)}".`;
 }
 
 export function badValueForDefaultArgMessage(
@@ -32,7 +33,8 @@ export function badValueForDefaultArgMessage(
   verboseErrors?: [string]
 ): string {
   const message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
-  return `Variable "$${varName}" has invalid default value ${value}.${message}`;
+  return `Variable "$${varName}" of type "${String(type)}" has invalid ` +
+    `default value ${value}.${message}`;
 }
 
 /**

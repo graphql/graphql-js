@@ -232,7 +232,7 @@ export class GraphQLScalarType<InternalType> {
     this._scalarConfig = config;
   }
 
-  serialize(value: mixed): ?InternalType {
+  serialize(value: InternalType): mixed {
     const serializer = this._scalarConfig.serialize;
     return serializer(value);
   }
@@ -361,7 +361,7 @@ function defineInterfaces(
     invariant(
       iface instanceof GraphQLInterfaceType,
       `${type.name} may only implement Interface types, it cannot ` +
-      `implement: ${iface.name}.`
+      `implement: ${String(iface)}.`
     );
     if (typeof iface.resolveType !== 'function') {
       invariant(

@@ -78,7 +78,7 @@ export class GraphQLDirective {
         invariant(
           isInputType(arg.type),
           `@${config.name}(${argName}:) argument type must be ` +
-          `Input Type but got: ${arg.type}.`
+          `Input Type but got: ${String(arg.type)}.`
         );
         return {
           name: argName,

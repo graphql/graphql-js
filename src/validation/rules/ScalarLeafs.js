@@ -19,14 +19,16 @@ export function noSubselectionAllowedMessage(
   field: string,
   type: GraphQLType
 ): string {
-  return `Field "${field}" of type "${type}" must not have a sub selection.`;
+  return `Field "${field}" of type "${String(type)}" must not have a ` +
+    'sub selection.';
 }
 
 export function requiredSubselectionMessage(
   field: string,
   type: GraphQLType
 ): string {
-  return `Field "${field}" of type "${type}" must have a sub selection.`;
+  return `Field "${field}" of type "${String(type)}" must have a ` +
+    'sub selection.';
 }
 
 /**

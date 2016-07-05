@@ -68,27 +68,28 @@ export class GraphQLSchema {
 
     invariant(
       config.query instanceof GraphQLObjectType,
-      `Schema query must be Object Type but got: ${config.query}.`
+      `Schema query must be Object Type but got: ${
+        String(config.query)}.`
     );
     this._queryType = config.query;
 
     invariant(
       !config.mutation || config.mutation instanceof GraphQLObjectType,
       `Schema mutation must be Object Type if provided but got: ${
-        config.mutation}.`
+        String(config.mutation)}.`
     );
     this._mutationType = config.mutation;
 
     invariant(
       !config.subscription || config.subscription instanceof GraphQLObjectType,
       `Schema subscription must be Object Type if provided but got: ${
-        config.subscription}.`
+        String(config.subscription)}.`
     );
     this._subscriptionType = config.subscription;
 
     invariant(
       !config.types || Array.isArray(config.types),
-      `Schema types must be Array if provided but got: ${config.types}.`
+      `Schema types must be Array if provided but got: ${String(config.types)}.`
     );
 
     invariant(
@@ -97,7 +98,7 @@ export class GraphQLSchema {
         directive => directive instanceof GraphQLDirective
       ),
       `Schema directives must be Array<GraphQLDirective> if provided but got: ${
-        config.directives}.`
+        String(config.directives)}.`
     );
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives || specifiedDirectives;
@@ -190,8 +191,8 @@ export class GraphQLSchema {
       const possibleTypes = this.getPossibleTypes(abstractType);
       invariant(
         Array.isArray(possibleTypes),
-        `Could not find possible implementing types for ${abstractType} in ` +
-        'schema. Check that schema.types is defined and is an array of ' +
+        `Could not find possible implementing types for ${abstractType.name} ` +
+        'in schema. Check that schema.types is defined and is an array of ' +
         'all possible types in the schema.'
       );
       possibleTypeMap[abstractType.name] =
@@ -234,7 +235,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
     invariant(
       map[type.name] === type,
       'Schema must contain unique named types but contains multiple ' +
-      `types named "${type}".`
+      `types named "${type.name}".`
     );
     return map;
   }
