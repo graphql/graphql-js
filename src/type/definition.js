@@ -160,7 +160,9 @@ export type GraphQLNullableType =
   GraphQLInputObjectType |
   GraphQLList;
 
-export function getNullableType(type: ?GraphQLType): ?GraphQLNullableType {
+export function getNullableType<T: GraphQLType>(
+  type: ?T
+): ?(T & GraphQLNullableType) {
   return type instanceof GraphQLNonNull ? type.ofType : type;
 }
 

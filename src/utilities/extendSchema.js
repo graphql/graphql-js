@@ -190,16 +190,16 @@ export function extendSchema(
   };
 
   // Get the root Query, Mutation, and Subscription object types.
-  const queryType = getObjectTypeFromDef(schema.getQueryType());
+  const queryType = getTypeFromDef(schema.getQueryType());
 
   const existingMutationType = schema.getMutationType();
   const mutationType = existingMutationType ?
-    getObjectTypeFromDef(existingMutationType) :
+    getTypeFromDef(existingMutationType) :
     null;
 
   const existingSubscriptionType = schema.getSubscriptionType();
   const subscriptionType = existingSubscriptionType ?
-    getObjectTypeFromDef(existingSubscriptionType) :
+    getTypeFromDef(existingSubscriptionType) :
     null;
 
   // Iterate through all types, getting the type definition for each, ensuring
@@ -227,10 +227,10 @@ export function extendSchema(
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
-  function getTypeFromDef(typeDef: GraphQLNamedType): GraphQLNamedType {
+  function getTypeFromDef<T: GraphQLNamedType>(typeDef: T): T {
     const type = _getNamedType(typeDef.name);
-    invariant(type, 'Invalid schema');
-    return type;
+    invariant(type, 'Missing type from schema');
+    return (type: any);
   }
 
   function getTypeFromAST(astNode: NamedType): GraphQLNamedType {
@@ -245,29 +245,15 @@ export function extendSchema(
     return type;
   }
 
-  function getObjectTypeFromDef(typeDef: GraphQLObjectType): GraphQLObjectType {
-    const type = getTypeFromDef(typeDef);
-    invariant(type instanceof GraphQLObjectType, 'Must be Object type.');
-    return type;
-  }
-
   function getObjectTypeFromAST(astNode: NamedType): GraphQLObjectType {
     const type = getTypeFromAST(astNode);
     invariant(type instanceof GraphQLObjectType, 'Must be Object type.');
     return type;
   }
 
-  function getInterfaceTypeFromDef(
-    typeDef: GraphQLInterfaceType
-  ): GraphQLInterfaceType {
-    const type = getTypeFromDef(typeDef);
-    invariant(type instanceof GraphQLInterfaceType, 'Must be Object type.');
-    return type;
-  }
-
   function getInterfaceTypeFromAST(astNode: NamedType): GraphQLInterfaceType {
     const type = getTypeFromAST(astNode);
-    invariant(type instanceof GraphQLInterfaceType, 'Must be Object type.');
+    invariant(type instanceof GraphQLInterfaceType, 'Must be Interface type.');
     return type;
   }
 
@@ -308,7 +294,7 @@ export function extendSchema(
 
   // Given a type's introspection result, construct the correct
   // GraphQLType instance.
-  function extendType(type: GraphQLType): GraphQLType {
+  function extendType(type: GraphQLNamedType): GraphQLNamedType {
     if (type instanceof GraphQLObjectType) {
       return extendObjectType(type);
     }
@@ -345,7 +331,7 @@ export function extendSchema(
     return new GraphQLUnionType({
       name: type.name,
       description: type.description,
-      types: type.getTypes().map(getObjectTypeFromDef),
+      types: type.getTypes().map(getTypeFromDef),
       resolveType: cannotExecuteClientSchema,
     });
   }
@@ -353,7 +339,7 @@ export function extendSchema(
   function extendImplementedInterfaces(
     type: GraphQLObjectType
   ): Array<GraphQLInterfaceType> {
-    const interfaces = type.getInterfaces().map(getInterfaceTypeFromDef);
+    const interfaces = type.getInterfaces().map(getTypeFromDef);
 
     // If there are any extensions to the interfaces, apply those here.
     const extensions = typeExtensionsMap[type.name];
@@ -415,17 +401,17 @@ export function extendSchema(
     return newFieldMap;
   }
 
-  function extendFieldType(type: GraphQLType): GraphQLType {
-    if (type instanceof GraphQLList) {
-      return new GraphQLList(extendFieldType(type.ofType));
+  function extendFieldType<T: GraphQLType>(typeDef: T): T {
+    if (typeDef instanceof GraphQLList) {
+      return (new GraphQLList(extendFieldType(typeDef.ofType)): any);
     }
-    if (type instanceof GraphQLNonNull) {
-      return new GraphQLNonNull(extendFieldType(type.ofType));
+    if (typeDef instanceof GraphQLNonNull) {
+      return (new GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
     }
-    return getTypeFromDef(type);
+    return getTypeFromDef(typeDef);
   }
 
-  function buildType(typeAST: TypeDefinition): GraphQLType {
+  function buildType(typeAST: TypeDefinition): GraphQLNamedType {
     switch (typeAST.kind) {
       case OBJECT_TYPE_DEFINITION: return buildObjectType(typeAST);
       case INTERFACE_TYPE_DEFINITION: return buildInterfaceType(typeAST);
@@ -434,6 +420,7 @@ export function extendSchema(
       case ENUM_TYPE_DEFINITION: return buildEnumType(typeAST);
       case INPUT_OBJECT_TYPE_DEFINITION: return buildInputObjectType(typeAST);
     }
+    throw new TypeError('Unknown type kind ' + typeAST.kind);
   }
 
   function buildObjectType(typeAST: ObjectTypeDefinition): GraphQLObjectType {
@@ -523,7 +510,9 @@ export function extendSchema(
       return new GraphQLList(buildInputFieldType(typeAST.type));
     }
     if (typeAST.kind === NON_NULL_TYPE) {
-      return new GraphQLNonNull(buildInputFieldType(typeAST.type));
+      const nullableType = buildInputFieldType(typeAST.type);
+      invariant(!(nullableType instanceof GraphQLNonNull), 'Must be nullable');
+      return new GraphQLNonNull(nullableType);
     }
     return getInputTypeFromAST(typeAST);
   }
@@ -533,7 +522,9 @@ export function extendSchema(
       return new GraphQLList(buildOutputFieldType(typeAST.type));
     }
     if (typeAST.kind === NON_NULL_TYPE) {
-      return new GraphQLNonNull(buildOutputFieldType(typeAST.type));
+      const nullableType = buildOutputFieldType(typeAST.type);
+      invariant(!(nullableType instanceof GraphQLNonNull), 'Must be nullable');
+      return new GraphQLNonNull(nullableType);
     }
     return getOutputTypeFromAST(typeAST);
   }

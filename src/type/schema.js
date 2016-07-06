@@ -16,7 +16,11 @@ import {
   GraphQLList,
   GraphQLNonNull
 } from './definition';
-import type { GraphQLType, GraphQLAbstractType } from './definition';
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLAbstractType
+} from './definition';
 import { GraphQLDirective, specifiedDirectives } from './directives';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
@@ -104,7 +108,7 @@ export class GraphQLSchema {
     this._directives = config.directives || specifiedDirectives;
 
     // Build type map now to detect any errors within this schema.
-    let initialTypes: Array<?GraphQLType> = [
+    let initialTypes: Array<?GraphQLNamedType> = [
       this.getQueryType(),
       this.getMutationType(),
       this.getSubscriptionType(),
@@ -164,7 +168,7 @@ export class GraphQLSchema {
     return this._typeMap;
   }
 
-  getType(name: string): ?GraphQLType {
+  getType(name: string): ?GraphQLNamedType {
     return this.getTypeMap()[name];
   }
 
@@ -214,13 +218,13 @@ export class GraphQLSchema {
   }
 }
 
-type TypeMap = { [typeName: string]: GraphQLType }
+type TypeMap = { [typeName: string]: GraphQLNamedType }
 
 type GraphQLSchemaConfig = {
   query: GraphQLObjectType;
   mutation?: ?GraphQLObjectType;
   subscription?: ?GraphQLObjectType;
-  types?: ?Array<GraphQLType>;
+  types?: ?Array<GraphQLNamedType>;
   directives?: ?Array<GraphQLDirective>;
 }
 
