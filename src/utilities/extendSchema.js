@@ -81,6 +81,9 @@ import type {
   InputObjectTypeDefinition,
 } from '../language/ast';
 
+import {
+  castToNamedType
+} from '../jsutils/typecast';
 
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -206,7 +209,7 @@ export function extendSchema(
   // that any type not directly referenced by a field will get created.
   const typeMap = schema.getTypeMap();
   const types = Object.keys(typeMap).map(typeName =>
-    getTypeFromDef(typeMap[typeName])
+    getTypeFromDef(castToNamedType(typeMap[typeName]))
   );
 
   // Do the same with new types, appending to the list of defined types.
@@ -293,7 +296,7 @@ export function extendSchema(
 
     const existingType = schema.getType(typeName);
     if (existingType) {
-      const typeDef = extendType(existingType);
+      const typeDef = castToNamedType(extendType(existingType));
       typeDefCache[typeName] = typeDef;
       return typeDef;
     }
@@ -420,12 +423,14 @@ export function extendSchema(
       return new GraphQLList(extendFieldType(type.ofType));
     }
     if (type instanceof GraphQLNonNull) {
-      return new GraphQLNonNull(extendFieldType(type.ofType));
+      const innerType = extendFieldType(type.ofType);
+      invariant(!(innerType instanceof GraphQLNonNull),'No nesting nonnull.');
+      return new GraphQLNonNull(innerType);
     }
     return getTypeFromDef(type);
   }
 
-  function buildType(typeAST: TypeDefinition): GraphQLType {
+  function buildType(typeAST: TypeDefinition): GraphQLNamedType {
     switch (typeAST.kind) {
       case OBJECT_TYPE_DEFINITION: return buildObjectType(typeAST);
       case INTERFACE_TYPE_DEFINITION: return buildInterfaceType(typeAST);
@@ -434,6 +439,8 @@ export function extendSchema(
       case ENUM_TYPE_DEFINITION: return buildEnumType(typeAST);
       case INPUT_OBJECT_TYPE_DEFINITION: return buildInputObjectType(typeAST);
     }
+    invariant(false, 'typeAST.kind must be ' +
+    'OBJECT|INTERFACE|UNION|SCALAR|ENUM|INPUT');
   }
 
   function buildObjectType(typeAST: ObjectTypeDefinition): GraphQLObjectType {
@@ -523,7 +530,9 @@ export function extendSchema(
       return new GraphQLList(buildInputFieldType(typeAST.type));
     }
     if (typeAST.kind === NON_NULL_TYPE) {
-      return new GraphQLNonNull(buildInputFieldType(typeAST.type));
+      const innerType = buildInputFieldType(typeAST.type);
+      invariant(!(innerType instanceof GraphQLNonNull),'No nesting nonnull.');
+      return new GraphQLNonNull(innerType);
     }
     return getInputTypeFromAST(typeAST);
   }
@@ -533,7 +542,9 @@ export function extendSchema(
       return new GraphQLList(buildOutputFieldType(typeAST.type));
     }
     if (typeAST.kind === NON_NULL_TYPE) {
-      return new GraphQLNonNull(buildOutputFieldType(typeAST.type));
+      const innerType = buildOutputFieldType(typeAST.type);
+      invariant(!(innerType instanceof GraphQLNonNull),'No nesting nonnull.');
+      return new GraphQLNonNull(innerType);
     }
     return getOutputTypeFromAST(typeAST);
   }
