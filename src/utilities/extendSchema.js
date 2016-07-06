@@ -24,6 +24,8 @@ import {
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  isInputType,
+  isOutputType,
 } from '../type/definition';
 
 import {
@@ -61,6 +63,8 @@ import {
 import type {
   GraphQLType,
   GraphQLNamedType,
+  GraphQLInputType,
+  GraphQLOutputType,
 } from '../type/definition';
 
 import type {
@@ -200,8 +204,9 @@ export function extendSchema(
 
   // Iterate through all types, getting the type definition for each, ensuring
   // that any type not directly referenced by a field will get created.
-  const types = Object.keys(schema.getTypeMap()).map(typeName =>
-    getTypeFromDef(schema.getType(typeName))
+  const typeMap = schema.getTypeMap();
+  const types = Object.keys(typeMap).map(typeName =>
+    getTypeFromDef(typeMap[typeName])
   );
 
   // Do the same with new types, appending to the list of defined types.
@@ -264,6 +269,18 @@ export function extendSchema(
     const type = getTypeFromAST(astNode);
     invariant(type instanceof GraphQLInterfaceType, 'Must be Object type.');
     return type;
+  }
+
+  function getInputTypeFromAST(astNode: NamedType): GraphQLInputType {
+    const type = getTypeFromAST(astNode);
+    invariant(isInputType(type), 'Must be Input type.');
+    return (type: any);
+  }
+
+  function getOutputTypeFromAST(astNode: NamedType): GraphQLOutputType {
+    const type = getTypeFromAST(astNode);
+    invariant(isOutputType(type), 'Must be Output type.');
+    return (type: any);
   }
 
   // Given a name, returns a type from either the existing schema or an
@@ -387,7 +404,7 @@ export function extendSchema(
             );
           }
           newFieldMap[fieldName] = {
-            type: buildFieldType(field.type),
+            type: buildOutputFieldType(field.type),
             args: buildInputValues(field.arguments),
             resolve: cannotExecuteClientSchema,
           };
@@ -480,7 +497,7 @@ export function extendSchema(
       typeAST.fields,
       field => field.name.value,
       field => ({
-        type: buildFieldType(field.type),
+        type: buildOutputFieldType(field.type),
         args: buildInputValues(field.arguments),
         resolve: cannotExecuteClientSchema,
       })
@@ -492,7 +509,7 @@ export function extendSchema(
       values,
       value => value.name.value,
       value => {
-        const type = buildFieldType(value.type);
+        const type = buildInputFieldType(value.type);
         return {
           type,
           defaultValue: valueFromAST(value.defaultValue, type)
@@ -501,14 +518,24 @@ export function extendSchema(
     );
   }
 
-  function buildFieldType(typeAST: Type): GraphQLType {
+  function buildInputFieldType(typeAST: Type): GraphQLInputType {
     if (typeAST.kind === LIST_TYPE) {
-      return new GraphQLList(buildFieldType(typeAST.type));
+      return new GraphQLList(buildInputFieldType(typeAST.type));
     }
     if (typeAST.kind === NON_NULL_TYPE) {
-      return new GraphQLNonNull(buildFieldType(typeAST.type));
+      return new GraphQLNonNull(buildInputFieldType(typeAST.type));
     }
-    return getTypeFromAST(typeAST);
+    return getInputTypeFromAST(typeAST);
+  }
+
+  function buildOutputFieldType(typeAST: Type): GraphQLOutputType {
+    if (typeAST.kind === LIST_TYPE) {
+      return new GraphQLList(buildOutputFieldType(typeAST.type));
+    }
+    if (typeAST.kind === NON_NULL_TYPE) {
+      return new GraphQLNonNull(buildOutputFieldType(typeAST.type));
+    }
+    return getOutputTypeFromAST(typeAST);
   }
 }
 

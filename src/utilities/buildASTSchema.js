@@ -47,22 +47,35 @@ import type {
   DirectiveDefinition,
 } from '../language/ast';
 
+import { GraphQLSchema } from '../type/schema';
+
 import {
-  GraphQLSchema,
+  GraphQLString,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLBoolean,
+  GraphQLID,
+} from '../type/scalars';
+
+import {
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLString,
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLBoolean,
-  GraphQLID,
   GraphQLList,
   GraphQLNonNull,
-} from '../type';
+  isInputType,
+  isOutputType,
+} from '../type/definition';
+
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLInputType,
+  GraphQLOutputType,
+} from '../type/definition';
 
 import {
   GraphQLDirective,
@@ -85,11 +98,6 @@ import {
   __EnumValue,
   __TypeKind,
 } from '../type/introspection';
-
-import type {
-  GraphQLType,
-  GraphQLNamedType
-} from '../type/definition';
 
 
 function buildWrappedType(
@@ -275,6 +283,18 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     return buildWrappedType(typeDef, typeAST);
   }
 
+  function produceInputType(typeAST: Type): GraphQLInputType {
+    const type = produceType(typeAST);
+    invariant(isInputType(type), 'Expected Input type.');
+    return (type: any);
+  }
+
+  function produceOutputType(typeAST: Type): GraphQLOutputType {
+    const type = produceType(typeAST);
+    invariant(isOutputType(type), 'Expected Output type.');
+    return (type: any);
+  }
+
   function produceObjectType(typeAST: Type): GraphQLObjectType {
     const type = produceType(typeAST);
     invariant(type instanceof GraphQLObjectType, 'Expected Object type.');
@@ -343,7 +363,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
       def.fields,
       field => field.name.value,
       field => ({
-        type: produceType(field.type),
+        type: produceOutputType(field.type),
         args: makeInputValues(field.arguments),
         deprecationReason: getDeprecationReason(field.directives)
       })
@@ -360,7 +380,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
       values,
       value => value.name.value,
       value => {
-        const type = produceType(value.type);
+        const type = produceInputType(value.type);
         return { type, defaultValue: valueFromAST(value.defaultValue, type) };
       }
     );
