@@ -181,8 +181,8 @@ export function visit(root, visitor, keyMap) {
         }
         let editOffset = 0;
         for (let ii = 0; ii < edits.length; ii++) {
-          let [ editKey ] = edits[ii];
-          const [ , editValue ] = edits[ii];
+          let editKey = edits[ii][0];
+          const editValue = edits[ii][1];
           if (inArray) {
             editKey -= editOffset;
           }
