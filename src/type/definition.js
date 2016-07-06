@@ -27,14 +27,9 @@ import type { GraphQLSchema } from './schema';
  * These are all of the possible kinds of types.
  */
 export type GraphQLType =
-  GraphQLScalarType |
-  GraphQLObjectType |
-  GraphQLInterfaceType |
-  GraphQLUnionType |
-  GraphQLEnumType |
-  GraphQLInputObjectType |
-  GraphQLList |
-  GraphQLNonNull;
+  GraphQLNamedType |
+  GraphQLList<any> |
+  GraphQLNonNull<any>;
 
 export function isType(type: mixed): boolean {
   return (
@@ -73,6 +68,23 @@ export function isInputType(type: ?GraphQLType): boolean {
   );
 }
 
+/*
+ * ToDo: should check inner type for GraphQLList|GraphQLNonNull later
+**/
+export function castToInputType(type: GraphQLType,eMsg?: string)
+: GraphQLInputType {
+  if (
+    type instanceof GraphQLScalarType ||
+    type instanceof GraphQLEnumType ||
+    type instanceof GraphQLInputObjectType ||
+    type instanceof GraphQLList ||
+    type instanceof GraphQLNonNull
+  ) {
+    return type;
+  }
+  invariant(false, eMsg ? eMsg : 'The given type is not a GraphQLInputType');
+}
+
 /**
  * These types may be used as output types as the result of fields.
  */
@@ -101,6 +113,24 @@ export function isOutputType(type: ?GraphQLType): boolean {
     namedType instanceof GraphQLUnionType ||
     namedType instanceof GraphQLEnumType
   );
+}
+
+/*
+ * ToDo: should check inner type for GraphQLList|GraphQLNonNull later
+**/
+export function castToOutputType(type: GraphQLType, eMsg?: string)
+: GraphQLOutputType {
+  if (type instanceof GraphQLScalarType ||
+      type instanceof GraphQLObjectType ||
+      type instanceof GraphQLInterfaceType ||
+      type instanceof GraphQLUnionType ||
+      type instanceof GraphQLEnumType ||
+      type instanceof GraphQLList ||
+      type instanceof GraphQLNonNull
+  ) {
+    return type;
+  }
+  invariant(false, eMsg ? eMsg : 'The given type is not a GraphQLOutputType');
 }
 
 /**
@@ -158,7 +188,7 @@ export type GraphQLNullableType =
   GraphQLUnionType |
   GraphQLEnumType |
   GraphQLInputObjectType |
-  GraphQLList;
+  GraphQLList<any>;
 
 export function getNullableType(type: ?GraphQLType): ?GraphQLNullableType {
   return type instanceof GraphQLNonNull ? type.ofType : type;
@@ -186,6 +216,19 @@ export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
   return unmodifiedType;
 }
 
+export function castToNamedType(type: ?GraphQLType, eMsg?: string)
+: GraphQLNamedType {
+  if (type instanceof GraphQLScalarType ||
+      type instanceof GraphQLObjectType ||
+      type instanceof GraphQLInterfaceType ||
+      type instanceof GraphQLUnionType ||
+      type instanceof GraphQLEnumType ||
+      type instanceof GraphQLInputObjectType
+  ) {
+    return type;
+  }
+  invariant(false, eMsg ? eMsg : 'The given type is not a GraphQLNamedType');
+}
 
 /**
  * Used while defining GraphQL types to allow for circular references in
