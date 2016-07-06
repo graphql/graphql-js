@@ -64,10 +64,15 @@ describe('Validate: Supports full validation', () => {
       specifiedRules
     );
 
-    expect(errors).to.deep.equal([
-      new Error('Cannot query field "catOrDog" on type "QueryRoot".'),
-      new Error('Cannot query field "furColor" on type "Cat".'),
-      new Error('Cannot query field "isHousetrained" on type "Dog".'),
+    const errorMessages = errors.map(err => err.message);
+
+    expect(errorMessages).to.deep.equal([
+      'Cannot query field "catOrDog" on type "QueryRoot". ' +
+      'Did you mean "catOrDog"?',
+      'Cannot query field "furColor" on type "Cat". ' +
+      'Did you mean "furColor"?',
+      'Cannot query field "isHousetrained" on type "Dog". ' +
+      'Did you mean "isHousetrained"?'
     ]);
   });
 
