@@ -33,8 +33,8 @@ export type GraphQLType =
   GraphQLUnionType |
   GraphQLEnumType |
   GraphQLInputObjectType |
-  GraphQLList |
-  GraphQLNonNull;
+  GraphQLList<any> |
+  GraphQLNonNull<any>;
 
 export function isType(type: mixed): boolean {
   return (
@@ -158,7 +158,7 @@ export type GraphQLNullableType =
   GraphQLUnionType |
   GraphQLEnumType |
   GraphQLInputObjectType |
-  GraphQLList;
+  GraphQLList<*>;
 
 export function getNullableType<T: GraphQLType>(
   type: ?T
