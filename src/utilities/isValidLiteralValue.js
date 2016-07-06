@@ -85,17 +85,17 @@ export function isValidLiteralValue(
 
     // Ensure every provided field is defined.
     const fieldASTs = (valueAST: ObjectValue).fields;
-    for (const providedFieldAST of fieldASTs) {
+    fieldASTs.forEach(providedFieldAST => {
       if (!fields[providedFieldAST.name.value]) {
         errors.push(
           `In field "${providedFieldAST.name.value}": Unknown field.`
         );
       }
-    }
+    });
 
     // Ensure every defined field is valid.
     const fieldASTMap = keyMap(fieldASTs, fieldAST => fieldAST.name.value);
-    for (const fieldName of Object.keys(fields)) {
+    Object.keys(fields).forEach(fieldName => {
       const result = isValidLiteralValue(
         fields[fieldName].type,
         fieldASTMap[fieldName] && fieldASTMap[fieldName].value
@@ -103,7 +103,7 @@ export function isValidLiteralValue(
       errors.push(...(result.map(error =>
         `In field "${fieldName}": ${error}`
       )));
-    }
+    });
 
     return errors;
   }

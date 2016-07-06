@@ -65,20 +65,21 @@ export function isValidJSValue(value: mixed, type: GraphQLInputType): [string] {
     const errors = [];
 
     // Ensure every provided field is defined.
-    for (const providedField of Object.keys(value)) {
+    Object.keys(value).forEach(providedField => {
       if (!fields[providedField]) {
         errors.push(`In field "${providedField}": Unknown field.`);
       }
-    }
+    });
 
     // Ensure every defined field is valid.
-    for (const fieldName of Object.keys(fields)) {
+    Object.keys(fields).forEach(fieldName => {
       const newErrors =
-        isValidJSValue(value[fieldName], fields[fieldName].type);
+        isValidJSValue((value: any)[fieldName], fields[fieldName].type);
       errors.push(...(newErrors.map(error =>
         `In field "${fieldName}": ${error}`
       )));
-    }
+    });
+
     return errors;
   }
 
