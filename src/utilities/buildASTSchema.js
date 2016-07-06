@@ -66,8 +66,6 @@ import {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
-  isInputType,
-  isOutputType,
 } from '../type/definition';
 
 import type {
@@ -98,6 +96,11 @@ import {
   __EnumValue,
   __TypeKind,
 } from '../type/introspection';
+
+import {
+  castToInputType,
+  castToOutputType,
+} from '../jsutils/typecast';
 
 
 function buildWrappedType(
@@ -284,15 +287,13 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
   }
 
   function produceInputType(typeAST: Type): GraphQLInputType {
-    const type = produceType(typeAST);
-    invariant(isInputType(type), 'Expected Input type.');
-    return (type: any);
+    return castToInputType(
+      produceType(typeAST), 'Expected Input type.');
   }
 
   function produceOutputType(typeAST: Type): GraphQLOutputType {
-    const type = produceType(typeAST);
-    invariant(isOutputType(type), 'Expected Output type.');
-    return (type: any);
+    return castToOutputType(
+      produceType(typeAST), 'Expected Output type.');
   }
 
   function produceObjectType(typeAST: Type): GraphQLObjectType {
