@@ -114,7 +114,7 @@ function printType(type: GraphQLType): string {
   return printInputObject(type);
 }
 
-function printScalar(type: GraphQLScalarType<any>): string {
+function printScalar(type: GraphQLScalarType<any, any>): string {
   return `scalar ${type.name}`;
 }
 

@@ -228,12 +228,6 @@ export function extendSchema(
     return type;
   }
 
-  function getObjectTypeFromDef(typeDef: GraphQLObjectType): GraphQLObjectType {
-    const type = _getNamedType(typeDef.name);
-    invariant(type instanceof GraphQLObjectType, 'Invalid schema');
-    return type;
-  }
-
   function getTypeFromAST(astNode: NamedType): GraphQLNamedType {
     const type = _getNamedType(astNode.name.value);
     if (!type) {
@@ -243,6 +237,32 @@ export function extendSchema(
         [ astNode ]
       );
     }
+    return type;
+  }
+
+  function getObjectTypeFromDef(typeDef: GraphQLObjectType): GraphQLObjectType {
+    const type = getTypeFromDef(typeDef);
+    invariant(type instanceof GraphQLObjectType, 'Must be Object type.');
+    return type;
+  }
+
+  function getObjectTypeFromAST(astNode: NamedType): GraphQLObjectType {
+    const type = getTypeFromAST(astNode);
+    invariant(type instanceof GraphQLObjectType, 'Must be Object type.');
+    return type;
+  }
+
+  function getInterfaceTypeFromDef(
+    typeDef: GraphQLInterfaceType
+  ): GraphQLInterfaceType {
+    const type = getTypeFromDef(typeDef);
+    invariant(type instanceof GraphQLInterfaceType, 'Must be Object type.');
+    return type;
+  }
+
+  function getInterfaceTypeFromAST(astNode: NamedType): GraphQLInterfaceType {
+    const type = getTypeFromAST(astNode);
+    invariant(type instanceof GraphQLInterfaceType, 'Must be Object type.');
     return type;
   }
 
@@ -316,7 +336,7 @@ export function extendSchema(
   function extendImplementedInterfaces(
     type: GraphQLObjectType
   ): Array<GraphQLInterfaceType> {
-    const interfaces = type.getInterfaces().map(getTypeFromDef);
+    const interfaces = type.getInterfaces().map(getInterfaceTypeFromDef);
 
     // If there are any extensions to the interfaces, apply those here.
     const extensions = typeExtensionsMap[type.name];
@@ -331,7 +351,7 @@ export function extendSchema(
               [ namedType ]
             );
           }
-          interfaces.push(getTypeFromAST(namedType));
+          interfaces.push(getInterfaceTypeFromAST(namedType));
         });
       });
     }
@@ -418,7 +438,7 @@ export function extendSchema(
   function buildUnionType(typeAST: UnionTypeDefinition) {
     return new GraphQLUnionType({
       name: typeAST.name.value,
-      types: typeAST.types.map(getTypeFromAST),
+      types: typeAST.types.map(getObjectTypeFromAST),
       resolveType: cannotExecuteClientSchema,
     });
   }
@@ -451,7 +471,8 @@ export function extendSchema(
   }
 
   function buildImplementedInterfaces(typeAST: ObjectTypeDefinition) {
-    return typeAST.interfaces.map(getTypeFromAST);
+    return typeAST.interfaces &&
+      typeAST.interfaces.map(getInterfaceTypeFromAST);
   }
 
   function buildFieldMap(typeAST) {

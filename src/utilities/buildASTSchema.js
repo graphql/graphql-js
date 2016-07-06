@@ -92,11 +92,6 @@ import type {
 } from '../type/definition';
 
 
-type CompositeDefinition =
-  ObjectTypeDefinition |
-  InterfaceTypeDefinition |
-  UnionTypeDefinition;
-
 function buildWrappedType(
   innerType: GraphQLType,
   inputTypeAST: Type
@@ -259,9 +254,9 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     return new GraphQLDirective({
       name: directiveAST.name.value,
       locations: directiveAST.locations.map(
-        node => (node.value: DirectiveLocationEnum)
+        node => ((node.value: any): DirectiveLocationEnum)
       ),
-      args: makeInputValues(directiveAST.arguments),
+      args: directiveAST.arguments && makeInputValues(directiveAST.arguments),
     });
   }
 
@@ -274,10 +269,22 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     return (type: any);
   }
 
-  function produceTypeDef(typeAST: Type): GraphQLType {
+  function produceType(typeAST: Type): GraphQLType {
     const typeName = getNamedTypeAST(typeAST).name.value;
     const typeDef = typeDefNamed(typeName);
     return buildWrappedType(typeDef, typeAST);
+  }
+
+  function produceObjectType(typeAST: Type): GraphQLObjectType {
+    const type = produceType(typeAST);
+    invariant(type instanceof GraphQLObjectType, 'Expected Object type.');
+    return type;
+  }
+
+  function produceInterfaceType(typeAST: Type): GraphQLInterfaceType {
+    const type = produceType(typeAST);
+    invariant(type instanceof GraphQLInterfaceType, 'Expected Object type.');
+    return type;
   }
 
   function typeDefNamed(typeName: string): GraphQLNamedType {
@@ -329,12 +336,14 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     return new GraphQLObjectType(config);
   }
 
-  function makeFieldDefMap(def: CompositeDefinition) {
+  function makeFieldDefMap(
+    def: ObjectTypeDefinition | InterfaceTypeDefinition
+  ) {
     return keyValMap(
       def.fields,
       field => field.name.value,
       field => ({
-        type: produceTypeDef(field.type),
+        type: produceType(field.type),
         args: makeInputValues(field.arguments),
         deprecationReason: getDeprecationReason(field.directives)
       })
@@ -342,7 +351,8 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
   }
 
   function makeImplementedInterfaces(def: ObjectTypeDefinition) {
-    return def.interfaces.map(inter => produceTypeDef(inter));
+    return def.interfaces &&
+      def.interfaces.map(iface => produceInterfaceType(iface));
   }
 
   function makeInputValues(values: Array<InputValueDefinition>) {
@@ -350,7 +360,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
       values,
       value => value.name.value,
       value => {
-        const type = produceTypeDef(value.type);
+        const type = produceType(value.type);
         return { type, defaultValue: valueFromAST(value.defaultValue, type) };
       }
     );
@@ -385,7 +395,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     return new GraphQLUnionType({
       name: def.name.value,
       resolveType: () => null,
-      types: def.types.map(t => produceTypeDef(t)),
+      types: def.types.map(t => produceObjectType(t)),
     });
   }
 

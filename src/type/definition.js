@@ -188,6 +188,17 @@ export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
 
 
 /**
+ * Used while defining GraphQL types to allow for circular references in
+ * otherwise immutable type definitions.
+ */
+export type Thunk<T> = (() => T) | T;
+
+function resolveThunk<T>(thunk: Thunk<T>): T {
+  return typeof thunk === 'function' ? thunk() : thunk;
+}
+
+
+/**
  * Scalar Type Definition
  *
  * The leaf values of any request and input values to arguments are
@@ -204,13 +215,13 @@ export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
  *     });
  *
  */
-export class GraphQLScalarType<InternalType> {
+export class GraphQLScalarType<TInternal, TExternal> {
   name: string;
   description: ?string;
 
-  _scalarConfig: GraphQLScalarTypeConfig<InternalType>;
+  _scalarConfig: GraphQLScalarTypeConfig<TInternal, TExternal>;
 
-  constructor(config: GraphQLScalarTypeConfig<InternalType>) {
+  constructor(config: GraphQLScalarTypeConfig<TInternal, TExternal>) {
     invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
@@ -232,17 +243,17 @@ export class GraphQLScalarType<InternalType> {
     this._scalarConfig = config;
   }
 
-  serialize(value: InternalType): mixed {
+  serialize(value: TInternal): ?TExternal {
     const serializer = this._scalarConfig.serialize;
     return serializer(value);
   }
 
-  parseValue(value: mixed): ?InternalType {
+  parseValue(value: TExternal): ?TInternal {
     const parser = this._scalarConfig.parseValue;
     return parser ? parser(value) : null;
   }
 
-  parseLiteral(valueAST: Value): ?InternalType {
+  parseLiteral(valueAST: Value): ?TInternal {
     const parser = this._scalarConfig.parseLiteral;
     return parser ? parser(valueAST) : null;
   }
@@ -252,12 +263,12 @@ export class GraphQLScalarType<InternalType> {
   }
 }
 
-export type GraphQLScalarTypeConfig<InternalType> = {
+export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   name: string;
   description?: ?string;
-  serialize: (value: mixed) => ?InternalType;
-  parseValue?: (value: mixed) => ?InternalType;
-  parseLiteral?: (valueAST: Value) => ?InternalType;
+  serialize: (value: TInternal) => ?TExternal;
+  parseValue?: (value: TExternal) => ?TInternal;
+  parseLiteral?: (valueAST: Value) => ?TInternal;
 }
 
 
@@ -304,11 +315,11 @@ export class GraphQLObjectType {
   description: ?string;
   isTypeOf: ?GraphQLIsTypeOfFn;
 
-  _typeConfig: GraphQLObjectTypeConfig;
+  _typeConfig: GraphQLObjectTypeConfig<*>;
   _fields: GraphQLFieldDefinitionMap;
   _interfaces: Array<GraphQLInterfaceType>;
 
-  constructor(config: GraphQLObjectTypeConfig) {
+  constructor(config: GraphQLObjectTypeConfig<*>) {
     invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
@@ -340,15 +351,11 @@ export class GraphQLObjectType {
   }
 }
 
-function resolveMaybeThunk<T>(thingOrThunk: T | () => T): T {
-  return typeof thingOrThunk === 'function' ? thingOrThunk() : thingOrThunk;
-}
-
 function defineInterfaces(
   type: GraphQLObjectType,
-  interfacesOrThunk: Array<GraphQLInterfaceType> | ?GraphQLInterfacesThunk
+  interfacesThunk: Thunk<?Array<GraphQLInterfaceType>>
 ): Array<GraphQLInterfaceType> {
-  const interfaces = resolveMaybeThunk(interfacesOrThunk);
+  const interfaces = resolveThunk(interfacesThunk);
   if (!interfaces) {
     return [];
   }
@@ -378,9 +385,9 @@ function defineInterfaces(
 
 function defineFieldMap(
   type: GraphQLNamedType,
-  fields: GraphQLFieldConfigMap | GraphQLFieldConfigMapThunk
+  fieldsThunk: Thunk<GraphQLFieldConfigMap<*>>
 ): GraphQLFieldDefinitionMap {
-  const fieldMap: any = resolveMaybeThunk(fields);
+  const fieldMap = resolveThunk(fieldsThunk);
   invariant(
     isPlainObj(fieldMap),
     `${type.name} fields must be an object with field names as keys or a ` +
@@ -397,8 +404,9 @@ function defineFieldMap(
   const resultFieldMap = {};
   fieldNames.forEach(fieldName => {
     assertValidName(fieldName);
+    const fieldConfig = fieldMap[fieldName];
     const field = {
-      ...fieldMap[fieldName],
+      ...fieldConfig,
       name: fieldName
     };
     invariant(
@@ -411,17 +419,18 @@ function defineFieldMap(
       `${type.name}.${fieldName} field type must be Output Type but ` +
       `got: ${String(field.type)}.`
     );
-    if (!field.args) {
+    const argsConfig = fieldConfig.args;
+    if (!argsConfig) {
       field.args = [];
     } else {
       invariant(
-        isPlainObj(field.args),
+        isPlainObj(argsConfig),
         `${type.name}.${fieldName} args must be an object with argument ` +
         'names as keys.'
       );
-      field.args = Object.keys(field.args).map(argName => {
+      field.args = Object.keys(argsConfig).map(argName => {
         assertValidName(argName);
-        const arg = field.args[argName];
+        const arg = argsConfig[argName];
         invariant(
           isInputType(arg.type),
           `${type.name}.${fieldName}(${argName}:) argument type must be ` +
@@ -444,17 +453,13 @@ function isPlainObj(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
 }
 
-export type GraphQLObjectTypeConfig = {
+export type GraphQLObjectTypeConfig<TSource> = {
   name: string;
-  interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
-  fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap;
-  isTypeOf?: GraphQLIsTypeOfFn;
+  interfaces?: Thunk<?Array<GraphQLInterfaceType>>;
+  fields: Thunk<GraphQLFieldConfigMap<TSource>>;
+  isTypeOf?: ?GraphQLIsTypeOfFn;
   description?: ?string
 }
-
-type GraphQLInterfacesThunk = () => Array<GraphQLInterfaceType>;
-
-type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
 
 export type GraphQLTypeResolveFn = (
   value: mixed,
@@ -463,13 +468,13 @@ export type GraphQLTypeResolveFn = (
 ) => ?GraphQLObjectType
 
 export type GraphQLIsTypeOfFn = (
-  value: mixed,
+  source: mixed,
   context: mixed,
   info: GraphQLResolveInfo
 ) => boolean
 
-export type GraphQLFieldResolveFn = (
-  source: mixed,
+export type GraphQLFieldResolveFn<TSource> = (
+  source: TSource,
   args: {[argName: string]: mixed},
   context: mixed,
   info: GraphQLResolveInfo
@@ -488,10 +493,10 @@ export type GraphQLResolveInfo = {
   variableValues: { [variableName: string]: mixed };
 }
 
-export type GraphQLFieldConfig = {
+export type GraphQLFieldConfig<TSource> = {
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;
-  resolve?: GraphQLFieldResolveFn;
+  resolve?: GraphQLFieldResolveFn<TSource>;
   deprecationReason?: ?string;
   description?: ?string;
 }
@@ -506,8 +511,8 @@ export type GraphQLArgumentConfig = {
   description?: ?string;
 }
 
-export type GraphQLFieldConfigMap = {
-  [fieldName: string]: GraphQLFieldConfig;
+export type GraphQLFieldConfigMap<TSource> = {
+  [fieldName: string]: GraphQLFieldConfig<TSource>;
 };
 
 export type GraphQLFieldDefinition = {
@@ -515,7 +520,7 @@ export type GraphQLFieldDefinition = {
   description: ?string;
   type: GraphQLOutputType;
   args: Array<GraphQLArgument>;
-  resolve?: GraphQLFieldResolveFn;
+  resolve?: GraphQLFieldResolveFn<*>;
   deprecationReason?: ?string;
 }
 
@@ -585,13 +590,13 @@ export class GraphQLInterfaceType {
 
 export type GraphQLInterfaceTypeConfig = {
   name: string,
-  fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap,
+  fields: Thunk<GraphQLFieldConfigMap<mixed>>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: GraphQLTypeResolveFn,
+  resolveType?: ?GraphQLTypeResolveFn,
   description?: ?string
 };
 
@@ -880,7 +885,7 @@ export class GraphQLInputObjectType {
   }
 
   _defineFieldMap(): InputObjectFieldMap {
-    const fieldMap: any = resolveMaybeThunk(this._typeConfig.fields);
+    const fieldMap: any = resolveThunk(this._typeConfig.fields);
     invariant(
       isPlainObj(fieldMap),
       `${this.name} fields must be an object with field names as keys or a ` +
@@ -916,11 +921,9 @@ export class GraphQLInputObjectType {
 
 export type InputObjectConfig = {
   name: string;
-  fields: InputObjectConfigFieldMapThunk | InputObjectConfigFieldMap;
+  fields: Thunk<InputObjectConfigFieldMap>;
   description?: ?string;
 }
-
-export type InputObjectConfigFieldMapThunk = () => InputObjectConfigFieldMap;
 
 export type InputObjectFieldConfig = {
   type: GraphQLInputType;
