@@ -26,9 +26,9 @@ import { GraphQLString } from '../type/scalars';
 import { DEFAULT_DEPRECATION_REASON } from '../type/directives';
 
 
-// type printStyle = 'alphabet' | 'hierarchy';
+type printStyle = 'alphabet' | 'hierarchy';
 export function printSchema(
-  schema: GraphQLSchema,style: string = 'alphabet'): string {
+  schema: GraphQLSchema,style: printStyle = 'alphabet'): string {
   switch (style) {
     case 'hierarchy':
       return printFineSchema(schema, n => !isSpecDirective(n));
@@ -256,7 +256,7 @@ function getOrderedNamesBySchema(schema) {
   return orderedNames;
 }
 
-function flatNamesMapToArray(leveledNamesMap:Map):Array<string> {
+function flatNamesMapToArray(leveledNamesMap: Map<*, *>): Array<string> {
   const levelToNamesMap = flipMap(leveledNamesMap);
   const nameLevels = Array.from(levelToNamesMap.keys());
   nameLevels.sort((pre,next) => ( next - pre ));
@@ -276,13 +276,13 @@ function flatNamesMapToArray(leveledNamesMap:Map):Array<string> {
 }
 
 type NamesMap = {
-  leveledNamesMap:Map,
-  unLeveledNamesMap:Map,
+  leveledNamesMap:Map<*, *>,
+  unLeveledNamesMap:Map<*, *>,
 };
 
 // calculate level values for each type names by their reference to each other
-function levelTypeNames(rootName:string,namesMapToBeLeveled:Map,
-                        schema:GraphQLSchema):NamesMap {
+function levelTypeNames(rootName: string,namesMapToBeLeveled: Map<*, *>,
+                        schema: GraphQLSchema): NamesMap {
   const typeMap = schema.getTypeMap();
   const unLeveledNamesMap = new Map(namesMapToBeLeveled);
   const leveledNamesMap = new Map();
@@ -322,7 +322,7 @@ function levelTypeNames(rootName:string,namesMapToBeLeveled:Map,
 // always return an array ,if get none,just return []
 // three sources of reference from a type.
 // field itself, args of a fields,interface
-function getRefedTypes(type:any):Array<string> {
+function getRefedTypes(type: any): Array<string> {
   let refedTypeNames = [];
   if (!isDefinedType(type.name) ||
       // as i known ~_~,if there is no Fields
@@ -358,8 +358,8 @@ function getRefedTypes(type:any):Array<string> {
 
 }
 
-function arrayToMap(_array:Array<string>,
-                    defaultValue:number):Map<string,number> {
+function arrayToMap(_array: Array<string>,
+                    defaultValue: number): Map<string, number> {
   const _map = new Map();
   for (const v of _array) {
     _map.set(v,defaultValue);
@@ -367,7 +367,7 @@ function arrayToMap(_array:Array<string>,
   return _map;
 }
 
-function flipMap(_srcMap:Map<string,number>):Map<number,Array<string>> {
+function flipMap(_srcMap: Map<string, number>): Map<number, Array<string>> {
   const _outMap = new Map();
   for (const [ oldKey,vToKey ] of _srcMap) {
     const subArray = _outMap.get(vToKey);
@@ -380,7 +380,7 @@ function flipMap(_srcMap:Map<string,number>):Map<number,Array<string>> {
   return _outMap;
 }
 
-function getTypeName(type:any):string {
+function getTypeName(type: any): string {
   const typeString = type.constructor.name;
   let name = type.name;
   if (typeString === 'GraphQLNonNull' || typeString === 'GraphQLList' ) {
@@ -395,7 +395,7 @@ function getTypeName(type:any):string {
   return name;
 }
 
-function getDefinedTypeNameByType(TypeObj:GraphQLType):?string {
+function getDefinedTypeNameByType(TypeObj: GraphQLType): ?string {
   const typeName = getTypeName(TypeObj);
   if (isDefinedType(typeName)) {
     return typeName;
