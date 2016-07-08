@@ -596,7 +596,7 @@ function resolveField(
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
 function resolveOrError(
-  resolveFn: GraphQLFieldResolveFn<*>,
+  resolveFn: GraphQLFieldResolveFn<*, *>,
   source: mixed,
   args: { [key: string]: mixed },
   context: mixed,

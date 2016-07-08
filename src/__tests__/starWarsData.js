@@ -1,10 +1,12 @@
+/* @flow */
+/* eslint quote-props: ["error", "as-needed",
+{ "keywords": true, "unnecessary": false }]*/
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
  *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
-
 /**
  * This defines a basic set of data for our Star Wars Schema.
  *
@@ -12,6 +14,8 @@
  * fetching this data from a backend service rather than from hardcoded
  * JSON objects in a more complex demo.
  */
+
+import invariant from '../jsutils/invariant';
 
 const luke = {
   id: '1000',
@@ -81,9 +85,37 @@ const droidData = {
 };
 
 /**
+ * These are data types corresponding to the schema design.
+ * They represent what the input and output datas should be
+ * in schema's resolving hierarchy.
+ * If the schema is re-designed,these types should be re-designed too.
+ */
+export type Character = {
+  id: string,
+  name?: string,
+  friends?: Array<string>,
+  appearsIn?: Array<number>,
+};
+
+export type Human = {
+  id: string,
+  name?: string,
+  friends?: Array<string>,
+  appearsIn?: Array<number>,
+  homePlanet?: string,
+};
+
+export type Droid = {
+  id: string,
+  name?: string,
+  friends?: Array<string>,
+  appearsIn?: Array<number>,
+  primaryFunction?: string
+};
+/**
  * Helper function to get a character by ID.
  */
-function getCharacter(id) {
+function getCharacter(id): Promise<*> {
   // Returning a promise just to illustrate GraphQL.js's support.
   return Promise.resolve(humanData[id] || droidData[id]);
 }
@@ -91,14 +123,20 @@ function getCharacter(id) {
 /**
  * Allows us to query for a character's friends.
  */
-export function getFriends(character) {
+export function getFriends(character: Character): Array<*> {
+  // as you can see,with Flow
+  // If you choose a schema structure like {friends?: Array<*>}.
+  // You must check it ,or re-design your schema.
+  // Flow will keep you away from hiden bugs.
+  invariant(character.friends !== undefined,
+    'Character.friends should not be undefined');
   return character.friends.map(id => getCharacter(id));
 }
 
 /**
  * Allows us to fetch the undisputed hero of the Star Wars trilogy, R2-D2.
  */
-export function getHero(episode) {
+export function getHero(episode: number): Character {
   if (episode === 5) {
     // Luke is the hero of Episode V.
     return luke;
@@ -110,13 +148,13 @@ export function getHero(episode) {
 /**
  * Allows us to query for the human with the given id.
  */
-export function getHuman(id) {
+export function getHuman(id: string): Human {
   return humanData[id];
 }
 
 /**
  * Allows us to query for the droid with the given id.
  */
-export function getDroid(id) {
+export function getDroid(id: string): Droid {
   return droidData[id];
 }
