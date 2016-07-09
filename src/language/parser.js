@@ -14,6 +14,7 @@ import { lex, TokenKind, getTokenKindDesc, getTokenDesc } from './lexer';
 import type { Token } from './lexer';
 import type {
   Name,
+  Description,
   Variable,
 
   Document,
@@ -64,6 +65,7 @@ import type {
 
 import {
   NAME,
+  DESCRIPTION,
   VARIABLE,
 
   DOCUMENT,
@@ -171,6 +173,21 @@ function parseName(parser: Parser): Name {
   };
 }
 
+/**
+ * Converts one or more description lex tokens into a description parse node.
+ */
+function parseDescription(parser: Parser): Description {
+  const tokens = [];
+  do {
+    tokens.push(expect(parser, TokenKind.DESCRIPTION));
+  } while (peek(parser, TokenKind.DESCRIPTION));
+  return {
+    kind: DESCRIPTION,
+    value: tokens.map(token => token.value).join('\n'),
+    loc: loc(parser, tokens[0].start)
+  };
+}
+
 // Implements the parsing rules in the Document section.
 
 /**
@@ -202,6 +219,11 @@ function parseDefinition(parser: Parser): Definition {
     return parseOperationDefinition(parser);
   }
 
+  let description = null;
+  if (peek(parser, TokenKind.DESCRIPTION)) {
+    description = parseDescription(parser);
+  }
+
   if (peek(parser, TokenKind.NAME)) {
     switch (parser.token.value) {
       // Note: subscription is an experimental non-spec addition.
@@ -221,7 +243,7 @@ function parseDefinition(parser: Parser): Definition {
       case 'enum':
       case 'input':
       case 'extend':
-      case 'directive': return parseTypeSystemDefinition(parser);
+      case 'directive': return parseTypeSystemDefinition(parser, description);
     }
   }
 
@@ -683,18 +705,30 @@ export function parseNamedType(parser: Parser): NamedType {
  *   - EnumTypeDefinition
  *   - InputObjectTypeDefinition
  */
-function parseTypeSystemDefinition(parser: Parser): TypeSystemDefinition {
+function parseTypeSystemDefinition(
+  parser: Parser,
+  description: ?Description
+): TypeSystemDefinition {
   if (peek(parser, TokenKind.NAME)) {
     switch (parser.token.value) {
-      case 'schema': return parseSchemaDefinition(parser);
-      case 'scalar': return parseScalarTypeDefinition(parser);
-      case 'type': return parseObjectTypeDefinition(parser);
-      case 'interface': return parseInterfaceTypeDefinition(parser);
-      case 'union': return parseUnionTypeDefinition(parser);
-      case 'enum': return parseEnumTypeDefinition(parser);
-      case 'input': return parseInputObjectTypeDefinition(parser);
-      case 'extend': return parseTypeExtensionDefinition(parser);
-      case 'directive': return parseDirectiveDefinition(parser);
+      case 'schema':
+        return parseSchemaDefinition(parser, description);
+      case 'scalar':
+        return parseScalarTypeDefinition(parser, description);
+      case 'type':
+        return parseObjectTypeDefinition(parser, description);
+      case 'interface':
+        return parseInterfaceTypeDefinition(parser, description);
+      case 'union':
+        return parseUnionTypeDefinition(parser, description);
+      case 'enum':
+        return parseEnumTypeDefinition(parser, description);
+      case 'input':
+        return parseInputObjectTypeDefinition(parser, description);
+      case 'directive':
+        return parseDirectiveDefinition(parser, description);
+      case 'extend':
+        return parseTypeExtensionDefinition(parser, description);
     }
   }
 
@@ -740,7 +774,10 @@ function parseOperationTypeDefinition(parser: Parser): OperationTypeDefinition {
 /**
  * ScalarTypeDefinition : scalar Name Directives?
  */
-function parseScalarTypeDefinition(parser: Parser): ScalarTypeDefinition {
+function parseScalarTypeDefinition(
+  parser: Parser,
+  description: ?Description
+): ScalarTypeDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'scalar');
   const name = parseName(parser);
@@ -748,6 +785,7 @@ function parseScalarTypeDefinition(parser: Parser): ScalarTypeDefinition {
   return {
     kind: SCALAR_TYPE_DEFINITION,
     name,
+    description,
     directives,
     loc: loc(parser, start),
   };
@@ -757,7 +795,10 @@ function parseScalarTypeDefinition(parser: Parser): ScalarTypeDefinition {
  * ObjectTypeDefinition :
  *   - type Name ImplementsInterfaces? Directives? { FieldDefinition+ }
  */
-function parseObjectTypeDefinition(parser: Parser): ObjectTypeDefinition {
+function parseObjectTypeDefinition(
+  parser: Parser,
+  description: ?Description
+): ObjectTypeDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'type');
   const name = parseName(parser);
@@ -772,6 +813,7 @@ function parseObjectTypeDefinition(parser: Parser): ObjectTypeDefinition {
   return {
     kind: OBJECT_TYPE_DEFINITION,
     name,
+    description,
     interfaces,
     directives,
     fields,
@@ -797,6 +839,10 @@ function parseImplementsInterfaces(parser: Parser): Array<NamedType> {
  * FieldDefinition : Name ArgumentsDefinition? : Type Directives?
  */
 function parseFieldDefinition(parser: Parser): FieldDefinition {
+  let description = null;
+  if (peek(parser, TokenKind.DESCRIPTION)) {
+    description = parseDescription(parser);
+  }
   const start = parser.token.start;
   const name = parseName(parser);
   const args = parseArgumentDefs(parser);
@@ -806,6 +852,7 @@ function parseFieldDefinition(parser: Parser): FieldDefinition {
   return {
     kind: FIELD_DEFINITION,
     name,
+    description,
     arguments: args,
     type,
     directives,
@@ -827,6 +874,10 @@ function parseArgumentDefs(parser: Parser): Array<InputValueDefinition> {
  * InputValueDefinition : Name : Type DefaultValue? Directives?
  */
 function parseInputValueDef(parser: Parser): InputValueDefinition {
+  let description = null;
+  if (peek(parser, TokenKind.DESCRIPTION)) {
+    description = parseDescription(parser);
+  }
   const start = parser.token.start;
   const name = parseName(parser);
   expect(parser, TokenKind.COLON);
@@ -839,6 +890,7 @@ function parseInputValueDef(parser: Parser): InputValueDefinition {
   return {
     kind: INPUT_VALUE_DEFINITION,
     name,
+    description,
     type,
     defaultValue,
     directives,
@@ -849,7 +901,10 @@ function parseInputValueDef(parser: Parser): InputValueDefinition {
 /**
  * InterfaceTypeDefinition : interface Name Directives? { FieldDefinition+ }
  */
-function parseInterfaceTypeDefinition(parser: Parser): InterfaceTypeDefinition {
+function parseInterfaceTypeDefinition(
+  parser: Parser,
+  description: ?Description
+): InterfaceTypeDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'interface');
   const name = parseName(parser);
@@ -863,6 +918,7 @@ function parseInterfaceTypeDefinition(parser: Parser): InterfaceTypeDefinition {
   return {
     kind: INTERFACE_TYPE_DEFINITION,
     name,
+    description,
     directives,
     fields,
     loc: loc(parser, start),
@@ -872,7 +928,10 @@ function parseInterfaceTypeDefinition(parser: Parser): InterfaceTypeDefinition {
 /**
  * UnionTypeDefinition : union Name Directives? = UnionMembers
  */
-function parseUnionTypeDefinition(parser: Parser): UnionTypeDefinition {
+function parseUnionTypeDefinition(
+  parser: Parser,
+  description: ?Description
+): UnionTypeDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'union');
   const name = parseName(parser);
@@ -882,6 +941,7 @@ function parseUnionTypeDefinition(parser: Parser): UnionTypeDefinition {
   return {
     kind: UNION_TYPE_DEFINITION,
     name,
+    description,
     directives,
     types,
     loc: loc(parser, start),
@@ -902,9 +962,12 @@ function parseUnionMembers(parser: Parser): Array<NamedType> {
 }
 
 /**
- * EnumTypeDefinition : enum Name Directives? { EnumValueDefinition+ }
+ * EnumTypeDefinition : enum Name { EnumValueDefinition+ }
  */
-function parseEnumTypeDefinition(parser: Parser): EnumTypeDefinition {
+function parseEnumTypeDefinition(
+  parser: Parser,
+  description: ?Description
+): EnumTypeDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'enum');
   const name = parseName(parser);
@@ -918,6 +981,7 @@ function parseEnumTypeDefinition(parser: Parser): EnumTypeDefinition {
   return {
     kind: ENUM_TYPE_DEFINITION,
     name,
+    description,
     directives,
     values,
     loc: loc(parser, start),
@@ -930,12 +994,17 @@ function parseEnumTypeDefinition(parser: Parser): EnumTypeDefinition {
  * EnumValue : Name
  */
 function parseEnumValueDefinition(parser: Parser) : EnumValueDefinition {
+  let description = null;
+  if (peek(parser, TokenKind.DESCRIPTION)) {
+    description = parseDescription(parser);
+  }
   const start = parser.token.start;
   const name = parseName(parser);
   const directives = parseDirectives(parser);
   return {
     kind: ENUM_VALUE_DEFINITION,
     name,
+    description,
     directives,
     loc: loc(parser, start),
   };
@@ -945,7 +1014,8 @@ function parseEnumValueDefinition(parser: Parser) : EnumValueDefinition {
  * InputObjectTypeDefinition : input Name Directives? { InputValueDefinition+ }
  */
 function parseInputObjectTypeDefinition(
-  parser: Parser
+  parser: Parser,
+  description: ?Description
 ): InputObjectTypeDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'input');
@@ -960,6 +1030,7 @@ function parseInputObjectTypeDefinition(
   return {
     kind: INPUT_OBJECT_TYPE_DEFINITION,
     name,
+    description,
     directives,
     fields,
     loc: loc(parser, start),
@@ -969,10 +1040,20 @@ function parseInputObjectTypeDefinition(
 /**
  * TypeExtensionDefinition : extend ObjectTypeDefinition
  */
-function parseTypeExtensionDefinition(parser: Parser): TypeExtensionDefinition {
+function parseTypeExtensionDefinition(
+  parser: Parser,
+  description: ?Description
+): TypeExtensionDefinition {
+  if (description) {
+    throw syntaxError(
+      parser.source,
+      parser.token.start,
+      'Description on type extension definition is not allowed'
+    );
+  }
   const start = parser.token.start;
   expectKeyword(parser, 'extend');
-  const definition = parseObjectTypeDefinition(parser);
+  const definition = parseObjectTypeDefinition(parser, null);
   return {
     kind: TYPE_EXTENSION_DEFINITION,
     definition,
@@ -984,7 +1065,10 @@ function parseTypeExtensionDefinition(parser: Parser): TypeExtensionDefinition {
  * DirectiveDefinition :
  *   - directive @ Name ArgumentsDefinition? on DirectiveLocations
  */
-function parseDirectiveDefinition(parser: Parser): DirectiveDefinition {
+function parseDirectiveDefinition(
+  parser: Parser,
+  description: ?Description
+): DirectiveDefinition {
   const start = parser.token.start;
   expectKeyword(parser, 'directive');
   expect(parser, TokenKind.AT);
@@ -995,6 +1079,7 @@ function parseDirectiveDefinition(parser: Parser): DirectiveDefinition {
   return {
     kind: DIRECTIVE_DEFINITION,
     name,
+    description,
     arguments: args,
     locations,
     loc: loc(parser, start)

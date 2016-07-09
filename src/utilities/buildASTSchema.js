@@ -348,8 +348,10 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
 
   function makeTypeDef(def: ObjectTypeDefinition) {
     const typeName = def.name.value;
+    const description = def.description && def.description.value;
     const config = {
       name: typeName,
+      description,
       fields: () => makeFieldDefMap(def),
       interfaces: () => makeImplementedInterfaces(def),
     };
@@ -365,7 +367,8 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
       field => ({
         type: produceOutputType(field.type),
         args: makeInputValues(field.arguments),
-        deprecationReason: getDeprecationReason(field.directives)
+        deprecationReason: getDeprecationReason(field.directives),
+        description: field.description && field.description.value,
       })
     );
   }

@@ -11,6 +11,10 @@
 
 export const NAME = 'Name';
 
+// Description
+
+export const DESCRIPTION = 'Description';
+
 // Document
 
 export const DOCUMENT = 'Document';
