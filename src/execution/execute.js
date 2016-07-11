@@ -518,7 +518,7 @@ function promiseForObject<T>(
 }
 
 /**
- * Implements the logic to compute the key of a given field’s entry
+ * Implements the logic to compute the key of a given field's entry
  */
 function getFieldEntryKey(node: Field): string {
   return node.alias ? node.alias.value : node.name.value;
