@@ -25,7 +25,7 @@ The reference implementation provides base libraries in JavaScript that would
 provide the basis for full GraphQL implementations and tools. It is not a fully
 standalone GraphQL server that a client developer could use to start
 manipulating and querying data. Most importantly, it provides no mapping to a
-functioning, production-ready backend. The only “backend” we have targeted for
+functioning, production-ready backend. The only "backend" we have targeted for
 this early preview are in-memory stubs in test cases.
 
 We are releasing this now because after GraphQL was first discussed publicly,
