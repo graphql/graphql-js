@@ -451,9 +451,9 @@ export type GraphQLObjectTypeConfig = {
   description?: ?string
 }
 
-type GraphQLInterfacesThunk = () => Array<GraphQLInterfaceType>;
+export type GraphQLInterfacesThunk = () => Array<GraphQLInterfaceType>;
 
-type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
+export type GraphQLFieldConfigMapThunk = () => GraphQLFieldConfigMap;
 
 export type GraphQLFieldResolveFn = (
   source?: any,
@@ -952,7 +952,7 @@ export type InputObjectConfig = {
   description?: ?string;
 }
 
-type InputObjectConfigFieldMapThunk = () => InputObjectConfigFieldMap;
+export type InputObjectConfigFieldMapThunk = () => InputObjectConfigFieldMap;
 
 export type InputObjectFieldConfig = {
   type: GraphQLInputType;
