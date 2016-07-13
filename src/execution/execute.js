@@ -591,7 +591,7 @@ function resolveField(
   let result = resolveOrError(resolveFn, source, args, context, info);
 
   if (isThenable(result)) {
-    result = ((result: any): Promise).then(
+    result = ((result: any): Promise<*>).then(
       passThroughResultAndLog(logFn, TAG.RESOLVER_END, { path }, info),
       reason => {
         logFn(TAG.RESOLVER_ERROR, {
@@ -665,7 +665,7 @@ function completeValueCatchingError(
     );
 
     if (isThenable(completed)) {
-      return ((completed: any): Promise).then(
+      return ((completed: any): Promise<*>).then(
         passThroughResultAndLog(logFn, TAG.SUBTREE_END, { path }, info),
         reason => {
           logFn(TAG.SUBTREE_ERROR, {
