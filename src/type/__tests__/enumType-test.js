@@ -326,6 +326,15 @@ describe('Type System: Enum Values', () => {
     });
   });
 
+  it('may present a values API for complex enums ', () => {
+    const values = ComplexEnum.getValues();
+    expect(values.length).to.equal(2);
+    expect(values[0].name).to.equal('ONE');
+    expect(values[0].value).to.equal(Complex1);
+    expect(values[1].name).to.equal('TWO');
+    expect(values[1].value).to.equal(Complex2);
+  });
+
   it('may be internally represented with complex values', async () => {
     expect(
       await graphql(schema, `{
