@@ -16,6 +16,7 @@ import {
   GraphQLObjectType,
   GraphQLInt,
   GraphQLString,
+  GraphQLBoolean,
 } from '../../';
 
 
@@ -27,6 +28,17 @@ describe('Type System: Enum Values', () => {
       RED: { value: 0 },
       GREEN: { value: 1 },
       BLUE: { value: 2 },
+    }
+  });
+
+  const Complex1 = { someRandomObject: 1 };
+  const Complex2 = { someOtherRandomObject: 2 };
+
+  const ComplexEnum = new GraphQLEnumType({
+    name: 'Complex',
+    values: {
+      ONE: { value: Complex1 },
+      TWO: { value: Complex2 },
     }
   });
 
@@ -54,6 +66,21 @@ describe('Type System: Enum Values', () => {
         },
         resolve(value, { fromEnum, fromInt }) {
           return fromInt !== undefined ? fromInt : fromEnum;
+        }
+      },
+      complexEnum: {
+        type: ComplexEnum,
+        args: {
+          fromEnum: { type: ComplexEnum },
+          provideBadValue: { type: GraphQLBoolean }
+        },
+        resolve(value, { fromEnum, provideBadValue }) {
+          if (provideBadValue) {
+            // Note: similar shape, but not the same *reference*
+            // as Complex1 above. Enum internal values require === equality.
+            return { someRandomObject: 1 };
+          }
+          return fromEnum || Complex1;
         }
       }
     }
@@ -295,6 +322,22 @@ describe('Type System: Enum Values', () => {
       data: {
         colorEnum: null,
         colorInt: null
+      }
+    });
+  });
+
+  it('may be internally represented with complex values', async () => {
+    expect(
+      await graphql(schema, `{
+        first: complexEnum
+        second: complexEnum(fromEnum: TWO)
+        bad: complexEnum(provideBadValue: true)
+      }`)
+    ).to.deep.equal({
+      data: {
+        first: 'ONE',
+        second: 'TWO',
+        bad: null
       }
     });
   });
