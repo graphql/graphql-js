@@ -71,7 +71,12 @@ describe('Type System: Enum Values', () => {
       complexEnum: {
         type: ComplexEnum,
         args: {
-          fromEnum: { type: ComplexEnum },
+          fromEnum: {
+            type: ComplexEnum,
+            // Note: defaultValue is provided an *internal* representation for
+            // Enums, rather than the string name.
+            defaultValue: Complex1
+          },
           provideBadValue: { type: GraphQLBoolean }
         },
         resolve(value, { fromEnum, provideBadValue }) {
@@ -80,7 +85,7 @@ describe('Type System: Enum Values', () => {
             // as Complex1 above. Enum internal values require === equality.
             return { someRandomObject: 1 };
           }
-          return fromEnum || Complex1;
+          return fromEnum;
         }
       }
     }
