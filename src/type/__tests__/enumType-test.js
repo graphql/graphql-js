@@ -77,9 +77,15 @@ describe('Type System: Enum Values', () => {
             // Enums, rather than the string name.
             defaultValue: Complex1
           },
+          provideGoodValue: { type: GraphQLBoolean },
           provideBadValue: { type: GraphQLBoolean }
         },
-        resolve(value, { fromEnum, provideBadValue }) {
+        resolve(value, { fromEnum, provideGoodValue, provideBadValue }) {
+          if (provideGoodValue) {
+            // Note: this is one of the references of the internal values which
+            // ComplexEnum allows.
+            return Complex2;
+          }
           if (provideBadValue) {
             // Note: similar shape, but not the same *reference*
             // as Complex1 above. Enum internal values require === equality.
@@ -345,12 +351,14 @@ describe('Type System: Enum Values', () => {
       await graphql(schema, `{
         first: complexEnum
         second: complexEnum(fromEnum: TWO)
+        good: complexEnum(provideGoodValue: true)
         bad: complexEnum(provideBadValue: true)
       }`)
     ).to.deep.equal({
       data: {
         first: 'ONE',
         second: 'TWO',
+        good: 'TWO',
         bad: null
       }
     });
