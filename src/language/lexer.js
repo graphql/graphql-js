@@ -75,8 +75,9 @@ export const TokenKind = {
  * A helper function to describe a token as a string for debugging
  */
 export function getTokenDesc(token: Token): string {
-  return token.value ?
-    `${getTokenKindDesc(token.kind)} "${token.value}"` :
+  const value = token.value;
+  return value ?
+    `${getTokenKindDesc(token.kind)} "${value}"` :
     getTokenKindDesc(token.kind);
 }
 

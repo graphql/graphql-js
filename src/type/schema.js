@@ -16,7 +16,11 @@ import {
   GraphQLList,
   GraphQLNonNull
 } from './definition';
-import type { GraphQLType, GraphQLAbstractType } from './definition';
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLAbstractType
+} from './definition';
 import { GraphQLDirective, specifiedDirectives } from './directives';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
@@ -68,27 +72,28 @@ export class GraphQLSchema {
 
     invariant(
       config.query instanceof GraphQLObjectType,
-      `Schema query must be Object Type but got: ${config.query}.`
+      `Schema query must be Object Type but got: ${
+        String(config.query)}.`
     );
     this._queryType = config.query;
 
     invariant(
       !config.mutation || config.mutation instanceof GraphQLObjectType,
       `Schema mutation must be Object Type if provided but got: ${
-        config.mutation}.`
+        String(config.mutation)}.`
     );
     this._mutationType = config.mutation;
 
     invariant(
       !config.subscription || config.subscription instanceof GraphQLObjectType,
       `Schema subscription must be Object Type if provided but got: ${
-        config.subscription}.`
+        String(config.subscription)}.`
     );
     this._subscriptionType = config.subscription;
 
     invariant(
       !config.types || Array.isArray(config.types),
-      `Schema types must be Array if provided but got: ${config.types}.`
+      `Schema types must be Array if provided but got: ${String(config.types)}.`
     );
 
     invariant(
@@ -97,13 +102,13 @@ export class GraphQLSchema {
         directive => directive instanceof GraphQLDirective
       ),
       `Schema directives must be Array<GraphQLDirective> if provided but got: ${
-        config.directives}.`
+        String(config.directives)}.`
     );
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives || specifiedDirectives;
 
     // Build type map now to detect any errors within this schema.
-    let initialTypes: Array<?GraphQLType> = [
+    let initialTypes: Array<?GraphQLNamedType> = [
       this.getQueryType(),
       this.getMutationType(),
       this.getSubscriptionType(),
@@ -163,7 +168,7 @@ export class GraphQLSchema {
     return this._typeMap;
   }
 
-  getType(name: string): ?GraphQLType {
+  getType(name: string): ?GraphQLNamedType {
     return this.getTypeMap()[name];
   }
 
@@ -190,8 +195,8 @@ export class GraphQLSchema {
       const possibleTypes = this.getPossibleTypes(abstractType);
       invariant(
         Array.isArray(possibleTypes),
-        `Could not find possible implementing types for ${abstractType} in ` +
-        'schema. Check that schema.types is defined and is an array of ' +
+        `Could not find possible implementing types for ${abstractType.name} ` +
+        'in schema. Check that schema.types is defined and is an array of ' +
         'all possible types in the schema.'
       );
       possibleTypeMap[abstractType.name] =
@@ -213,13 +218,13 @@ export class GraphQLSchema {
   }
 }
 
-type TypeMap = { [typeName: string]: GraphQLType }
+type TypeMap = { [typeName: string]: GraphQLNamedType }
 
 type GraphQLSchemaConfig = {
   query: GraphQLObjectType;
   mutation?: ?GraphQLObjectType;
   subscription?: ?GraphQLObjectType;
-  types?: ?Array<GraphQLType>;
+  types?: ?Array<GraphQLNamedType>;
   directives?: ?Array<GraphQLDirective>;
 }
 
@@ -234,7 +239,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
     invariant(
       map[type.name] === type,
       'Schema must contain unique named types but contains multiple ' +
-      `types named "${type}".`
+      `types named "${type.name}".`
     );
     return map;
   }
@@ -284,16 +289,17 @@ function assertObjectImplementsInterface(
     // Assert interface field exists on object.
     invariant(
       objectField,
-      `"${iface}" expects field "${fieldName}" but "${object}" does not ` +
-      'provide it.'
+      `"${iface.name}" expects field "${fieldName}" but "${object.name}" ` +
+      'does not provide it.'
     );
 
     // Assert interface field type is satisfied by object field type, by being
     // a valid subtype. (covariant)
     invariant(
       isTypeSubTypeOf(schema, objectField.type, ifaceField.type),
-      `${iface}.${fieldName} expects type "${ifaceField.type}" but ` +
-      `${object}.${fieldName} provides type "${objectField.type}".`
+      `${iface.name}.${fieldName} expects type "${String(ifaceField.type)}" ` +
+      'but ' +
+      `${object.name}.${fieldName} provides type "${String(objectField.type)}".`
     );
 
     // Assert each interface field arg is implemented.
@@ -304,17 +310,18 @@ function assertObjectImplementsInterface(
       // Assert interface field arg exists on object field.
       invariant(
         objectArg,
-        `${iface}.${fieldName} expects argument "${argName}" but ` +
-        `${object}.${fieldName} does not provide it.`
+        `${iface.name}.${fieldName} expects argument "${argName}" but ` +
+        `${object.name}.${fieldName} does not provide it.`
       );
 
       // Assert interface field arg type matches object field arg type.
       // (invariant)
       invariant(
         isEqualType(ifaceArg.type, objectArg.type),
-        `${iface}.${fieldName}(${argName}:) expects type "${ifaceArg.type}" ` +
-        `but ${object}.${fieldName}(${argName}:) provides ` +
-        `type "${objectArg.type}".`
+        `${iface.name}.${fieldName}(${argName}:) expects type ` +
+        `"${String(ifaceArg.type)}" but ` +
+        `${object.name}.${fieldName}(${argName}:) provides type ` +
+        `"${String(objectArg.type)}".`
       );
     });
 
@@ -325,9 +332,9 @@ function assertObjectImplementsInterface(
       if (!ifaceArg) {
         invariant(
           !(objectArg.type instanceof GraphQLNonNull),
-          `${object}.${fieldName}(${argName}:) is of required type ` +
-          `"${objectArg.type}" but is not also provided by the ` +
-          `interface ${iface}.${fieldName}.`
+          `${object.name}.${fieldName}(${argName}:) is of required type ` +
+          `"${String(objectArg.type)}" but is not also provided by the ` +
+          `interface ${iface.name}.${fieldName}.`
         );
       }
     });

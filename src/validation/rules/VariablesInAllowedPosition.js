@@ -21,8 +21,8 @@ export function badVarPosMessage(
   varType: GraphQLType,
   expectedType: GraphQLType
 ): string {
-  return `Variable "$${varName}" of type "${varType}" used in position ` +
-    `expecting type "${expectedType}".`;
+  return `Variable "$${varName}" of type "${String(varType)}" used in ` +
+    `position expecting type "${String(expectedType)}".`;
 }
 
 /**

@@ -21,7 +21,7 @@ export function typeIncompatibleSpreadMessage(
   fragType: GraphQLType
 ): string {
   return `Fragment "${fragName}" cannot be spread here as objects of ` +
-    `type "${parentType}" can never be of type "${fragType}".`;
+    `type "${String(parentType)}" can never be of type "${String(fragType)}".`;
 }
 
 export function typeIncompatibleAnonSpreadMessage(
@@ -29,7 +29,7 @@ export function typeIncompatibleAnonSpreadMessage(
   fragType: GraphQLType
 ): string {
   return 'Fragment cannot be spread here as objects of ' +
-    `type "${parentType}" can never be of type "${fragType}".`;
+    `type "${String(parentType)}" can never be of type "${String(fragType)}".`;
 }
 
 /**

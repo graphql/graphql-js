@@ -20,8 +20,8 @@ export function missingFieldArgMessage(
   argName: string,
   type: GraphQLType
 ): string {
-  return `Field "${fieldName}" argument "${argName}" of type "${type}" ` +
-    'is required but not provided.';
+  return `Field "${fieldName}" argument "${argName}" of type ` +
+    `"${String(type)}" is required but not provided.`;
 }
 
 export function missingDirectiveArgMessage(
@@ -30,7 +30,7 @@ export function missingDirectiveArgMessage(
   type: GraphQLType
 ): string {
   return `Directive "@${directiveName}" argument "${argName}" of type ` +
-    `"${type}" is required but not provided.`;
+    `"${String(type)}" is required but not provided.`;
 }
 
 /**

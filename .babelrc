@@ -1,13 +1,25 @@
 {
-  "presets": [
-    "es2015"
-  ],
   "plugins": [
     "syntax-async-functions",
     "transform-class-properties",
     "transform-flow-strip-types",
     "transform-object-rest-spread",
+    "transform-es2015-template-literals",
+    "transform-es2015-literals",
+    "transform-es2015-function-name",
+    "transform-es2015-arrow-functions",
+    "transform-es2015-block-scoped-functions",
+    ["transform-es2015-classes", {loose: true}],
+    "transform-es2015-object-super",
+    "transform-es2015-shorthand-properties",
+    "transform-es2015-duplicate-keys",
+    "transform-es2015-computed-properties",
+    "check-es2015-constants",
+    ["transform-es2015-spread", {loose: true}],
+    "transform-es2015-parameters",
+    ["transform-es2015-destructuring", {loose: true}],
+    "transform-es2015-block-scoping",
+    "transform-es2015-modules-commonjs",
     "transform-regenerator",
-    "transform-runtime"
   ]
 }

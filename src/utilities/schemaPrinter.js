@@ -82,17 +82,17 @@ function printSchemaDefinition(schema: GraphQLSchema): string {
 
   const queryType = schema.getQueryType();
   if (queryType) {
-    operationTypes.push(`  query: ${queryType}`);
+    operationTypes.push(`  query: ${queryType.name}`);
   }
 
   const mutationType = schema.getMutationType();
   if (mutationType) {
-    operationTypes.push(`  mutation: ${mutationType}`);
+    operationTypes.push(`  mutation: ${mutationType.name}`);
   }
 
   const subscriptionType = schema.getSubscriptionType();
   if (subscriptionType) {
-    operationTypes.push(`  subscription: ${subscriptionType}`);
+    operationTypes.push(`  subscription: ${subscriptionType.name}`);
   }
 
   return `schema {\n${operationTypes.join('\n')}\n}`;
@@ -156,7 +156,8 @@ function printFields(type) {
   const fieldMap = type.getFields();
   const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
   return fields.map(
-    f => `  ${f.name}${printArgs(f)}: ${f.type}${printDeprecated(f)}`
+    f => '  ' + f.name + printArgs(f) + ': ' +
+      String(f.type) + printDeprecated(f)
   ).join('\n');
 }
 
@@ -182,7 +183,7 @@ function printArgs(fieldOrDirectives) {
 }
 
 function printInputValue(arg) {
-  let argDecl = `${arg.name}: ${arg.type}`;
+  let argDecl = arg.name + ': ' + String(arg.type);
   if (!isNullish(arg.defaultValue)) {
     argDecl += ` = ${print(astFromValue(arg.defaultValue, arg.type))}`;
   }

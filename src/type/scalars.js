@@ -19,13 +19,12 @@ import { Kind } from '../language';
 const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
 
-function coerceInt(value) {
+function coerceInt(value: mixed): ?number {
   const num = Number(value);
   if (num === num && num <= MAX_INT && num >= MIN_INT) {
     return (num < 0 ? Math.ceil : Math.floor)(num);
   }
   return null;
-
 }
 
 export const GraphQLInt = new GraphQLScalarType({
@@ -46,7 +45,7 @@ export const GraphQLInt = new GraphQLScalarType({
   }
 });
 
-function coerceFloat(value) {
+function coerceFloat(value: mixed): ?number {
   const num = Number(value);
   return num === num ? num : null;
 }
