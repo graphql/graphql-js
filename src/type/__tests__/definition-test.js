@@ -342,11 +342,21 @@ describe('Type System: Example', () => {
     ];
     badUnionTypes.forEach(x => {
       expect(() =>
-        new GraphQLUnionType({ name: 'BadUnion', types: [ x ] })
+        new GraphQLUnionType({ name: 'BadUnion', types: [ x ] }).getTypes()
       ).to.throw(
         `BadUnion may only contain Object types, it cannot contain: ${x}.`
       );
     });
+  });
+
+  it('allows a thunk for Union\'s types', () => {
+    const types = [ ObjectType ];
+    const union = new GraphQLUnionType({
+      name: 'ThunkUnion',
+      types: () => types
+    });
+
+    expect(union.getTypes()).to.equal(types);
   });
 
   it('does not mutate passed field definitions', () => {

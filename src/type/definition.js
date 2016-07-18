@@ -651,11 +651,21 @@ export class GraphQLUnionType {
       );
     }
     this.resolveType = config.resolveType;
+    this._typeConfig = config;
+  }
+
+  getTypes(): Array<GraphQLObjectType> {
+    return this._types || (this._types = this._defineTypes());
+  }
+
+  _defineTypes(): Array<GraphQLObjectType> {
+    const types = resolveThunk(this._typeConfig.types);
     invariant(
-      Array.isArray(config.types) && config.types.length > 0,
-      `Must provide Array of types for Union ${config.name}.`
+      Array.isArray(types) && types.length > 0,
+      'Must provide Array of types or a function which returns ' +
+      `such an array for Union ${this.name}.`
     );
-    config.types.forEach(type => {
+    types.forEach(type => {
       invariant(
         type instanceof GraphQLObjectType,
         `${this.name} may only contain Object types, it cannot contain: ` +
@@ -671,12 +681,8 @@ export class GraphQLUnionType {
         );
       }
     });
-    this._types = config.types;
-    this._typeConfig = config;
-  }
 
-  getTypes(): Array<GraphQLObjectType> {
-    return this._types;
+    return types;
   }
 
   toString(): string {
@@ -686,7 +692,7 @@ export class GraphQLUnionType {
 
 export type GraphQLUnionTypeConfig = {
   name: string,
-  types: Array<GraphQLObjectType>,
+  types: Thunk<Array<GraphQLObjectType>>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing

@@ -542,7 +542,7 @@ describe('Type System: Object interfaces must be array', () => {
 });
 
 
-describe('Type System: Union types must be array', () => {
+describe('Type System: Union types must be array or thunk', () => {
 
   it('accepts a Union type with array types', () => {
     expect(
@@ -554,6 +554,16 @@ describe('Type System: Union types must be array', () => {
     ).not.to.throw();
   });
 
+  it('accepts a Union type with thunk types', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLUnionType({
+        name: 'SomeUnion',
+        resolveType: () => null,
+        types: () => [ SomeObjectType ],
+      }))
+    ).not.to.throw();
+  });
+
   it('rejects a Union type without types', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
@@ -561,7 +571,8 @@ describe('Type System: Union types must be array', () => {
         resolveType: () => null,
       }))
     ).to.throw(
-      'Must provide Array of types for Union SomeUnion.'
+      'Must provide Array of types or a function which returns such an array ' +
+      'for Union SomeUnion.'
     );
   });
 
@@ -573,7 +584,8 @@ describe('Type System: Union types must be array', () => {
         types: []
       }))
     ).to.throw(
-      'Must provide Array of types for Union SomeUnion.'
+      'Must provide Array of types or a function which returns such an array ' +
+      'for Union SomeUnion.'
     );
   });
 
@@ -587,7 +599,8 @@ describe('Type System: Union types must be array', () => {
         },
       }))
     ).to.throw(
-      'Must provide Array of types for Union SomeUnion.'
+      'Must provide Array of types or a function which returns such an array ' +
+      'for Union SomeUnion.'
     );
   });
 
