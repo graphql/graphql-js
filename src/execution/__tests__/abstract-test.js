@@ -20,7 +20,6 @@ import {
   GraphQLBoolean,
 } from '../../';
 
-
 class Dog {
   constructor(name, woofs) {
     this.name = name;
@@ -245,7 +244,7 @@ describe('Execute: Handles execution of abstract types', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.deep.equal({
+    expect(result).to.jsonEqual({
       data: {
         pets: [
           { name: 'Odie',
@@ -256,9 +255,11 @@ describe('Execute: Handles execution of abstract types', () => {
         ]
       },
       errors: [
-        new Error(
-          'Runtime Object type "Human" is not a possible type for "Pet".'
-        )
+        {
+          message:
+            'Runtime Object type "Human" is not a possible type for "Pet".',
+          locations: [ { line: 2, column: 7 } ]
+        }
       ]
     });
   });
@@ -332,7 +333,7 @@ describe('Execute: Handles execution of abstract types', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.deep.equal({
+    expect(result).to.jsonEqual({
       data: {
         pets: [
           { name: 'Odie',
@@ -343,9 +344,11 @@ describe('Execute: Handles execution of abstract types', () => {
         ]
       },
       errors: [
-        new Error(
-          'Runtime Object type "Human" is not a possible type for "Pet".'
-        )
+        {
+          message:
+            'Runtime Object type "Human" is not a possible type for "Pet".',
+          locations: [ { line: 2, column: 7 } ]
+        }
       ]
     });
   });
