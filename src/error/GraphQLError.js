@@ -34,7 +34,10 @@ export class GraphQLError extends Error {
     super(message);
     this.message = message;
 
-    Object.defineProperty(this, 'stack', { value: stack || message });
+    Object.defineProperty(this, 'stack', {
+      value: stack || message,
+      writeable: true,
+    });
     Object.defineProperty(this, 'nodes', { value: nodes });
 
     // Note: flow does not yet know about Object.defineProperty with `get`.
