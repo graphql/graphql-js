@@ -22,6 +22,7 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
 } from '../type/definition';
+import { GraphQLString } from '../type/scalars';
 import { DEFAULT_DEPRECATION_REASON } from '../type/directives';
 
 
@@ -172,7 +173,8 @@ function printDeprecated(fieldOrEnumVal) {
   ) {
     return ' @deprecated';
   }
-  return ' @deprecated(reason: ' + print(astFromValue(reason)) + ')';
+  return ' @deprecated(reason: ' +
+    print(astFromValue(reason, GraphQLString)) + ')';
 }
 
 function printArgs(fieldOrDirectives) {

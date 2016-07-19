@@ -245,7 +245,7 @@ export class GraphQLScalarType {
     this._scalarConfig = config;
   }
 
-  // Serializes an internal value to include an a response.
+  // Serializes an internal value to include in a response.
   serialize(value: mixed): mixed {
     const serializer = this._scalarConfig.serialize;
     return serializer(value);

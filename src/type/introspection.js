@@ -338,7 +338,7 @@ export const __InputValue = new GraphQLObjectType({
         'input value.',
       resolve: inputVal => isNullish(inputVal.defaultValue) ?
         null :
-        print(astFromValue(inputVal.defaultValue, inputVal))
+        print(astFromValue(inputVal.defaultValue, inputVal.type))
     }
   })
 });
