@@ -34,7 +34,13 @@ export class GraphQLError extends Error {
     super(message);
     this.message = message;
 
-    Object.defineProperty(this, 'stack', { value: stack || message });
+    Object.defineProperty(this, 'stack', {
+      value: stack || message,
+      // Note: stack should not really be writable, but some libraries (such
+      // as bluebird) use Error brand-checking which specifically looks to see
+      // if stack is a writable property.
+      writable: true,
+    });
     Object.defineProperty(this, 'nodes', { value: nodes });
 
     // Note: flow does not yet know about Object.defineProperty with `get`.
