@@ -192,7 +192,7 @@ function buildExecutionContext(
         break;
       default: throw new GraphQLError(
         `GraphQL cannot execute a request containing a ${definition.kind}.`,
-        definition
+        [ definition ]
       );
     }
   });

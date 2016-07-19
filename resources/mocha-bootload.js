@@ -8,9 +8,8 @@
  */
 
 var chai = require('chai');
-
-var chaiSubset = require('chai-subset');
-chai.use(chaiSubset);
+chai.use(require('chai-subset'));
+chai.use(require('chai-json-equal'));
 
 process.on('unhandledRejection', function (error) {
   console.error('Unhandled Promise Rejection:');

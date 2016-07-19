@@ -129,7 +129,7 @@ describe('Type System: Enum Values', () => {
   it('accepts enum literals as input', async () => {
     expect(
       await graphql(schema, '{ colorInt(fromEnum: GREEN) }')
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         colorInt: 1
       }
@@ -139,7 +139,7 @@ describe('Type System: Enum Values', () => {
   it('enum may be output type', async () => {
     expect(
       await graphql(schema, '{ colorEnum(fromInt: 1) }')
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         colorEnum: 'GREEN'
       }
@@ -149,7 +149,7 @@ describe('Type System: Enum Values', () => {
   it('enum may be both input and output type', async () => {
     expect(
       await graphql(schema, '{ colorEnum(fromEnum: GREEN) }')
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         colorEnum: 'GREEN'
       }
@@ -159,12 +159,14 @@ describe('Type System: Enum Values', () => {
   it('does not accept string literals', async () => {
     expect(
       await graphql(schema, '{ colorEnum(fromEnum: "GREEN") }')
-    ).to.deep.equal({
+    ).to.jsonEqual({
       errors: [
-        new Error(
-          'Argument "fromEnum" has invalid value "GREEN".' +
-          '\nExpected type \"Color\", found "GREEN".'
-        )
+        {
+          message:
+            'Argument "fromEnum" has invalid value "GREEN".' +
+            '\nExpected type \"Color\", found "GREEN".',
+          locations: [ { line: 1, column: 23 } ]
+        }
       ]
     });
   });
@@ -172,7 +174,7 @@ describe('Type System: Enum Values', () => {
   it('does not accept incorrect internal value', async () => {
     expect(
       await graphql(schema, '{ colorEnum(fromString: "GREEN") }')
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         colorEnum: null
       }
@@ -182,12 +184,14 @@ describe('Type System: Enum Values', () => {
   it('does not accept internal value in place of enum literal', async () => {
     expect(
       await graphql(schema, '{ colorEnum(fromEnum: 1) }')
-    ).to.deep.equal({
+    ).to.jsonEqual({
       errors: [
-        new Error(
-          'Argument "fromEnum" has invalid value 1.' +
-          '\nExpected type "Color", found 1.'
-        )
+        {
+          message:
+            'Argument "fromEnum" has invalid value 1.' +
+            '\nExpected type "Color", found 1.',
+          locations: [ { line: 1, column: 23 } ]
+        }
       ]
     });
   });
@@ -195,12 +199,14 @@ describe('Type System: Enum Values', () => {
   it('does not accept enum literal in place of int', async () => {
     expect(
       await graphql(schema, '{ colorEnum(fromInt: GREEN) }')
-    ).to.deep.equal({
+    ).to.jsonEqual({
       errors: [
-        new Error(
-          'Argument "fromInt" has invalid value GREEN.' +
-          '\nExpected type "Int", found GREEN.'
-        )
+        {
+          message:
+            'Argument "fromInt" has invalid value GREEN.' +
+            '\nExpected type "Int", found GREEN.',
+          locations: [ { line: 1, column: 22 } ]
+        }
       ]
     });
   });
@@ -214,7 +220,7 @@ describe('Type System: Enum Values', () => {
         null,
         { color: 'BLUE' }
       )
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         colorEnum: 'BLUE'
       }
@@ -230,7 +236,7 @@ describe('Type System: Enum Values', () => {
         null,
         { color: 'GREEN' }
       )
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         favoriteEnum: 'GREEN'
       }
@@ -246,7 +252,7 @@ describe('Type System: Enum Values', () => {
         null,
         { color: 'GREEN' }
       )
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         subscribeToEnum: 'GREEN'
       }
@@ -262,12 +268,14 @@ describe('Type System: Enum Values', () => {
         null,
         { color: 2 }
       )
-    ).to.deep.equal({
+    ).to.jsonEqual({
       errors: [
-        new Error(
-          'Variable "\$color" got invalid value 2.' +
-          '\nExpected type "Color", found 2.'
-        )
+        {
+          message:
+            'Variable "\$color" got invalid value 2.' +
+            '\nExpected type "Color", found 2.',
+          locations: [ { line: 1, column: 12 } ]
+        }
       ]
     });
   });
@@ -281,12 +289,14 @@ describe('Type System: Enum Values', () => {
         null,
         { color: 'BLUE' }
       )
-    ).to.deep.equal({
+    ).to.jsonEqual({
       errors: [
-        new Error(
-          'Variable "$color" of type "String!" used in position ' +
-          'expecting type "Color".'
-        )
+        {
+          message:
+            'Variable "$color" of type "String!" used in position ' +
+            'expecting type "Color".',
+          locations: [ { line: 1, column: 12 }, { line: 1, column: 51 } ]
+        }
       ]
     });
   });
@@ -300,12 +310,14 @@ describe('Type System: Enum Values', () => {
         null,
         { color: 2 }
       )
-    ).to.deep.equal({
+    ).to.jsonEqual({
       errors: [
-        new Error(
-          'Variable "$color" of type "Int!" used in position ' +
-          'expecting type "Color".'
-        )
+        {
+          message:
+            'Variable "$color" of type "Int!" used in position ' +
+            'expecting type "Color".',
+          locations: [ { line: 1, column: 12 }, { line: 1, column: 48 } ]
+        }
       ]
     });
   });
@@ -316,7 +328,7 @@ describe('Type System: Enum Values', () => {
         colorEnum(fromEnum: RED)
         colorInt(fromEnum: RED)
       }`)
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         colorEnum: 'RED',
         colorInt: 0
@@ -330,7 +342,7 @@ describe('Type System: Enum Values', () => {
         colorEnum
         colorInt
       }`)
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         colorEnum: null,
         colorInt: null
@@ -355,7 +367,7 @@ describe('Type System: Enum Values', () => {
         good: complexEnum(provideGoodValue: true)
         bad: complexEnum(provideBadValue: true)
       }`)
-    ).to.deep.equal({
+    ).to.jsonEqual({
       data: {
         first: 'ONE',
         second: 'TWO',

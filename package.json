@@ -59,6 +59,7 @@
     "babel-plugin-transform-object-rest-spread": "6.8.0",
     "babel-plugin-transform-regenerator": "6.9.0",
     "chai": "3.5.0",
+    "chai-json-equal": "0.0.1",
     "chai-subset": "1.2.2",
     "coveralls": "2.11.9",
     "eslint": "2.11.1",

@@ -32,7 +32,17 @@ export class GraphQLError extends Error {
     positions?: Array<number>
   ) {
     super(message);
-    this.message = message;
+
+    Object.defineProperty(this, 'message', {
+      value: message,
+      // By being enumerable, JSON.stringify will include `message` in the
+      // resulting output. This ensures that the simplist possible GraphQL
+      // service adheres to the spec.
+      enumerable: true,
+      // Note: you really shouldn't overwrite message, but it enables
+      // Error brand-checking.
+      writable: true,
+    });
 
     Object.defineProperty(this, 'stack', {
       value: stack || message,
@@ -41,6 +51,7 @@ export class GraphQLError extends Error {
       // if stack is a writable property.
       writable: true,
     });
+
     Object.defineProperty(this, 'nodes', { value: nodes });
 
     // Note: flow does not yet know about Object.defineProperty with `get`.
@@ -72,10 +83,16 @@ export class GraphQLError extends Error {
 
     Object.defineProperty(this, 'locations', ({
       get() {
-        if (this.positions && this.source) {
-          return this.positions.map(pos => getLocation(this.source, pos));
+        const _positions = this.positions;
+        const _source = this.source;
+        if (_positions && _positions.length > 0 && _source) {
+          return _positions.map(pos => getLocation(_source, pos));
         }
-      }
+      },
+      // By being enumerable, JSON.stringify will include `locations` in the
+      // resulting output. This ensures that the simplist possible GraphQL
+      // service adheres to the spec.
+      enumerable: true,
     }: any));
   }
 }
