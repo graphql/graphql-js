@@ -7,6 +7,9 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+ // 80+ char lines are useful in describe/it, so ignore in this file.
+ /* eslint-disable max-len */
+
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import {
@@ -17,6 +20,7 @@ import {
   GraphQLInt,
   GraphQLString,
   GraphQLBoolean,
+  introspectionQuery,
 } from '../../';
 
 
@@ -31,7 +35,7 @@ describe('Type System: Enum Values', () => {
     }
   });
 
-  const Complex1 = { someRandomObject: 1 };
+  const Complex1 = { someRandomObject: 1, someFunction: () => {} };
   const Complex2 = { someOtherRandomObject: 2 };
 
   const ComplexEnum = new GraphQLEnumType({
@@ -362,6 +366,12 @@ describe('Type System: Enum Values', () => {
         bad: null
       }
     });
+  });
+
+  it('functions in defaultValues should work with introspectionQuery', async () => {
+    const result = await graphql(schema, introspectionQuery);
+    // console.log(result.errors);
+    expect(result).to.not.have.property('errors');
   });
 
 });
