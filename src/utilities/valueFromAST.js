@@ -39,8 +39,9 @@ import type {
  * | Input Object         | Object        |
  * | List                 | Array         |
  * | Boolean              | Boolean       |
- * | String / Enum Value  | String        |
+ * | String               | String        |
  * | Int / Float          | Number        |
+ * | Enum Value           | Mixed         |
  *
  */
 export function valueFromAST(
@@ -81,10 +82,10 @@ export function valueFromAST(
   }
 
   if (type instanceof GraphQLInputObjectType) {
-    const fields = type.getFields();
     if (valueAST.kind !== Kind.OBJECT) {
       return null;
     }
+    const fields = type.getFields();
     const fieldASTs = keyMap(
       (valueAST: ObjectValue).fields,
       field => field.name.value

@@ -17,6 +17,7 @@ import {
   GraphQLInt,
   GraphQLString,
   GraphQLBoolean,
+  introspectionQuery,
 } from '../../';
 
 
@@ -31,8 +32,8 @@ describe('Type System: Enum Values', () => {
     }
   });
 
-  const Complex1 = { someRandomObject: 1 };
-  const Complex2 = { someOtherRandomObject: 2 };
+  const Complex1 = { someRandomFunction: () => {} };
+  const Complex2 = { someRandomValue: 123 };
 
   const ComplexEnum = new GraphQLEnumType({
     name: 'Complex',
@@ -88,8 +89,8 @@ describe('Type System: Enum Values', () => {
           }
           if (provideBadValue) {
             // Note: similar shape, but not the same *reference*
-            // as Complex1 above. Enum internal values require === equality.
-            return { someRandomObject: 1 };
+            // as Complex2 above. Enum internal values require === equality.
+            return { someRandomValue: 123 };
           }
           return fromEnum;
         }
@@ -362,6 +363,11 @@ describe('Type System: Enum Values', () => {
         bad: null
       }
     });
+  });
+
+  it('can be introspected without error', async () => {
+    const result = await graphql(schema, introspectionQuery);
+    expect(result).to.not.have.property('errors');
   });
 
 });

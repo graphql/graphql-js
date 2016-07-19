@@ -31,21 +31,22 @@ import {
   OBJECT,
   OBJECT_FIELD,
 } from '../language/kinds';
-import type { GraphQLType } from '../type/definition';
+import type { GraphQLInputType } from '../type/definition';
 import {
+  GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
 } from '../type/definition';
-import { GraphQLFloat } from '../type/scalars';
+import { GraphQLID } from '../type/scalars';
 
 
 /**
  * Produces a GraphQL Value AST given a JavaScript value.
  *
- * Optionally, a GraphQL type may be provided, which will be used to
- * disambiguate between value primitives.
+ * A GraphQL type must be provided, which will be used to interpret different
+ * JavaScript values.
  *
  * | JSON Value    | GraphQL Value        |
  * | ------------- | -------------------- |
@@ -54,11 +55,12 @@ import { GraphQLFloat } from '../type/scalars';
  * | Boolean       | Boolean              |
  * | String        | String / Enum Value  |
  * | Number        | Int / Float          |
+ * | Mixed         | Enum Value           |
  *
  */
 export function astFromValue(
   value: mixed,
-  type?: ?GraphQLType
+  type: GraphQLInputType
 ): ?Value {
   // Ensure flow knows that we treat function params as const.
   const _value = value;
@@ -75,77 +77,86 @@ export function astFromValue(
 
   // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
   // the value is not an array, convert the value using the list's item type.
-  if (Array.isArray(_value)) {
-    const itemType = type instanceof GraphQLList ? type.ofType : null;
-    return ({
-      kind: LIST,
-      values: _value.map(item => {
-        const itemValue = astFromValue(item, itemType);
-        invariant(itemValue, 'Could not create AST item.');
-        return itemValue;
-      })
-    }: ListValue);
-  } else if (type instanceof GraphQLList) {
-    // Because GraphQL will accept single values as a "list of one" when
-    // expecting a list, if there's a non-array value and an expected list type,
-    // create an AST using the list's item type.
-    return astFromValue(_value, type.ofType);
+  if (type instanceof GraphQLList) {
+    const itemType = type.ofType;
+    if (Array.isArray(_value)) {
+      const valuesASTs = [];
+      _value.forEach(item => {
+        const itemAST = astFromValue(item, itemType);
+        if (itemAST) {
+          valuesASTs.push(itemAST);
+        }
+      });
+      return ({ kind: LIST, values: valuesASTs }: ListValue);
+    }
+    return astFromValue(_value, itemType);
   }
 
-  if (typeof _value === 'boolean') {
-    return ({ kind: BOOLEAN, value: _value }: BooleanValue);
-  }
-
-  // JavaScript numbers can be Float or Int values. Use the GraphQLType to
-  // differentiate if available, otherwise prefer Int if the value is a
-  // valid Int.
-  if (typeof _value === 'number') {
-    const stringNum = String(_value);
-    const isIntValue = /^[0-9]+$/.test(stringNum);
-    if (isIntValue) {
-      if (type === GraphQLFloat) {
-        return ({ kind: FLOAT, value: stringNum + '.0' }: FloatValue);
+  // Populate the fields of the input object by creating ASTs from each value
+  // in the JavaScript object according to the fields in the input type.
+  if (type instanceof GraphQLInputObjectType) {
+    if (_value === null || typeof _value !== 'object') {
+      return null;
+    }
+    const fields = type.getFields();
+    const fieldASTs = [];
+    Object.keys(fields).forEach(fieldName => {
+      const fieldType = fields[fieldName].type;
+      const fieldValue = astFromValue(_value[fieldName], fieldType);
+      if (fieldValue) {
+        fieldASTs.push({
+          kind: OBJECT_FIELD,
+          name: { kind: NAME, value: fieldName },
+          value: fieldValue
+        });
       }
-      return ({ kind: INT, value: stringNum }: IntValue);
-    }
-    return ({ kind: FLOAT, value: stringNum }: FloatValue);
+    });
+    return ({ kind: OBJECT, fields: fieldASTs }: ObjectValue);
   }
 
-  // JavaScript strings can be Enum values or String values. Use the
-  // GraphQLType to differentiate if possible.
-  if (typeof _value === 'string') {
-    if (type instanceof GraphQLEnumType &&
-        /^[_a-zA-Z][_a-zA-Z0-9]*$/.test(_value)) {
-      return ({ kind: ENUM, value: _value }: EnumValue);
+  invariant(
+    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
+    'Must provide Input Type, cannot use: ' + String(type)
+  );
+
+  // Since value is an internally represented value, it must be serialized
+  // to an externally represented value before converting into an AST.
+  const serialized = type.serialize(_value);
+  if (isNullish(serialized)) {
+    return null;
+  }
+
+  // Others serialize based on their corresponding JavaScript scalar types.
+  if (typeof serialized === 'boolean') {
+    return ({ kind: BOOLEAN, value: serialized }: BooleanValue);
+  }
+
+  // JavaScript numbers can be Int or Float values.
+  if (typeof serialized === 'number') {
+    const stringNum = String(serialized);
+    return /^[0-9]+$/.test(stringNum) ?
+      ({ kind: INT, value: stringNum }: IntValue) :
+      ({ kind: FLOAT, value: stringNum }: FloatValue);
+  }
+
+  if (typeof serialized === 'string') {
+    // Enum types use Enum literals.
+    if (type instanceof GraphQLEnumType) {
+      return ({ kind: ENUM, value: serialized }: EnumValue);
     }
+
+    // ID types can use Int literals.
+    if (type === GraphQLID && /^[0-9]+$/.test(serialized)) {
+      return ({ kind: INT, value: serialized }: IntValue);
+    }
+
     // Use JSON stringify, which uses the same string encoding as GraphQL,
     // then remove the quotes.
     return ({
       kind: STRING,
-      value: JSON.stringify(_value).slice(1, -1)
+      value: JSON.stringify(serialized).slice(1, -1)
     }: StringValue);
   }
 
-  // last remaining possible typeof
-  invariant(typeof _value === 'object' && _value !== null);
-
-  // Populate the fields of the input object by creating ASTs from each value
-  // in the JavaScript object.
-  const fields = [];
-  Object.keys(_value).forEach(fieldName => {
-    let fieldType;
-    if (type instanceof GraphQLInputObjectType) {
-      const fieldDef = type.getFields()[fieldName];
-      fieldType = fieldDef && fieldDef.type;
-    }
-    const fieldValue = astFromValue(_value[fieldName], fieldType);
-    if (fieldValue) {
-      fields.push({
-        kind: OBJECT_FIELD,
-        name: { kind: NAME, value: fieldName },
-        value: fieldValue
-      });
-    }
-  });
-  return ({ kind: OBJECT, fields }: ObjectValue);
+  throw new TypeError('Cannot convert value to AST: ' + String(serialized));
 }
