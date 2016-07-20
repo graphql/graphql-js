@@ -878,8 +878,8 @@ describe('Type System: Union types must be resolvable', () => {
         types: [ SomeObjectType ],
       }))
     ).to.throw(
-      'Union Type SomeUnion does not provide a "resolveType" function and ' +
-      'possible Type SomeObject does not provide a "isTypeOf" function. ' +
+      'Union type "SomeUnion" does not provide a "resolveType" function and ' +
+      'possible type "SomeObject" does not provide an "isTypeOf" function. ' +
       'There is no way to resolve this possible type during execution.'
     );
   });

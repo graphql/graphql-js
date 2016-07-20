@@ -655,39 +655,45 @@ export class GraphQLUnionType {
   }
 
   getTypes(): Array<GraphQLObjectType> {
-    return this._types || (this._types = this._defineTypes());
-  }
-
-  _defineTypes(): Array<GraphQLObjectType> {
-    const types = resolveThunk(this._typeConfig.types);
-    invariant(
-      Array.isArray(types) && types.length > 0,
-      'Must provide Array of types or a function which returns ' +
-      `such an array for Union ${this.name}.`
+    return this._types || (this._types =
+      defineTypes(this, this._typeConfig.types)
     );
-    types.forEach(type => {
-      invariant(
-        type instanceof GraphQLObjectType,
-        `${this.name} may only contain Object types, it cannot contain: ` +
-        `${String(type)}.`
-      );
-      if (typeof this.resolveType !== 'function') {
-        invariant(
-          typeof type.isTypeOf === 'function',
-          `Union Type ${this.name} does not provide a "resolveType" function ` +
-          `and possible Type ${type.name} does not provide a "isTypeOf" ` +
-          'function. There is no way to resolve this possible type ' +
-          'during execution.'
-        );
-      }
-    });
-
-    return types;
   }
 
   toString(): string {
     return this.name;
   }
+}
+
+function defineTypes(
+  unionType: GraphQLUnionType,
+  typesThunk: Thunk<Array<GraphQLObjectType>>
+): Array<GraphQLObjectType> {
+  const types = resolveThunk(typesThunk);
+
+  invariant(
+    Array.isArray(types) && types.length > 0,
+    'Must provide Array of types or a function which returns ' +
+    `such an array for Union ${unionType.name}.`
+  );
+  types.forEach(objType => {
+    invariant(
+      objType instanceof GraphQLObjectType,
+      `${unionType.name} may only contain Object types, it cannot contain: ` +
+      `${String(objType)}.`
+    );
+    if (typeof unionType.resolveType !== 'function') {
+      invariant(
+        typeof objType.isTypeOf === 'function',
+        `Union type "${unionType.name}" does not provide a "resolveType" ` +
+        `function and possible type "${objType.name}" does not provide an ` +
+        '"isTypeOf" function. There is no way to resolve this possible type ' +
+        'during execution.'
+      );
+    }
+  });
+
+  return types;
 }
 
 export type GraphQLUnionTypeConfig = {
