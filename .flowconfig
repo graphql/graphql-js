@@ -3,7 +3,6 @@
 .*/dist/.*
 .*/coverage/.*
 .*/resources/.*
-.*/node_modules/.*
 
 [include]
 
