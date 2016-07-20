@@ -24,6 +24,9 @@ describe('Type System: Scalar coercion', () => {
       GraphQLInt.serialize(1)
     ).to.equal(1);
     expect(
+      GraphQLInt.serialize('123')
+    ).to.equal(123);
+    expect(
       GraphQLInt.serialize(0)
     ).to.equal(0);
     expect(
@@ -43,25 +46,35 @@ describe('Type System: Scalar coercion', () => {
     ).to.equal(100000);
     // Maybe a safe JavaScript int, but bigger than 2^32, so not
     // representable as a GraphQL Int
-    expect(
+    expect(() =>
       GraphQLInt.serialize(9876504321)
-    ).to.equal(null);
-    expect(
+    ).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 9876504321'
+    );
+    expect(() =>
       GraphQLInt.serialize(-9876504321)
-    ).to.equal(null);
+    ).to.throw(
+      'Int cannot represent non 32-bit signed integer value: -9876504321'
+    );
     // Too big to represent as an Int in JavaScript or GraphQL
-    expect(
+    expect(() =>
       GraphQLInt.serialize(1e100)
-    ).to.equal(null);
-    expect(
+    ).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 1e+100'
+    );
+    expect(() =>
       GraphQLInt.serialize(-1e100)
-    ).to.equal(null);
+    ).to.throw(
+      'Int cannot represent non 32-bit signed integer value: -1e+100'
+    );
     expect(
       GraphQLInt.serialize('-1.1')
     ).to.equal(-1);
-    expect(
+    expect(() =>
       GraphQLInt.serialize('one')
-    ).to.equal(null);
+    ).to.throw(
+      'Int cannot represent non 32-bit signed integer value: one'
+    );
     expect(
       GraphQLInt.serialize(false)
     ).to.equal(0);
@@ -78,6 +91,9 @@ describe('Type System: Scalar coercion', () => {
       GraphQLFloat.serialize(0)
     ).to.equal(0.0);
     expect(
+      GraphQLFloat.serialize('123.5')
+    ).to.equal(123.5);
+    expect(
       GraphQLFloat.serialize(-1)
     ).to.equal(-1.0);
     expect(
@@ -93,14 +109,23 @@ describe('Type System: Scalar coercion', () => {
       GraphQLFloat.serialize('-1.1')
     ).to.equal(-1.1);
     expect(
-      GraphQLFloat.serialize('one')
-    ).to.equal(null);
-    expect(
       GraphQLFloat.serialize(false)
     ).to.equal(0.0);
     expect(
       GraphQLFloat.serialize(true)
     ).to.equal(1.0);
+
+    expect(() =>
+      GraphQLFloat.serialize(NaN)
+    ).to.throw(
+      'Float cannot represent non numeric value: NaN'
+    );
+
+    expect(() =>
+      GraphQLFloat.serialize('one')
+    ).to.throw(
+      'Float cannot represent non numeric value: one'
+    );
   });
 
   it('serializes output strings', () => {

@@ -24,7 +24,9 @@ function coerceInt(value: mixed): ?number {
   if (num === num && num <= MAX_INT && num >= MIN_INT) {
     return (num < 0 ? Math.ceil : Math.floor)(num);
   }
-  return null;
+  throw new TypeError(
+    'Int cannot represent non 32-bit signed integer value: ' + value
+  );
 }
 
 export const GraphQLInt = new GraphQLScalarType({
@@ -47,7 +49,12 @@ export const GraphQLInt = new GraphQLScalarType({
 
 function coerceFloat(value: mixed): ?number {
   const num = Number(value);
-  return num === num ? num : null;
+  if (num === num) {
+    return num;
+  }
+  throw new TypeError(
+    'Float cannot represent non numeric value: ' + value
+  );
 }
 
 export const GraphQLFloat = new GraphQLScalarType({
