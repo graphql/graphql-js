@@ -363,8 +363,6 @@ describe('Execute: Handles basic execution tasks', () => {
         locations: [ { line: 6, column: 7 } ] },
       { message: 'Error getting syncReturnErrorList3',
         locations: [ { line: 6, column: 7 } ] },
-      { message: 'Error getting asyncReturnError',
-        locations: [ { line: 13, column: 7 } ] },
       { message: 'Error getting asyncReject',
         locations: [ { line: 8, column: 7 } ] },
       { message: 'Error getting asyncRawReject',
@@ -375,6 +373,8 @@ describe('Execute: Handles basic execution tasks', () => {
         locations: [ { line: 11, column: 7 } ] },
       { message: 'Error getting asyncRawError',
         locations: [ { line: 12, column: 7 } ] },
+      { message: 'Error getting asyncReturnError',
+        locations: [ { line: 13, column: 7 } ] },
     ]);
   });
 

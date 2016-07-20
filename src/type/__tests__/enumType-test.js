@@ -174,10 +174,14 @@ describe('Type System: Enum Values', () => {
   it('does not accept incorrect internal value', async () => {
     expect(
       await graphql(schema, '{ colorEnum(fromString: "GREEN") }')
-    ).to.jsonEqual({
+    ).to.containSubset({
       data: {
         colorEnum: null
-      }
+      },
+      errors: [
+        { message: 'Expected a value of type "Color" but received: GREEN',
+          locations: [ { line: 1, column: 3 } ] }
+      ]
     });
   });
 
@@ -367,13 +371,18 @@ describe('Type System: Enum Values', () => {
         good: complexEnum(provideGoodValue: true)
         bad: complexEnum(provideBadValue: true)
       }`)
-    ).to.jsonEqual({
+    ).to.containSubset({
       data: {
         first: 'ONE',
         second: 'TWO',
         good: 'TWO',
         bad: null
-      }
+      },
+      errors: [ {
+        message:
+          'Expected a value of type "Complex" but received: [object Object]',
+        locations: [ { line: 5, column: 9 } ]
+      } ]
     });
   });
 

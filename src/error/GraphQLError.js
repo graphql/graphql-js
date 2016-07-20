@@ -17,10 +17,10 @@ export class GraphQLError extends Error {
   message: string;
   stack: string;
   nodes: ?Array<Node>;
-  source: Source;
-  positions: Array<number>;
-  locations: any;
-  path: Array<string | number>;
+  source: ?Source;
+  positions: ?Array<number>;
+  locations: ?Array<{ line: number, column: number }>;
+  path: ?Array<string | number>;
   originalError: ?Error;
 
   constructor(
@@ -28,8 +28,10 @@ export class GraphQLError extends Error {
     // A flow bug keeps us from declaring nodes as an array of Node
     nodes?: Array<any/* Node */>,
     stack?: ?string,
-    source?: Source,
-    positions?: Array<number>
+    source?: ?Source,
+    positions?: ?Array<number>,
+    path?: ?Array<string|number>,
+    originalError?: ?Error
   ) {
     super(message);
 
@@ -94,5 +96,17 @@ export class GraphQLError extends Error {
       // service adheres to the spec.
       enumerable: true,
     }: any));
+
+    Object.defineProperty(this, 'path', {
+      value: path,
+      // By being enumerable, JSON.stringify will include `path` in the
+      // resulting output. This ensures that the simplist possible GraphQL
+      // service adheres to the spec.
+      enumerable: true
+    });
+
+    Object.defineProperty(this, 'originalError', {
+      value: originalError
+    });
   }
 }
