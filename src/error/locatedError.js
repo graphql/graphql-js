@@ -21,12 +21,23 @@ export function locatedError(
   nodes: Array<any>,
   path: Array<string | number>
 ): GraphQLError {
+  // Note: this uses a brand-check to support GraphQL errors originating from
+  // other contexts.
+  if (originalError && originalError.hasOwnProperty('locations')) {
+    return (originalError: any);
+  }
+
   const message = originalError ?
     originalError.message || String(originalError) :
     'An unknown error occurred.';
   const stack = originalError ? originalError.stack : null;
-  const error = new GraphQLError(message, nodes, stack);
-  error.path = path;
-  error.originalError = originalError;
-  return error;
+  return new GraphQLError(
+    message,
+    nodes,
+    stack,
+    null,
+    null,
+    path,
+    originalError
+  );
 }

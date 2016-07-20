@@ -620,9 +620,9 @@ function completeValueCatchingError(
   result: mixed
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
-  // protection from errors.
+  // protection from errors, however it still properly locates the error.
   if (returnType instanceof GraphQLNonNull) {
-    return completeValue(
+    return completeValueWithLocatedError(
       exeContext,
       returnType,
       fieldASTs,
@@ -635,7 +635,7 @@ function completeValueCatchingError(
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
   try {
-    const completed = completeValue(
+    const completed = completeValueWithLocatedError(
       exeContext,
       returnType,
       fieldASTs,
@@ -644,8 +644,8 @@ function completeValueCatchingError(
       result
     );
     if (isThenable(completed)) {
-      // If `completeValue` returned a rejected promise, log the rejection
-      // error and resolve to null.
+      // If `completeValueWithLocatedError` returned a rejected promise, log
+      // the rejection error and resolve to null.
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return ((completed: any): Promise<*>).then(undefined, error => {
@@ -655,10 +655,40 @@ function completeValueCatchingError(
     }
     return completed;
   } catch (error) {
-    // If `completeValue` returned abruptly (threw an error), log the error
-    // and return null.
+    // If `completeValueWithLocatedError` returned abruptly (threw an error),
+    // log the error and return null.
     exeContext.errors.push(error);
     return null;
+  }
+}
+
+// This is a small wrapper around completeValue which annotates errors with
+// location information.
+function completeValueWithLocatedError(
+  exeContext: ExecutionContext,
+  returnType: GraphQLType,
+  fieldASTs: Array<Field>,
+  info: GraphQLResolveInfo,
+  path: Array<string | number>,
+  result: mixed
+): mixed {
+  try {
+    const completed = completeValue(
+      exeContext,
+      returnType,
+      fieldASTs,
+      info,
+      path,
+      result
+    );
+    if (isThenable(completed)) {
+      return ((completed: any): Promise<*>).catch(
+        error => Promise.reject(locatedError(error, fieldASTs, path))
+      );
+    }
+    return completed;
+  } catch (error) {
+    throw locatedError(error, fieldASTs, path);
   }
 }
 
@@ -694,7 +724,6 @@ function completeValue(
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
     return ((result: any): Promise<*>).then(
-      // Once resolved to a value, complete that value.
       resolved => completeValue(
         exeContext,
         returnType,
@@ -702,15 +731,13 @@ function completeValue(
         info,
         path,
         resolved
-      ),
-      // If rejected, create a located error, and continue to reject.
-      error => Promise.reject(locatedError(error, fieldASTs, path))
+      )
     );
   }
 
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
-    throw locatedError(result, fieldASTs, path);
+    throw result;
   }
 
   // If field type is NonNull, complete for inner type, and throw field error
@@ -725,10 +752,9 @@ function completeValue(
       result
     );
     if (completed === null) {
-      throw new GraphQLError(
+      throw new Error(
         `Cannot return null for non-nullable field ${
-          info.parentType.name}.${info.fieldName}.`,
-        fieldASTs
+          info.parentType.name}.${info.fieldName}.`
       );
     }
     return completed;
@@ -785,8 +811,7 @@ function completeValue(
   }
 
   // Not reachable. All possible output types have been considered.
-  invariant(
-    false,
+  throw new Error(
     `Cannot complete value of unexpected type "${String(returnType)}".`
   );
 }
@@ -845,7 +870,13 @@ function completeLeafValue(
 ): mixed {
   invariant(returnType.serialize, 'Missing serialize method on type');
   const serializedResult = returnType.serialize(result);
-  return isNullish(serializedResult) ? null : serializedResult;
+  if (isNullish(serializedResult)) {
+    throw new Error(
+      `Expected a value of type "${String(returnType)}" but ` +
+      `received: ${String(result)}`
+    );
+  }
+  return serializedResult;
 }
 
 /**
