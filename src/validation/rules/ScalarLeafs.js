@@ -16,19 +16,19 @@ import type { GraphQLType } from '../../type/definition';
 
 
 export function noSubselectionAllowedMessage(
-  field: string,
+  fieldName: string,
   type: GraphQLType
 ): string {
-  return `Field "${field}" of type "${String(type)}" must not have a ` +
-    'sub selection.';
+  return `Field "${fieldName}" must not have a selection since ` +
+    `type "${String(type)}" has no subfields.`;
 }
 
 export function requiredSubselectionMessage(
-  field: string,
+  fieldName: string,
   type: GraphQLType
 ): string {
-  return `Field "${field}" of type "${String(type)}" must have a ` +
-    'sub selection.';
+  return `Field "${fieldName}" of type "${String(type)}" must have a ` +
+    `selection of subfields. Did you mean "${fieldName} { ... }"?`;
 }
 
 /**
