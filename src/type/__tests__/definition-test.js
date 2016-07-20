@@ -350,13 +350,14 @@ describe('Type System: Example', () => {
   });
 
   it('allows a thunk for Union\'s types', () => {
-    const types = [ ObjectType ];
     const union = new GraphQLUnionType({
       name: 'ThunkUnion',
-      types: () => types
+      types: () => [ ObjectType ]
     });
 
-    expect(union.getTypes()).to.equal(types);
+    const types = union.getTypes();
+    expect(types.length).to.equal(1);
+    expect(types[0]).to.equal(ObjectType);
   });
 
   it('does not mutate passed field definitions', () => {

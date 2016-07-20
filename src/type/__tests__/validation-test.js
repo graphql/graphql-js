@@ -506,9 +506,7 @@ describe('Type System: Object interfaces must be array', () => {
 
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
-        interfaces() {
-          return [ AnotherInterfaceType ];
-        },
+        interfaces: () => [ AnotherInterfaceType ],
         fields: { f: { type: GraphQLString } }
       }));
     }).not.to.throw();
@@ -542,7 +540,7 @@ describe('Type System: Object interfaces must be array', () => {
 });
 
 
-describe('Type System: Union types must be array or thunk', () => {
+describe('Type System: Union types must be array', () => {
 
   it('accepts a Union type with array types', () => {
     expect(
@@ -554,7 +552,7 @@ describe('Type System: Union types must be array or thunk', () => {
     ).not.to.throw();
   });
 
-  it('accepts a Union type with thunk types', () => {
+  it('accepts a Union type with function returning an array of types', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
