@@ -60,8 +60,8 @@ describe('astFromValue', () => {
     );
 
     // Note: outside the bounds of 32bit signed int.
-    expect(astFromValue(1e40, GraphQLInt)).to.deep.equal(
-      null
+    expect(() => astFromValue(1e40, GraphQLInt)).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 1e+40'
     );
   });
 
