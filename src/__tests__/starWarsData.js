@@ -52,11 +52,11 @@ const tarkin = {
 };
 
 const humanData = {
-  1000: luke,
-  1001: vader,
-  1002: han,
-  1003: leia,
-  1004: tarkin,
+  '1000': luke,
+  '1001': vader,
+  '1002': han,
+  '1003': leia,
+  '1004': tarkin,
 };
 
 const threepio = {
@@ -76,8 +76,8 @@ const artoo = {
 };
 
 const droidData = {
-  2000: threepio,
-  2001: artoo,
+  '2000': threepio,
+  '2001': artoo,
 };
 
 /**
