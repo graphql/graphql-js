@@ -8,6 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import { forEach, isCollection } from 'iterall';
+
 import { GraphQLError, locatedError } from '../error';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
@@ -829,8 +831,8 @@ function completeListValue(
   result: mixed
 ): mixed {
   invariant(
-    Array.isArray(result),
-    `User Error: expected iterable, but did not find one for field ${
+    isCollection(result),
+    `Expected Iterable, but did not find one for field ${
       info.parentType.name}.${info.fieldName}.`
   );
 
@@ -838,7 +840,8 @@ function completeListValue(
   // where the list contains no Promises by avoiding creating another Promise.
   const itemType = returnType.ofType;
   let containsPromise = false;
-  const completedResults = result.map((item, index) => {
+  const completedResults = [];
+  forEach((result: any), (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const fieldPath = path.concat([ index ]);
@@ -854,7 +857,7 @@ function completeListValue(
     if (!containsPromise && isThenable(completedItem)) {
       containsPromise = true;
     }
-    return completedItem;
+    completedResults.push(completedItem);
   });
 
   return containsPromise ? Promise.all(completedResults) : completedResults;

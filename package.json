@@ -34,6 +34,9 @@
     "preversion": ". ./resources/checkgit.sh && npm test",
     "prepublish": ". ./resources/prepublish.sh"
   },
+  "dependencies": {
+    "iterall": "1.0.2"
+  },
   "devDependencies": {
     "babel-cli": "6.10.1",
     "babel-eslint": "6.1.0",

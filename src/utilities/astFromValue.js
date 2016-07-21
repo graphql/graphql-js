@@ -8,6 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import { forEach, isCollection } from 'iterall';
+
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import type {
@@ -79,9 +81,9 @@ export function astFromValue(
   // the value is not an array, convert the value using the list's item type.
   if (type instanceof GraphQLList) {
     const itemType = type.ofType;
-    if (Array.isArray(_value)) {
+    if (isCollection(_value)) {
       const valuesASTs = [];
-      _value.forEach(item => {
+      forEach((_value: any), item => {
         const itemAST = astFromValue(item, itemType);
         if (itemAST) {
           valuesASTs.push(itemAST);

@@ -18,6 +18,7 @@ import { parse } from '../../language';
 import {
   GraphQLSchema,
   GraphQLObjectType,
+  GraphQLString,
   GraphQLInt,
   GraphQLList,
   GraphQLNonNull
@@ -66,6 +67,48 @@ function check(testType, testData, expected) {
     expect(result).to.deep.equal(expected);
   };
 }
+
+describe('Execute: Accepts any iterable as list value', () => {
+
+  it('Accepts a Set as a List value', check(
+    new GraphQLList(GraphQLString),
+    new Set([ 'apple', 'banana', 'apple', 'coconut' ]),
+    { data: { nest: { test: [ 'apple', 'banana', 'coconut' ] } } }
+  ));
+
+  function *yieldItems() {
+    yield 'one';
+    yield 2;
+    yield true;
+  }
+
+  it('Accepts an Generator function as a List value', check(
+    new GraphQLList(GraphQLString),
+    yieldItems(),
+    { data: { nest: { test: [ 'one', '2', 'true' ] } } }
+  ));
+
+  function getArgs() {
+    return arguments;
+  }
+
+  it('Accepts function arguments as a List value', check(
+    new GraphQLList(GraphQLString),
+    getArgs('one', 'two'),
+    { data: { nest: { test: [ 'one', 'two' ] } } }
+  ));
+
+  it('Does not accept (Iterable) String-literal as a List value', check(
+    new GraphQLList(GraphQLString),
+    'Singluar',
+    { data: { nest: { test: null } },
+      errors: [ {
+        message: 'Expected Iterable, but did not find one for field DataType.test.',
+        locations: [ { line: 1, column: 10 } ]
+      } ] }
+  ));
+
+});
 
 describe('Execute: Handles list nullability', () => {
 

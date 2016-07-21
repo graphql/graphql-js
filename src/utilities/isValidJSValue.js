@@ -8,6 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import { forEach, isCollection } from 'iterall';
+
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import {
@@ -44,13 +46,14 @@ export function isValidJSValue(value: mixed, type: GraphQLInputType): [string] {
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
     const itemType = type.ofType;
-    if (Array.isArray(value)) {
-      return value.reduce((acc, item, index) => {
-        const errors = isValidJSValue(item, itemType);
-        return acc.concat(errors.map(error =>
+    if (isCollection(value)) {
+      const errors = [];
+      forEach((value: any), (item, index) => {
+        errors.push.apply(errors, isValidJSValue(item, itemType).map(error =>
           `In element #${index}: ${error}`
         ));
-      }, []);
+      });
+      return errors;
     }
     return isValidJSValue(value, itemType);
   }
