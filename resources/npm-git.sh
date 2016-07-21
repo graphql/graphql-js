@@ -11,7 +11,9 @@
 # Ensure a vanilla package.json before deploying so other tools do not interpret
 # The built output as requiring any further transformation.
 node -e "var package = require('./package.json'); \
-  delete package.babel; delete package.scripts; delete package.options; \
+  delete package.scripts; \
+  delete package.options; \
+  delete package.devDependencies; \
   require('fs').writeFileSync('./npm/package.json', JSON.stringify(package, null, 2));"
 
 cp README.md npm/
