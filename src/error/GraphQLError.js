@@ -46,13 +46,15 @@ export class GraphQLError extends Error {
       writable: true,
     });
 
-    Object.defineProperty(this, 'stack', {
-      value: stack || message,
-      // Note: stack should not really be writable, but some libraries (such
-      // as bluebird) use Error brand-checking which specifically looks to see
-      // if stack is a writable property.
-      writable: true,
-    });
+    if (stack) {
+      Object.defineProperty(this, 'stack', {
+        value: stack,
+        // Note: stack should not really be writable, but some libraries (such
+        // as bluebird) use Error brand-checking which specifically looks to see
+        // if stack is a writable property.
+        writable: true,
+      });
+    }
 
     Object.defineProperty(this, 'nodes', { value: nodes });
 
