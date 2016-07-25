@@ -20,7 +20,7 @@ import {
 
 import { getFriends, getHero, getHuman, getDroid } from './starWarsData.js';
 
-import type {Character, Human, Droid} from './starWarsData.js';
+import type { Character, Human, Droid } from './starWarsData.js';
 
 /**
  * This is designed to be an end-to-end test, demonstrating

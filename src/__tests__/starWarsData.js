@@ -1,6 +1,4 @@
 /* @flow */
-/* eslint quote-props: ["error", "as-needed",
-{ "keywords": true, "unnecessary": false }]*/
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
@@ -115,7 +113,7 @@ export type Droid = {
 /**
  * Helper function to get a character by ID.
  */
-function getCharacter(id): Promise<*> {
+function getCharacter(id) {
   // Returning a promise just to illustrate GraphQL.js's support.
   return Promise.resolve(humanData[id] || droidData[id]);
 }
@@ -123,7 +121,7 @@ function getCharacter(id): Promise<*> {
 /**
  * Allows us to query for a character's friends.
  */
-export function getFriends(character: Character): Array<*> {
+export function getFriends(character: Character): Array<Promise<Character>> {
   // as you can see,with Flow
   // If you choose a schema structure like {friends?: Array<*>}.
   // You must check it ,or re-design your schema.
