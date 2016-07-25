@@ -8,6 +8,13 @@ node_js:
   - "0.12"
   - "0.10"
 
+git:
+  depth: 5
+
+cache:
+  directories:
+    - ~/.npm
+
 notifications:
   irc:
     use_notice: true
