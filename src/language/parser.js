@@ -10,6 +10,7 @@
 
 import { Source } from './source';
 import { syntaxError } from '../error';
+import type { GraphQLError } from '../error';
 import { lex, TokenKind, getTokenKindDesc, getTokenDesc } from './lexer';
 import type { Token } from './lexer';
 import type {
@@ -1120,7 +1121,7 @@ function expectKeyword(parser: Parser, value: string): Token {
  * Helper function for creating an error when an unexpected lexed token
  * is encountered.
  */
-function unexpected(parser: Parser, atToken?: ?Token): Error {
+function unexpected(parser: Parser, atToken?: ?Token): GraphQLError {
   const token = atToken || parser.token;
   return syntaxError(
     parser.source,

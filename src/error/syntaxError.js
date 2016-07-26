@@ -26,7 +26,6 @@ export function syntaxError(
     `Syntax Error ${source.name} (${location.line}:${location.column}) ` +
     description + '\n\n' + highlightSourceAtLocation(source, location),
     undefined,
-    undefined,
     source,
     [ position ]
   );

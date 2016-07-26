@@ -18,25 +18,23 @@ import { GraphQLError } from './GraphQLError';
  */
 export function locatedError(
   originalError: ?Error,
-  nodes: Array<any>,
+  nodes: Array<*>,
   path: Array<string | number>
 ): GraphQLError {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
-  if (originalError && originalError.hasOwnProperty('locations')) {
+  if (originalError && originalError.locations) {
     return (originalError: any);
   }
 
   const message = originalError ?
     originalError.message || String(originalError) :
     'An unknown error occurred.';
-  const stack = originalError ? originalError.stack : null;
   return new GraphQLError(
     message,
     nodes,
-    stack,
-    null,
-    null,
+    undefined,
+    undefined,
     path,
     originalError
   );
