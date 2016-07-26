@@ -85,27 +85,31 @@ export class GraphQLError extends Error {
       }
     }: any));
 
-    Object.defineProperty(this, 'locations', ({
-      get() {
-        const _positions = this.positions;
-        const _source = this.source;
-        if (_positions && _positions.length > 0 && _source) {
-          return _positions.map(pos => getLocation(_source, pos));
-        }
-      },
-      // By being enumerable, JSON.stringify will include `locations` in the
-      // resulting output. This ensures that the simplist possible GraphQL
-      // service adheres to the spec.
-      enumerable: true,
-    }: any));
+    if (nodes || positions) {
+      Object.defineProperty(this, 'locations', ({
+        get() {
+          const _positions = this.positions;
+          const _source = this.source;
+          if (_positions && _positions.length > 0 && _source) {
+            return _positions.map(pos => getLocation(_source, pos));
+          }
+        },
+        // By being enumerable, JSON.stringify will include `locations` in the
+        // resulting output. This ensures that the simplist possible GraphQL
+        // service adheres to the spec.
+        enumerable: true,
+      }: any));
+    }
 
-    Object.defineProperty(this, 'path', {
-      value: path,
-      // By being enumerable, JSON.stringify will include `path` in the
-      // resulting output. This ensures that the simplist possible GraphQL
-      // service adheres to the spec.
-      enumerable: true
-    });
+    if (path) {
+      Object.defineProperty(this, 'path', {
+        value: path,
+        // By being enumerable, JSON.stringify will include `path` in the
+        // resulting output. This ensures that the simplist possible GraphQL
+        // service adheres to the spec.
+        enumerable: true
+      });
+    }
 
     Object.defineProperty(this, 'originalError', {
       value: originalError
