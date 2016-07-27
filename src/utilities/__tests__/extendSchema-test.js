@@ -26,7 +26,6 @@ import {
   GraphQLScalarType,
 } from '../../type';
 
-
 // Test schema.
 const SomeInterfaceType = new GraphQLInterfaceType({
   name: 'SomeInterface',
@@ -726,7 +725,6 @@ type Subscription {
 
     const extendedSchema = extendSchema(testSchema, ast);
     const newDirective = extendedSchema.getDirective('neat');
-
     expect(newDirective.name).to.equal('neat');
     expect(newDirective.locations).to.contain('QUERY');
   });
@@ -738,7 +736,6 @@ type Subscription {
 
     const extendedSchema = extendSchema(testSchema, ast);
     const extendedDirective = extendedSchema.getDirective('profile');
-
     expect(extendedDirective.locations).to.contain('QUERY');
     expect(extendedDirective.locations).to.contain('FIELD');
 
@@ -747,7 +744,6 @@ type Subscription {
     const arg1 = args[1];
 
     expect(args.length).to.equal(2);
-
     expect(arg0.name).to.equal('enable');
     expect(arg0.type).to.be.instanceof(GraphQLNonNull);
     expect(arg0.type.ofType).to.be.instanceof(GraphQLScalarType);
