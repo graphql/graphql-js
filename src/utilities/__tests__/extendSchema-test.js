@@ -747,7 +747,7 @@ type Subscription {
     expect(arg0.name).to.equal('enable');
     expect(arg0.type).to.be.instanceof(GraphQLNonNull);
     expect(arg0.type.ofType).to.be.instanceof(GraphQLScalarType);
-    
+
     expect(arg1.name).to.equal('tag');
     expect(arg1.type).to.be.instanceof(GraphQLScalarType);
   });
