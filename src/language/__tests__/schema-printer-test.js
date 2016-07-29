@@ -56,7 +56,10 @@ describe('Printer', () => {
   mutation: MutationType
 }
 
+## description of 'Foo'
+## with multiple lines
 type Foo implements Bar {
+  ## description of field 'one'
   one: Type
   two(argument: InputType!): Type
   three(argument: InputType, other: String): Int
@@ -65,56 +68,76 @@ type Foo implements Bar {
   six(argument: InputType = {key: "value"}): Type
 }
 
+## description of 'AnnotatedObject'
 type AnnotatedObject @onObject(arg: "value") {
   annotatedField(arg: Type = "default" @onArg): Type @onField
 }
 
+## description of 'Bar'
 interface Bar {
   one: Type
+  ## description of field 'four'
   four(argument: String = "string"): String
 }
 
+## description of 'AnnotatedInterface'
 interface AnnotatedInterface @onInterface {
   annotatedField(arg: Type @onArg): Type @onField
 }
 
+## description of 'Feed'
 union Feed = Story | Article | Advert
 
+## description of 'AnnotatedUnion'
 union AnnotatedUnion @onUnion = A | B
 
+## description of 'CustomScalar'
 scalar CustomScalar
 
+## description of 'AnnotatedScalar'
 scalar AnnotatedScalar @onScalar
 
+## description of 'Site'
 enum Site {
   DESKTOP
+  ## description of enum value 'MOBILE'
   MOBILE
 }
 
+## description of 'AnnotatedEnum'
 enum AnnotatedEnum @onEnum {
+  ## description of enum value 'ANNOTATED_VALUE'
   ANNOTATED_VALUE @onEnumValue
+  ## description of enum value 'OTHER_VALUE'
   OTHER_VALUE
 }
 
+## description of 'InputType'
 input InputType {
   key: String!
+  ## description of field 'answer'
   answer: Int = 42
 }
 
+## description of 'AnnotatedInput'
 input AnnotatedInput @onInputObjectType {
   annotatedField: Type @onField
 }
 
 extend type Foo {
+  ## description of field 'seven'
   seven(argument: [String]): Type
 }
 
 extend type Foo @onType {}
 
+## description of 'NoFields'
 type NoFields {}
 
+## description of '@skip'
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
+## description of '@include'
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 `);
 

@@ -13,7 +13,7 @@ import { syntaxError } from '../error';
 
 /**
  * A representation of a lexed Token. Value only appears for non-punctuation
- * tokens: NAME, INT, FLOAT, and STRING.
+ * tokens: NAME, INT, FLOAT, STRING, and DESCRIPTION.
  */
 export type Token = {
   kind: number;
@@ -69,6 +69,7 @@ export const TokenKind = {
   INT: 16,
   FLOAT: 17,
   STRING: 18,
+  DESCRIPTION: 19,
 };
 
 /**
@@ -107,6 +108,7 @@ tokenDescription[TokenKind.NAME] = 'Name';
 tokenDescription[TokenKind.INT] = 'Int';
 tokenDescription[TokenKind.FLOAT] = 'Float';
 tokenDescription[TokenKind.STRING] = 'String';
+tokenDescription[TokenKind.DESCRIPTION] = 'Description';
 
 const charCodeAt = String.prototype.charCodeAt;
 const slice = String.prototype.slice;
@@ -212,6 +214,8 @@ function readToken(source: Source, fromPosition: number): Token {
       return readNumber(source, position, code);
     // "
     case 34: return readString(source, position);
+    // #
+    case 35: return readDescription(source, position);
   }
 
   throw syntaxError(
@@ -229,6 +233,7 @@ function readToken(source: Source, fromPosition: number): Token {
 function positionAfterWhitespace(body: string, startPosition: number): number {
   const bodyLength = body.length;
   let position = startPosition;
+
   while (position < bodyLength) {
     let code = charCodeAt.call(body, position);
     // Skip Ignored
@@ -247,6 +252,11 @@ function positionAfterWhitespace(body: string, startPosition: number): number {
       ++position;
     // Skip comments
     } else if (code === 35) { // #
+      // If we see a second hash mark, we are in a description comment which is
+      // a valid token
+      if (charCodeAt.call(body, position + 1) === 35) {
+        return position;
+      }
       ++position;
       while (
         position < bodyLength &&
@@ -418,6 +428,26 @@ function readString(source, start) {
 
   value += slice.call(body, chunkStart, position);
   return makeToken(TokenKind.STRING, start, position + 1, value);
+}
+
+/**
+ * Reads a description comment token from the source file.
+ */
+function readDescription(source, start) {
+  const body = source.body;
+  const bodyLength = body.length;
+  let position = start + 2;
+  let code = 0;
+  while (
+    position < bodyLength &&
+    (code = charCodeAt.call(body, position)) !== null &&
+    // SourceCharacter but not LineTerminator
+    (code > 0x001F || code === 0x0009) && code !== 0x000A && code !== 0x000D
+  ) {
+    ++position;
+  }
+  const value = slice.call(body, start + 2, position).trim();
+  return makeToken(TokenKind.DESCRIPTION, start, position, value);
 }
 
 /**

@@ -426,6 +426,19 @@ describe('Lexer', () => {
     );
   });
 
+  it('lexes description comments', () => {
+
+    expect(
+      lexOne('## test description')
+    ).to.deep.equal({
+      kind: TokenKind.DESCRIPTION,
+      start: 0,
+      end: 19,
+      value: 'test description'
+    });
+
+  });
+
   it('lexes punctuation', () => {
 
     expect(
