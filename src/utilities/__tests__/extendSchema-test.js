@@ -23,8 +23,8 @@ import {
   GraphQLEnumType,
   GraphQLNonNull,
   GraphQLList,
+  GraphQLScalarType,
 } from '../../type';
-
 
 // Test schema.
 const SomeInterfaceType = new GraphQLInterfaceType({
@@ -716,6 +716,72 @@ type Subscription {
   newSubscriptionField: Int
 }
 `);
+  });
+
+  it('may extend directives with new simple directive', () => {
+    const ast = parse(`
+      directive @neat on QUERY
+    `);
+
+    const extendedSchema = extendSchema(testSchema, ast);
+    const newDirective = extendedSchema.getDirective('neat');
+    expect(newDirective.name).to.equal('neat');
+    expect(newDirective.locations).to.contain('QUERY');
+  });
+
+  it('may extend directives with new complex directive', () => {
+    const ast = parse(`
+      directive @profile(enable: Boolean! tag: String) on QUERY | FIELD
+    `);
+
+    const extendedSchema = extendSchema(testSchema, ast);
+    const extendedDirective = extendedSchema.getDirective('profile');
+    expect(extendedDirective.locations).to.contain('QUERY');
+    expect(extendedDirective.locations).to.contain('FIELD');
+
+    const args = extendedDirective.args;
+    const arg0 = args[0];
+    const arg1 = args[1];
+
+    expect(args.length).to.equal(2);
+    expect(arg0.name).to.equal('enable');
+    expect(arg0.type).to.be.instanceof(GraphQLNonNull);
+    expect(arg0.type.ofType).to.be.instanceof(GraphQLScalarType);
+
+    expect(arg1.name).to.equal('tag');
+    expect(arg1.type).to.be.instanceof(GraphQLScalarType);
+  });
+
+  it('does not allow replacing a default directive', () => {
+    const ast = parse(`
+      directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD
+    `);
+
+    expect(() =>
+      extendSchema(testSchema, ast)
+    ).to.throw(
+      'Directive "include" already exists in the schema. It cannot be ' +
+      'redefined.'
+    );
+  });
+
+  it('does not allow replacing a custom directive', () => {
+    const ast = parse(`
+      directive @meow(if: Boolean!) on FIELD | FRAGMENT_SPREAD
+    `);
+
+    const extendedSchema = extendSchema(testSchema, ast);
+
+    const replacementAst = parse(`
+      directive @meow(if: Boolean!) on FIELD | QUERY
+    `);
+
+    expect(() =>
+      extendSchema(extendedSchema, replacementAst)
+    ).to.throw(
+      'Directive "meow" already exists in the schema. It cannot be ' +
+      'redefined.'
+    );
   });
 
   it('does not allow replacing an existing type', () => {

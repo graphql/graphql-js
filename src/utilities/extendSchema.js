@@ -29,6 +29,10 @@ import {
 } from '../type/definition';
 
 import {
+  GraphQLDirective,
+} from '../type/directives';
+
+import {
   __Schema,
   __Directive,
   __DirectiveLocation,
@@ -58,6 +62,7 @@ import {
   SCALAR_TYPE_DEFINITION,
   INPUT_OBJECT_TYPE_DEFINITION,
   TYPE_EXTENSION_DEFINITION,
+  DIRECTIVE_DEFINITION,
 } from '../language/kinds';
 
 import type {
@@ -66,6 +71,10 @@ import type {
   GraphQLInputType,
   GraphQLOutputType,
 } from '../type/definition';
+
+import type {
+  DirectiveLocationEnum
+} from '../type/directives';
 
 import type {
   Document,
@@ -79,6 +88,7 @@ import type {
   ScalarTypeDefinition,
   EnumTypeDefinition,
   InputObjectTypeDefinition,
+  DirectiveDefinition,
 } from '../language/ast';
 
 
@@ -111,6 +121,10 @@ export function extendSchema(
   // Collect the type definitions and extensions found in the document.
   const typeDefinitionMap = {};
   const typeExtensionsMap = {};
+
+  // New directives and types are separate because a directives and types can
+  // have the same name. For example, a type named "skip".
+  const directiveDefinitions : Array<DirectiveDefinition> = [];
 
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const def = documentAST.definitions[i];
@@ -159,13 +173,26 @@ export function extendSchema(
         }
         typeExtensionsMap[extendedTypeName] = extensions;
         break;
+      case DIRECTIVE_DEFINITION:
+        const directiveName = def.name.value;
+        const existingDirective = schema.getDirective(directiveName);
+        if (existingDirective) {
+          throw new GraphQLError(
+            `Directive "${directiveName}" already exists in the schema. It ` +
+            'cannot be redefined.',
+            [ def ]
+          );
+        }
+        directiveDefinitions.push(def);
+        break;
     }
   }
 
-  // If this document contains no new types, then return the same unmodified
-  // GraphQLSchema instance.
+  // If this document contains no new types, extensions, or directives then
+  // return the same unmodified GraphQLSchema instance.
   if (Object.keys(typeExtensionsMap).length === 0 &&
-      Object.keys(typeDefinitionMap).length === 0) {
+      Object.keys(typeDefinitionMap).length === 0 &&
+      directiveDefinitions.length === 0) {
     return schema;
   }
 
@@ -220,12 +247,21 @@ export function extendSchema(
     mutation: mutationType,
     subscription: subscriptionType,
     types,
-    // Copy directives.
-    directives: schema.getDirectives(),
+    directives: getMergedDirectives(),
   });
 
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
+
+  function getMergedDirectives(): Array<GraphQLDirective> {
+    const existingDirectives = schema.getDirectives();
+    invariant(existingDirectives, 'schema must have default directives');
+
+    const newDirectives = directiveDefinitions.map(directiveAST =>
+      getDirective(directiveAST)
+    );
+    return existingDirectives.concat(newDirectives);
+  }
 
   function getTypeFromDef<T: GraphQLNamedType>(typeDef: T): T {
     const type = _getNamedType(typeDef.name);
@@ -471,6 +507,18 @@ export function extendSchema(
     return new GraphQLInputObjectType({
       name: typeAST.name.value,
       fields: () => buildInputValues(typeAST.fields),
+    });
+  }
+
+  function getDirective(
+    directiveAST: DirectiveDefinition
+  ): GraphQLDirective {
+    return new GraphQLDirective({
+      name: directiveAST.name.value,
+      locations: directiveAST.locations.map(
+        node => ((node.value: any): DirectiveLocationEnum)
+      ),
+      args: directiveAST.arguments && buildInputValues(directiveAST.arguments),
     });
   }
 
