@@ -48,6 +48,9 @@ export { isValidLiteralValue } from './isValidLiteralValue';
 // Concatenates multiple AST together.
 export { concatAST } from './concatAST';
 
+// Separates an AST into an AST per Operation.
+export { separateOperations } from './separateOperations';
+
 // Comparators for types
 export {
   isEqualType,
