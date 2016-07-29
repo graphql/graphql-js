@@ -124,7 +124,7 @@ export function extendSchema(
 
   // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
-  const directiveDefinitionMap = {};
+  const directiveDefinitions : Array<DirectiveDefinition> = [];
 
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const def = documentAST.definitions[i];
@@ -183,7 +183,7 @@ export function extendSchema(
             [ def ]
           );
         }
-        directiveDefinitionMap[directiveName] = def;
+        directiveDefinitions.push(def);
         break;
     }
   }
@@ -192,7 +192,7 @@ export function extendSchema(
   // return the same unmodified GraphQLSchema instance.
   if (Object.keys(typeExtensionsMap).length === 0 &&
       Object.keys(typeDefinitionMap).length === 0 &&
-      Object.keys(directiveDefinitionMap).length === 0) {
+      directiveDefinitions.length === 0) {
     return schema;
   }
 
@@ -257,14 +257,10 @@ export function extendSchema(
     const existingDirectives = schema.getDirectives();
     invariant(existingDirectives, 'schema must have default directives');
 
-    const mergedDirectives = existingDirectives.slice(0);
-    Object.keys(directiveDefinitionMap).forEach(dirName => {
-      const directiveAST = directiveDefinitionMap[dirName];
-      const directive = getDirective(directiveAST);
-      mergedDirectives.push(directive);
-    });
-
-    return mergedDirectives;
+    const newDirectives = directiveDefinitions.map(directiveAST =>
+      getDirective(directiveAST)
+    );
+    return existingDirectives.concat(newDirectives);
   }
 
   function getTypeFromDef<T: GraphQLNamedType>(typeDef: T): T {
