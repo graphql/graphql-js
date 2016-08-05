@@ -478,12 +478,12 @@ export type GraphQLIsTypeOfFn = (
   info: GraphQLResolveInfo
 ) => boolean
 
-export type GraphQLFieldResolveFn<TSource> = (
+export type GraphQLFieldResolveFn<TSource, TResult> = (
   source: TSource,
   args: {[argName: string]: mixed},
   context: mixed,
   info: GraphQLResolveInfo
-) => mixed
+) => TResult
 
 export type GraphQLResolveInfo = {
   fieldName: string;
@@ -501,7 +501,7 @@ export type GraphQLResolveInfo = {
 export type GraphQLFieldConfig<TSource> = {
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;
-  resolve?: GraphQLFieldResolveFn<TSource>;
+  resolve?: GraphQLFieldResolveFn<TSource, *>;
   deprecationReason?: ?string;
   description?: ?string;
 }
@@ -525,7 +525,7 @@ export type GraphQLFieldDefinition = {
   description: ?string;
   type: GraphQLOutputType;
   args: Array<GraphQLArgument>;
-  resolve?: GraphQLFieldResolveFn<*>;
+  resolve?: GraphQLFieldResolveFn<*, *>;
   deprecationReason?: ?string;
 }
 

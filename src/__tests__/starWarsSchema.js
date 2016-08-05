@@ -1,3 +1,4 @@
+/* @flow */
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
@@ -18,6 +19,8 @@ import {
 } from '../type';
 
 import { getFriends, getHero, getHuman, getDroid } from './starWarsData.js';
+
+import type { Character, Human, Droid } from './starWarsData.js';
 
 /**
  * This is designed to be an end-to-end test, demonstrating
@@ -132,7 +135,7 @@ const characterInterface = new GraphQLInterfaceType({
     },
   }),
   resolveType: character => {
-    return getHuman(character.id) ? humanType : droidType;
+    return getHuman((character: any).id) ? humanType : droidType;
   }
 });
 
@@ -164,7 +167,7 @@ const humanType = new GraphQLObjectType({
       type: new GraphQLList(characterInterface),
       description: 'The friends of the human, or an empty list if they ' +
                    'have none.',
-      resolve: human => getFriends(human),
+      resolve: (human: Human): Array<Promise<Character>> => getFriends(human),
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
@@ -214,7 +217,7 @@ const droidType = new GraphQLObjectType({
       type: new GraphQLList(characterInterface),
       description: 'The friends of the droid, or an empty list if they ' +
                    'have none.',
-      resolve: droid => getFriends(droid),
+      resolve: (droid: Droid): Array<Promise<Character>> => getFriends(droid),
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
@@ -261,7 +264,7 @@ const queryType = new GraphQLObjectType({
           type: episodeEnum
         }
       },
-      resolve: (root, { episode }) => getHero(episode),
+      resolve: (root, { episode }): Character => getHero((episode: any)),
     },
     human: {
       type: humanType,
@@ -271,7 +274,7 @@ const queryType = new GraphQLObjectType({
           type: new GraphQLNonNull(GraphQLString)
         }
       },
-      resolve: (root, { id }) => getHuman(id),
+      resolve: (root, { id }): Human => getHuman((id: any)),
     },
     droid: {
       type: droidType,
@@ -281,7 +284,7 @@ const queryType = new GraphQLObjectType({
           type: new GraphQLNonNull(GraphQLString)
         }
       },
-      resolve: (root, { id }) => getDroid(id),
+      resolve: (root, { id }): Droid => getDroid((id: any)),
     },
   })
 });
