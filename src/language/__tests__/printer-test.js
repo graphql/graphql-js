@@ -17,9 +17,9 @@ import { join } from 'path';
 describe('Printer', () => {
   it('does not alter ast', () => {
     const ast = parse(kitchenSink);
-    const astCopy = JSON.parse(JSON.stringify(ast));
+    const astBefore = JSON.stringify(ast);
     print(ast);
-    expect(ast).to.deep.equal(astCopy);
+    expect(JSON.stringify(ast)).to.equal(astBefore);
   });
 
   it('prints minimal ast', () => {

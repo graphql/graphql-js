@@ -121,6 +121,7 @@ export {
   visitInParallel,
   visitWithTypeInfo,
   Kind,
+  TokenKind,
   BREAK,
 } from './language';
 
