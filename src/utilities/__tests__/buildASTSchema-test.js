@@ -66,6 +66,36 @@ type Hello {
     expect(output).to.equal(body);
   });
 
+  it('Supports descriptions', () => {
+    const body = `
+schema {
+  query: Hello
+}
+
+# This is a directive
+directive @foo(
+  # It has an argument
+  arg: Int
+) on FIELD
+
+# With an enum
+enum Color {
+  RED
+
+  # Not a creative color
+  GREEN
+  BLUE
+}
+
+# What a great type
+type Hello {
+  # And a field to boot
+  str: String
+}
+`;
+    const output = cycleOutput(body);
+    expect(output).to.equal(body);
+  });
 
   it('Maintains @skip & @include', () => {
     const body = `
