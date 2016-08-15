@@ -155,7 +155,7 @@ describe('Validate: No unused variables', () => {
     ]);
   });
 
-  it('multiple variables not used', () => {
+  it('multiple variables not used in fragments', () => {
     expectFailsRule(NoUnusedVariables, `
       query Foo($a: String, $b: String, $c: String) {
         ...FragA
