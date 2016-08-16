@@ -12,14 +12,100 @@ import type { Source } from './source';
 
 
 /**
- * Contains a range of UTF-8 character offsets that identify
- * the region of the source from which the AST derived.
+ * Contains a range of UTF-8 character offsets and token references that
+ * identify the region of the source from which the AST derived.
  */
 export type Location = {
+
+  /**
+   * The character offset at which this Node begins.
+   */
   start: number;
+
+  /**
+   * The character offset at which this Node ends.
+   */
   end: number;
-  source?: ?Source
-}
+
+  /**
+   * The Token at which this Node begins.
+   */
+  startToken: Token;
+
+  /**
+   * The Token at which this Node ends.
+   */
+  endToken: Token;
+
+  /**
+   * The Source document the AST represents.
+   */
+  source: Source;
+};
+
+/**
+ * Represents a range of characters represented by a lexical token
+ * within a Source.
+ */
+export type Token = {
+
+  /**
+   * The kind of Token.
+   */
+  kind: '<SOF>'
+      | '<EOF>'
+      | '!'
+      | '$'
+      | '('
+      | ')'
+      | '...'
+      | ':'
+      | '='
+      | '@'
+      | '['
+      | ']'
+      | '{'
+      | '|'
+      | '}'
+      | 'Name'
+      | 'Int'
+      | 'Float'
+      | 'String'
+      | 'Comment';
+
+  /**
+   * The character offset at which this Node begins.
+   */
+  start: number;
+
+  /**
+   * The character offset at which this Node ends.
+   */
+  end: number;
+
+  /**
+   * The 1-indexed line number on which this Token appears.
+   */
+  line: number;
+
+  /**
+   * The 1-indexed column number at which this Token begins.
+   */
+  column: number;
+
+  /**
+   * For non-punctuation tokens, represents the interpreted value of the token.
+   */
+  value: string | void;
+
+  /**
+   * Tokens exist as nodes in a double-linked-list amongst all tokens
+   * including ignored tokens. <SOF> is always the first node and <EOF>
+   * the last.
+   */
+  prev: Token | null;
+  next: Token | null;
+};
 
 /**
  * The list of all possible AST node types.
@@ -65,7 +151,7 @@ export type Node = Name
 
 export type Name = {
   kind: 'Name';
-  loc?: ?Location;
+  loc?: Location;
   value: string;
 }
 
@@ -73,7 +159,7 @@ export type Name = {
 
 export type Document = {
   kind: 'Document';
-  loc?: ?Location;
+  loc?: Location;
   definitions: Array<Definition>;
 }
 
@@ -83,7 +169,7 @@ export type Definition = OperationDefinition
 
 export type OperationDefinition = {
   kind: 'OperationDefinition';
-  loc?: ?Location;
+  loc?: Location;
   operation: OperationType;
   name?: ?Name;
   variableDefinitions?: ?Array<VariableDefinition>;
@@ -96,7 +182,7 @@ export type OperationType = 'query' | 'mutation' | 'subscription';
 
 export type VariableDefinition = {
   kind: 'VariableDefinition';
-  loc?: ?Location;
+  loc?: Location;
   variable: Variable;
   type: Type;
   defaultValue?: ?Value;
@@ -104,13 +190,13 @@ export type VariableDefinition = {
 
 export type Variable = {
   kind: 'Variable';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
 }
 
 export type SelectionSet = {
   kind: 'SelectionSet';
-  loc?: ?Location;
+  loc?: Location;
   selections: Array<Selection>;
 }
 
@@ -120,7 +206,7 @@ export type Selection = Field
 
 export type Field = {
   kind: 'Field';
-  loc?: ?Location;
+  loc?: Location;
   alias?: ?Name;
   name: Name;
   arguments?: ?Array<Argument>;
@@ -130,7 +216,7 @@ export type Field = {
 
 export type Argument = {
   kind: 'Argument';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   value: Value;
 }
@@ -140,14 +226,14 @@ export type Argument = {
 
 export type FragmentSpread = {
   kind: 'FragmentSpread';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   directives?: ?Array<Directive>;
 }
 
 export type InlineFragment = {
   kind: 'InlineFragment';
-  loc?: ?Location;
+  loc?: Location;
   typeCondition?: ?NamedType;
   directives?: ?Array<Directive>;
   selectionSet: SelectionSet;
@@ -155,7 +241,7 @@ export type InlineFragment = {
 
 export type FragmentDefinition = {
   kind: 'FragmentDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   typeCondition: NamedType;
   directives?: ?Array<Directive>;
@@ -176,49 +262,49 @@ export type Value = Variable
 
 export type IntValue = {
   kind: 'IntValue';
-  loc?: ?Location;
+  loc?: Location;
   value: string;
 }
 
 export type FloatValue = {
   kind: 'FloatValue';
-  loc?: ?Location;
+  loc?: Location;
   value: string;
 }
 
 export type StringValue = {
   kind: 'StringValue';
-  loc?: ?Location;
+  loc?: Location;
   value: string;
 }
 
 export type BooleanValue = {
   kind: 'BooleanValue';
-  loc?: ?Location;
+  loc?: Location;
   value: boolean;
 }
 
 export type EnumValue = {
   kind: 'EnumValue';
-  loc?: ?Location;
+  loc?: Location;
   value: string;
 }
 
 export type ListValue = {
   kind: 'ListValue';
-  loc?: ?Location;
+  loc?: Location;
   values: Array<Value>;
 }
 
 export type ObjectValue = {
   kind: 'ObjectValue';
-  loc?: ?Location;
+  loc?: Location;
   fields: Array<ObjectField>;
 }
 
 export type ObjectField = {
   kind: 'ObjectField';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   value: Value;
 }
@@ -228,7 +314,7 @@ export type ObjectField = {
 
 export type Directive = {
   kind: 'Directive';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   arguments?: ?Array<Argument>;
 }
@@ -242,19 +328,19 @@ export type Type = NamedType
 
 export type NamedType = {
   kind: 'NamedType';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
 };
 
 export type ListType = {
   kind: 'ListType';
-  loc?: ?Location;
+  loc?: Location;
   type: Type;
 }
 
 export type NonNullType = {
   kind: 'NonNullType';
-  loc?: ?Location;
+  loc?: Location;
   type: NamedType | ListType;
 }
 
@@ -267,14 +353,14 @@ export type TypeSystemDefinition = SchemaDefinition
 
 export type SchemaDefinition = {
   kind: 'SchemaDefinition';
-  loc?: ?Location;
+  loc?: Location;
   directives: Array<Directive>;
   operationTypes: Array<OperationTypeDefinition>;
 }
 
 export type OperationTypeDefinition = {
   kind: 'OperationTypeDefinition';
-  loc?: ?Location;
+  loc?: Location;
   operation: OperationType;
   type: NamedType;
 }
@@ -288,14 +374,14 @@ export type TypeDefinition = ScalarTypeDefinition
 
 export type ScalarTypeDefinition = {
   kind: 'ScalarTypeDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   directives?: ?Array<Directive>;
 }
 
 export type ObjectTypeDefinition = {
   kind: 'ObjectTypeDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   interfaces?: ?Array<NamedType>;
   directives?: ?Array<Directive>;
@@ -304,7 +390,7 @@ export type ObjectTypeDefinition = {
 
 export type FieldDefinition = {
   kind: 'FieldDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   arguments: Array<InputValueDefinition>;
   type: Type;
@@ -313,7 +399,7 @@ export type FieldDefinition = {
 
 export type InputValueDefinition = {
   kind: 'InputValueDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   type: Type;
   defaultValue?: ?Value;
@@ -322,7 +408,7 @@ export type InputValueDefinition = {
 
 export type InterfaceTypeDefinition = {
   kind: 'InterfaceTypeDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   directives?: ?Array<Directive>;
   fields: Array<FieldDefinition>;
@@ -330,7 +416,7 @@ export type InterfaceTypeDefinition = {
 
 export type UnionTypeDefinition = {
   kind: 'UnionTypeDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   directives?: ?Array<Directive>;
   types: Array<NamedType>;
@@ -338,7 +424,7 @@ export type UnionTypeDefinition = {
 
 export type EnumTypeDefinition = {
   kind: 'EnumTypeDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   directives?: ?Array<Directive>;
   values: Array<EnumValueDefinition>;
@@ -346,14 +432,14 @@ export type EnumTypeDefinition = {
 
 export type EnumValueDefinition = {
   kind: 'EnumValueDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   directives?: ?Array<Directive>;
 }
 
 export type InputObjectTypeDefinition = {
   kind: 'InputObjectTypeDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   directives?: ?Array<Directive>;
   fields: Array<InputValueDefinition>;
@@ -361,13 +447,13 @@ export type InputObjectTypeDefinition = {
 
 export type TypeExtensionDefinition = {
   kind: 'TypeExtensionDefinition';
-  loc?: ?Location;
+  loc?: Location;
   definition: ObjectTypeDefinition;
 }
 
 export type DirectiveDefinition = {
   kind: 'DirectiveDefinition';
-  loc?: ?Location;
+  loc?: Location;
   name: Name;
   arguments?: ?Array<InputValueDefinition>;
   locations: Array<Name>;

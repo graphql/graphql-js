@@ -8,67 +8,126 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import type { Token } from './ast';
 import type { Source } from './source';
 import { syntaxError } from '../error';
 
 /**
- * A representation of a lexed Token. Value only appears for non-punctuation
- * tokens: NAME, INT, FLOAT, and STRING.
- */
-export type Token = {
-  kind: number;
-  start: number;
-  end: number;
-  value: ?string;
-};
-
-type Lexer = (resetPosition?: number) => Token;
-
-/**
  * Given a Source object, this returns a Lexer for that source.
- * A Lexer is a function that acts like a generator in that every time
- * it is called, it returns the next token in the Source. Assuming the
+ * A Lexer is a stateful stream generator in that every time
+ * it is advanced, it returns the next token in the Source. Assuming the
  * source lexes, the final Token emitted by the lexer will be of kind
- * EOF, after which the lexer will repeatedly return EOF tokens whenever
- * called.
- *
- * The argument to the lexer function is optional, and can be used to
- * rewind or fast forward the lexer to a new position in the source.
+ * EOF, after which the lexer will repeatedly return the same EOF token
+ * whenever called.
  */
-export function lex(source: Source): Lexer {
-  let prevPosition = 0;
-  return function nextToken(resetPosition) {
-    const token = readToken(
-      source,
-      resetPosition === undefined ? prevPosition : resetPosition
-    );
-    prevPosition = token.end;
-    return token;
+export function createLexer<TOptions>(
+  source: Source,
+  options: TOptions
+): Lexer<TOptions> {
+  const startOfFileToken = new Tok(SOF, 0, 0, 0, 0, null);
+  const lexer: Lexer<TOptions> = {
+    source,
+    options,
+    lastToken: startOfFileToken,
+    token: startOfFileToken,
+    line: 1,
+    lineStart: 0,
+    advance: advanceLexer
   };
+  return lexer;
+}
+
+function advanceLexer() {
+  let token = this.lastToken = this.token;
+  if (token.kind !== EOF) {
+    do {
+      token = token.next = readToken(this, token);
+    } while (token.kind === COMMENT);
+    this.token = token;
+  }
+  return token;
 }
 
 /**
- * An enum describing the different kinds of tokens that the lexer emits.
+ * The return type of createLexer.
+ */
+export type Lexer<TOptions> = {
+  source: Source;
+  options: TOptions;
+
+  /**
+   * The previously focused non-ignored token.
+   */
+  lastToken: Token;
+
+  /**
+   * The currently focused non-ignored token.
+   */
+  token: Token;
+
+  /**
+   * The (1-indexed) line containing the current token.
+   */
+  line: number;
+
+  /**
+   * The character offset at which the current line begins.
+   */
+  lineStart: number;
+
+  /**
+   * Advances the token stream to the next non-ignored token.
+   */
+  advance(): Token;
+};
+
+// Each kind of token.
+const SOF = '<SOF>';
+const EOF = '<EOF>';
+const BANG = '!';
+const DOLLAR = '$';
+const PAREN_L = '(';
+const PAREN_R = ')';
+const SPREAD = '...';
+const COLON = ':';
+const EQUALS = '=';
+const AT = '@';
+const BRACKET_L = '[';
+const BRACKET_R = ']';
+const BRACE_L = '{';
+const PIPE = '|';
+const BRACE_R = '}';
+const NAME = 'Name';
+const INT = 'Int';
+const FLOAT = 'Float';
+const STRING = 'String';
+const COMMENT = 'Comment';
+
+/**
+ * An exported enum describing the different kinds of tokens that the
+ * lexer emits.
  */
 export const TokenKind = {
-  EOF: 1,
-  BANG: 2,
-  DOLLAR: 3,
-  PAREN_L: 4,
-  PAREN_R: 5,
-  SPREAD: 6,
-  COLON: 7,
-  EQUALS: 8,
-  AT: 9,
-  BRACKET_L: 10,
-  BRACKET_R: 11,
-  BRACE_L: 12,
-  PIPE: 13,
-  BRACE_R: 14,
-  NAME: 15,
-  INT: 16,
-  FLOAT: 17,
-  STRING: 18,
+  SOF,
+  EOF,
+  BANG,
+  DOLLAR,
+  PAREN_L,
+  PAREN_R,
+  SPREAD,
+  COLON,
+  EQUALS,
+  AT,
+  BRACKET_L,
+  BRACKET_R,
+  BRACE_L,
+  PIPE,
+  BRACE_R,
+  NAME,
+  INT,
+  FLOAT,
+  STRING,
+  COMMENT
 };
 
 /**
@@ -76,37 +135,8 @@ export const TokenKind = {
  */
 export function getTokenDesc(token: Token): string {
   const value = token.value;
-  return value ?
-    `${getTokenKindDesc(token.kind)} "${value}"` :
-    getTokenKindDesc(token.kind);
+  return value ? `${token.kind} "${value}"` : token.kind;
 }
-
-/**
- * A helper function to describe a token kind as a string for debugging
- */
-export function getTokenKindDesc(kind: number): string {
-  return tokenDescription[kind];
-}
-
-const tokenDescription = {};
-tokenDescription[TokenKind.EOF] = 'EOF';
-tokenDescription[TokenKind.BANG] = '!';
-tokenDescription[TokenKind.DOLLAR] = '$';
-tokenDescription[TokenKind.PAREN_L] = '(';
-tokenDescription[TokenKind.PAREN_R] = ')';
-tokenDescription[TokenKind.SPREAD] = '...';
-tokenDescription[TokenKind.COLON] = ':';
-tokenDescription[TokenKind.EQUALS] = '=';
-tokenDescription[TokenKind.AT] = '@';
-tokenDescription[TokenKind.BRACKET_L] = '[';
-tokenDescription[TokenKind.BRACKET_R] = ']';
-tokenDescription[TokenKind.BRACE_L] = '{';
-tokenDescription[TokenKind.PIPE] = '|';
-tokenDescription[TokenKind.BRACE_R] = '}';
-tokenDescription[TokenKind.NAME] = 'Name';
-tokenDescription[TokenKind.INT] = 'Int';
-tokenDescription[TokenKind.FLOAT] = 'Float';
-tokenDescription[TokenKind.STRING] = 'String';
 
 const charCodeAt = String.prototype.charCodeAt;
 const slice = String.prototype.slice;
@@ -114,19 +144,39 @@ const slice = String.prototype.slice;
 /**
  * Helper function for constructing the Token object.
  */
-function makeToken(
-  kind: number,
+function Tok(
+  kind,
   start: number,
   end: number,
+  line: number,
+  column: number,
+  prev: Token | null,
   value?: string
-): Token {
-  return { kind, start, end, value };
+) {
+  this.kind = kind;
+  this.start = start;
+  this.end = end;
+  this.line = line;
+  this.column = column;
+  this.value = value;
+  this.prev = prev;
+  this.next = null;
 }
+
+// Print a simplified form when appearing in JSON/util.inspect.
+Tok.prototype.toJSON = Tok.prototype.inspect = function toJSON() {
+  return {
+    kind: this.kind,
+    value: this.value,
+    line: this.line,
+    column: this.column
+  };
+};
 
 function printCharCode(code) {
   return (
     // NaN/undefined represents access beyond the end of the file.
-    isNaN(code) ? '<EOF>' :
+    isNaN(code) ? EOF :
     // Trust JSON for ASCII.
     code < 0x007F ? JSON.stringify(String.fromCharCode(code)) :
     // Otherwise print the escaped form.
@@ -141,14 +191,17 @@ function printCharCode(code) {
  * token, then lexes punctuators immediately or calls the appropriate helper
  * function for more complicated tokens.
  */
-function readToken(source: Source, fromPosition: number): Token {
+function readToken(lexer: Lexer<*>, prev: Token): Token {
+  const source = lexer.source;
   const body = source.body;
   const bodyLength = body.length;
 
-  const position = positionAfterWhitespace(body, fromPosition);
+  const position = positionAfterWhitespace(body, prev.end, lexer);
+  const line = lexer.line;
+  const col = 1 + position - lexer.lineStart;
 
   if (position >= bodyLength) {
-    return makeToken(TokenKind.EOF, position, position);
+    return new Tok(EOF, bodyLength, bodyLength, line, col, prev);
   }
 
   const code = charCodeAt.call(body, position);
@@ -164,36 +217,42 @@ function readToken(source: Source, fromPosition: number): Token {
 
   switch (code) {
     // !
-    case 33: return makeToken(TokenKind.BANG, position, position + 1);
+    case 33: return new Tok(BANG, position, position + 1, line, col, prev);
+    // #
+    case 35: return readComment(source, position, line, col, prev);
     // $
-    case 36: return makeToken(TokenKind.DOLLAR, position, position + 1);
+    case 36: return new Tok(DOLLAR, position, position + 1, line, col, prev);
     // (
-    case 40: return makeToken(TokenKind.PAREN_L, position, position + 1);
+    case 40: return new Tok(PAREN_L, position, position + 1, line, col, prev);
     // )
-    case 41: return makeToken(TokenKind.PAREN_R, position, position + 1);
+    case 41: return new Tok(PAREN_R, position, position + 1, line, col, prev);
     // .
     case 46:
       if (charCodeAt.call(body, position + 1) === 46 &&
           charCodeAt.call(body, position + 2) === 46) {
-        return makeToken(TokenKind.SPREAD, position, position + 3);
+        return new Tok(SPREAD, position, position + 3, line, col, prev);
       }
       break;
     // :
-    case 58: return makeToken(TokenKind.COLON, position, position + 1);
+    case 58: return new Tok(COLON, position, position + 1, line, col, prev);
     // =
-    case 61: return makeToken(TokenKind.EQUALS, position, position + 1);
+    case 61: return new Tok(EQUALS, position, position + 1, line, col, prev);
     // @
-    case 64: return makeToken(TokenKind.AT, position, position + 1);
+    case 64: return new Tok(AT, position, position + 1, line, col, prev);
     // [
-    case 91: return makeToken(TokenKind.BRACKET_L, position, position + 1);
+    case 91:
+      return new Tok(BRACKET_L, position, position + 1, line, col, prev);
     // ]
-    case 93: return makeToken(TokenKind.BRACKET_R, position, position + 1);
+    case 93:
+      return new Tok(BRACKET_R, position, position + 1, line, col, prev);
     // {
-    case 123: return makeToken(TokenKind.BRACE_L, position, position + 1);
+    case 123:
+      return new Tok(BRACE_L, position, position + 1, line, col, prev);
     // |
-    case 124: return makeToken(TokenKind.PIPE, position, position + 1);
+    case 124: return new Tok(PIPE, position, position + 1, line, col, prev);
     // }
-    case 125: return makeToken(TokenKind.BRACE_R, position, position + 1);
+    case 125:
+      return new Tok(BRACE_R, position, position + 1, line, col, prev);
     // A-Z _ a-z
     case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72:
     case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80:
@@ -204,14 +263,14 @@ function readToken(source: Source, fromPosition: number): Token {
     case 105: case 106: case 107: case 108: case 109: case 110: case 111:
     case 112: case 113: case 114: case 115: case 116: case 117: case 118:
     case 119: case 120: case 121: case 122:
-      return readName(source, position);
+      return readName(source, position, line, col, prev);
     // - 0-9
     case 45:
     case 48: case 49: case 50: case 51: case 52:
     case 53: case 54: case 55: case 56: case 57:
-      return readNumber(source, position, code);
+      return readNumber(source, position, code, line, col, prev);
     // "
-    case 34: return readString(source, position);
+    case 34: return readString(source, position, line, col, prev);
   }
 
   throw syntaxError(
@@ -226,41 +285,64 @@ function readToken(source: Source, fromPosition: number): Token {
  * or commented character, then returns the position of that character for
  * lexing.
  */
-function positionAfterWhitespace(body: string, startPosition: number): number {
+function positionAfterWhitespace(
+  body: string,
+  startPosition: number,
+  lexer: Lexer<*>
+): number {
   const bodyLength = body.length;
   let position = startPosition;
   while (position < bodyLength) {
-    let code = charCodeAt.call(body, position);
-    // Skip Ignored
-    if (
-      // BOM
-      code === 0xFEFF ||
-      // White Space
-      code === 0x0009 || // tab
-      code === 0x0020 || // space
-      // Line Terminator
-      code === 0x000A || // new line
-      code === 0x000D || // carriage return
-      // Comma
-      code === 0x002C
-    ) {
+    const code = charCodeAt.call(body, position);
+    // tab | space | comma | BOM
+    if (code === 9 || code === 32 || code === 44 || code === 0xFEFF) {
       ++position;
-    // Skip comments
-    } else if (code === 35) { // #
+    } else if (code === 10) { // new line
       ++position;
-      while (
-        position < bodyLength &&
-        (code = charCodeAt.call(body, position)) !== null &&
-        // SourceCharacter but not LineTerminator
-        (code > 0x001F || code === 0x0009) && code !== 0x000A && code !== 0x000D
-      ) {
+      ++lexer.line;
+      lexer.lineStart = position;
+    } else if (code === 13) { // carriage return
+      if (charCodeAt.call(body, position + 1) === 10) {
+        position += 2;
+      } else {
         ++position;
       }
+      ++lexer.line;
+      lexer.lineStart = position;
     } else {
       break;
     }
   }
   return position;
+}
+
+/**
+ * Reads a comment token from the source file.
+ *
+ * #[\u0009\u0020-\uFFFF]*
+ */
+function readComment(source, start, line, col, prev): Token {
+  const body = source.body;
+  let code;
+  let position = start;
+
+  do {
+    code = charCodeAt.call(body, ++position);
+  } while (
+    code !== null &&
+    // SourceCharacter but not LineTerminator
+    (code > 0x001F || code === 0x0009)
+  );
+
+  return new Tok(
+    COMMENT,
+    start,
+    position,
+    line,
+    col,
+    prev,
+    slice.call(body, start + 1, position)
+  );
 }
 
 /**
@@ -270,7 +352,7 @@ function positionAfterWhitespace(body: string, startPosition: number): number {
  * Int:   -?(0|[1-9][0-9]*)
  * Float: -?(0|[1-9][0-9]*)(\.[0-9]+)?((E|e)(+|-)?[0-9]+)?
  */
-function readNumber(source, start, firstCode) {
+function readNumber(source, start, firstCode, line, col, prev): Token {
   const body = source.body;
   let code = firstCode;
   let position = start;
@@ -312,10 +394,13 @@ function readNumber(source, start, firstCode) {
     position = readDigits(source, position, code);
   }
 
-  return makeToken(
-    isFloat ? TokenKind.FLOAT : TokenKind.INT,
+  return new Tok(
+    isFloat ? FLOAT : INT,
     start,
     position,
+    line,
+    col,
+    prev,
     slice.call(body, start, position)
   );
 }
@@ -345,7 +430,7 @@ function readDigits(source, start, firstCode) {
  *
  * "([^"\\\u000A\u000D]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
  */
-function readString(source, start) {
+function readString(source, start, line, col, prev): Token {
   const body = source.body;
   let position = start + 1;
   let chunkStart = position;
@@ -417,7 +502,7 @@ function readString(source, start) {
   }
 
   value += slice.call(body, chunkStart, position);
-  return makeToken(TokenKind.STRING, start, position + 1, value);
+  return new Tok(STRING, start, position + 1, line, col, prev, value);
 }
 
 /**
@@ -456,7 +541,7 @@ function char2hex(a) {
  *
  * [_A-Za-z][_0-9A-Za-z]*
  */
-function readName(source, position) {
+function readName(source, position, line, col, prev): Token {
   const body = source.body;
   const bodyLength = body.length;
   let end = position + 1;
@@ -473,10 +558,13 @@ function readName(source, position) {
   ) {
     ++end;
   }
-  return makeToken(
-    TokenKind.NAME,
+  return new Tok(
+    NAME,
     position,
     end,
+    line,
+    col,
+    prev,
     slice.call(body, position, end)
   );
 }

@@ -10,7 +10,7 @@
 export { getLocation } from './location';
 import * as Kind from './kinds';
 export { Kind };
-export { lex } from './lexer';
+export { createLexer, TokenKind } from './lexer';
 export { parse, parseValue } from './parser';
 export { print } from './printer';
 export { Source } from './source';

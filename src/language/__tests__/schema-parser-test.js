@@ -11,17 +11,6 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parse } from '../parser';
 
-function createLocFn(body) {
-  return (start, end) => ({
-    start,
-    end,
-    source: {
-      body,
-      name: 'GraphQL',
-    },
-  });
-}
-
 function printJson(obj) {
   return JSON.stringify(obj, null, 2);
 }
@@ -84,26 +73,25 @@ type Hello {
   world: String
 }`;
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', loc(6, 11)),
+          name: nameNode('Hello', { start: 6, end: 11 }),
           interfaces: [],
           directives: [],
           fields: [
             fieldNode(
-              nameNode('world', loc(16, 21)),
-              typeNode('String', loc(23, 29)),
-              loc(16, 29)
+              nameNode('world', { start: 16, end: 21 }),
+              typeNode('String', { start: 23, end: 29 }),
+              { start: 16, end: 29 }
             )
           ],
-          loc: loc(1, 31),
+          loc: { start: 1, end: 31 },
         }
       ],
-      loc: loc(1, 31),
+      loc: { start: 0, end: 31 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -112,9 +100,9 @@ type Hello {
     const body = `
 extend type Hello {
   world: String
-}`;
+}
+`;
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
@@ -122,22 +110,22 @@ extend type Hello {
           kind: 'TypeExtensionDefinition',
           definition: {
             kind: 'ObjectTypeDefinition',
-            name: nameNode('Hello', loc(13, 18)),
+            name: nameNode('Hello', { start: 13, end: 18 }),
             interfaces: [],
             directives: [],
             fields: [
               fieldNode(
-                nameNode('world', loc(23, 28)),
-                typeNode('String', loc(30, 36)),
-                loc(23, 36)
+                nameNode('world', { start: 23, end: 28 }),
+                typeNode('String', { start: 30, end: 36 }),
+                { start: 23, end: 36 }
               )
             ],
-            loc: loc(8, 38),
+            loc: { start: 8, end: 38 },
           },
-          loc: loc(1, 38),
+          loc: { start: 1, end: 38 },
         }
       ],
-      loc: loc(1, 38)
+      loc: { start: 0, end: 39 }
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -147,31 +135,30 @@ extend type Hello {
 type Hello {
   world: String!
 }`;
-    const loc = createLocFn(body);
     const doc = parse(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', loc(6, 11)),
+          name: nameNode('Hello', { start: 6, end: 11 }),
           interfaces: [],
           directives: [],
           fields: [
             fieldNode(
-              nameNode('world', loc(16, 21)),
+              nameNode('world', { start: 16, end: 21 }),
               {
                 kind: 'NonNullType',
-                type: typeNode('String', loc(23, 29)),
-                loc: loc(23, 30),
+                type: typeNode('String', { start: 23, end: 29 }),
+                loc: { start: 23, end: 30 },
               },
-              loc(16, 30)
+              { start: 16, end: 30 }
             )
           ],
-          loc: loc(1, 32),
+          loc: { start: 1, end: 32 },
         }
       ],
-      loc: loc(1, 32),
+      loc: { start: 0, end: 32 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -179,88 +166,84 @@ type Hello {
 
   it('Simple type inheriting interface', () => {
     const body = 'type Hello implements World { }';
-    const loc = createLocFn(body);
     const doc = parse(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', loc(5, 10)),
-          interfaces: [ typeNode('World', loc(22, 27)) ],
+          name: nameNode('Hello', { start: 5, end: 10 }),
+          interfaces: [ typeNode('World', { start: 22, end: 27 }) ],
           directives: [],
           fields: [],
-          loc: loc(0, 31),
+          loc: { start: 0, end: 31 },
         }
       ],
-      loc: loc(0, 31),
+      loc: { start: 0, end: 31 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Simple type inheriting multiple interfaces', () => {
     const body = 'type Hello implements Wo, rld { }';
-    const loc = createLocFn(body);
     const doc = parse(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', loc(5, 10)),
+          name: nameNode('Hello', { start: 5, end: 10 }),
           interfaces: [
-            typeNode('Wo', loc(22, 24)),
-            typeNode('rld', loc(26, 29))
+            typeNode('Wo', { start: 22, end: 24 }),
+            typeNode('rld', { start: 26, end: 29 })
           ],
           directives: [],
           fields: [],
-          loc: loc(0, 33),
+          loc: { start: 0, end: 33 },
         }
       ],
-      loc: loc(0, 33),
+      loc: { start: 0, end: 33 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Single value enum', () => {
     const body = 'enum Hello { WORLD }';
-    const loc = createLocFn(body);
     const doc = parse(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'EnumTypeDefinition',
-          name: nameNode('Hello', loc(5, 10)),
+          name: nameNode('Hello', { start: 5, end: 10 }),
           directives: [],
-          values: [ enumValueNode('WORLD', loc(13, 18)) ],
-          loc: loc(0, 20),
+          values: [ enumValueNode('WORLD', { start: 13, end: 18 }) ],
+          loc: { start: 0, end: 20 },
         }
       ],
-      loc: loc(0, 20),
+      loc: { start: 0, end: 20 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Double value enum', () => {
     const body = 'enum Hello { WO, RLD }';
-    const loc = createLocFn(body);
     const doc = parse(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'EnumTypeDefinition',
-          name: nameNode('Hello', loc(5, 10)),
+          name: nameNode('Hello', { start: 5, end: 10 }),
           directives: [],
           values: [
-            enumValueNode('WO', loc(13, 15)),
-            enumValueNode('RLD', loc(17, 20)),
+            enumValueNode('WO', { start: 13, end: 15 }),
+            enumValueNode('RLD', { start: 17, end: 20 }),
           ],
-          loc: loc(0, 22),
+          loc: { start: 0, end: 22 },
         }
       ],
-      loc: loc(0, 22),
+      loc: { start: 0, end: 22 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -271,25 +254,24 @@ interface Hello {
   world: String
 }`;
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'InterfaceTypeDefinition',
-          name: nameNode('Hello', loc(11, 16)),
+          name: nameNode('Hello', { start: 11, end: 16 }),
           directives: [],
           fields: [
             fieldNode(
-              nameNode('world', loc(21, 26)),
-              typeNode('String', loc(28, 34)),
-              loc(21, 34)
+              nameNode('world', { start: 21, end: 26 }),
+              typeNode('String', { start: 28, end: 34 }),
+              { start: 21, end: 34 }
             )
           ],
-          loc: loc(1, 36),
+          loc: { start: 1, end: 36 },
         }
       ],
-      loc: loc(1, 36),
+      loc: { start: 0, end: 36 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -300,34 +282,33 @@ type Hello {
   world(flag: Boolean): String
 }`;
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', loc(6, 11)),
+          name: nameNode('Hello', { start: 6, end: 11 }),
           interfaces: [],
           directives: [],
           fields: [
             fieldNodeWithArgs(
-              nameNode('world', loc(16, 21)),
-              typeNode('String', loc(38, 44)),
+              nameNode('world', { start: 16, end: 21 }),
+              typeNode('String', { start: 38, end: 44 }),
               [
                 inputValueNode(
-                  nameNode('flag', loc(22, 26)),
-                  typeNode('Boolean', loc(28, 35)),
+                  nameNode('flag', { start: 22, end: 26 }),
+                  typeNode('Boolean', { start: 28, end: 35 }),
                   null,
-                  loc(22, 35)
+                  { start: 22, end: 35 }
                 )
               ],
-              loc(16, 44)
+              { start: 16, end: 44 }
             )
           ],
-          loc: loc(1, 46),
+          loc: { start: 1, end: 46 },
         }
       ],
-      loc: loc(1, 46),
+      loc: { start: 0, end: 46 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -338,38 +319,37 @@ type Hello {
   world(flag: Boolean = true): String
 }`;
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', loc(6, 11)),
+          name: nameNode('Hello', { start: 6, end: 11 }),
           interfaces: [],
           directives: [],
           fields: [
             fieldNodeWithArgs(
-              nameNode('world', loc(16, 21)),
-              typeNode('String', loc(45, 51)),
+              nameNode('world', { start: 16, end: 21 }),
+              typeNode('String', { start: 45, end: 51 }),
               [
                 inputValueNode(
-                  nameNode('flag', loc(22, 26)),
-                  typeNode('Boolean', loc(28, 35)),
+                  nameNode('flag', { start: 22, end: 26 }),
+                  typeNode('Boolean', { start: 28, end: 35 }),
                   {
                     kind: 'BooleanValue',
                     value: true,
-                    loc: loc(38, 42),
+                    loc: { start: 38, end: 42 },
                   },
-                  loc(22, 42)
+                  { start: 22, end: 42 }
                 )
               ],
-              loc(16, 51)
+              { start: 16, end: 51 }
             )
           ],
-          loc: loc(1, 53),
+          loc: { start: 1, end: 53 },
         }
       ],
-      loc: loc(1, 53),
+      loc: { start: 0, end: 53 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -380,38 +360,37 @@ type Hello {
   world(things: [String]): String
 }`;
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', loc(6, 11)),
+          name: nameNode('Hello', { start: 6, end: 11 }),
           interfaces: [],
           directives: [],
           fields: [
             fieldNodeWithArgs(
-              nameNode('world', loc(16, 21)),
-              typeNode('String', loc(41, 47)),
+              nameNode('world', { start: 16, end: 21 }),
+              typeNode('String', { start: 41, end: 47 }),
               [
                 inputValueNode(
-                  nameNode('things', loc(22, 28)),
+                  nameNode('things', { start: 22, end: 28 }),
                   {
                     kind: 'ListType',
-                    type: typeNode('String', loc(31, 37)),
-                    loc: loc(30, 38)
+                    type: typeNode('String', { start: 31, end: 37 }),
+                    loc: { start: 30, end: 38 }
                   },
                   null,
-                  loc(22, 38)
+                  { start: 22, end: 38 }
                 )
               ],
-              loc(16, 47)
+              { start: 16, end: 47 }
             )
           ],
-          loc: loc(1, 49),
+          loc: { start: 1, end: 49 },
         }
       ],
-      loc: loc(1, 49),
+      loc: { start: 0, end: 49 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -422,40 +401,39 @@ type Hello {
   world(argOne: Boolean, argTwo: Int): String
 }`;
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', loc(6, 11)),
+          name: nameNode('Hello', { start: 6, end: 11 }),
           interfaces: [],
           directives: [],
           fields: [
             fieldNodeWithArgs(
-              nameNode('world', loc(16, 21)),
-              typeNode('String', loc(53, 59)),
+              nameNode('world', { start: 16, end: 21 }),
+              typeNode('String', { start: 53, end: 59 }),
               [
                 inputValueNode(
-                  nameNode('argOne', loc(22, 28)),
-                  typeNode('Boolean', loc(30, 37)),
+                  nameNode('argOne', { start: 22, end: 28 }),
+                  typeNode('Boolean', { start: 30, end: 37 }),
                   null,
-                  loc(22, 37)
+                  { start: 22, end: 37 }
                 ),
                 inputValueNode(
-                  nameNode('argTwo', loc(39, 45)),
-                  typeNode('Int', loc(47, 50)),
+                  nameNode('argTwo', { start: 39, end: 45 }),
+                  typeNode('Int', { start: 47, end: 50 }),
                   null,
-                  loc(39, 50)
+                  { start: 39, end: 50 }
                 ),
               ],
-              loc(16, 59)
+              { start: 16, end: 59 }
             )
           ],
-          loc: loc(1, 61),
+          loc: { start: 1, end: 61 },
         }
       ],
-      loc: loc(1, 61),
+      loc: { start: 0, end: 61 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -463,19 +441,18 @@ type Hello {
   it('Simple union', () => {
     const body = 'union Hello = World';
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'UnionTypeDefinition',
-          name: nameNode('Hello', loc(6, 11)),
+          name: nameNode('Hello', { start: 6, end: 11 }),
           directives: [],
-          types: [ typeNode('World', loc(14, 19)) ],
-          loc: loc(0, 19),
+          types: [ typeNode('World', { start: 14, end: 19 }) ],
+          loc: { start: 0, end: 19 },
         }
       ],
-      loc: loc(0, 19),
+      loc: { start: 0, end: 19 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -483,22 +460,21 @@ type Hello {
   it('Union with two types', () => {
     const body = 'union Hello = Wo | Rld';
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'UnionTypeDefinition',
-          name: nameNode('Hello', loc(6, 11)),
+          name: nameNode('Hello', { start: 6, end: 11 }),
           directives: [],
           types: [
-            typeNode('Wo', loc(14, 16)),
-            typeNode('Rld', loc(19, 22)),
+            typeNode('Wo', { start: 14, end: 16 }),
+            typeNode('Rld', { start: 19, end: 22 }),
           ],
-          loc: loc(0, 22),
+          loc: { start: 0, end: 22 },
         }
       ],
-      loc: loc(0, 22),
+      loc: { start: 0, end: 22 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -506,18 +482,17 @@ type Hello {
   it('Scalar', () => {
     const body = 'scalar Hello';
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'ScalarTypeDefinition',
-          name: nameNode('Hello', loc(7, 12)),
+          name: nameNode('Hello', { start: 7, end: 12 }),
           directives: [],
-          loc: loc(0, 12),
+          loc: { start: 0, end: 12 },
         }
       ],
-      loc: loc(0, 12),
+      loc: { start: 0, end: 12 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -528,26 +503,25 @@ input Hello {
   world: String
 }`;
     const doc = parse(body);
-    const loc = createLocFn(body);
     const expected = {
       kind: 'Document',
       definitions: [
         {
           kind: 'InputObjectTypeDefinition',
-          name: nameNode('Hello', loc(7, 12)),
+          name: nameNode('Hello', { start: 7, end: 12 }),
           directives: [],
           fields: [
             inputValueNode(
-              nameNode('world', loc(17, 22)),
-              typeNode('String', loc(24, 30)),
+              nameNode('world', { start: 17, end: 22 }),
+              typeNode('String', { start: 24, end: 30 }),
               null,
-              loc(17, 30)
+              { start: 17, end: 30 }
             )
           ],
-          loc: loc(1, 32),
+          loc: { start: 1, end: 32 },
         }
       ],
-      loc: loc(1, 32),
+      loc: { start: 0, end: 32 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });

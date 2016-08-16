@@ -17,34 +17,6 @@ import { join } from 'path';
 
 describe('Parser', () => {
 
-  it('accepts option to not include source', () => {
-    expect(parse('{ field }', { noSource: true })).to.deep.equal({
-      kind: 'Document',
-      loc: { start: 0, end: 9 },
-      definitions:
-       [ { kind: 'OperationDefinition',
-           loc: { start: 0, end: 9 },
-           operation: 'query',
-           name: null,
-           variableDefinitions: null,
-           directives: [],
-           selectionSet: {
-             kind: 'SelectionSet',
-             loc: { start: 0, end: 9 },
-             selections:
-              [ { kind: 'Field',
-                  loc: { start: 2, end: 7 },
-                  alias: null,
-                  name:
-                   { kind: 'Name',
-                     loc: { start: 2, end: 7 },
-                     value: 'field' },
-                  arguments: [],
-                  directives: [],
-                  selectionSet: null } ] } } ]
-    });
-  });
-
   it('parse provides useful errors', () => {
 
     let caughtError;
@@ -55,7 +27,7 @@ describe('Parser', () => {
     }
 
     expect(caughtError.message).to.equal(
-      `Syntax Error GraphQL (1:2) Expected Name, found EOF
+      `Syntax Error GraphQL (1:2) Expected Name, found <EOF>
 
 1: {
     ^
@@ -92,7 +64,7 @@ fragment MissingOn Type
   it('parse provides useful error when using source', () => {
     expect(
       () => parse(new Source('query', 'MyQuery.graphql'))
-    ).to.throw('Syntax Error MyQuery.graphql (1:6) Expected {, found EOF');
+    ).to.throw('Syntax Error MyQuery.graphql (1:6) Expected {, found <EOF>');
   });
 
   it('parses variable inline values', () => {
@@ -218,7 +190,7 @@ fragment ${fragmentName} on Type {
     `)).to.not.throw();
   });
 
-  it('parse creates ast', () => {
+  it('creates ast', () => {
 
     const source = new Source(`{
   node(id: 4) {
@@ -229,63 +201,96 @@ fragment ${fragmentName} on Type {
 `);
     const result = parse(source);
 
-    expect(result).to.deep.equal(
+    expect(result).to.containSubset(
       { kind: Kind.DOCUMENT,
-        loc: { start: 0, end: 41, source },
+        loc: { start: 0, end: 41 },
         definitions:
          [ { kind: Kind.OPERATION_DEFINITION,
-             loc: { start: 0, end: 40, source },
+             loc: { start: 0, end: 40 },
              operation: 'query',
              name: null,
              variableDefinitions: null,
              directives: [],
              selectionSet:
               { kind: Kind.SELECTION_SET,
-                loc: { start: 0, end: 40, source },
+                loc: { start: 0, end: 40 },
                 selections:
                  [ { kind: Kind.FIELD,
-                     loc: { start: 4, end: 38, source },
+                     loc: { start: 4, end: 38 },
                      alias: null,
                      name:
                       { kind: Kind.NAME,
-                        loc: { start: 4, end: 8, source },
+                        loc: { start: 4, end: 8 },
                         value: 'node' },
                      arguments:
                       [ { kind: Kind.ARGUMENT,
                           name:
                            { kind: Kind.NAME,
-                             loc: { start: 9, end: 11, source },
+                             loc: { start: 9, end: 11 },
                              value: 'id' },
                           value:
                            { kind: Kind.INT,
-                             loc: { start: 13, end: 14, source },
+                             loc: { start: 13, end: 14 },
                              value: '4' },
-                          loc: { start: 9, end: 14, source } } ],
+                          loc: { start: 9, end: 14 } } ],
                      directives: [],
                      selectionSet:
                       { kind: Kind.SELECTION_SET,
-                        loc: { start: 16, end: 38, source },
+                        loc: { start: 16, end: 38 },
                         selections:
                          [ { kind: Kind.FIELD,
-                             loc: { start: 22, end: 24, source },
+                             loc: { start: 22, end: 24 },
                              alias: null,
                              name:
                               { kind: Kind.NAME,
-                                loc: { start: 22, end: 24, source },
+                                loc: { start: 22, end: 24 },
                                 value: 'id' },
                              arguments: [],
                              directives: [],
                              selectionSet: null },
                            { kind: Kind.FIELD,
-                             loc: { start: 30, end: 34, source },
+                             loc: { start: 30, end: 34 },
                              alias: null,
                              name:
                               { kind: Kind.NAME,
-                                loc: { start: 30, end: 34, source },
+                                loc: { start: 30, end: 34 },
                                 value: 'name' },
                              arguments: [],
                              directives: [],
                              selectionSet: null } ] } } ] } } ] }
     );
+  });
+
+  it('allows parsing without source location information', () => {
+    const source = new Source('{ id }');
+    const result = parse(source, { noLocation: true });
+    expect(result.loc).to.equal(undefined);
+  });
+
+  it('contains location information that only stringifys start/end', () => {
+    const source = new Source('{ id }');
+    const result = parse(source);
+    expect(JSON.stringify(result.loc)).to.equal(
+      '{"start":0,"end":6}'
+    );
+    // NB: util.inspect used to suck
+    if (parseFloat(process.version.slice(1)) > 0.10) {
+      expect(require('util').inspect(result.loc)).to.equal(
+        '{ start: 0, end: 6 }'
+      );
+    }
+  });
+
+  it('contains references to source', () => {
+    const source = new Source('{ id }');
+    const result = parse(source);
+    expect(result.loc.source).to.equal(source);
+  });
+
+  it('contains references to start and end tokens', () => {
+    const source = new Source('{ id }');
+    const result = parse(source);
+    expect(result.loc.startToken.kind).to.equal('<SOF>');
+    expect(result.loc.endToken.kind).to.equal('<EOF>');
   });
 });
