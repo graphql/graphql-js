@@ -274,7 +274,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   serialize: (value: mixed) => ?TExternal;
   parseValue?: (value: mixed) => ?TInternal;
   parseLiteral?: (valueAST: Value) => ?TInternal;
-}
+};
 
 
 
@@ -464,26 +464,26 @@ export type GraphQLObjectTypeConfig<TSource> = {
   fields: Thunk<GraphQLFieldConfigMap<TSource>>;
   isTypeOf?: ?GraphQLIsTypeOfFn;
   description?: ?string
-}
+};
 
 export type GraphQLTypeResolveFn = (
   value: mixed,
   context: mixed,
   info: GraphQLResolveInfo
-) => ?GraphQLObjectType
+) => ?GraphQLObjectType;
 
 export type GraphQLIsTypeOfFn = (
   source: mixed,
   context: mixed,
   info: GraphQLResolveInfo
-) => boolean
+) => boolean;
 
 export type GraphQLFieldResolveFn<TSource> = (
   source: TSource,
   args: {[argName: string]: mixed},
   context: mixed,
   info: GraphQLResolveInfo
-) => mixed
+) => mixed;
 
 export type GraphQLResolveInfo = {
   fieldName: string;
@@ -496,7 +496,7 @@ export type GraphQLResolveInfo = {
   rootValue: mixed;
   operation: OperationDefinition;
   variableValues: { [variableName: string]: mixed };
-}
+};
 
 export type GraphQLFieldConfig<TSource> = {
   type: GraphQLOutputType;
@@ -504,7 +504,7 @@ export type GraphQLFieldConfig<TSource> = {
   resolve?: GraphQLFieldResolveFn<TSource>;
   deprecationReason?: ?string;
   description?: ?string;
-}
+};
 
 export type GraphQLFieldConfigArgumentMap = {
   [argName: string]: GraphQLArgumentConfig;
@@ -514,7 +514,7 @@ export type GraphQLArgumentConfig = {
   type: GraphQLInputType;
   defaultValue?: mixed;
   description?: ?string;
-}
+};
 
 export type GraphQLFieldConfigMap<TSource> = {
   [fieldName: string]: GraphQLFieldConfig<TSource>;
@@ -527,7 +527,7 @@ export type GraphQLFieldDefinition = {
   args: Array<GraphQLArgument>;
   resolve?: GraphQLFieldResolveFn<*>;
   deprecationReason?: ?string;
-}
+};
 
 export type GraphQLArgument = {
   name: string;
@@ -841,7 +841,7 @@ export type GraphQLEnumTypeConfig/* <T> */ = {
   name: string;
   values: GraphQLEnumValueConfigMap/* <T> */;
   description?: ?string;
-}
+};
 
 export type GraphQLEnumValueConfigMap/* <T> */ = {
   [valueName: string]: GraphQLEnumValueConfig/* <T> */;
@@ -851,14 +851,14 @@ export type GraphQLEnumValueConfig/* <T> */ = {
   value?: any/* T */;
   deprecationReason?: ?string;
   description?: ?string;
-}
+};
 
 export type GraphQLEnumValueDefinition/* <T> */ = {
   name: string;
   description: ?string;
   deprecationReason: ?string;
   value: any/* T */;
-}
+};
 
 
 
@@ -940,13 +940,13 @@ export type InputObjectConfig = {
   name: string;
   fields: Thunk<InputObjectConfigFieldMap>;
   description?: ?string;
-}
+};
 
 export type InputObjectFieldConfig = {
   type: GraphQLInputType;
   defaultValue?: mixed;
   description?: ?string;
-}
+};
 
 export type InputObjectConfigFieldMap = {
   [fieldName: string]: InputObjectFieldConfig;
@@ -957,7 +957,7 @@ export type InputObjectField = {
   type: GraphQLInputType;
   defaultValue?: mixed;
   description?: ?string;
-}
+};
 
 export type InputObjectFieldMap = {
   [fieldName: string]: InputObjectField;
