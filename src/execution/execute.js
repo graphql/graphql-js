@@ -990,13 +990,16 @@ function defaultResolveTypeFn(
  * If a resolve function is not given, then a default resolve behavior is used
  * which takes the property of the source object of the same name as the field
  * and returns it as the result, or if it's a function, returns the result
- * of calling that function.
+ * of calling that function while passing along args and context.
  */
 function defaultResolveFn(source: any, args, context, { fieldName }) {
   // ensure source is a value for which property access is acceptable.
   if (typeof source === 'object' || typeof source === 'function') {
     const property = source[fieldName];
-    return typeof property === 'function' ? source[fieldName]() : property;
+    if (typeof property === 'function') {
+      return source[fieldName](args, context);
+    }
+    return property;
   }
 }
 

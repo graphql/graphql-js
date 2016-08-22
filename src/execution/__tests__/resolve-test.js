@@ -66,6 +66,34 @@ describe('Execute: resolve function', () => {
     });
   });
 
+  it('default function passes args and context', async () => {
+    const schema = testSchema({
+      type: GraphQLInt,
+      args: {
+        addend1: { type: GraphQLInt },
+      },
+    });
+
+    class Adder {
+      constructor(num) {
+        this._num = num;
+      }
+
+      test({addend1}, context) {
+        return this._num + addend1 + context.addend2;
+      }
+    }
+    const source = new Adder(700);
+
+    expect(
+      await graphql(schema, '{ test(addend1: 80) }', source, { addend2: 9 })
+    ).to.deep.equal({
+      data: {
+        test: 789
+      }
+    });
+  });
+
   it('uses provided resolve function', async () => {
     const schema = testSchema({
       type: GraphQLString,
