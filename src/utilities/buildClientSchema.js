@@ -226,7 +226,7 @@ export function buildClientSchema(
     return new GraphQLScalarType({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
-      serialize: () => null,
+      serialize: id => id,
       // Note: validation calls the parse functions to determine if a
       // literal value is correct. Returning null would cause use of custom
       // scalars to always fail validation. Returning false causes them to
@@ -305,7 +305,6 @@ export function buildClientSchema(
         deprecationReason: fieldIntrospection.deprecationReason,
         type: getOutputType(fieldIntrospection.type),
         args: buildInputValueDefMap(fieldIntrospection.args),
-        resolve: cannotExecuteClientSchema,
       })
     );
   }
@@ -393,5 +392,7 @@ export function buildClientSchema(
 }
 
 function cannotExecuteClientSchema() {
-  throw new Error('Client Schema cannot be used for execution.');
+  throw new Error(
+    'Client Schema cannot use Interface or Union types for execution.'
+  );
 }

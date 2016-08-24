@@ -13,10 +13,11 @@ import { parse } from '../../language';
 import { printSchema } from '../schemaPrinter';
 import { buildASTSchema } from '../buildASTSchema';
 import {
+  graphql,
   GraphQLSkipDirective,
   GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
-} from '../../type/directives';
+} from '../../';
 
 /**
  * This function does a full cycle of going from a
@@ -32,6 +33,23 @@ function cycleOutput(body) {
 }
 
 describe('Schema Builder', () => {
+
+  it('can use built schema for limited execution', async () => {
+    const schema = buildASTSchema(parse(`
+      schema { query: Query }
+      type Query {
+        str: String
+      }
+    `));
+
+    const result = await graphql(
+      schema,
+      '{ str }',
+      { str: 123 }
+    );
+    expect(result.data).to.deep.equal({ str: '123' });
+  });
+
   it('Simple type', () => {
     const body = `
 schema {
