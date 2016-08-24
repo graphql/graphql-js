@@ -131,6 +131,20 @@ describe('extendSchema', () => {
     } ]);
   });
 
+  it('can describe the extended fields', async () => {
+    const ast = parse(`
+      extend type Query {
+        # New field description.
+        newField: String
+      }
+    `);
+    const extendedSchema = extendSchema(testSchema, ast);
+
+    expect(
+      extendedSchema.getType('Query').getFields().newField.description
+    ).to.equal('New field description.');
+  });
+
   it('extends objects by adding new fields', () => {
     const ast = parse(`
       extend type Foo {

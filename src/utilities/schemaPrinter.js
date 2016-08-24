@@ -116,50 +116,95 @@ function printType(type: GraphQLType): string {
 }
 
 function printScalar(type: GraphQLScalarType): string {
-  return `scalar ${type.name}`;
+  return printDescription(type) +
+    `scalar ${type.name}`;
 }
 
 function printObject(type: GraphQLObjectType): string {
   const interfaces = type.getInterfaces();
   const implementedInterfaces = interfaces.length ?
     ' implements ' + interfaces.map(i => i.name).join(', ') : '';
-  return `type ${type.name}${implementedInterfaces} {\n` +
-    printFields(type) + '\n' +
-  '}';
+  return printDescription(type) +
+    `type ${type.name}${implementedInterfaces} {\n` +
+      printFields(type) + '\n' +
+    '}';
 }
 
 function printInterface(type: GraphQLInterfaceType): string {
-  return `interface ${type.name} {\n` +
-    printFields(type) + '\n' +
-  '}';
+  return printDescription(type) +
+    `interface ${type.name} {\n` +
+      printFields(type) + '\n' +
+    '}';
 }
 
 function printUnion(type: GraphQLUnionType): string {
-  return `union ${type.name} = ${type.getTypes().join(' | ')}`;
+  return printDescription(type) +
+    `union ${type.name} = ${type.getTypes().join(' | ')}`;
 }
 
 function printEnum(type: GraphQLEnumType): string {
-  const values = type.getValues();
-  return `enum ${type.name} {\n` +
-    values.map(v => '  ' + v.name + printDeprecated(v)).join('\n') + '\n' +
-  '}';
+  return printDescription(type) +
+    `enum ${type.name} {\n` +
+      printEnumValues(type.getValues()) + '\n' +
+    '}';
+}
+
+function printEnumValues(values): string {
+  return values.map((value, i) =>
+    printDescription(value, '  ', !i) + '  ' +
+    value.name + printDeprecated(value)
+  ).join('\n');
 }
 
 function printInputObject(type: GraphQLInputObjectType): string {
   const fieldMap = type.getFields();
   const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
-  return `input ${type.name} {\n` +
-    fields.map(f => '  ' + printInputValue(f)).join('\n') + '\n' +
-  '}';
+  return printDescription(type) +
+    `input ${type.name} {\n` +
+      fields.map((f, i) =>
+        printDescription(f, '  ', !i) + '  ' + printInputValue(f)
+      ).join('\n') + '\n' +
+    '}';
 }
 
 function printFields(type) {
   const fieldMap = type.getFields();
   const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
-  return fields.map(
-    f => '  ' + f.name + printArgs(f) + ': ' +
-      String(f.type) + printDeprecated(f)
+  return fields.map((f, i) =>
+    printDescription(f, '  ', !i) + '  ' +
+    f.name + printArgs(f.args, '  ') + ': ' +
+    String(f.type) + printDeprecated(f)
   ).join('\n');
+}
+
+function printArgs(args, indentation = '') {
+  if (args.length === 0) {
+    return '';
+  }
+
+  // If every arg does not have a description, print them on one line.
+  if (args.every(arg => !arg.description)) {
+    return '(' + args.map(printInputValue).join(', ') + ')';
+  }
+
+  return '(\n' + args.map((arg, i) =>
+    printDescription(arg, '  ' + indentation, !i) + '  ' + indentation +
+    printInputValue(arg)
+  ).join('\n') + '\n' + indentation + ')';
+}
+
+function printInputValue(arg) {
+  let argDecl = arg.name + ': ' + String(arg.type);
+  if (!isNullish(arg.defaultValue)) {
+    argDecl += ` = ${print(astFromValue(arg.defaultValue, arg.type))}`;
+  }
+  return argDecl;
+}
+
+function printDirective(directive) {
+  return printDescription(directive) +
+    'directive @' + directive.name + printArgs(directive.args) +
+    ' on ' + directive.locations.join(' | ');
 }
 
 function printDeprecated(fieldOrEnumVal) {
@@ -177,22 +222,38 @@ function printDeprecated(fieldOrEnumVal) {
     print(astFromValue(reason, GraphQLString)) + ')';
 }
 
-function printArgs(fieldOrDirectives) {
-  if (fieldOrDirectives.args.length === 0) {
+function printDescription(def, indentation = '', firstInBlock = true): string {
+  if (!def.description) {
     return '';
   }
-  return '(' + fieldOrDirectives.args.map(printInputValue).join(', ') + ')';
-}
-
-function printInputValue(arg) {
-  let argDecl = arg.name + ': ' + String(arg.type);
-  if (!isNullish(arg.defaultValue)) {
-    argDecl += ` = ${print(astFromValue(arg.defaultValue, arg.type))}`;
+  const lines = def.description.split('\n');
+  let description = indentation && !firstInBlock ? '\n' : '';
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i] === '') {
+      description += indentation + '#\n';
+    } else {
+      // For > 120 character long lines, cut at space boundaries into sublines
+      // of ~80 chars.
+      const sublines = breakLine(lines[i], 120 - indentation.length);
+      for (let j = 0; j < sublines.length; j++) {
+        description += indentation + '# ' + sublines[j] + '\n';
+      }
+    }
   }
-  return argDecl;
+  return description;
 }
 
-function printDirective(directive) {
-  return 'directive @' + directive.name + printArgs(directive) +
-    ' on ' + directive.locations.join(' | ');
+function breakLine(line: string, len: number): Array<string> {
+  if (line.length < len + 5) {
+    return [ line ];
+  }
+  const parts = line.split(new RegExp(`((?: |^).{15,${len - 40}}(?= |$))`));
+  if (parts.length < 4) {
+    return [ line ];
+  }
+  const sublines = [ parts[0] + parts[1] + parts[2] ];
+  for (let i = 3; i < parts.length; i += 2) {
+    sublines.push(parts[i].slice(1) + parts[i + 1]);
+  }
+  return sublines;
 }

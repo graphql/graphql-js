@@ -11,6 +11,7 @@
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
+import { getDescription } from './buildASTSchema';
 import { valueFromAST } from './valueFromAST';
 import { GraphQLError } from '../error/GraphQLError';
 import { GraphQLSchema } from '../type/schema';
@@ -426,6 +427,7 @@ export function extendSchema(
             );
           }
           newFieldMap[fieldName] = {
+            description: getDescription(field),
             type: buildOutputFieldType(field.type),
             args: buildInputValues(field.arguments),
             resolve: cannotExecuteClientSchema,
@@ -462,6 +464,7 @@ export function extendSchema(
   function buildObjectType(typeAST: ObjectTypeDefinition): GraphQLObjectType {
     return new GraphQLObjectType({
       name: typeAST.name.value,
+      description: getDescription(typeAST),
       interfaces: () => buildImplementedInterfaces(typeAST),
       fields: () => buildFieldMap(typeAST),
     });
@@ -470,6 +473,7 @@ export function extendSchema(
   function buildInterfaceType(typeAST: InterfaceTypeDefinition) {
     return new GraphQLInterfaceType({
       name: typeAST.name.value,
+      description: getDescription(typeAST),
       fields: () => buildFieldMap(typeAST),
       resolveType: cannotExecuteClientSchema,
     });
@@ -478,6 +482,7 @@ export function extendSchema(
   function buildUnionType(typeAST: UnionTypeDefinition) {
     return new GraphQLUnionType({
       name: typeAST.name.value,
+      description: getDescription(typeAST),
       types: typeAST.types.map(getObjectTypeFromAST),
       resolveType: cannotExecuteClientSchema,
     });
@@ -486,6 +491,7 @@ export function extendSchema(
   function buildScalarType(typeAST: ScalarTypeDefinition) {
     return new GraphQLScalarType({
       name: typeAST.name.value,
+      description: getDescription(typeAST),
       serialize: () => null,
       // Note: validation calls the parse functions to determine if a
       // literal value is correct. Returning null would cause use of custom
@@ -499,6 +505,7 @@ export function extendSchema(
   function buildEnumType(typeAST: EnumTypeDefinition) {
     return new GraphQLEnumType({
       name: typeAST.name.value,
+      description: getDescription(typeAST),
       values: keyValMap(typeAST.values, v => v.name.value, () => ({})),
     });
   }
@@ -506,6 +513,7 @@ export function extendSchema(
   function buildInputObjectType(typeAST: InputObjectTypeDefinition) {
     return new GraphQLInputObjectType({
       name: typeAST.name.value,
+      description: getDescription(typeAST),
       fields: () => buildInputValues(typeAST.fields),
     });
   }
@@ -533,6 +541,7 @@ export function extendSchema(
       field => field.name.value,
       field => ({
         type: buildOutputFieldType(field.type),
+        description: getDescription(field),
         args: buildInputValues(field.arguments),
         resolve: cannotExecuteClientSchema,
       })
@@ -547,6 +556,7 @@ export function extendSchema(
         const type = buildInputFieldType(value.type);
         return {
           type,
+          description: getDescription(value),
           defaultValue: valueFromAST(value.defaultValue, type)
         };
       }
