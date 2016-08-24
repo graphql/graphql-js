@@ -457,10 +457,6 @@ type Subscription {
 
   it('Unreferenced type implementing referenced interface', () => {
     const body = `
-schema {
-  query: Query
-}
-
 type Concrete implements Iface {
   key: String
 }
@@ -479,10 +475,6 @@ type Query {
 
   it('Unreferenced type implementing referenced union', () => {
     const body = `
-schema {
-  query: Query
-}
-
 type Concrete {
   key: String
 }
@@ -499,10 +491,6 @@ union Union = Concrete
 
   it('Supports @deprecated', () => {
     const body = `
-schema {
-  query: Query
-}
-
 enum MyEnum {
   VALUE
   OLD_VALUE @deprecated
@@ -522,15 +510,16 @@ type Query {
 
 describe('Failures', () => {
 
-  it('Requires a schema definition', () => {
+  it('Requires a schema definition or Query type', () => {
     const body = `
 type Hello {
   bar: Bar
 }
 `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Must provide a schema definition.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Must provide schema definition with query type or a type named Query.'
+    );
   });
 
   it('Allows only a single schema definition', () => {
@@ -563,8 +552,9 @@ type Hello {
 }
 `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Must provide schema definition with query type.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Must provide schema definition with query type or a type named Query.'
+    );
   });
 
   it('Allows only a single query type', () => {
