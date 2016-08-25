@@ -10,7 +10,6 @@
 
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
-import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { TokenKind } from '../language/lexer';
@@ -128,6 +127,9 @@ function getNamedTypeAST(typeAST: Type): NamedType {
  * This takes the ast of a schema document produced by the parse function in
  * src/language/parser.js.
  *
+ * If no schema definition is provided, then it will look for types named Query
+ * and Mutation.
+ *
  * Given that AST it constructs a GraphQLSchema. As constructed
  * they are not particularly useful for non-introspection queries
  * since they have no resolve methods.
@@ -140,6 +142,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
   let schemaDef: ?SchemaDefinition;
 
   const typeDefs: Array<TypeDefinition> = [];
+  const astMap: {[name: string]: TypeDefinition} = Object.create(null);
   const directiveDefs: Array<DirectiveDefinition> = [];
   for (let i = 0; i < ast.definitions.length; i++) {
     const d = ast.definitions[i];
@@ -157,6 +160,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
       case UNION_TYPE_DEFINITION:
       case INPUT_OBJECT_TYPE_DEFINITION:
         typeDefs.push(d);
+        astMap[d.name.value] = d;
         break;
       case DIRECTIVE_DEFINITION:
         directiveDefs.push(d);
@@ -164,56 +168,59 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     }
   }
 
-  if (!schemaDef) {
-    throw new Error('Must provide a schema definition.');
-  }
-
   let queryTypeName;
   let mutationTypeName;
   let subscriptionTypeName;
-  schemaDef.operationTypes.forEach(operationType => {
-    const typeName = operationType.type.name.value;
-    if (operationType.operation === 'query') {
-      if (queryTypeName) {
-        throw new Error('Must provide only one query type in schema.');
+  if (schemaDef) {
+    schemaDef.operationTypes.forEach(operationType => {
+      const typeName = operationType.type.name.value;
+      if (operationType.operation === 'query') {
+        if (queryTypeName) {
+          throw new Error('Must provide only one query type in schema.');
+        }
+        if (!astMap[typeName]) {
+          throw new Error(
+            `Specified query type "${typeName}" not found in document.`
+          );
+        }
+        queryTypeName = typeName;
+      } else if (operationType.operation === 'mutation') {
+        if (mutationTypeName) {
+          throw new Error('Must provide only one mutation type in schema.');
+        }
+        if (!astMap[typeName]) {
+          throw new Error(
+            `Specified mutation type "${typeName}" not found in document.`
+          );
+        }
+        mutationTypeName = typeName;
+      } else if (operationType.operation === 'subscription') {
+        if (subscriptionTypeName) {
+          throw new Error('Must provide only one subscription type in schema.');
+        }
+        if (!astMap[typeName]) {
+          throw new Error(
+            `Specified subscription type "${typeName}" not found in document.`
+          );
+        }
+        subscriptionTypeName = typeName;
       }
-      queryTypeName = typeName;
-    } else if (operationType.operation === 'mutation') {
-      if (mutationTypeName) {
-        throw new Error('Must provide only one mutation type in schema.');
-      }
-      mutationTypeName = typeName;
-    } else if (operationType.operation === 'subscription') {
-      if (subscriptionTypeName) {
-        throw new Error('Must provide only one subscription type in schema.');
-      }
-      subscriptionTypeName = typeName;
+    });
+  } else {
+    if (astMap.Query) {
+      queryTypeName = 'Query';
     }
-  });
+    if (astMap.Mutation) {
+      mutationTypeName = 'Mutation';
+    }
+    if (astMap.Subscription) {
+      subscriptionTypeName = 'Subscription';
+    }
+  }
 
   if (!queryTypeName) {
-    throw new Error('Must provide schema definition with query type.');
-  }
-
-  const astMap: {[name: string]: TypeDefinition} =
-    keyMap(typeDefs, d => d.name.value);
-
-  if (!astMap[queryTypeName]) {
     throw new Error(
-      `Specified query type "${queryTypeName}" not found in document.`
-    );
-  }
-
-  if (mutationTypeName && !astMap[mutationTypeName]) {
-    throw new Error(
-      `Specified mutation type "${mutationTypeName}" not found in document.`
-    );
-  }
-
-  if (subscriptionTypeName && !astMap[subscriptionTypeName]) {
-    throw new Error(
-      `Specified subscription type "${
-        subscriptionTypeName}" not found in document.`
+      'Must provide schema definition with query type or a type named Query.'
     );
   }
 
