@@ -11,7 +11,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parse } from '../../language';
 import { printSchema } from '../schemaPrinter';
-import { buildASTSchema } from '../buildASTSchema';
+import { buildASTSchema, buildSchema } from '../buildASTSchema';
 import {
   graphql,
   GraphQLSkipDirective,
@@ -48,6 +48,17 @@ describe('Schema Builder', () => {
       { str: 123 }
     );
     expect(result.data).to.deep.equal({ str: '123' });
+  });
+
+  it('can build a schema directly from the source', async () => {
+    const schema = buildSchema(`
+      type Query {
+        add(x: Int, y: Int): Int
+      }
+    `);
+    expect(await graphql(
+      schema, '{ add(x: 34, y: 55) }', { add: ({x, y}) => x + y }
+    )).to.deep.equal({ data: { add: 89 }});
   });
 
   it('Simple type', () => {

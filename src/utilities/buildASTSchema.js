@@ -13,6 +13,8 @@ import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { TokenKind } from '../language/lexer';
+import { parse } from '../language/parser';
+import { Source } from '../language/source';
 import { getArgumentValues } from '../execution/values';
 
 import {
@@ -130,9 +132,8 @@ function getNamedTypeAST(typeAST: Type): NamedType {
  * If no schema definition is provided, then it will look for types named Query
  * and Mutation.
  *
- * Given that AST it constructs a GraphQLSchema. As constructed
- * they are not particularly useful for non-introspection queries
- * since they have no resolve methods.
+ * Given that AST it constructs a GraphQLSchema. The resulting schema
+ * has no resolve methods, so execution will use default resolvers.
  */
 export function buildASTSchema(ast: Document): GraphQLSchema {
   if (!ast || ast.kind !== DOCUMENT) {
@@ -505,6 +506,14 @@ export function getDescription(node: { loc?: Location }): ?string {
     .reverse()
     .map(comment => comment.slice(minSpaces))
     .join('\n');
+}
+
+/**
+ * A helper function to build a GraphQLSchema directly from a source
+ * document.
+ */
+export function buildSchema(source: string | Source): GraphQLSchema {
+  return buildASTSchema(parse(source));
 }
 
 // Count the number of spaces on the starting side of a string.

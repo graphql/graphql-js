@@ -17,8 +17,8 @@ export { getOperationAST } from './getOperationAST';
 // Build a GraphQLSchema from an introspection result.
 export { buildClientSchema } from './buildClientSchema';
 
-// Build a GraphQLSchema from a parsed GraphQL Schema language AST.
-export { buildASTSchema } from './buildASTSchema';
+// Build a GraphQLSchema from GraphQL Schema language.
+export { buildASTSchema, buildSchema } from './buildASTSchema';
 
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
 export { extendSchema } from './extendSchema';
