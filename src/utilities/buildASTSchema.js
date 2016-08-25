@@ -14,7 +14,7 @@ import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
-import { Source } from '../language/source';
+import type { Source } from '../language/source';
 import { getArgumentValues } from '../execution/values';
 
 import {
