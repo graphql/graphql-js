@@ -644,7 +644,7 @@ describe('Type System: build schema from introspection', () => {
     await testSchema(schema);
   });
 
-  it('cannot use client schema for general execution', async () => {
+  it('can use client schema for limited execution', async () => {
     const customScalar = new GraphQLScalarType({
       name: 'CustomScalar',
       serialize: () => null,
@@ -670,20 +670,13 @@ describe('Type System: build schema from introspection', () => {
 
     const result = await graphql(
       clientSchema,
-      'query NoNo($v: CustomScalar) { foo(custom1: 123, custom2: $v) }',
-      { foo: 'bar' },
+      'query Limited($v: CustomScalar) { foo(custom1: 123, custom2: $v) }',
+      { foo: 'bar', unused: 'value' },
       null,
       { v: 'baz' }
     );
-    expect(result).to.containSubset({
-      data: {
-        foo: null,
-      },
-      errors: [
-        { message: 'Client Schema cannot be used for execution.',
-          locations: [ { line: 1, column: 32 } ] }
-      ]
-    });
+
+    expect(result.data).to.deep.equal({ foo: 'bar' });
   });
 
   describe('throws when given incomplete introspection', () => {

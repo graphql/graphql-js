@@ -405,8 +405,8 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     return new GraphQLInterfaceType({
       name: typeName,
       description: getDescription(def),
-      resolveType: () => null,
       fields: () => makeFieldDefMap(def),
+      resolveType: cannotExecuteSchema,
     });
   }
 
@@ -431,8 +431,8 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     return new GraphQLUnionType({
       name: def.name.value,
       description: getDescription(def),
-      resolveType: () => null,
       types: def.types.map(t => produceObjectType(t)),
+      resolveType: cannotExecuteSchema,
     });
   }
 
@@ -516,4 +516,10 @@ function leadingSpaces(str) {
     }
   }
   return i;
+}
+
+function cannotExecuteSchema() {
+  throw new Error(
+    'Generated Schema cannot use Interface or Union types for execution.'
+  );
 }

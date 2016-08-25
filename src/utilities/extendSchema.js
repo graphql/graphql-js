@@ -350,6 +350,7 @@ export function extendSchema(
       description: type.description,
       interfaces: () => extendImplementedInterfaces(type),
       fields: () => extendFieldMap(type),
+      isTypeOf: type.isTypeOf,
     });
   }
 
@@ -360,7 +361,7 @@ export function extendSchema(
       name: type.name,
       description: type.description,
       fields: () => extendFieldMap(type),
-      resolveType: cannotExecuteClientSchema,
+      resolveType: type.resolveType,
     });
   }
 
@@ -369,7 +370,7 @@ export function extendSchema(
       name: type.name,
       description: type.description,
       types: type.getTypes().map(getTypeFromDef),
-      resolveType: cannotExecuteClientSchema,
+      resolveType: type.resolveType,
     });
   }
 
@@ -409,7 +410,7 @@ export function extendSchema(
         deprecationReason: field.deprecationReason,
         type: extendFieldType(field.type),
         args: keyMap(field.args, arg => arg.name),
-        resolve: cannotExecuteClientSchema,
+        resolve: field.resolve,
       };
     });
 
@@ -430,7 +431,6 @@ export function extendSchema(
             description: getDescription(field),
             type: buildOutputFieldType(field.type),
             args: buildInputValues(field.arguments),
-            resolve: cannotExecuteClientSchema,
           };
         });
       });
@@ -475,7 +475,7 @@ export function extendSchema(
       name: typeAST.name.value,
       description: getDescription(typeAST),
       fields: () => buildFieldMap(typeAST),
-      resolveType: cannotExecuteClientSchema,
+      resolveType: cannotExecuteExtendedSchema,
     });
   }
 
@@ -484,7 +484,7 @@ export function extendSchema(
       name: typeAST.name.value,
       description: getDescription(typeAST),
       types: typeAST.types.map(getObjectTypeFromAST),
-      resolveType: cannotExecuteClientSchema,
+      resolveType: cannotExecuteExtendedSchema,
     });
   }
 
@@ -492,7 +492,7 @@ export function extendSchema(
     return new GraphQLScalarType({
       name: typeAST.name.value,
       description: getDescription(typeAST),
-      serialize: () => null,
+      serialize: id => id,
       // Note: validation calls the parse functions to determine if a
       // literal value is correct. Returning null would cause use of custom
       // scalars to always fail validation. Returning false causes them to
@@ -543,7 +543,6 @@ export function extendSchema(
         type: buildOutputFieldType(field.type),
         description: getDescription(field),
         args: buildInputValues(field.arguments),
-        resolve: cannotExecuteClientSchema,
       })
     );
   }
@@ -588,6 +587,8 @@ export function extendSchema(
   }
 }
 
-function cannotExecuteClientSchema() {
-  throw new Error('Client Schema cannot be used for execution.');
+function cannotExecuteExtendedSchema() {
+  throw new Error(
+    'Extended Schema cannot use Interface or Union types for execution.'
+  );
 }

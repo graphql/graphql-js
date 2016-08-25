@@ -704,7 +704,7 @@ export type GraphQLUnionTypeConfig = {
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: GraphQLTypeResolveFn;
+  resolveType?: ?GraphQLTypeResolveFn;
   description?: ?string;
 };
 

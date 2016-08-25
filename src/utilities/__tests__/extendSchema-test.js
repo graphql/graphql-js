@@ -115,7 +115,7 @@ describe('extendSchema', () => {
     expect(printSchema(testSchema)).to.not.contain('newField');
   });
 
-  it('cannot be used for execution', async () => {
+  it('can be used for limited execution', async () => {
     const ast = parse(`
       extend type Query {
         newField: String
@@ -124,11 +124,12 @@ describe('extendSchema', () => {
     const extendedSchema = extendSchema(testSchema, ast);
     const clientQuery = parse('{ newField }');
 
-    const result = await execute(extendedSchema, clientQuery);
-    expect(result.data.newField).to.equal(null);
-    expect(result.errors).to.containSubset([ {
-      message: 'Client Schema cannot be used for execution.'
-    } ]);
+    const result = await execute(
+      extendedSchema,
+      clientQuery,
+      { newField: 123 }
+    );
+    expect(result.data).to.deep.equal({ newField: '123' });
   });
 
   it('can describe the extended fields', async () => {
