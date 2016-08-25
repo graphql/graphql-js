@@ -121,4 +121,60 @@ fragment B on T {
 
   });
 
+  it('survives circular dependencies', () => {
+
+    const ast = parse(`
+      query One {
+        ...A
+      }
+
+      fragment A on T {
+        ...B
+      }
+
+      fragment B on T {
+        ...A
+      }
+
+      query Two {
+        ...B
+      }
+    `);
+
+    const separatedASTs = separateOperations(ast);
+
+    expect(Object.keys(separatedASTs)).to.deep.equal([ 'One', 'Two' ]);
+
+    expect(print(separatedASTs.One)).to.equal(
+`query One {
+  ...A
+}
+
+fragment A on T {
+  ...B
+}
+
+fragment B on T {
+  ...A
+}
+`
+    );
+
+    expect(print(separatedASTs.Two)).to.equal(
+`fragment A on T {
+  ...B
+}
+
+fragment B on T {
+  ...A
+}
+
+query Two {
+  ...B
+}
+`
+    );
+
+  });
+
 });
