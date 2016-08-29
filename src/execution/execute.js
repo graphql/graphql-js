@@ -125,6 +125,14 @@ export function execute(
     'not multiple versions of GraphQL installed in your node_modules directory.'
   );
 
+  // Variables, if provided, must be an object.
+  invariant(
+    !variableValues || typeof variableValues === 'object',
+    'Variables must be provided as an Object where each property is a ' +
+    'variable value. Perhaps look to see if an unparsed JSON string ' +
+    'was provided.'
+  );
+
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
   const context = buildExecutionContext(
