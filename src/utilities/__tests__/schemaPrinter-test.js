@@ -795,7 +795,6 @@ enum __TypeKind {
   NON_NULL
 }
 `;
-    console.error(output); // eslint-disable-line
     expect(output).to.equal(introspectionSchema);
   });
 });
