@@ -183,6 +183,55 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('provides info about current execution state', async () => {
+    const ast = parse('query ($var: String) { result: test }');
+
+    let info;
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Test',
+        fields: {
+          test: {
+            type: GraphQLString,
+            resolve(val, args, ctx, _info) {
+              info = _info;
+            }
+          }
+        }
+      })
+    });
+
+    const rootValue = { root: 'val' };
+
+    await execute(schema, ast, rootValue, null, { var: 123 });
+
+    expect(Object.keys(info)).to.deep.equal([
+      'fieldName',
+      'fieldASTs',
+      'returnType',
+      'parentType',
+      'path',
+      'schema',
+      'fragments',
+      'rootValue',
+      'operation',
+      'variableValues',
+    ]);
+    expect(info.fieldName).to.equal('test');
+    expect(info.fieldASTs).to.have.lengthOf(1);
+    expect(info.fieldASTs[0]).to.equal(
+      ast.definitions[0].selectionSet.selections[0]
+    );
+    expect(info.returnType).to.equal(GraphQLString);
+    expect(info.parentType).to.equal(schema.getQueryType());
+    expect(info.path).to.deep.equal([ 'result' ]);
+    expect(info.schema).to.equal(schema);
+    expect(info.rootValue).to.equal(rootValue);
+    expect(info.operation).to.equal(ast.definitions[0]);
+    expect(info.variableValues).to.deep.equal({ var: '123' });
+  });
+
   it('threads root value context correctly', async () => {
     const doc = 'query Example { a }';
 

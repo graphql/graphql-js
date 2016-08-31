@@ -90,7 +90,7 @@ type ExecutionContext = {
   operation: OperationDefinition;
   variableValues: {[key: string]: mixed};
   errors: Array<GraphQLError>;
-}
+};
 
 /**
  * The result of execution. `data` is the result of executing the
@@ -100,7 +100,7 @@ type ExecutionContext = {
 type ExecutionResult = {
   data: ?Object;
   errors?: Array<GraphQLError>;
-}
+};
 
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.
