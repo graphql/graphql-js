@@ -20,6 +20,11 @@ const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
 
 function coerceInt(value: mixed): ?number {
+  if (value === '') {
+    throw new TypeError(
+      'Int cannot represent non 32-bit signed integer value: (empty string)'
+    );
+  }
   const num = Number(value);
   if (num === num && num <= MAX_INT && num >= MIN_INT) {
     return (num < 0 ? Math.ceil : Math.floor)(num);
@@ -48,6 +53,11 @@ export const GraphQLInt = new GraphQLScalarType({
 });
 
 function coerceFloat(value: mixed): ?number {
+  if (value === '') {
+    throw new TypeError(
+      'Float cannot represent non numeric value: (empty string)'
+    );
+  }
   const num = Number(value);
   if (num === num) {
     return num;

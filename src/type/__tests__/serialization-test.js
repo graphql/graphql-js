@@ -81,6 +81,11 @@ describe('Type System: Scalar coercion', () => {
     expect(
       GraphQLInt.serialize(true)
     ).to.equal(1);
+    expect(() =>
+      GraphQLInt.serialize('')
+    ).to.throw(
+      'Int cannot represent non 32-bit signed integer value: (empty string)'
+    );
   });
 
   it('serializes output float', () => {
@@ -125,6 +130,12 @@ describe('Type System: Scalar coercion', () => {
       GraphQLFloat.serialize('one')
     ).to.throw(
       'Float cannot represent non numeric value: one'
+    );
+
+    expect(() =>
+      GraphQLFloat.serialize('')
+    ).to.throw(
+      'Float cannot represent non numeric value: (empty string)'
     );
   });
 
