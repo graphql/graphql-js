@@ -9,7 +9,7 @@
  */
 
 import { GraphQLScalarType } from './definition';
-import { Kind } from '../language';
+import * as Kind from '../language/kinds';
 
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.

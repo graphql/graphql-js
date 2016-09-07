@@ -262,7 +262,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
     Object.keys(fieldMap).forEach(fieldName => {
       const field = fieldMap[fieldName];
 
-      if (field.args) {
+      if ((typeof field.args === 'object') && Array.isArray(field.args)) {
         const fieldArgTypes = field.args.map(arg => arg.type);
         reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       }

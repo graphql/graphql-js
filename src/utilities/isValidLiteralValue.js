@@ -38,12 +38,12 @@ import isNullish from '../jsutils/isNullish';
 export function isValidLiteralValue(
   type: GraphQLInputType,
   valueAST: Value
-): [ string ] {
+): Array<string> {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
     if (!valueAST) {
       if (type.ofType.name) {
-        return [ `Expected "${type.ofType.name}!", found null.` ];
+        return [ `Expected "${String(type.ofType.name)}!", found null.` ];
       }
       return [ 'Expected non-null value, found null.' ];
     }

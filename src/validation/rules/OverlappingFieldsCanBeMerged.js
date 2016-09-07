@@ -732,7 +732,7 @@ function _collectFieldsAndFragmentNames(
       case INLINE_FRAGMENT:
         const typeCondition = selection.typeCondition;
         const inlineFragmentType = typeCondition ?
-          typeFromAST(context.getSchema(), selection.typeCondition) :
+          typeFromAST(context.getSchema(), typeCondition) :
           parentType;
         _collectFieldsAndFragmentNames(
           context,
