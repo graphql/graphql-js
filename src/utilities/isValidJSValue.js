@@ -27,8 +27,10 @@ import type { GraphQLInputType } from '../type/definition';
  * accepted for that type. This is primarily useful for validating the
  * runtime values of query variables.
  */
-export function isValidJSValue(value: mixed, type: GraphQLInputType):
-Array<string> {
+export function isValidJSValue(
+  value: mixed,
+  type: GraphQLInputType
+): Array<string> {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
     if (isNullish(value)) {

@@ -256,16 +256,23 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   if (type instanceof GraphQLObjectType ||
-      type instanceof GraphQLInterfaceType ||
-      type instanceof GraphQLInputObjectType) {
+      type instanceof GraphQLInterfaceType) {
     const fieldMap = type.getFields();
     Object.keys(fieldMap).forEach(fieldName => {
       const field = fieldMap[fieldName];
 
-      if ((typeof field.args === 'object') && Array.isArray(field.args)) {
+      if (field.args) {
         const fieldArgTypes = field.args.map(arg => arg.type);
         reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       }
+      reducedMap = typeMapReducer(reducedMap, field.type);
+    });
+  }
+
+  if (type instanceof GraphQLInputObjectType) {
+    const fieldMap = type.getFields();
+    Object.keys(fieldMap).forEach(fieldName => {
+      const field = fieldMap[fieldName];
       reducedMap = typeMapReducer(reducedMap, field.type);
     });
   }
