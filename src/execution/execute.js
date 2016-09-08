@@ -216,7 +216,8 @@ function buildExecutionContext(
   const variableValues = getVariableValues(
     schema,
     operation.variableDefinitions || [],
-    rawVariableValues || {}
+    rawVariableValues || {},
+    contextValue || {},
   );
 
   return {
