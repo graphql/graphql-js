@@ -153,7 +153,7 @@ export function execute(
   // resolved Promise.
   return new Promise(resolve => {
     resolve(executeOperation(context, context.operation, rootValue));
-  }).catch(error => {
+  }).then(undefined, error => {
     // Errors from sub-fields of a NonNull type may propagate to the top level,
     // at which point we still log the error and null the parent field, which
     // in this case is the entire response.
@@ -692,7 +692,8 @@ function completeValueWithLocatedError(
       result
     );
     if (isThenable(completed)) {
-      return ((completed: any): Promise<*>).catch(
+      return ((completed: any): Promise<*>).then(
+        undefined,
         error => Promise.reject(locatedError(error, fieldASTs, path))
       );
     }

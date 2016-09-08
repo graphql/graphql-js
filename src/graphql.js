@@ -66,7 +66,7 @@ export function graphql(
         )
       );
     }
-  }).catch(error => {
+  }).then(undefined, error => {
     return { errors: [ error ] };
   });
 }
