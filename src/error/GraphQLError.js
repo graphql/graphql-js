@@ -108,8 +108,9 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   }
 
   let _locations;
-  if (_source && _positions) {
-    _locations = _positions.map(pos => getLocation(_source, pos));
+  const _source2 = _source; // seems here Flow need a const to resolve type.
+  if (_source2 && _positions) {
+    _locations = _positions.map(pos => getLocation(_source2, pos));
   }
 
   Object.defineProperties(this, {

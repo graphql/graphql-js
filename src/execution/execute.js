@@ -15,7 +15,7 @@ import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import { typeFromAST } from '../utilities/typeFromAST';
-import { Kind } from '../language';
+import * as Kind from '../language/kinds';
 import { getVariableValues, getArgumentValues } from './values';
 import {
   GraphQLScalarType,
