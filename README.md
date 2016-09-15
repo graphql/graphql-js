@@ -1,47 +1,18 @@
 # GraphQL.js
 
-This is a technical preview of the JavaScript reference implementation for
-GraphQL, a query language created by Facebook for describing data requirements
-on complex application data models.
+The JavaScript reference implementation for GraphQL, a query language for APIs created by Facebook.
 
 [![npm version](https://badge.fury.io/js/graphql.svg)](http://badge.fury.io/js/graphql)
 [![Build Status](https://travis-ci.org/graphql/graphql-js.svg?branch=master)](https://travis-ci.org/graphql/graphql-js?branch=master)
 [![Coverage Status](https://coveralls.io/repos/graphql/graphql-js/badge.svg?branch=master)](https://coveralls.io/r/graphql/graphql-js?branch=master)
 
 See more complete documentation at http://graphql.org/ and
-http://graphql.org/docs/api-reference-graphql/.
+http://graphql.org/graphql-js/.
 
 For questions, ask [Stack Overflow](http://stackoverflow.com/questions/tagged/graphql).
 
 For discussion, join [#graphql on Discord](http://join.reactiflux.com/).
 
-## Technical Preview Contents
-
-This technical preview contains a [draft specification for GraphQL]
-(https://github.com/facebook/graphql) and a reference implementation in
-JavaScript that implements that draft, GraphQL.js.
-
-The reference implementation provides base libraries in JavaScript that would
-provide the basis for full GraphQL implementations and tools. It is not a fully
-standalone GraphQL server that a client developer could use to start
-manipulating and querying data. Most importantly, it provides no mapping to a
-functioning, production-ready backend. The only "backend" we have targeted for
-this early preview are in-memory stubs in test cases.
-
-We are releasing this now because after GraphQL was first discussed publicly,
-many engineers used this information to implement the parts of the system that
-we discussed publicly. We want to support those engineers by providing both a
-formal specification and a reference implementation for the system as a whole.
-
-To that end, the target audience is not the client developer, but those who have
-built or are actively interested in building their own GraphQL implementations and
-tools. Critically, we also want feedback on the system and to incorporate that
-feedback in our final release.
-
-In order to be broadly adopted, GraphQL will have to target a wide
-variety of backends, frameworks, and languages, which will necessitate a
-collaborative effort across projects and organizations. This technical preview
-marks the beginning of that process.
 
 ## Getting Started
 
