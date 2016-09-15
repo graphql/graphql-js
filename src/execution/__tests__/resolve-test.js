@@ -139,4 +139,104 @@ describe('Execute: resolve function', () => {
     });
   });
 
+  describe('resolve function error handling', () => {
+    const asyncReject = rejection => {
+      return new Promise((resolve, reject) => {
+        setImmediate(() => reject(rejection));
+      });
+    };
+
+    it('emits errors from error-based Promise rejections', async () => {
+      const schema = testSchema({
+        type: GraphQLString,
+        args: {
+          aStr: { type: GraphQLString },
+          aInt: { type: GraphQLInt },
+        },
+        resolve() {
+          return asyncReject(new Error('Test Rejection'));
+        }
+      });
+
+      expect(
+        await graphql(schema, '{ test }')
+      ).to.deep.equal({
+        data: {
+          test: null,
+        },
+        errors: [ {
+          locations: [
+            {
+              column: 3,
+              line: 1
+            }
+          ],
+          message: 'Test Rejection',
+          path: [ 'test' ]
+        } ]
+      });
+    });
+
+    it('emits errors from non-error-based Promise rejections', async () => {
+      const schema = testSchema({
+        type: GraphQLString,
+        args: {
+          aStr: { type: GraphQLString },
+          aInt: { type: GraphQLInt },
+        },
+        resolve() {
+          return asyncReject({ error: 'Test Rejection' });
+        }
+      });
+
+      expect(
+        await graphql(schema, '{ test }')
+      ).to.deep.equal({
+        data: {
+          test: null,
+        },
+        errors: [ {
+          locations: [
+            {
+              column: 3,
+              line: 1
+            }
+          ],
+          message: '[object Object]',
+          path: [ 'test' ]
+        } ]
+      });
+    });
+
+    it('emits errors from thrown errors', async () => {
+      const schema = testSchema({
+        type: GraphQLString,
+        args: {
+          aStr: { type: GraphQLString },
+          aInt: { type: GraphQLInt },
+        },
+        resolve() {
+          throw new Error('Test Thrown Error');
+        }
+      });
+
+      expect(
+        await graphql(schema, '{ test }')
+      ).to.deep.equal({
+        data: {
+          test: null,
+        },
+        errors: [ {
+          locations: [
+            {
+              column: 3,
+              line: 1
+            }
+          ],
+          message: 'Test Thrown Error',
+          path: [ 'test' ]
+        } ]
+      });
+    });
+  });
 });
