@@ -23,6 +23,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLString,
+  GraphQLDirective,
 } from '../../';
 
 
@@ -1907,6 +1908,154 @@ describe('Objects must adhere to Interface they implement', () => {
     ).to.throw(
       'SomeEnum.value should provide "deprecationReason" instead ' +
       'of "isDeprecated".'
+    );
+  });
+
+});
+
+describe('Type System: internal names cannot be repeated', () => {
+
+  it('does not allow duplicates in input object fields', () => {
+    expect(() =>
+      new GraphQLInputObjectType({
+        name: 'Foo',
+        fields: {
+          _a: { type: GraphQLString, internalName: 'a' },
+          _b: { type: GraphQLString, internalName: 'a' },
+          _c: { type: GraphQLString, internalName: 'c' },
+        }
+      }).getFields()
+    ).to.throw(
+      'Foo must not have two fields with the same internal name.'
+    );
+  });
+
+  it('does not allow duplicates in object field arguments', () => {
+    expect(() =>
+      new GraphQLObjectType({
+        name: 'Foo',
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: {
+              _a: { type: GraphQLString, internalName: 'a' },
+              _b: { type: GraphQLString, internalName: 'a' },
+              _c: { type: GraphQLString, internalName: 'c' },
+            }
+          }
+        }
+      }).getFields()
+    ).to.throw(
+      'Foo.field must not have two args with the same ' +
+      'internal name.'
+    );
+  });
+
+  it('does not allow duplicates in interface field arguments', () => {
+    expect(() =>
+      new GraphQLInterfaceType({
+        name: 'Foo',
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: {
+              _a: { type: GraphQLString, internalName: 'a' },
+              _b: { type: GraphQLString, internalName: 'a' },
+              _c: { type: GraphQLString, internalName: 'c' },
+            }
+          }
+        }
+      }).getFields()
+    ).to.throw(
+      'Foo.field must not have two args with the same ' +
+      'internal name.'
+    );
+  });
+
+  it('does not allow duplicates in directive arguments', () => {
+    expect(() =>
+      new GraphQLDirective({
+        name: 'Foo',
+        locations: [],
+        args: {
+          _a: { type: GraphQLString, internalName: 'a' },
+          _b: { type: GraphQLString, internalName: 'a' },
+          _c: { type: GraphQLString, internalName: 'c' },
+        }
+      })
+    ).to.throw(
+      'Foo must not have two args with the same ' +
+      'internal name.'
+    );
+  });
+
+  it('does not allow duplicates in input object fields when an internal name is implied', () => {
+    expect(() =>
+      new GraphQLInputObjectType({
+        name: 'Bar',
+        fields: {
+          _a: { type: GraphQLString },
+          _b: { type: GraphQLString, internalName: '_a' },
+        }
+      }).getFields()
+    ).to.throw(
+      'Bar must not have two fields with the same internal name.'
+    );
+  });
+
+  it('does not allow duplicates in object field arguments when an internal name is implied', () => {
+    expect(() =>
+      new GraphQLObjectType({
+        name: 'Bar',
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: {
+              _a: { type: GraphQLString },
+              _b: { type: GraphQLString, internalName: '_a' },
+            }
+          }
+        }
+      }).getFields()
+    ).to.throw(
+      'Bar.field must not have two args with the same ' +
+      'internal name.'
+    );
+  });
+
+  it('does not allow duplicates in interface field arguments when an internal name is implied', () => {
+    expect(() =>
+      new GraphQLInterfaceType({
+        name: 'Bar',
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: {
+              _a: { type: GraphQLString },
+              _b: { type: GraphQLString, internalName: '_a' },
+            }
+          }
+        }
+      }).getFields()
+    ).to.throw(
+      'Bar.field must not have two args with the same ' +
+      'internal name.'
+    );
+  });
+
+  it('does not allow duplicates in directive arguments when an internal name is implied', () => {
+    expect(() =>
+      new GraphQLDirective({
+        name: 'Foo',
+        locations: [],
+        args: {
+          _a: { type: GraphQLString },
+          _b: { type: GraphQLString, internalName: '_a' },
+        }
+      })
+    ).to.throw(
+      'Foo must not have two args with the same ' +
+      'internal name.'
     );
   });
 

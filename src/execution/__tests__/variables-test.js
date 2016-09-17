@@ -64,6 +64,24 @@ const TestNestedInputObject = new GraphQLInputObjectType({
   },
 });
 
+const TestInternalNamesInputObject = new GraphQLInputObjectType({
+  name: 'TestInternalNamesInputObject',
+  fields: {
+    insa: { type: new GraphQLNonNull(GraphQLString), internalName: 'a' },
+    insb: { type: new GraphQLNonNull(GraphQLString), internalName: 'b' },
+    insc: { type: new GraphQLNonNull(GraphQLString) },
+    insd: {
+      type: new GraphQLInputObjectType({
+        name: 'TestInternalNamesNestedInputObject',
+        fields: {
+          insa: { type: new GraphQLNonNull(GraphQLString), internalName: 'a' },
+          insb: { type: new GraphQLNonNull(GraphQLString) },
+        }
+      })
+    }
+  },
+});
+
 const TestType = new GraphQLObjectType({
   name: 'TestType',
   fields: {
@@ -95,6 +113,24 @@ const TestType = new GraphQLObjectType({
         }
       },
       resolve: (_, { input }) => input && JSON.stringify(input)
+    },
+    fieldWithInternalNamesInputObject: {
+      type: GraphQLString,
+      args: {
+        input: {
+          type: TestInternalNamesInputObject
+        },
+      },
+      resolve: (_, { input }) => input && JSON.stringify(input)
+    },
+    fieldWithInternallyNamedArgs: {
+      type: GraphQLString,
+      args: {
+        insa: { type: new GraphQLNonNull(GraphQLString), internalName: 'a' },
+        insb: { type: new GraphQLNonNull(GraphQLString), internalName: 'b' },
+        insc: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve: (_, args) => JSON.stringify(args)
     },
     list: {
       type: GraphQLString,
@@ -857,6 +893,56 @@ describe('Execute: Handles inputs', () => {
       return expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithDefaultArgumentValue: '"Hello World"'
+        }
+      });
+    });
+
+  });
+
+  describe('Handles input object internal names', () => {
+
+    it('renames fields when appropriate', async () => {
+      const ast = parse(`
+        query q($input: TestInternalNamesInputObject) {
+          fieldWithInternalNamesInputObject(input: $input)
+        }
+      `);
+
+      const vars = {
+        input: { insa: '1', insb: '2', insc: '3', insd: { insa: '4', insb: '5' } }
+      };
+
+      const result = await execute(schema, ast, null, null, vars);
+
+      return expect(result).to.deep.equal({
+        data: {
+          fieldWithInternalNamesInputObject: '{"a":"1","b":"2","insc":"3","insd":{"a":"4","insb":"5"}}'
+        }
+      });
+    });
+
+  });
+
+  describe('Handles argument internal names', () => {
+
+    it('renames arguments when appropriate', async () => {
+      const ast = parse(`
+        query q($x: String, $y: String, $z: String) {
+          fieldWithInternallyNamedArgs(insa: $x, insb: $y, insc: $z)
+        }
+      `);
+
+      const vars = {
+        x: '1',
+        y: '2',
+        z: '3',
+      };
+
+      const result = await execute(schema, ast, null, null, vars);
+
+      return expect(result).to.deep.equal({
+        data: {
+          fieldWithInternallyNamedArgs: '{"a":"1","b":"2","insc":"3"}'
         }
       });
     });

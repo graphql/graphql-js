@@ -10,6 +10,7 @@
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import isDistinct from '../jsutils/isDistinct';
 import { ENUM } from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
 import type {
@@ -443,11 +444,18 @@ function defineFieldMap(
         );
         return {
           name: argName,
+          internalName:
+            typeof arg.internalName !== 'string' ? argName : arg.internalName,
           description: arg.description === undefined ? null : arg.description,
           type: arg.type,
           defaultValue: arg.defaultValue === undefined ? null : arg.defaultValue
         };
       });
+      invariant(
+        isDistinct(field.args.map(({ internalName }) => internalName)),
+        `${type.name}.${fieldName} must not have two args with the same ` +
+        'internal name.'
+      );
     }
     resultFieldMap[fieldName] = field;
   });
@@ -513,6 +521,7 @@ export type GraphQLFieldConfigArgumentMap = {
 export type GraphQLArgumentConfig = {
   type: GraphQLInputType;
   defaultValue?: mixed;
+  internalName?: ?string;
   description?: ?string;
 };
 
@@ -531,6 +540,7 @@ export type GraphQLFieldDefinition = {
 
 export type GraphQLArgument = {
   name: string;
+  internalName: string;
   type: GraphQLInputType;
   defaultValue?: mixed;
   description?: ?string;
@@ -921,6 +931,9 @@ export class GraphQLInputObjectType {
         ...fieldMap[fieldName],
         name: fieldName
       };
+      if (isNullish(field.internalName)) {
+        field.internalName = fieldName;
+      }
       invariant(
         isInputType(field.type),
         `${this.name}.${fieldName} field type must be Input Type but ` +
@@ -928,6 +941,10 @@ export class GraphQLInputObjectType {
       );
       resultFieldMap[fieldName] = field;
     });
+    invariant(
+      isDistinct(fieldNames.map(name => resultFieldMap[name].internalName)),
+      `${this.name} must not have two fields with the same internal name.`
+    );
     return resultFieldMap;
   }
 
@@ -945,6 +962,7 @@ export type InputObjectConfig = {
 export type InputObjectFieldConfig = {
   type: GraphQLInputType;
   defaultValue?: mixed;
+  internalName?: ?string;
   description?: ?string;
 };
 
@@ -954,6 +972,7 @@ export type InputObjectConfigFieldMap = {
 
 export type InputObjectField = {
   name: string;
+  internalName: string;
   type: GraphQLInputType;
   defaultValue?: mixed;
   description?: ?string;

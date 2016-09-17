@@ -8,6 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import isDistinct from '../jsutils/isDistinct';
 import { isInputType, GraphQLNonNull } from './definition';
 import type {
   GraphQLFieldConfigArgumentMap,
@@ -82,11 +83,17 @@ export class GraphQLDirective {
         );
         return {
           name: argName,
+          internalName:
+            typeof arg.internalName !== 'string' ? argName : arg.internalName,
           description: arg.description === undefined ? null : arg.description,
           type: arg.type,
           defaultValue: arg.defaultValue === undefined ? null : arg.defaultValue
         };
       });
+      invariant(
+        isDistinct(this.args.map(({ internalName }) => internalName)),
+        `@${config.name} must not have two args with the same internal name.`
+      );
     }
   }
 }

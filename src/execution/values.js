@@ -70,7 +70,7 @@ export function getArgumentValues(
       value = argDef.defaultValue;
     }
     if (!isNullish(value)) {
-      result[name] = value;
+      result[argDef.internalName] = value;
     }
     return result;
   }, {});
@@ -162,7 +162,7 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
         fieldValue = field.defaultValue;
       }
       if (!isNullish(fieldValue)) {
-        obj[fieldName] = fieldValue;
+        obj[field.internalName] = fieldValue;
       }
       return obj;
     }, {});

@@ -220,4 +220,28 @@ describe('astFromValue', () => {
             value: { kind: 'EnumValue', value: 'HELLO' } } ] }
     );
   });
+
+  it('converts input objects with their internal names', () => {
+    const inputObj = new GraphQLInputObjectType({
+      name: 'MyInputObj',
+      fields: {
+        foo: { type: GraphQLFloat, internalName: '_foo' },
+        bar: { type: myEnum, internalName: '_bar' }
+      }
+    });
+
+    expect(astFromValue(
+      { _foo: 3, _bar: 'HELLO' },
+      inputObj
+    )).to.deep.equal(
+      { kind: 'ObjectValue',
+        fields: [
+          { kind: 'ObjectField',
+            name: { kind: 'Name', value: 'foo' },
+            value: { kind: 'IntValue', value: '3' } },
+          { kind: 'ObjectField',
+            name: { kind: 'Name', value: 'bar' },
+            value: { kind: 'EnumValue', value: 'HELLO' } } ] }
+    );
+  });
 });

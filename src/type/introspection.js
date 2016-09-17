@@ -437,7 +437,11 @@ export const TypeMetaFieldDef: GraphQLFieldDefinition = {
   type: __Type,
   description: 'Request the type information of a single type.',
   args: [
-    { name: 'name', type: new GraphQLNonNull(GraphQLString) }
+    {
+      name: 'name',
+      internalName: 'name',
+      type: new GraphQLNonNull(GraphQLString)
+    }
   ],
   resolve: (source, { name }: { name: string }, context, { schema }) =>
     schema.getType(name)
