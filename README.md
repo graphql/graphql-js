@@ -9,9 +9,7 @@ The JavaScript reference implementation for GraphQL, a query language for APIs c
 See more complete documentation at http://graphql.org/ and
 http://graphql.org/graphql-js/.
 
-For questions, ask [Stack Overflow](http://stackoverflow.com/questions/tagged/graphql).
-
-For discussion, join [#graphql on Discord](http://join.reactiflux.com/).
+Looking for help? Find resources [from the community](http://graphql.org/community/).
 
 
 ## Getting Started
