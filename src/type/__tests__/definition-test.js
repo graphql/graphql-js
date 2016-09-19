@@ -169,6 +169,41 @@ describe('Type System: Example', () => {
 
   });
 
+  it('defines an enum type with deprecated value', () => {
+    const EnumTypeWithDeprecatedValue = new GraphQLEnumType({
+      name: 'EnumWithDeprecatedValue',
+      values: { foo: { deprecationReason: 'Just because' } }
+    });
+
+    expect(EnumTypeWithDeprecatedValue.getValues()[0]).to.deep.equal({
+      name: 'foo',
+      description: undefined,
+      isDeprecated: true,
+      deprecationReason: 'Just because',
+      value: 'foo'
+    });
+  });
+
+  it('defines an object type with deprecated field', () => {
+    const TypeWithDeprecatedField = new GraphQLObjectType({
+      name: 'foo',
+      fields: {
+        bar: {
+          type: GraphQLString,
+          deprecationReason: 'A terrible reason'
+        }
+      }
+    });
+
+    expect(TypeWithDeprecatedField.getFields().bar).to.deep.equal({
+      type: GraphQLString,
+      deprecationReason: 'A terrible reason',
+      isDeprecated: true,
+      name: 'bar',
+      args: []
+    });
+  });
+
   it('includes nested input objects in the map', () => {
     const NestedInputObject = new GraphQLInputObjectType({
       name: 'NestedInputObject',

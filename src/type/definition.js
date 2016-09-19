@@ -410,15 +410,16 @@ function defineFieldMap(
   fieldNames.forEach(fieldName => {
     assertValidName(fieldName);
     const fieldConfig = fieldMap[fieldName];
-    const field = {
-      ...fieldConfig,
-      name: fieldName
-    };
     invariant(
-      !field.hasOwnProperty('isDeprecated'),
+      !fieldConfig.hasOwnProperty('isDeprecated'),
       `${type.name}.${fieldName} should provide "deprecationReason" instead ` +
       'of "isDeprecated".'
     );
+    const field = {
+      ...fieldConfig,
+      isDeprecated: Boolean(fieldConfig.deprecationReason),
+      name: fieldName
+    };
     invariant(
       isOutputType(field.type),
       `${type.name}.${fieldName} field type must be Output Type but ` +
@@ -526,6 +527,7 @@ export type GraphQLFieldDefinition = {
   type: GraphQLOutputType;
   args: Array<GraphQLArgument>;
   resolve?: GraphQLFieldResolveFn<*>;
+  isDeprecated?: boolean;
   deprecationReason?: ?string;
 };
 
@@ -831,6 +833,7 @@ function defineEnumValues(
     return {
       name: valueName,
       description: value.description,
+      isDeprecated: Boolean(value.deprecationReason),
       deprecationReason: value.deprecationReason,
       value: isNullish(value.value) ? valueName : value.value,
     };
@@ -856,6 +859,7 @@ export type GraphQLEnumValueConfig/* <T> */ = {
 export type GraphQLEnumValueDefinition/* <T> */ = {
   name: string;
   description: ?string;
+  isDeprecated?: boolean;
   deprecationReason: ?string;
   value: any/* T */;
 };
