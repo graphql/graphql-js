@@ -534,6 +534,40 @@ type Query {
 `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
+
+    const ast = parse(body);
+    const schema = buildASTSchema(ast);
+
+    expect(schema.getType('MyEnum').getValues()).to.deep.equal([
+      {
+        name: 'VALUE',
+        description: '',
+        isDeprecated: false,
+        deprecationReason: undefined,
+        value: 'VALUE'
+      },
+      {
+        name: 'OLD_VALUE',
+        description: '',
+        isDeprecated: true,
+        deprecationReason: 'No longer supported',
+        value: 'OLD_VALUE'
+      },
+      {
+        name: 'OTHER_VALUE',
+        description: '',
+        isDeprecated: true,
+        deprecationReason: 'Terrible reasons',
+        value: 'OTHER_VALUE'
+      }
+    ]);
+
+    const rootFields = schema.getType('Query').getFields();
+    expect(rootFields.field1.isDeprecated).to.equal(true);
+    expect(rootFields.field1.deprecationReason).to.equal('No longer supported');
+
+    expect(rootFields.field2.isDeprecated).to.equal(true);
+    expect(rootFields.field2.deprecationReason).to.equal('Because I said so');
   });
 });
 
