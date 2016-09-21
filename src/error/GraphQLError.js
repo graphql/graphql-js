@@ -80,15 +80,15 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   // Include (non-enumerable) stack trace.
   if (originalError && originalError.stack) {
     Object.defineProperty(this, 'stack', {
-      value: originalError.stack,
-      writable: true
+      ...Object.getOwnPropertyDescriptor(this, 'stack'),
+      value: originalError.stack
     });
   } else if (Error.captureStackTrace) {
     Error.captureStackTrace(this, GraphQLError);
   } else {
     Object.defineProperty(this, 'stack', {
-      value: Error().stack,
-      writable: true
+      ...Object.getOwnPropertyDescriptor(this, 'stack'),
+      value: Error().stack
     });
   }
 
