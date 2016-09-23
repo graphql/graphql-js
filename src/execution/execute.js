@@ -55,7 +55,9 @@ import type {
   InlineFragmentNode,
   FragmentDefinitionNode,
 } from '../language/ast';
-
+import {
+  Observable
+} from 'rxjs';
 
 /**
  * Terminology
@@ -120,6 +122,30 @@ export function execute(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
 ): Promise<ExecutionResult> {
+  return executeObs(schema,
+                    documentAST,
+                    rootValue,
+                    contextValue,
+                    variableValues,
+                    operationName).toPromise();
+}
+
+/**
+ * Implements the "Evaluating requests" section of the GraphQL specification.
+ *
+ * Returns an Observable that will eventually be resolved and never rejected.
+ *
+ * If the arguments to this function do not result in a legal execution context,
+ * a GraphQLError will be thrown immediately explaining the invalid input.
+ */
+export function executeObs(
+  schema: GraphQLSchema,
+  documentAST: Document,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
+  operationName?: ?string
+): Observable<ExecutionResult> {
   invariant(schema, 'Must provide schema');
   invariant(
     schema instanceof GraphQLSchema,
@@ -146,27 +172,34 @@ export function execute(
     operationName
   );
 
-  // Return a Promise that will eventually resolve to the data described by
+  // Return an Observable that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
   //
   // If errors are encountered while executing a GraphQL field, only that
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  return new Promise(resolve => {
-    resolve(executeOperation(context, context.operation, rootValue));
-  }).then(undefined, error => {
-    // Errors from sub-fields of a NonNull type may propagate to the top level,
-    // at which point we still log the error and null the parent field, which
-    // in this case is the entire response.
-    context.errors.push(error);
-    return null;
-  }).then(data => {
+  return new Observable(observer => {
+    try {
+      return toObservable(
+        executeOperation(context, context.operation, rootValue)
+      ).subscribe(observer).unsubscribe;
+    } catch (e) {
+      observer.error(e);
+    }
+  }).catch(e => {
+    // Errors from sub-fields of a NonNull type may propagate to the top
+    // level, at which point we still log the error and null the parent field,
+    // which in this case is the entire response.
+    context.errors.push(e);
+    return Observable.of(null);
+  }).map(data => {
     if (!context.errors.length) {
       return { data };
     }
     return { data, errors: context.errors };
-  });
+  }).take(1);
+  // TODO: Should remove take(1) to enable reactive results.
 }
 
 /**
@@ -184,7 +217,6 @@ export function responsePathAsArray(
   }
   return flattened.reverse();
 }
-
 
 function addPath(prev: ResponsePath, key: string | number) {
   return { prev, key };
@@ -325,9 +357,10 @@ function executeFieldsSerially(
   sourceValue: mixed,
   path: ResponsePath,
   fields: {[key: string]: Array<FieldNode>}
-): Promise<{[key: string]: mixed}> {
+): Observable<{[key: string]: mixed}> {
   return Object.keys(fields).reduce(
-    (prevPromise, responseName) => prevPromise.then(results => {
+    (prevObs: Observable<{[key: string]: mixed}>,
+    responseName: string) => prevObs.switchMap(results => {
       const fieldNodes = fields[responseName];
       const fieldPath = addPath(path, responseName);
       const result = resolveField(
@@ -338,18 +371,15 @@ function executeFieldsSerially(
         fieldPath
       );
       if (result === undefined) {
+        return Observable.of(results);
+      }
+
+      return toObservable(result).map(resolvedResult => {
+        results[responseName] = resolvedResult;
         return results;
-      }
-      if (isThenable(result)) {
-        return ((result: any): Promise<*>).then(resolvedResult => {
-          results[responseName] = resolvedResult;
-          return results;
-        });
-      }
-      results[responseName] = result;
-      return results;
+      });
     }),
-    Promise.resolve({})
+    Observable.of({})
   );
 }
 
@@ -364,13 +394,13 @@ function executeFields(
   path: ResponsePath,
   fields: {[key: string]: Array<FieldNode>}
 ): {[key: string]: mixed} {
-  let containsPromise = false;
+  let containsObservable = false;
 
   const finalResults = Object.keys(fields).reduce(
     (results, responseName) => {
       const fieldNodes = fields[responseName];
       const fieldPath = addPath(path, responseName);
-      const result = resolveField(
+      let result = resolveField(
         exeContext,
         parentType,
         sourceValue,
@@ -381,24 +411,25 @@ function executeFields(
         return results;
       }
       results[responseName] = result;
-      if (isThenable(result)) {
-        containsPromise = true;
+      if (isThenable(result) || isSubscribeable(result)) {
+        containsObservable = true;
+        result = toObservable(result);
       }
       return results;
     },
     Object.create(null)
   );
 
-  // If there are no promises, we can just return the object
-  if (!containsPromise) {
+  // If there are no observables, we can just return the object
+  if (!containsObservable) {
     return finalResults;
   }
 
   // Otherwise, results is a map from field name to the result
-  // of resolving that field, which is possibly a promise. Return
-  // a promise that will return this same map, but with any
+  // of resolving that field, which is possibly an observable. Return
+  // an observable that will return this same map, but with any
   // promises replaced with the values they resolved to.
-  return promiseForObject(finalResults);
+  return observableForObject(finalResults);
 }
 
 /**
@@ -532,22 +563,63 @@ function doesFragmentConditionMatch(
 }
 
 /**
- * This function transforms a JS object `{[key: string]: Promise<T>}` into
- * a `Promise<{[key: string]: T}>`
- *
- * This is akin to bluebird's `Promise.props`, but implemented only using
- * `Promise.all` so it will work with any implementation of ES6 promises.
+ * this function recursively searches for Observables.
+ * returns true if found or false if not.
  */
-function promiseForObject<T>(
-  object: {[key: string]: Promise<T>}
-): Promise<{[key: string]: T}> {
+function objectContainsObservable(
+  object: mixed
+): boolean {
+  if ( object === null ) {
+    return false;
+  }
+
+  if ( isSubscribeable(object) || isThenable(object) ) {
+    // Observable/Promise found,
+    // returns true then Promise will be converted into Observable
+    return true;
+  }
+
+  if ( Array.isArray(object) ) {
+    // Go over all of the array values, recursively search for observable.
+    return object.reduce((contains, value) => {
+      if ( contains ) {
+        return true;
+      }
+
+      return objectContainsObservable(value);
+    }, false);
+  }
+
+  if ( typeof object === 'object' ) {
+    const asObject = (object: { [key: string]: mixed });
+    // Go over all of the object values, recursively search for observable.
+    return Object.keys(asObject).reduce((contains, value) => {
+      if ( contains ) {
+        return true;
+      }
+
+      return objectContainsObservable(asObject[value]);
+    }, false);
+  }
+
+  return false;
+}
+
+/**
+ * This function transforms a JS object `{[key: string]: Observable<T>}` into
+ * a `Observable<{[key: string]: T}>`
+ */
+function observableForObject<T>(
+  object: {[key: string]: mixed}
+): Observable<{[key: string]: T}> {
   const keys = Object.keys(object);
   const valuesAndPromises = keys.map(name => object[name]);
-  return Promise.all(valuesAndPromises).then(
-    values => values.reduce((resolvedObject, value, i) => {
+  return Observable.combineLatest(
+    ...valuesAndPromises.map(value => toObservable(value)),
+    (...values) => values.reduce((resolvedObject, value, i) => {
       resolvedObject[keys[i]] = value;
       return resolvedObject;
-    }, Object.create(null))
+    }, Object.create({}))
   );
 }
 
@@ -559,10 +631,44 @@ function getFieldEntryKey(node: FieldNode): string {
 }
 
 /**
+ * Utility function used to convert all possible result types into observables.
+ */
+function toObservable(result: mixed): Observable<mixed> {
+  if (result === undefined) {
+    return undefined;
+  }
+
+  if (result === null) {
+    return Observable.of(null);
+  }
+
+  if (Array.isArray(result) && (objectContainsObservable(result) === true)) {
+    return Observable.combineLatest(...result.map(value => toObservable(value)),
+    (...values) => values);
+  }
+
+  if (isSubscribeable(result)) {
+    return (result: Observable<mixed>);
+  }
+
+  if (isThenable(result)) {
+    return Observable.fromPromise(result);
+  }
+
+  if ((!Array.isArray(result)) &&
+      (typeof result === 'object') &&
+      (objectContainsObservable(result) === true)) {
+    return observableForObject((result: {[key: string]: mixed}));
+  }
+
+  return Observable.of(result);
+}
+
+/**
  * Resolves the field on the given source object. In particular, this
  * figures out the value that the field returns by calling its resolve function,
- * then calls completeValue to complete promises, serialize scalars, or execute
- * the sub-selection-set for objects.
+ * then calls completeValue to subscribe observables,
+ * serialize scalars, or execute the sub-selection-set for objects.
  */
 function resolveField(
   exeContext: ExecutionContext,
@@ -687,14 +793,12 @@ function completeValueCatchingError(
       path,
       result
     );
-    if (isThenable(completed)) {
-      // If `completeValueWithLocatedError` returned a rejected promise, log
-      // the rejection error and resolve to null.
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      return ((completed: any): Promise<*>).then(undefined, error => {
+    if ( isThenable(completed) || isSubscribeable(completed) ) {
+      return toObservable(completed).catch(error => {
+        // If `completeValueWithLocatedError` returned a errored observable, log
+        // the error and resolve to null.
         exeContext.errors.push(error);
-        return Promise.resolve(null);
+        return Observable.of(null);
       });
     }
     return completed;
@@ -725,12 +829,10 @@ function completeValueWithLocatedError(
       path,
       result
     );
-    if (isThenable(completed)) {
-      return ((completed: any): Promise<*>).then(
-        undefined,
-        error => Promise.reject(
-          locatedError(error, fieldNodes, responsePathAsArray(path))
-        )
+    if (isThenable(completed) || isSubscribeable(completed)) {
+      return toObservable(completed).catch(
+        error => Observable.throw(
+			locatedError(error, fieldNodes, responsePathAsArray(path)))
       );
     }
     return completed;
@@ -768,9 +870,9 @@ function completeValue(
   path: ResponsePath,
   result: mixed
 ): mixed {
-  // If result is a Promise, apply-lift over completeValue.
-  if (isThenable(result)) {
-    return ((result: any): Promise<*>).then(
+  // If result is Observable (or promise that will become one), apply lift
+  if (isThenable(result) || isSubscribeable(result)) {
+    return toObservable(result).map(
       resolved => completeValue(
         exeContext,
         returnType,
@@ -779,7 +881,8 @@ function completeValue(
         path,
         resolved
       )
-    );
+    )
+    .switchMap(value => toObservable(value));
   }
 
   // If result is an Error, throw a located error.
@@ -882,15 +985,16 @@ function completeListValue(
   );
 
   // This is specified as a simple map, however we're optimizing the path
-  // where the list contains no Promises by avoiding creating another Promise.
+  // where the list contains no observables
+  // by avoiding creating another observable.
   const itemType = returnType.ofType;
-  let containsPromise = false;
+  let containsObservable = false;
   const completedResults = [];
   forEach((result: any), (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const fieldPath = addPath(path, index);
-    const completedItem = completeValueCatchingError(
+    let completedItem = completeValueCatchingError(
       exeContext,
       itemType,
       fieldNodes,
@@ -899,13 +1003,14 @@ function completeListValue(
       item
     );
 
-    if (!containsPromise && isThenable(completedItem)) {
-      containsPromise = true;
+    if (isThenable(completedItem) || isSubscribeable(completedItem)) {
+      containsObservable = true;
+      completedItem = toObservable(completedItem);
     }
     completedResults.push(completedItem);
   });
 
-  return containsPromise ? Promise.all(completedResults) : completedResults;
+  return containsObservable ? toObservable(completedResults) : completedResults;
 }
 
 /**
@@ -1062,6 +1167,16 @@ function isThenable(value: mixed): boolean {
   return typeof value === 'object' &&
     value !== null &&
     typeof value.then === 'function';
+}
+
+/**
+ * Checks to see if this object acts like an Observable, i.e. has a "subscribe"
+ * function.
+ */
+function isSubscribeable(value: mixed): boolean {
+  return typeof value === 'object' &&
+    value !== null &&
+    typeof value.subscribe === 'function';
 }
 
 /**
