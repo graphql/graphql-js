@@ -107,12 +107,7 @@ export type ExecutionResult = {
 };
 
 /**
- * Implements the "Evaluating requests" section of the GraphQL specification.
- *
- * Returns a Promise that will eventually be resolved and never rejected.
- *
- * If the arguments to this function do not result in a legal execution context,
- * a GraphQLError will be thrown immediately explaining the invalid input.
+ * legacy promise wrapper for executeReactive.
  */
 export function execute(
   schema: GraphQLSchema,
@@ -122,12 +117,13 @@ export function execute(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
 ): Promise<ExecutionResult> {
-  return executeObs(schema,
-                    documentAST,
-                    rootValue,
-                    contextValue,
-                    variableValues,
-                    operationName).toPromise();
+  return executeReactive(schema,
+                         document,
+                         rootValue,
+                         contextValue,
+                         variableValues,
+                         operationName)
+         .take(1).toPromise();
 }
 
 /**
@@ -138,9 +134,9 @@ export function execute(
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
-export function executeObs(
+export function executeReactive(
   schema: GraphQLSchema,
-  documentAST: Document,
+  document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
@@ -198,8 +194,7 @@ export function executeObs(
       return { data };
     }
     return { data, errors: context.errors };
-  }).take(1);
-  // TODO: Should remove take(1) to enable reactive results.
+  });
 }
 
 /**
@@ -710,7 +705,7 @@ function resolveField(
 
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
-  const result = resolveOrError(
+  let result = resolveOrError(
     exeContext,
     fieldDef,
     fieldNode,
@@ -719,6 +714,22 @@ function resolveField(
     context,
     info
   );
+
+  // if promise is returned, convert to observable.
+  if ( isThenable(result) ) {
+    result = toObservable(result);
+  }
+
+  // if observable is returned, make sure it won't be reactive
+  // for query and mutation.
+  // NOTE: in the future, this can be modified to
+  // support reactive directives.
+  if ( isSubscribeable(result) ) {
+    if ( (info.operation.operation === 'query') ||
+         (info.operation.operation === 'mutation') ) {
+      result = (result: Observable).take(1);
+    }
+  }
 
   return completeValueCatchingError(
     exeContext,
