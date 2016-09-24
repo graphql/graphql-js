@@ -11,10 +11,30 @@
 import { Source } from './language/source';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
-import { execute } from './execution/execute';
+import { executeReactive } from './execution/execute';
 import type { GraphQLSchema } from './type/schema';
 import type { ExecutionResult } from './execution/execute';
+import { Observable } from 'rxjs';
 
+/**
+ * legacy promise wrapper for graphqlReactive
+ */
+export function graphql(
+  schema: GraphQLSchema,
+  requestString: string,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
+  operationName?: ?string
+): Promise<ExecutionResult> {
+  return graphqlReactive(schema,
+                         requestString,
+                         rootValue,
+                         contextValue,
+                         variableValues,
+                         operationName)
+         .take(1).toPromise();
+}
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -40,33 +60,30 @@ import type { ExecutionResult } from './execution/execute';
  *    possible operations. Can be omitted if requestString contains only
  *    one operation.
  */
-export function graphql(
+export function graphqlReactive(
   schema: GraphQLSchema,
   requestString: string,
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
-): Promise<ExecutionResult> {
-  return new Promise(resolve => {
+): Observable<ExecutionResult> {
+  return Observable.of(null).switchMap(() => {
     const source = new Source(requestString || '', 'GraphQL request');
     const documentAST = parse(source);
     const validationErrors = validate(schema, documentAST);
     if (validationErrors.length > 0) {
-      resolve({ errors: validationErrors });
-    } else {
-      resolve(
-        execute(
-          schema,
-          documentAST,
-          rootValue,
-          contextValue,
-          variableValues,
-          operationName
-        )
-      );
+      return Observable.of({ errors: validationErrors });
     }
-  }).then(undefined, error => {
-    return { errors: [ error ] };
+    return executeReactive(
+      schema,
+      documentAST,
+      rootValue,
+      contextValue,
+      variableValues,
+      operationName
+    );
+  }).catch(error => {
+    return Observable.of({ errors: [ error ] });
   });
 }
