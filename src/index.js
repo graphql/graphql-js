@@ -34,9 +34,9 @@
 
 // The primary entry point into fulfilling a GraphQL request.
 export {
-  graphql
+  graphql,
+  graphqlReactive,
 } from './graphql';
-
 
 // Create and operate on GraphQL type definitions and schema.
 export {
@@ -143,7 +143,6 @@ export type {
   GraphQLUnionTypeConfig,
 } from './type';
 
-
 // Parse and operate on GraphQL language source files.
 export {
   Source,
@@ -220,10 +219,10 @@ export type {
   DirectiveDefinitionNode,
 } from './language';
 
-
 // Execute GraphQL queries.
 export {
   execute,
+  executeReactive,
   defaultFieldResolver,
   responsePathAsArray,
 } from './execution';
@@ -232,13 +231,11 @@ export type {
   ExecutionResult,
 } from './execution';
 
-
 // Validate GraphQL queries.
 export {
   validate,
   specifiedRules,
 } from './validation';
-
 
 // Create and format GraphQL errors.
 export {
@@ -250,7 +247,6 @@ export type {
   GraphQLFormattedError,
   GraphQLErrorLocation,
 } from './error';
-
 
 // Utilities for operating on GraphQL type schema and parsed sources.
 export {
