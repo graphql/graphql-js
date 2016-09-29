@@ -72,6 +72,19 @@ describe('GraphQLError', () => {
     expect(e.locations).to.deep.equal([ { line: 2, column: 7 } ]);
   });
 
+  it('converts node with loc.start === 0 to positions and locations', () => {
+    const source = new Source(`{
+      field
+    }`);
+    const ast = parse(source);
+    const operationAST = ast.definitions[0];
+    const e = new GraphQLError('msg', [ operationAST ]);
+    expect(e.nodes).to.deep.equal([ operationAST ]);
+    expect(e.source).to.equal(source);
+    expect(e.positions).to.deep.equal([ 0 ]);
+    expect(e.locations).to.deep.equal([ { line: 1, column: 1 } ]);
+  });
+
   it('converts source and positions to locations', () => {
     const source = new Source(`{
       field

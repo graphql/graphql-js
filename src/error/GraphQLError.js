@@ -103,7 +103,8 @@ export function GraphQLError( // eslint-disable-line no-redeclare
 
   let _positions = positions;
   if (!_positions && nodes) {
-    _positions = nodes.map(node => node.loc && node.loc.start).filter(Boolean);
+    _positions = nodes.filter(node => node.loc !== null)
+      .map(node => node.loc.start);
   }
   if (_positions && _positions.length === 0) {
     _positions = undefined;
