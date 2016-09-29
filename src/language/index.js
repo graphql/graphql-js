@@ -12,7 +12,7 @@ export { getLocation } from './location';
 import * as Kind from './kinds';
 export { Kind };
 export { createLexer, TokenKind } from './lexer';
-export { parse, parseValue } from './parser';
+export { parse, parseValue, parseType } from './parser';
 export { print } from './printer';
 export { Source } from './source';
 export { visit, visitInParallel, visitWithTypeInfo, BREAK } from './visitor';
