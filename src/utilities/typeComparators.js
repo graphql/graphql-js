@@ -63,14 +63,14 @@ export function isTypeSubTypeOf(
     return true;
   }
 
-  // If superType is non-null, maybeSubType must also be nullable.
+  // If superType is non-null, maybeSubType must also be non-null.
   if (superType instanceof GraphQLNonNull) {
     if (maybeSubType instanceof GraphQLNonNull) {
       return isTypeSubTypeOf(schema, maybeSubType.ofType, superType.ofType);
     }
     return false;
   } else if (maybeSubType instanceof GraphQLNonNull) {
-    // If superType is nullable, maybeSubType may be non-null.
+    // If superType is nullable, maybeSubType may be non-null or nullable.
     return isTypeSubTypeOf(schema, maybeSubType.ofType, superType);
   }
 
