@@ -311,10 +311,7 @@ export const __Field = new GraphQLObjectType({
       resolve: field => field.args || []
     },
     type: { type: new GraphQLNonNull(__Type) },
-    isDeprecated: {
-      type: new GraphQLNonNull(GraphQLBoolean),
-      resolve: field => field.isDeprecated,
-    },
+    isDeprecated: { type: new GraphQLNonNull(GraphQLBoolean) },
     deprecationReason: {
       type: GraphQLString,
     }
@@ -352,10 +349,7 @@ export const __EnumValue = new GraphQLObjectType({
   fields: () => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
-    isDeprecated: {
-      type: new GraphQLNonNull(GraphQLBoolean),
-      resolve: enumValue => enumValue.isDeprecated,
-    },
+    isDeprecated: { type: new GraphQLNonNull(GraphQLBoolean) },
     deprecationReason: {
       type: GraphQLString,
     }
