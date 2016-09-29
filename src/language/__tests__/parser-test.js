@@ -10,7 +10,7 @@
 import * as Kind from '../kinds';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { parse } from '../parser';
+import { parse, parseValue, parseType } from '../parser';
 import { Source } from '../source';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -292,5 +292,94 @@ fragment ${fragmentName} on Type {
     const result = parse(source);
     expect(result.loc.startToken.kind).to.equal('<SOF>');
     expect(result.loc.endToken.kind).to.equal('<EOF>');
+  });
+
+  describe('parseValue', () => {
+
+    it('parses list values', () => {
+      expect(parseValue('[123 "abc"]')).to.containSubset({
+        kind: Kind.LIST,
+        loc: { start: 0, end: 11 },
+        values: [
+          { kind: Kind.INT,
+            loc: { start: 1, end: 4},
+            value: '123' },
+          { kind: Kind.STRING,
+            loc: { start: 5, end: 10},
+            value: 'abc' } ]
+      });
+    });
+
+  });
+
+  describe('parseType', () => {
+
+    it('parses well known types', () => {
+      expect(parseType('String')).to.containSubset({
+        kind: Kind.NAMED_TYPE,
+        loc: { start: 0, end: 6 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'String' }
+      });
+    });
+
+    it('parses custom types', () => {
+      expect(parseType('MyType')).to.containSubset({
+        kind: Kind.NAMED_TYPE,
+        loc: { start: 0, end: 6 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType' }
+      });
+    });
+
+    it('parses list types', () => {
+      expect(parseType('[MyType]')).to.containSubset({
+        kind: Kind.LIST_TYPE,
+        loc: { start: 0, end: 8 },
+        type: {
+          kind: Kind.NAMED_TYPE,
+          loc: { start: 1, end: 7 },
+          name: {
+            kind: Kind.NAME,
+            loc: { start: 1, end: 7 },
+            value: 'MyType' } }
+      });
+    });
+
+    it('parses non-null types', () => {
+      expect(parseType('MyType!')).to.containSubset({
+        kind: Kind.NON_NULL_TYPE,
+        loc: { start: 0, end: 7 },
+        type: {
+          kind: Kind.NAMED_TYPE,
+          loc: { start: 0, end: 6 },
+          name: {
+            kind: Kind.NAME,
+            loc: { start: 0, end: 6 },
+            value: 'MyType' } }
+      });
+    });
+
+    it('parses nested types', () => {
+      expect(parseType('[MyType!]')).to.containSubset({
+        kind: Kind.LIST_TYPE,
+        loc: { start: 0, end: 9 },
+        type: {
+          kind: Kind.NON_NULL_TYPE,
+          loc: { start: 1, end: 8 },
+          type: {
+            kind: Kind.NAMED_TYPE,
+            loc: { start: 1, end: 7 },
+            name: {
+              kind: Kind.NAME,
+              loc: { start: 1, end: 7 },
+              value: 'MyType' } } }
+      });
+    });
+
   });
 });

@@ -112,6 +112,7 @@ export {
   // Parse
   parse,
   parseValue,
+  parseType,
 
   // Print
   print,

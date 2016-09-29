@@ -145,11 +145,14 @@ export function parse(
 }
 
 /**
- * Given a string containing a GraphQL value, parse the AST for that value.
+ * Given a string containing a GraphQL value (ex. `[42]`), parse the AST for
+ * that value.
  * Throws GraphQLError if a syntax error is encountered.
  *
  * This is useful within tools that operate upon GraphQL Values directly and
  * in isolation of complete GraphQL documents.
+ *
+ * Consider providing the results to the utility function: valueFromAST().
  */
 export function parseValue(
   source: string | Source,
@@ -161,6 +164,28 @@ export function parseValue(
   const value = parseValueLiteral(lexer, false);
   expect(lexer, TokenKind.EOF);
   return value;
+}
+
+/**
+ * Given a string containing a GraphQL Type (ex. `[Int!]`), parse the AST for
+ * that type.
+ * Throws GraphQLError if a syntax error is encountered.
+ *
+ * This is useful within tools that operate upon GraphQL Types directly and
+ * in isolation of complete GraphQL documents.
+ *
+ * Consider providing the results to the utility function: typeFromAST().
+ */
+export function parseType(
+  source: string | Source,
+  options?: ParseOptions
+): Type {
+  const sourceObj = typeof source === 'string' ? new Source(source) : source;
+  const lexer = createLexer(sourceObj, options || {});
+  expect(lexer, TokenKind.SOF);
+  const type = parseTypeReference(lexer);
+  expect(lexer, TokenKind.EOF);
+  return type;
 }
 
 /**
@@ -306,7 +331,7 @@ function parseVariableDefinition(lexer: Lexer<*>): VariableDefinition {
   return {
     kind: VARIABLE_DEFINITION,
     variable: parseVariable(lexer),
-    type: (expect(lexer, TokenKind.COLON), parseType(lexer)),
+    type: (expect(lexer, TokenKind.COLON), parseTypeReference(lexer)),
     defaultValue:
       skip(lexer, TokenKind.EQUALS) ? parseValueLiteral(lexer, true) : null,
     loc: loc(lexer, start)
@@ -633,11 +658,11 @@ function parseDirective(lexer: Lexer<*>): Directive {
  *   - ListType
  *   - NonNullType
  */
-export function parseType(lexer: Lexer<*>): Type {
+export function parseTypeReference(lexer: Lexer<*>): Type {
   const start = lexer.token;
   let type;
   if (skip(lexer, TokenKind.BRACKET_L)) {
-    type = parseType(lexer);
+    type = parseTypeReference(lexer);
     expect(lexer, TokenKind.BRACKET_R);
     type = ({
       kind: LIST_TYPE,
@@ -807,7 +832,7 @@ function parseFieldDefinition(lexer: Lexer<*>): FieldDefinition {
   const name = parseName(lexer);
   const args = parseArgumentDefs(lexer);
   expect(lexer, TokenKind.COLON);
-  const type = parseType(lexer);
+  const type = parseTypeReference(lexer);
   const directives = parseDirectives(lexer);
   return {
     kind: FIELD_DEFINITION,
@@ -836,7 +861,7 @@ function parseInputValueDef(lexer: Lexer<*>): InputValueDefinition {
   const start = lexer.token;
   const name = parseName(lexer);
   expect(lexer, TokenKind.COLON);
-  const type = parseType(lexer);
+  const type = parseTypeReference(lexer);
   let defaultValue = null;
   if (skip(lexer, TokenKind.EQUALS)) {
     defaultValue = parseConstValue(lexer);
