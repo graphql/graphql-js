@@ -81,14 +81,16 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   if (originalError && originalError.stack) {
     Object.defineProperty(this, 'stack', {
       value: originalError.stack,
-      writable: true
+      writable: true,
+      configurable: true
     });
   } else if (Error.captureStackTrace) {
     Error.captureStackTrace(this, GraphQLError);
   } else {
     Object.defineProperty(this, 'stack', {
       value: Error().stack,
-      writable: true
+      writable: true,
+      configurable: true
     });
   }
 
