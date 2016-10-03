@@ -63,6 +63,7 @@ export { assertValidName } from './assertValidName';
 
 // Helpful functions to compare two GraphQLSchemas and detect breaking changes.
 export {
+  findBreakingChanges,
   findRemovedTypes,
   findTypesThatChangedType,
   findBreakingFieldChanges,

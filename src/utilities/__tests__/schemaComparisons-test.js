@@ -19,6 +19,7 @@ import {
   GraphQLUnionType,
 } from '../../type';
 import {
+  findBreakingChanges,
   findBreakingFieldChanges,
   findRemovedTypes,
   findTypesRemovedFromUnions,
@@ -255,5 +256,115 @@ describe('CheckSchemaBackwardsCompatibility', () => {
 
     expect(Array.from(findValuesRemovedFromEnums(oldSchema, newSchema)))
       .to.eql([ 'VALUE1 was removed from enum type EnumType1' ]);
+  });
+
+  it('should detect all breaking changes', () => {
+    const typeThatGetsRemoved = new GraphQLObjectType({
+      name: 'TypeThatGetsRemoved',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+
+    const typeThatChangesTypeOld = new GraphQLObjectType({
+      name: 'TypeThatChangesType',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    const typeThatChangesTypeNew = new GraphQLInterfaceType({
+      name: 'TypeThatChangesType',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+
+    const typeThatHasBreakingFieldChangesOld = new GraphQLInterfaceType({
+      name: 'TypeThatHasBreakingFieldChanges',
+      fields: {
+        field1: { type: GraphQLString },
+        field2: { type: GraphQLString },
+      }
+    });
+    const typeThatHasBreakingFieldChangesNew = new GraphQLInterfaceType({
+      name: 'TypeThatHasBreakingFieldChanges',
+      fields: {
+        field2: { type: GraphQLBoolean },
+      }
+    });
+
+    const typeInUnion1 = new GraphQLObjectType({
+      name: 'TypeInUnion1',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    const typeInUnion2 = new GraphQLObjectType({
+      name: 'TypeInUnion2',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    const unionTypeThatLosesATypeOld = new GraphQLUnionType({
+      name: 'UnionTypeThatLosesAType',
+      types: [ typeInUnion1, typeInUnion2 ],
+      resolveType: () => null,
+    });
+    const unionTypeThatLosesATypeNew = new GraphQLUnionType({
+      name: 'UnionTypeThatLosesAType',
+      types: [ typeInUnion1 ],
+      resolveType: () => null,
+    });
+
+    const enumTypeThatLosesAValueOld = new GraphQLEnumType({
+      name: 'EnumTypeThatLosesAValue',
+      values: {
+        VALUE0: { value: 0 },
+        VALUE1: { value: 1 },
+        VALUE2: { value: 2 },
+      }
+    });
+    const enumTypeThatLosesAValueNew = new GraphQLEnumType({
+      name: 'EnumTypeThatLosesAValue',
+      values: {
+        VALUE1: { value: 1 },
+        VALUE2: { value: 2 },
+      }
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        typeThatGetsRemoved,
+        typeThatChangesTypeOld,
+        typeThatHasBreakingFieldChangesOld,
+        unionTypeThatLosesATypeOld,
+        enumTypeThatLosesAValueOld,
+      ]
+    });
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        typeThatChangesTypeNew,
+        typeThatHasBreakingFieldChangesNew,
+        unionTypeThatLosesATypeNew,
+        enumTypeThatLosesAValueNew,
+      ]
+    });
+
+    const expectedBreakingChanges = [
+      'TypeThatGetsRemoved was removed',
+      'TypeInUnion2 was removed',
+      'TypeThatChangesType changed from a GraphQLObjectType ' +
+        'to a GraphQLInterfaceType',
+      'TypeThatHasBreakingFieldChanges.field1 was removed',
+      'TypeThatHasBreakingFieldChanges.field2 changed type ' +
+        'from String to Boolean',
+      'TypeInUnion2 was removed from union type UnionTypeThatLosesAType',
+      'VALUE0 was removed from enum type EnumTypeThatLosesAValue',
+    ];
+
+    expect(Array.from(findBreakingChanges(oldSchema, newSchema)))
+      .to.eql(expectedBreakingChanges);
   });
 });

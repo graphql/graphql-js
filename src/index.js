@@ -206,6 +206,7 @@ export {
 
   // Helpful functions to compare two GraphQLSchemas and detect breaking
   // changes.
+  findBreakingChanges,
   findRemovedTypes,
   findTypesThatChangedType,
   findBreakingFieldChanges,

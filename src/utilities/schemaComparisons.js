@@ -30,6 +30,23 @@ import type {
 } from '../type/schema';
 
 /**
+ * Given two schemas, returns a Set containing descriptions of all the types of
+ * breaking changes covered by the other functions down below.
+ */
+export function findBreakingChanges(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
+): Set<string> {
+  return new Set([
+    ...Array.from(findRemovedTypes(oldSchema, newSchema)),
+    ...Array.from(findTypesThatChangedType(oldSchema, newSchema)),
+    ...Array.from(findBreakingFieldChanges(oldSchema, newSchema)),
+    ...Array.from(findTypesRemovedFromUnions(oldSchema, newSchema)),
+    ...Array.from(findValuesRemovedFromEnums(oldSchema, newSchema))
+  ]);
+}
+
+/**
 * Given two schemas, returns a Set containing descriptions of any breaking
 * changes in the newSchema related to removing an entire type.
 */
