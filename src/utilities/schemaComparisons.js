@@ -20,6 +20,20 @@ import {
   GraphQLSchema,
 } from '../type/schema';
 
+export const BreakingChangeType = {
+  FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
+  FIELD_REMOVED: 'FIELD_REMOVED',
+  TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND',
+  TYPE_REMOVED: 'TYPE_REMOVED',
+  TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION',
+  VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
+};
+
+export type BreakingChange = {
+  type: $Keys<typeof BreakingChangeType>;
+  description: string;
+};
+
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of breaking changes covered by the other functions down below.
@@ -27,7 +41,7 @@ import {
 export function findBreakingChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema
-): Array<string> {
+): Array<BreakingChange> {
   return [
     ...findRemovedTypes(oldSchema, newSchema),
     ...findTypesThatChangedKind(oldSchema, newSchema),
@@ -44,11 +58,16 @@ export function findBreakingChanges(
 export function findRemovedTypes(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema
-): Array<string> {
+): Array<BreakingChange> {
   const oldTypes = Object.keys(oldSchema.getTypeMap());
   const newTypes = new Set(Object.keys(newSchema.getTypeMap()));
   return oldTypes.filter(typeName => !newTypes.has(typeName)).map(
-    type => `${type} was removed`
+    type => {
+      return {
+        type: BreakingChangeType.TYPE_REMOVED,
+        description: `${type} was removed`,
+      };
+    }
   );
 }
 
@@ -59,7 +78,7 @@ export function findRemovedTypes(
 export function findTypesThatChangedKind(
  oldSchema: GraphQLSchema,
  newSchema: GraphQLSchema
-): Array<string> {
+): Array<BreakingChange> {
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
 
@@ -71,8 +90,13 @@ export function findTypesThatChangedKind(
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
     if (!(oldType instanceof newType.constructor)) {
-      typesThatChangedType.push(`${typeName} changed from a ` +
-        `${oldType.constructor.name} to a ${newType.constructor.name}`);
+      typesThatChangedType.push(
+        {
+          type: BreakingChangeType.TYPE_CHANGED_KIND,
+          description: `${typeName} changed from a ` +
+            `${oldType.constructor.name} to a ${newType.constructor.name}`,
+        }
+      );
     }
   });
   return typesThatChangedType;
@@ -86,7 +110,7 @@ export function findTypesThatChangedKind(
 export function findFieldsThatChangedType(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema
-): Array<string> {
+): Array<BreakingChange> {
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
 
@@ -108,7 +132,12 @@ export function findFieldsThatChangedType(
     Object.keys(oldTypeFieldsDef).forEach(fieldName => {
       // Check if the field is missing on the type in the new schema.
       if (!(fieldName in newTypeFieldsDef)) {
-        breakingFieldChanges.push(`${typeName}.${fieldName} was removed`);
+        breakingFieldChanges.push(
+          {
+            type: BreakingChangeType.FIELD_REMOVED,
+            description: `${typeName}.${fieldName} was removed`,
+          }
+        );
       } else {
         // Check if the field's type has changed in the new schema.
         const oldFieldType = getNamedType(oldTypeFieldsDef[fieldName].type);
@@ -118,8 +147,11 @@ export function findFieldsThatChangedType(
           (oldFieldType.name !== newFieldType.name)
         ) {
           breakingFieldChanges.push(
-            `${typeName}.${fieldName} changed type from ${oldFieldType.name} ` +
-            `to ${newFieldType.name}`
+            {
+              type: BreakingChangeType.FIELD_CHANGED_KIND,
+              description: `${typeName}.${fieldName} changed type from ` +
+                `${oldFieldType.name} to ${newFieldType.name}`,
+            }
           );
         }
       }
@@ -135,7 +167,7 @@ export function findFieldsThatChangedType(
 export function findTypesRemovedFromUnions(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema
-): Array<string> {
+): Array<BreakingChange> {
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
 
@@ -155,7 +187,11 @@ export function findTypesRemovedFromUnions(
     oldType.getTypes().forEach(typeInOldUnion => {
       if (!typeNamesInNewUnion.has(typeInOldUnion.name)) {
         typesRemovedFromUnion.push(
-          `${typeInOldUnion.name} was removed from union type ${typeName}`
+          {
+            type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
+            description: `${typeInOldUnion.name} was removed from union ` +
+              `type ${typeName}`,
+          }
         );
       }
     });
@@ -170,7 +206,7 @@ export function findTypesRemovedFromUnions(
 export function findValuesRemovedFromEnums(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema
-): Array<string> {
+): Array<BreakingChange> {
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
 
@@ -190,7 +226,11 @@ export function findValuesRemovedFromEnums(
     oldType.getValues().forEach(valueInOldEnum => {
       if (!valuesInNewEnum.has(valueInOldEnum.name)) {
         valuesRemovedFromEnums.push(
-          `${valueInOldEnum.name} was removed from enum type ${typeName}`
+          {
+            type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
+            description: `${valueInOldEnum.name} was removed from enum ` +
+              `type ${typeName}`,
+          }
         );
       }
     });

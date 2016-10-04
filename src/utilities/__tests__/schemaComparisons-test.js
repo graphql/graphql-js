@@ -19,6 +19,7 @@ import {
   GraphQLUnionType,
 } from '../../type';
 import {
+  BreakingChangeType,
   findBreakingChanges,
   findFieldsThatChangedType,
   findRemovedTypes,
@@ -62,9 +63,12 @@ describe('CheckSchemaBackwardsCompatibility', () => {
         type2,
       ]
     });
-    expect(findRemovedTypes(oldSchema, newSchema)).to.eql(
-      [ 'Type1 was removed' ]
-    );
+    expect(findRemovedTypes(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.TYPE_REMOVED,
+        description: 'Type1 was removed',
+      }
+    ]);
     expect(findRemovedTypes(oldSchema, oldSchema)).to.eql([]);
   });
 
@@ -100,9 +104,13 @@ describe('CheckSchemaBackwardsCompatibility', () => {
         unionType1,
       ]
     });
-    expect(findTypesThatChangedKind(oldSchema, newSchema)).to.eql(
-      [ 'Type1 changed from a GraphQLInterfaceType to a GraphQLUnionType' ]
-    );
+    expect(findTypesThatChangedKind(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.TYPE_CHANGED_KIND,
+        description:
+          'Type1 changed from a GraphQLInterfaceType to a GraphQLUnionType',
+      }
+    ]);
   });
 
   it('should detect if a field on a type was deleted or changed type', () => {
@@ -160,9 +168,18 @@ describe('CheckSchemaBackwardsCompatibility', () => {
     });
 
     const expectedFieldChanges = [
-      'Type1.field2 was removed',
-      'Type1.field3 changed type from String to Boolean',
-      'Type1.field4 changed type from TypeA to TypeB',
+      {
+        type: BreakingChangeType.FIELD_REMOVED,
+        description: 'Type1.field2 was removed',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field3 changed type from String to Boolean',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field4 changed type from TypeA to TypeB',
+      },
     ];
     expect(findFieldsThatChangedType(oldSchema, newSchema)).to.eql(
       expectedFieldChanges
@@ -221,9 +238,12 @@ describe('CheckSchemaBackwardsCompatibility', () => {
       ]
     });
 
-    expect(findTypesRemovedFromUnions(oldSchema, newSchema)).to.eql(
-      [ 'Type2 was removed from union type UnionType1' ]
-    );
+    expect(findTypesRemovedFromUnions(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
+        description: 'Type2 was removed from union type UnionType1',
+      },
+    ]);
   });
 
   it('should detect if a value was removed from an enum type', () => {
@@ -257,9 +277,12 @@ describe('CheckSchemaBackwardsCompatibility', () => {
       ]
     });
 
-    expect(findValuesRemovedFromEnums(oldSchema, newSchema)).to.eql(
-      [ 'VALUE1 was removed from enum type EnumType1' ]
-    );
+    expect(findValuesRemovedFromEnums(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
+        description: 'VALUE1 was removed from enum type EnumType1',
+      },
+    ]);
   });
 
   it('should detect all breaking changes', () => {
@@ -357,17 +380,39 @@ describe('CheckSchemaBackwardsCompatibility', () => {
     });
 
     const expectedBreakingChanges = [
-      'TypeThatGetsRemoved was removed',
-      'TypeInUnion2 was removed',
-      'TypeThatChangesType changed from a GraphQLObjectType ' +
-        'to a GraphQLInterfaceType',
-      'TypeThatHasBreakingFieldChanges.field1 was removed',
-      'TypeThatHasBreakingFieldChanges.field2 changed type ' +
-        'from String to Boolean',
-      'TypeInUnion2 was removed from union type UnionTypeThatLosesAType',
-      'VALUE0 was removed from enum type EnumTypeThatLosesAValue',
+      {
+        type: BreakingChangeType.TYPE_REMOVED,
+        description: 'TypeThatGetsRemoved was removed',
+      },
+      {
+        type: BreakingChangeType.TYPE_REMOVED,
+        description: 'TypeInUnion2 was removed',
+      },
+      {
+        type: BreakingChangeType.TYPE_CHANGED_KIND,
+        description: 'TypeThatChangesType changed from a GraphQLObjectType ' +
+          'to a GraphQLInterfaceType',
+      },
+      {
+        type: BreakingChangeType.FIELD_REMOVED,
+        description: 'TypeThatHasBreakingFieldChanges.field1 was removed',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'TypeThatHasBreakingFieldChanges.field2 changed type ' +
+          'from String to Boolean',
+      },
+      {
+        type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
+        description: 'TypeInUnion2 was removed from union type ' +
+          'UnionTypeThatLosesAType',
+      },
+      {
+        type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
+        description: 'VALUE0 was removed from enum type ' +
+          'EnumTypeThatLosesAValue',
+      },
     ];
-
     expect(findBreakingChanges(oldSchema, newSchema)).to.eql(
       expectedBreakingChanges
     );
