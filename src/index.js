@@ -208,8 +208,8 @@ export {
   // changes.
   findBreakingChanges,
   findRemovedTypes,
-  findTypesThatChangedType,
-  findBreakingFieldChanges,
+  findTypesThatChangedKind,
+  findFieldsThatChangedType,
   findTypesRemovedFromUnions,
   findValuesRemovedFromEnums,
 } from './utilities';

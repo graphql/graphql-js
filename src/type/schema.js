@@ -218,7 +218,7 @@ export class GraphQLSchema {
   }
 }
 
-export type TypeMap = { [typeName: string]: GraphQLNamedType }
+type TypeMap = { [typeName: string]: GraphQLNamedType }
 
 type GraphQLSchemaConfig = {
   query: GraphQLObjectType;

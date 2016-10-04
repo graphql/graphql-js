@@ -65,8 +65,8 @@ export { assertValidName } from './assertValidName';
 export {
   findBreakingChanges,
   findRemovedTypes,
-  findTypesThatChangedType,
-  findBreakingFieldChanges,
+  findTypesThatChangedKind,
+  findFieldsThatChangedType,
   findTypesRemovedFromUnions,
   findValuesRemovedFromEnums,
 } from './schemaComparisons';

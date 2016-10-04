@@ -20,10 +20,10 @@ import {
 } from '../../type';
 import {
   findBreakingChanges,
-  findBreakingFieldChanges,
+  findFieldsThatChangedType,
   findRemovedTypes,
   findTypesRemovedFromUnions,
-  findTypesThatChangedType,
+  findTypesThatChangedKind,
   findValuesRemovedFromEnums,
 } from '../schemaComparisons';
 
@@ -62,9 +62,10 @@ describe('CheckSchemaBackwardsCompatibility', () => {
         type2,
       ]
     });
-    expect(Array.from(findRemovedTypes(oldSchema, newSchema)))
-      .to.eql([ 'Type1 was removed' ]);
-    expect(Array.from(findRemovedTypes(oldSchema, oldSchema))).to.eql([]);
+    expect(findRemovedTypes(oldSchema, newSchema)).to.eql(
+      [ 'Type1 was removed' ]
+    );
+    expect(findRemovedTypes(oldSchema, oldSchema)).to.eql([]);
   });
 
   it('should detect if a type changed its type', () => {
@@ -99,7 +100,7 @@ describe('CheckSchemaBackwardsCompatibility', () => {
         unionType1,
       ]
     });
-    expect(Array.from(findTypesThatChangedType(oldSchema, newSchema))).to.eql(
+    expect(findTypesThatChangedKind(oldSchema, newSchema)).to.eql(
       [ 'Type1 changed from a GraphQLInterfaceType to a GraphQLUnionType' ]
     );
   });
@@ -163,8 +164,9 @@ describe('CheckSchemaBackwardsCompatibility', () => {
       'Type1.field3 changed type from String to Boolean',
       'Type1.field4 changed type from TypeA to TypeB',
     ];
-    expect(Array.from(findBreakingFieldChanges(oldSchema, newSchema)))
-      .to.eql(expectedFieldChanges);
+    expect(findFieldsThatChangedType(oldSchema, newSchema)).to.eql(
+      expectedFieldChanges
+    );
   });
 
   it('should detect if a type was removed from a union type', () => {
@@ -219,8 +221,9 @@ describe('CheckSchemaBackwardsCompatibility', () => {
       ]
     });
 
-    expect(Array.from(findTypesRemovedFromUnions(oldSchema, newSchema)))
-      .to.eql([ 'Type2 was removed from union type UnionType1' ]);
+    expect(findTypesRemovedFromUnions(oldSchema, newSchema)).to.eql(
+      [ 'Type2 was removed from union type UnionType1' ]
+    );
   });
 
   it('should detect if a value was removed from an enum type', () => {
@@ -254,8 +257,9 @@ describe('CheckSchemaBackwardsCompatibility', () => {
       ]
     });
 
-    expect(Array.from(findValuesRemovedFromEnums(oldSchema, newSchema)))
-      .to.eql([ 'VALUE1 was removed from enum type EnumType1' ]);
+    expect(findValuesRemovedFromEnums(oldSchema, newSchema)).to.eql(
+      [ 'VALUE1 was removed from enum type EnumType1' ]
+    );
   });
 
   it('should detect all breaking changes', () => {
@@ -364,7 +368,8 @@ describe('CheckSchemaBackwardsCompatibility', () => {
       'VALUE0 was removed from enum type EnumTypeThatLosesAValue',
     ];
 
-    expect(Array.from(findBreakingChanges(oldSchema, newSchema)))
-      .to.eql(expectedBreakingChanges);
+    expect(findBreakingChanges(oldSchema, newSchema)).to.eql(
+      expectedBreakingChanges
+    );
   });
 });
