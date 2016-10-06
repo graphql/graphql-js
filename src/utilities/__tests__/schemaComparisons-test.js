@@ -107,8 +107,7 @@ describe('CheckSchemaBackwardsCompatibility', () => {
     expect(findTypesThatChangedKind(oldSchema, newSchema)).to.eql([
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
-        description:
-          'Type1 changed from a GraphQLInterfaceType to a GraphQLUnionType',
+        description: 'Type1 changed from an Interface type to a Union type',
       }
     ]);
   });
@@ -390,8 +389,8 @@ describe('CheckSchemaBackwardsCompatibility', () => {
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
-        description: 'TypeThatChangesType changed from a GraphQLObjectType ' +
-          'to a GraphQLInterfaceType',
+        description: 'TypeThatChangesType changed from an Object type to an ' +
+          'Interface type',
       },
       {
         type: BreakingChangeType.FIELD_REMOVED,

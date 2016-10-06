@@ -62,12 +62,10 @@ export function findRemovedTypes(
   const oldTypes = Object.keys(oldSchema.getTypeMap());
   const newTypes = new Set(Object.keys(newSchema.getTypeMap()));
   return oldTypes.filter(typeName => !newTypes.has(typeName)).map(
-    type => {
-      return {
-        type: BreakingChangeType.TYPE_REMOVED,
-        description: `${type} was removed`,
-      };
-    }
+    type => ({
+      type: BreakingChangeType.TYPE_REMOVED,
+      description: `${type} was removed`,
+    })
   );
 }
 
@@ -82,7 +80,7 @@ export function findTypesThatChangedKind(
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
 
-  const typesThatChangedType = [];
+  const breakingChanges = [];
   Object.keys(oldTypeMap).forEach(typeName => {
     if (!newTypeMap[typeName]) {
       return;
@@ -90,16 +88,23 @@ export function findTypesThatChangedKind(
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
     if (!(oldType instanceof newType.constructor)) {
-      typesThatChangedType.push(
+      breakingChanges.push(
         {
           type: BreakingChangeType.TYPE_CHANGED_KIND,
-          description: `${typeName} changed from a ` +
-            `${oldType.constructor.name} to a ${newType.constructor.name}`,
+          description: `${typeName} changed from ` +
+            `${prettifyTypeKind(oldType.constructor.name)} type to ` +
+            `${prettifyTypeKind(newType.constructor.name)} type`,
         }
       );
     }
   });
-  return typesThatChangedType;
+  return breakingChanges;
+}
+
+function prettifyTypeKind(typeKind: string): string {
+  const kind = typeKind.replace('GraphQL', '').replace('Type', '');
+  const article = [ 'A','E','I','O' ].includes(kind.charAt(0)) ? 'an' : 'a';
+  return article + ' ' + kind;
 }
 
 /**

@@ -61,12 +61,5 @@ export {
 // Asserts that a string is a valid GraphQL name
 export { assertValidName } from './assertValidName';
 
-// Helpful functions to compare two GraphQLSchemas and detect breaking changes.
-export {
-  findBreakingChanges,
-  findRemovedTypes,
-  findTypesThatChangedKind,
-  findFieldsThatChangedType,
-  findTypesRemovedFromUnions,
-  findValuesRemovedFromEnums,
-} from './schemaComparisons';
+// Compares two GraphQLSchemas and detects breaking changes.
+export { findBreakingChanges } from './schemaComparisons';
