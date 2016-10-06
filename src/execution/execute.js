@@ -903,9 +903,14 @@ function completeAbstractValue(
   path: Array<string | number>,
   result: mixed
 ): mixed {
-  const runtimeType = returnType.resolveType ?
+  let runtimeType = returnType.resolveType ?
     returnType.resolveType(result, exeContext.contextValue, info) :
     defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
+
+  // If resolveType returns a string, we assume it's a GraphQLObjectType name.
+  if (typeof runtimeType === 'string') {
+    runtimeType = exeContext.schema.getType(runtimeType);
+  }
 
   if (!(runtimeType instanceof GraphQLObjectType)) {
     throw new GraphQLError(

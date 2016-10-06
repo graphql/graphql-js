@@ -471,7 +471,7 @@ export type GraphQLTypeResolveFn = (
   value: mixed,
   context: mixed,
   info: GraphQLResolveInfo
-) => ?GraphQLObjectType;
+) => ?GraphQLObjectType | ?string;
 
 export type GraphQLIsTypeOfFn = (
   source: mixed,

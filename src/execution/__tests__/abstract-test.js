@@ -353,4 +353,79 @@ describe('Execute: Handles execution of abstract types', () => {
     });
   });
 
+  it('resolveType allows resolving with type name', async () => {
+    const PetType = new GraphQLInterfaceType({
+      name: 'Pet',
+      resolveType(obj) {
+        return obj instanceof Dog ? 'Dog' :
+          obj instanceof Cat ? 'Cat' :
+          null;
+      },
+      fields: {
+        name: { type: GraphQLString }
+      }
+    });
+
+    const DogType = new GraphQLObjectType({
+      name: 'Dog',
+      interfaces: [ PetType ],
+      fields: {
+        name: { type: GraphQLString },
+        woofs: { type: GraphQLBoolean },
+      }
+    });
+
+    const CatType = new GraphQLObjectType({
+      name: 'Cat',
+      interfaces: [ PetType ],
+      fields: {
+        name: { type: GraphQLString },
+        meows: { type: GraphQLBoolean },
+      }
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          pets: {
+            type: new GraphQLList(PetType),
+            resolve() {
+              return [
+                new Dog('Odie', true),
+                new Cat('Garfield', false)
+              ];
+            }
+          }
+        }
+      }),
+      types: [ CatType, DogType ]
+    });
+
+    const query = `{
+      pets {
+        name
+        ... on Dog {
+          woofs
+        }
+        ... on Cat {
+          meows
+        }
+      }
+    }`;
+
+    const result = await graphql(schema, query);
+
+    expect(result).to.jsonEqual({
+      data: {
+        pets: [
+          { name: 'Odie',
+            woofs: true },
+          { name: 'Garfield',
+            meows: false },
+        ]
+      }
+    });
+  });
+
 });
