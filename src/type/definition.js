@@ -223,6 +223,8 @@ export class GraphQLScalarType {
 
   _scalarConfig: GraphQLScalarTypeConfig<*, *>;
 
+  static prettyName: string = 'Scalar';
+
   constructor(config: GraphQLScalarTypeConfig<*, *>) {
     invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
@@ -323,6 +325,8 @@ export class GraphQLObjectType {
   _typeConfig: GraphQLObjectTypeConfig<*>;
   _fields: GraphQLFieldDefinitionMap;
   _interfaces: Array<GraphQLInterfaceType>;
+
+  static prettyName: string = 'Object';
 
   constructor(config: GraphQLObjectTypeConfig<*>) {
     invariant(config.name, 'Type must be named.');
@@ -570,6 +574,8 @@ export class GraphQLInterfaceType {
   _typeConfig: GraphQLInterfaceTypeConfig;
   _fields: GraphQLFieldDefinitionMap;
 
+  static prettyName: string = 'Interface';
+
   constructor(config: GraphQLInterfaceTypeConfig) {
     invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
@@ -640,6 +646,8 @@ export class GraphQLUnionType {
   _typeConfig: GraphQLUnionTypeConfig;
   _types: Array<GraphQLObjectType>;
   _possibleTypeNames: {[typeName: string]: boolean};
+
+  static prettyName: string = 'Union';
 
   constructor(config: GraphQLUnionTypeConfig) {
     invariant(config.name, 'Type must be named.');
@@ -741,6 +749,8 @@ export class GraphQLEnumType/* <T> */ {
   _values: Array<GraphQLEnumValueDefinition/* <T> */>;
   _valueLookup: Map<any/* T */, GraphQLEnumValueDefinition>;
   _nameLookup: { [valueName: string]: GraphQLEnumValueDefinition };
+
+  static prettyName: string = 'Enum';
 
   constructor(config: GraphQLEnumTypeConfig/* <T> */) {
     this.name = config.name;
@@ -892,6 +902,8 @@ export class GraphQLInputObjectType {
 
   _typeConfig: InputObjectConfig;
   _fields: InputObjectFieldMap;
+
+  static prettyName: string = 'InputObject';
 
   constructor(config: InputObjectConfig) {
     invariant(config.name, 'Type must be named.');
