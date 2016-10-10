@@ -60,3 +60,6 @@ export {
 
 // Asserts that a string is a valid GraphQL name
 export { assertValidName } from './assertValidName';
+
+// Compares two GraphQLSchemas and detects breaking changes.
+export { findBreakingChanges } from './schemaComparisons';

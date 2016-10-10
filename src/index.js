@@ -203,4 +203,7 @@ export {
 
   // Asserts a string is a valid GraphQL name.
   assertValidName,
+
+  // Compares two GraphQLSchemas and detects breaking changes.
+  findBreakingChanges,
 } from './utilities';
