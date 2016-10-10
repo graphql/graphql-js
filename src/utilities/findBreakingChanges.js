@@ -10,15 +10,17 @@
 
 import {
   getNamedType,
+  GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
 } from '../type/definition';
-import {
-  GraphQLSchema,
-} from '../type/schema';
+
+import type { GraphQLNamedType } from '../type/definition';
+
+import { GraphQLSchema } from '../type/schema';
 
 export const BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
@@ -59,14 +61,19 @@ export function findRemovedTypes(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema
 ): Array<BreakingChange> {
-  const oldTypeNames = Object.keys(oldSchema.getTypeMap());
-  const newTypes = newSchema.getTypeMap();
-  return oldTypeNames.filter(typeName => !newTypes[typeName]).map(
-    type => ({
-      type: BreakingChangeType.TYPE_REMOVED,
-      description: `${type} was removed`,
-    })
-  );
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+
+  const breakingChanges = [];
+  Object.keys(oldTypeMap).forEach(typeName => {
+    if (!newTypeMap[typeName]) {
+      breakingChanges.push({
+        type: BreakingChangeType.TYPE_REMOVED,
+        description: `${typeName} was removed.`,
+      });
+    }
+  });
+  return breakingChanges;
 }
 
 /**
@@ -88,22 +95,36 @@ export function findTypesThatChangedKind(
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
     if (!(oldType instanceof newType.constructor)) {
-      breakingChanges.push(
-        {
-          type: BreakingChangeType.TYPE_CHANGED_KIND,
-          description: `${typeName} changed from ` +
-            `${addArticle(oldType.constructor.prettyName)} type to ` +
-            `${addArticle(newType.constructor.prettyName)} type`,
-        }
-      );
+      breakingChanges.push({
+        type: BreakingChangeType.TYPE_CHANGED_KIND,
+        description: `${typeName} changed from ` +
+          `${typeKindName(oldType)} to ${typeKindName(newType)}.`
+      });
     }
   });
   return breakingChanges;
 }
 
-function addArticle(typeKind: string): string {
-  const article = [ 'A','E','I','O' ].includes(typeKind.charAt(0)) ? 'an' : 'a';
-  return article + ' ' + typeKind;
+function typeKindName(type: GraphQLNamedType): string {
+  if (type instanceof GraphQLScalarType) {
+    return 'a Scalar type';
+  }
+  if (type instanceof GraphQLObjectType) {
+    return 'an Object type';
+  }
+  if (type instanceof GraphQLInterfaceType) {
+    return 'an Interface type';
+  }
+  if (type instanceof GraphQLUnionType) {
+    return 'a Union type';
+  }
+  if (type instanceof GraphQLEnumType) {
+    return 'an Enum type';
+  }
+  if (type instanceof GraphQLInputObjectType) {
+    return 'an Input type';
+  }
+  throw new TypeError('Unknown type ' + type.constructor.name);
 }
 
 /**
@@ -136,27 +157,22 @@ export function findFieldsThatChangedType(
     Object.keys(oldTypeFieldsDef).forEach(fieldName => {
       // Check if the field is missing on the type in the new schema.
       if (!(fieldName in newTypeFieldsDef)) {
-        breakingFieldChanges.push(
-          {
-            type: BreakingChangeType.FIELD_REMOVED,
-            description: `${typeName}.${fieldName} was removed`,
-          }
-        );
+        breakingFieldChanges.push({
+          type: BreakingChangeType.FIELD_REMOVED,
+          description: `${typeName}.${fieldName} was removed.`,
+        });
       } else {
         // Check if the field's type has changed in the new schema.
         const oldFieldType = getNamedType(oldTypeFieldsDef[fieldName].type);
         const newFieldType = getNamedType(newTypeFieldsDef[fieldName].type);
-        if (
-          oldFieldType && newFieldType &&
-          (oldFieldType.name !== newFieldType.name)
-        ) {
-          breakingFieldChanges.push(
-            {
-              type: BreakingChangeType.FIELD_CHANGED_KIND,
-              description: `${typeName}.${fieldName} changed type from ` +
-                `${oldFieldType.name} to ${newFieldType.name}`,
-            }
-          );
+        if (oldFieldType &&
+            newFieldType &&
+            oldFieldType.name !== newFieldType.name) {
+          breakingFieldChanges.push({
+            type: BreakingChangeType.FIELD_CHANGED_KIND,
+            description: `${typeName}.${fieldName} changed type from ` +
+              `${oldFieldType.name} to ${newFieldType.name}.`,
+          });
         }
       }
     });
@@ -179,24 +195,20 @@ export function findTypesRemovedFromUnions(
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (
-      !(oldType instanceof GraphQLUnionType) ||
-      !(newType instanceof GraphQLUnionType)
-    ) {
+    if (!(oldType instanceof GraphQLUnionType) ||
+        !(newType instanceof GraphQLUnionType)) {
       return;
     }
-    const typeNamesInNewUnion = new Set(
-      newType.getTypes().map(type => type.name)
-    );
-    oldType.getTypes().forEach(typeInOldUnion => {
-      if (!typeNamesInNewUnion.has(typeInOldUnion.name)) {
-        typesRemovedFromUnion.push(
-          {
-            type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
-            description: `${typeInOldUnion.name} was removed from union ` +
-              `type ${typeName}`,
-          }
-        );
+    const typeNamesInNewUnion = Object.create(null);
+    newType.getTypes().forEach(type => {
+      typeNamesInNewUnion[type.name] = true;
+    });
+    oldType.getTypes().forEach(type => {
+      if (!typeNamesInNewUnion[type.name]) {
+        typesRemovedFromUnion.push({
+          type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
+          description: `${type.name} was removed from union type ${typeName}.`
+        });
       }
     });
   });
@@ -218,24 +230,20 @@ export function findValuesRemovedFromEnums(
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (
-      !(oldType instanceof GraphQLEnumType) ||
-      !(newType instanceof GraphQLEnumType)
-    ) {
+    if (!(oldType instanceof GraphQLEnumType) ||
+        !(newType instanceof GraphQLEnumType)) {
       return;
     }
-    const valuesInNewEnum = new Set(
-      newType.getValues().map(value => value.name)
-    );
-    oldType.getValues().forEach(valueInOldEnum => {
-      if (!valuesInNewEnum.has(valueInOldEnum.name)) {
-        valuesRemovedFromEnums.push(
-          {
-            type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-            description: `${valueInOldEnum.name} was removed from enum ` +
-              `type ${typeName}`,
-          }
-        );
+    const valuesInNewEnum = Object.create(null);
+    newType.getValues().forEach(value => {
+      valuesInNewEnum[value.name] = true;
+    });
+    oldType.getValues().forEach(value => {
+      if (!valuesInNewEnum[value.name]) {
+        valuesRemovedFromEnums.push({
+          type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
+          description: `${value.name} was removed from enum type ${typeName}.`
+        });
       }
     });
   });
