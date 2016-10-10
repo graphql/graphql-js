@@ -30,7 +30,7 @@ function coerceInt(value: mixed): ?number {
     return (num < 0 ? Math.ceil : Math.floor)(num);
   }
   throw new TypeError(
-    'Int cannot represent non 32-bit signed integer value: ' + value
+    'Int cannot represent non 32-bit signed integer value: ' + String(value)
   );
 }
 
@@ -63,7 +63,7 @@ function coerceFloat(value: mixed): ?number {
     return num;
   }
   throw new TypeError(
-    'Float cannot represent non numeric value: ' + value
+    'Float cannot represent non numeric value: ' + String(value)
   );
 }
 
