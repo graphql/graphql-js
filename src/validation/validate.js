@@ -96,8 +96,10 @@ export class ValidationContext {
   _errors: Array<GraphQLError>;
   _fragments: {[name: string]: FragmentDefinition};
   _fragmentSpreads: Map<SelectionSet, Array<FragmentSpread>>;
-  _recursivelyReferencedFragments:
-    Map<OperationDefinition, Array<FragmentDefinition>>;
+  _recursivelyReferencedFragments: Map<
+    OperationDefinition,
+    Array<FragmentDefinition>
+  >;
   _variableUsages: Map<HasSelectionSet, Array<VariableUsage>>;
   _recursiveVariableUsages: Map<OperationDefinition, Array<VariableUsage>>;
 

@@ -61,8 +61,9 @@ export class GraphQLSchema {
   _directives: Array<GraphQLDirective>;
   _typeMap: TypeMap;
   _implementations: { [interfaceName: string]: Array<GraphQLObjectType> };
-  _possibleTypeMap:
-    ?{ [abstractName: string]: { [possibleName: string]: boolean } };
+  _possibleTypeMap: ?{
+    [abstractName: string]: { [possibleName: string]: boolean }
+  };
 
   constructor(config: GraphQLSchemaConfig) {
     invariant(

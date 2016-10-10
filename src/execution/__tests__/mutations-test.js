@@ -81,28 +81,28 @@ const schema = new GraphQLSchema({
         args: { newNumber: { type: GraphQLInt } },
         resolve: (function (obj, { newNumber }) {
           return obj.immediatelyChangeTheNumber(newNumber);
-        }:any)
+        }: any)
       },
       promiseToChangeTheNumber: {
         type: numberHolderType,
         args: { newNumber: { type: GraphQLInt } },
         resolve: (function (obj, { newNumber }) {
           return obj.promiseToChangeTheNumber(newNumber);
-        }:any)
+        }: any)
       },
       failToChangeTheNumber: {
         type: numberHolderType,
         args: { newNumber: { type: GraphQLInt } },
         resolve: (function (obj, { newNumber }) {
           return obj.failToChangeTheNumber(newNumber);
-        }:any)
+        }: any)
       },
       promiseAndFailToChangeTheNumber: {
         type: numberHolderType,
         args: { newNumber: { type: GraphQLInt } },
         resolve: (function (obj, { newNumber }) {
           return obj.promiseAndFailToChangeTheNumber(newNumber);
-        }:any)
+        }: any)
       }
     },
     name: 'Mutation',
