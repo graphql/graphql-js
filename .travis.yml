@@ -20,6 +20,7 @@ notifications:
     use_notice: true
     on_success: change
     on_failure: change
+    skip_join: true
     channels:
       - "chat.freenode.net#graphql"
   slack:
