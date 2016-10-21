@@ -43,7 +43,7 @@ import { getFriends, getHero, getHuman, getDroid } from './starWarsData.js';
  *   appearsIn: [Episode]
  * }
  *
- * type Human : Character {
+ * type Human implements Character {
  *   id: String!
  *   name: String
  *   friends: [Character]
@@ -51,7 +51,7 @@ import { getFriends, getHero, getHuman, getDroid } from './starWarsData.js';
  *   homePlanet: String
  * }
  *
- * type Droid : Character {
+ * type Droid implements Character {
  *   id: String!
  *   name: String
  *   friends: [Character]
