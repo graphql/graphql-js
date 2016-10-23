@@ -890,10 +890,10 @@ export class GraphQLInputObjectType {
   name: string;
   description: ?string;
 
-  _typeConfig: InputObjectConfig;
-  _fields: InputObjectFieldMap;
+  _typeConfig: GraphQLInputObjectConfig;
+  _fields: GraphQLInputObjectFieldMap;
 
-  constructor(config: InputObjectConfig) {
+  constructor(config: GraphQLInputObjectConfig) {
     invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
@@ -901,11 +901,11 @@ export class GraphQLInputObjectType {
     this._typeConfig = config;
   }
 
-  getFields(): InputObjectFieldMap {
+  getFields(): GraphQLInputObjectFieldMap {
     return this._fields || (this._fields = this._defineFieldMap());
   }
 
-  _defineFieldMap(): InputObjectFieldMap {
+  _defineFieldMap(): GraphQLInputObjectFieldMap {
     const fieldMap: any = resolveThunk(this._typeConfig.fields);
     invariant(
       isPlainObj(fieldMap),
@@ -940,31 +940,31 @@ export class GraphQLInputObjectType {
   }
 }
 
-export type InputObjectConfig = {
+export type GraphQLInputObjectConfig = {
   name: string;
-  fields: Thunk<InputObjectConfigFieldMap>;
+  fields: Thunk<GraphQLInputObjectConfigFieldMap>;
   description?: ?string;
 };
 
-export type InputObjectFieldConfig = {
+export type GraphQLInputObjectFieldConfig = {
   type: GraphQLInputType;
   defaultValue?: mixed;
   description?: ?string;
 };
 
-export type InputObjectConfigFieldMap = {
-  [fieldName: string]: InputObjectFieldConfig;
+export type GraphQLInputObjectConfigFieldMap = {
+  [fieldName: string]: GraphQLInputObjectFieldConfig;
 };
 
-export type InputObjectField = {
+export type GraphQLInputObjectField = {
   name: string;
   type: GraphQLInputType;
   defaultValue?: mixed;
   description?: ?string;
 };
 
-export type InputObjectFieldMap = {
-  [fieldName: string]: InputObjectField;
+export type GraphQLInputObjectFieldMap = {
+  [fieldName: string]: GraphQLInputObjectField;
 };
 
 
