@@ -39,11 +39,17 @@ import type { Argument, VariableDefinition } from '../language/ast';
 export function getVariableValues(
   schema: GraphQLSchema,
   definitionASTs: Array<VariableDefinition>,
-  inputs: { [key: string]: mixed }
+  inputs: { [key: string]: mixed },
+  contextValue: mixed
 ): { [key: string]: mixed } {
   return definitionASTs.reduce((values, defAST) => {
     const varName = defAST.variable.name.value;
-    values[varName] = getVariableValue(schema, defAST, inputs[varName]);
+    values[varName] = getVariableValue(
+      schema,
+      defAST,
+      inputs[varName],
+      contextValue
+    );
     return values;
   }, {});
 }
@@ -84,7 +90,8 @@ export function getArgumentValues(
 function getVariableValue(
   schema: GraphQLSchema,
   definitionAST: VariableDefinition,
-  input: mixed
+  input: mixed,
+  contextValue: mixed
 ): mixed {
   const type = typeFromAST(schema, definitionAST.type);
   const variable = definitionAST.variable;
@@ -104,7 +111,7 @@ function getVariableValue(
         return valueFromAST(defaultValue, inputType);
       }
     }
-    return coerceValue(inputType, input);
+    return coerceValue(inputType, input, contextValue);
   }
   if (isNullish(input)) {
     throw new GraphQLError(
@@ -124,14 +131,18 @@ function getVariableValue(
 /**
  * Given a type and any value, return a runtime value coerced to match the type.
  */
-function coerceValue(type: GraphQLInputType, value: mixed): mixed {
+function coerceValue(
+  type: GraphQLInputType,
+  value: mixed,
+  contextValue: mixed
+): mixed {
   // Ensure flow knows that we treat function params as const.
   const _value = value;
 
   if (type instanceof GraphQLNonNull) {
     // Note: we're not checking that the result of coerceValue is non-null.
     // We only call this function after calling isValidJSValue.
-    return coerceValue(type.ofType, _value);
+    return coerceValue(type.ofType, _value, contextValue);
   }
 
   if (isNullish(_value)) {
@@ -143,11 +154,11 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
     if (isCollection(_value)) {
       const coercedValues = [];
       forEach((_value: any), item => {
-        coercedValues.push(coerceValue(itemType, item));
+        coercedValues.push(coerceValue(itemType, item, contextValue));
       });
       return coercedValues;
     }
-    return [ coerceValue(itemType, _value) ];
+    return [ coerceValue(itemType, _value, contextValue) ];
   }
 
   if (type instanceof GraphQLInputObjectType) {
@@ -157,7 +168,7 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
     const fields = type.getFields();
     return Object.keys(fields).reduce((obj, fieldName) => {
       const field = fields[fieldName];
-      let fieldValue = coerceValue(field.type, _value[fieldName]);
+      let fieldValue = coerceValue(field.type, _value[fieldName], contextValue);
       if (isNullish(fieldValue)) {
         fieldValue = field.defaultValue;
       }
@@ -173,7 +184,7 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
     'Must be input type'
   );
 
-  const parsed = type.parseValue(_value);
+  const parsed = type.parseValue(_value, contextValue);
   if (!isNullish(parsed)) {
     return parsed;
   }
