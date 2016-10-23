@@ -891,7 +891,7 @@ export class GraphQLInputObjectType {
   description: ?string;
 
   _typeConfig: GraphQLInputObjectTypeConfig;
-  _fields: GraphQLInputFieldMap;
+  _fields: GraphQLInputFieldDefinitionMap;
 
   constructor(config: GraphQLInputObjectTypeConfig) {
     invariant(config.name, 'Type must be named.');
