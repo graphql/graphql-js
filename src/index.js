@@ -130,6 +130,7 @@ export {
 // Execute GraphQL queries.
 export {
   execute,
+  defaultResolveFn,
 } from './execution';
 
 
