@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "babel-cli": "6.16.0",
-    "babel-eslint": "7.0.0",
+    "babel-eslint": "7.1.0",
     "babel-plugin-check-es2015-constants": "6.8.0",
     "babel-plugin-syntax-async-functions": "6.13.0",
     "babel-plugin-transform-class-properties": "6.16.0",
