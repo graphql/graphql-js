@@ -126,6 +126,7 @@ export type Node =
   | FloatValue
   | StringValue
   | BooleanValue
+  | NullValue
   | EnumValue
   | ListValue
   | ObjectValue
@@ -260,6 +261,7 @@ export type Value =
   | FloatValue
   | StringValue
   | BooleanValue
+  | NullValue
   | EnumValue
   | ListValue
   | ObjectValue;
@@ -286,6 +288,11 @@ export type BooleanValue = {
   kind: 'BooleanValue';
   loc?: Location;
   value: boolean;
+};
+
+export type NullValue = {
+  kind: 'NullValue';
+  loc?: Location;
 };
 
 export type EnumValue = {
