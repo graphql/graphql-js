@@ -27,6 +27,7 @@ export const QueryDocumentKeys = {
   FloatValue: [],
   StringValue: [],
   BooleanValue: [],
+  NullValue: [],
   EnumValue: [],
   ListValue: [ 'values' ],
   ObjectValue: [ 'fields' ],
