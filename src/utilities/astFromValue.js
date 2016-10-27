@@ -18,6 +18,7 @@ import type {
   FloatValue,
   StringValue,
   BooleanValue,
+  NullValue,
   EnumValue,
   ListValue,
   ObjectValue,
@@ -28,6 +29,7 @@ import {
   FLOAT,
   STRING,
   BOOLEAN,
+  NULL,
   ENUM,
   LIST,
   OBJECT,
@@ -58,6 +60,7 @@ import { GraphQLID } from '../type/scalars';
  * | String        | String / Enum Value  |
  * | Number        | Int / Float          |
  * | Mixed         | Enum Value           |
+ * | null          | NullValue            |
  *
  */
 export function astFromValue(
@@ -73,6 +76,12 @@ export function astFromValue(
     return astFromValue(_value, type.ofType);
   }
 
+  // only explicit null, not undefined, NaN
+  if (_value === null) {
+    return ({ kind: NULL }: NullValue);
+  }
+
+  // other nullish values
   if (isNullish(_value)) {
     return null;
   }

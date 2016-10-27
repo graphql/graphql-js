@@ -33,8 +33,12 @@ describe('astFromValue', () => {
       { kind: 'BooleanValue', value: false }
     );
 
-    expect(astFromValue(null, GraphQLBoolean)).to.deep.equal(
+    expect(astFromValue(undefined, GraphQLBoolean)).to.deep.equal(
       null
+    );
+
+    expect(astFromValue(null, GraphQLBoolean)).to.deep.equal(
+      { kind: 'NullValue' }
     );
 
     expect(astFromValue(0, GraphQLBoolean)).to.deep.equal(
@@ -105,6 +109,10 @@ describe('astFromValue', () => {
     );
 
     expect(astFromValue(null, GraphQLString)).to.deep.equal(
+      { kind: 'NullValue' }
+    );
+
+    expect(astFromValue(undefined, GraphQLString)).to.deep.equal(
       null
     );
   });
@@ -133,6 +141,10 @@ describe('astFromValue', () => {
     );
 
     expect(astFromValue(null, GraphQLID)).to.deep.equal(
+      { kind: 'NullValue' }
+    );
+
+    expect(astFromValue(undefined, GraphQLID)).to.deep.equal(
       null
     );
   });
