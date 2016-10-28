@@ -107,7 +107,7 @@ export const introspectionQuery = `
 
 export type IntrospectionQuery = {
   __schema: IntrospectionSchema
-}
+};
 
 export type IntrospectionSchema = {
   queryType: IntrospectionNamedTypeRef;
@@ -115,21 +115,21 @@ export type IntrospectionSchema = {
   subscriptionType: ?IntrospectionNamedTypeRef;
   types: Array<IntrospectionType>;
   directives: Array<IntrospectionDirective>;
-}
+};
 
 export type IntrospectionType =
-  IntrospectionScalarType |
-  IntrospectionObjectType |
-  IntrospectionInterfaceType |
-  IntrospectionUnionType |
-  IntrospectionEnumType |
-  IntrospectionInputObjectType
+  | IntrospectionScalarType
+  | IntrospectionObjectType
+  | IntrospectionInterfaceType
+  | IntrospectionUnionType
+  | IntrospectionEnumType
+  | IntrospectionInputObjectType;
 
 export type IntrospectionScalarType = {
   kind: 'SCALAR';
   name: string;
   description: ?string;
-}
+};
 
 export type IntrospectionObjectType = {
   kind: 'OBJECT';
@@ -137,7 +137,7 @@ export type IntrospectionObjectType = {
   description: ?string;
   fields: Array<IntrospectionField>;
   interfaces: Array<IntrospectionNamedTypeRef>;
-}
+};
 
 export type IntrospectionInterfaceType = {
   kind: 'INTERFACE';
@@ -145,48 +145,48 @@ export type IntrospectionInterfaceType = {
   description: ?string;
   fields: Array<IntrospectionField>;
   possibleTypes: Array<IntrospectionNamedTypeRef>;
-}
+};
 
 export type IntrospectionUnionType = {
   kind: 'UNION';
   name: string;
   description: ?string;
   possibleTypes: Array<IntrospectionNamedTypeRef>;
-}
+};
 
 export type IntrospectionEnumType = {
   kind: 'ENUM';
   name: string;
   description: ?string;
   enumValues: Array<IntrospectionEnumValue>;
-}
+};
 
 export type IntrospectionInputObjectType = {
   kind: 'INPUT_OBJECT';
   name: string;
   description: ?string;
   inputFields: Array<IntrospectionInputValue>;
-}
+};
 
 export type IntrospectionTypeRef =
-  IntrospectionNamedTypeRef |
-  IntrospectionListTypeRef |
-  IntrospectionNonNullTypeRef
+  | IntrospectionNamedTypeRef
+  | IntrospectionListTypeRef
+  | IntrospectionNonNullTypeRef;
 
 export type IntrospectionNamedTypeRef = {
   kind: string;
   name: string;
-}
+};
 
 export type IntrospectionListTypeRef = {
   kind: 'LIST';
   ofType?: IntrospectionTypeRef;
-}
+};
 
 export type IntrospectionNonNullTypeRef = {
   kind: 'NON_NULL';
   ofType?: IntrospectionTypeRef;
-}
+};
 
 export type IntrospectionField = {
   name: string;
@@ -195,25 +195,25 @@ export type IntrospectionField = {
   type: IntrospectionTypeRef;
   isDeprecated: boolean;
   deprecationReason: ?string;
-}
+};
 
 export type IntrospectionInputValue = {
   name: string;
   description: ?string;
   type: IntrospectionTypeRef;
   defaultValue: ?string;
-}
+};
 
 export type IntrospectionEnumValue = {
   name: string;
   description: ?string;
   isDeprecated: boolean;
   deprecationReason: ?string;
-}
+};
 
 export type IntrospectionDirective = {
   name: string;
   description: ?string;
   locations: Array<DirectiveLocationEnum>;
   args: Array<IntrospectionInputValue>;
-}
+};

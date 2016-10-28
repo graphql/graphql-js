@@ -219,7 +219,7 @@ export class GraphQLSchema {
   }
 }
 
-type TypeMap = { [typeName: string]: GraphQLNamedType }
+type TypeMap = { [typeName: string]: GraphQLNamedType };
 
 type GraphQLSchemaConfig = {
   query: GraphQLObjectType;
@@ -227,7 +227,7 @@ type GraphQLSchemaConfig = {
   subscription?: ?GraphQLObjectType;
   types?: ?Array<GraphQLNamedType>;
   directives?: ?Array<GraphQLDirective>;
-}
+};
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (!type) {

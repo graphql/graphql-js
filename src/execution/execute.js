@@ -93,12 +93,13 @@ type ExecutionContext = {
 };
 
 /**
- * The result of execution. `data` is the result of executing the
- * query, `errors` is null if no errors occurred, and is a
- * non-empty array if an error occurred.
+ * The result of GraphQL execution.
+ *
+ *   - `data` is the result of a successful execution of the query.
+ *   - `errors` is included when any errors occurred as a non-empty array.
  */
-type ExecutionResult = {
-  data: ?Object;
+export type ExecutionResult = {
+  data?: ?{[key: string]: mixed};
   errors?: Array<GraphQLError>;
 };
 
@@ -237,7 +238,7 @@ function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinition,
   rootValue: mixed
-): Object {
+): {[key: string]: mixed} {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
@@ -301,7 +302,7 @@ function executeFieldsSerially(
   sourceValue: mixed,
   path: Array<string | number>,
   fields: {[key: string]: Array<Field>}
-): Promise<Object> {
+): Promise<{[key: string]: mixed}> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
       const fieldASTs = fields[responseName];
@@ -339,7 +340,7 @@ function executeFields(
   sourceValue: mixed,
   path: Array<string | number>,
   fields: {[key: string]: Array<Field>}
-): Object {
+): {[key: string]: mixed} {
   let containsPromise = false;
 
   const finalResults = Object.keys(fields).reduce(

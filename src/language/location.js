@@ -16,7 +16,7 @@ import type { Source } from './source';
 type SourceLocation = {
   line: number;
   column: number;
-}
+};
 
 /**
  * Takes a Source and a UTF-8 character offset, and returns the corresponding

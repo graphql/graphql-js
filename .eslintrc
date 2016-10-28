@@ -3,8 +3,7 @@
 
   "plugins": [
     "babel",
-    "flowtype",
-    "flow-vars"
+    "flowtype"
   ],
 
   "env": {
@@ -40,17 +39,19 @@
   },
 
   "rules": {
-    "babel/arrow-parens": [2, "as-needed"],
-    "babel/array-bracket-spacing": [2, "always"],
-    "babel/generator-star-spacing": [2, {"before": true, "after": false}],
-    "array-bracket-spacing": 0,
-    "generator-star-spacing": 0,
+    "babel/no-await-in-loop": 2,
 
     "flowtype/space-after-type-colon": [2, "always"],
     "flowtype/space-before-type-colon": [2, "never"],
-    "flow-vars/define-flow-type": 2,
-    "flow-vars/use-flow-type": 2,
+    "flowtype/space-before-generic-bracket": [2, "never"],
+    "flowtype/union-intersection-spacing": [2, "always"],
+    "flowtype/no-weak-types": [2, {"any": false}],
+    "flowtype/define-flow-type": 2,
+    "flowtype/use-flow-type": 2,
+    "flowtype/semi": 2,
 
+    "array-bracket-spacing": [2, "always"],
+    "arrow-parens": [2, "as-needed"],
     "arrow-spacing": 2,
     "block-scoped-var": 0,
     "brace-style": [2, "1tbs", {"allowSingleLine": true}],
@@ -71,6 +72,7 @@
     "eqeqeq": 2,
     "func-names": 0,
     "func-style": 0,
+    "generator-star-spacing": [2, {"before": true, "after": false}],
     "guard-for-in": 2,
     "handle-callback-err": [2, "error"],
     "id-length": 0,

@@ -96,7 +96,7 @@ type GraphQLDirectiveConfig = {
   description?: ?string;
   locations: Array<DirectiveLocationEnum>;
   args?: ?GraphQLFieldConfigArgumentMap;
-}
+};
 
 /**
  * Used to conditionally include fields or fragments.

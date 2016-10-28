@@ -962,7 +962,7 @@ function parseEnumTypeDefinition(lexer: Lexer<*>): EnumTypeDefinition {
  *
  * EnumValue : Name
  */
-function parseEnumValueDefinition(lexer: Lexer<*>) : EnumValueDefinition {
+function parseEnumValueDefinition(lexer: Lexer<*>): EnumValueDefinition {
   const start = lexer.token;
   const name = parseName(lexer);
   const directives = parseDirectives(lexer);
