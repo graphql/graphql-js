@@ -55,7 +55,7 @@
     "babel-plugin-transform-es2015-modules-commonjs": "6.16.0",
     "babel-plugin-transform-es2015-object-super": "6.8.0",
     "babel-plugin-transform-es2015-parameters": "6.17.0",
-    "babel-plugin-transform-es2015-shorthand-properties": "6.8.0",
+    "babel-plugin-transform-es2015-shorthand-properties": "6.18.0",
     "babel-plugin-transform-es2015-spread": "6.8.0",
     "babel-plugin-transform-es2015-template-literals": "6.8.0",
     "babel-plugin-transform-flow-strip-types": "6.14.0",
