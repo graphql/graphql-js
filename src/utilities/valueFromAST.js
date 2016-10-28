@@ -42,6 +42,7 @@ import type {
  * | String               | String        |
  * | Int / Float          | Number        |
  * | Enum Value           | Mixed         |
+ * | NullValue            | null          |
  *
  */
 export function valueFromAST(
@@ -57,13 +58,17 @@ export function valueFromAST(
   }
 
   if (!valueAST) {
+    return;
+  }
+
+  if (valueAST.kind === Kind.NULL) {
     return null;
   }
 
   if (valueAST.kind === Kind.VARIABLE) {
     const variableName = (valueAST: Variable).name.value;
     if (!variables || !variables.hasOwnProperty(variableName)) {
-      return null;
+      return;
     }
     // Note: we're not doing any checking that this variable is correct. We're
     // assuming that this query has been validated and the variable usage here
@@ -83,7 +88,7 @@ export function valueFromAST(
 
   if (type instanceof GraphQLInputObjectType) {
     if (valueAST.kind !== Kind.OBJECT) {
-      return null;
+      return;
     }
     const fields = type.getFields();
     const fieldASTs = keyMap(
@@ -93,14 +98,13 @@ export function valueFromAST(
     return Object.keys(fields).reduce((obj, fieldName) => {
       const field = fields[fieldName];
       const fieldAST = fieldASTs[fieldName];
-      let fieldValue =
+      const fieldValue =
         valueFromAST(fieldAST && fieldAST.value, field.type, variables);
-      if (isNullish(fieldValue)) {
-        fieldValue = field.defaultValue;
-      }
-      if (!isNullish(fieldValue)) {
-        obj[fieldName] = fieldValue;
-      }
+
+      // If no valid field value was provided, use the default value
+      obj[fieldName] = fieldValue === undefined || fieldValue !== fieldValue ?
+        field.defaultValue :
+        fieldValue;
       return obj;
     }, {});
   }

@@ -159,6 +159,36 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
+      it('properly parses null value to null', async () => {
+        const doc = `
+        {
+          fieldWithObjectInput(input: {a: null, b: null, c: "C", d: null})
+        }
+        `;
+        const ast = parse(doc);
+
+        return expect(await execute(schema, ast)).to.deep.equal({
+          data: {
+            fieldWithObjectInput: '{"a":null,"b":null,"c":"C","d":null}'
+          }
+        });
+      });
+
+      it('properly parses null value in list', async () => {
+        const doc = `
+        {
+          fieldWithObjectInput(input: {b: ["A",null,"C"], c: "C"})
+        }
+        `;
+        const ast = parse(doc);
+
+        return expect(await execute(schema, ast)).to.deep.equal({
+          data: {
+            fieldWithObjectInput: '{"b":["A",null,"C"],"c":"C"}'
+          }
+        });
+      });
+
       it('does not use incorrect value', async () => {
         const doc = `
         {
