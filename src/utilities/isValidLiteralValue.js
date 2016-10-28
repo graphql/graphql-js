@@ -11,6 +11,7 @@
 import { print } from '../language/printer';
 import type { Value, ListValue, ObjectValue } from '../language/ast';
 import {
+  NULL,
   VARIABLE,
   LIST,
   OBJECT
@@ -41,7 +42,7 @@ export function isValidLiteralValue(
 ): Array<string> {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
-    if (!valueAST) {
+    if (!valueAST || (valueAST.kind === NULL)) {
       if (type.ofType.name) {
         return [ `Expected "${String(type.ofType.name)}!", found null.` ];
       }
