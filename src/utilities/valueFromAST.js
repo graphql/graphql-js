@@ -11,6 +11,7 @@
 import keyMap from '../jsutils/keyMap';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import isInvalid from '../jsutils/isInvalid';
 import * as Kind from '../language/kinds';
 import {
   GraphQLScalarType,
@@ -58,7 +59,7 @@ export function valueFromAST(
   }
 
   if (!valueAST) {
-    return;
+    return undefined;
   }
 
   if (valueAST.kind === Kind.NULL) {
@@ -68,7 +69,7 @@ export function valueFromAST(
   if (valueAST.kind === Kind.VARIABLE) {
     const variableName = (valueAST: Variable).name.value;
     if (!variables || !variables.hasOwnProperty(variableName)) {
-      return;
+      return undefined;
     }
     // Note: we're not doing any checking that this variable is correct. We're
     // assuming that this query has been validated and the variable usage here
@@ -102,9 +103,7 @@ export function valueFromAST(
         valueFromAST(fieldAST && fieldAST.value, field.type, variables);
 
       // If no valid field value was provided, use the default value
-      obj[fieldName] = fieldValue === undefined || fieldValue !== fieldValue ?
-        field.defaultValue :
-        fieldValue;
+      obj[fieldName] = isInvalid(fieldValue) ? field.defaultValue : fieldValue;
       return obj;
     }, {});
   }

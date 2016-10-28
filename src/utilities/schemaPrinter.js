@@ -10,6 +10,7 @@
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import isInvalid from '../jsutils/isInvalid';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import type { GraphQLSchema } from '../type/schema';
@@ -231,7 +232,7 @@ function printArgs(args, indentation = '') {
 
 function printInputValue(arg) {
   let argDecl = arg.name + ': ' + String(arg.type);
-  if (!isNullish(arg.defaultValue)) {
+  if (!isInvalid(arg.defaultValue)) {
     argDecl += ` = ${print(astFromValue(arg.defaultValue, arg.type))}`;
   }
   return argDecl;
