@@ -35,12 +35,12 @@ class Root {
     this.numberHolder = new NumberHolder(originalNumber);
   }
 
-  immediatelyChangeTheNumber(newNumber: number): Object {
+  immediatelyChangeTheNumber(newNumber: number): NumberHolder {
     this.numberHolder.theNumber = newNumber;
     return this.numberHolder;
   }
 
-  promiseToChangeTheNumber(newNumber: number): Promise<Object> {
+  promiseToChangeTheNumber(newNumber: number): Promise<NumberHolder> {
     return new Promise(resolve => {
       process.nextTick(() => {
         resolve(this.immediatelyChangeTheNumber(newNumber));
@@ -48,11 +48,11 @@ class Root {
     });
   }
 
-  failToChangeTheNumber(): Object {
+  failToChangeTheNumber(): NumberHolder {
     throw new Error('Cannot change the number');
   }
 
-  promiseAndFailToChangeTheNumber(): Promise<Object> {
+  promiseAndFailToChangeTheNumber(): Promise<NumberHolder> {
     return new Promise((resolve, reject) => {
       process.nextTick(() => {
         reject(new Error('Cannot change the number'));
