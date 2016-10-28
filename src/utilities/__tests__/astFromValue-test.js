@@ -49,6 +49,11 @@ describe('astFromValue', () => {
     expect(astFromValue(1, GraphQLBoolean)).to.deep.equal(
       { kind: 'BooleanValue', value: true }
     );
+
+    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
+    expect(astFromValue(0, NonNullBoolean)).to.deep.equal(
+      { kind: 'BooleanValue', value: false }
+    );
   });
 
   it('converts Int values to Int ASTs', () => {
