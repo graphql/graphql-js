@@ -71,9 +71,11 @@ export function astFromValue(
   const _value = value;
 
   if (type instanceof GraphQLNonNull) {
-    // Note: we're not checking that the result is non-null.
-    // This function is not responsible for validating the input value.
-    return astFromValue(_value, type.ofType);
+    const astValue = astFromValue(_value, type.ofType);
+    if (astValue && astValue.kind === NULL) {
+      return null;
+    }
+    return astValue;
   }
 
   // only explicit null, not undefined, NaN

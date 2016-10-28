@@ -19,6 +19,7 @@ import {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  GraphQLNonNull,
 } from '../../type';
 
 
@@ -145,6 +146,13 @@ describe('astFromValue', () => {
     );
 
     expect(astFromValue(undefined, GraphQLID)).to.deep.equal(
+      null
+    );
+  });
+
+  it('does not converts NonNull values to NullValue', () => {
+    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
+    expect(astFromValue(null, NonNullBoolean)).to.deep.equal(
       null
     );
   });
