@@ -103,8 +103,11 @@ export function astFromValue(
     const fields = type.getFields();
     const fieldASTs = [];
     Object.keys(fields).forEach(fieldName => {
-      const fieldType = fields[fieldName].type;
-      const fieldValue = astFromValue(_value[fieldName], fieldType);
+      const field = fields[fieldName];
+      const fieldValue = astFromValue(
+        _value[field.internalName],
+        field.type
+      );
       if (fieldValue) {
         fieldASTs.push({
           kind: OBJECT_FIELD,

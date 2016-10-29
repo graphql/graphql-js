@@ -99,7 +99,7 @@ export function valueFromAST(
         fieldValue = field.defaultValue;
       }
       if (!isNullish(fieldValue)) {
-        obj[fieldName] = fieldValue;
+        obj[field.internalName] = fieldValue;
       }
       return obj;
     }, {});
