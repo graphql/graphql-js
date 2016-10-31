@@ -115,65 +115,11 @@ describe('Validate: Argument values of correct type', () => {
       `);
     });
 
-  });
-
-  describe('Valid `null` values', () => {
-
-    it('Null into int', () => {
+    it('null into nullable type', () => {
       expectPassesRule(ArgumentsOfCorrectType, `
         {
           complicatedArgs {
             intArgField(intArg: null)
-          }
-        }
-      `);
-    });
-
-    it('Null into boolean', () => {
-      expectPassesRule(ArgumentsOfCorrectType, `
-        {
-          complicatedArgs {
-            booleanArgField(booleanArg: null)
-          }
-        }
-      `);
-    });
-
-    it('Null into string', () => {
-      expectPassesRule(ArgumentsOfCorrectType, `
-        {
-          complicatedArgs {
-            stringArgField(stringArg: null)
-          }
-        }
-      `);
-    });
-
-    it('Null into float', () => {
-      expectPassesRule(ArgumentsOfCorrectType, `
-        {
-          complicatedArgs {
-            floatArgField(floatArg: null)
-          }
-        }
-      `);
-    });
-
-    it('Null into ID', () => {
-      expectPassesRule(ArgumentsOfCorrectType, `
-        {
-          complicatedArgs {
-            idArgField(idArg: null)
-          }
-        }
-      `);
-    });
-
-    it('Null into enum', () => {
-      expectPassesRule(ArgumentsOfCorrectType, `
-        {
-          dog {
-            doesKnowCommand(dogCommand: null)
           }
         }
       `);
