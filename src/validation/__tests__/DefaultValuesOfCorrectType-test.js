@@ -68,6 +68,44 @@ describe('Validate: Variable default values of correct type', () => {
     `);
   });
 
+  it('variables with valid default null values', () => {
+    expectPassesRule(DefaultValuesOfCorrectType, `
+      query WithDefaultValues(
+        $a: Int = null,
+        $b: String = null,
+        $c: ComplexInput = { requiredField: true, intField: null }
+      ) {
+        dog { name }
+      }
+    `);
+  });
+
+  it('variables with invalid default null values', () => {
+    expectFailsRule(DefaultValuesOfCorrectType, `
+      query WithDefaultValues(
+        $a: Int! = null,
+        $b: String! = null,
+        $c: ComplexInput = { requiredField: null, intField: null }
+      ) {
+        dog { name }
+      }
+    `, [
+      defaultForNonNullArg('a', 'Int!', 'Int', 3, 20),
+      badValue('a', 'Int!', 'null', 3, 20, [
+        'Expected "Int!", found null.'
+      ]),
+      defaultForNonNullArg('b', 'String!', 'String', 4, 23),
+      badValue('b', 'String!', 'null', 4, 23, [
+        'Expected "String!", found null.'
+      ]),
+      badValue('c', 'ComplexInput', '{requiredField: null, intField: null}',
+        5, 28, [
+          'In field "requiredField": Expected "Boolean!", found null.'
+        ]
+      ),
+    ]);
+  });
+
   it('no required variables with default values', () => {
     expectFailsRule(DefaultValuesOfCorrectType, `
       query UnreachableDefaultValues($a: Int! = 3, $b: String! = "default") {
