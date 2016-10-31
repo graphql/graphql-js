@@ -51,7 +51,7 @@ export function isValidLiteralValue(
     return isValidLiteralValue(type.ofType, valueAST);
   }
 
-  if (!valueAST) {
+  if (!valueAST || (valueAST.kind === NULL)) {
     return [];
   }
 
