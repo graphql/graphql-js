@@ -117,7 +117,7 @@ describe('Validate: Argument values of correct type', () => {
 
   });
 
-  describe('`null` values', () => {
+  describe('Valid `null` values', () => {
 
     it('Null into int', () => {
       expectPassesRule(ArgumentsOfCorrectType, `
@@ -518,7 +518,7 @@ describe('Validate: Argument values of correct type', () => {
       expectPassesRule(ArgumentsOfCorrectType, `
         {
           complicatedArgs {
-            stringListArgField(stringListArg: ["one", "two"])
+            stringListArgField(stringListArg: ["one", null, "two"])
           }
         }
       `);
@@ -529,6 +529,16 @@ describe('Validate: Argument values of correct type', () => {
         {
           complicatedArgs {
             stringListArgField(stringListArg: [])
+          }
+        }
+      `);
+    });
+
+    it('Null value', () => {
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          complicatedArgs {
+            stringListArgField(stringListArg: null)
           }
         }
       `);
