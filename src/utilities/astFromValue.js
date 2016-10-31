@@ -12,6 +12,7 @@ import { forEach, isCollection } from 'iterall';
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import isInvalid from '../jsutils/isInvalid';
 import type {
   Value,
   IntValue,
@@ -83,9 +84,9 @@ export function astFromValue(
     return ({ kind: NULL }: NullValue);
   }
 
-  // other nullish values
-  if (isNullish(_value)) {
-    return null;
+  // undefined, NaN
+  if (isInvalid(_value)) {
+    return;
   }
 
   // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
