@@ -9,7 +9,7 @@
  */
 
 /**
- * Returns true if a value is null, undefined, or NaN.
+ * Returns true if a value is undefined, or NaN.
  */
 export default function isInvalid(value: mixed): boolean {
   return value === undefined || value !== value;
