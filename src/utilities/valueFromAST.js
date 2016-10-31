@@ -59,10 +59,13 @@ export function valueFromAST(
   }
 
   if (!valueAST) {
+    // it is really importand to distinguish
+    // between undefined and real null value here
     return undefined;
   }
 
   if (valueAST.kind === Kind.NULL) {
+    // this is actually valid return value
     return null;
   }
 
