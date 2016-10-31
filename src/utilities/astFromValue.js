@@ -86,7 +86,7 @@ export function astFromValue(
 
   // undefined, NaN
   if (isInvalid(_value)) {
-    return;
+    return null;
   }
 
   // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
