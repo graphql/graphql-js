@@ -205,59 +205,59 @@ fragment ${fragmentName} on Type {
       { kind: Kind.DOCUMENT,
         loc: { start: 0, end: 41 },
         definitions:
-         [ { kind: Kind.OPERATION_DEFINITION,
-             loc: { start: 0, end: 40 },
-             operation: 'query',
-             name: null,
-             variableDefinitions: null,
-             directives: [],
-             selectionSet:
+        [ { kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 40 },
+          operation: 'query',
+          name: null,
+          variableDefinitions: null,
+          directives: [],
+          selectionSet:
+          { kind: Kind.SELECTION_SET,
+            loc: { start: 0, end: 40 },
+            selections:
+            [ { kind: Kind.FIELD,
+              loc: { start: 4, end: 38 },
+              alias: null,
+              name:
+              { kind: Kind.NAME,
+                loc: { start: 4, end: 8 },
+                value: 'node' },
+              arguments:
+              [ { kind: Kind.ARGUMENT,
+                name:
+                { kind: Kind.NAME,
+                  loc: { start: 9, end: 11 },
+                  value: 'id' },
+                value:
+                { kind: Kind.INT,
+                  loc: { start: 13, end: 14 },
+                  value: '4' },
+                loc: { start: 9, end: 14 } } ],
+              directives: [],
+              selectionSet:
               { kind: Kind.SELECTION_SET,
-                loc: { start: 0, end: 40 },
+                loc: { start: 16, end: 38 },
                 selections:
-                 [ { kind: Kind.FIELD,
-                     loc: { start: 4, end: 38 },
-                     alias: null,
-                     name:
-                      { kind: Kind.NAME,
-                        loc: { start: 4, end: 8 },
-                        value: 'node' },
-                     arguments:
-                      [ { kind: Kind.ARGUMENT,
-                          name:
-                           { kind: Kind.NAME,
-                             loc: { start: 9, end: 11 },
-                             value: 'id' },
-                          value:
-                           { kind: Kind.INT,
-                             loc: { start: 13, end: 14 },
-                             value: '4' },
-                          loc: { start: 9, end: 14 } } ],
-                     directives: [],
-                     selectionSet:
-                      { kind: Kind.SELECTION_SET,
-                        loc: { start: 16, end: 38 },
-                        selections:
-                         [ { kind: Kind.FIELD,
-                             loc: { start: 22, end: 24 },
-                             alias: null,
-                             name:
-                              { kind: Kind.NAME,
-                                loc: { start: 22, end: 24 },
-                                value: 'id' },
-                             arguments: [],
-                             directives: [],
-                             selectionSet: null },
-                           { kind: Kind.FIELD,
-                             loc: { start: 30, end: 34 },
-                             alias: null,
-                             name:
-                              { kind: Kind.NAME,
-                                loc: { start: 30, end: 34 },
-                                value: 'name' },
-                             arguments: [],
-                             directives: [],
-                             selectionSet: null } ] } } ] } } ] }
+                [ { kind: Kind.FIELD,
+                  loc: { start: 22, end: 24 },
+                  alias: null,
+                  name:
+                  { kind: Kind.NAME,
+                    loc: { start: 22, end: 24 },
+                    value: 'id' },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null },
+                { kind: Kind.FIELD,
+                  loc: { start: 30, end: 34 },
+                  alias: null,
+                  name:
+                  { kind: Kind.NAME,
+                    loc: { start: 30, end: 34 },
+                    value: 'name' },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null } ] } } ] } } ] }
     );
   });
 

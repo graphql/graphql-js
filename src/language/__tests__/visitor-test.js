@@ -139,8 +139,8 @@ describe('Visitor', () => {
     const addedField =
       { kind: 'Field',
         name:
-         { kind: 'Name',
-           value: '__typename' } };
+        { kind: 'Name',
+          value: '__typename' } };
 
     let didVisitAddedField;
 

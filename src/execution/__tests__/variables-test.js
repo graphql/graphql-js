@@ -349,7 +349,7 @@ describe('Execute: Handles inputs', () => {
           message:
             'Variable "$input" got invalid value ' +
              '{"a":"foo","b":"bar","c":"baz","extra":"dog"}.' +
-             '\nIn field \"extra\": Unknown field.'
+             '\nIn field "extra": Unknown field.'
         });
       });
 

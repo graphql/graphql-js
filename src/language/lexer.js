@@ -460,7 +460,7 @@ function readString(source, start, line, col, prev): Token {
       code = charCodeAt.call(body, position);
       switch (code) {
         case 34: value += '"'; break;
-        case 47: value += '\/'; break;
+        case 47: value += '/'; break;
         case 92: value += '\\'; break;
         case 98: value += '\b'; break;
         case 102: value += '\f'; break;

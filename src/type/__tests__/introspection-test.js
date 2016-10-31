@@ -878,26 +878,26 @@ describe('Introspection', () => {
       await graphql(schema, request)
     ).to.containSubset({
       data:
-       { __schema:
-          { types:
-             [ { kind: 'INPUT_OBJECT',
-                 name: 'TestInputObject',
-                 inputFields:
-                  [ { name: 'a',
-                      type:
-                       { kind: 'SCALAR',
-                         name: 'String',
-                         ofType: null },
-                      defaultValue: '"foo"' },
-                    { name: 'b',
-                      type:
-                       { kind: 'LIST',
-                         name: null,
-                         ofType:
-                          { kind: 'SCALAR',
-                            name: 'String',
-                            ofType: null } },
-                      defaultValue: null } ] } ] } }
+      { __schema:
+      { types:
+      [ { kind: 'INPUT_OBJECT',
+        name: 'TestInputObject',
+        inputFields:
+        [ { name: 'a',
+          type:
+          { kind: 'SCALAR',
+            name: 'String',
+            ofType: null },
+          defaultValue: '"foo"' },
+        { name: 'b',
+          type:
+          { kind: 'LIST',
+            name: null,
+            ofType:
+            { kind: 'SCALAR',
+              name: 'String',
+              ofType: null } },
+          defaultValue: null } ] } ] } }
     });
   });
 

@@ -185,6 +185,8 @@
     "no-unused-vars": [2, {"vars": "all", "args": "after-used"}],
     "no-use-before-define": 0,
     "no-useless-call": 2,
+    "no-useless-escape": 2,
+    "no-useless-return": 2,
     "no-var": 2,
     "no-void": 2,
     "no-warning-comments": 0,

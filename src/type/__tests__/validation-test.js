@@ -372,7 +372,7 @@ describe('Type System: Objects must have fields', () => {
       () => schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
         fields() {
-          return;
+
         }
       }))
     ).to.throw(
@@ -689,7 +689,7 @@ describe('Type System: Input Objects must have fields', () => {
       () => schemaWithInputObject(new GraphQLInputObjectType({
         name: 'SomeInputObject',
         fields() {
-          return;
+
         }
       }))
     ).to.throw(

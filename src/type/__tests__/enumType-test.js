@@ -164,7 +164,7 @@ describe('Type System: Enum Values', () => {
         {
           message:
             'Argument "fromEnum" has invalid value "GREEN".' +
-            '\nExpected type \"Color\", found "GREEN".',
+            '\nExpected type "Color", found "GREEN".',
           locations: [ { line: 1, column: 23 } ]
         }
       ]
@@ -276,7 +276,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Variable "\$color" got invalid value 2.' +
+            'Variable "$color" got invalid value 2.' +
             '\nExpected type "Color", found 2.',
           locations: [ { line: 1, column: 12 } ]
         }

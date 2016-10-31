@@ -160,7 +160,7 @@ describe('Lexer', () => {
       kind: TokenKind.STRING,
       start: 0,
       end: 15,
-      value: 'slashes \\ \/'
+      value: 'slashes \\ /'
     });
 
     expect(
