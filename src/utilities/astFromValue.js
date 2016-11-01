@@ -12,12 +12,14 @@ import { forEach, isCollection } from 'iterall';
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import isInvalid from '../jsutils/isInvalid';
 import type {
   Value,
   IntValue,
   FloatValue,
   StringValue,
   BooleanValue,
+  NullValue,
   EnumValue,
   ListValue,
   ObjectValue,
@@ -28,6 +30,7 @@ import {
   FLOAT,
   STRING,
   BOOLEAN,
+  NULL,
   ENUM,
   LIST,
   OBJECT,
@@ -58,6 +61,7 @@ import { GraphQLID } from '../type/scalars';
  * | String        | String / Enum Value  |
  * | Number        | Int / Float          |
  * | Mixed         | Enum Value           |
+ * | null          | NullValue            |
  *
  */
 export function astFromValue(
@@ -68,12 +72,20 @@ export function astFromValue(
   const _value = value;
 
   if (type instanceof GraphQLNonNull) {
-    // Note: we're not checking that the result is non-null.
-    // This function is not responsible for validating the input value.
-    return astFromValue(_value, type.ofType);
+    const astValue = astFromValue(_value, type.ofType);
+    if (astValue && astValue.kind === NULL) {
+      return null;
+    }
+    return astValue;
   }
 
-  if (isNullish(_value)) {
+  // only explicit null, not undefined, NaN
+  if (_value === null) {
+    return ({ kind: NULL }: NullValue);
+  }
+
+  // undefined, NaN
+  if (isInvalid(_value)) {
     return null;
   }
 

@@ -76,6 +76,7 @@ const printDocASTReducer = {
   FloatValue: ({ value }) => value,
   StringValue: ({ value }) => JSON.stringify(value),
   BooleanValue: ({ value }) => JSON.stringify(value),
+  NullValue: () => 'null',
   EnumValue: ({ value }) => value,
   ListValue: ({ values }) => '[' + join(values, ', ') + ']',
   ObjectValue: ({ fields }) => '{' + join(fields, ', ') + '}',

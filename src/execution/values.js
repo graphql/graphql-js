@@ -13,6 +13,7 @@ import { forEach, isCollection } from 'iterall';
 import { GraphQLError } from '../error';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import isInvalid from '../jsutils/isInvalid';
 import keyMap from '../jsutils/keyMap';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
@@ -66,10 +67,10 @@ export function getArgumentValues(
     const name = argDef.name;
     const valueAST = argASTMap[name] ? argASTMap[name].value : null;
     let value = valueFromAST(valueAST, argDef.type, variableValues);
-    if (isNullish(value)) {
+    if (isInvalid(value)) {
       value = argDef.defaultValue;
     }
-    if (!isNullish(value)) {
+    if (!isInvalid(value)) {
       result[name] = value;
     }
     return result;
@@ -98,7 +99,7 @@ function getVariableValue(
   const inputType = ((type: any): GraphQLInputType);
   const errors = isValidJSValue(input, inputType);
   if (!errors.length) {
-    if (isNullish(input)) {
+    if (isInvalid(input)) {
       const defaultValue = definitionAST.defaultValue;
       if (defaultValue) {
         return valueFromAST(defaultValue, inputType);
@@ -134,8 +135,12 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
     return coerceValue(type.ofType, _value);
   }
 
-  if (isNullish(_value)) {
+  if (_value === null) {
     return null;
+  }
+
+  if (isInvalid(_value)) {
+    return undefined;
   }
 
   if (type instanceof GraphQLList) {
@@ -158,10 +163,10 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
     return Object.keys(fields).reduce((obj, fieldName) => {
       const field = fields[fieldName];
       let fieldValue = coerceValue(field.type, _value[fieldName]);
-      if (isNullish(fieldValue)) {
+      if (isInvalid(fieldValue)) {
         fieldValue = field.defaultValue;
       }
-      if (!isNullish(fieldValue)) {
+      if (!isInvalid(fieldValue)) {
         obj[fieldName] = fieldValue;
       }
       return obj;

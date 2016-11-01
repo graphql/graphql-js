@@ -89,6 +89,7 @@ import {
   FLOAT,
   STRING,
   BOOLEAN,
+  NULL,
   ENUM,
   LIST,
   OBJECT,
@@ -503,11 +504,14 @@ function parseFragmentName(lexer: Lexer<*>): Name {
  *   - FloatValue
  *   - StringValue
  *   - BooleanValue
+ *   - NullValue
  *   - EnumValue
  *   - ListValue[?Const]
  *   - ObjectValue[?Const]
  *
  * BooleanValue : one of `true` `false`
+ *
+ * NullValue : `null`
  *
  * EnumValue : Name but not `true`, `false` or `null`
  */
@@ -547,15 +551,19 @@ function parseValueLiteral(lexer: Lexer<*>, isConst: boolean): Value {
           value: token.value === 'true',
           loc: loc(lexer, token)
         };
-      } else if (token.value !== 'null') {
+      } else if (token.value === 'null') {
         lexer.advance();
         return {
-          kind: (ENUM: 'EnumValue'),
-          value: ((token.value: any): string),
+          kind: (NULL: 'NullValue'),
           loc: loc(lexer, token)
         };
       }
-      break;
+      lexer.advance();
+      return {
+        kind: (ENUM: 'EnumValue'),
+        value: ((token.value: any): string),
+        loc: loc(lexer, token)
+      };
     case TokenKind.DOLLAR:
       if (!isConst) {
         return parseVariable(lexer);

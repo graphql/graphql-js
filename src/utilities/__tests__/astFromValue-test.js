@@ -19,6 +19,7 @@ import {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  GraphQLNonNull,
 } from '../../type';
 
 
@@ -33,8 +34,12 @@ describe('astFromValue', () => {
       { kind: 'BooleanValue', value: false }
     );
 
-    expect(astFromValue(null, GraphQLBoolean)).to.deep.equal(
+    expect(astFromValue(undefined, GraphQLBoolean)).to.deep.equal(
       null
+    );
+
+    expect(astFromValue(null, GraphQLBoolean)).to.deep.equal(
+      { kind: 'NullValue' }
     );
 
     expect(astFromValue(0, GraphQLBoolean)).to.deep.equal(
@@ -43,6 +48,11 @@ describe('astFromValue', () => {
 
     expect(astFromValue(1, GraphQLBoolean)).to.deep.equal(
       { kind: 'BooleanValue', value: true }
+    );
+
+    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
+    expect(astFromValue(0, NonNullBoolean)).to.deep.equal(
+      { kind: 'BooleanValue', value: false }
     );
   });
 
@@ -105,6 +115,10 @@ describe('astFromValue', () => {
     );
 
     expect(astFromValue(null, GraphQLString)).to.deep.equal(
+      { kind: 'NullValue' }
+    );
+
+    expect(astFromValue(undefined, GraphQLString)).to.deep.equal(
       null
     );
   });
@@ -133,6 +147,17 @@ describe('astFromValue', () => {
     );
 
     expect(astFromValue(null, GraphQLID)).to.deep.equal(
+      { kind: 'NullValue' }
+    );
+
+    expect(astFromValue(undefined, GraphQLID)).to.deep.equal(
+      null
+    );
+  });
+
+  it('does not converts NonNull values to NullValue', () => {
+    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
+    expect(astFromValue(null, NonNullBoolean)).to.deep.equal(
       null
     );
   });
@@ -220,4 +245,26 @@ describe('astFromValue', () => {
             value: { kind: 'EnumValue', value: 'HELLO' } } ] }
     );
   });
+
+  it('converts input objects with explicit nulls', () => {
+    const inputObj = new GraphQLInputObjectType({
+      name: 'MyInputObj',
+      fields: {
+        foo: { type: GraphQLFloat },
+        bar: { type: myEnum },
+      }
+    });
+
+    expect(astFromValue(
+      { foo: null },
+      inputObj
+    )).to.deep.equal(
+      { kind: 'ObjectValue',
+        fields: [
+          { kind: 'ObjectField',
+            name: { kind: 'Name', value: 'foo' },
+            value: { kind: 'NullValue' } } ] }
+    );
+  });
+
 });

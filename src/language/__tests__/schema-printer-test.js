@@ -63,6 +63,7 @@ type Foo implements Bar {
   four(argument: String = "string"): String
   five(argument: [String] = ["string", "string"]): String
   six(argument: InputType = {key: "value"}): Type
+  seven(argument: Int = null): Type
 }
 
 type AnnotatedObject @onObject(arg: "value") {

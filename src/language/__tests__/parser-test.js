@@ -91,12 +91,6 @@ fragment MissingOn Type
     ).to.throw('Syntax Error GraphQL (1:9) Expected Name, found }');
   });
 
-  it('does not allow null as value', async () => {
-    expect(
-      () => parse('{ fieldWithNullableStringInput(input: null) }')
-    ).to.throw('Syntax Error GraphQL (1:39) Unexpected Name "null"');
-  });
-
   it('parses multi-byte characters', async () => {
     // Note: \u0A0A could be naively interpretted as two line-feed chars.
     expect(
@@ -295,6 +289,13 @@ fragment ${fragmentName} on Type {
   });
 
   describe('parseValue', () => {
+
+    it('parses null value', () => {
+      expect(parseValue('null')).to.containSubset({
+        kind: Kind.NULL,
+        loc: { start: 0, end: 4 }
+      });
+    });
 
     it('parses list values', () => {
       expect(parseValue('[123 "abc"]')).to.containSubset({

@@ -115,6 +115,24 @@ describe('Validate: Argument values of correct type', () => {
       `);
     });
 
+    it('null into nullable type', () => {
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          complicatedArgs {
+            intArgField(intArg: null)
+          }
+        }
+      `);
+
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          dog(a: null, b: null, c:{ requiredField: true, intField: null }) {
+            name
+          }
+        }
+      `);
+    });
+
   });
 
 
@@ -454,7 +472,7 @@ describe('Validate: Argument values of correct type', () => {
       expectPassesRule(ArgumentsOfCorrectType, `
         {
           complicatedArgs {
-            stringListArgField(stringListArg: ["one", "two"])
+            stringListArgField(stringListArg: ["one", null, "two"])
           }
         }
       `);
@@ -465,6 +483,16 @@ describe('Validate: Argument values of correct type', () => {
         {
           complicatedArgs {
             stringListArgField(stringListArg: [])
+          }
+        }
+      `);
+    });
+
+    it('Null value', () => {
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          complicatedArgs {
+            stringListArgField(stringListArg: null)
           }
         }
       `);
@@ -643,6 +671,20 @@ describe('Validate: Argument values of correct type', () => {
         }
       `, [
         badValue('req1', 'Int', '"one"', 4, 32),
+      ]);
+    });
+
+    it('Null value', () => {
+      expectFailsRule(ArgumentsOfCorrectType, `
+        {
+          complicatedArgs {
+            multipleReqs(req1: null)
+          }
+        }
+      `, [
+        badValue('req1', 'Int!', 'null', 4, 32, [
+          'Expected "Int!", found null.'
+        ]),
       ]);
     });
 

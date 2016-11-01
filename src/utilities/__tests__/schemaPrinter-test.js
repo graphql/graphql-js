@@ -213,6 +213,25 @@ type Root {
     );
   });
 
+  it('Prints String Field With Int Arg With Default Null', () => {
+    const output = printSingleFieldSchema(
+      {
+        type: GraphQLString,
+        args: { argOne: { type: GraphQLInt, defaultValue: null } },
+      }
+    );
+    expect(output).to.equal(`
+schema {
+  query: Root
+}
+
+type Root {
+  singleField(argOne: Int = null): String
+}
+`
+    );
+  });
+
   it('Prints String Field With Int! Arg', () => {
     const output = printSingleFieldSchema(
       {
