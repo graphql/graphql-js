@@ -71,7 +71,7 @@ export function valueFromAST(
 
   if (valueAST.kind === Kind.VARIABLE) {
     const variableName = (valueAST: Variable).name.value;
-    if (!variables || !variables.hasOwnProperty(variableName)) {
+    if (!variables || isInvalid(variables[variableName])) {
       // No valid return value.
       return;
     }
@@ -84,33 +84,54 @@ export function valueFromAST(
   if (type instanceof GraphQLList) {
     const itemType = type.ofType;
     if (valueAST.kind === Kind.LIST) {
-      return (valueAST: ListValue).values.map(
-        itemAST => valueFromAST(itemAST, itemType, variables)
-      );
+      const coercedValues = [];
+      const itemASTs = (valueAST: ListValue).values;
+      for (let i = 0; i < itemASTs.length; i++) {
+        const itemValue = valueFromAST(itemASTs[i], itemType, variables);
+        if (isInvalid(itemValue)) {
+          return; // Intentionally return no value.
+        }
+        coercedValues.push(itemValue);
+      }
+      return coercedValues;
     }
-    return [ valueFromAST(valueAST, itemType, variables) ];
+    const coercedValue = valueFromAST(valueAST, itemType, variables);
+    if (isInvalid(coercedValue)) {
+      return; // Intentionally return no value.
+    }
+    return [ coercedValue ];
   }
 
   if (type instanceof GraphQLInputObjectType) {
     if (valueAST.kind !== Kind.OBJECT) {
-      // No valid return value.
-      return;
+      return; // Intentionally return no value.
     }
+    const coercedObj = Object.create(null);
     const fields = type.getFields();
     const fieldASTs = keyMap(
       (valueAST: ObjectValue).fields,
       field => field.name.value
     );
-    return Object.keys(fields).reduce((obj, fieldName) => {
+    const fieldNames = Object.keys(fields);
+    for (let i = 0; i < fieldNames.length; i++) {
+      const fieldName = fieldNames[i];
       const field = fields[fieldName];
       const fieldAST = fieldASTs[fieldName];
-      const fieldValue =
-        valueFromAST(fieldAST && fieldAST.value, field.type, variables);
-
-      // If no valid field value was provided, use the default value
-      obj[fieldName] = isInvalid(fieldValue) ? field.defaultValue : fieldValue;
-      return obj;
-    }, {});
+      if (!fieldAST) {
+        if (!isInvalid(field.defaultValue)) {
+          coercedObj[fieldName] = field.defaultValue;
+        } else if (field.type instanceof GraphQLNonNull) {
+          return; // Intentionally return no value.
+        }
+        continue;
+      }
+      const fieldValue = valueFromAST(fieldAST.value, field.type, variables);
+      if (isInvalid(fieldValue)) {
+        return; // Intentionally return no value.
+      }
+      coercedObj[fieldName] = fieldValue;
+    }
+    return coercedObj;
   }
 
   invariant(
@@ -119,7 +140,11 @@ export function valueFromAST(
   );
 
   const parsed = type.parseLiteral(valueAST);
-  if (!isNullish(parsed)) {
-    return parsed;
+  if (isNullish(parsed)) {
+    // null or invalid values represent a failure to parse correctly,
+    // in which case no value is returned.
+    return;
   }
+
+  return parsed;
 }

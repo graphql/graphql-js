@@ -469,8 +469,8 @@ function getDeprecationReason(directives: ?Array<Directive>): ?string {
     return;
   }
   const { reason } = getArgumentValues(
-    GraphQLDeprecatedDirective.args,
-    deprecatedAST.arguments
+    GraphQLDeprecatedDirective,
+    deprecatedAST
   );
   return (reason: any);
 }

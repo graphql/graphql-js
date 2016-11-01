@@ -458,8 +458,8 @@ function shouldIncludeNode(
   );
   if (skipAST) {
     const { if: skipIf } = getArgumentValues(
-      GraphQLSkipDirective.args,
-      skipAST.arguments,
+      GraphQLSkipDirective,
+      skipAST,
       exeContext.variableValues
     );
     if (skipIf === true) {
@@ -473,8 +473,8 @@ function shouldIncludeNode(
   );
   if (includeAST) {
     const { if: includeIf } = getArgumentValues(
-      GraphQLIncludeDirective.args,
-      includeAST.arguments,
+      GraphQLIncludeDirective,
+      includeAST,
       exeContext.variableValues
     );
     if (includeIf === false) {
@@ -563,8 +563,8 @@ function resolveField(
   // variables scope to fulfill any variable references.
   // TODO: find a way to memoize, in case this field is within a List type.
   const args = getArgumentValues(
-    fieldDef.args,
-    fieldAST.arguments,
+    fieldDef,
+    fieldAST,
     exeContext.variableValues
   );
 
