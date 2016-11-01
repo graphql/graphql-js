@@ -43,10 +43,7 @@ export function isValidLiteralValue(
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
     if (!valueAST || (valueAST.kind === NULL)) {
-      if (type.ofType.name) {
-        return [ `Expected "${String(type.ofType.name)}!", found null.` ];
-      }
-      return [ 'Expected non-null value, found null.' ];
+      return [ `Expected "${String(type)}", found null.` ];
     }
     return isValidLiteralValue(type.ofType, valueAST);
   }

@@ -51,17 +51,17 @@ export function valueFromAST(
   type: GraphQLInputType,
   variables?: ?{ [key: string]: mixed }
 ): mixed {
-  if (type instanceof GraphQLNonNull) {
-    // Note: we're not checking that the result of valueFromAST is non-null.
-    // We're assuming that this query has been validated and the value used
-    // here is of the correct type.
-    return valueFromAST(valueAST, type.ofType, variables);
-  }
-
   if (!valueAST) {
     // When there is no AST, then there is also no value.
     // Importantly, this is different from returning the value null.
     return;
+  }
+
+  if (type instanceof GraphQLNonNull) {
+    if (valueAST.kind === Kind.NULL) {
+      return; // Intentionally return no value.
+    }
+    return valueFromAST(valueAST, type.ofType, variables);
   }
 
   if (valueAST.kind === Kind.NULL) {

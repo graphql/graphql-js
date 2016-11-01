@@ -61,7 +61,7 @@ export function getVariableValues(
     if (!isInputType(varType)) {
       throw new GraphQLError(
         `Variable "$${varName}" expected value of type ` +
-        `"${String(varType)}" which cannot be used as an input type.`,
+        `"${print(definitionAST.type)}" which cannot be used as an input type.`,
         [ definitionAST.type ]
       );
     }
@@ -81,16 +81,18 @@ export function getVariableValues(
         );
       }
     } else {
-      const coercedValue = coerceValue(varType, value);
-      if (isInvalid(coercedValue)) {
-        const errors = isValidJSValue(value, varType);
+      const errors = isValidJSValue(value, varType);
+      if (errors.length) {
         const message = errors ? '\n' + errors.join('\n') : '';
         throw new GraphQLError(
-          `Variable "${varName}" got invalid value ` +
+          `Variable "$${varName}" got invalid value ` +
           `${JSON.stringify(value)}.${message}`,
           [ definitionAST ]
         );
       }
+
+      const coercedValue = coerceValue(varType, value);
+      invariant(!isInvalid(coercedValue), 'Should have reported error.');
       coercedValues[varName] = coercedValue;
     }
   }
@@ -147,15 +149,19 @@ export function getArgumentValues(
       }
     } else {
       const valueAST = argumentAST.value;
-      const coercedValue = valueFromAST(valueAST, argType, variableValues);
-      if (isInvalid(coercedValue)) {
+
+      const errors = isValidLiteralValue(argType, valueAST);
+      if (errors.length) {
         const errors = isValidLiteralValue(argType, valueAST);
         const message = errors ? '\n' + errors.join('\n') : '';
         throw new GraphQLError(
           `Argument "${name}" got invalid value ${print(valueAST)}.${message}`,
-          [ def ]
+          [ argumentAST.value ]
         );
       }
+
+      const coercedValue = valueFromAST(valueAST, argType, variableValues);
+      invariant(!isInvalid(coercedValue), 'Should have reported error.');
       coercedValues[name] = coercedValue;
     }
   }
@@ -169,15 +175,15 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
   // Ensure flow knows that we treat function params as const.
   const _value = value;
 
-  if (type instanceof GraphQLNonNull) {
-    // Note: we're not checking that the result of coerceValue is non-null.
-    // We only call this function after calling isValidJSValue.
-    return coerceValue(type.ofType, _value);
+  if (isInvalid(_value)) {
+    return; // Intentionally return no value.
   }
 
-  if (isInvalid(_value)) {
-    // Intentionally teturn no value rather than the value null.
-    return;
+  if (type instanceof GraphQLNonNull) {
+    if (_value === null) {
+      return; // Intentionally return no value.
+    }
+    return coerceValue(type.ofType, _value);
   }
 
   if (_value === null) {
@@ -211,7 +217,7 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
   }
 
   if (type instanceof GraphQLInputObjectType) {
-    if (typeof _value !== 'object' || _value === null) {
+    if (typeof _value !== 'object') {
       return; // Intentionally return no value.
     }
     const coercedObj = Object.create(null);

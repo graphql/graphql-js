@@ -34,10 +34,7 @@ export function isValidJSValue(
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
     if (isNullish(value)) {
-      if (type.ofType.name) {
-        return [ `Expected "${String(type.ofType.name)}!", found null.` ];
-      }
-      return [ 'Expected non-null value, found null.' ];
+      return [ `Expected "${String(type)}", found null.` ];
     }
     return isValidJSValue(value, type.ofType);
   }
