@@ -23,7 +23,7 @@ export function locatedError(
 ): GraphQLError {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
-  if (originalError && originalError.locations) {
+  if (originalError && originalError.path) {
     return (originalError: any);
   }
 
@@ -32,9 +32,9 @@ export function locatedError(
     'An unknown error occurred.';
   return new GraphQLError(
     message,
-    nodes,
-    undefined,
-    undefined,
+    originalError && originalError.nodes || nodes,
+    originalError && originalError.source,
+    originalError && originalError.positions,
     path,
     originalError
   );

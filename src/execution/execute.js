@@ -559,15 +559,6 @@ function resolveField(
   const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve || defaultResolveFn;
 
-  // Build a JS object of arguments from the field.arguments AST, using the
-  // variables scope to fulfill any variable references.
-  // TODO: find a way to memoize, in case this field is within a List type.
-  const args = getArgumentValues(
-    fieldDef,
-    fieldAST,
-    exeContext.variableValues
-  );
-
   // The resolve function's optional third argument is a context value that
   // is provided to every resolve function within an execution. It is commonly
   // used to represent an authenticated user, or request-specific caches.
@@ -590,7 +581,15 @@ function resolveField(
 
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
-  const result = resolveOrError(resolveFn, source, args, context, info);
+  const result = resolveOrError(
+    exeContext,
+    fieldDef,
+    fieldAST,
+    resolveFn,
+    source,
+    context,
+    info
+  );
 
   return completeValueCatchingError(
     exeContext,
@@ -605,13 +604,24 @@ function resolveField(
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
 function resolveOrError(
+  exeContext: ExecutionContext,
+  fieldDef: GraphQLFieldDefinition,
+  fieldAST: Field,
   resolveFn: GraphQLFieldResolveFn<*>,
   source: mixed,
-  args: { [key: string]: mixed },
   context: mixed,
   info: GraphQLResolveInfo
 ): Error | mixed {
   try {
+    // Build a JS object of arguments from the field.arguments AST, using the
+    // variables scope to fulfill any variable references.
+    // TODO: find a way to memoize, in case this field is within a List type.
+    const args = getArgumentValues(
+      fieldDef,
+      fieldAST,
+      exeContext.variableValues
+    );
+
     return resolveFn(source, args, context, info);
   } catch (error) {
     // Sometimes a non-error is thrown, wrap it as an Error for a
