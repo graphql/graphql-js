@@ -32,9 +32,9 @@ export function locatedError(
     'An unknown error occurred.';
   return new GraphQLError(
     message,
-    originalError && originalError.nodes || nodes,
-    originalError && originalError.source,
-    originalError && originalError.positions,
+    originalError && (originalError: any).nodes || nodes,
+    originalError && (originalError: any).source,
+    originalError && (originalError: any).positions,
     path,
     originalError
   );

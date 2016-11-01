@@ -771,7 +771,7 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable "$input" got invalid value null.\n'+
+          'Variable "$input" got invalid value null.\n' +
           'Expected "[String!]!", found null.'
       });
     });

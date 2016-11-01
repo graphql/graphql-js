@@ -149,9 +149,8 @@ export function getArgumentValues(
       }
     } else {
       const valueAST = argumentAST.value;
-
-      const errors = isValidLiteralValue(argType, valueAST);
-      if (errors.length) {
+      const coercedValue = valueFromAST(valueAST, argType, variableValues);
+      if (isInvalid(coercedValue)) {
         const errors = isValidLiteralValue(argType, valueAST);
         const message = errors ? '\n' + errors.join('\n') : '';
         throw new GraphQLError(
@@ -159,9 +158,6 @@ export function getArgumentValues(
           [ argumentAST.value ]
         );
       }
-
-      const coercedValue = valueFromAST(valueAST, argType, variableValues);
-      invariant(!isInvalid(coercedValue), 'Should have reported error.');
       coercedValues[name] = coercedValue;
     }
   }
