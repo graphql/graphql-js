@@ -61,7 +61,7 @@ export function valueFromAST(
   if (!valueAST) {
     // When there is no AST, then there is also no value.
     // Importantly, this is different from returning the value null.
-    return undefined;
+    return;
   }
 
   if (valueAST.kind === Kind.NULL) {
@@ -72,7 +72,8 @@ export function valueFromAST(
   if (valueAST.kind === Kind.VARIABLE) {
     const variableName = (valueAST: Variable).name.value;
     if (!variables || !variables.hasOwnProperty(variableName)) {
-      return undefined;
+      // No valid return value.
+      return;
     }
     // Note: we're not doing any checking that this variable is correct. We're
     // assuming that this query has been validated and the variable usage here
@@ -92,6 +93,7 @@ export function valueFromAST(
 
   if (type instanceof GraphQLInputObjectType) {
     if (valueAST.kind !== Kind.OBJECT) {
+      // No valid return value.
       return;
     }
     const fields = type.getFields();
