@@ -123,6 +123,14 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `);
+
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          dog(a: null, b: null, c:{ requiredField: true, intField: null }) {
+            name
+          }
+        }
+      `);
     });
 
   });
@@ -663,6 +671,20 @@ describe('Validate: Argument values of correct type', () => {
         }
       `, [
         badValue('req1', 'Int', '"one"', 4, 32),
+      ]);
+    });
+
+    it('Null value', () => {
+      expectFailsRule(ArgumentsOfCorrectType, `
+        {
+          complicatedArgs {
+            multipleReqs(req1: null)
+          }
+        }
+      `, [
+        badValue('req1', 'Int!', 'null', 4, 32, [
+          'Expected "Int!", found null.'
+        ]),
       ]);
     });
 
