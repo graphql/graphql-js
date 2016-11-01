@@ -1,10 +1,10 @@
 language: node_js
 
+# https://github.com/nodejs/LTS
 node_js:
+  - '7'
   - '6'
-  - '5'
   - '4'
-  - 'iojs'
   - '0.12'
 
 git:
