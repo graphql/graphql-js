@@ -433,8 +433,8 @@ export const TypeMetaFieldDef: GraphQLFieldDefinition = {
   args: [
     { name: 'name', type: new GraphQLNonNull(GraphQLString) }
   ],
-  resolve: (source, { name }: { name: string }, context, { schema }) =>
-    schema.getType(name)
+  resolve: (source, { name }, context, { schema }) =>
+    schema.getType(((name: any): string))
 };
 
 export const TypeNameMetaFieldDef: GraphQLFieldDefinition = {
