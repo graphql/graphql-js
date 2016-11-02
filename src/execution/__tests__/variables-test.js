@@ -488,7 +488,21 @@ describe('Execute: Handles inputs', () => {
     });
   });
 
-  describe('Handles non-nullable scalars', () => {
+  describe('Handles non-nullable scalars', async () => {
+    it('allows non-nullable inputs to be omitted given a default', async () => {
+      const doc = `
+        query SetsNonNullable($value: String = "default") {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `;
+
+      expect(await execute(schema, parse(doc))).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: '"default"'
+        }
+      });
+    });
+
     it('does not allow non-nullable inputs to be omitted in a variable', async () => {
       const doc = `
         query SetsNonNullable($value: String!) {
@@ -580,6 +594,33 @@ describe('Execute: Handles inputs', () => {
         errors: [ {
           message: 'Argument "input" of required type "String!" was not provided.',
           locations: [ { line: 3, column: 9 } ],
+          path: [ 'fieldWithNonNullableStringInput' ]
+        } ]
+      });
+    });
+
+    it('reports error for non-provided variables for non-nullable inputs', async () => {
+      // Note: this test would typically fail validation before encountering
+      // this execution error, however for queries which previously validated
+      // and are being run against a new schema which have introduced a breaking
+      // change to make a formerly non-required argument required, this asserts
+      // failure before allowing the underlying code to receive a non-null value.
+      const doc = `
+      {
+        fieldWithNonNullableStringInput(input: $foo)
+      }
+      `;
+      const ast = parse(doc);
+
+      return expect(await execute(schema, ast)).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: null
+        },
+        errors: [ {
+          message:
+            'Argument "input" of required type "String!" was provided the ' +
+            'variable "$foo" which was not provided a runtime value.',
+          locations: [ { line: 3, column: 48 } ],
           path: [ 'fieldWithNonNullableStringInput' ]
         } ]
       });

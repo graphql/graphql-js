@@ -70,7 +70,7 @@ export function getVariableValues(
     const value = inputs[varName];
     if (isInvalid(value)) {
       const defaultValue = definitionAST.defaultValue;
-      if (!isInvalid(defaultValue)) {
+      if (defaultValue) {
         coercedValues[varName] = valueFromAST(defaultValue, varType);
       }
       if (varType instanceof GraphQLNonNull) {
