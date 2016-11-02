@@ -35,6 +35,9 @@ import type {
  * A GraphQL type must be provided, which will be used to interpret different
  * GraphQL Value literals.
  *
+ * Returns `undefined` when the value could not be validly coerced according to
+ * the provided type.
+ *
  * | GraphQL Value        | JSON Value    |
  * | -------------------- | ------------- |
  * | Input Object         | Object        |
@@ -50,7 +53,7 @@ export function valueFromAST(
   valueAST: ?Value,
   type: GraphQLInputType,
   variables?: ?{ [key: string]: mixed }
-): mixed {
+): mixed | void {
   if (!valueAST) {
     // When there is no AST, then there is also no value.
     // Importantly, this is different from returning the value null.
@@ -117,7 +120,7 @@ export function valueFromAST(
       const fieldName = fieldNames[i];
       const field = fields[fieldName];
       const fieldAST = fieldASTs[fieldName];
-      if (!fieldAST) {
+      if (!fieldAST || isMissingVariable(fieldAST.value, variables)) {
         if (!isInvalid(field.defaultValue)) {
           coercedObj[fieldName] = field.defaultValue;
         } else if (field.type instanceof GraphQLNonNull) {
@@ -147,4 +150,11 @@ export function valueFromAST(
   }
 
   return parsed;
+}
+
+// Returns true if the provided valueAST is a variable which is not defined
+// in the set of variables.
+function isMissingVariable(valueAST, variables) {
+  return valueAST.kind === Kind.VARIABLE &&
+    (!variables || isInvalid(variables[(valueAST: Variable).name.value]));
 }

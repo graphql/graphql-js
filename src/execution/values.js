@@ -143,7 +143,8 @@ export function getArgumentValues(
       } else if (argType instanceof GraphQLNonNull) {
         throw new GraphQLError(
           `Argument "${name}" of required type "${String(argType)}" was ` +
-          `provided the variable "$${variableName}" without a runtime value.`,
+          `provided the variable "$${variableName}" which was not provided ` +
+          'a runtime value.',
           [ argumentAST.value ]
         );
       }
