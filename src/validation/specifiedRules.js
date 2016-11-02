@@ -56,6 +56,11 @@ import { NoUnusedVariables } from './rules/NoUnusedVariables';
 // Spec Section: "Directives Are Defined"
 import { KnownDirectives } from './rules/KnownDirectives';
 
+// Spec Section: "Directives Are Unique Per Location"
+import {
+  UniqueDirectivesPerLocation
+} from './rules/UniqueDirectivesPerLocation';
+
 // Spec Section: "Argument Names"
 import { KnownArgumentNames } from './rules/KnownArgumentNames';
 
@@ -104,6 +109,7 @@ export const specifiedRules: Array<(context: ValidationContext) => any> = [
   NoUndefinedVariables,
   NoUnusedVariables,
   KnownDirectives,
+  UniqueDirectivesPerLocation,
   KnownArgumentNames,
   UniqueArgumentNames,
   ArgumentsOfCorrectType,
