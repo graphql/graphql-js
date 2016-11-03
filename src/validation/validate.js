@@ -25,7 +25,7 @@ import type {
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLCompositeType,
-  GraphQLFieldDefinition,
+  GraphQLField,
   GraphQLArgument
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
@@ -240,7 +240,7 @@ export class ValidationContext {
     return this._typeInfo.getInputType();
   }
 
-  getFieldDef(): ?GraphQLFieldDefinition {
+  getFieldDef(): ?GraphQLField {
     return this._typeInfo.getFieldDef();
   }
 

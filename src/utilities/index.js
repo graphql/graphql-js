@@ -10,6 +10,25 @@
 
 // The GraphQL query recommended for a full schema introspection.
 export { introspectionQuery } from './introspectionQuery';
+export type {
+  IntrospectionQuery,
+  IntrospectionSchema,
+  IntrospectionType,
+  IntrospectionScalarType,
+  IntrospectionObjectType,
+  IntrospectionInterfaceType,
+  IntrospectionUnionType,
+  IntrospectionEnumType,
+  IntrospectionInputObjectType,
+  IntrospectionTypeRef,
+  IntrospectionNamedTypeRef,
+  IntrospectionListTypeRef,
+  IntrospectionNonNullTypeRef,
+  IntrospectionField,
+  IntrospectionInputValue,
+  IntrospectionEnumValue,
+  IntrospectionDirective,
+} from './introspectionQuery';
 
 // Gets the target Operation from a Document
 export { getOperationAST } from './getOperationAST';
@@ -63,3 +82,4 @@ export { assertValidName } from './assertValidName';
 
 // Compares two GraphQLSchemas and detects breaking changes.
 export { findBreakingChanges } from './findBreakingChanges';
+export type { BreakingChange } from './findBreakingChanges';

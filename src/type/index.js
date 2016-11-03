@@ -80,3 +80,42 @@ export {
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from './introspection';
+
+export type { DirectiveLocationEnum } from './directives';
+
+export type {
+  GraphQLType,
+  GraphQLInputType,
+  GraphQLOutputType,
+  GraphQLLeafType,
+  GraphQLCompositeType,
+  GraphQLAbstractType,
+  GraphQLNullableType,
+  GraphQLNamedType,
+  Thunk,
+  GraphQLArgument,
+  GraphQLArgumentConfig,
+  GraphQLEnumTypeConfig,
+  GraphQLEnumValue,
+  GraphQLEnumValueConfig,
+  GraphQLEnumValueConfigMap,
+  GraphQLField,
+  GraphQLFieldConfig,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLFieldConfigMap,
+  GraphQLFieldMap,
+  GraphQLFieldResolveFn,
+  GraphQLInputField,
+  GraphQLInputFieldConfig,
+  GraphQLInputFieldConfigMap,
+  GraphQLInputFieldMap,
+  GraphQLInputObjectTypeConfig,
+  GraphQLInterfaceTypeConfig,
+  GraphQLIsTypeOfFn,
+  GraphQLObjectTypeConfig,
+  GraphQLResolveInfo,
+  GraphQLScalarTypeConfig,
+  GraphQLTypeResolveFn,
+  GraphQLUnionTypeConfig,
+} from './definition';
+

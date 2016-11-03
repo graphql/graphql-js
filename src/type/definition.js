@@ -321,7 +321,7 @@ export class GraphQLObjectType {
   isTypeOf: ?GraphQLIsTypeOfFn;
 
   _typeConfig: GraphQLObjectTypeConfig<*>;
-  _fields: GraphQLFieldDefinitionMap;
+  _fields: GraphQLFieldMap;
   _interfaces: Array<GraphQLInterfaceType>;
 
   constructor(config: GraphQLObjectTypeConfig<*>) {
@@ -339,7 +339,7 @@ export class GraphQLObjectType {
     this._typeConfig = config;
   }
 
-  getFields(): GraphQLFieldDefinitionMap {
+  getFields(): GraphQLFieldMap {
     return this._fields || (this._fields =
       defineFieldMap(this, this._typeConfig.fields)
     );
@@ -391,7 +391,7 @@ function defineInterfaces(
 function defineFieldMap(
   type: GraphQLNamedType,
   fieldsThunk: Thunk<GraphQLFieldConfigMap<*>>
-): GraphQLFieldDefinitionMap {
+): GraphQLFieldMap {
   const fieldMap = resolveThunk(fieldsThunk);
   invariant(
     isPlainObj(fieldMap),
@@ -521,7 +521,7 @@ export type GraphQLFieldConfigMap<TSource> = {
   [fieldName: string]: GraphQLFieldConfig<TSource>;
 };
 
-export type GraphQLFieldDefinition = {
+export type GraphQLField = {
   name: string;
   description: ?string;
   type: GraphQLOutputType;
@@ -538,8 +538,8 @@ export type GraphQLArgument = {
   description?: ?string;
 };
 
-export type GraphQLFieldDefinitionMap = {
-  [fieldName: string]: GraphQLFieldDefinition;
+export type GraphQLFieldMap = {
+  [fieldName: string]: GraphQLField;
 };
 
 
@@ -568,7 +568,7 @@ export class GraphQLInterfaceType {
   resolveType: ?GraphQLTypeResolveFn;
 
   _typeConfig: GraphQLInterfaceTypeConfig;
-  _fields: GraphQLFieldDefinitionMap;
+  _fields: GraphQLFieldMap;
 
   constructor(config: GraphQLInterfaceTypeConfig) {
     invariant(config.name, 'Type must be named.');
@@ -585,7 +585,7 @@ export class GraphQLInterfaceType {
     this._typeConfig = config;
   }
 
-  getFields(): GraphQLFieldDefinitionMap {
+  getFields(): GraphQLFieldMap {
     return this._fields ||
       (this._fields = defineFieldMap(this, this._typeConfig.fields));
   }
@@ -738,9 +738,9 @@ export class GraphQLEnumType/* <T> */ {
   description: ?string;
 
   _enumConfig: GraphQLEnumTypeConfig/* <T> */;
-  _values: Array<GraphQLEnumValueDefinition/* <T> */>;
-  _valueLookup: Map<any/* T */, GraphQLEnumValueDefinition>;
-  _nameLookup: { [valueName: string]: GraphQLEnumValueDefinition };
+  _values: Array<GraphQLEnumValue/* <T> */>;
+  _valueLookup: Map<any/* T */, GraphQLEnumValue>;
+  _nameLookup: { [valueName: string]: GraphQLEnumValue };
 
   constructor(config: GraphQLEnumTypeConfig/* <T> */) {
     this.name = config.name;
@@ -750,7 +750,7 @@ export class GraphQLEnumType/* <T> */ {
     this._enumConfig = config;
   }
 
-  getValues(): Array<GraphQLEnumValueDefinition/* <T> */> {
+  getValues(): Array<GraphQLEnumValue/* <T> */> {
     return this._values;
   }
 
@@ -777,7 +777,7 @@ export class GraphQLEnumType/* <T> */ {
     }
   }
 
-  _getValueLookup(): Map<any/* T */, GraphQLEnumValueDefinition> {
+  _getValueLookup(): Map<any/* T */, GraphQLEnumValue> {
     if (!this._valueLookup) {
       const lookup = new Map();
       this.getValues().forEach(value => {
@@ -788,7 +788,7 @@ export class GraphQLEnumType/* <T> */ {
     return this._valueLookup;
   }
 
-  _getNameLookup(): { [valueName: string]: GraphQLEnumValueDefinition } {
+  _getNameLookup(): { [valueName: string]: GraphQLEnumValue } {
     if (!this._nameLookup) {
       const lookup = Object.create(null);
       this.getValues().forEach(value => {
@@ -807,7 +807,7 @@ export class GraphQLEnumType/* <T> */ {
 function defineEnumValues(
   type: GraphQLEnumType,
   valueMap: GraphQLEnumValueConfigMap/* <T> */
-): Array<GraphQLEnumValueDefinition/* <T> */> {
+): Array<GraphQLEnumValue/* <T> */> {
   invariant(
     isPlainObj(valueMap),
     `${type.name} values must be an object with value names as keys.`
@@ -856,7 +856,7 @@ export type GraphQLEnumValueConfig/* <T> */ = {
   description?: ?string;
 };
 
-export type GraphQLEnumValueDefinition/* <T> */ = {
+export type GraphQLEnumValue/* <T> */ = {
   name: string;
   description: ?string;
   isDeprecated?: boolean;
@@ -891,7 +891,7 @@ export class GraphQLInputObjectType {
   description: ?string;
 
   _typeConfig: GraphQLInputObjectTypeConfig;
-  _fields: GraphQLInputFieldDefinitionMap;
+  _fields: GraphQLInputFieldMap;
 
   constructor(config: GraphQLInputObjectTypeConfig) {
     invariant(config.name, 'Type must be named.');
@@ -901,11 +901,11 @@ export class GraphQLInputObjectType {
     this._typeConfig = config;
   }
 
-  getFields(): GraphQLInputFieldDefinitionMap {
+  getFields(): GraphQLInputFieldMap {
     return this._fields || (this._fields = this._defineFieldMap());
   }
 
-  _defineFieldMap(): GraphQLInputFieldDefinitionMap {
+  _defineFieldMap(): GraphQLInputFieldMap {
     const fieldMap: any = resolveThunk(this._typeConfig.fields);
     invariant(
       isPlainObj(fieldMap),
@@ -956,15 +956,15 @@ export type GraphQLInputFieldConfigMap = {
   [fieldName: string]: GraphQLInputFieldConfig;
 };
 
-export type GraphQLInputFieldDefinition = {
+export type GraphQLInputField = {
   name: string;
   type: GraphQLInputType;
   defaultValue?: mixed;
   description?: ?string;
 };
 
-export type GraphQLInputFieldDefinitionMap = {
-  [fieldName: string]: GraphQLInputFieldDefinition;
+export type GraphQLInputFieldMap = {
+  [fieldName: string]: GraphQLInputField;
 };
 
 

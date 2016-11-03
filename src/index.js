@@ -103,6 +103,45 @@ export {
   getNamedType,
 } from './type';
 
+export type {
+  DirectiveLocationEnum,
+
+  GraphQLType,
+  GraphQLInputType,
+  GraphQLOutputType,
+  GraphQLLeafType,
+  GraphQLCompositeType,
+  GraphQLAbstractType,
+  GraphQLNullableType,
+  GraphQLNamedType,
+
+  Thunk,
+  GraphQLArgument,
+  GraphQLArgumentConfig,
+  GraphQLEnumTypeConfig,
+  GraphQLEnumValue,
+  GraphQLEnumValueConfig,
+  GraphQLEnumValueConfigMap,
+  GraphQLField,
+  GraphQLFieldConfig,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLFieldConfigMap,
+  GraphQLFieldMap,
+  GraphQLFieldResolveFn,
+  GraphQLInputField,
+  GraphQLInputFieldConfig,
+  GraphQLInputFieldConfigMap,
+  GraphQLInputFieldMap,
+  GraphQLInputObjectTypeConfig,
+  GraphQLInterfaceTypeConfig,
+  GraphQLIsTypeOfFn,
+  GraphQLObjectTypeConfig,
+  GraphQLResolveInfo,
+  GraphQLScalarTypeConfig,
+  GraphQLTypeResolveFn,
+  GraphQLUnionTypeConfig,
+} from './type';
+
 
 // Parse and operate on GraphQL language source files.
 export {
@@ -126,12 +165,70 @@ export {
   BREAK,
 } from './language';
 
+export type {
+  Lexer,
+  ParseOptions,
+
+  // AST nodes
+  Location,
+  Token,
+  Node,
+  Name,
+  Document,
+  Definition,
+  OperationDefinition,
+  OperationType,
+  VariableDefinition,
+  Variable,
+  SelectionSet,
+  Selection,
+  Field,
+  Argument,
+  FragmentSpread,
+  InlineFragment,
+  FragmentDefinition,
+  Value,
+  IntValue,
+  FloatValue,
+  StringValue,
+  BooleanValue,
+  NullValue,
+  EnumValue,
+  ListValue,
+  ObjectValue,
+  ObjectField,
+  Directive,
+  Type,
+  NamedType,
+  ListType,
+  NonNullType,
+  TypeSystemDefinition,
+  SchemaDefinition,
+  OperationTypeDefinition,
+  TypeDefinition,
+  ScalarTypeDefinition,
+  ObjectTypeDefinition,
+  FieldDefinition,
+  InputValueDefinition,
+  InterfaceTypeDefinition,
+  UnionTypeDefinition,
+  EnumTypeDefinition,
+  EnumValueDefinition,
+  InputObjectTypeDefinition,
+  TypeExtensionDefinition,
+  DirectiveDefinition,
+} from './language';
+
 
 // Execute GraphQL queries.
 export {
   execute,
   defaultFieldResolver,
 } from './execution';
+
+export type {
+  ExecutionResult,
+} from './execute';
 
 
 // Validate GraphQL queries.
@@ -145,6 +242,11 @@ export {
 export {
   GraphQLError,
   formatError,
+} from './error';
+
+export type {
+  GraphQLFormattedError,
+  GraphQLErrorLocation,
 } from './error';
 
 
@@ -208,3 +310,25 @@ export {
   // Compares two GraphQLSchemas and detects breaking changes.
   findBreakingChanges,
 } from './utilities';
+
+export type {
+  BreakingChange,
+
+  IntrospectionDirective,
+  IntrospectionEnumType,
+  IntrospectionEnumValue,
+  IntrospectionField,
+  IntrospectionInputObjectType,
+  IntrospectionInputValue,
+  IntrospectionInterfaceType,
+  IntrospectionListTypeRef,
+  IntrospectionNamedTypeRef,
+  IntrospectionNonNullTypeRef,
+  IntrospectionObjectType,
+  IntrospectionQuery,
+  IntrospectionScalarType,
+  IntrospectionSchema,
+  IntrospectionType,
+  IntrospectionTypeRef,
+  IntrospectionUnionType,
+} from './introspectionQuery';

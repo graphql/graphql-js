@@ -31,7 +31,7 @@ import type {
   GraphQLNamedType,
   GraphQLOutputType,
   GraphQLCompositeType,
-  GraphQLFieldDefinition
+  GraphQLField
 } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
@@ -98,7 +98,7 @@ type ConflictReason = [ string, ConflictReasonMessage ];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining an AST in a context
-type AstAndDef = [ GraphQLCompositeType, Field, ?GraphQLFieldDefinition ];
+type AstAndDef = [ GraphQLCompositeType, Field, ?GraphQLField ];
 // Map of array of those.
 type AstAndDefCollection = { [key: string]: Array<AstAndDef> };
 

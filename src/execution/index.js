@@ -8,3 +8,5 @@
  */
 
 export { execute, defaultFieldResolver } from './execute';
+
+export type { ExecutionResult } from './execute';

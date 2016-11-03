@@ -31,7 +31,7 @@ import type {
   GraphQLType,
   GraphQLLeafType,
   GraphQLAbstractType,
-  GraphQLFieldDefinition,
+  GraphQLField,
   GraphQLFieldResolveFn,
   GraphQLResolveInfo,
 } from '../type/definition';
@@ -605,7 +605,7 @@ function resolveField(
 // function. Returns the result of resolveFn or the abrupt-return Error object.
 function resolveOrError(
   exeContext: ExecutionContext,
-  fieldDef: GraphQLFieldDefinition,
+  fieldDef: GraphQLField,
   fieldAST: Field,
   resolveFn: GraphQLFieldResolveFn<*>,
   source: mixed,
@@ -1052,7 +1052,7 @@ function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
   fieldName: string
-): ?GraphQLFieldDefinition {
+): ?GraphQLField {
   if (fieldName === SchemaMetaFieldDef.name &&
       schema.getQueryType() === parentType) {
     return SchemaMetaFieldDef;

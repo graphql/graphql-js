@@ -25,7 +25,7 @@ import type {
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLCompositeType,
-  GraphQLFieldDefinition,
+  GraphQLField,
   GraphQLArgument
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
@@ -50,7 +50,7 @@ export class TypeInfo {
   _typeStack: Array<?GraphQLOutputType>;
   _parentTypeStack: Array<?GraphQLCompositeType>;
   _inputTypeStack: Array<?GraphQLInputType>;
-  _fieldDefStack: Array<?GraphQLFieldDefinition>;
+  _fieldDefStack: Array<?GraphQLField>;
   _directive: ?GraphQLDirective;
   _argument: ?GraphQLArgument;
   _getFieldDef: typeof getFieldDef;
@@ -90,7 +90,7 @@ export class TypeInfo {
     }
   }
 
-  getFieldDef(): ?GraphQLFieldDefinition {
+  getFieldDef(): ?GraphQLField {
     if (this._fieldDefStack.length > 0) {
       return this._fieldDefStack[this._fieldDefStack.length - 1];
     }
@@ -227,7 +227,7 @@ function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLType,
   fieldAST: Field
-): ?GraphQLFieldDefinition {
+): ?GraphQLField {
   const name = fieldAST.name.value;
   if (name === SchemaMetaFieldDef.name &&
       schema.getQueryType() === parentType) {

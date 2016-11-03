@@ -31,7 +31,7 @@ import {
 } from '../type/definition';
 import type {
   GraphQLInputType,
-  GraphQLFieldDefinition
+  GraphQLField
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
@@ -104,7 +104,7 @@ export function getVariableValues(
  * definitions and list of argument AST nodes.
  */
 export function getArgumentValues(
-  def: GraphQLFieldDefinition | GraphQLDirective,
+  def: GraphQLField | GraphQLDirective,
   node: Field | Directive,
   variableValues?: ?{ [key: string]: mixed }
 ): { [key: string]: mixed } {
