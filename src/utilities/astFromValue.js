@@ -14,15 +14,15 @@ import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import type {
-  Value,
-  IntValue,
-  FloatValue,
-  StringValue,
-  BooleanValue,
-  NullValue,
-  EnumValue,
-  ListValue,
-  ObjectValue,
+  ValueNode,
+  IntValueNode,
+  FloatValueNode,
+  StringValueNode,
+  BooleanValueNode,
+  NullValueNode,
+  EnumValueNode,
+  ListValueNode,
+  ObjectValueNode,
 } from '../language/ast';
 import {
   NAME,
@@ -67,7 +67,7 @@ import { GraphQLID } from '../type/scalars';
 export function astFromValue(
   value: mixed,
   type: GraphQLInputType
-): ?Value {
+): ?ValueNode {
   // Ensure flow knows that we treat function params as const.
   const _value = value;
 
@@ -81,7 +81,7 @@ export function astFromValue(
 
   // only explicit null, not undefined, NaN
   if (_value === null) {
-    return ({ kind: NULL }: NullValue);
+    return ({ kind: NULL }: NullValueNode);
   }
 
   // undefined, NaN
@@ -94,14 +94,14 @@ export function astFromValue(
   if (type instanceof GraphQLList) {
     const itemType = type.ofType;
     if (isCollection(_value)) {
-      const valuesASTs = [];
+      const valuesNodes = [];
       forEach((_value: any), item => {
-        const itemAST = astFromValue(item, itemType);
-        if (itemAST) {
-          valuesASTs.push(itemAST);
+        const itemNode = astFromValue(item, itemType);
+        if (itemNode) {
+          valuesNodes.push(itemNode);
         }
       });
-      return ({ kind: LIST, values: valuesASTs }: ListValue);
+      return ({ kind: LIST, values: valuesNodes }: ListValueNode);
     }
     return astFromValue(_value, itemType);
   }
@@ -113,19 +113,19 @@ export function astFromValue(
       return null;
     }
     const fields = type.getFields();
-    const fieldASTs = [];
+    const fieldNodes = [];
     Object.keys(fields).forEach(fieldName => {
       const fieldType = fields[fieldName].type;
       const fieldValue = astFromValue(_value[fieldName], fieldType);
       if (fieldValue) {
-        fieldASTs.push({
+        fieldNodes.push({
           kind: OBJECT_FIELD,
           name: { kind: NAME, value: fieldName },
           value: fieldValue
         });
       }
     });
-    return ({ kind: OBJECT, fields: fieldASTs }: ObjectValue);
+    return ({ kind: OBJECT, fields: fieldNodes }: ObjectValueNode);
   }
 
   invariant(
@@ -142,26 +142,26 @@ export function astFromValue(
 
   // Others serialize based on their corresponding JavaScript scalar types.
   if (typeof serialized === 'boolean') {
-    return ({ kind: BOOLEAN, value: serialized }: BooleanValue);
+    return ({ kind: BOOLEAN, value: serialized }: BooleanValueNode);
   }
 
   // JavaScript numbers can be Int or Float values.
   if (typeof serialized === 'number') {
     const stringNum = String(serialized);
     return /^[0-9]+$/.test(stringNum) ?
-      ({ kind: INT, value: stringNum }: IntValue) :
-      ({ kind: FLOAT, value: stringNum }: FloatValue);
+      ({ kind: INT, value: stringNum }: IntValueNode) :
+      ({ kind: FLOAT, value: stringNum }: FloatValueNode);
   }
 
   if (typeof serialized === 'string') {
     // Enum types use Enum literals.
     if (type instanceof GraphQLEnumType) {
-      return ({ kind: ENUM, value: serialized }: EnumValue);
+      return ({ kind: ENUM, value: serialized }: EnumValueNode);
     }
 
     // ID types can use Int literals.
     if (type === GraphQLID && /^[0-9]+$/.test(serialized)) {
-      return ({ kind: INT, value: serialized }: IntValue);
+      return ({ kind: INT, value: serialized }: IntValueNode);
     }
 
     // Use JSON stringify, which uses the same string encoding as GraphQL,
@@ -169,7 +169,7 @@ export function astFromValue(
     return ({
       kind: STRING,
       value: JSON.stringify(serialized).slice(1, -1)
-    }: StringValue);
+    }: StringValueNode);
   }
 
   throw new TypeError('Cannot convert value to AST: ' + String(serialized));

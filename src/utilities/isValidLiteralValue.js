@@ -9,7 +9,11 @@
  */
 
 import { print } from '../language/printer';
-import type { Value, ListValue, ObjectValue } from '../language/ast';
+import type {
+  ValueNode,
+  ListValueNode,
+  ObjectValueNode
+} from '../language/ast';
 import {
   NULL,
   VARIABLE,
@@ -30,51 +34,51 @@ import isNullish from '../jsutils/isNullish';
 
 
 /**
- * Utility for validators which determines if a value literal AST is valid given
- * an input type.
+ * Utility for validators which determines if a value literal node is valid
+ * given an input type.
  *
  * Note that this only validates literal values, variables are assumed to
  * provide values of the correct type.
  */
 export function isValidLiteralValue(
   type: GraphQLInputType,
-  valueAST: Value
+  valueNode: ValueNode
 ): Array<string> {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
-    if (!valueAST || (valueAST.kind === NULL)) {
+    if (!valueNode || (valueNode.kind === NULL)) {
       return [ `Expected "${String(type)}", found null.` ];
     }
-    return isValidLiteralValue(type.ofType, valueAST);
+    return isValidLiteralValue(type.ofType, valueNode);
   }
 
-  if (!valueAST || (valueAST.kind === NULL)) {
+  if (!valueNode || (valueNode.kind === NULL)) {
     return [];
   }
 
   // This function only tests literals, and assumes variables will provide
   // values of the correct type.
-  if (valueAST.kind === VARIABLE) {
+  if (valueNode.kind === VARIABLE) {
     return [];
   }
 
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
     const itemType = type.ofType;
-    if (valueAST.kind === LIST) {
-      return (valueAST: ListValue).values.reduce((acc, itemAST, index) => {
-        const errors = isValidLiteralValue(itemType, itemAST);
+    if (valueNode.kind === LIST) {
+      return (valueNode: ListValueNode).values.reduce((acc, item, index) => {
+        const errors = isValidLiteralValue(itemType, item);
         return acc.concat(errors.map(error =>
           `In element #${index}: ${error}`
         ));
       }, []);
     }
-    return isValidLiteralValue(itemType, valueAST);
+    return isValidLiteralValue(itemType, valueNode);
   }
 
   // Input objects check each defined field and look for undefined fields.
   if (type instanceof GraphQLInputObjectType) {
-    if (valueAST.kind !== OBJECT) {
+    if (valueNode.kind !== OBJECT) {
       return [ `Expected "${type.name}", found not an object.` ];
     }
     const fields = type.getFields();
@@ -82,21 +86,21 @@ export function isValidLiteralValue(
     const errors = [];
 
     // Ensure every provided field is defined.
-    const fieldASTs = (valueAST: ObjectValue).fields;
-    fieldASTs.forEach(providedFieldAST => {
-      if (!fields[providedFieldAST.name.value]) {
+    const fieldNodes = (valueNode: ObjectValueNode).fields;
+    fieldNodes.forEach(providedFieldNode => {
+      if (!fields[providedFieldNode.name.value]) {
         errors.push(
-          `In field "${providedFieldAST.name.value}": Unknown field.`
+          `In field "${providedFieldNode.name.value}": Unknown field.`
         );
       }
     });
 
     // Ensure every defined field is valid.
-    const fieldASTMap = keyMap(fieldASTs, fieldAST => fieldAST.name.value);
+    const fieldNodeMap = keyMap(fieldNodes, fieldNode => fieldNode.name.value);
     Object.keys(fields).forEach(fieldName => {
       const result = isValidLiteralValue(
         fields[fieldName].type,
-        fieldASTMap[fieldName] && fieldASTMap[fieldName].value
+        fieldNodeMap[fieldName] && fieldNodeMap[fieldName].value
       );
       errors.push(...(result.map(error =>
         `In field "${fieldName}": ${error}`
@@ -113,9 +117,9 @@ export function isValidLiteralValue(
 
   // Scalar/Enum input checks to ensure the type can parse the value to
   // a non-null value.
-  const parseResult = type.parseLiteral(valueAST);
+  const parseResult = type.parseLiteral(valueNode);
   if (isNullish(parseResult)) {
-    return [ `Expected type "${type.name}", found ${print(valueAST)}.` ];
+    return [ `Expected type "${type.name}", found ${print(valueNode)}.` ];
   }
 
   return [];

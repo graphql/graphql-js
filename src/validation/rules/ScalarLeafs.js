@@ -10,7 +10,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import type { Field } from '../../language/ast';
+import type { FieldNode } from '../../language/ast';
 import { isLeafType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
 
@@ -39,7 +39,7 @@ export function requiredSubselectionMessage(
  */
 export function ScalarLeafs(context: ValidationContext): any {
   return {
-    Field(node: Field) {
+    Field(node: FieldNode) {
       const type = context.getType();
       if (type) {
         if (isLeafType(type)) {

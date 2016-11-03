@@ -78,18 +78,18 @@ import type {
 } from '../type/directives';
 
 import type {
-  Document,
-  InputValueDefinition,
-  Type,
-  NamedType,
-  TypeDefinition,
-  ObjectTypeDefinition,
-  InterfaceTypeDefinition,
-  UnionTypeDefinition,
-  ScalarTypeDefinition,
-  EnumTypeDefinition,
-  InputObjectTypeDefinition,
-  DirectiveDefinition,
+  DocumentNode,
+  InputValueDefinitionNode,
+  TypeNode,
+  NamedTypeNode,
+  TypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  UnionTypeDefinitionNode,
+  ScalarTypeDefinitionNode,
+  EnumTypeDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  DirectiveDefinitionNode,
 } from '../language/ast';
 
 
@@ -107,7 +107,7 @@ import type {
  */
 export function extendSchema(
   schema: GraphQLSchema,
-  documentAST: Document
+  documentAST: DocumentNode
 ): GraphQLSchema {
   invariant(
     schema instanceof GraphQLSchema,
@@ -125,7 +125,7 @@ export function extendSchema(
 
   // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
-  const directiveDefinitions : Array<DirectiveDefinition> = [];
+  const directiveDefinitions : Array<DirectiveDefinitionNode> = [];
 
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const def = documentAST.definitions[i];
@@ -258,8 +258,8 @@ export function extendSchema(
     const existingDirectives = schema.getDirectives();
     invariant(existingDirectives, 'schema must have default directives');
 
-    const newDirectives = directiveDefinitions.map(directiveAST =>
-      getDirective(directiveAST)
+    const newDirectives = directiveDefinitions.map(directiveNode =>
+      getDirective(directiveNode)
     );
     return existingDirectives.concat(newDirectives);
   }
@@ -270,38 +270,38 @@ export function extendSchema(
     return (type: any);
   }
 
-  function getTypeFromAST(astNode: NamedType): GraphQLNamedType {
-    const type = _getNamedType(astNode.name.value);
+  function getTypeFromAST(node: NamedTypeNode): GraphQLNamedType {
+    const type = _getNamedType(node.name.value);
     if (!type) {
       throw new GraphQLError(
-        `Unknown type: "${astNode.name.value}". Ensure that this type exists ` +
+        `Unknown type: "${node.name.value}". Ensure that this type exists ` +
         'either in the original schema, or is added in a type definition.',
-        [ astNode ]
+        [ node ]
       );
     }
     return type;
   }
 
-  function getObjectTypeFromAST(astNode: NamedType): GraphQLObjectType {
-    const type = getTypeFromAST(astNode);
+  function getObjectTypeFromAST(node: NamedTypeNode): GraphQLObjectType {
+    const type = getTypeFromAST(node);
     invariant(type instanceof GraphQLObjectType, 'Must be Object type.');
     return type;
   }
 
-  function getInterfaceTypeFromAST(astNode: NamedType): GraphQLInterfaceType {
-    const type = getTypeFromAST(astNode);
+  function getInterfaceTypeFromAST(node: NamedTypeNode): GraphQLInterfaceType {
+    const type = getTypeFromAST(node);
     invariant(type instanceof GraphQLInterfaceType, 'Must be Interface type.');
     return type;
   }
 
-  function getInputTypeFromAST(astNode: NamedType): GraphQLInputType {
-    const type = getTypeFromAST(astNode);
+  function getInputTypeFromAST(node: NamedTypeNode): GraphQLInputType {
+    const type = getTypeFromAST(node);
     invariant(isInputType(type), 'Must be Input type.');
     return (type: any);
   }
 
-  function getOutputTypeFromAST(astNode: NamedType): GraphQLOutputType {
-    const type = getTypeFromAST(astNode);
+  function getOutputTypeFromAST(node: NamedTypeNode): GraphQLOutputType {
+    const type = getTypeFromAST(node);
     invariant(isOutputType(type), 'Must be Output type.');
     return (type: any);
   }
@@ -321,9 +321,9 @@ export function extendSchema(
       return typeDef;
     }
 
-    const typeAST = typeDefinitionMap[typeName];
-    if (typeAST) {
-      const typeDef = buildType(typeAST);
+    const typeNode = typeDefinitionMap[typeName];
+    if (typeNode) {
+      const typeDef = buildType(typeNode);
       typeDefCache[typeName] = typeDef;
       return typeDef;
     }
@@ -449,49 +449,49 @@ export function extendSchema(
     return getTypeFromDef(typeDef);
   }
 
-  function buildType(typeAST: TypeDefinition): GraphQLNamedType {
-    switch (typeAST.kind) {
-      case OBJECT_TYPE_DEFINITION: return buildObjectType(typeAST);
-      case INTERFACE_TYPE_DEFINITION: return buildInterfaceType(typeAST);
-      case UNION_TYPE_DEFINITION: return buildUnionType(typeAST);
-      case SCALAR_TYPE_DEFINITION: return buildScalarType(typeAST);
-      case ENUM_TYPE_DEFINITION: return buildEnumType(typeAST);
-      case INPUT_OBJECT_TYPE_DEFINITION: return buildInputObjectType(typeAST);
+  function buildType(typeNode: TypeDefinitionNode): GraphQLNamedType {
+    switch (typeNode.kind) {
+      case OBJECT_TYPE_DEFINITION: return buildObjectType(typeNode);
+      case INTERFACE_TYPE_DEFINITION: return buildInterfaceType(typeNode);
+      case UNION_TYPE_DEFINITION: return buildUnionType(typeNode);
+      case SCALAR_TYPE_DEFINITION: return buildScalarType(typeNode);
+      case ENUM_TYPE_DEFINITION: return buildEnumType(typeNode);
+      case INPUT_OBJECT_TYPE_DEFINITION: return buildInputObjectType(typeNode);
     }
-    throw new TypeError('Unknown type kind ' + typeAST.kind);
+    throw new TypeError('Unknown type kind ' + typeNode.kind);
   }
 
-  function buildObjectType(typeAST: ObjectTypeDefinition): GraphQLObjectType {
+  function buildObjectType(typeNode: ObjectTypeDefinitionNode) {
     return new GraphQLObjectType({
-      name: typeAST.name.value,
-      description: getDescription(typeAST),
-      interfaces: () => buildImplementedInterfaces(typeAST),
-      fields: () => buildFieldMap(typeAST),
+      name: typeNode.name.value,
+      description: getDescription(typeNode),
+      interfaces: () => buildImplementedInterfaces(typeNode),
+      fields: () => buildFieldMap(typeNode),
     });
   }
 
-  function buildInterfaceType(typeAST: InterfaceTypeDefinition) {
+  function buildInterfaceType(typeNode: InterfaceTypeDefinitionNode) {
     return new GraphQLInterfaceType({
-      name: typeAST.name.value,
-      description: getDescription(typeAST),
-      fields: () => buildFieldMap(typeAST),
+      name: typeNode.name.value,
+      description: getDescription(typeNode),
+      fields: () => buildFieldMap(typeNode),
       resolveType: cannotExecuteExtendedSchema,
     });
   }
 
-  function buildUnionType(typeAST: UnionTypeDefinition) {
+  function buildUnionType(typeNode: UnionTypeDefinitionNode) {
     return new GraphQLUnionType({
-      name: typeAST.name.value,
-      description: getDescription(typeAST),
-      types: typeAST.types.map(getObjectTypeFromAST),
+      name: typeNode.name.value,
+      description: getDescription(typeNode),
+      types: typeNode.types.map(getObjectTypeFromAST),
       resolveType: cannotExecuteExtendedSchema,
     });
   }
 
-  function buildScalarType(typeAST: ScalarTypeDefinition) {
+  function buildScalarType(typeNode: ScalarTypeDefinitionNode) {
     return new GraphQLScalarType({
-      name: typeAST.name.value,
-      description: getDescription(typeAST),
+      name: typeNode.name.value,
+      description: getDescription(typeNode),
       serialize: id => id,
       // Note: validation calls the parse functions to determine if a
       // literal value is correct. Returning null would cause use of custom
@@ -502,42 +502,43 @@ export function extendSchema(
     });
   }
 
-  function buildEnumType(typeAST: EnumTypeDefinition) {
+  function buildEnumType(typeNode: EnumTypeDefinitionNode) {
     return new GraphQLEnumType({
-      name: typeAST.name.value,
-      description: getDescription(typeAST),
-      values: keyValMap(typeAST.values, v => v.name.value, () => ({})),
+      name: typeNode.name.value,
+      description: getDescription(typeNode),
+      values: keyValMap(typeNode.values, v => v.name.value, () => ({})),
     });
   }
 
-  function buildInputObjectType(typeAST: InputObjectTypeDefinition) {
+  function buildInputObjectType(typeNode: InputObjectTypeDefinitionNode) {
     return new GraphQLInputObjectType({
-      name: typeAST.name.value,
-      description: getDescription(typeAST),
-      fields: () => buildInputValues(typeAST.fields),
+      name: typeNode.name.value,
+      description: getDescription(typeNode),
+      fields: () => buildInputValues(typeNode.fields),
     });
   }
 
   function getDirective(
-    directiveAST: DirectiveDefinition
+    directiveNode: DirectiveDefinitionNode
   ): GraphQLDirective {
     return new GraphQLDirective({
-      name: directiveAST.name.value,
-      locations: directiveAST.locations.map(
+      name: directiveNode.name.value,
+      locations: directiveNode.locations.map(
         node => ((node.value: any): DirectiveLocationEnum)
       ),
-      args: directiveAST.arguments && buildInputValues(directiveAST.arguments),
+      args:
+        directiveNode.arguments && buildInputValues(directiveNode.arguments),
     });
   }
 
-  function buildImplementedInterfaces(typeAST: ObjectTypeDefinition) {
-    return typeAST.interfaces &&
-      typeAST.interfaces.map(getInterfaceTypeFromAST);
+  function buildImplementedInterfaces(typeNode: ObjectTypeDefinitionNode) {
+    return typeNode.interfaces &&
+      typeNode.interfaces.map(getInterfaceTypeFromAST);
   }
 
-  function buildFieldMap(typeAST) {
+  function buildFieldMap(typeNode) {
     return keyValMap(
-      typeAST.fields,
+      typeNode.fields,
       field => field.name.value,
       field => ({
         type: buildOutputFieldType(field.type),
@@ -547,7 +548,7 @@ export function extendSchema(
     );
   }
 
-  function buildInputValues(values: Array<InputValueDefinition>) {
+  function buildInputValues(values: Array<InputValueDefinitionNode>) {
     return keyValMap(
       values,
       value => value.name.value,
@@ -562,28 +563,28 @@ export function extendSchema(
     );
   }
 
-  function buildInputFieldType(typeAST: Type): GraphQLInputType {
-    if (typeAST.kind === LIST_TYPE) {
-      return new GraphQLList(buildInputFieldType(typeAST.type));
+  function buildInputFieldType(typeNode: TypeNode): GraphQLInputType {
+    if (typeNode.kind === LIST_TYPE) {
+      return new GraphQLList(buildInputFieldType(typeNode.type));
     }
-    if (typeAST.kind === NON_NULL_TYPE) {
-      const nullableType = buildInputFieldType(typeAST.type);
+    if (typeNode.kind === NON_NULL_TYPE) {
+      const nullableType = buildInputFieldType(typeNode.type);
       invariant(!(nullableType instanceof GraphQLNonNull), 'Must be nullable');
       return new GraphQLNonNull(nullableType);
     }
-    return getInputTypeFromAST(typeAST);
+    return getInputTypeFromAST(typeNode);
   }
 
-  function buildOutputFieldType(typeAST: Type): GraphQLOutputType {
-    if (typeAST.kind === LIST_TYPE) {
-      return new GraphQLList(buildOutputFieldType(typeAST.type));
+  function buildOutputFieldType(typeNode: TypeNode): GraphQLOutputType {
+    if (typeNode.kind === LIST_TYPE) {
+      return new GraphQLList(buildOutputFieldType(typeNode.type));
     }
-    if (typeAST.kind === NON_NULL_TYPE) {
-      const nullableType = buildOutputFieldType(typeAST.type);
+    if (typeNode.kind === NON_NULL_TYPE) {
+      const nullableType = buildOutputFieldType(typeNode.type);
       invariant(!(nullableType instanceof GraphQLNonNull), 'Must be nullable');
       return new GraphQLNonNull(nullableType);
     }
-    return getOutputTypeFromAST(typeAST);
+    return getOutputTypeFromAST(typeNode);
   }
 }
 

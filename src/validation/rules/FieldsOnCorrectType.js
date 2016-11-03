@@ -12,7 +12,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
-import type { Field } from '../../language/ast';
+import type { FieldNode } from '../../language/ast';
 import type { GraphQLSchema } from '../../type/schema';
 import type { GraphQLOutputType } from '../../type/definition';
 import {
@@ -46,7 +46,7 @@ export function undefinedFieldMessage(
  */
 export function FieldsOnCorrectType(context: ValidationContext): any {
   return {
-    Field(node: Field) {
+    Field(node: FieldNode) {
       const type = context.getParentType();
       if (type) {
         const fieldDef = context.getFieldDef();

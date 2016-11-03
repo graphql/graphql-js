@@ -9,7 +9,7 @@
  */
 
 import { OPERATION_DEFINITION } from '../language/kinds';
-import type { Document, OperationDefinition } from '../language/ast';
+import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 
 
 /**
@@ -18,9 +18,9 @@ import type { Document, OperationDefinition } from '../language/ast';
  * provided in the document.
  */
 export function getOperationAST(
-  documentAST: Document,
+  documentAST: DocumentNode,
   operationName: ?string
-): ?OperationDefinition {
+): ?OperationDefinitionNode {
   let operation = null;
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const definition = documentAST.definitions[i];

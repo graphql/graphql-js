@@ -43,24 +43,24 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
   return {
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
-      leave(fieldAST) {
+      leave(node) {
         const fieldDef = context.getFieldDef();
         if (!fieldDef) {
           return false;
         }
-        const argASTs = fieldAST.arguments || [];
+        const argNodes = node.arguments || [];
 
-        const argASTMap = keyMap(argASTs, arg => arg.name.value);
+        const argNodeMap = keyMap(argNodes, arg => arg.name.value);
         fieldDef.args.forEach(argDef => {
-          const argAST = argASTMap[argDef.name];
-          if (!argAST && argDef.type instanceof GraphQLNonNull) {
+          const argNode = argNodeMap[argDef.name];
+          if (!argNode && argDef.type instanceof GraphQLNonNull) {
             context.reportError(new GraphQLError(
               missingFieldArgMessage(
-                fieldAST.name.value,
+                node.name.value,
                 argDef.name,
                 argDef.type
               ),
-              [ fieldAST ]
+              [ node ]
             ));
           }
         });
@@ -69,24 +69,24 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
 
     Directive: {
       // Validate on leave to allow for deeper errors to appear first.
-      leave(directiveAST) {
+      leave(node) {
         const directiveDef = context.getDirective();
         if (!directiveDef) {
           return false;
         }
-        const argASTs = directiveAST.arguments || [];
+        const argNodes = node.arguments || [];
 
-        const argASTMap = keyMap(argASTs, arg => arg.name.value);
+        const argNodeMap = keyMap(argNodes, arg => arg.name.value);
         directiveDef.args.forEach(argDef => {
-          const argAST = argASTMap[argDef.name];
-          if (!argAST && argDef.type instanceof GraphQLNonNull) {
+          const argNode = argNodeMap[argDef.name];
+          if (!argNode && argDef.type instanceof GraphQLNonNull) {
             context.reportError(new GraphQLError(
               missingDirectiveArgMessage(
-                directiveAST.name.value,
+                node.name.value,
                 argDef.name,
                 argDef.type
               ),
-              [ directiveAST ]
+              [ node ]
             ));
           }
         });

@@ -23,7 +23,7 @@ import {
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from './directives';
-import type { GraphQLFieldDefinition } from './definition';
+import type { GraphQLField } from './definition';
 
 
 export const __Schema = new GraphQLObjectType({
@@ -414,11 +414,11 @@ export const __TypeKind = new GraphQLEnumType({
 });
 
 /**
- * Note that these are GraphQLFieldDefinition and not GraphQLFieldConfig,
+ * Note that these are GraphQLField and not GraphQLFieldConfig,
  * so the format for args is different.
  */
 
-export const SchemaMetaFieldDef: GraphQLFieldDefinition = {
+export const SchemaMetaFieldDef: GraphQLField = {
   name: '__schema',
   type: new GraphQLNonNull(__Schema),
   description: 'Access the current type schema of this server.',
@@ -426,7 +426,7 @@ export const SchemaMetaFieldDef: GraphQLFieldDefinition = {
   resolve: (source, args, context, { schema }) => schema
 };
 
-export const TypeMetaFieldDef: GraphQLFieldDefinition = {
+export const TypeMetaFieldDef: GraphQLField = {
   name: '__type',
   type: __Type,
   description: 'Request the type information of a single type.',
@@ -437,7 +437,7 @@ export const TypeMetaFieldDef: GraphQLFieldDefinition = {
     schema.getType(((name: any): string))
 };
 
-export const TypeNameMetaFieldDef: GraphQLFieldDefinition = {
+export const TypeNameMetaFieldDef: GraphQLField = {
   name: '__typename',
   type: new GraphQLNonNull(GraphQLString),
   description: 'The name of the current Object type at runtime.',

@@ -110,48 +110,48 @@ export type Token = {
 /**
  * The list of all possible AST node types.
  */
-export type Node =
-  | Name
-  | Document
-  | OperationDefinition
-  | VariableDefinition
-  | Variable
-  | SelectionSet
-  | Field
-  | Argument
-  | FragmentSpread
-  | InlineFragment
-  | FragmentDefinition
-  | IntValue
-  | FloatValue
-  | StringValue
-  | BooleanValue
-  | NullValue
-  | EnumValue
-  | ListValue
-  | ObjectValue
-  | ObjectField
-  | Directive
-  | NamedType
-  | ListType
-  | NonNullType
-  | SchemaDefinition
-  | OperationTypeDefinition
-  | ScalarTypeDefinition
-  | ObjectTypeDefinition
-  | FieldDefinition
-  | InputValueDefinition
-  | InterfaceTypeDefinition
-  | UnionTypeDefinition
-  | EnumTypeDefinition
-  | EnumValueDefinition
-  | InputObjectTypeDefinition
-  | TypeExtensionDefinition
-  | DirectiveDefinition;
+export type ASTNode =
+  | NameNode
+  | DocumentNode
+  | OperationDefinitionNode
+  | VariableDefinitionNode
+  | VariableNode
+  | SelectionSetNode
+  | FieldNode
+  | ArgumentNode
+  | FragmentSpreadNode
+  | InlineFragmentNode
+  | FragmentDefinitionNode
+  | IntValueNode
+  | FloatValueNode
+  | StringValueNode
+  | BooleanValueNode
+  | NullValueNode
+  | EnumValueNode
+  | ListValueNode
+  | ObjectValueNode
+  | ObjectFieldNode
+  | DirectiveNode
+  | NamedTypeNode
+  | ListTypeNode
+  | NonNullTypeNode
+  | SchemaDefinitionNode
+  | OperationTypeDefinitionNode
+  | ScalarTypeDefinitionNode
+  | ObjectTypeDefinitionNode
+  | FieldDefinitionNode
+  | InputValueDefinitionNode
+  | InterfaceTypeDefinitionNode
+  | UnionTypeDefinitionNode
+  | EnumTypeDefinitionNode
+  | EnumValueDefinitionNode
+  | InputObjectTypeDefinitionNode
+  | TypeExtensionDefinitionNode
+  | DirectiveDefinitionNode;
 
 // Name
 
-export type Name = {
+export type NameNode = {
   kind: 'Name';
   loc?: Location;
   value: string;
@@ -159,316 +159,316 @@ export type Name = {
 
 // Document
 
-export type Document = {
+export type DocumentNode = {
   kind: 'Document';
   loc?: Location;
-  definitions: Array<Definition>;
+  definitions: Array<DefinitionNode>;
 };
 
-export type Definition =
-  | OperationDefinition
-  | FragmentDefinition
-  | TypeSystemDefinition; // experimental non-spec addition.
+export type DefinitionNode =
+  | OperationDefinitionNode
+  | FragmentDefinitionNode
+  | TypeSystemDefinitionNode; // experimental non-spec addition.
 
-export type OperationDefinition = {
+export type OperationDefinitionNode = {
   kind: 'OperationDefinition';
   loc?: Location;
-  operation: OperationType;
-  name?: ?Name;
-  variableDefinitions?: ?Array<VariableDefinition>;
-  directives?: ?Array<Directive>;
-  selectionSet: SelectionSet;
+  operation: OperationTypeNode;
+  name?: ?NameNode;
+  variableDefinitions?: ?Array<VariableDefinitionNode>;
+  directives?: ?Array<DirectiveNode>;
+  selectionSet: SelectionSetNode;
 };
 
 // Note: subscription is an experimental non-spec addition.
-export type OperationType = 'query' | 'mutation' | 'subscription';
+export type OperationTypeNode = 'query' | 'mutation' | 'subscription';
 
-export type VariableDefinition = {
+export type VariableDefinitionNode = {
   kind: 'VariableDefinition';
   loc?: Location;
-  variable: Variable;
-  type: Type;
-  defaultValue?: ?Value;
+  variable: VariableNode;
+  type: TypeNode;
+  defaultValue?: ?ValueNode;
 };
 
-export type Variable = {
+export type VariableNode = {
   kind: 'Variable';
   loc?: Location;
-  name: Name;
+  name: NameNode;
 };
 
-export type SelectionSet = {
+export type SelectionSetNode = {
   kind: 'SelectionSet';
   loc?: Location;
-  selections: Array<Selection>;
+  selections: Array<SelectionNode>;
 };
 
-export type Selection =
-  | Field
-  | FragmentSpread
-  | InlineFragment;
+export type SelectionNode =
+  | FieldNode
+  | FragmentSpreadNode
+  | InlineFragmentNode;
 
-export type Field = {
+export type FieldNode = {
   kind: 'Field';
   loc?: Location;
-  alias?: ?Name;
-  name: Name;
-  arguments?: ?Array<Argument>;
-  directives?: ?Array<Directive>;
-  selectionSet?: ?SelectionSet;
+  alias?: ?NameNode;
+  name: NameNode;
+  arguments?: ?Array<ArgumentNode>;
+  directives?: ?Array<DirectiveNode>;
+  selectionSet?: ?SelectionSetNode;
 };
 
-export type Argument = {
+export type ArgumentNode = {
   kind: 'Argument';
   loc?: Location;
-  name: Name;
-  value: Value;
+  name: NameNode;
+  value: ValueNode;
 };
 
 
 // Fragments
 
-export type FragmentSpread = {
+export type FragmentSpreadNode = {
   kind: 'FragmentSpread';
   loc?: Location;
-  name: Name;
-  directives?: ?Array<Directive>;
+  name: NameNode;
+  directives?: ?Array<DirectiveNode>;
 };
 
-export type InlineFragment = {
+export type InlineFragmentNode = {
   kind: 'InlineFragment';
   loc?: Location;
-  typeCondition?: ?NamedType;
-  directives?: ?Array<Directive>;
-  selectionSet: SelectionSet;
+  typeCondition?: ?NamedTypeNode;
+  directives?: ?Array<DirectiveNode>;
+  selectionSet: SelectionSetNode;
 };
 
-export type FragmentDefinition = {
+export type FragmentDefinitionNode = {
   kind: 'FragmentDefinition';
   loc?: Location;
-  name: Name;
-  typeCondition: NamedType;
-  directives?: ?Array<Directive>;
-  selectionSet: SelectionSet;
+  name: NameNode;
+  typeCondition: NamedTypeNode;
+  directives?: ?Array<DirectiveNode>;
+  selectionSet: SelectionSetNode;
 };
 
 
 // Values
 
-export type Value =
-  | Variable
-  | IntValue
-  | FloatValue
-  | StringValue
-  | BooleanValue
-  | NullValue
-  | EnumValue
-  | ListValue
-  | ObjectValue;
+export type ValueNode =
+  | VariableNode
+  | IntValueNode
+  | FloatValueNode
+  | StringValueNode
+  | BooleanValueNode
+  | NullValueNode
+  | EnumValueNode
+  | ListValueNode
+  | ObjectValueNode;
 
-export type IntValue = {
+export type IntValueNode = {
   kind: 'IntValue';
   loc?: Location;
   value: string;
 };
 
-export type FloatValue = {
+export type FloatValueNode = {
   kind: 'FloatValue';
   loc?: Location;
   value: string;
 };
 
-export type StringValue = {
+export type StringValueNode = {
   kind: 'StringValue';
   loc?: Location;
   value: string;
 };
 
-export type BooleanValue = {
+export type BooleanValueNode = {
   kind: 'BooleanValue';
   loc?: Location;
   value: boolean;
 };
 
-export type NullValue = {
+export type NullValueNode = {
   kind: 'NullValue';
   loc?: Location;
 };
 
-export type EnumValue = {
+export type EnumValueNode = {
   kind: 'EnumValue';
   loc?: Location;
   value: string;
 };
 
-export type ListValue = {
+export type ListValueNode = {
   kind: 'ListValue';
   loc?: Location;
-  values: Array<Value>;
+  values: Array<ValueNode>;
 };
 
-export type ObjectValue = {
+export type ObjectValueNode = {
   kind: 'ObjectValue';
   loc?: Location;
-  fields: Array<ObjectField>;
+  fields: Array<ObjectFieldNode>;
 };
 
-export type ObjectField = {
+export type ObjectFieldNode = {
   kind: 'ObjectField';
   loc?: Location;
-  name: Name;
-  value: Value;
+  name: NameNode;
+  value: ValueNode;
 };
 
 
 // Directives
 
-export type Directive = {
+export type DirectiveNode = {
   kind: 'Directive';
   loc?: Location;
-  name: Name;
-  arguments?: ?Array<Argument>;
+  name: NameNode;
+  arguments?: ?Array<ArgumentNode>;
 };
 
 
 // Type Reference
 
-export type Type =
-  | NamedType
-  | ListType
-  | NonNullType;
+export type TypeNode =
+  | NamedTypeNode
+  | ListTypeNode
+  | NonNullTypeNode;
 
-export type NamedType = {
+export type NamedTypeNode = {
   kind: 'NamedType';
   loc?: Location;
-  name: Name;
+  name: NameNode;
 };
 
-export type ListType = {
+export type ListTypeNode = {
   kind: 'ListType';
   loc?: Location;
-  type: Type;
+  type: TypeNode;
 };
 
-export type NonNullType = {
+export type NonNullTypeNode = {
   kind: 'NonNullType';
   loc?: Location;
-  type: NamedType | ListType;
+  type: NamedTypeNode | ListTypeNode;
 };
 
 // Type System Definition
 
-export type TypeSystemDefinition =
-  | SchemaDefinition
-  | TypeDefinition
-  | TypeExtensionDefinition
-  | DirectiveDefinition;
+export type TypeSystemDefinitionNode =
+  | SchemaDefinitionNode
+  | TypeDefinitionNode
+  | TypeExtensionDefinitionNode
+  | DirectiveDefinitionNode;
 
-export type SchemaDefinition = {
+export type SchemaDefinitionNode = {
   kind: 'SchemaDefinition';
   loc?: Location;
-  directives: Array<Directive>;
-  operationTypes: Array<OperationTypeDefinition>;
+  directives: Array<DirectiveNode>;
+  operationTypes: Array<OperationTypeDefinitionNode>;
 };
 
-export type OperationTypeDefinition = {
+export type OperationTypeDefinitionNode = {
   kind: 'OperationTypeDefinition';
   loc?: Location;
-  operation: OperationType;
-  type: NamedType;
+  operation: OperationTypeNode;
+  type: NamedTypeNode;
 };
 
-export type TypeDefinition =
-  | ScalarTypeDefinition
-  | ObjectTypeDefinition
-  | InterfaceTypeDefinition
-  | UnionTypeDefinition
-  | EnumTypeDefinition
-  | InputObjectTypeDefinition;
+export type TypeDefinitionNode =
+  | ScalarTypeDefinitionNode
+  | ObjectTypeDefinitionNode
+  | InterfaceTypeDefinitionNode
+  | UnionTypeDefinitionNode
+  | EnumTypeDefinitionNode
+  | InputObjectTypeDefinitionNode;
 
-export type ScalarTypeDefinition = {
+export type ScalarTypeDefinitionNode = {
   kind: 'ScalarTypeDefinition';
   loc?: Location;
-  name: Name;
-  directives?: ?Array<Directive>;
+  name: NameNode;
+  directives?: ?Array<DirectiveNode>;
 };
 
-export type ObjectTypeDefinition = {
+export type ObjectTypeDefinitionNode = {
   kind: 'ObjectTypeDefinition';
   loc?: Location;
-  name: Name;
-  interfaces?: ?Array<NamedType>;
-  directives?: ?Array<Directive>;
-  fields: Array<FieldDefinition>;
+  name: NameNode;
+  interfaces?: ?Array<NamedTypeNode>;
+  directives?: ?Array<DirectiveNode>;
+  fields: Array<FieldDefinitionNode>;
 };
 
-export type FieldDefinition = {
+export type FieldDefinitionNode = {
   kind: 'FieldDefinition';
   loc?: Location;
-  name: Name;
-  arguments: Array<InputValueDefinition>;
-  type: Type;
-  directives?: ?Array<Directive>;
+  name: NameNode;
+  arguments: Array<InputValueDefinitionNode>;
+  type: TypeNode;
+  directives?: ?Array<DirectiveNode>;
 };
 
-export type InputValueDefinition = {
+export type InputValueDefinitionNode = {
   kind: 'InputValueDefinition';
   loc?: Location;
-  name: Name;
-  type: Type;
-  defaultValue?: ?Value;
-  directives?: ?Array<Directive>;
+  name: NameNode;
+  type: TypeNode;
+  defaultValue?: ?ValueNode;
+  directives?: ?Array<DirectiveNode>;
 };
 
-export type InterfaceTypeDefinition = {
+export type InterfaceTypeDefinitionNode = {
   kind: 'InterfaceTypeDefinition';
   loc?: Location;
-  name: Name;
-  directives?: ?Array<Directive>;
-  fields: Array<FieldDefinition>;
+  name: NameNode;
+  directives?: ?Array<DirectiveNode>;
+  fields: Array<FieldDefinitionNode>;
 };
 
-export type UnionTypeDefinition = {
+export type UnionTypeDefinitionNode = {
   kind: 'UnionTypeDefinition';
   loc?: Location;
-  name: Name;
-  directives?: ?Array<Directive>;
-  types: Array<NamedType>;
+  name: NameNode;
+  directives?: ?Array<DirectiveNode>;
+  types: Array<NamedTypeNode>;
 };
 
-export type EnumTypeDefinition = {
+export type EnumTypeDefinitionNode = {
   kind: 'EnumTypeDefinition';
   loc?: Location;
-  name: Name;
-  directives?: ?Array<Directive>;
-  values: Array<EnumValueDefinition>;
+  name: NameNode;
+  directives?: ?Array<DirectiveNode>;
+  values: Array<EnumValueDefinitionNode>;
 };
 
-export type EnumValueDefinition = {
+export type EnumValueDefinitionNode = {
   kind: 'EnumValueDefinition';
   loc?: Location;
-  name: Name;
-  directives?: ?Array<Directive>;
+  name: NameNode;
+  directives?: ?Array<DirectiveNode>;
 };
 
-export type InputObjectTypeDefinition = {
+export type InputObjectTypeDefinitionNode = {
   kind: 'InputObjectTypeDefinition';
   loc?: Location;
-  name: Name;
-  directives?: ?Array<Directive>;
-  fields: Array<InputValueDefinition>;
+  name: NameNode;
+  directives?: ?Array<DirectiveNode>;
+  fields: Array<InputValueDefinitionNode>;
 };
 
-export type TypeExtensionDefinition = {
+export type TypeExtensionDefinitionNode = {
   kind: 'TypeExtensionDefinition';
   loc?: Location;
-  definition: ObjectTypeDefinition;
+  definition: ObjectTypeDefinitionNode;
 };
 
-export type DirectiveDefinition = {
+export type DirectiveDefinitionNode = {
   kind: 'DirectiveDefinition';
   loc?: Location;
-  name: Name;
-  arguments?: ?Array<InputValueDefinition>;
-  locations: Array<Name>;
+  name: NameNode;
+  arguments?: ?Array<InputValueDefinitionNode>;
+  locations: Array<NameNode>;
 };

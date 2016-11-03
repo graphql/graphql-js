@@ -64,9 +64,9 @@ describe('GraphQLError', () => {
       field
     }`);
     const ast = parse(source);
-    const fieldAST = ast.definitions[0].selectionSet.selections[0];
-    const e = new GraphQLError('msg', [ fieldAST ]);
-    expect(e.nodes).to.deep.equal([ fieldAST ]);
+    const fieldNode = ast.definitions[0].selectionSet.selections[0];
+    const e = new GraphQLError('msg', [ fieldNode ]);
+    expect(e.nodes).to.deep.equal([ fieldNode ]);
     expect(e.source).to.equal(source);
     expect(e.positions).to.deep.equal([ 8 ]);
     expect(e.locations).to.deep.equal([ { line: 2, column: 7 } ]);
@@ -77,9 +77,9 @@ describe('GraphQLError', () => {
       field
     }`);
     const ast = parse(source);
-    const operationAST = ast.definitions[0];
-    const e = new GraphQLError('msg', [ operationAST ]);
-    expect(e.nodes).to.deep.equal([ operationAST ]);
+    const operationNode = ast.definitions[0];
+    const e = new GraphQLError('msg', [ operationNode ]);
+    expect(e.nodes).to.deep.equal([ operationNode ]);
     expect(e.source).to.equal(source);
     expect(e.positions).to.deep.equal([ 0 ]);
     expect(e.locations).to.deep.equal([ { line: 1, column: 1 } ]);

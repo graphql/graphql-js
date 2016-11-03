@@ -22,10 +22,10 @@ import {
 } from '../type/definition';
 import type { GraphQLInputType } from '../type/definition';
 import type {
-  Value,
-  Variable,
-  ListValue,
-  ObjectValue
+  ValueNode,
+  VariableNode,
+  ListValueNode,
+  ObjectValueNode,
 } from '../language/ast';
 
 
@@ -50,30 +50,30 @@ import type {
  *
  */
 export function valueFromAST(
-  valueAST: ?Value,
+  valueNode: ?ValueNode,
   type: GraphQLInputType,
   variables?: ?{ [key: string]: mixed }
 ): mixed | void {
-  if (!valueAST) {
-    // When there is no AST, then there is also no value.
+  if (!valueNode) {
+    // When there is no node, then there is also no value.
     // Importantly, this is different from returning the value null.
     return;
   }
 
   if (type instanceof GraphQLNonNull) {
-    if (valueAST.kind === Kind.NULL) {
+    if (valueNode.kind === Kind.NULL) {
       return; // Invalid: intentionally return no value.
     }
-    return valueFromAST(valueAST, type.ofType, variables);
+    return valueFromAST(valueNode, type.ofType, variables);
   }
 
-  if (valueAST.kind === Kind.NULL) {
+  if (valueNode.kind === Kind.NULL) {
     // This is explicitly returning the value null.
     return null;
   }
 
-  if (valueAST.kind === Kind.VARIABLE) {
-    const variableName = (valueAST: Variable).name.value;
+  if (valueNode.kind === Kind.VARIABLE) {
+    const variableName = (valueNode: VariableNode).name.value;
     if (!variables || isInvalid(variables[variableName])) {
       // No valid return value.
       return;
@@ -86,11 +86,11 @@ export function valueFromAST(
 
   if (type instanceof GraphQLList) {
     const itemType = type.ofType;
-    if (valueAST.kind === Kind.LIST) {
+    if (valueNode.kind === Kind.LIST) {
       const coercedValues = [];
-      const itemASTs = (valueAST: ListValue).values;
-      for (let i = 0; i < itemASTs.length; i++) {
-        if (isMissingVariable(itemASTs[i], variables)) {
+      const itemNodes = (valueNode: ListValueNode).values;
+      for (let i = 0; i < itemNodes.length; i++) {
+        if (isMissingVariable(itemNodes[i], variables)) {
           // If an array contains a missing variable, it is either coerced to
           // null or if the item type is non-null, it considered invalid.
           if (itemType instanceof GraphQLNonNull) {
@@ -98,7 +98,7 @@ export function valueFromAST(
           }
           coercedValues.push(null);
         } else {
-          const itemValue = valueFromAST(itemASTs[i], itemType, variables);
+          const itemValue = valueFromAST(itemNodes[i], itemType, variables);
           if (isInvalid(itemValue)) {
             return; // Invalid: intentionally return no value.
           }
@@ -107,7 +107,7 @@ export function valueFromAST(
       }
       return coercedValues;
     }
-    const coercedValue = valueFromAST(valueAST, itemType, variables);
+    const coercedValue = valueFromAST(valueNode, itemType, variables);
     if (isInvalid(coercedValue)) {
       return; // Invalid: intentionally return no value.
     }
@@ -115,21 +115,21 @@ export function valueFromAST(
   }
 
   if (type instanceof GraphQLInputObjectType) {
-    if (valueAST.kind !== Kind.OBJECT) {
+    if (valueNode.kind !== Kind.OBJECT) {
       return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
     const fields = type.getFields();
-    const fieldASTs = keyMap(
-      (valueAST: ObjectValue).fields,
+    const fieldNodes = keyMap(
+      (valueNode: ObjectValueNode).fields,
       field => field.name.value
     );
     const fieldNames = Object.keys(fields);
     for (let i = 0; i < fieldNames.length; i++) {
       const fieldName = fieldNames[i];
       const field = fields[fieldName];
-      const fieldAST = fieldASTs[fieldName];
-      if (!fieldAST || isMissingVariable(fieldAST.value, variables)) {
+      const fieldNode = fieldNodes[fieldName];
+      if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (!isInvalid(field.defaultValue)) {
           coercedObj[fieldName] = field.defaultValue;
         } else if (field.type instanceof GraphQLNonNull) {
@@ -137,7 +137,7 @@ export function valueFromAST(
         }
         continue;
       }
-      const fieldValue = valueFromAST(fieldAST.value, field.type, variables);
+      const fieldValue = valueFromAST(fieldNode.value, field.type, variables);
       if (isInvalid(fieldValue)) {
         return; // Invalid: intentionally return no value.
       }
@@ -151,7 +151,7 @@ export function valueFromAST(
     'Must be input type'
   );
 
-  const parsed = type.parseLiteral(valueAST);
+  const parsed = type.parseLiteral(valueNode);
   if (isNullish(parsed)) {
     // null or invalid values represent a failure to parse correctly,
     // in which case no value is returned.
@@ -161,9 +161,9 @@ export function valueFromAST(
   return parsed;
 }
 
-// Returns true if the provided valueAST is a variable which is not defined
+// Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
-function isMissingVariable(valueAST, variables) {
-  return valueAST.kind === Kind.VARIABLE &&
-    (!variables || isInvalid(variables[(valueAST: Variable).name.value]));
+function isMissingVariable(valueNode, variables) {
+  return valueNode.kind === Kind.VARIABLE &&
+    (!variables || isInvalid(variables[(valueNode: VariableNode).name.value]));
 }

@@ -208,7 +208,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(Object.keys(info)).to.deep.equal([
       'fieldName',
-      'fieldASTs',
+      'fieldNodes',
       'returnType',
       'parentType',
       'path',
@@ -219,8 +219,8 @@ describe('Execute: Handles basic execution tasks', () => {
       'variableValues',
     ]);
     expect(info.fieldName).to.equal('test');
-    expect(info.fieldASTs).to.have.lengthOf(1);
-    expect(info.fieldASTs[0]).to.equal(
+    expect(info.fieldNodes).to.have.lengthOf(1);
+    expect(info.fieldNodes[0]).to.equal(
       ast.definitions[0].selectionSet.selections[0]
     );
     expect(info.returnType).to.equal(GraphQLString);

@@ -13,19 +13,19 @@ import { GraphQLError } from '../error';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import * as Kind from '../language/kinds';
 import type {
-  Document,
-  OperationDefinition,
-  Variable,
-  SelectionSet,
-  FragmentSpread,
-  FragmentDefinition,
+  DocumentNode,
+  OperationDefinitionNode,
+  VariableNode,
+  SelectionSetNode,
+  FragmentSpreadNode,
+  FragmentDefinitionNode,
 } from '../language/ast';
 import { GraphQLSchema } from '../type/schema';
 import type {
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLCompositeType,
-  GraphQLFieldDefinition,
+  GraphQLField,
   GraphQLArgument
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
@@ -48,7 +48,7 @@ import { specifiedRules } from './specifiedRules';
  */
 export function validate(
   schema: GraphQLSchema,
-  ast: Document,
+  ast: DocumentNode,
   rules?: Array<any>
 ): Array<GraphQLError> {
   invariant(schema, 'Must provide schema');
@@ -71,7 +71,7 @@ export function validate(
 export function visitUsingRules(
   schema: GraphQLSchema,
   typeInfo: TypeInfo,
-  documentAST: Document,
+  documentAST: DocumentNode,
   rules: Array<any>
 ): Array<GraphQLError> {
   const context = new ValidationContext(schema, documentAST, typeInfo);
@@ -81,8 +81,8 @@ export function visitUsingRules(
   return context.getErrors();
 }
 
-type HasSelectionSet = OperationDefinition | FragmentDefinition;
-type VariableUsage = { node: Variable, type: ?GraphQLInputType };
+type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
+type VariableUsage = { node: VariableNode, type: ?GraphQLInputType };
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -91,19 +91,19 @@ type VariableUsage = { node: Variable, type: ?GraphQLInputType };
  */
 export class ValidationContext {
   _schema: GraphQLSchema;
-  _ast: Document;
+  _ast: DocumentNode;
   _typeInfo: TypeInfo;
   _errors: Array<GraphQLError>;
-  _fragments: {[name: string]: FragmentDefinition};
-  _fragmentSpreads: Map<SelectionSet, Array<FragmentSpread>>;
+  _fragments: {[name: string]: FragmentDefinitionNode};
+  _fragmentSpreads: Map<SelectionSetNode, Array<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
-    OperationDefinition,
-    Array<FragmentDefinition>
+    OperationDefinitionNode,
+    Array<FragmentDefinitionNode>
   >;
-  _variableUsages: Map<HasSelectionSet, Array<VariableUsage>>;
-  _recursiveVariableUsages: Map<OperationDefinition, Array<VariableUsage>>;
+  _variableUsages: Map<NodeWithSelectionSet, Array<VariableUsage>>;
+  _recursiveVariableUsages: Map<OperationDefinitionNode, Array<VariableUsage>>;
 
-  constructor(schema: GraphQLSchema, ast: Document, typeInfo: TypeInfo) {
+  constructor(schema: GraphQLSchema, ast: DocumentNode, typeInfo: TypeInfo) {
     this._schema = schema;
     this._ast = ast;
     this._typeInfo = typeInfo;
@@ -126,11 +126,11 @@ export class ValidationContext {
     return this._schema;
   }
 
-  getDocument(): Document {
+  getDocument(): DocumentNode {
     return this._ast;
   }
 
-  getFragment(name: string): ?FragmentDefinition {
+  getFragment(name: string): ?FragmentDefinitionNode {
     let fragments = this._fragments;
     if (!fragments) {
       this._fragments = fragments =
@@ -144,11 +144,11 @@ export class ValidationContext {
     return fragments[name];
   }
 
-  getFragmentSpreads(node: SelectionSet): Array<FragmentSpread> {
+  getFragmentSpreads(node: SelectionSetNode): Array<FragmentSpreadNode> {
     let spreads = this._fragmentSpreads.get(node);
     if (!spreads) {
       spreads = [];
-      const setsToVisit: Array<SelectionSet> = [ node ];
+      const setsToVisit: Array<SelectionSetNode> = [ node ];
       while (setsToVisit.length !== 0) {
         const set = setsToVisit.pop();
         for (let i = 0; i < set.selections.length; i++) {
@@ -166,13 +166,13 @@ export class ValidationContext {
   }
 
   getRecursivelyReferencedFragments(
-    operation: OperationDefinition
-  ): Array<FragmentDefinition> {
+    operation: OperationDefinitionNode
+  ): Array<FragmentDefinitionNode> {
     let fragments = this._recursivelyReferencedFragments.get(operation);
     if (!fragments) {
       fragments = [];
       const collectedNames = Object.create(null);
-      const nodesToVisit: Array<SelectionSet> = [ operation.selectionSet ];
+      const nodesToVisit: Array<SelectionSetNode> = [ operation.selectionSet ];
       while (nodesToVisit.length !== 0) {
         const node = nodesToVisit.pop();
         const spreads = this.getFragmentSpreads(node);
@@ -193,7 +193,7 @@ export class ValidationContext {
     return fragments;
   }
 
-  getVariableUsages(node: HasSelectionSet): Array<VariableUsage> {
+  getVariableUsages(node: NodeWithSelectionSet): Array<VariableUsage> {
     let usages = this._variableUsages.get(node);
     if (!usages) {
       const newUsages = [];
@@ -211,7 +211,7 @@ export class ValidationContext {
   }
 
   getRecursiveVariableUsages(
-    operation: OperationDefinition
+    operation: OperationDefinitionNode
   ): Array<VariableUsage> {
     let usages = this._recursiveVariableUsages.get(operation);
     if (!usages) {
@@ -240,7 +240,7 @@ export class ValidationContext {
     return this._typeInfo.getInputType();
   }
 
-  getFieldDef(): ?GraphQLFieldDefinition {
+  getFieldDef(): ?GraphQLField {
     return this._typeInfo.getFieldDef();
   }
 

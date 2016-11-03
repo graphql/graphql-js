@@ -35,19 +35,19 @@ export function badValueMessage(
  */
 export function ArgumentsOfCorrectType(context: ValidationContext): any {
   return {
-    Argument(argAST) {
+    Argument(node) {
       const argDef = context.getArgument();
       if (argDef) {
-        const errors = isValidLiteralValue(argDef.type, argAST.value);
+        const errors = isValidLiteralValue(argDef.type, node.value);
         if (errors && errors.length > 0) {
           context.reportError(new GraphQLError(
             badValueMessage(
-              argAST.name.value,
+              node.name.value,
               argDef.type,
-              print(argAST.value),
+              print(node.value),
               errors
             ),
-            [ argAST.value ]
+            [ node.value ]
           ));
         }
       }

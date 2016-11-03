@@ -31,28 +31,28 @@ import type {
   GraphQLType,
   GraphQLLeafType,
   GraphQLAbstractType,
-  GraphQLFieldDefinition,
-  GraphQLFieldResolveFn,
+  GraphQLField,
+  GraphQLFieldResolver,
   GraphQLResolveInfo,
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
-  TypeNameMetaFieldDef
+  TypeNameMetaFieldDef,
 } from '../type/introspection';
 import {
   GraphQLIncludeDirective,
-  GraphQLSkipDirective
+  GraphQLSkipDirective,
 } from '../type/directives';
 import type {
-  Directive,
-  Document,
-  OperationDefinition,
-  SelectionSet,
-  Field,
-  InlineFragment,
-  FragmentDefinition
+  DirectiveNode,
+  DocumentNode,
+  OperationDefinitionNode,
+  SelectionSetNode,
+  FieldNode,
+  InlineFragmentNode,
+  FragmentDefinitionNode,
 } from '../language/ast';
 
 
@@ -84,10 +84,10 @@ import type {
  */
 type ExecutionContext = {
   schema: GraphQLSchema;
-  fragments: {[key: string]: FragmentDefinition};
+  fragments: {[key: string]: FragmentDefinitionNode};
   rootValue: mixed;
   contextValue: mixed;
-  operation: OperationDefinition;
+  operation: OperationDefinitionNode;
   variableValues: {[key: string]: mixed};
   errors: Array<GraphQLError>;
 };
@@ -113,7 +113,7 @@ export type ExecutionResult = {
  */
 export function execute(
   schema: GraphQLSchema,
-  documentAST: Document,
+  document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
@@ -138,7 +138,7 @@ export function execute(
   // this will throw an error.
   const context = buildExecutionContext(
     schema,
-    documentAST,
+    document,
     rootValue,
     contextValue,
     variableValues,
@@ -176,16 +176,17 @@ export function execute(
  */
 function buildExecutionContext(
   schema: GraphQLSchema,
-  documentAST: Document,
+  document: DocumentNode,
   rootValue: mixed,
   contextValue: mixed,
   rawVariableValues: ?{[key: string]: mixed},
   operationName: ?string
 ): ExecutionContext {
   const errors: Array<GraphQLError> = [];
-  let operation: ?OperationDefinition;
-  const fragments: {[name: string]: FragmentDefinition} = Object.create(null);
-  documentAST.definitions.forEach(definition => {
+  let operation: ?OperationDefinitionNode;
+  const fragments: {[name: string]: FragmentDefinitionNode} =
+    Object.create(null);
+  document.definitions.forEach(definition => {
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
         if (!operationName && operation) {
@@ -236,7 +237,7 @@ function buildExecutionContext(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-  operation: OperationDefinition,
+  operation: OperationDefinitionNode,
   rootValue: mixed
 ): {[key: string]: mixed} {
   const type = getOperationRootType(exeContext.schema, operation);
@@ -261,7 +262,7 @@ function executeOperation(
  */
 function getOperationRootType(
   schema: GraphQLSchema,
-  operation: OperationDefinition
+  operation: OperationDefinitionNode
 ): GraphQLObjectType {
   switch (operation.operation) {
     case 'query':
@@ -301,17 +302,17 @@ function executeFieldsSerially(
   parentType: GraphQLObjectType,
   sourceValue: mixed,
   path: Array<string | number>,
-  fields: {[key: string]: Array<Field>}
+  fields: {[key: string]: Array<FieldNode>}
 ): Promise<{[key: string]: mixed}> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
-      const fieldASTs = fields[responseName];
+      const fieldNodes = fields[responseName];
       const fieldPath = path.concat([ responseName ]);
       const result = resolveField(
         exeContext,
         parentType,
         sourceValue,
-        fieldASTs,
+        fieldNodes,
         fieldPath
       );
       if (result === undefined) {
@@ -339,19 +340,19 @@ function executeFields(
   parentType: GraphQLObjectType,
   sourceValue: mixed,
   path: Array<string | number>,
-  fields: {[key: string]: Array<Field>}
+  fields: {[key: string]: Array<FieldNode>}
 ): {[key: string]: mixed} {
   let containsPromise = false;
 
   const finalResults = Object.keys(fields).reduce(
     (results, responseName) => {
-      const fieldASTs = fields[responseName];
+      const fieldNodes = fields[responseName];
       const fieldPath = path.concat([ responseName ]);
       const result = resolveField(
         exeContext,
         parentType,
         sourceValue,
-        fieldASTs,
+        fieldNodes,
         fieldPath
       );
       if (result === undefined) {
@@ -389,10 +390,10 @@ function executeFields(
 function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
-  selectionSet: SelectionSet,
-  fields: {[key: string]: Array<Field>},
+  selectionSet: SelectionSetNode,
+  fields: {[key: string]: Array<FieldNode>},
   visitedFragmentNames: {[key: string]: boolean}
-): {[key: string]: Array<Field>} {
+): {[key: string]: Array<FieldNode>} {
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
     switch (selection.kind) {
@@ -450,16 +451,16 @@ function collectFields(
  */
 function shouldIncludeNode(
   exeContext: ExecutionContext,
-  directives: ?Array<Directive>
+  directives: ?Array<DirectiveNode>
 ): boolean {
-  const skipAST = directives && find(
+  const skipNode = directives && find(
     directives,
     directive => directive.name.value === GraphQLSkipDirective.name
   );
-  if (skipAST) {
+  if (skipNode) {
     const { if: skipIf } = getArgumentValues(
       GraphQLSkipDirective,
-      skipAST,
+      skipNode,
       exeContext.variableValues
     );
     if (skipIf === true) {
@@ -467,14 +468,14 @@ function shouldIncludeNode(
     }
   }
 
-  const includeAST = directives && find(
+  const includeNode = directives && find(
     directives,
     directive => directive.name.value === GraphQLIncludeDirective.name
   );
-  if (includeAST) {
+  if (includeNode) {
     const { if: includeIf } = getArgumentValues(
       GraphQLIncludeDirective,
-      includeAST,
+      includeNode,
       exeContext.variableValues
     );
     if (includeIf === false) {
@@ -490,14 +491,14 @@ function shouldIncludeNode(
  */
 function doesFragmentConditionMatch(
   exeContext: ExecutionContext,
-  fragment: FragmentDefinition | InlineFragment,
+  fragment: FragmentDefinitionNode | InlineFragmentNode,
   type: GraphQLObjectType
 ): boolean {
-  const typeConditionAST = fragment.typeCondition;
-  if (!typeConditionAST) {
+  const typeConditionNode = fragment.typeCondition;
+  if (!typeConditionNode) {
     return true;
   }
-  const conditionalType = typeFromAST(exeContext.schema, typeConditionAST);
+  const conditionalType = typeFromAST(exeContext.schema, typeConditionNode);
   if (conditionalType === type) {
     return true;
   }
@@ -531,7 +532,7 @@ function promiseForObject<T>(
 /**
  * Implements the logic to compute the key of a given field's entry
  */
-function getFieldEntryKey(node: Field): string {
+function getFieldEntryKey(node: FieldNode): string {
   return node.alias ? node.alias.value : node.name.value;
 }
 
@@ -545,11 +546,11 @@ function resolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: mixed,
-  fieldASTs: Array<Field>,
+  fieldNodes: Array<FieldNode>,
   path: Array<string | number>
 ): mixed {
-  const fieldAST = fieldASTs[0];
-  const fieldName = fieldAST.name.value;
+  const fieldNode = fieldNodes[0];
+  const fieldName = fieldNode.name.value;
 
   const fieldDef = getFieldDef(exeContext.schema, parentType, fieldName);
   if (!fieldDef) {
@@ -568,7 +569,7 @@ function resolveField(
   // information about the current execution state.
   const info: GraphQLResolveInfo = {
     fieldName,
-    fieldASTs,
+    fieldNodes,
     returnType,
     parentType,
     path,
@@ -584,7 +585,7 @@ function resolveField(
   const result = resolveOrError(
     exeContext,
     fieldDef,
-    fieldAST,
+    fieldNode,
     resolveFn,
     source,
     context,
@@ -594,7 +595,7 @@ function resolveField(
   return completeValueCatchingError(
     exeContext,
     returnType,
-    fieldASTs,
+    fieldNodes,
     info,
     path,
     result
@@ -605,9 +606,9 @@ function resolveField(
 // function. Returns the result of resolveFn or the abrupt-return Error object.
 function resolveOrError(
   exeContext: ExecutionContext,
-  fieldDef: GraphQLFieldDefinition,
-  fieldAST: Field,
-  resolveFn: GraphQLFieldResolveFn<*>,
+  fieldDef: GraphQLField,
+  fieldNode: FieldNode,
+  resolveFn: GraphQLFieldResolver<*>,
   source: mixed,
   context: mixed,
   info: GraphQLResolveInfo
@@ -618,7 +619,7 @@ function resolveOrError(
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = getArgumentValues(
       fieldDef,
-      fieldAST,
+      fieldNode,
       exeContext.variableValues
     );
 
@@ -635,7 +636,7 @@ function resolveOrError(
 function completeValueCatchingError(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  fieldASTs: Array<Field>,
+  fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: Array<string | number>,
   result: mixed
@@ -646,7 +647,7 @@ function completeValueCatchingError(
     return completeValueWithLocatedError(
       exeContext,
       returnType,
-      fieldASTs,
+      fieldNodes,
       info,
       path,
       result
@@ -659,7 +660,7 @@ function completeValueCatchingError(
     const completed = completeValueWithLocatedError(
       exeContext,
       returnType,
-      fieldASTs,
+      fieldNodes,
       info,
       path,
       result
@@ -688,7 +689,7 @@ function completeValueCatchingError(
 function completeValueWithLocatedError(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  fieldASTs: Array<Field>,
+  fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: Array<string | number>,
   result: mixed
@@ -697,7 +698,7 @@ function completeValueWithLocatedError(
     const completed = completeValue(
       exeContext,
       returnType,
-      fieldASTs,
+      fieldNodes,
       info,
       path,
       result
@@ -705,12 +706,12 @@ function completeValueWithLocatedError(
     if (isThenable(completed)) {
       return ((completed: any): Promise<*>).then(
         undefined,
-        error => Promise.reject(locatedError(error, fieldASTs, path))
+        error => Promise.reject(locatedError(error, fieldNodes, path))
       );
     }
     return completed;
   } catch (error) {
-    throw locatedError(error, fieldASTs, path);
+    throw locatedError(error, fieldNodes, path);
   }
 }
 
@@ -738,7 +739,7 @@ function completeValueWithLocatedError(
 function completeValue(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  fieldASTs: Array<Field>,
+  fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: Array<string | number>,
   result: mixed
@@ -749,7 +750,7 @@ function completeValue(
       resolved => completeValue(
         exeContext,
         returnType,
-        fieldASTs,
+        fieldNodes,
         info,
         path,
         resolved
@@ -768,7 +769,7 @@ function completeValue(
     const completed = completeValue(
       exeContext,
       returnType.ofType,
-      fieldASTs,
+      fieldNodes,
       info,
       path,
       result
@@ -792,7 +793,7 @@ function completeValue(
     return completeListValue(
       exeContext,
       returnType,
-      fieldASTs,
+      fieldNodes,
       info,
       path,
       result
@@ -813,7 +814,7 @@ function completeValue(
     return completeAbstractValue(
       exeContext,
       returnType,
-      fieldASTs,
+      fieldNodes,
       info,
       path,
       result
@@ -825,7 +826,7 @@ function completeValue(
     return completeObjectValue(
       exeContext,
       returnType,
-      fieldASTs,
+      fieldNodes,
       info,
       path,
       result
@@ -845,7 +846,7 @@ function completeValue(
 function completeListValue(
   exeContext: ExecutionContext,
   returnType: GraphQLList<*>,
-  fieldASTs: Array<Field>,
+  fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: Array<string | number>,
   result: mixed
@@ -868,7 +869,7 @@ function completeListValue(
     const completedItem = completeValueCatchingError(
       exeContext,
       itemType,
-      fieldASTs,
+      fieldNodes,
       info,
       fieldPath,
       item
@@ -909,7 +910,7 @@ function completeLeafValue(
 function completeAbstractValue(
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
-  fieldASTs: Array<Field>,
+  fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: Array<string | number>,
   result: mixed
@@ -928,7 +929,7 @@ function completeAbstractValue(
       `Abstract type ${returnType.name} must resolve to an Object type at ` +
       `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
       `value "${String(result)}", received "${String(runtimeType)}".`,
-      fieldASTs
+      fieldNodes
     );
   }
 
@@ -936,14 +937,14 @@ function completeAbstractValue(
     throw new GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type ` +
       `for "${returnType.name}".`,
-      fieldASTs
+      fieldNodes
     );
   }
 
   return completeObjectValue(
     exeContext,
     runtimeType,
-    fieldASTs,
+    fieldNodes,
     info,
     path,
     result
@@ -956,7 +957,7 @@ function completeAbstractValue(
 function completeObjectValue(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
-  fieldASTs: Array<Field>,
+  fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: Array<string | number>,
   result: mixed
@@ -968,27 +969,27 @@ function completeObjectValue(
       !returnType.isTypeOf(result, exeContext.contextValue, info)) {
     throw new GraphQLError(
       `Expected value of type "${returnType.name}" but got: ${String(result)}.`,
-      fieldASTs
+      fieldNodes
     );
   }
 
   // Collect sub-fields to execute to complete this value.
-  let subFieldASTs = Object.create(null);
+  let subFieldNodes = Object.create(null);
   const visitedFragmentNames = Object.create(null);
-  for (let i = 0; i < fieldASTs.length; i++) {
-    const selectionSet = fieldASTs[i].selectionSet;
+  for (let i = 0; i < fieldNodes.length; i++) {
+    const selectionSet = fieldNodes[i].selectionSet;
     if (selectionSet) {
-      subFieldASTs = collectFields(
+      subFieldNodes = collectFields(
         exeContext,
         returnType,
         selectionSet,
-        subFieldASTs,
+        subFieldNodes,
         visitedFragmentNames
       );
     }
   }
 
-  return executeFields(exeContext, returnType, result, path, subFieldASTs);
+  return executeFields(exeContext, returnType, result, path, subFieldNodes);
 }
 
 /**
@@ -1017,7 +1018,7 @@ function defaultResolveTypeFn(
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context.
  */
-export const defaultFieldResolver: GraphQLFieldResolveFn<any> =
+export const defaultFieldResolver: GraphQLFieldResolver<any> =
 function (source, args, context, { fieldName }) {
   // ensure source is a value for which property access is acceptable.
   if (typeof source === 'object' || typeof source === 'function') {
@@ -1052,7 +1053,7 @@ function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
   fieldName: string
-): ?GraphQLFieldDefinition {
+): ?GraphQLField {
   if (fieldName === SchemaMetaFieldDef.name &&
       schema.getQueryType() === parentType) {
     return SchemaMetaFieldDef;

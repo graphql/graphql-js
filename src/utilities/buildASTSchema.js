@@ -33,20 +33,20 @@ import {
 
 import type {
   Location,
-  Document,
-  Directive,
-  Type,
-  NamedType,
-  SchemaDefinition,
-  TypeDefinition,
-  ScalarTypeDefinition,
-  ObjectTypeDefinition,
-  InputValueDefinition,
-  InterfaceTypeDefinition,
-  UnionTypeDefinition,
-  EnumTypeDefinition,
-  InputObjectTypeDefinition,
-  DirectiveDefinition,
+  DocumentNode,
+  DirectiveNode,
+  TypeNode,
+  NamedTypeNode,
+  SchemaDefinitionNode,
+  TypeDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+  InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  UnionTypeDefinitionNode,
+  EnumTypeDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  DirectiveDefinitionNode,
 } from '../language/ast';
 
 import { GraphQLSchema } from '../type/schema';
@@ -104,21 +104,21 @@ import {
 
 function buildWrappedType(
   innerType: GraphQLType,
-  inputTypeAST: Type
+  inputTypeNode: TypeNode
 ): GraphQLType {
-  if (inputTypeAST.kind === LIST_TYPE) {
-    return new GraphQLList(buildWrappedType(innerType, inputTypeAST.type));
+  if (inputTypeNode.kind === LIST_TYPE) {
+    return new GraphQLList(buildWrappedType(innerType, inputTypeNode.type));
   }
-  if (inputTypeAST.kind === NON_NULL_TYPE) {
-    const wrappedType = buildWrappedType(innerType, inputTypeAST.type);
+  if (inputTypeNode.kind === NON_NULL_TYPE) {
+    const wrappedType = buildWrappedType(innerType, inputTypeNode.type);
     invariant(!(wrappedType instanceof GraphQLNonNull), 'No nesting nonnull.');
     return new GraphQLNonNull(wrappedType);
   }
   return innerType;
 }
 
-function getNamedTypeAST(typeAST: Type): NamedType {
-  let namedType = typeAST;
+function getNamedTypeNode(typeNode: TypeNode): NamedTypeNode {
+  let namedType = typeNode;
   while (namedType.kind === LIST_TYPE || namedType.kind === NON_NULL_TYPE) {
     namedType = namedType.type;
   }
@@ -135,16 +135,16 @@ function getNamedTypeAST(typeAST: Type): NamedType {
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
  */
-export function buildASTSchema(ast: Document): GraphQLSchema {
+export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   if (!ast || ast.kind !== DOCUMENT) {
     throw new Error('Must provide a document ast.');
   }
 
-  let schemaDef: ?SchemaDefinition;
+  let schemaDef: ?SchemaDefinitionNode;
 
-  const typeDefs: Array<TypeDefinition> = [];
-  const astMap: {[name: string]: TypeDefinition} = Object.create(null);
-  const directiveDefs: Array<DirectiveDefinition> = [];
+  const typeDefs: Array<TypeDefinitionNode> = [];
+  const nodeMap: {[name: string]: TypeDefinitionNode} = Object.create(null);
+  const directiveDefs: Array<DirectiveDefinitionNode> = [];
   for (let i = 0; i < ast.definitions.length; i++) {
     const d = ast.definitions[i];
     switch (d.kind) {
@@ -161,7 +161,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
       case UNION_TYPE_DEFINITION:
       case INPUT_OBJECT_TYPE_DEFINITION:
         typeDefs.push(d);
-        astMap[d.name.value] = d;
+        nodeMap[d.name.value] = d;
         break;
       case DIRECTIVE_DEFINITION:
         directiveDefs.push(d);
@@ -179,7 +179,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
         if (queryTypeName) {
           throw new Error('Must provide only one query type in schema.');
         }
-        if (!astMap[typeName]) {
+        if (!nodeMap[typeName]) {
           throw new Error(
             `Specified query type "${typeName}" not found in document.`
           );
@@ -189,7 +189,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
         if (mutationTypeName) {
           throw new Error('Must provide only one mutation type in schema.');
         }
-        if (!astMap[typeName]) {
+        if (!nodeMap[typeName]) {
           throw new Error(
             `Specified mutation type "${typeName}" not found in document.`
           );
@@ -199,7 +199,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
         if (subscriptionTypeName) {
           throw new Error('Must provide only one subscription type in schema.');
         }
-        if (!astMap[typeName]) {
+        if (!nodeMap[typeName]) {
           throw new Error(
             `Specified subscription type "${typeName}" not found in document.`
           );
@@ -208,13 +208,13 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
       }
     });
   } else {
-    if (astMap.Query) {
+    if (nodeMap.Query) {
       queryTypeName = 'Query';
     }
-    if (astMap.Mutation) {
+    if (nodeMap.Mutation) {
       mutationTypeName = 'Mutation';
     }
-    if (astMap.Subscription) {
+    if (nodeMap.Subscription) {
       subscriptionTypeName = 'Subscription';
     }
   }
@@ -259,27 +259,32 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
   }
 
   return new GraphQLSchema({
-    query: getObjectType(astMap[queryTypeName]),
-    mutation: mutationTypeName ? getObjectType(astMap[mutationTypeName]) : null,
-    subscription:
-      subscriptionTypeName ? getObjectType(astMap[subscriptionTypeName]) : null,
+    query: getObjectType(nodeMap[queryTypeName]),
+    mutation: mutationTypeName ?
+      getObjectType(nodeMap[mutationTypeName]) :
+      null,
+    subscription: subscriptionTypeName ?
+      getObjectType(nodeMap[subscriptionTypeName]) :
+      null,
     types,
     directives,
   });
 
-  function getDirective(directiveAST: DirectiveDefinition): GraphQLDirective {
+  function getDirective(
+    directiveNode: DirectiveDefinitionNode
+  ): GraphQLDirective {
     return new GraphQLDirective({
-      name: directiveAST.name.value,
-      description: getDescription(directiveAST),
-      locations: directiveAST.locations.map(
+      name: directiveNode.name.value,
+      description: getDescription(directiveNode),
+      locations: directiveNode.locations.map(
         node => ((node.value: any): DirectiveLocationEnum)
       ),
-      args: directiveAST.arguments && makeInputValues(directiveAST.arguments),
+      args: directiveNode.arguments && makeInputValues(directiveNode.arguments),
     });
   }
 
-  function getObjectType(typeAST: TypeDefinition): GraphQLObjectType {
-    const type = typeDefNamed(typeAST.name.value);
+  function getObjectType(typeNode: TypeDefinitionNode): GraphQLObjectType {
+    const type = typeDefNamed(typeNode.name.value);
     invariant(
       type instanceof GraphQLObjectType,
       'AST must provide object type.'
@@ -287,32 +292,32 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     return (type: any);
   }
 
-  function produceType(typeAST: Type): GraphQLType {
-    const typeName = getNamedTypeAST(typeAST).name.value;
+  function produceType(typeNode: TypeNode): GraphQLType {
+    const typeName = getNamedTypeNode(typeNode).name.value;
     const typeDef = typeDefNamed(typeName);
-    return buildWrappedType(typeDef, typeAST);
+    return buildWrappedType(typeDef, typeNode);
   }
 
-  function produceInputType(typeAST: Type): GraphQLInputType {
-    const type = produceType(typeAST);
+  function produceInputType(typeNode: TypeNode): GraphQLInputType {
+    const type = produceType(typeNode);
     invariant(isInputType(type), 'Expected Input type.');
     return (type: any);
   }
 
-  function produceOutputType(typeAST: Type): GraphQLOutputType {
-    const type = produceType(typeAST);
+  function produceOutputType(typeNode: TypeNode): GraphQLOutputType {
+    const type = produceType(typeNode);
     invariant(isOutputType(type), 'Expected Output type.');
     return (type: any);
   }
 
-  function produceObjectType(typeAST: Type): GraphQLObjectType {
-    const type = produceType(typeAST);
+  function produceObjectType(typeNode: TypeNode): GraphQLObjectType {
+    const type = produceType(typeNode);
     invariant(type instanceof GraphQLObjectType, 'Expected Object type.');
     return type;
   }
 
-  function produceInterfaceType(typeAST: Type): GraphQLInterfaceType {
-    const type = produceType(typeAST);
+  function produceInterfaceType(typeNode: TypeNode): GraphQLInterfaceType {
+    const type = produceType(typeNode);
     invariant(type instanceof GraphQLInterfaceType, 'Expected Object type.');
     return type;
   }
@@ -322,11 +327,11 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
       return innerTypeMap[typeName];
     }
 
-    if (!astMap[typeName]) {
+    if (!nodeMap[typeName]) {
       throw new Error(`Type "${typeName}" not found in document.`);
     }
 
-    const innerTypeDef = makeSchemaDef(astMap[typeName]);
+    const innerTypeDef = makeSchemaDef(nodeMap[typeName]);
     if (!innerTypeDef) {
       throw new Error(`Nothing constructed for "${typeName}".`);
     }
@@ -356,7 +361,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     }
   }
 
-  function makeTypeDef(def: ObjectTypeDefinition) {
+  function makeTypeDef(def: ObjectTypeDefinitionNode) {
     const typeName = def.name.value;
     return new GraphQLObjectType({
       name: typeName,
@@ -367,7 +372,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
   }
 
   function makeFieldDefMap(
-    def: ObjectTypeDefinition | InterfaceTypeDefinition
+    def: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode
   ) {
     return keyValMap(
       def.fields,
@@ -381,12 +386,12 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     );
   }
 
-  function makeImplementedInterfaces(def: ObjectTypeDefinition) {
+  function makeImplementedInterfaces(def: ObjectTypeDefinitionNode) {
     return def.interfaces &&
       def.interfaces.map(iface => produceInterfaceType(iface));
   }
 
-  function makeInputValues(values: Array<InputValueDefinition>) {
+  function makeInputValues(values: Array<InputValueDefinitionNode>) {
     return keyValMap(
       values,
       value => value.name.value,
@@ -401,7 +406,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     );
   }
 
-  function makeInterfaceDef(def: InterfaceTypeDefinition) {
+  function makeInterfaceDef(def: InterfaceTypeDefinitionNode) {
     const typeName = def.name.value;
     return new GraphQLInterfaceType({
       name: typeName,
@@ -411,7 +416,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     });
   }
 
-  function makeEnumDef(def: EnumTypeDefinition) {
+  function makeEnumDef(def: EnumTypeDefinitionNode) {
     const enumType = new GraphQLEnumType({
       name: def.name.value,
       description: getDescription(def),
@@ -428,7 +433,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     return enumType;
   }
 
-  function makeUnionDef(def: UnionTypeDefinition) {
+  function makeUnionDef(def: UnionTypeDefinitionNode) {
     return new GraphQLUnionType({
       name: def.name.value,
       description: getDescription(def),
@@ -437,7 +442,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     });
   }
 
-  function makeScalarDef(def: ScalarTypeDefinition) {
+  function makeScalarDef(def: ScalarTypeDefinitionNode) {
     return new GraphQLScalarType({
       name: def.name.value,
       description: getDescription(def),
@@ -451,7 +456,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
     });
   }
 
-  function makeInputObjectDef(def: InputObjectTypeDefinition) {
+  function makeInputObjectDef(def: InputObjectTypeDefinitionNode) {
     return new GraphQLInputObjectType({
       name: def.name.value,
       description: getDescription(def),
@@ -460,7 +465,7 @@ export function buildASTSchema(ast: Document): GraphQLSchema {
   }
 }
 
-function getDeprecationReason(directives: ?Array<Directive>): ?string {
+function getDeprecationReason(directives: ?Array<DirectiveNode>): ?string {
   const deprecatedAST = directives && find(
     directives,
     directive => directive.name.value === GraphQLDeprecatedDirective.name

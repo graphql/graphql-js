@@ -10,7 +10,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import type { VariableDefinition } from '../../language/ast';
+import type { VariableDefinitionNode } from '../../language/ast';
 import { print } from '../../language/printer';
 import { isInputType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
@@ -31,7 +31,7 @@ export function nonInputTypeOnVarMessage(
  */
 export function VariablesAreInputTypes(context: ValidationContext): any {
   return {
-    VariableDefinition(node: VariableDefinition): ?GraphQLError {
+    VariableDefinition(node: VariableDefinitionNode): ?GraphQLError {
       const type = typeFromAST(context.getSchema(), node.type);
 
       // If the variable type is not an input type, return an error.

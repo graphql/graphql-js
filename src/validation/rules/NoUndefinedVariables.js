@@ -49,8 +49,8 @@ export function NoUndefinedVariables(context: ValidationContext): any {
         });
       }
     },
-    VariableDefinition(varDefAST) {
-      variableNameDefined[varDefAST.variable.name.value] = true;
+    VariableDefinition(node) {
+      variableNameDefined[node.variable.name.value] = true;
     }
   };
 }

@@ -45,9 +45,9 @@ export function badValueForDefaultArgMessage(
  */
 export function DefaultValuesOfCorrectType(context: ValidationContext): any {
   return {
-    VariableDefinition(varDefAST) {
-      const name = varDefAST.variable.name.value;
-      const defaultValue = varDefAST.defaultValue;
+    VariableDefinition(node) {
+      const name = node.variable.name.value;
+      const defaultValue = node.defaultValue;
       const type = context.getInputType();
       if (type instanceof GraphQLNonNull && defaultValue) {
         context.reportError(new GraphQLError(

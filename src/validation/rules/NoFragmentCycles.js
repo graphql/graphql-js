@@ -10,7 +10,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import type { FragmentDefinition } from '../../language/ast';
+import type { FragmentDefinitionNode } from '../../language/ast';
 
 
 export function cycleErrorMessage(
@@ -45,7 +45,7 @@ export function NoFragmentCycles(context: ValidationContext): any {
   // This does a straight-forward DFS to find cycles.
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
-  function detectCycleRecursive(fragment: FragmentDefinition) {
+  function detectCycleRecursive(fragment: FragmentDefinitionNode) {
     const fragmentName = fragment.name.value;
     visitedFrags[fragmentName] = true;
 
