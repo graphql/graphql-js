@@ -9,7 +9,6 @@
  */
 
 import * as Kind from '../language/kinds';
-import type { Field } from '../language/ast';
 import {
   isCompositeType,
   getNullableType,
@@ -35,7 +34,7 @@ import {
   TypeNameMetaFieldDef
 } from '../type/introspection';
 import type { GraphQLSchema } from '../type/schema';
-import type { Node } from '../language/ast';
+import type { ASTNode, FieldNode } from '../language/ast';
 import { typeFromAST } from './typeFromAST';
 import find from '../jsutils/find';
 
@@ -105,7 +104,7 @@ export class TypeInfo {
   }
 
   // Flow does not yet handle this case.
-  enter(node: any/* Node */) {
+  enter(node: any/* ASTNode */) {
     const schema = this._schema;
     switch (node.kind) {
       case Kind.SELECTION_SET:
@@ -186,7 +185,7 @@ export class TypeInfo {
     }
   }
 
-  leave(node: Node) {
+  leave(node: ASTNode) {
     switch (node.kind) {
       case Kind.SELECTION_SET:
         this._parentTypeStack.pop();
@@ -226,9 +225,9 @@ export class TypeInfo {
 function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLType,
-  fieldAST: Field
+  fieldNode: FieldNode
 ): ?GraphQLField {
-  const name = fieldAST.name.value;
+  const name = fieldNode.name.value;
   if (name === SchemaMetaFieldDef.name &&
       schema.getQueryType() === parentType) {
     return SchemaMetaFieldDef;

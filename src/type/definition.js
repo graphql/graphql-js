@@ -13,10 +13,10 @@ import isNullish from '../jsutils/isNullish';
 import { ENUM } from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
 import type {
-  OperationDefinition,
-  Field,
-  FragmentDefinition,
-  Value,
+  OperationDefinitionNode,
+  FieldNode,
+  FragmentDefinitionNode,
+  ValueNode,
 } from '../language/ast';
 import type { GraphQLSchema } from './schema';
 
@@ -258,9 +258,9 @@ export class GraphQLScalarType {
   }
 
   // Parses an externally provided literal value to use as an input.
-  parseLiteral(valueAST: Value): mixed {
+  parseLiteral(valueNode: ValueNode): mixed {
     const parser = this._scalarConfig.parseLiteral;
-    return parser ? parser(valueAST) : null;
+    return parser ? parser(valueNode) : null;
   }
 
   toString(): string {
@@ -273,7 +273,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   description?: ?string;
   serialize: (value: mixed) => ?TExternal;
   parseValue?: (value: mixed) => ?TInternal;
-  parseLiteral?: (valueAST: Value) => ?TInternal;
+  parseLiteral?: (valueNode: ValueNode) => ?TInternal;
 };
 
 
@@ -488,14 +488,14 @@ export type GraphQLFieldResolveFn<TSource> = (
 
 export type GraphQLResolveInfo = {
   fieldName: string;
-  fieldASTs: Array<Field>;
+  fieldNodes: Array<FieldNode>;
   returnType: GraphQLOutputType;
   parentType: GraphQLCompositeType;
   path: Array<string | number>;
   schema: GraphQLSchema;
-  fragments: { [fragmentName: string]: FragmentDefinition };
+  fragments: { [fragmentName: string]: FragmentDefinitionNode };
   rootValue: mixed;
-  operation: OperationDefinition;
+  operation: OperationDefinitionNode;
   variableValues: { [variableName: string]: mixed };
 };
 
@@ -768,9 +768,9 @@ export class GraphQLEnumType/* <T> */ {
     }
   }
 
-  parseLiteral(valueAST: Value): ?any/* T */ {
-    if (valueAST.kind === ENUM) {
-      const enumValue = this._getNameLookup()[valueAST.value];
+  parseLiteral(valueNode: ValueNode): ?any/* T */ {
+    if (valueNode.kind === ENUM) {
+      const enumValue = this._getNameLookup()[valueNode.value];
       if (enumValue) {
         return enumValue.value;
       }

@@ -118,4 +118,3 @@ export type {
   GraphQLTypeResolveFn,
   GraphQLUnionTypeConfig,
 } from './definition';
-

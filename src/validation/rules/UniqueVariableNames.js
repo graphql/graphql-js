@@ -9,7 +9,7 @@
  */
 
 import type { ValidationContext } from '../index';
-import type { VariableDefinition } from '../../language/ast';
+import type { VariableDefinitionNode } from '../../language/ast';
 import { GraphQLError } from '../../error';
 
 
@@ -28,7 +28,7 @@ export function UniqueVariableNames(context: ValidationContext): any {
     OperationDefinition() {
       knownVariableNames = Object.create(null);
     },
-    VariableDefinition(node: VariableDefinition) {
+    VariableDefinition(node: VariableDefinitionNode) {
       const variableName = node.variable.name.value;
       if (knownVariableNames[variableName]) {
         context.reportError(new GraphQLError(

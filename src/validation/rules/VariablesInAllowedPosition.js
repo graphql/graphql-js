@@ -63,8 +63,8 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
         });
       }
     },
-    VariableDefinition(varDefAST) {
-      varDefMap[varDefAST.variable.name.value] = varDefAST;
+    VariableDefinition(node) {
+      varDefMap[node.variable.name.value] = node;
     }
   };
 }

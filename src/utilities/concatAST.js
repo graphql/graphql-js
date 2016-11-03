@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import type { Document } from '../language/ast';
+import type { DocumentNode } from '../language/ast';
 
 
 /**
@@ -16,7 +16,7 @@ import type { Document } from '../language/ast';
  * concatenate the ASTs together into batched AST, useful for validating many
  * GraphQL source files which together represent one conceptual application.
  */
-export function concatAST(asts: Array<Document>): Document {
+export function concatAST(asts: Array<DocumentNode>): DocumentNode {
   const batchDefinitions = [];
   for (let i = 0; i < asts.length; i++) {
     const definitions = asts[i].definitions;

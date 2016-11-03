@@ -12,10 +12,10 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import find from '../../jsutils/find';
 import type {
-  SelectionSet,
-  Field,
-  Argument,
-  FragmentDefinition,
+  SelectionSetNode,
+  FieldNode,
+  ArgumentNode,
+  FragmentDefinitionNode,
 } from '../../language/ast';
 import { FIELD, INLINE_FRAGMENT, FRAGMENT_SPREAD } from '../../language/kinds';
 import { print } from '../../language/printer';
@@ -92,15 +92,15 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
   };
 }
 
-type Conflict = [ ConflictReason, Array<Field>, Array<Field> ];
+type Conflict = [ ConflictReason, Array<FieldNode>, Array<FieldNode> ];
 // Field name and reason.
 type ConflictReason = [ string, ConflictReasonMessage ];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
-// Tuple defining an AST in a context
-type AstAndDef = [ GraphQLCompositeType, Field, ?GraphQLField ];
+// Tuple defining a field node in a context.
+type NodeAndDef = [ GraphQLCompositeType, FieldNode, ?GraphQLField ];
 // Map of array of those.
-type AstAndDefCollection = { [key: string]: Array<AstAndDef> };
+type NodeAndDefCollection = { [key: string]: Array<NodeAndDef> };
 
 /**
  * Algorithm:
@@ -165,7 +165,7 @@ function findConflictsWithinSelectionSet(
   cachedFieldsAndFragmentNames,
   comparedFragments: PairSet,
   parentType: ?GraphQLNamedType,
-  selectionSet: SelectionSet
+  selectionSet: SelectionSetNode
 ): Array<Conflict> {
   const conflicts = [];
 
@@ -225,7 +225,7 @@ function collectConflictsBetweenFieldsAndFragment(
   cachedFieldsAndFragmentNames,
   comparedFragments: PairSet,
   areMutuallyExclusive: boolean,
-  fieldMap: AstAndDefCollection,
+  fieldMap: NodeAndDefCollection,
   fragmentName: string
 ): void {
   const fragment = context.getFragment(fragmentName);
@@ -357,9 +357,9 @@ function findConflictsBetweenSubSelectionSets(
   comparedFragments: PairSet,
   areMutuallyExclusive: boolean,
   parentType1: ?GraphQLNamedType,
-  selectionSet1: SelectionSet,
+  selectionSet1: SelectionSetNode,
   parentType2: ?GraphQLNamedType,
-  selectionSet2: SelectionSet
+  selectionSet2: SelectionSetNode
 ): Array<Conflict> {
   const conflicts = [];
 
@@ -440,7 +440,7 @@ function collectConflictsWithin(
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames,
   comparedFragments: PairSet,
-  fieldMap: AstAndDefCollection
+  fieldMap: NodeAndDefCollection
 ): void {
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
@@ -483,8 +483,8 @@ function collectConflictsBetween(
   cachedFieldsAndFragmentNames,
   comparedFragments: PairSet,
   parentFieldsAreMutuallyExclusive: boolean,
-  fieldMap1: AstAndDefCollection,
-  fieldMap2: AstAndDefCollection
+  fieldMap1: NodeAndDefCollection,
+  fieldMap2: NodeAndDefCollection
 ): void {
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
@@ -523,11 +523,11 @@ function findConflict(
   comparedFragments: PairSet,
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
-  field1: AstAndDef,
-  field2: AstAndDef
+  field1: NodeAndDef,
+  field2: NodeAndDef
 ): ?Conflict {
-  const [ parentType1, ast1, def1 ] = field1;
-  const [ parentType2, ast2, def2 ] = field2;
+  const [ parentType1, node1, def1 ] = field1;
+  const [ parentType2, node2, def2 ] = field2;
 
   // If it is known that two fields could not possibly apply at the same
   // time, due to the parent types, then it is safe to permit them to diverge
@@ -549,22 +549,22 @@ function findConflict(
 
   if (!areMutuallyExclusive) {
     // Two aliases must refer to the same field.
-    const name1 = ast1.name.value;
-    const name2 = ast2.name.value;
+    const name1 = node1.name.value;
+    const name2 = node2.name.value;
     if (name1 !== name2) {
       return [
         [ responseName, `${name1} and ${name2} are different fields` ],
-        [ ast1 ],
-        [ ast2 ]
+        [ node1 ],
+        [ node2 ]
       ];
     }
 
     // Two field calls must have the same arguments.
-    if (!sameArguments(ast1.arguments || [], ast2.arguments || [])) {
+    if (!sameArguments(node1.arguments || [], node2.arguments || [])) {
       return [
         [ responseName, 'they have differing arguments' ],
-        [ ast1 ],
-        [ ast2 ]
+        [ node1 ],
+        [ node2 ]
       ];
     }
   }
@@ -573,16 +573,16 @@ function findConflict(
     return [
       [ responseName,
         `they return conflicting types ${String(type1)} and ${String(type2)}` ],
-      [ ast1 ],
-      [ ast2 ]
+      [ node1 ],
+      [ node2 ]
     ];
   }
 
   // Collect and compare sub-fields. Use the same "visited fragment names" list
   // for both collections so fields in a fragment reference are never
   // compared to themselves.
-  const selectionSet1 = ast1.selectionSet;
-  const selectionSet2 = ast2.selectionSet;
+  const selectionSet1 = node1.selectionSet;
+  const selectionSet2 = node2.selectionSet;
   if (selectionSet1 && selectionSet2) {
     const conflicts = findConflictsBetweenSubSelectionSets(
       context,
@@ -594,13 +594,13 @@ function findConflict(
       getNamedType(type2),
       selectionSet2
     );
-    return subfieldConflicts(conflicts, responseName, ast1, ast2);
+    return subfieldConflicts(conflicts, responseName, node1, node2);
   }
 }
 
 function sameArguments(
-  arguments1: Array<Argument>,
-  arguments2: Array<Argument>
+  arguments1: Array<ArgumentNode>,
+  arguments2: Array<ArgumentNode>
 ): boolean {
   if (arguments1.length !== arguments2.length) {
     return false;
@@ -655,26 +655,26 @@ function doTypesConflict(
 }
 
 // Given a selection set, return the collection of fields (a mapping of response
-// name to field ASTs and definitions) as well as a list of fragment names
+// name to field nodes and definitions) as well as a list of fragment names
 // referenced via fragment spreads.
 function getFieldsAndFragmentNames(
   context: ValidationContext,
   cachedFieldsAndFragmentNames,
   parentType: ?GraphQLNamedType,
-  selectionSet: SelectionSet
-): [ AstAndDefCollection, Array<string> ] {
+  selectionSet: SelectionSetNode
+): [ NodeAndDefCollection, Array<string> ] {
   let cached = cachedFieldsAndFragmentNames.get(selectionSet);
   if (!cached) {
-    const astAndDefs = {};
+    const nodeAndDefs = {};
     const fragmentNames = {};
     _collectFieldsAndFragmentNames(
       context,
       parentType,
       selectionSet,
-      astAndDefs,
+      nodeAndDefs,
       fragmentNames
     );
-    cached = [ astAndDefs, Object.keys(fragmentNames) ];
+    cached = [ nodeAndDefs, Object.keys(fragmentNames) ];
     cachedFieldsAndFragmentNames.set(selectionSet, cached);
   }
   return cached;
@@ -685,9 +685,9 @@ function getFieldsAndFragmentNames(
 function getReferencedFieldsAndFragmentNames(
   context: ValidationContext,
   cachedFieldsAndFragmentNames,
-  fragment: FragmentDefinition
+  fragment: FragmentDefinitionNode
 ) {
-  // Short-circuit building a type from the AST if possible.
+  // Short-circuit building a type from the node if possible.
   const cached = cachedFieldsAndFragmentNames.get(fragment.selectionSet);
   if (cached) {
     return cached;
@@ -705,8 +705,8 @@ function getReferencedFieldsAndFragmentNames(
 function _collectFieldsAndFragmentNames(
   context: ValidationContext,
   parentType: ?GraphQLNamedType,
-  selectionSet: SelectionSet,
-  astAndDefs,
+  selectionSet: SelectionSetNode,
+  nodeAndDefs,
   fragmentNames
 ): void {
   for (let i = 0; i < selectionSet.selections.length; i++) {
@@ -721,10 +721,10 @@ function _collectFieldsAndFragmentNames(
         }
         const responseName =
           selection.alias ? selection.alias.value : fieldName;
-        if (!astAndDefs[responseName]) {
-          astAndDefs[responseName] = [];
+        if (!nodeAndDefs[responseName]) {
+          nodeAndDefs[responseName] = [];
         }
-        astAndDefs[responseName].push([ parentType, selection, fieldDef ]);
+        nodeAndDefs[responseName].push([ parentType, selection, fieldDef ]);
         break;
       case FRAGMENT_SPREAD:
         fragmentNames[selection.name.value] = true;
@@ -738,7 +738,7 @@ function _collectFieldsAndFragmentNames(
           context,
           ((inlineFragmentType: any): GraphQLNamedType),
           selection.selectionSet,
-          astAndDefs,
+          nodeAndDefs,
           fragmentNames
         );
         break;
@@ -751,19 +751,19 @@ function _collectFieldsAndFragmentNames(
 function subfieldConflicts(
   conflicts: Array<Conflict>,
   responseName: string,
-  ast1: Field,
-  ast2: Field
+  node1: FieldNode,
+  node2: FieldNode
 ): ?Conflict {
   if (conflicts.length > 0) {
     return [
       [ responseName, conflicts.map(([ reason ]) => reason) ],
       conflicts.reduce(
         (allFields, [ , fields1 ]) => allFields.concat(fields1),
-        [ ast1 ]
+        [ node1 ]
       ),
       conflicts.reduce(
         (allFields, [ , , fields2 ]) => allFields.concat(fields2),
-        [ ast2 ]
+        [ node2 ]
       )
     ];
   }

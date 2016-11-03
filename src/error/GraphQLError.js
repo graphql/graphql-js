@@ -9,7 +9,7 @@
  */
 
 import { getLocation } from '../language';
-import type { Node } from '../language/ast';
+import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
 
 /**
@@ -50,7 +50,7 @@ declare class GraphQLError extends Error {
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
-  nodes: Array<Node> | void;
+  nodes: Array<ASTNode> | void;
 
   /**
    * The source GraphQL document corresponding to this error.

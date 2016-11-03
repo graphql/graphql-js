@@ -36,10 +36,10 @@ import type {
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 import type {
-  Field,
-  Directive,
-  Variable,
-  VariableDefinition,
+  FieldNode,
+  DirectiveNode,
+  VariableNode,
+  VariableDefinitionNode,
 } from '../language/ast';
 
 
@@ -50,26 +50,26 @@ import type {
  */
 export function getVariableValues(
   schema: GraphQLSchema,
-  definitionASTs: Array<VariableDefinition>,
+  varDefNodes: Array<VariableDefinitionNode>,
   inputs: { [key: string]: mixed }
 ): { [key: string]: mixed } {
   const coercedValues = Object.create(null);
-  for (let i = 0; i < definitionASTs.length; i++) {
-    const definitionAST = definitionASTs[i];
-    const varName = definitionAST.variable.name.value;
-    let varType = typeFromAST(schema, definitionAST.type);
+  for (let i = 0; i < varDefNodes.length; i++) {
+    const varDefNode = varDefNodes[i];
+    const varName = varDefNode.variable.name.value;
+    let varType = typeFromAST(schema, varDefNode.type);
     if (!isInputType(varType)) {
       throw new GraphQLError(
         `Variable "$${varName}" expected value of type ` +
-        `"${print(definitionAST.type)}" which cannot be used as an input type.`,
-        [ definitionAST.type ]
+        `"${print(varDefNode.type)}" which cannot be used as an input type.`,
+        [ varDefNode.type ]
       );
     }
     varType = ((varType: any): GraphQLInputType);
 
     const value = inputs[varName];
     if (isInvalid(value)) {
-      const defaultValue = definitionAST.defaultValue;
+      const defaultValue = varDefNode.defaultValue;
       if (defaultValue) {
         coercedValues[varName] = valueFromAST(defaultValue, varType);
       }
@@ -77,7 +77,7 @@ export function getVariableValues(
         throw new GraphQLError(
           `Variable "$${varName}" of required type ` +
           `"${String(varType)}" was not provided.`,
-          [ definitionAST ]
+          [ varDefNode ]
         );
       }
     } else {
@@ -87,7 +87,7 @@ export function getVariableValues(
         throw new GraphQLError(
           `Variable "$${varName}" got invalid value ` +
           `${JSON.stringify(value)}.${message}`,
-          [ definitionAST ]
+          [ varDefNode ]
         );
       }
 
@@ -105,23 +105,23 @@ export function getVariableValues(
  */
 export function getArgumentValues(
   def: GraphQLField | GraphQLDirective,
-  node: Field | Directive,
+  node: FieldNode | DirectiveNode,
   variableValues?: ?{ [key: string]: mixed }
 ): { [key: string]: mixed } {
   const argDefs = def.args;
-  const argASTs = node.arguments;
-  if (!argDefs || !argASTs) {
+  const argNodes = node.arguments;
+  if (!argDefs || !argNodes) {
     return {};
   }
   const coercedValues = Object.create(null);
-  const argASTMap = keyMap(argASTs, arg => arg.name.value);
+  const argNodeMap = keyMap(argNodes, arg => arg.name.value);
   for (let i = 0; i < argDefs.length; i++) {
     const argDef = argDefs[i];
     const name = argDef.name;
     const argType = argDef.type;
-    const argumentAST = argASTMap[name];
+    const argumentNode = argNodeMap[name];
     const defaultValue = argDef.defaultValue;
-    if (!argumentAST) {
+    if (!argumentNode) {
       if (!isInvalid(defaultValue)) {
         coercedValues[name] = defaultValue;
       } else if (argType instanceof GraphQLNonNull) {
@@ -131,8 +131,8 @@ export function getArgumentValues(
           [ node ]
         );
       }
-    } else if (argumentAST.value.kind === Kind.VARIABLE) {
-      const variableName = (argumentAST.value: Variable).name.value;
+    } else if (argumentNode.value.kind === Kind.VARIABLE) {
+      const variableName = (argumentNode.value: VariableNode).name.value;
       if (variableValues && !isInvalid(variableValues[variableName])) {
         // Note: this does not check that this variable value is correct.
         // This assumes that this query has been validated and the variable
@@ -145,18 +145,18 @@ export function getArgumentValues(
           `Argument "${name}" of required type "${String(argType)}" was ` +
           `provided the variable "$${variableName}" which was not provided ` +
           'a runtime value.',
-          [ argumentAST.value ]
+          [ argumentNode.value ]
         );
       }
     } else {
-      const valueAST = argumentAST.value;
-      const coercedValue = valueFromAST(valueAST, argType, variableValues);
+      const valueNode = argumentNode.value;
+      const coercedValue = valueFromAST(valueNode, argType, variableValues);
       if (isInvalid(coercedValue)) {
-        const errors = isValidLiteralValue(argType, valueAST);
+        const errors = isValidLiteralValue(argType, valueNode);
         const message = errors ? '\n' + errors.join('\n') : '';
         throw new GraphQLError(
-          `Argument "${name}" got invalid value ${print(valueAST)}.${message}`,
-          [ argumentAST.value ]
+          `Argument "${name}" got invalid value ${print(valueNode)}.${message}`,
+          [ argumentNode.value ]
         );
       }
       coercedValues[name] = coercedValue;

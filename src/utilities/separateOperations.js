@@ -10,8 +10,8 @@
 
 import { visit } from '../language/visitor';
 import type {
-  Document,
-  OperationDefinition,
+  DocumentNode,
+  OperationDefinitionNode,
 } from '../language/ast';
 
 /**
@@ -21,8 +21,8 @@ import type {
  * refers to.
  */
 export function separateOperations(
-  documentAST: Document
-): { [operationName: string]: Document } {
+  documentAST: DocumentNode
+): { [operationName: string]: DocumentNode } {
 
   const operations = [];
   const depGraph: DepGraph = Object.create(null);
@@ -67,7 +67,7 @@ export function separateOperations(
 type DepGraph = {[from: string]: {[to: string]: boolean}};
 
 // Provides the empty string for anonymous operations.
-function opName(operation: OperationDefinition): string {
+function opName(operation: OperationDefinitionNode): string {
   return operation.name ? operation.name.value : '';
 }
 
