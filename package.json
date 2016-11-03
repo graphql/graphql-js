@@ -1,6 +1,6 @@
 {
   "name": "graphql",
-  "version": "0.7.2",
+  "version": "0.8.0-beta1",
   "description": "A Query Language and Runtime which can target any service.",
   "contributors": [
     "Lee Byron <lee@leebyron.com> (http://leebyron.com/)",
@@ -28,7 +28,7 @@
     "check": "flow check",
     "check-cover": "for file in {src/*.js,src/**/*.js}; do echo $file; flow coverage $file; done",
     "build": "babel src --optional runtime --ignore __tests__ --out-dir dist/ && cp package.json dist/ && npm run build-dot-flow",
-    "build-dot-flow": "find ./src -name '*.js' -not -path '*/__tests__*' | while read filepath; do cp $filepath `echo $filepath | sed 's/\\\/src\\\//\\\/dist\\\//g'`.flow; done",
+    "build-dot-flow": "find ./src -name '*.js' -not -path '*/__tests__*' | while read filepath; do cp $filepath `echo $filepath | sed 's/\\/src\\//\\/dist\\//g'`.flow; done",
     "watch": "babel-node ./resources/watch.js",
     "cover": "babel-node ./node_modules/.bin/isparta cover --root src --report html _mocha -- $npm_package_options_mocha",
     "cover:lcov": "babel-node ./node_modules/.bin/isparta cover --root src --report lcovonly _mocha -- $npm_package_options_mocha",
