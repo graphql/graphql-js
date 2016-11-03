@@ -467,7 +467,7 @@ export type GraphQLObjectTypeConfig<TSource> = {
   description?: ?string
 };
 
-export type GraphQLTypeResolveFn = (
+export type GraphQLTypeResolver = (
   value: mixed,
   context: mixed,
   info: GraphQLResolveInfo
@@ -479,7 +479,7 @@ export type GraphQLIsTypeOfFn = (
   info: GraphQLResolveInfo
 ) => boolean;
 
-export type GraphQLFieldResolveFn<TSource> = (
+export type GraphQLFieldResolver<TSource> = (
   source: TSource,
   args: {[argName: string]: mixed},
   context: mixed,
@@ -502,7 +502,7 @@ export type GraphQLResolveInfo = {
 export type GraphQLFieldConfig<TSource> = {
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;
-  resolve?: GraphQLFieldResolveFn<TSource>;
+  resolve?: GraphQLFieldResolver<TSource>;
   deprecationReason?: ?string;
   description?: ?string;
 };
@@ -526,7 +526,7 @@ export type GraphQLField = {
   description: ?string;
   type: GraphQLOutputType;
   args: Array<GraphQLArgument>;
-  resolve?: GraphQLFieldResolveFn<*>;
+  resolve?: GraphQLFieldResolver<*>;
   isDeprecated?: boolean;
   deprecationReason?: ?string;
 };
@@ -565,7 +565,7 @@ export type GraphQLFieldMap = {
 export class GraphQLInterfaceType {
   name: string;
   description: ?string;
-  resolveType: ?GraphQLTypeResolveFn;
+  resolveType: ?GraphQLTypeResolver;
 
   _typeConfig: GraphQLInterfaceTypeConfig;
   _fields: GraphQLFieldMap;
@@ -603,7 +603,7 @@ export type GraphQLInterfaceTypeConfig = {
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: ?GraphQLTypeResolveFn,
+  resolveType?: ?GraphQLTypeResolver,
   description?: ?string
 };
 
@@ -635,7 +635,7 @@ export type GraphQLInterfaceTypeConfig = {
 export class GraphQLUnionType {
   name: string;
   description: ?string;
-  resolveType: ?GraphQLTypeResolveFn;
+  resolveType: ?GraphQLTypeResolver;
 
   _typeConfig: GraphQLUnionTypeConfig;
   _types: Array<GraphQLObjectType>;
@@ -706,7 +706,7 @@ export type GraphQLUnionTypeConfig = {
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: ?GraphQLTypeResolveFn;
+  resolveType?: ?GraphQLTypeResolver;
   description?: ?string;
 };
 

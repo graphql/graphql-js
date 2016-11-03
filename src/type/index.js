@@ -104,7 +104,7 @@ export type {
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldMap,
-  GraphQLFieldResolveFn,
+  GraphQLFieldResolver,
   GraphQLInputField,
   GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
@@ -115,6 +115,6 @@ export type {
   GraphQLObjectTypeConfig,
   GraphQLResolveInfo,
   GraphQLScalarTypeConfig,
-  GraphQLTypeResolveFn,
+  GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
 } from './definition';

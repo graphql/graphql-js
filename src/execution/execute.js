@@ -32,7 +32,7 @@ import type {
   GraphQLLeafType,
   GraphQLAbstractType,
   GraphQLField,
-  GraphQLFieldResolveFn,
+  GraphQLFieldResolver,
   GraphQLResolveInfo,
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
@@ -608,7 +608,7 @@ function resolveOrError(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField,
   fieldNode: FieldNode,
-  resolveFn: GraphQLFieldResolveFn<*>,
+  resolveFn: GraphQLFieldResolver<*>,
   source: mixed,
   context: mixed,
   info: GraphQLResolveInfo
@@ -1018,7 +1018,7 @@ function defaultResolveTypeFn(
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context.
  */
-export const defaultFieldResolver: GraphQLFieldResolveFn<any> =
+export const defaultFieldResolver: GraphQLFieldResolver<any> =
 function (source, args, context, { fieldName }) {
   // ensure source is a value for which property access is acceptable.
   if (typeof source === 'object' || typeof source === 'function') {
