@@ -62,7 +62,7 @@ export function valueFromAST(
 
   if (type instanceof GraphQLNonNull) {
     if (valueAST.kind === Kind.NULL) {
-      return; // Intentionally return no value.
+      return; // Invalid: intentionally return no value.
     }
     return valueFromAST(valueAST, type.ofType, variables);
   }
@@ -90,24 +90,33 @@ export function valueFromAST(
       const coercedValues = [];
       const itemASTs = (valueAST: ListValue).values;
       for (let i = 0; i < itemASTs.length; i++) {
-        const itemValue = valueFromAST(itemASTs[i], itemType, variables);
-        if (isInvalid(itemValue)) {
-          return; // Intentionally return no value.
+        if (isMissingVariable(itemASTs[i], variables)) {
+          // If an array contains a missing variable, it is either coerced to
+          // null or if the item type is non-null, it considered invalid.
+          if (itemType instanceof GraphQLNonNull) {
+            return; // Invalid: intentionally return no value.
+          }
+          coercedValues.push(null);
+        } else {
+          const itemValue = valueFromAST(itemASTs[i], itemType, variables);
+          if (isInvalid(itemValue)) {
+            return; // Invalid: intentionally return no value.
+          }
+          coercedValues.push(itemValue);
         }
-        coercedValues.push(itemValue);
       }
       return coercedValues;
     }
     const coercedValue = valueFromAST(valueAST, itemType, variables);
     if (isInvalid(coercedValue)) {
-      return; // Intentionally return no value.
+      return; // Invalid: intentionally return no value.
     }
     return [ coercedValue ];
   }
 
   if (type instanceof GraphQLInputObjectType) {
     if (valueAST.kind !== Kind.OBJECT) {
-      return; // Intentionally return no value.
+      return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
     const fields = type.getFields();
@@ -124,13 +133,13 @@ export function valueFromAST(
         if (!isInvalid(field.defaultValue)) {
           coercedObj[fieldName] = field.defaultValue;
         } else if (field.type instanceof GraphQLNonNull) {
-          return; // Intentionally return no value.
+          return; // Invalid: intentionally return no value.
         }
         continue;
       }
       const fieldValue = valueFromAST(fieldAST.value, field.type, variables);
       if (isInvalid(fieldValue)) {
-        return; // Intentionally return no value.
+        return; // Invalid: intentionally return no value.
       }
       coercedObj[fieldName] = fieldValue;
     }

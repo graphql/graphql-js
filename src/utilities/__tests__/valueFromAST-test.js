@@ -165,9 +165,13 @@ describe('valueFromAST', () => {
   });
 
   it('asserts variables are provided as items in lists', () => {
-    testCaseWithVars({}, listOfBool, '[ $foo ]', undefined);
+    testCaseWithVars({}, listOfBool, '[ $foo ]', [ null ]);
     testCaseWithVars({}, listOfNonNullBool, '[ $foo ]', undefined);
     testCaseWithVars({ foo: true }, listOfNonNullBool, '[ $foo ]', [ true ]);
+    // Note: variables are expected to have already been coerced, so we
+    // do not expect the singleton wrapping behavior for variables.
+    testCaseWithVars({ foo: true }, listOfNonNullBool, '$foo', true);
+    testCaseWithVars({ foo: [ true ] }, listOfNonNullBool, '$foo', [ true ]);
   });
 
   it('omits input object fields for unprovided variables', () => {
