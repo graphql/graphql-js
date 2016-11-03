@@ -199,24 +199,30 @@ describe('Execute: Handles inputs', () => {
 
         const result = await execute(schema, ast);
 
-        expect(result).to.deep.equal({
+        expect(result).to.containSubset({
           data: {
             fieldWithObjectInput: null
-          }
+          },
+          errors: [ {
+            message:
+              'Argument "input" got invalid value ["foo", "bar", "baz"].\n' +
+              'Expected "TestInputObject", found not an object.',
+            path: [ 'fieldWithObjectInput' ]
+          } ]
         });
       });
 
       it('properly runs parseLiteral on complex scalar types', async () => {
         const doc = `
         {
-          fieldWithObjectInput(input: {a: "foo", d: "SerializedValue"})
+          fieldWithObjectInput(input: {c: "foo", d: "SerializedValue"})
         }
         `;
         const ast = parse(doc);
 
         return expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","d":"DeserializedValue"}',
+            fieldWithObjectInput: '{"c":"foo","d":"DeserializedValue"}',
           }
         });
       });
@@ -482,7 +488,21 @@ describe('Execute: Handles inputs', () => {
     });
   });
 
-  describe('Handles non-nullable scalars', () => {
+  describe('Handles non-nullable scalars', async () => {
+    it('allows non-nullable inputs to be omitted given a default', async () => {
+      const doc = `
+        query SetsNonNullable($value: String = "default") {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `;
+
+      expect(await execute(schema, parse(doc))).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: '"default"'
+        }
+      });
+    });
+
     it('does not allow non-nullable inputs to be omitted in a variable', async () => {
       const doc = `
         query SetsNonNullable($value: String!) {
@@ -522,7 +542,8 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 31 } ],
         message:
-          'Variable "$value" of required type "String!" was not provided.'
+          'Variable "$value" got invalid value null.\n' +
+          'Expected "String!", found null.'
       });
     });
 
@@ -558,7 +579,7 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('passes along null for non-nullable inputs if explcitly set in the query', async () => {
+    it('reports error for missing non-nullable inputs', async () => {
       const doc = `
       {
         fieldWithNonNullableStringInput
@@ -569,7 +590,39 @@ describe('Execute: Handles inputs', () => {
       return expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: null
-        }
+        },
+        errors: [ {
+          message: 'Argument "input" of required type "String!" was not provided.',
+          locations: [ { line: 3, column: 9 } ],
+          path: [ 'fieldWithNonNullableStringInput' ]
+        } ]
+      });
+    });
+
+    it('reports error for non-provided variables for non-nullable inputs', async () => {
+      // Note: this test would typically fail validation before encountering
+      // this execution error, however for queries which previously validated
+      // and are being run against a new schema which have introduced a breaking
+      // change to make a formerly non-required argument required, this asserts
+      // failure before allowing the underlying code to receive a non-null value.
+      const doc = `
+      {
+        fieldWithNonNullableStringInput(input: $foo)
+      }
+      `;
+      const ast = parse(doc);
+
+      return expect(await execute(schema, ast)).to.deep.equal({
+        data: {
+          fieldWithNonNullableStringInput: null
+        },
+        errors: [ {
+          message:
+            'Argument "input" of required type "String!" was provided the ' +
+            'variable "$foo" which was not provided a runtime value.',
+          locations: [ { line: 3, column: 48 } ],
+          path: [ 'fieldWithNonNullableStringInput' ]
+        } ]
       });
     });
   });
@@ -644,7 +697,8 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable "$input" of required type "[String]!" was not provided.'
+          'Variable "$input" got invalid value null.\n' +
+          'Expected "[String]!", found null.'
       });
     });
 
@@ -758,7 +812,8 @@ describe('Execute: Handles inputs', () => {
       expect(caughtError).to.containSubset({
         locations: [ { line: 2, column: 17 } ],
         message:
-          'Variable "$input" of required type "[String!]!" was not provided.'
+          'Variable "$input" got invalid value null.\n' +
+          'Expected "[String!]!", found null.'
       });
     });
 
@@ -820,7 +875,7 @@ describe('Execute: Handles inputs', () => {
       }
 
       expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 17 } ],
+        locations: [ { line: 2, column: 25 } ],
         message:
           'Variable "$input" expected value of type "TestType!" which cannot ' +
           'be used as an input type.'
@@ -844,7 +899,7 @@ describe('Execute: Handles inputs', () => {
       }
 
       expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 17 } ],
+        locations: [ { line: 2, column: 25 } ],
         message:
           'Variable "$input" expected value of type "UnknownType!" which ' +
           'cannot be used as an input type.'
@@ -867,7 +922,7 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('when nullable variable provided', async () => {
+    it('when omitted variable provided', async () => {
       const ast = parse(`query optionalVariable($optional: String) {
         fieldWithDefaultArgumentValue(input: $optional)
       }`);
@@ -879,15 +934,22 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('when argument provided cannot be parsed', async () => {
+    it('not when argument cannot be coerced', async () => {
       const ast = parse(`{
         fieldWithDefaultArgumentValue(input: WRONG_TYPE)
       }`);
 
       return expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithDefaultArgumentValue: '"Hello World"'
-        }
+          fieldWithDefaultArgumentValue: null
+        },
+        errors: [ {
+          message:
+            'Argument "input" got invalid value WRONG_TYPE.\n' +
+            'Expected type "String", found WRONG_TYPE.',
+          locations: [ { line: 2, column: 46 } ],
+          path: [ 'fieldWithDefaultArgumentValue' ]
+        } ]
       });
     });
 

@@ -258,7 +258,8 @@ describe('Execute: Handles execution of abstract types', () => {
         {
           message:
             'Runtime Object type "Human" is not a possible type for "Pet".',
-          locations: [ { line: 2, column: 7 } ]
+          locations: [ { line: 2, column: 7 } ],
+          path: [ 'pets', 2 ]
         }
       ]
     });
@@ -347,7 +348,8 @@ describe('Execute: Handles execution of abstract types', () => {
         {
           message:
             'Runtime Object type "Human" is not a possible type for "Pet".',
-          locations: [ { line: 2, column: 7 } ]
+          locations: [ { line: 2, column: 7 } ],
+          path: [ 'pets', 2 ]
         }
       ]
     });
