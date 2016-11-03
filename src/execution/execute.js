@@ -557,7 +557,7 @@ function resolveField(
   }
 
   const returnType = fieldDef.type;
-  const resolveFn = fieldDef.resolve || defaultResolveFn;
+  const resolveFn = fieldDef.resolve || defaultFieldResolver;
 
   // The resolve function's optional third argument is a context value that
   // is provided to every resolve function within an execution. It is commonly
@@ -1017,7 +1017,8 @@ function defaultResolveTypeFn(
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context.
  */
-function defaultResolveFn(source: any, args, context, { fieldName }) {
+export const defaultFieldResolver: GraphQLFieldResolveFn<any> =
+function (source, args, context, { fieldName }) {
   // ensure source is a value for which property access is acceptable.
   if (typeof source === 'object' || typeof source === 'function') {
     const property = source[fieldName];
@@ -1026,7 +1027,7 @@ function defaultResolveFn(source: any, args, context, { fieldName }) {
     }
     return property;
   }
-}
+};
 
 /**
  * Checks to see if this object acts like a Promise, i.e. has a "then"
