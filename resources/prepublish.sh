@@ -21,7 +21,8 @@ fi;
 #
 #    var language = require('graphql/language');
 #
-babel src --ignore __tests__ --out-dir ./
+babel src --ignore __tests__ --out-dir ./;
+find ./src -name '*.js' -not -path '*/__tests__*' | while read filepath; do cp $filepath `echo $filepath | sed 's/\\/src\\//\\//g'`.flow; done;
 
 # Ensure a vanilla package.json before deploying so other tools do not interpret
 # The built output as requiring any further transformation.
