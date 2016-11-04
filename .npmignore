@@ -7,9 +7,10 @@
 .idea
 npm-debug.log
 
-.babelrc 
+.babelrc
 CONTRIBUTING.md
 node_modules
 coverage
 resources
 src
+dist
