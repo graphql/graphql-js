@@ -10,6 +10,7 @@
 
 import { GraphQLScalarType } from './definition';
 import * as Kind from '../language/kinds';
+import moment from 'moment';
 
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
@@ -18,6 +19,28 @@ import * as Kind from '../language/kinds';
 // they are internally represented as IEEE 754 doubles.
 const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
+
+// All the allowed ISO 8601 date-time formats used in the
+// GraphQLDateTime scalar.
+const ISO_8601_FORMAT = [
+  'YYYY',
+  'YYYY-MM',
+  'YYYY-MM-DD',
+  'YYYYMMDD',
+  'YYYY-MM-DDTHHZ',
+  'YYYY-MM-DDTHH:mmZ',
+  'YYYY-MM-DDTHHmmZ',
+  'YYYY-MM-DDTHH:mm:ssZ',
+  'YYYY-MM-DDTHHmmssZ',
+  'YYYY-MM-DDTHH:mm:ss.SSSZ',
+  'YYYY-MM-DDTHHmmss.SSSZ',
+  'YYYY-[W]WW',
+  'YYYY[W]WW',
+  'YYYY-[W]WW-E',
+  'YYYY[W]WWE',
+  'YYYY-DDDD',
+  'YYYYDDDD'
+];
 
 function coerceInt(value: mixed): ?number {
   if (value === '') {
@@ -119,5 +142,47 @@ export const GraphQLID = new GraphQLScalarType({
     return ast.kind === Kind.STRING || ast.kind === Kind.INT ?
       ast.value :
       null;
+  }
+});
+
+export const GraphQLDateTime = new GraphQLScalarType({
+  name: 'DateTime',
+  description: 'An ISO-8601 encoded UTC date string.',
+  serialize(value: mixed): string {
+    if (!(value instanceof Date)) {
+      throw new TypeError(
+        'DateTime cannot be serialized from a non Date type ' + String(value)
+      );
+    }
+    const momentDate = moment.utc(value);
+    if (momentDate.isValid()) {
+      return momentDate.toISOString();
+    }
+    throw new TypeError(
+      'DateTime cannot represent an invalid date ' + String(value)
+    );
+  },
+  parseValue(value: mixed): Date {
+    if (!(typeof value === 'string' || value instanceof String)) {
+      throw new TypeError(
+        'DateTime cannot represent non string type ' + String(value)
+      );
+    }
+    const momentDate = moment.utc(value, ISO_8601_FORMAT, true);
+    if (momentDate.isValid()) {
+      return momentDate.toDate();
+    }
+    throw new TypeError(
+      'DateTime cannot represent an invalid ISO 8601 date ' + String(value)
+    );
+  },
+  parseLiteral(ast) {
+    if (ast.kind === Kind.STRING) {
+      const momentDate = moment.utc(ast.value, ISO_8601_FORMAT, true);
+      if (momentDate.isValid()) {
+        return momentDate.toDate();
+      }
+    }
+    return null;
   }
 });

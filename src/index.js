@@ -65,6 +65,7 @@ export {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  GraphQLDateTime,
 
   // Built-in Directives defined by the Spec
   specifiedDirectives,
