@@ -274,6 +274,9 @@ export {
   // Print a GraphQLSchema to GraphQL Schema language.
   printSchema,
 
+  // Print a GraphQLType to GraphQL Schema language.
+  printType,
+
   // Create a GraphQLType from a GraphQL language AST.
   typeFromAST,
 
