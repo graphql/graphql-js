@@ -43,7 +43,11 @@ export { buildASTSchema, buildSchema } from './buildASTSchema';
 export { extendSchema } from './extendSchema';
 
 // Print a GraphQLSchema to GraphQL Schema language.
-export { printSchema, printIntrospectionSchema } from './schemaPrinter';
+export {
+  printSchema,
+  printType,
+  printIntrospectionSchema,
+} from './schemaPrinter';
 
 // Create a GraphQLType from a GraphQL language AST.
 export { typeFromAST } from './typeFromAST';

@@ -136,7 +136,7 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   return true;
 }
 
-function printType(type: GraphQLType): string {
+export function printType(type: GraphQLType): string {
   if (type instanceof GraphQLScalarType) {
     return printScalar(type);
   } else if (type instanceof GraphQLObjectType) {
