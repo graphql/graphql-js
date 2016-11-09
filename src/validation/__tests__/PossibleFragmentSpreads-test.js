@@ -20,6 +20,7 @@ function error(fragName, parentType, fragType, line, column) {
   return {
     message: typeIncompatibleSpreadMessage(fragName, parentType, fragType),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 
@@ -27,6 +28,7 @@ function errorAnon(parentType, fragType, line, column) {
   return {
     message: typeIncompatibleAnonSpreadMessage(parentType, fragType),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 

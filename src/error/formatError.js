@@ -20,13 +20,15 @@ export function formatError(error: GraphQLError): GraphQLFormattedError {
   invariant(error, 'Received null or undefined error.');
   return {
     message: error.message,
-    locations: error.locations
+    locations: error.locations,
+    path: error.path
   };
 }
 
 export type GraphQLFormattedError = {
   message: string,
-  locations: ?Array<GraphQLErrorLocation>
+  locations: ?Array<GraphQLErrorLocation>,
+  path: ?Array<string | number>
 };
 
 export type GraphQLErrorLocation = {

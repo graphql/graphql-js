@@ -19,6 +19,7 @@ function error(fragName, typeName, line, column) {
   return {
     message: fragmentOnNonCompositeErrorMessage(fragName, typeName),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 
@@ -101,7 +102,8 @@ describe('Validate: Fragments on composite types', () => {
       }
     `, [
       { message: inlineFragmentOnNonCompositeErrorMessage('String'),
-        locations: [ { line: 3, column: 16 } ] }
+        locations: [ { line: 3, column: 16 } ],
+        path: undefined }
     ]);
   });
 

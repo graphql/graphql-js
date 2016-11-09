@@ -32,6 +32,7 @@ function undefinedField(
       suggestedFields
     ),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 

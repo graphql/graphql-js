@@ -19,6 +19,7 @@ function unusedFrag(fragName, line, column) {
   return {
     message: unusedFragMessage(fragName),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 

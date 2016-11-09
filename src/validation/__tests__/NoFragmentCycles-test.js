@@ -63,7 +63,8 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragA on Human { relatives { ...fragA } },
     `, [
       { message: cycleErrorMessage('fragA', []),
-        locations: [ { line: 2, column: 45 } ] }
+        locations: [ { line: 2, column: 45 } ],
+        path: undefined }
     ]);
   });
 
@@ -72,7 +73,8 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragA on Dog { ...fragA }
     `, [
       { message: cycleErrorMessage('fragA', []),
-        locations: [ { line: 2, column: 31 } ] }
+        locations: [ { line: 2, column: 31 } ],
+        path: undefined }
     ]);
   });
 
@@ -85,7 +87,8 @@ describe('Validate: No circular fragment spreads', () => {
       }
     `, [
       { message: cycleErrorMessage('fragA', []),
-        locations: [ { line: 4, column: 11 } ] }
+        locations: [ { line: 4, column: 11 } ],
+        path: undefined }
     ]);
   });
 
@@ -95,7 +98,8 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragB on Dog { ...fragA }
     `, [
       { message: cycleErrorMessage('fragA', [ 'fragB' ]),
-        locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ] }
+        locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ],
+        path: undefined }
     ]);
   });
 
@@ -105,7 +109,8 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragA on Dog { ...fragB }
     `, [
       { message: cycleErrorMessage('fragB', [ 'fragA' ]),
-        locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ] }
+        locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ],
+        path: undefined }
     ]);
   });
 
@@ -124,7 +129,8 @@ describe('Validate: No circular fragment spreads', () => {
       }
     `, [
       { message: cycleErrorMessage('fragA', [ 'fragB' ]),
-        locations: [ { line: 4, column: 11 }, { line: 9, column: 11 } ] }
+        locations: [ { line: 4, column: 11 }, { line: 9, column: 11 } ],
+        path: undefined }
     ]);
   });
 
@@ -146,7 +152,8 @@ describe('Validate: No circular fragment spreads', () => {
           { line: 3, column: 31 },
           { line: 4, column: 31 },
           { line: 8, column: 31 },
-          { line: 9, column: 31 } ] },
+          { line: 9, column: 31 } ],
+        path: undefined },
       { message:
           cycleErrorMessage('fragO', [ 'fragP', 'fragX', 'fragY', 'fragZ' ]),
         locations: [
@@ -154,7 +161,8 @@ describe('Validate: No circular fragment spreads', () => {
           { line: 9, column: 41 },
           { line: 5, column: 31 },
           { line: 6, column: 31 },
-          { line: 7, column: 31 } ] }
+          { line: 7, column: 31 } ],
+        path: undefined }
     ]);
   });
 
@@ -165,9 +173,11 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragC on Dog { ...fragA }
     `, [
       { message: cycleErrorMessage('fragA', [ 'fragB' ]),
-        locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ] },
+        locations: [ { line: 2, column: 31 }, { line: 3, column: 31 } ],
+        path: undefined },
       { message: cycleErrorMessage('fragA', [ 'fragC' ]),
-        locations: [ { line: 2, column: 41 }, { line: 4, column: 31 } ] }
+        locations: [ { line: 2, column: 41 }, { line: 4, column: 31 } ],
+        path: undefined }
     ]);
   });
 
@@ -178,9 +188,11 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragC on Dog { ...fragA, ...fragB }
     `, [
       { message: cycleErrorMessage('fragA', [ 'fragC' ]),
-        locations: [ { line: 2, column: 31 }, { line: 4, column: 31 } ] },
+        locations: [ { line: 2, column: 31 }, { line: 4, column: 31 } ],
+        path: undefined },
       { message: cycleErrorMessage('fragC', [ 'fragB' ]),
-        locations: [ { line: 4, column: 41 }, { line: 3, column: 31 } ] }
+        locations: [ { line: 4, column: 41 }, { line: 3, column: 31 } ],
+        path: undefined }
     ]);
   });
 
@@ -191,14 +203,17 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragC on Dog { ...fragA, ...fragB }
     `, [
       { message: cycleErrorMessage('fragB', []),
-        locations: [ { line: 3, column: 31 } ] },
+        locations: [ { line: 3, column: 31 } ],
+        path: undefined },
       { message: cycleErrorMessage('fragA', [ 'fragB', 'fragC' ]),
         locations: [
           { line: 2, column: 31 },
           { line: 3, column: 41 },
-          { line: 4, column: 31 } ] },
+          { line: 4, column: 31 } ],
+        path: undefined },
       { message: cycleErrorMessage('fragB', [ 'fragC' ]),
-        locations: [ { line: 3, column: 41 }, { line: 4, column: 41 } ] }
+        locations: [ { line: 3, column: 41 }, { line: 4, column: 41 } ],
+        path: undefined }
     ]);
   });
 
