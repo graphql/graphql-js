@@ -27,6 +27,7 @@ function badValue(argName, typeName, value, line, column, errors) {
   return {
     message: badValueMessage(argName, typeName, value, realErrors),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 

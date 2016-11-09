@@ -109,7 +109,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           'fido',
           'name and nickname are different fields'
         ),
-        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] },
+        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ],
+        path: undefined }
     ]);
   });
 
@@ -139,7 +140,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           'name',
           'nickname and name are different fields'
         ),
-        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] },
+        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ],
+        path: undefined }
     ]);
   });
 
@@ -154,7 +156,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           'doesKnowCommand',
           'they have differing arguments'
         ),
-        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] }
+        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ],
+        path: undefined }
     ]);
   });
 
@@ -169,7 +172,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           'doesKnowCommand',
           'they have differing arguments'
         ),
-        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] }
+        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ],
+        path: undefined }
     ]);
   });
 
@@ -184,7 +188,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           'doesKnowCommand',
           'they have differing arguments'
         ),
-        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ] }
+        locations: [ { line: 3, column: 9 }, { line: 4, column: 9 } ],
+        path: undefined }
     ]);
   });
 
@@ -217,7 +222,8 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     `, [
       { message: fieldsConflictMessage('x', 'a and b are different fields'),
-        locations: [ { line: 7, column: 9 }, { line: 10, column: 9 } ] }
+        locations: [ { line: 7, column: 9 }, { line: 10, column: 9 } ],
+        path: undefined }
     ]);
   });
 
@@ -246,11 +252,14 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     `, [
       { message: fieldsConflictMessage('x', 'a and b are different fields'),
-        locations: [ { line: 18, column: 9 }, { line: 21, column: 9 } ] },
+        locations: [ { line: 18, column: 9 }, { line: 21, column: 9 } ],
+        path: undefined },
       { message: fieldsConflictMessage('x', 'c and a are different fields'),
-        locations: [ { line: 14, column: 11 }, { line: 18, column: 9 } ] },
+        locations: [ { line: 14, column: 11 }, { line: 18, column: 9 } ],
+        path: undefined },
       { message: fieldsConflictMessage('x', 'c and b are different fields'),
-        locations: [ { line: 14, column: 11 }, { line: 21, column: 9 } ] }
+        locations: [ { line: 14, column: 11 }, { line: 21, column: 9 } ],
+        path: undefined }
     ]);
   });
 
@@ -272,7 +281,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           { line: 3, column: 9 },
           { line: 4, column: 11 },
           { line: 6, column: 9 },
-          { line: 7, column: 11 } ] },
+          { line: 7, column: 11 } ],
+        path: undefined },
     ]);
   });
 
@@ -301,7 +311,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           { line: 5, column: 11 },
           { line: 7, column: 9 },
           { line: 8, column: 11 },
-          { line: 9, column: 11 } ] },
+          { line: 9, column: 11 } ],
+        path: undefined },
     ]);
   });
 
@@ -330,7 +341,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           { line: 5, column: 13 },
           { line: 8, column: 9 },
           { line: 9, column: 11 },
-          { line: 10, column: 13 } ] },
+          { line: 10, column: 13 } ],
+        path: undefined },
     ]);
   });
 
@@ -359,7 +371,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           { line: 4, column: 11 },
           { line: 5, column: 13 },
           { line: 7, column: 11 },
-          { line: 8, column: 13 } ] },
+          { line: 8, column: 13 } ],
+        path: undefined },
     ]);
   });
 
@@ -396,7 +409,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           { line: 12, column: 11 },
           { line: 13, column: 13 },
           { line: 15, column: 11 },
-          { line: 16, column: 13 } ] },
+          { line: 16, column: 13 } ],
+        path: undefined },
     ]);
   });
 
@@ -435,7 +449,8 @@ describe('Validate: Overlapping fields can be merged', () => {
           { line: 15, column: 9 },
           { line: 6, column: 9 },
           { line: 22, column: 9 },
-          { line: 18, column: 9 } ] },
+          { line: 18, column: 9 } ],
+        path: undefined },
     ]);
   });
 
@@ -581,7 +596,8 @@ describe('Validate: Overlapping fields can be merged', () => {
             'scalar',
             'they return conflicting types Int and String!'
           ),
-          locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ] }
+          locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ],
+          path: undefined }
       ]);
     });
 
@@ -624,7 +640,8 @@ describe('Validate: Overlapping fields can be merged', () => {
             'scalar',
             'they return conflicting types Int and String'
           ),
-          locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ] }
+          locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ],
+          path: undefined }
       ]);
     });
 
@@ -682,7 +699,8 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 39, column: 11 },
             { line: 34, column: 11 },
             { line: 42, column: 11 },
-          ] }
+          ],
+          path: undefined }
       ]);
     });
 
@@ -703,7 +721,8 @@ describe('Validate: Overlapping fields can be merged', () => {
             'scalar',
             'they return conflicting types String! and String'
           ),
-          locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ] }
+          locations: [ { line: 5, column: 15 }, { line: 8, column: 15 } ],
+          path: undefined }
       ]);
     });
 
@@ -728,7 +747,8 @@ describe('Validate: Overlapping fields can be merged', () => {
             'box',
             'they return conflicting types [StringBox] and StringBox'
           ),
-          locations: [ { line: 5, column: 15 }, { line: 10, column: 15 } ] }
+          locations: [ { line: 5, column: 15 }, { line: 10, column: 15 } ],
+          path: undefined }
       ]);
 
       expectFailsRuleWithSchema(schema, OverlappingFieldsCanBeMerged, `
@@ -751,7 +771,8 @@ describe('Validate: Overlapping fields can be merged', () => {
             'box',
             'they return conflicting types StringBox and [StringBox]'
           ),
-          locations: [ { line: 5, column: 15 }, { line: 10, column: 15 } ] }
+          locations: [ { line: 5, column: 15 }, { line: 10, column: 15 } ],
+          path: undefined }
       ]);
     });
 
@@ -777,7 +798,8 @@ describe('Validate: Overlapping fields can be merged', () => {
             'val',
             'scalar and unrelatedField are different fields'
           ),
-          locations: [ { line: 6, column: 17 }, { line: 7, column: 17 } ] }
+          locations: [ { line: 6, column: 17 }, { line: 7, column: 17 } ],
+          path: undefined }
       ]);
     });
 
@@ -806,7 +828,8 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 5, column: 15 },
             { line: 6, column: 17 },
             { line: 10, column: 15 },
-            { line: 11, column: 17 } ] }
+            { line: 11, column: 17 } ],
+          path: undefined }
       ]);
     });
 
@@ -883,7 +906,8 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 14, column: 11 },
             { line: 15, column: 13 },
             { line: 16, column: 15 },
-          ] }
+          ],
+          path: undefined }
       ]);
     });
 

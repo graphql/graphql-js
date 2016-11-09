@@ -104,7 +104,8 @@ describe('Execute: Accepts any iterable as list value', () => {
     { data: { nest: { test: null } },
       errors: [ {
         message: 'Expected Iterable, but did not find one for field DataType.test.',
-        locations: [ { line: 1, column: 10 } ]
+        locations: [ { line: 1, column: 10 } ],
+        path: [ 'nest', 'test' ]
       } ] }
   ));
 
@@ -157,7 +158,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: { test: null } },
           errors: [
             { message: 'bad',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test' ] }
           ] }
       ));
 
@@ -180,7 +182,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: { test: [ 1, null, 2 ] } },
           errors: [
             { message: 'bad',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 
@@ -208,7 +211,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test' ] }
           ] }
       ));
 
@@ -231,7 +235,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test' ] }
           ] }
       ));
 
@@ -240,7 +245,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'bad',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test' ] }
           ] }
       ));
 
@@ -263,7 +269,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: { test: [ 1, null, 2 ] } },
           errors: [
             { message: 'bad',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 
@@ -286,7 +293,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: { test: null } },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 
@@ -309,7 +317,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: { test: null } },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 
@@ -323,7 +332,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: { test: null } },
           errors: [
             { message: 'bad',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test' ] }
           ] }
       ));
 
@@ -341,7 +351,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: { test: null } },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 
@@ -350,7 +361,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: { test: null } },
           errors: [
             { message: 'bad',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 
@@ -375,7 +387,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 
@@ -384,7 +397,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test' ] }
           ] }
       ));
 
@@ -402,7 +416,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 
@@ -411,7 +426,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test' ] }
           ] }
       ));
 
@@ -420,7 +436,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'bad',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test' ] }
           ] }
       ));
 
@@ -438,7 +455,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 
@@ -447,7 +465,8 @@ describe('Execute: Handles list nullability', () => {
         { data: { nest: null },
           errors: [
             { message: 'bad',
-              locations: [ { line: 1, column: 10 } ] }
+              locations: [ { line: 1, column: 10 } ],
+              path: [ 'nest', 'test', 1 ] }
           ] }
       ));
 

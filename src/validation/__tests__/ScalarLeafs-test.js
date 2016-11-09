@@ -20,6 +20,7 @@ function noScalarSubselection(field, type, line, column) {
   return {
     message: noSubselectionAllowedMessage(field, type),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 
@@ -27,6 +28,7 @@ function missingObjSubselection(field, type, line, column) {
   return {
     message: requiredSubselectionMessage(field, type),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 

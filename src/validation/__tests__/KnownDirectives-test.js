@@ -22,14 +22,16 @@ import {
 function unknownDirective(directiveName, line, column) {
   return {
     message: unknownDirectiveMessage(directiveName),
-    locations: [ { line, column } ]
+    locations: [ { line, column } ],
+    path: undefined,
   };
 }
 
 function misplacedDirective(directiveName, placement, line, column) {
   return {
     message: misplacedDirectiveMessage(directiveName, placement),
-    locations: [ { line, column } ]
+    locations: [ { line, column } ],
+    path: undefined,
   };
 }
 

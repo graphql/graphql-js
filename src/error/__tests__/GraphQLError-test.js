@@ -10,7 +10,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse, Source, GraphQLError } from '../../';
+import { parse, Source, GraphQLError, formatError } from '../../';
 
 
 describe('GraphQLError', () => {
@@ -121,6 +121,22 @@ describe('GraphQLError', () => {
     expect(JSON.stringify(e)).to.equal(
       '{"message":"msg","path":["path",3,"to","field"]}'
     );
+  });
+
+  it('default error formatter includes path', () => {
+    const e = new GraphQLError(
+      'msg',
+      null,
+      null,
+      null,
+      [ 'path', 3, 'to', 'field' ]
+    );
+
+    expect(formatError(e)).to.deep.equal({
+      message: 'msg',
+      locations: undefined,
+      path: [ 'path', 3, 'to', 'field' ]
+    });
   });
 
 });

@@ -19,6 +19,7 @@ function undefVar(varName, l1, c1, opName, l2, c2) {
   return {
     message: undefinedVarMessage(varName, opName),
     locations: [ { line: l1, column: c1 }, { line: l2, column: c2 } ],
+    path: undefined,
   };
 }
 

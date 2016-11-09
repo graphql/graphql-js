@@ -20,6 +20,7 @@ function defaultForNonNullArg(varName, typeName, guessTypeName, line, column) {
   return {
     message: defaultForNonNullArgMessage(varName, typeName, guessTypeName),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 
@@ -35,6 +36,7 @@ function badValue(varName, typeName, val, line, column, errors) {
   return {
     message: badValueForDefaultArgMessage(varName, typeName, val, realErrors),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 

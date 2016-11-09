@@ -19,6 +19,7 @@ function unknownType(typeName, suggestedTypes, line, column) {
   return {
     message: unknownTypeMessage(typeName, suggestedTypes),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 

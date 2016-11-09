@@ -19,6 +19,7 @@ function unusedVar(varName, opName, line, column) {
   return {
     message: unusedVariableMessage(varName, opName),
     locations: [ { line, column } ],
+    path: undefined,
   };
 }
 

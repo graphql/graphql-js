@@ -18,7 +18,8 @@ import {
 function undefFrag(fragName, line, column) {
   return {
     message: unknownFragmentMessage(fragName),
-    locations: [ { line, column } ]
+    locations: [ { line, column } ],
+    path: undefined,
   };
 }
 
