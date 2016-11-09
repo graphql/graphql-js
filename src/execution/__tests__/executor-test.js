@@ -225,7 +225,7 @@ describe('Execute: Handles basic execution tasks', () => {
     );
     expect(info.returnType).to.equal(GraphQLString);
     expect(info.parentType).to.equal(schema.getQueryType());
-    expect(info.path).to.deep.equal([ 'result' ]);
+    expect(info.path).to.deep.equal({ prev: undefined, key: 'result' });
     expect(info.schema).to.equal(schema);
     expect(info.rootValue).to.equal(rootValue);
     expect(info.operation).to.equal(ast.definitions[0]);

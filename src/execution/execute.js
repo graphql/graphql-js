@@ -34,6 +34,7 @@ import type {
   GraphQLField,
   GraphQLFieldResolver,
   GraphQLResolveInfo,
+  ResponsePath,
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import {
@@ -169,6 +170,27 @@ export function execute(
 }
 
 /**
+ * Given a ResponsePath (found in the `path` entry in the information provided
+ * as the last argument to a field resolver), return an Array of the path keys.
+ */
+export function responsePathAsArray(
+  path: ResponsePath
+): Array<string | number> {
+  const flattened = [];
+  let curr = path;
+  while (curr) {
+    flattened.push(curr.key);
+    curr = curr.prev;
+  }
+  return flattened.reverse();
+}
+
+
+function addPath(prev: ResponsePath, key: string | number) {
+  return { prev, key };
+}
+
+/**
  * Constructs a ExecutionContext object from the arguments passed to
  * execute, which we will pass throughout the other execution methods.
  *
@@ -249,7 +271,7 @@ function executeOperation(
     Object.create(null)
   );
 
-  const path = [];
+  const path = undefined;
 
   if (operation.operation === 'mutation') {
     return executeFieldsSerially(exeContext, type, rootValue, path, fields);
@@ -301,13 +323,13 @@ function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  path: Array<string | number>,
+  path: ResponsePath,
   fields: {[key: string]: Array<FieldNode>}
 ): Promise<{[key: string]: mixed}> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
       const fieldNodes = fields[responseName];
-      const fieldPath = path.concat([ responseName ]);
+      const fieldPath = addPath(path, responseName);
       const result = resolveField(
         exeContext,
         parentType,
@@ -339,7 +361,7 @@ function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  path: Array<string | number>,
+  path: ResponsePath,
   fields: {[key: string]: Array<FieldNode>}
 ): {[key: string]: mixed} {
   let containsPromise = false;
@@ -347,7 +369,7 @@ function executeFields(
   const finalResults = Object.keys(fields).reduce(
     (results, responseName) => {
       const fieldNodes = fields[responseName];
-      const fieldPath = path.concat([ responseName ]);
+      const fieldPath = addPath(path, responseName);
       const result = resolveField(
         exeContext,
         parentType,
@@ -547,7 +569,7 @@ function resolveField(
   parentType: GraphQLObjectType,
   source: mixed,
   fieldNodes: Array<FieldNode>,
-  path: Array<string | number>
+  path: ResponsePath
 ): mixed {
   const fieldNode = fieldNodes[0];
   const fieldName = fieldNode.name.value;
@@ -638,7 +660,7 @@ function completeValueCatchingError(
   returnType: GraphQLType,
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
-  path: Array<string | number>,
+  path: ResponsePath,
   result: mixed
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
@@ -691,7 +713,7 @@ function completeValueWithLocatedError(
   returnType: GraphQLType,
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
-  path: Array<string | number>,
+  path: ResponsePath,
   result: mixed
 ): mixed {
   try {
@@ -706,12 +728,14 @@ function completeValueWithLocatedError(
     if (isThenable(completed)) {
       return ((completed: any): Promise<*>).then(
         undefined,
-        error => Promise.reject(locatedError(error, fieldNodes, path))
+        error => Promise.reject(
+          locatedError(error, fieldNodes, responsePathAsArray(path))
+        )
       );
     }
     return completed;
   } catch (error) {
-    throw locatedError(error, fieldNodes, path);
+    throw locatedError(error, fieldNodes, responsePathAsArray(path));
   }
 }
 
@@ -741,7 +765,7 @@ function completeValue(
   returnType: GraphQLType,
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
-  path: Array<string | number>,
+  path: ResponsePath,
   result: mixed
 ): mixed {
   // If result is a Promise, apply-lift over completeValue.
@@ -848,7 +872,7 @@ function completeListValue(
   returnType: GraphQLList<*>,
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
-  path: Array<string | number>,
+  path: ResponsePath,
   result: mixed
 ): mixed {
   invariant(
@@ -865,7 +889,7 @@ function completeListValue(
   forEach((result: any), (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    const fieldPath = path.concat([ index ]);
+    const fieldPath = addPath(path, index);
     const completedItem = completeValueCatchingError(
       exeContext,
       itemType,
@@ -912,7 +936,7 @@ function completeAbstractValue(
   returnType: GraphQLAbstractType,
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
-  path: Array<string | number>,
+  path: ResponsePath,
   result: mixed
 ): mixed {
   let runtimeType = returnType.resolveType ?
@@ -959,7 +983,7 @@ function completeObjectValue(
   returnType: GraphQLObjectType,
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
-  path: Array<string | number>,
+  path: ResponsePath,
   result: mixed
 ): mixed {
   // If there is an isTypeOf predicate function, call it with the

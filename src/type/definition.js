@@ -491,13 +491,15 @@ export type GraphQLResolveInfo = {
   fieldNodes: Array<FieldNode>;
   returnType: GraphQLOutputType;
   parentType: GraphQLCompositeType;
-  path: Array<string | number>;
+  path: ResponsePath;
   schema: GraphQLSchema;
   fragments: { [fragmentName: string]: FragmentDefinitionNode };
   rootValue: mixed;
   operation: OperationDefinitionNode;
   variableValues: { [variableName: string]: mixed };
 };
+
+export type ResponsePath = { prev: ResponsePath, key: string | number } | void;
 
 export type GraphQLFieldConfig<TSource> = {
   type: GraphQLOutputType;

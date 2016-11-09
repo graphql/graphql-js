@@ -137,6 +137,7 @@ export type {
   GraphQLIsTypeOfFn,
   GraphQLObjectTypeConfig,
   GraphQLResolveInfo,
+  ResponsePath,
   GraphQLScalarTypeConfig,
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
@@ -224,6 +225,7 @@ export type {
 export {
   execute,
   defaultFieldResolver,
+  responsePathAsArray,
 } from './execution';
 
 export type {
