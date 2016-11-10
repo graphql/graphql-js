@@ -114,6 +114,7 @@ export type {
   GraphQLIsTypeOfFn,
   GraphQLObjectTypeConfig,
   GraphQLResolveInfo,
+  ResponsePath,
   GraphQLScalarTypeConfig,
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
