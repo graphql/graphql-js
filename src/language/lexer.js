@@ -211,7 +211,7 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     throw syntaxError(
       source,
       position,
-      `Invalid character ${printCharCode(code)}.`
+      `Cannot contain the invalid character ${printCharCode(code)}.`
     );
   }
 
@@ -276,8 +276,20 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
   throw syntaxError(
     source,
     position,
-    `Unexpected character ${printCharCode(code)}.`
+    unexpectedCharacterMessage(code)
   );
+}
+
+/**
+ * Report a message that an unexpected character was encountered.
+ */
+function unexpectedCharacterMessage(code) {
+  if (code === 39) { // '
+    return 'Unexpected single quote character (\'), did you mean to use ' +
+      'a double quote (")?';
+  }
+
+  return 'Cannot parse the unexpected character ' + printCharCode(code) + '.';
 }
 
 /**
