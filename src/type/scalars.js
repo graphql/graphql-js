@@ -10,7 +10,6 @@
 
 import { GraphQLScalarType } from './definition';
 import * as Kind from '../language/kinds';
-import moment from 'moment';
 
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
@@ -19,28 +18,6 @@ import moment from 'moment';
 // they are internally represented as IEEE 754 doubles.
 const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
-
-// All the allowed ISO 8601 date-time formats used in the
-// GraphQLDateTime scalar.
-const ISO_8601_FORMAT = [
-  'YYYY',
-  'YYYY-MM',
-  'YYYY-MM-DD',
-  'YYYYMMDD',
-  'YYYY-MM-DDTHHZ',
-  'YYYY-MM-DDTHH:mmZ',
-  'YYYY-MM-DDTHHmmZ',
-  'YYYY-MM-DDTHH:mm:ssZ',
-  'YYYY-MM-DDTHHmmssZ',
-  'YYYY-MM-DDTHH:mm:ss.SSSZ',
-  'YYYY-MM-DDTHHmmss.SSSZ',
-  'YYYY-[W]WW',
-  'YYYY[W]WW',
-  'YYYY-[W]WW-E',
-  'YYYY[W]WWE',
-  'YYYY-DDDD',
-  'YYYYDDDD'
-];
 
 function coerceInt(value: mixed): ?number {
   if (value === '') {
@@ -145,22 +122,119 @@ export const GraphQLID = new GraphQLScalarType({
   }
 });
 
+/**
+* Function that checks whether a date string represents a valid date in
+* the ISO 8601 formats:
+* - YYYY
+* - YYYY-MM
+* - YYYY-MM-DD,
+* - YYYY-MM-DDThh:mmZ
+* - YYYY-MM-DDThh:mm:ssZ
+* - YYYY-MM-DDThh:mm:ss.sssZ
+*/
+function isValidDate(datestring: string): boolean {
+
+  // An array of regular expression containing the supported ISO 8601 formats
+  const ISO_8601_REGEX = [
+    /^\d{4}$/, // YYYY
+    /^\d{4}-\d{2}$/, // YYYY-MM
+    /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD,
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$/, // YYYY-MM-DDThh:mmZ
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/, // YYYY-MM-DDThh:mm:ssZ
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/,// YYYY-MM-DDThh:mm:ss.sssZ
+  ];
+
+  // Validate the structure of the date-string
+  if (!ISO_8601_REGEX.some(regex => regex.test(datestring))) {
+    return false;
+  }
+
+  // Check if it is a correct date using the javascript Date parse() method.
+  const time = Date.parse(datestring);
+  if (time !== time) {
+    return false;
+  }
+
+  // Perform specific checks for dates. We need
+  // to make sure that the date string has the correct
+  // number of days for a given month. This check is required
+  // because the javascript Date.parse() assumes every month has 31 days.
+  const regexYYYYMM = /\d{4}-\d{2}-\d{2}/;
+  if (regexYYYYMM.test(datestring)) {
+    const year = Number(datestring.substr(0,4));
+    const month = Number(datestring.substr(5,2));
+    const day = Number(datestring.substr(8,2));
+
+    switch (month) {
+      case 2: // February
+        if (leapYear(year) && day > 29) {
+          return false;
+        } else if (!leapYear(year) && day > 28) {
+          return false;
+        }
+        return true;
+      case 4: // April
+      case 6: // June
+      case 9: // September
+      case 11: // November
+        if (day > 30) {
+          return false;
+        }
+        break;
+      default:
+        return true;
+    }
+  }
+  // Every year that is exactly divisible by four
+  // is a leap year, except for years that are exactly
+  // divisible by 100, but these centurial years are
+  // leap years if they are exactly divisible by 400.
+  // For example, the years 1700, 1800, and 1900 are not leap years,
+  // but the years 1600 and 2000 are.
+  function leapYear(year) {
+    return ((year % 4 === 0) && (year % 100 !== 0)) || (year % 400 === 0);
+  }
+  return true;
+}
+
 export const GraphQLDateTime = new GraphQLScalarType({
   name: 'DateTime',
   description: 'An ISO-8601 encoded UTC date string.',
   serialize(value: mixed): string {
-    if (!(value instanceof Date)) {
+    if (value instanceof Date) {
+      const time = value.getTime();
+      if (time === time) {
+        return value.toISOString();
+      }
+      throw new TypeError('DateTime cannot represent an invalid Date instance');
+    } else if (typeof value === 'string' || value instanceof String) {
+      if (isValidDate(value)) {
+        return value;
+      }
       throw new TypeError(
-        'DateTime cannot be serialized from a non Date type ' + String(value)
+        'DateTime cannot represent an invalid ISO 8601 date string ' + value
+      );
+    } else if (typeof value === 'number' || value instanceof Number) {
+      // Serialize from Unix timestamp: the number of
+      // seconds since 1st Jan 1970.
+
+      // Unix timestamp are 32-bit signed integers
+      if (value === value && value <= MAX_INT && value >= MIN_INT) {
+        // Date represents unix time as the number of
+        // milliseconds since 1st Jan 1970 therefore we
+        // need to perform a conversion.
+        const date = new Date(value * 1000);
+        return date.toISOString();
+      }
+      throw new TypeError(
+        'DateTime cannot represent an invalid Unix timestamp ' + value
+      );
+    } else {
+      throw new TypeError(
+        'DateTime cannot be serialized from a non string, ' +
+        'non numeric or non Date type ' + String(value)
       );
     }
-    const momentDate = moment.utc(value);
-    if (momentDate.isValid()) {
-      return momentDate.toISOString();
-    }
-    throw new TypeError(
-      'DateTime cannot represent an invalid date ' + String(value)
-    );
   },
   parseValue(value: mixed): Date {
     if (!(typeof value === 'string' || value instanceof String)) {
@@ -168,19 +242,17 @@ export const GraphQLDateTime = new GraphQLScalarType({
         'DateTime cannot represent non string type ' + String(value)
       );
     }
-    const momentDate = moment.utc(value, ISO_8601_FORMAT, true);
-    if (momentDate.isValid()) {
-      return momentDate.toDate();
+    if (isValidDate(value)) {
+      return new Date(value);
     }
     throw new TypeError(
-      'DateTime cannot represent an invalid ISO 8601 date ' + String(value)
+      'DateTime cannot represent an invalid ISO 8601 date ' + value
     );
   },
   parseLiteral(ast) {
     if (ast.kind === Kind.STRING) {
-      const momentDate = moment.utc(ast.value, ISO_8601_FORMAT, true);
-      if (momentDate.isValid()) {
-        return momentDate.toDate();
+      if (isValidDate(ast.value)) {
+        return new Date(ast.value);
       }
     }
     return null;

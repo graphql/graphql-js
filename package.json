@@ -36,8 +36,7 @@
     "prepublish": ". ./resources/prepublish.sh"
   },
   "dependencies": {
-    "iterall": "1.0.2",
-    "moment": "^2.15.2"
+    "iterall": "1.0.2"
   },
   "devDependencies": {
     "babel-cli": "6.18.0",

@@ -12,13 +12,12 @@ import {
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
-  GraphQLDateTime
+  GraphQLDateTime,
 } from '../';
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import * as Kind from '../../language/kinds';
-
 
 describe('Type System: Scalar coercion', () => {
   it('serializes output int', () => {
@@ -181,71 +180,260 @@ describe('Type System: Scalar coercion', () => {
   });
 
   it('serializes output DateTime', () => {
-    expect(
-      GraphQLDateTime.serialize(new Date(Date.UTC(2016, 0, 1)))
-    ).to.equal('2016-01-01T00:00:00.000Z');
-    expect(
-      GraphQLDateTime.serialize(new Date(Date.UTC(2016, 0, 1, 14, 48, 10, 3)))
-    ).to.equal('2016-01-01T14:48:10.003Z');
+
+    [
+      {},
+      [],
+      null,
+      undefined,
+      true,
+    ].forEach(invalidInput => {
+      expect(() =>
+        GraphQLDateTime.serialize(invalidInput)
+      ).to.throw(
+        'DateTime cannot be serialized from a non string, ' +
+        'non numeric or non Date type ' + invalidInput
+      );
+    });
+
+    // Serialize from Date
+    [
+      [ new Date(Date.UTC(2016, 0, 1)), '2016-01-01T00:00:00.000Z' ],
+      [
+        new Date(Date.UTC(2016, 0, 1, 14, 48, 10, 3)),
+        '2016-01-01T14:48:10.003Z'
+      ],
+    ].forEach(([ value, expected ]) => {
+      expect(
+        GraphQLDateTime.serialize(value)
+      ).to.equal(expected);
+    });
+
     expect(() =>
-      GraphQLDateTime.serialize('2016-01-01T14:48:10.003Z')
+      GraphQLDateTime.serialize(new Date('invalid date'))
     ).to.throw(
-      'DateTime cannot be serialized from a non Date ' +
-      'type 2016-01-01T14:48:10.003Z'
+      'DateTime cannot represent an invalid Date instance'
     );
-    expect(() =>
-      GraphQLDateTime.serialize(75683393)
-    ).to.throw(
-      'DateTime cannot be serialized from a non Date type 75683393'
-    );
-    expect(() =>
-      GraphQLDateTime.serialize(new Date('wrong date'))
-    ).to.throw(
-      'DateTime cannot represent an invalid date'
-    );
+
+    // Serializes from date string
+    [
+      // Years
+      '2016',
+      // Years and month
+      '2016-01',
+      '2016-11',
+      // Date
+      '2016-02-01',
+      '2016-09-15',
+      '2016-01-31',
+      // Date with 30 days in the month
+      '2016-04-30',
+      '2016-06-30',
+      '2016-09-30',
+      '2016-11-30',
+      // Date leap year checks
+      '2016-02-29',
+      '2000-02-29',
+      // Datetime with hours and minutes
+      '2016-02-01T00:00Z',
+      '2016-02-01T24:00Z',
+      '2016-02-01T23:59Z',
+      '2016-02-01T15:32Z',
+      // Datetime with hours, minutes and seconds
+      '2016-02-01T00:00:00Z',
+      '2016-02-01T00:00:15Z',
+      '2016-02-01T00:00:59Z',
+      // Datetime with hours, minutes, seconds and milliseconds
+      '2016-02-01T00:00:00.000Z',
+      '2016-02-01T00:00:00.999Z',
+      '2016-02-01T00:00:00.456Z',
+    ].forEach(value => {
+      expect(
+        GraphQLDateTime.serialize(value)
+      ).to.equal(value);
+    });
+
+    [
+      // General
+      'Invalid date',
+      // Year and month
+      '2016-00',
+      '2016-13',
+      '2016-1',
+      '201613',
+      // Date
+      '2016-01-00',
+      '2016-01-32',
+      '2016-01-1',
+      '20160101',
+      // Date leap year checks
+      '2015-02-29',
+      '2015-02-30',
+      '1900-02-29',
+      '1900-02-30',
+      '2016-02-30',
+      '2000-02-30',
+      // Datetime with hours and minutes
+      '2016-02-01T24:01Z',
+      '2016-02-01T00:60Z',
+      '2016-02-01T0:60Z',
+      '2016-02-01T00:0Z',
+      '2015-02-29T00:00Z',
+      '2016-02-01T0000',
+      // Datetime with hours, minutes and seconds
+      '2016-02-01T000059Z',
+      '2016-02-01T00:00:60Z',
+      '2016-02-01T00:00:0Z',
+      '2015-02-29T00:00:00Z',
+      '2016-02-01T00:00:00',
+      // Datetime with hours, minutes, seconds and milliseconds
+      '2016-02-01T00:00:00.1Z',
+      '2016-02-01T00:00:00.22Z',
+      '2015-02-29T00:00:00.000Z',
+      '2016-02-01T00:00:00.223',
+    ].forEach(dateString => {
+      expect(() =>
+        GraphQLDateTime.serialize(dateString)
+      ).to.throw(
+        'DateTime cannot represent an invalid ISO 8601' +
+        ' date string ' + dateString
+      );
+    });
+
+    // Serializes Unix timestamp
+    [
+      [ 854325678, '1997-01-27T00:41:18.000Z' ],
+      [ 876535, '1970-01-11T03:28:55.000Z' ],
+      [ 876535.8, '1970-01-11T03:28:55.800Z' ],
+      [ 876535.8321, '1970-01-11T03:28:55.832Z' ],
+      [ -876535.8, '1969-12-21T20:31:04.200Z' ],
+      // The maximum representable unix timestamp
+      [ 2147483647, '2038-01-19T03:14:07.000Z' ],
+      // The minimum representable unit timestamp
+      [ -2147483648, '1901-12-13T20:45:52.000Z' ],
+    ].forEach(([ value, expected ]) => {
+      expect(
+        GraphQLDateTime.serialize(value)
+      ).to.equal(expected);
+    });
+
+    [
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      Number.POSITIVE_INFINITY,
+      // assume Unix timestamp are 32-bit
+      2147483648,
+      -2147483649
+    ].forEach(value => {
+      expect(() =>
+        GraphQLDateTime.serialize(value)
+      ).to.throw(
+        'DateTime cannot represent an invalid Unix timestamp ' + value
+      );
+    });
   });
 
   it('parses input DateTime', () => {
 
     [
+      // Years
       [ '2016', new Date(Date.UTC(2016, 0)) ],
+      // Years and month
+      [ '2016-01', new Date(Date.UTC(2016, 0)) ],
       [ '2016-11', new Date(Date.UTC(2016, 10)) ],
-      [ '2016-11-05', new Date(Date.UTC(2016, 10, 5)) ],
-      [ '20161105', new Date(Date.UTC(2016, 10, 5)) ],
-      [ '2016-W44', new Date(Date.UTC(2016, 9, 31)) ],
-      [ '2016W44', new Date(Date.UTC(2016, 9, 31)) ],
-      [ '2016-W44-6', new Date(Date.UTC(2016, 10, 5)) ],
-      [ '2016W446', new Date(Date.UTC(2016, 10, 5)) ],
-      [ '2016-310', new Date(Date.UTC(2016, 10, 5)) ],
-      [ '2016310', new Date(Date.UTC(2016, 10, 5)) ],
-      [ '2016-01-01T10Z', new Date(Date.UTC(2016, 0, 1, 10)) ],
-      [ '2016-01-01T10:10Z', new Date(Date.UTC(2016, 0, 1, 10, 10)) ],
-      [ '2016-01-01T1010Z', new Date(Date.UTC(2016, 0, 1, 10, 10)) ],
-      [ '2016-01-01T10:10:10Z', new Date(Date.UTC(2016, 0, 1, 10, 10, 10)) ],
-      [ '2016-01-01T101010Z',
-        new Date(Date.UTC(2016, 0, 1, 10, 10, 10)) ],
-      [ '2016-01-01T10:10:10.321Z',
-        new Date(Date.UTC(2016, 0, 1, 10, 10, 10, 321)) ],
-      [ '2016-01-01T101010.321Z',
-        new Date(Date.UTC(2016, 0, 1, 10, 10, 10, 321)) ]
+      // Date
+      [ '2016-02-01', new Date(Date.UTC(2016, 1, 1)) ],
+      [ '2016-09-15', new Date(Date.UTC(2016, 8, 15)) ],
+      [ '2016-01-31', new Date(Date.UTC(2016, 0, 31)) ],
+      // Date with 30 days in the month
+      [ '2016-04-30', new Date(Date.UTC(2016, 3, 30)) ],
+      [ '2016-06-30', new Date(Date.UTC(2016, 5, 30)) ],
+      [ '2016-09-30', new Date(Date.UTC(2016, 8, 30)) ],
+      [ '2016-11-30', new Date(Date.UTC(2016, 10, 30)) ],
+      // Date leap year checks
+      [ '2016-02-29', new Date(Date.UTC(2016, 1, 29)) ],
+      [ '2000-02-29', new Date(Date.UTC(2000, 1, 29)) ],
+      // Datetime with hours and minutes
+      [ '2016-02-01T00:00Z', new Date(Date.UTC(2016, 1, 1, 0, 0)) ],
+      [ '2016-02-01T24:00Z', new Date(Date.UTC(2016, 1, 2, 0, 0)) ],
+      [ '2016-02-01T23:59Z', new Date(Date.UTC(2016, 1, 1, 23, 59)) ],
+      [ '2016-02-01T15:32Z', new Date(Date.UTC(2016, 1, 1, 15, 32)) ],
+      // Datetime with hours, minutes and seconds
+      [ '2016-02-01T00:00:00Z', new Date(Date.UTC(2016, 1, 1, 0, 0, 0)) ],
+      [ '2016-02-01T00:00:15Z', new Date(Date.UTC(2016, 1, 1, 0, 0, 15)) ],
+      [ '2016-02-01T00:00:59Z', new Date(Date.UTC(2016, 1, 1, 0, 0, 59)) ],
+      // Datetime with hours, minutes, seconds and milliseconds
+      [
+        '2016-02-01T00:00:00.000Z',
+        new Date(Date.UTC(2016, 1, 1, 0, 0, 0, 0))
+      ],
+      [
+        '2016-02-01T00:00:00.999Z',
+        new Date(Date.UTC(2016, 1, 1, 0, 0, 0, 999))
+      ],
+      [
+        '2016-02-01T00:00:00.456Z',
+        new Date(Date.UTC(2016, 1, 1, 0, 0, 0, 456))
+      ],
     ].forEach(([ value, expected ]) => {
       expect(
-        GraphQLDateTime.parseValue(value).getTime()
-      ).to.equal(expected.getTime());
+        GraphQLDateTime.parseValue(value).toISOString()
+      ).to.equal(expected.toISOString());
     });
 
-    expect(() =>
-      GraphQLDateTime.parseValue(75683393)
-    ).to.throw(
-      'DateTime cannot represent non string type 75683393'
-    );
+    [
+      null,
+      undefined,
+      4566,
+      {},
+      [],
+      true,
+    ].forEach(invalidInput => {
+      expect(() =>
+        GraphQLDateTime.parseValue(invalidInput)
+      ).to.throw(
+        'DateTime cannot represent non string type ' + invalidInput
+      );
+    });
 
     [
-      '01-01-2016',
-      '201611',
-      '2016-W44-8',
+      // General
+      'Invalid date',
+      // Year and month
+      '2016-00',
+      '2016-13',
+      '2016-1',
+      '201613',
+      // Date
+      '2016-01-00',
+      '2016-01-32',
+      '2016-01-1',
+      '20160101',
+      // Date leap year checks
       '2015-02-29',
-      '2016-01-01T101010.321'
+      '2015-02-30',
+      '1900-02-29',
+      '1900-02-30',
+      '2016-02-30',
+      '2000-02-30',
+      // Datetime with hours and minutes
+      '2016-02-01T24:01Z',
+      '2016-02-01T00:60Z',
+      '2016-02-01T0:60Z',
+      '2016-02-01T00:0Z',
+      '2015-02-29T00:00Z',
+      '2016-02-01T0000',
+      // Datetime with hours, minutes and seconds
+      '2016-02-01T000059Z',
+      '2016-02-01T00:00:60Z',
+      '2016-02-01T00:00:0Z',
+      '2015-02-29T00:00:00Z',
+      '2016-02-01T00:00:00',
+      // Datetime with hours, minutes, seconds and milliseconds
+      '2016-02-01T00:00:00.1Z',
+      '2016-02-01T00:00:00.22Z',
+      '2015-02-29T00:00:00.000Z',
+      '2016-02-01T00:00:00.223',
     ].forEach(dateString => {
       expect(() =>
         GraphQLDateTime.parseValue(dateString)
@@ -257,21 +445,103 @@ describe('Type System: Scalar coercion', () => {
 
   it('parses literal DateTime', () => {
 
-    expect(
-      GraphQLDateTime.parseLiteral({
-        kind: Kind.STRING, value: '2016-01-01T101010.321Z'
-      }).getTime()
-    ).to.equal(
-      new Date(Date.UTC(2016, 0, 1, 10, 10, 10, 321)).getTime()
-    );
+    [
+      // Years
+      [ '2016', new Date(Date.UTC(2016, 0)) ],
+      // Years and month
+      [ '2016-01', new Date(Date.UTC(2016, 0)) ],
+      [ '2016-11', new Date(Date.UTC(2016, 10)) ],
+      // Date
+      [ '2016-02-01', new Date(Date.UTC(2016, 1, 1)) ],
+      [ '2016-09-15', new Date(Date.UTC(2016, 8, 15)) ],
+      [ '2016-01-31', new Date(Date.UTC(2016, 0, 31)) ],
+      // Date with 30 days in the month
+      [ '2016-04-30', new Date(Date.UTC(2016, 3, 30)) ],
+      [ '2016-06-30', new Date(Date.UTC(2016, 5, 30)) ],
+      [ '2016-09-30', new Date(Date.UTC(2016, 8, 30)) ],
+      [ '2016-11-30', new Date(Date.UTC(2016, 10, 30)) ],
+      // Date leap year checks
+      [ '2016-02-29', new Date(Date.UTC(2016, 1, 29)) ],
+      [ '2000-02-29', new Date(Date.UTC(2000, 1, 29)) ],
+      // Datetime with hours and minutes
+      [ '2016-02-01T00:00Z', new Date(Date.UTC(2016, 1, 1, 0, 0)) ],
+      [ '2016-02-01T24:00Z', new Date(Date.UTC(2016, 1, 2, 0, 0)) ],
+      [ '2016-02-01T23:59Z', new Date(Date.UTC(2016, 1, 1, 23, 59)) ],
+      [ '2016-02-01T15:32Z', new Date(Date.UTC(2016, 1, 1, 15, 32)) ],
+      // Datetime with hours, minutes and seconds
+      [ '2016-02-01T00:00:00Z', new Date(Date.UTC(2016, 1, 1, 0, 0, 0)) ],
+      [ '2016-02-01T00:00:15Z', new Date(Date.UTC(2016, 1, 1, 0, 0, 15)) ],
+      [ '2016-02-01T00:00:59Z', new Date(Date.UTC(2016, 1, 1, 0, 0, 59)) ],
+      // Datetime with hours, minutes, seconds and milliseconds
+      [
+        '2016-02-01T00:00:00.000Z',
+        new Date(Date.UTC(2016, 1, 1, 0, 0, 0, 0))
+      ],
+      [
+        '2016-02-01T00:00:00.999Z',
+        new Date(Date.UTC(2016, 1, 1, 0, 0, 0, 999))
+      ],
+      [
+        '2016-02-01T00:00:00.456Z',
+        new Date(Date.UTC(2016, 1, 1, 0, 0, 0, 456))
+      ],
+    ].forEach(([ value, expected ]) => {
+      expect(
+        GraphQLDateTime.parseLiteral({
+          kind: Kind.STRING, value
+        }).toISOString()
+      ).to.equal(expected.toISOString());
+    });
+
+    [
+      // General
+      'Invalid date',
+      // Year and month
+      '2016-00',
+      '2016-13',
+      '2016-1',
+      '201613',
+      // Date
+      '2016-01-00',
+      '2016-01-32',
+      '2016-01-1',
+      '20160101',
+      // Date leap year checks
+      '2015-02-29',
+      '2015-02-30',
+      '1900-02-29',
+      '1900-02-30',
+      '2016-02-30',
+      '2000-02-30',
+      // Datetime with hours and minutes
+      '2016-02-01T24:01Z',
+      '2016-02-01T00:60Z',
+      '2016-02-01T0:60Z',
+      '2016-02-01T00:0Z',
+      '2015-02-29T00:00Z',
+      '2016-02-01T0000',
+      // Datetime with hours, minutes and seconds
+      '2016-02-01T000059Z',
+      '2016-02-01T00:00:60Z',
+      '2016-02-01T00:00:0Z',
+      '2015-02-29T00:00:00Z',
+      '2016-02-01T00:00:00',
+      // Datetime with hours, minutes, seconds and milliseconds
+      '2016-02-01T00:00:00.1Z',
+      '2016-02-01T00:00:00.22Z',
+      '2015-02-29T00:00:00.000Z',
+      '2016-02-01T00:00:00.223',
+    ].forEach(value => {
+      expect(
+        GraphQLDateTime.parseLiteral({
+          kind: Kind.STRING, value
+        })
+      ).to.equal(null);
+    });
+
     expect(
       GraphQLDateTime.parseLiteral({
         kind: Kind.FLOAT, value: 5
-      })
-    ).to.equal(null);
-    expect(
-      GraphQLDateTime.parseLiteral({
-        kind: Kind.STRING, value: '2015-02-29'
       })
     ).to.equal(null);
   });
