@@ -155,12 +155,25 @@ function isValidDate(datestring: string): boolean {
     return false;
   }
 
-  // Perform specific checks for dates. We need
+  // Perform specific checks for the hours in datetimes
+  // (i.e. datetimes that incude YYYY-MM-DDThh). We need
+  // to make sure that the number of hours in a day ranges
+  // from 0 to 23. This needs to be done because node v6 and above
+  // support the hour range 0-24 while other node versions only support
+  // range 0 to 23. We need to keep this consistent across node versions.
+  if (datestring.length >= 13) {
+    const hour = Number(datestring.substr(11,2));
+    if (hour > 23) {
+      return false;
+    }
+  }
+
+  // Perform specific checks for dates (i.e. that include
+  // YYYY-MM-DD). We need
   // to make sure that the date string has the correct
   // number of days for a given month. This check is required
   // because the javascript Date.parse() assumes every month has 31 days.
-  const regexYYYYMM = /\d{4}-\d{2}-\d{2}/;
-  if (regexYYYYMM.test(datestring)) {
+  if (datestring.length >= 10) {
     const year = Number(datestring.substr(0,4));
     const month = Number(datestring.substr(5,2));
     const day = Number(datestring.substr(8,2));
@@ -181,10 +194,9 @@ function isValidDate(datestring: string): boolean {
           return false;
         }
         break;
-      default:
-        return true;
     }
   }
+
   // Every year that is exactly divisible by four
   // is a leap year, except for years that are exactly
   // divisible by 100, but these centurial years are

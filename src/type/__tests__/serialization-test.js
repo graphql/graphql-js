@@ -236,7 +236,7 @@ describe('Type System: Scalar coercion', () => {
       '2000-02-29',
       // Datetime with hours and minutes
       '2016-02-01T00:00Z',
-      '2016-02-01T24:00Z',
+      '2016-02-01T23:00Z',
       '2016-02-01T23:59Z',
       '2016-02-01T15:32Z',
       // Datetime with hours, minutes and seconds
@@ -280,6 +280,7 @@ describe('Type System: Scalar coercion', () => {
       '2016-02-01T00:0Z',
       '2015-02-29T00:00Z',
       '2016-02-01T0000',
+      '2016-02-02T24:00Z',
       // Datetime with hours, minutes and seconds
       '2016-02-01T000059Z',
       '2016-02-01T00:00:60Z',
@@ -355,7 +356,7 @@ describe('Type System: Scalar coercion', () => {
       [ '2000-02-29', new Date(Date.UTC(2000, 1, 29)) ],
       // Datetime with hours and minutes
       [ '2016-02-01T00:00Z', new Date(Date.UTC(2016, 1, 1, 0, 0)) ],
-      [ '2016-02-01T24:00Z', new Date(Date.UTC(2016, 1, 2, 0, 0)) ],
+      [ '2016-02-01T23:00Z', new Date(Date.UTC(2016, 1, 1, 23, 0)) ],
       [ '2016-02-01T23:59Z', new Date(Date.UTC(2016, 1, 1, 23, 59)) ],
       [ '2016-02-01T15:32Z', new Date(Date.UTC(2016, 1, 1, 15, 32)) ],
       // Datetime with hours, minutes and seconds
@@ -423,6 +424,7 @@ describe('Type System: Scalar coercion', () => {
       '2016-02-01T00:0Z',
       '2015-02-29T00:00Z',
       '2016-02-01T0000',
+      '2016-02-02T24:00Z',
       // Datetime with hours, minutes and seconds
       '2016-02-01T000059Z',
       '2016-02-01T00:00:60Z',
@@ -465,7 +467,7 @@ describe('Type System: Scalar coercion', () => {
       [ '2000-02-29', new Date(Date.UTC(2000, 1, 29)) ],
       // Datetime with hours and minutes
       [ '2016-02-01T00:00Z', new Date(Date.UTC(2016, 1, 1, 0, 0)) ],
-      [ '2016-02-01T24:00Z', new Date(Date.UTC(2016, 1, 2, 0, 0)) ],
+      [ '2016-02-01T23:00Z', new Date(Date.UTC(2016, 1, 1, 23, 0)) ],
       [ '2016-02-01T23:59Z', new Date(Date.UTC(2016, 1, 1, 23, 59)) ],
       [ '2016-02-01T15:32Z', new Date(Date.UTC(2016, 1, 1, 15, 32)) ],
       // Datetime with hours, minutes and seconds
@@ -520,6 +522,7 @@ describe('Type System: Scalar coercion', () => {
       '2016-02-01T00:0Z',
       '2015-02-29T00:00Z',
       '2016-02-01T0000',
+      '2016-02-02T24:00Z',
       // Datetime with hours, minutes and seconds
       '2016-02-01T000059Z',
       '2016-02-01T00:00:60Z',
