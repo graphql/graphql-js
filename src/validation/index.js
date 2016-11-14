@@ -7,5 +7,5 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-export { validate } from './validate';
+export { validate, ValidationContext } from './validate';
 export { specifiedRules } from './specifiedRules';

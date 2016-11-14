@@ -236,6 +236,7 @@ export type {
 // Validate GraphQL queries.
 export {
   validate,
+  ValidationContext,
   specifiedRules,
 } from './validation';
 
