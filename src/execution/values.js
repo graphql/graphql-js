@@ -104,7 +104,7 @@ export function getVariableValues(
  * definitions and list of argument AST nodes.
  */
 export function getArgumentValues(
-  def: GraphQLField | GraphQLDirective,
+  def: GraphQLField<*, *> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
   variableValues?: ?{ [key: string]: mixed }
 ): { [key: string]: mixed } {

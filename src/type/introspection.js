@@ -418,7 +418,7 @@ export const __TypeKind = new GraphQLEnumType({
  * so the format for args is different.
  */
 
-export const SchemaMetaFieldDef: GraphQLField = {
+export const SchemaMetaFieldDef: GraphQLField<*, *> = {
   name: '__schema',
   type: new GraphQLNonNull(__Schema),
   description: 'Access the current type schema of this server.',
@@ -426,7 +426,7 @@ export const SchemaMetaFieldDef: GraphQLField = {
   resolve: (source, args, context, { schema }) => schema
 };
 
-export const TypeMetaFieldDef: GraphQLField = {
+export const TypeMetaFieldDef: GraphQLField<*, *> = {
   name: '__type',
   type: __Type,
   description: 'Request the type information of a single type.',
@@ -437,7 +437,7 @@ export const TypeMetaFieldDef: GraphQLField = {
     schema.getType(((name: any): string))
 };
 
-export const TypeNameMetaFieldDef: GraphQLField = {
+export const TypeNameMetaFieldDef: GraphQLField<*, *> = {
   name: '__typename',
   type: new GraphQLNonNull(GraphQLString),
   description: 'The name of the current Object type at runtime.',

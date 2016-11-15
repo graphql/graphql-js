@@ -368,11 +368,11 @@ export class GraphQLObjectType {
   description: ?string;
   isTypeOf: ?GraphQLIsTypeOfFn;
 
-  _typeConfig: GraphQLObjectTypeConfig<*>;
-  _fields: GraphQLFieldMap;
+  _typeConfig: GraphQLObjectTypeConfig<*, *>;
+  _fields: GraphQLFieldMap<*, *>;
   _interfaces: Array<GraphQLInterfaceType>;
 
-  constructor(config: GraphQLObjectTypeConfig<*>) {
+  constructor(config: GraphQLObjectTypeConfig<*, *>) {
     invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
@@ -387,7 +387,7 @@ export class GraphQLObjectType {
     this._typeConfig = config;
   }
 
-  getFields(): GraphQLFieldMap {
+  getFields(): GraphQLFieldMap<*, *> {
     return this._fields || (this._fields =
       defineFieldMap(this, this._typeConfig.fields)
     );
@@ -436,10 +436,10 @@ function defineInterfaces(
   return interfaces;
 }
 
-function defineFieldMap(
+function defineFieldMap<TSource, TContext>(
   type: GraphQLNamedType,
-  fieldsThunk: Thunk<GraphQLFieldConfigMap<*>>
-): GraphQLFieldMap {
+  fieldsThunk: Thunk<GraphQLFieldConfigMap<TSource, TContext>>
+): GraphQLFieldMap<TSource, TContext> {
   const fieldMap = resolveThunk(fieldsThunk);
   invariant(
     isPlainObj(fieldMap),
@@ -507,10 +507,10 @@ function isPlainObj(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
 }
 
-export type GraphQLObjectTypeConfig<TSource> = {
+export type GraphQLObjectTypeConfig<TSource, TContext> = {
   name: string;
   interfaces?: Thunk<?Array<GraphQLInterfaceType>>;
-  fields: Thunk<GraphQLFieldConfigMap<TSource>>;
+  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
   isTypeOf?: ?GraphQLIsTypeOfFn;
   description?: ?string
 };
@@ -527,10 +527,10 @@ export type GraphQLIsTypeOfFn = (
   info: GraphQLResolveInfo
 ) => boolean;
 
-export type GraphQLFieldResolver<TSource> = (
+export type GraphQLFieldResolver<TSource, TContext> = (
   source: TSource,
   args: {[argName: string]: mixed},
-  context: mixed,
+  context: TContext,
   info: GraphQLResolveInfo
 ) => mixed;
 
@@ -549,10 +549,10 @@ export type GraphQLResolveInfo = {
 
 export type ResponsePath = { prev: ResponsePath, key: string | number } | void;
 
-export type GraphQLFieldConfig<TSource> = {
+export type GraphQLFieldConfig<TSource, TContext> = {
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;
-  resolve?: GraphQLFieldResolver<TSource>;
+  resolve?: GraphQLFieldResolver<TSource, TContext>;
   deprecationReason?: ?string;
   description?: ?string;
 };
@@ -567,16 +567,16 @@ export type GraphQLArgumentConfig = {
   description?: ?string;
 };
 
-export type GraphQLFieldConfigMap<TSource> = {
-  [fieldName: string]: GraphQLFieldConfig<TSource>;
+export type GraphQLFieldConfigMap<TSource, TContext> = {
+  [fieldName: string]: GraphQLFieldConfig<TSource, TContext>;
 };
 
-export type GraphQLField = {
+export type GraphQLField<TSource, TContext> = {
   name: string;
   description: ?string;
   type: GraphQLOutputType;
   args: Array<GraphQLArgument>;
-  resolve?: GraphQLFieldResolver<*>;
+  resolve?: GraphQLFieldResolver<TSource, TContext>;
   isDeprecated?: boolean;
   deprecationReason?: ?string;
 };
@@ -588,8 +588,8 @@ export type GraphQLArgument = {
   description?: ?string;
 };
 
-export type GraphQLFieldMap = {
-  [fieldName: string]: GraphQLField;
+export type GraphQLFieldMap<TSource, TContext> = {
+  [fieldName: string]: GraphQLField<TSource, TContext>;
 };
 
 
@@ -617,10 +617,10 @@ export class GraphQLInterfaceType {
   description: ?string;
   resolveType: ?GraphQLTypeResolver;
 
-  _typeConfig: GraphQLInterfaceTypeConfig;
-  _fields: GraphQLFieldMap;
+  _typeConfig: GraphQLInterfaceTypeConfig<*, *>;
+  _fields: GraphQLFieldMap<*, *>;
 
-  constructor(config: GraphQLInterfaceTypeConfig) {
+  constructor(config: GraphQLInterfaceTypeConfig<*, *>) {
     invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
@@ -635,7 +635,7 @@ export class GraphQLInterfaceType {
     this._typeConfig = config;
   }
 
-  getFields(): GraphQLFieldMap {
+  getFields(): GraphQLFieldMap<*, *> {
     return this._fields ||
       (this._fields = defineFieldMap(this, this._typeConfig.fields));
   }
@@ -645,9 +645,9 @@ export class GraphQLInterfaceType {
   }
 }
 
-export type GraphQLInterfaceTypeConfig = {
+export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
   name: string,
-  fields: Thunk<GraphQLFieldConfigMap<mixed>>,
+  fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing

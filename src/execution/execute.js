@@ -626,13 +626,13 @@ function resolveField(
 
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
-function resolveOrError(
+function resolveOrError<TSource, TContext>(
   exeContext: ExecutionContext,
-  fieldDef: GraphQLField,
+  fieldDef: GraphQLField<TSource, TContext>,
   fieldNode: FieldNode,
-  resolveFn: GraphQLFieldResolver<*>,
-  source: mixed,
-  context: mixed,
+  resolveFn: GraphQLFieldResolver<TSource, TContext>,
+  source: TSource,
+  context: TContext,
   info: GraphQLResolveInfo
 ): Error | mixed {
   try {
@@ -1042,7 +1042,7 @@ function defaultResolveTypeFn(
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context.
  */
-export const defaultFieldResolver: GraphQLFieldResolver<any> =
+export const defaultFieldResolver: GraphQLFieldResolver<any, *> =
 function (source, args, context, { fieldName }) {
   // ensure source is a value for which property access is acceptable.
   if (typeof source === 'object' || typeof source === 'function') {
@@ -1077,7 +1077,7 @@ function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
   fieldName: string
-): ?GraphQLField {
+): ?GraphQLField<*, *> {
   if (fieldName === SchemaMetaFieldDef.name &&
       schema.getQueryType() === parentType) {
     return SchemaMetaFieldDef;
