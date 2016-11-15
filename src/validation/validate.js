@@ -240,7 +240,7 @@ export class ValidationContext {
     return this._typeInfo.getInputType();
   }
 
-  getFieldDef(): ?GraphQLField {
+  getFieldDef(): ?GraphQLField<*, *> {
     return this._typeInfo.getFieldDef();
   }
 
