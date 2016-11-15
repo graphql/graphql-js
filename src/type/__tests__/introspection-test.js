@@ -825,7 +825,8 @@ describe('Introspection', () => {
       name: 'TestInputObject',
       fields: {
         a: { type: GraphQLString, defaultValue: 'foo' },
-        b: { type: new GraphQLList(GraphQLString) }
+        b: { type: new GraphQLList(GraphQLString) },
+        c: { type: GraphQLString, defaultValue: null }
       }
     });
 
@@ -897,7 +898,13 @@ describe('Introspection', () => {
             { kind: 'SCALAR',
               name: 'String',
               ofType: null } },
-          defaultValue: null } ] } ] } }
+          defaultValue: null },
+        { name: 'c',
+          type:
+          { kind: 'SCALAR',
+            name: 'String',
+            ofType: null },
+          defaultValue: 'null' } ] } ] } }
     });
   });
 

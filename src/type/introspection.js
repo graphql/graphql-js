@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import isNullish from '../jsutils/isNullish';
+import isInvalid from '../jsutils/isInvalid';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import {
@@ -333,7 +333,7 @@ export const __InputValue = new GraphQLObjectType({
       description:
         'A GraphQL-formatted string representing the default value for this ' +
         'input value.',
-      resolve: inputVal => isNullish(inputVal.defaultValue) ?
+      resolve: inputVal => isInvalid(inputVal.defaultValue) ?
         null :
         print(astFromValue(inputVal.defaultValue, inputVal.type))
     }

@@ -509,6 +509,23 @@ describe('Type System: build schema from introspection', () => {
                 defaultValue: { lat: 37.485, lon: -122.148 }
               }
             }
+          },
+          defaultNull: {
+            type: GraphQLString,
+            args: {
+              intArg: {
+                type: GraphQLInt,
+                defaultValue: null
+              }
+            }
+          },
+          noDefault: {
+            type: GraphQLString,
+            args: {
+              intArg: {
+                type: GraphQLInt
+              }
+            }
           }
         }
       })
