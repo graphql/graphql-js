@@ -19,7 +19,7 @@ import type { GraphQLType } from './definition';
 const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
 
-function coerceInt(value: mixed): ?number {
+function coerceInt(value: mixed): number {
   if (value === '') {
     throw new TypeError(
       'Int cannot represent non 32-bit signed integer value: (empty string)',
@@ -58,7 +58,7 @@ export const GraphQLInt = new GraphQLScalarType({
   },
 });
 
-function coerceFloat(value: mixed): ?number {
+function coerceFloat(value: mixed): number {
   if (value === '') {
     throw new TypeError(
       'Float cannot represent non numeric value: (empty string)',
@@ -88,7 +88,7 @@ export const GraphQLFloat = new GraphQLScalarType({
   },
 });
 
-function coerceString(value: mixed): ?string {
+function coerceString(value: mixed): string {
   if (Array.isArray(value)) {
     throw new TypeError(
       `String cannot represent an array value: [${String(value)}]`,
@@ -137,7 +137,7 @@ export const GraphQLID = new GraphQLScalarType({
   },
 });
 
-export const specifiedScalarTypes: Array<GraphQLScalarType> = [
+export const specifiedScalarTypes = [
   GraphQLString,
   GraphQLInt,
   GraphQLFloat,

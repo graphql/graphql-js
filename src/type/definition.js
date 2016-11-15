@@ -37,7 +37,7 @@ import type { GraphQLSchema } from './schema';
  * These are all of the possible kinds of types.
  */
 export type GraphQLType =
-  | GraphQLScalarType
+  | GraphQLScalarType<any>
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
@@ -68,12 +68,12 @@ export function assertType(type: mixed): GraphQLType {
  * These types may be used as input types for arguments and directives.
  */
 type GraphQLInputType_<T> =
-  | GraphQLScalarType
+  | GraphQLScalarType<any>
   | GraphQLEnumType
   | GraphQLInputObjectType
   | GraphQLList<T>
   | GraphQLNonNull<
-      | GraphQLScalarType
+      | GraphQLScalarType<any>
       | GraphQLEnumType
       | GraphQLInputObjectType
       | GraphQLList<T>,
@@ -102,14 +102,14 @@ export function assertInputType(type: ?GraphQLType): GraphQLInputType {
  * These types may be used as output types as the result of fields.
  */
 export type GraphQLOutputType =
-  | GraphQLScalarType
+  | GraphQLScalarType<any>
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
   | GraphQLEnumType
   | GraphQLList<GraphQLOutputType>
   | GraphQLNonNull<
-      | GraphQLScalarType
+      | GraphQLScalarType<any>
       | GraphQLObjectType
       | GraphQLInterfaceType
       | GraphQLUnionType
@@ -140,7 +140,7 @@ export function assertOutputType(type: ?GraphQLType): GraphQLOutputType {
 /**
  * These types may describe types which may be leaf values.
  */
-export type GraphQLLeafType = GraphQLScalarType | GraphQLEnumType;
+export type GraphQLLeafType = GraphQLScalarType<any> | GraphQLEnumType;
 
 export function isLeafType(type: ?GraphQLType): boolean %checks {
   return type instanceof GraphQLScalarType || type instanceof GraphQLEnumType;
@@ -201,7 +201,7 @@ export function assertAbstractType(type: ?GraphQLType): GraphQLAbstractType {
  * These types can all accept null as a value.
  */
 type GraphQLNullableType_<T> =
-  | GraphQLScalarType
+  | GraphQLScalarType<any>
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
@@ -220,7 +220,7 @@ export function getNullableType<T: GraphQLType>(
  * These named types do not include modifiers like List or NonNull.
  */
 export type GraphQLNamedType =
-  | GraphQLScalarType
+  | GraphQLScalarType<any>
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
@@ -297,18 +297,18 @@ function resolveThunk<T>(thunk: Thunk<T>): T {
  *     });
  *
  */
-export class GraphQLScalarType {
+export class GraphQLScalarType<TInternal = any, TExternal = TInternal> {
   name: string;
   description: ?string;
   astNode: ?ScalarTypeDefinitionNode;
+  _scalarConfig: GraphQLScalarTypeConfig<TInternal, TExternal>;
 
-  _scalarConfig: GraphQLScalarTypeConfig<*, *>;
-
-  constructor(config: GraphQLScalarTypeConfig<*, *>): void {
-    assertValidName(config.name);
+  constructor(config: GraphQLScalarTypeConfig<TInternal, TExternal>): void {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this._scalarConfig = config;
+    assertValidName(config.name);
     invariant(
       typeof config.serialize === 'function',
       `${this.name} must provide "serialize" function. If this custom Scalar ` +
@@ -323,11 +323,10 @@ export class GraphQLScalarType {
           'functions.',
       );
     }
-    this._scalarConfig = config;
   }
 
   // Serializes an internal value to include in a response.
-  serialize(value: mixed): mixed {
+  serialize(value: mixed): TExternal | void {
     const serializer = this._scalarConfig.serialize;
     return serializer(value);
   }
@@ -338,12 +337,11 @@ export class GraphQLScalarType {
   }
 
   // Parses an externally provided value to use as an input.
-  parseValue(value: mixed): mixed {
+  parseValue(value: mixed): TInternal | void {
     const parser = this._scalarConfig.parseValue;
-    if (isInvalid(value)) {
-      return undefined;
+    if (!isInvalid(value)) {
+      return parser ? parser(value) : (value: any);
     }
-    return parser ? parser(value) : value;
   }
 
   // Determines if an internal value is valid for this type.
@@ -352,11 +350,14 @@ export class GraphQLScalarType {
   }
 
   // Parses an externally provided literal value to use as an input.
-  parseLiteral(valueNode: ValueNode, variables: ?ObjMap<mixed>): mixed {
+  parseLiteral(
+    valueNode: ValueNode,
+    variables: ?ObjMap<mixed>,
+  ): TInternal | void {
     const parser = this._scalarConfig.parseLiteral;
     return parser
       ? parser(valueNode, variables)
-      : valueFromASTUntyped(valueNode, variables);
+      : (valueFromASTUntyped(valueNode, variables): any);
   }
 
   toString(): string {
@@ -375,12 +376,12 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   name: string,
   description?: ?string,
   astNode?: ?ScalarTypeDefinitionNode,
-  serialize: (value: mixed) => ?TExternal,
-  parseValue?: (value: mixed) => ?TInternal,
+  serialize: (value: mixed) => TExternal | void,
+  parseValue?: (value: mixed) => TInternal | void,
   parseLiteral?: (
     valueNode: ValueNode,
     variables: ?ObjMap<mixed>,
-  ) => ?TInternal,
+  ) => TInternal | void,
 };
 
 /**
