@@ -36,6 +36,14 @@ export type GraphQLType =
   GraphQLList<any> |
   GraphQLNonNull<any>;
 
+export function assertType(type: mixed): GraphQLType {
+  invariant(
+    isType(type),
+    `GraphQL: Expected ${String(type)} to be a GraphQLType.`
+  );
+  return (type: any);
+}
+
 export function isType(type: mixed): boolean {
   return (
     type instanceof GraphQLScalarType ||
@@ -63,6 +71,14 @@ export type GraphQLInputType =
     GraphQLInputObjectType |
     GraphQLList<GraphQLInputType>
   >;
+
+export function assertInputType(type: ?GraphQLType): GraphQLInputType {
+  invariant(
+    isInputType(type),
+    `GraphQL: Expected type ${String(type)} to be a GraphQLInputType.`
+  );
+  return (type: any);
+}
 
 export function isInputType(type: ?GraphQLType): boolean {
   const namedType = getNamedType(type);
@@ -92,6 +108,14 @@ export type GraphQLOutputType =
     GraphQLList<GraphQLOutputType>
   >;
 
+export function assertOutputType(type: ?GraphQLType): GraphQLOutputType {
+  invariant(
+    isOutputType(type),
+    `GraphQL: Expected type ${String(type)} to be a GraphQLOutputType.`,
+  );
+  return (type: any);
+}
+
 export function isOutputType(type: ?GraphQLType): boolean {
   const namedType = getNamedType(type);
   return (
@@ -110,6 +134,14 @@ export type GraphQLLeafType =
   GraphQLScalarType |
   GraphQLEnumType;
 
+export function assertLeafType(type: ?GraphQLType): GraphQLLeafType {
+  invariant(
+    isLeafType(type),
+    `GraphQL: Expected type ${String(type)} to be a GraphQLLeafType.`,
+  );
+  return (type: any);
+}
+
 export function isLeafType(type: ?GraphQLType): boolean {
   const namedType = getNamedType(type);
   return (
@@ -126,6 +158,14 @@ export type GraphQLCompositeType =
   GraphQLInterfaceType |
   GraphQLUnionType;
 
+export function assertCompositeType(type: ?GraphQLType): GraphQLCompositeType {
+  invariant(
+    isCompositeType(type),
+    `GraphQL: Expected type ${String(type)} to be a GraphQLCompositeType.`,
+  );
+  return (type: any);
+}
+
 export function isCompositeType(type: ?GraphQLType): boolean {
   return (
     type instanceof GraphQLObjectType ||
@@ -140,6 +180,14 @@ export function isCompositeType(type: ?GraphQLType): boolean {
 export type GraphQLAbstractType =
   GraphQLInterfaceType |
   GraphQLUnionType;
+
+export function assertAbstractType(type: ?GraphQLType): GraphQLAbstractType {
+  invariant(
+    isAbstractType(type),
+    `GraphQL: Expected type ${String(type)} to be a GraphQLAbstractType.`,
+  );
+  return (type: any);
+}
 
 export function isAbstractType(type: ?GraphQLType): boolean {
   return (

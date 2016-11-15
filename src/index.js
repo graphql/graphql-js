@@ -90,6 +90,14 @@ export {
   __EnumValue,
   __TypeKind,
 
+  // Assertions
+  assertType,
+  assertInputType,
+  assertOutputType,
+  assertLeafType,
+  assertCompositeType,
+  assertAbstractType,
+
   // Predicates
   isType,
   isInputType,

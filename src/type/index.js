@@ -12,6 +12,14 @@
 export { GraphQLSchema } from './schema';
 
 export {
+  // Assertions
+  assertType,
+  assertInputType,
+  assertOutputType,
+  assertLeafType,
+  assertCompositeType,
+  assertAbstractType,
+
   // Predicates
   isType,
   isInputType,
