@@ -21,7 +21,7 @@ import type {
 import type { GraphQLSchema } from './schema';
 
 
-// Predicates
+// Predicates & Assertions
 
 /**
  * These are all of the possible kinds of types.
@@ -36,14 +36,6 @@ export type GraphQLType =
   GraphQLList<any> |
   GraphQLNonNull<any>;
 
-export function assertType(type: mixed): GraphQLType {
-  invariant(
-    isType(type),
-    `GraphQL: Expected ${String(type)} to be a GraphQLType.`
-  );
-  return (type: any);
-}
-
 export function isType(type: mixed): boolean {
   return (
     type instanceof GraphQLScalarType ||
@@ -55,6 +47,14 @@ export function isType(type: mixed): boolean {
     type instanceof GraphQLList ||
     type instanceof GraphQLNonNull
   );
+}
+
+export function assertType(type: mixed): GraphQLType {
+  invariant(
+    isType(type),
+    `Expected ${String(type)} to be a GraphQL type.`
+  );
+  return (type: any);
 }
 
 /**
@@ -72,14 +72,6 @@ export type GraphQLInputType =
     GraphQLList<GraphQLInputType>
   >;
 
-export function assertInputType(type: ?GraphQLType): GraphQLInputType {
-  invariant(
-    isInputType(type),
-    `GraphQL: Expected type ${String(type)} to be a GraphQLInputType.`
-  );
-  return (type: any);
-}
-
 export function isInputType(type: ?GraphQLType): boolean {
   const namedType = getNamedType(type);
   return (
@@ -87,6 +79,14 @@ export function isInputType(type: ?GraphQLType): boolean {
     namedType instanceof GraphQLEnumType ||
     namedType instanceof GraphQLInputObjectType
   );
+}
+
+export function assertInputType(type: ?GraphQLType): GraphQLInputType {
+  invariant(
+    isInputType(type),
+    `Expected ${String(type)} to be a GraphQL input type.`
+  );
+  return (type: any);
 }
 
 /**
@@ -108,14 +108,6 @@ export type GraphQLOutputType =
     GraphQLList<GraphQLOutputType>
   >;
 
-export function assertOutputType(type: ?GraphQLType): GraphQLOutputType {
-  invariant(
-    isOutputType(type),
-    `GraphQL: Expected type ${String(type)} to be a GraphQLOutputType.`,
-  );
-  return (type: any);
-}
-
 export function isOutputType(type: ?GraphQLType): boolean {
   const namedType = getNamedType(type);
   return (
@@ -127,6 +119,14 @@ export function isOutputType(type: ?GraphQLType): boolean {
   );
 }
 
+export function assertOutputType(type: ?GraphQLType): GraphQLOutputType {
+  invariant(
+    isOutputType(type),
+    `Expected ${String(type)} to be a GraphQL output type.`,
+  );
+  return (type: any);
+}
+
 /**
  * These types may describe types which may be leaf values.
  */
@@ -134,20 +134,20 @@ export type GraphQLLeafType =
   GraphQLScalarType |
   GraphQLEnumType;
 
-export function assertLeafType(type: ?GraphQLType): GraphQLLeafType {
-  invariant(
-    isLeafType(type),
-    `GraphQL: Expected type ${String(type)} to be a GraphQLLeafType.`,
-  );
-  return (type: any);
-}
-
 export function isLeafType(type: ?GraphQLType): boolean {
   const namedType = getNamedType(type);
   return (
     namedType instanceof GraphQLScalarType ||
     namedType instanceof GraphQLEnumType
   );
+}
+
+export function assertLeafType(type: ?GraphQLType): GraphQLLeafType {
+  invariant(
+    isLeafType(type),
+    `Expected ${String(type)} to be a GraphQL leaf type.`,
+  );
+  return (type: any);
 }
 
 /**
@@ -158,20 +158,20 @@ export type GraphQLCompositeType =
   GraphQLInterfaceType |
   GraphQLUnionType;
 
-export function assertCompositeType(type: ?GraphQLType): GraphQLCompositeType {
-  invariant(
-    isCompositeType(type),
-    `GraphQL: Expected type ${String(type)} to be a GraphQLCompositeType.`,
-  );
-  return (type: any);
-}
-
 export function isCompositeType(type: ?GraphQLType): boolean {
   return (
     type instanceof GraphQLObjectType ||
     type instanceof GraphQLInterfaceType ||
     type instanceof GraphQLUnionType
   );
+}
+
+export function assertCompositeType(type: ?GraphQLType): GraphQLCompositeType {
+  invariant(
+    isCompositeType(type),
+    `Expected ${String(type)} to be a GraphQL composite type.`,
+  );
+  return (type: any);
 }
 
 /**
@@ -181,19 +181,19 @@ export type GraphQLAbstractType =
   GraphQLInterfaceType |
   GraphQLUnionType;
 
-export function assertAbstractType(type: ?GraphQLType): GraphQLAbstractType {
-  invariant(
-    isAbstractType(type),
-    `GraphQL: Expected type ${String(type)} to be a GraphQLAbstractType.`,
-  );
-  return (type: any);
-}
-
 export function isAbstractType(type: ?GraphQLType): boolean {
   return (
     type instanceof GraphQLInterfaceType ||
     type instanceof GraphQLUnionType
   );
+}
+
+export function assertAbstractType(type: ?GraphQLType): GraphQLAbstractType {
+  invariant(
+    isAbstractType(type),
+    `Expected ${String(type)} to be a GraphQL abstract type.`,
+  );
+  return (type: any);
 }
 
 /**
