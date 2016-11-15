@@ -366,7 +366,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
 export class GraphQLObjectType {
   name: string;
   description: ?string;
-  isTypeOf: ?GraphQLIsTypeOfFn;
+  isTypeOf: ?GraphQLIsTypeOfFn<*, *>;
 
   _typeConfig: GraphQLObjectTypeConfig<*, *>;
   _fields: GraphQLFieldMap<*, *>;
@@ -511,19 +511,19 @@ export type GraphQLObjectTypeConfig<TSource, TContext> = {
   name: string;
   interfaces?: Thunk<?Array<GraphQLInterfaceType>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
-  isTypeOf?: ?GraphQLIsTypeOfFn;
+  isTypeOf?: ?GraphQLIsTypeOfFn<TSource, TContext>;
   description?: ?string
 };
 
-export type GraphQLTypeResolver = (
-  value: mixed,
-  context: mixed,
+export type GraphQLTypeResolver<TSource, TContext> = (
+  value: TSource,
+  context: TContext,
   info: GraphQLResolveInfo
 ) => ?GraphQLObjectType | ?string;
 
-export type GraphQLIsTypeOfFn = (
-  source: mixed,
-  context: mixed,
+export type GraphQLIsTypeOfFn<TSource, TContext> = (
+  source: TSource,
+  context: TContext,
   info: GraphQLResolveInfo
 ) => boolean;
 
@@ -615,7 +615,7 @@ export type GraphQLFieldMap<TSource, TContext> = {
 export class GraphQLInterfaceType {
   name: string;
   description: ?string;
-  resolveType: ?GraphQLTypeResolver;
+  resolveType: ?GraphQLTypeResolver<*, *>;
 
   _typeConfig: GraphQLInterfaceTypeConfig<*, *>;
   _fields: GraphQLFieldMap<*, *>;
@@ -653,7 +653,7 @@ export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: ?GraphQLTypeResolver,
+  resolveType?: ?GraphQLTypeResolver<TSource, TContext>,
   description?: ?string
 };
 
@@ -685,13 +685,13 @@ export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
 export class GraphQLUnionType {
   name: string;
   description: ?string;
-  resolveType: ?GraphQLTypeResolver;
+  resolveType: ?GraphQLTypeResolver<*, *>;
 
-  _typeConfig: GraphQLUnionTypeConfig;
+  _typeConfig: GraphQLUnionTypeConfig<*, *>;
   _types: Array<GraphQLObjectType>;
   _possibleTypeNames: {[typeName: string]: boolean};
 
-  constructor(config: GraphQLUnionTypeConfig) {
+  constructor(config: GraphQLUnionTypeConfig<*, *>) {
     invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
@@ -748,7 +748,7 @@ function defineTypes(
   return types;
 }
 
-export type GraphQLUnionTypeConfig = {
+export type GraphQLUnionTypeConfig<TSource, TContext> = {
   name: string,
   types: Thunk<Array<GraphQLObjectType>>,
   /**
@@ -756,7 +756,7 @@ export type GraphQLUnionTypeConfig = {
    * the default implementation will call `isTypeOf` on each implementing
    * Object type.
    */
-  resolveType?: ?GraphQLTypeResolver;
+  resolveType?: ?GraphQLTypeResolver<TSource, TContext>;
   description?: ?string;
 };
 
