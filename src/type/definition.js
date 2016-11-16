@@ -529,7 +529,7 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
 
 export type GraphQLFieldResolver<TSource, TContext> = (
   source: TSource,
-  args: {[argName: string]: mixed},
+  args: { [argName: string]: any },
   context: TContext,
   info: GraphQLResolveInfo
 ) => mixed;
