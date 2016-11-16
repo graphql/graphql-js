@@ -1,3 +1,4 @@
+/* @flow */
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
@@ -14,6 +15,7 @@
  */
 
 const luke = {
+  type: 'Human',
   id: '1000',
   name: 'Luke Skywalker',
   friends: [ '1002', '1003', '2000', '2001' ],
@@ -22,6 +24,7 @@ const luke = {
 };
 
 const vader = {
+  type: 'Human',
   id: '1001',
   name: 'Darth Vader',
   friends: [ '1004' ],
@@ -30,6 +33,7 @@ const vader = {
 };
 
 const han = {
+  type: 'Human',
   id: '1002',
   name: 'Han Solo',
   friends: [ '1000', '1003', '2001' ],
@@ -37,6 +41,7 @@ const han = {
 };
 
 const leia = {
+  type: 'Human',
   id: '1003',
   name: 'Leia Organa',
   friends: [ '1000', '1002', '2000', '2001' ],
@@ -45,6 +50,7 @@ const leia = {
 };
 
 const tarkin = {
+  type: 'Human',
   id: '1004',
   name: 'Wilhuff Tarkin',
   friends: [ '1001' ],
@@ -60,6 +66,7 @@ const humanData = {
 };
 
 const threepio = {
+  type: 'Droid',
   id: '2000',
   name: 'C-3PO',
   friends: [ '1000', '1002', '1003', '2001' ],
@@ -68,6 +75,7 @@ const threepio = {
 };
 
 const artoo = {
+  type: 'Droid',
   id: '2001',
   name: 'R2-D2',
   friends: [ '1000', '1002', '1003' ],
@@ -81,6 +89,35 @@ const droidData = {
 };
 
 /**
+ * These are Flow types which correspond to the schema.
+ * They represent the shape of the data visited during field resolution.
+ */
+export type Character = {
+  id: string,
+  name: string,
+  friends: Array<string>,
+  appearsIn: Array<number>,
+};
+
+export type Human = {
+  type: 'Human',
+  id: string,
+  name: string,
+  friends: Array<string>,
+  appearsIn: Array<number>,
+  homePlanet: string,
+};
+
+export type Droid = {
+  type: 'Droid',
+  id: string,
+  name: string,
+  friends: Array<string>,
+  appearsIn: Array<number>,
+  primaryFunction: string
+};
+
+/**
  * Helper function to get a character by ID.
  */
 function getCharacter(id) {
@@ -91,14 +128,15 @@ function getCharacter(id) {
 /**
  * Allows us to query for a character's friends.
  */
-export function getFriends(character) {
+export function getFriends(character: Character): Array<Promise<Character>> {
+  // Notice that GraphQL accepts Arrays of Promises.
   return character.friends.map(id => getCharacter(id));
 }
 
 /**
  * Allows us to fetch the undisputed hero of the Star Wars trilogy, R2-D2.
  */
-export function getHero(episode) {
+export function getHero(episode: number): Character {
   if (episode === 5) {
     // Luke is the hero of Episode V.
     return luke;
@@ -110,13 +148,13 @@ export function getHero(episode) {
 /**
  * Allows us to query for the human with the given id.
  */
-export function getHuman(id) {
+export function getHuman(id: string): Human {
   return humanData[id];
 }
 
 /**
  * Allows us to query for the droid with the given id.
  */
-export function getDroid(id) {
+export function getDroid(id: string): Droid {
   return droidData[id];
 }

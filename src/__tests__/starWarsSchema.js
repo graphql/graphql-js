@@ -1,3 +1,4 @@
+/* @flow */
 /**
  *  Copyright (c) 2015, Facebook, Inc.
  *  All rights reserved.
@@ -131,8 +132,13 @@ const characterInterface = new GraphQLInterfaceType({
       description: 'All secrets about their past.',
     },
   }),
-  resolveType: character => {
-    return getHuman(character.id) ? humanType : droidType;
+  resolveType(character) {
+    if (character.type === 'Human') {
+      return humanType;
+    }
+    if (character.type === 'Droid') {
+      return droidType;
+    }
   }
 });
 
@@ -162,8 +168,8 @@ const humanType = new GraphQLObjectType({
     },
     friends: {
       type: new GraphQLList(characterInterface),
-      description: 'The friends of the human, or an empty list if they ' +
-                   'have none.',
+      description:
+        'The friends of the human, or an empty list if they have none.',
       resolve: human => getFriends(human),
     },
     appearsIn: {
@@ -177,7 +183,7 @@ const humanType = new GraphQLObjectType({
     secretBackstory: {
       type: GraphQLString,
       description: 'Where are they from and how they came to be who they are.',
-      resolve: () => {
+      resolve() {
         throw new Error('secretBackstory is secret.');
       },
     },
@@ -212,8 +218,8 @@ const droidType = new GraphQLObjectType({
     },
     friends: {
       type: new GraphQLList(characterInterface),
-      description: 'The friends of the droid, or an empty list if they ' +
-                   'have none.',
+      description:
+        'The friends of the droid, or an empty list if they have none.',
       resolve: droid => getFriends(droid),
     },
     appearsIn: {
@@ -223,7 +229,7 @@ const droidType = new GraphQLObjectType({
     secretBackstory: {
       type: GraphQLString,
       description: 'Construction date and the name of the designer.',
-      resolve: () => {
+      resolve() {
         throw new Error('secretBackstory is secret.');
       },
     },

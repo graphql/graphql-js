@@ -19,6 +19,7 @@ import {
   GraphQLBoolean,
   GraphQLInt,
   GraphQLString,
+  GraphQLNonNull,
 } from '../../type';
 
 describe('Execute: Handles basic execution tasks', () => {
@@ -436,6 +437,71 @@ describe('Execute: Handles basic execution tasks', () => {
         locations: [ { line: 13, column: 7 } ],
         path: [ 'asyncReturnError' ] },
     ]);
+  });
+
+
+  it('Full response path is included for non-nullable fields', async () => {
+    const A = new GraphQLObjectType({
+      name: 'A',
+      fields: () => ({
+        nullableA: {
+          type: A,
+          resolve: () => ({}),
+        },
+        nonNullA: {
+          type: new GraphQLNonNull(A),
+          resolve: () => ({}),
+        },
+        throws: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve: () => {
+            throw new Error('Catch me if you can');
+          },
+        },
+      }),
+    });
+    const queryType = new GraphQLObjectType({
+      name: 'query',
+      fields: () => ({
+        nullableA: {
+          type: A,
+          resolve: () => ({})
+        }
+      }),
+    });
+    const schema = new GraphQLSchema({
+      query: queryType,
+    });
+
+    const query = `
+      query {
+        nullableA {
+          aliasedA: nullableA {
+            nonNullA {
+              anotherA: nonNullA {
+                throws
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const result = await execute(schema, parse(query));
+    expect(result).to.deep.equal({
+      data: {
+        nullableA: {
+          aliasedA: null
+        }
+      },
+      errors: [
+        {
+          message: 'Catch me if you can',
+          locations: [ { line: 7, column: 17 } ],
+          path: [ 'nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws' ]
+        }
+      ]
+    });
   });
 
   it('uses the inline operation if no operation name is provided', async () => {
