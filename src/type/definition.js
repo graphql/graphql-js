@@ -314,7 +314,15 @@ export class GraphQLScalarType {
   toString(): string {
     return this.name;
   }
+
+  toJSON: () => string;
+  inspect: () => string;
 }
+
+// Also provide toJSON and inspect aliases for toString.
+GraphQLScalarType.prototype.toJSON =
+  GraphQLScalarType.prototype.inspect =
+    GraphQLScalarType.prototype.toString;
 
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   name: string;
@@ -402,7 +410,15 @@ export class GraphQLObjectType {
   toString(): string {
     return this.name;
   }
+
+  toJSON: () => string;
+  inspect: () => string;
 }
+
+// Also provide toJSON and inspect aliases for toString.
+GraphQLObjectType.prototype.toJSON =
+  GraphQLObjectType.prototype.inspect =
+    GraphQLObjectType.prototype.toString;
 
 function defineInterfaces(
   type: GraphQLObjectType,
@@ -643,7 +659,15 @@ export class GraphQLInterfaceType {
   toString(): string {
     return this.name;
   }
+
+  toJSON: () => string;
+  inspect: () => string;
 }
+
+// Also provide toJSON and inspect aliases for toString.
+GraphQLInterfaceType.prototype.toJSON =
+  GraphQLInterfaceType.prototype.inspect =
+    GraphQLInterfaceType.prototype.toString;
 
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
   name: string,
@@ -715,7 +739,15 @@ export class GraphQLUnionType {
   toString(): string {
     return this.name;
   }
+
+  toJSON: () => string;
+  inspect: () => string;
 }
+
+// Also provide toJSON and inspect aliases for toString.
+GraphQLUnionType.prototype.toJSON =
+  GraphQLUnionType.prototype.inspect =
+    GraphQLUnionType.prototype.toString;
 
 function defineTypes(
   unionType: GraphQLUnionType,
@@ -852,7 +884,15 @@ export class GraphQLEnumType/* <T> */ {
   toString(): string {
     return this.name;
   }
+
+  toJSON: () => string;
+  inspect: () => string;
 }
+
+// Also provide toJSON and inspect aliases for toString.
+GraphQLEnumType.prototype.toJSON =
+  GraphQLEnumType.prototype.inspect =
+    GraphQLEnumType.prototype.toString;
 
 function defineEnumValues(
   type: GraphQLEnumType,
@@ -988,7 +1028,15 @@ export class GraphQLInputObjectType {
   toString(): string {
     return this.name;
   }
+
+  toJSON: () => string;
+  inspect: () => string;
 }
+
+// Also provide toJSON and inspect aliases for toString.
+GraphQLInputObjectType.prototype.toJSON =
+  GraphQLInputObjectType.prototype.inspect =
+    GraphQLInputObjectType.prototype.toString;
 
 export type GraphQLInputObjectTypeConfig = {
   name: string;
@@ -1051,7 +1099,15 @@ export class GraphQLList<T: GraphQLType> {
   toString(): string {
     return '[' + String(this.ofType) + ']';
   }
+
+  toJSON: () => string;
+  inspect: () => string;
 }
+
+// Also provide toJSON and inspect aliases for toString.
+GraphQLList.prototype.toJSON =
+  GraphQLList.prototype.inspect =
+    GraphQLList.prototype.toString;
 
 
 /**
@@ -1089,4 +1145,12 @@ export class GraphQLNonNull<T: GraphQLNullableType> {
   toString(): string {
     return this.ofType.toString() + '!';
   }
+
+  toJSON: () => string;
+  inspect: () => string;
 }
+
+// Also provide toJSON and inspect aliases for toString.
+GraphQLNonNull.prototype.toJSON =
+  GraphQLNonNull.prototype.inspect =
+    GraphQLNonNull.prototype.toString;
