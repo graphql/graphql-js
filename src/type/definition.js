@@ -225,6 +225,25 @@ export type GraphQLNamedType =
   GraphQLEnumType |
   GraphQLInputObjectType;
 
+export function isNamedType(type: ?GraphQLType): boolean {
+  return (
+    type instanceof GraphQLScalarType ||
+    type instanceof GraphQLObjectType ||
+    type instanceof GraphQLInterfaceType ||
+    type instanceof GraphQLUnionType ||
+    type instanceof GraphQLEnumType ||
+    type instanceof GraphQLInputObjectType
+  );
+}
+
+export function assertNamedType(type: ?GraphQLType): GraphQLNamedType {
+  invariant(
+    isNamedType(type),
+    `Expected ${String(type)} to be a GraphQL named type.`,
+  );
+  return (type: any);
+}
+
 export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
   let unmodifiedType = type;
   while (

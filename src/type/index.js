@@ -19,6 +19,7 @@ export {
   isLeafType,
   isCompositeType,
   isAbstractType,
+  isNamedType,
 
   // Assertions
   assertType,
@@ -27,6 +28,7 @@ export {
   assertLeafType,
   assertCompositeType,
   assertAbstractType,
+  assertNamedType,
 
   // Un-modifiers
   getNullableType,
