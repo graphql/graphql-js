@@ -8,15 +8,29 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import invariant from '../jsutils/invariant';
-
-
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 
-// Helper to assert that provided names are valid.
-export function assertValidName(name: string): void {
-  invariant(
-    NAME_RX.test(name),
-    `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`
-  );
+/**
+ * Upholds the spec rules about naming.
+ */
+export function assertValidName(
+  name: string,
+  isIntrospection?: boolean
+): void {
+  if (!name || typeof name !== 'string') {
+    throw new Error(
+      `Must be named. Unexpected name: ${name}.`
+    );
+  }
+  if (!isIntrospection && name.slice(0, 2) === '__') {
+    throw new Error(
+      `Name "${name}" must not begin with "__", which is reserved by ` +
+      'GraphQL introspection.'
+    );
+  }
+  if (!NAME_RX.test(name)) {
+    throw new Error(
+      `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`
+    );
+  }
 }
