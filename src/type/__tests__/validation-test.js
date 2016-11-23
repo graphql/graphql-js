@@ -341,6 +341,17 @@ describe('Type System: Objects must have fields', () => {
     );
   });
 
+  it('rejects an Object type with reserved named fields', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: { __notPartOfIntrospection: { type: GraphQLString } }
+      }))
+    ).to.throw(
+      'Name "__notPartOfIntrospection" must not begin with "__", which is reserved by GraphQL introspection.'
+    );
+  });
+
   it('rejects an Object type with incorrectly typed fields', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({

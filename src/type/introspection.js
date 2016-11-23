@@ -28,6 +28,7 @@ import type { GraphQLField } from './definition';
 
 export const __Schema = new GraphQLObjectType({
   name: '__Schema',
+  isIntrospection: true,
   description:
     'A GraphQL Schema defines the capabilities of a GraphQL server. It ' +
     'exposes all available types and directives on the server, as well as ' +
@@ -69,6 +70,7 @@ export const __Schema = new GraphQLObjectType({
 
 export const __Directive = new GraphQLObjectType({
   name: '__Directive',
+  isIntrospection: true,
   description:
     'A Directive provides a way to describe alternate runtime execution and ' +
     'type validation behavior in a GraphQL document.' +
@@ -117,6 +119,7 @@ export const __Directive = new GraphQLObjectType({
 
 export const __DirectiveLocation = new GraphQLEnumType({
   name: '__DirectiveLocation',
+  isIntrospection: true,
   description:
     'A Directive can be adjacent to many parts of the GraphQL language, a ' +
     '__DirectiveLocation describes one such possible adjacencies.',
@@ -198,6 +201,7 @@ export const __DirectiveLocation = new GraphQLEnumType({
 
 export const __Type = new GraphQLObjectType({
   name: '__Type',
+  isIntrospection: true,
   description:
     'The fundamental unit of any GraphQL Schema is the type. There are ' +
     'many kinds of types in GraphQL as represented by the `__TypeKind` enum.' +
@@ -299,6 +303,7 @@ export const __Type = new GraphQLObjectType({
 
 export const __Field = new GraphQLObjectType({
   name: '__Field',
+  isIntrospection: true,
   description:
     'Object and Interface types are described by a list of Fields, each of ' +
     'which has a name, potentially a list of arguments, and a return type.',
@@ -320,6 +325,7 @@ export const __Field = new GraphQLObjectType({
 
 export const __InputValue = new GraphQLObjectType({
   name: '__InputValue',
+  isIntrospection: true,
   description:
     'Arguments provided to Fields or Directives and the input fields of an ' +
     'InputObject are represented as Input Values which describe their type ' +
@@ -342,6 +348,7 @@ export const __InputValue = new GraphQLObjectType({
 
 export const __EnumValue = new GraphQLObjectType({
   name: '__EnumValue',
+  isIntrospection: true,
   description:
     'One possible value for a given Enum. Enum values are unique values, not ' +
     'a placeholder for a string or numeric value. However an Enum value is ' +
@@ -369,6 +376,7 @@ export const TypeKind = {
 
 export const __TypeKind = new GraphQLEnumType({
   name: '__TypeKind',
+  isIntrospection: true,
   description: 'An enum describing what kind of type a given `__Type` is.',
   values: {
     SCALAR: {

@@ -291,7 +291,6 @@ export class GraphQLScalarType {
   _scalarConfig: GraphQLScalarTypeConfig<*, *>;
 
   constructor(config: GraphQLScalarTypeConfig<*, *>) {
-    invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
@@ -400,8 +399,7 @@ export class GraphQLObjectType {
   _interfaces: Array<GraphQLInterfaceType>;
 
   constructor(config: GraphQLObjectTypeConfig<*, *>) {
-    invariant(config.name, 'Type must be named.');
-    assertValidName(config.name);
+    assertValidName(config.name, config.isIntrospection);
     this.name = config.name;
     this.description = config.description;
     if (config.isTypeOf) {
@@ -547,7 +545,8 @@ export type GraphQLObjectTypeConfig<TSource, TContext> = {
   interfaces?: Thunk<?Array<GraphQLInterfaceType>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
   isTypeOf?: ?GraphQLIsTypeOfFn<TSource, TContext>;
-  description?: ?string
+  description?: ?string;
+  isIntrospection?: boolean;
 };
 
 export type GraphQLTypeResolver<TSource, TContext> = (
@@ -656,7 +655,6 @@ export class GraphQLInterfaceType {
   _fields: GraphQLFieldMap<*, *>;
 
   constructor(config: GraphQLInterfaceTypeConfig<*, *>) {
-    invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
@@ -735,7 +733,6 @@ export class GraphQLUnionType {
   _possibleTypeNames: {[typeName: string]: boolean};
 
   constructor(config: GraphQLUnionTypeConfig<*, *>) {
-    invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
@@ -845,7 +842,7 @@ export class GraphQLEnumType/* <T> */ {
 
   constructor(config: GraphQLEnumTypeConfig/* <T> */) {
     this.name = config.name;
-    assertValidName(config.name);
+    assertValidName(config.name, config.isIntrospection);
     this.description = config.description;
     this._values = defineEnumValues(this, config.values);
     this._enumConfig = config;
@@ -953,6 +950,7 @@ export type GraphQLEnumTypeConfig/* <T> */ = {
   name: string;
   values: GraphQLEnumValueConfigMap/* <T> */;
   description?: ?string;
+  isIntrospection?: boolean;
 };
 
 export type GraphQLEnumValueConfigMap/* <T> */ = {
@@ -1003,7 +1001,6 @@ export class GraphQLInputObjectType {
   _fields: GraphQLInputFieldMap;
 
   constructor(config: GraphQLInputObjectTypeConfig) {
-    invariant(config.name, 'Type must be named.');
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
