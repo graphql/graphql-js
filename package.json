@@ -71,7 +71,7 @@
     "eslint-plugin-flowtype": "2.25.0",
     "flow-bin": "0.35.0",
     "isparta": "4.0.0",
-    "mocha": "3.1.2",
+    "mocha": "3.2.0",
     "sane": "1.4.1"
   }
 }
