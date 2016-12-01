@@ -68,7 +68,7 @@
     "coveralls": "2.11.15",
     "eslint": "3.11.0",
     "eslint-plugin-babel": "4.0.0",
-    "eslint-plugin-flowtype": "2.25.0",
+    "eslint-plugin-flowtype": "2.26.0",
     "flow-bin": "0.35.0",
     "isparta": "4.0.0",
     "mocha": "3.2.0",
