@@ -23,6 +23,21 @@ import {
 } from '../../type';
 
 describe('Execute: Handles basic execution tasks', () => {
+  it('throws if no document is provided', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Type',
+        fields: {
+          a: { type: GraphQLString },
+        }
+      })
+    });
+
+    expect(() => execute(schema, null)).to.throw(
+      'Must provide document'
+    );
+  });
+
   it('executes arbitrary code', async () => {
     const data = {
       a() { return 'Apple'; },
