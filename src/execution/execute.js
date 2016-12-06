@@ -1044,12 +1044,12 @@ function defaultResolveTypeFn(
  * of calling that function while passing along args and context.
  */
 export const defaultFieldResolver: GraphQLFieldResolver<any, *> =
-function (source, args, context, { fieldName }) {
+function (source, args, context, info) {
   // ensure source is a value for which property access is acceptable.
   if (typeof source === 'object' || typeof source === 'function') {
-    const property = source[fieldName];
+    const property = source[info.fieldName];
     if (typeof property === 'function') {
-      return source[fieldName](args, context);
+      return source[info.fieldName](args, context, info);
     }
     return property;
   }
