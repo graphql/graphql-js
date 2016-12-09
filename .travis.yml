@@ -10,9 +10,7 @@ node_js:
 git:
   depth: 5
 
-cache:
-  directories:
-    - ~/.npm
+cache: yarn
 
 notifications:
   irc:
