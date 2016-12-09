@@ -93,10 +93,17 @@ export function isValidJSValue(
 
   // Scalar/Enum input checks to ensure the type can parse the value to
   // a non-null value.
-  const parseResult = type.parseValue(value);
-  if (isNullish(parseResult)) {
+  try {
+    const parseResult = type.parseValue(value);
+    if (isNullish(parseResult)) {
+      return [
+        `Expected type "${type.name}", found ${JSON.stringify(value)}.`
+      ];
+    }
+  } catch (error) {
     return [
-      `Expected type "${type.name}", found ${JSON.stringify(value)}.`
+      `Expected type "${type.name}", found ${JSON.stringify(value)}: ` +
+      error.message
     ];
   }
 
