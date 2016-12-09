@@ -102,6 +102,7 @@ export function isValidJSValue(
     }
   } catch (error) {
     return [
+      `Expected type "${type.name}", found ${JSON.stringify(value)}: ` +
       error.message
     ];
   }
