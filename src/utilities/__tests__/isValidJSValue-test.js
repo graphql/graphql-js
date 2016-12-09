@@ -17,6 +17,7 @@ import {
 
 function expectNoErrors(result) {
   expect(result).to.be.an.instanceof(Array);
+  expect(result.length).to.equal(0);
 }
 
 function expectErrorResult(result, size) {
