@@ -121,6 +121,7 @@ export function execute(
   operationName?: ?string
 ): Promise<ExecutionResult> {
   invariant(schema, 'Must provide schema');
+  invariant(document, 'Must provide document');
   invariant(
     schema instanceof GraphQLSchema,
     'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
