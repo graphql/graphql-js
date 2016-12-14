@@ -328,6 +328,10 @@ export class GraphQLScalarType {
     const parser = this._scalarConfig.parseLiteral;
     return parser ? parser(valueNode) : null;
   }
+  
+  get scalarConfig(): GraphQLScalarTypeConfig<*, *> {
+    return this._scalarConfig;
+  }
 
   toString(): string {
     return this.name;
@@ -422,6 +426,10 @@ export class GraphQLObjectType {
     return this._interfaces || (this._interfaces =
       defineInterfaces(this, this._typeConfig.interfaces)
     );
+  }
+
+  get typeConfig(): GraphQLObjectTypeConfig<*, *> {
+    return this._typeConfig;
   }
 
   toString(): string {
@@ -673,6 +681,10 @@ export class GraphQLInterfaceType {
       (this._fields = defineFieldMap(this, this._typeConfig.fields));
   }
 
+  get typeConfig(): GraphQLInterfaceTypeConfig<*, *> {
+    return this._typeConfig;
+  }
+
   toString(): string {
     return this.name;
   }
@@ -750,6 +762,10 @@ export class GraphQLUnionType {
     return this._types || (this._types =
       defineTypes(this, this._typeConfig.types)
     );
+  }
+
+  get typeConfig(): GraphQLUnionTypeConfig<*, *> {
+    return this._typeConfig;
   }
 
   toString(): string {
@@ -897,6 +913,10 @@ export class GraphQLEnumType/* <T> */ {
     return this._nameLookup;
   }
 
+  get enumConfig(): GraphQLEnumTypeConfig/* <T> */ {
+    return this._enumConfig;
+  }
+
   toString(): string {
     return this.name;
   }
@@ -1039,6 +1059,10 @@ export class GraphQLInputObjectType {
       resultFieldMap[fieldName] = field;
     });
     return resultFieldMap;
+  }
+
+  get typeConfig(): GraphQLInputObjectTypeConfig {
+    return this._typeConfig
   }
 
   toString(): string {
