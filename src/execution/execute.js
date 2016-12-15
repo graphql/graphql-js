@@ -940,40 +940,53 @@ function completeAbstractValue(
   path: ResponsePath,
   result: mixed
 ): mixed {
-  let runtimeType = returnType.resolveType ?
-    returnType.resolveType(result, exeContext.contextValue, info) :
-    defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
-
-  // If resolveType returns a string, we assume it's a GraphQLObjectType name.
-  if (typeof runtimeType === 'string') {
-    runtimeType = exeContext.schema.getType(runtimeType);
-  }
-
-  if (!(runtimeType instanceof GraphQLObjectType)) {
-    throw new GraphQLError(
-      `Abstract type ${returnType.name} must resolve to an Object type at ` +
-      `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
-      `value "${String(result)}", received "${String(runtimeType)}".`,
-      fieldNodes
+  const runtimeTypePromise = returnType.resolveType ?
+    Promise.resolve(returnType.resolveType(
+      result,
+      exeContext.contextValue,
+      info
+    )) :
+    resolveFirstValidType(
+      result,
+      exeContext.contextValue,
+      info,
+      info.schema.getPossibleTypes(returnType)
     );
-  }
 
-  if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
-    throw new GraphQLError(
-      `Runtime Object type "${runtimeType.name}" is not a possible type ` +
-      `for "${returnType.name}".`,
-      fieldNodes
+  return runtimeTypePromise.then(type => {
+    let runtimeType = type;
+
+    // If resolveType returns a string, we assume it's a GraphQLObjectType name.
+    if (typeof runtimeType === 'string') {
+      runtimeType = exeContext.schema.getType(runtimeType);
+    }
+
+    if (!(runtimeType instanceof GraphQLObjectType)) {
+      throw new GraphQLError(
+        `Abstract type ${returnType.name} must resolve to an Object type at ` +
+        `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
+        `value "${String(result)}", received "${String(runtimeType)}".`,
+        fieldNodes
+      );
+    }
+
+    if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
+      throw new GraphQLError(
+        `Runtime Object type "${runtimeType.name}" is not a possible type ` +
+        `for "${returnType.name}".`,
+        fieldNodes
+      );
+    }
+
+    return completeObjectValue(
+      exeContext,
+      runtimeType,
+      fieldNodes,
+      info,
+      path,
+      result
     );
-  }
-
-  return completeObjectValue(
-    exeContext,
-    runtimeType,
-    fieldNodes,
-    info,
-    path,
-    result
-  );
+  });
 }
 
 /**
@@ -990,31 +1003,37 @@ function completeObjectValue(
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
-  if (returnType.isTypeOf &&
-      !returnType.isTypeOf(result, exeContext.contextValue, info)) {
-    throw new GraphQLError(
-      `Expected value of type "${returnType.name}" but got: ${String(result)}.`,
-      fieldNodes
-    );
-  }
-
-  // Collect sub-fields to execute to complete this value.
-  let subFieldNodes = Object.create(null);
-  const visitedFragmentNames = Object.create(null);
-  for (let i = 0; i < fieldNodes.length; i++) {
-    const selectionSet = fieldNodes[i].selectionSet;
-    if (selectionSet) {
-      subFieldNodes = collectFields(
-        exeContext,
-        returnType,
-        selectionSet,
-        subFieldNodes,
-        visitedFragmentNames
+  return Promise.resolve(returnType.isTypeOf ?
+    returnType.isTypeOf(result, exeContext.contextValue, info) :
+    true
+  )
+  .then(isTypeOfResult => {
+    if (!isTypeOfResult) {
+      throw new GraphQLError(
+        `Expected value of type "${returnType.name}" ` +
+        `but got: ${String(result)}.`,
+        fieldNodes
       );
     }
-  }
 
-  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+    // Collect sub-fields to execute to complete this value.
+    let subFieldNodes = Object.create(null);
+    const visitedFragmentNames = Object.create(null);
+    for (let i = 0; i < fieldNodes.length; i++) {
+      const selectionSet = fieldNodes[i].selectionSet;
+      if (selectionSet) {
+        subFieldNodes = collectFields(
+          exeContext,
+          returnType,
+          selectionSet,
+          subFieldNodes,
+          visitedFragmentNames
+        );
+      }
+    }
+
+    return executeFields(exeContext, returnType, result, path, subFieldNodes);
+  });
 }
 
 /**
@@ -1022,19 +1041,31 @@ function completeObjectValue(
  * used which tests each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
-function defaultResolveTypeFn(
+function resolveFirstValidType(
   value: mixed,
   context: mixed,
   info: GraphQLResolveInfo,
-  abstractType: GraphQLAbstractType
-): ?GraphQLObjectType {
-  const possibleTypes = info.schema.getPossibleTypes(abstractType);
-  for (let i = 0; i < possibleTypes.length; i++) {
-    const type = possibleTypes[i];
-    if (type.isTypeOf && type.isTypeOf(value, context, info)) {
+  possibleTypes: Array<GraphQLObjectType>,
+  i: number = 0,
+): Promise<?GraphQLObjectType | ?string> {
+  if (i >= possibleTypes.length) {
+    return Promise.resolve(null);
+  }
+
+  const type = possibleTypes[i];
+
+  if (!type.isTypeOf) {
+    return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
+  }
+
+  return Promise.resolve(type.isTypeOf(value, context, info))
+  .then(result => {
+    if (result) {
       return type;
     }
-  }
+
+    return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
+  });
 }
 
 /**
