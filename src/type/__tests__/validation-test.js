@@ -330,17 +330,6 @@ describe('Type System: Objects must have fields', () => {
     );
   });
 
-  it('rejects an Object type with incorrectly named fields', () => {
-    expect(
-      () => schemaWithFieldType(new GraphQLObjectType({
-        name: 'SomeObject',
-        fields: { 'bad-name-with-dashes': { type: GraphQLString } }
-      }))
-    ).to.throw(
-      'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "bad-name-with-dashes" does not.'
-    );
-  });
-
   it('rejects an Object type with reserved named fields', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
