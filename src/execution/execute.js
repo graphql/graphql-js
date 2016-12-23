@@ -940,12 +940,12 @@ function completeAbstractValue(
   path: ResponsePath,
   result: mixed
 ): mixed {
-  const runtimeTypePromise = returnType.resolveType ?
-    Promise.resolve(returnType.resolveType(
+  const runtimeType = returnType.resolveType ?
+    returnType.resolveType(
       result,
       exeContext.contextValue,
       info
-    )) :
+    ) :
     resolveFirstValidType(
       result,
       exeContext.contextValue,
@@ -953,40 +953,113 @@ function completeAbstractValue(
       info.schema.getPossibleTypes(returnType)
     );
 
-  return runtimeTypePromise.then(type => {
-    let runtimeType = type;
+  if (isThenable(runtimeType)) {
+    return ((runtimeType: any): Promise<*>).then(resolvedRuntimeType => (
+      validateRuntimeTypeAndCompleteObjectValue(
+        exeContext,
+        returnType,
+        fieldNodes,
+        info,
+        path,
+        resolvedRuntimeType,
+        result
+      )
+    ));
+  }
 
-    // If resolveType returns a string, we assume it's a GraphQLObjectType name.
-    if (typeof runtimeType === 'string') {
-      runtimeType = exeContext.schema.getType(runtimeType);
-    }
+  return validateRuntimeTypeAndCompleteObjectValue(
+    exeContext,
+    returnType,
+    fieldNodes,
+    info,
+    path,
+    runtimeType,
+    result
+  );
+}
 
-    if (!(runtimeType instanceof GraphQLObjectType)) {
-      throw new GraphQLError(
-        `Abstract type ${returnType.name} must resolve to an Object type at ` +
-        `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
-        `value "${String(result)}", received "${String(runtimeType)}".`,
-        fieldNodes
-      );
-    }
+function validateRuntimeTypeAndCompleteObjectValue(
+  exeContext: ExecutionContext,
+  returnType: GraphQLAbstractType,
+  fieldNodes: Array<FieldNode>,
+  info: GraphQLResolveInfo,
+  path: ResponsePath,
+  returnedRuntimeType: mixed,
+  result: mixed
+): mixed {
+  let runtimeType = returnedRuntimeType;
 
-    if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
-      throw new GraphQLError(
-        `Runtime Object type "${runtimeType.name}" is not a possible type ` +
-        `for "${returnType.name}".`,
-        fieldNodes
-      );
-    }
+  // If resolveType returns a string, we assume it's a GraphQLObjectType name.
+  if (typeof runtimeType === 'string') {
+    runtimeType = exeContext.schema.getType(runtimeType);
+  }
 
-    return completeObjectValue(
-      exeContext,
-      runtimeType,
-      fieldNodes,
-      info,
-      path,
-      result
+  if (!(runtimeType instanceof GraphQLObjectType)) {
+    throw new GraphQLError(
+      `Abstract type ${returnType.name} must resolve to an Object type at ` +
+      `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
+      `value "${String(result)}", received "${String(runtimeType)}".`,
+      fieldNodes
     );
-  });
+  }
+
+  if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
+    throw new GraphQLError(
+      `Runtime Object type "${runtimeType.name}" is not a possible type ` +
+      `for "${returnType.name}".`,
+      fieldNodes
+    );
+  }
+
+  return completeObjectValue(
+    exeContext,
+    runtimeType,
+    fieldNodes,
+    info,
+    path,
+    result
+  );
+}
+
+/**
+ * If a resolveType function is not given, then a default resolve behavior is
+ * used which tests each possible type for the abstract type by calling
+ * isTypeOf for the object being coerced, returning the first type that matches.
+ */
+function resolveFirstValidType(
+  value: mixed,
+  context: mixed,
+  info: GraphQLResolveInfo,
+  possibleTypes: Array<GraphQLObjectType>,
+  i: number = 0,
+): ?GraphQLObjectType | ?string | ?Promise<?GraphQLObjectType | ?string> {
+  if (i >= possibleTypes.length) {
+    return null;
+  }
+
+  const type = possibleTypes[i];
+
+  if (!type.isTypeOf) {
+    return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
+  }
+
+  const isCorrectType = type.isTypeOf(value, context, info);
+
+  if (isThenable(isCorrectType)) {
+    return ((isCorrectType: any): Promise<*>).then(result => {
+      if (result) {
+        return type;
+      }
+
+      return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
+    });
+  }
+
+  if (isCorrectType) {
+    return type;
+  }
+
+  return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
 }
 
 /**
@@ -1033,38 +1106,6 @@ function completeObjectValue(
     }
 
     return executeFields(exeContext, returnType, result, path, subFieldNodes);
-  });
-}
-
-/**
- * If a resolveType function is not given, then a default resolve behavior is
- * used which tests each possible type for the abstract type by calling
- * isTypeOf for the object being coerced, returning the first type that matches.
- */
-function resolveFirstValidType(
-  value: mixed,
-  context: mixed,
-  info: GraphQLResolveInfo,
-  possibleTypes: Array<GraphQLObjectType>,
-  i: number = 0,
-): Promise<?GraphQLObjectType | ?string> {
-  if (i >= possibleTypes.length) {
-    return Promise.resolve(null);
-  }
-
-  const type = possibleTypes[i];
-
-  if (!type.isTypeOf) {
-    return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
-  }
-
-  return Promise.resolve(type.isTypeOf(value, context, info))
-  .then(result => {
-    if (result) {
-      return type;
-    }
-
-    return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
   });
 }
 
