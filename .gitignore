@@ -7,6 +7,7 @@
 npm-debug.log
 
 node_modules
+flow-typed
 coverage
 dist
 .vscode
