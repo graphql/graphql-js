@@ -238,9 +238,7 @@ function completeValue(
 ): mixed {
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
-    return ((result: any): Promise<*>).then(
-      resolved => completeValue(descriptor, path, returnType, resolved)
-    );
+    return completePromiseValue(descriptor, path, returnType, result);
   }
 
   // If result is an Error, throw a located error.
@@ -251,15 +249,7 @@ function completeValue(
   // If field type is NonNull, complete for inner type, and throw field error
   // if result is null.
   if (returnType instanceof GraphQLNonNull) {
-    const completed = completeValue(descriptor, path, returnType.ofType,
-      result);
-    if (completed === null) {
-      throw new Error(
-        `Cannot return null for non-nullable field ${
-          descriptor.info.parentType.name}.${descriptor.info.fieldName}.`
-      );
-    }
-    return completed;
+    return completeNonNullValue(descriptor, path, returnType, result);
   }
 
   // If result value is null-ish (null, undefined, or NaN) then return null.
@@ -296,6 +286,35 @@ function completeValue(
     `Cannot complete value of unexpected type "${String(returnType)}".`
   );
 }
+
+function completePromiseValue(
+  descriptor: ExecutionDescriptor,
+  path: ResponsePath,
+  returnType: GraphQLType,
+  result: mixed
+): mixed {
+  return ((result: any): Promise<*>).then(
+    resolved => completeValue(descriptor, path, returnType, resolved)
+  );
+}
+
+function completeNonNullValue(
+  descriptor: ExecutionDescriptor,
+  path: ResponsePath,
+  returnType: GraphQLNonNull,
+  result: mixed
+): mixed {
+  const completed = completeValue(descriptor, path, returnType.ofType,
+    result);
+  if (completed === null) {
+    throw new Error(
+      `Cannot return null for non-nullable field ${
+        descriptor.info.parentType.name}.${descriptor.info.fieldName}.`
+    );
+  }
+  return completed;
+}
+
 
 /**
  * Complete a list value by completing each item in the list with the
