@@ -120,6 +120,12 @@ function resolveField(
     variableValues: exeContext.variableValues,
   };
 
+  const descriptor: ExecutionDescriptor = {
+    exeContext,
+    fieldNodes,
+    info,
+  };
+
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
   const result = resolveOrError(
@@ -133,11 +139,9 @@ function resolveField(
   );
 
   return completeValueCatchingError(
-    exeContext,
-    returnType,
-    fieldNodes,
-    info,
+    descriptor,
     path,
+    returnType,
     result
   );
 }
@@ -145,37 +149,23 @@ function resolveField(
 // This is a small wrapper around completeValue which detects and logs errors
 // in the execution context.
 function completeValueCatchingError(
-  exeContext: ExecutionContext,
-  returnType: GraphQLType,
-  fieldNodes: Array<FieldNode>,
-  info: GraphQLResolveInfo,
+  descriptor: ExecutionDescriptor,
   path: ResponsePath,
+  returnType: GraphQLType,
   result: mixed
 ): mixed {
+  const { exeContext } = descriptor;
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
   if (returnType instanceof GraphQLNonNull) {
-    return completeValueWithLocatedError(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result
-    );
+    return completeValueWithLocatedError(descriptor, path, returnType, result);
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
   try {
-    const completed = completeValueWithLocatedError(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result
-    );
+    const completed = completeValueWithLocatedError(descriptor, path,
+      returnType, result);
     if (isThenable(completed)) {
       // If `completeValueWithLocatedError` returned a rejected promise, log
       // the rejection error and resolve to null.
@@ -198,33 +188,24 @@ function completeValueCatchingError(
 // This is a small wrapper around completeValue which annotates errors with
 // location information.
 function completeValueWithLocatedError(
-  exeContext: ExecutionContext,
-  returnType: GraphQLType,
-  fieldNodes: Array<FieldNode>,
-  info: GraphQLResolveInfo,
+  descriptor: ExecutionDescriptor,
   path: ResponsePath,
+  returnType: GraphQLType,
   result: mixed
 ): mixed {
   try {
-    const completed = completeValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result
-    );
+    const completed = completeValue(descriptor, path, returnType, result);
     if (isThenable(completed)) {
       return ((completed: any): Promise<*>).then(
         undefined,
         error => Promise.reject(
-          locatedError(error, fieldNodes, responsePathAsArray(path))
+          locatedError(error, descriptor.fieldNodes, responsePathAsArray(path))
         )
       );
     }
     return completed;
   } catch (error) {
-    throw locatedError(error, fieldNodes, responsePathAsArray(path));
+    throw locatedError(error, descriptor.fieldNodes, responsePathAsArray(path));
   }
 }
 
@@ -250,24 +231,15 @@ function completeValueWithLocatedError(
  * value by evaluating all sub-selections.
  */
 function completeValue(
-  exeContext: ExecutionContext,
-  returnType: GraphQLType,
-  fieldNodes: Array<FieldNode>,
-  info: GraphQLResolveInfo,
+  descriptor: ExecutionDescriptor,
   path: ResponsePath,
+  returnType: GraphQLType,
   result: mixed
 ): mixed {
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
     return ((result: any): Promise<*>).then(
-      resolved => completeValue(
-        exeContext,
-        returnType,
-        fieldNodes,
-        info,
-        path,
-        resolved
-      )
+      resolved => completeValue(descriptor, path, returnType, resolved)
     );
   }
 
@@ -279,18 +251,12 @@ function completeValue(
   // If field type is NonNull, complete for inner type, and throw field error
   // if result is null.
   if (returnType instanceof GraphQLNonNull) {
-    const completed = completeValue(
-      exeContext,
-      returnType.ofType,
-      fieldNodes,
-      info,
-      path,
-      result
-    );
+    const completed = completeValue(descriptor, path, returnType.ofType,
+      result);
     if (completed === null) {
       throw new Error(
         `Cannot return null for non-nullable field ${
-          info.parentType.name}.${info.fieldName}.`
+          descriptor.info.parentType.name}.${descriptor.info.fieldName}.`
       );
     }
     return completed;
@@ -303,14 +269,7 @@ function completeValue(
 
   // If field type is List, complete each item in the list with the inner type
   if (returnType instanceof GraphQLList) {
-    return completeListValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result
-    );
+    return completeListValue(descriptor, path, returnType, result);
   }
 
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
@@ -324,26 +283,12 @@ function completeValue(
   // runtime Object type and complete for that type.
   if (returnType instanceof GraphQLInterfaceType ||
       returnType instanceof GraphQLUnionType) {
-    return completeAbstractValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result
-    );
+    return completeAbstractValue(descriptor, path, returnType, result);
   }
 
   // If field type is Object, execute and complete all sub-selections.
   if (returnType instanceof GraphQLObjectType) {
-    return completeObjectValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result
-    );
+    return completeObjectValue(descriptor, path, returnType, result);
   }
 
   // Not reachable. All possible output types have been considered.
@@ -357,17 +302,15 @@ function completeValue(
  * inner type
  */
 function completeListValue(
-  exeContext: ExecutionContext,
-  returnType: GraphQLList<*>,
-  fieldNodes: Array<FieldNode>,
-  info: GraphQLResolveInfo,
+  descriptor: ExecutionDescriptor,
   path: ResponsePath,
+  returnType: GraphQLList<*>,
   result: mixed
 ): mixed {
   invariant(
     isCollection(result),
     `Expected Iterable, but did not find one for field ${
-      info.parentType.name}.${info.fieldName}.`
+      descriptor.info.parentType.name}.${descriptor.info.fieldName}.`
   );
 
   // This is specified as a simple map, however we're optimizing the path
@@ -379,14 +322,8 @@ function completeListValue(
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const fieldPath = addPath(path, index);
-    const completedItem = completeValueCatchingError(
-      exeContext,
-      itemType,
-      fieldNodes,
-      info,
-      fieldPath,
-      item
-    );
+    const completedItem = completeValueCatchingError(descriptor, fieldPath,
+      itemType, item);
 
     if (!containsPromise && isThenable(completedItem)) {
       containsPromise = true;
@@ -421,13 +358,12 @@ function completeLeafValue(
  * of that value, then complete the value for that type.
  */
 function completeAbstractValue(
-  exeContext: ExecutionContext,
-  returnType: GraphQLAbstractType,
-  fieldNodes: Array<FieldNode>,
-  info: GraphQLResolveInfo,
+  descriptor: ExecutionDescriptor,
   path: ResponsePath,
+  returnType: GraphQLAbstractType,
   result: mixed
 ): mixed {
+  const { exeContext, fieldNodes, info } = descriptor;
   let runtimeType = returnType.resolveType ?
     returnType.resolveType(result, exeContext.contextValue, info) :
     defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
@@ -454,27 +390,19 @@ function completeAbstractValue(
     );
   }
 
-  return completeObjectValue(
-    exeContext,
-    runtimeType,
-    fieldNodes,
-    info,
-    path,
-    result
-  );
+  return completeObjectValue(descriptor, path, runtimeType, result);
 }
 
 /**
  * Complete an Object value by executing all sub-selections.
  */
 function completeObjectValue(
-  exeContext: ExecutionContext,
-  returnType: GraphQLObjectType,
-  fieldNodes: Array<FieldNode>,
-  info: GraphQLResolveInfo,
+  descriptor: ExecutionDescriptor,
   path: ResponsePath,
+  returnType: GraphQLObjectType,
   result: mixed
 ): mixed {
+  const { exeContext, fieldNodes, info } = descriptor;
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
