@@ -22,6 +22,7 @@
   },
   "scripts": {
     "test": "npm run lint && npm run check && npm run testonly",
+    "test:staged": "./resources/test-staged.sh",
     "testonly": "babel-node ./node_modules/.bin/_mocha $npm_package_options_mocha",
     "t": "babel-node ./node_modules/.bin/_mocha --require ./resources/mocha-bootload",
     "lint": "eslint src || (printf '\\033[33mTry: \\033[7m npm run lint -- --fix \\033[0m\\n' && exit 1)",
