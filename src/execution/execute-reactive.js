@@ -37,7 +37,33 @@ type ExecutionDescriptor = {
   info: GraphQLResolveInfo,
 };
 
+// !!!: CompleteType could be more clear types.
 type CompleteType = mixed;
+
+type ProcessField = (rxjs$Observable<rxjs$Observable<CompleteType>>) =>
+  rxjs$Observable<Array<CompleteType>>;
+
+
+/**
+ * Implements the "Evaluating selection sets" section of the spec
+ * for "write" mode.
+ */
+export function executeFieldsSerially(
+  exeContext: ExecutionContext,
+  parentType: GraphQLObjectType,
+  sourceValue: mixed,
+  path: ResponsePath,
+  fields: {[key: string]: Array<FieldNode>}
+): rxjs$Observable<CompleteType> {
+  return eachResolvedFields$$(exeContext, parentType, sourceValue, path, fields,
+    // We only allow each mutation field to execute only once (`take(1)`) and
+    // serially (`concatAll()`). Convert the sequential results into an array.
+    eachResolvedFields => eachResolvedFields
+      .map(x => x.take(1))
+      .concatAll()
+      .toArray()
+  );
+}
 
 /**
  * Implements the "Evaluating selection sets" section of the spec
@@ -50,26 +76,34 @@ export function executeFields(
   path: ResponsePath,
   fields: {[key: string]: Array<FieldNode>}
 ): rxjs$Observable<CompleteType> {
-  // The final results are reactive for all field resolvers which will send
-  // multiple results through time.
-  //
+  return eachResolvedFields$$(exeContext, parentType, sourceValue, path, fields,
+    // We combine all higher-order observables of resolved fields into an array.
+    // When any elements (observable) sends a new value, pop a new array for the
+    // total results.
+    eachResolvedFields => eachResolvedFields.combineAll()
+  );
+}
+
+/**
+ * Return a Observable which execute fields properly. You will use processFields
+ * to decide how to manipulate each higher-order observable of fields and
+ * how to assemble the each field result into a total result.
+ */
+function eachResolvedFields$$(
+  exeContext: ExecutionContext,
+  parentType: GraphQLObjectType,
+  sourceValue: mixed,
+  path: ResponsePath,
+  fields: {[key: string]: Array<FieldNode>},
+  processFields: ProcessField
+): rxjs$Observable<CompleteType> {
   // The whole process from input to return (a reactive observable for results):
-  // `Object{ [fieldName]: fieldNodes }` -> `$(Object{ [fieldName]: result })`
-  const finalResults =
-  // Convert the fields (`Object{ [fieldName]: fieldNodes }`) to an observable
-  // with propery pairs (`$( [fieldName, fieldNodes] )`, where `$()` annotates
-  // an observable).
-  //
+  // `Object{ [fieldName]: fieldNodes }` -> `$( $( {[fieldName]: result} ) )`
+  const eachResolvedFields =
   // `Object{ [fieldName]: fieldNodes }` -> `$( [fieldName, fieldNodes] )`
   Observable.pairs(fields)
-    // Resolve the fieldNodes with other info to an observable for reactive
-    // results.
-    //
     // `$( [fieldName, fieldNodes] )` -> `$( [fieldName, $(fieldResult)] )`
     .map(([ fieldName, fieldNodes ]) => {
-      // Map and resolve from each pair (element) in the array
-      // from `[fieldName, fieldNodes]`
-      //   to `[fieldName, fieldResult$]` (fieldResult$ is an observable)
       const fieldPath = addPath(path, fieldName);
       const fieldResult$ = resolveField(
         exeContext,
@@ -78,39 +112,37 @@ export function executeFields(
         fieldNodes,
         fieldPath
       );
-      // The fieldResult$ might be null due to the field definition is not
-      // found. We filter those illegal fieldResult$ in the next step.
       return [ fieldName, fieldResult$ ];
     })
-    // If the fieldResult$ is illegal, we skip it to avoid generate any result.
-    // This happens when there is no definition of the field.
+    // The fieldResult$ might be null due to the field definition is not found
+    // without throwing any error. We filter those illegal fieldResult$ to avoid
+    // generate any result.
     .filter(([ /* fieldName */, fieldResult$ ]) => Boolean(fieldResult$))
-    // When fieldResult$ sends results, convert them to `{[fieldName]: result}`.
-    // This will turn the source observables into a higher-order observable.
-    // We will flat them in the next step by `combineAll`.
-    //
     // `$( [fieldName, $(result)] )` -> `$( $( {[fieldName]: result} ) )`
     .map(([ fieldName, fieldResult$ ]) =>
       fieldResult$.map(result => ({[fieldName]: result}))
-    )
-    // When any elements (observable) sends a new value, return a new array
-    // for the total result.
-    //
-    // `$( $( {[fieldName]: result} ) )` -> `$(Array< {[fieldName]: result} >)`
-    .combineAll()
+    );
+
+  // Let `processFields` callback decides how to execute and assemble the
+  // results of Observables.
+  // `$( $( {[fieldName]: result} ) )` -> `$(Array< {[fieldName]: result} >)`
+  const assembledResult = processFields(eachResolvedFields);
+
+  // `$(Array< {[fieldName]: result} >)` -> `$(Object{ [fieldName]: result })`
+  const resolvedResults = assembledResult
     // Convert the field results (array) to a total result (object) by `reduce`.
-    // `$(Array< {[fieldName]: result} >)` -> `$(Object{ [fieldName]: result })`
     .map(fieldResults =>
       fieldResults.reduce((results, fieldResult) => {
         return Object.assign(results, fieldResult);
       }, {})
-    );
+    )
+    // !!!: we haven't tested when the fields is an empty object.
+    // We try to give the finalResults a default value if it completes without
+    // emitting any next value. The final results will always be an object for
+    // the query field. The default result is an empty object.
+    .defaultIfEmpty({});
 
-  // !!!: we haven't tested when the fields is an empty object.
-  // We try to give the finalResults a default value if it completes without
-  // emitting any next value. The final results will always be an object for
-  // the query field. The default result is an empty object.
-  return finalResults.defaultIfEmpty({});
+  return resolvedResults;
 }
 
 /**
@@ -164,24 +196,28 @@ function resolveField(
     info,
   };
 
-  // Get the resolve function, regardless of if its result is normal
-  // or abrupt (error).
-  const result = resolveOrError(
-    exeContext,
-    fieldDef,
-    fieldNode,
-    resolveFn,
-    source,
-    context,
-    info
-  );
+  // Defer the resolveFn part. It will only be triggered when the Observable is
+  // subscribed.
+  return Observable.defer(() => {
+    // Get the resolve function, regardless of if its result is normal
+    // or abrupt (error).
+    const result = resolveOrError(
+      exeContext,
+      fieldDef,
+      fieldNode,
+      resolveFn,
+      source,
+      context,
+      info
+    );
 
-  return completeResolvedValue(
-    descriptor,
-    path,
-    returnType,
-    result
-  );
+    return completeResolvedValue(
+      descriptor,
+      path,
+      returnType,
+      result
+    );
+  });
 }
 
 // This is a small wrapper around completeValue which catch and annotate errors.
