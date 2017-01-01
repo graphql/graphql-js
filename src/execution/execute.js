@@ -280,7 +280,8 @@ function executeOperation(
   }
 
   // !!!: use the alias for refactor
-  return executeFieldsRx(exeContext, type, rootValue, path, fields);
+  return executeFieldsRx(exeContext, type, rootValue, path, fields)
+    .toPromise();
   // return executeFields(exeContext, type, rootValue, path, fields);
 }
 
