@@ -106,8 +106,25 @@ type CompleteType = mixed;
 type ProcessFields = (rxjs$Observable<rxjs$Observable<CompleteType>>) =>
   rxjs$Observable<Array<CompleteType>>;
 
-
 export function execute(
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
+  operationName?: ?string
+): Promise<ExecutionResult> {
+  return executeRx(
+    schema: GraphQLSchema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName
+  ).toPromise();
+}
+
+export function executeRx(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
