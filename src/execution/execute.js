@@ -56,11 +56,6 @@ import type {
   FragmentDefinitionNode,
 } from '../language/ast';
 
-import {
-  executeFields as executeFieldsRx,
-  executeFieldsSerially as executeFieldsSeriallyRx
-} from './execute-reactive';
-
 /**
  * Terminology
  *
@@ -279,15 +274,10 @@ function executeOperation(
   const path = undefined;
 
   if (operation.operation === 'mutation') {
-    return executeFieldsSeriallyRx(exeContext, type, rootValue, path, fields)
-      .toPromise();
-    // return executeFieldsSerially(exeContext, type, rootValue, path, fields);
+    return executeFieldsSerially(exeContext, type, rootValue, path, fields);
   }
 
-  // !!!: use the alias for refactor
-  return executeFieldsRx(exeContext, type, rootValue, path, fields)
-    .toPromise();
-  // return executeFields(exeContext, type, rootValue, path, fields);
+  return executeFields(exeContext, type, rootValue, path, fields);
 }
 
 /**

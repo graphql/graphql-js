@@ -1,20 +1,12 @@
 import { isCollection } from 'iterall';
 
-import { getArgumentValues } from './values';
-import find from '../jsutils/find';
 import { GraphQLError, locatedError } from '../error';
-import * as Kind from '../language/kinds';
-import { typeFromAST } from '../utilities/typeFromAST';
+import find from '../jsutils/find';
+import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
-import {
-  GraphQLIncludeDirective,
-  GraphQLSkipDirective,
-} from '../type/directives';
-import {
-  SchemaMetaFieldDef,
-  TypeMetaFieldDef,
-  TypeNameMetaFieldDef,
-} from '../type/introspection';
+import { typeFromAST } from '../utilities/typeFromAST';
+import * as Kind from '../language/kinds';
+import { getVariableValues, getArgumentValues } from './values';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -25,11 +17,82 @@ import {
   GraphQLUnionType,
   isAbstractType
 } from '../type/definition';
-
-// -----------------------------------------------------------------------------
-// New code (We will inject this section back into execute.js for replacement)
-// -----------------------------------------------------------------------------
+import type {
+  GraphQLType,
+  GraphQLLeafType,
+  GraphQLAbstractType,
+  GraphQLField,
+  GraphQLFieldResolver,
+  GraphQLResolveInfo,
+  ResponsePath,
+} from '../type/definition';
+import { GraphQLSchema } from '../type/schema';
+import {
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+} from '../type/introspection';
+import {
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
+} from '../type/directives';
+import type {
+  DirectiveNode,
+  DocumentNode,
+  OperationDefinitionNode,
+  SelectionSetNode,
+  FieldNode,
+  InlineFragmentNode,
+  FragmentDefinitionNode,
+} from '../language/ast';
 import { Observable } from 'rxjs/Rx';
+
+/**
+ * Terminology
+ *
+ * "Definitions" are the generic name for top-level statements in the document.
+ * Examples of this include:
+ * 1) Operations (such as a query)
+ * 2) Fragments
+ *
+ * "Operations" are a generic name for requests in the document.
+ * Examples of this include:
+ * 1) query,
+ * 2) mutation
+ *
+ * "Selections" are the definitions that can appear legally and at
+ * single level of the query. These include:
+ * 1) field references e.g "a"
+ * 2) fragment "spreads" e.g. "...c"
+ * 3) inline fragment "spreads" e.g. "...on Type { a }"
+ */
+
+/**
+ * Data that must be available at all points during query execution.
+ *
+ * Namely, schema of the type system that is currently executing,
+ * and the fragments defined in the query document
+ */
+type ExecutionContext = {
+  schema: GraphQLSchema;
+  fragments: {[key: string]: FragmentDefinitionNode};
+  rootValue: mixed;
+  contextValue: mixed;
+  operation: OperationDefinitionNode;
+  variableValues: {[key: string]: mixed};
+  errors: Array<GraphQLError>;
+};
+
+/**
+ * The result of GraphQL execution.
+ *
+ *   - `data` is the result of a successful execution of the query.
+ *   - `errors` is included when any errors occurred as a non-empty array.
+ */
+export type ExecutionResult = {
+  data?: ?{[key: string]: mixed};
+  errors?: Array<GraphQLError>;
+};
 
 type ExecutionDescriptor = {
   exeContext: ExecutionContext,
@@ -40,15 +103,98 @@ type ExecutionDescriptor = {
 // !!!: CompleteType could be more clear types.
 type CompleteType = mixed;
 
-type ProcessField = (rxjs$Observable<rxjs$Observable<CompleteType>>) =>
+type ProcessFields = (rxjs$Observable<rxjs$Observable<CompleteType>>) =>
   rxjs$Observable<Array<CompleteType>>;
 
+
+export function execute(
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
+  operationName?: ?string
+): rxjs$Observable<ExecutionResult> {
+  invariant(schema, 'Must provide schema');
+  invariant(document, 'Must provide document');
+  invariant(
+    schema instanceof GraphQLSchema,
+    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
+    'not multiple versions of GraphQL installed in your node_modules directory.'
+  );
+
+  // Variables, if provided, must be an object.
+  invariant(
+    !variableValues || typeof variableValues === 'object',
+    'Variables must be provided as an Object where each property is a ' +
+    'variable value. Perhaps look to see if an unparsed JSON string ' +
+    'was provided.'
+  );
+
+  // If a valid context cannot be created due to incorrect arguments,
+  // this will throw an error.
+  const context = buildExecutionContext(
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName
+  );
+
+  // Return an Observable that will eventually resolve to the data described by
+  // The "Response" section of the GraphQL specification.
+  //
+  // If errors are encountered while executing a GraphQL field, only that
+  // field and its descendants will be omitted, and sibling fields will still
+  // be executed. An execution which encounters errors will still result in a
+  // resolved Observable.
+  return executeOperation(context, context.operation, rootValue)
+    .catch(error => {
+      // Errors from sub-fields of a NonNull type may propagate to the top
+      // level, at which point we still log the error and null the parent field,
+      // which in this case is the entire response.
+      context.errors.push(error);
+      return Observable.of(null);
+    })
+    .map(data => {
+      if (!context.errors.length) {
+        return { data };
+      }
+      return { data, errors: context.errors };
+    });
+}
+
+/**
+ * Implements the "Evaluating operations" section of the spec.
+ */
+function executeOperation(
+  exeContext: ExecutionContext,
+  operation: OperationDefinitionNode,
+  rootValue: mixed
+): rxjs$Observable<CompleteType> {
+  const type = getOperationRootType(exeContext.schema, operation);
+  const fields = collectFields(
+    exeContext,
+    type,
+    operation.selectionSet,
+    Object.create(null),
+    Object.create(null)
+  );
+
+  const path = undefined;
+
+  if (operation.operation === 'mutation') {
+    return executeFieldsSerially(exeContext, type, rootValue, path, fields);
+  }
+  return executeFields(exeContext, type, rootValue, path, fields);
+}
 
 /**
  * Implements the "Evaluating selection sets" section of the spec
  * for "write" mode.
  */
-export function executeFieldsSerially(
+function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
@@ -69,7 +215,7 @@ export function executeFieldsSerially(
  * Implements the "Evaluating selection sets" section of the spec
  * for "read" mode.
  */
-export function executeFields(
+function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
@@ -95,7 +241,7 @@ function eachResolvedFields$$(
   sourceValue: mixed,
   path: ResponsePath,
   fields: {[key: string]: Array<FieldNode>},
-  processFields: ProcessField
+  processFields: ProcessFields
 ): rxjs$Observable<CompleteType> {
   // The whole process from input to return (a reactive observable for results):
   // `Object{ [fieldName]: fieldNodes }` -> `$( $( {[fieldName]: result} ) )`
@@ -148,8 +294,8 @@ function eachResolvedFields$$(
 /**
  * Resolves the field on the given source object. In particular, this
  * figures out the value that the field returns by calling its resolve function,
- * then calls completeValue to complete promises, serialize scalars, or execute
- * the sub-selection-set for objects.
+ * then calls completeValue to complete observables, serialize scalars, or
+ * execute the sub-selection-set for objects.
  */
 function resolveField(
   exeContext: ExecutionContext,
@@ -536,87 +682,104 @@ function addPath(prev: ResponsePath, key: string | number) {
 }
 
 /**
- * Checks to see if this object acts like a Promise, i.e. has a "then"
- * function.
+ * Constructs a ExecutionContext object from the arguments passed to
+ * execute, which we will pass throughout the other execution methods.
+ *
+ * Throws a GraphQLError if a valid execution context cannot be created.
  */
-function isThenable(value: mixed): boolean {
-  return typeof value === 'object' &&
-    value !== null &&
-    typeof value.then === 'function';
-}
-
-/**
- * This method looks up the field on the given type defintion.
- * It has special casing for the two introspection fields, __schema
- * and __typename. __typename is special because it can always be
- * queried as a field, even in situations where no other fields
- * are allowed, like on a Union. __schema could get automatically
- * added to the query type, but that would require mutating type
- * definitions, which would cause issues.
- */
-function getFieldDef(
+function buildExecutionContext(
   schema: GraphQLSchema,
-  parentType: GraphQLObjectType,
-  fieldName: string
-): ?GraphQLField<*, *> {
-  if (fieldName === SchemaMetaFieldDef.name &&
-      schema.getQueryType() === parentType) {
-    return SchemaMetaFieldDef;
-  } else if (fieldName === TypeMetaFieldDef.name &&
-             schema.getQueryType() === parentType) {
-    return TypeMetaFieldDef;
-  } else if (fieldName === TypeNameMetaFieldDef.name) {
-    return TypeNameMetaFieldDef;
+  document: DocumentNode,
+  rootValue: mixed,
+  contextValue: mixed,
+  rawVariableValues: ?{[key: string]: mixed},
+  operationName: ?string
+): ExecutionContext {
+  const errors: Array<GraphQLError> = [];
+  let operation: ?OperationDefinitionNode;
+  const fragments: {[name: string]: FragmentDefinitionNode} =
+    Object.create(null);
+  document.definitions.forEach(definition => {
+    switch (definition.kind) {
+      case Kind.OPERATION_DEFINITION:
+        if (!operationName && operation) {
+          throw new GraphQLError(
+            'Must provide operation name if query contains multiple operations.'
+          );
+        }
+        if (!operationName ||
+            definition.name && definition.name.value === operationName) {
+          operation = definition;
+        }
+        break;
+      case Kind.FRAGMENT_DEFINITION:
+        fragments[definition.name.value] = definition;
+        break;
+      default: throw new GraphQLError(
+        `GraphQL cannot execute a request containing a ${definition.kind}.`,
+        [ definition ]
+      );
+    }
+  });
+  if (!operation) {
+    if (operationName) {
+      throw new GraphQLError(`Unknown operation named "${operationName}".`);
+    } else {
+      throw new GraphQLError('Must provide an operation.');
+    }
   }
-  return parentType.getFields()[fieldName];
-}
+  const variableValues = getVariableValues(
+    schema,
+    operation.variableDefinitions || [],
+    rawVariableValues || {}
+  );
 
-// Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
-// function. Returns the result of resolveFn or the abrupt-return Error object.
-function resolveOrError<TSource, TContext>(
-  exeContext: ExecutionContext,
-  fieldDef: GraphQLField<TSource, TContext>,
-  fieldNode: FieldNode,
-  resolveFn: GraphQLFieldResolver<TSource, TContext>,
-  source: TSource,
-  context: TContext,
-  info: GraphQLResolveInfo
-): Error | mixed {
-  try {
-    // Build a JS object of arguments from the field.arguments AST, using the
-    // variables scope to fulfill any variable references.
-    // TODO: find a way to memoize, in case this field is within a List type.
-    const args = getArgumentValues(
-      fieldDef,
-      fieldNode,
-      exeContext.variableValues
-    );
-
-    return resolveFn(source, args, context, info);
-  } catch (error) {
-    // Sometimes a non-error is thrown, wrap it as an Error for a
-    // consistent interface.
-    return error instanceof Error ? error : new Error(error);
-  }
+  return {
+    schema,
+    fragments,
+    rootValue,
+    contextValue,
+    operation,
+    variableValues,
+    errors
+  };
 }
 
 /**
- * If a resolve function is not given, then a default resolve behavior is used
- * which takes the property of the source object of the same name as the field
- * and returns it as the result, or if it's a function, returns the result
- * of calling that function while passing along args and context.
+ * Extracts the root type of the operation from the schema.
  */
-export const defaultFieldResolver: GraphQLFieldResolver<any, *> =
-function (source, args, context, info) {
-  // ensure source is a value for which property access is acceptable.
-  if (typeof source === 'object' || typeof source === 'function') {
-    const property = source[info.fieldName];
-    if (typeof property === 'function') {
-      return source[info.fieldName](args, context, info);
-    }
-    return property;
+function getOperationRootType(
+  schema: GraphQLSchema,
+  operation: OperationDefinitionNode
+): GraphQLObjectType {
+  switch (operation.operation) {
+    case 'query':
+      return schema.getQueryType();
+    case 'mutation':
+      const mutationType = schema.getMutationType();
+      if (!mutationType) {
+        throw new GraphQLError(
+          'Schema is not configured for mutations',
+          [ operation ]
+        );
+      }
+      return mutationType;
+    case 'subscription':
+      const subscriptionType = schema.getSubscriptionType();
+      if (!subscriptionType) {
+        throw new GraphQLError(
+          'Schema is not configured for subscriptions',
+          [ operation ]
+        );
+      }
+      return subscriptionType;
+    default:
+      throw new GraphQLError(
+        'Can only execute queries, mutations and subscriptions',
+        [ operation ]
+      );
   }
-};
+}
 
 /**
  * Given a selectionSet, adds all of the fields in that selection to
@@ -682,26 +845,6 @@ function collectFields(
     }
   }
   return fields;
-}
-
-/**
- * If a resolveType function is not given, then a default resolve behavior is
- * used which tests each possible type for the abstract type by calling
- * isTypeOf for the object being coerced, returning the first type that matches.
- */
-function defaultResolveTypeFn(
-  value: mixed,
-  context: mixed,
-  info: GraphQLResolveInfo,
-  abstractType: GraphQLAbstractType
-): ?GraphQLObjectType {
-  const possibleTypes = info.schema.getPossibleTypes(abstractType);
-  for (let i = 0; i < possibleTypes.length; i++) {
-    const type = possibleTypes[i];
-    if (type.isTypeOf && type.isTypeOf(value, context, info)) {
-      return type;
-    }
-  }
 }
 
 /**
@@ -773,4 +916,107 @@ function doesFragmentConditionMatch(
  */
 function getFieldEntryKey(node: FieldNode): string {
   return node.alias ? node.alias.value : node.name.value;
+}
+
+// Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
+// function. Returns the result of resolveFn or the abrupt-return Error object.
+function resolveOrError<TSource, TContext>(
+  exeContext: ExecutionContext,
+  fieldDef: GraphQLField<TSource, TContext>,
+  fieldNode: FieldNode,
+  resolveFn: GraphQLFieldResolver<TSource, TContext>,
+  source: TSource,
+  context: TContext,
+  info: GraphQLResolveInfo
+): Error | mixed {
+  try {
+    // Build a JS object of arguments from the field.arguments AST, using the
+    // variables scope to fulfill any variable references.
+    // TODO: find a way to memoize, in case this field is within a List type.
+    const args = getArgumentValues(
+      fieldDef,
+      fieldNode,
+      exeContext.variableValues
+    );
+
+    return resolveFn(source, args, context, info);
+  } catch (error) {
+    // Sometimes a non-error is thrown, wrap it as an Error for a
+    // consistent interface.
+    return error instanceof Error ? error : new Error(error);
+  }
+}
+
+/**
+ * If a resolveType function is not given, then a default resolve behavior is
+ * used which tests each possible type for the abstract type by calling
+ * isTypeOf for the object being coerced, returning the first type that matches.
+ */
+function defaultResolveTypeFn(
+  value: mixed,
+  context: mixed,
+  info: GraphQLResolveInfo,
+  abstractType: GraphQLAbstractType
+): ?GraphQLObjectType {
+  const possibleTypes = info.schema.getPossibleTypes(abstractType);
+  for (let i = 0; i < possibleTypes.length; i++) {
+    const type = possibleTypes[i];
+    if (type.isTypeOf && type.isTypeOf(value, context, info)) {
+      return type;
+    }
+  }
+}
+
+/**
+ * If a resolve function is not given, then a default resolve behavior is used
+ * which takes the property of the source object of the same name as the field
+ * and returns it as the result, or if it's a function, returns the result
+ * of calling that function while passing along args and context.
+ */
+export const defaultFieldResolver: GraphQLFieldResolver<any, *> =
+function (source, args, context, info) {
+  // ensure source is a value for which property access is acceptable.
+  if (typeof source === 'object' || typeof source === 'function') {
+    const property = source[info.fieldName];
+    if (typeof property === 'function') {
+      return source[info.fieldName](args, context, info);
+    }
+    return property;
+  }
+};
+
+/**
+ * Checks to see if this object acts like a Promise, i.e. has a "then"
+ * function.
+ */
+function isThenable(value: mixed): boolean {
+  return typeof value === 'object' &&
+    value !== null &&
+    typeof value.then === 'function';
+}
+
+/**
+ * This method looks up the field on the given type defintion.
+ * It has special casing for the two introspection fields, __schema
+ * and __typename. __typename is special because it can always be
+ * queried as a field, even in situations where no other fields
+ * are allowed, like on a Union. __schema could get automatically
+ * added to the query type, but that would require mutating type
+ * definitions, which would cause issues.
+ */
+function getFieldDef(
+  schema: GraphQLSchema,
+  parentType: GraphQLObjectType,
+  fieldName: string
+): ?GraphQLField<*, *> {
+  if (fieldName === SchemaMetaFieldDef.name &&
+      schema.getQueryType() === parentType) {
+    return SchemaMetaFieldDef;
+  } else if (fieldName === TypeMetaFieldDef.name &&
+             schema.getQueryType() === parentType) {
+    return TypeMetaFieldDef;
+  } else if (fieldName === TypeNameMetaFieldDef.name) {
+    return TypeNameMetaFieldDef;
+  }
+  return parentType.getFields()[fieldName];
 }
