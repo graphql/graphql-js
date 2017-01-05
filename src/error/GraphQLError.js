@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { getLocation } from '../language';
+import { getLocation } from '../language/location';
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
 
