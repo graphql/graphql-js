@@ -946,11 +946,11 @@ function completeAbstractValue(
       exeContext.contextValue,
       info
     ) :
-    resolveFirstValidType(
+    defaultResolveTypeFn(
       result,
       exeContext.contextValue,
       info,
-      info.schema.getPossibleTypes(returnType)
+      returnType
     );
 
   if (isThenable(runtimeType)) {
@@ -1022,47 +1022,6 @@ function validateRuntimeTypeAndCompleteObjectValue(
 }
 
 /**
- * If a resolveType function is not given, then a default resolve behavior is
- * used which tests each possible type for the abstract type by calling
- * isTypeOf for the object being coerced, returning the first type that matches.
- */
-function resolveFirstValidType(
-  value: mixed,
-  context: mixed,
-  info: GraphQLResolveInfo,
-  possibleTypes: Array<GraphQLObjectType>,
-  i: number = 0,
-): ?GraphQLObjectType | ?string | ?Promise<?GraphQLObjectType | ?string> {
-  if (i >= possibleTypes.length) {
-    return null;
-  }
-
-  const type = possibleTypes[i];
-
-  if (!type.isTypeOf) {
-    return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
-  }
-
-  const isCorrectType = type.isTypeOf(value, context, info);
-
-  if (isThenable(isCorrectType)) {
-    return ((isCorrectType: any): Promise<*>).then(result => {
-      if (result) {
-        return type;
-      }
-
-      return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
-    });
-  }
-
-  if (isCorrectType) {
-    return type;
-  }
-
-  return resolveFirstValidType(value, context, info, possibleTypes, i + 1);
-}
-
-/**
  * Complete an Object value by executing all sub-selections.
  */
 function completeObjectValue(
@@ -1073,40 +1032,124 @@ function completeObjectValue(
   path: ResponsePath,
   result: mixed
 ): mixed {
-  // If there is an isTypeOf predicate function, call it with the
-  // current result. If isTypeOf returns false, then raise an error rather
-  // than continuing execution.
-  return Promise.resolve(returnType.isTypeOf ?
-    returnType.isTypeOf(result, exeContext.contextValue, info) :
-    true
-  )
-  .then(isTypeOfResult => {
-    if (!isTypeOfResult) {
-      throw new GraphQLError(
-        `Expected value of type "${returnType.name}" ` +
-        `but got: ${String(result)}.`,
-        fieldNodes
+  // If there is an isTypeOf predicate function,
+  // call it with the current result.
+  // Otherwise assume the type is correct
+  if (!returnType.isTypeOf) {
+    return validateResultTypeAndExecuteFields(
+      exeContext,
+      returnType,
+      fieldNodes,
+      info,
+      path,
+      result,
+      true
+    );
+  }
+
+  const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
+
+  if (isThenable(isTypeOf)) {
+    return ((isTypeOf: any): Promise<boolean>).then(isTypeOfResult => (
+      validateResultTypeAndExecuteFields(
+        exeContext,
+        returnType,
+        fieldNodes,
+        info,
+        path,
+        result,
+        isTypeOfResult
+      )
+    ));
+  }
+
+  return validateResultTypeAndExecuteFields(
+    exeContext,
+    returnType,
+    fieldNodes,
+    info,
+    path,
+    result,
+    ((isTypeOf: any): boolean)
+  );
+}
+
+function validateResultTypeAndExecuteFields(
+  exeContext: ExecutionContext,
+  returnType: GraphQLObjectType,
+  fieldNodes: Array<FieldNode>,
+  info: GraphQLResolveInfo,
+  path: ResponsePath,
+  result: mixed,
+  isTypeOfResult: boolean
+): mixed {
+  // If isTypeOf returns false, then raise an error
+  // rather than continuing execution.
+  if (!isTypeOfResult) {
+    throw new GraphQLError(
+      `Expected value of type "${returnType.name}" ` +
+      `but got: ${String(result)}.`,
+      fieldNodes
+    );
+  }
+
+  // Collect sub-fields to execute to complete this value.
+  let subFieldNodes = Object.create(null);
+  const visitedFragmentNames = Object.create(null);
+
+  for (let i = 0; i < fieldNodes.length; i++) {
+    const selectionSet = fieldNodes[i].selectionSet;
+    if (selectionSet) {
+      subFieldNodes = collectFields(
+        exeContext,
+        returnType,
+        selectionSet,
+        subFieldNodes,
+        visitedFragmentNames
       );
     }
+  }
 
-    // Collect sub-fields to execute to complete this value.
-    let subFieldNodes = Object.create(null);
-    const visitedFragmentNames = Object.create(null);
-    for (let i = 0; i < fieldNodes.length; i++) {
-      const selectionSet = fieldNodes[i].selectionSet;
-      if (selectionSet) {
-        subFieldNodes = collectFields(
-          exeContext,
-          returnType,
-          selectionSet,
-          subFieldNodes,
-          visitedFragmentNames
-        );
+  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+}
+
+/**
+ * If a resolveType function is not given, then a default resolve behavior is
+ * used which tests each possible type for the abstract type by calling
+ * isTypeOf for the object being coerced, returning the first type that matches.
+ */
+function defaultResolveTypeFn(
+  value: mixed,
+  context: mixed,
+  info: GraphQLResolveInfo,
+  abstractType: GraphQLAbstractType,
+): ?GraphQLObjectType | ?Promise<?GraphQLObjectType> {
+  const possibleTypes = info.schema.getPossibleTypes(abstractType);
+  const promisedIsTypeOfResults = [];
+  const promisedIsTypeOfResultTypes = [];
+
+  for (let i = 0; i < possibleTypes.length; i++) {
+    const type = possibleTypes[i];
+
+    if (type.isTypeOf) {
+      const isTypeOfResult = type.isTypeOf(value, context, info);
+
+      if (isThenable(isTypeOfResult)) {
+        promisedIsTypeOfResults.push(isTypeOfResult);
+        promisedIsTypeOfResultTypes.push(type);
+      } else if (isTypeOfResult) {
+        return type;
       }
     }
+  }
 
-    return executeFields(exeContext, returnType, result, path, subFieldNodes);
-  });
+  if (promisedIsTypeOfResults.length) {
+    return Promise.all(promisedIsTypeOfResults).then(isTypeOfResults => (
+      promisedIsTypeOfResultTypes[
+        isTypeOfResults.findIndex(isTypeOf => isTypeOf)
+      ]
+    ));
+  }
 }
 
 /**

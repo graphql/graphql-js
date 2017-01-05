@@ -168,15 +168,18 @@ describe('Execute: Handles execution of abstract types with promises', () => {
 
     expect(result).to.deep.equal({
       data: {
-        pets: [
-          null,
-          { name: 'Garfield',
-            meows: false } ] },
+        pets: [ null, null ]
+      },
       errors: [
         {
           message: 'We are testing this error',
           locations: [ { line: 2, column: 7 } ],
           path: [ 'pets', 0 ]
+        },
+        {
+          message: 'We are testing this error',
+          locations: [ { line: 2, column: 7 } ],
+          path: [ 'pets', 1 ]
         }
       ]
     });
