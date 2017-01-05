@@ -69,7 +69,7 @@
     "eslint": "3.12.2",
     "eslint-plugin-babel": "4.0.0",
     "eslint-plugin-flowtype": "2.29.2",
-    "flow-bin": "0.37.1",
+    "flow-bin": "0.37.4",
     "isparta": "4.0.0",
     "mocha": "3.2.0",
     "sane": "1.5.0"
