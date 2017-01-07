@@ -66,7 +66,7 @@
     "chai-json-equal": "0.0.1",
     "chai-subset": "1.4.0",
     "coveralls": "2.11.15",
-    "eslint": "3.12.2",
+    "eslint": "3.13.0",
     "eslint-plugin-babel": "4.0.0",
     "eslint-plugin-flowtype": "2.29.2",
     "flow-bin": "0.37.4",
