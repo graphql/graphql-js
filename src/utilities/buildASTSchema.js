@@ -318,7 +318,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
 
   function produceInterfaceType(typeNode: TypeNode): GraphQLInterfaceType {
     const type = produceType(typeNode);
-    invariant(type instanceof GraphQLInterfaceType, 'Expected Object type.');
+    invariant(type instanceof GraphQLInterfaceType, 'Expected Interface type.');
     return type;
   }
 
