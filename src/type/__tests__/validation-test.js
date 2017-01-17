@@ -1119,6 +1119,49 @@ describe('Type System: Object fields must have output types', () => {
 });
 
 
+describe('Type System: Object fields must have valid resolve values', () => {
+
+  function schemaWithObjectWithFieldResolver(resolveValue) {
+    const BadResolverType = new GraphQLObjectType({
+      name: 'BadResolver',
+      fields: {
+        badField: {
+          type: GraphQLString,
+          resolve: resolveValue
+        }
+      }
+    });
+
+    return new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          f: { type: BadResolverType }
+        }
+      })
+    });
+  }
+
+  it('accepts a lambda as an Object field resolver', () => {
+    expect(() => schemaWithObjectWithFieldResolver(() => ({}))).not.to.throw();
+  });
+
+  it('rejects an empty Object field resolver', () => {
+    expect(() => schemaWithObjectWithFieldResolver({})).to.throw(
+      'BadResolver.badField field resolver must be function or null/undefined' +
+      ', but got: [object Object].'
+    );
+  });
+
+  it('rejects a constant scalar value resolver', () => {
+    expect(() => schemaWithObjectWithFieldResolver(0)).to.throw(
+      'BadResolver.badField field resolver must be function or null/undefined' +
+      ', but got: 0.'
+    );
+  });
+});
+
+
 describe('Type System: Objects can only implement interfaces', () => {
 
   function schemaWithObjectImplementingType(implementedType) {
