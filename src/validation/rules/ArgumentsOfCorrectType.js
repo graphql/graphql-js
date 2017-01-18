@@ -19,7 +19,7 @@ export function badValueMessage(
   argName: string,
   type: GraphQLType,
   value: string,
-  verboseErrors?: [string]
+  verboseErrors?: string[]
 ): string {
   const message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
   return (
