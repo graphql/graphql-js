@@ -30,7 +30,7 @@ export function badValueForDefaultArgMessage(
   varName: string,
   type: GraphQLType,
   value: string,
-  verboseErrors?: [string]
+  verboseErrors?: string[]
 ): string {
   const message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
   return `Variable "$${varName}" of type "${String(type)}" has invalid ` +
