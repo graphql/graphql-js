@@ -17,6 +17,7 @@ import {
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLInputObjectType,
+  GraphQLEnumType,
   GraphQLList,
 } from '../type/definition';
 import type {
@@ -25,7 +26,8 @@ import type {
   GraphQLOutputType,
   GraphQLCompositeType,
   GraphQLField,
-  GraphQLArgument
+  GraphQLArgument,
+  GraphQLEnumValue,
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import {
@@ -52,6 +54,7 @@ export class TypeInfo {
   _fieldDefStack: Array<?GraphQLField<*, *>>;
   _directive: ?GraphQLDirective;
   _argument: ?GraphQLArgument;
+  _enumValue: ?GraphQLEnumValue;
   _getFieldDef: typeof getFieldDef;
 
   constructor(
@@ -68,6 +71,7 @@ export class TypeInfo {
     this._fieldDefStack = [];
     this._directive = null;
     this._argument = null;
+    this._enumValue = null;
     this._getFieldDef = getFieldDefFn || getFieldDef;
   }
 
@@ -101,6 +105,10 @@ export class TypeInfo {
 
   getArgument(): ?GraphQLArgument {
     return this._argument;
+  }
+
+  getEnumValue(): ?GraphQLEnumValue {
+    return this._enumValue;
   }
 
   // Flow does not yet handle this case.
@@ -182,6 +190,14 @@ export class TypeInfo {
         }
         this._inputTypeStack.push(fieldType);
         break;
+      case Kind.ENUM:
+        const enumType = getNamedType(this.getInputType());
+        let enumValue;
+        if (enumType instanceof GraphQLEnumType) {
+          enumValue = enumType.getValue(node.value);
+        }
+        this._enumValue = enumValue;
+        break;
     }
   }
 
@@ -212,6 +228,9 @@ export class TypeInfo {
       case Kind.LIST:
       case Kind.OBJECT_FIELD:
         this._inputTypeStack.pop();
+        break;
+      case Kind.ENUM:
+        this._enumValue = null;
         break;
     }
   }
