@@ -852,6 +852,10 @@ export class GraphQLEnumType/* <T> */ {
     return this._values;
   }
 
+  getValue(name: string): ?GraphQLEnumValue {
+    return this._getNameLookup()[name];
+  }
+
   serialize(value: any/* T */): ?string {
     const enumValue = this._getValueLookup().get(value);
     return enumValue ? enumValue.name : null;

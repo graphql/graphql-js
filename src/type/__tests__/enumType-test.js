@@ -354,13 +354,22 @@ describe('Type System: Enum Values', () => {
     });
   });
 
-  it('may present a values API for complex enums ', () => {
+  it('presents a getValues() API for complex enums', () => {
     const values = ComplexEnum.getValues();
     expect(values.length).to.equal(2);
     expect(values[0].name).to.equal('ONE');
     expect(values[0].value).to.equal(Complex1);
     expect(values[1].name).to.equal('TWO');
     expect(values[1].value).to.equal(Complex2);
+  });
+
+  it('presents a getValue() API for complex enums', () => {
+    const oneValue = ComplexEnum.getValue('ONE');
+    expect(oneValue.name).to.equal('ONE');
+    expect(oneValue.value).to.equal(Complex1);
+
+    const badUsage = ComplexEnum.getValue(Complex1);
+    expect(badUsage).to.equal(undefined);
   });
 
   it('may be internally represented with complex values', async () => {
