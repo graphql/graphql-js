@@ -69,7 +69,7 @@
     "dot-location": [2, "property"],
     "dot-notation": 0,
     "eol-last": 2,
-    "eqeqeq": 2,
+    "eqeqeq": ["error", "smart"],
     "func-names": 0,
     "func-style": 0,
     "generator-star-spacing": [2, {"before": true, "after": false}],
