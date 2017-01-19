@@ -726,6 +726,97 @@ describe('Type System: Input Objects must have fields', () => {
 });
 
 
+describe('Type System: Input Object fields must not have resolvers', () => {
+
+  function schemaWithInputObject(inputObjectType) {
+    return new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          f: {
+            type: GraphQLString,
+            args: {
+              input: { type: inputObjectType }
+            }
+          }
+        }
+      })
+    });
+  }
+
+  it('accepts an Input Object type with no resolver', () => {
+    expect(
+      () => schemaWithInputObject(new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+          }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('accepts an Input Object type with null resolver', () => {
+    expect(
+      () => schemaWithInputObject(new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            resolve: null,
+          }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('accepts an Input Object type with undefined resolver', () => {
+    expect(
+      () => schemaWithInputObject(new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            resolve: undefined,
+          }
+        }
+      }))
+    ).not.to.throw();
+  });
+
+  it('rejects an Input Object type with resolver function', () => {
+    expect(
+      () => schemaWithInputObject(new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            resolve: () => { return 0; },
+          }
+        }
+      }))
+    ).to.throw('SomeInputObject.f field type has a resolve property,' +
+    ' but Input Types cannot define resolvers.');
+  });
+
+  it('rejects an Input Object type with resolver constant', () => {
+    expect(
+      () => schemaWithInputObject(new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: {
+            type: GraphQLString,
+            resolve: {},
+          }
+        }
+      }))
+    ).to.throw('SomeInputObject.f field type has a resolve property,' +
+    ' but Input Types cannot define resolvers.');
+  });
+});
+
+
 describe('Type System: Object types must be assertable', () => {
 
   it('accepts an Object type with an isTypeOf function', () => {
