@@ -67,7 +67,7 @@
     "chai-subset": "1.4.0",
     "coveralls": "2.11.15",
     "eslint": "3.13.1",
-    "eslint-plugin-babel": "4.0.0",
+    "eslint-plugin-babel": "4.0.1",
     "eslint-plugin-flowtype": "2.30.0",
     "flow-bin": "0.38.0",
     "isparta": "4.0.0",
