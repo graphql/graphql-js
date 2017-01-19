@@ -325,6 +325,9 @@ export {
 
   // Compares two GraphQLSchemas and detects breaking changes.
   findBreakingChanges,
+
+  // Report all deprecated usage within a GraphQL document.
+  findDeprecatedUsages,
 } from './utilities';
 
 export type {
