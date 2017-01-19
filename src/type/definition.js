@@ -506,6 +506,11 @@ function defineFieldMap<TSource, TContext>(
       `${type.name}.${fieldName} field type must be Output Type but ` +
       `got: ${String(field.type)}.`
     );
+    invariant(
+      isValidResolver(field.resolve),
+      `${type.name}.${fieldName} field resolver must be a function if ` +
+      `provided, but got: ${String(field.resolve)}.`
+    );
     const argsConfig = fieldConfig.args;
     if (!argsConfig) {
       field.args = [];
@@ -538,6 +543,11 @@ function defineFieldMap<TSource, TContext>(
 
 function isPlainObj(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
+}
+
+// If a resolver is defined, it must be a function.
+function isValidResolver(resolver: any): boolean {
+  return (resolver == null || typeof resolver === 'function');
 }
 
 export type GraphQLObjectTypeConfig<TSource, TContext> = {
