@@ -985,7 +985,7 @@ function completeAbstractValue(
 }
 
 function ensureValidRuntimeType(
-  runtimeTypeOrName: string | GraphQLObjectType | void
+  runtimeTypeOrName: string | GraphQLObjectType | void,
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
   fieldNodes: Array<FieldNode>,
