@@ -951,10 +951,6 @@ function completeAbstractValue(
     return runtimeTypePromise.then(resolvedRuntimeType =>
       completeObjectValue(
         exeContext,
-        returnType,
-        fieldNodes,
-        info,
-        path,
         ensureValidRuntimeType(
           resolvedRuntimeType,
           exeContext, 
@@ -963,6 +959,9 @@ function completeAbstractValue(
           info,
           result
         ),
+        fieldNodes,
+        info,
+        path,
         result
       )
     );
@@ -970,10 +969,6 @@ function completeAbstractValue(
 
   return completeObjectValue(
     exeContext,
-    returnType,
-    fieldNodes,
-    info,
-    path,
     ensureValidRuntimeType(
       resolvedRuntimeType,
       exeContext,
@@ -982,6 +977,9 @@ function completeAbstractValue(
       info,
       result
     ),
+    fieldNodes,
+    info,
+    path,
     result
   );
 }
