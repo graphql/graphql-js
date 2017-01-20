@@ -941,30 +941,24 @@ function completeAbstractValue(
   result: mixed
 ): mixed {
   const runtimeType = returnType.resolveType ?
-    returnType.resolveType(
-      result,
-      exeContext.contextValue,
-      info
-    ) :
-    defaultResolveTypeFn(
-      result,
-      exeContext.contextValue,
-      info,
-      returnType
-    );
+    returnType.resolveType(result, exeContext.contextValue, info) :
+    defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
 
   if (isThenable(runtimeType)) {
-    return ((runtimeType: any): Promise<*>).then(resolvedRuntimeType => (
+    // Cast to Promise
+    const runtimeTypePromise: Promise<GraphQLObjectType | string> = 
+      (runtimeType: any);
+    return runtimeTypePromise.then(resolvedRuntimeType =>
       validateRuntimeTypeAndCompleteObjectValue(
         exeContext,
         returnType,
         fieldNodes,
         info,
         path,
-        resolvedRuntimeType,
+        ensureType(exeContext.schema, resolvedRuntimeType),
         result
       )
-    ));
+    );
   }
 
   return validateRuntimeTypeAndCompleteObjectValue(
@@ -973,9 +967,18 @@ function completeAbstractValue(
     fieldNodes,
     info,
     path,
-    runtimeType,
+    ensureType(exeContext.schema, runtimeType),
     result
   );
+}
+
+function ensureType(
+  schema: GraphQLSchema, 
+  typeOrName: string | GraphQLObjectType
+): GraphQLObjectType {
+  return typeof typeOrName === 'string' ? 
+    schema.getType(typeOrName) : 
+    typeOrName;
 }
 
 function validateRuntimeTypeAndCompleteObjectValue(
@@ -984,16 +987,9 @@ function validateRuntimeTypeAndCompleteObjectValue(
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
-  returnedRuntimeType: mixed,
+  runtimeType: GraphQLObjectType,
   result: mixed
 ): mixed {
-  let runtimeType = returnedRuntimeType;
-
-  // If resolveType returns a string, we assume it's a GraphQLObjectType name.
-  if (typeof runtimeType === 'string') {
-    runtimeType = exeContext.schema.getType(runtimeType);
-  }
-
   if (!(runtimeType instanceof GraphQLObjectType)) {
     throw new GraphQLError(
       `Abstract type ${returnType.name} must resolve to an Object type at ` +
@@ -1087,8 +1083,7 @@ function validateResultTypeAndExecuteFields(
   // rather than continuing execution.
   if (!isTypeOfResult) {
     throw new GraphQLError(
-      `Expected value of type "${returnType.name}" ` +
-      `but got: ${String(result)}.`,
+      `Expected value of type "${returnType.name}" but got: ${String(result)}.`,
       fieldNodes
     );
   }
@@ -1096,7 +1091,6 @@ function validateResultTypeAndExecuteFields(
   // Collect sub-fields to execute to complete this value.
   let subFieldNodes = Object.create(null);
   const visitedFragmentNames = Object.create(null);
-
   for (let i = 0; i < fieldNodes.length; i++) {
     const selectionSet = fieldNodes[i].selectionSet;
     if (selectionSet) {
@@ -1122,7 +1116,7 @@ function defaultResolveTypeFn(
   value: mixed,
   context: mixed,
   info: GraphQLResolveInfo,
-  abstractType: GraphQLAbstractType,
+  abstractType: GraphQLAbstractType
 ): ?GraphQLObjectType | ?Promise<?GraphQLObjectType> {
   const possibleTypes = info.schema.getPossibleTypes(abstractType);
   const promisedIsTypeOfResults = [];
