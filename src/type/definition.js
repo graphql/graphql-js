@@ -1050,6 +1050,11 @@ export class GraphQLInputObjectType {
         `${this.name}.${fieldName} field type must be Input Type but ` +
         `got: ${String(field.type)}.`
       );
+      invariant(
+        field.resolve == null,
+        `${this.name}.${fieldName} field type has a resolve property, but ` +
+        'Input Types cannot define resolvers.'
+      );
       resultFieldMap[fieldName] = field;
     });
     return resultFieldMap;
