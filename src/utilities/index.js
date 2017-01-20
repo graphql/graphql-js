@@ -87,3 +87,6 @@ export { assertValidName } from './assertValidName';
 // Compares two GraphQLSchemas and detects breaking changes.
 export { findBreakingChanges } from './findBreakingChanges';
 export type { BreakingChange } from './findBreakingChanges';
+
+// Report all deprecated usage within a GraphQL document.
+export { findDeprecatedUsages } from './findDeprecatedUsages';
