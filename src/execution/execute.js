@@ -949,47 +949,55 @@ function completeAbstractValue(
     const runtimeTypePromise: Promise<GraphQLObjectType | string> = 
       (runtimeType: any);
     return runtimeTypePromise.then(resolvedRuntimeType =>
-      validateRuntimeTypeAndCompleteObjectValue(
+      completeObjectValue(
         exeContext,
         returnType,
         fieldNodes,
         info,
         path,
-        ensureType(exeContext.schema, resolvedRuntimeType),
+        ensureValidRuntimeType(
+          resolvedRuntimeType,
+          exeContext, 
+          returnType, 
+          fieldNodes,
+          info,
+          result
+        ),
         result
       )
     );
   }
 
-  return validateRuntimeTypeAndCompleteObjectValue(
+  return completeObjectValue(
     exeContext,
     returnType,
     fieldNodes,
     info,
     path,
-    ensureType(exeContext.schema, runtimeType),
+    ensureValidRuntimeType(
+      resolvedRuntimeType,
+      exeContext,
+      returnType, 
+      fieldNodes,
+      info,
+      result
+    ),
     result
   );
 }
 
-function ensureType(
-  schema: GraphQLSchema, 
-  typeOrName: string | GraphQLObjectType
-): GraphQLObjectType {
-  return typeof typeOrName === 'string' ? 
-    schema.getType(typeOrName) : 
-    typeOrName;
-}
-
-function validateRuntimeTypeAndCompleteObjectValue(
+function ensureValidRuntimeType(
+  runtimeTypeOrName: string | GraphQLObjectType | void
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
-  path: ResponsePath,
-  runtimeType: GraphQLObjectType,
   result: mixed
-): mixed {
+): GraphQLObjectType {
+  const runtimeType = typeof runtimeTypeOrName === 'string' ? 
+    exeContext.schema.getType(runtimeTypeOrName) : 
+    runtimeTypeOrName;
+
   if (!(runtimeType instanceof GraphQLObjectType)) {
     throw new GraphQLError(
       `Abstract type ${returnType.name} must resolve to an Object type at ` +
@@ -1007,14 +1015,7 @@ function validateRuntimeTypeAndCompleteObjectValue(
     );
   }
 
-  return completeObjectValue(
-    exeContext,
-    runtimeType,
-    fieldNodes,
-    info,
-    path,
-    result
-  );
+  return runtimeType;
 }
 
 /**
