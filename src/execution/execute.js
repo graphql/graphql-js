@@ -946,15 +946,15 @@ function completeAbstractValue(
 
   if (isThenable(runtimeType)) {
     // Cast to Promise
-    const runtimeTypePromise: Promise<GraphQLObjectType | string> = 
+    const runtimeTypePromise: Promise<?GraphQLObjectType | string> =
       (runtimeType: any);
     return runtimeTypePromise.then(resolvedRuntimeType =>
       completeObjectValue(
         exeContext,
         ensureValidRuntimeType(
           resolvedRuntimeType,
-          exeContext, 
-          returnType, 
+          exeContext,
+          returnType,
           fieldNodes,
           info,
           result
@@ -970,9 +970,9 @@ function completeAbstractValue(
   return completeObjectValue(
     exeContext,
     ensureValidRuntimeType(
-      resolvedRuntimeType,
+      ((runtimeType: any): ?GraphQLObjectType | string),
       exeContext,
-      returnType, 
+      returnType,
       fieldNodes,
       info,
       result
@@ -985,15 +985,15 @@ function completeAbstractValue(
 }
 
 function ensureValidRuntimeType(
-  runtimeTypeOrName: string | GraphQLObjectType | void,
+  runtimeTypeOrName: ?GraphQLObjectType | string,
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   result: mixed
 ): GraphQLObjectType {
-  const runtimeType = typeof runtimeTypeOrName === 'string' ? 
-    exeContext.schema.getType(runtimeTypeOrName) : 
+  const runtimeType = typeof runtimeTypeOrName === 'string' ?
+    exeContext.schema.getType(runtimeTypeOrName) :
     runtimeTypeOrName;
 
   if (!(runtimeType instanceof GraphQLObjectType)) {
