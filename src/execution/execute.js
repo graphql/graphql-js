@@ -1112,10 +1112,9 @@ function defaultResolveTypeFn(
   context: mixed,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType
-): ?GraphQLObjectType | ?Promise<?GraphQLObjectType> {
+): ?GraphQLObjectType | Promise<?GraphQLObjectType> {
   const possibleTypes = info.schema.getPossibleTypes(abstractType);
   const promisedIsTypeOfResults = [];
-  const promisedIsTypeOfResultTypes = [];
 
   for (let i = 0; i < possibleTypes.length; i++) {
     const type = possibleTypes[i];
@@ -1124,8 +1123,7 @@ function defaultResolveTypeFn(
       const isTypeOfResult = type.isTypeOf(value, context, info);
 
       if (isThenable(isTypeOfResult)) {
-        promisedIsTypeOfResults.push(isTypeOfResult);
-        promisedIsTypeOfResultTypes.push(type);
+        promisedIsTypeOfResults[i] = isTypeOfResult;
       } else if (isTypeOfResult) {
         return type;
       }
@@ -1133,11 +1131,13 @@ function defaultResolveTypeFn(
   }
 
   if (promisedIsTypeOfResults.length) {
-    return Promise.all(promisedIsTypeOfResults).then(isTypeOfResults => (
-      promisedIsTypeOfResultTypes[
-        isTypeOfResults.findIndex(isTypeOf => isTypeOf)
-      ]
-    ));
+    return Promise.all(promisedIsTypeOfResults).then(isTypeOfResults => {
+      for (let i = 0; i < isTypeOfResults.length; i++) {
+        if (isTypeOfResults[i]) {
+          return possibleTypes[i];
+        }
+      }
+    });
   }
 }
 
