@@ -563,13 +563,13 @@ export type GraphQLTypeResolver<TSource, TContext> = (
   value: TSource,
   context: TContext,
   info: GraphQLResolveInfo
-) => ?GraphQLObjectType | ?string;
+) => ?GraphQLObjectType | ?string | ?Promise<?GraphQLObjectType | ?string>;
 
 export type GraphQLIsTypeOfFn<TSource, TContext> = (
   source: TSource,
   context: TContext,
   info: GraphQLResolveInfo
-) => boolean;
+) => boolean | Promise<boolean>;
 
 export type GraphQLFieldResolver<TSource, TContext> = (
   source: TSource,
