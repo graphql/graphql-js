@@ -1027,66 +1027,62 @@ function completeObjectValue(
   path: ResponsePath,
   result: mixed
 ): mixed {
-  // If there is an isTypeOf predicate function,
-  // call it with the current result.
-  // Otherwise assume the type is correct
-  if (!returnType.isTypeOf) {
-    return validateResultTypeAndExecuteFields(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-      true
-    );
+  // If there is an isTypeOf predicate function, call it with the
+  // current result. If isTypeOf returns false, then raise an error rather
+  // than continuing execution.
+  if (returnType.isTypeOf) {
+    const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
+
+    if (isThenable(isTypeOf)) {
+      return ((isTypeOf: any): Promise<boolean>).then(isTypeOfResult => {
+        if (!isTypeOfResult) {
+          throw invalidReturnTypeError(returnType, result, fieldNodes);
+        }
+        return collectAndExecuteSubfields(
+          exeContext,
+          returnType,
+          fieldNodes,
+          info,
+          path,
+          result
+        );
+      });
+    }
+
+    if (!isTypeOf) {
+      throw invalidReturnTypeError(returnType, result, fieldNodes);
+    }
   }
 
-  const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
-
-  if (isThenable(isTypeOf)) {
-    return ((isTypeOf: any): Promise<boolean>).then(isTypeOfResult => (
-      validateResultTypeAndExecuteFields(
-        exeContext,
-        returnType,
-        fieldNodes,
-        info,
-        path,
-        result,
-        isTypeOfResult
-      )
-    ));
-  }
-
-  return validateResultTypeAndExecuteFields(
+  return collectAndExecuteSubfields(
     exeContext,
     returnType,
     fieldNodes,
     info,
     path,
-    result,
-    ((isTypeOf: any): boolean)
+    result
   );
 }
 
-function validateResultTypeAndExecuteFields(
+function invalidReturnTypeError(
+  returnType: GraphQLObjectType,
+  result: mixed,
+  fieldNodes: Array<FieldNode>
+): GraphQLError {
+  return new GraphQLError(
+    `Expected value of type "${returnType.name}" but got: ${String(result)}.`,
+    fieldNodes
+  );
+}
+
+function collectAndExecuteSubfields(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
-  result: mixed,
-  isTypeOfResult: boolean
+  result: mixed
 ): mixed {
-  // If isTypeOf returns false, then raise an error
-  // rather than continuing execution.
-  if (!isTypeOfResult) {
-    throw new GraphQLError(
-      `Expected value of type "${returnType.name}" but got: ${String(result)}.`,
-      fieldNodes
-    );
-  }
-
   // Collect sub-fields to execute to complete this value.
   let subFieldNodes = Object.create(null);
   const visitedFragmentNames = Object.create(null);
