@@ -8,7 +8,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
+const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9-]*$/;
 
 /**
  * Upholds the spec rules about naming.
@@ -30,7 +30,7 @@ export function assertValidName(
   }
   if (!NAME_RX.test(name)) {
     throw new Error(
-      `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`
+      `Names must match /^[_a-zA-Z][_a-zA-Z0-9-]*$/ but "${name}" does not.`
     );
   }
 }
