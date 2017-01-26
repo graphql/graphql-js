@@ -21,5 +21,6 @@
     "transform-es2015-block-scoping",
     "transform-es2015-modules-commonjs",
     "transform-regenerator",
+    "transform-es3-property-literals",
   ]
 }
