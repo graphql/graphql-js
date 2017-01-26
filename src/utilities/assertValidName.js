@@ -10,6 +10,9 @@
 
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 
+// Ensures console warnings are only issued once.
+let hasWarnedAboutDunder = false;
+
 /**
  * Upholds the spec rules about naming.
  */
@@ -22,11 +25,17 @@ export function assertValidName(
       `Must be named. Unexpected name: ${name}.`
     );
   }
-  if (!isIntrospection && name.slice(0, 2) === '__') {
-    throw new Error(
-      `Name "${name}" must not begin with "__", which is reserved by ` +
-      'GraphQL introspection.'
-    );
+  if (!isIntrospection && name.slice(0, 2) === '__' && !hasWarnedAboutDunder) {
+    hasWarnedAboutDunder = true;
+    /* eslint-disable no-console */
+    if (console && console.error) {
+      const error = new Error(
+        `Name "${name}" must not begin with "__", which is reserved by ` +
+        'GraphQL introspection.'
+      );
+      console.error(error.stack || String(error));
+    }
+    /* eslint-enable no-console */
   }
   if (!NAME_RX.test(name)) {
     throw new Error(
