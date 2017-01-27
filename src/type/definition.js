@@ -135,10 +135,9 @@ export type GraphQLLeafType =
   GraphQLEnumType;
 
 export function isLeafType(type: ?GraphQLType): boolean {
-  const namedType = getNamedType(type);
   return (
-    namedType instanceof GraphQLScalarType ||
-    namedType instanceof GraphQLEnumType
+    type instanceof GraphQLScalarType ||
+    type instanceof GraphQLEnumType
   );
 }
 

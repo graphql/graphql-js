@@ -11,7 +11,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { FieldNode } from '../../language/ast';
-import { isLeafType } from '../../type/definition';
+import { getNamedType, isLeafType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
 
 
@@ -42,7 +42,7 @@ export function ScalarLeafs(context: ValidationContext): any {
     Field(node: FieldNode) {
       const type = context.getType();
       if (type) {
-        if (isLeafType(type)) {
+        if (isLeafType(getNamedType(type))) {
           if (node.selectionSet) {
             context.reportError(new GraphQLError(
               noSubselectionAllowedMessage(node.name.value, type),
