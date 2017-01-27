@@ -341,8 +341,9 @@ function executeFieldsSerially(
       if (result === undefined) {
         return results;
       }
-      if (isThenable(result)) {
-        return ((result: any): Promise<*>).then(resolvedResult => {
+      const promise = getPromise(result);
+      if (promise) {
+        return promise.then(resolvedResult => {
           results[responseName] = resolvedResult;
           return results;
         });
@@ -382,7 +383,7 @@ function executeFields(
         return results;
       }
       results[responseName] = result;
-      if (isThenable(result)) {
+      if (getPromise(result)) {
         containsPromise = true;
       }
       return results;
@@ -688,12 +689,13 @@ function completeValueCatchingError(
       path,
       result
     );
-    if (isThenable(completed)) {
+    const promise = getPromise(completed);
+    if (promise) {
       // If `completeValueWithLocatedError` returned a rejected promise, log
       // the rejection error and resolve to null.
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return ((completed: any): Promise<*>).then(undefined, error => {
+      return promise.then(undefined, error => {
         exeContext.errors.push(error);
         return Promise.resolve(null);
       });
@@ -726,8 +728,9 @@ function completeValueWithLocatedError(
       path,
       result
     );
-    if (isThenable(completed)) {
-      return ((completed: any): Promise<*>).then(
+    const promise = getPromise(completed);
+    if (promise) {
+      return promise.then(
         undefined,
         error => Promise.reject(
           locatedError(error, fieldNodes, responsePathAsArray(path))
@@ -770,8 +773,9 @@ function completeValue(
   result: mixed
 ): mixed {
   // If result is a Promise, apply-lift over completeValue.
-  if (isThenable(result)) {
-    return ((result: any): Promise<*>).then(
+  const promise = getPromise(result);
+  if (promise) {
+    return promise.then(
       resolved => completeValue(
         exeContext,
         returnType,
@@ -900,7 +904,7 @@ function completeListValue(
       item
     );
 
-    if (!containsPromise && isThenable(completedItem)) {
+    if (!containsPromise && getPromise(completedItem)) {
       containsPromise = true;
     }
     completedResults.push(completedItem);
@@ -944,11 +948,9 @@ function completeAbstractValue(
     returnType.resolveType(result, exeContext.contextValue, info) :
     defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
 
-  if (isThenable(runtimeType)) {
-    // Cast to Promise
-    const runtimeTypePromise: Promise<?GraphQLObjectType | string> =
-      (runtimeType: any);
-    return runtimeTypePromise.then(resolvedRuntimeType =>
+  const promise = getPromise(runtimeType);
+  if (promise) {
+    return promise.then(resolvedRuntimeType =>
       completeObjectValue(
         exeContext,
         ensureValidRuntimeType(
@@ -1033,8 +1035,9 @@ function completeObjectValue(
   if (returnType.isTypeOf) {
     const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
 
-    if (isThenable(isTypeOf)) {
-      return ((isTypeOf: any): Promise<boolean>).then(isTypeOfResult => {
+    const promise = getPromise(isTypeOf);
+    if (promise) {
+      return promise.then(isTypeOfResult => {
         if (!isTypeOfResult) {
           throw invalidReturnTypeError(returnType, result, fieldNodes);
         }
@@ -1122,8 +1125,9 @@ function defaultResolveTypeFn(
     if (type.isTypeOf) {
       const isTypeOfResult = type.isTypeOf(value, context, info);
 
-      if (isThenable(isTypeOfResult)) {
-        promisedIsTypeOfResults[i] = isTypeOfResult;
+      const promise = getPromise(isTypeOfResult);
+      if (promise) {
+        promisedIsTypeOfResults[i] = promise;
       } else if (isTypeOfResult) {
         return type;
       }
@@ -1160,13 +1164,15 @@ function (source, args, context, info) {
 };
 
 /**
- * Checks to see if this object acts like a Promise, i.e. has a "then"
- * function.
+ * Only returns the value if it acts like a Promise, i.e. has a "then" function,
+ * otherwise returns void.
  */
-function isThenable(value: mixed): boolean {
-  return typeof value === 'object' &&
-    value !== null &&
-    typeof value.then === 'function';
+function getPromise<T>(value: Promise<T> | mixed): Promise<T> | void {
+  if (typeof value === 'object' &&
+      value !== null &&
+      typeof value.then === 'function') {
+    return (value: any);
+  }
 }
 
 /**
