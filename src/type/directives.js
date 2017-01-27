@@ -112,7 +112,7 @@ export const GraphQLIncludeDirective = new GraphQLDirective({
     DirectiveLocation.INLINE_FRAGMENT,
   ],
   args: {
-    if: {
+    'if': {
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Included when true.'
     }
@@ -133,7 +133,7 @@ export const GraphQLSkipDirective = new GraphQLDirective({
     DirectiveLocation.INLINE_FRAGMENT,
   ],
   args: {
-    if: {
+    'if': {
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Skipped when true.'
     }
