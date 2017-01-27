@@ -11,6 +11,8 @@
 import * as Kind from '../language/kinds';
 import {
   isCompositeType,
+  isInputType,
+  isOutputType,
   getNullableType,
   getNamedType,
   GraphQLObjectType,
@@ -117,12 +119,11 @@ export class TypeInfo {
     switch (node.kind) {
       case Kind.SELECTION_SET:
         const namedType = getNamedType(this.getType());
-        let compositeType: ?GraphQLCompositeType;
-        if (isCompositeType(namedType)) {
-          // isCompositeType is a type refining predicate, so this is safe.
-          compositeType = ((namedType: any): GraphQLCompositeType);
-        }
-        this._parentTypeStack.push(compositeType);
+        this._parentTypeStack.push(
+          isCompositeType(namedType) ?
+            ((namedType: any): GraphQLCompositeType) :
+            undefined
+        );
         break;
       case Kind.FIELD:
         const parentType = this.getParentType();
@@ -153,11 +154,19 @@ export class TypeInfo {
         const outputType = typeConditionAST ?
           typeFromAST(schema, typeConditionAST) :
           this.getType();
-        this._typeStack.push(((outputType: any): GraphQLOutputType));
+        this._typeStack.push(
+          isOutputType(outputType) ?
+            ((outputType: any): GraphQLOutputType) :
+            undefined
+        );
         break;
       case Kind.VARIABLE_DEFINITION:
         const inputType = typeFromAST(schema, node.type);
-        this._inputTypeStack.push(((inputType: any): GraphQLInputType));
+        this._inputTypeStack.push(
+          isInputType(inputType) ?
+            ((inputType: any): GraphQLInputType) :
+            undefined
+        );
         break;
       case Kind.ARGUMENT:
         let argDef;

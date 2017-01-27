@@ -13,6 +13,7 @@ import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
 import { isCompositeType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
+import { typeFromAST } from '../../utilities/typeFromAST';
 
 
 export function inlineFragmentOnNonCompositeErrorMessage(
@@ -39,16 +40,18 @@ export function fragmentOnNonCompositeErrorMessage(
 export function FragmentsOnCompositeTypes(context: ValidationContext): any {
   return {
     InlineFragment(node) {
-      const type = context.getType();
-      if (node.typeCondition && type && !isCompositeType(type)) {
-        context.reportError(new GraphQLError(
-          inlineFragmentOnNonCompositeErrorMessage(print(node.typeCondition)),
-          [ node.typeCondition ]
-        ));
+      if (node.typeCondition) {
+        const type = typeFromAST(context.getSchema(), node.typeCondition);
+        if (type && !isCompositeType(type)) {
+          context.reportError(new GraphQLError(
+            inlineFragmentOnNonCompositeErrorMessage(print(node.typeCondition)),
+            [ node.typeCondition ]
+          ));
+        }
       }
     },
     FragmentDefinition(node) {
-      const type = context.getType();
+      const type = typeFromAST(context.getSchema(), node.typeCondition);
       if (type && !isCompositeType(type)) {
         context.reportError(new GraphQLError(
           fragmentOnNonCompositeErrorMessage(
