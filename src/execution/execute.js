@@ -18,14 +18,11 @@ import { typeFromAST } from '../utilities/typeFromAST';
 import * as Kind from '../language/kinds';
 import { getVariableValues, getArgumentValues } from './values';
 import {
-  GraphQLScalarType,
   GraphQLObjectType,
-  GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  isAbstractType
+  isAbstractType,
+  isLeafType,
 } from '../type/definition';
 import type {
   GraphQLType,
@@ -527,8 +524,7 @@ function doesFragmentConditionMatch(
     return true;
   }
   if (isAbstractType(conditionalType)) {
-    const abstractType = ((conditionalType: any): GraphQLAbstractType);
-    return exeContext.schema.isPossibleType(abstractType, type);
+    return exeContext.schema.isPossibleType(conditionalType, type);
   }
   return false;
 }
@@ -831,15 +827,13 @@ function completeValue(
 
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
   // returning null if serialization is not possible.
-  if (returnType instanceof GraphQLScalarType ||
-      returnType instanceof GraphQLEnumType) {
+  if (isLeafType(returnType)) {
     return completeLeafValue(returnType, result);
   }
 
   // If field type is an abstract type, Interface or Union, determine the
   // runtime Object type and complete for that type.
-  if (returnType instanceof GraphQLInterfaceType ||
-      returnType instanceof GraphQLUnionType) {
+  if (isAbstractType(returnType)) {
     return completeAbstractValue(
       exeContext,
       returnType,

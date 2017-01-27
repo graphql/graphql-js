@@ -281,9 +281,7 @@ export function findFieldsThatChangedType(
         // Check if the field's type has changed in the new schema.
         const oldFieldType = getNamedType(oldTypeFieldsDef[fieldName].type);
         const newFieldType = getNamedType(newTypeFieldsDef[fieldName].type);
-        if (oldFieldType &&
-            newFieldType &&
-            oldFieldType.name !== newFieldType.name) {
+        if (oldFieldType.name !== newFieldType.name) {
           breakingFieldChanges.push({
             type: BreakingChangeType.FIELD_CHANGED_KIND,
             description: `${typeName}.${fieldName} changed type from ` +

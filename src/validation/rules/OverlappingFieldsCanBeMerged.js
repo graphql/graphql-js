@@ -697,7 +697,7 @@ function getReferencedFieldsAndFragmentNames(
   return getFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
-    ((fragmentType: any): GraphQLNamedType),
+    fragmentType,
     fragment.selectionSet
   );
 }
@@ -736,7 +736,7 @@ function _collectFieldsAndFragmentNames(
           parentType;
         _collectFieldsAndFragmentNames(
           context,
-          ((inlineFragmentType: any): GraphQLNamedType),
+          inlineFragmentType,
           selection.selectionSet,
           nodeAndDefs,
           fragmentNames

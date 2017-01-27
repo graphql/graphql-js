@@ -68,8 +68,8 @@ import {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
-  isInputType,
-  isOutputType,
+  assertInputType,
+  assertOutputType,
 } from '../type/definition';
 
 import type {
@@ -299,15 +299,11 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 
   function produceInputType(typeNode: TypeNode): GraphQLInputType {
-    const type = produceType(typeNode);
-    invariant(isInputType(type), 'Expected Input type.');
-    return (type: any);
+    return assertInputType(produceType(typeNode));
   }
 
   function produceOutputType(typeNode: TypeNode): GraphQLOutputType {
-    const type = produceType(typeNode);
-    invariant(isOutputType(type), 'Expected Output type.');
-    return (type: any);
+    return assertOutputType(produceType(typeNode));
   }
 
   function produceObjectType(typeNode: TypeNode): GraphQLObjectType {
