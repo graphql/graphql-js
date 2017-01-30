@@ -29,6 +29,7 @@ export const BreakingChangeType = {
   TYPE_REMOVED: 'TYPE_REMOVED',
   TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION',
   VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
+  ARG_REMOVED: 'ARG_REMOVED',
 };
 
 export type BreakingChange = {
@@ -103,6 +104,63 @@ export function findTypesThatChangedKind(
     }
   });
   return breakingChanges;
+}
+
+/**
+ * Given two schemas, returns an Array containing descriptions of any breaking
+ * changes in the newSchema related to removal of an arg.
+ */
+export function findArgsRemovedFromTypes(
+ oldSchema: GraphQLSchema,
+ newSchema: GraphQLSchema
+): Array<BreakingChange> {
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+
+  const breakingArgChanges = [];
+
+  Object.keys(oldTypeMap).forEach(typeName => {
+    const oldType = oldTypeMap[typeName];
+    const newType = newTypeMap[typeName];
+    if (
+      !(oldType instanceof GraphQLObjectType ||
+        oldType instanceof GraphQLInterfaceType ||
+        oldType instanceof GraphQLInputObjectType) ||
+      !(newType instanceof oldType.constructor)
+    ) {
+      return;
+    }
+
+    const oldTypeFields = oldType.getFields();
+    const newTypeFields = newType.getFields();
+
+    Object.keys(oldTypeFields).forEach(fieldName => {
+      if (!newTypeFields[fieldName]) {
+        return;
+      }
+
+      Object.keys(oldTypeFields[fieldName].args).forEach(argIndex => {
+        const oldArgDef = oldTypeFields[fieldName].args[argIndex];
+        const newArgs = newTypeFields[fieldName].args;
+
+        const newTypeArgIndex = newArgs.findIndex(argDef => {
+          return argDef.name === oldArgDef.name;
+        });
+
+        if (newTypeArgIndex < 0) {
+          const brokenFieldName = oldTypeFields[fieldName].name;
+          const argName = oldArgDef.name;
+
+          breakingArgChanges.push({
+            type: BreakingChangeType.ARG_REMOVED,
+            description: `Arg "${argName}" on ${brokenFieldName} was removed`,
+          });
+        }
+      });
+    });
+  });
+
+  return breakingArgChanges;
 }
 
 function typeKindName(type: GraphQLNamedType): string {
