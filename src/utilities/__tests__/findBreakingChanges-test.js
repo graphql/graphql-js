@@ -26,9 +26,10 @@ import {
   findTypesRemovedFromUnions,
   findTypesThatChangedKind,
   findValuesRemovedFromEnums,
+  findArgsRemovedFromTypes,
 } from '../findBreakingChanges';
 
-describe('CheckSchemaBackwardsCompatibility', () => {
+describe('findBreakingChanges', () => {
   const queryType = new GraphQLObjectType({
     name: 'Query',
     fields: {
@@ -281,6 +282,53 @@ describe('CheckSchemaBackwardsCompatibility', () => {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
         description: 'VALUE1 was removed from enum type EnumType1.',
       },
+    ]);
+  });
+
+  it('should detect if a type argument was removed', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {},
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(findArgsRemovedFromTypes(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.ARG_REMOVED,
+        description: 'Arg "name" on field1 was removed',
+      }
     ]);
   });
 
