@@ -16,6 +16,7 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
+  getNullableType,
 } from '../type/definition';
 
 import type { GraphQLNamedType } from '../type/definition';
@@ -30,6 +31,8 @@ export const BreakingChangeType = {
   TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION',
   VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
   ARG_REMOVED: 'ARG_REMOVED',
+  ARG_CHANGED_KIND: 'ARG_CHANGED_KIND',
+  ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
 };
 
 export type BreakingChange = {
@@ -50,7 +53,8 @@ export function findBreakingChanges(
     ...findTypesThatChangedKind(oldSchema, newSchema),
     ...findFieldsThatChangedType(oldSchema, newSchema),
     ...findTypesRemovedFromUnions(oldSchema, newSchema),
-    ...findValuesRemovedFromEnums(oldSchema, newSchema)
+    ...findValuesRemovedFromEnums(oldSchema, newSchema),
+    ...findBreakingArgChanges(oldSchema, newSchema),
   ];
 }
 
@@ -110,7 +114,7 @@ export function findTypesThatChangedKind(
  * Given two schemas, returns an Array containing descriptions of any breaking
  * changes in the newSchema related to removal of an arg.
  */
-export function findArgsRemovedFromTypes(
+export function findBreakingArgChanges(
  oldSchema: GraphQLSchema,
  newSchema: GraphQLSchema
 ): Array<BreakingChange> {
@@ -140,20 +144,42 @@ export function findArgsRemovedFromTypes(
       }
 
       Object.keys(oldTypeFields[fieldName].args).forEach(argIndex => {
-        const oldArgDef = oldTypeFields[fieldName].args[argIndex];
         const newArgs = newTypeFields[fieldName].args;
+        const oldArgDef = oldTypeFields[fieldName].args[argIndex];
+        const argName = oldArgDef.name;
+        const newTypeArgIndex = newArgs.findIndex(
+          arg => arg.name === oldArgDef.name
+        );
+        const newArgDef = newArgs[newTypeArgIndex];
 
-        const newTypeArgIndex = newArgs.findIndex(argDef => {
-          return argDef.name === oldArgDef.name;
-        });
-
+        // Arg not present
         if (newTypeArgIndex < 0) {
-          const brokenFieldName = oldTypeFields[fieldName].name;
-          const argName = oldArgDef.name;
-
           breakingArgChanges.push({
             type: BreakingChangeType.ARG_REMOVED,
-            description: `Arg "${argName}" on ${brokenFieldName} was removed`,
+            description: `${oldType.name}.${fieldName} arg ` +
+              `${oldArgDef.name} was removed`,
+          });
+
+        // Arg changed type in a breaking way
+        } else if (
+          oldArgDef.type !== newArgDef.type &&
+          getNullableType(oldArgDef.type) !== newArgDef.type
+        ) {
+          breakingArgChanges.push({
+            type: BreakingChangeType.ARG_REMOVED,
+            description: `${oldType.name}.${fieldName} arg ` +
+              `${oldArgDef.name} has changed type from ` +
+              `${oldArgDef.type} to ${newArgDef.type}`,
+          });
+
+        // Arg default value has changed
+        } else if (oldArgDef.defaultValue !== undefined &&
+          oldArgDef.defaultValue !== newArgDef.defaultValue) {
+          breakingArgChanges.push({
+            type: BreakingChangeType.ARG_DEFAULT_VALUE_CHANGE,
+            description: `${oldType.name}.${fieldName} arg ${oldArgDef.name} ` +
+              'has changed defaultValue from ' +
+              `${oldArgDef.defaultValue} to ${newArgDef.defaultValue}`,
           });
         }
       });
