@@ -17,6 +17,8 @@ import {
   GraphQLSchema,
   GraphQLString,
   GraphQLUnionType,
+  GraphQLInt,
+  GraphQLNonNull,
 } from '../../type';
 import {
   BreakingChangeType,
@@ -26,7 +28,7 @@ import {
   findTypesRemovedFromUnions,
   findTypesThatChangedKind,
   findValuesRemovedFromEnums,
-  findArgsRemovedFromTypes,
+  findBreakingArgChanges,
 } from '../findBreakingChanges';
 
 describe('findBreakingChanges', () => {
@@ -324,12 +326,164 @@ describe('findBreakingChanges', () => {
       ]
     });
 
-    expect(findArgsRemovedFromTypes(oldSchema, newSchema)).to.eql([
+    expect(findBreakingArgChanges(oldSchema, newSchema)).to.eql([
       {
         type: BreakingChangeType.ARG_REMOVED,
-        description: 'Arg "name" on field1 was removed',
+        description: 'Type1.field1 arg name was removed',
       }
     ]);
+  });
+
+  it('should detect if a type argument has changed', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLInt,
+            },
+          },
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(findBreakingArgChanges(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.ARG_REMOVED,
+        description: 'Type1.field1 arg name has changed type ' +
+          'from String to Int',
+      }
+    ]);
+  });
+
+  it('should detect if an argument\'s defaultValue has changed', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+              defaultValue: 'test',
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+              defaultValue: 'Test',
+            },
+          },
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(findBreakingArgChanges(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.ARG_DEFAULT_VALUE_CHANGE,
+        description: 'Type1.field1 arg name has changed defaultValue ' +
+          'from test to Test',
+      }
+    ]);
+  });
+
+  it('should consider args that move away from NonNull as non-breaking', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: new GraphQLNonNull(GraphQLString),
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+            },
+          },
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(findBreakingArgChanges(oldSchema, newSchema)).to.eql([]);
   });
 
   it('should detect all breaking changes', () => {
@@ -338,6 +492,30 @@ describe('findBreakingChanges', () => {
       fields: {
         field1: { type: GraphQLString },
       }
+    });
+
+    const argThatChanges = new GraphQLObjectType({
+      name: 'ArgThatChanges',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            id: { type: GraphQLInt },
+          },
+        },
+      },
+    });
+
+    const argChanged = new GraphQLObjectType({
+      name: 'ArgThatChanges',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            id: { type: GraphQLString },
+          },
+        },
+      },
     });
 
     const typeThatChangesTypeOld = new GraphQLObjectType({
@@ -414,8 +592,10 @@ describe('findBreakingChanges', () => {
         typeThatHasBreakingFieldChangesOld,
         unionTypeThatLosesATypeOld,
         enumTypeThatLosesAValueOld,
+        argThatChanges
       ]
     });
+
     const newSchema = new GraphQLSchema({
       query: queryType,
       types: [
@@ -423,6 +603,7 @@ describe('findBreakingChanges', () => {
         typeThatHasBreakingFieldChangesNew,
         unionTypeThatLosesATypeNew,
         enumTypeThatLosesAValueNew,
+        argChanged,
       ]
     });
 
@@ -434,6 +615,10 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'TypeInUnion2 was removed.',
+      },
+      {
+        description: 'Int was removed.',
+        type: BreakingChangeType.TYPE_REMOVED,
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
@@ -458,6 +643,11 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
         description: 'VALUE0 was removed from enum type ' +
           'EnumTypeThatLosesAValue.',
+      },
+      {
+        type: BreakingChangeType.ARG_REMOVED,
+        description: 'ArgThatChanges.field1 arg id has changed ' +
+          'type from Int to String',
       },
     ];
     expect(findBreakingChanges(oldSchema, newSchema)).to.eql(
