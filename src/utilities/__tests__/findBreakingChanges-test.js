@@ -379,7 +379,7 @@ describe('findBreakingChanges', () => {
 
     expect(findBreakingArgChanges(oldSchema, newSchema)).to.eql([
       {
-        type: BreakingChangeType.ARG_REMOVED,
+        type: BreakingChangeType.ARG_CHANGED_KIND,
         description: 'Type1.field1 arg name has changed type ' +
           'from String to Int',
       }
@@ -644,7 +644,7 @@ describe('findBreakingChanges', () => {
           'EnumTypeThatLosesAValue.',
       },
       {
-        type: BreakingChangeType.ARG_REMOVED,
+        type: BreakingChangeType.ARG_CHANGED_KIND,
         description: 'ArgThatChanges.field1 arg id has changed ' +
           'type from Int to String',
       },

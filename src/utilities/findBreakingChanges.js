@@ -112,7 +112,8 @@ export function findTypesThatChangedKind(
 
 /**
  * Given two schemas, returns an Array containing descriptions of any breaking
- * changes in the newSchema related to removal of an arg.
+ * changes in the newSchema related to arguments (such as removal or change
+ * of type of an argument, or a change in an argument's default value).
  */
 export function findBreakingArgChanges(
  oldSchema: GraphQLSchema,
@@ -162,7 +163,7 @@ export function findBreakingArgChanges(
           getNullableType(oldArgDef.type) !== newArgDef.type
         ) {
           breakingArgChanges.push({
-            type: BreakingChangeType.ARG_REMOVED,
+            type: BreakingChangeType.ARG_CHANGED_KIND,
             description: `${oldType.name}.${fieldName} arg ` +
               `${oldArgDef.name} has changed type from ` +
               `${oldArgDef.type.toString()} to ${newArgDef.type.toString()}`,
