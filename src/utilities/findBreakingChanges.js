@@ -146,7 +146,6 @@ export function findBreakingArgChanges(
       Object.keys(oldTypeFields[fieldName].args).forEach(argIndex => {
         const newArgs = newTypeFields[fieldName].args;
         const oldArgDef = oldTypeFields[fieldName].args[argIndex];
-        const argName = oldArgDef.name;
         const newTypeArgIndex = newArgs.findIndex(
           arg => arg.name === oldArgDef.name
         );
