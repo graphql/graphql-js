@@ -434,8 +434,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingArgChanges(oldSchema, newSchema)).to.eql([
       {
         type: BreakingChangeType.ARG_DEFAULT_VALUE_CHANGE,
-        description: 'Type1.field1 arg name has changed defaultValue ' +
-          'from test to Test',
+        description: 'Type1.field1 arg name has changed defaultValue',
       }
     ]);
   });

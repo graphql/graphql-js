@@ -19,7 +19,7 @@ import {
   getNullableType,
 } from '../type/definition';
 
-import type { GraphQLNamedType } from '../type/definition';
+import type { GraphQLNamedType, GraphQLFieldMap } from '../type/definition';
 
 import { GraphQLSchema } from '../type/schema';
 
@@ -127,25 +127,22 @@ export function findBreakingArgChanges(
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
     if (
-      !(oldType instanceof GraphQLObjectType ||
-        oldType instanceof GraphQLInterfaceType ||
-        oldType instanceof GraphQLInputObjectType) ||
+      !(oldType instanceof GraphQLObjectType) ||
       !(newType instanceof oldType.constructor)
     ) {
       return;
     }
 
-    const oldTypeFields = oldType.getFields();
-    const newTypeFields = newType.getFields();
+    const oldTypeFields: GraphQLFieldMap<*, *> = oldType.getFields();
+    const newTypeFields: GraphQLFieldMap<*, *> = newType.getFields();
 
     Object.keys(oldTypeFields).forEach(fieldName => {
       if (!newTypeFields[fieldName]) {
         return;
       }
 
-      Object.keys(oldTypeFields[fieldName].args).forEach(argIndex => {
+      oldTypeFields[fieldName].args.forEach(oldArgDef => {
         const newArgs = newTypeFields[fieldName].args;
-        const oldArgDef = oldTypeFields[fieldName].args[argIndex];
         const newTypeArgIndex = newArgs.findIndex(
           arg => arg.name === oldArgDef.name
         );
@@ -168,7 +165,7 @@ export function findBreakingArgChanges(
             type: BreakingChangeType.ARG_REMOVED,
             description: `${oldType.name}.${fieldName} arg ` +
               `${oldArgDef.name} has changed type from ` +
-              `${oldArgDef.type} to ${newArgDef.type}`,
+              `${oldArgDef.type.toString()} to ${newArgDef.type.toString()}`,
           });
 
         // Arg default value has changed
@@ -177,8 +174,7 @@ export function findBreakingArgChanges(
           breakingArgChanges.push({
             type: BreakingChangeType.ARG_DEFAULT_VALUE_CHANGE,
             description: `${oldType.name}.${fieldName} arg ${oldArgDef.name} ` +
-              'has changed defaultValue from ' +
-              `${oldArgDef.defaultValue} to ${newArgDef.defaultValue}`,
+              'has changed defaultValue',
           });
         }
       });
