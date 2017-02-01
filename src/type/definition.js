@@ -491,6 +491,10 @@ function defineFieldMap<TSource, TContext>(
     assertValidName(fieldName);
     const fieldConfig = fieldMap[fieldName];
     invariant(
+      isPlainObj(fieldConfig),
+      `${type.name}.${fieldName} field config must be an object`
+    );
+    invariant(
       !fieldConfig.hasOwnProperty('isDeprecated'),
       `${type.name}.${fieldName} should provide "deprecationReason" instead ` +
       'of "isDeprecated".'

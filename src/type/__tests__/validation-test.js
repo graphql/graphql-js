@@ -330,6 +330,19 @@ describe('Type System: Objects must have fields', () => {
     );
   });
 
+  it('rejects an Object type field with undefined config', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {
+          f: undefined
+        }
+      }))
+    ).to.throw(
+      'SomeObject.f field config must be an object'
+    );
+  });
+
   it('rejects an Object type with incorrectly named fields', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
