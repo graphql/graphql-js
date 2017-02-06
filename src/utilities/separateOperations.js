@@ -11,6 +11,7 @@
 import { visit } from '../language/visitor';
 import type {
   DocumentNode,
+  FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast';
 
@@ -24,18 +25,22 @@ export function separateOperations(
   documentAST: DocumentNode
 ): { [operationName: string]: DocumentNode } {
 
-  const operations = [];
+  const definitions: DefinitionMap = Object.create(null);
   const depGraph: DepGraph = Object.create(null);
   let fromName;
+  let idx = 0;
 
-  // Populate the list of operations and build a dependency graph.
+  // Populate the list of definitions and build a dependency graph.
   visit(documentAST, {
     OperationDefinition(node) {
-      operations.push(node);
       fromName = opName(node);
+      definitions[fromName] = { idx, node };
+      ++idx;
     },
     FragmentDefinition(node) {
       fromName = node.name.value;
+      definitions[fromName] = { idx, node };
+      ++idx;
     },
     FragmentSpread(node) {
       const toName = node.name.value;
@@ -47,23 +52,32 @@ export function separateOperations(
   // For each operation, produce a new synthesized AST which includes only what
   // is necessary for completing that operation.
   const separatedDocumentASTs = Object.create(null);
-  operations.forEach(operation => {
-    const operationName = opName(operation);
+  const operationNames = Object.keys(definitions).filter(defName =>
+    definitions[defName].node.kind === 'OperationDefinition'
+  );
+  operationNames.forEach(operationName => {
     const dependencies = Object.create(null);
     collectTransitiveDependencies(dependencies, depGraph, operationName);
+    dependencies[operationName] = true;
 
     separatedDocumentASTs[operationName] = {
       kind: 'Document',
-      definitions: documentAST.definitions.filter(def =>
-        def === operation ||
-        def.kind === 'FragmentDefinition' && dependencies[def.name.value]
-      )
+      definitions: Object.keys(dependencies)
+        .map(defName => definitions[defName])
+        .sort((def1, def2) => def1.idx - def2.idx)
+        .map(def => def.node)
     };
   });
 
   return separatedDocumentASTs;
 }
 
+type DefinitionMap = {
+  [defName: string]: {
+    idx: number,
+    node: OperationDefinitionNode | FragmentDefinitionNode
+  }
+};
 type DepGraph = {[from: string]: {[to: string]: boolean}};
 
 // Provides the empty string for anonymous operations.
