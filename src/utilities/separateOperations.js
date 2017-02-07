@@ -62,7 +62,7 @@ export function separateOperations(
     // to retain the same order as the original document.
     const definitions = [ operation ];
     Object.keys(dependencies).forEach(name => {
-      definitions.push(fragments[name])
+      definitions.push(fragments[name]);
     });
     definitions.sort(
       (n1, n2) => (positions.get(n1) || 0) - (positions.get(n2) || 0)
