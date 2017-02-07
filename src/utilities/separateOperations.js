@@ -11,7 +11,6 @@
 import { visit } from '../language/visitor';
 import type {
   DocumentNode,
-  FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast';
 
@@ -25,22 +24,24 @@ export function separateOperations(
   documentAST: DocumentNode
 ): { [operationName: string]: DocumentNode } {
 
-  const definitions: DefinitionMap = Object.create(null);
+  const operations = [];
+  const fragments = Object.create(null);
+  const positions = new Map();
   const depGraph: DepGraph = Object.create(null);
   let fromName;
   let idx = 0;
 
-  // Populate the list of definitions and build a dependency graph.
+  // Populate metadata and build a dependency graph.
   visit(documentAST, {
     OperationDefinition(node) {
       fromName = opName(node);
-      definitions[fromName] = { idx, node };
-      ++idx;
+      operations.push(node);
+      positions.set(node, idx++);
     },
     FragmentDefinition(node) {
       fromName = node.name.value;
-      definitions[fromName] = { idx, node };
-      ++idx;
+      fragments[fromName] = node;
+      positions.set(node, idx++);
     },
     FragmentSpread(node) {
       const toName = node.name.value;
@@ -52,32 +53,30 @@ export function separateOperations(
   // For each operation, produce a new synthesized AST which includes only what
   // is necessary for completing that operation.
   const separatedDocumentASTs = Object.create(null);
-  const operationNames = Object.keys(definitions).filter(defName =>
-    definitions[defName].node.kind === 'OperationDefinition'
-  );
-  operationNames.forEach(operationName => {
+  operations.forEach(operation => {
+    const operationName = opName(operation);
     const dependencies = Object.create(null);
     collectTransitiveDependencies(dependencies, depGraph, operationName);
-    dependencies[operationName] = true;
+
+    // The list of definition nodes to be included for this operation, sorted
+    // to retain the same order as the original document.
+    const definitions = [ operation ];
+    Object.keys(dependencies).forEach(name => {
+      definitions.push(fragments[name])
+    });
+    definitions.sort(
+      (n1, n2) => (positions.get(n1) || 0) - (positions.get(n2) || 0)
+    );
 
     separatedDocumentASTs[operationName] = {
       kind: 'Document',
-      definitions: Object.keys(dependencies)
-        .map(defName => definitions[defName])
-        .sort((def1, def2) => def1.idx - def2.idx)
-        .map(def => def.node)
+      definitions
     };
   });
 
   return separatedDocumentASTs;
 }
 
-type DefinitionMap = {
-  [defName: string]: {
-    idx: number,
-    node: OperationDefinitionNode | FragmentDefinitionNode
-  }
-};
 type DepGraph = {[from: string]: {[to: string]: boolean}};
 
 // Provides the empty string for anonymous operations.
