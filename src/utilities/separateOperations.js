@@ -25,17 +25,23 @@ export function separateOperations(
 ): { [operationName: string]: DocumentNode } {
 
   const operations = [];
+  const fragments = Object.create(null);
+  const positions = new Map();
   const depGraph: DepGraph = Object.create(null);
   let fromName;
+  let idx = 0;
 
-  // Populate the list of operations and build a dependency graph.
+  // Populate metadata and build a dependency graph.
   visit(documentAST, {
     OperationDefinition(node) {
-      operations.push(node);
       fromName = opName(node);
+      operations.push(node);
+      positions.set(node, idx++);
     },
     FragmentDefinition(node) {
       fromName = node.name.value;
+      fragments[fromName] = node;
+      positions.set(node, idx++);
     },
     FragmentSpread(node) {
       const toName = node.name.value;
@@ -52,12 +58,19 @@ export function separateOperations(
     const dependencies = Object.create(null);
     collectTransitiveDependencies(dependencies, depGraph, operationName);
 
+    // The list of definition nodes to be included for this operation, sorted
+    // to retain the same order as the original document.
+    const definitions = [ operation ];
+    Object.keys(dependencies).forEach(name => {
+      definitions.push(fragments[name]);
+    });
+    definitions.sort(
+      (n1, n2) => (positions.get(n1) || 0) - (positions.get(n2) || 0)
+    );
+
     separatedDocumentASTs[operationName] = {
       kind: 'Document',
-      definitions: documentAST.definitions.filter(def =>
-        def === operation ||
-        def.kind === 'FragmentDefinition' && dependencies[def.name.value]
-      )
+      definitions
     };
   });
 
