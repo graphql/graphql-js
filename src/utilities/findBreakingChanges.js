@@ -132,9 +132,10 @@ export function findTypesThatChangedKind(
 }
 
 /**
- * Given two schemas, returns an Array containing descriptions of any breaking
- * changes in the newSchema related to arguments (such as removal or change
- * of type of an argument, or a change in an argument's default value).
+ * Given two schemas, returns an Array containing descriptions of any
+ * breaking or dangerous changes in the newSchema related to arguments
+ * (such as removal or change of type of an argument, or a change in an
+ * argument's default value).
  */
 export function findArgChanges(
  oldSchema: GraphQLSchema,
