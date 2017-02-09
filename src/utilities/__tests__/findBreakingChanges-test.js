@@ -17,18 +17,23 @@ import {
   GraphQLSchema,
   GraphQLString,
   GraphQLUnionType,
+  GraphQLInt,
+  GraphQLNonNull,
 } from '../../type';
 import {
   BreakingChangeType,
+  DangerousChangeType,
   findBreakingChanges,
+  findDangerousChanges,
   findFieldsThatChangedType,
   findRemovedTypes,
   findTypesRemovedFromUnions,
   findTypesThatChangedKind,
   findValuesRemovedFromEnums,
+  findArgChanges,
 } from '../findBreakingChanges';
 
-describe('CheckSchemaBackwardsCompatibility', () => {
+describe('findBreakingChanges', () => {
   const queryType = new GraphQLObjectType({
     name: 'Query',
     fields: {
@@ -284,12 +289,187 @@ describe('CheckSchemaBackwardsCompatibility', () => {
     ]);
   });
 
+  it('should detect if a type argument was removed', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {},
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(
+      findArgChanges(oldSchema, newSchema).breakingChanges
+    ).to.eql([
+      {
+        type: BreakingChangeType.ARG_REMOVED,
+        description: 'Type1.field1 arg name was removed',
+      }
+    ]);
+  });
+
+  it('should detect if a type argument has changed', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLInt,
+            },
+          },
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(
+      findArgChanges(oldSchema, newSchema).breakingChanges
+    ).to.eql([
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg name has changed type ' +
+          'from String to Int',
+      }
+    ]);
+  });
+
+  it('should consider args that move away from NonNull as non-breaking', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: new GraphQLNonNull(GraphQLString),
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+            },
+          },
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(
+      findArgChanges(oldSchema, newSchema).breakingChanges
+    ).to.eql([]);
+  });
+
   it('should detect all breaking changes', () => {
     const typeThatGetsRemoved = new GraphQLObjectType({
       name: 'TypeThatGetsRemoved',
       fields: {
         field1: { type: GraphQLString },
       }
+    });
+
+    const argThatChanges = new GraphQLObjectType({
+      name: 'ArgThatChanges',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            id: { type: GraphQLInt },
+          },
+        },
+      },
+    });
+
+    const argChanged = new GraphQLObjectType({
+      name: 'ArgThatChanges',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            id: { type: GraphQLString },
+          },
+        },
+      },
     });
 
     const typeThatChangesTypeOld = new GraphQLObjectType({
@@ -366,8 +546,10 @@ describe('CheckSchemaBackwardsCompatibility', () => {
         typeThatHasBreakingFieldChangesOld,
         unionTypeThatLosesATypeOld,
         enumTypeThatLosesAValueOld,
+        argThatChanges
       ]
     });
+
     const newSchema = new GraphQLSchema({
       query: queryType,
       types: [
@@ -375,6 +557,7 @@ describe('CheckSchemaBackwardsCompatibility', () => {
         typeThatHasBreakingFieldChangesNew,
         unionTypeThatLosesATypeNew,
         enumTypeThatLosesAValueNew,
+        argChanged,
       ]
     });
 
@@ -386,6 +569,10 @@ describe('CheckSchemaBackwardsCompatibility', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'TypeInUnion2 was removed.',
+      },
+      {
+        description: 'Int was removed.',
+        type: BreakingChangeType.TYPE_REMOVED,
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
@@ -411,9 +598,137 @@ describe('CheckSchemaBackwardsCompatibility', () => {
         description: 'VALUE0 was removed from enum type ' +
           'EnumTypeThatLosesAValue.',
       },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'ArgThatChanges.field1 arg id has changed ' +
+          'type from Int to String',
+      },
     ];
     expect(findBreakingChanges(oldSchema, newSchema)).to.eql(
       expectedBreakingChanges
+    );
+  });
+});
+
+describe('findDangerousChanges', () => {
+  const queryType = new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      field1: { type: GraphQLString },
+    }
+  });
+
+  describe('findArgChanges', () => {
+    it('should detect if an argument\'s defaultValue has changed', () => {
+      const oldType = new GraphQLObjectType({
+        name: 'Type1',
+        fields: {
+          field1: {
+            type: GraphQLString,
+            args: {
+              name: {
+                type: GraphQLString,
+                defaultValue: 'test',
+              },
+            },
+          },
+        },
+      });
+
+      const newType = new GraphQLObjectType({
+        name: 'Type1',
+        fields: {
+          field1: {
+            type: GraphQLString,
+            args: {
+              name: {
+                type: GraphQLString,
+                defaultValue: 'Test',
+              },
+            },
+          },
+        },
+      });
+
+      const oldSchema = new GraphQLSchema({
+        query: queryType,
+        types: [
+          oldType,
+        ]
+      });
+
+      const newSchema = new GraphQLSchema({
+        query: queryType,
+        types: [
+          newType,
+        ]
+      });
+
+      expect(
+        findArgChanges(oldSchema, newSchema).dangerousChanges
+      ).to.eql([
+        {
+          type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+          description: 'Type1.field1 arg name has changed defaultValue',
+        }
+      ]);
+    });
+  });
+
+  it('should find all dangerous changes', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+              defaultValue: 'test',
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            name: {
+              type: GraphQLString,
+              defaultValue: 'Test',
+            },
+          },
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    const expectedDangerousChanges = [
+      {
+        description: 'Type1.field1 arg name has changed defaultValue',
+        type: 'ARG_DEFAULT_VALUE_CHANGE'
+      }
+    ];
+
+    expect(findDangerousChanges(oldSchema, newSchema)).to.eql(
+      expectedDangerousChanges
     );
   });
 });

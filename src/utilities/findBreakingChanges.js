@@ -16,9 +16,10 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
+  getNullableType,
 } from '../type/definition';
 
-import type { GraphQLNamedType } from '../type/definition';
+import type { GraphQLNamedType, GraphQLFieldMap } from '../type/definition';
 
 import { GraphQLSchema } from '../type/schema';
 
@@ -29,10 +30,21 @@ export const BreakingChangeType = {
   TYPE_REMOVED: 'TYPE_REMOVED',
   TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION',
   VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
+  ARG_REMOVED: 'ARG_REMOVED',
+  ARG_CHANGED_KIND: 'ARG_CHANGED_KIND',
+};
+
+export const DangerousChangeType = {
+  ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
 };
 
 export type BreakingChange = {
   type: $Keys<typeof BreakingChangeType>;
+  description: string;
+};
+
+export type DangerousChange = {
+  type: $Keys<typeof DangerousChangeType>;
   description: string;
 };
 
@@ -49,7 +61,21 @@ export function findBreakingChanges(
     ...findTypesThatChangedKind(oldSchema, newSchema),
     ...findFieldsThatChangedType(oldSchema, newSchema),
     ...findTypesRemovedFromUnions(oldSchema, newSchema),
-    ...findValuesRemovedFromEnums(oldSchema, newSchema)
+    ...findValuesRemovedFromEnums(oldSchema, newSchema),
+    ...findArgChanges(oldSchema, newSchema).breakingChanges,
+  ];
+}
+
+/**
+ * Given two schemas, returns an Array containing descriptions of all the types
+ * of potentially dangerous changes covered by the other functions down below.
+ */
+export function findDangerousChanges(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
+): Array<DangerousChange> {
+  return [
+    ...findArgChanges(oldSchema, newSchema).dangerousChanges,
   ];
 }
 
@@ -103,6 +129,88 @@ export function findTypesThatChangedKind(
     }
   });
   return breakingChanges;
+}
+
+/**
+ * Given two schemas, returns an Array containing descriptions of any breaking
+ * changes in the newSchema related to arguments (such as removal or change
+ * of type of an argument, or a change in an argument's default value).
+ */
+export function findArgChanges(
+ oldSchema: GraphQLSchema,
+ newSchema: GraphQLSchema
+): {
+  breakingChanges: Array<BreakingChange>,
+  dangerousChanges: Array<DangerousChange>
+} {
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+
+  const breakingChanges = [];
+  const dangerousChanges = [];
+
+  Object.keys(oldTypeMap).forEach(typeName => {
+    const oldType = oldTypeMap[typeName];
+    const newType = newTypeMap[typeName];
+    if (
+      !(oldType instanceof GraphQLObjectType) ||
+      !(newType instanceof oldType.constructor)
+    ) {
+      return;
+    }
+
+    const oldTypeFields: GraphQLFieldMap<*, *> = oldType.getFields();
+    const newTypeFields: GraphQLFieldMap<*, *> = newType.getFields();
+
+    Object.keys(oldTypeFields).forEach(fieldName => {
+      if (!newTypeFields[fieldName]) {
+        return;
+      }
+
+      oldTypeFields[fieldName].args.forEach(oldArgDef => {
+        const newArgs = newTypeFields[fieldName].args;
+        const newTypeArgIndex = newArgs.findIndex(
+          arg => arg.name === oldArgDef.name
+        );
+        const newArgDef = newArgs[newTypeArgIndex];
+
+        // Arg not present
+        if (newTypeArgIndex < 0) {
+          breakingChanges.push({
+            type: BreakingChangeType.ARG_REMOVED,
+            description: `${oldType.name}.${fieldName} arg ` +
+              `${oldArgDef.name} was removed`,
+          });
+
+        // Arg changed type in a breaking way
+        } else if (
+          oldArgDef.type !== newArgDef.type &&
+          getNullableType(oldArgDef.type) !== newArgDef.type
+        ) {
+          breakingChanges.push({
+            type: BreakingChangeType.ARG_CHANGED_KIND,
+            description: `${oldType.name}.${fieldName} arg ` +
+              `${oldArgDef.name} has changed type from ` +
+              `${oldArgDef.type.toString()} to ${newArgDef.type.toString()}`,
+          });
+
+        // Arg default value has changed
+        } else if (oldArgDef.defaultValue !== undefined &&
+          oldArgDef.defaultValue !== newArgDef.defaultValue) {
+          dangerousChanges.push({
+            type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+            description: `${oldType.name}.${fieldName} arg ${oldArgDef.name} ` +
+              'has changed defaultValue',
+          });
+        }
+      });
+    });
+  });
+
+  return {
+    breakingChanges,
+    dangerousChanges,
+  };
 }
 
 function typeKindName(type: GraphQLNamedType): string {
