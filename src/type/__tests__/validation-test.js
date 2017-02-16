@@ -356,9 +356,9 @@ describe('Type System: Objects must have fields', () => {
 
   it('warns about an Object type with reserved named fields', () => {
     /* eslint-disable no-console */
-    const realConsoleError = console.error;
+    const realConsoleWarn = console.warn;
     const calls = [];
-    console.error = function () {
+    console.warn = function () {
       calls.push(Array.prototype.slice.call(arguments));
     };
     try {
@@ -371,7 +371,7 @@ describe('Type System: Objects must have fields', () => {
         'Name "__notPartOfIntrospection" must not begin with "__", which is reserved by GraphQL introspection.'
       );
     } finally {
-      console.error = realConsoleError;
+      console.warn = realConsoleWarn;
     }
     /* eslint-enable no-console */
   });
