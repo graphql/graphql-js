@@ -28,12 +28,12 @@ export function assertValidName(
   if (!isIntrospection && name.slice(0, 2) === '__' && !hasWarnedAboutDunder) {
     hasWarnedAboutDunder = true;
     /* eslint-disable no-console */
-    if (console && console.error) {
+    if (console && console.warn) {
       const error = new Error(
         `Name "${name}" must not begin with "__", which is reserved by ` +
         'GraphQL introspection.'
       );
-      console.error(error.stack || String(error));
+      console.warn(error.stack || String(error));
     }
     /* eslint-enable no-console */
   }
