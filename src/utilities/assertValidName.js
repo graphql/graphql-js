@@ -9,6 +9,7 @@
  */
 
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
+const ERROR_PREFIX_RX = /^Error: /;
 
 // Ensures console warnings are only issued once.
 let hasWarnedAboutDunder = false;
@@ -33,7 +34,7 @@ export function assertValidName(
         `Name "${name}" must not begin with "__", which is reserved by ` +
         'GraphQL introspection.'
       );
-      console.warn(error.stack || String(error));
+      console.warn(formatWarning(error));
     }
     /* eslint-enable no-console */
   }
@@ -42,4 +43,21 @@ export function assertValidName(
       `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`
     );
   }
+}
+
+/**
+ * Returns a human-readable warning based an the supplied Error object,
+ * including stack trace information if available.
+ */
+export function formatWarning(error: Error): string {
+  let formatted = '';
+  const errorString = String(error).replace(ERROR_PREFIX_RX, '');
+  const stack = error.stack;
+  if (stack) {
+    formatted = stack.replace(ERROR_PREFIX_RX, '');
+  }
+  if (formatted.indexOf(errorString) === -1) {
+    formatted = errorString + '\n' + formatted;
+  }
+  return formatted.trim();
 }
