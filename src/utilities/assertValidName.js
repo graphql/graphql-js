@@ -32,7 +32,8 @@ export function assertValidName(
     if (console && console.warn) {
       const error = new Error(
         `Name "${name}" must not begin with "__", which is reserved by ` +
-        'GraphQL introspection.'
+        'GraphQL introspection. In a future release of graphql this will ' +
+        'become a hard error.'
       );
       console.warn(formatWarning(error));
     }
