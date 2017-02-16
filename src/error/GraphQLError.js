@@ -81,7 +81,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   Object.defineProperty(this, 'message', {
     value: message,
     // By being enumerable, JSON.stringify will include `message` in the
-    // resulting output. This ensures that the simplist possible GraphQL
+    // resulting output. This ensures that the simplest possible GraphQL
     // service adheres to the spec.
     enumerable: true,
     writable: true
