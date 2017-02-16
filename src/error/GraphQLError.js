@@ -86,6 +86,33 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   path?: ?Array<string | number>,
   originalError?: ?Error
 ) {
+  // Define message so it can be captured in stack trace.
+  Object.defineProperty(this, 'message', {
+    value: message,
+    // By being enumerable, JSON.stringify will include `message` in the
+    // resulting output. This ensures that the simplist possible GraphQL
+    // service adheres to the spec.
+    enumerable: true,
+    writable: true
+  });
+
+  // Include (non-enumerable) stack trace.
+  if (originalError && originalError.stack) {
+    Object.defineProperty(this, 'stack', {
+      value: originalError.stack,
+      writable: true,
+      configurable: true
+    });
+  } else if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, GraphQLError);
+  } else {
+    Object.defineProperty(this, 'stack', {
+      value: Error().stack,
+      writable: true,
+      configurable: true
+    });
+  }
+
   // Compute locations in the source for the given nodes/positions.
   let _source = source;
   if (!_source && nodes && nodes.length > 0) {
@@ -109,14 +136,6 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   }
 
   Object.defineProperties(this, {
-    message: {
-      value: message,
-      // By being enumerable, JSON.stringify will include `message` in the
-      // resulting output. This ensures that the simplest possible GraphQL
-      // service adheres to the spec.
-      enumerable: true,
-      writable: true
-    },
     locations: {
       // Coercing falsey values to undefined ensures they will not be included
       // in JSON.stringify() when not provided.
