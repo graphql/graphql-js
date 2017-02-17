@@ -19,7 +19,10 @@ import type {
   ValueNode,
 } from '../language/ast';
 import type { GraphQLSchema } from './schema';
+import { validationError } from '../error/syntaxError';
 
+import type { Source } from '../language/source';
+import type { ASTNode } from '../language/ast';
 
 // Predicates & Assertions
 
@@ -82,11 +85,16 @@ export function isInputType(type: ?GraphQLType): boolean %checks {
   );
 }
 
-export function assertInputType(type: ?GraphQLType): GraphQLInputType {
-  invariant(
-    isInputType(type),
-    `Expected ${String(type)} to be a GraphQL input type.`
-  );
+export function assertInputType(
+  type: ?GraphQLType,
+  typeNode?: ASTNode,
+  source?: Source
+): GraphQLInputType {
+  invariant(isInputType(type),
+    validationError(
+      `Expected ${String(type)} to be a GraphQL input type.`,
+      typeNode,
+      source));
   return type;
 }
 
@@ -121,11 +129,16 @@ export function isOutputType(type: ?GraphQLType): boolean %checks {
   );
 }
 
-export function assertOutputType(type: ?GraphQLType): GraphQLOutputType {
-  invariant(
-    isOutputType(type),
-    `Expected ${String(type)} to be a GraphQL output type.`,
-  );
+export function assertOutputType(
+  type: ?GraphQLType,
+  typeNode?: ASTNode,
+  source?: Source
+): GraphQLOutputType {
+  invariant(isOutputType(type),
+    validationError(
+      `Expected ${String(type)} to be a GraphQL output type.`,
+      typeNode,
+      source));
   return type;
 }
 

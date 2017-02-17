@@ -17,6 +17,7 @@ import {
   GraphQLSkipDirective,
   GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
+  Source,
 } from '../../';
 
 /**
@@ -819,5 +820,30 @@ type Repeated {
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Type "Repeated" was defined more than once.');
+
+  it('warns with a location where validation errors occur', () => {
+    const body = new Source(`type OutputType {
+      value: String
+    }
+
+    input InputType {
+      value: String
+    }
+
+    type Query {
+      output: [OutputType]
+    }
+
+    type Mutation {
+      signup (password: OutputType): OutputType
+    }`);
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc, body))
+      .to.throw(`GraphQLError: Validation Error: Expected Input type (14:25)
+
+13:     type Mutation {
+14:       signup (password: OutputType): OutputType
+                            ^
+15:     }`);
   });
 });

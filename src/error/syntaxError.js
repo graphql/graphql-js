@@ -11,6 +11,29 @@
 import { getLocation } from '../language/location';
 import type { Source } from '../language/source';
 import { GraphQLError } from './GraphQLError';
+import type { ASTNode } from '../language/ast';
+
+/**
+ * Produces a string for formatting a syntax or validation error with an
+ * embedded location.
+ */
+export function printLocatedError(
+  source: Source,
+  position: number,
+  message: string,
+  description?: string,
+): GraphQLError {
+  const location = getLocation(source, position);
+  const body = `${message} (${location.line}:${location.column})` +
+    (description ? ' ' + description : '') +
+    '\n\n' + highlightSourceAtLocation(source, location);
+  return new GraphQLError(
+    body,
+    undefined,
+    source,
+    [ position ]
+  );
+}
 
 /**
  * Produces a GraphQLError representing a syntax error, containing useful
@@ -21,15 +44,29 @@ export function syntaxError(
   position: number,
   description: string
 ): GraphQLError {
-  const location = getLocation(source, position);
-  const error = new GraphQLError(
-    `Syntax Error ${source.name} (${location.line}:${location.column}) ` +
-    description + '\n\n' + highlightSourceAtLocation(source, location),
-    undefined,
+  return printLocatedError(
     source,
-    [ position ]
+    position,
+    `Syntax Error ${source.name}`,
+    description,
   );
-  return error;
+}
+
+/**
+ * Produces a GraphQLError for the invariant(...) function that renders the
+ * location where a validation error occurred. If no source is passed in, it
+ * returns an error containing the message, without context.
+ */
+export function validationError(
+  message: string,
+  node?: ASTNode,
+  source?: Source
+): GraphQLError {
+  const position = node ? (node.loc ? node.loc.start : null) : null;
+  if (position == null || source == null) {
+    return new GraphQLError(message);
+  }
+  return printLocatedError(source, position, `Validation Error: ${message}`);
 }
 
 /**

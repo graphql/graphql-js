@@ -14,8 +14,9 @@ import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
-import type { Source } from '../language/source';
+import { Source } from '../language/source';
 import { getArgumentValues } from '../execution/values';
+import { validationError } from '../error/syntaxError';
 
 import {
   LIST_TYPE,
@@ -135,7 +136,10 @@ function getNamedTypeNode(typeNode: TypeNode): NamedTypeNode {
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
  */
-export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
+export function buildASTSchema(
+  ast: DocumentNode,
+  source?: Source
+): GraphQLSchema {
   if (!ast || ast.kind !== DOCUMENT) {
     throw new Error('Must provide a document ast.');
   }
@@ -303,22 +307,24 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 
   function produceInputType(typeNode: TypeNode): GraphQLInputType {
-    return assertInputType(produceType(typeNode));
+    return assertInputType(produceType(typeNode), typeNode, source);
   }
 
   function produceOutputType(typeNode: TypeNode): GraphQLOutputType {
-    return assertOutputType(produceType(typeNode));
+    return assertOutputType(produceType(typeNode), typeNode, source);
   }
 
   function produceObjectType(typeNode: TypeNode): GraphQLObjectType {
     const type = produceType(typeNode);
-    invariant(type instanceof GraphQLObjectType, 'Expected Object type.');
+    invariant(type instanceof GraphQLObjectType,
+      validationError('Expected Object type', typeNode, source));
     return type;
   }
 
   function produceInterfaceType(typeNode: TypeNode): GraphQLInterfaceType {
     const type = produceType(typeNode);
-    invariant(type instanceof GraphQLInterfaceType, 'Expected Interface type.');
+    invariant(type instanceof GraphQLInterfaceType,
+      validationError('Expected Interface type', typeNode, source));
     return type;
   }
 
@@ -524,7 +530,8 @@ export function getDescription(node: { loc?: Location }): ?string {
  * document.
  */
 export function buildSchema(source: string | Source): GraphQLSchema {
-  return buildASTSchema(parse(source));
+  const sourceObj = typeof source === 'string' ? new Source(source) : source;
+  return buildASTSchema(parse(sourceObj), sourceObj);
 }
 
 // Count the number of spaces on the starting side of a string.
