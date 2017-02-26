@@ -449,12 +449,19 @@ function defineInterfaces(
     `${type.name} interfaces must be an Array or a function which returns ` +
     'an Array.'
   );
+
+  const seenInterfaceNames = [];
   interfaces.forEach(iface => {
     invariant(
       iface instanceof GraphQLInterfaceType,
       `${type.name} may only implement Interface types, it cannot ` +
       `implement: ${String(iface)}.`
     );
+    invariant(
+      seenInterfaceNames.indexOf(iface.name) === -1,
+      `${type.name} may declare it implements ${iface.name} only once.`
+    );
+    seenInterfaceNames.push(iface.name);
     if (typeof iface.resolveType !== 'function') {
       invariant(
         typeof type.isTypeOf === 'function',
