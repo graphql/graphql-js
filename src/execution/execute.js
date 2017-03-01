@@ -582,7 +582,13 @@ function resolveField(
   }
 
   const returnType = fieldDef.type;
-  const resolveFn = fieldDef.resolve || defaultFieldResolver;
+
+  // If no resolve function is specified on the field object, graphQL will
+  // fall back to the parent type's resolve function followed by the
+  // built-in default resolver.
+  const resolveFn = fieldDef.resolve ||
+    parentType.resolve ||
+    defaultFieldResolver;
 
   // The resolve function's optional third argument is a context value that
   // is provided to every resolve function within an execution. It is commonly
