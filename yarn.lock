@@ -627,9 +627,9 @@ chai-json-equal@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/chai-json-equal/-/chai-json-equal-0.0.1.tgz#338fcbbdaec63349379c7c4278c8a28da3b141a1"
 
-chai-subset@1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/chai-subset/-/chai-subset-1.4.0.tgz#aab826cfbd8eb067cc55573d5d59796a4f9ffa4f"
+chai-subset@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/chai-subset/-/chai-subset-1.5.0.tgz#d03dbcfa8c9daad848643bbde4e63376b7882427"
 
 chai@3.5.0:
   version "3.5.0"
