@@ -160,8 +160,12 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
       case ENUM_TYPE_DEFINITION:
       case UNION_TYPE_DEFINITION:
       case INPUT_OBJECT_TYPE_DEFINITION:
+        const typeName = d.name.value;
+        if (nodeMap[typeName]) {
+          throw new Error(`Type "${typeName}" was defined more than once.`);
+        }
         typeDefs.push(d);
-        nodeMap[d.name.value] = d;
+        nodeMap[typeName] = d;
         break;
       case DIRECTIVE_DEFINITION:
         directiveDefs.push(d);
