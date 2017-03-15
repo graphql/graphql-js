@@ -465,7 +465,13 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 }
 
-function getDeprecationReason(directives: ?Array<DirectiveNode>): ?string {
+/**
+ * Given a collection of directives, returns the string value for the
+ * deprecation reason.
+ */
+export function getDeprecationReason(
+  directives: ?Array<DirectiveNode>,
+): ?string {
   const deprecatedAST = directives && find(
     directives,
     directive => directive.name.value === GraphQLDeprecatedDirective.name
