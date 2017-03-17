@@ -44,30 +44,6 @@ export type Location = {
 };
 
 /**
- * Represents the different kinds of tokens in a GraphQL document.
- */
-export type TokenKind = '<SOF>'
-                      | '<EOF>'
-                      | '!'
-                      | '$'
-                      | '('
-                      | ')'
-                      | '...'
-                      | ':'
-                      | '='
-                      | '@'
-                      | '['
-                      | ']'
-                      | '{'
-                      | '|'
-                      | '}'
-                      | 'Name'
-                      | 'Int'
-                      | 'Float'
-                      | 'String'
-                      | 'Comment';
-
-/**
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
@@ -76,7 +52,26 @@ export type Token = {
   /**
    * The kind of Token.
    */
-  kind: TokenKind;
+  kind: '<SOF>'
+      | '<EOF>'
+      | '!'
+      | '$'
+      | '('
+      | ')'
+      | '...'
+      | ':'
+      | '='
+      | '@'
+      | '['
+      | ']'
+      | '{'
+      | '|'
+      | '}'
+      | 'Name'
+      | 'Int'
+      | 'Float'
+      | 'String'
+      | 'Comment';
 
   /**
    * The character offset at which this Node begins.
