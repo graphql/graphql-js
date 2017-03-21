@@ -92,9 +92,9 @@ export function assertInputType(
 ): GraphQLInputType {
   invariant(isInputType(type),
     validationError(
-      `Expected ${String(type)} to be a GraphQL input type.`,
+      source,
       typeNode,
-      source));
+      `Expected ${String(type)} to be a GraphQL input type.`));
   return type;
 }
 
@@ -136,9 +136,9 @@ export function assertOutputType(
 ): GraphQLOutputType {
   invariant(isOutputType(type),
     validationError(
-      `Expected ${String(type)} to be a GraphQL output type.`,
+      source,
       typeNode,
-      source));
+      `Expected ${String(type)} to be a GraphQL output type.`));
   return type;
 }
 

@@ -317,14 +317,14 @@ export function buildASTSchema(
   function produceObjectType(typeNode: TypeNode): GraphQLObjectType {
     const type = produceType(typeNode);
     invariant(type instanceof GraphQLObjectType,
-      validationError('Expected Object type', typeNode, source));
+      validationError(source, typeNode, 'Expected Object type'));
     return type;
   }
 
   function produceInterfaceType(typeNode: TypeNode): GraphQLInterfaceType {
     const type = produceType(typeNode);
     invariant(type instanceof GraphQLInterfaceType,
-      validationError('Expected Interface type', typeNode, source));
+      validationError(source, typeNode, 'Expected Interface type'));
     return type;
   }
 

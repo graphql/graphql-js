@@ -58,9 +58,9 @@ export function syntaxError(
  * returns an error containing the message, without context.
  */
 export function validationError(
+  source: ?Source,
+  node: ?ASTNode,
   message: string,
-  node?: ASTNode,
-  source?: Source
 ): GraphQLError {
   const position = node ? (node.loc ? node.loc.start : null) : null;
   if (position == null || source == null) {
