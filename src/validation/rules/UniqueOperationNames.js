@@ -13,7 +13,7 @@ import { GraphQLError } from '../../error';
 
 
 export function duplicateOperationNameMessage(operationName: string): string {
-  return `There can only be one operation named "${operationName}".`;
+  return `There can be only one operation named "${operationName}".`;
 }
 
 /**
