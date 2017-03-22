@@ -13,7 +13,7 @@ import { GraphQLError } from '../../error';
 
 
 export function duplicateFragmentNameMessage(fragName: string): string {
-  return `There can only be one fragment named "${fragName}".`;
+  return `There can be only one fragment named "${fragName}".`;
 }
 
 /**
