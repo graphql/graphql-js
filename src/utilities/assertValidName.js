@@ -26,7 +26,16 @@ export function assertValidName(
       `Must be named. Unexpected name: ${name}.`
     );
   }
-  if (!isIntrospection && name.slice(0, 2) === '__' && !hasWarnedAboutDunder) {
+  // For legacy reasons, __type__ and __configs__ should not generate a warning
+  // until the usage of these fields is cleaned up from the Facebook internal
+  // schemas.
+  if (
+    !isIntrospection &&
+    name.slice(0, 2) === '__' &&
+    name !== '__configs__' &&
+    name !== '__type__' &&
+    !hasWarnedAboutDunder
+  ) {
     hasWarnedAboutDunder = true;
     /* eslint-disable no-console */
     if (console && console.warn) {
