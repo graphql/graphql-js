@@ -239,6 +239,12 @@ function collectConflictsBetweenFieldsAndFragment(
     fragment
   );
 
+  if (fragmentNames2.indexOf(fragmentName) !== -1) {
+    // This means a fragment spread in itself. We're going to infinite loop
+    // if we try and collect all fields. Pretend we did not index that fragment
+    fragmentNames2.splice(fragmentNames2.indexOf(fragmentName));
+  }
+
   // (D) First collect any conflicts between the provided collection of fields
   // and the collection of fields represented by the given fragment.
   collectConflictsBetween(
