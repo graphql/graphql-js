@@ -225,14 +225,14 @@ babel-generator@^6.22.0:
     lodash "^4.2.0"
     source-map "^0.5.0"
 
-babel-helper-call-delegate@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-helper-call-delegate/-/babel-helper-call-delegate-6.22.0.tgz#119921b56120f17e9dae3f74b4f5cc7bcc1b37ef"
+babel-helper-call-delegate@^6.24.1:
+  version "6.24.1"
+  resolved "https://registry.yarnpkg.com/babel-helper-call-delegate/-/babel-helper-call-delegate-6.24.1.tgz#ece6aacddc76e41c3461f88bfc575bd0daa2df8d"
   dependencies:
-    babel-helper-hoist-variables "^6.22.0"
+    babel-helper-hoist-variables "^6.24.1"
     babel-runtime "^6.22.0"
-    babel-traverse "^6.22.0"
-    babel-types "^6.22.0"
+    babel-traverse "^6.24.1"
+    babel-types "^6.24.1"
 
 babel-helper-define-map@^6.22.0:
   version "6.22.0"
@@ -253,6 +253,16 @@ babel-helper-function-name@^6.22.0:
     babel-traverse "^6.22.0"
     babel-types "^6.22.0"
 
+babel-helper-function-name@^6.24.1:
+  version "6.24.1"
+  resolved "https://registry.yarnpkg.com/babel-helper-function-name/-/babel-helper-function-name-6.24.1.tgz#d3475b8c03ed98242a25b48351ab18399d3580a9"
+  dependencies:
+    babel-helper-get-function-arity "^6.24.1"
+    babel-runtime "^6.22.0"
+    babel-template "^6.24.1"
+    babel-traverse "^6.24.1"
+    babel-types "^6.24.1"
+
 babel-helper-get-function-arity@^6.22.0:
   version "6.22.0"
   resolved "https://registry.yarnpkg.com/babel-helper-get-function-arity/-/babel-helper-get-function-arity-6.22.0.tgz#0beb464ad69dc7347410ac6ade9f03a50634f5ce"
@@ -260,12 +270,19 @@ babel-helper-get-function-arity@^6.22.0:
     babel-runtime "^6.22.0"
     babel-types "^6.22.0"
 
-babel-helper-hoist-variables@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-helper-hoist-variables/-/babel-helper-hoist-variables-6.22.0.tgz#3eacbf731d80705845dd2e9718f600cfb9b4ba72"
+babel-helper-get-function-arity@^6.24.1:
+  version "6.24.1"
+  resolved "https://registry.yarnpkg.com/babel-helper-get-function-arity/-/babel-helper-get-function-arity-6.24.1.tgz#8f7782aa93407c41d3aa50908f89b031b1b6853d"
   dependencies:
     babel-runtime "^6.22.0"
-    babel-types "^6.22.0"
+    babel-types "^6.24.1"
+
+babel-helper-hoist-variables@^6.24.1:
+  version "6.24.1"
+  resolved "https://registry.yarnpkg.com/babel-helper-hoist-variables/-/babel-helper-hoist-variables-6.24.1.tgz#1ecb27689c9d25513eadbc9914a73f5408be7a76"
+  dependencies:
+    babel-runtime "^6.22.0"
+    babel-types "^6.24.1"
 
 babel-helper-optimise-call-expression@^6.22.0:
   version "6.22.0"
@@ -391,13 +408,13 @@ babel-plugin-transform-es2015-duplicate-keys@6.24.1:
     babel-runtime "^6.22.0"
     babel-types "^6.24.1"
 
-babel-plugin-transform-es2015-function-name@6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-function-name/-/babel-plugin-transform-es2015-function-name-6.22.0.tgz#f5fcc8b09093f9a23c76ac3d9e392c3ec4b77104"
+babel-plugin-transform-es2015-function-name@6.24.1:
+  version "6.24.1"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-function-name/-/babel-plugin-transform-es2015-function-name-6.24.1.tgz#834c89853bc36b1af0f3a4c5dbaa94fd8eacaa8b"
   dependencies:
-    babel-helper-function-name "^6.22.0"
+    babel-helper-function-name "^6.24.1"
     babel-runtime "^6.22.0"
-    babel-types "^6.22.0"
+    babel-types "^6.24.1"
 
 babel-plugin-transform-es2015-literals@6.22.0:
   version "6.22.0"
@@ -405,14 +422,14 @@ babel-plugin-transform-es2015-literals@6.22.0:
   dependencies:
     babel-runtime "^6.22.0"
 
-babel-plugin-transform-es2015-modules-commonjs@6.24.0:
-  version "6.24.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-modules-commonjs/-/babel-plugin-transform-es2015-modules-commonjs-6.24.0.tgz#e921aefb72c2cc26cb03d107626156413222134f"
+babel-plugin-transform-es2015-modules-commonjs@6.24.1:
+  version "6.24.1"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-modules-commonjs/-/babel-plugin-transform-es2015-modules-commonjs-6.24.1.tgz#d3e310b40ef664a36622200097c6d440298f2bfe"
   dependencies:
-    babel-plugin-transform-strict-mode "^6.22.0"
+    babel-plugin-transform-strict-mode "^6.24.1"
     babel-runtime "^6.22.0"
-    babel-template "^6.23.0"
-    babel-types "^6.23.0"
+    babel-template "^6.24.1"
+    babel-types "^6.24.1"
 
 babel-plugin-transform-es2015-object-super@6.22.0:
   version "6.22.0"
@@ -421,16 +438,16 @@ babel-plugin-transform-es2015-object-super@6.22.0:
     babel-helper-replace-supers "^6.22.0"
     babel-runtime "^6.22.0"
 
-babel-plugin-transform-es2015-parameters@6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-parameters/-/babel-plugin-transform-es2015-parameters-6.22.0.tgz#57076069232019094f27da8c68bb7162fe208dbb"
+babel-plugin-transform-es2015-parameters@6.24.1:
+  version "6.24.1"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-parameters/-/babel-plugin-transform-es2015-parameters-6.24.1.tgz#57ac351ab49caf14a97cd13b09f66fdf0a625f2b"
   dependencies:
-    babel-helper-call-delegate "^6.22.0"
-    babel-helper-get-function-arity "^6.22.0"
+    babel-helper-call-delegate "^6.24.1"
+    babel-helper-get-function-arity "^6.24.1"
     babel-runtime "^6.22.0"
-    babel-template "^6.22.0"
-    babel-traverse "^6.22.0"
-    babel-types "^6.22.0"
+    babel-template "^6.24.1"
+    babel-traverse "^6.24.1"
+    babel-types "^6.24.1"
 
 babel-plugin-transform-es2015-shorthand-properties@6.24.1:
   version "6.24.1"
@@ -477,12 +494,12 @@ babel-plugin-transform-regenerator@6.24.1:
   dependencies:
     regenerator-transform "0.9.11"
 
-babel-plugin-transform-strict-mode@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-strict-mode/-/babel-plugin-transform-strict-mode-6.22.0.tgz#e008df01340fdc87e959da65991b7e05970c8c7c"
+babel-plugin-transform-strict-mode@^6.24.1:
+  version "6.24.1"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-strict-mode/-/babel-plugin-transform-strict-mode-6.24.1.tgz#d5faf7aa578a65bbe591cf5edae04a0c67020758"
   dependencies:
     babel-runtime "^6.22.0"
-    babel-types "^6.22.0"
+    babel-types "^6.24.1"
 
 babel-polyfill@^6.22.0:
   version "6.22.0"
@@ -521,7 +538,7 @@ babel-template@^6.22.0:
     babylon "^6.11.0"
     lodash "^4.2.0"
 
-babel-template@^6.23.0, babel-template@^6.24.1:
+babel-template@^6.24.1:
   version "6.24.1"
   resolved "https://registry.yarnpkg.com/babel-template/-/babel-template-6.24.1.tgz#04ae514f1f93b3a2537f2a0f60a5a45fb8308333"
   dependencies:
@@ -531,21 +548,7 @@ babel-template@^6.23.0, babel-template@^6.24.1:
     babylon "^6.11.0"
     lodash "^4.2.0"
 
-babel-traverse@^6.22.0, babel-traverse@^6.22.1, babel-traverse@^6.23.1:
-  version "6.23.1"
-  resolved "https://registry.yarnpkg.com/babel-traverse/-/babel-traverse-6.23.1.tgz#d3cb59010ecd06a97d81310065f966b699e14f48"
-  dependencies:
-    babel-code-frame "^6.22.0"
-    babel-messages "^6.23.0"
-    babel-runtime "^6.22.0"
-    babel-types "^6.23.0"
-    babylon "^6.15.0"
-    debug "^2.2.0"
-    globals "^9.0.0"
-    invariant "^2.2.0"
-    lodash "^4.2.0"
-
-babel-traverse@^6.24.1:
+babel-traverse@^6.22.0, babel-traverse@^6.22.1, babel-traverse@^6.24.1:
   version "6.24.1"
   resolved "https://registry.yarnpkg.com/babel-traverse/-/babel-traverse-6.24.1.tgz#ab36673fd356f9a0948659e7b338d5feadb31695"
   dependencies:
@@ -559,7 +562,21 @@ babel-traverse@^6.24.1:
     invariant "^2.2.0"
     lodash "^4.2.0"
 
-babel-types@^6.19.0, babel-types@^6.24.1:
+babel-traverse@^6.23.1:
+  version "6.23.1"
+  resolved "https://registry.yarnpkg.com/babel-traverse/-/babel-traverse-6.23.1.tgz#d3cb59010ecd06a97d81310065f966b699e14f48"
+  dependencies:
+    babel-code-frame "^6.22.0"
+    babel-messages "^6.23.0"
+    babel-runtime "^6.22.0"
+    babel-types "^6.23.0"
+    babylon "^6.15.0"
+    debug "^2.2.0"
+    globals "^9.0.0"
+    invariant "^2.2.0"
+    lodash "^4.2.0"
+
+babel-types@^6.19.0, babel-types@^6.22.0, babel-types@^6.24.1:
   version "6.24.1"
   resolved "https://registry.yarnpkg.com/babel-types/-/babel-types-6.24.1.tgz#a136879dc15b3606bda0d90c1fc74304c2ff0975"
   dependencies:
@@ -568,7 +585,7 @@ babel-types@^6.19.0, babel-types@^6.24.1:
     lodash "^4.2.0"
     to-fast-properties "^1.0.1"
 
-babel-types@^6.22.0, babel-types@^6.23.0:
+babel-types@^6.23.0:
   version "6.23.0"
   resolved "https://registry.yarnpkg.com/babel-types/-/babel-types-6.23.0.tgz#bb17179d7538bad38cd0c9e115d340f77e7e9acf"
   dependencies:
