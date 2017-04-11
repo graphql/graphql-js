@@ -175,6 +175,12 @@ export function findArgChanges(
         );
         const newArgDef = newArgs[newTypeArgIndex];
 
+        const oldArgNullableType = getNullableType(oldArgDef.type);
+        const oldArgNullableTypeName = getNamedType(oldArgNullableType);
+        const newArgTypeName = newArgDef ?
+          getNamedType(newArgDef.type) :
+          null;
+
         // Arg not present
         if (newTypeArgIndex < 0) {
           breakingChanges.push({
@@ -185,8 +191,7 @@ export function findArgChanges(
 
         // Arg changed type in a breaking way
         } else if (
-          oldArgDef.type !== newArgDef.type &&
-          getNullableType(oldArgDef.type) !== newArgDef.type
+          oldArgNullableTypeName.name !== newArgTypeName.name
         ) {
           breakingChanges.push({
             type: BreakingChangeType.ARG_CHANGED_KIND,
