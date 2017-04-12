@@ -179,8 +179,12 @@ export function findArgChanges(
           getNamedType(newArgDef.type) :
           null;
 
+        if (!oldArgTypeName) {
+          return;
+        }
+
         // Arg not present
-        if (newTypeArgIndex < 0) {
+        if (!newArgTypeName) {
           breakingChanges.push({
             type: BreakingChangeType.ARG_REMOVED,
             description: `${oldType.name}.${fieldName} arg ` +
@@ -189,7 +193,6 @@ export function findArgChanges(
 
         // Arg changed type in a breaking way
         } else if (
-          oldArgTypeName && newArgTypeName &&
           oldArgTypeName.name !== newArgTypeName.name
         ) {
           breakingChanges.push({

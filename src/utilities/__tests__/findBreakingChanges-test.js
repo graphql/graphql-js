@@ -392,6 +392,54 @@ describe('findBreakingChanges', () => {
     ]);
   });
 
+  it('should not flag args with the same type signature as breaking', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLInt,
+          args: {
+            id: {
+              type: new GraphQLNonNull(GraphQLInt),
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLInt,
+          args: {
+            id: {
+              type: new GraphQLNonNull(GraphQLInt),
+            },
+          },
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(
+      findArgChanges(oldSchema, newSchema).breakingChanges
+    ).to.eql([]);
+  });
+
   it('should consider args that move away from NonNull as non-breaking', () => {
     const oldType = new GraphQLObjectType({
       name: 'Type1',
