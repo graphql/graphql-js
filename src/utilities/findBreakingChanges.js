@@ -16,7 +16,6 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
-  getNullableType,
 } from '../type/definition';
 
 import type { GraphQLNamedType, GraphQLFieldMap } from '../type/definition';
@@ -175,8 +174,17 @@ export function findArgChanges(
         );
         const newArgDef = newArgs[newTypeArgIndex];
 
+        const oldArgTypeName = getNamedType(oldArgDef.type);
+        const newArgTypeName = newArgDef ?
+          getNamedType(newArgDef.type) :
+          null;
+
+        if (!oldArgTypeName) {
+          return;
+        }
+
         // Arg not present
-        if (newTypeArgIndex < 0) {
+        if (!newArgTypeName) {
           breakingChanges.push({
             type: BreakingChangeType.ARG_REMOVED,
             description: `${oldType.name}.${fieldName} arg ` +
@@ -185,8 +193,7 @@ export function findArgChanges(
 
         // Arg changed type in a breaking way
         } else if (
-          oldArgDef.type !== newArgDef.type &&
-          getNullableType(oldArgDef.type) !== newArgDef.type
+          oldArgTypeName.name !== newArgTypeName.name
         ) {
           breakingChanges.push({
             type: BreakingChangeType.ARG_CHANGED_KIND,
