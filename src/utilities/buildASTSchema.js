@@ -38,6 +38,9 @@ import type {
 } from '../language/ast';
 
 import { GraphQLSchema } from '../type/schema';
+import type {
+  GraphQLSchemaComponents,
+} from '../type/schema';
 
 import {
   GraphQLString,
@@ -127,6 +130,43 @@ function getNamedTypeNode(typeNode: TypeNode): NamedTypeNode {
  * has no resolve methods, so execution will use default resolvers.
  */
 export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
+  const config: any = buildASTSchemaComponents(ast);
+  const directives = config.directives;
+
+  if (config.query === null) {
+    throw new Error(
+      'Must provide schema definition with query type or a type named Query.'
+    );
+  }
+
+  // If specified directives were not explicitly declared, add them.
+  if (!directives.some(directive => directive.name === 'skip')) {
+    directives.push(GraphQLSkipDirective);
+  }
+
+  if (!directives.some(directive => directive.name === 'include')) {
+    directives.push(GraphQLIncludeDirective);
+  }
+
+  if (!directives.some(directive => directive.name === 'deprecated')) {
+    directives.push(GraphQLDeprecatedDirective);
+  }
+
+  return new GraphQLSchema(config);
+}
+
+/**
+ * This takes the ast of a schema document produced by the parse function in
+ * src/language/parser.js.
+ *
+ * If no schema definition is provided, then it will look for types named Query
+ * and Mutation.
+ *
+ * Given that AST it return object that can be used to construct a GraphQLSchema
+ * instance.
+ */
+export function buildASTSchemaComponents(ast: DocumentNode):
+GraphQLSchemaComponents {
   if (!ast || ast.kind !== Kind.DOCUMENT) {
     throw new Error('Must provide a document ast.');
   }
@@ -214,12 +254,6 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
     }
   }
 
-  if (!queryTypeName) {
-    throw new Error(
-      'Must provide schema definition with query type or a type named Query.'
-    );
-  }
-
   const innerTypeMap = {
     String: GraphQLString,
     Int: GraphQLInt,
@@ -237,24 +271,12 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   };
 
   const types = typeDefs.map(def => typeDefNamed(def.name.value));
-
   const directives = directiveDefs.map(getDirective);
 
-  // If specified directives were not explicitly declared, add them.
-  if (!directives.some(directive => directive.name === 'skip')) {
-    directives.push(GraphQLSkipDirective);
-  }
-
-  if (!directives.some(directive => directive.name === 'include')) {
-    directives.push(GraphQLIncludeDirective);
-  }
-
-  if (!directives.some(directive => directive.name === 'deprecated')) {
-    directives.push(GraphQLDeprecatedDirective);
-  }
-
-  return new GraphQLSchema({
-    query: getObjectType(nodeMap[queryTypeName]),
+  return {
+    query: queryTypeName ?
+      getObjectType(nodeMap[queryTypeName]) :
+      null,
     mutation: mutationTypeName ?
       getObjectType(nodeMap[mutationTypeName]) :
       null,
@@ -264,7 +286,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
     types,
     directives,
     astNode: schemaDef,
-  });
+  };
 
   function getDirective(
     directiveNode: DirectiveDefinitionNode

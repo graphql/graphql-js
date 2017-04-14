@@ -11,7 +11,11 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parse, print } from '../../language';
 import { printSchema } from '../schemaPrinter';
-import { buildASTSchema, buildSchema } from '../buildASTSchema';
+import {
+  buildASTSchemaComponents,
+  buildASTSchema,
+  buildSchema
+} from '../buildASTSchema';
 import dedent from '../../jsutils/dedent';
 import {
   graphql,
@@ -34,6 +38,18 @@ function cycleOutput(body) {
 }
 
 describe('Schema Builder', () => {
+
+  it('can build schema config for IDL with missing query type', async () => {
+    const config = buildASTSchemaComponents(parse(`
+      scalar TestType
+      directive @testDirective(testArg: TestType, testArg2: Float) on FIELD
+    `));
+
+    expect(config.types.length).to.equal(1);
+    expect(config.types[0].name).to.equal('TestType');
+    expect(config.directives.length).to.equal(1);
+    expect(config.directives[0].name).to.equal('testDirective');
+  });
 
   it('can use built schema for limited execution', async () => {
     const schema = buildASTSchema(parse(`
