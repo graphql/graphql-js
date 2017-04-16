@@ -408,7 +408,7 @@ function executeFields(
  * the passed in map of fields, and returns it at the end.
  *
  * CollectFields requires the "runtime type" of an object. For a field which
- * returns and Interface or Union type, the "runtime type" will be the actual
+ * returns an Interface or Union type, the "runtime type" will be the actual
  * Object type returned by that field.
  */
 function collectFields(
