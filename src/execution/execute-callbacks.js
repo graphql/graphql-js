@@ -1,4 +1,4 @@
-import { isCollection } from 'iterall';
+import { isCollection, forEach } from 'iterall';
 
 import { GraphQLError, locatedError } from '../error';
 import find from '../jsutils/find';
@@ -45,7 +45,9 @@ import type {
   InlineFragmentNode,
   FragmentDefinitionNode,
 } from '../language/ast';
-import { Observable } from 'rxjs/Rx';
+
+import * as Most from 'most';
+
 
 /**
  * Terminology
@@ -103,6 +105,7 @@ type ExecutionDescriptor = {
 // !!!: CompleteType could be more clear types.
 type CompleteType = mixed;
 
+// !!!: wrong type def for Most.js
 type ProcessFields = (rxjs$Observable<rxjs$Observable<CompleteType>>) =>
   rxjs$Observable<Array<CompleteType>>;
 
@@ -114,24 +117,26 @@ export function execute(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
 ): Promise<ExecutionResult> {
-  return executeRx(
+  return executeMost(
     schema: GraphQLSchema,
     document,
     rootValue,
     contextValue,
     variableValues,
     operationName
-  ).toPromise();
+  )
+  .take(1)
+  .reduce((_, x) => x, undefined);
 }
 
-export function executeRx(
+export function executeMost(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
-): rxjs$Observable<ExecutionResult> {
+) {
   invariant(schema, 'Must provide schema');
   invariant(document, 'Must provide document');
   invariant(
@@ -167,12 +172,12 @@ export function executeRx(
   // be executed. An execution which encounters errors will still result in a
   // resolved Observable.
   return executeOperation(context, context.operation, rootValue)
-    .catch(error => {
+    .recoverWith(error => {
       // Errors from sub-fields of a NonNull type may propagate to the top
       // level, at which point we still log the error and null the parent field,
       // which in this case is the entire response.
       context.errors.push(error);
-      return Observable.of(null);
+      return Most.of(null);
     })
     .map(data => {
       if (!context.errors.length) {
@@ -189,7 +194,7 @@ function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: mixed
-): rxjs$Observable<CompleteType> {
+) {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
@@ -217,14 +222,23 @@ function executeFieldsSerially(
   sourceValue: mixed,
   path: ResponsePath,
   fields: {[key: string]: Array<FieldNode>}
-): rxjs$Observable<CompleteType> {
+) {
   return eachResolvedFields$$(exeContext, parentType, sourceValue, path, fields,
     // We only allow each mutation field to execute only once (`take(1)`) and
     // serially (`concatAll()`). Convert the sequential results into an array.
-    eachResolvedFields => eachResolvedFields
-      .map(x => x.take(1))
-      .concatAll()
-      .toArray()
+    fieldStreamList => {
+      // Start with an empty stream, and take one value from each stream in the
+      // list.
+      const serialStream = fieldStreamList.reduce((prev, curr) => {
+        return prev.concat(curr.take(1));
+      }, Most.empty());
+
+      // A Promise containing the result
+      const result = serialStream.reduce((resultList, value) => {
+        return resultList.concat(value);
+      }, []);
+      return Most.fromPromise(result);
+    }
   );
 }
 
@@ -238,12 +252,14 @@ function executeFields(
   sourceValue: mixed,
   path: ResponsePath,
   fields: {[key: string]: Array<FieldNode>}
-): rxjs$Observable<CompleteType> {
+) {
   return eachResolvedFields$$(exeContext, parentType, sourceValue, path, fields,
     // We combine all higher-order observables of resolved fields into an array.
     // When any elements (observable) sends a new value, pop a new array for the
     // total results.
-    eachResolvedFields => eachResolvedFields.combineAll()
+    fieldStreamList => {
+      return Most.combineArray((...values) => [ ...values ], fieldStreamList);
+    }
   );
 }
 
@@ -259,53 +275,50 @@ function eachResolvedFields$$(
   path: ResponsePath,
   fields: {[key: string]: Array<FieldNode>},
   processFields: ProcessFields
-): rxjs$Observable<CompleteType> {
-  // The whole process from input to return (a reactive observable for results):
-  // `Object{ [fieldName]: fieldNodes }` -> `$( $( {[fieldName]: result} ) )`
-  const eachResolvedFields =
-  // `Object{ [fieldName]: fieldNodes }` -> `$( [fieldName, fieldNodes] )`
-  Observable.pairs(fields)
-    // `$( [fieldName, fieldNodes] )` -> `$( [fieldName, $(fieldResult)] )`
-    .map(([ fieldName, fieldNodes ]) => {
-      const fieldPath = addPath(path, fieldName);
-      const fieldResult$ = resolveField(
-        exeContext,
-        parentType,
-        sourceValue,
-        fieldNodes,
-        fieldPath
-      );
-      return [ fieldName, fieldResult$ ];
-    })
+) {
+  // Generate `Array< $( {[fieldName]: result} ) >` for the execution sequence.
+  const resolvedFields = [];
+  Object.keys(fields).forEach(fieldName => {
+    const fieldNodes = fields[fieldName];
+    const fieldPath = addPath(path, fieldName);
+    const fieldResult$ = resolveField(
+      exeContext,
+      parentType,
+      sourceValue,
+      fieldNodes,
+      fieldPath
+    );
     // The fieldResult$ might be null due to the field definition is not found
     // without throwing any error. We filter those illegal fieldResult$ to avoid
     // generate any result.
-    .filter(([ /* fieldName */, fieldResult$ ]) => Boolean(fieldResult$))
-    // `$( [fieldName, $(result)] )` -> `$( $( {[fieldName]: result} ) )`
-    .map(([ fieldName, fieldResult$ ]) =>
-      fieldResult$.map(result => ({[fieldName]: result}))
-    );
+    if (fieldResult$) {
+      // `$( result )` -> `$( {[fieldName]: result} )`
+      const field$ = fieldResult$.map(result => ({[fieldName]: result}));
+      resolvedFields.push(field$);
+    }
+  });
+
+  if (resolvedFields.length === 0) {
+    // !!!: we haven't tested when the fields is an empty object.
+    // We try to give the finalResults a default value if it completes without
+    // emitting any next value. The final results will always be an object for
+    // the query field. The default result is an empty object.
+    return Most.of({});
+  }
 
   // Let `processFields` callback decides how to execute and assemble the
   // results of Observables.
-  // `$( $( {[fieldName]: result} ) )` -> `$(Array< {[fieldName]: result} >)`
-  const assembledResult = processFields(eachResolvedFields);
+  // `Array< $( {[fieldName]: result} )>` -> `$(Array< {[fieldName]: result} >)`
+  const assembledResult = processFields(resolvedFields);
 
   // `$(Array< {[fieldName]: result} >)` -> `$(Object{ [fieldName]: result })`
-  const resolvedResults = assembledResult
+  return assembledResult
     // Convert the field results (array) to a total result (object) by `reduce`.
     .map(fieldResults =>
       fieldResults.reduce((results, fieldResult) => {
         return Object.assign(results, fieldResult);
       }, {})
-    )
-    // !!!: we haven't tested when the fields is an empty object.
-    // We try to give the finalResults a default value if it completes without
-    // emitting any next value. The final results will always be an object for
-    // the query field. The default result is an empty object.
-    .defaultIfEmpty({});
-
-  return resolvedResults;
+    );
 }
 
 /**
@@ -320,7 +333,7 @@ function resolveField(
   source: mixed,
   fieldNodes: Array<FieldNode>,
   path: ResponsePath
-): ?rxjs$Observable<CompleteType> {
+) {
   const fieldNode = fieldNodes[0];
   const fieldName = fieldNode.name.value;
 
@@ -361,7 +374,7 @@ function resolveField(
 
   // Defer the resolveFn part. It will only be triggered when the Observable is
   // subscribed.
-  return Observable.defer(() => {
+  return Most.empty().continueWith(() => {
     // Get the resolve function, regardless of if its result is normal
     // or abrupt (error).
     const result = resolveOrError(
@@ -391,9 +404,9 @@ function completeResolvedValue(
   path: ResponsePath,
   returnType: GraphQLType,
   result: mixed
-): rxjs$Observable<CompleteType> {
+) {
   return completeValue(descriptor, path, returnType, result)
-    .catch(error => {
+    .recoverWith(error => {
       // Annotates errors with location information.
       const pathKeys = responsePathAsArray(path);
       const annotated = locatedError(error, descriptor.fieldNodes, pathKeys);
@@ -401,13 +414,14 @@ function completeResolvedValue(
       if (returnType instanceof GraphQLNonNull) {
         // If the field type is non-nullable, then it is resolved without any
         // protection from errors, however it still properly locates the error.
-        return Observable.throw(annotated);
+        return Most.throwError(annotated);
       }
 
       // Otherwise, error protection is applied, logging the error and
       // resolving a null value for this field if one is encountered.
       descriptor.exeContext.errors.push(annotated);
-      return Observable.of(null);
+      console.log(`push annotated error: ${annotated}`);
+      return Most.of(null);
     });
 }
 
@@ -437,7 +451,7 @@ function completeValue(
   path: ResponsePath,
   returnType: GraphQLType,
   result: mixed
-): rxjs$Observable<CompleteType> {
+) {
   // If result is a Promise, apply-lift over completeValue.
   if (isThenable(result)) {
     return completePromiseValue(descriptor, path, returnType, result);
@@ -445,7 +459,7 @@ function completeValue(
 
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
-    return Observable.throw(result);
+    return Most.throwError(result);
   }
 
   // If field type is NonNull, complete for inner type, and throw field error
@@ -456,7 +470,7 @@ function completeValue(
 
   // If result value is null-ish (null, undefined, or NaN) then return null.
   if (isNullish(result)) {
-    return Observable.of(null);
+    return Most.of(null);
   }
 
   // If field type is List, complete each item in the list with the inner type
@@ -484,7 +498,7 @@ function completeValue(
   }
 
   // Not reachable. All possible output types have been considered.
-  return Observable.throw(new Error(
+  return Most.throwError(new Error(
     `Cannot complete value of unexpected type "${String(returnType)}".`
   ));
 }
@@ -493,11 +507,14 @@ function completePromiseValue(
   descriptor: ExecutionDescriptor,
   path: ResponsePath,
   returnType: GraphQLType,
-  result: mixed
-): rxjs$Observable<CompleteType> {
-  return Observable.fromPromise(result).flatMap(
-    resolved => completeValue(descriptor, path, returnType, resolved)
-  );
+  result: Promise<mixed>
+) {
+  return (onNext, onError, onComplete) => {
+    result.then(resolved => {
+      completeValue(descriptor, path, returnType, resolved)
+        (onNext, onError, onComplete);
+    }, onError);
+  };
 }
 
 function completeNonNullValue(
@@ -505,17 +522,21 @@ function completeNonNullValue(
   path: ResponsePath,
   returnType: GraphQLNonNull,
   result: mixed
-): rxjs$Observable<CompleteType> {
-  return completeValue(descriptor, path, returnType.ofType, result)
-    .switchMap(value => {
+) {
+  return (onNext, onError, onComplete) => {
+    const onCheckNextValue = value => {
       if (value === null) {
-        return Observable.throw(new Error(
+        return onError(new Error(
           `Cannot return null for non-nullable field ${
             descriptor.info.parentType.name}.${descriptor.info.fieldName}.`
         ));
       }
-      return Observable.of(value);
-    });
+      return onNext(value);
+    }
+
+    return completeValue(descriptor, path, returnType.ofType, result)
+      (onCheckNextValue, onError, onComplete);
+  };
 }
 
 
@@ -528,41 +549,40 @@ function completeListValue(
   path: ResponsePath,
   returnType: GraphQLList<*>,
   result: mixed
-): rxjs$Observable<CompleteType> {
-  // !!!: We are using `Rx.Observable.from()` for the result.
-  // `Rx.Observable.from()` might not support other collection types which
-  // the library 'iterall' supports.
+) {
+  // !!!: We are using `Most.of()` for the result.
+  // `Most.of()` might not support other collection types which the library
+  // 'iterall' supports.
   // This conditional test might not be useful.
   if (!isCollection(result)) {
-    return Observable.throw(new Error(
-      `Expected Iterable, but did not find one for field ${
-        descriptor.info.parentType.name}.${descriptor.info.fieldName}.`
-    ));
+    return (onNext, onError, onComplete) => {
+      onError(new Error(
+        `Expected Iterable, but did not find one for field ${
+          descriptor.info.parentType.name}.${descriptor.info.fieldName}.`
+      ));
+    }
   }
 
-  // This is specified as a simple map, however we're optimizing the path
-  // where the list contains no Promises by avoiding creating another Promise.
   const itemType = returnType.ofType;
+  const streamList = [];
+  forEach(result, (item, index) => {
+    // No need to modify the info object containing the path,
+    // since from here on it is not ever accessed by resolver functions.
+    const fieldPath = addPath(path, index);
+    const completedItem = completeResolvedValue(
+      descriptor,
+      fieldPath,
+      itemType,
+      item
+    );
+    streamList.push(completedItem);
+  });
 
-  // Every element inside the result list might be a reactive data source. We
-  // resolve each of them and combine them all into an array.
-  // The combined Observable will send the first result only when all elements
-  // are resolved at least once, and then the combined Observable will start
-  // to send all results when any element send a new value.
-  const list$ = Observable.from(result)
-    .map((item, index) => {
-      // No need to modify the info object containing the path,
-      // since from here on it is not ever accessed by resolver functions.
-      const fieldPath = addPath(path, index);
-      return completeResolvedValue(descriptor, fieldPath, itemType, item);
-    })
-    .combineAll();
+  if (streamList.length === 0) {
+    return Most.of([]);
+  }
 
-  // If there is no element in the result, we send an empty array as the default
-  // value to complete the value. Do not send the result itself, because the
-  // result may not be an array type which can't be resolved correctly when
-  // testing.
-  return list$.defaultIfEmpty([]);
+  return Most.combineArray((...values) => [ ...values ], streamList);
 }
 
 /**
@@ -572,9 +592,9 @@ function completeListValue(
 function completeLeafValue(
   returnType: GraphQLLeafType,
   result: mixed
-): rxjs$Observable<CompleteType> {
+) {
   if (!returnType.serialize) {
-    return Observable.throw(new Error(
+    return Most.throwError(new Error(
       `Missing serialize method on type "${String(returnType)}"`
     ));
   }
@@ -582,12 +602,12 @@ function completeLeafValue(
   const serializedResult = returnType.serialize(result);
 
   if (isNullish(serializedResult)) {
-    return Observable.throw(new Error(
+    return Most.throwError(new Error(
       `Expected a value of type "${String(returnType)}" but received: ${
         String(result)}`
     ));
   }
-  return Observable.of(serializedResult);
+  return Most.of(serializedResult);
 }
 
 /**
@@ -599,7 +619,7 @@ function completeAbstractValue(
   path: ResponsePath,
   returnType: GraphQLAbstractType,
   result: mixed
-): rxjs$Observable<CompleteType> {
+) {
   const { exeContext, fieldNodes, info } = descriptor;
   let runtimeType = returnType.resolveType ?
     returnType.resolveType(result, exeContext.contextValue, info) :
@@ -611,7 +631,7 @@ function completeAbstractValue(
   }
 
   if (!(runtimeType instanceof GraphQLObjectType)) {
-    return Observable.throw(new GraphQLError(
+    return Most.throwError(new GraphQLError(
       `Abstract type ${returnType.name} must resolve to an Object type at ` +
       `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
       `value "${String(result)}", received "${String(runtimeType)}".`,
@@ -620,7 +640,7 @@ function completeAbstractValue(
   }
 
   if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
-    return Observable.throw(new GraphQLError(
+    return Most.throwError(new GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type ` +
       `for "${returnType.name}".`,
       fieldNodes
@@ -638,14 +658,14 @@ function completeObjectValue(
   path: ResponsePath,
   returnType: GraphQLObjectType,
   result: mixed
-): rxjs$Observable<CompleteType> {
+) {
   const { exeContext, fieldNodes, info } = descriptor;
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
   if (returnType.isTypeOf &&
       !returnType.isTypeOf(result, exeContext.contextValue, info)) {
-    return Observable.throw(new GraphQLError(
+    return Most.throwError(new GraphQLError(
       `Expected value of type "${returnType.name}" but got: ${String(result)}.`,
       fieldNodes
     ));

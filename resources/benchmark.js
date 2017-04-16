@@ -7,21 +7,21 @@
 import Benchmark from 'benchmark';
 import { describe, it } from 'mocha';
 
-import { StarWarsSchema } from './starWarsSchema.js';
-import { parse } from '../language';
+import { StarWarsSchema } from '../src/__tests__/starWarsSchema';
+import { parse } from '../src/language';
 import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLInt,
-} from '../type';
-import { Observable } from 'rxjs/Rx';
+} from '../src/type';
 
-import {
-  graphqlOri,
-  graphqlRx
-} from '../graphql';
-import { execute as executeOri } from '../execution/execute-origin';
-import { executeRx } from '../execution/execute-rx';
+import { Observable } from 'rxjs/Rx';
+import { graphql as graphqlOri } from '../src/graphql-origin';
+import { graphql as graphqlRx } from '../src/graphql-rx';
+import { graphql as graphqlMost } from '../src/graphql-most';
+import { execute as executeOri } from '../src/execution/execute-origin';
+import { executeRx } from '../src/execution/execute-rx';
+import { executeMost } from  '../src/execution/execute-most';
 
 
 function runBenchmark(cases = {}, callback = () => {}) {
@@ -43,6 +43,7 @@ function runBenchmark(cases = {}, callback = () => {}) {
 }
 
 function verifyAndRunBenchmark(cases = {}) {
+  // Ensure the results of tasks are the same before running benchmark.
   const verifyTaskResultsAreTheSame = Observable.pairs(cases)
     .map(([ caseName, task ]) => {
       return Observable.create(async subscriber => {
@@ -85,13 +86,14 @@ function verifyAndRunBenchmark(cases = {}) {
     })
     .mergeAll();
 
-
   return verifyTaskResultsAreTheSame.toPromise()
     .then(() => {
+      // Only passing the verification will run the benchmark.
       runBenchmark(cases);
     });
 }
 
+// Copy the serial test from mutations-test.js
 class NumberHolder {
   theNumber: number;
 
@@ -201,6 +203,10 @@ describe('Run Benchmark', function () {
       },
       graphqlRxToPromise: async () => {
         return await graphqlRx(StarWarsSchema, query).toPromise();
+      },
+      graphqlMostToPromise: async () => {
+        return await graphqlMost(StarWarsSchema, query)
+          .take(1).reduce((_, x) => x, undefined);
       }
     })
     .then(done, done);
@@ -228,6 +234,10 @@ describe('Run Benchmark', function () {
       },
       graphqlRxToPromise: async () => {
         return await graphqlRx(StarWarsSchema, query).toPromise();
+      },
+      graphqlMostToPromise: async () => {
+        return await graphqlMost(StarWarsSchema, query)
+          .take(1).reduce((_, x) => x, undefined);
       }
     })
     .then(done, done);
@@ -261,6 +271,10 @@ describe('Run Benchmark', function () {
       },
       graphqlRxToPromise: async () => {
         return await executeRx(schema, documentAST, new Root(6)).toPromise();
+      },
+      graphqlMostToPromise: async () => {
+        return await executeMost(schema, documentAST, new Root(6))
+          .take(1).reduce((_, x) => x, undefined);
       }
     })
     .then(done, done);

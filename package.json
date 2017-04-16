@@ -24,7 +24,10 @@
     "test": "npm run lint && npm run check && npm run testonly",
     "test:staged": "./resources/test-staged.sh",
     "testonly": "babel-node ./node_modules/.bin/_mocha $npm_package_options_mocha",
-    "t": "babel-node --max-old-space-size=4096 ./node_modules/.bin/_mocha --require ./resources/mocha-bootload",
+    "testonly-rx": "RUN_MODE=Rx babel-node ./node_modules/.bin/_mocha $npm_package_options_mocha",
+    "testonly-most": "RUN_MODE=Most babel-node ./node_modules/.bin/_mocha $npm_package_options_mocha",
+    "benchmark": "babel-node --max-old-space-size=4096 ./node_modules/.bin/_mocha --require ./resources/mocha-bootload ./resources/benchmark.js",
+    "t": "babel-node ./node_modules/.bin/_mocha --require ./resources/mocha-bootload",
     "lint": "eslint src || (printf '\\033[33mTry: \\033[7m npm run lint -- --fix \\033[0m\\n' && exit 1)",
     "check": "flow check",
     "check-cover": "for file in {src/*.js,src/**/*.js}; do echo $file; flow coverage $file; done",
@@ -38,6 +41,7 @@
   },
   "dependencies": {
     "iterall": "1.0.3",
+    "most": "^1.2.0",
     "rxjs": "^5.0.2"
   },
   "devDependencies": {
