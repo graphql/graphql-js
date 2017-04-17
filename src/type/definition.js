@@ -942,6 +942,11 @@ function defineEnumValues(
   );
   return valueNames.map(valueName => {
     assertValidName(valueName);
+    invariant(
+      [ 'true', 'false', 'null' ].indexOf(valueName) === -1,
+      `Name "${valueName}" is can not be used for Enum value.`
+    );
+
     const value = valueMap[valueName];
     invariant(
       isPlainObj(value),
