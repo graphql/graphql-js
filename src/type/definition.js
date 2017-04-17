@@ -789,12 +789,18 @@ function defineTypes(
     'Must provide Array of types or a function which returns ' +
     `such an array for Union ${unionType.name}.`
   );
+  const seenObjectNames = [];
   types.forEach(objType => {
     invariant(
       objType instanceof GraphQLObjectType,
       `${unionType.name} may only contain Object types, it cannot contain: ` +
       `${String(objType)}.`
     );
+    invariant(
+      seenObjectNames.indexOf(objType.name) === -1,
+      `${unionType.name} can include ${objType.name} type only once.`
+    );
+    seenObjectNames.push(objType.name);
     if (typeof unionType.resolveType !== 'function') {
       invariant(
         typeof objType.isTypeOf === 'function',
@@ -942,6 +948,11 @@ function defineEnumValues(
   );
   return valueNames.map(valueName => {
     assertValidName(valueName);
+    invariant(
+      [ 'true', 'false', 'null' ].indexOf(valueName) === -1,
+      `Name "${valueName}" is can not be used for Enum value.`
+    );
+
     const value = valueMap[valueName];
     invariant(
       isPlainObj(value),
