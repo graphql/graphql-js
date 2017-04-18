@@ -11,7 +11,7 @@
 export { getLocation } from './location';
 import * as Kind from './kinds';
 export { Kind };
-export { createLexer, TokenKind } from './lexer';
+export { createLexer, Token, TokenKind } from './lexer';
 export { parse, parseValue, parseType } from './parser';
 export { print } from './printer';
 export { Source } from './source';
@@ -22,7 +22,6 @@ export type { ParseOptions } from './parser';
 
 export type {
   Location,
-  Token,
   ASTNode,
 
   // Each kind of AST node
