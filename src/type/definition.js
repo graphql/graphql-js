@@ -245,10 +245,7 @@ export function assertNamedType(type: ?GraphQLType): GraphQLNamedType {
 
 export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
   let unmodifiedType = type;
-  while (
-    unmodifiedType instanceof GraphQLList ||
-    unmodifiedType instanceof GraphQLNonNull
-  ) {
+  while (unmodifiedType.ofType) {
     unmodifiedType = unmodifiedType.ofType;
   }
   return unmodifiedType;
