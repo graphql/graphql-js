@@ -16,9 +16,10 @@ import {
   TokenKind,
   getTokenDesc
 } from './lexer';
-import type { Lexer, Token } from './lexer';
+import type { Lexer } from './lexer';
 import type {
   Location,
+  Token,
 
   NameNode,
   VariableNode,
