@@ -9,7 +9,6 @@
  */
 
 import type { Source } from './source';
-import type { Token } from './lexer';
 
 
 /**
@@ -42,6 +41,70 @@ export type Location = {
    * The Source document the AST represents.
    */
   source: Source;
+};
+
+/**
+ * Represents a range of characters represented by a lexical token
+ * within a Source.
+ */
+export type Token = {
+
+  /**
+   * The kind of Token.
+   */
+  kind: '<SOF>'
+      | '<EOF>'
+      | '!'
+      | '$'
+      | '('
+      | ')'
+      | '...'
+      | ':'
+      | '='
+      | '@'
+      | '['
+      | ']'
+      | '{'
+      | '|'
+      | '}'
+      | 'Name'
+      | 'Int'
+      | 'Float'
+      | 'String'
+      | 'Comment';
+
+  /**
+   * The character offset at which this Node begins.
+   */
+  start: number;
+
+  /**
+   * The character offset at which this Node ends.
+   */
+  end: number;
+
+  /**
+   * The 1-indexed line number on which this Token appears.
+   */
+  line: number;
+
+  /**
+   * The 1-indexed column number at which this Token begins.
+   */
+  column: number;
+
+  /**
+   * For non-punctuation tokens, represents the interpreted value of the token.
+   */
+  value: string | void;
+
+  /**
+   * Tokens exist as nodes in a double-linked-list amongst all tokens
+   * including ignored tokens. <SOF> is always the first node and <EOF>
+   * the last.
+   */
+  prev: Token | null;
+  next: Token | null;
 };
 
 /**
