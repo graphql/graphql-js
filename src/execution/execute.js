@@ -80,7 +80,7 @@ import type {
  * Namely, schema of the type system that is currently executing,
  * and the fragments defined in the query document
  */
-type ExecutionContext = {
+export type ExecutionContext = {
   schema: GraphQLSchema;
   fragments: {[key: string]: FragmentDefinitionNode};
   rootValue: mixed;
@@ -183,8 +183,11 @@ export function responsePathAsArray(
   return flattened.reverse();
 }
 
-
-function addPath(prev: ResponsePath, key: string | number) {
+/**
+ * Given a ResponsePath and a key, return a new ResponsePath containing the
+ * new key.
+ */
+export function addPath(prev: ResponsePath, key: string | number) {
   return { prev, key };
 }
 
@@ -194,7 +197,7 @@ function addPath(prev: ResponsePath, key: string | number) {
  *
  * Throws a GraphQLError if a valid execution context cannot be created.
  */
-function buildExecutionContext(
+export function buildExecutionContext(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue: mixed,
@@ -280,7 +283,7 @@ function executeOperation(
 /**
  * Extracts the root type of the operation from the schema.
  */
-function getOperationRootType(
+export function getOperationRootType(
   schema: GraphQLSchema,
   operation: OperationDefinitionNode
 ): GraphQLObjectType {
@@ -408,7 +411,7 @@ function executeFields(
  * returns an Interface or Union type, the "runtime type" will be the actual
  * Object type returned by that field.
  */
-function collectFields(
+export function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
@@ -1178,7 +1181,7 @@ function getPromise<T>(value: Promise<T> | mixed): Promise<T> | void {
  * added to the query type, but that would require mutating type
  * definitions, which would cause issues.
  */
-function getFieldDef(
+export function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
   fieldName: string
