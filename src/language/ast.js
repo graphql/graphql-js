@@ -44,6 +44,32 @@ export type Location = {
 };
 
 /**
+ * Represents the different kinds of tokens in a GraphQL document.
+ * This type is not inlined in `Token` to fix syntax highlighting on GitHub
+ * *only*.
+ */
+type TokenKind = '<SOF>'
+               | '<EOF>'
+               | '!'
+               | '$'
+               | '('
+               | ')'
+               | '...'
+               | ':'
+               | '='
+               | '@'
+               | '['
+               | ']'
+               | '{'
+               | '|'
+               | '}'
+               | 'Name'
+               | 'Int'
+               | 'Float'
+               | 'String'
+               | 'Comment';
+
+/**
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
@@ -52,26 +78,7 @@ export type Token = {
   /**
    * The kind of Token.
    */
-  kind: '<SOF>'
-      | '<EOF>'
-      | '!'
-      | '$'
-      | '('
-      | ')'
-      | '...'
-      | ':'
-      | '='
-      | '@'
-      | '['
-      | ']'
-      | '{'
-      | '|'
-      | '}'
-      | 'Name'
-      | 'Int'
-      | 'Float'
-      | 'String'
-      | 'Comment';
+  kind: TokenKind;
 
   /**
    * The character offset at which this Node begins.
