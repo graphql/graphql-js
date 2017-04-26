@@ -76,7 +76,7 @@ describe('Execute: Accepts any iterable as list value', () => {
     { data: { nest: { test: [ 'apple', 'banana', 'coconut' ] } } }
   ));
 
-  function *yieldItems() {
+  function* yieldItems() {
     yield 'one';
     yield 2;
     yield true;

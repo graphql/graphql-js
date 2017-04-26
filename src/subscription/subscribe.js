@@ -9,6 +9,7 @@
  * @flow
  */
 
+import { isAsyncIterable } from 'iterall';
 import {
   addPath,
   buildExecutionContext,
@@ -17,8 +18,9 @@ import {
   execute,
   getFieldDef,
   getOperationRootType,
+  buildResolveInfo,
+  resolveFieldValueOrError,
 } from '../execution/execute';
-import { getArgumentValues } from '../execution/values';
 import { GraphQLSchema } from '../type/schema';
 import invariant from '../jsutils/invariant';
 import mapAsyncIterator from './mapAsyncIterator';
@@ -31,7 +33,6 @@ import type {
   DocumentNode,
   OperationDefinitionNode,
 } from '../language/ast';
-import type { GraphQLResolveInfo } from '../type/definition';
 
 
 /**
@@ -50,23 +51,6 @@ export function subscribe(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string,
 ): AsyncIterator<ExecutionResult> {
-  // Note: these invariants are identical to execute.js
-  invariant(schema, 'Must provide schema');
-  invariant(document, 'Must provide document');
-  invariant(
-    schema instanceof GraphQLSchema,
-    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
-    'not multiple versions of GraphQL installed in your node_modules directory.'
-  );
-
-  // Variables, if provided, must be an object.
-  invariant(
-    !variableValues || typeof variableValues === 'object',
-    'Variables must be provided as an Object where each property is a ' +
-    'variable value. Perhaps look to see if an unparsed JSON string ' +
-    'was provided.'
-  );
-
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
   const exeContext = buildExecutionContext(
@@ -105,10 +89,7 @@ function resolveSubscription(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: mixed
-): AsyncIterator<mixed> {
-  // Note: this function is almost the same as executeOperation() and
-  // resolveField() with only a few minor differences.
-
+): AsyncIterable<mixed> {
   const type = getOperationRootType(exeContext.schema, exeContext.operation);
   const fields = collectFields(
     exeContext,
@@ -117,7 +98,6 @@ function resolveSubscription(
     Object.create(null),
     Object.create(null)
   );
-
   const responseNames = Object.keys(fields);
   invariant(
     responseNames.length === 1,
@@ -125,11 +105,8 @@ function resolveSubscription(
   );
   const responseName = responseNames[0];
   const fieldNodes = fields[responseName];
-  const fieldPath = addPath(undefined, responseName);
-
   const fieldNode = fieldNodes[0];
-  const fieldName = fieldNode.name.value;
-  const fieldDef = getFieldDef(exeContext.schema, type, fieldName);
+  const fieldDef = getFieldDef(exeContext.schema, type, fieldNode.name.value);
   invariant(
     fieldDef,
     'This subscription is not defined by the schema.'
@@ -138,47 +115,28 @@ function resolveSubscription(
   // TODO: make GraphQLSubscription flow type special to support defining these?
   const resolveFn = (fieldDef: any).subscribe || defaultFieldResolver;
 
-  // The resolve function's optional third argument is a context value that
-  // is provided to every resolve function within an execution. It is commonly
-  // used to represent an authenticated user, or request-specific caches.
-  const context = exeContext.contextValue;
-
-  // The resolve function's optional fourth argument is a collection of
-  // information about the current execution state.
-  const info: GraphQLResolveInfo = {
-    fieldName,
-    fieldNodes,
-    returnType: fieldDef.type,
-    parentType: type,
-    path: fieldPath,
-    schema: exeContext.schema,
-    fragments: exeContext.fragments,
-    rootValue: exeContext.rootValue,
-    operation: exeContext.operation,
-    variableValues: exeContext.variableValues,
-  };
-
-  // Build a JS object of arguments from the field.arguments AST, using the
-  // variables scope to fulfill any variable references.
-  const args = getArgumentValues(
+  const info = buildResolveInfo(
+    exeContext,
     fieldDef,
-    fieldNode,
-    exeContext.variableValues
+    fieldNodes,
+    type,
+    addPath(undefined, responseName)
   );
 
-  // TODO: resolveFn could throw!
-  const subscription = resolveFn(rootValue, args, context, info);
+  // TODO: handle the error
+  const subscription = resolveFieldValueOrError(
+    exeContext,
+    fieldDef,
+    fieldNodes,
+    resolveFn,
+    rootValue,
+    info
+  );
 
   invariant(
-    isIterable(subscription),
-    'Subscription must return async-iterator.'
+    isAsyncIterable(subscription),
+    'Subscription must return Async Iterable.'
   );
 
-  return subscription;
-}
-
-function isIterable(value) {
-  return typeof value === 'object' &&
-    value !== null &&
-    typeof value.next === 'function';
+  return (subscription: any);
 }

@@ -57,6 +57,8 @@ describe('eventEmitterAsyncIterator', () => {
     expect(await i5).to.deep.equal({ done: true, value: undefined });
 
     // And next returns empty completion value
-    expect(await iterator.next()).to.deep.equal({ done: true, value: undefined });
+    expect(await iterator.next()).to.deep.equal(
+      { done: true, value: undefined }
+    );
   });
 });
