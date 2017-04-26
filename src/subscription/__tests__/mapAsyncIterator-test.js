@@ -43,7 +43,7 @@ describe('mapAsyncIterator', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterator(source(), async (x) => await x + x);
+    const doubles = mapAsyncIterator(source(), async x => await x + x);
 
     expect(
       await doubles.next()
@@ -143,7 +143,7 @@ describe('mapAsyncIterator', () => {
     // Throw error
     let caughtError;
     try {
-      await doubles.throw('ouch')
+      await doubles.throw('ouch');
     } catch (e) {
       caughtError = e;
     }

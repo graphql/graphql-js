@@ -10,9 +10,7 @@
  */
 
 import type EventEmitter from 'events';
-
-const ASYNC_ITERATOR_SYMBOL =
-  typeof Symbol === 'function' && Symbol.asyncIterator || '@@asyncIterator';
+import { $$asyncIterator } from 'iterall';
 
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
@@ -22,8 +20,8 @@ export default function eventEmitterAsyncIterator(
   eventEmitter: EventEmitter,
   eventName: string
 ): AsyncIterator<mixed> {
-  let pullQueue = [];
-  let pushQueue = [];
+  const pullQueue = [];
+  const pushQueue = [];
   let listening = true;
   eventEmitter.addListener(eventName, pushValue);
 
@@ -67,7 +65,7 @@ export default function eventEmitterAsyncIterator(
       emptyQueue();
       return Promise.reject(error);
     },
-    [ASYNC_ITERATOR_SYMBOL]() {
+    [$$asyncIterator]() {
       return this;
     },
   };

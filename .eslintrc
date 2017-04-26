@@ -70,7 +70,7 @@
     "eqeqeq": ["error", "smart"],
     "func-names": 0,
     "func-style": 0,
-    "generator-star-spacing": [2, {"before": true, "after": false}],
+    "generator-star-spacing": [2, {"before": false, "after": true}],
     "guard-for-in": 2,
     "handle-callback-err": [2, "error"],
     "id-length": 0,

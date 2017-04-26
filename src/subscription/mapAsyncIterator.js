@@ -9,17 +9,20 @@
  * @flow
  */
 
-const ASYNC_ITERATOR_SYMBOL =
-  typeof Symbol === 'function' && Symbol.asyncIterator || '@@asyncIterator';
+import { $$asyncIterator, getAsyncIterator } from 'iterall';
 
 /**
- * Given an AsyncIterator and a callback function, return a new AsyncIterator
+ * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
 export default function mapAsyncIterator<T, U>(
-  iterator: AsyncIterator<T>,
+  iterable: AsyncIterable<T>,
   callback: (value: T) => U
 ): AsyncIterator<U> {
+  // Fixes a temporary issue with Regenerator/Babel
+  // https://github.com/facebook/regenerator/pull/290
+  const iterator = iterable.next ? (iterable: any) : getAsyncIterator(iterable);
+
   function mapResult(result) {
     return result.done ?
       result :
@@ -44,7 +47,7 @@ export default function mapAsyncIterator<T, U>(
       }
       return Promise.reject(error);
     },
-    [ASYNC_ITERATOR_SYMBOL]() {
+    [$$asyncIterator]() {
       return this;
     },
   };

@@ -117,22 +117,6 @@ export function execute(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
 ): Promise<ExecutionResult> {
-  invariant(schema, 'Must provide schema');
-  invariant(document, 'Must provide document');
-  invariant(
-    schema instanceof GraphQLSchema,
-    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
-    'not multiple versions of GraphQL installed in your node_modules directory.'
-  );
-
-  // Variables, if provided, must be an object.
-  invariant(
-    !variableValues || typeof variableValues === 'object',
-    'Variables must be provided as an Object where each property is a ' +
-    'variable value. Perhaps look to see if an unparsed JSON string ' +
-    'was provided.'
-  );
-
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
   const context = buildExecutionContext(
@@ -205,6 +189,22 @@ export function buildExecutionContext(
   rawVariableValues: ?{[key: string]: mixed},
   operationName: ?string
 ): ExecutionContext {
+  invariant(schema, 'Must provide schema');
+  invariant(document, 'Must provide document');
+  invariant(
+    schema instanceof GraphQLSchema,
+    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
+    'not multiple versions of GraphQL installed in your node_modules directory.'
+  );
+
+  // Variables, if provided, must be an object.
+  invariant(
+    !rawVariableValues || typeof rawVariableValues === 'object',
+    'Variables must be provided as an Object where each property is a ' +
+    'variable value. Perhaps look to see if an unparsed JSON string ' +
+    'was provided.'
+  );
+
   const errors: Array<GraphQLError> = [];
   let operation: ?OperationDefinitionNode;
   const fragments: {[name: string]: FragmentDefinitionNode} =
@@ -580,20 +580,50 @@ function resolveField(
     return;
   }
 
-  const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve || defaultFieldResolver;
 
-  // The resolve function's optional third argument is a context value that
-  // is provided to every resolve function within an execution. It is commonly
-  // used to represent an authenticated user, or request-specific caches.
-  const context = exeContext.contextValue;
+  const info = buildResolveInfo(
+    exeContext,
+    fieldDef,
+    fieldNodes,
+    parentType,
+    path
+  );
 
+  // Get the resolve function, regardless of if its result is normal
+  // or abrupt (error).
+  const result = resolveFieldValueOrError(
+    exeContext,
+    fieldDef,
+    fieldNodes,
+    resolveFn,
+    source,
+    info
+  );
+
+  return completeValueCatchingError(
+    exeContext,
+    fieldDef.type,
+    fieldNodes,
+    info,
+    path,
+    result
+  );
+}
+
+export function buildResolveInfo(
+  exeContext: ExecutionContext,
+  fieldDef: GraphQLField<*, *>,
+  fieldNodes: Array<FieldNode>,
+  parentType: GraphQLObjectType,
+  path: ResponsePath
+): GraphQLResolveInfo {
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
-  const info: GraphQLResolveInfo = {
-    fieldName,
+  return {
+    fieldName: fieldNodes[0].name.value,
     fieldNodes,
-    returnType,
+    returnType: fieldDef.type,
     parentType,
     path,
     schema: exeContext.schema,
@@ -602,38 +632,16 @@ function resolveField(
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
   };
-
-  // Get the resolve function, regardless of if its result is normal
-  // or abrupt (error).
-  const result = resolveOrError(
-    exeContext,
-    fieldDef,
-    fieldNode,
-    resolveFn,
-    source,
-    context,
-    info
-  );
-
-  return completeValueCatchingError(
-    exeContext,
-    returnType,
-    fieldNodes,
-    info,
-    path,
-    result
-  );
 }
 
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
-function resolveOrError<TSource, TContext>(
+export function resolveFieldValueOrError<TSource>(
   exeContext: ExecutionContext,
-  fieldDef: GraphQLField<TSource, TContext>,
-  fieldNode: FieldNode,
-  resolveFn: GraphQLFieldResolver<TSource, TContext>,
+  fieldDef: GraphQLField<TSource, *>,
+  fieldNodes: Array<FieldNode>,
+  resolveFn: GraphQLFieldResolver<TSource, *>,
   source: TSource,
-  context: TContext,
   info: GraphQLResolveInfo
 ): Error | mixed {
   try {
@@ -642,9 +650,14 @@ function resolveOrError<TSource, TContext>(
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = getArgumentValues(
       fieldDef,
-      fieldNode,
+      fieldNodes[0],
       exeContext.variableValues
     );
+
+    // The resolve function's optional third argument is a context value that
+    // is provided to every resolve function within an execution. It is commonly
+    // used to represent an authenticated user, or request-specific caches.
+    const context = exeContext.contextValue;
 
     return resolveFn(source, args, context, info);
   } catch (error) {

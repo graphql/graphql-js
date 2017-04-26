@@ -20,7 +20,6 @@ import {
   GraphQLBoolean,
   GraphQLInt,
   GraphQLString,
-  GraphQLNonNull,
 } from '../../type';
 
 
