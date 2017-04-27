@@ -1188,6 +1188,43 @@ describe('Type System: Enum types must be well defined', () => {
     );
   });
 
+  it('rejects an Enum type with incorrectly named values', () => {
+    function enumValue(name) {
+      return new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          [name]: {}
+        }
+      });
+    }
+
+    expect(() => enumValue('#value')
+    ).to.throw('Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "#value" does not.');
+
+    expect(() => enumValue('true')
+    ).to.throw('Name "true" is can not be used for Enum value.');
+
+    expect(() => enumValue('false')
+    ).to.throw('Name "false" is can not be used for Enum value.');
+
+    expect(() => enumValue('null')
+    ).to.throw('Name "null" is can not be used for Enum value.');
+  });
+
+  it('does not allow isDeprecated without deprecationReason on enum', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          value: { isDeprecated: true }
+        }
+      })
+    ).to.throw(
+      'SomeEnum.value should provide "deprecationReason" instead ' +
+      'of "isDeprecated".'
+    );
+  });
+
 });
 
 
@@ -2061,20 +2098,6 @@ describe('Objects must adhere to Interface they implement', () => {
       return schemaWithFieldType(OldObject);
     }).to.throw(
       'OldObject.field should provide "deprecationReason" instead ' +
-      'of "isDeprecated".'
-    );
-  });
-
-  it('does not allow isDeprecated without deprecationReason on enum', () => {
-    expect(() =>
-      new GraphQLEnumType({
-        name: 'SomeEnum',
-        values: {
-          value: { isDeprecated: true }
-        }
-      })
-    ).to.throw(
-      'SomeEnum.value should provide "deprecationReason" instead ' +
       'of "isDeprecated".'
     );
   });
