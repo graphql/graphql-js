@@ -637,6 +637,19 @@ describe('Type System: Union types must be array', () => {
     );
   });
 
+  it('rejects a Union type with duplicated member type', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLUnionType({
+        name: 'SomeUnion',
+        resolveType: () => null,
+        types: [
+          SomeObjectType,
+          SomeObjectType,
+        ],
+      }))
+    ).to.throw('SomeUnion can include SomeObject type only once.');
+  });
+
 });
 
 

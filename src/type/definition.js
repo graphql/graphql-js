@@ -789,12 +789,18 @@ function defineTypes(
     'Must provide Array of types or a function which returns ' +
     `such an array for Union ${unionType.name}.`
   );
+  const includedTypeNames = {};
   types.forEach(objType => {
     invariant(
       objType instanceof GraphQLObjectType,
       `${unionType.name} may only contain Object types, it cannot contain: ` +
       `${String(objType)}.`
     );
+    invariant(
+      !includedTypeNames[objType.name],
+      `${unionType.name} can include ${objType.name} type only once.`
+    );
+    includedTypeNames[objType.name] = true;
     if (typeof unionType.resolveType !== 'function') {
       invariant(
         typeof objType.isTypeOf === 'function',
