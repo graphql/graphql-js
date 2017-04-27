@@ -20,12 +20,21 @@ import type { Source } from '../language/source';
  */
 declare class GraphQLError extends Error {
 
+  constructor(
+    message: string,
+    nodes?: ?Array<*>,
+    source?: ?Source,
+    positions?: ?Array<number>,
+    path?: ?Array<string | number>,
+    originalError?: ?Error
+  ): void;
+
   /**
    * A message describing the Error for debugging purposes.
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  message: string,
+  message: string;
 
   /**
    * An array of { line, column } locations within the source GraphQL document
