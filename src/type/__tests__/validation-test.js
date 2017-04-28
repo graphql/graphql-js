@@ -1239,13 +1239,13 @@ describe('Type System: Enum types must be well defined', () => {
     ).to.throw('Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "#value" does not.');
 
     expect(() => enumValue('true')
-    ).to.throw('Name "true" is can not be used for Enum value.');
+    ).to.throw('Name "true" can not be used as an Enum value.');
 
     expect(() => enumValue('false')
-    ).to.throw('Name "false" is can not be used for Enum value.');
+    ).to.throw('Name "false" can not be used as an Enum value.');
 
     expect(() => enumValue('null')
-    ).to.throw('Name "null" is can not be used for Enum value.');
+    ).to.throw('Name "null" can not be used as an Enum value.');
   });
 
   it('does not allow isDeprecated without deprecationReason on enum', () => {

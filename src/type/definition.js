@@ -957,7 +957,7 @@ function defineEnumValues(
     assertValidName(valueName);
     invariant(
       [ 'true', 'false', 'null' ].indexOf(valueName) === -1,
-      `Name "${valueName}" is can not be used for Enum value.`
+      `Name "${valueName}" can not be used as an Enum value.`
     );
 
     const value = valueMap[valueName];
