@@ -559,6 +559,30 @@ describe('Type System: Object interfaces must be array', () => {
     );
   });
 
+  it('rejects an Object that declare it implements same interface more than once', () => {
+    expect(() => {
+      const NonUniqInterface = new GraphQLInterfaceType({
+        name: 'NonUniqInterface',
+        resolveType: () => null,
+        fields: { f: { type: GraphQLString } },
+      });
+
+      const AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: { f: { type: GraphQLString } },
+      });
+
+      schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        interfaces: () => [ NonUniqInterface, AnotherInterface, NonUniqInterface ],
+        fields: { f: { type: GraphQLString } }
+      }));
+    }).to.throw(
+      'SomeObject may declare it implements NonUniqInterface only once.'
+    );
+  });
+
   it('rejects an Object type with interfaces as a function returning an incorrect type', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
