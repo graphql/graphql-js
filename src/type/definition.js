@@ -9,7 +9,6 @@
  */
 
 import invariant from '../jsutils/invariant';
-import isNullish from '../jsutils/isNullish';
 import { ENUM } from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
 import type {
@@ -984,7 +983,7 @@ function defineEnumValues(
       description: value.description,
       isDeprecated: Boolean(value.deprecationReason),
       deprecationReason: value.deprecationReason,
-      value: isNullish(value.value) ? valueName : value.value,
+      value: value.hasOwnProperty('value') ? value.value : valueName,
     };
   });
 }
