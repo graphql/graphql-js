@@ -26,12 +26,18 @@ function coerceInt(value: mixed): ?number {
     );
   }
   const num = Number(value);
-  if (num === num && num <= MAX_INT && num >= MIN_INT) {
-    return (num < 0 ? Math.ceil : Math.floor)(num);
+  if (num !== num || num > MAX_INT || num < MIN_INT) {
+    throw new TypeError(
+      'Int cannot represent non 32-bit signed integer value: ' + String(value)
+    );
   }
-  throw new TypeError(
-    'Int cannot represent non 32-bit signed integer value: ' + String(value)
-  );
+  const int = Math.floor(num);
+  if (int !== num) {
+    throw new TypeError(
+      'Int cannot represent non-integer value: ' + String(value)
+    );
+  }
+  return int;
 }
 
 export const GraphQLInt = new GraphQLScalarType({

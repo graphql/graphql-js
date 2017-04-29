@@ -31,13 +31,13 @@ describe('isValidJSValue for GraphQLInt', () => {
     expectNoErrors(result);
   });
 
-  it('returns no error for exponent input', () => {
-    const result = isValidJSValue('1e3', GraphQLInt);
+  it('returns no error for negative int input', () => {
+    const result = isValidJSValue('-1', GraphQLInt);
     expectNoErrors(result);
   });
 
-  it('returns no error for float input', () => {
-    const result = isValidJSValue('1.5', GraphQLInt);
+  it('returns no error for exponent input', () => {
+    const result = isValidJSValue('1e3', GraphQLInt);
     expectNoErrors(result);
   });
 
@@ -48,6 +48,11 @@ describe('isValidJSValue for GraphQLInt', () => {
 
   it('returns a single error for empty value', () => {
     const result = isValidJSValue('', GraphQLInt);
+    expectErrorResult(result, 1);
+  });
+
+  it('returns error for float input as int', () => {
+    const result = isValidJSValue('1.5', GraphQLInt);
     expectErrorResult(result, 1);
   });
 
