@@ -357,7 +357,7 @@ export function visitWithTypeInfo(typeInfo, visitor) {
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.
  */
-function getVisitFn(visitor, kind, isLeaving) {
+export function getVisitFn(visitor, kind, isLeaving) {
   const kindVisitor = visitor[kind];
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {

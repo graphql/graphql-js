@@ -171,6 +171,7 @@ export {
   visit,
   visitInParallel,
   visitWithTypeInfo,
+  getVisitFn,
   Kind,
   TokenKind,
   BREAK,
