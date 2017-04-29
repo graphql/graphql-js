@@ -45,11 +45,15 @@ import { specifiedRules } from './specifiedRules';
  * Each validation rules is a function which returns a visitor
  * (see the language/visitor API). Visitor methods are expected to return
  * GraphQLErrors, or Arrays of GraphQLErrors when invalid.
+ *
+ * Optionally a custom TypeInfo instance may be provided. If not provided, one
+ * will be created from the provided schema.
  */
 export function validate(
   schema: GraphQLSchema,
   ast: DocumentNode,
-  rules?: Array<any>
+  rules?: Array<any>,
+  typeInfo?: TypeInfo,
 ): Array<GraphQLError> {
   invariant(schema, 'Must provide schema');
   invariant(ast, 'Must provide document');
@@ -58,8 +62,12 @@ export function validate(
     'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
     'not multiple versions of GraphQL installed in your node_modules directory.'
   );
-  const typeInfo = new TypeInfo(schema);
-  return visitUsingRules(schema, typeInfo, ast, rules || specifiedRules);
+  return visitUsingRules(
+    schema,
+    typeInfo || new TypeInfo(schema),
+    ast,
+    rules || specifiedRules
+  );
 }
 
 /**
