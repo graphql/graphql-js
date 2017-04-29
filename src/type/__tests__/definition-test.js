@@ -184,6 +184,33 @@ describe('Type System: Example', () => {
     });
   });
 
+  it('defines an enum type with a value of `null` and `undefined`', () => {
+    const EnumTypeWithNullishValue = new GraphQLEnumType({
+      name: 'EnumWithNullishValue',
+      values: {
+        NULL: { value: null },
+        UNDEFINED: { value: undefined },
+      }
+    });
+
+    expect(EnumTypeWithNullishValue.getValues()).to.deep.equal([
+      {
+        name: 'NULL',
+        description: undefined,
+        isDeprecated: false,
+        deprecationReason: undefined,
+        value: null,
+      },
+      {
+        name: 'UNDEFINED',
+        description: undefined,
+        isDeprecated: false,
+        deprecationReason: undefined,
+        value: undefined,
+      },
+    ]);
+  });
+
   it('defines an object type with deprecated field', () => {
     const TypeWithDeprecatedField = new GraphQLObjectType({
       name: 'foo',
