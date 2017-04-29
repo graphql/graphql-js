@@ -72,12 +72,13 @@ export type GraphQLInputType =
     GraphQLList<GraphQLInputType>
   >;
 
-export function isInputType(type: ?GraphQLType): boolean {
-  const namedType = getNamedType(type);
+export function isInputType(type: ?GraphQLType): boolean %checks {
   return (
-    namedType instanceof GraphQLScalarType ||
-    namedType instanceof GraphQLEnumType ||
-    namedType instanceof GraphQLInputObjectType
+    type instanceof GraphQLScalarType ||
+    type instanceof GraphQLEnumType ||
+    type instanceof GraphQLInputObjectType ||
+    type instanceof GraphQLNonNull && isInputType(type.ofType) ||
+    type instanceof GraphQLList && isInputType(type.ofType)
   );
 }
 
@@ -86,7 +87,7 @@ export function assertInputType(type: ?GraphQLType): GraphQLInputType {
     isInputType(type),
     `Expected ${String(type)} to be a GraphQL input type.`
   );
-  return (type: any);
+  return type;
 }
 
 /**
@@ -108,14 +109,15 @@ export type GraphQLOutputType =
     GraphQLList<GraphQLOutputType>
   >;
 
-export function isOutputType(type: ?GraphQLType): boolean {
-  const namedType = getNamedType(type);
+export function isOutputType(type: ?GraphQLType): boolean %checks {
   return (
-    namedType instanceof GraphQLScalarType ||
-    namedType instanceof GraphQLObjectType ||
-    namedType instanceof GraphQLInterfaceType ||
-    namedType instanceof GraphQLUnionType ||
-    namedType instanceof GraphQLEnumType
+    type instanceof GraphQLScalarType ||
+    type instanceof GraphQLObjectType ||
+    type instanceof GraphQLInterfaceType ||
+    type instanceof GraphQLUnionType ||
+    type instanceof GraphQLEnumType ||
+    type instanceof GraphQLNonNull && isOutputType(type.ofType) ||
+    type instanceof GraphQLList && isOutputType(type.ofType)
   );
 }
 
@@ -124,7 +126,7 @@ export function assertOutputType(type: ?GraphQLType): GraphQLOutputType {
     isOutputType(type),
     `Expected ${String(type)} to be a GraphQL output type.`,
   );
-  return (type: any);
+  return type;
 }
 
 /**
@@ -134,7 +136,7 @@ export type GraphQLLeafType =
   GraphQLScalarType |
   GraphQLEnumType;
 
-export function isLeafType(type: ?GraphQLType): boolean {
+export function isLeafType(type: ?GraphQLType): boolean %checks {
   return (
     type instanceof GraphQLScalarType ||
     type instanceof GraphQLEnumType
@@ -146,7 +148,7 @@ export function assertLeafType(type: ?GraphQLType): GraphQLLeafType {
     isLeafType(type),
     `Expected ${String(type)} to be a GraphQL leaf type.`,
   );
-  return (type: any);
+  return type;
 }
 
 /**
@@ -157,7 +159,7 @@ export type GraphQLCompositeType =
   GraphQLInterfaceType |
   GraphQLUnionType;
 
-export function isCompositeType(type: ?GraphQLType): boolean {
+export function isCompositeType(type: ?GraphQLType): boolean %checks {
   return (
     type instanceof GraphQLObjectType ||
     type instanceof GraphQLInterfaceType ||
@@ -170,7 +172,7 @@ export function assertCompositeType(type: ?GraphQLType): GraphQLCompositeType {
     isCompositeType(type),
     `Expected ${String(type)} to be a GraphQL composite type.`,
   );
-  return (type: any);
+  return type;
 }
 
 /**
@@ -180,7 +182,7 @@ export type GraphQLAbstractType =
   GraphQLInterfaceType |
   GraphQLUnionType;
 
-export function isAbstractType(type: ?GraphQLType): boolean {
+export function isAbstractType(type: ?GraphQLType): boolean %checks {
   return (
     type instanceof GraphQLInterfaceType ||
     type instanceof GraphQLUnionType
@@ -192,7 +194,7 @@ export function assertAbstractType(type: ?GraphQLType): GraphQLAbstractType {
     isAbstractType(type),
     `Expected ${String(type)} to be a GraphQL abstract type.`,
   );
-  return (type: any);
+  return type;
 }
 
 /**
@@ -224,7 +226,7 @@ export type GraphQLNamedType =
   GraphQLEnumType |
   GraphQLInputObjectType;
 
-export function isNamedType(type: ?GraphQLType): boolean {
+export function isNamedType(type: ?GraphQLType): boolean %checks {
   return (
     type instanceof GraphQLScalarType ||
     type instanceof GraphQLObjectType ||
@@ -240,18 +242,24 @@ export function assertNamedType(type: ?GraphQLType): GraphQLNamedType {
     isNamedType(type),
     `Expected ${String(type)} to be a GraphQL named type.`,
   );
-  return (type: any);
+  return type;
 }
 
-export function getNamedType(type: ?GraphQLType): ?GraphQLNamedType {
-  let unmodifiedType = type;
-  while (
-    unmodifiedType instanceof GraphQLList ||
-    unmodifiedType instanceof GraphQLNonNull
-  ) {
-    unmodifiedType = unmodifiedType.ofType;
+/* eslint-disable no-redeclare */
+declare function getNamedType(type: void | null): void;
+declare function getNamedType(type: GraphQLType): GraphQLNamedType;
+export function getNamedType(type) {
+/* eslint-enable no-redeclare */
+  if (type) {
+    let unmodifiedType = type;
+    while (
+      unmodifiedType instanceof GraphQLList ||
+      unmodifiedType instanceof GraphQLNonNull
+    ) {
+      unmodifiedType = unmodifiedType.ofType;
+    }
+    return unmodifiedType;
   }
-  return unmodifiedType;
 }
 
 
@@ -556,7 +564,7 @@ function isPlainObj(obj) {
 }
 
 // If a resolver is defined, it must be a function.
-function isValidResolver(resolver: any): boolean {
+function isValidResolver(resolver: mixed): boolean {
   return (resolver == null || typeof resolver === 'function');
 }
 

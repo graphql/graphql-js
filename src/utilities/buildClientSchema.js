@@ -162,7 +162,7 @@ export function buildClientSchema(
       isInputType(type),
       'Introspection must provide input type for arguments.'
     );
-    return (type: any);
+    return type;
   }
 
   function getOutputType(typeRef: IntrospectionTypeRef): GraphQLOutputType {
@@ -171,7 +171,7 @@ export function buildClientSchema(
       isOutputType(type),
       'Introspection must provide output type for fields.'
     );
-    return (type: any);
+    return type;
   }
 
   function getObjectType(typeRef: IntrospectionTypeRef): GraphQLObjectType {
@@ -180,7 +180,7 @@ export function buildClientSchema(
       type instanceof GraphQLObjectType,
       'Introspection must provide object type for possibleTypes.'
     );
-    return (type: any);
+    return type;
   }
 
   function getInterfaceType(
@@ -191,7 +191,7 @@ export function buildClientSchema(
       type instanceof GraphQLInterfaceType,
       'Introspection must provide interface type for interfaces.'
     );
-    return (type: any);
+    return type;
   }
 
 

@@ -57,7 +57,7 @@ export function getVariableValues(
   for (let i = 0; i < varDefNodes.length; i++) {
     const varDefNode = varDefNodes[i];
     const varName = varDefNode.variable.name.value;
-    let varType = typeFromAST(schema, varDefNode.type);
+    const varType = typeFromAST(schema, varDefNode.type);
     if (!isInputType(varType)) {
       throw new GraphQLError(
         `Variable "$${varName}" expected value of type ` +
@@ -65,7 +65,6 @@ export function getVariableValues(
         [ varDefNode.type ]
       );
     }
-    varType = ((varType: any): GraphQLInputType);
 
     const value = inputs[varName];
     if (isInvalid(value)) {

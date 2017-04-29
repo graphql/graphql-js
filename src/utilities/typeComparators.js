@@ -11,15 +11,12 @@
 import {
   isAbstractType,
   GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLList,
   GraphQLNonNull,
 } from '../type/definition';
 import type {
   GraphQLType,
-  GraphQLCompositeType,
-  GraphQLAbstractType
+  GraphQLCompositeType
 } from '../type/definition';
 import type {
   GraphQLSchema
@@ -89,10 +86,7 @@ export function isTypeSubTypeOf(
   // possible object type.
   if (isAbstractType(superType) &&
       maybeSubType instanceof GraphQLObjectType &&
-      schema.isPossibleType(
-        ((superType: any): GraphQLAbstractType),
-        maybeSubType
-      )) {
+      schema.isPossibleType(superType, maybeSubType)) {
     return true;
   }
 
@@ -122,10 +116,8 @@ export function doTypesOverlap(
     return true;
   }
 
-  if (typeA instanceof GraphQLInterfaceType ||
-      typeA instanceof GraphQLUnionType) {
-    if (_typeB instanceof GraphQLInterfaceType ||
-        _typeB instanceof GraphQLUnionType) {
+  if (isAbstractType(typeA)) {
+    if (isAbstractType(_typeB)) {
       // If both types are abstract, then determine if there is any intersection
       // between possible concrete types of each.
       return schema.getPossibleTypes(typeA).some(
@@ -136,8 +128,7 @@ export function doTypesOverlap(
     return schema.isPossibleType(typeA, _typeB);
   }
 
-  if (_typeB instanceof GraphQLInterfaceType ||
-      _typeB instanceof GraphQLUnionType) {
+  if (isAbstractType(_typeB)) {
     // Determine if the former type is a possible concrete type of the latter.
     return schema.isPossibleType(_typeB, typeA);
   }
