@@ -57,7 +57,6 @@ describe('assertValidName()', () => {
     // Make sure module-internal state is reset for each test.
     delete require.cache[require.resolve('../assertValidName')];
     assertValidName = require('../assertValidName').assertValidName;
-
   });
 
   afterEach(() => {
