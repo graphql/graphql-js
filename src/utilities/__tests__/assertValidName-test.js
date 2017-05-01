@@ -7,9 +7,11 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
+import { default as chai, expect } from 'chai';
 import { formatWarning } from '../assertValidName';
+
+/* eslint-disable no-console */
 
 /**
  * Helper for dedenting indented template literals. This helps us to
@@ -40,6 +42,64 @@ function createErrorObject(message, stack) {
   error.stack = stack;
   return error;
 }
+
+describe('assertValidName()', () => {
+  let assertValidName;
+  let noNameWarning;
+  let warn;
+
+  beforeEach(() => {
+    noNameWarning = process.env.GRAPHQL_NO_NAME_WARNING;
+    delete process.env.GRAPHQL_NO_NAME_WARNING;
+    warn = console.warn;
+    console.warn = chai.spy();
+
+    // Make sure module-internal state is reset for each test.
+    delete require.cache[require.resolve('../assertValidName')];
+    assertValidName = require('../assertValidName').assertValidName;
+
+  });
+
+  afterEach(() => {
+    console.warn = warn;
+    if (noNameWarning === undefined) {
+      delete process.env.GRAPHQL_NO_NAME_WARNING;
+    } else {
+      process.env.GRAPHQL_NO_NAME_WARNING = noNameWarning;
+    }
+  });
+
+  it('warns against use of leading double underscores', () => {
+    assertValidName('__bad');
+    expect(console.warn).to.have.been.called.once();
+    expect(console.warn.__spy.calls[0][0]).to.match(/must not begin with/);
+  });
+
+  it('warns exactly once even in the presence of multiple violations', () => {
+    assertValidName('__bad');
+    assertValidName('__alsoBad');
+    expect(console.warn).to.have.been.called.once();
+  });
+
+  it('throws for non-strings', () => {
+    expect(() => assertValidName({})).to.throw(/Must be named/);
+  });
+
+  it('throws for names with invalid characters', () => {
+    expect(() => assertValidName('>--()-->')).to.throw(/Names must match/);
+  });
+
+  it('does not warn during introspection', () => {
+    assertValidName('__bad', true);
+    expect(console.warn).not.to.have.been.called();
+  });
+
+  it('does not warn when GRAPHQL_NO_NAME_WARNING is in effect', () => {
+    process.env.GRAPHQL_NO_NAME_WARNING = '1';
+    assertValidName('__bad', true);
+    expect(console.warn).not.to.have.been.called();
+  });
+});
 
 describe('formatWarning()', () => {
   it('formats given a Chrome-style stack property', () => {
