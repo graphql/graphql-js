@@ -11,6 +11,10 @@
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 const ERROR_PREFIX_RX = /^Error: /;
 
+// Silences warnings if an environment flag is enabled
+const noNameWarning =
+  Boolean(process && process.env && process.env.GRAPHQL_NO_NAME_WARNING);
+
 // Ensures console warnings are only issued once.
 let hasWarnedAboutDunder = false;
 
@@ -26,7 +30,12 @@ export function assertValidName(
       `Must be named. Unexpected name: ${name}.`
     );
   }
-  if (!isIntrospection && name.slice(0, 2) === '__' && !hasWarnedAboutDunder) {
+  if (
+    !isIntrospection &&
+    !hasWarnedAboutDunder &&
+    !noNameWarning &&
+    name.slice(0, 2) === '__'
+  ) {
     hasWarnedAboutDunder = true;
     /* eslint-disable no-console */
     if (console && console.warn) {
