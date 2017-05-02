@@ -627,7 +627,7 @@ chai-json-equal@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/chai-json-equal/-/chai-json-equal-0.0.1.tgz#338fcbbdaec63349379c7c4278c8a28da3b141a1"
 
-chai-spies@^0.7.1:
+chai-spies@0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/chai-spies/-/chai-spies-0.7.1.tgz#343d99f51244212e8b17e64b93996ff7b2c2a9b1"
 
