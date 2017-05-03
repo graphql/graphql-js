@@ -243,6 +243,7 @@ export type {
   ExecutionResult,
 } from './execution';
 
+export { subscribe } from './subscription';
 
 // Validate GraphQL queries.
 export {
