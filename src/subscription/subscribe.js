@@ -85,6 +85,7 @@ export function subscribe(schema: GraphQLSchema,
         variables: variableValues,
         operationName,
         rootValue,
+        payload,
       })
     )),
   );
