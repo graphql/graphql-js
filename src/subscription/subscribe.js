@@ -43,14 +43,12 @@ import type {
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
-export function subscribe(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
-  operationName?: ?string,
-): AsyncIterator<ExecutionResult> {
+export function subscribe(schema: GraphQLSchema,
+                          document: DocumentNode,
+                          rootValue?: mixed,
+                          contextValue?: mixed,
+                          variableValues?: ?{ [key: string]: mixed },
+                          operationName?: ?string,): AsyncIterator<ExecutionResult> {
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
   const exeContext = buildExecutionContext(
@@ -74,22 +72,27 @@ export function subscribe(
   // GraphQL `execute` function, with `payload` as the rootValue.
   return mapAsyncIterator(
     subscription,
-    payload => execute(
+    payload => (execute(
       schema,
       document,
       payload,
       contextValue,
       variableValues,
       operationName
-    )
+    ).then(executionResult => ({
+        data: executionResult.data,
+        context: contextValue,
+        variables: variableValues,
+        operationName,
+        rootValue,
+      })
+    )),
   );
 }
 
-function resolveSubscription(
-  exeContext: ExecutionContext,
-  operation: OperationDefinitionNode,
-  rootValue: mixed
-): AsyncIterable<mixed> {
+function resolveSubscription(exeContext: ExecutionContext,
+                             operation: OperationDefinitionNode,
+                             rootValue: mixed): AsyncIterable<mixed> {
   const type = getOperationRootType(exeContext.schema, exeContext.operation);
   const fields = collectFields(
     exeContext,
