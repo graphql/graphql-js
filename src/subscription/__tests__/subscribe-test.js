@@ -11,7 +11,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import EventEmitter from 'events';
 import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
-import {subscribe} from '../subscribe';
+import { subscribe } from '../subscribe';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -77,10 +77,7 @@ describe('Subscribe', () => {
     subscription: SubscriptionType
   });
 
-  it('produces a payload per subscription event', async () => {
-
-    const pubsub = new EventEmitter();
-
+  const createSubscription = pubsub => {
     const data = {
       inbox: {
         emails: [
@@ -125,13 +122,21 @@ describe('Subscribe', () => {
 
     // GraphQL `subscribe` has the same call signature as `execute`, but returns
     // AsyncIterator instead of Promise.
-    const subscription = subscribe(
-      emailSchema,
-      ast,
-      data,
-      null, // context
-      { priority: 1 }
-    );
+    return {
+      subscription: subscribe(
+        emailSchema,
+        ast,
+        data,
+        null, // context
+        { priority: 1 }
+      ),
+      sendImportantEmail,
+    };
+  };
+
+  it('produces a payload per subscription event', async () => {
+    const pubsub = new EventEmitter();
+    const { sendImportantEmail, subscription } = createSubscription(pubsub);
 
     // Wait for the next subscription payload.
     const payload = subscription.next();
@@ -211,4 +216,279 @@ describe('Subscribe', () => {
     });
   });
 
+  it('produces a payload when there are multiple events', async () => {
+    const pubsub = new EventEmitter();
+    const { sendImportantEmail, subscription } = createSubscription(pubsub);
+    let payload = subscription.next();
+
+    // A new email arrives!
+    expect(sendImportantEmail({
+      from: 'yuzhi@graphql.org',
+      subject: 'Alright',
+      message: 'Tests are good',
+      unread: true,
+    })).to.equal(true);
+
+    expect(await payload).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              from: 'yuzhi@graphql.org',
+              subject: 'Alright',
+            },
+            inbox: {
+              unread: 1,
+              total: 2,
+            },
+          },
+        },
+      },
+    });
+
+    payload = subscription.next();
+
+    // A new email arrives!
+    expect(sendImportantEmail({
+      from: 'yuzhi@graphql.org',
+      subject: 'Alright 2',
+      message: 'Tests are good 2',
+      unread: true,
+    })).to.equal(true);
+
+    expect(await payload).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              from: 'yuzhi@graphql.org',
+              subject: 'Alright 2',
+            },
+            inbox: {
+              unread: 2,
+              total: 3,
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it('should not trigger when subscription is already done', async () => {
+    const pubsub = new EventEmitter();
+    const { sendImportantEmail, subscription } = createSubscription(pubsub);
+    let payload = subscription.next();
+
+    // A new email arrives!
+    expect(sendImportantEmail({
+      from: 'yuzhi@graphql.org',
+      subject: 'Alright',
+      message: 'Tests are good',
+      unread: true,
+    })).to.equal(true);
+
+    expect(await payload).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              from: 'yuzhi@graphql.org',
+              subject: 'Alright',
+            },
+            inbox: {
+              unread: 1,
+              total: 2,
+            },
+          },
+        },
+      },
+    });
+
+    payload = subscription.next();
+    subscription.return();
+
+    // A new email arrives!
+    expect(sendImportantEmail({
+      from: 'yuzhi@graphql.org',
+      subject: 'Alright 2',
+      message: 'Tests are good 2',
+      unread: true,
+    })).to.equal(false);
+
+    expect(await payload).to.deep.equal({
+      done: true,
+      value: undefined,
+    });
+  });
+
+  it('events order is correct when multiple triggered together', async () => {
+    const pubsub = new EventEmitter();
+    const { sendImportantEmail, subscription } = createSubscription(pubsub);
+    let payload = subscription.next();
+
+    // A new email arrives!
+    expect(sendImportantEmail({
+      from: 'yuzhi@graphql.org',
+      subject: 'Message',
+      message: 'Tests are good',
+      unread: true,
+    })).to.equal(true);
+
+    // A new email arrives!
+    expect(sendImportantEmail({
+      from: 'yuzhi@graphql.org',
+      subject: 'Message 2',
+      message: 'Tests are good 2',
+      unread: true,
+    })).to.equal(true);
+
+    expect(await payload).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              from: 'yuzhi@graphql.org',
+              subject: 'Message',
+            },
+            inbox: {
+              unread: 2,
+              total: 3,
+            },
+          },
+        },
+      },
+    });
+
+    payload = subscription.next();
+
+    expect(await payload).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              from: 'yuzhi@graphql.org',
+              subject: 'Message 2',
+            },
+            inbox: {
+              unread: 2,
+              total: 3,
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it('invalid query should result in error', async () => {
+    const invalidAST = parse(`
+      subscription {
+        invalidField
+      }
+    `);
+
+    expect(() => {
+      subscribe(
+        emailSchema,
+        invalidAST,
+        null,
+        null, // context
+        { priority: 1 });
+    }).to.throw('This subscription is not defined by the schema.');
+  });
+
+  it('throws when subscription definition doesnt return iterator', () => {
+    const invalidEmailSchema = new GraphQLSchema({
+      query: QueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          importantEmail: {
+            type: GraphQLString,
+            resolve: () => 'test',
+          },
+        }
+      })
+    });
+
+    const ast = parse(`
+      subscription {
+        importantEmail
+      }
+    `);
+
+    expect(() => {
+      subscribe(
+        invalidEmailSchema,
+        ast,
+        null,
+        null, // context
+        { priority: 1 });
+    }).to.throw('Subscription must return Async Iterable.');
+  });
+
+  it('expects to have subscribe on type definition with iterator', () => {
+    const pubsub = new EventEmitter();
+    const invalidEmailSchema = new GraphQLSchema({
+      query: QueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          importantEmail: {
+            type: GraphQLString,
+            subscribe: () => eventEmitterAsyncIterator(pubsub, 'importantEmail')
+          },
+        }
+      })
+    });
+
+    const ast = parse(`
+      subscription {
+        importantEmail
+      }
+    `);
+
+    expect(() => {
+      subscribe(
+        invalidEmailSchema,
+        ast,
+        null,
+        null, // context
+        { priority: 1 });
+    }).not.to.throw();
+  });
+
+  it('throws when subscribe does not return a valid iterator', () => {
+    const invalidEmailSchema = new GraphQLSchema({
+      query: QueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          importantEmail: {
+            type: GraphQLString,
+            subscribe: () => 'test'
+          },
+        }
+      })
+    });
+
+    const ast = parse(`
+      subscription {
+        importantEmail
+      }
+    `);
+
+    expect(() => {
+      subscribe(
+        invalidEmailSchema,
+        ast,
+        null,
+        null, // context
+        { priority: 1 });
+    }).to.throw('Subscription must return Async Iterable.');
+  });
 });
