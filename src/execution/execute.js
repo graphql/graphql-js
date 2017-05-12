@@ -93,12 +93,12 @@ type ExecutionContext = {
 /**
  * The result of GraphQL execution.
  *
- *   - `data` is the result of a successful execution of the query.
  *   - `errors` is included when any errors occurred as a non-empty array.
+ *   - `data` is the result of a successful execution of the query.
  */
 export type ExecutionResult = {
-  data?: ?{[key: string]: mixed};
   errors?: Array<GraphQLError>;
+  data?: ?{[key: string]: mixed};
 };
 
 /**
@@ -163,7 +163,7 @@ export function execute(
     if (!context.errors.length) {
       return { data };
     }
-    return { data, errors: context.errors };
+    return { errors: context.errors, data };
   });
 }
 
