@@ -152,9 +152,11 @@ export function valueFromAST(
   );
 
   const parsed = type.parseLiteral(valueNode);
-  if (isNullish(parsed)) {
-    // null or invalid values represent a failure to parse correctly,
-    // in which case no value is returned.
+  if (type instanceof GraphQLEnumType ?
+      !type.serialize(parsed) : isNullish(parsed)) {
+    // null or invalid values represent a failure to parse correctly (unless
+    // we have a legitimately null-valued Enum), in which case no value is
+    // returned.
     return;
   }
 

@@ -66,7 +66,13 @@ describe('valueFromAST', () => {
 
   const testEnum = new GraphQLEnumType({
     name: 'TestColor',
-    values: { RED: { value: 1 }, GREEN: { value: 2 }, BLUE: { value: 3 } }
+    values: {
+      RED: { value: 1 },
+      GREEN: { value: 2 },
+      BLUE: { value: 3 },
+      NULL: { value: null },
+      UNDEFINED: { value: undefined }
+    }
   });
 
   it('converts enum values according to input coercion rules', () => {
@@ -75,6 +81,8 @@ describe('valueFromAST', () => {
     testCase(testEnum, '3', undefined);
     testCase(testEnum, '"BLUE"', undefined);
     testCase(testEnum, 'null', null);
+    testCase(testEnum, 'NULL', null);
+    testCase(testEnum, 'UNDEFINED', undefined);
   });
 
   // Boolean!
