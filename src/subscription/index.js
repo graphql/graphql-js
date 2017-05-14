@@ -1,1 +1,1 @@
-export { subscribe } from './subscribe';
+export { subscribe, getSubscriptionEventSource } from './subscribe';
