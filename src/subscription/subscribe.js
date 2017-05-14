@@ -34,6 +34,33 @@ import type {
   OperationDefinitionNode,
 } from '../language/ast';
 
+export function getSubscriptionEventSource(
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
+  operationName?: ?string,
+): AsyncIterable<mixed> {
+  // If a valid context cannot be created due to incorrect arguments,
+  // this will throw an error.
+  const exeContext = buildExecutionContext(
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName
+  );
+
+  // Call the `subscribe()` resolver or the default resolver to produce an
+  // AsyncIterable yielding raw payloads.
+  return resolveSubscription(
+    exeContext,
+    exeContext.operation,
+    rootValue
+  );
+}
 
 /**
  * Implements the "Subscribing to request" section of the GraphQL specification.
@@ -51,24 +78,13 @@ export function subscribe(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string,
 ): AsyncIterator<ExecutionResult> {
-  // If a valid context cannot be created due to incorrect arguments,
-  // this will throw an error.
-  const exeContext = buildExecutionContext(
+  const subscription = getSubscriptionEventSource(
     schema,
     document,
     rootValue,
     contextValue,
     variableValues,
-    operationName
-  );
-
-  // Call the `subscribe()` resolver or the default resolver to produce an
-  // AsyncIterable yielding raw payloads.
-  const subscription = resolveSubscription(
-    exeContext,
-    exeContext.operation,
-    rootValue
-  );
+    operationName);
 
   // For each payload yielded from a subscription, map it over the normal
   // GraphQL `execute` function, with `payload` as the rootValue.
