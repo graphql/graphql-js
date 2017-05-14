@@ -123,7 +123,6 @@ function resolveSubscription(
     addPath(undefined, responseName)
   );
 
-  // TODO: handle the error
   const subscription = resolveFieldValueOrError(
     exeContext,
     fieldDef,
@@ -132,6 +131,10 @@ function resolveSubscription(
     rootValue,
     info
   );
+
+  if (subscription instanceof Error) {
+    throw subscription;
+  }
 
   invariant(
     isAsyncIterable(subscription),

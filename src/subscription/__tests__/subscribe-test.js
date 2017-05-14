@@ -77,7 +77,7 @@ describe('Subscribe', () => {
     subscription: SubscriptionType
   });
 
-  const createSubscription = pubsub => {
+  function createSubscription(pubsub) {
     const data = {
       inbox: {
         emails: [
@@ -123,16 +123,15 @@ describe('Subscribe', () => {
     // GraphQL `subscribe` has the same call signature as `execute`, but returns
     // AsyncIterator instead of Promise.
     return {
+      sendImportantEmail,
       subscription: subscribe(
         emailSchema,
         ast,
         data,
-        null, // context
-        { priority: 1 }
+        null
       ),
-      sendImportantEmail,
     };
-  };
+  }
 
   it('produces a payload per subscription event', async () => {
     const pubsub = new EventEmitter();
@@ -396,8 +395,7 @@ describe('Subscribe', () => {
         emailSchema,
         invalidAST,
         null,
-        null, // context
-        { priority: 1 });
+        null);
     }).to.throw('This subscription is not defined by the schema.');
   });
 
@@ -409,7 +407,7 @@ describe('Subscribe', () => {
         fields: {
           importantEmail: {
             type: GraphQLString,
-            resolve: () => 'test',
+            subscribe: () => 'test',
           },
         }
       })
@@ -426,8 +424,7 @@ describe('Subscribe', () => {
         invalidEmailSchema,
         ast,
         null,
-        null, // context
-        { priority: 1 });
+        null);
     }).to.throw('Subscription must return Async Iterable.');
   });
 
@@ -457,12 +454,11 @@ describe('Subscribe', () => {
         invalidEmailSchema,
         ast,
         null,
-        null, // context
-        { priority: 1 });
+        null);
     }).not.to.throw();
   });
 
-  it('throws when subscribe does not return a valid iterator', () => {
+  it('should handle error thrown by subscribe method', () => {
     const invalidEmailSchema = new GraphQLSchema({
       query: QueryType,
       subscription: new GraphQLObjectType({
@@ -470,9 +466,11 @@ describe('Subscribe', () => {
         fields: {
           importantEmail: {
             type: GraphQLString,
-            subscribe: () => 'test'
+            subscribe: () => {
+              throw new Error('test error');
+            },
           },
-        }
+        },
       })
     });
 
@@ -487,8 +485,7 @@ describe('Subscribe', () => {
         invalidEmailSchema,
         ast,
         null,
-        null, // context
-        { priority: 1 });
-    }).to.throw('Subscription must return Async Iterable.');
+        null);
+    }).to.throw('test error');
   });
 });
