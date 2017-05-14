@@ -77,7 +77,7 @@ describe('Subscribe', () => {
     subscription: SubscriptionType
   });
 
-  function createSubscription(pubsub) {
+  function createSubscription(pubsub, schema = emailSchema) {
     const data = {
       inbox: {
         emails: [
@@ -125,13 +125,71 @@ describe('Subscribe', () => {
     return {
       sendImportantEmail,
       subscription: subscribe(
-        emailSchema,
+        schema,
         ast,
         data,
         null
       ),
     };
   }
+
+  it('multiple subscription fields defined in schema', async () => {
+    const pubsub = new EventEmitter();
+    const SubscriptionTypeMultiple = new GraphQLObjectType({
+      name: 'Subscription',
+      fields: {
+        importantEmail: { type: EmailEventType },
+        nonImportantEmail: { type: EmailEventType },
+      }
+    });
+
+    const testSchema = new GraphQLSchema({
+      query: QueryType,
+      subscription: SubscriptionTypeMultiple
+    });
+
+    expect(() => {
+      const { sendImportantEmail } =
+        createSubscription(pubsub, testSchema);
+
+      sendImportantEmail({
+        from: 'yuzhi@graphql.org',
+        subject: 'Alright',
+        message: 'Tests are good',
+        unread: true,
+      });
+    }).not.to.throw();
+  });
+
+  it('should throw when querying for multiple fields', async () => {
+    const SubscriptionTypeMultiple = new GraphQLObjectType({
+      name: 'Subscription',
+      fields: {
+        importantEmail: { type: EmailEventType },
+        nonImportantEmail: { type: EmailEventType },
+      }
+    });
+
+    const testSchema = new GraphQLSchema({
+      query: QueryType,
+      subscription: SubscriptionTypeMultiple
+    });
+
+    const ast = parse(`
+      subscription {
+        importantEmail
+        nonImportantEmail
+      }
+    `);
+
+    expect(() => {
+      subscribe(
+        testSchema,
+        ast,
+        null,
+        null);
+    }).to.throw('A subscription must contain exactly one field.');
+  });
 
   it('produces a payload per subscription event', async () => {
     const pubsub = new EventEmitter();
