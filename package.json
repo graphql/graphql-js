@@ -70,7 +70,7 @@
     "coveralls": "2.13.1",
     "eslint": "3.19.0",
     "eslint-plugin-babel": "4.1.1",
-    "eslint-plugin-flowtype": "2.32.1",
+    "eslint-plugin-flowtype": "2.33.0",
     "flow-bin": "0.46.0",
     "isparta": "4.0.0",
     "mocha": "3.3.0",
