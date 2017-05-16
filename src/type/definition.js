@@ -614,6 +614,7 @@ export type GraphQLFieldConfig<TSource, TContext> = {
   type: GraphQLOutputType;
   args?: GraphQLFieldConfigArgumentMap;
   resolve?: GraphQLFieldResolver<TSource, TContext>;
+  subscribe?: GraphQLFieldResolver<TSource, TContext>;
   deprecationReason?: ?string;
   description?: ?string;
 };
@@ -638,6 +639,7 @@ export type GraphQLField<TSource, TContext> = {
   type: GraphQLOutputType;
   args: Array<GraphQLArgument>;
   resolve?: GraphQLFieldResolver<TSource, TContext>;
+  subscribe?: GraphQLFieldResolver<TSource, TContext>;
   isDeprecated?: boolean;
   deprecationReason?: ?string;
 };

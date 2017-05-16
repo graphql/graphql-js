@@ -128,8 +128,7 @@ function resolveSubscription(
     'This subscription is not defined by the schema.'
   );
 
-  // TODO: make GraphQLSubscription flow type special to support defining these?
-  const resolveFn = (fieldDef: any).subscribe || defaultFieldResolver;
+  const resolveFn = fieldDef.subscribe || defaultFieldResolver;
 
   const info = buildResolveInfo(
     exeContext,
