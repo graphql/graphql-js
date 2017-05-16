@@ -13,8 +13,14 @@ import { parse } from './language/parser';
 import { validate } from './validation/validate';
 import { execute } from './execution/execute';
 import type { GraphQLSchema } from './type/schema';
-import type { ExecutionResult } from './execution/execute';
+// import type { ExecutionResult } from './execution/execute';
 
+type onNextBlock = (next: mixed) => void;
+type onErrorBlock = (error: Error, isContinued: ?boolean) => void;
+type onEndBlock = (info: ?mixed) => void;
+
+type UniversalCallbackFunction =
+  (onNext: onNextBlock, onError: onErrorBlock, onEnd: onEndBlock) => void;
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -40,33 +46,66 @@ import type { ExecutionResult } from './execution/execute';
  *    possible operations. Can be omitted if requestString contains only
  *    one operation.
  */
-export function graphql(
+export function graphql$UCCF(
   schema: GraphQLSchema,
   requestString: string,
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string
-): Promise<ExecutionResult> {
-  return new Promise(resolve => {
+): UniversalCallbackFunction {
+
+  return function (onNext, onError) {
     const source = new Source(requestString || '', 'GraphQL request');
     const documentAST = parse(source);
     const validationErrors = validate(schema, documentAST);
     if (validationErrors.length > 0) {
-      resolve({ errors: validationErrors });
-    } else {
-      resolve(
-        execute(
-          schema,
-          documentAST,
-          rootValue,
-          contextValue,
-          variableValues,
-          operationName
-        )
-      );
+      onNext({ errors: validationErrors });
+      return;
     }
-  }).then(undefined, error => {
-    return { errors: [ error ] };
-  });
+    try {
+      // !!!:
+      // Currently, although graphql$UCCF adopts UCC design, the graphql$UCCF is
+      // not reactive due to the upstream (execute) isn't reactive (as Promise).
+      // We'll refactor `execute()` later.
+      execute(
+        schema,
+        documentAST,
+        rootValue,
+        contextValue,
+        variableValues,
+        operationName
+      ).then(data => {
+        onNext(data);
+      }, error => {
+        onError(error);
+      });
+    } catch (error) {
+      onNext({ errors: [ error ] });
+    }
+  };
 }
+
+/**
+ * Turn a UCC function into a Promise.
+ *
+ * @see https://gist.github.com/xareelee/e85c8b2134ff1805ab1ab2f1c8a037ce
+ */
+function promisify(uccf) {
+  return function (...args: any[]) {
+    return new Promise((resolve, reject) => {
+      uccf(...args)(
+        x => resolve(x),
+        err => reject(err),
+        end => resolve(end)
+      );
+    });
+  };
+}
+
+/**
+ * We export `graphql` as a Promise from `graphql$UCCF`.
+ *
+ * @see graphql$UCCF
+ */
+export const graphql = promisify(graphql$UCCF);
