@@ -394,10 +394,28 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
  *       })
  *     });
  *
+ * You can specify a root level resolve function when creating a new object
+ * type. This function will be used as the default resolver for any fields
+ * that do not specify their own resolve function.
+ *
+ * Example:
+ *
+ *     const ArticleType = new GraphQLObjectType({
+ *       name: 'Article',
+ *       resolve: (obj, args, context, info) => {
+ *         return context.loader(obj, info.fieldName)
+ *       },
+ *       fields: () => ({
+ *         title: { type: GraphQLString },
+ *         text: { type: GraphQLString }
+ *       })
+ *     });
+ *
  */
 export class GraphQLObjectType {
   name: string;
   description: ?string;
+  resolve: ?GraphQLFieldResolver<*, *>
   isTypeOf: ?GraphQLIsTypeOfFn<*, *>;
 
   _typeConfig: GraphQLObjectTypeConfig<*, *>;
@@ -408,6 +426,7 @@ export class GraphQLObjectType {
     assertValidName(config.name, config.isIntrospection);
     this.name = config.name;
     this.description = config.description;
+    this.resolve = config.resolve;
     if (config.isTypeOf) {
       invariant(
         typeof config.isTypeOf === 'function',
@@ -569,6 +588,7 @@ function isValidResolver(resolver: mixed): boolean {
 
 export type GraphQLObjectTypeConfig<TSource, TContext> = {
   name: string;
+  resolve?: GraphQLFieldResolver<TSource, TContext>;
   interfaces?: Thunk<?Array<GraphQLInterfaceType>>;
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>;
   isTypeOf?: ?GraphQLIsTypeOfFn<TSource, TContext>;

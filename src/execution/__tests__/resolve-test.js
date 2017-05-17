@@ -20,10 +20,11 @@ import {
 
 describe('Execute: resolve function', () => {
 
-  function testSchema(testField) {
+  function testSchema(testField, resolve) {
     return new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
+        resolve,
         fields: {
           test: testField
         }
@@ -94,7 +95,7 @@ describe('Execute: resolve function', () => {
     });
   });
 
-  it('uses provided resolve function', async () => {
+  it('uses field provided resolve function', async () => {
     const schema = testSchema({
       type: GraphQLString,
       args: {
@@ -135,6 +136,23 @@ describe('Execute: resolve function', () => {
     ).to.deep.equal({
       data: {
         test: '["Source!",{"aStr":"String!","aInt":-123}]'
+      }
+    });
+  });
+
+  it('uses object provided resolve function', async () => {
+    const schema = testSchema({
+      type: GraphQLString
+    },
+    () => {
+      return 'defaultResult';
+    });
+
+    expect(
+      await graphql(schema, '{ test }')
+    ).to.deep.equal({
+      data: {
+        test: 'defaultResult'
       }
     });
   });
