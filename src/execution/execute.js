@@ -385,7 +385,7 @@ function executeFields(
       }
       return results;
     },
-    Object.create(null)
+    {}
   );
 
   // If there are no promises, we can just return the object
@@ -545,7 +545,7 @@ function promiseForObject<T>(
     values => values.reduce((resolvedObject, value, i) => {
       resolvedObject[keys[i]] = value;
       return resolvedObject;
-    }, Object.create(null))
+    }, {})
   );
 }
 

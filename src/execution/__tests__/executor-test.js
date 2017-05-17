@@ -935,4 +935,58 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('returns proper Javascript Objects', async () => {
+    const Thread = new GraphQLObjectType({
+      name: 'Thread',
+      fields: {
+        id: {
+          type: GraphQLString,
+          resolve(thread) {
+            return thread.id;
+          },
+        },
+        name: {
+          type: GraphQLString,
+          resolve() {
+            return 'Lorem Lipsum';
+          },
+        },
+      },
+    });
+    const Query = new GraphQLObjectType({
+      name: 'Query',
+      fields: {
+        thread: {
+          type: Thread,
+          args: {
+            id: {
+              type: GraphQLString,
+            },
+          },
+          resolve(root, args) {
+            return {id: args.id};
+          }
+        },
+      },
+    });
+    const jsSchema = new GraphQLSchema({
+      query: Query,
+    });
+    const testQuery = `query abc{
+      thread(id: "67"){
+        id
+        name
+      }
+    }`;
+    const expected = {
+      thread: {
+        id: '67',
+        name: 'Lorem Ipsum',
+      },
+    };
+    const res = await execute(jsSchema, parse(testQuery));
+    expect(Object.getPrototypeOf(res.data.thread)).to.deep.equal(
+      Object.getPrototypeOf(expected)
+    );
+  });
 });
