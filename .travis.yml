@@ -22,35 +22,26 @@ notifications:
   slack:
     secure: G7fzaXoPI1cyyW7dlpQ8oG/ot73n4kE83HgbyK1iEN1YBfodsytVgh0jS+zB3DhhRAotS/VfGVz9Wj2Oo109U5w/FyxdMGuKvFan/0B/aAws1sPxLGWA5230u1wTKQCHAu17+yppFOODUu1ILDXaD2A//Wj5iru9M4NnKc1bO6VHkfBHPTLQLbdPHmorwuSH02Ocbh7K4XOWzXRxM6VrwamEn1KnyXGu2w3QdJUT31OjGEEdf6FUzvjwzFgXPhngCw5+enpwm71ljHDNu8YHhXvHtS4328O5pYQO8np7j653HNEqi+ZUiYEOWpwC8be1xHdvi/s32tPFZiCx28ZmDoCUrY744tpPtE6tzuncmSKB0Y3EjutdXBpxllNr5l5hpX5092G2MlpokFbv85J+E2ALcZYNYeFOqTYTKwTYkxK6B1x4amBNpM+FXgUhloK4BK9OT0Qh5SiQOsM8cZT0h6QP91n+REljtpugW3VbuIxq5OJAi42FYbHBC27pohhq6ohU1euZfobk9a7ZawnjoEUk1EZHXiJzYKY/QqzyB6dwk0ersBl3l3OX/wnjwKTkqc9aTmDWo2L+lHaUCXuCY1+KQXsRicfnH395szTJXQbvcbN0zz188gdz6sawzi5BxndWo0NRwZyOG2YcyUHFQR4bK1rL7Lo6t6rijQ/XMeQ=
 
-before_install:
-  - npm config set spin false --global
-
 script:
-  - if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then npm run lint && npm run check && npm run cover:lcov; else npm run testonly; fi
+  - if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then npm run lint && npm run check && npm run cover:lcov && cat ./coverage/lcov.info | coveralls; else npm run testonly; fi
 
-after_failure:
-  - (cd resources; python travis_after_all.py)
-
-after_success:
-  - (cd resources; python travis_after_all.py)
-  - export $(cat resources/.to_export_back)
-  - if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js; fi
-
-deploy:
-  - provider: script
-    skip_cleanup: true
-    script: ./resources/npm-git.sh
-    on:
-      branch: master
-      condition: "$BUILD_LEADER$BUILD_AGGREGATE_STATUS = YESothers_succeeded"
-  - provider: npm
-    email: "lee@leebyron.com"
-    api_key:
-      secure: tCIGE/3CLOQlC49i/9ug42ILQjZnMOrSjyjdHkqmTVN5q9p9bljjziXQbNxYfVPYa9icICnVnI4c5psjktW+vwaz2WJAJhpWD6P3YGcpmKjjgPKKHKWOcXvq3HdIzH7DIbXyVtE0QLpV5zgbyxglD96vYScO9dvGeAhTGY/9qJaDvVkLOZ+6YpKiTwZlZcyPHlD1tbxzd4NytJgIsi7CedFdfATAmOyVsot1NRZr5q3oV0aXFjJRnhBQ3RtykGgGHtXEWYTNhAmYxcIwezYRYXLxtlkbrlwxixpKAdJr/UXHg6amplkaHtCopi+QChPQRmdndcDC6F+e2nFHut6BCi14Jnbvf7seaqWrmh0uqdopqMJFRP3OBc9lXZf3hljVKV9+iVbWNjxoUB7ezurOOEpgkXleJ5AO2o3u8oYh3OFfLYu7E1a4uSjfe4nP/zi+th+wvS4Wy2UWqErYFUMotMyStS/vllXUpK7pl+Qt59MUVHB8YzREyCVKxakQ/uvNvY+bzKf4sM8UJ/Dqnl3MaAjLG3rWZbFyzXdaJnRGdTeFK2lpz8nrfJEDzLIQX5ZC88yR30WahrRjAhLnnq0V1fYp0wLbLxs4SdN+tuMRlkzQhQEYYDYa5osgEo2C+O4D/H9F7GWHHJp9zPE+hMi5+ZwTPKHkln4/AqrABUKOk78=
-    on:
-      tags: true
-      branch: master
-      condition: "$BUILD_LEADER$BUILD_AGGREGATE_STATUS = YESothers_succeeded"
+jobs:
+  include:
+    - stage: Deploy
+      script: echo "Deploying..."
+      node_js: '7'
+      deploy:
+        - provider: script
+          script: ./resources/npm-git.sh
+          on:
+            branch: master
+        - provider: npm
+          email: "lee@leebyron.com"
+          api_key:
+            secure: tCIGE/3CLOQlC49i/9ug42ILQjZnMOrSjyjdHkqmTVN5q9p9bljjziXQbNxYfVPYa9icICnVnI4c5psjktW+vwaz2WJAJhpWD6P3YGcpmKjjgPKKHKWOcXvq3HdIzH7DIbXyVtE0QLpV5zgbyxglD96vYScO9dvGeAhTGY/9qJaDvVkLOZ+6YpKiTwZlZcyPHlD1tbxzd4NytJgIsi7CedFdfATAmOyVsot1NRZr5q3oV0aXFjJRnhBQ3RtykGgGHtXEWYTNhAmYxcIwezYRYXLxtlkbrlwxixpKAdJr/UXHg6amplkaHtCopi+QChPQRmdndcDC6F+e2nFHut6BCi14Jnbvf7seaqWrmh0uqdopqMJFRP3OBc9lXZf3hljVKV9+iVbWNjxoUB7ezurOOEpgkXleJ5AO2o3u8oYh3OFfLYu7E1a4uSjfe4nP/zi+th+wvS4Wy2UWqErYFUMotMyStS/vllXUpK7pl+Qt59MUVHB8YzREyCVKxakQ/uvNvY+bzKf4sM8UJ/Dqnl3MaAjLG3rWZbFyzXdaJnRGdTeFK2lpz8nrfJEDzLIQX5ZC88yR30WahrRjAhLnnq0V1fYp0wLbLxs4SdN+tuMRlkzQhQEYYDYa5osgEo2C+O4D/H9F7GWHHJp9zPE+hMi5+ZwTPKHkln4/AqrABUKOk78=
+          on:
+            tags: true
+            branch: master
 
 env:
   global:
