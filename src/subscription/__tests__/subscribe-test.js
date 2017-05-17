@@ -192,6 +192,44 @@ describe('Subscribe', () => {
       'A subscription operation must contain exactly one root field.');
   });
 
+  it('produces payload for multiple subscribe in same subscription',
+    async () => {
+      const pubsub = new EventEmitter();
+      const { sendImportantEmail, subscription } = createSubscription(pubsub);
+      const second = createSubscription(pubsub);
+
+      const payload1 = subscription.next();
+      const payload2 = second.subscription.next();
+
+      expect(sendImportantEmail({
+        from: 'yuzhi@graphql.org',
+        subject: 'Alright',
+        message: 'Tests are good',
+        unread: true,
+      })).to.equal(true);
+
+      const expectedPayload = {
+        done: false,
+        value: {
+          data: {
+            importantEmail: {
+              email: {
+                from: 'yuzhi@graphql.org',
+                subject: 'Alright',
+              },
+              inbox: {
+                unread: 1,
+                total: 2,
+              },
+            },
+          },
+        },
+      };
+
+      expect(await payload1).to.deep.equal(expectedPayload);
+      expect(await payload2).to.deep.equal(expectedPayload);
+    });
+
   it('produces a payload per subscription event', async () => {
     const pubsub = new EventEmitter();
     const { sendImportantEmail, subscription } = createSubscription(pubsub);
