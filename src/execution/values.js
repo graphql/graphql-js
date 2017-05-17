@@ -191,7 +191,7 @@ function coerceValue(type: GraphQLInputType, value: mixed): mixed {
     const itemType = type.ofType;
     if (isCollection(_value)) {
       const coercedValues = [];
-      const valueIter = createIterator((_value: any));
+      const valueIter = createIterator(_value);
       if (!valueIter) {
         return; // Intentionally return no value.
       }

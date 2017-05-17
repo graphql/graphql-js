@@ -34,7 +34,7 @@ import type {
   OperationDefinitionNode,
 } from '../language/ast';
 
-export function getSubscriptionEventSource(
+export function createSubscriptionSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -78,7 +78,7 @@ export function subscribe(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string,
 ): AsyncIterator<ExecutionResult> {
-  const subscription = getSubscriptionEventSource(
+  const subscription = createSubscriptionSourceEventStream(
     schema,
     document,
     rootValue,
@@ -117,7 +117,7 @@ function resolveSubscription(
   const responseNames = Object.keys(fields);
   invariant(
     responseNames.length === 1,
-    'A subscription must contain exactly one field.'
+    'A subscription operation must contain exactly one root field.'
   );
   const responseName = responseNames[0];
   const fieldNodes = fields[responseName];

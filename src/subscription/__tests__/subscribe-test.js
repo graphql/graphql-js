@@ -188,7 +188,8 @@ describe('Subscribe', () => {
         ast,
         null,
         null);
-    }).to.throw('A subscription must contain exactly one field.');
+    }).to.throw(
+      'A subscription operation must contain exactly one root field.');
   });
 
   it('produces a payload per subscription event', async () => {
