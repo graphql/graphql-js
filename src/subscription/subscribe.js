@@ -35,13 +35,13 @@ import type {
 } from '../language/ast';
 
 /**
- * Implements the "CreateSourceEventStream" and resolves the subscription
- * event stream source.
+ * Implements the "CreateSourceEventStream" algorithm described in the 
+ * GraphQL specification, resolving the subscription source event stream.
  *
  * Returns an AsyncIterable
  *
- * A Source Stream represents the sequence of events, each of which will
- * trigger a GraphQL execution corresponding to that event.
+ * A Source Stream represents the sequence of events, each of which is 
+ * expected to be used to trigger a GraphQL execution for that event.
  */
 export function createSourceEventStream(
   schema: GraphQLSchema,
@@ -72,7 +72,7 @@ export function createSourceEventStream(
 }
 
 /**
- * Implements the "Subscribing to request" section of the GraphQL specification.
+ * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
  * Returns an AsyncIterator
  *
@@ -147,8 +147,9 @@ function resolveSubscription(
     addPath(undefined, responseName)
   );
 
-  // resolveFieldValueOrError mirros ResolveFieldEventStream
-  // from subscriptions spec
+  // resolveFieldValueOrError implements the "ResolveFieldEventStream"
+  // algorithm from GraphQL specification. It differs from 
+  // "ResolveFieldValue" due to providing a different `resolveFn`.
   const subscription = resolveFieldValueOrError(
     exeContext,
     fieldDef,
