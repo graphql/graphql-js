@@ -12,6 +12,7 @@ import { Source } from './language/source';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
 import { execute } from './execution/execute';
+import type { GraphQLFieldResolver } from './type/definition';
 import type { GraphQLSchema } from './type/schema';
 import type { ExecutionResult } from './execution/execute';
 
@@ -39,6 +40,10 @@ import type { ExecutionResult } from './execution/execute';
  *    The name of the operation to use if requestString contains multiple
  *    possible operations. Can be omitted if requestString contains only
  *    one operation.
+ * fieldResolver:
+ *    A resolver function to use when one is not provided by the schema.
+ *    If not provided, the default field resolver is used (which looks for a
+ *    value or method on the source value with the field's name).
  */
 export function graphql(
   schema: GraphQLSchema,
@@ -46,7 +51,8 @@ export function graphql(
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
-  operationName?: ?string
+  operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): Promise<ExecutionResult> {
   return new Promise(resolve => {
     const source = new Source(requestString || '', 'GraphQL request');
@@ -62,7 +68,8 @@ export function graphql(
           rootValue,
           contextValue,
           variableValues,
-          operationName
+          operationName,
+          fieldResolver
         )
       );
     }

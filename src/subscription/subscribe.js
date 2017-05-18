@@ -14,7 +14,6 @@ import {
   addPath,
   buildExecutionContext,
   collectFields,
-  defaultFieldResolver,
   execute,
   getFieldDef,
   getOperationRootType,
@@ -27,6 +26,7 @@ import mapAsyncIterator from './mapAsyncIterator';
 
 import type { ExecutionResult } from '../execution/execute';
 import type { DocumentNode } from '../language/ast';
+import type { GraphQLFieldResolver } from '../type/definition';
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -43,6 +43,8 @@ export function subscribe(
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>
 ): AsyncIterator<ExecutionResult> {
   const subscription = createSourceEventStream(
     schema,
@@ -50,7 +52,9 @@ export function subscribe(
     rootValue,
     contextValue,
     variableValues,
-    operationName);
+    operationName,
+    subscribeFieldResolver
+  );
 
   // For each payload yielded from a subscription, map it over the normal
   // GraphQL `execute` function, with `payload` as the rootValue.
@@ -66,7 +70,8 @@ export function subscribe(
       payload,
       contextValue,
       variableValues,
-      operationName
+      operationName,
+      fieldResolver
     )
   );
 }
@@ -92,6 +97,7 @@ export function createSourceEventStream(
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): AsyncIterable<mixed> {
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
@@ -101,7 +107,8 @@ export function createSourceEventStream(
     rootValue,
     contextValue,
     variableValues,
-    operationName
+    operationName,
+    fieldResolver
   );
 
   const type = getOperationRootType(schema, exeContext.operation);
@@ -128,7 +135,7 @@ export function createSourceEventStream(
 
   // Call the `subscribe()` resolver or the default resolver to produce an
   // AsyncIterable yielding raw payloads.
-  const resolveFn = fieldDef.subscribe || defaultFieldResolver;
+  const resolveFn = fieldDef.subscribe || exeContext.fieldResolver;
 
   const info = buildResolveInfo(
     exeContext,
