@@ -148,7 +148,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       value: originalError
     }
   });
-  
+
   // Include (non-enumerable) stack trace.
   if (originalError && originalError.stack) {
     Object.defineProperty(this, 'stack', {
