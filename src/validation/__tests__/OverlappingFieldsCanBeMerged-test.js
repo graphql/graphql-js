@@ -936,6 +936,35 @@ describe('Validate: Overlapping fields can be merged', () => {
       );
     });
 
+    it('works for field names that are JS keywords', () => {
+      const FooType = new GraphQLObjectType({
+        name: 'Foo',
+        fields: {
+          constructor: {
+            type: GraphQLString
+          },
+        }
+      });
+
+      const schemaWithKeywords = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'Query',
+          fields: () => ({
+            foo: { type: FooType },
+          })
+        }),
+      });
+
+      expectPassesRuleWithSchema(
+        schemaWithKeywords,
+        OverlappingFieldsCanBeMerged,
+        `{
+          foo {
+            constructor
+          }
+        }`
+      );
+    });
   });
 
 });

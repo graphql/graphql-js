@@ -151,7 +151,7 @@ export class ValidationContext {
             frags[statement.name.value] = statement;
           }
           return frags;
-        }, {});
+        }, Object.create(null));
     }
     return fragments[name];
   }
