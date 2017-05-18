@@ -72,7 +72,6 @@ function emailSchemaWithResolvers(subscribeFn, resolveFn) {
           type: EmailEventType,
           resolve: resolveFn,
           subscribe: subscribeFn,
-          // TODO: remove
           args: {
             priority: {type: GraphQLInt}
           }
@@ -347,7 +346,7 @@ describe('Subscription Initialization Phase', () => {
     );
   });
 
-  it('throws an error for unknown root field', async () => {
+  it('unknown field should result in closed subscription', async () => {
     const ast = parse(`
       subscription {
         unknownField
@@ -356,10 +355,10 @@ describe('Subscription Initialization Phase', () => {
 
     const pubsub = new EventEmitter();
 
-    expectPromiseToThrow(
-      () => createSubscription(pubsub, emailSchema, ast),
-      'This subscription is not defined by the schema.'
-    );
+    const { subscription } = await createSubscription(pubsub, emailSchema, ast);
+
+    const payload = await subscription.next();
+    expect(payload).to.deep.equal({ done: true, value: undefined });
   });
 
   it('throws an error if subscribe does not return an iterator', async () => {
