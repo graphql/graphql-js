@@ -76,7 +76,7 @@ export function validate(
  *
  * @internal
  */
-export function visitUsingRules(
+function visitUsingRules(
   schema: GraphQLSchema,
   typeInfo: TypeInfo,
   documentAST: DocumentNode,
