@@ -935,4 +935,34 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('uses a custom field resolver', async () => {
+    const query = parse('{ foo }');
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          foo: { type: GraphQLString }
+        }
+      })
+    });
+
+    // For the purposes of test, just return the name of the field!
+    function customResolver(source, args, context, info) {
+      return info.fieldName;
+    }
+
+    const result = await execute(
+      schema,
+      query,
+      null,
+      null,
+      null,
+      null,
+      customResolver
+    );
+
+    expect(result).to.jsonEqual({ data: { foo: 'foo' } });
+  });
+
 });

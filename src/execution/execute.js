@@ -87,6 +87,7 @@ export type ExecutionContext = {
   contextValue: mixed;
   operation: OperationDefinitionNode;
   variableValues: {[key: string]: mixed};
+  fieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
 };
 
@@ -115,7 +116,8 @@ export function execute(
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
-  operationName?: ?string
+  operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): Promise<ExecutionResult> {
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
@@ -125,7 +127,8 @@ export function execute(
     rootValue,
     contextValue,
     variableValues,
-    operationName
+    operationName,
+    fieldResolver
   );
 
   // Return a Promise that will eventually resolve to the data described by
@@ -187,7 +190,8 @@ export function buildExecutionContext(
   rootValue: mixed,
   contextValue: mixed,
   rawVariableValues: ?{[key: string]: mixed},
-  operationName: ?string
+  operationName: ?string,
+  fieldResolver: ?GraphQLFieldResolver<any, any>
 ): ExecutionContext {
   invariant(schema, 'Must provide schema');
   invariant(document, 'Must provide document');
@@ -251,7 +255,8 @@ export function buildExecutionContext(
     contextValue,
     operation,
     variableValues,
-    errors
+    fieldResolver: fieldResolver || defaultFieldResolver,
+    errors,
   };
 }
 
@@ -580,7 +585,7 @@ function resolveField(
     return;
   }
 
-  const resolveFn = fieldDef.resolve || defaultFieldResolver;
+  const resolveFn = fieldDef.resolve || exeContext.fieldResolver;
 
   const info = buildResolveInfo(
     exeContext,
