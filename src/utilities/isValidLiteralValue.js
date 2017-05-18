@@ -115,10 +115,11 @@ export function isValidLiteralValue(
     'Must be input type'
   );
 
-  // Scalar/Enum input checks to ensure the type can parse the value to
-  // a non-null value.
+  // Scalars must parse to a non-null value, Enums may be null but must
+  // serialize back to a named value.
   const parseResult = type.parseLiteral(valueNode);
-  if (isNullish(parseResult)) {
+  if (type instanceof GraphQLEnumType ?
+      !type.serialize(parseResult) : isNullish(parseResult)) {
     return [ `Expected type "${type.name}", found ${print(valueNode)}.` ];
   }
 
