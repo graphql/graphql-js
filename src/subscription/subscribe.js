@@ -35,8 +35,10 @@ import type { GraphQLFieldResolver } from '../type/definition';
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
+ *
+ * Accepts either an object with named arguments, or individual arguments.
  */
-export function subscribe(
+declare function subscribe({|
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -45,7 +47,43 @@ export function subscribe(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>
-): AsyncIterator<ExecutionResult> {
+|}, ..._: []): AsyncIterator<ExecutionResult>;
+/* eslint-disable no-redeclare */
+declare function subscribe(
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
+  operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>
+): AsyncIterator<ExecutionResult>;
+export function subscribe(
+  argsOrSchema,
+  document,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  fieldResolver,
+  subscribeFieldResolver
+) {
+  // Extract arguments from object args if provided.
+  const args = arguments.length === 1 ? argsOrSchema : undefined;
+  const schema = args ? args.schema : argsOrSchema;
+  if (args) {
+    /* eslint-disable no-param-reassign */
+    document = args.document;
+    rootValue = args.rootValue;
+    contextValue = args.contextValue;
+    variableValues = args.variableValues;
+    operationName = args.operationName;
+    fieldResolver = args.fieldResolver;
+    subscribeFieldResolver = args.subscribeFieldResolver;
+    /* eslint-enable no-param-reassign, no-redeclare */
+  }
+
   const subscription = createSourceEventStream(
     schema,
     document,

@@ -127,11 +127,61 @@ describe('Subscribe', () => {
       subscription: subscribe(
         schema,
         ast,
-        data,
-        null
+        data
       ),
     };
   }
+
+  it('accepts an object with named properties as arguments', async () => {
+    const document = parse(`
+      subscription {
+        importantEmail
+      }
+    `);
+
+    async function* emptyAsyncIterator() {
+      // Empty
+    }
+
+    const ai = await subscribe({
+      schema: emailSchema,
+      document,
+      rootValue: {
+        importantEmail: emptyAsyncIterator
+      }
+    });
+
+    ai.return();
+  });
+
+  it('throws when missing schema', async () => {
+    const document = parse(`
+      subscription {
+        importantEmail
+      }
+    `);
+
+    expect(() =>
+      subscribe(
+        null,
+        document
+      )
+    ).to.throw('Must provide schema');
+
+    expect(() =>
+      subscribe({ document })
+    ).to.throw('Must provide schema');
+  });
+
+  it('throws when missing document', async () => {
+    expect(() =>
+      subscribe(emailSchema, null)
+    ).to.throw('Must provide document');
+
+    expect(() =>
+      subscribe({ schema: emailSchema })
+    ).to.throw('Must provide document');
+  });
 
   it('multiple subscription fields defined in schema', async () => {
     const pubsub = new EventEmitter();

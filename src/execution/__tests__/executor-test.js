@@ -38,6 +38,45 @@ describe('Execute: Handles basic execution tasks', () => {
     );
   });
 
+  it('throws if no schema is provided', () => {
+    expect(() => execute({
+      document: parse('{ field }')
+    })).to.throw(
+      'Must provide schema'
+    );
+  });
+
+  it('accepts an object with named properties as arguments', async () => {
+    const doc = 'query Example { a }';
+
+    const data = 'rootValue';
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Type',
+        fields: {
+          a: {
+            type: GraphQLString,
+            resolve(rootValue) {
+              return rootValue;
+            }
+          }
+        }
+      })
+    });
+
+    const result = await execute({
+      schema,
+      document: parse(doc),
+      rootValue: data
+    });
+
+    expect(result).to.jsonEqual({
+      data: { a: 'rootValue' }
+    });
+  });
+
+
   it('executes arbitrary code', async () => {
     const data = {
       a() { return 'Apple'; },
