@@ -27,7 +27,7 @@ describe('Parser', () => {
     }
 
     expect(caughtError.message).to.equal(
-      `Syntax Error GraphQL (1:2) Expected Name, found <EOF>
+      `Syntax Error GraphQL request (1:2) Expected Name, found <EOF>
 
 1: {
     ^
@@ -45,19 +45,23 @@ describe('Parser', () => {
 `{ ...MissingOn }
 fragment MissingOn Type
 `)
-    ).to.throw('Syntax Error GraphQL (2:20) Expected "on", found Name "Type"');
+    ).to.throw(
+      'Syntax Error GraphQL request (2:20) Expected "on", found Name "Type"'
+    );
 
     expect(
       () => parse('{ field: {} }')
-    ).to.throw('Syntax Error GraphQL (1:10) Expected Name, found {');
+    ).to.throw('Syntax Error GraphQL request (1:10) Expected Name, found {');
 
     expect(
       () => parse('notanoperation Foo { field }')
-    ).to.throw('Syntax Error GraphQL (1:1) Unexpected Name "notanoperation"');
+    ).to.throw(
+      'Syntax Error GraphQL request (1:1) Unexpected Name "notanoperation"'
+    );
 
     expect(
       () => parse('...')
-    ).to.throw('Syntax Error GraphQL (1:1) Unexpected ...');
+    ).to.throw('Syntax Error GraphQL request (1:1) Unexpected ...');
 
   });
 
@@ -76,19 +80,19 @@ fragment MissingOn Type
   it('parses constant default values', () => {
     expect(
       () => parse('query Foo($x: Complex = { a: { b: [ $var ] } }) { field }')
-    ).to.throw('Syntax Error GraphQL (1:37) Unexpected $');
+    ).to.throw('Syntax Error GraphQL request (1:37) Unexpected $');
   });
 
   it('does not accept fragments named "on"', () => {
     expect(
       () => parse('fragment on on on { on }')
-    ).to.throw('Syntax Error GraphQL (1:10) Unexpected Name "on"');
+    ).to.throw('Syntax Error GraphQL request (1:10) Unexpected Name "on"');
   });
 
   it('does not accept fragments spread of "on"', () => {
     expect(
       () => parse('{ ...on }')
-    ).to.throw('Syntax Error GraphQL (1:9) Expected Name, found }');
+    ).to.throw('Syntax Error GraphQL request (1:9) Expected Name, found }');
   });
 
   it('parses multi-byte characters', async () => {

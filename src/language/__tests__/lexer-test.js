@@ -17,13 +17,15 @@ function lexOne(str) {
   return lexer.advance();
 }
 
+/* eslint-disable max-len */
+
 describe('Lexer', () => {
 
   it('disallows uncommon control characters', () => {
 
     expect(() => lexOne('\u0007')
     ).to.throw(
-      'Syntax Error GraphQL (1:1) ' +
+      'Syntax Error GraphQL request (1:1) ' +
       'Cannot contain the invalid character "\\u0007"'
     );
 
@@ -107,7 +109,7 @@ describe('Lexer', () => {
 
 `)
     ).to.throw(
-      'Syntax Error GraphQL (3:5) ' +
+      'Syntax Error GraphQL request (3:5) ' +
       'Cannot parse the unexpected character "?".\n' +
       '\n' +
       '2: \n' +
@@ -180,79 +182,79 @@ describe('Lexer', () => {
 
     expect(
       () => lexOne('"')
-    ).to.throw('Syntax Error GraphQL (1:2) Unterminated string.');
+    ).to.throw('Syntax Error GraphQL request (1:2) Unterminated string.');
 
     expect(
       () => lexOne('"no end quote')
-    ).to.throw('Syntax Error GraphQL (1:14) Unterminated string.');
+    ).to.throw('Syntax Error GraphQL request (1:14) Unterminated string.');
 
     expect(
       () => lexOne('\'single quotes\'')
     ).to.throw(
-      'Syntax Error GraphQL (1:1) Unexpected single quote character (\'), ' +
+      'Syntax Error GraphQL request (1:1) Unexpected single quote character (\'), ' +
       'did you mean to use a double quote (")?'
     );
 
     expect(
       () => lexOne('"contains unescaped \u0007 control char"')
     ).to.throw(
-      'Syntax Error GraphQL (1:21) Invalid character within String: "\\u0007".'
+      'Syntax Error GraphQL request (1:21) Invalid character within String: "\\u0007".'
     );
 
     expect(
       () => lexOne('"null-byte is not \u0000 end of file"')
     ).to.throw(
-      'Syntax Error GraphQL (1:19) Invalid character within String: "\\u0000".'
+      'Syntax Error GraphQL request (1:19) Invalid character within String: "\\u0000".'
     );
 
     expect(
       () => lexOne('"multi\nline"')
-    ).to.throw('Syntax Error GraphQL (1:7) Unterminated string');
+    ).to.throw('Syntax Error GraphQL request (1:7) Unterminated string');
 
     expect(
       () => lexOne('"multi\rline"')
-    ).to.throw('Syntax Error GraphQL (1:7) Unterminated string');
+    ).to.throw('Syntax Error GraphQL request (1:7) Unterminated string');
 
     expect(
       () => lexOne('"bad \\z esc"')
     ).to.throw(
-      'Syntax Error GraphQL (1:7) Invalid character escape sequence: \\z.'
+      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\z.'
     );
 
     expect(
       () => lexOne('"bad \\x esc"')
     ).to.throw(
-      'Syntax Error GraphQL (1:7) Invalid character escape sequence: \\x.'
+      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\x.'
     );
 
     expect(
       () => lexOne('"bad \\u1 esc"')
     ).to.throw(
-      'Syntax Error GraphQL (1:7) Invalid character escape sequence: \\u1 es.'
+      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\u1 es.'
     );
 
     expect(
       () => lexOne('"bad \\u0XX1 esc"')
     ).to.throw(
-      'Syntax Error GraphQL (1:7) Invalid character escape sequence: \\u0XX1.'
+      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\u0XX1.'
     );
 
     expect(
       () => lexOne('"bad \\uXXXX esc"')
     ).to.throw(
-      'Syntax Error GraphQL (1:7) Invalid character escape sequence: \\uXXXX.'
+      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\uXXXX.'
     );
 
     expect(
       () => lexOne('"bad \\uFXXX esc"')
     ).to.throw(
-      'Syntax Error GraphQL (1:7) Invalid character escape sequence: \\uFXXX.'
+      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\uFXXX.'
     );
 
     expect(
       () => lexOne('"bad \\uXXXF esc"')
     ).to.throw(
-      'Syntax Error GraphQL (1:7) Invalid character escape sequence: \\uXXXF.'
+      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\uXXXF.'
     );
   });
 
@@ -409,53 +411,53 @@ describe('Lexer', () => {
     expect(
       () => lexOne('00')
     ).to.throw(
-      'Syntax Error GraphQL (1:2) Invalid number, ' +
+      'Syntax Error GraphQL request (1:2) Invalid number, ' +
       'unexpected digit after 0: "0".'
     );
 
     expect(
       () => lexOne('+1')
     ).to.throw(
-      'Syntax Error GraphQL (1:1) Cannot parse the unexpected character "+".'
+      'Syntax Error GraphQL request (1:1) Cannot parse the unexpected character "+".'
     );
 
     expect(
       () => lexOne('1.')
     ).to.throw(
-      'Syntax Error GraphQL (1:3) Invalid number, ' +
+      'Syntax Error GraphQL request (1:3) Invalid number, ' +
       'expected digit but got: <EOF>.'
     );
 
     expect(
       () => lexOne('.123')
     ).to.throw(
-      'Syntax Error GraphQL (1:1) Cannot parse the unexpected character ".".'
+      'Syntax Error GraphQL request (1:1) Cannot parse the unexpected character ".".'
     );
 
     expect(
       () => lexOne('1.A')
     ).to.throw(
-      'Syntax Error GraphQL (1:3) Invalid number, ' +
+      'Syntax Error GraphQL request (1:3) Invalid number, ' +
       'expected digit but got: "A".'
     );
 
     expect(
       () => lexOne('-A')
     ).to.throw(
-      'Syntax Error GraphQL (1:2) Invalid number, ' +
+      'Syntax Error GraphQL request (1:2) Invalid number, ' +
       'expected digit but got: "A".'
     );
 
     expect(
       () => lexOne('1.0e')
     ).to.throw(
-      'Syntax Error GraphQL (1:5) Invalid number, ' +
+      'Syntax Error GraphQL request (1:5) Invalid number, ' +
       'expected digit but got: <EOF>.');
 
     expect(
       () => lexOne('1.0eA')
     ).to.throw(
-      'Syntax Error GraphQL (1:5) Invalid number, ' +
+      'Syntax Error GraphQL request (1:5) Invalid number, ' +
       'expected digit but got: "A".'
     );
   });
@@ -586,26 +588,26 @@ describe('Lexer', () => {
     expect(
       () => lexOne('..')
     ).to.throw(
-      'Syntax Error GraphQL (1:1) Cannot parse the unexpected character ".".'
+      'Syntax Error GraphQL request (1:1) Cannot parse the unexpected character ".".'
     );
 
     expect(
       () => lexOne('?')
     ).to.throw(
-      'Syntax Error GraphQL (1:1) Cannot parse the unexpected character "?".'
+      'Syntax Error GraphQL request (1:1) Cannot parse the unexpected character "?".'
     );
 
     expect(
       () => lexOne('\u203B')
     ).to.throw(
-      'Syntax Error GraphQL (1:1) ' +
+      'Syntax Error GraphQL request (1:1) ' +
       'Cannot parse the unexpected character "\\u203B".'
     );
 
     expect(
       () => lexOne('\u200b')
     ).to.throw(
-      'Syntax Error GraphQL (1:1) ' +
+      'Syntax Error GraphQL request (1:1) ' +
       'Cannot parse the unexpected character "\\u200B".'
     );
   });
@@ -623,7 +625,7 @@ describe('Lexer', () => {
     expect(
       () => lexer.advance()
     ).to.throw(
-      'Syntax Error GraphQL (1:3) Invalid number, expected digit but got: "b".'
+      'Syntax Error GraphQL request (1:3) Invalid number, expected digit but got: "b".'
     );
   });
 

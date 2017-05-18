@@ -8,10 +8,10 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import { Source } from './language/source';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
 import { execute } from './execution/execute';
+import type { Source } from './language/source';
 import type { GraphQLFieldResolver } from './type/definition';
 import type { GraphQLSchema } from './type/schema';
 import type { ExecutionResult } from './execution/execute';
@@ -28,7 +28,7 @@ import type { ExecutionResult } from './execution/execute';
  *
  * schema:
  *    The GraphQL type system to use when validating and executing a query.
- * requestString:
+ * source:
  *    A GraphQL language formatted string representing the requested operation.
  * rootValue:
  *    The value provided as the first argument to resolver functions on the top
@@ -47,7 +47,7 @@ import type { ExecutionResult } from './execution/execute';
  */
 export function graphql(
   schema: GraphQLSchema,
-  requestString: string,
+  source: string | Source,
   rootValue?: mixed,
   contextValue?: mixed,
   variableValues?: ?{[key: string]: mixed},
@@ -55,7 +55,6 @@ export function graphql(
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): Promise<ExecutionResult> {
   return new Promise(resolve => {
-    const source = new Source(requestString || '', 'GraphQL request');
     const documentAST = parse(source);
     const validationErrors = validate(schema, documentAST);
     if (validationErrors.length > 0) {
