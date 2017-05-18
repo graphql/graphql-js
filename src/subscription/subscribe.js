@@ -34,7 +34,16 @@ import type {
   OperationDefinitionNode,
 } from '../language/ast';
 
-export function createSubscriptionSourceEventStream(
+/**
+ * Implements the "CreateSourceEventStream" and resolves the subscription
+ * event stream source.
+ *
+ * Returns an AsyncIterable
+ *
+ * A Source Stream represents the sequence of events, each of which will
+ * trigger a GraphQL execution corresponding to that event.
+ */
+export function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -78,7 +87,7 @@ export function subscribe(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string,
 ): AsyncIterator<ExecutionResult> {
-  const subscription = createSubscriptionSourceEventStream(
+  const subscription = createSourceEventStream(
     schema,
     document,
     rootValue,
@@ -138,6 +147,8 @@ function resolveSubscription(
     addPath(undefined, responseName)
   );
 
+  // resolveFieldValueOrError mirros ResolveFieldEventStream
+  // from subscriptions spec
   const subscription = resolveFieldValueOrError(
     exeContext,
     fieldDef,
