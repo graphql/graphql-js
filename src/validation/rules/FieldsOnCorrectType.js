@@ -18,7 +18,7 @@ import type { GraphQLOutputType } from '../../type/definition';
 import {
   GraphQLObjectType,
   GraphQLInterfaceType,
-  GraphQLUnionType,
+  isAbstractType,
 } from '../../type/definition';
 
 
@@ -89,8 +89,7 @@ function getSuggestedTypeNames(
   type: GraphQLOutputType,
   fieldName: string
 ): Array<string> {
-  if (type instanceof GraphQLInterfaceType ||
-      type instanceof GraphQLUnionType) {
+  if (isAbstractType(type)) {
     const suggestedObjectTypes = [];
     const interfaceUsageCount = Object.create(null);
     schema.getPossibleTypes(type).forEach(possibleType => {

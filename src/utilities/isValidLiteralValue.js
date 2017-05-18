@@ -30,7 +30,6 @@ import {
 import type { GraphQLInputType } from '../type/definition';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
-import isNullish from '../jsutils/isNullish';
 
 
 /**
@@ -115,10 +114,8 @@ export function isValidLiteralValue(
     'Must be input type'
   );
 
-  // Scalar/Enum input checks to ensure the type can parse the value to
-  // a non-null value.
-  const parseResult = type.parseLiteral(valueNode);
-  if (isNullish(parseResult)) {
+  // Scalars determine if a literal values is valid.
+  if (!type.isValidLiteral(valueNode)) {
     return [ `Expected type "${type.name}", found ${print(valueNode)}.` ];
   }
 

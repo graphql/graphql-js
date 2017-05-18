@@ -171,6 +171,7 @@ export {
   visit,
   visitInParallel,
   visitWithTypeInfo,
+  getVisitFn,
   Kind,
   TokenKind,
   BREAK,
@@ -242,12 +243,42 @@ export type {
   ExecutionResult,
 } from './execution';
 
+export { subscribe, createSourceEventStream } from './subscription';
 
 // Validate GraphQL queries.
 export {
   validate,
   ValidationContext,
+
+  // All validation rules in the GraphQL Specification.
   specifiedRules,
+
+  // Individual validation rules.
+  ArgumentsOfCorrectTypeRule,
+  DefaultValuesOfCorrectTypeRule,
+  FieldsOnCorrectTypeRule,
+  FragmentsOnCompositeTypesRule,
+  KnownArgumentNamesRule,
+  KnownDirectivesRule,
+  KnownFragmentNamesRule,
+  KnownTypeNamesRule,
+  LoneAnonymousOperationRule,
+  NoFragmentCyclesRule,
+  NoUndefinedVariablesRule,
+  NoUnusedFragmentsRule,
+  NoUnusedVariablesRule,
+  OverlappingFieldsCanBeMergedRule,
+  PossibleFragmentSpreadsRule,
+  ProvidedNonNullArgumentsRule,
+  ScalarLeafsRule,
+  UniqueArgumentNamesRule,
+  UniqueDirectivesPerLocationRule,
+  UniqueFragmentNamesRule,
+  UniqueInputFieldNamesRule,
+  UniqueOperationNamesRule,
+  UniqueVariableNamesRule,
+  VariablesAreInputTypesRule,
+  VariablesInAllowedPositionRule,
 } from './validation';
 
 

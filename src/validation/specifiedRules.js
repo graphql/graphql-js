@@ -91,6 +91,9 @@ import type { ValidationContext } from './index';
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.
+ *
+ * The order of the rules in this list has been adjusted to lead to the
+ * most clear output when encountering multiple validation errors.
  */
 export const specifiedRules: Array<(context: ValidationContext) => any> = [
   UniqueOperationNames,

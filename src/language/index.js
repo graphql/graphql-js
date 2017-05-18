@@ -15,7 +15,13 @@ export { createLexer, TokenKind } from './lexer';
 export { parse, parseValue, parseType } from './parser';
 export { print } from './printer';
 export { Source } from './source';
-export { visit, visitInParallel, visitWithTypeInfo, BREAK } from './visitor';
+export {
+  visit,
+  visitInParallel,
+  visitWithTypeInfo,
+  getVisitFn,
+  BREAK,
+} from './visitor';
 
 export type { Lexer } from './lexer';
 export type { ParseOptions } from './parser';

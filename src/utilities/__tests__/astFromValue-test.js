@@ -38,6 +38,8 @@ describe('astFromValue', () => {
       null
     );
 
+    expect(astFromValue(NaN, GraphQLInt)).to.deep.equal(null);
+
     expect(astFromValue(null, GraphQLBoolean)).to.deep.equal(
       { kind: 'NullValue' }
     );
@@ -61,12 +63,14 @@ describe('astFromValue', () => {
       { kind: 'IntValue', value: '123' }
     );
 
-    expect(astFromValue(123.5, GraphQLInt)).to.deep.equal(
-      { kind: 'IntValue', value: '123' }
-    );
-
     expect(astFromValue(1e4, GraphQLInt)).to.deep.equal(
       { kind: 'IntValue', value: '10000' }
+    );
+
+    // GraphQL spec does not allow coercing non-integer values to Int to avoid
+    // accidental data loss.
+    expect(() => astFromValue(123.5, GraphQLInt)).to.throw(
+      'Int cannot represent non-integer value: 123.5'
     );
 
     // Note: outside the bounds of 32bit signed int.

@@ -68,8 +68,8 @@ import {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
-  isInputType,
-  isOutputType,
+  assertInputType,
+  assertOutputType,
 } from '../type/definition';
 
 import type {
@@ -160,8 +160,12 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
       case ENUM_TYPE_DEFINITION:
       case UNION_TYPE_DEFINITION:
       case INPUT_OBJECT_TYPE_DEFINITION:
+        const typeName = d.name.value;
+        if (nodeMap[typeName]) {
+          throw new Error(`Type "${typeName}" was defined more than once.`);
+        }
         typeDefs.push(d);
-        nodeMap[d.name.value] = d;
+        nodeMap[typeName] = d;
         break;
       case DIRECTIVE_DEFINITION:
         directiveDefs.push(d);
@@ -299,15 +303,11 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 
   function produceInputType(typeNode: TypeNode): GraphQLInputType {
-    const type = produceType(typeNode);
-    invariant(isInputType(type), 'Expected Input type.');
-    return (type: any);
+    return assertInputType(produceType(typeNode));
   }
 
   function produceOutputType(typeNode: TypeNode): GraphQLOutputType {
-    const type = produceType(typeNode);
-    invariant(isOutputType(type), 'Expected Output type.');
-    return (type: any);
+    return assertOutputType(produceType(typeNode));
   }
 
   function produceObjectType(typeNode: TypeNode): GraphQLObjectType {
@@ -465,7 +465,13 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 }
 
-function getDeprecationReason(directives: ?Array<DirectiveNode>): ?string {
+/**
+ * Given a collection of directives, returns the string value for the
+ * deprecation reason.
+ */
+export function getDeprecationReason(
+  directives: ?Array<DirectiveNode>,
+): ?string {
   const deprecatedAST = directives && find(
     directives,
     directive => directive.name.value === GraphQLDeprecatedDirective.name

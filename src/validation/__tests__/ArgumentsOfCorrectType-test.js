@@ -116,6 +116,26 @@ describe('Validate: Argument values of correct type', () => {
       `);
     });
 
+    it('Enum with undefined value', () => {
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          complicatedArgs {
+            enumArgField(enumArg: UNKNOWN)
+          }
+        }
+      `);
+    });
+
+    it('Enum with null value', () => {
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          complicatedArgs {
+            enumArgField(enumArg: NO_FUR)
+          }
+        }
+      `);
+    });
+
     it('null into nullable type', () => {
       expectPassesRule(ArgumentsOfCorrectType, `
         {

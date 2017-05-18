@@ -189,6 +189,8 @@ const FurColor = new GraphQLEnumType({
     BLACK: { value: 1 },
     TAN: { value: 2 },
     SPOTTED: { value: 3 },
+    NO_FUR: { value: null },
+    UNKNOWN: { value: undefined }
   },
 });
 

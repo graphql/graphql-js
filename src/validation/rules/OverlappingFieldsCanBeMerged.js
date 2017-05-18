@@ -697,7 +697,7 @@ function getReferencedFieldsAndFragmentNames(
   return getFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
-    ((fragmentType: any): GraphQLNamedType),
+    fragmentType,
     fragment.selectionSet
   );
 }
@@ -736,7 +736,7 @@ function _collectFieldsAndFragmentNames(
           parentType;
         _collectFieldsAndFragmentNames(
           context,
-          ((inlineFragmentType: any): GraphQLNamedType),
+          inlineFragmentType,
           selection.selectionSet,
           nodeAndDefs,
           fragmentNames
@@ -776,7 +776,7 @@ function subfieldConflicts(
 class PairSet {
   _data: {[a: string]: {[b: string]: boolean}};
 
-  constructor() {
+  constructor(): void {
     this._data = Object.create(null);
   }
 

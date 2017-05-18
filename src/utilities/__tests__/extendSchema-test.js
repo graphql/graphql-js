@@ -195,6 +195,50 @@ union SomeUnion = Foo | Biz
 `);
   });
 
+  it('builds types with deprecated fields/values', () => {
+    const ast = parse(`
+      type TypeWithDeprecatedField {
+        newDeprecatedField: String @deprecated(reason: "not used anymore")
+      }
+
+      enum EnumWithDeprecatedValue {
+        DEPRECATED @deprecated(reason: "do not use")
+      }
+    `);
+    const extendedSchema = extendSchema(testSchema, ast);
+    const deprecatedFieldDef = extendedSchema
+      .getType('TypeWithDeprecatedField')
+      .getFields()
+      .newDeprecatedField;
+    expect(deprecatedFieldDef.isDeprecated).to.equal(true);
+    expect(deprecatedFieldDef.deprecationReason).to.equal('not used anymore');
+
+    const deprecatedEnumDef = extendedSchema
+      .getType('EnumWithDeprecatedValue');
+    expect(deprecatedEnumDef.getValues()).to.deep.equal([
+      {
+        name: 'DEPRECATED',
+        description: '',
+        isDeprecated: true,
+        deprecationReason: 'do not use',
+        value: 'DEPRECATED'
+      }
+    ]);
+  });
+
+  it('extends objects with deprecated fields', () => {
+    const ast = parse(`
+      extend type Foo {
+        deprecatedField: String @deprecated(reason: "not used anymore")
+      }
+    `);
+    const extendedSchema = extendSchema(testSchema, ast);
+    const deprecatedFieldDef =
+      extendedSchema.getType('Foo').getFields().deprecatedField;
+    expect(deprecatedFieldDef.isDeprecated).to.equal(true);
+    expect(deprecatedFieldDef.deprecationReason).to.equal('not used anymore');
+  });
+
   it('extends objects by adding new unused types', () => {
     const ast = parse(`
       type Unused {

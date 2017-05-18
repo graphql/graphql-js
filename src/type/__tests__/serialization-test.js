@@ -33,17 +33,30 @@ describe('Type System: Scalar coercion', () => {
       GraphQLInt.serialize(-1)
     ).to.equal(-1);
     expect(
-      GraphQLInt.serialize(0.1)
-    ).to.equal(0);
-    expect(
-      GraphQLInt.serialize(1.1)
-    ).to.equal(1);
-    expect(
-      GraphQLInt.serialize(-1.1)
-    ).to.equal(-1);
-    expect(
       GraphQLInt.serialize(1e5)
     ).to.equal(100000);
+    // The GraphQL specification does not allow serializing non-integer values
+    // as Int to avoid accidental data loss.
+    expect(() =>
+      GraphQLInt.serialize(0.1)
+    ).to.throw(
+      'Int cannot represent non-integer value: 0.1'
+    );
+    expect(() =>
+      GraphQLInt.serialize(1.1)
+    ).to.throw(
+      'Int cannot represent non-integer value: 1.1'
+    );
+    expect(() =>
+      GraphQLInt.serialize(-1.1)
+    ).to.throw(
+      'Int cannot represent non-integer value: -1.1'
+    );
+    expect(() =>
+      GraphQLInt.serialize('-1.1')
+    ).to.throw(
+      'Int cannot represent non-integer value: -1.1'
+    );
     // Maybe a safe JavaScript int, but bigger than 2^32, so not
     // representable as a GraphQL Int
     expect(() =>
@@ -67,9 +80,6 @@ describe('Type System: Scalar coercion', () => {
     ).to.throw(
       'Int cannot represent non 32-bit signed integer value: -1e+100'
     );
-    expect(
-      GraphQLInt.serialize('-1.1')
-    ).to.equal(-1);
     expect(() =>
       GraphQLInt.serialize('one')
     ).to.throw(
@@ -85,6 +95,11 @@ describe('Type System: Scalar coercion', () => {
       GraphQLInt.serialize('')
     ).to.throw(
       'Int cannot represent non 32-bit signed integer value: (empty string)'
+    );
+    expect(() =>
+      GraphQLInt.serialize(NaN)
+    ).to.throw(
+      'Int cannot represent non 32-bit signed integer value: NaN'
     );
   });
 

@@ -11,7 +11,10 @@
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
-import { getDescription } from './buildASTSchema';
+import {
+  getDescription,
+  getDeprecationReason,
+} from './buildASTSchema';
 import { valueFromAST } from './valueFromAST';
 import { GraphQLError } from '../error/GraphQLError';
 import { GraphQLSchema } from '../type/schema';
@@ -25,8 +28,8 @@ import {
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  isInputType,
-  isOutputType,
+  assertInputType,
+  assertOutputType,
 } from '../type/definition';
 
 import {
@@ -295,15 +298,11 @@ export function extendSchema(
   }
 
   function getInputTypeFromAST(node: NamedTypeNode): GraphQLInputType {
-    const type = getTypeFromAST(node);
-    invariant(isInputType(type), 'Must be Input type.');
-    return (type: any);
+    return assertInputType(getTypeFromAST(node));
   }
 
   function getOutputTypeFromAST(node: NamedTypeNode): GraphQLOutputType {
-    const type = getTypeFromAST(node);
-    invariant(isOutputType(type), 'Must be Output type.');
-    return (type: any);
+    return assertOutputType(getTypeFromAST(node));
   }
 
   // Given a name, returns a type from either the existing schema or an
@@ -431,6 +430,7 @@ export function extendSchema(
             description: getDescription(field),
             type: buildOutputFieldType(field.type),
             args: buildInputValues(field.arguments),
+            deprecationReason: getDeprecationReason(field.directives),
           };
         });
       });
@@ -506,7 +506,14 @@ export function extendSchema(
     return new GraphQLEnumType({
       name: typeNode.name.value,
       description: getDescription(typeNode),
-      values: keyValMap(typeNode.values, v => v.name.value, () => ({})),
+      values: keyValMap(
+        typeNode.values,
+        enumValue => enumValue.name.value,
+        enumValue => ({
+          description: getDescription(enumValue),
+          deprecationReason: getDeprecationReason(enumValue.directives),
+        }),
+      ),
     });
   }
 
@@ -544,6 +551,7 @@ export function extendSchema(
         type: buildOutputFieldType(field.type),
         description: getDescription(field),
         args: buildInputValues(field.arguments),
+        deprecationReason: getDeprecationReason(field.directives),
       })
     );
   }

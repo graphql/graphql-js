@@ -25,6 +25,14 @@ through that README and the corresponding tests in parallel.
 
 Install GraphQL.js from npm
 
+With yarn:
+
+```sh
+yarn add graphql
+```
+
+or alternatively using npm:
+
 ```sh
 npm install --save graphql
 ```

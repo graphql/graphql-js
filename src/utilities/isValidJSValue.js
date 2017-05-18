@@ -95,7 +95,7 @@ export function isValidJSValue(
   // a non-null value.
   try {
     const parseResult = type.parseValue(value);
-    if (isNullish(parseResult)) {
+    if (isNullish(parseResult) && !type.isValidValue(value)) {
       return [
         `Expected type "${type.name}", found ${JSON.stringify(value)}.`
       ];

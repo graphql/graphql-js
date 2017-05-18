@@ -20,6 +20,7 @@ import {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
+  isAbstractType,
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from './directives';
@@ -267,8 +268,7 @@ export const __Type = new GraphQLObjectType({
     possibleTypes: {
       type: new GraphQLList(new GraphQLNonNull(__Type)),
       resolve(type, args, context, { schema }) {
-        if (type instanceof GraphQLInterfaceType ||
-            type instanceof GraphQLUnionType) {
+        if (isAbstractType(type)) {
           return schema.getPossibleTypes(type);
         }
       }

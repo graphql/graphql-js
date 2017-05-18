@@ -356,9 +356,9 @@ describe('Type System: Objects must have fields', () => {
 
   it('warns about an Object type with reserved named fields', () => {
     /* eslint-disable no-console */
-    const realConsoleError = console.error;
+    const realConsoleWarn = console.warn;
     const calls = [];
-    console.error = function () {
+    console.warn = function () {
       calls.push(Array.prototype.slice.call(arguments));
     };
     try {
@@ -371,7 +371,7 @@ describe('Type System: Objects must have fields', () => {
         'Name "__notPartOfIntrospection" must not begin with "__", which is reserved by GraphQL introspection.'
       );
     } finally {
-      console.error = realConsoleError;
+      console.warn = realConsoleWarn;
     }
     /* eslint-enable no-console */
   });
@@ -559,6 +559,30 @@ describe('Type System: Object interfaces must be array', () => {
     );
   });
 
+  it('rejects an Object that declare it implements same interface more than once', () => {
+    expect(() => {
+      const NonUniqInterface = new GraphQLInterfaceType({
+        name: 'NonUniqInterface',
+        resolveType: () => null,
+        fields: { f: { type: GraphQLString } },
+      });
+
+      const AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        resolveType: () => null,
+        fields: { f: { type: GraphQLString } },
+      });
+
+      schemaWithFieldType(new GraphQLObjectType({
+        name: 'SomeObject',
+        interfaces: () => [ NonUniqInterface, AnotherInterface, NonUniqInterface ],
+        fields: { f: { type: GraphQLString } }
+      }));
+    }).to.throw(
+      'SomeObject may declare it implements NonUniqInterface only once.'
+    );
+  });
+
   it('rejects an Object type with interfaces as a function returning an incorrect type', () => {
     expect(
       () => schemaWithFieldType(new GraphQLObjectType({
@@ -635,6 +659,19 @@ describe('Type System: Union types must be array', () => {
       'Must provide Array of types or a function which returns such an array ' +
       'for Union SomeUnion.'
     );
+  });
+
+  it('rejects a Union type with duplicated member type', () => {
+    expect(
+      () => schemaWithFieldType(new GraphQLUnionType({
+        name: 'SomeUnion',
+        resolveType: () => null,
+        types: [
+          SomeObjectType,
+          SomeObjectType,
+        ],
+      }))
+    ).to.throw('SomeUnion can include SomeObject type only once.');
   });
 
 });
@@ -1185,6 +1222,43 @@ describe('Type System: Enum types must be well defined', () => {
     ).to.throw(
       'SomeEnum.FOO must refer to an object with a "value" key representing ' +
       'an internal value but got: 10.'
+    );
+  });
+
+  it('rejects an Enum type with incorrectly named values', () => {
+    function enumValue(name) {
+      return new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          [name]: {}
+        }
+      });
+    }
+
+    expect(() => enumValue('#value')
+    ).to.throw('Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "#value" does not.');
+
+    expect(() => enumValue('true')
+    ).to.throw('Name "true" can not be used as an Enum value.');
+
+    expect(() => enumValue('false')
+    ).to.throw('Name "false" can not be used as an Enum value.');
+
+    expect(() => enumValue('null')
+    ).to.throw('Name "null" can not be used as an Enum value.');
+  });
+
+  it('does not allow isDeprecated without deprecationReason on enum', () => {
+    expect(() =>
+      new GraphQLEnumType({
+        name: 'SomeEnum',
+        values: {
+          value: { isDeprecated: true }
+        }
+      })
+    ).to.throw(
+      'SomeEnum.value should provide "deprecationReason" instead ' +
+      'of "isDeprecated".'
     );
   });
 
@@ -2061,20 +2135,6 @@ describe('Objects must adhere to Interface they implement', () => {
       return schemaWithFieldType(OldObject);
     }).to.throw(
       'OldObject.field should provide "deprecationReason" instead ' +
-      'of "isDeprecated".'
-    );
-  });
-
-  it('does not allow isDeprecated without deprecationReason on enum', () => {
-    expect(() =>
-      new GraphQLEnumType({
-        name: 'SomeEnum',
-        values: {
-          value: { isDeprecated: true }
-        }
-      })
-    ).to.throw(
-      'SomeEnum.value should provide "deprecationReason" instead ' +
       'of "isDeprecated".'
     );
   });

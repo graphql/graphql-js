@@ -17,7 +17,6 @@ import {
   getNamedType,
   GraphQLObjectType,
   GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLInputObjectType,
   GraphQLEnumType,
   GraphQLList,
@@ -65,7 +64,7 @@ export class TypeInfo {
     // to support non-spec-compliant codebases. You should never need to use it.
     // It may disappear in the future.
     getFieldDefFn?: typeof getFieldDef
-  ) {
+  ): void {
     this._schema = schema;
     this._typeStack = [];
     this._parentTypeStack = [];
@@ -120,9 +119,7 @@ export class TypeInfo {
       case Kind.SELECTION_SET:
         const namedType = getNamedType(this.getType());
         this._parentTypeStack.push(
-          isCompositeType(namedType) ?
-            ((namedType: any): GraphQLCompositeType) :
-            undefined
+          isCompositeType(namedType) ? namedType : undefined
         );
         break;
       case Kind.FIELD:
@@ -155,17 +152,13 @@ export class TypeInfo {
           typeFromAST(schema, typeConditionAST) :
           this.getType();
         this._typeStack.push(
-          isOutputType(outputType) ?
-            ((outputType: any): GraphQLOutputType) :
-            undefined
+          isOutputType(outputType) ? outputType : undefined
         );
         break;
       case Kind.VARIABLE_DEFINITION:
         const inputType = typeFromAST(schema, node.type);
         this._inputTypeStack.push(
-          isInputType(inputType) ?
-            ((inputType: any): GraphQLInputType) :
-            undefined
+          isInputType(inputType) ? inputType : undefined
         );
         break;
       case Kind.ARGUMENT:
@@ -264,11 +257,7 @@ function getFieldDef(
       schema.getQueryType() === parentType) {
     return TypeMetaFieldDef;
   }
-  if (name === TypeNameMetaFieldDef.name &&
-      (parentType instanceof GraphQLObjectType ||
-       parentType instanceof GraphQLInterfaceType ||
-       parentType instanceof GraphQLUnionType)
-  ) {
+  if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
     return TypeNameMetaFieldDef;
   }
   if (parentType instanceof GraphQLObjectType ||

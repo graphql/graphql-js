@@ -11,7 +11,6 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { testSchema } from './harness';
 import { validate, specifiedRules } from '../';
-import { visitUsingRules } from '../validate';
 import { parse } from '../../language';
 import { TypeInfo } from '../../utilities/TypeInfo';
 
@@ -57,12 +56,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    const errors = visitUsingRules(
-      testSchema,
-      typeInfo,
-      ast,
-      specifiedRules
-    );
+    const errors = validate(testSchema, ast, specifiedRules, typeInfo);
 
     const errorMessages = errors.map(err => err.message);
 
