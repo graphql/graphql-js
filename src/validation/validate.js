@@ -111,7 +111,11 @@ export class ValidationContext {
   _variableUsages: Map<NodeWithSelectionSet, Array<VariableUsage>>;
   _recursiveVariableUsages: Map<OperationDefinitionNode, Array<VariableUsage>>;
 
-  constructor(schema: GraphQLSchema, ast: DocumentNode, typeInfo: TypeInfo) {
+  constructor(
+    schema: GraphQLSchema,
+    ast: DocumentNode,
+    typeInfo: TypeInfo
+  ): void {
     this._schema = schema;
     this._ast = ast;
     this._typeInfo = typeInfo;

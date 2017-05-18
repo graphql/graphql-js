@@ -64,7 +64,7 @@ export class TypeInfo {
     // to support non-spec-compliant codebases. You should never need to use it.
     // It may disappear in the future.
     getFieldDefFn?: typeof getFieldDef
-  ) {
+  ): void {
     this._schema = schema;
     this._typeStack = [];
     this._parentTypeStack = [];

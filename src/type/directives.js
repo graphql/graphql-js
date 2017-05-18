@@ -53,7 +53,7 @@ export class GraphQLDirective {
   locations: Array<DirectiveLocationEnum>;
   args: Array<GraphQLArgument>;
 
-  constructor(config: GraphQLDirectiveConfig) {
+  constructor(config: GraphQLDirectiveConfig): void {
     invariant(config.name, 'Directive must be named.');
     assertValidName(config.name);
     invariant(

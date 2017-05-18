@@ -776,7 +776,7 @@ function subfieldConflicts(
 class PairSet {
   _data: {[a: string]: {[b: string]: boolean}};
 
-  constructor() {
+  constructor(): void {
     this._data = Object.create(null);
   }
 
