@@ -470,7 +470,7 @@ function defineInterfaces(
     'an Array.'
   );
 
-  const implementedTypeNames = {};
+  const implementedTypeNames = Object.create(null);
   interfaces.forEach(iface => {
     invariant(
       iface instanceof GraphQLInterfaceType,
@@ -513,7 +513,7 @@ function defineFieldMap<TSource, TContext>(
     'function which returns such an object.'
   );
 
-  const resultFieldMap = {};
+  const resultFieldMap = Object.create(null);
   fieldNames.forEach(fieldName => {
     assertValidName(fieldName);
     const fieldConfig = fieldMap[fieldName];
@@ -818,7 +818,7 @@ function defineTypes(
     'Must provide Array of types or a function which returns ' +
     `such an array for Union ${unionType.name}.`
   );
-  const includedTypeNames = {};
+  const includedTypeNames = Object.create(null);
   types.forEach(objType => {
     invariant(
       objType instanceof GraphQLObjectType,
@@ -1091,7 +1091,7 @@ export class GraphQLInputObjectType {
       `${this.name} fields must be an object with field names as keys or a ` +
       'function which returns such an object.'
     );
-    const resultFieldMap = {};
+    const resultFieldMap = Object.create(null);
     fieldNames.forEach(fieldName => {
       assertValidName(fieldName);
       const field = {
