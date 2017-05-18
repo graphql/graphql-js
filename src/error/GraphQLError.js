@@ -86,23 +86,6 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   path?: ?Array<string | number>,
   originalError?: ?Error
 ) {
-  // Include (non-enumerable) stack trace.
-  if (originalError && originalError.stack) {
-    Object.defineProperty(this, 'stack', {
-      value: originalError.stack,
-      writable: true,
-      configurable: true
-    });
-  } else if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, GraphQLError);
-  } else {
-    Object.defineProperty(this, 'stack', {
-      value: Error().stack,
-      writable: true,
-      configurable: true
-    });
-  }
-
   // Compute locations in the source for the given nodes/positions.
   let _source = source;
   if (!_source && nodes && nodes.length > 0) {
@@ -165,6 +148,23 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       value: originalError
     }
   });
+
+  // Include (non-enumerable) stack trace.
+  if (originalError && originalError.stack) {
+    Object.defineProperty(this, 'stack', {
+      value: originalError.stack,
+      writable: true,
+      configurable: true
+    });
+  } else if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, GraphQLError);
+  } else {
+    Object.defineProperty(this, 'stack', {
+      value: Error().stack,
+      writable: true,
+      configurable: true
+    });
+  }
 }
 
 (GraphQLError: any).prototype = Object.create(Error.prototype, {
