@@ -9,6 +9,7 @@
  */
 
 import invariant from '../jsutils/invariant';
+import isNullish from '../jsutils/isNullish';
 import { ENUM } from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
 import type {
@@ -323,16 +324,28 @@ export class GraphQLScalarType {
     return serializer(value);
   }
 
+  // Determines if an internal value is valid for this type.
+  // Equivalent to checking for if the parsedValue is nullish.
+  isValidValue(value: mixed): boolean {
+    return !isNullish(this.parseValue(value));
+  }
+
   // Parses an externally provided value to use as an input.
   parseValue(value: mixed): mixed {
     const parser = this._scalarConfig.parseValue;
-    return parser ? parser(value) : null;
+    return parser && !isNullish(value) ? parser(value) : undefined;
+  }
+
+  // Determines if an internal value is valid for this type.
+  // Equivalent to checking for if the parsedLiteral is nullish.
+  isValidLiteral(valueNode: ValueNode): boolean {
+    return !isNullish(this.parseLiteral(valueNode));
   }
 
   // Parses an externally provided literal value to use as an input.
   parseLiteral(valueNode: ValueNode): mixed {
     const parser = this._scalarConfig.parseLiteral;
-    return parser ? parser(valueNode) : null;
+    return parser ? parser(valueNode) : undefined;
   }
 
   toString(): string {
@@ -896,6 +909,11 @@ export class GraphQLEnumType/* <T> */ {
     return enumValue ? enumValue.name : null;
   }
 
+  isValidValue(value: mixed): boolean {
+    return typeof value === 'string' &&
+      this._getNameLookup()[value] !== undefined;
+  }
+
   parseValue(value: mixed): ?any/* T */ {
     if (typeof value === 'string') {
       const enumValue = this._getNameLookup()[value];
@@ -903,6 +921,11 @@ export class GraphQLEnumType/* <T> */ {
         return enumValue.value;
       }
     }
+  }
+
+  isValidLiteral(valueNode: ValueNode): boolean {
+    return valueNode.kind === ENUM &&
+      this._getNameLookup()[valueNode.value] !== undefined;
   }
 
   parseLiteral(valueNode: ValueNode): ?any/* T */ {
