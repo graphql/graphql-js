@@ -33,7 +33,8 @@
     "cover": "babel-node ./node_modules/.bin/isparta cover --root src --report html _mocha -- $npm_package_options_mocha",
     "cover:lcov": "babel-node ./node_modules/.bin/isparta cover --root src --report lcovonly _mocha -- $npm_package_options_mocha",
     "preversion": ". ./resources/checkgit.sh && npm test",
-    "prepublish": ". ./resources/prepublish.sh"
+    "prepublish": ". ./resources/prepublish.sh",
+    "gitpublish": ". ./resources/gitpublish.sh"
   },
   "dependencies": {
     "iterall": "^1.1.0"

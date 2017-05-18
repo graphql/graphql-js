@@ -6,7 +6,7 @@
 #     "graphql": "git://github.com/graphql/graphql-js.git#npm"
 #
 
-./node_modules/.bin/babel src --ignore __tests__ --out-dir npm
+babel src --ignore __tests__ --out-dir npm
 
 # Ensure a vanilla package.json before deploying so other tools do not interpret
 # The built output as requiring any further transformation.
