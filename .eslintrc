@@ -202,7 +202,7 @@
     "quote-props": [2, "as-needed", {"numbers": true}],
     "quotes": [2, "single"],
     "radix": 2,
-    "require-yield": 2,
+    "require-yield": 0,
     "semi": [2, "always"],
     "semi-spacing": [2, {"before": false, "after": true}],
     "sort-vars": 0,

@@ -109,8 +109,10 @@ export type ExecutionResult = {
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
+ *
+ * Accepts either an object with named arguments, or individual arguments.
  */
-export function execute(
+declare function execute({|
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -118,7 +120,40 @@ export function execute(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
-): Promise<ExecutionResult> {
+|}, ..._: []): Promise<ExecutionResult>;
+/* eslint-disable no-redeclare */
+declare function execute(
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
+  operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>
+): Promise<ExecutionResult>;
+export function execute(
+  argsOrSchema,
+  document,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  fieldResolver
+) {
+  // Extract arguments from object args if provided.
+  const args = arguments.length === 1 ? argsOrSchema : undefined;
+  const schema = args ? args.schema : argsOrSchema;
+  if (args) {
+    /* eslint-disable no-param-reassign */
+    document = args.document;
+    rootValue = args.rootValue;
+    contextValue = args.contextValue;
+    variableValues = args.variableValues;
+    operationName = args.operationName;
+    fieldResolver = args.fieldResolver;
+    /* eslint-enable no-param-reassign, no-redeclare */
+  }
+
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
   const context = buildExecutionContext(
