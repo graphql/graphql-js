@@ -20,6 +20,6 @@ export class Source {
 
   constructor(body: string, name?: string): void {
     this.body = body;
-    this.name = name || 'GraphQL';
+    this.name = name || 'GraphQL request';
   }
 }
