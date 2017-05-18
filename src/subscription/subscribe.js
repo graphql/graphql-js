@@ -34,7 +34,16 @@ import type {
   OperationDefinitionNode,
 } from '../language/ast';
 
-export function createSubscriptionSourceEventStream(
+/**
+ * Implements the "CreateSourceEventStream" algorithm described in the 
+ * GraphQL specification, resolving the subscription source event stream.
+ *
+ * Returns an AsyncIterable
+ *
+ * A Source Stream represents the sequence of events, each of which is 
+ * expected to be used to trigger a GraphQL execution for that event.
+ */
+export function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -63,7 +72,7 @@ export function createSubscriptionSourceEventStream(
 }
 
 /**
- * Implements the "Subscribing to request" section of the GraphQL specification.
+ * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
  * Returns an AsyncIterator
  *
@@ -78,7 +87,7 @@ export function subscribe(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string,
 ): AsyncIterator<ExecutionResult> {
-  const subscription = createSubscriptionSourceEventStream(
+  const subscription = createSourceEventStream(
     schema,
     document,
     rootValue,
@@ -138,6 +147,9 @@ function resolveSubscription(
     addPath(undefined, responseName)
   );
 
+  // resolveFieldValueOrError implements the "ResolveFieldEventStream"
+  // algorithm from GraphQL specification. It differs from 
+  // "ResolveFieldValue" due to providing a different `resolveFn`.
   const subscription = resolveFieldValueOrError(
     exeContext,
     fieldDef,
