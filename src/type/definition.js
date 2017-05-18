@@ -297,7 +297,7 @@ export class GraphQLScalarType {
 
   _scalarConfig: GraphQLScalarTypeConfig<*, *>;
 
-  constructor(config: GraphQLScalarTypeConfig<*, *>) {
+  constructor(config: GraphQLScalarTypeConfig<*, *>): void {
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
@@ -417,7 +417,7 @@ export class GraphQLObjectType {
   _fields: GraphQLFieldMap<*, *>;
   _interfaces: Array<GraphQLInterfaceType>;
 
-  constructor(config: GraphQLObjectTypeConfig<*, *>) {
+  constructor(config: GraphQLObjectTypeConfig<*, *>): void {
     assertValidName(config.name, config.isIntrospection);
     this.name = config.name;
     this.description = config.description;
@@ -696,7 +696,7 @@ export class GraphQLInterfaceType {
   _typeConfig: GraphQLInterfaceTypeConfig<*, *>;
   _fields: GraphQLFieldMap<*, *>;
 
-  constructor(config: GraphQLInterfaceTypeConfig<*, *>) {
+  constructor(config: GraphQLInterfaceTypeConfig<*, *>): void {
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
@@ -774,7 +774,7 @@ export class GraphQLUnionType {
   _types: Array<GraphQLObjectType>;
   _possibleTypeNames: {[typeName: string]: boolean};
 
-  constructor(config: GraphQLUnionTypeConfig<*, *>) {
+  constructor(config: GraphQLUnionTypeConfig<*, *>): void {
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
@@ -888,7 +888,7 @@ export class GraphQLEnumType/* <T> */ {
   _valueLookup: Map<any/* T */, GraphQLEnumValue>;
   _nameLookup: { [valueName: string]: GraphQLEnumValue };
 
-  constructor(config: GraphQLEnumTypeConfig/* <T> */) {
+  constructor(config: GraphQLEnumTypeConfig/* <T> */): void {
     this.name = config.name;
     assertValidName(config.name, config.isIntrospection);
     this.description = config.description;
@@ -1067,7 +1067,7 @@ export class GraphQLInputObjectType {
   _typeConfig: GraphQLInputObjectTypeConfig;
   _fields: GraphQLInputFieldMap;
 
-  constructor(config: GraphQLInputObjectTypeConfig) {
+  constructor(config: GraphQLInputObjectTypeConfig): void {
     assertValidName(config.name);
     this.name = config.name;
     this.description = config.description;
@@ -1176,7 +1176,7 @@ export type GraphQLInputFieldMap = {
 export class GraphQLList<T: GraphQLType> {
   ofType: T;
 
-  constructor(type: T) {
+  constructor(type: T): void {
     invariant(
       isType(type),
       `Can only create List of a GraphQLType but got: ${String(type)}.`
@@ -1221,7 +1221,7 @@ GraphQLList.prototype.toJSON =
 export class GraphQLNonNull<T: GraphQLNullableType> {
   ofType: T;
 
-  constructor(type: T) {
+  constructor(type: T): void {
     invariant(
       isType(type) && !(type instanceof GraphQLNonNull),
       'Can only create NonNull of a Nullable GraphQLType but got: ' +

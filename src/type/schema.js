@@ -65,7 +65,7 @@ export class GraphQLSchema {
     [abstractName: string]: { [possibleName: string]: boolean }
   };
 
-  constructor(config: GraphQLSchemaConfig) {
+  constructor(config: GraphQLSchemaConfig): void {
     invariant(
       typeof config === 'object',
       'Must provide configuration object.'

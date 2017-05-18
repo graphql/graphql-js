@@ -441,10 +441,10 @@ export function extendSchema(
 
   function extendFieldType<T: GraphQLType>(typeDef: T): T {
     if (typeDef instanceof GraphQLList) {
-      return new GraphQLList(extendFieldType(typeDef.ofType));
+      return (new GraphQLList(extendFieldType(typeDef.ofType)): any);
     }
     if (typeDef instanceof GraphQLNonNull) {
-      return new GraphQLNonNull(extendFieldType(typeDef.ofType));
+      return (new GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
     }
     return getTypeFromDef(typeDef);
   }
