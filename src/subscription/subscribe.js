@@ -25,51 +25,8 @@ import { GraphQLSchema } from '../type/schema';
 import invariant from '../jsutils/invariant';
 import mapAsyncIterator from './mapAsyncIterator';
 
-import type {
-  ExecutionContext,
-  ExecutionResult,
-} from '../execution/execute';
-import type {
-  DocumentNode,
-  OperationDefinitionNode,
-} from '../language/ast';
-
-/**
- * Implements the "CreateSourceEventStream" algorithm described in the 
- * GraphQL specification, resolving the subscription source event stream.
- *
- * Returns an AsyncIterable
- *
- * A Source Stream represents the sequence of events, each of which is 
- * expected to be used to trigger a GraphQL execution for that event.
- */
-export function createSourceEventStream(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
-  operationName?: ?string,
-): AsyncIterable<mixed> {
-  // If a valid context cannot be created due to incorrect arguments,
-  // this will throw an error.
-  const exeContext = buildExecutionContext(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName
-  );
-
-  // Call the `subscribe()` resolver or the default resolver to produce an
-  // AsyncIterable yielding raw payloads.
-  return resolveSubscription(
-    exeContext,
-    exeContext.operation,
-    rootValue
-  );
-}
+import type { ExecutionResult } from '../execution/execute';
+import type { DocumentNode } from '../language/ast';
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -97,6 +54,10 @@ export function subscribe(
 
   // For each payload yielded from a subscription, map it over the normal
   // GraphQL `execute` function, with `payload` as the rootValue.
+  // This implements the "MapSourceToResponseEvent" algorithm described in
+  // the GraphQL specification. The `execute` function provides the
+  // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
+  // "ExecuteQuery" algorithm, for which `execute` is also used.
   return mapAsyncIterator(
     subscription,
     payload => execute(
@@ -110,12 +71,40 @@ export function subscribe(
   );
 }
 
-function resolveSubscription(
-  exeContext: ExecutionContext,
-  operation: OperationDefinitionNode,
-  rootValue: mixed
+/**
+ * Implements the "CreateSourceEventStream" algorithm described in the
+ * GraphQL specification, resolving the subscription source event stream.
+ *
+ * Returns an AsyncIterable, may through a GraphQLError.
+ *
+ * A Source Stream represents the sequence of events, each of which is
+ * expected to be used to trigger a GraphQL execution for that event.
+ *
+ * This may be useful when hosting the stateful subscription service in a
+ * different process or machine than the stateless GraphQL execution engine,
+ * or otherwise separating these two steps. For more on this, see the
+ * "Supporting Subscriptions at Scale" information in the GraphQL specification.
+ */
+export function createSourceEventStream(
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
+  operationName?: ?string,
 ): AsyncIterable<mixed> {
-  const type = getOperationRootType(exeContext.schema, exeContext.operation);
+  // If a valid context cannot be created due to incorrect arguments,
+  // this will throw an error.
+  const exeContext = buildExecutionContext(
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName
+  );
+
+  const type = getOperationRootType(schema, exeContext.operation);
   const fields = collectFields(
     exeContext,
     type,
@@ -131,12 +120,14 @@ function resolveSubscription(
   const responseName = responseNames[0];
   const fieldNodes = fields[responseName];
   const fieldNode = fieldNodes[0];
-  const fieldDef = getFieldDef(exeContext.schema, type, fieldNode.name.value);
+  const fieldDef = getFieldDef(schema, type, fieldNode.name.value);
   invariant(
     fieldDef,
     'This subscription is not defined by the schema.'
   );
 
+  // Call the `subscribe()` resolver or the default resolver to produce an
+  // AsyncIterable yielding raw payloads.
   const resolveFn = fieldDef.subscribe || defaultFieldResolver;
 
   const info = buildResolveInfo(
@@ -148,7 +139,7 @@ function resolveSubscription(
   );
 
   // resolveFieldValueOrError implements the "ResolveFieldEventStream"
-  // algorithm from GraphQL specification. It differs from 
+  // algorithm from GraphQL specification. It differs from
   // "ResolveFieldValue" due to providing a different `resolveFn`.
   const subscription = resolveFieldValueOrError(
     exeContext,
