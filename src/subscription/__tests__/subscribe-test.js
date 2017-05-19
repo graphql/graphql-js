@@ -235,9 +235,8 @@ describe('Subscribe', () => {
     expect(() => {
       subscribe(
         testSchema,
-        ast,
-        null,
-        null);
+        ast
+      );
     }).to.throw(
       'A subscription operation must contain exactly one root field.');
   });
@@ -541,8 +540,7 @@ describe('Subscribe', () => {
       subscribe(
         emailSchema,
         invalidAST,
-        null,
-        null);
+      );
     }).to.throw('This subscription is not defined by the schema.');
   });
 
@@ -569,9 +567,8 @@ describe('Subscribe', () => {
     expect(() => {
       subscribe(
         invalidEmailSchema,
-        ast,
-        null,
-        null);
+        ast
+      );
     }).to.throw('Subscription must return Async Iterable.');
   });
 
@@ -599,9 +596,8 @@ describe('Subscribe', () => {
     expect(() => {
       subscribe(
         invalidEmailSchema,
-        ast,
-        null,
-        null);
+        ast
+      );
     }).not.to.throw();
   });
 
@@ -630,9 +626,8 @@ describe('Subscribe', () => {
     expect(() => {
       subscribe(
         invalidEmailSchema,
-        ast,
-        null,
-        null);
+        ast
+      );
     }).to.throw('test error');
   });
 });
