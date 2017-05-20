@@ -5,6 +5,8 @@
  *  This source code is licensed under the BSD-style license found in the
  *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * @flow
  */
 
 import { expect } from 'chai';
@@ -43,7 +45,9 @@ describe('mapAsyncIterator', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterator(source(), async x => await x + x);
+    // Flow test: this is *not* AsyncIterator<Promise<number>>
+    const doubles: AsyncIterator<number> =
+      mapAsyncIterator(source(), async x => await x + x);
 
     expect(
       await doubles.next()
@@ -188,6 +192,63 @@ describe('mapAsyncIterator', () => {
     expect(
       await doubles.next()
     ).to.deep.equal({ value: undefined, done: true });
+  });
+
+  async function testClosesSourceWithMapper(mapper) {
+    let didVisitFinally = false;
+
+    async function* source() {
+      try {
+        yield 1;
+        yield 2;
+        yield 3;
+      } finally {
+        didVisitFinally = true;
+        yield 1000;
+      }
+    }
+
+    const throwOver1 = mapAsyncIterator(source(), mapper);
+
+    expect(
+      await throwOver1.next()
+    ).to.deep.equal({ value: 1, done: false });
+
+    let expectedError;
+    try {
+      await throwOver1.next();
+    } catch (error) {
+      expectedError = error;
+    }
+
+    expect(expectedError).to.be.an('error');
+    if (expectedError) {
+      expect(expectedError.message).to.equal('Cannot count to 2');
+    }
+
+    expect(
+      await throwOver1.next()
+    ).to.deep.equal({ value: undefined, done: true });
+
+    expect(didVisitFinally).to.equal(true);
+  }
+
+  it('closes source if mapper throws an error', async () => {
+    await testClosesSourceWithMapper(x => {
+      if (x > 1) {
+        throw new Error('Cannot count to ' + x);
+      }
+      return x;
+    });
+  });
+
+  it('closes source if mapper rejects', async () => {
+    await testClosesSourceWithMapper(async x => {
+      if (x > 1) {
+        throw new Error('Cannot count to ' + x);
+      }
+      return x;
+    });
   });
 
 });
