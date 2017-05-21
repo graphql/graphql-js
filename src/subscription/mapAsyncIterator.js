@@ -17,18 +17,23 @@ import { $$asyncIterator, getAsyncIterator } from 'iterall';
  */
 export default function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T>,
-  callback: (value: T) => U
-): AsyncIterator<U> {
-  // Fixes a temporary issue with Regenerator/Babel
-  // https://github.com/facebook/regenerator/pull/290
-  const iterator = iterable.next ? (iterable: any) : getAsyncIterator(iterable);
+  callback: (value: T) => Promise<U> | U
+): AsyncGenerator<U, void, void> {
+  const iterator = getAsyncIterator(iterable);
+  let $return;
+  let abruptClose;
+  if (typeof iterator.return === 'function') {
+    $return = iterator.return;
+    abruptClose = error => {
+      const rethrow = () => Promise.reject(error);
+      return $return.call(iterator).then(rethrow, rethrow);
+    };
+  }
 
   function mapResult(result) {
     return result.done ?
       result :
-      Promise.resolve(callback(result.value)).then(
-        mapped => ({ value: mapped, done: false })
-      );
+      asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
   }
 
   return {
@@ -36,19 +41,29 @@ export default function mapAsyncIterator<T, U>(
       return iterator.next().then(mapResult);
     },
     return() {
-      if (typeof iterator.return === 'function') {
-        return iterator.return().then(mapResult);
-      }
-      return Promise.resolve({ value: undefined, done: true });
+      return $return ?
+        $return.call(iterator).then(mapResult) :
+        Promise.resolve({ value: undefined, done: true });
     },
     throw(error) {
       if (typeof iterator.throw === 'function') {
         return iterator.throw(error).then(mapResult);
       }
-      return Promise.reject(error);
+      return Promise.reject(error).catch(abruptClose);
     },
     [$$asyncIterator]() {
       return this;
     },
   };
+}
+
+function asyncMapValue<T, U>(
+  value: T,
+  callback: (T) => Promise<U> | U
+): Promise<U> {
+  return new Promise(resolve => resolve(callback(value)));
+}
+
+function iteratorResult<T>(value: T): IteratorResult<T, void> {
+  return { value, done: false };
 }
