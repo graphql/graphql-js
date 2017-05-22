@@ -12,7 +12,9 @@ import { describe, it } from 'mocha';
 import {
   GraphQLBoolean,
   GraphQLEnumType,
+  GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLList,
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLString,
@@ -31,6 +33,7 @@ import {
   findTypesThatChangedKind,
   findValuesRemovedFromEnums,
   findArgChanges,
+  findInterfacesRemovedFromObjectTypes,
 } from '../findBreakingChanges';
 
 describe('findBreakingChanges', () => {
@@ -125,7 +128,7 @@ describe('findBreakingChanges', () => {
       }
     });
     // logically equivalent to TypeA; findBreakingFieldChanges shouldn't
-    // treat this as differnt than TypeA
+    // treat this as different than TypeA
     const TypeA2 = new GraphQLObjectType({
       name: 'TypeA',
       fields: {
@@ -146,6 +149,22 @@ describe('findBreakingChanges', () => {
         field2: { type: GraphQLString },
         field3: { type: GraphQLString },
         field4: { type: TypeA },
+        field6: { type: GraphQLString },
+        field7: { type: new GraphQLList(GraphQLString) },
+        field8: { type: GraphQLInt },
+        field9: { type: new GraphQLNonNull(GraphQLInt) },
+        field10: { type: new GraphQLNonNull(new GraphQLList(GraphQLInt)) },
+        field11: { type: GraphQLInt },
+        field12: { type: new GraphQLList(GraphQLInt) },
+        field13: { type: new GraphQLList(new GraphQLNonNull(GraphQLInt)) },
+        field14: { type: new GraphQLList(GraphQLInt) },
+        field15: { type: new GraphQLList(new GraphQLList(GraphQLInt)) },
+        field16: { type: new GraphQLNonNull(GraphQLInt) },
+        field17: { type: new GraphQLList(GraphQLInt) },
+        field18: {
+          type: new GraphQLList(new GraphQLNonNull(
+            new GraphQLList(new GraphQLNonNull(GraphQLInt)))),
+        },
       }
     });
     const newType1 = new GraphQLInterfaceType({
@@ -155,6 +174,22 @@ describe('findBreakingChanges', () => {
         field3: { type: GraphQLBoolean },
         field4: { type: TypeB },
         field5: { type: GraphQLString },
+        field6: { type: new GraphQLList(GraphQLString) },
+        field7: { type: GraphQLString },
+        field8: { type: new GraphQLNonNull(GraphQLInt) },
+        field9: { type: GraphQLInt },
+        field10: { type: new GraphQLList(GraphQLInt) },
+        field11: { type: new GraphQLNonNull(new GraphQLList(GraphQLInt)) },
+        field12: { type: new GraphQLList(new GraphQLNonNull(GraphQLInt)) },
+        field13: { type: new GraphQLList(GraphQLInt) },
+        field14: { type: new GraphQLList(new GraphQLList(GraphQLInt)) },
+        field15: { type: new GraphQLList(GraphQLInt) },
+        field16: { type: new GraphQLNonNull(new GraphQLList(GraphQLInt)) },
+        field17: { type: new GraphQLNonNull(new GraphQLList(GraphQLInt)) },
+        field18: {
+          type: new GraphQLList(
+            new GraphQLList(new GraphQLNonNull(GraphQLInt))),
+        },
       }
     });
 
@@ -184,9 +219,276 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field4 changed type from TypeA to TypeB.',
       },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field6 changed type from String to [String].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field7 changed type from [String] to String.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field9 changed type from Int! to Int.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field10 changed type from [Int]! to [Int].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field11 changed type from Int to [Int]!.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field13 changed type from [Int!] to [Int].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field14 changed type from [Int] to [[Int]].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field15 changed type from [[Int]] to [Int].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field16 changed type from Int! to [Int]!.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Type1.field18 changed type from [[Int!]!] to [[Int!]].',
+      },
     ];
     expect(findFieldsThatChangedType(oldSchema, newSchema)).to.eql(
       expectedFieldChanges
+    );
+  });
+
+  it(
+    'should detect if fields on input types changed kind or were removed',
+    () => {
+      const oldInputType = new GraphQLInputObjectType({
+        name: 'InputType1',
+        fields: {
+          field1: {
+            type: GraphQLString,
+          },
+          field2: {
+            type: GraphQLBoolean,
+          },
+          field3: {
+            type: new GraphQLList(GraphQLString),
+          },
+          field4: {
+            type: new GraphQLNonNull(GraphQLString),
+          },
+          field5: {
+            type: GraphQLString,
+          },
+          field6: {
+            type: new GraphQLList(GraphQLInt),
+          },
+          field7: {
+            type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+          },
+          field8: {
+            type: GraphQLInt,
+          },
+          field9: {
+            type: new GraphQLList(GraphQLInt),
+          },
+          field10: {
+            type: new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+          },
+          field11: {
+            type: new GraphQLList(GraphQLInt),
+          },
+          field12: {
+            type: new GraphQLList(new GraphQLList(GraphQLInt)),
+          },
+          field13: {
+            type: new GraphQLNonNull(GraphQLInt),
+          },
+          field14: {
+            type: new GraphQLList(new GraphQLNonNull(
+              new GraphQLList(GraphQLInt))),
+          },
+          field15: {
+            type: new GraphQLList(new GraphQLNonNull(
+              new GraphQLList(GraphQLInt))),
+          },
+        },
+      });
+      const newInputType = new GraphQLInputObjectType({
+        name: 'InputType1',
+        fields: {
+          field1: {
+            type: GraphQLInt,
+          },
+          field3: {
+            type: GraphQLString,
+          },
+          field4: {
+            type: GraphQLString,
+          },
+          field5: {
+            type: new GraphQLNonNull(GraphQLString),
+          },
+          field6: {
+            type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+          },
+          field7: {
+            type: new GraphQLList(GraphQLInt),
+          },
+          field8: {
+            type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+          },
+          field9: {
+            type: new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+          },
+          field10: {
+            type: new GraphQLList(GraphQLInt),
+          },
+          field11: {
+            type: new GraphQLList(new GraphQLList(GraphQLInt)),
+          },
+          field12: {
+            type: new GraphQLList(GraphQLInt),
+          },
+          field13: {
+            type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+          },
+          field14: {
+            type: new GraphQLList(new GraphQLList(GraphQLInt)),
+          },
+          field15: {
+            type: new GraphQLList(new GraphQLNonNull(
+              new GraphQLList(new GraphQLNonNull(GraphQLInt)))),
+          },
+        },
+      });
+
+      const oldSchema = new GraphQLSchema({
+        query: queryType,
+        types: [
+          oldInputType,
+        ]
+      });
+      const newSchema = new GraphQLSchema({
+        query: queryType,
+        types: [
+          newInputType,
+        ]
+      });
+
+      const expectedFieldChanges = [
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field1 changed type from String to Int.',
+        },
+        {
+          type: BreakingChangeType.FIELD_REMOVED,
+          description: 'InputType1.field2 was removed.',
+        },
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field3 changed type from [String] to ' +
+            'String.',
+        },
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field5 changed type from String to ' +
+            'String!.',
+        },
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field6 changed type from [Int] to ' +
+            '[Int]!.',
+        },
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field8 changed type from Int to ' +
+            '[Int]!.',
+        },
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field9 changed type from [Int] to ' +
+            '[Int!].',
+        },
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field11 changed type from [Int] to ' +
+            '[[Int]].',
+        },
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field12 changed type from [[Int]] to ' +
+            '[Int].',
+        },
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field13 changed type from Int! to ' +
+            '[Int]!.',
+        },
+        {
+          type: BreakingChangeType.FIELD_CHANGED_KIND,
+          description: 'InputType1.field15 changed type from [[Int]!] to ' +
+            '[[Int!]!].',
+        },
+      ];
+      expect(findFieldsThatChangedType(oldSchema, newSchema)).to.eql(
+        expectedFieldChanges,
+      );
+    }
+  );
+
+  it('should detect if a non-null field is added to an input type', () => {
+    const oldInputType = new GraphQLInputObjectType({
+      name: 'InputType1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+    const newInputType = new GraphQLInputObjectType({
+      name: 'InputType1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+        requiredField: {
+          type: new GraphQLNonNull(GraphQLInt),
+        },
+        optionalField: {
+          type: GraphQLBoolean,
+        }
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldInputType,
+      ]
+    });
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newInputType,
+      ]
+    });
+
+    const expectedFieldChanges = [
+      {
+        type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
+        description: 'A non-null field requiredField on input type ' +
+          'InputType1 was added.',
+      },
+    ];
+    expect(findFieldsThatChangedType(oldSchema, newSchema)).to.eql(
+      expectedFieldChanges,
     );
   });
 
@@ -289,7 +591,7 @@ describe('findBreakingChanges', () => {
     ]);
   });
 
-  it('should detect if a type argument was removed', () => {
+  it('should detect if a field argument was removed', () => {
     const oldType = new GraphQLObjectType({
       name: 'Type1',
       fields: {
@@ -302,6 +604,32 @@ describe('findBreakingChanges', () => {
           },
         },
       },
+    });
+
+    const inputType = new GraphQLInputObjectType({
+      name: 'InputType1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const oldInterfaceType = new GraphQLInterfaceType({
+      name: 'Interface1',
+      fields: {
+        field1: {
+          type: GraphQLString ,
+          args: {
+            arg1: {
+              type: GraphQLBoolean,
+            },
+            objectArg: {
+              type: inputType,
+            }
+          }
+        },
+      }
     });
 
     const newType = new GraphQLObjectType({
@@ -314,10 +642,20 @@ describe('findBreakingChanges', () => {
       },
     });
 
+    const newInterfaceType = new GraphQLInterfaceType({
+      name: 'Interface1',
+      fields: {
+        field1: {
+          type: GraphQLString
+        },
+      }
+    });
+
     const oldSchema = new GraphQLSchema({
       query: queryType,
       types: [
         oldType,
+        oldInterfaceType,
       ]
     });
 
@@ -325,6 +663,7 @@ describe('findBreakingChanges', () => {
       query: queryType,
       types: [
         newType,
+        newInterfaceType,
       ]
     });
 
@@ -334,19 +673,71 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.ARG_REMOVED,
         description: 'Type1.field1 arg name was removed',
+      },
+      {
+        type: BreakingChangeType.ARG_REMOVED,
+        description: 'Interface1.field1 arg arg1 was removed',
+      },
+      {
+        type: BreakingChangeType.ARG_REMOVED,
+        description: 'Interface1.field1 arg objectArg was removed',
       }
     ]);
   });
 
-  it('should detect if a type argument has changed', () => {
+  it('should detect if a field argument has changed type', () => {
     const oldType = new GraphQLObjectType({
       name: 'Type1',
       fields: {
         field1: {
           type: GraphQLString,
           args: {
-            name: {
+            arg1: {
               type: GraphQLString,
+            },
+            arg2: {
+              type: GraphQLString,
+            },
+            arg3: {
+              type: new GraphQLList(GraphQLString),
+            },
+            arg4: {
+              type: GraphQLString,
+            },
+            arg5: {
+              type: new GraphQLNonNull(GraphQLString),
+            },
+            arg6: {
+              type: new GraphQLNonNull(GraphQLString),
+            },
+            arg7: {
+              type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+            },
+            arg8: {
+              type: GraphQLInt,
+            },
+            arg9: {
+              type: new GraphQLList(GraphQLInt),
+            },
+            arg10: {
+              type: new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+            },
+            arg11: {
+              type: new GraphQLList(GraphQLInt),
+            },
+            arg12: {
+              type: new GraphQLList(new GraphQLList(GraphQLInt)),
+            },
+            arg13: {
+              type: new GraphQLNonNull(GraphQLInt),
+            },
+            arg14: {
+              type: new GraphQLList(new GraphQLNonNull(
+                new GraphQLList(GraphQLInt))),
+            },
+            arg15: {
+              type: new GraphQLList(new GraphQLNonNull(
+                new GraphQLList(GraphQLInt))),
             },
           },
         },
@@ -359,8 +750,51 @@ describe('findBreakingChanges', () => {
         field1: {
           type: GraphQLString,
           args: {
-            name: {
+            arg1: {
               type: GraphQLInt,
+            },
+            arg2: {
+              type: new GraphQLList(GraphQLString),
+            },
+            arg3: {
+              type: GraphQLString,
+            },
+            arg4: {
+              type: new GraphQLNonNull(GraphQLString),
+            },
+            arg5: {
+              type: GraphQLInt,
+            },
+            arg6: {
+              type: new GraphQLNonNull(GraphQLInt),
+            },
+            arg7: {
+              type: new GraphQLList(GraphQLInt),
+            },
+            arg8: {
+              type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+            },
+            arg9: {
+              type: new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+            },
+            arg10: {
+              type: new GraphQLList(GraphQLInt),
+            },
+            arg11: {
+              type: new GraphQLList(new GraphQLList(GraphQLInt)),
+            },
+            arg12: {
+              type: new GraphQLList(GraphQLInt),
+            },
+            arg13: {
+              type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+            },
+            arg14: {
+              type: new GraphQLList(new GraphQLList(GraphQLInt)),
+            },
+            arg15: {
+              type: new GraphQLList(new GraphQLNonNull(
+                new GraphQLList(new GraphQLNonNull(GraphQLInt)))),
             },
           },
         },
@@ -386,22 +820,157 @@ describe('findBreakingChanges', () => {
     ).to.eql([
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
-        description: 'Type1.field1 arg name has changed type ' +
+        description: 'Type1.field1 arg arg1 has changed type ' +
           'from String to Int',
-      }
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg2 has changed type from String ' +
+          'to [String]'
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg3 has changed type from ' +
+          '[String] to String',
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg4 has changed type from String ' +
+          'to String!',
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg5 has changed type from String! ' +
+          'to Int',
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg6 has changed type from String! ' +
+          'to Int!',
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg8 has changed type from Int to ' +
+          '[Int]!',
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg9 has changed type from [Int] to ' +
+          '[Int!]',
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg11 has changed type from [Int] to ' +
+          '[[Int]]',
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg12 has changed type from [[Int]] ' +
+          'to [Int]',
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg13 has changed type from Int! to ' +
+          '[Int]!',
+      },
+      {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description: 'Type1.field1 arg arg15 has changed type from [[Int]!] ' +
+          'to [[Int!]!]',
+      },
+    ]);
+  });
+
+  it('should detect if a non-null field argument was added', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            arg1: {
+              type: GraphQLString,
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            arg1: {
+              type: GraphQLString,
+            },
+            newRequiredArg: {
+              type: new GraphQLNonNull(GraphQLString),
+            },
+            newOptionalArg: {
+              type: GraphQLInt,
+            }
+          },
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(
+      findArgChanges(oldSchema, newSchema).breakingChanges
+    ).to.eql([
+      {
+        type: BreakingChangeType.NON_NULL_ARG_ADDED,
+        description: 'A non-null arg newRequiredArg on Type1.field1 was ' +
+          'added',
+      },
     ]);
   });
 
   it('should not flag args with the same type signature as breaking', () => {
+    const inputType1a = new GraphQLInputObjectType({
+      name: 'InputType1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+    const inputType1b = new GraphQLInputObjectType({
+      name: 'InputType1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
     const oldType = new GraphQLObjectType({
       name: 'Type1',
       fields: {
         field1: {
           type: GraphQLInt,
           args: {
-            id: {
+            arg1: {
               type: new GraphQLNonNull(GraphQLInt),
             },
+            arg2: {
+              type: inputType1a,
+            }
           },
         },
       },
@@ -413,9 +982,12 @@ describe('findBreakingChanges', () => {
         field1: {
           type: GraphQLInt,
           args: {
-            id: {
+            arg1: {
               type: new GraphQLNonNull(GraphQLInt),
             },
+            arg2: {
+              type: inputType1b,
+            }
           },
         },
       },
@@ -486,6 +1058,60 @@ describe('findBreakingChanges', () => {
     expect(
       findArgChanges(oldSchema, newSchema).breakingChanges
     ).to.eql([]);
+  });
+
+  it('should detect interfaces removed from types', () => {
+    const interface1 = new GraphQLInterfaceType({
+      name: 'Interface1',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+      resolveType: () => null,
+    });
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      interfaces: [
+        interface1,
+      ],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      interfaces: [],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(
+      findInterfacesRemovedFromObjectTypes(oldSchema, newSchema)
+    ).to.eql([
+      {
+        description: 'Type1 no longer implements interface Interface1.',
+        type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT
+      }
+    ]);
   });
 
   it('should detect all breaking changes', () => {

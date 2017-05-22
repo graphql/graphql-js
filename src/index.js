@@ -357,6 +357,8 @@ export {
 
   // Compares two GraphQLSchemas and detects breaking changes.
   findBreakingChanges,
+  BreakingChangeType,
+  DangerousChangeType,
 
   // Report all deprecated usage within a GraphQL document.
   findDeprecatedUsages,
@@ -364,6 +366,7 @@ export {
 
 export type {
   BreakingChange,
+  DangerousChange,
 
   IntrospectionDirective,
   IntrospectionEnumType,

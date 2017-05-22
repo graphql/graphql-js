@@ -9,16 +9,22 @@
  */
 
 import {
-  getNamedType,
+  isNamedType,
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLUnionType,
 } from '../type/definition';
 
-import type { GraphQLNamedType, GraphQLFieldMap } from '../type/definition';
+import type {
+  GraphQLNamedType,
+  GraphQLFieldMap,
+  GraphQLType,
+} from '../type/definition';
 
 import { GraphQLSchema } from '../type/schema';
 
@@ -31,6 +37,9 @@ export const BreakingChangeType = {
   VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
   ARG_REMOVED: 'ARG_REMOVED',
   ARG_CHANGED_KIND: 'ARG_CHANGED_KIND',
+  NON_NULL_ARG_ADDED: 'NON_NULL_ARG_ADDED',
+  NON_NULL_INPUT_FIELD_ADDED: 'NON_NULL_INPUT_FIELD_ADDED',
+  INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
 };
 
 export const DangerousChangeType = {
@@ -62,6 +71,7 @@ export function findBreakingChanges(
     ...findTypesRemovedFromUnions(oldSchema, newSchema),
     ...findValuesRemovedFromEnums(oldSchema, newSchema),
     ...findArgChanges(oldSchema, newSchema).breakingChanges,
+    ...findInterfacesRemovedFromObjectTypes(oldSchema, newSchema),
   ];
 }
 
@@ -153,7 +163,8 @@ export function findArgChanges(
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
     if (
-      !(oldType instanceof GraphQLObjectType) ||
+      !(oldType instanceof GraphQLObjectType ||
+        oldType instanceof GraphQLInterfaceType) ||
       !(newType instanceof oldType.constructor)
     ) {
       return;
@@ -169,46 +180,50 @@ export function findArgChanges(
 
       oldTypeFields[fieldName].args.forEach(oldArgDef => {
         const newArgs = newTypeFields[fieldName].args;
-        const newTypeArgIndex = newArgs.findIndex(
+        const newArgDef = newArgs.find(
           arg => arg.name === oldArgDef.name
         );
-        const newArgDef = newArgs[newTypeArgIndex];
-
-        const oldArgTypeName = getNamedType(oldArgDef.type);
-        const newArgTypeName = newArgDef ?
-          getNamedType(newArgDef.type) :
-          null;
-
-        if (!oldArgTypeName) {
-          return;
-        }
 
         // Arg not present
-        if (!newArgTypeName) {
+        if (!newArgDef) {
           breakingChanges.push({
             type: BreakingChangeType.ARG_REMOVED,
             description: `${oldType.name}.${fieldName} arg ` +
               `${oldArgDef.name} was removed`,
           });
-
-        // Arg changed type in a breaking way
-        } else if (
-          oldArgTypeName.name !== newArgTypeName.name
-        ) {
-          breakingChanges.push({
-            type: BreakingChangeType.ARG_CHANGED_KIND,
-            description: `${oldType.name}.${fieldName} arg ` +
-              `${oldArgDef.name} has changed type from ` +
-              `${oldArgDef.type.toString()} to ${newArgDef.type.toString()}`,
-          });
-
-        // Arg default value has changed
-        } else if (oldArgDef.defaultValue !== undefined &&
+        } else {
+          const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(
+            oldArgDef.type,
+            newArgDef.type,
+          );
+          if (!isSafe) {
+            breakingChanges.push({
+              type: BreakingChangeType.ARG_CHANGED_KIND,
+              description: `${oldType.name}.${fieldName} arg ` +
+                `${oldArgDef.name} has changed type from ` +
+                `${oldArgDef.type.toString()} to ${newArgDef.type.toString()}`,
+            });
+          } else if (oldArgDef.defaultValue !== undefined &&
           oldArgDef.defaultValue !== newArgDef.defaultValue) {
-          dangerousChanges.push({
-            type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-            description: `${oldType.name}.${fieldName} arg ${oldArgDef.name} ` +
-              'has changed defaultValue',
+            dangerousChanges.push({
+              type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+              description: `${oldType.name}.${fieldName} arg ` +
+                `${oldArgDef.name} has changed defaultValue`,
+            });
+          }
+        }
+      });
+      // Check if a non-null arg was added to the field
+      newTypeFields[fieldName].args.forEach(newArgDef => {
+        const oldArgs = oldTypeFields[fieldName].args;
+        const oldArgDef = oldArgs.find(
+          arg => arg.name === newArgDef.name
+        );
+        if (!oldArgDef && newArgDef.type instanceof GraphQLNonNull) {
+          breakingChanges.push({
+            type: BreakingChangeType.NON_NULL_ARG_ADDED,
+            description: `A non-null arg ${newArgDef.name} on ` +
+              `${newType.name}.${fieldName} was added`,
           });
         }
       });
@@ -246,11 +261,22 @@ function typeKindName(type: GraphQLNamedType): string {
 /**
  * Given two schemas, returns an Array containing descriptions of any breaking
  * changes in the newSchema related to the fields on a type. This includes if
- * a field has been removed from a type or if a field has changed type.
+ * a field has been removed from a type, if a field has changed type, or if
+ * a non-null field is added to an input type.
  */
 export function findFieldsThatChangedType(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema
+): Array<BreakingChange> {
+  return [
+    ...findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema),
+    ...findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema),
+  ];
+}
+
+function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
@@ -261,8 +287,7 @@ export function findFieldsThatChangedType(
     const newType = newTypeMap[typeName];
     if (
       !(oldType instanceof GraphQLObjectType ||
-        oldType instanceof GraphQLInterfaceType ||
-        oldType instanceof GraphQLInputObjectType) ||
+        oldType instanceof GraphQLInterfaceType) ||
       !(newType instanceof oldType.constructor)
     ) {
       return;
@@ -278,20 +303,173 @@ export function findFieldsThatChangedType(
           description: `${typeName}.${fieldName} was removed.`,
         });
       } else {
-        // Check if the field's type has changed in the new schema.
-        const oldFieldType = getNamedType(oldTypeFieldsDef[fieldName].type);
-        const newFieldType = getNamedType(newTypeFieldsDef[fieldName].type);
-        if (oldFieldType.name !== newFieldType.name) {
+        const oldFieldType = oldTypeFieldsDef[fieldName].type;
+        const newFieldType = newTypeFieldsDef[fieldName].type;
+        const isSafe =
+          isChangeSafeForObjectOrInterfaceField(oldFieldType, newFieldType);
+        if (!isSafe) {
+          const oldFieldTypeString = isNamedType(oldFieldType) ?
+            oldFieldType.name :
+            oldFieldType.toString();
+          const newFieldTypeString = isNamedType(newFieldType) ?
+            newFieldType.name :
+            newFieldType.toString();
           breakingFieldChanges.push({
             type: BreakingChangeType.FIELD_CHANGED_KIND,
             description: `${typeName}.${fieldName} changed type from ` +
-              `${oldFieldType.name} to ${newFieldType.name}.`,
+              `${oldFieldTypeString} to ${newFieldTypeString}.`,
           });
         }
       }
     });
   });
   return breakingFieldChanges;
+}
+
+export function findFieldsThatChangedTypeOnInputObjectTypes(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
+): Array<BreakingChange> {
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+
+  const breakingFieldChanges = [];
+  Object.keys(oldTypeMap).forEach(typeName => {
+    const oldType = oldTypeMap[typeName];
+    const newType = newTypeMap[typeName];
+    if (
+      !(oldType instanceof GraphQLInputObjectType) ||
+      !(newType instanceof GraphQLInputObjectType)
+    ) {
+      return;
+    }
+
+    const oldTypeFieldsDef = oldType.getFields();
+    const newTypeFieldsDef = newType.getFields();
+    Object.keys(oldTypeFieldsDef).forEach(fieldName => {
+      // Check if the field is missing on the type in the new schema.
+      if (!(fieldName in newTypeFieldsDef)) {
+        breakingFieldChanges.push({
+          type: BreakingChangeType.FIELD_REMOVED,
+          description: `${typeName}.${fieldName} was removed.`,
+        });
+      } else {
+        const oldFieldType = oldTypeFieldsDef[fieldName].type;
+        const newFieldType = newTypeFieldsDef[fieldName].type;
+
+        const isSafe =
+          isChangeSafeForInputObjectFieldOrFieldArg(oldFieldType, newFieldType);
+        if (!isSafe) {
+          const oldFieldTypeString = isNamedType(oldFieldType) ?
+            oldFieldType.name :
+            oldFieldType.toString();
+          const newFieldTypeString = isNamedType(newFieldType) ?
+            newFieldType.name :
+            newFieldType.toString();
+          breakingFieldChanges.push({
+            type: BreakingChangeType.FIELD_CHANGED_KIND,
+            description: `${typeName}.${fieldName} changed type from ` +
+              `${oldFieldTypeString} to ${newFieldTypeString}.`,
+          });
+        }
+      }
+    });
+    // Check if a non-null field was added to the input object type
+    Object.keys(newTypeFieldsDef).forEach(fieldName => {
+      if (
+        !(fieldName in oldTypeFieldsDef) &&
+        newTypeFieldsDef[fieldName].type instanceof GraphQLNonNull
+      ) {
+        breakingFieldChanges.push({
+          type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
+          description: `A non-null field ${fieldName} on ` +
+            `input type ${newType.name} was added.`,
+        });
+      }
+    });
+  });
+  return breakingFieldChanges;
+}
+
+function isChangeSafeForObjectOrInterfaceField(
+  oldType: GraphQLType,
+  newType: GraphQLType,
+): boolean {
+  if (isNamedType(oldType)) {
+    return (
+        // if they're both named types, see if their names are equivalent
+        isNamedType(newType) && oldType.name === newType.name
+      ) ||
+      (
+        // moving from nullable to non-null of the same underlying type is safe
+        newType instanceof GraphQLNonNull &&
+        isChangeSafeForObjectOrInterfaceField(
+          oldType,
+          newType.ofType,
+        )
+      );
+  } else if (oldType instanceof GraphQLList) {
+    return (
+        // if they're both lists, make sure the underlying types are compatible
+        newType instanceof GraphQLList &&
+        isChangeSafeForObjectOrInterfaceField(
+          oldType.ofType,
+          newType.ofType,
+        )
+      ) ||
+      (
+        // moving from nullable to non-null of the same underlying type is safe
+        newType instanceof GraphQLNonNull &&
+        isChangeSafeForObjectOrInterfaceField(
+          oldType,
+          newType.ofType,
+        )
+      );
+  } else if (oldType instanceof GraphQLNonNull) {
+    // if they're both non-null, make sure the underlying types are compatible
+    return newType instanceof GraphQLNonNull &&
+      isChangeSafeForObjectOrInterfaceField(
+        oldType.ofType,
+        newType.ofType,
+      );
+  }
+  return false;
+}
+
+function isChangeSafeForInputObjectFieldOrFieldArg(
+  oldType: GraphQLType,
+  newType: GraphQLType,
+): boolean {
+  if (isNamedType(oldType)) {
+    // if they're both named types, see if their names are equivalent
+    return isNamedType(newType) && oldType.name === newType.name;
+  } else if (oldType instanceof GraphQLList) {
+    // if they're both lists, make sure the underlying types are compatible
+    return newType instanceof GraphQLList &&
+      isChangeSafeForInputObjectFieldOrFieldArg(
+        oldType.ofType,
+        newType.ofType,
+      );
+  } else if (oldType instanceof GraphQLNonNull) {
+    return (
+        // if they're both non-null, make sure the underlying types are
+        // compatible
+        newType instanceof GraphQLNonNull &&
+        isChangeSafeForInputObjectFieldOrFieldArg(
+          oldType.ofType,
+          newType.ofType,
+        )
+      ) ||
+      (
+        // moving from non-null to nullable of the same underlying type is safe
+        !(newType instanceof GraphQLNonNull) &&
+        isChangeSafeForInputObjectFieldOrFieldArg(
+          oldType.ofType,
+          newType,
+        )
+      );
+  }
+  return false;
 }
 
 /**
@@ -362,4 +540,37 @@ export function findValuesRemovedFromEnums(
     });
   });
   return valuesRemovedFromEnums;
+}
+
+export function findInterfacesRemovedFromObjectTypes(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
+): Array<BreakingChange> {
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+  const breakingChanges = [];
+
+  Object.keys(oldTypeMap).forEach(typeName => {
+    const oldType = oldTypeMap[typeName];
+    const newType = newTypeMap[typeName];
+    if (
+      !(oldType instanceof GraphQLObjectType) ||
+      !(newType instanceof GraphQLObjectType)
+    ) {
+      return;
+    }
+
+    const oldInterfaces = oldType.getInterfaces();
+    const newInterfaces = newType.getInterfaces();
+    oldInterfaces.forEach(oldInterface => {
+      if (!newInterfaces.some(int => int.name === oldInterface.name)) {
+        breakingChanges.push({
+          type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+          description: `${typeName} no longer implements interface ` +
+            `${oldInterface.name}.`
+        });
+      }
+    });
+  });
+  return breakingChanges;
 }
