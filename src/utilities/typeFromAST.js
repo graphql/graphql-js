@@ -29,19 +29,19 @@ import type { GraphQLSchema } from '../type/schema';
  * found in the schema, then undefined will be returned.
  */
 /* eslint-disable no-redeclare */
-declare function typeFromAST(
+declare function typeFromASTType(
   schema: GraphQLSchema,
   typeNode: NamedTypeNode
 ): void | GraphQLNamedType;
-declare function typeFromAST(
+declare function typeFromASTType(
   schema: GraphQLSchema,
   typeNode: ListTypeNode
 ): void | GraphQLList<*>;
-declare function typeFromAST(
+declare function typeFromASTType(
   schema: GraphQLSchema,
   typeNode: NonNullTypeNode
 ): void | GraphQLNonNull<*>;
-export function typeFromAST(schema, typeNode) {
+function typeFromASTImpl(schema, typeNode) {
 /* eslint-enable no-redeclare */
   let innerType;
   if (typeNode.kind === LIST_TYPE) {
@@ -55,3 +55,7 @@ export function typeFromAST(schema, typeNode) {
   invariant(typeNode.kind === NAMED_TYPE, 'Must be a named type.');
   return schema.getType(typeNode.name.value);
 }
+// This will export typeFromAST with the correct type, but currently exposes
+// ~26 errors: https://gist.github.com/4a29403a99a8186fcb15064d69c5f3ae
+// export var typeFromAST: typeof typeFromASTType = typeFromASTImpl;
+export const typeFromAST: $FlowFixMe = typeFromASTImpl;
