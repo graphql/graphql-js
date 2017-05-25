@@ -1,27 +1,25 @@
 {
+  "presets": [["env", {
+    "targets": {
+      "node": 4,
+      "browsers": [
+        "ie 9",
+        "ios 9",
+        "last 2 chrome versions",
+        "last 2 edge versions",
+        "last 2 firefox versions",
+      ]
+    }
+  }]],
   "plugins": [
     "syntax-async-functions",
     "syntax-async-generators",
     "transform-class-properties",
+    "transform-es3-property-literals",
     "transform-flow-strip-types",
     "transform-object-rest-spread",
-    "transform-es2015-template-literals",
-    "transform-es2015-literals",
-    "transform-es2015-function-name",
-    "transform-es2015-arrow-functions",
-    "transform-es2015-block-scoped-functions",
     ["transform-es2015-classes", {"loose": true}],
-    "transform-es2015-object-super",
-    "transform-es2015-shorthand-properties",
-    "transform-es2015-duplicate-keys",
-    "transform-es2015-computed-properties",
-    "check-es2015-constants",
-    ["transform-es2015-spread", {"loose": true}],
-    "transform-es2015-parameters",
     ["transform-es2015-destructuring", {"loose": true}],
-    "transform-es2015-block-scoping",
-    "transform-es2015-modules-commonjs",
-    "transform-regenerator",
-    "transform-es3-property-literals"
+    ["transform-es2015-spread", {"loose": true}]
   ]
 }
