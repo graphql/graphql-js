@@ -65,17 +65,23 @@ describe('Subscribe', () => {
     }
   });
 
-  const SubscriptionType = new GraphQLObjectType({
-    name: 'Subscription',
-    fields: {
-      importantEmail: { type: EmailEventType },
-    }
-  });
+  const emailSchema = emailSchemaWithResolvers();
 
-  const emailSchema = new GraphQLSchema({
-    query: QueryType,
-    subscription: SubscriptionType
-  });
+  function emailSchemaWithResolvers(subscribeFn, resolveFn) {
+    return new GraphQLSchema({
+      query: QueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          importantEmail: {
+            type: EmailEventType,
+            resolve: resolveFn,
+            subscribe: subscribeFn,
+          },
+        },
+      })
+    });
+  }
 
   function createSubscription(pubsub, schema = emailSchema, ast) {
     const data = {
@@ -641,40 +647,71 @@ describe('Subscribe', () => {
     expect(caughtError).to.equal(undefined);
   });
 
-  it('should handle error thrown by subscribe method', async () => {
-    const invalidEmailSchema = new GraphQLSchema({
-      query: QueryType,
-      subscription: new GraphQLObjectType({
-        name: 'Subscription',
-        fields: {
-          importantEmail: {
-            type: GraphQLString,
-            subscribe: () => {
-              throw new Error('test error');
-            },
-          },
-        },
-      })
-    });
-
-    const ast = parse(`
-      subscription {
-        importantEmail
-      }
-    `);
-
-    const subscription = subscribe(
-      invalidEmailSchema,
-      ast
+  it('should report error thrown by subscribe function', async () => {
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      () => { throw new Error('test error'); }
     );
 
-    let caughtError;
-    try {
-      await subscription.next();
-    } catch (thrownError) {
-      caughtError = thrownError;
-    }
+    const subscription = subscribe(
+      erroringEmailSchema,
+      parse(`
+        subscription {
+          importantEmail
+        }
+      `)
+    );
 
-    expect(caughtError && caughtError.message).to.equal('test error');
+    const result = await subscription.next();
+
+    expect(result).to.deep.equal({
+      done: false,
+      value: {
+        errors: [
+          {
+            message: 'test error',
+            locations: [ { line: 3, column: 11 } ],
+            path: [ 'importantEmail' ]
+          }
+        ]
+      }
+    });
+
+    expect(
+      await subscription.next()
+    ).to.deep.equal({ value: undefined, done: true });
+  });
+
+  it('should report error returned by subscribe function', async () => {
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      () => { return new Error('test error'); }
+    );
+
+    const subscription = subscribe(
+      erroringEmailSchema,
+      parse(`
+        subscription {
+          importantEmail
+        }
+      `)
+    );
+
+    const result = await subscription.next();
+
+    expect(result).to.deep.equal({
+      done: false,
+      value: {
+        errors: [
+          {
+            message: 'test error',
+            locations: [ { line: 3, column: 11 } ],
+            path: [ 'importantEmail' ]
+          }
+        ]
+      }
+    });
+
+    expect(
+      await subscription.next()
+    ).to.deep.equal({ value: undefined, done: true });
   });
 });

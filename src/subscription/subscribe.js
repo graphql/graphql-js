@@ -11,6 +11,7 @@
 
 import { isAsyncIterable } from 'iterall';
 import { GraphQLError } from '../error/GraphQLError';
+import { locatedError } from '../error/locatedError';
 import {
   addPath,
   assertValidExecutionArguments,
@@ -21,6 +22,7 @@ import {
   getFieldDef,
   getOperationRootType,
   resolveFieldValueOrError,
+  responsePathAsArray,
 } from '../execution/execute';
 import { GraphQLSchema } from '../type/schema';
 import invariant from '../jsutils/invariant';
@@ -217,12 +219,14 @@ export function createSourceEventStream(
     // AsyncIterable yielding raw payloads.
     const resolveFn = fieldDef.subscribe || exeContext.fieldResolver;
 
+    const path = addPath(undefined, responseName);
+
     const info = buildResolveInfo(
       exeContext,
       fieldDef,
       fieldNodes,
       type,
-      addPath(undefined, responseName)
+      path
     );
 
     // resolveFieldValueOrError implements the "ResolveFieldEventStream"
@@ -237,8 +241,9 @@ export function createSourceEventStream(
       info
     );
 
+    // Throw located GraphQLError if subscription source fails to resolve.
     if (subscription instanceof Error) {
-      throw subscription;
+      throw locatedError(subscription, fieldNodes, responsePathAsArray(path));
     }
 
     if (!isAsyncIterable(subscription)) {
