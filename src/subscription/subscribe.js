@@ -73,18 +73,39 @@ export function subscribe(
   // Extract arguments from object args if provided.
   const args = arguments.length === 1 ? argsOrSchema : undefined;
   const schema = args ? args.schema : argsOrSchema;
-  if (args) {
-    /* eslint-disable no-param-reassign */
-    document = args.document;
-    rootValue = args.rootValue;
-    contextValue = args.contextValue;
-    variableValues = args.variableValues;
-    operationName = args.operationName;
-    fieldResolver = args.fieldResolver;
-    subscribeFieldResolver = args.subscribeFieldResolver;
-    /* eslint-enable no-param-reassign, no-redeclare */
-  }
+  return args ?
+    subscribeImpl(
+      schema,
+      args.document,
+      args.rootValue,
+      args.contextValue,
+      args.variableValues,
+      args.operationName,
+      args.fieldResolver,
+      args.subscribeFieldResolver,
+    ) :
+    subscribeImpl(
+      schema,
+      document,
+      rootValue,
+      contextValue,
+      variableValues,
+      operationName,
+      fieldResolver,
+      subscribeFieldResolver,
+    );
+}
 
+function subscribeImpl(
+  schema,
+  document,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  fieldResolver,
+  subscribeFieldResolver
+) {
   const subscription = createSourceEventStream(
     schema,
     document,

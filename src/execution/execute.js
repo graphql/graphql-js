@@ -143,17 +143,36 @@ export function execute(
   // Extract arguments from object args if provided.
   const args = arguments.length === 1 ? argsOrSchema : undefined;
   const schema = args ? args.schema : argsOrSchema;
-  if (args) {
-    /* eslint-disable no-param-reassign */
-    document = args.document;
-    rootValue = args.rootValue;
-    contextValue = args.contextValue;
-    variableValues = args.variableValues;
-    operationName = args.operationName;
-    fieldResolver = args.fieldResolver;
-    /* eslint-enable no-param-reassign, no-redeclare */
-  }
+  return args ?
+    executeImpl(
+      schema,
+      args.document,
+      args.rootValue,
+      args.contextValue,
+      args.variableValues,
+      args.operationName,
+      args.fieldResolver,
+    ) :
+    executeImpl(
+      schema,
+      document,
+      rootValue,
+      contextValue,
+      variableValues,
+      operationName,
+      fieldResolver,
+    );
+}
 
+function executeImpl(
+  schema,
+  document,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  fieldResolver
+) {
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(
     schema,
