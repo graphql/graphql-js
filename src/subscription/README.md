@@ -1,7 +1,7 @@
 GraphQL Subscription
 -----------------
 
-The `graphql/subscription` module is responsible subscribing to updates on specific data.
+The `graphql/subscription` module is responsible for subscribing to updates on specific data.
 
 ```js
 import { subscribe, createSourceEventStream } from 'graphql/subscription'; // ES6
