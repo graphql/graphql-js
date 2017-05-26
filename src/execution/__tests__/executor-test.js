@@ -637,7 +637,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
-  it('throws if no op name is provided with multiple operations', async () => {
+  it('errors if no op name is provided with multiple operations', async () => {
     const doc = 'query Example { a } query OtherExample { a }';
     const data = { a: 'b' };
     const ast = parse(doc);
@@ -663,7 +663,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
-  it('throws if unknown operation name is provided', async () => {
+  it('errors if unknown operation name is provided', async () => {
     const doc = 'query Example { a } query OtherExample { a }';
     const ast = parse(doc);
     const schema = new GraphQLSchema({

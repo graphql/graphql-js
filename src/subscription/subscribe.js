@@ -12,6 +12,7 @@
 import { isAsyncIterable } from 'iterall';
 import {
   addPath,
+  assertValidExecutionArguments,
   buildExecutionContext,
   collectFields,
   execute,
@@ -137,6 +138,13 @@ export function createSourceEventStream(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): AsyncIterable<mixed> {
+  // If arguments are missing or incorrect, throw an error.
+  assertValidExecutionArguments(
+    schema,
+    document,
+    variableValues
+  );
+
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
   const exeContext = buildExecutionContext(

@@ -154,8 +154,7 @@ export function execute(
     /* eslint-enable no-param-reassign, no-redeclare */
   }
 
-  // If a valid context cannot be created due to incorrect arguments,
-  // this will throw an error.
+  // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(
     schema,
     document,
@@ -259,22 +258,6 @@ export function buildExecutionContext(
   operationName: ?string,
   fieldResolver: ?GraphQLFieldResolver<any, any>
 ): ExecutionContext {
-  invariant(schema, 'Must provide schema');
-  invariant(document, 'Must provide document');
-  invariant(
-    schema instanceof GraphQLSchema,
-    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
-    'not multiple versions of GraphQL installed in your node_modules directory.'
-  );
-
-  // Variables, if provided, must be an object.
-  invariant(
-    !rawVariableValues || typeof rawVariableValues === 'object',
-    'Variables must be provided as an Object where each property is a ' +
-    'variable value. Perhaps look to see if an unparsed JSON string ' +
-    'was provided.'
-  );
-
   const errors: Array<GraphQLError> = [];
   let operation: ?OperationDefinitionNode;
   const fragments: {[name: string]: FragmentDefinitionNode} =
