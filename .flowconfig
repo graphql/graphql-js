@@ -9,3 +9,4 @@
 [libs]
 
 [options]
+experimental.const_params=true

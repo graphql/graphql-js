@@ -77,17 +77,36 @@ export function graphql(
   // Extract arguments from object args if provided.
   const args = arguments.length === 1 ? argsOrSchema : undefined;
   const schema = args ? args.schema : argsOrSchema;
-  if (args) {
-    /* eslint-disable no-param-reassign */
-    source = args.source;
-    rootValue = args.rootValue;
-    contextValue = args.contextValue;
-    variableValues = args.variableValues;
-    operationName = args.operationName;
-    fieldResolver = args.fieldResolver;
-    /* eslint-enable no-param-reassign, no-redeclare */
-  }
+  return args ?
+    graphqlImpl(
+      schema,
+      args.source,
+      args.rootValue,
+      args.contextValue,
+      args.variableValues,
+      args.operationName,
+      args.fieldResolver,
+    ) :
+    graphqlImpl(
+      schema,
+      source,
+      rootValue,
+      contextValue,
+      variableValues,
+      operationName,
+      fieldResolver,
+    );
+}
 
+function graphqlImpl(
+  schema,
+  source,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  fieldResolver
+) {
   return new Promise(resolve => {
     // Parse
     let document;
