@@ -14,6 +14,9 @@ import { UniqueOperationNames } from './rules/UniqueOperationNames';
 // Spec Section: "Lone Anonymous Operation"
 import { LoneAnonymousOperation } from './rules/LoneAnonymousOperation';
 
+// Spec Section: "Subscriptions with Single Root Field"
+import { SingleFieldSubscriptions } from './rules/SingleFieldSubscriptions';
+
 // Spec Section: "Fragment Spread Type Existence"
 import { KnownTypeNames } from './rules/KnownTypeNames';
 
@@ -98,6 +101,7 @@ import type { ValidationContext } from './index';
 export const specifiedRules: Array<(context: ValidationContext) => any> = [
   UniqueOperationNames,
   LoneAnonymousOperation,
+  SingleFieldSubscriptions,
   KnownTypeNames,
   FragmentsOnCompositeTypes,
   VariablesAreInputTypes,

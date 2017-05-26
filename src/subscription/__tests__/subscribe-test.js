@@ -211,12 +211,27 @@ describe('Subscribe', () => {
     }).not.to.throw();
   });
 
-  it('should throw when querying for multiple fields', async () => {
+  it('should only resolve the first field of invalid multi-field', async () => {
+    let didResolveImportantEmail = false;
+    let didResolveNonImportantEmail = false;
+
     const SubscriptionTypeMultiple = new GraphQLObjectType({
       name: 'Subscription',
       fields: {
-        importantEmail: { type: EmailEventType },
-        nonImportantEmail: { type: EmailEventType },
+        importantEmail: {
+          type: EmailEventType,
+          subscribe() {
+            didResolveImportantEmail = true;
+            return eventEmitterAsyncIterator(new EventEmitter(), 'event');
+          }
+        },
+        nonImportantEmail: {
+          type: EmailEventType,
+          subscribe() {
+            didResolveNonImportantEmail = true;
+            return eventEmitterAsyncIterator(new EventEmitter(), 'event');
+          }
+        },
       }
     });
 
@@ -232,13 +247,14 @@ describe('Subscribe', () => {
       }
     `);
 
-    expect(() => {
-      subscribe(
-        testSchema,
-        ast
-      );
-    }).to.throw(
-      'A subscription operation must contain exactly one root field.');
+    const subscription = subscribe(testSchema, ast);
+    subscription.next(); // Ask for a result, but ignore it.
+
+    expect(didResolveImportantEmail).to.equal(true);
+    expect(didResolveNonImportantEmail).to.equal(false);
+
+    // Close subscription
+    subscription.return();
   });
 
   it('produces payload for multiple subscribe in same subscription',
