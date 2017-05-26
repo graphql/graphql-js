@@ -151,7 +151,7 @@ export function execute(
       args.contextValue,
       args.variableValues,
       args.operationName,
-      args.fieldResolver,
+      args.fieldResolver
     ) :
     executeImpl(
       schema,
@@ -160,7 +160,7 @@ export function execute(
       contextValue,
       variableValues,
       operationName,
-      fieldResolver,
+      fieldResolver
     );
 }
 

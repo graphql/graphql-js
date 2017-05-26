@@ -82,7 +82,7 @@ export function subscribe(
       args.variableValues,
       args.operationName,
       args.fieldResolver,
-      args.subscribeFieldResolver,
+      args.subscribeFieldResolver
     ) :
     subscribeImpl(
       schema,
@@ -92,7 +92,7 @@ export function subscribe(
       variableValues,
       operationName,
       fieldResolver,
-      subscribeFieldResolver,
+      subscribeFieldResolver
     );
 }
 

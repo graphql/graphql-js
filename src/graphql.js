@@ -85,7 +85,7 @@ export function graphql(
       args.contextValue,
       args.variableValues,
       args.operationName,
-      args.fieldResolver,
+      args.fieldResolver
     ) :
     graphqlImpl(
       schema,
@@ -94,7 +94,7 @@ export function graphql(
       contextValue,
       variableValues,
       operationName,
-      fieldResolver,
+      fieldResolver
     );
 }
 
