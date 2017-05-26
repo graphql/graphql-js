@@ -158,10 +158,6 @@ export function createSourceEventStream(
     Object.create(null)
   );
   const responseNames = Object.keys(fields);
-  invariant(
-    responseNames.length === 1,
-    'A subscription operation must contain exactly one root field.'
-  );
   const responseName = responseNames[0];
   const fieldNodes = fields[responseName];
   const fieldNode = fieldNodes[0];

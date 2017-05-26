@@ -271,6 +271,7 @@ export {
   PossibleFragmentSpreadsRule,
   ProvidedNonNullArgumentsRule,
   ScalarLeafsRule,
+  SingleFieldSubscriptionsRule,
   UniqueArgumentNamesRule,
   UniqueDirectivesPerLocationRule,
   UniqueFragmentNamesRule,

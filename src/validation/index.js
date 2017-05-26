@@ -96,6 +96,11 @@ export {
   ScalarLeafs as ScalarLeafsRule
 } from './rules/ScalarLeafs';
 
+// Spec Section: "Subscriptions with Single Root Field"
+export {
+  SingleFieldSubscriptions as SingleFieldSubscriptionsRule
+} from './rules/SingleFieldSubscriptions';
+
 // Spec Section: "Argument Uniqueness"
 export {
   UniqueArgumentNames as UniqueArgumentNamesRule
