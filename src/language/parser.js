@@ -141,6 +141,9 @@ export function parse(
   options?: ParseOptions
 ): DocumentNode {
   const sourceObj = typeof source === 'string' ? new Source(source) : source;
+  if (!(sourceObj instanceof Source)) {
+    throw new TypeError('Must provide Source. Received: ' + String(sourceObj));
+  }
   const lexer = createLexer(sourceObj, options || {});
   return parseDocument(lexer);
 }

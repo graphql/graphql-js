@@ -17,6 +17,16 @@ import { join } from 'path';
 
 describe('Parser', () => {
 
+  it('asserts that a source to parse was provided', () => {
+    expect(() => parse()).to.throw('Must provide Source. Received: undefined');
+  });
+
+  it('asserts that a source to parse was provided', () => {
+    expect(
+      () => parse({})
+    ).to.throw('Must provide Source. Received: [object Object]');
+  });
+
   it('parse provides useful errors', () => {
 
     let caughtError;

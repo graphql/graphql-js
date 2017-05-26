@@ -612,7 +612,7 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result).to.deep.equal({ data: { second: 'b' } });
   });
 
-  it('throws if no operation is provided', () => {
+  it('provides error if no operation is provided', async () => {
     const doc = 'fragment Example on Type { a }';
     const data = { a: 'b' };
     const ast = parse(doc);
@@ -625,12 +625,19 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    expect(() => execute(schema, ast, data)).to.throw(
-      'Must provide an operation.'
-    );
+    const result = await execute(schema, ast, data);
+    expect(result).to.deep.equal({
+      errors: [
+        {
+          message: 'Must provide an operation.',
+          locations: undefined,
+          path: undefined,
+        }
+      ]
+    });
   });
 
-  it('throws if no operation name is provided with multiple operations', () => {
+  it('throws if no op name is provided with multiple operations', async () => {
     const doc = 'query Example { a } query OtherExample { a }';
     const data = { a: 'b' };
     const ast = parse(doc);
@@ -643,14 +650,21 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    expect(() => execute(schema, ast, data)).to.throw(
-      'Must provide operation name if query contains multiple operations.'
-    );
+    const result = await execute(schema, ast, data);
+    expect(result).to.deep.equal({
+      errors: [
+        {
+          message: 'Must provide operation name if query contains ' +
+            'multiple operations.',
+          locations: undefined,
+          path: undefined,
+        }
+      ]
+    });
   });
 
-  it('throws if unknown operation name is provided', () => {
+  it('throws if unknown operation name is provided', async () => {
     const doc = 'query Example { a } query OtherExample { a }';
-    const data = { a: 'b' };
     const ast = parse(doc);
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -661,11 +675,20 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    expect(() =>
-      execute(schema, ast, data, null, null, 'UnknownExample')
-    ).to.throw(
-      'Unknown operation named "UnknownExample".'
-    );
+    const result = await execute({
+      schema,
+      document: ast,
+      operationName: 'UnknownExample'
+    });
+    expect(result).to.deep.equal({
+      errors: [
+        {
+          message: 'Unknown operation named "UnknownExample".',
+          locations: undefined,
+          path: undefined,
+        }
+      ]
+    });
   });
 
   it('uses the query schema for queries', async () => {
@@ -960,17 +983,16 @@ describe('Execute: Handles basic execution tasks', () => {
       })
     });
 
-    let caughtError;
-    try {
-      await execute(schema, query);
-    } catch (error) {
-      caughtError = error;
-    }
-
-    expect(caughtError).to.jsonEqual({
-      message:
-        'GraphQL cannot execute a request containing a ObjectTypeDefinition.',
-      locations: [ { line: 4, column: 7 } ]
+    const result = await execute(schema, query);
+    expect(result).to.deep.equal({
+      errors: [
+        {
+          message: 'GraphQL cannot execute a request containing a ' +
+            'ObjectTypeDefinition.',
+          locations: [ { line: 4, column: 7 } ],
+          path: undefined,
+        }
+      ]
     });
   });
 
