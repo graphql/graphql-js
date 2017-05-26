@@ -89,24 +89,31 @@ export function graphql(
   }
 
   return new Promise(resolve => {
-    const document = parse(source);
+    // Parse
+    let document;
+    try {
+      document = parse(source);
+    } catch (syntaxError) {
+      return resolve({ errors: [ syntaxError ]});
+    }
+
+    // Validate
     const validationErrors = validate(schema, document);
     if (validationErrors.length > 0) {
-      resolve({ errors: validationErrors });
-    } else {
-      resolve(
-        execute(
-          schema,
-          document,
-          rootValue,
-          contextValue,
-          variableValues,
-          operationName,
-          fieldResolver
-        )
-      );
+      return resolve({ errors: validationErrors });
     }
-  }).then(undefined, error => {
-    return { errors: [ error ] };
+
+    // Execute
+    resolve(
+      execute(
+        schema,
+        document,
+        rootValue,
+        contextValue,
+        variableValues,
+        operationName,
+        fieldResolver
+      )
+    );
   });
 }

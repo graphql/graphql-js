@@ -156,15 +156,28 @@ export function execute(
 
   // If a valid context cannot be created due to incorrect arguments,
   // this will throw an error.
-  const context = buildExecutionContext(
+  assertValidExecutionArguments(
     schema,
     document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver
+    variableValues
   );
+
+  // If a valid context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  let context;
+  try {
+    context = buildExecutionContext(
+      schema,
+      document,
+      rootValue,
+      contextValue,
+      variableValues,
+      operationName,
+      fieldResolver
+    );
+  } catch (error) {
+    return Promise.resolve({ errors: [ error ] });
+  }
 
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
@@ -173,20 +186,12 @@ export function execute(
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  return new Promise(resolve => {
-    resolve(executeOperation(context, context.operation, rootValue));
-  }).then(undefined, error => {
-    // Errors from sub-fields of a NonNull type may propagate to the top level,
-    // at which point we still log the error and null the parent field, which
-    // in this case is the entire response.
-    context.errors.push(error);
-    return null;
-  }).then(data => {
-    if (!context.errors.length) {
-      return { data };
-    }
-    return { errors: context.errors, data };
-  });
+  return Promise.resolve(
+    executeOperation(context, context.operation, rootValue)
+  ).then(data => context.errors.length === 0 ?
+    { data } :
+    { errors: context.errors, data }
+  );
 }
 
 /**
@@ -211,6 +216,32 @@ export function responsePathAsArray(
  */
 export function addPath(prev: ResponsePath, key: string | number) {
   return { prev, key };
+}
+
+/**
+ * Essential assertions before executing to provide developer feedback for
+ * improper use of the GraphQL library.
+ */
+export function assertValidExecutionArguments(
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rawVariableValues: ?{[key: string]: mixed}
+): void {
+  invariant(schema, 'Must provide schema');
+  invariant(document, 'Must provide document');
+  invariant(
+    schema instanceof GraphQLSchema,
+    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
+    'not multiple versions of GraphQL installed in your node_modules directory.'
+  );
+
+  // Variables, if provided, must be an object.
+  invariant(
+    !rawVariableValues || typeof rawVariableValues === 'object',
+    'Variables must be provided as an Object where each property is a ' +
+    'variable value. Perhaps look to see if an unparsed JSON string ' +
+    'was provided.'
+  );
 }
 
 /**
@@ -302,7 +333,7 @@ function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: mixed
-): {[key: string]: mixed} {
+): ?{[key: string]: mixed} {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
@@ -314,10 +345,27 @@ function executeOperation(
 
   const path = undefined;
 
-  if (operation.operation === 'mutation') {
-    return executeFieldsSerially(exeContext, type, rootValue, path, fields);
+  // Errors from sub-fields of a NonNull type may propagate to the top level,
+  // at which point we still log the error and null the parent field, which
+  // in this case is the entire response.
+  //
+  // Similar to completeValueCatchingError.
+  try {
+    const result = operation.operation === 'mutation' ?
+      executeFieldsSerially(exeContext, type, rootValue, path, fields) :
+      executeFields(exeContext, type, rootValue, path, fields);
+    const promise = getPromise(result);
+    if (promise) {
+      return promise.then(undefined, error => {
+        exeContext.errors.push(error);
+        return Promise.resolve(null);
+      });
+    }
+    return result;
+  } catch (error) {
+    exeContext.errors.push(error);
+    return null;
   }
-  return executeFields(exeContext, type, rootValue, path, fields);
 }
 
 /**

@@ -137,7 +137,7 @@ describe('Execute: Handles inputs', () => {
         `;
         const ast = parse(doc);
 
-        return expect(await execute(schema, ast)).to.deep.equal({
+        expect(await execute(schema, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
@@ -152,7 +152,7 @@ describe('Execute: Handles inputs', () => {
         `;
         const ast = parse(doc);
 
-        return expect(await execute(schema, ast)).to.deep.equal({
+        expect(await execute(schema, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
@@ -167,7 +167,7 @@ describe('Execute: Handles inputs', () => {
         `;
         const ast = parse(doc);
 
-        return expect(await execute(schema, ast)).to.deep.equal({
+        expect(await execute(schema, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":null,"b":null,"c":"C","d":null}'
           }
@@ -182,7 +182,7 @@ describe('Execute: Handles inputs', () => {
         `;
         const ast = parse(doc);
 
-        return expect(await execute(schema, ast)).to.deep.equal({
+        expect(await execute(schema, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"b":["A",null,"C"],"c":"C"}'
           }
@@ -220,7 +220,7 @@ describe('Execute: Handles inputs', () => {
         `;
         const ast = parse(doc);
 
-        return expect(await execute(schema, ast)).to.deep.equal({
+        expect(await execute(schema, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"c":"foo","d":"DeserializedValue"}',
           }
@@ -242,7 +242,7 @@ describe('Execute: Handles inputs', () => {
         const params = { input: { a: 'foo', b: [ 'bar' ], c: 'baz' } };
         const result = await execute(schema, ast, null, null, params);
 
-        return expect(result).to.deep.equal({
+        expect(result).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
@@ -258,7 +258,7 @@ describe('Execute: Handles inputs', () => {
 
         const result = await execute(schema, withDefaultsAST);
 
-        return expect(result).to.deep.equal({
+        expect(result).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
@@ -269,7 +269,7 @@ describe('Execute: Handles inputs', () => {
         const params = { input: { a: 'foo', b: 'bar', c: 'baz' } };
         const result = await execute(schema, ast, null, null, params);
 
-        return expect(result).to.deep.equal({
+        expect(result).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
           }
@@ -280,7 +280,7 @@ describe('Execute: Handles inputs', () => {
         const params = { input: { c: 'foo', d: 'SerializedValue' } };
         const result = await execute(schema, ast, null, null, params);
 
-        return expect(result).to.deep.equal({
+        expect(result).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"c":"foo","d":"DeserializedValue"}'
           }
@@ -290,55 +290,52 @@ describe('Execute: Handles inputs', () => {
       it('errors on null for nested non-null', async () => {
         const params = { input: { a: 'foo', b: 'bar', c: null } };
 
-        let caughtError;
-        try {
-          execute(schema, ast, null, null, params);
-        } catch (error) {
-          caughtError = error;
-        }
-
-        expect(caughtError).to.containSubset({
-          locations: [ { line: 2, column: 17 } ],
-          message:
-            'Variable "$input" got invalid value ' +
-            '{"a":"foo","b":"bar","c":null}.' +
-            '\nIn field "c": Expected "String!", found null.'
+        const result = await execute(schema, ast, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value ' +
+                '{"a":"foo","b":"bar","c":null}.' +
+                '\nIn field "c": Expected "String!", found null.',
+              locations: [ { line: 2, column: 17 } ],
+              path: undefined,
+            }
+          ]
         });
       });
 
       it('errors on incorrect type', async () => {
         const params = { input: 'foo bar' };
 
-        let caughtError;
-        try {
-          execute(schema, ast, null, null, params);
-        } catch (error) {
-          caughtError = error;
-        }
-
-        expect(caughtError).to.containSubset({
-          locations: [ { line: 2, column: 17 } ],
-          message:
-            'Variable "$input" got invalid value "foo bar".' +
-            '\nExpected "TestInputObject", found not an object.'
+        const result = await execute(schema, ast, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value "foo bar".' +
+                '\nExpected "TestInputObject", found not an object.',
+              locations: [ { line: 2, column: 17 } ],
+              path: undefined,
+            }
+          ]
         });
       });
 
       it('errors on omission of nested non-null', async () => {
         const params = { input: { a: 'foo', b: 'bar' } };
 
-        let caughtError;
-        try {
-          execute(schema, ast, null, null, params);
-        } catch (error) {
-          caughtError = error;
-        }
-
-        expect(caughtError).to.containSubset({
-          locations: [ { line: 2, column: 17 } ],
-          message:
-            'Variable "$input" got invalid value {"a":"foo","b":"bar"}.' +
-            '\nIn field "c": Expected "String!", found null.'
+        const result = await execute(schema, ast, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value {"a":"foo","b":"bar"}.' +
+                '\nIn field "c": Expected "String!", found null.',
+              locations: [ { line: 2, column: 17 } ],
+              path: undefined,
+            }
+          ]
         });
       });
 
@@ -351,21 +348,20 @@ describe('Execute: Handles inputs', () => {
         const nestedAst = parse(nestedDoc);
         const params = { input: { na: { a: 'foo' } } };
 
-        let caughtError;
-        try {
-          execute(schema, nestedAst, null, null, params);
-        } catch (error) {
-          caughtError = error;
-        }
-
-        expect(caughtError).to.containSubset({
-          locations: [ { line: 2, column: 19 } ],
-          message:
-            'Variable "$input" got invalid value {"na":{"a":"foo"}}.' +
-            '\nIn field "na": In field "c": Expected "String!", found null.' +
-            '\nIn field "nb": Expected "String!", found null.'
+        const result = await execute(schema, nestedAst, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value {"na":{"a":"foo"}}.' +
+                '\nIn field "na": In field "c": Expected "String!", ' +
+                'found null.' +
+                '\nIn field "nb": Expected "String!", found null.',
+              locations: [ { line: 2, column: 19 } ],
+              path: undefined,
+            }
+          ]
         });
-
       });
 
       it('errors on addition of unknown input field', async () => {
@@ -373,19 +369,18 @@ describe('Execute: Handles inputs', () => {
           input: { a: 'foo', b: 'bar', c: 'baz', extra: 'dog' }
         };
 
-        let caughtError;
-        try {
-          execute(schema, ast, null, null, params);
-        } catch (error) {
-          caughtError = error;
-        }
-
-        expect(caughtError).to.containSubset({
-          locations: [ { line: 2, column: 17 } ],
-          message:
-            'Variable "$input" got invalid value ' +
-             '{"a":"foo","b":"bar","c":"baz","extra":"dog"}.' +
-             '\nIn field "extra": Unknown field.'
+        const result = await execute(schema, ast, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value ' +
+                '{"a":"foo","b":"bar","c":"baz","extra":"dog"}.' +
+                '\nIn field "extra": Unknown field.',
+              locations: [ { line: 2, column: 17 } ],
+              path: undefined,
+            }
+          ]
         });
       });
 
@@ -401,7 +396,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: null
         }
@@ -416,7 +411,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: null
         }
@@ -431,7 +426,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: null
         }
@@ -446,7 +441,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { value: null })
       ).to.deep.equal({
         data: {
@@ -463,7 +458,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { value: 'a' })
       ).to.deep.equal({
         data: {
@@ -480,7 +475,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNullableStringInput: '"a"'
         }
@@ -510,17 +505,16 @@ describe('Execute: Handles inputs', () => {
         }
       `;
 
-      let caughtError;
-      try {
-        execute(schema, parse(doc));
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 31 } ],
-        message:
-          'Variable "$value" of required type "String!" was not provided.'
+      const result = await execute(schema, parse(doc));
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$value" of required type "String!" was not provided.',
+            locations: [ { line: 2, column: 31 } ],
+            path: undefined,
+          }
+        ]
       });
     });
 
@@ -532,18 +526,17 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      let caughtError;
-      try {
-        execute(schema, ast, null, null, { value: null });
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 31 } ],
-        message:
-          'Variable "$value" got invalid value null.\n' +
-          'Expected "String!", found null.'
+      const result = await execute(schema, ast, null, null, { value: null });
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$value" got invalid value null.\n' +
+              'Expected "String!", found null.',
+            locations: [ { line: 2, column: 31 } ],
+            path: undefined,
+          }
+        ]
       });
     });
 
@@ -555,7 +548,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { value: 'a' })
       ).to.deep.equal({
         data: {
@@ -572,7 +565,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: '"a"'
         }
@@ -587,7 +580,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: null
         },
@@ -612,7 +605,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithNonNullableStringInput: null
         },
@@ -636,7 +629,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { input: null })
       ).to.deep.equal({
         data: {
@@ -653,7 +646,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { input: [ 'A' ] })
       ).to.deep.equal({
         data: {
@@ -670,7 +663,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { input: [ 'A', null, 'B' ] })
       ).to.deep.equal({
         data: {
@@ -687,18 +680,17 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      let caughtError;
-      try {
-        execute(schema, ast, null, null, { input: null });
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 17 } ],
-        message:
-          'Variable "$input" got invalid value null.\n' +
-          'Expected "[String]!", found null.'
+      const result = await execute(schema, ast, null, null, { input: null });
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$input" got invalid value null.\n' +
+              'Expected "[String]!", found null.',
+            locations: [ { line: 2, column: 17 } ],
+            path: undefined,
+          }
+        ]
       });
     });
 
@@ -710,7 +702,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { input: [ 'A' ] })
       ).to.deep.equal({
         data: {
@@ -727,7 +719,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { input: [ 'A', null, 'B' ] })
       ).to.deep.equal({
         data: {
@@ -744,7 +736,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { input: null })
       ).to.deep.equal({
         data: {
@@ -761,7 +753,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { input: [ 'A' ] })
       ).to.deep.equal({
         data: {
@@ -779,18 +771,17 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
       const vars = { input: [ 'A', null, 'B' ] };
 
-      let caughtError;
-      try {
-        execute(schema, ast, null, null, vars);
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 17 } ],
-        message:
-          'Variable "$input" got invalid value ["A",null,"B"].' +
-          '\nIn element #1: Expected "String!", found null.'
+      const result = await execute(schema, ast, null, null, vars);
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$input" got invalid value ["A",null,"B"].' +
+              '\nIn element #1: Expected "String!", found null.',
+            locations: [ { line: 2, column: 17 } ],
+            path: undefined,
+          }
+        ]
       });
     });
 
@@ -802,18 +793,17 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      let caughtError;
-      try {
-        execute(schema, ast, null, null, { input: null });
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 17 } ],
-        message:
-          'Variable "$input" got invalid value null.\n' +
-          'Expected "[String!]!", found null.'
+      const result = await execute(schema, ast, null, null, { input: null });
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$input" got invalid value null.\n' +
+              'Expected "[String!]!", found null.',
+            locations: [ { line: 2, column: 17 } ],
+            path: undefined,
+          }
+        ]
       });
     });
 
@@ -825,7 +815,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const ast = parse(doc);
 
-      return expect(
+      expect(
         await execute(schema, ast, null, null, { input: [ 'A' ] })
       ).to.deep.equal({
         data: {
@@ -843,18 +833,17 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
       const vars = { input: [ 'A', null, 'B' ] };
 
-      let caughtError;
-      try {
-        execute(schema, ast, null, null, vars);
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 17 } ],
-        message:
-          'Variable "$input" got invalid value ["A",null,"B"].' +
-          '\nIn element #1: Expected "String!", found null.'
+      const result = await execute(schema, ast, null, null, vars);
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$input" got invalid value ["A",null,"B"].' +
+              '\nIn element #1: Expected "String!", found null.',
+            locations: [ { line: 2, column: 17 } ],
+            path: undefined,
+          }
+        ]
       });
     });
 
@@ -867,18 +856,17 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
       const vars = { input: { list: [ 'A', 'B' ] } };
 
-      let caughtError;
-      try {
-        execute(schema, ast, null, null, vars);
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 25 } ],
-        message:
-          'Variable "$input" expected value of type "TestType!" which cannot ' +
-          'be used as an input type.'
+      const result = await execute(schema, ast, null, null, vars);
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$input" expected value of type "TestType!" which ' +
+              'cannot be used as an input type.',
+            locations: [ { line: 2, column: 25 } ],
+            path: undefined,
+          }
+        ]
       });
     });
 
@@ -891,18 +879,17 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
       const vars = { input: 'whoknows' };
 
-      let caughtError;
-      try {
-        execute(schema, ast, null, null, vars);
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError).to.containSubset({
-        locations: [ { line: 2, column: 25 } ],
-        message:
-          'Variable "$input" expected value of type "UnknownType!" which ' +
-          'cannot be used as an input type.'
+      const result = await execute(schema, ast, null, null, vars);
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$input" expected value of type "UnknownType!" which ' +
+              'cannot be used as an input type.',
+            locations: [ { line: 2, column: 25 } ],
+            path: undefined,
+          }
+        ]
       });
     });
 
@@ -915,7 +902,7 @@ describe('Execute: Handles inputs', () => {
         fieldWithDefaultArgumentValue
       }`);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithDefaultArgumentValue: '"Hello World"'
         }
@@ -927,7 +914,7 @@ describe('Execute: Handles inputs', () => {
         fieldWithDefaultArgumentValue(input: $optional)
       }`);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithDefaultArgumentValue: '"Hello World"'
         }
@@ -939,7 +926,7 @@ describe('Execute: Handles inputs', () => {
         fieldWithDefaultArgumentValue(input: WRONG_TYPE)
       }`);
 
-      return expect(await execute(schema, ast)).to.deep.equal({
+      expect(await execute(schema, ast)).to.deep.equal({
         data: {
           fieldWithDefaultArgumentValue: null
         },
