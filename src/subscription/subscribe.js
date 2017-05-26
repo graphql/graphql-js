@@ -10,19 +10,21 @@
  */
 
 import { isAsyncIterable } from 'iterall';
+import { GraphQLError } from '../error/GraphQLError';
 import {
   addPath,
   assertValidExecutionArguments,
   buildExecutionContext,
+  buildResolveInfo,
   collectFields,
   execute,
   getFieldDef,
   getOperationRootType,
-  buildResolveInfo,
   resolveFieldValueOrError,
 } from '../execution/execute';
 import { GraphQLSchema } from '../type/schema';
 import invariant from '../jsutils/invariant';
+import asyncIteratorReject from './asyncIteratorReject';
 import mapAsyncIterator from './mapAsyncIterator';
 
 import type { ExecutionResult } from '../execution/execute';
@@ -34,8 +36,9 @@ import type { GraphQLFieldResolver } from '../type/definition';
  *
  * Returns an AsyncIterator
  *
- * If the arguments to this function do not result in a legal execution context,
- * a GraphQLError will be thrown immediately explaining the invalid input.
+ * If the client-provided arguments to this function do not result in a
+ * compliant subscription, a GraphQL Response with descriptive errors and no
+ * data will be yielded.
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
@@ -132,7 +135,13 @@ function subscribeImpl(
       variableValues,
       operationName,
       fieldResolver
-    )
+    ),
+    error => {
+      if (error instanceof GraphQLError) {
+        return { errors: [ error ] };
+      }
+      throw error;
+    }
   );
 }
 
@@ -140,7 +149,11 @@ function subscribeImpl(
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.
  *
- * Returns an AsyncIterable, may through a GraphQLError.
+ * Returns an AsyncIterable.
+ *
+ * If the client-provided arguments to this function do not result in a
+ * compliant subscription, iteration will fail with a GraphQLError explaining
+ * the invalid input. These should be caught and yielded as a GraphQL Response.
  *
  * A Source Stream represents the sequence of events, each of which is
  * expected to be used to trigger a GraphQL execution for that event.
@@ -159,77 +172,84 @@ export function createSourceEventStream(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): AsyncIterable<mixed> {
-  // If arguments are missing or incorrect, throw an error.
+  // If arguments are missing or incorrectly typed, this is an internal
+  // developer mistake which should throw an early error.
   assertValidExecutionArguments(
     schema,
     document,
     variableValues
   );
 
-  // If a valid context cannot be created due to incorrect arguments,
-  // this will throw an error.
-  const exeContext = buildExecutionContext(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver
-  );
-
-  const type = getOperationRootType(schema, exeContext.operation);
-  const fields = collectFields(
-    exeContext,
-    type,
-    exeContext.operation.selectionSet,
-    Object.create(null),
-    Object.create(null)
-  );
-  const responseNames = Object.keys(fields);
-  const responseName = responseNames[0];
-  const fieldNodes = fields[responseName];
-  const fieldNode = fieldNodes[0];
-  const fieldDef = getFieldDef(schema, type, fieldNode.name.value);
-  invariant(
-    fieldDef,
-    'This subscription is not defined by the schema.'
-  );
-
-  // Call the `subscribe()` resolver or the default resolver to produce an
-  // AsyncIterable yielding raw payloads.
-  const resolveFn = fieldDef.subscribe || exeContext.fieldResolver;
-
-  const info = buildResolveInfo(
-    exeContext,
-    fieldDef,
-    fieldNodes,
-    type,
-    addPath(undefined, responseName)
-  );
-
-  // resolveFieldValueOrError implements the "ResolveFieldEventStream"
-  // algorithm from GraphQL specification. It differs from
-  // "ResolveFieldValue" due to providing a different `resolveFn`.
-  const subscription = resolveFieldValueOrError(
-    exeContext,
-    fieldDef,
-    fieldNodes,
-    resolveFn,
-    rootValue,
-    info
-  );
-
-  if (subscription instanceof Error) {
-    throw subscription;
-  }
-
-  if (!isAsyncIterable(subscription)) {
-    throw new Error(
-      'Subscription must return Async Iterable. ' +
-        'Received: ' + String(subscription)
+  // After asserting valid arguments, any error created should result in
+  // returning a rejected AsyncIterable.
+  try {
+    // If a valid context cannot be created due to incorrect arguments,
+    // this will throw an error.
+    const exeContext = buildExecutionContext(
+      schema,
+      document,
+      rootValue,
+      contextValue,
+      variableValues,
+      operationName,
+      fieldResolver
     );
-  }
 
-  return (subscription: any);
+    const type = getOperationRootType(schema, exeContext.operation);
+    const fields = collectFields(
+      exeContext,
+      type,
+      exeContext.operation.selectionSet,
+      Object.create(null),
+      Object.create(null)
+    );
+    const responseNames = Object.keys(fields);
+    const responseName = responseNames[0];
+    const fieldNodes = fields[responseName];
+    const fieldNode = fieldNodes[0];
+    const fieldDef = getFieldDef(schema, type, fieldNode.name.value);
+    invariant(
+      fieldDef,
+      'This subscription is not defined by the schema.'
+    );
+
+    // Call the `subscribe()` resolver or the default resolver to produce an
+    // AsyncIterable yielding raw payloads.
+    const resolveFn = fieldDef.subscribe || exeContext.fieldResolver;
+
+    const info = buildResolveInfo(
+      exeContext,
+      fieldDef,
+      fieldNodes,
+      type,
+      addPath(undefined, responseName)
+    );
+
+    // resolveFieldValueOrError implements the "ResolveFieldEventStream"
+    // algorithm from GraphQL specification. It differs from
+    // "ResolveFieldValue" due to providing a different `resolveFn`.
+    const subscription = resolveFieldValueOrError(
+      exeContext,
+      fieldDef,
+      fieldNodes,
+      resolveFn,
+      rootValue,
+      info
+    );
+
+    if (subscription instanceof Error) {
+      throw subscription;
+    }
+
+    if (!isAsyncIterable(subscription)) {
+      throw new Error(
+        'Subscription must return Async Iterable. ' +
+          'Received: ' + String(subscription)
+      );
+    }
+
+    return (subscription: any);
+  } catch (error) {
+    return asyncIteratorReject(error);
+  }
 }
