@@ -224,10 +224,12 @@ export function createSourceEventStream(
     throw subscription;
   }
 
-  invariant(
-    isAsyncIterable(subscription),
-    'Subscription must return Async Iterable.'
-  );
+  if (!isAsyncIterable(subscription)) {
+    throw new Error(
+      'Subscription must return Async Iterable. ' +
+        'Received: ' + String(subscription)
+    );
+  }
 
   return (subscription: any);
 }
