@@ -68,11 +68,11 @@ schema {
 }
 
 type HelloScalars {
-  str: String
-  int: Int
+  bool: Boolean
   float: Float
   id: ID
-  bool: Boolean
+  int: Int
+  str: String
 }
 `;
     const output = cycleOutput(body);
@@ -196,11 +196,11 @@ schema {
 }
 
 type HelloScalars {
-  nonNullStr: String!
-  listOfStrs: [String]
   listOfNonNullStrs: [String!]
-  nonNullListOfStrs: [String]!
+  listOfStrs: [String]
   nonNullListOfNonNullStrs: [String!]!
+  nonNullListOfStrs: [String]!
+  nonNullStr: String!
 }
 `;
     const output = cycleOutput(body);
@@ -215,8 +215,8 @@ schema {
 }
 
 type Recurse {
-  str: String
   recurse: Recurse
+  str: String
 }
 `;
     const output = cycleOutput(body);
@@ -250,10 +250,10 @@ schema {
 }
 
 type Hello {
-  str(int: Int): String
+  booleanToStr(bool: Boolean): String
   floatToStr(float: Float): String
   idToStr(id: ID): String
-  booleanToStr(bool: Boolean): String
+  str(int: Int): String
   strToStr(bool: String): String
 }
 `;
@@ -450,9 +450,9 @@ schema {
 }
 
 type HelloScalars {
-  str: String
-  int: Int
   bool: Boolean
+  int: Int
+  str: String
 }
 
 type Mutation {
@@ -471,9 +471,9 @@ schema {
 }
 
 type HelloScalars {
-  str: String
-  int: Int
   bool: Boolean
+  int: Int
+  str: String
 }
 
 type Subscription {
@@ -527,9 +527,9 @@ enum MyEnum {
 }
 
 type Query {
+  enum: MyEnum
   field1: String @deprecated
   field2: Int @deprecated(reason: "Because I said so")
-  enum: MyEnum
 }
 `;
     const output = cycleOutput(body);
