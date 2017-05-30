@@ -585,7 +585,7 @@ describe('Subscribe', () => {
         invalidEmailSchema,
         ast
       );
-    }).to.throw('Subscription must return AsyncIterable. Received: test');
+    }).to.throw('Subscription must return Async Iterable. Received: test');
   });
 
   it('expects to have subscribe on type definition with iterator', () => {

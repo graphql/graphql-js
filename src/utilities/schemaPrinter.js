@@ -195,7 +195,9 @@ function printEnumValues(values): string {
 
 function printInputObject(type: GraphQLInputObjectType): string {
   const fieldMap = type.getFields();
-  const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
+  const fields = Object.keys(fieldMap)
+    .sort((name1, name2) => name1.localeCompare(name2))
+    .map(fieldName => fieldMap[fieldName]);
   return printDescription(type) +
     `input ${type.name} {\n` +
       fields.map((f, i) =>
@@ -206,7 +208,9 @@ function printInputObject(type: GraphQLInputObjectType): string {
 
 function printFields(type) {
   const fieldMap = type.getFields();
-  const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
+  const fields = Object.keys(fieldMap)
+    .sort((name1, name2) => name1.localeCompare(name2))
+    .map(fieldName => fieldMap[fieldName]);
   return fields.map((f, i) =>
     printDescription(f, '  ', !i) + '  ' +
     f.name + printArgs(f.args, '  ') + ': ' +
