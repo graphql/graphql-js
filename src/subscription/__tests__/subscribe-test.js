@@ -714,4 +714,134 @@ describe('Subscribe', () => {
       await subscription.next()
     ).to.deep.equal({ value: undefined, done: true });
   });
+
+  it('should handle error during execuction of source event', async () => {
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      async function* () {
+        yield { email: { subject: 'Hello' } };
+        yield { email: { subject: 'Goodbye' } };
+        yield { email: { subject: 'Bonjour' } };
+      },
+      event => {
+        if (event.email.subject === 'Goodbye') {
+          throw new Error('Never leave.');
+        }
+        return event;
+      }
+    );
+
+    const subscription = subscribe(
+      erroringEmailSchema,
+      parse(`
+        subscription {
+          importantEmail {
+            email {
+              subject
+            }
+          }
+        }
+      `)
+    );
+
+    const payload1 = await subscription.next();
+    expect(payload1).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Hello'
+            }
+          }
+        }
+      }
+    });
+
+    // An error in execution is presented as such.
+    const payload2 = await subscription.next();
+    expect(payload2).to.deep.equal({
+      done: false,
+      value: {
+        errors: [
+          {
+            message: 'Never leave.',
+            locations: [ { line: 3, column: 11 } ],
+            path: [ 'importantEmail' ],
+          }
+        ],
+        data: {
+          importantEmail: null,
+        }
+      }
+    });
+
+    // However that does not close the response event stream. Subsequent
+    // events are still executed.
+    const payload3 = await subscription.next();
+    expect(payload3).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Bonjour'
+            }
+          }
+        }
+      }
+    });
+
+  });
+
+  it('should pass through error thrown in source event stream', async () => {
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      async function* () {
+        yield { email: { subject: 'Hello' } };
+        throw new Error('test error');
+      },
+      email => email
+    );
+
+    const subscription = subscribe(
+      erroringEmailSchema,
+      parse(`
+        subscription {
+          importantEmail {
+            email {
+              subject
+            }
+          }
+        }
+      `)
+    );
+
+    const payload1 = await subscription.next();
+    expect(payload1).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Hello'
+            }
+          }
+        }
+      }
+    });
+
+    let expectedError;
+    try {
+      await subscription.next();
+    } catch (error) {
+      expectedError = error;
+    }
+
+    expect(expectedError).to.deep.equal(new Error('test error'));
+
+    const payload2 = await subscription.next();
+    expect(payload2).to.deep.equal({
+      done: true,
+      value: undefined
+    });
+  });
 });
