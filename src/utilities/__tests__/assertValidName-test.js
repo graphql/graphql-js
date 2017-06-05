@@ -70,14 +70,18 @@ describe('assertValidName()', () => {
 
   it('warns against use of leading double underscores', () => {
     assertValidName('__bad');
-    expect(console.warn).to.have.been.called.once();
+    /* eslint-disable no-unused-expressions */
+    expect(console.warn).to.have.been.called.once;
+    /* eslint-enable no-unused-expressions */
     expect(console.warn.__spy.calls[0][0]).to.match(/must not begin with/);
   });
 
   it('warns exactly once even in the presence of multiple violations', () => {
     assertValidName('__bad');
     assertValidName('__alsoBad');
-    expect(console.warn).to.have.been.called.once();
+    /* eslint-disable no-unused-expressions */
+    expect(console.warn).to.have.been.called.once;
+    /* eslint-enable no-unused-expressions */
   });
 
   it('throws for non-strings', () => {
