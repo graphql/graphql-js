@@ -631,9 +631,9 @@ chai-json-equal@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/chai-json-equal/-/chai-json-equal-0.0.1.tgz#338fcbbdaec63349379c7c4278c8a28da3b141a1"
 
-chai-spies@0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/chai-spies/-/chai-spies-0.7.1.tgz#343d99f51244212e8b17e64b93996ff7b2c2a9b1"
+chai-spies-next@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/chai-spies-next/-/chai-spies-next-0.8.0.tgz#9f289ec2236f8476aee9fe33571ad0c34ba60309"
 
 chai-subset@1.5.0:
   version "1.5.0"

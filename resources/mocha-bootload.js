@@ -9,7 +9,7 @@
 
 var chai = require('chai');
 chai.use(require('chai-json-equal'));
-chai.use(require('chai-spies'));
+chai.use(require('chai-spies-next'));
 chai.use(require('chai-subset'));
 
 process.on('unhandledRejection', function (error) {
