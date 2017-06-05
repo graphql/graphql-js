@@ -46,6 +46,16 @@ describe('Validate: Argument values of correct type', () => {
       `);
     });
 
+    it('Good negative int value', () => {
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          complicatedArgs {
+            intArgField(intArg: -2)
+          }
+        }
+      `);
+    });
+
     it('Good boolean value', () => {
       expectPassesRule(ArgumentsOfCorrectType, `
         {
@@ -71,6 +81,16 @@ describe('Validate: Argument values of correct type', () => {
         {
           complicatedArgs {
             floatArgField(floatArg: 1.1)
+          }
+        }
+      `);
+    });
+
+    it('Good negative float value', () => {
+      expectPassesRule(ArgumentsOfCorrectType, `
+        {
+          complicatedArgs {
+            floatArgField(floatArg: -1.1)
           }
         }
       `);
