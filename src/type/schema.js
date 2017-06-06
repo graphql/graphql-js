@@ -21,6 +21,7 @@ import type {
   GraphQLNamedType,
   GraphQLAbstractType
 } from './definition';
+import type { SchemaDefinitionNode } from '../language/ast';
 import { GraphQLDirective, specifiedDirectives } from './directives';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
@@ -55,6 +56,7 @@ import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
  *
  */
 export class GraphQLSchema {
+  astNode: ?SchemaDefinitionNode;
   _queryType: GraphQLObjectType;
   _mutationType: ?GraphQLObjectType;
   _subscriptionType: ?GraphQLObjectType;
@@ -107,6 +109,7 @@ export class GraphQLSchema {
     );
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives || specifiedDirectives;
+    this.astNode = config.astNode || null;
 
     // Build type map now to detect any errors within this schema.
     let initialTypes: Array<?GraphQLNamedType> = [
@@ -227,6 +230,7 @@ type GraphQLSchemaConfig = {
   subscription?: ?GraphQLObjectType;
   types?: ?Array<GraphQLNamedType>;
   directives?: ?Array<GraphQLDirective>;
+  astNode?: ?SchemaDefinitionNode;
 };
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {

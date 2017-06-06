@@ -180,7 +180,8 @@ describe('Type System: Example', () => {
       description: undefined,
       isDeprecated: true,
       deprecationReason: 'Just because',
-      value: 'foo'
+      value: 'foo',
+      astNode: undefined,
     });
   });
 
@@ -200,6 +201,7 @@ describe('Type System: Example', () => {
         isDeprecated: false,
         deprecationReason: undefined,
         value: null,
+        astNode: undefined,
       },
       {
         name: 'UNDEFINED',
@@ -207,6 +209,7 @@ describe('Type System: Example', () => {
         isDeprecated: false,
         deprecationReason: undefined,
         value: undefined,
+        astNode: undefined,
       },
     ]);
   });
