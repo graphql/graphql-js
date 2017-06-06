@@ -9,7 +9,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { parse } from '../../language';
+import { parse, print } from '../../language';
 import { printSchema } from '../schemaPrinter';
 import { buildASTSchema, buildSchema } from '../buildASTSchema';
 import dedent from '../../jsutils/dedent';
@@ -559,6 +559,78 @@ describe('Schema Builder', () => {
 
     expect(rootFields.field2.isDeprecated).to.equal(true);
     expect(rootFields.field2.deprecationReason).to.equal('Because I said so');
+  });
+
+  it('Correctly assign AST nodes', () => {
+    const schema = buildSchema(`
+      schema {
+        query: Query
+      }
+
+      type Query {
+        testField(testArg: TestInput): TestUnion
+      }
+
+      input TestInput {
+        testInputField: TestEnum
+      }
+
+      enum TestEnum {
+        TEST_VALUE
+      }
+
+      union TestUnion = TestType
+
+      interface TestInterface {
+        interfaceField: String
+      }
+
+      type TestType implements TestInterface {
+        interfaceField: String
+      }
+
+      directive @test(arg: Int) on FIELD
+    `);
+    const query = schema.getType('Query');
+    const testInput = schema.getType('TestInput');
+    const testEnum = schema.getType('TestEnum');
+    const testUnion = schema.getType('TestUnion');
+    const testInterface = schema.getType('TestInterface');
+    const testType = schema.getType('TestType');
+    const testDirective = schema.getDirective('test');
+
+    const restoredIDL = printSchema(buildSchema(
+      print(schema.astNode) + '\n' +
+      print(query.astNode) + '\n' +
+      print(testInput.astNode) + '\n' +
+      print(testEnum.astNode) + '\n' +
+      print(testUnion.astNode) + '\n' +
+      print(testInterface.astNode) + '\n' +
+      print(testType.astNode) + '\n' +
+      print(testDirective.astNode)
+    ));
+    expect(restoredIDL).to.be.equal(printSchema(schema));
+
+    const testField = query.getFields().testField;
+    expect(print(testField.astNode)).to.equal(
+      'testField(testArg: TestInput): TestUnion'
+    );
+    expect(print(testField.args[0].astNode)).to.equal(
+      'testArg: TestInput'
+    );
+    expect(print(testInput.getFields().testInputField.astNode)).to.equal(
+      'testInputField: TestEnum'
+    );
+    expect(print(testEnum.getValue('TEST_VALUE').astNode)).to.equal(
+      'TEST_VALUE'
+    );
+    expect(print(testInterface.getFields().interfaceField.astNode)).to.equal(
+      'interfaceField: String'
+    );
+    expect(print(testType.getFields().interfaceField.astNode)).to.equal(
+      'interfaceField: String'
+    );
+    expect(print(testDirective.args[0].astNode)).to.equal('arg: Int');
   });
 });
 
