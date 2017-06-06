@@ -135,7 +135,10 @@ function getNamedTypeNode(typeNode: TypeNode): NamedTypeNode {
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
  */
-export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
+export function buildASTSchema(
+    ast: DocumentNode,
+    customTypeMap: {[name: string]: GraphQLNamedType}
+): GraphQLSchema {
   if (!ast || ast.kind !== DOCUMENT) {
     throw new Error('Must provide a document ast.');
   }
@@ -325,6 +328,10 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   function typeDefNamed(typeName: string): GraphQLNamedType {
     if (innerTypeMap[typeName]) {
       return innerTypeMap[typeName];
+    }
+
+    if (customTypeMap && customTypeMap[typeName]) {
+      return customTypeMap[typeName];
     }
 
     if (!nodeMap[typeName]) {
@@ -523,8 +530,11 @@ export function getDescription(node: { loc?: Location }): ?string {
  * A helper function to build a GraphQLSchema directly from a source
  * document.
  */
-export function buildSchema(source: string | Source): GraphQLSchema {
-  return buildASTSchema(parse(source));
+export function buildSchema(
+    source: string | Source,
+    customTypeMap: {[name: string]: GraphQLNamedType}
+): GraphQLSchema {
+  return buildASTSchema(parse(source), customTypeMap);
 }
 
 // Count the number of spaces on the starting side of a string.

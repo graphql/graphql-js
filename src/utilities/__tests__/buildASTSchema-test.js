@@ -17,6 +17,8 @@ import {
   GraphQLSkipDirective,
   GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
+  Kind,
+  GraphQLScalarType,
 } from '../../';
 
 /**
@@ -819,5 +821,50 @@ type Repeated {
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Type "Repeated" was defined more than once.');
+  });
+});
+
+describe('customTypeMap', () => {
+
+  const Url = new GraphQLScalarType({
+    name: 'Url',
+    serialize: String,
+    parseValue: String,
+    parseLiteral(ast) {
+      return ast.kind === Kind.STRING || ast.kind === Kind.INT ?
+        ast.value :
+        null;
+    }
+  });
+
+  it('Unknown type referenced', () => {
+    const body = `
+schema {
+  query: Hello
+}
+
+type Hello {
+  bar: Url
+}
+`;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc))
+      .to.throw('Type "Url" not found in document.');
+  });
+
+  it('Unknown type by customTypeMap', async () => {
+    const schema = buildASTSchema(parse(`
+      schema { query: Query }
+      type Query {
+        str(url: Url): Url
+      }
+    `), {Url});
+
+    const result = await graphql(
+      schema,
+      '{ str(url: "http://example.com") }',
+      { str: ({ url }) => url }
+    );
+    expect(result.data).to.deep.equal({ str: 'http://example.com' });
   });
 });
