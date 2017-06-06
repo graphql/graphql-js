@@ -240,6 +240,7 @@ export function extendSchema(
     subscription: subscriptionType,
     types,
     directives: getMergedDirectives(),
+    astNode: schema.astNode,
   });
 
   // Below are functions used for producing this schema that have closed over
@@ -332,11 +333,19 @@ export function extendSchema(
   }
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
+    const name = type.name;
+    let extensionASTNodes = type.extensionASTNodes;
+    if (typeExtensionsMap[name]) {
+      extensionASTNodes = extensionASTNodes.concat(typeExtensionsMap[name]);
+    }
+
     return new GraphQLObjectType({
-      name: type.name,
+      name,
       description: type.description,
       interfaces: () => extendImplementedInterfaces(type),
       fields: () => extendFieldMap(type),
+      astNode: type.astNode,
+      extensionASTNodes,
       isTypeOf: type.isTypeOf,
     });
   }
@@ -348,6 +357,7 @@ export function extendSchema(
       name: type.name,
       description: type.description,
       fields: () => extendFieldMap(type),
+      astNode: type.astNode,
       resolveType: type.resolveType,
     });
   }
@@ -357,6 +367,7 @@ export function extendSchema(
       name: type.name,
       description: type.description,
       types: type.getTypes().map(getTypeFromDef),
+      astNode: type.astNode,
       resolveType: type.resolveType,
     });
   }
@@ -397,6 +408,7 @@ export function extendSchema(
         deprecationReason: field.deprecationReason,
         type: extendFieldType(field.type),
         args: keyMap(field.args, arg => arg.name),
+        astNode: field.astNode,
         resolve: field.resolve,
       };
     });
@@ -419,6 +431,7 @@ export function extendSchema(
             type: buildOutputFieldType(field.type),
             args: buildInputValues(field.arguments),
             deprecationReason: getDeprecationReason(field),
+            astNode: field,
           };
         });
       });
@@ -456,6 +469,7 @@ export function extendSchema(
       description: getDescription(typeNode),
       interfaces: () => buildImplementedInterfaces(typeNode),
       fields: () => buildFieldMap(typeNode),
+      astNode: typeNode,
     });
   }
 
@@ -464,6 +478,7 @@ export function extendSchema(
       name: typeNode.name.value,
       description: getDescription(typeNode),
       fields: () => buildFieldMap(typeNode),
+      astNode: typeNode,
       resolveType: cannotExecuteExtendedSchema,
     });
   }
@@ -473,6 +488,7 @@ export function extendSchema(
       name: typeNode.name.value,
       description: getDescription(typeNode),
       types: typeNode.types.map(getObjectTypeFromAST),
+      astNode: typeNode,
       resolveType: cannotExecuteExtendedSchema,
     });
   }
@@ -481,6 +497,7 @@ export function extendSchema(
     return new GraphQLScalarType({
       name: typeNode.name.value,
       description: getDescription(typeNode),
+      astNode: typeNode,
       serialize: id => id,
       // Note: validation calls the parse functions to determine if a
       // literal value is correct. Returning null would cause use of custom
@@ -501,8 +518,10 @@ export function extendSchema(
         enumValue => ({
           description: getDescription(enumValue),
           deprecationReason: getDeprecationReason(enumValue),
+          astNode: enumValue,
         }),
       ),
+      astNode: typeNode,
     });
   }
 
@@ -511,6 +530,7 @@ export function extendSchema(
       name: typeNode.name.value,
       description: getDescription(typeNode),
       fields: () => buildInputValues(typeNode.fields),
+      astNode: typeNode,
     });
   }
 
@@ -524,6 +544,7 @@ export function extendSchema(
       ),
       args:
         directiveNode.arguments && buildInputValues(directiveNode.arguments),
+      astNode: directiveNode,
     });
   }
 
@@ -541,6 +562,7 @@ export function extendSchema(
         description: getDescription(field),
         args: buildInputValues(field.arguments),
         deprecationReason: getDeprecationReason(field),
+        astNode: field,
       })
     );
   }
@@ -554,7 +576,8 @@ export function extendSchema(
         return {
           type,
           description: getDescription(value),
-          defaultValue: valueFromAST(value.defaultValue, type)
+          defaultValue: valueFromAST(value.defaultValue, type),
+          astNode: value,
         };
       }
     );
