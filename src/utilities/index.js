@@ -78,15 +78,22 @@ export { separateOperations } from './separateOperations';
 export {
   isEqualType,
   isTypeSubTypeOf,
-  doTypesOverlap
+  doTypesOverlap,
 } from './typeComparators';
 
 // Asserts that a string is a valid GraphQL name
 export { assertValidName } from './assertValidName';
 
 // Compares two GraphQLSchemas and detects breaking changes.
-export { findBreakingChanges } from './findBreakingChanges';
-export type { BreakingChange } from './findBreakingChanges';
+export {
+  BreakingChangeType,
+  DangerousChangeType,
+  findBreakingChanges,
+} from './findBreakingChanges';
+export type {
+  BreakingChange,
+  DangerousChange,
+} from './findBreakingChanges';
 
 // Report all deprecated usage within a GraphQL document.
 export { findDeprecatedUsages } from './findDeprecatedUsages';
