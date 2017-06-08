@@ -430,4 +430,108 @@ describe('Execute: Handles execution of abstract types', () => {
     });
   });
 
+  it('resolveType with source value', async () => {
+    const DogType = new GraphQLObjectType({
+      name: 'Dog',
+      fields: {
+        name: { type: GraphQLString },
+        woofs: { type: GraphQLBoolean },
+      }
+    });
+
+    const CatType = new GraphQLObjectType({
+      name: 'Cat',
+      fields: {
+        name: { type: GraphQLString },
+        meows: { type: GraphQLBoolean },
+      }
+    });
+
+    const PetConnectionType = new GraphQLObjectType({
+      name: 'PetConnection',
+      fields: {
+        petType: {
+          type: GraphQLString
+        },
+        entity: {
+          type: new GraphQLUnionType({
+            name: 'PetType',
+            types: [ DogType, CatType ],
+            resolveType(obj, context, info, source) {
+              return source.petType === 'dog' ? DogType :
+                source.petType === 'cat' ? CatType :
+                null;
+            },
+          }),
+          resolve(obj) {
+            const value = {
+              name: `${obj.name}`,
+            };
+            if (obj.petType === 'dog') {
+              value.woofs = true;
+            }
+            if (obj.petType === 'cat') {
+              value.meows = true;
+            }
+            return value;
+          },
+        },
+      },
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          pets: {
+            type: new GraphQLList(PetConnectionType),
+            resolve() {
+              return [ {
+                petType: 'dog',
+                name: 'Odie'
+              }, {
+                petType: 'cat',
+                name: 'Garfield'
+              } ];
+            }
+          }
+        }
+      }),
+    });
+
+    const query = `{
+      pets {
+        entity {
+          ... on Dog {
+            name
+            woofs
+          }
+          ... on Cat {
+            name
+            meows
+          }
+        }
+      }
+    }`;
+
+    const result = await graphql(schema, query);
+    expect(result).to.jsonEqual({
+      data: {
+        pets: [
+          {
+            entity: {
+              name: 'Odie',
+              woofs: true
+            },
+          }, {
+            entity: {
+              name: 'Garfield',
+              meows: true
+            },
+          }
+        ]
+      }
+    });
+  });
+
 });

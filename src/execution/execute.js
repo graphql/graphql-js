@@ -697,7 +697,8 @@ function resolveField(
     fieldNodes,
     info,
     path,
-    result
+    result,
+    source
   );
 }
 
@@ -765,7 +766,8 @@ function completeValueCatchingError(
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
-  result: mixed
+  result: mixed,
+  source: mixed
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
@@ -776,7 +778,8 @@ function completeValueCatchingError(
       fieldNodes,
       info,
       path,
-      result
+      result,
+      source
     );
   }
 
@@ -789,7 +792,8 @@ function completeValueCatchingError(
       fieldNodes,
       info,
       path,
-      result
+      result,
+      source
     );
     const promise = getPromise(completed);
     if (promise) {
@@ -819,7 +823,8 @@ function completeValueWithLocatedError(
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
-  result: mixed
+  result: mixed,
+  source: mixed
 ): mixed {
   try {
     const completed = completeValue(
@@ -828,7 +833,8 @@ function completeValueWithLocatedError(
       fieldNodes,
       info,
       path,
-      result
+      result,
+      source
     );
     const promise = getPromise(completed);
     if (promise) {
@@ -872,7 +878,8 @@ function completeValue(
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
-  result: mixed
+  result: mixed,
+  source: mixed
 ): mixed {
   // If result is a Promise, apply-lift over completeValue.
   const promise = getPromise(result);
@@ -946,7 +953,8 @@ function completeValue(
       fieldNodes,
       info,
       path,
-      result
+      result,
+      source
     );
   }
 
@@ -1042,10 +1050,11 @@ function completeAbstractValue(
   fieldNodes: Array<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
-  result: mixed
+  result: mixed,
+  source: mixed
 ): mixed {
   const runtimeType = returnType.resolveType ?
-    returnType.resolveType(result, exeContext.contextValue, info) :
+    returnType.resolveType(result, exeContext.contextValue, info, source) :
     defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
 
   const promise = getPromise(runtimeType);
