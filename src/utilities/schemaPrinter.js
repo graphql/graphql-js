@@ -27,8 +27,17 @@ import { GraphQLString } from '../type/scalars';
 import { DEFAULT_DEPRECATION_REASON } from '../type/directives';
 
 
-export function printSchema(schema: GraphQLSchema): string {
-  return printFilteredSchema(schema, n => !isSpecDirective(n), isDefinedType);
+type printStyle = 'alphabet' | 'hierarchy';
+export function printSchema(
+  schema: GraphQLSchema,style: printStyle = 'alphabet'): string {
+  switch (style) {
+    case 'hierarchy':
+      return printFineSchema(schema, n => !isSpecDirective(n));
+    case 'alphabet':
+    default:
+      return printFilteredSchema(schema, n => !isSpecDirective(n),
+      isDefinedType);
+  }
 }
 
 export function printIntrospectionSchema(schema: GraphQLSchema): string {
@@ -297,4 +306,201 @@ function breakLine(line: string, len: number): Array<string> {
     sublines.push(parts[i].slice(1) + parts[i + 1]);
   }
   return sublines;
+}
+
+function printFineSchema(
+  schema: GraphQLSchema,
+  directiveFilter: (type: string) => boolean = (n => !isSpecDirective(n))
+): string {
+  const directives = schema.getDirectives()
+  .filter(directive => directiveFilter(directive.name));
+  const typeMap = schema.getTypeMap();
+  const orderedNames = getOrderedNamesBySchema(schema);
+  const types = orderedNames.map(orderedName => typeMap[orderedName]);
+  return [ directives.map(printDirective) ].concat(
+    types.map(printType),
+    printSchemaDefinition(schema)
+  ).join('\n\n') + '\n';
+}
+
+function getOrderedNamesBySchema(schema) {
+  const typeMap = schema.getTypeMap();
+  const rootQuery = schema.getQueryType();
+  const definedTypeNames = Object.keys(typeMap).filter(isDefinedType);
+
+  // use a big number 999999 to save some condition operator ~_~
+  // todo should modify the magic 999999
+  const typeNamesMap = arrayToMap(definedTypeNames,99999);
+  // give each type used by 'Query' a level number
+  const queryMaps = levelTypeNames(rootQuery.name,typeNamesMap,schema);
+  let unLeveledNamesMap = queryMaps.unLeveledNamesMap;
+  const leveledNamesMap = queryMaps.leveledNamesMap;
+  let orderedNames = flatNamesMapToArray(leveledNamesMap);
+
+  const rootMutation = schema.getMutationType();
+  if (rootMutation) {
+    // give level number to the rest unLeveled type
+    // which used by Mutations
+    const restNamesMap = levelTypeNames(rootMutation.name,
+      unLeveledNamesMap,schema);
+    const orderedMutations =
+      flatNamesMapToArray(restNamesMap.leveledNamesMap);
+
+    orderedNames = [ ...orderedNames,...orderedMutations ];
+    unLeveledNamesMap = restNamesMap.unLeveledNamesMap;
+  }
+
+  // todo throw a error .. should have none unknown type
+  const theNamesIDontKnown = flatNamesMapToArray(unLeveledNamesMap);
+  if (theNamesIDontKnown.length > 0) {
+    orderedNames = [ ...theNamesIDontKnown,...orderedNames ];
+  }
+  return orderedNames;
+}
+
+function flatNamesMapToArray(leveledNamesMap: Map<*, *>): Array<string> {
+  const levelToNamesMap = flipMap(leveledNamesMap);
+  const nameLevels = Array.from(levelToNamesMap.keys());
+  nameLevels.sort((pre,next) => ( next - pre ));
+  let orderedNames = [];
+  for (const level of nameLevels) {
+    const levelNames = levelToNamesMap.get(level);
+    if (levelNames) {
+      // sort the same level names . to get a certainly order.
+      levelNames.sort((name1, name2) => name1.localeCompare(name2));
+      orderedNames = orderedNames.concat(levelNames);
+    } else {
+      throw new Error(`printFineSchema.getOrderedNamesFromMap:
+      level[${level}] have no names,it should have`);
+    }
+  }
+  return orderedNames;
+}
+
+type NamesMap = {
+  leveledNamesMap:Map<*, *>,
+  unLeveledNamesMap:Map<*, *>,
+};
+
+// calculate level values for each type names by their reference to each other
+function levelTypeNames(rootName: string,namesMapToBeLeveled: Map<*, *>,
+                        schema: GraphQLSchema): NamesMap {
+  const typeMap = schema.getTypeMap();
+  const unLeveledNamesMap = new Map(namesMapToBeLeveled);
+  const leveledNamesMap = new Map();
+  // use a map to watch circle ref,Depth-first search
+  const circleRef = new Map();
+
+  unLeveledNamesMap.delete(rootName);
+  leveledNamesMap.set(rootName,0);
+  _levelTypeNames(rootName,1);
+  function _levelTypeNames(thisName,childLevel) {
+    const childrenNames = getRefedTypes(typeMap[thisName]);
+    for (const childName of childrenNames) {
+      const currentLevel = leveledNamesMap.get(childName);
+      if (// meet a circle ref,skip
+      circleRef.get(childName) ||
+        // this type is not belong to current process,skip
+      namesMapToBeLeveled.get(childName) === undefined ||
+        //  if [the level of leveled Name] >= [current level]
+        // must skip,level is always up~ no downgrade
+      (currentLevel && currentLevel >= childLevel)
+      ) {
+        continue;
+      }
+      circleRef.set(childName,childLevel);
+
+      leveledNamesMap.set(childName,childLevel);
+      unLeveledNamesMap.delete(childName);
+      _levelTypeNames(childName,childLevel + 1);
+
+      circleRef.delete(childName);
+    }
+  }
+
+  return {unLeveledNamesMap,leveledNamesMap};
+}
+
+// always return an array ,if get none,just return []
+// three sources of reference from a type.
+// field itself, args of a fields,interface
+function getRefedTypes(type: any): Array<string> {
+  let refedTypeNames = [];
+  if (!isDefinedType(type.name) ||
+      // as i known ~_~,if there is no Fields
+      // this type can not ref other types inside
+    !(type.getFields instanceof Function)
+  ) {
+    return refedTypeNames;
+  }
+
+  const fields = type.getFields();
+  // 1/2 get refed type name from fields
+  Object.keys(fields).map( fieldKey => fields[fieldKey])
+    .filter(field => isDefinedType(getTypeName(field.type) ) )
+    .map(field => {
+      refedTypeNames = refedTypeNames.concat(
+        // 1. get type name from args of a field
+        // in javascript, can not use instanceof to check a String type!
+        // must use typeof!
+        field.args.map(arg => getDefinedTypeNameByType(arg.type))
+          .filter(value => (typeof value === 'string')) ,
+        // 2. get type name from field itself
+        getDefinedTypeNameByType(field.type) || []
+      );
+    });
+
+  // 3. get type name from interfaces
+  if (type.getInterfaces instanceof Function) {
+    for (const interfaceType of type.getInterfaces()) {
+      refedTypeNames.push(interfaceType.name);
+    }
+  }
+  return refedTypeNames;
+
+}
+
+function arrayToMap(_array: Array<string>,
+                    defaultValue: number): Map<string, number> {
+  const _map = new Map();
+  for (const v of _array) {
+    _map.set(v,defaultValue);
+  }
+  return _map;
+}
+
+function flipMap(_srcMap: Map<string, number>): Map<number, Array<string>> {
+  const _outMap = new Map();
+  for (const [ oldKey,vToKey ] of _srcMap) {
+    const subArray = _outMap.get(vToKey);
+    if ( subArray ) {
+      subArray.push(oldKey);
+    } else {
+      _outMap.set(vToKey,[ oldKey ]);
+    }
+  }
+  return _outMap;
+}
+
+function getTypeName(type: any): string {
+  const typeString = type.constructor.name;
+  let name = type.name;
+  if (typeString === 'GraphQLNonNull' || typeString === 'GraphQLList' ) {
+    name = getTypeName(type.ofType);
+  }
+  if ( name === undefined && isDefinedType(type)) {
+    // if still can not get name,
+    // this type must be something i dont known ,throw to learn
+    throw new Error(`Unknown type its javascript class is
+      [ [${type.constructor.name}] ${type.ofType.constructor.name}]`);
+  }
+  return name;
+}
+
+function getDefinedTypeNameByType(TypeObj: GraphQLType): ?string {
+  const typeName = getTypeName(TypeObj);
+  if (isDefinedType(typeName)) {
+    return typeName;
+  }
+  return null;
 }
