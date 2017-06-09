@@ -227,12 +227,6 @@ export function buildClientSchema(
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
       serialize: id => id,
-      // Note: validation calls the parse functions to determine if a
-      // literal value is correct. Returning null would cause use of custom
-      // scalars to always fail validation. Returning false causes them to
-      // always pass validation.
-      parseValue: () => false,
-      parseLiteral: () => false,
     });
   }
 

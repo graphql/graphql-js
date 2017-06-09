@@ -12,6 +12,7 @@ import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import * as Kind from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
+import { scalarValueFromAST } from '../utilities/scalarValueFromAST';
 import type {
   ScalarTypeDefinitionNode,
   ObjectTypeDefinitionNode,
@@ -345,7 +346,10 @@ export class GraphQLScalarType {
   // Parses an externally provided value to use as an input.
   parseValue(value: mixed): mixed {
     const parser = this._scalarConfig.parseValue;
-    return parser && !isNullish(value) ? parser(value) : undefined;
+    if (isNullish(value)) {
+      return undefined;
+    }
+    return parser ? parser(value) : value;
   }
 
   // Determines if an internal value is valid for this type.
@@ -357,7 +361,7 @@ export class GraphQLScalarType {
   // Parses an externally provided literal value to use as an input.
   parseLiteral(valueNode: ValueNode): mixed {
     const parser = this._scalarConfig.parseLiteral;
-    return parser ? parser(valueNode) : undefined;
+    return (parser || scalarValueFromAST)(valueNode);
   }
 
   toString(): string {

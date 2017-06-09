@@ -448,12 +448,6 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
       description: getDescription(def),
       astNode: def,
       serialize: () => null,
-      // Note: validation calls the parse functions to determine if a
-      // literal value is correct. Returning null would cause use of custom
-      // scalars to always fail validation. Returning false causes them to
-      // always pass validation.
-      parseValue: () => false,
-      parseLiteral: () => false,
     });
   }
 
