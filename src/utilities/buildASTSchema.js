@@ -447,7 +447,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
       name: def.name.value,
       description: getDescription(def),
       astNode: def,
-      serialize: () => null,
+      serialize: value => value,
     });
   }
 

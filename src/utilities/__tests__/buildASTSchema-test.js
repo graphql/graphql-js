@@ -444,6 +444,22 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
   });
 
+  it('Custom scalar argument field with default', () => {
+    const body = dedent`
+      schema {
+        query: Hello
+      }
+
+      scalar CustomScalar
+
+      type Hello {
+        str(int: CustomScalar = 2): String
+      }
+    `;
+    const output = cycleOutput(body);
+    expect(output).to.equal(body);
+  });
+
   it('Simple type with mutation', () => {
     const body = dedent`
       schema {
