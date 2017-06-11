@@ -17,19 +17,7 @@ import { parse } from '../language/parser';
 import type { Source } from '../language/source';
 import { getArgumentValues } from '../execution/values';
 
-import {
-  LIST_TYPE,
-  NON_NULL_TYPE,
-  DOCUMENT,
-  SCHEMA_DEFINITION,
-  SCALAR_TYPE_DEFINITION,
-  OBJECT_TYPE_DEFINITION,
-  INTERFACE_TYPE_DEFINITION,
-  ENUM_TYPE_DEFINITION,
-  UNION_TYPE_DEFINITION,
-  INPUT_OBJECT_TYPE_DEFINITION,
-  DIRECTIVE_DEFINITION,
-} from '../language/kinds';
+import * as Kind from '../language/kinds';
 
 import type {
   Location,
@@ -106,10 +94,10 @@ function buildWrappedType(
   innerType: GraphQLType,
   inputTypeNode: TypeNode
 ): GraphQLType {
-  if (inputTypeNode.kind === LIST_TYPE) {
+  if (inputTypeNode.kind === Kind.LIST_TYPE) {
     return new GraphQLList(buildWrappedType(innerType, inputTypeNode.type));
   }
-  if (inputTypeNode.kind === NON_NULL_TYPE) {
+  if (inputTypeNode.kind === Kind.NON_NULL_TYPE) {
     const wrappedType = buildWrappedType(innerType, inputTypeNode.type);
     invariant(!(wrappedType instanceof GraphQLNonNull), 'No nesting nonnull.');
     return new GraphQLNonNull(wrappedType);
@@ -119,7 +107,10 @@ function buildWrappedType(
 
 function getNamedTypeNode(typeNode: TypeNode): NamedTypeNode {
   let namedType = typeNode;
-  while (namedType.kind === LIST_TYPE || namedType.kind === NON_NULL_TYPE) {
+  while (
+    namedType.kind === Kind.LIST_TYPE ||
+    namedType.kind === Kind.NON_NULL_TYPE
+  ) {
     namedType = namedType.type;
   }
   return namedType;
@@ -136,7 +127,7 @@ function getNamedTypeNode(typeNode: TypeNode): NamedTypeNode {
  * has no resolve methods, so execution will use default resolvers.
  */
 export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
-  if (!ast || ast.kind !== DOCUMENT) {
+  if (!ast || ast.kind !== Kind.DOCUMENT) {
     throw new Error('Must provide a document ast.');
   }
 
@@ -148,18 +139,18 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   for (let i = 0; i < ast.definitions.length; i++) {
     const d = ast.definitions[i];
     switch (d.kind) {
-      case SCHEMA_DEFINITION:
+      case Kind.SCHEMA_DEFINITION:
         if (schemaDef) {
           throw new Error('Must provide only one schema definition.');
         }
         schemaDef = d;
         break;
-      case SCALAR_TYPE_DEFINITION:
-      case OBJECT_TYPE_DEFINITION:
-      case INTERFACE_TYPE_DEFINITION:
-      case ENUM_TYPE_DEFINITION:
-      case UNION_TYPE_DEFINITION:
-      case INPUT_OBJECT_TYPE_DEFINITION:
+      case Kind.SCALAR_TYPE_DEFINITION:
+      case Kind.OBJECT_TYPE_DEFINITION:
+      case Kind.INTERFACE_TYPE_DEFINITION:
+      case Kind.ENUM_TYPE_DEFINITION:
+      case Kind.UNION_TYPE_DEFINITION:
+      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
         const typeName = d.name.value;
         if (nodeMap[typeName]) {
           throw new Error(`Type "${typeName}" was defined more than once.`);
@@ -167,7 +158,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
         typeDefs.push(d);
         nodeMap[typeName] = d;
         break;
-      case DIRECTIVE_DEFINITION:
+      case Kind.DIRECTIVE_DEFINITION:
         directiveDefs.push(d);
         break;
     }
@@ -344,17 +335,17 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
       throw new Error('def must be defined');
     }
     switch (def.kind) {
-      case OBJECT_TYPE_DEFINITION:
+      case Kind.OBJECT_TYPE_DEFINITION:
         return makeTypeDef(def);
-      case INTERFACE_TYPE_DEFINITION:
+      case Kind.INTERFACE_TYPE_DEFINITION:
         return makeInterfaceDef(def);
-      case ENUM_TYPE_DEFINITION:
+      case Kind.ENUM_TYPE_DEFINITION:
         return makeEnumDef(def);
-      case UNION_TYPE_DEFINITION:
+      case Kind.UNION_TYPE_DEFINITION:
         return makeUnionDef(def);
-      case SCALAR_TYPE_DEFINITION:
+      case Kind.SCALAR_TYPE_DEFINITION:
         return makeScalarDef(def);
-      case INPUT_OBJECT_TYPE_DEFINITION:
+      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
         return makeInputObjectDef(def);
       default:
         throw new Error(`Type kind "${def.kind}" not supported.`);

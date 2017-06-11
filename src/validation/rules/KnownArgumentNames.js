@@ -14,10 +14,7 @@ import find from '../../jsutils/find';
 import invariant from '../../jsutils/invariant';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
-import {
-  FIELD,
-  DIRECTIVE
-} from '../../language/kinds';
+import * as Kind from '../../language/kinds';
 import type { GraphQLType } from '../../type/definition';
 
 
@@ -58,7 +55,7 @@ export function KnownArgumentNames(context: ValidationContext): any {
   return {
     Argument(node, key, parent, path, ancestors) {
       const argumentOf = ancestors[ancestors.length - 1];
-      if (argumentOf.kind === FIELD) {
+      if (argumentOf.kind === Kind.FIELD) {
         const fieldDef = context.getFieldDef();
         if (fieldDef) {
           const fieldArgDef = find(
@@ -82,7 +79,7 @@ export function KnownArgumentNames(context: ValidationContext): any {
             ));
           }
         }
-      } else if (argumentOf.kind === DIRECTIVE) {
+      } else if (argumentOf.kind === Kind.DIRECTIVE) {
         const directive = context.getDirective();
         if (directive) {
           const directiveArgDef = find(

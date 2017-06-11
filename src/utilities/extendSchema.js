@@ -55,19 +55,7 @@ import {
   GraphQLID,
 } from '../type/scalars';
 
-import {
-  DOCUMENT,
-  LIST_TYPE,
-  NON_NULL_TYPE,
-  OBJECT_TYPE_DEFINITION,
-  INTERFACE_TYPE_DEFINITION,
-  ENUM_TYPE_DEFINITION,
-  UNION_TYPE_DEFINITION,
-  SCALAR_TYPE_DEFINITION,
-  INPUT_OBJECT_TYPE_DEFINITION,
-  TYPE_EXTENSION_DEFINITION,
-  DIRECTIVE_DEFINITION,
-} from '../language/kinds';
+import * as Kind from '../language/kinds';
 
 import type {
   GraphQLType,
@@ -118,7 +106,7 @@ export function extendSchema(
   );
 
   invariant(
-    documentAST && documentAST.kind === DOCUMENT,
+    documentAST && documentAST.kind === Kind.DOCUMENT,
     'Must provide valid Document AST'
   );
 
@@ -133,12 +121,12 @@ export function extendSchema(
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const def = documentAST.definitions[i];
     switch (def.kind) {
-      case OBJECT_TYPE_DEFINITION:
-      case INTERFACE_TYPE_DEFINITION:
-      case ENUM_TYPE_DEFINITION:
-      case UNION_TYPE_DEFINITION:
-      case SCALAR_TYPE_DEFINITION:
-      case INPUT_OBJECT_TYPE_DEFINITION:
+      case Kind.OBJECT_TYPE_DEFINITION:
+      case Kind.INTERFACE_TYPE_DEFINITION:
+      case Kind.ENUM_TYPE_DEFINITION:
+      case Kind.UNION_TYPE_DEFINITION:
+      case Kind.SCALAR_TYPE_DEFINITION:
+      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
         // Sanity check that none of the defined types conflict with the
         // schema's existing types.
         const typeName = def.name.value;
@@ -151,7 +139,7 @@ export function extendSchema(
         }
         typeDefinitionMap[typeName] = def;
         break;
-      case TYPE_EXTENSION_DEFINITION:
+      case Kind.TYPE_EXTENSION_DEFINITION:
         // Sanity check that this type extension exists within the
         // schema's existing types.
         const extendedTypeName = def.definition.name.value;
@@ -177,7 +165,7 @@ export function extendSchema(
         }
         typeExtensionsMap[extendedTypeName] = extensions;
         break;
-      case DIRECTIVE_DEFINITION:
+      case Kind.DIRECTIVE_DEFINITION:
         const directiveName = def.name.value;
         const existingDirective = schema.getDirective(directiveName);
         if (existingDirective) {
@@ -451,12 +439,13 @@ export function extendSchema(
 
   function buildType(typeNode: TypeDefinitionNode): GraphQLNamedType {
     switch (typeNode.kind) {
-      case OBJECT_TYPE_DEFINITION: return buildObjectType(typeNode);
-      case INTERFACE_TYPE_DEFINITION: return buildInterfaceType(typeNode);
-      case UNION_TYPE_DEFINITION: return buildUnionType(typeNode);
-      case SCALAR_TYPE_DEFINITION: return buildScalarType(typeNode);
-      case ENUM_TYPE_DEFINITION: return buildEnumType(typeNode);
-      case INPUT_OBJECT_TYPE_DEFINITION: return buildInputObjectType(typeNode);
+      case Kind.OBJECT_TYPE_DEFINITION: return buildObjectType(typeNode);
+      case Kind.INTERFACE_TYPE_DEFINITION: return buildInterfaceType(typeNode);
+      case Kind.UNION_TYPE_DEFINITION: return buildUnionType(typeNode);
+      case Kind.SCALAR_TYPE_DEFINITION: return buildScalarType(typeNode);
+      case Kind.ENUM_TYPE_DEFINITION: return buildEnumType(typeNode);
+      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+        return buildInputObjectType(typeNode);
     }
     throw new TypeError('Unknown type kind ' + typeNode.kind);
   }
@@ -572,10 +561,10 @@ export function extendSchema(
   }
 
   function buildInputFieldType(typeNode: TypeNode): GraphQLInputType {
-    if (typeNode.kind === LIST_TYPE) {
+    if (typeNode.kind === Kind.LIST_TYPE) {
       return new GraphQLList(buildInputFieldType(typeNode.type));
     }
-    if (typeNode.kind === NON_NULL_TYPE) {
+    if (typeNode.kind === Kind.NON_NULL_TYPE) {
       const nullableType = buildInputFieldType(typeNode.type);
       invariant(!(nullableType instanceof GraphQLNonNull), 'Must be nullable');
       return new GraphQLNonNull(nullableType);
@@ -584,10 +573,10 @@ export function extendSchema(
   }
 
   function buildOutputFieldType(typeNode: TypeNode): GraphQLOutputType {
-    if (typeNode.kind === LIST_TYPE) {
+    if (typeNode.kind === Kind.LIST_TYPE) {
       return new GraphQLList(buildOutputFieldType(typeNode.type));
     }
-    if (typeNode.kind === NON_NULL_TYPE) {
+    if (typeNode.kind === Kind.NON_NULL_TYPE) {
       const nullableType = buildOutputFieldType(typeNode.type);
       invariant(!(nullableType instanceof GraphQLNonNull), 'Must be nullable');
       return new GraphQLNonNull(nullableType);

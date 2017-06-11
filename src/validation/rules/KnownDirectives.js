@@ -11,23 +11,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import find from '../../jsutils/find';
-import {
-  FIELD,
-  FRAGMENT_DEFINITION,
-  FRAGMENT_SPREAD,
-  INLINE_FRAGMENT,
-  OPERATION_DEFINITION,
-  SCHEMA_DEFINITION,
-  SCALAR_TYPE_DEFINITION,
-  OBJECT_TYPE_DEFINITION,
-  FIELD_DEFINITION,
-  INPUT_VALUE_DEFINITION,
-  INTERFACE_TYPE_DEFINITION,
-  UNION_TYPE_DEFINITION,
-  ENUM_TYPE_DEFINITION,
-  ENUM_VALUE_DEFINITION,
-  INPUT_OBJECT_TYPE_DEFINITION,
-} from '../../language/kinds';
+import * as Kind from '../../language/kinds';
 import { DirectiveLocation } from '../../type/directives';
 
 
@@ -81,29 +65,30 @@ export function KnownDirectives(context: ValidationContext): any {
 function getDirectiveLocationForASTPath(ancestors) {
   const appliedTo = ancestors[ancestors.length - 1];
   switch (appliedTo.kind) {
-    case OPERATION_DEFINITION:
+    case Kind.OPERATION_DEFINITION:
       switch (appliedTo.operation) {
         case 'query': return DirectiveLocation.QUERY;
         case 'mutation': return DirectiveLocation.MUTATION;
         case 'subscription': return DirectiveLocation.SUBSCRIPTION;
       }
       break;
-    case FIELD: return DirectiveLocation.FIELD;
-    case FRAGMENT_SPREAD: return DirectiveLocation.FRAGMENT_SPREAD;
-    case INLINE_FRAGMENT: return DirectiveLocation.INLINE_FRAGMENT;
-    case FRAGMENT_DEFINITION: return DirectiveLocation.FRAGMENT_DEFINITION;
-    case SCHEMA_DEFINITION: return DirectiveLocation.SCHEMA;
-    case SCALAR_TYPE_DEFINITION: return DirectiveLocation.SCALAR;
-    case OBJECT_TYPE_DEFINITION: return DirectiveLocation.OBJECT;
-    case FIELD_DEFINITION: return DirectiveLocation.FIELD_DEFINITION;
-    case INTERFACE_TYPE_DEFINITION: return DirectiveLocation.INTERFACE;
-    case UNION_TYPE_DEFINITION: return DirectiveLocation.UNION;
-    case ENUM_TYPE_DEFINITION: return DirectiveLocation.ENUM;
-    case ENUM_VALUE_DEFINITION: return DirectiveLocation.ENUM_VALUE;
-    case INPUT_OBJECT_TYPE_DEFINITION: return DirectiveLocation.INPUT_OBJECT;
-    case INPUT_VALUE_DEFINITION:
+    case Kind.FIELD: return DirectiveLocation.FIELD;
+    case Kind.FRAGMENT_SPREAD: return DirectiveLocation.FRAGMENT_SPREAD;
+    case Kind.INLINE_FRAGMENT: return DirectiveLocation.INLINE_FRAGMENT;
+    case Kind.FRAGMENT_DEFINITION: return DirectiveLocation.FRAGMENT_DEFINITION;
+    case Kind.SCHEMA_DEFINITION: return DirectiveLocation.SCHEMA;
+    case Kind.SCALAR_TYPE_DEFINITION: return DirectiveLocation.SCALAR;
+    case Kind.OBJECT_TYPE_DEFINITION: return DirectiveLocation.OBJECT;
+    case Kind.FIELD_DEFINITION: return DirectiveLocation.FIELD_DEFINITION;
+    case Kind.INTERFACE_TYPE_DEFINITION: return DirectiveLocation.INTERFACE;
+    case Kind.UNION_TYPE_DEFINITION: return DirectiveLocation.UNION;
+    case Kind.ENUM_TYPE_DEFINITION: return DirectiveLocation.ENUM;
+    case Kind.ENUM_VALUE_DEFINITION: return DirectiveLocation.ENUM_VALUE;
+    case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+      return DirectiveLocation.INPUT_OBJECT;
+    case Kind.INPUT_VALUE_DEFINITION:
       const parentNode = ancestors[ancestors.length - 3];
-      return parentNode.kind === INPUT_OBJECT_TYPE_DEFINITION ?
+      return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION ?
         DirectiveLocation.INPUT_FIELD_DEFINITION :
         DirectiveLocation.ARGUMENT_DEFINITION;
   }
