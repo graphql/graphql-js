@@ -11,12 +11,15 @@
 import { forEach, isCollection } from 'iterall';
 
 import { GraphQLError, locatedError } from '../error';
-import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import { typeFromAST } from '../utilities/typeFromAST';
 import * as Kind from '../language/kinds';
-import { getVariableValues, getArgumentValues } from './values';
+import {
+  getVariableValues,
+  getArgumentValues,
+  getDirectiveArgs,
+} from './values';
 import {
   GraphQLObjectType,
   GraphQLList,
@@ -44,11 +47,11 @@ import {
   GraphQLSkipDirective,
 } from '../type/directives';
 import type {
-  DirectiveNode,
   DocumentNode,
   OperationDefinitionNode,
   SelectionSetNode,
   FieldNode,
+  FragmentSpreadNode,
   InlineFragmentNode,
   FragmentDefinitionNode,
 } from '../language/ast';
@@ -512,7 +515,7 @@ export function collectFields(
     const selection = selectionSet.selections[i];
     switch (selection.kind) {
       case Kind.FIELD:
-        if (!shouldIncludeNode(exeContext, selection.directives)) {
+        if (!shouldIncludeNode(exeContext, selection)) {
           continue;
         }
         const name = getFieldEntryKey(selection);
@@ -522,7 +525,7 @@ export function collectFields(
         fields[name].push(selection);
         break;
       case Kind.INLINE_FRAGMENT:
-        if (!shouldIncludeNode(exeContext, selection.directives) ||
+        if (!shouldIncludeNode(exeContext, selection) ||
             !doesFragmentConditionMatch(exeContext, selection, runtimeType)) {
           continue;
         }
@@ -537,7 +540,7 @@ export function collectFields(
       case Kind.FRAGMENT_SPREAD:
         const fragName = selection.name.value;
         if (visitedFragmentNames[fragName] ||
-            !shouldIncludeNode(exeContext, selection.directives)) {
+            !shouldIncludeNode(exeContext, selection)) {
           continue;
         }
         visitedFragmentNames[fragName] = true;
@@ -565,38 +568,25 @@ export function collectFields(
  */
 function shouldIncludeNode(
   exeContext: ExecutionContext,
-  directives: ?Array<DirectiveNode>
+  node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
 ): boolean {
-  const skipNode = directives && find(
-    directives,
-    directive => directive.name.value === GraphQLSkipDirective.name
+  const skip = getDirectiveArgs(
+    GraphQLSkipDirective,
+    node,
+    exeContext.variableValues
   );
-  if (skipNode) {
-    const { if: skipIf } = getArgumentValues(
-      GraphQLSkipDirective,
-      skipNode,
-      exeContext.variableValues
-    );
-    if (skipIf === true) {
-      return false;
-    }
+  if (skip && skip.if === true) {
+    return false;
   }
 
-  const includeNode = directives && find(
-    directives,
-    directive => directive.name.value === GraphQLIncludeDirective.name
+  const include = getDirectiveArgs(
+    GraphQLIncludeDirective,
+    node,
+    exeContext.variableValues
   );
-  if (includeNode) {
-    const { if: includeIf } = getArgumentValues(
-      GraphQLIncludeDirective,
-      includeNode,
-      exeContext.variableValues
-    );
-    if (includeIf === false) {
-      return false;
-    }
+  if (include && include.if === false) {
+    return false;
   }
-
   return true;
 }
 

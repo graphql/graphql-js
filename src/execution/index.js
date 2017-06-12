@@ -7,6 +7,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+export { getDirectiveArgs } from './values';
 export { execute, defaultFieldResolver, responsePathAsArray } from './execute';
 
 export type { ExecutionResult } from './execute';
+

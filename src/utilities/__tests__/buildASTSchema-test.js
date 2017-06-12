@@ -543,7 +543,7 @@ type Query {
         name: 'VALUE',
         description: '',
         isDeprecated: false,
-        deprecationReason: undefined,
+        deprecationReason: null,
         value: 'VALUE'
       },
       {

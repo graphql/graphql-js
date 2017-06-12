@@ -8,14 +8,13 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
 import type { Source } from '../language/source';
-import { getArgumentValues } from '../execution/values';
+import { getDirectiveArgs } from '../execution/values';
 
 import {
   LIST_TYPE,
@@ -34,17 +33,18 @@ import {
 import type {
   Location,
   DocumentNode,
-  DirectiveNode,
   TypeNode,
   NamedTypeNode,
   SchemaDefinitionNode,
   TypeDefinitionNode,
   ScalarTypeDefinitionNode,
   ObjectTypeDefinitionNode,
+  FieldDefinitionNode,
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
   UnionTypeDefinitionNode,
   EnumTypeDefinitionNode,
+  EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
   DirectiveDefinitionNode,
 } from '../language/ast';
@@ -381,7 +381,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
         type: produceOutputType(field.type),
         description: getDescription(field),
         args: makeInputValues(field.arguments),
-        deprecationReason: getDeprecationReason(field.directives)
+        deprecationReason: getDeprecationReason(field)
       })
     );
   }
@@ -425,7 +425,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
         enumValue => enumValue.name.value,
         enumValue => ({
           description: getDescription(enumValue),
-          deprecationReason: getDeprecationReason(enumValue.directives)
+          deprecationReason: getDeprecationReason(enumValue)
         })
       ),
     });
@@ -466,24 +466,17 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
 }
 
 /**
- * Given a collection of directives, returns the string value for the
+ * Given a field or enum value node, returns the string value for the
  * deprecation reason.
  */
 export function getDeprecationReason(
-  directives: ?Array<DirectiveNode>,
+  node: EnumValueDefinitionNode | FieldDefinitionNode
 ): ?string {
-  const deprecatedAST = directives && find(
-    directives,
-    directive => directive.name.value === GraphQLDeprecatedDirective.name
-  );
-  if (!deprecatedAST) {
-    return;
-  }
-  const { reason } = getArgumentValues(
+  const deprecated = getDirectiveArgs(
     GraphQLDeprecatedDirective,
-    deprecatedAST
+    node
   );
-  return (reason: any);
+  return deprecated && (deprecated.reason: any);
 }
 
 /**
