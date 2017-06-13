@@ -457,7 +457,7 @@ type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
-  it('Union with two types and begining pipe', () => {
+  it('Union with two types and leading vertical bar', () => {
     const body = 'union Hello = | Wo | Rld';
     const doc = parse(body);
     const expected = {
@@ -477,6 +477,21 @@ type Hello {
       loc: { start: 0, end: 24 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Union with no types and leading vertical bar', () => {
+    const body = 'union Hello = |';
+    expect(() => parse(body)).to.throw();
+  });
+
+  it('Union with types and ending vertical bar', () => {
+    const body = 'union Hello = Wo | Rld |';
+    expect(() => parse(body)).to.throw();
+  });
+
+  it('Union with types , leanding and ending vertical bar', () => {
+    const body = 'union Hello = | Wo | Rld |';
+    expect(() => parse(body)).to.throw();
   });
 
   it('Union with two types', () => {
