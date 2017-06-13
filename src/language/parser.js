@@ -943,6 +943,9 @@ function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
  */
 function parseUnionMembers(lexer: Lexer<*>): Array<NamedTypeNode> {
   const members = [];
+  if (peek(lexer, TokenKind.PIPE)) {
+    skip(lexer, TokenKind.PIPE);
+  }
   do {
     members.push(parseNamedType(lexer));
   } while (skip(lexer, TokenKind.PIPE));

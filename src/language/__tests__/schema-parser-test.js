@@ -457,6 +457,28 @@ type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
+  it('Union with two types and begining pipe', () => {
+    const body = 'union Hello = | Wo | Rld';
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'UnionTypeDefinition',
+          name: nameNode('Hello', { start: 6, end: 11 }),
+          directives: [],
+          types: [
+            typeNode('Wo', { start: 16, end: 18 }),
+            typeNode('Rld', { start: 21, end: 24 }),
+          ],
+          loc: { start: 0, end: 24 },
+        }
+      ],
+      loc: { start: 0, end: 24 },
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
   it('Union with two types', () => {
     const body = 'union Hello = Wo | Rld';
     const doc = parse(body);
