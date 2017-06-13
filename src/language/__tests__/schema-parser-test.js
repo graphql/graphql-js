@@ -457,6 +457,58 @@ type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
+  it('Union with two types and leading vertical bar', () => {
+    const body = 'union Hello = | Wo | Rld';
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'UnionTypeDefinition',
+          name: nameNode('Hello', { start: 6, end: 11 }),
+          directives: [],
+          types: [
+            typeNode('Wo', { start: 16, end: 18 }),
+            typeNode('Rld', { start: 21, end: 24 }),
+          ],
+          loc: { start: 0, end: 24 },
+        }
+      ],
+      loc: { start: 0, end: 24 },
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Union with no types and leading vertical bar', () => {
+    const body = 'union Hello = |';
+    expect(() => parse(body)).to.throw();
+  });
+
+  it('Union with types and ending vertical bar', () => {
+    const body = 'union Hello = Wo | Rld |';
+    expect(() => parse(body)).to.throw();
+  });
+
+  it('Union with types and double vertical bar at the beginning', () => {
+    const body = 'union Hello = || Wo | Rld';
+    expect(() => parse(body)).to.throw();
+  });
+
+  it('Union with types and double vertical bar in the middle', () => {
+    const body = 'union Hello = Wo || Rld';
+    expect(() => parse(body)).to.throw();
+  });
+
+  it('Union with types and double vertical bar at the end', () => {
+    const body = 'union Hello = | Wo | Rld ||';
+    expect(() => parse(body)).to.throw();
+  });
+
+  it('Union with types , leanding and ending vertical bar', () => {
+    const body = 'union Hello = | Wo | Rld |';
+    expect(() => parse(body)).to.throw();
+  });
+
   it('Union with two types', () => {
     const body = 'union Hello = Wo | Rld';
     const doc = parse(body);

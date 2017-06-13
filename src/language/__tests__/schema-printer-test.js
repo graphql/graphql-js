@@ -83,6 +83,8 @@ union Feed = Story | Article | Advert
 
 union AnnotatedUnion @onUnion = A | B
 
+union AnnotatedUnionTwo @onUnion = A | B
+
 scalar CustomScalar
 
 scalar AnnotatedScalar @onScalar
