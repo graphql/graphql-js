@@ -489,6 +489,21 @@ type Hello {
     expect(() => parse(body)).to.throw();
   });
 
+  it('Union with types and double vertical bar at the beginning', () => {
+    const body = 'union Hello = || Wo | Rld';
+    expect(() => parse(body)).to.throw();
+  });
+
+  it('Union with types and double vertical bar in the middle', () => {
+    const body = 'union Hello = Wo || Rld';
+    expect(() => parse(body)).to.throw();
+  });
+
+  it('Union with types and double vertical bar at the end', () => {
+    const body = 'union Hello = | Wo | Rld ||';
+    expect(() => parse(body)).to.throw();
+  });
+
   it('Union with types , leanding and ending vertical bar', () => {
     const body = 'union Hello = | Wo | Rld |';
     expect(() => parse(body)).to.throw();
