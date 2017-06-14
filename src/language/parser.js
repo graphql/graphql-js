@@ -938,14 +938,13 @@ function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
 
 /**
  * UnionMembers :
- *   - NamedType
+ *   - `|`? NamedType
  *   - UnionMembers | NamedType
  */
 function parseUnionMembers(lexer: Lexer<*>): Array<NamedTypeNode> {
+  // Optional leading pipe
+  skip(lexer, TokenKind.PIPE);
   const members = [];
-  if (peek(lexer, TokenKind.PIPE)) {
-    skip(lexer, TokenKind.PIPE);
-  }
   do {
     members.push(parseNamedType(lexer));
   } while (skip(lexer, TokenKind.PIPE));
@@ -1056,10 +1055,12 @@ function parseDirectiveDefinition(lexer: Lexer<*>): DirectiveDefinitionNode {
 
 /**
  * DirectiveLocations :
- *   - Name
+ *   - `|`? Name
  *   - DirectiveLocations | Name
  */
 function parseDirectiveLocations(lexer: Lexer<*>): Array<NameNode> {
+  // Optional leading pipe
+  skip(lexer, TokenKind.PIPE);
   const locations = [];
   do {
     locations.push(parseName(lexer));
