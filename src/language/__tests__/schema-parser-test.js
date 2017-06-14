@@ -457,7 +457,29 @@ type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
-  it('Union with two types and leading vertical bar', () => {
+  it('Union with two types', () => {
+    const body = 'union Hello = Wo | Rld';
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'UnionTypeDefinition',
+          name: nameNode('Hello', { start: 6, end: 11 }),
+          directives: [],
+          types: [
+            typeNode('Wo', { start: 14, end: 16 }),
+            typeNode('Rld', { start: 19, end: 22 }),
+          ],
+          loc: { start: 0, end: 22 },
+        }
+      ],
+      loc: { start: 0, end: 22 },
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Union with two types and leading pipe', () => {
     const body = 'union Hello = | Wo | Rld';
     const doc = parse(body);
     const expected = {
@@ -479,56 +501,24 @@ type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
-  it('Union with no types and leading vertical bar', () => {
+  it('Union fails with no types', () => {
     const body = 'union Hello = |';
     expect(() => parse(body)).to.throw();
   });
 
-  it('Union with types and ending vertical bar', () => {
-    const body = 'union Hello = Wo | Rld |';
-    expect(() => parse(body)).to.throw();
-  });
-
-  it('Union with types and double vertical bar at the beginning', () => {
+  it('Union fails with leading douple pipe', () => {
     const body = 'union Hello = || Wo | Rld';
     expect(() => parse(body)).to.throw();
   });
 
-  it('Union with types and double vertical bar in the middle', () => {
+  it('Union fails with double pipe', () => {
     const body = 'union Hello = Wo || Rld';
     expect(() => parse(body)).to.throw();
   });
 
-  it('Union with types and double vertical bar at the end', () => {
-    const body = 'union Hello = | Wo | Rld ||';
-    expect(() => parse(body)).to.throw();
-  });
-
-  it('Union with types , leanding and ending vertical bar', () => {
+  it('Union fails with trailing pipe', () => {
     const body = 'union Hello = | Wo | Rld |';
     expect(() => parse(body)).to.throw();
-  });
-
-  it('Union with two types', () => {
-    const body = 'union Hello = Wo | Rld';
-    const doc = parse(body);
-    const expected = {
-      kind: 'Document',
-      definitions: [
-        {
-          kind: 'UnionTypeDefinition',
-          name: nameNode('Hello', { start: 6, end: 11 }),
-          directives: [],
-          types: [
-            typeNode('Wo', { start: 14, end: 16 }),
-            typeNode('Rld', { start: 19, end: 22 }),
-          ],
-          loc: { start: 0, end: 22 },
-        }
-      ],
-      loc: { start: 0, end: 22 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Scalar', () => {
