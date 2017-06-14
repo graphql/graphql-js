@@ -820,4 +820,14 @@ type Repeated {
     expect(() => buildASTSchema(doc))
       .to.throw('Type "Repeated" was defined more than once.');
   });
+
+  it('Unknown @depraecate directive argument', () => {
+    const body = `
+type Query {
+  field1: String @deprecated(reason: "Because I said so", unknownArg: "Oops...")
+}`;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc))
+      .to.throw('Unknown argument "unknownArg" on directive "@deprecated"');
+  });
 });
