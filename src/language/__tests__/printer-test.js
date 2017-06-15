@@ -13,6 +13,7 @@ import { parse } from '../parser';
 import { readFileSync } from 'fs';
 import { print } from '../printer';
 import { join } from 'path';
+import dedent from '../../jsutils/dedent';
 
 describe('Printer', () => {
   it('does not alter ast', () => {
@@ -36,40 +37,40 @@ describe('Printer', () => {
 
   it('correctly prints non-query operations without name', () => {
     const queryAstShorthanded = parse('query { id, name }');
-    expect(print(queryAstShorthanded)).to.equal(
-`{
-  id
-  name
-}
-`);
+    expect(print(queryAstShorthanded)).to.equal(dedent`
+      {
+        id
+        name
+      }
+    `);
 
     const mutationAst = parse('mutation { id, name }');
-    expect(print(mutationAst)).to.equal(
-`mutation {
-  id
-  name
-}
-`);
+    expect(print(mutationAst)).to.equal(dedent`
+      mutation {
+        id
+        name
+      }
+    `);
 
     const queryAstWithArtifacts = parse(
       'query ($foo: TestType) @testDirective { id, name }'
     );
-    expect(print(queryAstWithArtifacts)).to.equal(
-`query ($foo: TestType) @testDirective {
-  id
-  name
-}
-`);
+    expect(print(queryAstWithArtifacts)).to.equal(dedent`
+      query ($foo: TestType) @testDirective {
+        id
+        name
+      }
+    `);
 
     const mutationAstWithArtifacts = parse(
       'mutation ($foo: TestType) @testDirective { id, name }'
     );
-    expect(print(mutationAstWithArtifacts)).to.equal(
-`mutation ($foo: TestType) @testDirective {
-  id
-  name
-}
-`);
+    expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+      mutation ($foo: TestType) @testDirective {
+        id
+        name
+      }
+    `);
   });
 
 
@@ -84,58 +85,58 @@ describe('Printer', () => {
 
     const printed = print(ast);
 
-    expect(printed).to.equal(
-  `query queryName($foo: ComplexType, $site: Site = MOBILE) {
-  whoever123is: node(id: [123, 456]) {
-    id
-    ... on User @defer {
-      field2 {
-        id
-        alias: field1(first: 10, after: $foo) @include(if: $foo) {
+    expect(printed).to.equal(dedent`
+      query queryName($foo: ComplexType, $site: Site = MOBILE) {
+        whoever123is: node(id: [123, 456]) {
           id
-          ...frag
+          ... on User @defer {
+            field2 {
+              id
+              alias: field1(first: 10, after: $foo) @include(if: $foo) {
+                id
+                ...frag
+              }
+            }
+          }
+          ... @skip(unless: $foo) {
+            id
+          }
+          ... {
+            id
+          }
         }
       }
-    }
-    ... @skip(unless: $foo) {
-      id
-    }
-    ... {
-      id
-    }
-  }
-}
 
-mutation likeStory {
-  like(story: 123) @defer {
-    story {
-      id
-    }
-  }
-}
-
-subscription StoryLikeSubscription($input: StoryLikeSubscribeInput) {
-  storyLikeSubscribe(input: $input) {
-    story {
-      likers {
-        count
+      mutation likeStory {
+        like(story: 123) @defer {
+          story {
+            id
+          }
+        }
       }
-      likeSentence {
-        text
+
+      subscription StoryLikeSubscription($input: StoryLikeSubscribeInput) {
+        storyLikeSubscribe(input: $input) {
+          story {
+            likers {
+              count
+            }
+            likeSentence {
+              text
+            }
+          }
+        }
       }
-    }
-  }
-}
 
-fragment frag on Friend {
-  foo(size: $size, bar: $b, obj: {key: "value"})
-}
+      fragment frag on Friend {
+        foo(size: $size, bar: $b, obj: {key: "value"})
+      }
 
-{
-  unnamed(truthy: true, falsey: false, nullish: null)
-  query
-}
-`);
+      {
+        unnamed(truthy: true, falsey: false, nullish: null)
+        query
+      }
+    `);
 
   });
 });

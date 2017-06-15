@@ -9,6 +9,7 @@
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import dedent from '../../jsutils/dedent';
 import { extendSchema } from '../extendSchema';
 import { execute } from '../../execution';
 import { parse } from '../../language';
@@ -156,43 +157,43 @@ describe('extendSchema', () => {
     const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
-  foo: Foo
-  name: String
-  some: SomeInterface
-}
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        foo: Foo
+        name: String
+        some: SomeInterface
+      }
 
-type Biz {
-  fizz: String
-}
+      type Biz {
+        fizz: String
+      }
 
-type Foo implements SomeInterface {
-  name: String
-  newField: String
-  some: SomeInterface
-  tree: [Foo]!
-}
+      type Foo implements SomeInterface {
+        name: String
+        newField: String
+        some: SomeInterface
+        tree: [Foo]!
+      }
 
-type Query {
-  foo: Foo
-  someEnum: SomeEnum
-  someInterface(id: ID!): SomeInterface
-  someUnion: SomeUnion
-}
+      type Query {
+        foo: Foo
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+        someUnion: SomeUnion
+      }
 
-enum SomeEnum {
-  ONE
-  TWO
-}
+      enum SomeEnum {
+        ONE
+        TWO
+      }
 
-interface SomeInterface {
-  name: String
-  some: SomeInterface
-}
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+      }
 
-union SomeUnion = Foo | Biz
-`);
+      union SomeUnion = Foo | Biz
+    `);
   });
 
   it('builds types with deprecated fields/values', () => {
@@ -249,46 +250,46 @@ union SomeUnion = Foo | Biz
     const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
-  foo: Foo
-  name: String
-  some: SomeInterface
-}
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        foo: Foo
+        name: String
+        some: SomeInterface
+      }
 
-type Biz {
-  fizz: String
-}
+      type Biz {
+        fizz: String
+      }
 
-type Foo implements SomeInterface {
-  name: String
-  some: SomeInterface
-  tree: [Foo]!
-}
+      type Foo implements SomeInterface {
+        name: String
+        some: SomeInterface
+        tree: [Foo]!
+      }
 
-type Query {
-  foo: Foo
-  someEnum: SomeEnum
-  someInterface(id: ID!): SomeInterface
-  someUnion: SomeUnion
-}
+      type Query {
+        foo: Foo
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+        someUnion: SomeUnion
+      }
 
-enum SomeEnum {
-  ONE
-  TWO
-}
+      enum SomeEnum {
+        ONE
+        TWO
+      }
 
-interface SomeInterface {
-  name: String
-  some: SomeInterface
-}
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+      }
 
-union SomeUnion = Foo | Biz
+      union SomeUnion = Foo | Biz
 
-type Unused {
-  someField: String
-}
-`);
+      type Unused {
+        someField: String
+      }
+    `);
   });
 
   it('extends objects by adding new fields with arguments', () => {
@@ -307,49 +308,49 @@ type Unused {
     const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
-  foo: Foo
-  name: String
-  some: SomeInterface
-}
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        foo: Foo
+        name: String
+        some: SomeInterface
+      }
 
-type Biz {
-  fizz: String
-}
+      type Biz {
+        fizz: String
+      }
 
-type Foo implements SomeInterface {
-  name: String
-  newField(arg1: String, arg2: NewInputObj!): String
-  some: SomeInterface
-  tree: [Foo]!
-}
+      type Foo implements SomeInterface {
+        name: String
+        newField(arg1: String, arg2: NewInputObj!): String
+        some: SomeInterface
+        tree: [Foo]!
+      }
 
-input NewInputObj {
-  field1: Int
-  field2: [Float]
-  field3: String!
-}
+      input NewInputObj {
+        field1: Int
+        field2: [Float]
+        field3: String!
+      }
 
-type Query {
-  foo: Foo
-  someEnum: SomeEnum
-  someInterface(id: ID!): SomeInterface
-  someUnion: SomeUnion
-}
+      type Query {
+        foo: Foo
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+        someUnion: SomeUnion
+      }
 
-enum SomeEnum {
-  ONE
-  TWO
-}
+      enum SomeEnum {
+        ONE
+        TWO
+      }
 
-interface SomeInterface {
-  name: String
-  some: SomeInterface
-}
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+      }
 
-union SomeUnion = Foo | Biz
-`);
+      union SomeUnion = Foo | Biz
+    `);
   });
 
   it('extends objects by adding new fields with existing types', () => {
@@ -362,43 +363,43 @@ union SomeUnion = Foo | Biz
     const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
-  foo: Foo
-  name: String
-  some: SomeInterface
-}
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        foo: Foo
+        name: String
+        some: SomeInterface
+      }
 
-type Biz {
-  fizz: String
-}
+      type Biz {
+        fizz: String
+      }
 
-type Foo implements SomeInterface {
-  name: String
-  newField(arg1: SomeEnum!): SomeEnum
-  some: SomeInterface
-  tree: [Foo]!
-}
+      type Foo implements SomeInterface {
+        name: String
+        newField(arg1: SomeEnum!): SomeEnum
+        some: SomeInterface
+        tree: [Foo]!
+      }
 
-type Query {
-  foo: Foo
-  someEnum: SomeEnum
-  someInterface(id: ID!): SomeInterface
-  someUnion: SomeUnion
-}
+      type Query {
+        foo: Foo
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+        someUnion: SomeUnion
+      }
 
-enum SomeEnum {
-  ONE
-  TWO
-}
+      enum SomeEnum {
+        ONE
+        TWO
+      }
 
-interface SomeInterface {
-  name: String
-  some: SomeInterface
-}
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+      }
 
-union SomeUnion = Foo | Biz
-`);
+      union SomeUnion = Foo | Biz
+    `);
   });
 
   it('extends objects by adding implemented interfaces', () => {
@@ -412,44 +413,44 @@ union SomeUnion = Foo | Biz
     const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
-  foo: Foo
-  name: String
-  some: SomeInterface
-}
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        foo: Foo
+        name: String
+        some: SomeInterface
+      }
 
-type Biz implements SomeInterface {
-  fizz: String
-  name: String
-  some: SomeInterface
-}
+      type Biz implements SomeInterface {
+        fizz: String
+        name: String
+        some: SomeInterface
+      }
 
-type Foo implements SomeInterface {
-  name: String
-  some: SomeInterface
-  tree: [Foo]!
-}
+      type Foo implements SomeInterface {
+        name: String
+        some: SomeInterface
+        tree: [Foo]!
+      }
 
-type Query {
-  foo: Foo
-  someEnum: SomeEnum
-  someInterface(id: ID!): SomeInterface
-  someUnion: SomeUnion
-}
+      type Query {
+        foo: Foo
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+        someUnion: SomeUnion
+      }
 
-enum SomeEnum {
-  ONE
-  TWO
-}
+      enum SomeEnum {
+        ONE
+        TWO
+      }
 
-interface SomeInterface {
-  name: String
-  some: SomeInterface
-}
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+      }
 
-union SomeUnion = Foo | Biz
-`);
+      union SomeUnion = Foo | Biz
+    `);
   });
 
   it('extends objects by including new types', () => {
@@ -488,69 +489,69 @@ union SomeUnion = Foo | Biz
     const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
-  foo: Foo
-  name: String
-  some: SomeInterface
-}
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        foo: Foo
+        name: String
+        some: SomeInterface
+      }
 
-type Biz {
-  fizz: String
-}
+      type Biz {
+        fizz: String
+      }
 
-type Foo implements SomeInterface {
-  name: String
-  newEnum: NewEnum
-  newInterface: NewInterface
-  newObject: NewObject
-  newScalar: NewScalar
-  newTree: [Foo]!
-  newUnion: NewUnion
-  some: SomeInterface
-  tree: [Foo]!
-}
+      type Foo implements SomeInterface {
+        name: String
+        newEnum: NewEnum
+        newInterface: NewInterface
+        newObject: NewObject
+        newScalar: NewScalar
+        newTree: [Foo]!
+        newUnion: NewUnion
+        some: SomeInterface
+        tree: [Foo]!
+      }
 
-enum NewEnum {
-  OPTION_A
-  OPTION_B
-}
+      enum NewEnum {
+        OPTION_A
+        OPTION_B
+      }
 
-interface NewInterface {
-  baz: String
-}
+      interface NewInterface {
+        baz: String
+      }
 
-type NewObject implements NewInterface {
-  baz: String
-}
+      type NewObject implements NewInterface {
+        baz: String
+      }
 
-type NewOtherObject {
-  fizz: Int
-}
+      type NewOtherObject {
+        fizz: Int
+      }
 
-scalar NewScalar
+      scalar NewScalar
 
-union NewUnion = NewObject | NewOtherObject
+      union NewUnion = NewObject | NewOtherObject
 
-type Query {
-  foo: Foo
-  someEnum: SomeEnum
-  someInterface(id: ID!): SomeInterface
-  someUnion: SomeUnion
-}
+      type Query {
+        foo: Foo
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+        someUnion: SomeUnion
+      }
 
-enum SomeEnum {
-  ONE
-  TWO
-}
+      enum SomeEnum {
+        ONE
+        TWO
+      }
 
-interface SomeInterface {
-  name: String
-  some: SomeInterface
-}
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+      }
 
-union SomeUnion = Foo | Biz
-`);
+      union SomeUnion = Foo | Biz
+    `);
   });
 
   it('extends objects by adding implemented new interfaces', () => {
@@ -567,47 +568,47 @@ union SomeUnion = Foo | Biz
     const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
-  foo: Foo
-  name: String
-  some: SomeInterface
-}
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        foo: Foo
+        name: String
+        some: SomeInterface
+      }
 
-type Biz {
-  fizz: String
-}
+      type Biz {
+        fizz: String
+      }
 
-type Foo implements SomeInterface, NewInterface {
-  baz: String
-  name: String
-  some: SomeInterface
-  tree: [Foo]!
-}
+      type Foo implements SomeInterface, NewInterface {
+        baz: String
+        name: String
+        some: SomeInterface
+        tree: [Foo]!
+      }
 
-interface NewInterface {
-  baz: String
-}
+      interface NewInterface {
+        baz: String
+      }
 
-type Query {
-  foo: Foo
-  someEnum: SomeEnum
-  someInterface(id: ID!): SomeInterface
-  someUnion: SomeUnion
-}
+      type Query {
+        foo: Foo
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+        someUnion: SomeUnion
+      }
 
-enum SomeEnum {
-  ONE
-  TWO
-}
+      enum SomeEnum {
+        ONE
+        TWO
+      }
 
-interface SomeInterface {
-  name: String
-  some: SomeInterface
-}
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+      }
 
-union SomeUnion = Foo | Biz
-`);
+      union SomeUnion = Foo | Biz
+    `);
   });
 
   it('extends objects multiple times', () => {
@@ -635,51 +636,51 @@ union SomeUnion = Foo | Biz
     const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(
-`type Bar implements SomeInterface {
-  foo: Foo
-  name: String
-  some: SomeInterface
-}
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        foo: Foo
+        name: String
+        some: SomeInterface
+      }
 
-type Biz implements NewInterface, SomeInterface {
-  buzz: String
-  fizz: String
-  name: String
-  newFieldA: Int
-  newFieldB: Float
-  some: SomeInterface
-}
+      type Biz implements NewInterface, SomeInterface {
+        buzz: String
+        fizz: String
+        name: String
+        newFieldA: Int
+        newFieldB: Float
+        some: SomeInterface
+      }
 
-type Foo implements SomeInterface {
-  name: String
-  some: SomeInterface
-  tree: [Foo]!
-}
+      type Foo implements SomeInterface {
+        name: String
+        some: SomeInterface
+        tree: [Foo]!
+      }
 
-interface NewInterface {
-  buzz: String
-}
+      interface NewInterface {
+        buzz: String
+      }
 
-type Query {
-  foo: Foo
-  someEnum: SomeEnum
-  someInterface(id: ID!): SomeInterface
-  someUnion: SomeUnion
-}
+      type Query {
+        foo: Foo
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+        someUnion: SomeUnion
+      }
 
-enum SomeEnum {
-  ONE
-  TWO
-}
+      enum SomeEnum {
+        ONE
+        TWO
+      }
 
-interface SomeInterface {
-  name: String
-  some: SomeInterface
-}
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+      }
 
-union SomeUnion = Foo | Biz
-`);
+      union SomeUnion = Foo | Biz
+    `);
   });
 
   it('may extend mutations and subscriptions', () => {
@@ -721,22 +722,22 @@ union SomeUnion = Foo | Biz
     const extendedSchema = extendSchema(mutationSchema, ast);
     expect(extendedSchema).to.not.equal(mutationSchema);
     expect(printSchema(mutationSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(
-`type Mutation {
-  mutationField: String
-  newMutationField: Int
-}
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Mutation {
+        mutationField: String
+        newMutationField: Int
+      }
 
-type Query {
-  newQueryField: Int
-  queryField: String
-}
+      type Query {
+        newQueryField: Int
+        queryField: String
+      }
 
-type Subscription {
-  newSubscriptionField: Int
-  subscriptionField: String
-}
-`);
+      type Subscription {
+        newSubscriptionField: Int
+        subscriptionField: String
+      }
+    `);
   });
 
   it('may extend directives with new simple directive', () => {

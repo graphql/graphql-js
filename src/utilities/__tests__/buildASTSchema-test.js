@@ -12,6 +12,7 @@ import { describe, it } from 'mocha';
 import { parse } from '../../language';
 import { printSchema } from '../schemaPrinter';
 import { buildASTSchema, buildSchema } from '../buildASTSchema';
+import dedent from '../../jsutils/dedent';
 import {
   graphql,
   GraphQLSkipDirective,
@@ -29,7 +30,7 @@ import {
 function cycleOutput(body) {
   const ast = parse(body);
   const schema = buildASTSchema(ast);
-  return '\n' + printSchema(schema);
+  return printSchema(schema);
 }
 
 describe('Schema Builder', () => {
@@ -62,80 +63,80 @@ describe('Schema Builder', () => {
   });
 
   it('Simple type', () => {
-    const body = `
-schema {
-  query: HelloScalars
-}
+    const body = dedent`
+      schema {
+        query: HelloScalars
+      }
 
-type HelloScalars {
-  bool: Boolean
-  float: Float
-  id: ID
-  int: Int
-  str: String
-}
-`;
+      type HelloScalars {
+        bool: Boolean
+        float: Float
+        id: ID
+        int: Int
+        str: String
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('With directives', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-directive @foo(arg: Int) on FIELD
+      directive @foo(arg: Int) on FIELD
 
-type Hello {
-  str: String
-}
-`;
+      type Hello {
+        str: String
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Supports descriptions', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-# This is a directive
-directive @foo(
-  # It has an argument
-  arg: Int
-) on FIELD
+      # This is a directive
+      directive @foo(
+        # It has an argument
+        arg: Int
+      ) on FIELD
 
-# With an enum
-enum Color {
-  RED
+      # With an enum
+      enum Color {
+        RED
 
-  # Not a creative color
-  GREEN
-  BLUE
-}
+        # Not a creative color
+        GREEN
+        BLUE
+      }
 
-# What a great type
-type Hello {
-  # And a field to boot
-  str: String
-}
-`;
+      # What a great type
+      type Hello {
+        # And a field to boot
+        str: String
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Maintains @skip & @include', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-type Hello {
-  str: String
-}
-`;
+      type Hello {
+        str: String
+      }
+    `;
     const schema = buildASTSchema(parse(body));
     expect(schema.getDirectives().length).to.equal(3);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
@@ -146,19 +147,19 @@ type Hello {
   });
 
   it('Overriding directives excludes specified', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-directive @skip on FIELD
-directive @include on FIELD
-directive @deprecated on FIELD_DEFINITION
+      directive @skip on FIELD
+      directive @include on FIELD
+      directive @deprecated on FIELD_DEFINITION
 
-type Hello {
-  str: String
-}
-`;
+      type Hello {
+        str: String
+      }
+    `;
     const schema = buildASTSchema(parse(body));
     expect(schema.getDirectives().length).to.equal(3);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
@@ -171,17 +172,17 @@ type Hello {
   });
 
   it('Adding directives maintains @skip & @include', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-directive @foo(arg: Int) on FIELD
+      directive @foo(arg: Int) on FIELD
 
-type Hello {
-  str: String
-}
-`;
+      type Hello {
+        str: String
+      }
+    `;
     const schema = buildASTSchema(parse(body));
     expect(schema.getDirectives().length).to.equal(4);
     expect(schema.getDirective('skip')).to.not.equal(undefined);
@@ -190,348 +191,348 @@ type Hello {
   });
 
   it('Type modifiers', () => {
-    const body = `
-schema {
-  query: HelloScalars
-}
+    const body = dedent`
+      schema {
+        query: HelloScalars
+      }
 
-type HelloScalars {
-  listOfNonNullStrs: [String!]
-  listOfStrs: [String]
-  nonNullListOfNonNullStrs: [String!]!
-  nonNullListOfStrs: [String]!
-  nonNullStr: String!
-}
-`;
+      type HelloScalars {
+        listOfNonNullStrs: [String!]
+        listOfStrs: [String]
+        nonNullListOfNonNullStrs: [String!]!
+        nonNullListOfStrs: [String]!
+        nonNullStr: String!
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
 
   it('Recursive type', () => {
-    const body = `
-schema {
-  query: Recurse
-}
+    const body = dedent`
+      schema {
+        query: Recurse
+      }
 
-type Recurse {
-  recurse: Recurse
-  str: String
-}
-`;
+      type Recurse {
+        recurse: Recurse
+        str: String
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Two types circular', () => {
-    const body = `
-schema {
-  query: TypeOne
-}
+    const body = dedent`
+      schema {
+        query: TypeOne
+      }
 
-type TypeOne {
-  str: String
-  typeTwo: TypeTwo
-}
+      type TypeOne {
+        str: String
+        typeTwo: TypeTwo
+      }
 
-type TypeTwo {
-  str: String
-  typeOne: TypeOne
-}
-`;
+      type TypeTwo {
+        str: String
+        typeOne: TypeOne
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Single argument field', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-type Hello {
-  booleanToStr(bool: Boolean): String
-  floatToStr(float: Float): String
-  idToStr(id: ID): String
-  str(int: Int): String
-  strToStr(bool: String): String
-}
-`;
+      type Hello {
+        booleanToStr(bool: Boolean): String
+        floatToStr(float: Float): String
+        idToStr(id: ID): String
+        str(int: Int): String
+        strToStr(bool: String): String
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple type with multiple arguments', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-type Hello {
-  str(int: Int, bool: Boolean): String
-}
-`;
+      type Hello {
+        str(int: Int, bool: Boolean): String
+      }
+    `;
     const output = cycleOutput(body, 'Hello');
     expect(output).to.equal(body);
   });
 
   it('Simple type with interface', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-type Hello implements WorldInterface {
-  str: String
-}
+      type Hello implements WorldInterface {
+        str: String
+      }
 
-interface WorldInterface {
-  str: String
-}
-`;
+      interface WorldInterface {
+        str: String
+      }
+    `;
     const output = cycleOutput(body, 'Hello');
     expect(output).to.equal(body);
   });
 
   it('Simple output enum', () => {
-    const body = `
-schema {
-  query: OutputEnumRoot
-}
+    const body = dedent`
+      schema {
+        query: OutputEnumRoot
+      }
 
-enum Hello {
-  WORLD
-}
+      enum Hello {
+        WORLD
+      }
 
-type OutputEnumRoot {
-  hello: Hello
-}
-`;
+      type OutputEnumRoot {
+        hello: Hello
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple input enum', () => {
-    const body = `
-schema {
-  query: InputEnumRoot
-}
+    const body = dedent`
+      schema {
+        query: InputEnumRoot
+      }
 
-enum Hello {
-  WORLD
-}
+      enum Hello {
+        WORLD
+      }
 
-type InputEnumRoot {
-  str(hello: Hello): String
-}
-`;
+      type InputEnumRoot {
+        str(hello: Hello): String
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Multiple value enum', () => {
-    const body = `
-schema {
-  query: OutputEnumRoot
-}
+    const body = dedent`
+      schema {
+        query: OutputEnumRoot
+      }
 
-enum Hello {
-  WO
-  RLD
-}
+      enum Hello {
+        WO
+        RLD
+      }
 
-type OutputEnumRoot {
-  hello: Hello
-}
-`;
+      type OutputEnumRoot {
+        hello: Hello
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple Union', () => {
-    const body = `
-schema {
-  query: Root
-}
+    const body = dedent`
+      schema {
+        query: Root
+      }
 
-union Hello = World
+      union Hello = World
 
-type Root {
-  hello: Hello
-}
+      type Root {
+        hello: Hello
+      }
 
-type World {
-  str: String
-}
-`;
+      type World {
+        str: String
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Multiple Union', () => {
-    const body = `
-schema {
-  query: Root
-}
+    const body = dedent`
+      schema {
+        query: Root
+      }
 
-union Hello = WorldOne | WorldTwo
+      union Hello = WorldOne | WorldTwo
 
-type Root {
-  hello: Hello
-}
+      type Root {
+        hello: Hello
+      }
 
-type WorldOne {
-  str: String
-}
+      type WorldOne {
+        str: String
+      }
 
-type WorldTwo {
-  str: String
-}
-`;
+      type WorldTwo {
+        str: String
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Custom Scalar', () => {
-    const body = `
-schema {
-  query: Root
-}
+    const body = dedent`
+      schema {
+        query: Root
+      }
 
-scalar CustomScalar
+      scalar CustomScalar
 
-type Root {
-  customScalar: CustomScalar
-}
-`;
+      type Root {
+        customScalar: CustomScalar
+      }
+    `;
 
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Input Object', async() => {
-    const body = `
-schema {
-  query: Root
-}
+    const body = dedent`
+      schema {
+        query: Root
+      }
 
-input Input {
-  int: Int
-}
+      input Input {
+        int: Int
+      }
 
-type Root {
-  field(in: Input): String
-}
-`;
+      type Root {
+        field(in: Input): String
+      }
+    `;
 
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple argument field with default', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-type Hello {
-  str(int: Int = 2): String
-}
-`;
+      type Hello {
+        str(int: Int = 2): String
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple type with mutation', () => {
-    const body = `
-schema {
-  query: HelloScalars
-  mutation: Mutation
-}
+    const body = dedent`
+      schema {
+        query: HelloScalars
+        mutation: Mutation
+      }
 
-type HelloScalars {
-  bool: Boolean
-  int: Int
-  str: String
-}
+      type HelloScalars {
+        bool: Boolean
+        int: Int
+        str: String
+      }
 
-type Mutation {
-  addHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
-}
-`;
+      type Mutation {
+        addHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Simple type with subscription', () => {
-    const body = `
-schema {
-  query: HelloScalars
-  subscription: Subscription
-}
+    const body = dedent`
+      schema {
+        query: HelloScalars
+        subscription: Subscription
+      }
 
-type HelloScalars {
-  bool: Boolean
-  int: Int
-  str: String
-}
+      type HelloScalars {
+        bool: Boolean
+        int: Int
+        str: String
+      }
 
-type Subscription {
-  subscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
-}
-`;
+      type Subscription {
+        sbscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Unreferenced type implementing referenced interface', () => {
-    const body = `
-type Concrete implements Iface {
-  key: String
-}
+    const body = dedent`
+      type Concrete implements Iface {
+        key: String
+      }
 
-interface Iface {
-  key: String
-}
+      interface Iface {
+        key: String
+      }
 
-type Query {
-  iface: Iface
-}
-`;
+      type Query {
+        iface: Iface
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Unreferenced type implementing referenced union', () => {
-    const body = `
-type Concrete {
-  key: String
-}
+    const body = dedent`
+      type Concrete {
+        key: String
+      }
 
-type Query {
-  union: Union
-}
+      type Query {
+        union: Union
+      }
 
-union Union = Concrete
-`;
+      union Union = Concrete
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
   it('Supports @deprecated', () => {
-    const body = `
-enum MyEnum {
-  VALUE
-  OLD_VALUE @deprecated
-  OTHER_VALUE @deprecated(reason: "Terrible reasons")
-}
+    const body = dedent`
+      enum MyEnum {
+        VALUE
+        OLD_VALUE @deprecated
+        OTHER_VALUE @deprecated(reason: "Terrible reasons")
+      }
 
-type Query {
-  enum: MyEnum
-  field1: String @deprecated
-  field2: Int @deprecated(reason: "Because I said so")
-}
-`;
+      type Query {
+        enum: MyEnum
+        field1: String @deprecated
+        field2: Int @deprecated(reason: "Because I said so")
+      }
+    `;
     const output = cycleOutput(body);
     expect(output).to.equal(body);
 
@@ -574,11 +575,11 @@ type Query {
 describe('Failures', () => {
 
   it('Requires a schema definition or Query type', () => {
-    const body = `
-type Hello {
-  bar: Bar
-}
-`;
+    const body = dedent`
+      type Hello {
+        bar: Bar
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc)).to.throw(
       'Must provide schema definition with query type or a type named Query.'
@@ -586,34 +587,34 @@ type Hello {
   });
 
   it('Allows only a single schema definition', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-schema {
-  query: Hello
-}
+      schema {
+        query: Hello
+      }
 
-type Hello {
-  bar: Bar
-}
-`;
+      type Hello {
+        bar: Bar
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Must provide only one schema definition.');
   });
 
   it('Requires a query type', () => {
-    const body = `
-schema {
-  mutation: Hello
-}
+    const body = dedent`
+      schema {
+        mutation: Hello
+      }
 
-type Hello {
-  bar: Bar
-}
-`;
+      type Hello {
+        bar: Bar
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc)).to.throw(
       'Must provide schema definition with query type or a type named Query.'
@@ -621,201 +622,201 @@ type Hello {
   });
 
   it('Allows only a single query type', () => {
-    const body = `
-schema {
-  query: Hello
-  query: Yellow
-}
+    const body = dedent`
+      schema {
+        query: Hello
+        query: Yellow
+      }
 
-type Hello {
-  bar: Bar
-}
+      type Hello {
+        bar: Bar
+      }
 
-type Yellow {
-  isColor: Boolean
-}
-`;
+      type Yellow {
+        isColor: Boolean
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Must provide only one query type in schema.');
   });
 
   it('Allows only a single mutation type', () => {
-    const body = `
-schema {
-  query: Hello
-  mutation: Hello
-  mutation: Yellow
-}
+    const body = dedent`
+      schema {
+        query: Hello
+        mutation: Hello
+        mutation: Yellow
+      }
 
-type Hello {
-  bar: Bar
-}
+      type Hello {
+        bar: Bar
+      }
 
-type Yellow {
-  isColor: Boolean
-}
-`;
+      type Yellow {
+        isColor: Boolean
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Must provide only one mutation type in schema.');
   });
 
   it('Allows only a single subscription type', () => {
-    const body = `
-schema {
-  query: Hello
-  subscription: Hello
-  subscription: Yellow
-}
+    const body = dedent`
+      schema {
+        query: Hello
+        subscription: Hello
+        subscription: Yellow
+      }
 
-type Hello {
-  bar: Bar
-}
+      type Hello {
+        bar: Bar
+      }
 
-type Yellow {
-  isColor: Boolean
-}
-`;
+      type Yellow {
+        isColor: Boolean
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Must provide only one subscription type in schema.');
   });
 
   it('Unknown type referenced', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-type Hello {
-  bar: Bar
-}
-`;
+      type Hello {
+        bar: Bar
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Type "Bar" not found in document.');
   });
 
   it('Unknown type in interface list', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-type Hello implements Bar { }
-`;
+      type Hello implements Bar { }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Type "Bar" not found in document.');
   });
 
   it('Unknown type in union list', () => {
-    const body = `
-schema {
-  query: Hello
-}
+    const body = dedent`
+      schema {
+        query: Hello
+      }
 
-union TestUnion = Bar
-type Hello { testUnion: TestUnion }
-`;
+      union TestUnion = Bar
+      type Hello { testUnion: TestUnion }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Type "Bar" not found in document.');
   });
 
   it('Unknown query type', () => {
-    const body = `
-schema {
-  query: Wat
-}
+    const body = dedent`
+      schema {
+        query: Wat
+      }
 
-type Hello {
-  str: String
-}
-`;
+      type Hello {
+        str: String
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Specified query type "Wat" not found in document.');
   });
 
   it('Unknown mutation type', () => {
-    const body = `
-schema {
-  query: Hello
-  mutation: Wat
-}
+    const body = dedent`
+      schema {
+        query: Hello
+        mutation: Wat
+      }
 
-type Hello {
-  str: String
-}
-`;
+      type Hello {
+        str: String
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Specified mutation type "Wat" not found in document.');
   });
 
   it('Unknown subscription type', () => {
-    const body = `
-schema {
-  query: Hello
-  mutation: Wat
-  subscription: Awesome
-}
+    const body = dedent`
+      schema {
+        query: Hello
+        mutation: Wat
+        subscription: Awesome
+      }
 
-type Hello {
-  str: String
-}
+      type Hello {
+        str: String
+      }
 
-type Wat {
-  str: String
-}
-`;
+      type Wat {
+        str: String
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Specified subscription type "Awesome" not found in document.');
   });
 
   it('Does not consider operation names', () => {
-    const body = `
-schema {
-  query: Foo
-}
+    const body = dedent`
+      schema {
+        query: Foo
+      }
 
-query Foo { field }
-`;
+      query Foo { field }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Specified query type "Foo" not found in document.');
   });
 
   it('Does not consider fragment names', () => {
-    const body = `
-schema {
-  query: Foo
-}
+    const body = dedent`
+      schema {
+        query: Foo
+      }
 
-fragment Foo on Type { field }
-`;
+      fragment Foo on Type { field }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Specified query type "Foo" not found in document.');
   });
 
   it('Forbids duplicate type definitions', () => {
-    const body = `
-schema {
-  query: Repeated
-}
+    const body = dedent`
+      schema {
+        query: Repeated
+      }
 
-type Repeated {
-  id: Int
-}
+      type Repeated {
+        id: Int
+      }
 
-type Repeated {
-  id: String
-}
-`;
+      type Repeated {
+        id: String
+      }
+    `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))
       .to.throw('Type "Repeated" was defined more than once.');
