@@ -1080,7 +1080,11 @@ function loc(lexer: Lexer<*>, startToken: Token): Location | void {
   }
 }
 
-function Loc(startToken: Token, endToken: Token, source: Source) {
+function Loc(
+  startToken: Token,
+  endToken: Token,
+  source: Source
+) {
   this.start = startToken.start;
   this.end = endToken.end;
   this.startToken = startToken;
@@ -1090,7 +1094,7 @@ function Loc(startToken: Token, endToken: Token, source: Source) {
 
 // Print a simplified form when appearing in JSON/util.inspect.
 Loc.prototype.toJSON = Loc.prototype.inspect = function toJSON() {
-  return { start: this.start, end: this.end };
+  return { start: this.start, end: this.end, origin: this.source.name };
 };
 
 /**

@@ -18,10 +18,13 @@ import type { GraphQLError } from './GraphQLError';
  */
 export function formatError(error: GraphQLError): GraphQLFormattedError {
   invariant(error, 'Received null or undefined error.');
+  // Pick location associated with the first AST node
+  const loc = error.nodes && error.nodes[0] && error.nodes[0].loc;
   return {
     message: error.message,
     locations: error.locations,
-    path: error.path
+    path: error.path,
+    origin: loc && loc.source.name,
   };
 }
 
