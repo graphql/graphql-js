@@ -381,7 +381,8 @@ export const __TypeKind = new GraphQLEnumType({
   values: {
     SCALAR: {
       value: TypeKind.SCALAR,
-      description: 'Indicates this type is a scalar.',
+      description:
+        'Indicates this type is a scalar. `ofType` is a valid field.',
     },
     OBJECT: {
       value: TypeKind.OBJECT,

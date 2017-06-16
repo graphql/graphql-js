@@ -8,6 +8,7 @@
  */
 
 import {
+  isScalarType,
   isObjectType,
   isInterfaceType,
   isUnionType,
@@ -19,6 +20,7 @@ import {
   isOutputType,
 } from './definition';
 import type {
+  GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -30,6 +32,7 @@ import type { GraphQLDirective } from './directives';
 import { isIntrospectionType } from './introspection';
 import { isSchema } from './schema';
 import type { GraphQLSchema } from './schema';
+import { isSpecifiedScalarType } from './scalars';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import { GraphQLError } from '../error/GraphQLError';
@@ -239,7 +242,10 @@ function validateTypes(context: SchemaValidationContext): void {
     // Ensure they are named correctly.
     validateName(context, type);
 
-    if (isObjectType(type)) {
+    if (isScalarType(type)) {
+      // Ensure ofType is a built-in scalar
+      validateScalarOfType(context, type);
+    } else if (isObjectType(type)) {
       // Ensure fields are valid
       validateFields(context, type);
 
@@ -259,6 +265,20 @@ function validateTypes(context: SchemaValidationContext): void {
       validateInputFields(context, type);
     }
   });
+}
+
+function validateScalarOfType(
+  context: SchemaValidationContext,
+  type: GraphQLScalarType,
+): void {
+  const ofType = type.ofType;
+  if (ofType && !isSpecifiedScalarType(ofType)) {
+    context.reportError(
+      `Type ${type.name} may only be described in terms of a built-in scalar ` +
+        `type. However ${ofType.name} is not a built-in scalar type.`,
+      type.astNode,
+    );
+  }
 }
 
 function validateFields(

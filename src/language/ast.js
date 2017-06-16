@@ -448,6 +448,7 @@ export type ScalarTypeDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
+  +type?: NamedTypeNode,
   +directives?: $ReadOnlyArray<DirectiveNode>,
 };
 

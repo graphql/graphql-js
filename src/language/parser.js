@@ -890,18 +890,23 @@ function parseOperationTypeDefinition(
 }
 
 /**
- * ScalarTypeDefinition : Description? scalar Name Directives[Const]?
+ * ScalarTypeDefinition : Description? scalar Name ScalarOfType? Directives[Const]?
+ * ScalarOfType : = NamedType
  */
 function parseScalarTypeDefinition(lexer: Lexer<*>): ScalarTypeDefinitionNode {
   const start = lexer.token;
   const description = parseDescription(lexer);
   expectKeyword(lexer, 'scalar');
   const name = parseName(lexer);
+  const type = skip(lexer, TokenKind.EQUALS)
+    ? parseNamedType(lexer)
+    : undefined;
   const directives = parseDirectives(lexer, true);
   return {
     kind: SCALAR_TYPE_DEFINITION,
     description,
     name,
+    type,
     directives,
     loc: loc(lexer, start),
   };

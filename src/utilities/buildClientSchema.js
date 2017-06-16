@@ -26,6 +26,7 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   assertNullableType,
+  assertScalarType,
   assertObjectType,
   assertInterfaceType,
 } from '../type/definition';
@@ -179,6 +180,11 @@ export function buildClientSchema(
     return assertInterfaceType(type);
   }
 
+  function getScalarType(typeRef: IntrospectionTypeRef): GraphQLScalarType {
+    const type = getType(typeRef);
+    return assertScalarType(type);
+  }
+
   // Given a type's introspection result, construct the correct
   // GraphQLType instance.
   function buildType(type: IntrospectionType): GraphQLNamedType {
@@ -208,9 +214,13 @@ export function buildClientSchema(
   function buildScalarDef(
     scalarIntrospection: IntrospectionScalarType,
   ): GraphQLScalarType {
+    const ofType = scalarIntrospection.ofType
+      ? getScalarType(scalarIntrospection.ofType)
+      : undefined;
     return new GraphQLScalarType({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
+      ofType,
       serialize: value => value,
     });
   }

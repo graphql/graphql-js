@@ -498,8 +498,17 @@ describe('Type System Printer', () => {
   });
 
   it('Custom Scalar', () => {
+    const EvenType = new GraphQLScalarType({
+      name: 'Even',
+      ofType: GraphQLInt,
+      serialize(value) {
+        return value % 2 === 1 ? value : null;
+      },
+    });
+
     const OddType = new GraphQLScalarType({
       name: 'Odd',
+      // No ofType in this test case.
       serialize(value) {
         return value % 2 === 1 ? value : null;
       },
@@ -508,6 +517,7 @@ describe('Type System Printer', () => {
     const Root = new GraphQLObjectType({
       name: 'Root',
       fields: {
+        even: { type: EvenType },
         odd: { type: OddType },
       },
     });
@@ -519,9 +529,12 @@ describe('Type System Printer', () => {
         query: Root
       }
 
+      scalar Even = Int
+
       scalar Odd
 
       type Root {
+        even: Even
         odd: Odd
       }
     `);
@@ -799,7 +812,7 @@ describe('Type System Printer', () => {
 
       """An enum describing what kind of type a given \`__Type\` is."""
       enum __TypeKind {
-        """Indicates this type is a scalar."""
+        """Indicates this type is a scalar. \`ofType\` is a valid field."""
         SCALAR
 
         """
@@ -1018,7 +1031,7 @@ describe('Type System Printer', () => {
 
       # An enum describing what kind of type a given \`__Type\` is.
       enum __TypeKind {
-        # Indicates this type is a scalar.
+        # Indicates this type is a scalar. \`ofType\` is a valid field.
         SCALAR
 
         # Indicates this type is an object. \`fields\` and \`interfaces\` are valid fields.
