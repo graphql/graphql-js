@@ -15,6 +15,7 @@ import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import keyMap from '../jsutils/keyMap';
+import find from '../jsutils/find';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
 import { isValidJSValue } from '../utilities/isValidJSValue';
@@ -34,7 +35,7 @@ import type {
   GraphQLField,
   GraphQLArgument,
 } from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
+import { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 import type {
   FieldNode,
@@ -112,6 +113,7 @@ export function getArgumentValues(
   const argNodes = node.arguments || [];
   const coercedValues = Object.create(null);
   const argNodesMap = keyMap(argNodes, arg => arg.name.value);
+  const checkedArgNodes = {};
   for (let i = 0; i < argDefs.length; i++) {
     const argDef = argDefs[i];
     const name = argDef.name;
@@ -119,6 +121,16 @@ export function getArgumentValues(
     if (!isInvalid(coercedValue)) {
       coercedValues[name] = coercedValue;
     }
+    checkedArgNodes[name] = true;
+  }
+  // check for undefined args
+  const uknownArg = find(argNodes, arg => !checkedArgNodes[arg.name.value]);
+  if (uknownArg) {
+    throw new GraphQLError( def instanceof GraphQLDirective ?
+      `Unknown argument "${uknownArg.name.value}" on directive "@${def.name}"` :
+      `Unknown argument "${uknownArg.name.value}" on field "${def.name}"`,
+      [ node ]
+    );
   }
   return coercedValues;
 
