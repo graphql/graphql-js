@@ -1308,7 +1308,8 @@ describe('Introspection', () => {
           enumValues: [
             {
               description:
-                'Indicates this type is a scalar. `ofType` is a valid field.',
+                'Indicates this type is a scalar. ' +
+                '`ofType` may represent how this scalar is serialized.',
               name: 'SCALAR',
             },
             {

@@ -114,7 +114,7 @@ const printDocASTReducer = {
     join(
       [
         description,
-        join(['scalar', name, wrap('= ', type), join(directives, ' ')], ' '),
+        join(['scalar', name, wrap('as ', type), join(directives, ' ')], ' '),
       ],
       '\n',
     ),

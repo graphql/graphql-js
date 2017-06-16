@@ -109,7 +109,7 @@ describe('Printer', () => {
 
       scalar CustomScalar
 
-      scalar StringEncodedCustomScalar = String
+      scalar StringEncodedCustomScalar as String
 
       scalar AnnotatedScalar @onScalar
 

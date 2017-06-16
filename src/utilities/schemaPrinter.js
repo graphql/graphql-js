@@ -170,7 +170,7 @@ export function printType(type: GraphQLNamedType, options?: Options): string {
 }
 
 function printScalar(type: GraphQLScalarType, options): string {
-  const ofType = type.ofType ? ` = ${type.ofType.name}` : '';
+  const ofType = type.ofType ? ` as ${type.ofType.name}` : '';
   return printDescription(options, type) + `scalar ${type.name}${ofType}`;
 }
 
