@@ -13,7 +13,6 @@ import EventEmitter from 'events';
 import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
 import { subscribe } from '../subscribe';
 import { parse } from '../../language';
-import { GraphQLError } from '../../error/GraphQLError';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -139,14 +138,9 @@ async function expectPromiseToThrow(promise, message) {
   try {
     await promise();
     expect.fail('promise should have thrown but did not');
-  } catch(error) {
+  } catch (error) {
     expect(error && error.message).to.equal(message);
   }
-}
-
-function expectError(error, message) {
-  expect(error instanceof Error).to.equal(true);
-  expect(error && error.message).to.equal(message);
 }
 
 // Check all error cases when initializing the subscription.
@@ -206,7 +200,7 @@ describe('Subscription Initialization Phase', () => {
 
   it('accepts type definition with sync subscribe function', async () => {
     const pubsub = new EventEmitter();
-    const emailSchema = new GraphQLSchema({
+    const schema = new GraphQLSchema({
       query: QueryType,
       subscription: new GraphQLObjectType({
         name: 'Subscription',
@@ -226,7 +220,7 @@ describe('Subscription Initialization Phase', () => {
     `);
 
     const subscription = await subscribe(
-      emailSchema,
+      schema,
       ast
     );
 
@@ -239,7 +233,7 @@ describe('Subscription Initialization Phase', () => {
 
   it('accepts type definition with async subscribe function', async () => {
     const pubsub = new EventEmitter();
-    const emailSchema = new GraphQLSchema({
+    const schema = new GraphQLSchema({
       query: QueryType,
       subscription: new GraphQLObjectType({
         name: 'Subscription',
@@ -262,7 +256,7 @@ describe('Subscription Initialization Phase', () => {
     `);
 
     const subscription = await subscribe(
-      emailSchema,
+      schema,
       ast
     );
 
@@ -359,13 +353,7 @@ describe('Subscription Initialization Phase', () => {
     const pubsub = new EventEmitter();
 
     expectPromiseToThrow(
-      async () => {
-        const { subscription } = await createSubscription(
-          pubsub,
-          emailSchema,
-          ast,
-        );
-      },
+      () => createSubscription(pubsub, emailSchema, ast),
       'This subscription is not defined by the schema.'
     );
   });
@@ -387,12 +375,7 @@ describe('Subscription Initialization Phase', () => {
     const pubsub = new EventEmitter();
 
     expectPromiseToThrow(
-      async () => {
-        const { subscription } = await createSubscription(
-          pubsub,
-          invalidEmailSchema,
-        );
-      },
+      () => createSubscription(pubsub, invalidEmailSchema),
       'Subscription must return Async Iterable. Received: test'
     );
   });

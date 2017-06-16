@@ -26,7 +26,6 @@ import {
 } from '../execution/execute';
 import { GraphQLSchema } from '../type/schema';
 import invariant from '../jsutils/invariant';
-import asyncIteratorReject from './asyncIteratorReject';
 import mapAsyncIterator from './mapAsyncIterator';
 
 import type { ExecutionResult } from '../execution/execute';
@@ -108,6 +107,16 @@ export function subscribe(
     );
 }
 
+// This function checks if the error is a GraphQLError. If it is, convert it to
+// an ExecutionResult interface, containing only errors and no value. Otherwise
+// treat the error as a system-class error and throw it.
+function convertOrThrowError(error) {
+  if (error instanceof GraphQLError) {
+    return { errors: [ error ] };
+  }
+  throw error;
+}
+
 function subscribeImpl(
   schema,
   document,
@@ -144,19 +153,9 @@ function subscribeImpl(
         operationName,
         fieldResolver
       ),
-      error => {
-        if (error instanceof GraphQLError) {
-          return { errors: [ error ] };
-        }
-        throw error;
-      }
+      convertOrThrowError
     );
-  }).catch(error => {
-    if (error instanceof GraphQLError) {
-      return { errors: [ error ] };
-    }
-    throw error;
-  });
+  }).catch(convertOrThrowError);
 }
 
 /**
@@ -185,7 +184,7 @@ export function createSourceEventStream(
   variableValues?: ?{[key: string]: mixed},
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
-): Promise<AsyncIterable<mixed>>{
+): Promise<AsyncIterable<mixed>> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(
