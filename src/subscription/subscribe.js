@@ -59,7 +59,7 @@ declare function subscribe({|
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>
-|}, ..._: []): Promise<AsyncIterator<ExecutionResult> | Error | ExecutionResult>;
+|}, ..._: []): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function subscribe(
   schema: GraphQLSchema,
@@ -71,7 +71,7 @@ declare function subscribe(
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>
 ): Promise<AsyncIterator<ExecutionResult> | Error | ExecutionResult>;
-export async function subscribe(
+export function subscribe(
   argsOrSchema,
   document,
   rootValue,
@@ -84,37 +84,31 @@ export async function subscribe(
   // Extract arguments from object args if provided.
   const args = arguments.length === 1 ? argsOrSchema : undefined;
   const schema = args ? args.schema : argsOrSchema;
-  try {
-    return args ?
-      await subscribeImpl(
-        schema,
-        args.document,
-        args.rootValue,
-        args.contextValue,
-        args.variableValues,
-        args.operationName,
-        args.fieldResolver,
-        args.subscribeFieldResolver
-      ) :
-      await subscribeImpl(
-        schema,
-        document,
-        rootValue,
-        contextValue,
-        variableValues,
-        operationName,
-        fieldResolver,
-        subscribeFieldResolver
-      );
-  } catch (error) {
-    if (error instanceof GraphQLError) {
-      return { errors: [ error ] };
-    }
-    return error;
-  }
+
+  return args ?
+    subscribeImpl(
+      schema,
+      args.document,
+      args.rootValue,
+      args.contextValue,
+      args.variableValues,
+      args.operationName,
+      args.fieldResolver,
+      args.subscribeFieldResolver
+    ) :
+    subscribeImpl(
+      schema,
+      document,
+      rootValue,
+      contextValue,
+      variableValues,
+      operationName,
+      fieldResolver,
+      subscribeFieldResolver
+    );
 }
 
-async function subscribeImpl(
+function subscribeImpl(
   schema,
   document,
   rootValue,
@@ -124,7 +118,7 @@ async function subscribeImpl(
   fieldResolver,
   subscribeFieldResolver
 ) {
-  const subscription = await createSourceEventStream(
+  return createSourceEventStream(
     schema,
     document,
     rootValue,
@@ -132,32 +126,37 @@ async function subscribeImpl(
     variableValues,
     operationName,
     subscribeFieldResolver
-  );
-
-  // For each payload yielded from a subscription, map it over the normal
-  // GraphQL `execute` function, with `payload` as the rootValue.
-  // This implements the "MapSourceToResponseEvent" algorithm described in
-  // the GraphQL specification. The `execute` function provides the
-  // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
-  // "ExecuteQuery" algorithm, for which `execute` is also used.
-  return mapAsyncIterator(
-    subscription,
-    payload => execute(
-      schema,
-      document,
-      payload,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver
-    ),
-    error => {
-      if (error instanceof GraphQLError) {
-        return { errors: [ error ] };
+  ).then(subscription => {
+    // For each payload yielded from a subscription, map it over the normal
+    // GraphQL `execute` function, with `payload` as the rootValue.
+    // This implements the "MapSourceToResponseEvent" algorithm described in
+    // the GraphQL specification. The `execute` function provides the
+    // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
+    // "ExecuteQuery" algorithm, for which `execute` is also used.
+    return mapAsyncIterator(
+      subscription,
+      payload => execute(
+        schema,
+        document,
+        payload,
+        contextValue,
+        variableValues,
+        operationName,
+        fieldResolver
+      ),
+      error => {
+        if (error instanceof GraphQLError) {
+          return { errors: [ error ] };
+        }
+        throw error;
       }
-      throw error;
+    );
+  }).catch(error => {
+    if (error instanceof GraphQLError) {
+      return { errors: [ error ] };
     }
-  );
+    throw error;
+  });
 }
 
 /**
@@ -178,7 +177,7 @@ async function subscribeImpl(
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
-export async function createSourceEventStream(
+export function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -242,7 +241,7 @@ export async function createSourceEventStream(
   // resolveFieldValueOrError implements the "ResolveFieldEventStream"
   // algorithm from GraphQL specification. It differs from
   // "ResolveFieldValue" due to providing a different `resolveFn`.
-  const subscription = await resolveFieldValueOrError(
+  const subscription = resolveFieldValueOrError(
     exeContext,
     fieldDef,
     fieldNodes,
@@ -251,17 +250,23 @@ export async function createSourceEventStream(
     info
   );
 
-  // Throw located GraphQLError if subscription source fails to resolve.
-  if (subscription instanceof Error) {
-    throw locatedError(subscription, fieldNodes, responsePathAsArray(path));
-  }
+  return Promise.resolve(subscription).then(resolvedSubscription => {
+    // Throw located GraphQLError if subscription source fails to resolve.
+    if (resolvedSubscription instanceof Error) {
+      throw locatedError(
+        resolvedSubscription,
+        fieldNodes,
+        responsePathAsArray(path),
+      );
+    }
 
-  if (!isAsyncIterable(subscription)) {
-    throw new Error(
-      'Subscription must return Async Iterable. ' +
-        'Received: ' + String(subscription)
-    );
-  }
+    if (!isAsyncIterable(resolvedSubscription)) {
+      throw new Error(
+        'Subscription must return Async Iterable. ' +
+          'Received: ' + String(resolvedSubscription)
+      );
+    }
 
-  return (subscription: any);
+    return (resolvedSubscription: any);
+  });
 }
