@@ -319,6 +319,10 @@ export {
   // Print a GraphQLSchema to GraphQL Schema language.
   printSchema,
 
+  // Prints the built-in introspection schema in the Schema Language
+  // format.
+  printIntrospectionSchema,
+
   // Print a GraphQLType to GraphQL Schema language.
   printType,
 
