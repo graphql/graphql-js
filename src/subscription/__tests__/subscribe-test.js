@@ -135,17 +135,13 @@ async function createSubscription(pubsub, schema = emailSchema, ast) {
   };
 }
 
-async function getPromiseException(fn) {
-  try {
-    await fn();
-  } catch(error) {
-    return error;
-  }
-}
-
 async function expectPromiseToThrow(promise, message) {
-  let error = await getPromiseException(promise);
-  expect(error && error.message).to.equal(message);
+  try {
+    await promise();
+    expect.fail('promise should have thrown but did not');
+  } catch(error) {
+    expect(error && error.message).to.equal(message);
+  }
 }
 
 function expectError(error, message) {
@@ -323,37 +319,37 @@ describe('Subscription Initialization Phase', () => {
     subscription.return();
   });
 
-  it('returns an error if schema is missing', async () => {
+  it('throws an error if schema is missing', async () => {
     const document = parse(`
       subscription {
         importantEmail
       }
     `);
 
-    expectError(
-      await subscribe(null, document),
+    expectPromiseToThrow(
+      () => subscribe(null, document),
       'Must provide schema',
     );
 
-    expectError(
-      await subscribe({ document }),
+    expectPromiseToThrow(
+      () => subscribe({ document }),
       'Must provide schema',
     );
   });
 
-  it('returns an error if document is missing', async () => {
-    expectError(
-      await subscribe(emailSchema, null),
+  it('throws an error if document is missing', async () => {
+    expectPromiseToThrow(
+      () => subscribe(emailSchema, null),
       'Must provide document'
     );
 
-    expectError(
-      await subscribe({ schema: emailSchema }),
+    expectPromiseToThrow(
+      () => subscribe({ schema: emailSchema }),
       'Must provide document'
     );
   });
 
-  it('returns an error for unknown root field', async () => {
+  it('throws an error for unknown root field', async () => {
     const ast = parse(`
       subscription {
         unknownField
@@ -362,15 +358,42 @@ describe('Subscription Initialization Phase', () => {
 
     const pubsub = new EventEmitter();
 
-    const { subscription } = await createSubscription(
-      pubsub,
-      emailSchema,
-      ast,
-    );
-
-    expectError(
-      subscription,
+    expectPromiseToThrow(
+      async () => {
+        const { subscription } = await createSubscription(
+          pubsub,
+          emailSchema,
+          ast,
+        );
+      },
       'This subscription is not defined by the schema.'
+    );
+  });
+
+  it('throws an error if subscribe does not return an iterator', async () => {
+    const invalidEmailSchema = new GraphQLSchema({
+      query: QueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          importantEmail: {
+            type: GraphQLString,
+            subscribe: () => 'test',
+          },
+        }
+      })
+    });
+
+    const pubsub = new EventEmitter();
+
+    expectPromiseToThrow(
+      async () => {
+        const { subscription } = await createSubscription(
+          pubsub,
+          invalidEmailSchema,
+        );
+      },
+      'Subscription must return Async Iterable. Received: test'
     );
   });
 
@@ -388,7 +411,6 @@ describe('Subscription Initialization Phase', () => {
       `)
     );
 
-    // TODO: is there a good way to check if result is of type ExecutionResult?
     expect(result).to.deep.equal({
       errors: [
         {
@@ -398,33 +420,6 @@ describe('Subscription Initialization Phase', () => {
         }
       ]
     });
-  });
-
-  it('returns an error if subscribe does not return an iterator', async () => {
-    const invalidEmailSchema = new GraphQLSchema({
-      query: QueryType,
-      subscription: new GraphQLObjectType({
-        name: 'Subscription',
-        fields: {
-          importantEmail: {
-            type: GraphQLString,
-            subscribe: () => 'test',
-          },
-        }
-      })
-    });
-
-    const pubsub = new EventEmitter();
-
-    const { subscription } = await createSubscription(
-      pubsub,
-      invalidEmailSchema,
-    );
-
-    expectError(
-      subscription,
-      'Subscription must return Async Iterable. Received: test'
-    );
   });
 
   it('returns an ExecutionResult for resolver errors', async () => {
@@ -441,7 +436,6 @@ describe('Subscription Initialization Phase', () => {
       `)
     );
 
-    // TODO: is there a good way to check if result is of type ExecutionResult?
     expect(result).to.deep.equal({
       errors: [
         {
