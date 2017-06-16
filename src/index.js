@@ -237,6 +237,7 @@ export {
   execute,
   defaultFieldResolver,
   responsePathAsArray,
+  getArgumentValues,
 } from './execution';
 
 export type {
