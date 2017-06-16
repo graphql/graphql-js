@@ -24,18 +24,7 @@ import type {
   ListValueNode,
   ObjectValueNode,
 } from '../language/ast';
-import {
-  NAME,
-  INT,
-  FLOAT,
-  STRING,
-  BOOLEAN,
-  NULL,
-  ENUM,
-  LIST,
-  OBJECT,
-  OBJECT_FIELD,
-} from '../language/kinds';
+import * as Kind from '../language/kinds';
 import type { GraphQLInputType } from '../type/definition';
 import {
   GraphQLScalarType,
@@ -73,7 +62,7 @@ export function astFromValue(
 
   if (type instanceof GraphQLNonNull) {
     const astValue = astFromValue(_value, type.ofType);
-    if (astValue && astValue.kind === NULL) {
+    if (astValue && astValue.kind === Kind.NULL) {
       return null;
     }
     return astValue;
@@ -81,7 +70,7 @@ export function astFromValue(
 
   // only explicit null, not undefined, NaN
   if (_value === null) {
-    return ({ kind: NULL }: NullValueNode);
+    return ({ kind: Kind.NULL }: NullValueNode);
   }
 
   // undefined, NaN
@@ -101,7 +90,7 @@ export function astFromValue(
           valuesNodes.push(itemNode);
         }
       });
-      return ({ kind: LIST, values: valuesNodes }: ListValueNode);
+      return ({ kind: Kind.LIST, values: valuesNodes }: ListValueNode);
     }
     return astFromValue(_value, itemType);
   }
@@ -119,13 +108,13 @@ export function astFromValue(
       const fieldValue = astFromValue(_value[fieldName], fieldType);
       if (fieldValue) {
         fieldNodes.push({
-          kind: OBJECT_FIELD,
-          name: { kind: NAME, value: fieldName },
+          kind: Kind.OBJECT_FIELD,
+          name: { kind: Kind.NAME, value: fieldName },
           value: fieldValue
         });
       }
     });
-    return ({ kind: OBJECT, fields: fieldNodes }: ObjectValueNode);
+    return ({ kind: Kind.OBJECT, fields: fieldNodes }: ObjectValueNode);
   }
 
   invariant(
@@ -142,32 +131,32 @@ export function astFromValue(
 
   // Others serialize based on their corresponding JavaScript scalar types.
   if (typeof serialized === 'boolean') {
-    return ({ kind: BOOLEAN, value: serialized }: BooleanValueNode);
+    return ({ kind: Kind.BOOLEAN, value: serialized }: BooleanValueNode);
   }
 
   // JavaScript numbers can be Int or Float values.
   if (typeof serialized === 'number') {
     const stringNum = String(serialized);
     return /^[0-9]+$/.test(stringNum) ?
-      ({ kind: INT, value: stringNum }: IntValueNode) :
-      ({ kind: FLOAT, value: stringNum }: FloatValueNode);
+      ({ kind: Kind.INT, value: stringNum }: IntValueNode) :
+      ({ kind: Kind.FLOAT, value: stringNum }: FloatValueNode);
   }
 
   if (typeof serialized === 'string') {
     // Enum types use Enum literals.
     if (type instanceof GraphQLEnumType) {
-      return ({ kind: ENUM, value: serialized }: EnumValueNode);
+      return ({ kind: Kind.ENUM, value: serialized }: EnumValueNode);
     }
 
     // ID types can use Int literals.
     if (type === GraphQLID && /^[0-9]+$/.test(serialized)) {
-      return ({ kind: INT, value: serialized }: IntValueNode);
+      return ({ kind: Kind.INT, value: serialized }: IntValueNode);
     }
 
     // Use JSON stringify, which uses the same string encoding as GraphQL,
     // then remove the quotes.
     return ({
-      kind: STRING,
+      kind: Kind.STRING,
       value: JSON.stringify(serialized).slice(1, -1)
     }: StringValueNode);
   }

@@ -14,12 +14,7 @@ import type {
   ListValueNode,
   ObjectValueNode
 } from '../language/ast';
-import {
-  NULL,
-  VARIABLE,
-  LIST,
-  OBJECT
-} from '../language/kinds';
+import * as Kind from '../language/kinds';
 import {
   GraphQLScalarType,
   GraphQLEnumType,
@@ -45,26 +40,26 @@ export function isValidLiteralValue(
 ): Array<string> {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
-    if (!valueNode || (valueNode.kind === NULL)) {
+    if (!valueNode || (valueNode.kind === Kind.NULL)) {
       return [ `Expected "${String(type)}", found null.` ];
     }
     return isValidLiteralValue(type.ofType, valueNode);
   }
 
-  if (!valueNode || (valueNode.kind === NULL)) {
+  if (!valueNode || (valueNode.kind === Kind.NULL)) {
     return [];
   }
 
   // This function only tests literals, and assumes variables will provide
   // values of the correct type.
-  if (valueNode.kind === VARIABLE) {
+  if (valueNode.kind === Kind.VARIABLE) {
     return [];
   }
 
   // Lists accept a non-list value as a list of one.
   if (type instanceof GraphQLList) {
     const itemType = type.ofType;
-    if (valueNode.kind === LIST) {
+    if (valueNode.kind === Kind.LIST) {
       return (valueNode: ListValueNode).values.reduce((acc, item, index) => {
         const errors = isValidLiteralValue(itemType, item);
         return acc.concat(errors.map(error =>
@@ -77,7 +72,7 @@ export function isValidLiteralValue(
 
   // Input objects check each defined field and look for undefined fields.
   if (type instanceof GraphQLInputObjectType) {
-    if (valueNode.kind !== OBJECT) {
+    if (valueNode.kind !== Kind.OBJECT) {
       return [ `Expected "${type.name}", found not an object.` ];
     }
     const fields = type.getFields();

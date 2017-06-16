@@ -17,7 +17,7 @@ import type {
   ArgumentNode,
   FragmentDefinitionNode,
 } from '../../language/ast';
-import { FIELD, INLINE_FRAGMENT, FRAGMENT_SPREAD } from '../../language/kinds';
+import * as Kind from '../../language/kinds';
 import { print } from '../../language/printer';
 import {
   getNamedType,
@@ -712,7 +712,7 @@ function _collectFieldsAndFragmentNames(
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
     switch (selection.kind) {
-      case FIELD:
+      case Kind.FIELD:
         const fieldName = selection.name.value;
         let fieldDef;
         if (parentType instanceof GraphQLObjectType ||
@@ -726,10 +726,10 @@ function _collectFieldsAndFragmentNames(
         }
         nodeAndDefs[responseName].push([ parentType, selection, fieldDef ]);
         break;
-      case FRAGMENT_SPREAD:
+      case Kind.FRAGMENT_SPREAD:
         fragmentNames[selection.name.value] = true;
         break;
-      case INLINE_FRAGMENT:
+      case Kind.INLINE_FRAGMENT:
         const typeCondition = selection.typeCondition;
         const inlineFragmentType = typeCondition ?
           typeFromAST(context.getSchema(), typeCondition) :

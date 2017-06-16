@@ -10,7 +10,7 @@
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
-import { ENUM } from '../language/kinds';
+import * as Kind from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
 import type {
   OperationDefinitionNode,
@@ -924,12 +924,12 @@ export class GraphQLEnumType/* <T> */ {
   }
 
   isValidLiteral(valueNode: ValueNode): boolean {
-    return valueNode.kind === ENUM &&
+    return valueNode.kind === Kind.ENUM &&
       this._getNameLookup()[valueNode.value] !== undefined;
   }
 
   parseLiteral(valueNode: ValueNode): ?any/* T */ {
-    if (valueNode.kind === ENUM) {
+    if (valueNode.kind === Kind.ENUM) {
       const enumValue = this._getNameLookup()[valueNode.value];
       if (enumValue) {
         return enumValue.value;

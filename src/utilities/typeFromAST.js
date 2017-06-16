@@ -9,7 +9,7 @@
  */
 
 import invariant from '../jsutils/invariant';
-import { NAMED_TYPE, LIST_TYPE, NON_NULL_TYPE } from '../language/kinds';
+import * as Kind from '../language/kinds';
 import type {
   NamedTypeNode,
   ListTypeNode,
@@ -44,15 +44,15 @@ declare function typeFromASTType(
 function typeFromASTImpl(schema, typeNode) {
 /* eslint-enable no-redeclare */
   let innerType;
-  if (typeNode.kind === LIST_TYPE) {
+  if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
     return innerType && new GraphQLList(innerType);
   }
-  if (typeNode.kind === NON_NULL_TYPE) {
+  if (typeNode.kind === Kind.NON_NULL_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
     return innerType && new GraphQLNonNull(innerType);
   }
-  invariant(typeNode.kind === NAMED_TYPE, 'Must be a named type.');
+  invariant(typeNode.kind === Kind.NAMED_TYPE, 'Must be a named type.');
   return schema.getType(typeNode.name.value);
 }
 // This will export typeFromAST with the correct type, but currently exposes
