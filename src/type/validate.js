@@ -8,6 +8,7 @@
  */
 
 import {
+  isScalarType,
   isObjectType,
   isInterfaceType,
   isUnionType,
@@ -19,6 +20,7 @@ import {
   isRequiredArgument,
 } from './definition';
 import type {
+  GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -28,6 +30,7 @@ import type {
 import { isDirective } from './directives';
 import type { GraphQLDirective } from './directives';
 import { isIntrospectionType } from './introspection';
+import { isSpecifiedScalarType } from './scalars';
 import { isSchema } from './schema';
 import type { GraphQLSchema } from './schema';
 import inspect from '../jsutils/inspect';
@@ -244,7 +247,10 @@ function validateTypes(context: SchemaValidationContext): void {
       validateName(context, type);
     }
 
-    if (isObjectType(type)) {
+    if (isScalarType(type)) {
+      // Ensure Scalars can serialize as expected.
+      validateScalarSerialization(context, type);
+    } else if (isObjectType(type)) {
       // Ensure fields are valid
       validateFields(context, type);
 
@@ -263,6 +269,20 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure Input Object fields are valid.
       validateInputFields(context, type);
     }
+  }
+}
+
+function validateScalarSerialization(
+  context: SchemaValidationContext,
+  scalarType: GraphQLScalarType,
+): void {
+  if (scalarType.ofType && !isSpecifiedScalarType(scalarType.ofType)) {
+    context.reportError(
+      `Scalar type ${scalarType.name} may only be described in terms of a ` +
+        `spec-defined scalar type. However ${String(scalarType.ofType)} is ` +
+        'not a built-in scalar type.',
+      scalarType.astNode && scalarType.astNode.type,
+    );
   }
 }
 

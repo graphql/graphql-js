@@ -119,6 +119,8 @@ describe('Printer: SDL document', () => {
 
       scalar AnnotatedScalar @onScalar
 
+      scalar StringEncodedCustomScalar as String
+
       extend scalar CustomScalar @onScalar
 
       enum Site {

@@ -421,6 +421,10 @@ export class ASTDefinitionBuilder {
     return new GraphQLScalarType({
       name: def.name.value,
       description: getDescription(def, this._options),
+      // Note: While this could make assertions to get the correctly typed
+      // values below, that would throw immediately while type system
+      // validation with validateSchema() will produce more actionable results.
+      ofType: def.type && (this.buildType(def.type): any),
       astNode: def,
       serialize: value => value,
     });

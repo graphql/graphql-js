@@ -538,6 +538,7 @@ export class GraphQLScalarType {
   serialize: GraphQLScalarSerializer<*>;
   parseValue: GraphQLScalarValueParser<*>;
   parseLiteral: GraphQLScalarLiteralParser<*>;
+  ofType: ?GraphQLScalarType;
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
@@ -545,10 +546,18 @@ export class GraphQLScalarType {
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize;
-    this.parseValue = config.parseValue || (value => value);
-    this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
+    this.ofType = config.ofType || null;
+    this.parseValue =
+      config.parseValue ||
+      (this.ofType && this.ofType.parseValue) ||
+      (value => value);
+    this.parseLiteral =
+      config.parseLiteral ||
+      (this.ofType && this.ofType.parseLiteral) ||
+      valueFromASTUntyped;
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
+
     invariant(typeof config.name === 'string', 'Must provide name.');
     invariant(
       typeof config.serialize === 'function',
@@ -591,6 +600,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   parseValue?: GraphQLScalarValueParser<TInternal>,
   // Parses an externally provided literal value to use as an input.
   parseLiteral?: GraphQLScalarLiteralParser<TInternal>,
+  ofType?: ?GraphQLScalarType,
   astNode?: ?ScalarTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<ScalarTypeExtensionNode>,
 |};
