@@ -231,9 +231,10 @@ describe('mapAsyncIterator', () => {
       await doubles.next()
     ).to.deep.equal({ value: 'HelloHello', done: false });
 
-    expect(
-      await doubles.next()
-    ).to.deep.equal({ value: new Error('Goodbye'), done: false });
+    const result = await doubles.next();
+    expect(result.value).to.be.instanceof(Error);
+    expect(result.value && result.value.message).to.equal('Goodbye');
+    expect(result.done).to.equal(false);
 
     expect(
       await doubles.next()
