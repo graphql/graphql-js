@@ -11,6 +11,7 @@
 import { createIterator, isCollection } from 'iterall';
 
 import { GraphQLError } from '../error';
+import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
@@ -162,6 +163,28 @@ export function getArgumentValues(
     }
   }
   return coercedValues;
+}
+
+/**
+ * Prepares an object map of argument values given a directive definition
+ * and a AST node which may contain directives. Optionally also accepts a map
+ * of variable values.
+ *
+ * If the directive does not exist on the node, returns undefined.
+ */
+export function getDirectiveValues(
+  directiveDef: GraphQLDirective,
+  node: { directives?: ?Array<DirectiveNode> },
+  variableValues?: ?{ [key: string]: mixed }
+): void | { [key: string]: mixed } {
+  const directiveNode = node.directives && find(
+    node.directives,
+    directive => directive.name.value === directiveDef.name
+  );
+
+  if (directiveNode) {
+    return getArgumentValues(directiveDef, directiveNode, variableValues);
+  }
 }
 
 /**
