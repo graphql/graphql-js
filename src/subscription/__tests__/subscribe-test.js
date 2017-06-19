@@ -68,7 +68,12 @@ describe('Subscribe', () => {
   const SubscriptionType = new GraphQLObjectType({
     name: 'Subscription',
     fields: {
-      importantEmail: { type: EmailEventType },
+      importantEmail: {
+        type: EmailEventType,
+        args: {
+          priority: { type: GraphQLString }
+        }
+      },
     }
   });
 
@@ -188,7 +193,10 @@ describe('Subscribe', () => {
     const SubscriptionTypeMultiple = new GraphQLObjectType({
       name: 'Subscription',
       fields: {
-        importantEmail: { type: EmailEventType },
+        importantEmail: {
+          type: EmailEventType,
+          args: { priority: { type: GraphQLString } }
+        },
         nonImportantEmail: { type: EmailEventType },
       }
     });
