@@ -14,6 +14,7 @@ import { parse, parseValue, parseType } from '../parser';
 import { Source } from '../source';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import dedent from '../../jsutils/dedent';
 
 describe('Parser', () => {
 
@@ -36,12 +37,12 @@ describe('Parser', () => {
       caughtError = error;
     }
 
-    expect(caughtError.message).to.equal(
-      `Syntax Error GraphQL request (1:2) Expected Name, found <EOF>
+    expect(caughtError.message).to.equal(dedent`
+      Syntax Error GraphQL request (1:2) Expected Name, found <EOF>
 
-1: {
-    ^
-`
+      1: {
+          ^
+      `
     );
 
     expect(caughtError.positions).to.deep.equal([ 1 ]);
@@ -51,10 +52,10 @@ describe('Parser', () => {
     ]);
 
     expect(
-      () => parse(
-`{ ...MissingOn }
-fragment MissingOn Type
-`)
+      () => parse(dedent`
+        { ...MissingOn }
+        fragment MissingOn Type
+      `)
     ).to.throw(
       'Syntax Error GraphQL request (2:20) Expected "on", found Name "Type"'
     );
@@ -154,13 +155,15 @@ fragment MissingOn Type
         fragmentName = 'a';
       }
       expect(() => {
-        parse(`query ${keyword} {
-  ... ${fragmentName}
-  ... on ${keyword} { field }
-}
-fragment ${fragmentName} on Type {
-  ${keyword}(${keyword}: $${keyword}) @${keyword}(${keyword}: ${keyword})
-}`
+        parse(dedent`
+          query ${keyword} {
+            ... ${fragmentName}
+            ... on ${keyword} { field }
+          }
+          fragment ${fragmentName} on Type {
+            ${keyword}(${keyword}: $${keyword})
+              @${keyword}(${keyword}: ${keyword})
+          }`
         );
       }).to.not.throw();
     });

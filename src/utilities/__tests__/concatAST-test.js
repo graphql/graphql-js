@@ -9,6 +9,7 @@
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import dedent from '../../jsutils/dedent';
 import { concatAST } from '../concatAST';
 import { Source, parse, print } from '../../language';
 
@@ -30,17 +31,17 @@ describe('concatAST', () => {
     const astB = parse(sourceB);
     const astC = concatAST([ astA, astB ]);
 
-    expect(print(astC)).to.equal(
-`{
-  a
-  b
-  ...Frag
-}
+    expect(print(astC)).to.equal(dedent`
+      {
+        a
+        b
+        ...Frag
+      }
 
-fragment Frag on T {
-  c
-}
-`);
+      fragment Frag on T {
+        c
+      }
+    `);
   });
 
 });
