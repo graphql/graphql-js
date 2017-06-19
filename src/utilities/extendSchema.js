@@ -418,7 +418,7 @@ export function extendSchema(
             description: getDescription(field),
             type: buildOutputFieldType(field.type),
             args: buildInputValues(field.arguments),
-            deprecationReason: getDeprecationReason(field.directives),
+            deprecationReason: getDeprecationReason(field),
           };
         });
       });
@@ -500,7 +500,7 @@ export function extendSchema(
         enumValue => enumValue.name.value,
         enumValue => ({
           description: getDescription(enumValue),
-          deprecationReason: getDeprecationReason(enumValue.directives),
+          deprecationReason: getDeprecationReason(enumValue),
         }),
       ),
     });
@@ -540,7 +540,7 @@ export function extendSchema(
         type: buildOutputFieldType(field.type),
         description: getDescription(field),
         args: buildInputValues(field.arguments),
-        deprecationReason: getDeprecationReason(field.directives),
+        deprecationReason: getDeprecationReason(field),
       })
     );
   }
