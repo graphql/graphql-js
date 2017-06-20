@@ -412,8 +412,8 @@ describe('Type System Printer', () => {
       }
 
       type Bar implements Foo, Baaz {
-        int: Int
         str: String
+        int: Int
       }
 
       interface Foo {
@@ -479,8 +479,8 @@ describe('Type System Printer', () => {
       union MultipleUnion = Foo | Bar
 
       type Root {
-        multiple: MultipleUnion
         single: SingleUnion
+        multiple: MultipleUnion
       }
 
       union SingleUnion = Foo
@@ -629,13 +629,13 @@ describe('Type System Printer', () => {
       # skipping a field. Directives provide this by describing additional information
       # to the executor.
       type __Directive {
-        args: [__InputValue!]!
+        name: String!
         description: String
         locations: [__DirectiveLocation!]!
-        name: String!
-        onField: Boolean! @deprecated(reason: "Use \`locations\`.")
-        onFragment: Boolean! @deprecated(reason: "Use \`locations\`.")
+        args: [__InputValue!]!
         onOperation: Boolean! @deprecated(reason: "Use \`locations\`.")
+        onFragment: Boolean! @deprecated(reason: "Use \`locations\`.")
+        onField: Boolean! @deprecated(reason: "Use \`locations\`.")
       }
 
       # A Directive can be adjacent to many parts of the GraphQL language, a
@@ -700,52 +700,53 @@ describe('Type System Printer', () => {
       # placeholder for a string or numeric value. However an Enum value is returned in
       # a JSON response as a string.
       type __EnumValue {
-        deprecationReason: String
+        name: String!
         description: String
         isDeprecated: Boolean!
-        name: String!
+        deprecationReason: String
       }
 
       # Object and Interface types are described by a list of Fields, each of which has
       # a name, potentially a list of arguments, and a return type.
       type __Field {
-        args: [__InputValue!]!
-        deprecationReason: String
-        description: String
-        isDeprecated: Boolean!
         name: String!
+        description: String
+        args: [__InputValue!]!
         type: __Type!
+        isDeprecated: Boolean!
+        deprecationReason: String
       }
 
       # Arguments provided to Fields or Directives and the input fields of an
       # InputObject are represented as Input Values which describe their type and
       # optionally a default value.
       type __InputValue {
+        name: String!
+        description: String
+        type: __Type!
+
         # A GraphQL-formatted string representing the default value for this input value.
         defaultValue: String
-        description: String
-        name: String!
-        type: __Type!
       }
 
       # A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all
       # available types and directives on the server, as well as the entry points for
       # query, mutation, and subscription operations.
       type __Schema {
-        # A list of all directives supported by this server.
-        directives: [__Directive!]!
-
-        # If this server supports mutation, the type that mutation operations will be rooted at.
-        mutationType: __Type
+        # A list of all types supported by this server.
+        types: [__Type!]!
 
         # The type that query operations will be rooted at.
         queryType: __Type!
 
+        # If this server supports mutation, the type that mutation operations will be rooted at.
+        mutationType: __Type
+
         # If this server support subscription, the type that subscription operations will be rooted at.
         subscriptionType: __Type
 
-        # A list of all types supported by this server.
-        types: [__Type!]!
+        # A list of all directives supported by this server.
+        directives: [__Directive!]!
       }
 
       # The fundamental unit of any GraphQL Schema is the type. There are many kinds of
@@ -757,15 +758,15 @@ describe('Type System Printer', () => {
       # they describe. Abstract types, Union and Interface, provide the Object types
       # possible at runtime. List and NonNull types compose other types.
       type __Type {
-        description: String
-        enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
-        fields(includeDeprecated: Boolean = false): [__Field!]
-        inputFields: [__InputValue!]
-        interfaces: [__Type!]
         kind: __TypeKind!
         name: String
-        ofType: __Type
+        description: String
+        fields(includeDeprecated: Boolean = false): [__Field!]
+        interfaces: [__Type!]
         possibleTypes: [__Type!]
+        enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
+        inputFields: [__InputValue!]
+        ofType: __Type
       }
 
       # An enum describing what kind of type a given \`__Type\` is.

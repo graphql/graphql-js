@@ -159,9 +159,9 @@ describe('extendSchema', () => {
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
       type Bar implements SomeInterface {
-        foo: Foo
         name: String
         some: SomeInterface
+        foo: Foo
       }
 
       type Biz {
@@ -170,16 +170,16 @@ describe('extendSchema', () => {
 
       type Foo implements SomeInterface {
         name: String
-        newField: String
         some: SomeInterface
         tree: [Foo]!
+        newField: String
       }
 
       type Query {
         foo: Foo
+        someUnion: SomeUnion
         someEnum: SomeEnum
         someInterface(id: ID!): SomeInterface
-        someUnion: SomeUnion
       }
 
       enum SomeEnum {
@@ -252,9 +252,9 @@ describe('extendSchema', () => {
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
       type Bar implements SomeInterface {
-        foo: Foo
         name: String
         some: SomeInterface
+        foo: Foo
       }
 
       type Biz {
@@ -269,9 +269,9 @@ describe('extendSchema', () => {
 
       type Query {
         foo: Foo
+        someUnion: SomeUnion
         someEnum: SomeEnum
         someInterface(id: ID!): SomeInterface
-        someUnion: SomeUnion
       }
 
       enum SomeEnum {
@@ -310,9 +310,9 @@ describe('extendSchema', () => {
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
       type Bar implements SomeInterface {
-        foo: Foo
         name: String
         some: SomeInterface
+        foo: Foo
       }
 
       type Biz {
@@ -321,9 +321,9 @@ describe('extendSchema', () => {
 
       type Foo implements SomeInterface {
         name: String
-        newField(arg1: String, arg2: NewInputObj!): String
         some: SomeInterface
         tree: [Foo]!
+        newField(arg1: String, arg2: NewInputObj!): String
       }
 
       input NewInputObj {
@@ -334,9 +334,9 @@ describe('extendSchema', () => {
 
       type Query {
         foo: Foo
+        someUnion: SomeUnion
         someEnum: SomeEnum
         someInterface(id: ID!): SomeInterface
-        someUnion: SomeUnion
       }
 
       enum SomeEnum {
@@ -365,9 +365,9 @@ describe('extendSchema', () => {
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
       type Bar implements SomeInterface {
-        foo: Foo
         name: String
         some: SomeInterface
+        foo: Foo
       }
 
       type Biz {
@@ -376,16 +376,16 @@ describe('extendSchema', () => {
 
       type Foo implements SomeInterface {
         name: String
-        newField(arg1: SomeEnum!): SomeEnum
         some: SomeInterface
         tree: [Foo]!
+        newField(arg1: SomeEnum!): SomeEnum
       }
 
       type Query {
         foo: Foo
+        someUnion: SomeUnion
         someEnum: SomeEnum
         someInterface(id: ID!): SomeInterface
-        someUnion: SomeUnion
       }
 
       enum SomeEnum {
@@ -415,9 +415,9 @@ describe('extendSchema', () => {
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
       type Bar implements SomeInterface {
-        foo: Foo
         name: String
         some: SomeInterface
+        foo: Foo
       }
 
       type Biz implements SomeInterface {
@@ -434,9 +434,9 @@ describe('extendSchema', () => {
 
       type Query {
         foo: Foo
+        someUnion: SomeUnion
         someEnum: SomeEnum
         someInterface(id: ID!): SomeInterface
-        someUnion: SomeUnion
       }
 
       enum SomeEnum {
@@ -491,9 +491,9 @@ describe('extendSchema', () => {
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
       type Bar implements SomeInterface {
-        foo: Foo
         name: String
         some: SomeInterface
+        foo: Foo
       }
 
       type Biz {
@@ -502,14 +502,14 @@ describe('extendSchema', () => {
 
       type Foo implements SomeInterface {
         name: String
-        newEnum: NewEnum
-        newInterface: NewInterface
-        newObject: NewObject
-        newScalar: NewScalar
-        newTree: [Foo]!
-        newUnion: NewUnion
         some: SomeInterface
         tree: [Foo]!
+        newObject: NewObject
+        newInterface: NewInterface
+        newUnion: NewUnion
+        newScalar: NewScalar
+        newEnum: NewEnum
+        newTree: [Foo]!
       }
 
       enum NewEnum {
@@ -535,9 +535,9 @@ describe('extendSchema', () => {
 
       type Query {
         foo: Foo
+        someUnion: SomeUnion
         someEnum: SomeEnum
         someInterface(id: ID!): SomeInterface
-        someUnion: SomeUnion
       }
 
       enum SomeEnum {
@@ -570,9 +570,9 @@ describe('extendSchema', () => {
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
       type Bar implements SomeInterface {
-        foo: Foo
         name: String
         some: SomeInterface
+        foo: Foo
       }
 
       type Biz {
@@ -580,10 +580,10 @@ describe('extendSchema', () => {
       }
 
       type Foo implements SomeInterface, NewInterface {
-        baz: String
         name: String
         some: SomeInterface
         tree: [Foo]!
+        baz: String
       }
 
       interface NewInterface {
@@ -592,9 +592,9 @@ describe('extendSchema', () => {
 
       type Query {
         foo: Foo
+        someUnion: SomeUnion
         someEnum: SomeEnum
         someInterface(id: ID!): SomeInterface
-        someUnion: SomeUnion
       }
 
       enum SomeEnum {
@@ -638,18 +638,18 @@ describe('extendSchema', () => {
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
       type Bar implements SomeInterface {
-        foo: Foo
         name: String
         some: SomeInterface
+        foo: Foo
       }
 
       type Biz implements NewInterface, SomeInterface {
-        buzz: String
         fizz: String
+        buzz: String
         name: String
+        some: SomeInterface
         newFieldA: Int
         newFieldB: Float
-        some: SomeInterface
       }
 
       type Foo implements SomeInterface {
@@ -664,9 +664,9 @@ describe('extendSchema', () => {
 
       type Query {
         foo: Foo
+        someUnion: SomeUnion
         someEnum: SomeEnum
         someInterface(id: ID!): SomeInterface
-        someUnion: SomeUnion
       }
 
       enum SomeEnum {
@@ -729,13 +729,13 @@ describe('extendSchema', () => {
       }
 
       type Query {
-        newQueryField: Int
         queryField: String
+        newQueryField: Int
       }
 
       type Subscription {
-        newSubscriptionField: Int
         subscriptionField: String
+        newSubscriptionField: Int
       }
     `);
   });

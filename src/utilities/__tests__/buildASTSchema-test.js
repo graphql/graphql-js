@@ -69,13 +69,14 @@ describe('Schema Builder', () => {
       }
 
       type HelloScalars {
-        bool: Boolean
+        str: String
+        int: Int
         float: Float
         id: ID
-        int: Int
-        str: String
+        bool: Boolean
       }
-    `;
+      `;
+
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
@@ -197,11 +198,11 @@ describe('Schema Builder', () => {
       }
 
       type HelloScalars {
-        listOfNonNullStrs: [String!]
-        listOfStrs: [String]
-        nonNullListOfNonNullStrs: [String!]!
-        nonNullListOfStrs: [String]!
         nonNullStr: String!
+        listOfStrs: [String]
+        listOfNonNullStrs: [String!]
+        nonNullListOfStrs: [String]!
+        nonNullListOfNonNullStrs: [String!]!
       }
     `;
     const output = cycleOutput(body);
@@ -216,8 +217,8 @@ describe('Schema Builder', () => {
       }
 
       type Recurse {
-        recurse: Recurse
         str: String
+        recurse: Recurse
       }
     `;
     const output = cycleOutput(body);
@@ -251,10 +252,10 @@ describe('Schema Builder', () => {
       }
 
       type Hello {
-        booleanToStr(bool: Boolean): String
+        str(int: Int): String
         floatToStr(float: Float): String
         idToStr(id: ID): String
-        str(int: Int): String
+        booleanToStr(bool: Boolean): String
         strToStr(bool: String): String
       }
     `;
@@ -451,9 +452,9 @@ describe('Schema Builder', () => {
       }
 
       type HelloScalars {
-        bool: Boolean
-        int: Int
         str: String
+        int: Int
+        bool: Boolean
       }
 
       type Mutation {
@@ -472,9 +473,9 @@ describe('Schema Builder', () => {
       }
 
       type HelloScalars {
-        bool: Boolean
-        int: Int
         str: String
+        int: Int
+        bool: Boolean
       }
 
       type Subscription {
@@ -528,9 +529,9 @@ describe('Schema Builder', () => {
       }
 
       type Query {
-        enum: MyEnum
         field1: String @deprecated
         field2: Int @deprecated(reason: "Because I said so")
+        enum: MyEnum
       }
     `;
     const output = cycleOutput(body);
