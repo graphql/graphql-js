@@ -8,6 +8,7 @@
  */
 
 import invariant from '../jsutils/invariant';
+import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import type {ObjMap} from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
@@ -42,14 +43,6 @@ import type {
 import { GraphQLSchema } from '../type/schema';
 
 import {
-  GraphQLString,
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLBoolean,
-  GraphQLID,
-} from '../type/scalars';
-
-import {
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -81,16 +74,7 @@ import type {
   DirectiveLocationEnum
 } from '../type/directives';
 
-import {
-  __Schema,
-  __Directive,
-  __DirectiveLocation,
-  __Type,
-  __Field,
-  __InputValue,
-  __EnumValue,
-  __TypeKind,
-} from '../type/introspection';
+import { builtInTypes } from '../type/builtins';
 
 type Options = {| commentDescriptions?: boolean |};
 
@@ -260,7 +244,7 @@ export class ASTDefinitionBuilder {
   _typeDefinitionsMap: TypeDefinitionsMap;
   _options: ?Options;
   _resolveType: TypeResolver;
-  _cache: { [typeName: string]: GraphQLNamedType };
+  _cache: ObjMap<GraphQLNamedType>;
 
   constructor(
     typeDefinitionsMap: TypeDefinitionsMap,
@@ -271,21 +255,7 @@ export class ASTDefinitionBuilder {
     this._options = options;
     this._resolveType = resolveType;
     // Initialize to the GraphQL built in scalars and introspection types.
-    this._cache = {
-      String: GraphQLString,
-      Int: GraphQLInt,
-      Float: GraphQLFloat,
-      Boolean: GraphQLBoolean,
-      ID: GraphQLID,
-      __Schema,
-      __Directive,
-      __DirectiveLocation,
-      __Type,
-      __Field,
-      __InputValue,
-      __EnumValue,
-      __TypeKind,
-    };
+    this._cache = keyMap(builtInTypes, type => type.name);
   }
 
   _buildType(typeName: string, typeNode?: ?NamedTypeNode): GraphQLNamedType {

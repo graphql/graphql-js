@@ -23,7 +23,7 @@ import {
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from './directives';
-import type { GraphQLField } from './definition';
+import type { GraphQLField, GraphQLNamedType } from './definition';
 
 
 export const __Schema = new GraphQLObjectType({
@@ -451,3 +451,19 @@ export const TypeNameMetaFieldDef: GraphQLField<*, *> = {
   args: [],
   resolve: (source, args, context, { parentType }) => parentType.name
 };
+
+export const introspectionTypes: Array<GraphQLNamedType> = [
+  __Schema,
+  __Directive,
+  __DirectiveLocation,
+  __Type,
+  __Field,
+  __InputValue,
+  __EnumValue,
+  __TypeKind,
+];
+
+const introspectionTypeNames = introspectionTypes.map(x => x.name);
+export function isIntrospectionType(type: GraphQLNamedType): boolean %checks {
+  return introspectionTypeNames.includes(type.name);
+}

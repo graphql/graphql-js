@@ -181,3 +181,8 @@ export const specifiedDirectives: Array<GraphQLDirective> = [
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
 ];
+
+const specifiedDirectivesNames = specifiedDirectives.map(x => x.name);
+export function isSpecDirective(directive: GraphQLDirective): boolean %checks {
+  return specifiedDirectivesNames.includes(directive.name);
+}

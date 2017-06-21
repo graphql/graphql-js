@@ -45,6 +45,8 @@ export {
 } from './definition';
 
 export {
+  isSpecDirective,
+
   // "Enum" of Directive Locations
   DirectiveLocation,
 
@@ -68,13 +70,18 @@ export {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  builtInScalars,
+  isBuiltInScalar,
 } from './scalars';
 
 export {
+  isIntrospectionType,
+
   // "Enum" of Type Kinds
   TypeKind,
 
   // GraphQL Types for introspection.
+  introspectionTypes,
   __Schema,
   __Directive,
   __DirectiveLocation,
@@ -128,3 +135,5 @@ export type {
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
 } from './definition';
+
+export { builtInTypes, isBuiltInType } from './builtins';

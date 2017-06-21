@@ -135,3 +135,16 @@ export const GraphQLID = new GraphQLScalarType({
       undefined;
   }
 });
+
+export const builtInScalars: Array<GraphQLScalarType> = [
+  GraphQLString,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLBoolean,
+  GraphQLID,
+];
+
+const builtInScalarNames = builtInScalars.map(x => x.name);
+export function isBuiltInScalar(type: GraphQLScalarType): boolean %checks {
+  return builtInScalarNames.includes(type.name);
+}

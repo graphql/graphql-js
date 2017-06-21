@@ -27,25 +27,6 @@ import {
   GraphQLNonNull,
 } from '../type/definition';
 
-import {
-  __Schema,
-  __Directive,
-  __DirectiveLocation,
-  __Type,
-  __Field,
-  __InputValue,
-  __EnumValue,
-  __TypeKind,
-} from '../type/introspection';
-
-import {
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
-  GraphQLBoolean,
-  GraphQLID
-} from '../type/scalars';
-
 import { DirectiveLocation, GraphQLDirective } from '../type/directives';
 
 import { TypeKind } from '../type/introspection';
@@ -72,6 +53,7 @@ import type {
   IntrospectionNamedTypeRef,
 } from './introspectionQuery';
 
+import { builtInTypes } from '../type/builtins';
 
 /**
  * Build a GraphQLSchema for use by client tools.
@@ -101,21 +83,7 @@ export function buildClientSchema(
   // A cache to use to store the actual GraphQLType definition objects by name.
   // Initialize to the GraphQL built in scalars. All functions below are inline
   // so that this type def cache is within the scope of the closure.
-  const typeDefCache = {
-    String: GraphQLString,
-    Int: GraphQLInt,
-    Float: GraphQLFloat,
-    Boolean: GraphQLBoolean,
-    ID: GraphQLID,
-    __Schema,
-    __Directive,
-    __DirectiveLocation,
-    __Type,
-    __Field,
-    __InputValue,
-    __EnumValue,
-    __TypeKind,
-  };
+  const typeDefCache = keyMap(builtInTypes, type => type.name);
 
   // Given a type reference in introspection, return the GraphQLType instance.
   // preferring cached instances before building new instances.

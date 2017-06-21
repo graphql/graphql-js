@@ -13,7 +13,7 @@ import isInvalid from '../jsutils/isInvalid';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLType } from '../type/definition';
+import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 import {
   GraphQLScalarType,
   GraphQLObjectType,
@@ -23,7 +23,14 @@ import {
   GraphQLInputObjectType,
 } from '../type/definition';
 import { GraphQLString } from '../type/scalars';
-import { DEFAULT_DEPRECATION_REASON } from '../type/directives';
+import {
+  GraphQLDirective,
+  DEFAULT_DEPRECATION_REASON,
+  isSpecDirective,
+} from '../type/directives';
+
+import { isIntrospectionType } from '../type/introspection';
+import { isBuiltInType } from '../type/builtins';
 
 type Options = {| commentDescriptions?: boolean |};
 
@@ -38,7 +45,7 @@ export function printSchema(schema: GraphQLSchema, options?: Options): string {
   return printFilteredSchema(
     schema,
     n => !isSpecDirective(n),
-    isDefinedType,
+    type => !isBuiltInType(type),
     options
   );
 }
@@ -55,45 +62,18 @@ export function printIntrospectionSchema(
   );
 }
 
-function isSpecDirective(directiveName: string): boolean {
-  return (
-    directiveName === 'skip' ||
-    directiveName === 'include' ||
-    directiveName === 'deprecated'
-  );
-}
-
-function isDefinedType(typename: string): boolean {
-  return !isIntrospectionType(typename) && !isBuiltInScalar(typename);
-}
-
-function isIntrospectionType(typename: string): boolean {
-  return typename.indexOf('__') === 0;
-}
-
-function isBuiltInScalar(typename: string): boolean {
-  return (
-    typename === 'String' ||
-    typename === 'Boolean' ||
-    typename === 'Int' ||
-    typename === 'Float' ||
-    typename === 'ID'
-  );
-}
-
 function printFilteredSchema(
   schema: GraphQLSchema,
-  directiveFilter: (type: string) => boolean,
-  typeFilter: (type: string) => boolean,
+  directiveFilter: (type: GraphQLDirective) => boolean,
+  typeFilter: (type: GraphQLNamedType) => boolean,
   options
 ): string {
-  const directives = schema.getDirectives()
-    .filter(directive => directiveFilter(directive.name));
+  const directives = schema.getDirectives().filter(directiveFilter);
   const typeMap = schema.getTypeMap();
   const types = Object.keys(typeMap)
-    .filter(typeFilter)
     .sort((name1, name2) => name1.localeCompare(name2))
-    .map(typeName => typeMap[typeName]);
+    .map(typeName => typeMap[typeName])
+    .filter(typeFilter);
 
   return [ printSchemaDefinition(schema) ].concat(
     directives.map(directive => printDirective(directive, options)),
