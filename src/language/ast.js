@@ -67,6 +67,7 @@ type TokenKind = '<SOF>'
                | 'Int'
                | 'Float'
                | 'String'
+               | 'MultiLineString'
                | 'Comment';
 
 /**
@@ -289,6 +290,7 @@ export type StringValueNode = {
   kind: 'StringValue';
   loc?: Location;
   value: string;
+  multiLine?: boolean;
 };
 
 export type BooleanValueNode = {
