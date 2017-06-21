@@ -72,7 +72,10 @@ const printDocASTReducer = {
 
   IntValue: ({ value }) => value,
   FloatValue: ({ value }) => value,
-  StringValue: ({ value }) => JSON.stringify(value),
+  StringValue: ({ value, multiLine }) =>
+    multiLine ?
+      `"""${value.replace(/"""/g, '\\"""')}"""` :
+      JSON.stringify(value),
   BooleanValue: ({ value }) => JSON.stringify(value),
   NullValue: () => 'null',
   EnumValue: ({ value }) => value,

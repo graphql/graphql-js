@@ -326,6 +326,22 @@ describe('Parser', () => {
       });
     });
 
+    it('parses multi-line strings', () => {
+      expect(parseValue('["""long""" "short"]')).to.containSubset({
+        kind: Kind.LIST,
+        loc: { start: 0, end: 20 },
+        values: [
+          { kind: Kind.STRING,
+            loc: { start: 1, end: 11},
+            value: 'long',
+            multiLine: true },
+          { kind: Kind.STRING,
+            loc: { start: 12, end: 19},
+            value: 'short',
+            multiLine: false } ]
+      });
+    });
+
   });
 
   describe('parseType', () => {
