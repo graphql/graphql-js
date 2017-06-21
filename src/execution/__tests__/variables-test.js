@@ -13,6 +13,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../execute';
+import { coerceValue } from '../values';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -590,6 +591,42 @@ describe('Execute: Handles inputs', () => {
           path: [ 'fieldWithNonNullableStringInput' ]
         } ]
       });
+    });
+
+    it('reports error for array passed into string input', async () => {
+      const doc = `
+        query SetsNonNullable($value: String!) {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `;
+      const ast = parse(doc);
+      const variables = {value: [ 1, 2, 3 ]};
+
+      expect(
+        await execute(schema, ast, null, null, variables)
+      ).to.deep.equal({
+        errors: [ {
+          message:
+            'Variable "$value" got invalid value [1,2,3].\nExpected type ' +
+            '"String", found [1,2,3]: String cannot represent an array value: [1,2,3]',
+          locations: [ { line: 2, column: 31 } ],
+          path: undefined,
+        } ]
+      });
+    });
+
+    it('coercing an array to GraphQLString throws TypeError', async () => {
+      let caughtError;
+      try {
+        coerceValue(GraphQLString, [ 1, 2, 3 ]);
+      } catch (error) {
+        caughtError = error;
+      }
+
+      expect(caughtError instanceof TypeError).to.equal(true);
+      expect(caughtError && caughtError.message).to.equal(
+        'String cannot represent an array value: [1,2,3]'
+      );
     });
 
     it('reports error for non-provided variables for non-nullable inputs', async () => {

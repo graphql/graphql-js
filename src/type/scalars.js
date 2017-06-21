@@ -88,6 +88,15 @@ export const GraphQLFloat = new GraphQLScalarType({
   }
 });
 
+function coerceString(value: mixed): ?string {
+  if (Array.isArray(value)) {
+    throw new TypeError(
+      `String cannot represent an array value: [${String(value)}]`
+    );
+  }
+  return String(value);
+}
+
 export const GraphQLString = new GraphQLScalarType({
   name: 'String',
   description:
@@ -95,7 +104,7 @@ export const GraphQLString = new GraphQLScalarType({
     'character sequences. The String type is most often used by GraphQL to ' +
     'represent free-form human-readable text.',
   serialize: String,
-  parseValue: String,
+  parseValue: coerceString,
   parseLiteral(ast) {
     return ast.kind === Kind.STRING ? ast.value : null;
   }
