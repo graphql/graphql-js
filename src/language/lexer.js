@@ -11,6 +11,7 @@
 import type { Token } from './ast';
 import type { Source } from './source';
 import { syntaxError } from '../error';
+import removeIndentation from '../jsutils/removeIndentation';
 
 /**
  * Given a Source object, this returns a Lexer for that source.
@@ -533,7 +534,7 @@ function readMultiLineString(source, start, line, col, prev): Token {
   let position = start + 3;
   let chunkStart = position;
   let code = 0;
-  let value = '';
+  let rawValue = '';
 
   while (
     position < body.length &&
@@ -545,7 +546,7 @@ function readMultiLineString(source, start, line, col, prev): Token {
       charCodeAt.call(body, position + 1) === 34 &&
       charCodeAt.call(body, position + 2) === 34
     ) {
-      value += slice.call(body, chunkStart, position);
+      rawValue += slice.call(body, chunkStart, position);
       return new Tok(
         MULTI_LINE_STRING,
         start,
@@ -553,7 +554,7 @@ function readMultiLineString(source, start, line, col, prev): Token {
         line,
         col,
         prev,
-        value
+        removeIndentation(rawValue)
       );
     }
 
@@ -578,7 +579,7 @@ function readMultiLineString(source, start, line, col, prev): Token {
       charCodeAt.call(body, position + 2) === 34 &&
       charCodeAt.call(body, position + 3) === 34
     ) {
-      value += slice.call(body, chunkStart, position) + '"""';
+      rawValue += slice.call(body, chunkStart, position) + '"""';
       position += 4;
       chunkStart = position;
     } else {
