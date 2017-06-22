@@ -54,6 +54,10 @@ describe('Printer', () => {
   mutation: MutationType
 }
 
+"""
+This is a description
+of the \`Foo\` type.
+"""
 type Foo implements Bar {
   one: Type
   two(argument: InputType!): Type

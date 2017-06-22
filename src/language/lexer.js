@@ -32,18 +32,24 @@ export function createLexer<TOptions>(
     token: startOfFileToken,
     line: 1,
     lineStart: 0,
-    advance: advanceLexer
+    advance: advanceLexer,
+    lookahead
   };
   return lexer;
 }
 
 function advanceLexer() {
-  let token = this.lastToken = this.token;
+  this.lastToken = this.token;
+  const token = this.token = this.lookahead();
+  return token;
+}
+
+function lookahead() {
+  let token = this.token;
   if (token.kind !== EOF) {
     do {
-      token = token.next = readToken(this, token);
+      token = token.next || (token.next = readToken(this, token));
     } while (token.kind === COMMENT);
-    this.token = token;
   }
   return token;
 }
@@ -79,6 +85,12 @@ export type Lexer<TOptions> = {
    * Advances the token stream to the next non-ignored token.
    */
   advance(): Token;
+
+  /**
+   * Looks ahead and returns the next non-ignored token, but does not change
+   * the Lexer's state.
+   */
+  lookahead(): Token;
 };
 
 // Each kind of token.

@@ -94,6 +94,55 @@ type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
+  it('parses type with description string', () => {
+    const doc = parse(`
+"Description"
+type Hello {
+  world: String
+}`);
+    expect(doc).to.containSubset({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeDefinition',
+          name: nameNode('Hello', { start: 20, end: 25 }),
+          description: {
+            kind: 'StringValue',
+            value: 'Description',
+            loc: { start: 1, end: 14 },
+          }
+        }
+      ],
+      loc: { start: 0, end: 45 },
+    });
+  });
+
+  it('parses type with description multi-line string', () => {
+    const doc = parse(`
+"""
+Description
+"""
+# Even with comments between them
+type Hello {
+  world: String
+}`);
+    expect(doc).to.containSubset({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeDefinition',
+          name: nameNode('Hello', { start: 60, end: 65 }),
+          description: {
+            kind: 'StringValue',
+            value: 'Description',
+            loc: { start: 1, end: 20 },
+          }
+        }
+      ],
+      loc: { start: 0, end: 85 },
+    });
+  });
+
   it('Simple extension', () => {
     const body = `
 extend type Hello {
@@ -126,6 +175,15 @@ extend type Hello {
       loc: { start: 0, end: 39 }
     };
     expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Extension do not include descriptions', () => {
+    expect(() => parse(`
+      "Description"
+      extend type Hello {
+        world: String
+      }
+    `)).to.throw('Syntax Error GraphQL request (2:7)');
   });
 
   it('Simple non-null type', () => {

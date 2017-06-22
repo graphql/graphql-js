@@ -40,19 +40,21 @@ export const QueryDocumentKeys = {
   SchemaDefinition: [ 'directives', 'operationTypes' ],
   OperationTypeDefinition: [ 'type' ],
 
-  ScalarTypeDefinition: [ 'name', 'directives' ],
-  ObjectTypeDefinition: [ 'name', 'interfaces', 'directives', 'fields' ],
-  FieldDefinition: [ 'name', 'arguments', 'type', 'directives' ],
-  InputValueDefinition: [ 'name', 'type', 'defaultValue', 'directives' ],
-  InterfaceTypeDefinition: [ 'name', 'directives', 'fields' ],
-  UnionTypeDefinition: [ 'name', 'directives', 'types' ],
-  EnumTypeDefinition: [ 'name', 'directives', 'values' ],
-  EnumValueDefinition: [ 'name', 'directives' ],
-  InputObjectTypeDefinition: [ 'name', 'directives', 'fields' ],
+  ScalarTypeDefinition: [ 'description', 'name', 'directives' ],
+  ObjectTypeDefinition:
+    [ 'description', 'name', 'interfaces', 'directives', 'fields' ],
+  FieldDefinition: [ 'description', 'name', 'arguments', 'type', 'directives' ],
+  InputValueDefinition:
+    [ 'description', 'name', 'type', 'defaultValue', 'directives' ],
+  InterfaceTypeDefinition: [ 'description', 'name', 'directives', 'fields' ],
+  UnionTypeDefinition: [ 'description', 'name', 'directives', 'types' ],
+  EnumTypeDefinition: [ 'description', 'name', 'directives', 'values' ],
+  EnumValueDefinition: [ 'description', 'name', 'directives' ],
+  InputObjectTypeDefinition: [ 'description', 'name', 'directives', 'fields' ],
 
   TypeExtensionDefinition: [ 'definition' ],
 
-  DirectiveDefinition: [ 'name', 'arguments', 'locations' ],
+  DirectiveDefinition: [ 'description', 'name', 'arguments', 'locations' ],
 };
 
 export const BREAK = {};
