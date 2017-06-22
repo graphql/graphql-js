@@ -301,11 +301,11 @@ describe('Lexer', () => {
     });
 
     expect(
-      lexOne('""" white space """')
+      lexOne('" white space "')
     ).to.containSubset({
-      kind: TokenKind.MULTI_LINE_STRING,
+      kind: TokenKind.STRING,
       start: 0,
-      end: 19,
+      end: 15,
       value: ' white space '
     });
 
@@ -337,12 +337,12 @@ describe('Lexer', () => {
     });
 
     expect(
-      lexOne('"""multi\rline"""')
+      lexOne('"""multi\rline\r\nnormalized"""')
     ).to.containSubset({
       kind: TokenKind.MULTI_LINE_STRING,
       start: 0,
-      end: 16,
-      value: 'multi\rline'
+      end: 28,
+      value: 'multi\nline\nnormalized'
     });
 
     expect(
@@ -361,6 +361,21 @@ describe('Lexer', () => {
       start: 0,
       end: 19,
       value: 'slashes \\\\ \\/'
+    });
+
+    expect(
+      lexOne(`"""
+
+        spans
+          multiple
+            lines
+
+        """`)
+    ).to.containSubset({
+      kind: TokenKind.MULTI_LINE_STRING,
+      start: 0,
+      end: 68,
+      value: 'spans\n  multiple\n    lines'
     });
 
   });

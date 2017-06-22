@@ -7,16 +7,7 @@
  * @flow
  */
 
- /**
-  * fixes identation by removing leading spaces from each line
-  */
-function fixIdent(str: string): string {
-  const indent = /^\n?( *)/.exec(str)[1]; // figure out ident
-  return str
-    .replace(RegExp('^' + indent, 'mg'), '') // remove ident
-    .replace(/^\n*/m, '') //  remove leading newline
-    .replace(/ *$/, ''); // remove trailing spaces
-}
+import removeIndentation from './removeIndentation';
 
 /**
  * An ES6 string tag that fixes identation. Also removes leading newlines
@@ -45,5 +36,5 @@ export default function dedent(
     }
   }
 
-  return fixIdent(res);
+  return removeIndentation(res) + '\n';
 }
