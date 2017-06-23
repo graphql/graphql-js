@@ -19,6 +19,7 @@ import type { GraphQLError } from './GraphQLError';
 export function formatError(error: GraphQLError): GraphQLFormattedError {
   invariant(error, 'Received null or undefined error.');
   return {
+    ...error.extensions,
     message: error.message,
     locations: error.locations,
     path: error.path
