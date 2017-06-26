@@ -70,7 +70,7 @@
     "chai-spies-next": "^0.8.0",
     "chai-subset": "1.5.0",
     "coveralls": "2.13.1",
-    "eslint": "3.19.0",
+    "eslint": "4.1.1",
     "eslint-plugin-babel": "4.1.1",
     "eslint-plugin-flowtype": "2.34.0",
     "flow-bin": "0.48.0",
