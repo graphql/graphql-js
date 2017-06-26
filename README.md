@@ -126,7 +126,7 @@ We actively welcome pull requests, learn how to
 
 ### Changelog
 
-Changes are tracked as [Github releases](https://github.com/graphql/graphql-js/releases).
+Changes are tracked as [GitHub releases](https://github.com/graphql/graphql-js/releases).
 
 ### License
 
