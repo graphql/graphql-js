@@ -411,7 +411,7 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
   });
 
-  it('Input Object', async() => {
+  it('Input Object', async () => {
     const body = dedent`
       schema {
         query: Root
