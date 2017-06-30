@@ -1,5 +1,6 @@
 {
   "plugins": [
+    "./resources/inline-invariant",
     "syntax-async-functions",
     "syntax-async-generators",
     "transform-class-properties",
