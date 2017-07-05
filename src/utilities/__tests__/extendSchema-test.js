@@ -10,9 +10,10 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import dedent from '../../jsutils/dedent';
+import { buildSchema } from '../buildASTSchema';
 import { extendSchema } from '../extendSchema';
 import { execute } from '../../execution';
-import { parse } from '../../language';
+import { parse, print } from '../../language';
 import { printSchema } from '../schemaPrinter';
 import {
   GraphQLSchema,
@@ -196,6 +197,96 @@ describe('extendSchema', () => {
     `);
   });
 
+  it('correctly assign AST nodes to new and extended types', () => {
+    const schemaFromIDL = buildSchema(`
+      type Query {
+        dummyField: String
+      }
+    `);
+    const extensionAst = parse(`
+      extend type Query {
+        newField(testArg: TestInput): TestEnum
+      }
+
+      enum TestEnum {
+        TEST_VALUE
+      }
+
+      input TestInput {
+        testInputField: TestEnum
+      }
+    `);
+    const extendedSchema = extendSchema(schemaFromIDL, extensionAst);
+    const secondExtensionAst = parse(`
+      extend type Query {
+        oneMoreNewField: TestUnion
+      }
+
+      union TestUnion = TestType
+
+      interface TestInterface {
+        interfaceField: String
+      }
+
+      type TestType implements TestInterface {
+        interfaceField: String
+      }
+
+      directive @test(arg: Int) on FIELD
+    `);
+    const extendedTwiceSchema = extendSchema(extendedSchema,
+      secondExtensionAst);
+
+    const query = extendedTwiceSchema.getType('Query');
+    const testInput = extendedTwiceSchema.getType('TestInput');
+    const testEnum = extendedTwiceSchema.getType('TestEnum');
+    const testUnion = extendedTwiceSchema.getType('TestUnion');
+    const testInterface = extendedTwiceSchema.getType('TestInterface');
+    const testType = extendedTwiceSchema.getType('TestType');
+    const testDirective = extendedTwiceSchema.getDirective('test');
+
+    expect(query.extensionASTNodes).to.have.lengthOf(2);
+    expect(testType.extensionASTNodes).to.have.lengthOf(0);
+
+    const restoredExtensionAST = parse(
+      print(query.extensionASTNodes[0]) + '\n' +
+      print(query.extensionASTNodes[1]) + '\n' +
+      print(testInput.astNode) + '\n' +
+      print(testEnum.astNode) + '\n' +
+      print(testUnion.astNode) + '\n' +
+      print(testInterface.astNode) + '\n' +
+      print(testType.astNode) + '\n' +
+      print(testDirective.astNode)
+    );
+    expect(
+      printSchema(extendSchema(schemaFromIDL, restoredExtensionAST))
+    ).to.be.equal(printSchema(extendedTwiceSchema));
+
+    const newField = query.getFields().newField;
+    expect(print(newField.astNode)).to.equal(
+      'newField(testArg: TestInput): TestEnum'
+    );
+    expect(print(newField.args[0].astNode)).to.equal(
+      'testArg: TestInput'
+    );
+    expect(print(query.getFields().oneMoreNewField.astNode)).to.equal(
+      'oneMoreNewField: TestUnion'
+    );
+    expect(print(testInput.getFields().testInputField.astNode)).to.equal(
+      'testInputField: TestEnum'
+    );
+    expect(print(testEnum.getValue('TEST_VALUE').astNode)).to.equal(
+      'TEST_VALUE'
+    );
+    expect(print(testInterface.getFields().interfaceField.astNode)).to.equal(
+      'interfaceField: String'
+    );
+    expect(print(testType.getFields().interfaceField.astNode)).to.equal(
+      'interfaceField: String'
+    );
+    expect(print(testDirective.args[0].astNode)).to.equal('arg: Int');
+  });
+
   it('builds types with deprecated fields/values', () => {
     const ast = parse(`
       type TypeWithDeprecatedField {
@@ -215,16 +306,10 @@ describe('extendSchema', () => {
     expect(deprecatedFieldDef.deprecationReason).to.equal('not used anymore');
 
     const deprecatedEnumDef = extendedSchema
-      .getType('EnumWithDeprecatedValue');
-    expect(deprecatedEnumDef.getValues()).to.deep.equal([
-      {
-        name: 'DEPRECATED',
-        description: '',
-        isDeprecated: true,
-        deprecationReason: 'do not use',
-        value: 'DEPRECATED'
-      }
-    ]);
+      .getType('EnumWithDeprecatedValue')
+      .getValue('DEPRECATED');
+    expect(deprecatedEnumDef.isDeprecated).to.equal(true);
+    expect(deprecatedEnumDef.deprecationReason).to.equal('do not use');
   });
 
   it('extends objects with deprecated fields', () => {
