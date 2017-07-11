@@ -74,13 +74,17 @@ function emailSchemaWithResolvers(subscribeFn, resolveFn) {
           type: EmailEventType,
           resolve: resolveFn,
           subscribe: subscribeFn,
+          // TODO: remove
+          args: {
+            priority: {type: GraphQLInt}
+          }
         },
       },
     })
   });
 }
 
-async function createSubscription(pubsub, schema = emailSchema, ast) {
+async function createSubscription(pubsub, schema = emailSchema, ast, vars) {
   const data = {
     inbox: {
       emails: [
@@ -123,13 +127,15 @@ async function createSubscription(pubsub, schema = emailSchema, ast) {
     }
   `);
 
-  // `subscribe` returns Promise<AsyncIterator | Error | ExecutionResult>
+  // `subscribe` returns Promise<AsyncIterator | ExecutionResult>
   return {
     sendImportantEmail,
     subscription: await subscribe(
       schema,
       ast || defaultAst,
-      data
+      data,
+      null,
+      vars,
     ),
   };
 }
@@ -425,6 +431,65 @@ describe('Subscription Initialization Phase', () => {
           message: 'test error',
           locations: [ { line: 3, column: 11 } ],
           path: [ 'importantEmail' ]
+        }
+      ]
+    });
+  });
+
+  it('resolves to an error if variables were wrong type', async () => {
+    // If we receive variables that cannot be coerced correctly, subscribe()
+    // will resolve to an ExecutionResult that contains an informative error
+    // description.
+    const ast = parse(`
+      subscription ($priority: Int) {
+        importantEmail(priority: $priority) {
+          email {
+            from
+            subject
+          }
+          inbox {
+            unread
+            total
+          }
+        }
+      }
+    `);
+
+    const pubsub = new EventEmitter();
+    const data = {
+      inbox: {
+        emails: [
+          {
+            from: 'joe@graphql.org',
+            subject: 'Hello',
+            message: 'Hello World',
+            unread: false,
+          },
+        ],
+      },
+      importantEmail() {
+        return eventEmitterAsyncIterator(pubsub, 'importantEmail');
+      }
+    };
+
+    const result = await subscribe(
+      emailSchema,
+      ast,
+      data,
+      null,
+      {
+        priority: 'meow',
+      }
+    );
+
+    expect(result).to.deep.equal({
+      errors: [
+        {
+          message: 'Variable "$priority" got invalid value "meow".\nExpected ' +
+          'type "Int", found "meow": Int cannot represent non 32-bit signed ' +
+          'integer value: meow',
+          locations: [ { line: 2, column: 21 } ],
+          path: undefined
         }
       ]
     });
