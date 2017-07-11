@@ -256,7 +256,7 @@ export async function createSourceEventStream(
     info
   );
 
-  // Throw located GraphQLError if subscription source fails to resolve.   
+  // Throw located GraphQLError if subscription source fails to resolve.
   if (subscription instanceof Error) {
     throw locatedError(
       subscription,
