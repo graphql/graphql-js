@@ -8,7 +8,8 @@
     "Daniel Schafer <dschafer@fb.com>"
   ],
   "license": "BSD-3-Clause",
-  "main": "index.js",
+  "main": "es5/index.js",
+  "jsnext:main": "modules/index.js",
   "homepage": "https://github.com/graphql/graphql-js",
   "bugs": {
     "url": "https://github.com/graphql/graphql-js/issues"
