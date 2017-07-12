@@ -14,6 +14,7 @@ import flowBinPath from 'flow-bin';
 
 
 process.env.PATH += ':./node_modules/.bin';
+process.env.BABEL_ENV = 'es5';
 
 var cmd = resolvePath(__dirname);
 var srcDir = resolvePath(cmd, '../src');
