@@ -16,7 +16,6 @@
     "syntax-async-functions",
     "syntax-async-generators",
     "transform-class-properties",
-    "transform-es3-property-literals",
     "transform-flow-strip-types",
     "transform-object-rest-spread",
     ["transform-es2015-classes", {"loose": true}],
