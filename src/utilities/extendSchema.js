@@ -16,6 +16,7 @@ import {
   getDeprecationReason,
 } from './buildASTSchema';
 import { valueFromAST } from './valueFromAST';
+import { resolveTypeForGeneratedSchema } from './resolveTypeForGeneratedSchema';
 import { GraphQLError } from '../error/GraphQLError';
 import { GraphQLSchema } from '../type/schema';
 
@@ -479,7 +480,7 @@ export function extendSchema(
       description: getDescription(typeNode),
       fields: () => buildFieldMap(typeNode),
       astNode: typeNode,
-      resolveType: cannotExecuteExtendedSchema,
+      resolveType: resolveTypeForGeneratedSchema,
     });
   }
 
@@ -489,7 +490,7 @@ export function extendSchema(
       description: getDescription(typeNode),
       types: typeNode.types.map(getObjectTypeFromAST),
       astNode: typeNode,
-      resolveType: cannotExecuteExtendedSchema,
+      resolveType: resolveTypeForGeneratedSchema,
     });
   }
 
@@ -607,10 +608,4 @@ export function extendSchema(
     }
     return getOutputTypeFromAST(typeNode);
   }
-}
-
-function cannotExecuteExtendedSchema() {
-  throw new Error(
-    'Extended Schema cannot use Interface or Union types for execution.'
-  );
 }
