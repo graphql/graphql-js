@@ -8,6 +8,8 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+import invariant from '../jsutils/invariant';
+
 type Location = {
   line: number,
   column: number,
@@ -30,5 +32,13 @@ export class Source {
     this.body = body;
     this.name = name || 'GraphQL request';
     this.locationOffset = locationOffset || { line: 1, column: 1 };
+    invariant(
+      this.locationOffset.line > 0,
+      'line in locationOffset is 1-indexed and must be positive'
+    );
+    invariant(
+      this.locationOffset.column > 0,
+      'column in locationOffset is 1-indexed and must be positive'
+    );
   }
 }
