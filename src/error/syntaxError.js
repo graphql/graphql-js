@@ -22,9 +22,11 @@ export function syntaxError(
   description: string
 ): GraphQLError {
   const location = getLocation(source, position);
+  const line = location.line + source.location.line - 1;
   const error = new GraphQLError(
-    `Syntax Error ${source.name} (${location.line}:${location.column}) ` +
-    description + '\n\n' + highlightSourceAtLocation(source, location),
+    `Syntax Error ${source.name} (${line}:${location.column}) ${description}` +
+      '\n\n' +
+      highlightSourceAtLocation(source, location),
     undefined,
     source,
     [ position ]
@@ -38,9 +40,11 @@ export function syntaxError(
  */
 function highlightSourceAtLocation(source, location) {
   const line = location.line;
-  const prevLineNum = (line - 1).toString();
-  const lineNum = line.toString();
-  const nextLineNum = (line + 1).toString();
+  const lineOffset = source.location.line - 1;
+  const contextLine = line + lineOffset;
+  const prevLineNum = (contextLine - 1).toString();
+  const lineNum = contextLine.toString();
+  const nextLineNum = (contextLine + 1).toString();
   const padLen = nextLineNum.length;
   const lines = source.body.split(/\r\n|[\n\r]/g);
   return (

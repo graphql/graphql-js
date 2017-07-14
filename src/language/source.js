@@ -8,18 +8,26 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+type Location = {
+  line: number,
+  column: number,
+};
+
 /**
- * A representation of source input to GraphQL. The name is optional,
- * but is mostly useful for clients who store GraphQL documents in
- * source files; for example, if the GraphQL input is in a file Foo.graphql,
- * it might be useful for name to be "Foo.graphql".
+ * A representation of source input to GraphQL.
+ * `name` and `location` are optional. They are useful for clients who store
+ * GraphQL documents in source files; for example, if the GraphQL input starts
+ * at line 40 in a file named Foo.graphql, it might be useful for name to be
+ * "Foo.graphql" and location to be `{ line: 40, column: 0 }`.
  */
 export class Source {
   body: string;
   name: string;
+  location: Location;
 
-  constructor(body: string, name?: string): void {
+  constructor(body: string, name?: string, location?: Location): void {
     this.body = body;
     this.name = name || 'GraphQL request';
+    this.location = location || { line: 1, column: 0 };
   }
 }
