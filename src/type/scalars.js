@@ -103,7 +103,7 @@ export const GraphQLString = new GraphQLScalarType({
     'The `String` scalar type represents textual data, represented as UTF-8 ' +
     'character sequences. The String type is most often used by GraphQL to ' +
     'represent free-form human-readable text.',
-  serialize: String,
+  serialize: coerceString,
   parseValue: coerceString,
   parseLiteral(ast) {
     return ast.kind === Kind.STRING ? ast.value : null;
