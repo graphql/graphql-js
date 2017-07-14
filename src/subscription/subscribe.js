@@ -110,10 +110,10 @@ export function subscribe(
 }
 
 /**
-/* This function checks if the error is a GraphQLError. If it is, convert it to
-/* an ExecutionResult interface, containing only errors and no value. Otherwise
-/* treat the error as a system-class error and throw it.
-*/
+ * This function checks if the error is a GraphQLError. If it is, convert it to
+ * an ExecutionResult interface, containing only errors and no value. Otherwise
+ * treat the error as a system-class error and throw it.
+ */
 function convertOrThrowError(error) {
   if (error instanceof GraphQLError) {
     return { errors: [ error ] };
