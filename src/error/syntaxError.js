@@ -22,7 +22,7 @@ export function syntaxError(
   description: string
 ): GraphQLError {
   const location = getLocation(source, position);
-  const line = location.line + source.location.line - 1;
+  const line = location.line + source.locationOffset.line - 1;
   const error = new GraphQLError(
     `Syntax Error ${source.name} (${line}:${location.column}) ${description}` +
       '\n\n' +
@@ -40,7 +40,7 @@ export function syntaxError(
  */
 function highlightSourceAtLocation(source, location) {
   const line = location.line;
-  const lineOffset = source.location.line - 1;
+  const lineOffset = source.locationOffset.line - 1;
   const contextLine = line + lineOffset;
   const prevLineNum = (contextLine - 1).toString();
   const lineNum = contextLine.toString();

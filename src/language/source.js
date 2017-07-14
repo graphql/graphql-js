@@ -15,19 +15,19 @@ type Location = {
 
 /**
  * A representation of source input to GraphQL.
- * `name` and `location` are optional. They are useful for clients who store
- * GraphQL documents in source files; for example, if the GraphQL input starts
- * at line 40 in a file named Foo.graphql, it might be useful for name to be
- * "Foo.graphql" and location to be `{ line: 40, column: 0 }`.
+ * `name` and `locationOffset` are optional. They are useful for clients who
+ * store GraphQL documents in source files; for example, if the GraphQL input
+ * starts at line 40 in a file named Foo.graphql, it might be useful for name to
+ * be "Foo.graphql" and location to be `{ line: 40, column: 0 }`.
  */
 export class Source {
   body: string;
   name: string;
-  location: Location;
+  locationOffset: Location;
 
-  constructor(body: string, name?: string, location?: Location): void {
+  constructor(body: string, name?: string, locationOffset?: Location): void {
     this.body = body;
     this.name = name || 'GraphQL request';
-    this.location = location || { line: 1, column: 0 };
+    this.locationOffset = locationOffset || { line: 1, column: 0 };
   }
 }
