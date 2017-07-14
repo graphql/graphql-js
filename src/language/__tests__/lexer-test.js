@@ -125,18 +125,31 @@ describe('Lexer', () => {
       const str = '' +
       '\n' +
       '\n' +
-      '    ?\n' +
+      '     ?\n' +
       '\n';
-      const source = new Source(str, 'foo.js', { line: 11, column: 0 });
+      const source = new Source(str, 'foo.js', { line: 11, column: 1 });
       return createLexer(source).advance();
     }).to.throw(
-        'Syntax Error foo.js (13:5) ' +
+        'Syntax Error foo.js (13:6) ' +
         'Cannot parse the unexpected character "?".\n' +
         '\n' +
         '12: \n' +
-        '13:     ?\n' +
-        '        ^\n' +
+        '13:      ?\n' +
+        '         ^\n' +
         '14: \n'
+      );
+  });
+
+  it('updates column numbers in error for file context', () => {
+    expect(() => {
+      const source = new Source('?', 'foo.js', { line: 1, column: 5 });
+      return createLexer(source).advance();
+    }).to.throw(
+        'Syntax Error foo.js (1:5) ' +
+        'Cannot parse the unexpected character "?".\n' +
+        '\n' +
+        '1:     ?\n' +
+        '       ^\n'
       );
   });
 

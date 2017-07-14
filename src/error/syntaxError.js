@@ -23,8 +23,9 @@ export function syntaxError(
 ): GraphQLError {
   const location = getLocation(source, position);
   const line = location.line + source.locationOffset.line - 1;
+  const column = location.column + source.locationOffset.column - 1;
   const error = new GraphQLError(
-    `Syntax Error ${source.name} (${line}:${location.column}) ${description}` +
+    `Syntax Error ${source.name} (${line}:${column}) ${description}` +
       '\n\n' +
       highlightSourceAtLocation(source, location),
     undefined,
@@ -41,22 +42,28 @@ export function syntaxError(
 function highlightSourceAtLocation(source, location) {
   const line = location.line;
   const lineOffset = source.locationOffset.line - 1;
+  const columnOffset = source.locationOffset.column - 1;
   const contextLine = line + lineOffset;
   const prevLineNum = (contextLine - 1).toString();
   const lineNum = contextLine.toString();
   const nextLineNum = (contextLine + 1).toString();
   const padLen = nextLineNum.length;
   const lines = source.body.split(/\r\n|[\n\r]/g);
+  lines[0] = whitespace(columnOffset) + lines[0];
   return (
     (line >= 2 ?
       lpad(padLen, prevLineNum) + ': ' + lines[line - 2] + '\n' : '') +
     lpad(padLen, lineNum) + ': ' + lines[line - 1] + '\n' +
-    Array(2 + padLen + location.column).join(' ') + '^\n' +
+    whitespace(2 + padLen + location.column + columnOffset - 1) + '^\n' +
     (line < lines.length ?
       lpad(padLen, nextLineNum) + ': ' + lines[line] + '\n' : '')
   );
 }
 
+function whitespace(len) {
+  return Array(len + 1).join(' ');
+}
+
 function lpad(len, str) {
-  return Array(len - str.length + 1).join(' ') + str;
+  return whitespace(len - str.length) + str;
 }

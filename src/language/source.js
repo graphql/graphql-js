@@ -19,6 +19,7 @@ type Location = {
  * store GraphQL documents in source files; for example, if the GraphQL input
  * starts at line 40 in a file named Foo.graphql, it might be useful for name to
  * be "Foo.graphql" and location to be `{ line: 40, column: 0 }`.
+ * line and columns in locationOffset are 1-indexed
  */
 export class Source {
   body: string;
@@ -28,6 +29,6 @@ export class Source {
   constructor(body: string, name?: string, locationOffset?: Location): void {
     this.body = body;
     this.name = name || 'GraphQL request';
-    this.locationOffset = locationOffset || { line: 1, column: 0 };
+    this.locationOffset = locationOffset || { line: 1, column: 1 };
   }
 }
