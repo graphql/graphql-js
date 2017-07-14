@@ -26,8 +26,7 @@ export function syntaxError(
   const column = location.column + source.locationOffset.column - 1;
   const error = new GraphQLError(
     `Syntax Error ${source.name} (${line}:${column}) ${description}` +
-      '\n\n' +
-      highlightSourceAtLocation(source, location),
+      '\n\n' + highlightSourceAtLocation(source, location),
     undefined,
     source,
     [ position ]
@@ -54,7 +53,7 @@ function highlightSourceAtLocation(source, location) {
     (line >= 2 ?
       lpad(padLen, prevLineNum) + ': ' + lines[line - 2] + '\n' : '') +
     lpad(padLen, lineNum) + ': ' + lines[line - 1] + '\n' +
-    whitespace(2 + padLen + location.column + columnOffset - 1) + '^\n' +
+    whitespace(2 + padLen + location.column - 1 + columnOffset) + '^\n' +
     (line < lines.length ?
       lpad(padLen, nextLineNum) + ': ' + lines[line] + '\n' : '')
   );
