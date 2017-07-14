@@ -101,12 +101,13 @@ describe('Lexer', () => {
   });
 
   it('errors respect whitespace', () => {
-    const str = '' +
-    '\n' +
-    '\n' +
-    '    ?\n' +
-    '\n';
-    expect(() => lexOne(str)
+
+    expect(() => lexOne(`
+
+    ?
+
+
+`)
     ).to.throw(
       'Syntax Error GraphQL request (3:5) ' +
       'Cannot parse the unexpected character "?".\n' +
@@ -116,6 +117,7 @@ describe('Lexer', () => {
       '       ^\n' +
       '4: \n'
     );
+
   });
 
   it('updates line numbers in error for file context', () => {
@@ -126,7 +128,7 @@ describe('Lexer', () => {
       '    ?\n' +
       '\n';
       const source = new Source(str, 'foo.js', { line: 11, column: 0 });
-      return createLexer(source).advance()
+      return createLexer(source).advance();
     }).to.throw(
         'Syntax Error foo.js (13:5) ' +
         'Cannot parse the unexpected character "?".\n' +
