@@ -12,6 +12,8 @@ import { getLocation } from '../language/location';
 import type { Source } from '../language/source';
 import { GraphQLError } from './GraphQLError';
 
+import type {SourceLocation} from '../language/location';
+
 /**
  * Produces a GraphQLError representing a syntax error, containing useful
  * descriptive information about the syntax error's position in the source.
@@ -23,7 +25,8 @@ export function syntaxError(
 ): GraphQLError {
   const location = getLocation(source, position);
   const line = location.line + source.locationOffset.line - 1;
-  const column = location.column + source.locationOffset.column - 1;
+  const columnOffset = getColumnOffset(source, location);
+  const column = location.column + columnOffset;
   const error = new GraphQLError(
     `Syntax Error ${source.name} (${line}:${column}) ${description}` +
       '\n\n' + highlightSourceAtLocation(source, location),
@@ -41,14 +44,14 @@ export function syntaxError(
 function highlightSourceAtLocation(source, location) {
   const line = location.line;
   const lineOffset = source.locationOffset.line - 1;
-  const columnOffset = source.locationOffset.column - 1;
+  const columnOffset = getColumnOffset(source, location);
   const contextLine = line + lineOffset;
   const prevLineNum = (contextLine - 1).toString();
   const lineNum = contextLine.toString();
   const nextLineNum = (contextLine + 1).toString();
   const padLen = nextLineNum.length;
   const lines = source.body.split(/\r\n|[\n\r]/g);
-  lines[0] = whitespace(columnOffset) + lines[0];
+  lines[0] = whitespace(source.locationOffset.column - 1) + lines[0];
   return (
     (line >= 2 ?
       lpad(padLen, prevLineNum) + ': ' + lines[line - 2] + '\n' : '') +
@@ -57,6 +60,13 @@ function highlightSourceAtLocation(source, location) {
     (line < lines.length ?
       lpad(padLen, nextLineNum) + ': ' + lines[line] + '\n' : '')
   );
+}
+
+function getColumnOffset(
+  source: Source,
+  location: SourceLocation
+): number {
+  return location.line === 1 ? source.locationOffset.column - 1 : 0;
 }
 
 function whitespace(len) {

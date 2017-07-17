@@ -127,7 +127,7 @@ describe('Lexer', () => {
       '\n' +
       '     ?\n' +
       '\n';
-      const source = new Source(str, 'foo.js', { line: 11, column: 1 });
+      const source = new Source(str, 'foo.js', { line: 11, column: 12 });
       return createLexer(source).advance();
     }).to.throw(
         'Syntax Error foo.js (13:6) ' +
