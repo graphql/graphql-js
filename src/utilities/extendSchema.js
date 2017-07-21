@@ -539,6 +539,7 @@ export function extendSchema(
   ): GraphQLDirective {
     return new GraphQLDirective({
       name: directiveNode.name.value,
+      description: getDescription(directiveNode),
       locations: directiveNode.locations.map(
         node => ((node.value: any): DirectiveLocationEnum)
       ),
