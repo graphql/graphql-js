@@ -836,7 +836,7 @@ describe('extendSchema', () => {
     expect(newDirective.locations).to.contain('QUERY');
   });
 
-  it('sets correct description when extends with a new directive', () => {
+  it('sets correct description when extending with a new directive', () => {
     const ast = parse(`
       # new directive
       directive @new on QUERY
