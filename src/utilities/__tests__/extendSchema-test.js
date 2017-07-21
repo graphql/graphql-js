@@ -836,6 +836,17 @@ describe('extendSchema', () => {
     expect(newDirective.locations).to.contain('QUERY');
   });
 
+  it('sets correct description when extends with a new directive', () => {
+    const ast = parse(`
+      # new directive
+      directive @new on QUERY
+    `);
+
+    const extendedSchema = extendSchema(testSchema, ast);
+    const newDirective = extendedSchema.getDirective('new');
+    expect(newDirective.description).to.equal('new directive');
+  });
+
   it('may extend directives with new complex directive', () => {
     const ast = parse(`
       directive @profile(enable: Boolean! tag: String) on QUERY | FIELD
