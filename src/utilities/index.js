@@ -89,6 +89,7 @@ export {
   BreakingChangeType,
   DangerousChangeType,
   findBreakingChanges,
+  findDangerousChanges,
 } from './findBreakingChanges';
 export type {
   BreakingChange,
