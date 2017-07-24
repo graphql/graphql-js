@@ -362,6 +362,7 @@ export {
 
   // Compares two GraphQLSchemas and detects breaking changes.
   findBreakingChanges,
+  findDangerousChanges,
   BreakingChangeType,
   DangerousChangeType,
 
