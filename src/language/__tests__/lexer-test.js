@@ -291,6 +291,121 @@ describe('Lexer', () => {
     );
   });
 
+  it('lexes multi-line strings', () => {
+
+    expect(
+      lexOne('"""simple"""')
+    ).to.containSubset({
+      kind: TokenKind.MULTI_LINE_STRING,
+      start: 0,
+      end: 12,
+      value: 'simple'
+    });
+
+    expect(
+      lexOne('" white space "')
+    ).to.containSubset({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 15,
+      value: ' white space '
+    });
+
+    expect(
+      lexOne('"""contains " quote"""')
+    ).to.containSubset({
+      kind: TokenKind.MULTI_LINE_STRING,
+      start: 0,
+      end: 22,
+      value: 'contains " quote'
+    });
+
+    expect(
+      lexOne('"""contains \\""" triplequote"""')
+    ).to.containSubset({
+      kind: TokenKind.MULTI_LINE_STRING,
+      start: 0,
+      end: 31,
+      value: 'contains """ triplequote'
+    });
+
+    expect(
+      lexOne('"""multi\nline"""')
+    ).to.containSubset({
+      kind: TokenKind.MULTI_LINE_STRING,
+      start: 0,
+      end: 16,
+      value: 'multi\nline'
+    });
+
+    expect(
+      lexOne('"""multi\rline\r\nnormalized"""')
+    ).to.containSubset({
+      kind: TokenKind.MULTI_LINE_STRING,
+      start: 0,
+      end: 28,
+      value: 'multi\nline\nnormalized'
+    });
+
+    expect(
+      lexOne('"""unescaped \\n\\r\\b\\t\\f\\u1234"""')
+    ).to.containSubset({
+      kind: TokenKind.MULTI_LINE_STRING,
+      start: 0,
+      end: 32,
+      value: 'unescaped \\n\\r\\b\\t\\f\\u1234'
+    });
+
+    expect(
+      lexOne('"""slashes \\\\ \\/"""')
+    ).to.containSubset({
+      kind: TokenKind.MULTI_LINE_STRING,
+      start: 0,
+      end: 19,
+      value: 'slashes \\\\ \\/'
+    });
+
+    expect(
+      lexOne(`"""
+
+        spans
+          multiple
+            lines
+
+        """`)
+    ).to.containSubset({
+      kind: TokenKind.MULTI_LINE_STRING,
+      start: 0,
+      end: 68,
+      value: 'spans\n  multiple\n    lines'
+    });
+
+  });
+
+  it('lex reports useful multi-line string errors', () => {
+
+    expect(
+      () => lexOne('"""')
+    ).to.throw('Syntax Error GraphQL request (1:4) Unterminated string.');
+
+    expect(
+      () => lexOne('"""no end quote')
+    ).to.throw('Syntax Error GraphQL request (1:16) Unterminated string.');
+
+    expect(
+      () => lexOne('"""contains unescaped \u0007 control char"""')
+    ).to.throw(
+      'Syntax Error GraphQL request (1:23) Invalid character within String: "\\u0007".'
+    );
+
+    expect(
+      () => lexOne('"""null-byte is not \u0000 end of file"""')
+    ).to.throw(
+      'Syntax Error GraphQL request (1:21) Invalid character within String: "\\u0000".'
+    );
+
+  });
+
   it('lexes numbers', () => {
 
     expect(

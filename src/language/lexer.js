@@ -11,6 +11,7 @@
 import type { Token } from './ast';
 import type { Source } from './source';
 import { syntaxError } from '../error';
+import removeIndentation from '../jsutils/removeIndentation';
 
 /**
  * Given a Source object, this returns a Lexer for that source.
@@ -101,6 +102,7 @@ const NAME = 'Name';
 const INT = 'Int';
 const FLOAT = 'Float';
 const STRING = 'String';
+const MULTI_LINE_STRING = 'MultiLineString';
 const COMMENT = 'Comment';
 
 /**
@@ -127,6 +129,7 @@ export const TokenKind = {
   INT,
   FLOAT,
   STRING,
+  MULTI_LINE_STRING,
   COMMENT
 };
 
@@ -270,7 +273,12 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     case 53: case 54: case 55: case 56: case 57:
       return readNumber(source, position, code, line, col, prev);
     // "
-    case 34: return readString(source, position, line, col, prev);
+    case 34:
+      if (charCodeAt.call(body, position + 1) === 34 &&
+          charCodeAt.call(body, position + 2) === 34) {
+        return readMultiLineString(source, position, line, col, prev);
+      }
+      return readString(source, position, line, col, prev);
   }
 
   throw syntaxError(
@@ -453,10 +461,14 @@ function readString(source, start, line, col, prev): Token {
     position < body.length &&
     (code = charCodeAt.call(body, position)) !== null &&
     // not LineTerminator
-    code !== 0x000A && code !== 0x000D &&
-    // not Quote (")
-    code !== 34
+    code !== 0x000A && code !== 0x000D
   ) {
+    // Closing Quote (")
+    if (code === 34) {
+      value += slice.call(body, chunkStart, position);
+      return new Tok(STRING, start, position + 1, line, col, prev, value);
+    }
+
     // SourceCharacter
     if (code < 0x0020 && code !== 0x0009) {
       throw syntaxError(
@@ -509,12 +521,73 @@ function readString(source, start, line, col, prev): Token {
     }
   }
 
-  if (code !== 34) { // quote (")
-    throw syntaxError(source, position, 'Unterminated string.');
+  throw syntaxError(source, position, 'Unterminated string.');
+}
+
+/**
+ * Reads a multi-line string token from the source file.
+ *
+ * """("?"?(\\"""|\\(?!=""")|[^"\\]))*"""
+ */
+function readMultiLineString(source, start, line, col, prev): Token {
+  const body = source.body;
+  let position = start + 3;
+  let chunkStart = position;
+  let code = 0;
+  let rawValue = '';
+
+  while (
+    position < body.length &&
+    (code = charCodeAt.call(body, position)) !== null
+  ) {
+    // Closing Triple-Quote (""")
+    if (
+      code === 34 &&
+      charCodeAt.call(body, position + 1) === 34 &&
+      charCodeAt.call(body, position + 2) === 34
+    ) {
+      rawValue += slice.call(body, chunkStart, position);
+      return new Tok(
+        MULTI_LINE_STRING,
+        start,
+        position + 3,
+        line,
+        col,
+        prev,
+        removeIndentation(rawValue)
+      );
+    }
+
+    // SourceCharacter
+    if (
+      code < 0x0020 &&
+      code !== 0x0009 &&
+      code !== 0x000A &&
+      code !== 0x000D
+    ) {
+      throw syntaxError(
+        source,
+        position,
+        `Invalid character within String: ${printCharCode(code)}.`
+      );
+    }
+
+    // Escape Triple-Quote (\""")
+    if (
+      code === 92 &&
+      charCodeAt.call(body, position + 1) === 34 &&
+      charCodeAt.call(body, position + 2) === 34 &&
+      charCodeAt.call(body, position + 3) === 34
+    ) {
+      rawValue += slice.call(body, chunkStart, position) + '"""';
+      position += 4;
+      chunkStart = position;
+    } else {
+      ++position;
+    }
   }
 
-  value += slice.call(body, chunkStart, position);
-  return new Tok(STRING, start, position + 1, line, col, prev, value);
+  throw syntaxError(source, position, 'Unterminated string.');
 }
 
 /**
