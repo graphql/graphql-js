@@ -1248,7 +1248,7 @@ function (source, args, context, info) {
     const property = source[info.fieldName];
     if (typeof property === 'function') {
       /* eslint-disable no-useless-call */
-      return source[info.fieldName].apply(source, [ args, context, info ]);
+      return source[info.fieldName].call(source, args, context, info);
     }
     return property;
   }
