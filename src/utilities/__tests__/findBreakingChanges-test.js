@@ -32,6 +32,7 @@ import {
   findTypesRemovedFromUnions,
   findTypesThatChangedKind,
   findValuesRemovedFromEnums,
+  findValuesAddedToEnums,
   findArgChanges,
   findInterfacesRemovedFromObjectTypes,
 } from '../findBreakingChanges';
@@ -1349,7 +1350,63 @@ describe('findDangerousChanges', () => {
     });
   });
 
+  it('should detect if a value was added to an enum type', () => {
+    const oldEnumType = new GraphQLEnumType({
+      name: 'EnumType1',
+      values: {
+        VALUE0: { value: 0 },
+        VALUE1: { value: 1 },
+      }
+    });
+    const newEnumType = new GraphQLEnumType({
+      name: 'EnumType1',
+      values: {
+        VALUE0: { value: 0 },
+        VALUE1: { value: 1 },
+        VALUE2: { value: 2 },
+      }
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldEnumType,
+      ]
+    });
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newEnumType,
+      ]
+    });
+
+    expect(findValuesAddedToEnums(oldSchema, newSchema)).to.eql(
+      [
+        {
+          type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
+          description: 'VALUE2 was added to enum type EnumType1.',
+        }
+      ]
+    );
+  });
+
   it('should find all dangerous changes', () => {
+    const enumThatGainsAValueOld = new GraphQLEnumType({
+      name: 'EnumType1',
+      values: {
+        VALUE0: { value: 0 },
+        VALUE1: { value: 1 },
+      }
+    });
+    const enumThatGainsAValueNew = new GraphQLEnumType({
+      name: 'EnumType1',
+      values: {
+        VALUE0: { value: 0 },
+        VALUE1: { value: 1 },
+        VALUE2: { value: 2 },
+      }
+    });
+
     const oldType = new GraphQLObjectType({
       name: 'Type1',
       fields: {
@@ -1384,6 +1441,7 @@ describe('findDangerousChanges', () => {
       query: queryType,
       types: [
         oldType,
+        enumThatGainsAValueOld
       ]
     });
 
@@ -1391,6 +1449,7 @@ describe('findDangerousChanges', () => {
       query: queryType,
       types: [
         newType,
+        enumThatGainsAValueNew
       ]
     });
 
@@ -1398,6 +1457,10 @@ describe('findDangerousChanges', () => {
       {
         description: 'Type1.field1 arg name has changed defaultValue',
         type: 'ARG_DEFAULT_VALUE_CHANGE'
+      },
+      {
+        description: 'VALUE2 was added to enum type EnumType1.',
+        type: 'VALUE_ADDED_TO_ENUM',
       }
     ];
 

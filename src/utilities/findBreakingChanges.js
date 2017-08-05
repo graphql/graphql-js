@@ -44,6 +44,7 @@ export const BreakingChangeType = {
 
 export const DangerousChangeType = {
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
+  VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM'
 };
 
 export type BreakingChange = {
@@ -85,6 +86,7 @@ export function findDangerousChanges(
 ): Array<DangerousChange> {
   return [
     ...findArgChanges(oldSchema, newSchema).dangerousChanges,
+    ...findValuesAddedToEnums(oldSchema, newSchema)
   ];
 }
 
@@ -540,6 +542,42 @@ export function findValuesRemovedFromEnums(
     });
   });
   return valuesRemovedFromEnums;
+}
+
+/**
+ * Given two schemas, returns an Array containing descriptions of any dangerous
+ * changes in the newSchema related to adding values to an enum type.
+ */
+export function findValuesAddedToEnums(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
+): Array<DangerousChange> {
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+
+  const valuesAddedToEnums = [];
+  Object.keys(oldTypeMap).forEach(typeName => {
+    const oldType = oldTypeMap[typeName];
+    const newType = newTypeMap[typeName];
+    if (!(oldType instanceof GraphQLEnumType) ||
+        !(newType instanceof GraphQLEnumType)) {
+      return;
+    }
+
+    const valuesInOldEnum = Object.create(null);
+    oldType.getValues().forEach(value => {
+      valuesInOldEnum[value.name] = true;
+    });
+    newType.getValues().forEach(value => {
+      if (!valuesInOldEnum[value.name]) {
+        valuesAddedToEnums.push({
+          type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
+          description: `${value.name} was added to enum type ${typeName}.`
+        });
+      }
+    });
+  });
+  return valuesAddedToEnums;
 }
 
 export function findInterfacesRemovedFromObjectTypes(
