@@ -241,6 +241,7 @@ export {
 } from './execution';
 
 export type {
+  ExecutionArgs,
   ExecutionResult,
 } from './execution';
 

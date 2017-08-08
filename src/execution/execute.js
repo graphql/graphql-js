@@ -105,6 +105,16 @@ export type ExecutionResult = {
   data?: ?{[key: string]: mixed};
 };
 
+export type ExecutionArgs = {|
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[key: string]: mixed},
+  operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>
+|};
+
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.
  *
@@ -115,15 +125,10 @@ export type ExecutionResult = {
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-declare function execute({|
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>
-|}, ..._: []): Promise<ExecutionResult>;
+declare function execute(
+  ExecutionArgs,
+  ..._: []
+): Promise<ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function execute(
   schema: GraphQLSchema,
