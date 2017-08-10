@@ -11,7 +11,9 @@
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import * as Kind from '../language/kinds';
+
 import { assertValidName } from '../utilities/assertValidName';
+import attachHasInstanceSymbol from '../utilities/attachHasInstanceSymbol';
 import type {
   ScalarTypeDefinitionNode,
   ObjectTypeDefinitionNode,
@@ -368,6 +370,8 @@ export class GraphQLScalarType {
   inspect: () => string;
 }
 
+attachHasInstanceSymbol(GraphQLScalarType);
+
 // Also provide toJSON and inspect aliases for toString.
 GraphQLScalarType.prototype.toJSON =
   GraphQLScalarType.prototype.inspect =
@@ -467,6 +471,8 @@ export class GraphQLObjectType {
   toJSON: () => string;
   inspect: () => string;
 }
+
+attachHasInstanceSymbol(GraphQLObjectType);
 
 // Also provide toJSON and inspect aliases for toString.
 GraphQLObjectType.prototype.toJSON =
@@ -749,6 +755,8 @@ export class GraphQLInterfaceType {
   inspect: () => string;
 }
 
+attachHasInstanceSymbol(GraphQLInterfaceType);
+
 // Also provide toJSON and inspect aliases for toString.
 GraphQLInterfaceType.prototype.toJSON =
   GraphQLInterfaceType.prototype.inspect =
@@ -830,6 +838,8 @@ export class GraphQLUnionType {
   toJSON: () => string;
   inspect: () => string;
 }
+
+attachHasInstanceSymbol(GraphQLUnionType);
 
 // Also provide toJSON and inspect aliases for toString.
 GraphQLUnionType.prototype.toJSON =
@@ -999,6 +1009,8 @@ export class GraphQLEnumType/* <T> */ {
   inspect: () => string;
 }
 
+attachHasInstanceSymbol(GraphQLEnumType);
+
 // Also provide toJSON and inspect aliases for toString.
 GraphQLEnumType.prototype.toJSON =
   GraphQLEnumType.prototype.inspect =
@@ -1159,6 +1171,8 @@ export class GraphQLInputObjectType {
   inspect: () => string;
 }
 
+attachHasInstanceSymbol(GraphQLInputObjectType);
+
 // Also provide toJSON and inspect aliases for toString.
 GraphQLInputObjectType.prototype.toJSON =
   GraphQLInputObjectType.prototype.inspect =
@@ -1233,6 +1247,8 @@ export class GraphQLList<T: GraphQLType> {
   inspect: () => string;
 }
 
+attachHasInstanceSymbol(GraphQLList);
+
 // Also provide toJSON and inspect aliases for toString.
 GraphQLList.prototype.toJSON =
   GraphQLList.prototype.inspect =
@@ -1278,6 +1294,8 @@ export class GraphQLNonNull<T: GraphQLNullableType> {
   toJSON: () => string;
   inspect: () => string;
 }
+
+attachHasInstanceSymbol(GraphQLNonNull);
 
 // Also provide toJSON and inspect aliases for toString.
 GraphQLNonNull.prototype.toJSON =
