@@ -35,6 +35,7 @@ import {
   findValuesAddedToEnums,
   findArgChanges,
   findInterfacesRemovedFromObjectTypes,
+  findInterfacesAddedToObjectTypes
 } from '../findBreakingChanges';
 
 describe('findBreakingChanges', () => {
@@ -1390,6 +1391,60 @@ describe('findDangerousChanges', () => {
     );
   });
 
+  it('should detect interfaces added to types', () => {
+    const interface1 = new GraphQLInterfaceType({
+      name: 'Interface1',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+      resolveType: () => null,
+    });
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      interfaces: [],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      interfaces: [
+        interface1
+      ],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(
+      findInterfacesAddedToObjectTypes(oldSchema, newSchema)
+    ).to.eql([
+      {
+        description: 'Interface1 added to interfaces implemented by Type1.',
+        type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT
+      }
+    ]);
+  });
+
   it('should find all dangerous changes', () => {
     const enumThatGainsAValueOld = new GraphQLEnumType({
       name: 'EnumType1',
@@ -1437,11 +1492,42 @@ describe('findDangerousChanges', () => {
       },
     });
 
+    const interface1 = new GraphQLInterfaceType({
+      name: 'Interface1',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+      resolveType: () => null,
+    });
+
+    const typeThatGainsInterfaceOld = new GraphQLObjectType({
+      name: 'TypeThatGainsInterface1',
+      interfaces: [],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const typeThaGainsInterfaceNew = new GraphQLObjectType({
+      name: 'TypeThatGainsInterface1',
+      interfaces: [
+        interface1
+      ],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
     const oldSchema = new GraphQLSchema({
       query: queryType,
       types: [
         oldType,
-        enumThatGainsAValueOld
+        enumThatGainsAValueOld,
+        typeThatGainsInterfaceOld
       ]
     });
 
@@ -1449,7 +1535,8 @@ describe('findDangerousChanges', () => {
       query: queryType,
       types: [
         newType,
-        enumThatGainsAValueNew
+        enumThatGainsAValueNew,
+        typeThaGainsInterfaceNew
       ]
     });
 
@@ -1461,6 +1548,11 @@ describe('findDangerousChanges', () => {
       {
         description: 'VALUE2 was added to enum type EnumType1.',
         type: 'VALUE_ADDED_TO_ENUM',
+      },
+      {
+        description: 'Interface1 added to interfaces implemented ' +
+        'by TypeThatGainsInterface1.',
+        type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT
       }
     ];
 
