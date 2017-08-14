@@ -1214,6 +1214,36 @@ describe('findBreakingChanges', () => {
       }
     });
 
+    const interface1 = new GraphQLInterfaceType({
+      name: 'Interface1',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+      resolveType: () => null,
+    });
+
+    const typeThatLosesInterfaceOld = new GraphQLObjectType({
+      name: 'TypeThatGainsInterface1',
+      interfaces: [
+        interface1
+      ],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const typeThaLosesInterfaceNew = new GraphQLObjectType({
+      name: 'TypeThatGainsInterface1',
+      interfaces: [],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
     const oldSchema = new GraphQLSchema({
       query: queryType,
       types: [
@@ -1222,7 +1252,8 @@ describe('findBreakingChanges', () => {
         typeThatHasBreakingFieldChangesOld,
         unionTypeThatLosesATypeOld,
         enumTypeThatLosesAValueOld,
-        argThatChanges
+        argThatChanges,
+        typeThatLosesInterfaceOld
       ]
     });
 
@@ -1234,6 +1265,8 @@ describe('findBreakingChanges', () => {
         unionTypeThatLosesATypeNew,
         enumTypeThatLosesAValueNew,
         argChanged,
+        typeThaLosesInterfaceNew,
+        interface1
       ]
     });
 
@@ -1279,6 +1312,11 @@ describe('findBreakingChanges', () => {
         description: 'ArgThatChanges.field1 arg id has changed ' +
           'type from Int to String',
       },
+      {
+        type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+        description: 'TypeThatGainsInterface1 no longer implements ' +
+        'interface Interface1.',
+      }
     ];
     expect(findBreakingChanges(oldSchema, newSchema)).to.eql(
       expectedBreakingChanges
