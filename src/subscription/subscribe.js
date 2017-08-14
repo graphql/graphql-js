@@ -44,7 +44,7 @@ import type { GraphQLFieldResolver } from '../type/definition';
  * descriptive errors and no data will be returned.
  *
  * If the the source stream could not be created due to faulty subscription
- * resolver logic or underlying systems, the promise will resolve to a single 
+ * resolver logic or underlying systems, the promise will resolve to a single
  * ExecutionResult containing `errors` and no `data`.
  *
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
@@ -112,7 +112,7 @@ export function subscribe(
 
 /**
  * This function checks if the error is a GraphQLError. If it is, report it as
- * an ExecutionResult, containing only errors and no data. Otherwise treat the 
+ * an ExecutionResult, containing only errors and no data. Otherwise treat the
  * error as a system-class error and re-throw it.
  */
 function reportGraphQLError(error) {
@@ -158,7 +158,7 @@ function subscribeImpl(
     fieldResolver
   );
 
-  // Resolve the Source Stream, then map every source value to a 
+  // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
   return sourcePromise.then(
     sourceStream => mapAsyncIterator(
