@@ -44,10 +44,11 @@ import type { GraphQLFieldResolver } from '../type/definition';
  * descriptive errors and no data will be returned.
  *
  * If the the source stream could not be created due to faulty subscription
- * resolver logic or underlying systems, the promise will be rejected.
+ * resolver logic or underlying systems, the promise will resolve to a single 
+ * ExecutionResult containing `errors` and no `data`.
  *
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
- * yields a stream of ExecutResults representing the response stream.
+ * yields a stream of ExecutionResults representing the response stream.
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
@@ -110,11 +111,11 @@ export function subscribe(
 }
 
 /**
- * This function checks if the error is a GraphQLError. If it is, convert it to
- * an ExecutionResult interface, containing only errors and no value. Otherwise
- * treat the error as a system-class error and throw it.
+ * This function checks if the error is a GraphQLError. If it is, report it as
+ * an ExecutionResult, containing only errors and no data. Otherwise treat the 
+ * error as a system-class error and re-throw it.
  */
-function convertOrThrowError(error) {
+function reportGraphQLError(error) {
   if (error instanceof GraphQLError) {
     return { errors: [ error ] };
   }
@@ -131,13 +132,23 @@ function subscribeImpl(
   fieldResolver,
   subscribeFieldResolver
 ) {
+  const sourcePromise = createSourceEventStream(
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    subscribeFieldResolver
+  );
+
   // For each payload yielded from a subscription, map it over the normal
   // GraphQL `execute` function, with `payload` as the rootValue.
   // This implements the "MapSourceToResponseEvent" algorithm described in
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponseEvent = payload => execute(
+  const mapSourceToResponse = payload => execute(
     schema,
     document,
     payload,
@@ -147,21 +158,15 @@ function subscribeImpl(
     fieldResolver
   );
 
-  return createSourceEventStream(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver
-  ).then(
-    subscription => mapAsyncIterator(
-      subscription,
-      mapSourceToResponseEvent,
-      convertOrThrowError
+  // Resolve the Source Stream, then map every source value to a 
+  // ExecutionResult value as described above.
+  return sourcePromise.then(
+    sourceStream => mapAsyncIterator(
+      sourceStream,
+      mapSourceToResponse,
+      reportGraphQLError
     ),
-    convertOrThrowError
+    reportGraphQLError
   );
 }
 
