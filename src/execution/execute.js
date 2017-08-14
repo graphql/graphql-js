@@ -1252,7 +1252,8 @@ function (source, args, context, info) {
   if (typeof source === 'object' || typeof source === 'function') {
     const property = source[info.fieldName];
     if (typeof property === 'function') {
-      return source[info.fieldName](args, context, info);
+      /* eslint-disable no-useless-call */
+      return source[info.fieldName].call(source, args, context, info);
     }
     return property;
   }
