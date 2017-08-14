@@ -44,7 +44,8 @@ export const BreakingChangeType = {
 
 export const DangerousChangeType = {
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
-  VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM'
+  VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
+  TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
 };
 
 export type BreakingChange = {
@@ -86,7 +87,8 @@ export function findDangerousChanges(
 ): Array<DangerousChange> {
   return [
     ...findArgChanges(oldSchema, newSchema).dangerousChanges,
-    ...findValuesAddedToEnums(oldSchema, newSchema)
+    ...findValuesAddedToEnums(oldSchema, newSchema),
+    ...findTypesAddedToUnions(oldSchema, newSchema)
   ];
 }
 
@@ -509,6 +511,40 @@ export function findTypesRemovedFromUnions(
   return typesRemovedFromUnion;
 }
 
+/**
+ * Given two schemas, returns an Array containing descriptions of any dangerous
+ * changes in the newSchema related to adding types to a union type.
+ */
+export function findTypesAddedToUnions(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
+): Array<DangerousChange> {
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+
+  const typesAddedToUnion = [];
+  Object.keys(newTypeMap).forEach(typeName => {
+    const oldType = oldTypeMap[typeName];
+    const newType = newTypeMap[typeName];
+    if (!(oldType instanceof GraphQLUnionType) ||
+        !(newType instanceof GraphQLUnionType)) {
+      return;
+    }
+    const typeNamesInOldUnion = Object.create(null);
+    oldType.getTypes().forEach(type => {
+      typeNamesInOldUnion[type.name] = true;
+    });
+    newType.getTypes().forEach(type => {
+      if (!typeNamesInOldUnion[type.name]) {
+        typesAddedToUnion.push({
+          type: DangerousChangeType.TYPE_ADDED_TO_UNION,
+          description: `${type.name} was added to union type ${typeName}.`
+        });
+      }
+    });
+  });
+  return typesAddedToUnion;
+}
 /**
  * Given two schemas, returns an Array containing descriptions of any breaking
  * changes in the newSchema related to removing values from an enum type.

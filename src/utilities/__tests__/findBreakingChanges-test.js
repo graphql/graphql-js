@@ -30,6 +30,7 @@ import {
   findFieldsThatChangedType,
   findRemovedTypes,
   findTypesRemovedFromUnions,
+  findTypesAddedToUnions,
   findTypesThatChangedKind,
   findValuesRemovedFromEnums,
   findValuesAddedToEnums,
@@ -1390,6 +1391,60 @@ describe('findDangerousChanges', () => {
     );
   });
 
+  it('should detect if a type was added to a union type', () => {
+    const type1 = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    // logially equivalent to type1; findTypesRemovedFromUnions should not
+    // treat this as different than type1
+    const type1a = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    const type2 = new GraphQLObjectType({
+      name: 'Type2',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+
+    const oldUnionType = new GraphQLUnionType({
+      name: 'UnionType1',
+      types: [ type1 ],
+      resolveType: () => null,
+    });
+    const newUnionType = new GraphQLUnionType({
+      name: 'UnionType1',
+      types: [ type1a, type2 ],
+      resolveType: () => null,
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldUnionType,
+      ]
+    });
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newUnionType,
+      ]
+    });
+
+    expect(findTypesAddedToUnions(oldSchema, newSchema)).to.eql([
+      {
+        type: DangerousChangeType.TYPE_ADDED_TO_UNION,
+        description: 'Type2 was added to union type UnionType1.',
+      },
+    ]);
+  });
+
   it('should find all dangerous changes', () => {
     const enumThatGainsAValueOld = new GraphQLEnumType({
       name: 'EnumType1',
@@ -1422,6 +1477,29 @@ describe('findDangerousChanges', () => {
       },
     });
 
+    const typeInUnion1 = new GraphQLObjectType({
+      name: 'TypeInUnion1',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    const typeInUnion2 = new GraphQLObjectType({
+      name: 'TypeInUnion2',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    const unionTypeThatGainsATypeOld = new GraphQLUnionType({
+      name: 'UnionTypeThatGainsAType',
+      types: [ typeInUnion1 ],
+      resolveType: () => null,
+    });
+    const unionTypeThatGainsATypeNew = new GraphQLUnionType({
+      name: 'UnionTypeThatGainsAType',
+      types: [ typeInUnion1, typeInUnion2 ],
+      resolveType: () => null,
+    });
+
     const newType = new GraphQLObjectType({
       name: 'Type1',
       fields: {
@@ -1441,7 +1519,8 @@ describe('findDangerousChanges', () => {
       query: queryType,
       types: [
         oldType,
-        enumThatGainsAValueOld
+        enumThatGainsAValueOld,
+        unionTypeThatGainsATypeOld
       ]
     });
 
@@ -1449,7 +1528,8 @@ describe('findDangerousChanges', () => {
       query: queryType,
       types: [
         newType,
-        enumThatGainsAValueNew
+        enumThatGainsAValueNew,
+        unionTypeThatGainsATypeNew
       ]
     });
 
@@ -1461,6 +1541,11 @@ describe('findDangerousChanges', () => {
       {
         description: 'VALUE2 was added to enum type EnumType1.',
         type: 'VALUE_ADDED_TO_ENUM',
+      },
+      {
+        type: DangerousChangeType.TYPE_ADDED_TO_UNION,
+        description: 'TypeInUnion2 was added to union type ' +
+          'UnionTypeThatGainsAType.',
       }
     ];
 
