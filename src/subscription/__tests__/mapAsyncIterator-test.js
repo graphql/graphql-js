@@ -194,6 +194,53 @@ describe('mapAsyncIterator', () => {
     ).to.deep.equal({ value: undefined, done: true });
   });
 
+  it('does not normally map over thrown errors', async () => {
+    async function* source() {
+      yield 'Hello';
+      throw new Error('Goodbye');
+    }
+
+    const doubles = mapAsyncIterator(source(), x => x + x);
+
+    expect(
+      await doubles.next()
+    ).to.deep.equal({ value: 'HelloHello', done: false });
+
+    let caughtError;
+    try {
+      await doubles.next();
+    } catch (e) {
+      caughtError = e;
+    }
+    expect(caughtError && caughtError.message).to.equal('Goodbye');
+  });
+
+  it('maps over thrown errors if second callback provided', async () => {
+    async function* source() {
+      yield 'Hello';
+      throw new Error('Goodbye');
+    }
+
+    const doubles = mapAsyncIterator(
+      source(),
+      x => x + x,
+      error => error
+    );
+
+    expect(
+      await doubles.next()
+    ).to.deep.equal({ value: 'HelloHello', done: false });
+
+    const result = await doubles.next();
+    expect(result.value).to.be.instanceof(Error);
+    expect(result.value && result.value.message).to.equal('Goodbye');
+    expect(result.done).to.equal(false);
+
+    expect(
+      await doubles.next()
+    ).to.deep.equal({ value: undefined, done: true });
+  });
+
   async function testClosesSourceWithMapper(mapper) {
     let didVisitFinally = false;
 
@@ -248,6 +295,47 @@ describe('mapAsyncIterator', () => {
         throw new Error('Cannot count to ' + x);
       }
       return x;
+    });
+  });
+
+  async function testClosesSourceWithRejectMapper(mapper) {
+    async function* source() {
+      yield 1;
+      throw new Error(2);
+    }
+
+    const throwOver1 = mapAsyncIterator(source(), x => x, mapper);
+
+    expect(
+      await throwOver1.next()
+    ).to.deep.equal({ value: 1, done: false });
+
+    let expectedError;
+    try {
+      await throwOver1.next();
+    } catch (error) {
+      expectedError = error;
+    }
+
+    expect(expectedError).to.be.an('error');
+    if (expectedError) {
+      expect(expectedError.message).to.equal('Cannot count to 2');
+    }
+
+    expect(
+      await throwOver1.next()
+    ).to.deep.equal({ value: undefined, done: true });
+  }
+
+  it('closes source if mapper throws an error', async () => {
+    await testClosesSourceWithRejectMapper(error => {
+      throw new Error('Cannot count to ' + error.message);
+    });
+  });
+
+  it('closes source if mapper rejects', async () => {
+    await testClosesSourceWithRejectMapper(async error => {
+      throw new Error('Cannot count to ' + error.message);
     });
   });
 

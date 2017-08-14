@@ -22,115 +22,135 @@ import {
   GraphQLString,
 } from '../../type';
 
-
-describe('Subscribe', () => {
-
-  const EmailType = new GraphQLObjectType({
-    name: 'Email',
-    fields: {
-      from: { type: GraphQLString },
-      subject: { type: GraphQLString },
-      message: { type: GraphQLString },
-      unread: { type: GraphQLBoolean },
-    }
-  });
-
-  const InboxType = new GraphQLObjectType({
-    name: 'Inbox',
-    fields: {
-      total: {
-        type: GraphQLInt,
-        resolve: inbox => inbox.emails.length,
-      },
-      unread: {
-        type: GraphQLInt,
-        resolve: inbox => inbox.emails.filter(email => email.unread).length,
-      },
-      emails: { type: new GraphQLList(EmailType) },
-    }
-  });
-
-  const QueryType = new GraphQLObjectType({
-    name: 'Query',
-    fields: {
-      inbox: { type: InboxType },
-    }
-  });
-
-  const EmailEventType = new GraphQLObjectType({
-    name: 'EmailEvent',
-    fields: {
-      email: { type: EmailType },
-      inbox: { type: InboxType },
-    }
-  });
-
-  const SubscriptionType = new GraphQLObjectType({
-    name: 'Subscription',
-    fields: {
-      importantEmail: { type: EmailEventType },
-    }
-  });
-
-  const emailSchema = new GraphQLSchema({
-    query: QueryType,
-    subscription: SubscriptionType
-  });
-
-  function createSubscription(pubsub, schema = emailSchema) {
-    const data = {
-      inbox: {
-        emails: [
-          {
-            from: 'joe@graphql.org',
-            subject: 'Hello',
-            message: 'Hello World',
-            unread: false,
-          },
-        ],
-      },
-      importantEmail() {
-        return eventEmitterAsyncIterator(pubsub, 'importantEmail');
-      }
-    };
-
-    function sendImportantEmail(newEmail) {
-      data.inbox.emails.push(newEmail);
-      // Returns true if the event was consumed by a subscriber.
-      return pubsub.emit('importantEmail', {
-        importantEmail: {
-          email: newEmail,
-          inbox: data.inbox,
-        }
-      });
-    }
-
-    const ast = parse(`
-      subscription ($priority: Int = 0) {
-        importantEmail(priority: $priority) {
-          email {
-            from
-            subject
-          }
-          inbox {
-            unread
-            total
-          }
-        }
-      }
-    `);
-
-    // GraphQL `subscribe` has the same call signature as `execute`, but returns
-    // AsyncIterator instead of Promise.
-    return {
-      sendImportantEmail,
-      subscription: subscribe(
-        schema,
-        ast,
-        data
-      ),
-    };
+const EmailType = new GraphQLObjectType({
+  name: 'Email',
+  fields: {
+    from: { type: GraphQLString },
+    subject: { type: GraphQLString },
+    message: { type: GraphQLString },
+    unread: { type: GraphQLBoolean },
   }
+});
+
+const InboxType = new GraphQLObjectType({
+  name: 'Inbox',
+  fields: {
+    total: {
+      type: GraphQLInt,
+      resolve: inbox => inbox.emails.length,
+    },
+    unread: {
+      type: GraphQLInt,
+      resolve: inbox => inbox.emails.filter(email => email.unread).length,
+    },
+    emails: { type: new GraphQLList(EmailType) },
+  }
+});
+
+const QueryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    inbox: { type: InboxType },
+  }
+});
+
+const EmailEventType = new GraphQLObjectType({
+  name: 'EmailEvent',
+  fields: {
+    email: { type: EmailType },
+    inbox: { type: InboxType },
+  }
+});
+
+const emailSchema = emailSchemaWithResolvers();
+
+function emailSchemaWithResolvers(subscribeFn, resolveFn) {
+  return new GraphQLSchema({
+    query: QueryType,
+    subscription: new GraphQLObjectType({
+      name: 'Subscription',
+      fields: {
+        importantEmail: {
+          type: EmailEventType,
+          resolve: resolveFn,
+          subscribe: subscribeFn,
+          // TODO: remove
+          args: {
+            priority: {type: GraphQLInt}
+          }
+        },
+      },
+    })
+  });
+}
+
+async function createSubscription(pubsub, schema = emailSchema, ast, vars) {
+  const data = {
+    inbox: {
+      emails: [
+        {
+          from: 'joe@graphql.org',
+          subject: 'Hello',
+          message: 'Hello World',
+          unread: false,
+        },
+      ],
+    },
+    importantEmail() {
+      return eventEmitterAsyncIterator(pubsub, 'importantEmail');
+    }
+  };
+
+  function sendImportantEmail(newEmail) {
+    data.inbox.emails.push(newEmail);
+    // Returns true if the event was consumed by a subscriber.
+    return pubsub.emit('importantEmail', {
+      importantEmail: {
+        email: newEmail,
+        inbox: data.inbox,
+      }
+    });
+  }
+
+  const defaultAst = parse(`
+    subscription ($priority: Int = 0) {
+      importantEmail(priority: $priority) {
+        email {
+          from
+          subject
+        }
+        inbox {
+          unread
+          total
+        }
+      }
+    }
+  `);
+
+  // `subscribe` returns Promise<AsyncIterator | ExecutionResult>
+  return {
+    sendImportantEmail,
+    subscription: await subscribe(
+      schema,
+      ast || defaultAst,
+      data,
+      null,
+      vars,
+    ),
+  };
+}
+
+async function expectPromiseToThrow(promise, message) {
+  try {
+    await promise();
+    expect.fail('promise should have thrown but did not');
+  } catch (error) {
+    expect(error && error.message).to.equal(message);
+  }
+}
+
+// Check all error cases when initializing the subscription.
+describe('Subscription Initialization Phase', () => {
 
   it('accepts an object with named properties as arguments', async () => {
     const document = parse(`
@@ -154,36 +174,7 @@ describe('Subscribe', () => {
     ai.return();
   });
 
-  it('throws when missing schema', async () => {
-    const document = parse(`
-      subscription {
-        importantEmail
-      }
-    `);
-
-    expect(() =>
-      subscribe(
-        null,
-        document
-      )
-    ).to.throw('Must provide schema');
-
-    expect(() =>
-      subscribe({ document })
-    ).to.throw('Must provide schema');
-  });
-
-  it('throws when missing document', async () => {
-    expect(() =>
-      subscribe(emailSchema, null)
-    ).to.throw('Must provide document');
-
-    expect(() =>
-      subscribe({ schema: emailSchema })
-    ).to.throw('Must provide document');
-  });
-
-  it('multiple subscription fields defined in schema', async () => {
+  it('accepts multiple subscription fields defined in schema', async () => {
     const pubsub = new EventEmitter();
     const SubscriptionTypeMultiple = new GraphQLObjectType({
       name: 'Subscription',
@@ -198,17 +189,88 @@ describe('Subscribe', () => {
       subscription: SubscriptionTypeMultiple
     });
 
-    expect(() => {
-      const { sendImportantEmail } =
-        createSubscription(pubsub, testSchema);
+    const {
+      subscription,
+      sendImportantEmail,
+    } = await createSubscription(pubsub, testSchema);
 
-      sendImportantEmail({
-        from: 'yuzhi@graphql.org',
-        subject: 'Alright',
-        message: 'Tests are good',
-        unread: true,
-      });
-    }).not.to.throw();
+    sendImportantEmail({
+      from: 'yuzhi@graphql.org',
+      subject: 'Alright',
+      message: 'Tests are good',
+      unread: true,
+    });
+
+    await subscription.next();
+  });
+
+  it('accepts type definition with sync subscribe function', async () => {
+    const pubsub = new EventEmitter();
+    const schema = new GraphQLSchema({
+      query: QueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          importantEmail: {
+            type: GraphQLString,
+            subscribe: () => eventEmitterAsyncIterator(pubsub, 'importantEmail')
+          },
+        }
+      })
+    });
+
+    const ast = parse(`
+      subscription {
+        importantEmail
+      }
+    `);
+
+    const subscription = await subscribe(
+      schema,
+      ast
+    );
+
+    pubsub.emit('importantEmail', {
+      importantEmail: {}
+    });
+
+    await subscription.next();
+  });
+
+  it('accepts type definition with async subscribe function', async () => {
+    const pubsub = new EventEmitter();
+    const schema = new GraphQLSchema({
+      query: QueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          importantEmail: {
+            type: GraphQLString,
+            subscribe: async () => {
+              await new Promise(setImmediate);
+              return eventEmitterAsyncIterator(pubsub, 'importantEmail');
+            }
+          },
+        }
+      })
+    });
+
+    const ast = parse(`
+      subscription {
+        importantEmail
+      }
+    `);
+
+    const subscription = await subscribe(
+      schema,
+      ast
+    );
+
+    pubsub.emit('importantEmail', {
+      importantEmail: {}
+    });
+
+    await subscription.next();
   });
 
   it('should only resolve the first field of invalid multi-field', async () => {
@@ -247,7 +309,7 @@ describe('Subscribe', () => {
       }
     `);
 
-    const subscription = subscribe(testSchema, ast);
+    const subscription = await subscribe(testSchema, ast);
     subscription.next(); // Ask for a result, but ignore it.
 
     expect(didResolveImportantEmail).to.equal(true);
@@ -257,11 +319,195 @@ describe('Subscribe', () => {
     subscription.return();
   });
 
-  it('produces payload for multiple subscribe in same subscription',
+  it('throws an error if schema is missing', async () => {
+    const document = parse(`
+      subscription {
+        importantEmail
+      }
+    `);
+
+    expectPromiseToThrow(
+      () => subscribe(null, document),
+      'Must provide schema',
+    );
+
+    expectPromiseToThrow(
+      () => subscribe({ document }),
+      'Must provide schema',
+    );
+  });
+
+  it('throws an error if document is missing', async () => {
+    expectPromiseToThrow(
+      () => subscribe(emailSchema, null),
+      'Must provide document'
+    );
+
+    expectPromiseToThrow(
+      () => subscribe({ schema: emailSchema }),
+      'Must provide document'
+    );
+  });
+
+  it('throws an error for unknown root field', async () => {
+    const ast = parse(`
+      subscription {
+        unknownField
+      }
+    `);
+
+    const pubsub = new EventEmitter();
+
+    expectPromiseToThrow(
+      () => createSubscription(pubsub, emailSchema, ast),
+      'This subscription is not defined by the schema.'
+    );
+  });
+
+  it('throws an error if subscribe does not return an iterator', async () => {
+    const invalidEmailSchema = new GraphQLSchema({
+      query: QueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          importantEmail: {
+            type: GraphQLString,
+            subscribe: () => 'test',
+          },
+        }
+      })
+    });
+
+    const pubsub = new EventEmitter();
+
+    expectPromiseToThrow(
+      () => createSubscription(pubsub, invalidEmailSchema),
+      'Subscription must return Async Iterable. Received: test'
+    );
+  });
+
+  it('returns an error if subscribe function returns error', async () => {
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      () => { return new Error('test error'); }
+    );
+
+    const result = await subscribe(
+      erroringEmailSchema,
+      parse(`
+        subscription {
+          importantEmail
+        }
+      `)
+    );
+
+    expect(result).to.deep.equal({
+      errors: [
+        {
+          message: 'test error',
+          locations: [ { line: 3, column: 11 } ],
+          path: [ 'importantEmail' ]
+        }
+      ]
+    });
+  });
+
+  it('returns an ExecutionResult for resolver errors', async () => {
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      () => { throw new Error('test error'); }
+    );
+
+    const result = await subscribe(
+      erroringEmailSchema,
+      parse(`
+        subscription {
+          importantEmail
+        }
+      `)
+    );
+
+    expect(result).to.deep.equal({
+      errors: [
+        {
+          message: 'test error',
+          locations: [ { line: 3, column: 11 } ],
+          path: [ 'importantEmail' ]
+        }
+      ]
+    });
+  });
+
+  it('resolves to an error if variables were wrong type', async () => {
+    // If we receive variables that cannot be coerced correctly, subscribe()
+    // will resolve to an ExecutionResult that contains an informative error
+    // description.
+    const ast = parse(`
+      subscription ($priority: Int) {
+        importantEmail(priority: $priority) {
+          email {
+            from
+            subject
+          }
+          inbox {
+            unread
+            total
+          }
+        }
+      }
+    `);
+
+    const pubsub = new EventEmitter();
+    const data = {
+      inbox: {
+        emails: [
+          {
+            from: 'joe@graphql.org',
+            subject: 'Hello',
+            message: 'Hello World',
+            unread: false,
+          },
+        ],
+      },
+      importantEmail() {
+        return eventEmitterAsyncIterator(pubsub, 'importantEmail');
+      }
+    };
+
+    const result = await subscribe(
+      emailSchema,
+      ast,
+      data,
+      null,
+      {
+        priority: 'meow',
+      }
+    );
+
+    expect(result).to.deep.equal({
+      errors: [
+        {
+          message: 'Variable "$priority" got invalid value "meow".\nExpected ' +
+          'type "Int", found "meow": Int cannot represent non 32-bit signed ' +
+          'integer value: meow',
+          locations: [ { line: 2, column: 21 } ],
+          path: undefined
+        }
+      ]
+    });
+  });
+});
+
+// Once a subscription returns a valid AsyncIterator, it can still yield
+// errors.
+describe('Subscription Publish Phase', () => {
+
+  it('produces a payload for multiple subscribe in same subscription',
     async () => {
       const pubsub = new EventEmitter();
-      const { sendImportantEmail, subscription } = createSubscription(pubsub);
-      const second = createSubscription(pubsub);
+      const {
+        sendImportantEmail,
+        subscription,
+      } = await createSubscription(pubsub);
+      const second = await createSubscription(pubsub);
 
       const payload1 = subscription.next();
       const payload2 = second.subscription.next();
@@ -297,7 +543,10 @@ describe('Subscribe', () => {
 
   it('produces a payload per subscription event', async () => {
     const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = createSubscription(pubsub);
+    const {
+      sendImportantEmail,
+      subscription,
+    } = await createSubscription(pubsub);
 
     // Wait for the next subscription payload.
     const payload = subscription.next();
@@ -379,7 +628,10 @@ describe('Subscribe', () => {
 
   it('produces a payload when there are multiple events', async () => {
     const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = createSubscription(pubsub);
+    const {
+      sendImportantEmail,
+      subscription,
+    } = await createSubscription(pubsub);
     let payload = subscription.next();
 
     // A new email arrives!
@@ -439,7 +691,10 @@ describe('Subscribe', () => {
 
   it('should not trigger when subscription is already done', async () => {
     const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = createSubscription(pubsub);
+    const {
+      sendImportantEmail,
+      subscription,
+    } = await createSubscription(pubsub);
     let payload = subscription.next();
 
     // A new email arrives!
@@ -485,9 +740,12 @@ describe('Subscribe', () => {
     });
   });
 
-  it('events order is correct when multiple triggered together', async () => {
+  it('event order is correct for multiple publishes', async () => {
     const pubsub = new EventEmitter();
-    const { sendImportantEmail, subscription } = createSubscription(pubsub);
+    const {
+      sendImportantEmail,
+      subscription,
+    } = await createSubscription(pubsub);
     let payload = subscription.next();
 
     // A new email arrives!
@@ -545,105 +803,134 @@ describe('Subscribe', () => {
     });
   });
 
-  it('invalid query should result in error', async () => {
-    const invalidAST = parse(`
-      subscription {
-        invalidField
-      }
-    `);
-
-    expect(() => {
-      subscribe(
-        emailSchema,
-        invalidAST,
-      );
-    }).to.throw('This subscription is not defined by the schema.');
-  });
-
-  it('throws when subscription definition doesnt return iterator', () => {
-    const invalidEmailSchema = new GraphQLSchema({
-      query: QueryType,
-      subscription: new GraphQLObjectType({
-        name: 'Subscription',
-        fields: {
-          importantEmail: {
-            type: GraphQLString,
-            subscribe: () => 'test',
-          },
+  it('should handle error during execuction of source event', async () => {
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      async function* () {
+        yield { email: { subject: 'Hello' } };
+        yield { email: { subject: 'Goodbye' } };
+        yield { email: { subject: 'Bonjour' } };
+      },
+      event => {
+        if (event.email.subject === 'Goodbye') {
+          throw new Error('Never leave.');
         }
-      })
-    });
-
-    const ast = parse(`
-      subscription {
-        importantEmail
+        return event;
       }
-    `);
+    );
 
-    expect(() => {
-      subscribe(
-        invalidEmailSchema,
-        ast
-      );
-    }).to.throw('Subscription must return Async Iterable. Received: test');
-  });
-
-  it('expects to have subscribe on type definition with iterator', () => {
-    const pubsub = new EventEmitter();
-    const invalidEmailSchema = new GraphQLSchema({
-      query: QueryType,
-      subscription: new GraphQLObjectType({
-        name: 'Subscription',
-        fields: {
-          importantEmail: {
-            type: GraphQLString,
-            subscribe: () => eventEmitterAsyncIterator(pubsub, 'importantEmail')
-          },
+    const subscription = await subscribe(
+      erroringEmailSchema,
+      parse(`
+        subscription {
+          importantEmail {
+            email {
+              subject
+            }
+          }
         }
-      })
+      `)
+    );
+
+    const payload1 = await subscription.next();
+    expect(payload1).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Hello'
+            }
+          }
+        }
+      }
     });
 
-    const ast = parse(`
-      subscription {
-        importantEmail
+    // An error in execution is presented as such.
+    const payload2 = await subscription.next();
+    expect(payload2).to.deep.equal({
+      done: false,
+      value: {
+        errors: [
+          {
+            message: 'Never leave.',
+            locations: [ { line: 3, column: 11 } ],
+            path: [ 'importantEmail' ],
+          }
+        ],
+        data: {
+          importantEmail: null,
+        }
       }
-    `);
+    });
 
-    expect(() => {
-      subscribe(
-        invalidEmailSchema,
-        ast
-      );
-    }).not.to.throw();
+    // However that does not close the response event stream. Subsequent
+    // events are still executed.
+    const payload3 = await subscription.next();
+    expect(payload3).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Bonjour'
+            }
+          }
+        }
+      }
+    });
+
   });
 
-  it('should handle error thrown by subscribe method', () => {
-    const invalidEmailSchema = new GraphQLSchema({
-      query: QueryType,
-      subscription: new GraphQLObjectType({
-        name: 'Subscription',
-        fields: {
+  it('should pass through error thrown in source event stream', async () => {
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      async function* () {
+        yield { email: { subject: 'Hello' } };
+        throw new Error('test error');
+      },
+      email => email
+    );
+
+    const subscription = await subscribe(
+      erroringEmailSchema,
+      parse(`
+        subscription {
+          importantEmail {
+            email {
+              subject
+            }
+          }
+        }
+      `)
+    );
+
+    const payload1 = await subscription.next();
+    expect(payload1).to.deep.equal({
+      done: false,
+      value: {
+        data: {
           importantEmail: {
-            type: GraphQLString,
-            subscribe: () => {
-              throw new Error('test error');
-            },
-          },
-        },
-      })
+            email: {
+              subject: 'Hello'
+            }
+          }
+        }
+      }
     });
 
-    const ast = parse(`
-      subscription {
-        importantEmail
-      }
-    `);
+    let expectedError;
+    try {
+      await subscription.next();
+    } catch (error) {
+      expectedError = error;
+    }
 
-    expect(() => {
-      subscribe(
-        invalidEmailSchema,
-        ast
-      );
-    }).to.throw('test error');
+    expect(expectedError).to.be.instanceof(Error);
+    expect(expectedError.message).to.equal('test error');
+
+    const payload2 = await subscription.next();
+    expect(payload2).to.deep.equal({
+      done: true,
+      value: undefined
+    });
   });
 });
