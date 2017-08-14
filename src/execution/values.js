@@ -190,7 +190,7 @@ export function getDirectiveValues(
 /**
  * Given a type and any value, return a runtime value coerced to match the type.
  */
-function coerceValue(type: GraphQLInputType, value: mixed): mixed {
+export function coerceValue(type: GraphQLInputType, value: mixed): mixed {
   // Ensure flow knows that we treat function params as const.
   const _value = value;
 
