@@ -101,11 +101,6 @@ export function extendSchema(
   documentAST: DocumentNode
 ): GraphQLSchema {
   invariant(
-    schema instanceof GraphQLSchema,
-    'Must provide valid GraphQLSchema'
-  );
-
-  invariant(
     documentAST && documentAST.kind === Kind.DOCUMENT,
     'Must provide valid Document AST'
   );
@@ -151,7 +146,7 @@ export function extendSchema(
             [ def.definition ]
           );
         }
-        if (!(existingType instanceof GraphQLObjectType)) {
+        if (!(existingType.kind === 'GraphQLObjectType')) {
           throw new GraphQLError(
             `Cannot extend non-object type "${extendedTypeName}".`,
             [ def.definition ]
@@ -276,13 +271,13 @@ export function extendSchema(
 
   function getObjectTypeFromAST(node: NamedTypeNode): GraphQLObjectType {
     const type = getTypeFromAST(node);
-    invariant(type instanceof GraphQLObjectType, 'Must be Object type.');
+    invariant(type.kind === 'GraphQLObjectType', 'Must be Object type.');
     return type;
   }
 
   function getInterfaceTypeFromAST(node: NamedTypeNode): GraphQLInterfaceType {
     const type = getTypeFromAST(node);
-    invariant(type instanceof GraphQLInterfaceType, 'Must be Interface type.');
+    invariant(type.kind === 'GraphQLInterfaceType', 'Must be Interface type.');
     return type;
   }
 
@@ -320,13 +315,13 @@ export function extendSchema(
   // Given a type's introspection result, construct the correct
   // GraphQLType instance.
   function extendType(type: GraphQLNamedType): GraphQLNamedType {
-    if (type instanceof GraphQLObjectType) {
+    if (type.kind === 'GraphQLObjectType') {
       return extendObjectType(type);
     }
-    if (type instanceof GraphQLInterfaceType) {
+    if (type.kind === 'GraphQLInterfaceType') {
       return extendInterfaceType(type);
     }
-    if (type instanceof GraphQLUnionType) {
+    if (type.kind === 'GraphQLUnionType') {
       return extendUnionType(type);
     }
     return type;
@@ -441,10 +436,10 @@ export function extendSchema(
   }
 
   function extendFieldType<T: GraphQLType>(typeDef: T): T {
-    if (typeDef instanceof GraphQLList) {
+    if (typeDef.kind === 'GraphQLList') {
       return (new GraphQLList(extendFieldType(typeDef.ofType)): any);
     }
-    if (typeDef instanceof GraphQLNonNull) {
+    if (typeDef.kind === 'GraphQLNonNull') {
       return (new GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
     }
     return getTypeFromDef(typeDef);
@@ -590,7 +585,7 @@ export function extendSchema(
     }
     if (typeNode.kind === Kind.NON_NULL_TYPE) {
       const nullableType = buildInputFieldType(typeNode.type);
-      invariant(!(nullableType instanceof GraphQLNonNull), 'Must be nullable');
+      invariant(nullableType.kind !== 'GraphQLNonNull', 'Must be nullable');
       return new GraphQLNonNull(nullableType);
     }
     return getInputTypeFromAST(typeNode);
@@ -602,7 +597,7 @@ export function extendSchema(
     }
     if (typeNode.kind === Kind.NON_NULL_TYPE) {
       const nullableType = buildOutputFieldType(typeNode.type);
-      invariant(!(nullableType instanceof GraphQLNonNull), 'Must be nullable');
+      invariant(nullableType.kind !== 'GraphQLNonNull', 'Must be nullable');
       return new GraphQLNonNull(nullableType);
     }
     return getOutputTypeFromAST(typeNode);

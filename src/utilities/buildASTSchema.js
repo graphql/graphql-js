@@ -99,7 +99,7 @@ function buildWrappedType(
   }
   if (inputTypeNode.kind === Kind.NON_NULL_TYPE) {
     const wrappedType = buildWrappedType(innerType, inputTypeNode.type);
-    invariant(!(wrappedType instanceof GraphQLNonNull), 'No nesting nonnull.');
+    invariant(wrappedType.kind !== 'GraphQLNonNull', 'No nesting nonnull.');
     return new GraphQLNonNull(wrappedType);
   }
   return innerType;
@@ -283,7 +283,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   function getObjectType(typeNode: TypeDefinitionNode): GraphQLObjectType {
     const type = typeDefNamed(typeNode.name.value);
     invariant(
-      type instanceof GraphQLObjectType,
+      type.kind === 'GraphQLObjectType',
       'AST must provide object type.'
     );
     return (type: any);

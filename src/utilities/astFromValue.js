@@ -60,7 +60,7 @@ export function astFromValue(
   // Ensure flow knows that we treat function params as const.
   const _value = value;
 
-  if (type instanceof GraphQLNonNull) {
+  if (type.kind === 'GraphQLNonNull') {
     const astValue = astFromValue(_value, type.ofType);
     if (astValue && astValue.kind === Kind.NULL) {
       return null;
@@ -80,7 +80,7 @@ export function astFromValue(
 
   // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
   // the value is not an array, convert the value using the list's item type.
-  if (type instanceof GraphQLList) {
+  if (type.kind === 'GraphQLList') {
     const itemType = type.ofType;
     if (isCollection(_value)) {
       const valuesNodes = [];
@@ -97,7 +97,7 @@ export function astFromValue(
 
   // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object according to the fields in the input type.
-  if (type instanceof GraphQLInputObjectType) {
+  if (type.kind === 'GraphQLInputObjectType') {
     if (_value === null || typeof _value !== 'object') {
       return null;
     }
@@ -118,7 +118,7 @@ export function astFromValue(
   }
 
   invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
+    type.kind === 'GraphQLScalarType' || type.kind === 'GraphQLEnumType',
     'Must provide Input Type, cannot use: ' + String(type)
   );
 
@@ -144,7 +144,7 @@ export function astFromValue(
 
   if (typeof serialized === 'string') {
     // Enum types use Enum literals.
-    if (type instanceof GraphQLEnumType) {
+    if (type.kind === 'GraphQLEnumType') {
       return ({ kind: Kind.ENUM, value: serialized }: EnumValueNode);
     }
 

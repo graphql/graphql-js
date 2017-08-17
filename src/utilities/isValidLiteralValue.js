@@ -71,7 +71,7 @@ export function isValidLiteralValue(
   }
 
   // Input objects check each defined field and look for undefined fields.
-  if (type instanceof GraphQLInputObjectType) {
+  if (type.kind === 'GraphQLInputObjectType') {
     if (valueNode.kind !== Kind.OBJECT) {
       return [ `Expected "${type.name}", found not an object.` ];
     }
@@ -105,7 +105,7 @@ export function isValidLiteralValue(
   }
 
   invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
+    type.kind === 'GraphQLScalarType' || type.kind === 'GraphQLEnumType',
     'Must be input type'
   );
 
