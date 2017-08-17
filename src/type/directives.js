@@ -49,7 +49,6 @@ export type DirectiveLocationEnum = $Keys<typeof DirectiveLocation>; // eslint-d
  * behavior. Type system creators will usually not create these directly.
  */
 export class GraphQLDirective {
-  kind: 'GraphQLDirective';
   name: string;
   description: ?string;
   locations: Array<DirectiveLocationEnum>;
