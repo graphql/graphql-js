@@ -164,57 +164,13 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
     }
   }
 
-  let queryTypeName;
-  let mutationTypeName;
-  let subscriptionTypeName;
-  if (schemaDef) {
-    schemaDef.operationTypes.forEach(operationType => {
-      const typeName = operationType.type.name.value;
-      if (operationType.operation === 'query') {
-        if (queryTypeName) {
-          throw new Error('Must provide only one query type in schema.');
-        }
-        if (!nodeMap[typeName]) {
-          throw new Error(
-            `Specified query type "${typeName}" not found in document.`
-          );
-        }
-        queryTypeName = typeName;
-      } else if (operationType.operation === 'mutation') {
-        if (mutationTypeName) {
-          throw new Error('Must provide only one mutation type in schema.');
-        }
-        if (!nodeMap[typeName]) {
-          throw new Error(
-            `Specified mutation type "${typeName}" not found in document.`
-          );
-        }
-        mutationTypeName = typeName;
-      } else if (operationType.operation === 'subscription') {
-        if (subscriptionTypeName) {
-          throw new Error('Must provide only one subscription type in schema.');
-        }
-        if (!nodeMap[typeName]) {
-          throw new Error(
-            `Specified subscription type "${typeName}" not found in document.`
-          );
-        }
-        subscriptionTypeName = typeName;
-      }
-    });
-  } else {
-    if (nodeMap.Query) {
-      queryTypeName = 'Query';
-    }
-    if (nodeMap.Mutation) {
-      mutationTypeName = 'Mutation';
-    }
-    if (nodeMap.Subscription) {
-      subscriptionTypeName = 'Subscription';
-    }
-  }
+  const operationTypes = schemaDef ? getOperationTypes(schemaDef) : {
+    query: nodeMap.Query && 'Query',
+    mutation: nodeMap.Mutation && 'Mutation',
+    subscription: nodeMap.Subscription && 'Subscription',
+  };
 
-  if (!queryTypeName) {
+  if (!operationTypes.query) {
     throw new Error(
       'Must provide schema definition with query type or a type named Query.'
     );
@@ -254,17 +210,36 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 
   return new GraphQLSchema({
-    query: getObjectType(nodeMap[queryTypeName]),
-    mutation: mutationTypeName ?
-      getObjectType(nodeMap[mutationTypeName]) :
+    query: getObjectType(operationTypes.query),
+    mutation: operationTypes.mutation ?
+      getObjectType(operationTypes.mutation) :
       null,
-    subscription: subscriptionTypeName ?
-      getObjectType(nodeMap[subscriptionTypeName]) :
+    subscription: operationTypes.subscription ?
+      getObjectType(operationTypes.subscription) :
       null,
     types,
     directives,
     astNode: schemaDef,
   });
+
+  function getOperationTypes(schema: SchemaDefinitionNode) {
+    const opTypes = {};
+    schema.operationTypes.forEach(operationType => {
+      const typeName = operationType.type.name.value;
+      const operation = operationType.operation;
+
+      if (opTypes[operation]) {
+        throw new Error(`Must provide only one ${operation} type in schema.`);
+      }
+      if (!nodeMap[typeName]) {
+        throw new Error(
+          `Specified ${operation} type "${typeName}" not found in document.`
+        );
+      }
+      opTypes[operation] = typeName;
+    });
+    return opTypes;
+  }
 
   function getDirective(
     directiveNode: DirectiveDefinitionNode
@@ -280,8 +255,8 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
     });
   }
 
-  function getObjectType(typeNode: TypeDefinitionNode): GraphQLObjectType {
-    const type = typeDefNamed(typeNode.name.value);
+  function getObjectType(name: string): GraphQLObjectType {
+    const type = typeDefNamed(name);
     invariant(
       type instanceof GraphQLObjectType,
       'AST must provide object type.'
