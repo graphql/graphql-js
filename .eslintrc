@@ -219,6 +219,8 @@
     "vars-on-top": 0,
     "wrap-iife": 2,
     "wrap-regex": 0,
-    "yoda": [2, "never", {"exceptRange": true}]
+    "yoda": [2, "never", {"exceptRange": true}],
+
+    "no-async": 2
   }
 }
