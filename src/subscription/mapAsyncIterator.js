@@ -39,8 +39,9 @@ export default function mapAsyncIterator<T, U>(
 
   let mapReject;
   if (rejectCallback) {
-    mapReject = error =>
-      asyncMapValue(error, rejectCallback).then(iteratorResult, abruptClose);
+    mapReject = error => rejectCallback ?
+      asyncMapValue(error, rejectCallback).then(iteratorResult, abruptClose) :
+      error;
   }
 
   return {
