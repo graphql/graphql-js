@@ -39,11 +39,10 @@ export default function mapAsyncIterator<T, U>(
 
   let mapReject;
   if (rejectCallback) {
-    // The redundant rejectCallback null check provides compatibility with
-    // different flow config options.
-    mapReject = error => rejectCallback ?
-      asyncMapValue(error, rejectCallback).then(iteratorResult, abruptClose) :
-      error;
+    // Capture rejectCallback to ensure it cannot be null.
+    const reject = rejectCallback;
+    mapReject = error =>
+      asyncMapValue(error, reject).then(iteratorResult, abruptClose);
   }
 
   return {
