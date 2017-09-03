@@ -217,7 +217,7 @@ export type GraphQLNullableType =
   GraphQLUnionType |
   GraphQLEnumType |
   GraphQLInputObjectType |
-  GraphQLList<*>;
+  GraphQLList<any>;
 
 export function getNullableType<T: GraphQLType>(
   type: ?T
