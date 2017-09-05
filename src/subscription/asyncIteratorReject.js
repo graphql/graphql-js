@@ -15,8 +15,11 @@ import { $$asyncIterator } from 'iterall';
  * Given an error, returns an AsyncIterable which will fail with that error.
  *
  * Similar to Promise.reject(error)
+ *
+ * Should return AsyncIterator<void>
+ *   used `any` until Flowtype get proper symbol support ($$asyncIterator)
  */
-export default function asyncIteratorReject(error: Error): AsyncIterator<void> {
+export default function asyncIteratorReject(error: Error): any {
   let isComplete = false;
   return {
     next() {

@@ -15,11 +15,14 @@ import { $$asyncIterator } from 'iterall';
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
  * PubSub system for tests.
+ *
+ * Should return `AsyncIterator<mixed>`
+ *   used `any` until Flowtype get proper symbol support ($$asyncIterator)
  */
 export default function eventEmitterAsyncIterator(
   eventEmitter: EventEmitter,
   eventName: string
-): AsyncIterator<mixed> {
+): any {
   const pullQueue = [];
   const pushQueue = [];
   let listening = true;
