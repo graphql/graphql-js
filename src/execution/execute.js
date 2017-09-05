@@ -149,43 +149,25 @@ export function execute(
   fieldResolver
 ) {
   // Extract arguments from object args if provided.
-  const args = arguments.length === 1 ? argsOrSchema : undefined;
-  const schema = args ? args.schema : argsOrSchema;
-  return args ?
-    executeImpl(
-      schema,
-      args.document,
-      args.rootValue,
-      args.contextValue,
-      args.variableValues,
-      args.operationName,
-      args.fieldResolver
-    ) :
-    executeImpl(
-      schema,
+  return arguments.length === 1 ?
+    executeImpl(argsOrSchema) :
+    executeImpl({
+      schema: argsOrSchema,
       document,
       rootValue,
       contextValue,
       variableValues,
       operationName,
       fieldResolver
-    );
+    });
 }
 
-function executeImpl(
-  schema,
-  document,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver
-) {
+function executeImpl(args) {
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(
-    schema,
-    document,
-    variableValues
+    args.schema,
+    args.document,
+    args.variableValues
   );
 
   // If a valid context cannot be created due to incorrect arguments,
@@ -193,13 +175,13 @@ function executeImpl(
   let context;
   try {
     context = buildExecutionContext(
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver
+      args.schema,
+      args.document,
+      args.rootValue,
+      args.contextValue,
+      args.variableValues,
+      args.operationName,
+      args.fieldResolver
     );
   } catch (error) {
     return Promise.resolve({ errors: [ error ] });
@@ -213,7 +195,7 @@ function executeImpl(
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
   return Promise.resolve(
-    executeOperation(context, context.operation, rootValue)
+    executeOperation(context)
   ).then(data => context.errors.length === 0 ?
     { data } :
     { errors: context.errors, data }
@@ -341,10 +323,9 @@ export function buildExecutionContext(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-  operation: OperationDefinitionNode,
-  rootValue: mixed
 ): ?{[key: string]: mixed} {
-  const type = getOperationRootType(exeContext.schema, operation);
+  const { schema, operation, rootValue } = exeContext;
+  const type = getOperationRootType(schema, operation);
   const fields = collectFields(
     exeContext,
     type,

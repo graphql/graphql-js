@@ -75,49 +75,31 @@ export function graphql(
   fieldResolver
 ) {
   // Extract arguments from object args if provided.
-  const args = arguments.length === 1 ? argsOrSchema : undefined;
-  const schema = args ? args.schema : argsOrSchema;
-  return args ?
-    graphqlImpl(
-      schema,
-      args.source,
-      args.rootValue,
-      args.contextValue,
-      args.variableValues,
-      args.operationName,
-      args.fieldResolver
-    ) :
-    graphqlImpl(
-      schema,
+  return arguments.length === 1 ?
+    graphqlImpl(argsOrSchema) :
+    graphqlImpl({
+      schema: argsOrSchema,
       source,
       rootValue,
       contextValue,
       variableValues,
       operationName,
       fieldResolver
-    );
+    });
 }
 
-function graphqlImpl(
-  schema,
-  source,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver
-) {
+function graphqlImpl(args) {
   return new Promise(resolve => {
     // Parse
     let document;
     try {
-      document = parse(source);
+      document = parse(args.source);
     } catch (syntaxError) {
       return resolve({ errors: [ syntaxError ]});
     }
 
     // Validate
-    const validationErrors = validate(schema, document);
+    const validationErrors = validate(args.schema, document);
     if (validationErrors.length > 0) {
       return resolve({ errors: validationErrors });
     }
@@ -125,13 +107,13 @@ function graphqlImpl(
     // Execute
     resolve(
       execute(
-        schema,
+        args.schema,
         document,
-        rootValue,
-        contextValue,
-        variableValues,
-        operationName,
-        fieldResolver
+        args.rootValue,
+        args.contextValue,
+        args.variableValues,
+        args.operationName,
+        args.fieldResolver
       )
     );
   });
