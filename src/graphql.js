@@ -75,20 +75,18 @@ export function graphql(
   fieldResolver
 ) {
   // Extract arguments from object args if provided.
-  const args = arguments.length === 1 ? argsOrSchema : undefined;
-  const schema = args ? args.schema : argsOrSchema;
-  return args ?
+  return arguments.length === 1 ?
     graphqlImpl(
-      schema,
-      args.source,
-      args.rootValue,
-      args.contextValue,
-      args.variableValues,
-      args.operationName,
-      args.fieldResolver
+      argsOrSchema.schema,
+      argsOrSchema.source,
+      argsOrSchema.rootValue,
+      argsOrSchema.contextValue,
+      argsOrSchema.variableValues,
+      argsOrSchema.operationName,
+      argsOrSchema.fieldResolver
     ) :
     graphqlImpl(
-      schema,
+      argsOrSchema,
       source,
       rootValue,
       contextValue,

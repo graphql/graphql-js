@@ -149,20 +149,18 @@ export function execute(
   fieldResolver
 ) {
   // Extract arguments from object args if provided.
-  const args = arguments.length === 1 ? argsOrSchema : undefined;
-  const schema = args ? args.schema : argsOrSchema;
-  return args ?
+  return arguments.length === 1 ?
     executeImpl(
-      schema,
-      args.document,
-      args.rootValue,
-      args.contextValue,
-      args.variableValues,
-      args.operationName,
-      args.fieldResolver
+      argsOrSchema.schema,
+      argsOrSchema.document,
+      argsOrSchema.rootValue,
+      argsOrSchema.contextValue,
+      argsOrSchema.variableValues,
+      argsOrSchema.operationName,
+      argsOrSchema.fieldResolver
     ) :
     executeImpl(
-      schema,
+      argsOrSchema,
       document,
       rootValue,
       contextValue,
