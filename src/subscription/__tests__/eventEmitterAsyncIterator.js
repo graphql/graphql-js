@@ -53,7 +53,9 @@ export default function eventEmitterAsyncIterator(
     }
   }
 
-  return {
+  /* TODO: Flow doesn't support symbols as keys:
+     https://github.com/facebook/flow/issues/3258 */
+  return ({
     next() {
       return listening ? pullValue() : this.return();
     },
@@ -68,5 +70,5 @@ export default function eventEmitterAsyncIterator(
     [$$asyncIterator]() {
       return this;
     },
-  };
+  }: any);
 }

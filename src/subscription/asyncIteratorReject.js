@@ -18,7 +18,9 @@ import { $$asyncIterator } from 'iterall';
  */
 export default function asyncIteratorReject(error: Error): AsyncIterator<void> {
   let isComplete = false;
-  return {
+  /* TODO: Flow doesn't support symbols as keys:
+     https://github.com/facebook/flow/issues/3258 */
+  return ({
     next() {
       const result = isComplete ?
         Promise.resolve({ value: undefined, done: true }) :
@@ -37,5 +39,5 @@ export default function asyncIteratorReject(error: Error): AsyncIterator<void> {
     [$$asyncIterator]() {
       return this;
     },
-  };
+  }: any);
 }
