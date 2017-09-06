@@ -18,6 +18,7 @@ import { $$asyncIterator } from 'iterall';
  *
  * Should return AsyncIterator<void>
  *   used `any` until Flowtype get proper symbol support ($$asyncIterator)
+ *   https://github.com/facebook/flow/issues/3258
  */
 export default function asyncIteratorReject(error: Error): any {
   let isComplete = false;
