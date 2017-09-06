@@ -14,12 +14,16 @@ import { $$asyncIterator, getAsyncIterator } from 'iterall';
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
+ *
+ * Should return `AsyncGenerator<U, void, void>`
+ *   used `any` until Flowtype get proper symbol support ($$asyncIterator)
+ *   https://github.com/facebook/flow/issues/3258
  */
 export default function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T>,
   callback: T => Promise<U> | U,
   rejectCallback?: any => Promise<U> | U
-): AsyncGenerator<U, void, void> {
+): any {
   const iterator = getAsyncIterator(iterable);
   let $return;
   let abruptClose;
