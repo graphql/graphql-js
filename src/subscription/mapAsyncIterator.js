@@ -45,7 +45,9 @@ export default function mapAsyncIterator<T, U>(
       asyncMapValue(error, reject).then(iteratorResult, abruptClose);
   }
 
-  return {
+  /* TODO: Flow doesn't support symbols as keys:
+     https://github.com/facebook/flow/issues/3258 */
+  return ({
     next() {
       return iterator.next().then(mapResult, mapReject);
     },
@@ -63,7 +65,7 @@ export default function mapAsyncIterator<T, U>(
     [$$asyncIterator]() {
       return this;
     },
-  };
+  }: any);
 }
 
 function asyncMapValue<T, U>(
