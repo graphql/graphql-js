@@ -81,7 +81,7 @@ type GraphQLInputType_<T> =
     GraphQLInputObjectType |
     GraphQLList<T>
   >;
-export type GraphQLInputType = GraphQLInputType_<*>
+export type GraphQLInputType = GraphQLInputType_<*>;
 
 export function isInputType(type: ?GraphQLType): boolean %checks {
   return (
@@ -219,7 +219,7 @@ type GraphQLNullableType_<T> =
   GraphQLEnumType |
   GraphQLInputObjectType |
   GraphQLList<T>;
-export type GraphQLNullableType = GraphQLNullableType_<*>
+export type GraphQLNullableType = GraphQLNullableType_<*>;
 
 export function getNullableType<T: GraphQLType>(
   type: ?T
