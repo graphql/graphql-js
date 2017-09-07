@@ -10,4 +10,4 @@
 export { execute, defaultFieldResolver, responsePathAsArray } from './execute';
 export { getDirectiveValues } from './values';
 
-export type { ExecutionResult } from './execute';
+export type { ExecutionArgs, ExecutionResult } from './execute';
