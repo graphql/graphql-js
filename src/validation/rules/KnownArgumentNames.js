@@ -15,17 +15,16 @@ import invariant from '../../jsutils/invariant';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
 import * as Kind from '../../language/kinds';
-import type { GraphQLType } from '../../type/definition';
 
 
 export function unknownArgMessage(
   argName: string,
   fieldName: string,
-  type: GraphQLType,
+  typeName: string,
   suggestedArgs: Array<string>
 ): string {
   let message = `Unknown argument "${argName}" on field "${fieldName}" of ` +
-    `type "${String(type)}".`;
+    `type "${typeName}".`;
   if (suggestedArgs.length) {
     message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
   }

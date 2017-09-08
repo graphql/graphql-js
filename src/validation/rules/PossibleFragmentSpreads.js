@@ -12,6 +12,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
+import { isCompositeType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
 
 
@@ -44,8 +45,8 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
     InlineFragment(node) {
       const fragType = context.getType();
       const parentType = context.getParentType();
-      if (fragType &&
-          parentType &&
+      if (isCompositeType(fragType) &&
+          isCompositeType(parentType) &&
           !doTypesOverlap(context.getSchema(), fragType, parentType)) {
         context.reportError(new GraphQLError(
           typeIncompatibleAnonSpreadMessage(parentType, fragType),
