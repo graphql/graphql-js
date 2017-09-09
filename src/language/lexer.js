@@ -40,9 +40,7 @@ export function createLexer<TOptions>(
 function advanceLexer() {
   let token = this.lastToken = this.token;
   if (token.kind !== EOF) {
-    do {
-      token = token.next = readToken(this, token);
-    } while (token.kind === COMMENT);
+    token = token.next = readToken(this, token);
     this.token = token;
   }
   return token;

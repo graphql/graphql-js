@@ -21,6 +21,7 @@ export const VARIABLE = 'Variable';
 export const SELECTION_SET = 'SelectionSet';
 export const FIELD = 'Field';
 export const ARGUMENT = 'Argument';
+export const COMMENT = 'Comment';
 
 // Fragments
 

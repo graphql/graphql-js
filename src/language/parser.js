@@ -33,6 +33,7 @@ import type {
   SelectionNode,
   FieldNode,
   ArgumentNode,
+  CommentNode,
 
   FragmentSpreadNode,
   InlineFragmentNode,
@@ -80,6 +81,7 @@ import {
   SELECTION_SET,
   FIELD,
   ARGUMENT,
+  COMMENT,
 
   FRAGMENT_SPREAD,
   INLINE_FRAGMENT,
@@ -431,6 +433,19 @@ function parseArgument(lexer: Lexer<*>): ArgumentNode {
     kind: ARGUMENT,
     name: parseName(lexer),
     value: (expect(lexer, TokenKind.COLON), parseValueLiteral(lexer, false)),
+    loc: loc(lexer, start)
+  };
+}
+
+/**
+ * Coment : Value
+ */
+// FIXME This is never used anywhere
+function parseComment(lexer: Lexer<*>): CommentNode {
+  const start = lexer.token;
+  return {
+    kind: COMMENT,
+    value: expect(lexer, TokenKind.COMMENT),
     loc: loc(lexer, start)
   };
 }

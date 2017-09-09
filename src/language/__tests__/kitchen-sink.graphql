@@ -52,6 +52,7 @@ fragment frag on Friend {
 }
 
 {
+  # Here is a comment
   unnamed(truthy: true, falsey: false, nullish: null),
   query
 }

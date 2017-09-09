@@ -52,6 +52,8 @@ const printDocASTReducer = {
 
   Argument: ({ name, value }) => name + ': ' + value,
 
+  Comment: ({ value }) => '# ' + value,
+
   // Fragments
 
   FragmentSpread: ({ name, directives }) =>

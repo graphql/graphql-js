@@ -126,6 +126,7 @@ export type ASTNode =
   | SelectionSetNode
   | FieldNode
   | ArgumentNode
+  | CommentNode
   | FragmentSpreadNode
   | InlineFragmentNode
   | FragmentDefinitionNode
@@ -232,6 +233,11 @@ export type ArgumentNode = {
   value: ValueNode;
 };
 
+export type CommentNode = {
+  kind: 'Comment';
+  loc?: Location;
+  value: string;
+};
 
 // Fragments
 

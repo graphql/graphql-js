@@ -18,6 +18,7 @@ export const QueryDocumentKeys = {
   SelectionSet: [ 'selections' ],
   Field: [ 'alias', 'name', 'arguments', 'directives', 'selectionSet' ],
   Argument: [ 'name', 'value' ],
+  Comment: [],
 
   FragmentSpread: [ 'name', 'directives' ],
   InlineFragment: [ 'typeCondition', 'directives', 'selectionSet' ],

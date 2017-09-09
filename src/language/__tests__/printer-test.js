@@ -36,6 +36,18 @@ describe('Printer', () => {
   });
 
   it('correctly prints non-query operations without name', () => {
+    const queryWithComment = parse(dedent`query {
+      # Test
+      id
+    }`);
+    console.log(JSON.stringify(queryWithComment, null, 2));
+    expect(print(queryWithComment)).to.equal(dedent`
+      {
+        # Test
+        id
+      }
+    `);
+
     const queryAstShorthanded = parse('query { id, name }');
     expect(print(queryAstShorthanded)).to.equal(dedent`
       {
