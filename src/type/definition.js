@@ -634,7 +634,7 @@ export type GraphQLResolveInfo = {
   fieldName: string;
   fieldNodes: Array<FieldNode>;
   returnType: GraphQLOutputType;
-  parentType: GraphQLCompositeType;
+  parentType: GraphQLObjectType;
   path: ResponsePath;
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDefinitionNode>;
@@ -643,7 +643,7 @@ export type GraphQLResolveInfo = {
   variableValues: {[variable: string]: mixed};
 };
 
-export type ResponsePath = { prev: ResponsePath, key: string | number } | void;
+export type ResponsePath = { prev: ?ResponsePath, key: string | number };
 
 export type GraphQLFieldConfig<TSource, TContext> = {
   type: GraphQLOutputType;
