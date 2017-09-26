@@ -25,6 +25,7 @@ import { GraphQLDirective, specifiedDirectives } from './directives';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
+import attachHasInstanceSymbol from '../utilities/attachHasInstanceSymbol';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 
@@ -220,6 +221,8 @@ export class GraphQLSchema {
     return find(this.getDirectives(), directive => directive.name === name);
   }
 }
+
+attachHasInstanceSymbol(GraphQLSchema);
 
 type TypeMap = { [typeName: string]: GraphQLNamedType };
 
