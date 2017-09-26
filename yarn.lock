@@ -1677,9 +1677,9 @@ istanbul@^0.4.0:
     which "^1.1.1"
     wordwrap "^1.0.0"
 
-iterall@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/iterall/-/iterall-1.1.1.tgz#f7f0af11e9a04ec6426260f5019d9fcca4d50214"
+iterall@1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/iterall/-/iterall-1.1.2.tgz#413332b3cdb46f8f5ede57d6cd8e3ca8a9df8816"
 
 jodid25519@^1.0.0:
   version "1.0.2"
