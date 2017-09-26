@@ -100,4 +100,4 @@ git push --follow-tags
 ## License
 
 By contributing to graphql-js, you agree that your contributions will be
-licensed under its BSD license.
+licensed under its MIT license.

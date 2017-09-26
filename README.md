@@ -130,5 +130,4 @@ Changes are tracked as [GitHub releases](https://github.com/graphql/graphql-js/r
 
 ### License
 
-GraphQL is [BSD-licensed](https://github.com/graphql/graphql-js/blob/master/LICENSE).
-We also provide an additional [patent grant](https://github.com/graphql/graphql-js/blob/master/PATENTS).
+GraphQL.js is [MIT-licensed](https://github.com/graphql/graphql-js/blob/master/LICENSE).

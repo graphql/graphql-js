@@ -7,7 +7,7 @@
     "Nicholas Schrock <schrockn@fb.com>",
     "Daniel Schafer <dschafer@fb.com>"
   ],
-  "license": "BSD-3-Clause",
+  "license": "MIT",
   "main": "index.js",
   "homepage": "https://github.com/graphql/graphql-js",
   "bugs": {
