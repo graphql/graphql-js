@@ -51,8 +51,8 @@ import type {
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: Array<VariableDefinitionNode>,
-  inputs: { [key: string]: mixed }
-): { [key: string]: mixed } {
+  inputs: { [key: string]: mixed, __proto__: null }
+): { [key: string]: mixed, __proto__: null } {
   const coercedValues = Object.create(null);
   for (let i = 0; i < varDefNodes.length; i++) {
     const varDefNode = varDefNodes[i];
@@ -105,8 +105,8 @@ export function getVariableValues(
 export function getArgumentValues(
   def: GraphQLField<*, *> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
-  variableValues?: ?{ [key: string]: mixed }
-): { [key: string]: mixed } {
+  variableValues?: ?{ [key: string]: mixed, __proto__: null }
+): { [key: string]: mixed, __proto__: null } {
   const argDefs = def.args;
   const argNodes = node.arguments;
   if (!argDefs || !argNodes) {
@@ -174,8 +174,8 @@ export function getArgumentValues(
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: { directives?: ?Array<DirectiveNode> },
-  variableValues?: ?{ [key: string]: mixed }
-): void | { [key: string]: mixed } {
+  variableValues?: ?{ [key: string]: mixed, __proto__: null }
+): void | { [key: string]: mixed, __proto__: null } {
   const directiveNode = node.directives && find(
     node.directives,
     directive => directive.name.value === directiveDef.name

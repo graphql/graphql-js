@@ -7,6 +7,8 @@
  * @flow
  */
 
+import type {ObjMap} from './ObjMap';
+
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
  * for each value in the array.
@@ -33,7 +35,7 @@
 export default function keyMap<T>(
   list: Array<T>,
   keyFn: (item: T) => string
-): {[key: string]: T} {
+): ObjMap<T> {
   return list.reduce(
     (map, item) => ((map[keyFn(item)] = item), map),
     Object.create(null)

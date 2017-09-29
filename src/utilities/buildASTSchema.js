@@ -9,6 +9,7 @@
 
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
+import type {ObjMap} from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
@@ -133,7 +134,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   let schemaDef: ?SchemaDefinitionNode;
 
   const typeDefs: Array<TypeDefinitionNode> = [];
-  const nodeMap: {[name: string]: TypeDefinitionNode} = Object.create(null);
+  const nodeMap: ObjMap<TypeDefinitionNode> = Object.create(null);
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
   for (let i = 0; i < ast.definitions.length; i++) {
     const d = ast.definitions[i];
