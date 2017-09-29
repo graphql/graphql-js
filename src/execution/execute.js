@@ -8,10 +8,11 @@
  */
 
 import { forEach, isCollection } from 'iterall';
-
 import { GraphQLError, locatedError } from '../error';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import type {ObjMap} from '../jsutils/ObjMap';
+
 import { typeFromAST } from '../utilities/typeFromAST';
 import * as Kind from '../language/kinds';
 import {
@@ -84,11 +85,11 @@ import type {
  */
 export type ExecutionContext = {
   schema: GraphQLSchema;
-  fragments: {[key: string]: FragmentDefinitionNode};
+  fragments: ObjMap<FragmentDefinitionNode>;
   rootValue: mixed;
   contextValue: mixed;
   operation: OperationDefinitionNode;
-  variableValues: {[key: string]: mixed};
+  variableValues: ObjMap<mixed>,
   fieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
 };
@@ -278,14 +279,13 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: mixed,
   contextValue: mixed,
-  rawVariableValues: ?{[key: string]: mixed},
+  rawVariableValues: ?ObjMap<mixed>,
   operationName: ?string,
   fieldResolver: ?GraphQLFieldResolver<any, any>
 ): ExecutionContext {
   const errors: Array<GraphQLError> = [];
   let operation: ?OperationDefinitionNode;
-  const fragments: {[name: string]: FragmentDefinitionNode} =
-    Object.create(null);
+  const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   document.definitions.forEach(definition => {
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
@@ -340,7 +340,7 @@ function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: mixed
-): ?{[key: string]: mixed} {
+): ?(Promise<?ObjMap<mixed>> | ObjMap<mixed>) {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
@@ -420,8 +420,8 @@ function executeFieldsSerially(
   parentType: GraphQLObjectType,
   sourceValue: mixed,
   path: ResponsePath,
-  fields: {[key: string]: Array<FieldNode>}
-): Promise<{[key: string]: mixed}> {
+  fields: ObjMap<Array<FieldNode>>,
+): Promise<ObjMap<mixed>> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
       const fieldNodes = fields[responseName];
@@ -459,8 +459,8 @@ function executeFields(
   parentType: GraphQLObjectType,
   sourceValue: mixed,
   path: ResponsePath,
-  fields: {[key: string]: Array<FieldNode>}
-): {[key: string]: mixed} {
+  fields: ObjMap<Array<FieldNode>>,
+): Promise<ObjMap<mixed>> | ObjMap<mixed> {
   let containsPromise = false;
 
   const finalResults = Object.keys(fields).reduce(
@@ -510,9 +510,9 @@ export function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: {[key: string]: Array<FieldNode>},
-  visitedFragmentNames: {[key: string]: boolean}
-): {[key: string]: Array<FieldNode>} {
+  fields: ObjMap<Array<FieldNode>>,
+  visitedFragmentNames: ObjMap<boolean>,
+): ObjMap<Array<FieldNode>> {
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
     switch (selection.kind) {
@@ -621,9 +621,7 @@ function doesFragmentConditionMatch(
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
-function promiseForObject<T>(
-  object: {[key: string]: Promise<T>}
-): Promise<{[key: string]: T}> {
+function promiseForObject<T>(object: ObjMap<Promise<T>>): Promise<ObjMap<T>> {
   const keys = Object.keys(object);
   const valuesAndPromises = keys.map(name => object[name]);
   return Promise.all(valuesAndPromises).then(

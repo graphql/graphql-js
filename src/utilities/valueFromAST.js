@@ -11,6 +11,7 @@ import keyMap from '../jsutils/keyMap';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
+import type {ObjMap} from '../jsutils/ObjMap';
 import * as Kind from '../language/kinds';
 import {
   GraphQLScalarType,
@@ -51,7 +52,7 @@ import type {
 export function valueFromAST(
   valueNode: ?ValueNode,
   type: GraphQLInputType,
-  variables?: ?{ [key: string]: mixed }
+  variables?: ?ObjMap<mixed>
 ): mixed | void {
   if (!valueNode) {
     // When there is no node, then there is also no value.

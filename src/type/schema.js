@@ -25,6 +25,7 @@ import { GraphQLDirective, specifiedDirectives } from './directives';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
+import type {ObjMap} from '../jsutils/ObjMap';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 
@@ -61,10 +62,8 @@ export class GraphQLSchema {
   _subscriptionType: ?GraphQLObjectType;
   _directives: Array<GraphQLDirective>;
   _typeMap: TypeMap;
-  _implementations: { [interfaceName: string]: Array<GraphQLObjectType> };
-  _possibleTypeMap: ?{
-    [abstractName: string]: { [possibleName: string]: boolean }
-  };
+  _implementations: ObjMap<Array<GraphQLObjectType>>;
+  _possibleTypeMap: ?ObjMap<{[possibleName: string]: boolean}>;
 
   constructor(config: GraphQLSchemaConfig): void {
     invariant(
@@ -221,7 +220,7 @@ export class GraphQLSchema {
   }
 }
 
-type TypeMap = { [typeName: string]: GraphQLNamedType };
+type TypeMap = ObjMap<GraphQLNamedType>;
 
 type GraphQLSchemaConfig = {
   query: GraphQLObjectType;

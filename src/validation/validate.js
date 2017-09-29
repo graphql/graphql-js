@@ -8,6 +8,7 @@
  */
 
 import invariant from '../jsutils/invariant';
+import type {ObjMap} from '../jsutils/ObjMap';
 import { GraphQLError } from '../error';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import * as Kind from '../language/kinds';
@@ -101,7 +102,7 @@ export class ValidationContext {
   _ast: DocumentNode;
   _typeInfo: TypeInfo;
   _errors: Array<GraphQLError>;
-  _fragments: {[name: string]: FragmentDefinitionNode};
+  _fragments: ObjMap<FragmentDefinitionNode>;
   _fragmentSpreads: Map<SelectionSetNode, Array<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
     OperationDefinitionNode,

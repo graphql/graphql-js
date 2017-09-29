@@ -10,6 +10,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import find from '../../jsutils/find';
+import type {ObjMap} from '../../jsutils/ObjMap';
 import type {
   SelectionSetNode,
   FieldNode,
@@ -99,7 +100,7 @@ type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining a field node in a context.
 type NodeAndDef = [ GraphQLCompositeType, FieldNode, ?GraphQLField<*, *> ];
 // Map of array of those.
-type NodeAndDefCollection = { [key: string]: Array<NodeAndDef> };
+type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
 
 /**
  * Algorithm:
@@ -773,7 +774,7 @@ function subfieldConflicts(
  * not matter. We do this by maintaining a sort of double adjacency sets.
  */
 class PairSet {
-  _data: {[a: string]: {[b: string]: boolean}};
+  _data: ObjMap<ObjMap<boolean>>;
 
   constructor(): void {
     this._data = Object.create(null);
