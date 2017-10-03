@@ -15,7 +15,6 @@ import {
   graphql,
   GraphQLSchema,
   GraphQLObjectType,
-  GraphQLList,
   GraphQLInputObjectType,
   GraphQLString,
   GraphQLEnumType,
@@ -823,7 +822,7 @@ describe('Introspection', () => {
       name: 'TestInputObject',
       fields: {
         a: { type: GraphQLString, defaultValue: 'foo' },
-        b: { type: new GraphQLList(GraphQLString) },
+        b: { type: GraphQLString.wrapList() },
         c: { type: GraphQLString, defaultValue: null }
       }
     });

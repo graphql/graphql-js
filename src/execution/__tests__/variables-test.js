@@ -17,7 +17,6 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLInputObjectType,
-  GraphQLList,
   GraphQLString,
   GraphQLNonNull,
   GraphQLScalarType
@@ -49,7 +48,7 @@ const TestInputObject = new GraphQLInputObjectType({
   name: 'TestInputObject',
   fields: {
     a: { type: GraphQLString },
-    b: { type: new GraphQLList(GraphQLString) },
+    b: { type: GraphQLString.wrapList() },
     c: { type: new GraphQLNonNull(GraphQLString) },
     d: { type: TestComplexScalar },
   }
@@ -97,23 +96,23 @@ const TestType = new GraphQLObjectType({
     },
     list: {
       type: GraphQLString,
-      args: { input: { type: new GraphQLList(GraphQLString) } },
+      args: { input: { type: GraphQLString.wrapList() } },
       resolve: (_, { input }) => input && JSON.stringify(input)
     },
     nnList: {
       type: GraphQLString,
-      args: { input: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) } },
+      args: { input: { type: new GraphQLNonNull(GraphQLString.wrapList()) } },
       resolve: (_, { input }) => input && JSON.stringify(input)
     },
     listNN: {
       type: GraphQLString,
-      args: { input: { type: new GraphQLList(new GraphQLNonNull(GraphQLString)) } },
+      args: { input: { type: (new GraphQLNonNull(GraphQLString)).wrapList() } },
       resolve: (_, { input }) => input && JSON.stringify(input)
     },
     nnListNN: {
       type: GraphQLString,
       args: { input: { type:
-        new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLString)))
+        new GraphQLNonNull((new GraphQLNonNull(GraphQLString)).wrapList())
       } },
       resolve: (_, { input }) => input && JSON.stringify(input)
     },

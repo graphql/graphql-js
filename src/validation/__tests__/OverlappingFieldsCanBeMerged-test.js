@@ -21,7 +21,6 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLInterfaceType,
-  GraphQLList,
   GraphQLNonNull,
   GraphQLInt,
   GraphQLString,
@@ -485,7 +484,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         scalar: { type: GraphQLString },
         deepBox: { type: StringBox },
         unrelatedField: { type: GraphQLString },
-        listStringBox: { type: new GraphQLList(StringBox) },
+        listStringBox: { type: StringBox.wrapList() },
         stringBox: { type: StringBox },
         intBox: { type: IntBox },
       })
@@ -498,7 +497,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         scalar: { type: GraphQLInt },
         deepBox: { type: IntBox },
         unrelatedField: { type: GraphQLString },
-        listStringBox: { type: new GraphQLList(StringBox) },
+        listStringBox: { type: StringBox.wrapList() },
         stringBox: { type: StringBox },
         intBox: { type: IntBox },
       })
@@ -544,7 +543,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       name: 'Connection',
       fields: {
         edges: {
-          type: new GraphQLList(new GraphQLObjectType({
+          type: (new GraphQLObjectType({
             name: 'Edge',
             fields: {
               node: {
@@ -557,7 +556,7 @@ describe('Validate: Overlapping fields can be merged', () => {
                 })
               }
             }
-          }))
+          })).wrapList()
         }
       }
     });

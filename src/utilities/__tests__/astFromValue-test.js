@@ -11,7 +11,6 @@ import { astFromValue } from '../astFromValue';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
@@ -197,7 +196,7 @@ describe('astFromValue', () => {
 
   it('converts array values to List ASTs', () => {
     expect(
-      astFromValue([ 'FOO', 'BAR' ], new GraphQLList(GraphQLString))
+      astFromValue([ 'FOO', 'BAR' ], GraphQLString.wrapList())
     ).to.deep.equal(
       { kind: 'ListValue',
         values: [
@@ -206,7 +205,7 @@ describe('astFromValue', () => {
     );
 
     expect(
-      astFromValue([ 'HELLO', 'GOODBYE' ], new GraphQLList(myEnum))
+      astFromValue([ 'HELLO', 'GOODBYE' ], myEnum.wrapList())
     ).to.deep.equal(
       { kind: 'ListValue',
         values: [
@@ -218,7 +217,7 @@ describe('astFromValue', () => {
   it('converts list singletons', () => {
     expect(astFromValue(
       'FOO',
-      new GraphQLList(GraphQLString)
+      GraphQLString.wrapList()
     )).to.deep.equal(
       { kind: 'StringValue', value: 'FOO' }
     );

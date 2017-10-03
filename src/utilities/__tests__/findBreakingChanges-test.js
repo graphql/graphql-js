@@ -12,7 +12,6 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
-  GraphQLList,
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLString,
@@ -150,20 +149,20 @@ describe('findBreakingChanges', () => {
         field3: { type: GraphQLString },
         field4: { type: TypeA },
         field6: { type: GraphQLString },
-        field7: { type: new GraphQLList(GraphQLString) },
+        field7: { type: GraphQLString.wrapList() },
         field8: { type: GraphQLInt },
         field9: { type: new GraphQLNonNull(GraphQLInt) },
-        field10: { type: new GraphQLNonNull(new GraphQLList(GraphQLInt)) },
+        field10: { type: new GraphQLNonNull(GraphQLInt.wrapList()) },
         field11: { type: GraphQLInt },
-        field12: { type: new GraphQLList(GraphQLInt) },
-        field13: { type: new GraphQLList(new GraphQLNonNull(GraphQLInt)) },
-        field14: { type: new GraphQLList(GraphQLInt) },
-        field15: { type: new GraphQLList(new GraphQLList(GraphQLInt)) },
+        field12: { type: GraphQLInt.wrapList() },
+        field13: { type: (new GraphQLNonNull(GraphQLInt)).wrapList() },
+        field14: { type: GraphQLInt.wrapList() },
+        field15: { type: GraphQLInt.wrapList().wrapList() },
         field16: { type: new GraphQLNonNull(GraphQLInt) },
-        field17: { type: new GraphQLList(GraphQLInt) },
+        field17: { type: GraphQLInt.wrapList() },
         field18: {
-          type: new GraphQLList(new GraphQLNonNull(
-            new GraphQLList(new GraphQLNonNull(GraphQLInt)))),
+          type: (new GraphQLNonNull(
+            (new GraphQLNonNull(GraphQLInt)).wrapList())).wrapList(),
         },
       }
     });
@@ -174,21 +173,20 @@ describe('findBreakingChanges', () => {
         field3: { type: GraphQLBoolean },
         field4: { type: TypeB },
         field5: { type: GraphQLString },
-        field6: { type: new GraphQLList(GraphQLString) },
+        field6: { type: GraphQLString.wrapList() },
         field7: { type: GraphQLString },
         field8: { type: new GraphQLNonNull(GraphQLInt) },
         field9: { type: GraphQLInt },
-        field10: { type: new GraphQLList(GraphQLInt) },
-        field11: { type: new GraphQLNonNull(new GraphQLList(GraphQLInt)) },
-        field12: { type: new GraphQLList(new GraphQLNonNull(GraphQLInt)) },
-        field13: { type: new GraphQLList(GraphQLInt) },
-        field14: { type: new GraphQLList(new GraphQLList(GraphQLInt)) },
-        field15: { type: new GraphQLList(GraphQLInt) },
-        field16: { type: new GraphQLNonNull(new GraphQLList(GraphQLInt)) },
-        field17: { type: new GraphQLNonNull(new GraphQLList(GraphQLInt)) },
+        field10: { type: GraphQLInt.wrapList() },
+        field11: { type: new GraphQLNonNull(GraphQLInt.wrapList()) },
+        field12: { type: (new GraphQLNonNull(GraphQLInt)).wrapList() },
+        field13: { type: GraphQLInt.wrapList() },
+        field14: { type: GraphQLInt.wrapList().wrapList() },
+        field15: { type: GraphQLInt.wrapList() },
+        field16: { type: new GraphQLNonNull(GraphQLInt.wrapList()) },
+        field17: { type: new GraphQLNonNull(GraphQLInt.wrapList()) },
         field18: {
-          type: new GraphQLList(
-            new GraphQLList(new GraphQLNonNull(GraphQLInt))),
+          type: (new GraphQLNonNull(GraphQLInt)).wrapList().wrapList(),
         },
       }
     });
@@ -278,7 +276,7 @@ describe('findBreakingChanges', () => {
             type: GraphQLBoolean,
           },
           field3: {
-            type: new GraphQLList(GraphQLString),
+            type: GraphQLString.wrapList(),
           },
           field4: {
             type: new GraphQLNonNull(GraphQLString),
@@ -287,36 +285,36 @@ describe('findBreakingChanges', () => {
             type: GraphQLString,
           },
           field6: {
-            type: new GraphQLList(GraphQLInt),
+            type: GraphQLInt.wrapList(),
           },
           field7: {
-            type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+            type: new GraphQLNonNull(GraphQLInt.wrapList()),
           },
           field8: {
             type: GraphQLInt,
           },
           field9: {
-            type: new GraphQLList(GraphQLInt),
+            type: GraphQLInt.wrapList(),
           },
           field10: {
-            type: new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+            type: (new GraphQLNonNull(GraphQLInt)).wrapList(),
           },
           field11: {
-            type: new GraphQLList(GraphQLInt),
+            type: GraphQLInt.wrapList(),
           },
           field12: {
-            type: new GraphQLList(new GraphQLList(GraphQLInt)),
+            type: GraphQLInt.wrapList().wrapList(),
           },
           field13: {
             type: new GraphQLNonNull(GraphQLInt),
           },
           field14: {
-            type: new GraphQLList(new GraphQLNonNull(
-              new GraphQLList(GraphQLInt))),
+            type: (new GraphQLNonNull(
+              GraphQLInt.wrapList())).wrapList(),
           },
           field15: {
-            type: new GraphQLList(new GraphQLNonNull(
-              new GraphQLList(GraphQLInt))),
+            type: (new GraphQLNonNull(
+              GraphQLInt.wrapList())).wrapList(),
           },
         },
       });
@@ -336,35 +334,35 @@ describe('findBreakingChanges', () => {
             type: new GraphQLNonNull(GraphQLString),
           },
           field6: {
-            type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+            type: new GraphQLNonNull(GraphQLInt.wrapList()),
           },
           field7: {
-            type: new GraphQLList(GraphQLInt),
+            type: GraphQLInt.wrapList(),
           },
           field8: {
-            type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+            type: new GraphQLNonNull(GraphQLInt.wrapList()),
           },
           field9: {
-            type: new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+            type: (new GraphQLNonNull(GraphQLInt)).wrapList(),
           },
           field10: {
-            type: new GraphQLList(GraphQLInt),
+            type: GraphQLInt.wrapList(),
           },
           field11: {
-            type: new GraphQLList(new GraphQLList(GraphQLInt)),
+            type: GraphQLInt.wrapList().wrapList(),
           },
           field12: {
-            type: new GraphQLList(GraphQLInt),
+            type: GraphQLInt.wrapList(),
           },
           field13: {
-            type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+            type: new GraphQLNonNull(GraphQLInt.wrapList()),
           },
           field14: {
-            type: new GraphQLList(new GraphQLList(GraphQLInt)),
+            type: GraphQLInt.wrapList().wrapList(),
           },
           field15: {
-            type: new GraphQLList(new GraphQLNonNull(
-              new GraphQLList(new GraphQLNonNull(GraphQLInt)))),
+            type: (new GraphQLNonNull(
+              (new GraphQLNonNull(GraphQLInt)).wrapList())).wrapList(),
           },
         },
       });
@@ -699,7 +697,7 @@ describe('findBreakingChanges', () => {
               type: GraphQLString,
             },
             arg3: {
-              type: new GraphQLList(GraphQLString),
+              type: GraphQLString.wrapList(),
             },
             arg4: {
               type: GraphQLString,
@@ -711,33 +709,33 @@ describe('findBreakingChanges', () => {
               type: new GraphQLNonNull(GraphQLString),
             },
             arg7: {
-              type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+              type: new GraphQLNonNull(GraphQLInt.wrapList()),
             },
             arg8: {
               type: GraphQLInt,
             },
             arg9: {
-              type: new GraphQLList(GraphQLInt),
+              type: GraphQLInt.wrapList(),
             },
             arg10: {
-              type: new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+              type: (new GraphQLNonNull(GraphQLInt)).wrapList(),
             },
             arg11: {
-              type: new GraphQLList(GraphQLInt),
+              type: GraphQLInt.wrapList(),
             },
             arg12: {
-              type: new GraphQLList(new GraphQLList(GraphQLInt)),
+              type: GraphQLInt.wrapList().wrapList(),
             },
             arg13: {
               type: new GraphQLNonNull(GraphQLInt),
             },
             arg14: {
-              type: new GraphQLList(new GraphQLNonNull(
-                new GraphQLList(GraphQLInt))),
+              type: (new GraphQLNonNull(
+                GraphQLInt.wrapList())).wrapList(),
             },
             arg15: {
-              type: new GraphQLList(new GraphQLNonNull(
-                new GraphQLList(GraphQLInt))),
+              type: (new GraphQLNonNull(
+                GraphQLInt.wrapList())).wrapList(),
             },
           },
         },
@@ -754,7 +752,7 @@ describe('findBreakingChanges', () => {
               type: GraphQLInt,
             },
             arg2: {
-              type: new GraphQLList(GraphQLString),
+              type: GraphQLString.wrapList(),
             },
             arg3: {
               type: GraphQLString,
@@ -769,32 +767,32 @@ describe('findBreakingChanges', () => {
               type: new GraphQLNonNull(GraphQLInt),
             },
             arg7: {
-              type: new GraphQLList(GraphQLInt),
+              type: GraphQLInt.wrapList(),
             },
             arg8: {
-              type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+              type: new GraphQLNonNull(GraphQLInt.wrapList()),
             },
             arg9: {
-              type: new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+              type: (new GraphQLNonNull(GraphQLInt)).wrapList(),
             },
             arg10: {
-              type: new GraphQLList(GraphQLInt),
+              type: GraphQLInt.wrapList(),
             },
             arg11: {
-              type: new GraphQLList(new GraphQLList(GraphQLInt)),
+              type: GraphQLInt.wrapList().wrapList(),
             },
             arg12: {
-              type: new GraphQLList(GraphQLInt),
+              type: GraphQLInt.wrapList(),
             },
             arg13: {
-              type: new GraphQLNonNull(new GraphQLList(GraphQLInt)),
+              type: new GraphQLNonNull(GraphQLInt.wrapList()),
             },
             arg14: {
-              type: new GraphQLList(new GraphQLList(GraphQLInt)),
+              type: GraphQLInt.wrapList().wrapList(),
             },
             arg15: {
-              type: new GraphQLList(new GraphQLNonNull(
-                new GraphQLList(new GraphQLNonNull(GraphQLInt)))),
+              type: (new GraphQLNonNull(
+                (new GraphQLNonNull(GraphQLInt)).wrapList())).wrapList(),
             },
           },
         },

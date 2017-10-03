@@ -441,7 +441,7 @@ export function extendSchema(
 
   function extendFieldType<T: GraphQLType>(typeDef: T): T {
     if (typeDef instanceof GraphQLList) {
-      return (new GraphQLList(extendFieldType(typeDef.ofType)): any);
+      return (extendFieldType(typeDef.ofType).wrapList(): any);
     }
     if (typeDef instanceof GraphQLNonNull) {
       return (new GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
@@ -585,7 +585,7 @@ export function extendSchema(
 
   function buildInputFieldType(typeNode: TypeNode): GraphQLInputType {
     if (typeNode.kind === Kind.LIST_TYPE) {
-      return new GraphQLList(buildInputFieldType(typeNode.type));
+      return buildInputFieldType(typeNode.type).wrapList();
     }
     if (typeNode.kind === Kind.NON_NULL_TYPE) {
       const nullableType = buildInputFieldType(typeNode.type);
@@ -597,7 +597,7 @@ export function extendSchema(
 
   function buildOutputFieldType(typeNode: TypeNode): GraphQLOutputType {
     if (typeNode.kind === Kind.LIST_TYPE) {
-      return new GraphQLList(buildOutputFieldType(typeNode.type));
+      return buildOutputFieldType(typeNode.type).wrapList();
     }
     if (typeNode.kind === Kind.NON_NULL_TYPE) {
       const nullableType = buildOutputFieldType(typeNode.type);

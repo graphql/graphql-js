@@ -12,7 +12,6 @@ import {
   GraphQLString,
   GraphQLInt,
   GraphQLFloat,
-  GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -35,13 +34,13 @@ describe('typeComparators', () => {
 
     it('lists of same type are equal', () => {
       expect(
-        isEqualType(new GraphQLList(GraphQLInt), new GraphQLList(GraphQLInt))
+        isEqualType(GraphQLInt.wrapList(), GraphQLInt.wrapList())
       ).to.equal(true);
     });
 
     it('lists is not equal to item', () => {
       expect(
-        isEqualType(new GraphQLList(GraphQLInt), GraphQLInt)
+        isEqualType(GraphQLInt.wrapList(), GraphQLInt)
       ).to.equal(false);
     });
 
@@ -104,14 +103,14 @@ describe('typeComparators', () => {
     it('item is not subtype of list', () => {
       const schema = testSchema({ field: { type: GraphQLString } });
       expect(
-        isTypeSubTypeOf(schema, GraphQLInt, new GraphQLList(GraphQLInt))
+        isTypeSubTypeOf(schema, GraphQLInt, GraphQLInt.wrapList())
       ).to.equal(false);
     });
 
     it('list is not subtype of item', () => {
       const schema = testSchema({ field: { type: GraphQLString } });
       expect(
-        isTypeSubTypeOf(schema, new GraphQLList(GraphQLInt), GraphQLInt)
+        isTypeSubTypeOf(schema, GraphQLInt.wrapList(), GraphQLInt)
       ).to.equal(false);
     });
 

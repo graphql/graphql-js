@@ -366,6 +366,10 @@ export class GraphQLScalarType {
     return this.name;
   }
 
+  wrapList(): GraphQLList<*> {
+    return new GraphQLList(this);
+  }
+
   toJSON: () => string;
   inspect: () => string;
 }
@@ -464,6 +468,10 @@ export class GraphQLObjectType {
 
   toString(): string {
     return this.name;
+  }
+
+  wrapList(): GraphQLList<*> {
+    return new GraphQLList(this);
   }
 
   toJSON: () => string;
@@ -743,6 +751,10 @@ export class GraphQLInterfaceType {
     return this.name;
   }
 
+  wrapList(): GraphQLList<*> {
+    return new GraphQLList(this);
+  }
+
   toJSON: () => string;
   inspect: () => string;
 }
@@ -822,6 +834,10 @@ export class GraphQLUnionType {
 
   toString(): string {
     return this.name;
+  }
+
+  wrapList(): GraphQLList<*> {
+    return new GraphQLList(this);
   }
 
   toJSON: () => string;
@@ -992,6 +1008,10 @@ export class GraphQLEnumType/* <T> */ {
     return this.name;
   }
 
+  wrapList(): GraphQLList<*> {
+    return new GraphQLList(this);
+  }
+
   toJSON: () => string;
   inspect: () => string;
 }
@@ -1151,6 +1171,10 @@ export class GraphQLInputObjectType {
     return this.name;
   }
 
+  wrapList(): GraphQLList<*> {
+    return new GraphQLList(this);
+  }
+
   toJSON: () => string;
   inspect: () => string;
 }
@@ -1223,6 +1247,10 @@ export class GraphQLList<T: GraphQLType> {
     return '[' + String(this.ofType) + ']';
   }
 
+  wrapList(): GraphQLList<*> {
+    return new GraphQLList(this);
+  }
+
   toJSON: () => string;
   inspect: () => string;
 }
@@ -1267,6 +1295,10 @@ export class GraphQLNonNull<T: GraphQLNullableType> {
 
   toString(): string {
     return this.ofType.toString() + '!';
+  }
+
+  wrapList(): GraphQLList<*> {
+    return new GraphQLList(this);
   }
 
   toJSON: () => string;

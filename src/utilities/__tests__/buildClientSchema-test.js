@@ -18,7 +18,6 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
   GraphQLNonNull,
   GraphQLInt,
   GraphQLFloat,
@@ -286,16 +285,16 @@ describe('Type System: build schema from introspection', () => {
         name: 'ComplexFields',
         fields: {
           string: { type: GraphQLString },
-          listOfString: { type: new GraphQLList(GraphQLString) },
+          listOfString: { type: GraphQLString.wrapList() },
           nonNullString: {
             type: new GraphQLNonNull(GraphQLString)
           },
           nonNullListOfString: {
-            type: new GraphQLNonNull(new GraphQLList(GraphQLString))
+            type: new GraphQLNonNull(GraphQLString.wrapList())
           },
           nonNullListOfNonNullString: {
             type: new GraphQLNonNull(
-              new GraphQLList(new GraphQLNonNull(GraphQLString))
+              (new GraphQLNonNull(GraphQLString)).wrapList()
             )
           },
         }
@@ -326,7 +325,7 @@ describe('Type System: build schema from introspection', () => {
             args: {
               listArg: {
                 description: 'This is an list of int arg',
-                type: new GraphQLList(GraphQLInt)
+                type: GraphQLInt.wrapList()
               },
               requiredArg: {
                 description: 'This is a required arg',
@@ -499,7 +498,7 @@ describe('Type System: build schema from introspection', () => {
             type: GraphQLString,
             args: {
               listArg: {
-                type: new GraphQLList(GraphQLInt),
+                type: GraphQLInt.wrapList(),
                 defaultValue: [ 1, 2, 3 ]
               }
             }
@@ -752,10 +751,15 @@ describe('Type System: build schema from introspection', () => {
           name: 'Query',
           fields: {
             foo: {
-              type: new GraphQLList(new GraphQLList(new GraphQLList(
-                new GraphQLList(new GraphQLList(new GraphQLList(
-                new GraphQLList(new GraphQLList(GraphQLString))
-              ))))))
+              type: GraphQLString
+                .wrapList()
+                .wrapList()
+                .wrapList()
+                .wrapList()
+                .wrapList()
+                .wrapList()
+                .wrapList()
+                .wrapList()
             }
           }
         })
@@ -773,10 +777,10 @@ describe('Type System: build schema from introspection', () => {
           name: 'Query',
           fields: {
             foo: {
-              type: new GraphQLList(new GraphQLNonNull(new GraphQLList(
-                new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(
-                new GraphQLList(new GraphQLNonNull(GraphQLString))
-              ))))))
+              type: (new GraphQLNonNull((
+                new GraphQLNonNull((new GraphQLNonNull(
+                (new GraphQLNonNull(GraphQLString)).wrapList()
+              )).wrapList())).wrapList())).wrapList()
             }
           }
         })
@@ -795,11 +799,11 @@ describe('Type System: build schema from introspection', () => {
           fields: {
             foo: {
               // e.g., fully non-null 3D matrix
-              type: new GraphQLNonNull(new GraphQLList(
-                new GraphQLNonNull(new GraphQLList(
-                new GraphQLNonNull(new GraphQLList(
+              type: new GraphQLNonNull((
+                new GraphQLNonNull((
+                new GraphQLNonNull((
                 new GraphQLNonNull(GraphQLString)
-              ))))))
+              ).wrapList())).wrapList())).wrapList())
             }
           }
         })
