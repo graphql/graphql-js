@@ -10,6 +10,7 @@
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
 import { execute } from './execution/execute';
+import type { ObjMap } from './jsutils/ObjMap';
 import type { Source } from './language/source';
 import type { GraphQLFieldResolver } from './type/definition';
 import type { GraphQLSchema } from './type/schema';
@@ -50,7 +51,7 @@ declare function graphql({|
   source: string | Source,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 |}, ..._: []): Promise<ExecutionResult>;
@@ -60,7 +61,7 @@ declare function graphql(
   source: Source | string,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): Promise<ExecutionResult>;

@@ -7,8 +7,8 @@
  * @flow
  */
 
-import type {ObjMap} from '../jsutils/ObjMap';
 import { visit } from '../language/visitor';
+import type {ObjMap} from '../jsutils/ObjMap';
 import type {
   DocumentNode,
   OperationDefinitionNode,
@@ -76,10 +76,7 @@ export function separateOperations(
   return separatedDocumentASTs;
 }
 
-type DepGraph = {
-  [from: string]: {[to: string]: boolean, __proto__: null},
-  __proto__: null,
-};
+type DepGraph = ObjMap<ObjMap<boolean>>;
 
 // Provides the empty string for anonymous operations.
 function opName(operation: OperationDefinitionNode): string {
@@ -89,7 +86,7 @@ function opName(operation: OperationDefinitionNode): string {
 // From a dependency graph, collects a list of transitive dependencies by
 // recursing through a dependency graph.
 function collectTransitiveDependencies(
-  collected: {[key: string]: boolean, __proto__: null},
+  collected: ObjMap<boolean>,
   depGraph: DepGraph,
   fromName: string
 ): void {
