@@ -26,6 +26,7 @@ import { GraphQLSchema } from '../type/schema';
 import invariant from '../jsutils/invariant';
 import mapAsyncIterator from './mapAsyncIterator';
 
+import type { ObjMap } from '../jsutils/ObjMap';
 import type { ExecutionResult } from '../execution/execute';
 import type { DocumentNode } from '../language/ast';
 import type { GraphQLFieldResolver } from '../type/definition';
@@ -55,7 +56,7 @@ declare function subscribe({|
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>
@@ -66,7 +67,7 @@ declare function subscribe(
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>
@@ -191,7 +192,7 @@ export function createSourceEventStream(
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): Promise<AsyncIterable<mixed>> {

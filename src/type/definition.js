@@ -625,7 +625,7 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
 
 export type GraphQLFieldResolver<TSource, TContext> = (
   source: TSource,
-  args: ObjMap<any>,
+  args: {[argument: string]: any},
   context: TContext,
   info: GraphQLResolveInfo
 ) => mixed;
@@ -640,7 +640,7 @@ export type GraphQLResolveInfo = {
   fragments: ObjMap<FragmentDefinitionNode>;
   rootValue: mixed;
   operation: OperationDefinitionNode;
-  variableValues: ObjMap<mixed>;
+  variableValues: {[variable: string]: mixed};
 };
 
 export type ResponsePath = { prev: ResponsePath, key: string | number } | void;
@@ -798,7 +798,6 @@ export class GraphQLUnionType {
 
   _typeConfig: GraphQLUnionTypeConfig<*, *>;
   _types: Array<GraphQLObjectType>;
-  _possibleTypeNames: {[typeName: string]: boolean};
 
   constructor(config: GraphQLUnionTypeConfig<*, *>): void {
     assertValidName(config.name);

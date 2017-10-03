@@ -89,7 +89,7 @@ export type ExecutionContext = {
   rootValue: mixed;
   contextValue: mixed;
   operation: OperationDefinitionNode;
-  variableValues: ObjMap<mixed>,
+  variableValues: {[variable: string]: mixed},
   fieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
 };
@@ -102,7 +102,7 @@ export type ExecutionContext = {
  */
 export type ExecutionResult = {
   errors?: Array<GraphQLError>;
-  data?: ?{[key: string]: mixed};
+  data?: ObjMap<mixed>;
 };
 
 export type ExecutionArgs = {|
@@ -110,7 +110,7 @@ export type ExecutionArgs = {|
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ?{[variable: string]: mixed},
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 |};
@@ -135,7 +135,7 @@ declare function execute(
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ?{[variable: string]: mixed},
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): Promise<ExecutionResult>;
@@ -249,7 +249,7 @@ export function addPath(prev: ResponsePath, key: string | number) {
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: ?{[key: string]: mixed}
+  rawVariableValues: ?ObjMap<mixed>
 ): void {
   invariant(schema, 'Must provide schema');
   invariant(document, 'Must provide document');
@@ -615,8 +615,8 @@ function doesFragmentConditionMatch(
 }
 
 /**
- * This function transforms a JS object `{[key: string]: Promise<T>}` into
- * a `Promise<{[key: string]: T}>`
+ * This function transforms a JS object `ObjMap<Promise<T>>` into
+ * a `Promise<ObjMap<T>>`
  *
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.

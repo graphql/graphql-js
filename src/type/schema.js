@@ -63,7 +63,7 @@ export class GraphQLSchema {
   _directives: Array<GraphQLDirective>;
   _typeMap: TypeMap;
   _implementations: ObjMap<Array<GraphQLObjectType>>;
-  _possibleTypeMap: ?ObjMap<{[possibleName: string]: boolean}>;
+  _possibleTypeMap: ?ObjMap<ObjMap<boolean>>;
 
   constructor(config: GraphQLSchemaConfig): void {
     invariant(
