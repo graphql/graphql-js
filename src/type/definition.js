@@ -309,6 +309,7 @@ export class GraphQLScalarType {
   astNode: ?ScalarTypeDefinitionNode;
 
   _scalarConfig: GraphQLScalarTypeConfig<*, *>;
+  _wrappedList: ?GraphQLList<*>;
 
   constructor(config: GraphQLScalarTypeConfig<*, *>): void {
     assertValidName(config.name);
@@ -364,6 +365,10 @@ export class GraphQLScalarType {
 
   toString(): string {
     return this.name;
+  }
+
+  wrapList(): GraphQLList<*> {
+    return this._wrappedList || (this._wrappedList = new GraphQLList(this));
   }
 
   toJSON: () => string;
@@ -433,6 +438,7 @@ export class GraphQLObjectType {
   _typeConfig: GraphQLObjectTypeConfig<*, *>;
   _fields: GraphQLFieldMap<*, *>;
   _interfaces: Array<GraphQLInterfaceType>;
+  _wrappedList: ?GraphQLList<*>;
 
   constructor(config: GraphQLObjectTypeConfig<*, *>): void {
     assertValidName(config.name, config.isIntrospection);
@@ -464,6 +470,10 @@ export class GraphQLObjectType {
 
   toString(): string {
     return this.name;
+  }
+
+  wrapList(): GraphQLList<*> {
+    return this._wrappedList || (this._wrappedList = new GraphQLList(this));
   }
 
   toJSON: () => string;
@@ -718,6 +728,7 @@ export class GraphQLInterfaceType {
 
   _typeConfig: GraphQLInterfaceTypeConfig<*, *>;
   _fields: GraphQLFieldMap<*, *>;
+  _wrappedList: ?GraphQLList<*>;
 
   constructor(config: GraphQLInterfaceTypeConfig<*, *>): void {
     assertValidName(config.name);
@@ -741,6 +752,10 @@ export class GraphQLInterfaceType {
 
   toString(): string {
     return this.name;
+  }
+
+  wrapList(): GraphQLList<*> {
+    return this._wrappedList || (this._wrappedList = new GraphQLList(this));
   }
 
   toJSON: () => string;
@@ -798,6 +813,7 @@ export class GraphQLUnionType {
 
   _typeConfig: GraphQLUnionTypeConfig<*, *>;
   _types: Array<GraphQLObjectType>;
+  _wrappedList: ?GraphQLList<*>;
 
   constructor(config: GraphQLUnionTypeConfig<*, *>): void {
     assertValidName(config.name);
@@ -822,6 +838,10 @@ export class GraphQLUnionType {
 
   toString(): string {
     return this.name;
+  }
+
+  wrapList(): GraphQLList<*> {
+    return this._wrappedList || (this._wrappedList = new GraphQLList(this));
   }
 
   toJSON: () => string;
@@ -915,6 +935,7 @@ export class GraphQLEnumType/* <T> */ {
   _values: Array<GraphQLEnumValue/* <T> */>;
   _valueLookup: Map<any/* T */, GraphQLEnumValue>;
   _nameLookup: ObjMap<GraphQLEnumValue>;
+  _wrappedList: ?GraphQLList<*>;
 
   constructor(config: GraphQLEnumTypeConfig/* <T> */): void {
     this.name = config.name;
@@ -990,6 +1011,10 @@ export class GraphQLEnumType/* <T> */ {
 
   toString(): string {
     return this.name;
+  }
+
+  wrapList(): GraphQLList<*> {
+    return this._wrappedList || (this._wrappedList = new GraphQLList(this));
   }
 
   toJSON: () => string;
@@ -1099,6 +1124,7 @@ export class GraphQLInputObjectType {
 
   _typeConfig: GraphQLInputObjectTypeConfig;
   _fields: GraphQLInputFieldMap;
+  _wrappedList: ?GraphQLList<*>;
 
   constructor(config: GraphQLInputObjectTypeConfig): void {
     assertValidName(config.name);
@@ -1149,6 +1175,10 @@ export class GraphQLInputObjectType {
 
   toString(): string {
     return this.name;
+  }
+
+  wrapList(): GraphQLList<*> {
+    return this._wrappedList || (this._wrappedList = new GraphQLList(this));
   }
 
   toJSON: () => string;
@@ -1202,14 +1232,15 @@ export type GraphQLInputFieldMap =
  *     const PersonType = new GraphQLObjectType({
  *       name: 'Person',
  *       fields: () => ({
- *         parents: { type: new GraphQLList(Person) },
- *         children: { type: new GraphQLList(Person) },
+ *         parents: { type: Person.wrapList() },
+ *         children: { type: Person.wrapList() },
  *       })
  *     })
  *
  */
 export class GraphQLList<T: GraphQLType> {
   ofType: T;
+  _wrappedList: ?GraphQLList<*>;
 
   constructor(type: T): void {
     invariant(
@@ -1221,6 +1252,10 @@ export class GraphQLList<T: GraphQLType> {
 
   toString(): string {
     return '[' + String(this.ofType) + ']';
+  }
+
+  wrapList(): GraphQLList<*> {
+    return this._wrappedList || (this._wrappedList = new GraphQLList(this));
   }
 
   toJSON: () => string;
@@ -1255,6 +1290,7 @@ GraphQLList.prototype.toJSON =
  */
 export class GraphQLNonNull<T: GraphQLNullableType> {
   ofType: T;
+  _wrappedList: ?GraphQLList<*>;
 
   constructor(type: T): void {
     invariant(
@@ -1267,6 +1303,10 @@ export class GraphQLNonNull<T: GraphQLNullableType> {
 
   toString(): string {
     return this.ofType.toString() + '!';
+  }
+
+  wrapList(): GraphQLList<*> {
+    return this._wrappedList || (this._wrappedList = new GraphQLList(this));
   }
 
   toJSON: () => string;

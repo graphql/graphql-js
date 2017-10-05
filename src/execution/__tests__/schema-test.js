@@ -13,7 +13,6 @@ import { parse } from '../../language';
 import {
   GraphQLSchema,
   GraphQLObjectType,
-  GraphQLList,
   GraphQLNonNull,
   GraphQLInt,
   GraphQLString,
@@ -56,7 +55,7 @@ describe('Execute: Handles execution with a complex schema', () => {
         author: { type: BlogAuthor },
         title: { type: GraphQLString },
         body: { type: GraphQLString },
-        keywords: { type: new GraphQLList(GraphQLString) }
+        keywords: { type: GraphQLString.wrapList() }
       }
     });
 
@@ -69,7 +68,7 @@ describe('Execute: Handles execution with a complex schema', () => {
           resolve: (_, { id }) => article(id)
         },
         feed: {
-          type: new GraphQLList(BlogArticle),
+          type: BlogArticle.wrapList(),
           resolve: () => [
             article(1),
             article(2),

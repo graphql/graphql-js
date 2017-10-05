@@ -45,7 +45,7 @@ function typeFromASTImpl(schema, typeNode) {
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
-    return innerType && new GraphQLList(innerType);
+    return innerType && innerType.wrapList();
   }
   if (typeNode.kind === Kind.NON_NULL_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);

@@ -13,7 +13,6 @@ import { parse } from '../../language';
 import {
   GraphQLSchema,
   GraphQLObjectType,
-  GraphQLList,
   GraphQLBoolean,
   GraphQLInt,
   GraphQLString,
@@ -180,8 +179,8 @@ describe('Execute: Handles basic execution tasks', () => {
       fields: {
         a: { type: GraphQLString },
         b: { type: GraphQLString },
-        c: { type: new GraphQLList(GraphQLString) },
-        deeper: { type: new GraphQLList(DataType) },
+        c: { type: GraphQLString.wrapList() },
+        deeper: { type: DataType.wrapList() },
       }
     });
 
@@ -425,7 +424,7 @@ describe('Execute: Handles basic execution tasks', () => {
           syncError: { type: GraphQLString },
           syncRawError: { type: GraphQLString },
           syncReturnError: { type: GraphQLString },
-          syncReturnErrorList: { type: new GraphQLList(GraphQLString) },
+          syncReturnErrorList: { type: GraphQLString.wrapList() },
           async: { type: GraphQLString },
           asyncReject: { type: GraphQLString },
           asyncRawReject: { type: GraphQLString },
@@ -938,7 +937,7 @@ describe('Execute: Handles basic execution tasks', () => {
         name: 'Query',
         fields: {
           specials: {
-            type: new GraphQLList(SpecialType),
+            type: SpecialType.wrapList(),
             resolve: rootValue => rootValue.specials
           }
         }

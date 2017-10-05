@@ -16,7 +16,6 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
   GraphQLNonNull,
   GraphQLInt,
   GraphQLFloat,
@@ -144,8 +143,8 @@ const Human = new GraphQLObjectType({
       type: GraphQLString,
       args: { surname: { type: GraphQLBoolean } },
     },
-    pets: { type: new GraphQLList(Pet) },
-    relatives: { type: new GraphQLList(Human) },
+    pets: { type: Pet.wrapList() },
+    relatives: { type: Human.wrapList() },
     iq: { type: GraphQLInt },
   })
 });
@@ -199,7 +198,7 @@ const ComplexInput = new GraphQLInputObjectType({
     intField: { type: GraphQLInt },
     stringField: { type: GraphQLString },
     booleanField: { type: GraphQLBoolean },
-    stringListField: { type: new GraphQLList(GraphQLString) },
+    stringListField: { type: GraphQLString.wrapList() },
   }
 });
 
@@ -239,7 +238,7 @@ const ComplicatedArgs = new GraphQLObjectType({
     },
     stringListArgField: {
       type: GraphQLString,
-      args: { stringListArg: { type: new GraphQLList(GraphQLString) } },
+      args: { stringListArg: { type: GraphQLString.wrapList() } },
     },
     complexArgField: {
       type: GraphQLString,

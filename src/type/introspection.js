@@ -36,7 +36,7 @@ export const __Schema = new GraphQLObjectType({
   fields: () => ({
     types: {
       description: 'A list of all types supported by this server.',
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__Type))),
+      type: new GraphQLNonNull((new GraphQLNonNull(__Type)).wrapList()),
       resolve(schema) {
         const typeMap = schema.getTypeMap();
         return Object.keys(typeMap).map(key => typeMap[key]);
@@ -62,7 +62,7 @@ export const __Schema = new GraphQLObjectType({
     directives: {
       description: 'A list of all directives supported by this server.',
       type:
-        new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__Directive))),
+        new GraphQLNonNull((new GraphQLNonNull(__Directive)).wrapList()),
       resolve: schema => schema.getDirectives(),
     }
   })
@@ -82,13 +82,13 @@ export const __Directive = new GraphQLObjectType({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
     locations: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(
+      type: new GraphQLNonNull((new GraphQLNonNull(
         __DirectiveLocation
-      )))
+      )).wrapList())
     },
     args: {
       type:
-        new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
+        new GraphQLNonNull((new GraphQLNonNull(__InputValue)).wrapList()),
       resolve: directive => directive.args || []
     },
     // NOTE: the following three fields are deprecated and are no longer part
@@ -238,7 +238,7 @@ export const __Type = new GraphQLObjectType({
     name: { type: GraphQLString },
     description: { type: GraphQLString },
     fields: {
-      type: new GraphQLList(new GraphQLNonNull(__Field)),
+      type: (new GraphQLNonNull(__Field)).wrapList(),
       args: {
         includeDeprecated: { type: GraphQLBoolean, defaultValue: false }
       },
@@ -257,7 +257,7 @@ export const __Type = new GraphQLObjectType({
       }
     },
     interfaces: {
-      type: new GraphQLList(new GraphQLNonNull(__Type)),
+      type: (new GraphQLNonNull(__Type)).wrapList(),
       resolve(type) {
         if (type instanceof GraphQLObjectType) {
           return type.getInterfaces();
@@ -265,7 +265,7 @@ export const __Type = new GraphQLObjectType({
       }
     },
     possibleTypes: {
-      type: new GraphQLList(new GraphQLNonNull(__Type)),
+      type: (new GraphQLNonNull(__Type)).wrapList(),
       resolve(type, args, context, { schema }) {
         if (isAbstractType(type)) {
           return schema.getPossibleTypes(type);
@@ -273,7 +273,7 @@ export const __Type = new GraphQLObjectType({
       }
     },
     enumValues: {
-      type: new GraphQLList(new GraphQLNonNull(__EnumValue)),
+      type: (new GraphQLNonNull(__EnumValue)).wrapList(),
       args: {
         includeDeprecated: { type: GraphQLBoolean, defaultValue: false }
       },
@@ -288,7 +288,7 @@ export const __Type = new GraphQLObjectType({
       }
     },
     inputFields: {
-      type: new GraphQLList(new GraphQLNonNull(__InputValue)),
+      type: (new GraphQLNonNull(__InputValue)).wrapList(),
       resolve(type) {
         if (type instanceof GraphQLInputObjectType) {
           const fieldMap = type.getFields();
@@ -311,7 +311,7 @@ export const __Field = new GraphQLObjectType({
     description: { type: GraphQLString },
     args: {
       type:
-        new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
+        new GraphQLNonNull((new GraphQLNonNull(__InputValue)).wrapList()),
       resolve: field => field.args || []
     },
     type: { type: new GraphQLNonNull(__Type) },

@@ -11,7 +11,6 @@ import { valueFromAST } from '../valueFromAST';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
@@ -86,9 +85,9 @@ describe('valueFromAST', () => {
   // Boolean!
   const nonNullBool = new GraphQLNonNull(GraphQLBoolean);
   // [Boolean]
-  const listOfBool = new GraphQLList(GraphQLBoolean);
+  const listOfBool = GraphQLBoolean.wrapList();
   // [Boolean!]
-  const listOfNonNullBool = new GraphQLList(nonNullBool);
+  const listOfNonNullBool = nonNullBool.wrapList();
   // [Boolean]!
   const nonNullListOfBool = new GraphQLNonNull(listOfBool);
   // [Boolean!]!

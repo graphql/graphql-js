@@ -70,9 +70,9 @@ const SomeInputObjectType = new GraphQLInputObjectType({
 
 function withModifiers(types) {
   return types
-    .concat(types.map(type => new GraphQLList(type)))
+    .concat(types.map(type => type.wrapList()))
     .concat(types.map(type => new GraphQLNonNull(type)))
-    .concat(types.map(type => new GraphQLNonNull(new GraphQLList(type))));
+    .concat(types.map(type => new GraphQLNonNull(type.wrapList())));
 }
 
 const outputTypes = withModifiers([
@@ -1604,7 +1604,7 @@ describe('Type System: List must accept GraphQL types', () => {
 
   types.forEach(type => {
     it(`accepts an type as item type of list: ${type}`, () => {
-      expect(() => new GraphQLList(type)).not.to.throw();
+      expect(() => type.wrapList()).not.to.throw();
     });
   });
 
@@ -1629,8 +1629,8 @@ describe('Type System: NonNull must accept GraphQL types', () => {
     SomeInterfaceType,
     SomeEnumType,
     SomeInputObjectType,
-    new GraphQLList(GraphQLString),
-    new GraphQLList(new GraphQLNonNull(GraphQLString)),
+    GraphQLString.wrapList(),
+    (new GraphQLNonNull(GraphQLString)).wrapList(),
   ];
 
   const notNullableTypes = [
@@ -2005,7 +2005,7 @@ describe('Objects must adhere to Interface they implement', () => {
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
-          field: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) }
+          field: { type: new GraphQLNonNull(GraphQLString.wrapList()) }
         }
       });
 
@@ -2013,7 +2013,7 @@ describe('Objects must adhere to Interface they implement', () => {
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
-          field: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) }
+          field: { type: new GraphQLNonNull(GraphQLString.wrapList()) }
         }
       });
 
@@ -2027,7 +2027,7 @@ describe('Objects must adhere to Interface they implement', () => {
         name: 'AnotherInterface',
         resolveType: () => null,
         fields: {
-          field: { type: new GraphQLList(GraphQLString) }
+          field: { type: GraphQLString.wrapList() }
         }
       });
 
@@ -2060,7 +2060,7 @@ describe('Objects must adhere to Interface they implement', () => {
         name: 'AnotherObject',
         interfaces: [ AnotherInterface ],
         fields: {
-          field: { type: new GraphQLList(GraphQLString) }
+          field: { type: GraphQLString.wrapList() }
         }
       });
 

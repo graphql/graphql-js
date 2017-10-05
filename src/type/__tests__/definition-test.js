@@ -65,7 +65,7 @@ const BlogQuery = new GraphQLObjectType({
       type: BlogArticle
     },
     feed: {
-      type: new GraphQLList(BlogArticle)
+      type: BlogArticle.wrapList()
     }
   }
 });
@@ -340,16 +340,16 @@ describe('Type System: Example', () => {
       String(new GraphQLNonNull(GraphQLInt))
     ).to.equal('Int!');
     expect(
-      String(new GraphQLList(GraphQLInt))
+      String(GraphQLInt.wrapList())
     ).to.equal('[Int]');
     expect(
-      String(new GraphQLNonNull(new GraphQLList(GraphQLInt)))
+      String(new GraphQLNonNull(GraphQLInt.wrapList()))
     ).to.equal('[Int]!');
     expect(
-      String(new GraphQLList(new GraphQLNonNull(GraphQLInt)))
+      String((new GraphQLNonNull(GraphQLInt)).wrapList())
     ).to.equal('[Int!]');
     expect(
-      String(new GraphQLList(new GraphQLList(GraphQLInt)))
+      String(GraphQLInt.wrapList().wrapList())
     ).to.equal('[[Int]]');
   });
 
@@ -364,7 +364,7 @@ describe('Type System: Example', () => {
     ];
     expected.forEach(([ type, answer ]) => {
       expect(isInputType(type)).to.equal(answer);
-      expect(isInputType(new GraphQLList(type))).to.equal(answer);
+      expect(isInputType(type.wrapList())).to.equal(answer);
       expect(isInputType(new GraphQLNonNull(type))).to.equal(answer);
     });
   });
@@ -380,7 +380,7 @@ describe('Type System: Example', () => {
     ];
     expected.forEach(([ type, answer ]) => {
       expect(isOutputType(type)).to.equal(answer);
-      expect(isOutputType(new GraphQLList(type))).to.equal(answer);
+      expect(isOutputType(type.wrapList())).to.equal(answer);
       expect(isOutputType(new GraphQLNonNull(type))).to.equal(answer);
     });
   });
@@ -397,7 +397,7 @@ describe('Type System: Example', () => {
     const badUnionTypes = [
       GraphQLInt,
       new GraphQLNonNull(GraphQLInt),
-      new GraphQLList(GraphQLInt),
+      GraphQLInt.wrapList(),
       InterfaceType,
       UnionType,
       EnumType,

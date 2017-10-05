@@ -22,7 +22,6 @@ import {
   GraphQLString,
   GraphQLEnumType,
   GraphQLNonNull,
-  GraphQLList,
   GraphQLScalarType,
 } from '../../type';
 
@@ -42,7 +41,7 @@ const FooType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     some: { type: SomeInterfaceType },
-    tree: { type: new GraphQLNonNull(new GraphQLList(FooType)) },
+    tree: { type: new GraphQLNonNull(FooType.wrapList()) },
   })
 });
 

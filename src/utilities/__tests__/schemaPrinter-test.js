@@ -23,7 +23,6 @@ import {
   GraphQLString,
   GraphQLInt,
   GraphQLBoolean,
-  GraphQLList,
   GraphQLNonNull,
 } from '../../';
 
@@ -41,7 +40,7 @@ function printSingleFieldSchema(fieldConfig) {
 }
 
 function listOf(type) {
-  return new GraphQLList(type);
+  return type.wrapList();
 }
 
 function nonNull(type) {

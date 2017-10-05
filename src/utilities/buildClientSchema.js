@@ -23,7 +23,6 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
   GraphQLNonNull,
 } from '../type/definition';
 
@@ -121,7 +120,7 @@ export function buildClientSchema(
       if (!itemRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
-      return new GraphQLList(getType(itemRef));
+      return getType(itemRef).wrapList();
     }
     if (typeRef.kind === TypeKind.NON_NULL) {
       const nullableRef = ((typeRef: any): IntrospectionNonNullTypeRef).ofType;

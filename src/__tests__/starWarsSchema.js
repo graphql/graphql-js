@@ -11,7 +11,6 @@ import {
   GraphQLEnumType,
   GraphQLInterfaceType,
   GraphQLObjectType,
-  GraphQLList,
   GraphQLNonNull,
   GraphQLSchema,
   GraphQLString,
@@ -118,12 +117,12 @@ const characterInterface = new GraphQLInterfaceType({
       description: 'The name of the character.',
     },
     friends: {
-      type: new GraphQLList(characterInterface),
+      type: characterInterface.wrapList(),
       description: 'The friends of the character, or an empty list if they ' +
                    'have none.',
     },
     appearsIn: {
-      type: new GraphQLList(episodeEnum),
+      type: episodeEnum.wrapList(),
       description: 'Which movies they appear in.',
     },
     secretBackstory: {
@@ -166,13 +165,13 @@ const humanType = new GraphQLObjectType({
       description: 'The name of the human.',
     },
     friends: {
-      type: new GraphQLList(characterInterface),
+      type: characterInterface.wrapList(),
       description:
         'The friends of the human, or an empty list if they have none.',
       resolve: human => getFriends(human),
     },
     appearsIn: {
-      type: new GraphQLList(episodeEnum),
+      type: episodeEnum.wrapList(),
       description: 'Which movies they appear in.',
     },
     homePlanet: {
@@ -216,13 +215,13 @@ const droidType = new GraphQLObjectType({
       description: 'The name of the droid.',
     },
     friends: {
-      type: new GraphQLList(characterInterface),
+      type: characterInterface.wrapList(),
       description:
         'The friends of the droid, or an empty list if they have none.',
       resolve: droid => getFriends(droid),
     },
     appearsIn: {
-      type: new GraphQLList(episodeEnum),
+      type: episodeEnum.wrapList(),
       description: 'Which movies they appear in.',
     },
     secretBackstory: {
