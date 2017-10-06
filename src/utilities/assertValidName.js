@@ -11,8 +11,12 @@ const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 const ERROR_PREFIX_RX = /^Error: /;
 
 // Silences warnings if an environment flag is enabled
-const noNameWarning =
-  Boolean(process && process.env && process.env.GRAPHQL_NO_NAME_WARNING);
+const noNameWarning = Boolean(
+  typeof process !== 'undefined' &&
+    process &&
+    process.env &&
+    process.env.GRAPHQL_NO_NAME_WARNING
+);
 
 // Ensures console warnings are only issued once.
 let hasWarnedAboutDunder = false;
