@@ -7,7 +7,7 @@
  * @flow
  */
 
-const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
+const NAME_RX = /^[_a-zA-Z][_#a-zA-Z0-9]*$/; // WW HASHMARKS Add hashmark to valid name
 const ERROR_PREFIX_RX = /^Error: /;
 
 // Silences warnings if an environment flag is enabled

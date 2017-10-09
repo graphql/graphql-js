@@ -217,8 +217,11 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
   switch (code) {
     // !
     case 33: return new Tok(BANG, position, position + 1, line, col, prev);
+    /* WW HASHMARKS Allow hashmark as name. Use ~ instead for comment.
     // #
     case 35: return readComment(source, position, line, col, prev);
+    */
+    case 126: return readComment(source, position, line, col, prev);
     // $
     case 36: return new Tok(DOLLAR, position, position + 1, line, col, prev);
     // (
@@ -253,6 +256,7 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     case 125:
       return new Tok(BRACE_R, position, position + 1, line, col, prev);
     // A-Z _ a-z
+    case 35: // WW HASHMARKS Allow hashmark in name. (record#, cny#)
     case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72:
     case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80:
     case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88:
