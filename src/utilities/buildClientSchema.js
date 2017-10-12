@@ -51,6 +51,7 @@ import { DirectiveLocation, GraphQLDirective } from '../type/directives';
 import { TypeKind } from '../type/introspection';
 
 import type {
+  GraphQLFieldConfigMap,
   GraphQLType,
   GraphQLInputType,
   GraphQLOutputType,
@@ -242,7 +243,9 @@ export function buildClientSchema(
       name: objectIntrospection.name,
       description: objectIntrospection.description,
       interfaces: objectIntrospection.interfaces.map(getInterfaceType),
-      fields: () => buildFieldDefMap(objectIntrospection),
+      fields: (): GraphQLFieldConfigMap<*, *> => buildFieldDefMap(
+        objectIntrospection
+      ),
     });
   }
 
@@ -252,7 +255,9 @@ export function buildClientSchema(
     return new GraphQLInterfaceType({
       name: interfaceIntrospection.name,
       description: interfaceIntrospection.description,
-      fields: () => buildFieldDefMap(interfaceIntrospection),
+      fields: (): GraphQLFieldConfigMap<*, *> => buildFieldDefMap(
+        interfaceIntrospection
+      ),
       resolveType: cannotExecuteClientSchema,
     });
   }
@@ -291,7 +296,9 @@ export function buildClientSchema(
     return new GraphQLInputObjectType({
       name: inputObjectIntrospection.name,
       description: inputObjectIntrospection.description,
-      fields: () => buildInputValueDefMap(inputObjectIntrospection.inputFields),
+      fields: (): GraphQLFieldConfigMap<*, *> => buildInputValueDefMap(
+        inputObjectIntrospection.inputFields
+      ),
     });
   }
 

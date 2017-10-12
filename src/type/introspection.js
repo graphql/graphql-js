@@ -23,7 +23,7 @@ import {
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from './directives';
-import type { GraphQLField } from './definition';
+import type { GraphQLField, GraphQLFieldConfigMap } from './definition';
 
 
 export const __Schema = new GraphQLObjectType({
@@ -33,7 +33,7 @@ export const __Schema = new GraphQLObjectType({
     'A GraphQL Schema defines the capabilities of a GraphQL server. It ' +
     'exposes all available types and directives on the server, as well as ' +
     'the entry points for query, mutation, and subscription operations.',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     types: {
       description: 'A list of all types supported by this server.',
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__Type))),
@@ -78,7 +78,7 @@ export const __Directive = new GraphQLObjectType({
     'execution behavior in ways field arguments will not suffice, such as ' +
     'conditionally including or skipping a field. Directives provide this by ' +
     'describing additional information to the executor.',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
     locations: {
@@ -211,7 +211,7 @@ export const __Type = new GraphQLObjectType({
     'Object and Interface types provide the fields they describe. Abstract ' +
     'types, Union and Interface, provide the Object types possible ' +
     'at runtime. List and NonNull types compose other types.',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     kind: {
       type: new GraphQLNonNull(__TypeKind),
       resolve(type) {
@@ -306,7 +306,7 @@ export const __Field = new GraphQLObjectType({
   description:
     'Object and Interface types are described by a list of Fields, each of ' +
     'which has a name, potentially a list of arguments, and a return type.',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
     args: {
@@ -329,7 +329,7 @@ export const __InputValue = new GraphQLObjectType({
     'Arguments provided to Fields or Directives and the input fields of an ' +
     'InputObject are represented as Input Values which describe their type ' +
     'and optionally a default value.',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
     type: { type: new GraphQLNonNull(__Type) },
@@ -352,7 +352,7 @@ export const __EnumValue = new GraphQLObjectType({
     'One possible value for a given Enum. Enum values are unique values, not ' +
     'a placeholder for a string or numeric value. However an Enum value is ' +
     'returned in a JSON response as a string.',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     name: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
     isDeprecated: { type: new GraphQLNonNull(GraphQLBoolean) },
