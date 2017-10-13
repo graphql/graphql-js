@@ -736,9 +736,8 @@ describe('Type System: build schema from introspection', () => {
       expect(
         () => buildClientSchema(incompleteIntrospection)
       ).to.throw(
-        'Invalid or incomplete schema, unknown kind: undefined. Ensure ' +
-        'that a full introspection query is used in order to build a ' +
-        'client schema.'
+        'Invalid or incomplete introspection result. Ensure that a full ' +
+        'introspection query is used in order to build a client schema'
       );
     });
 
