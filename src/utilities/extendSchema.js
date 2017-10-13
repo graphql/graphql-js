@@ -59,6 +59,7 @@ import * as Kind from '../language/kinds';
 import type {
   GraphQLType,
   GraphQLNamedType,
+  GraphQLFieldConfigMap,
   GraphQLInputType,
   GraphQLOutputType,
 } from '../type/definition';
@@ -342,7 +343,7 @@ export function extendSchema(
       name,
       description: type.description,
       interfaces: () => extendImplementedInterfaces(type),
-      fields: () => extendFieldMap(type),
+      fields: (): GraphQLFieldConfigMap<*, *> => extendFieldMap(type),
       astNode: type.astNode,
       extensionASTNodes,
       isTypeOf: type.isTypeOf,
@@ -355,7 +356,7 @@ export function extendSchema(
     return new GraphQLInterfaceType({
       name: type.name,
       description: type.description,
-      fields: () => extendFieldMap(type),
+      fields: (): GraphQLFieldConfigMap<*, *> => extendFieldMap(type),
       astNode: type.astNode,
       resolveType: type.resolveType,
     });
@@ -467,7 +468,7 @@ export function extendSchema(
       name: typeNode.name.value,
       description: getDescription(typeNode),
       interfaces: () => buildImplementedInterfaces(typeNode),
-      fields: () => buildFieldMap(typeNode),
+      fields: (): GraphQLFieldConfigMap<*, *> => buildFieldMap(typeNode),
       astNode: typeNode,
     });
   }
@@ -476,7 +477,7 @@ export function extendSchema(
     return new GraphQLInterfaceType({
       name: typeNode.name.value,
       description: getDescription(typeNode),
-      fields: () => buildFieldMap(typeNode),
+      fields: (): GraphQLFieldConfigMap<*, *> => buildFieldMap(typeNode),
       astNode: typeNode,
       resolveType: cannotExecuteExtendedSchema,
     });
@@ -528,7 +529,9 @@ export function extendSchema(
     return new GraphQLInputObjectType({
       name: typeNode.name.value,
       description: getDescription(typeNode),
-      fields: () => buildInputValues(typeNode.fields),
+      fields: (): GraphQLFieldConfigMap<*, *> => buildInputValues(
+        typeNode.fields
+      ),
       astNode: typeNode,
     });
   }

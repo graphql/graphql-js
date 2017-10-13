@@ -18,6 +18,7 @@ import { getDirectiveValues } from '../execution/values';
 
 import * as Kind from '../language/kinds';
 
+
 import type {
   Location,
   DocumentNode,
@@ -61,6 +62,7 @@ import {
 } from '../type/definition';
 
 import type {
+  GraphQLFieldConfigMap,
   GraphQLType,
   GraphQLNamedType,
   GraphQLInputType,
@@ -349,7 +351,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
     return new GraphQLObjectType({
       name: typeName,
       description: getDescription(def),
-      fields: () => makeFieldDefMap(def),
+      fields: (): GraphQLFieldConfigMap<*, *> => makeFieldDefMap(def),
       interfaces: () => makeImplementedInterfaces(def),
       astNode: def,
     });
@@ -396,7 +398,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
     return new GraphQLInterfaceType({
       name: def.name.value,
       description: getDescription(def),
-      fields: () => makeFieldDefMap(def),
+      fields: (): GraphQLFieldConfigMap<*, *> => makeFieldDefMap(def),
       astNode: def,
       resolveType: cannotExecuteSchema,
     });
@@ -448,7 +450,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
     return new GraphQLInputObjectType({
       name: def.name.value,
       description: getDescription(def),
-      fields: () => makeInputValues(def.fields),
+      fields: (): GraphQLFieldConfigMap<*, *> => makeInputValues(def.fields),
       astNode: def,
     });
   }

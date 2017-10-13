@@ -17,6 +17,8 @@ import {
   GraphQLString,
 } from '../type';
 
+import type {GraphQLFieldConfigMap} from '../type/definition';
+
 import { getFriends, getHero, getHuman, getDroid } from './starWarsData.js';
 
 /**
@@ -108,7 +110,7 @@ const episodeEnum = new GraphQLEnumType({
 const characterInterface = new GraphQLInterfaceType({
   name: 'Character',
   description: 'A character in the Star Wars Trilogy',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     id: {
       type: new GraphQLNonNull(GraphQLString),
       description: 'The id of the character.',
@@ -156,7 +158,7 @@ const characterInterface = new GraphQLInterfaceType({
 const humanType = new GraphQLObjectType({
   name: 'Human',
   description: 'A humanoid creature in the Star Wars universe.',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     id: {
       type: new GraphQLNonNull(GraphQLString),
       description: 'The id of the human.',
@@ -206,7 +208,7 @@ const humanType = new GraphQLObjectType({
 const droidType = new GraphQLObjectType({
   name: 'Droid',
   description: 'A mechanical creature in the Star Wars universe.',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     id: {
       type: new GraphQLNonNull(GraphQLString),
       description: 'The id of the droid.',
@@ -256,7 +258,7 @@ const droidType = new GraphQLObjectType({
  */
 const queryType = new GraphQLObjectType({
   name: 'Query',
-  fields: () => ({
+  fields: (): GraphQLFieldConfigMap<*, *> => ({
     hero: {
       type: characterInterface,
       args: {
