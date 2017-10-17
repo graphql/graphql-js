@@ -1013,7 +1013,7 @@ function completeLeafValue(
 ): mixed {
   invariant(returnType.serialize, 'Missing serialize method on type');
   const serializedResult = returnType.serialize(result);
-  if (isNullish(serializedResult)) {
+  if (isNullish(serializedResult) && !returnType.allowNullSerialize) {
     throw new Error(
       `Expected a value of type "${String(returnType)}" but ` +
       `received: ${String(result)}`
