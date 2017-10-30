@@ -111,7 +111,7 @@ graphql(schema, query).then(result => {
 
 The `npm` branch in this repository is automatically maintained to be the last
 commit to `master` to pass all tests, in the same form found on npm. It is
-recommend to use builds deployed npm for many reasons, but if you want to use
+recommended to use builds deployed to npm for many reasons, but if you want to use
 the latest not-yet-released version of graphql-js, you can do so by depending
 directly on this branch:
 
