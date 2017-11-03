@@ -66,10 +66,6 @@ import type {
   IntrospectionUnionType,
   IntrospectionEnumType,
   IntrospectionInputObjectType,
-  IntrospectionInputType,
-  IntrospectionOutputType,
-  IntrospectionList,
-  IntrospectionNonNull,
   IntrospectionTypeRef,
   IntrospectionInputTypeRef,
   IntrospectionOutputTypeRef,
@@ -175,7 +171,9 @@ export function buildClientSchema(
     return type;
   }
 
-  function getOutputType(typeRef: IntrospectionOutputTypeRef): GraphQLOutputType {
+  function getOutputType(
+    typeRef: IntrospectionOutputTypeRef
+  ): GraphQLOutputType {
     const type = getType(typeRef);
     invariant(
       isOutputType(type),
@@ -184,7 +182,9 @@ export function buildClientSchema(
     return type;
   }
 
-  function getObjectType(typeRef: IntrospectionNamedTypeRef<IntrospectionObjectType>): GraphQLObjectType {
+  function getObjectType(
+    typeRef: IntrospectionNamedTypeRef<IntrospectionObjectType>
+  ): GraphQLObjectType {
     const type = getType(typeRef);
     invariant(
       type instanceof GraphQLObjectType,
