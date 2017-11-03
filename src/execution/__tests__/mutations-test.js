@@ -12,11 +12,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../execute';
 import { parse } from '../../language';
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLInt,
-} from '../../type';
+import { GraphQLSchema, GraphQLObjectType, GraphQLInt } from '../../type';
 
 class NumberHolder {
   theNumber: number;
@@ -79,36 +75,35 @@ const schema = new GraphQLSchema({
         args: { newNumber: { type: GraphQLInt } },
         resolve(obj, { newNumber }) {
           return obj.immediatelyChangeTheNumber(newNumber);
-        }
+        },
       },
       promiseToChangeTheNumber: {
         type: numberHolderType,
         args: { newNumber: { type: GraphQLInt } },
         resolve(obj, { newNumber }) {
           return obj.promiseToChangeTheNumber(newNumber);
-        }
+        },
       },
       failToChangeTheNumber: {
         type: numberHolderType,
         args: { newNumber: { type: GraphQLInt } },
         resolve(obj, { newNumber }) {
           return obj.failToChangeTheNumber(newNumber);
-        }
+        },
       },
       promiseAndFailToChangeTheNumber: {
         type: numberHolderType,
         args: { newNumber: { type: GraphQLInt } },
         resolve(obj, { newNumber }) {
           return obj.promiseAndFailToChangeTheNumber(newNumber);
-        }
-      }
+        },
+      },
     },
     name: 'Mutation',
-  })
+  }),
 });
 
 describe('Execute: Handles mutation execution ordering', () => {
-
   it('evaluates mutations serially', async () => {
     const doc = `mutation M {
       first: immediatelyChangeTheNumber(newNumber: 1) {
@@ -133,21 +128,21 @@ describe('Execute: Handles mutation execution ordering', () => {
     return expect(mutationResult).to.deep.equal({
       data: {
         first: {
-          theNumber: 1
+          theNumber: 1,
         },
         second: {
-          theNumber: 2
+          theNumber: 2,
         },
         third: {
-          theNumber: 3
+          theNumber: 3,
         },
         fourth: {
-          theNumber: 4
+          theNumber: 4,
         },
         fifth: {
-          theNumber: 5
-        }
-      }
+          theNumber: 5,
+        },
+      },
     });
   });
 
@@ -177,27 +172,31 @@ describe('Execute: Handles mutation execution ordering', () => {
 
     expect(result.data).to.deep.equal({
       first: {
-        theNumber: 1
+        theNumber: 1,
       },
       second: {
-        theNumber: 2
+        theNumber: 2,
       },
       third: null,
       fourth: {
-        theNumber: 4
+        theNumber: 4,
       },
       fifth: {
-        theNumber: 5
+        theNumber: 5,
       },
       sixth: null,
     });
 
     expect(result.errors).to.have.length(2);
     expect(result.errors).to.containSubset([
-      { message: 'Cannot change the number',
-        locations: [ { line: 8, column: 7 } ] },
-      { message: 'Cannot change the number',
-        locations: [ { line: 17, column: 7 } ] }
+      {
+        message: 'Cannot change the number',
+        locations: [{ line: 8, column: 7 }],
+      },
+      {
+        message: 'Cannot change the number',
+        locations: [{ line: 17, column: 7 }],
+      },
     ]);
   });
 });

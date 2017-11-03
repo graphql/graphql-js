@@ -12,33 +12,43 @@ import {
   nonInputTypeOnVarMessage,
 } from '../rules/VariablesAreInputTypes';
 
-
 describe('Validate: Variables are input types', () => {
-
   it('input types are valid', () => {
-    expectPassesRule(VariablesAreInputTypes, `
+    expectPassesRule(
+      VariablesAreInputTypes,
+      `
       query Foo($a: String, $b: [Boolean!]!, $c: ComplexInput) {
         field(a: $a, b: $b, c: $c)
       }
-    `);
+    `,
+    );
   });
 
   it('output types are invalid', () => {
-    expectFailsRule(VariablesAreInputTypes, `
+    expectFailsRule(
+      VariablesAreInputTypes,
+      `
       query Foo($a: Dog, $b: [[CatOrDog!]]!, $c: Pet) {
         field(a: $a, b: $b, c: $c)
       }
-    `, [
-      { locations: [ { line: 2, column: 21 } ],
-        message: nonInputTypeOnVarMessage('a', 'Dog'),
-        path: undefined },
-      { locations: [ { line: 2, column: 30 } ],
-        message: nonInputTypeOnVarMessage('b', '[[CatOrDog!]]!'),
-        path: undefined },
-      { locations: [ { line: 2, column: 50 } ],
-        message: nonInputTypeOnVarMessage('c', 'Pet'),
-        path: undefined },
-    ]);
+    `,
+      [
+        {
+          locations: [{ line: 2, column: 21 }],
+          message: nonInputTypeOnVarMessage('a', 'Dog'),
+          path: undefined,
+        },
+        {
+          locations: [{ line: 2, column: 30 }],
+          message: nonInputTypeOnVarMessage('b', '[[CatOrDog!]]!'),
+          path: undefined,
+        },
+        {
+          locations: [{ line: 2, column: 50 }],
+          message: nonInputTypeOnVarMessage('c', 'Pet'),
+          path: undefined,
+        },
+      ],
+    );
   });
-
 });

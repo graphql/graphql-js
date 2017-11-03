@@ -17,15 +17,14 @@ import {
 } from '../../';
 
 describe('Execute: resolve function', () => {
-
   function testSchema(testField) {
     return new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
         fields: {
-          test: testField
-        }
-      })
+          test: testField,
+        },
+      }),
     });
   }
 
@@ -33,15 +32,13 @@ describe('Execute: resolve function', () => {
     const schema = testSchema({ type: GraphQLString });
 
     const source = {
-      test: 'testValue'
+      test: 'testValue',
     };
 
-    expect(
-      await graphql(schema, '{ test }', source)
-    ).to.deep.equal({
+    expect(await graphql(schema, '{ test }', source)).to.deep.equal({
       data: {
-        test: 'testValue'
-      }
+        test: 'testValue',
+      },
     });
   });
 
@@ -52,15 +49,13 @@ describe('Execute: resolve function', () => {
       _secret: 'secretValue',
       test() {
         return this._secret;
-      }
+      },
     };
 
-    expect(
-      await graphql(schema, '{ test }', source)
-    ).to.deep.equal({
+    expect(await graphql(schema, '{ test }', source)).to.deep.equal({
       data: {
-        test: 'secretValue'
-      }
+        test: 'secretValue',
+      },
     });
   });
 
@@ -77,18 +72,18 @@ describe('Execute: resolve function', () => {
         this._num = num;
       }
 
-      test({addend1}, context) {
+      test({ addend1 }, context) {
         return this._num + addend1 + context.addend2;
       }
     }
     const source = new Adder(700);
 
     expect(
-      await graphql(schema, '{ test(addend1: 80) }', source, { addend2: 9 })
+      await graphql(schema, '{ test(addend1: 80) }', source, { addend2: 9 }),
     ).to.deep.equal({
       data: {
-        test: 789
-      }
+        test: 789,
+      },
     });
   });
 
@@ -100,41 +95,36 @@ describe('Execute: resolve function', () => {
         aInt: { type: GraphQLInt },
       },
       resolve(source, args) {
-        return JSON.stringify([ source, args ]);
-      }
+        return JSON.stringify([source, args]);
+      },
+    });
+
+    expect(await graphql(schema, '{ test }')).to.deep.equal({
+      data: {
+        test: '[null,{}]',
+      },
+    });
+
+    expect(await graphql(schema, '{ test }', 'Source!')).to.deep.equal({
+      data: {
+        test: '["Source!",{}]',
+      },
     });
 
     expect(
-      await graphql(schema, '{ test }')
+      await graphql(schema, '{ test(aStr: "String!") }', 'Source!'),
     ).to.deep.equal({
       data: {
-        test: '[null,{}]'
-      }
+        test: '["Source!",{"aStr":"String!"}]',
+      },
     });
 
     expect(
-      await graphql(schema, '{ test }', 'Source!')
+      await graphql(schema, '{ test(aInt: -123, aStr: "String!") }', 'Source!'),
     ).to.deep.equal({
       data: {
-        test: '["Source!",{}]'
-      }
-    });
-
-    expect(
-      await graphql(schema, '{ test(aStr: "String!") }', 'Source!')
-    ).to.deep.equal({
-      data: {
-        test: '["Source!",{"aStr":"String!"}]'
-      }
-    });
-
-    expect(
-      await graphql(schema, '{ test(aInt: -123, aStr: "String!") }', 'Source!')
-    ).to.deep.equal({
-      data: {
-        test: '["Source!",{"aStr":"String!","aInt":-123}]'
-      }
+        test: '["Source!",{"aStr":"String!","aInt":-123}]',
+      },
     });
   });
-
 });

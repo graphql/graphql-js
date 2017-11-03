@@ -19,7 +19,7 @@ import {
   GraphQLString,
   GraphQLInt,
   GraphQLList,
-  GraphQLNonNull
+  GraphQLNonNull,
 } from '../../type';
 
 // resolved() is shorthand for Promise.resolve()
@@ -43,7 +43,7 @@ function check(testType, testData, expected) {
       fields: () => ({
         test: { type: testType },
         nest: { type: dataType, resolve: () => data },
-      })
+      }),
     });
 
     const schema = new GraphQLSchema({ query: dataType });
@@ -57,7 +57,7 @@ function check(testType, testData, expected) {
     if (response.errors) {
       result = {
         data: response.data,
-        errors: response.errors.map(formatError)
+        errors: response.errors.map(formatError),
       };
     } else {
       result = response;
@@ -67,12 +67,14 @@ function check(testType, testData, expected) {
 }
 
 describe('Execute: Accepts any iterable as list value', () => {
-
-  it('Accepts a Set as a List value', check(
-    new GraphQLList(GraphQLString),
-    new Set([ 'apple', 'banana', 'apple', 'coconut' ]),
-    { data: { nest: { test: [ 'apple', 'banana', 'coconut' ] } } }
-  ));
+  it(
+    'Accepts a Set as a List value',
+    check(
+      new GraphQLList(GraphQLString),
+      new Set(['apple', 'banana', 'apple', 'coconut']),
+      { data: { nest: { test: ['apple', 'banana', 'coconut'] } } },
+    ),
+  );
 
   function* yieldItems() {
     yield 'one';
@@ -80,396 +82,478 @@ describe('Execute: Accepts any iterable as list value', () => {
     yield true;
   }
 
-  it('Accepts an Generator function as a List value', check(
-    new GraphQLList(GraphQLString),
-    yieldItems(),
-    { data: { nest: { test: [ 'one', '2', 'true' ] } } }
-  ));
+  it(
+    'Accepts an Generator function as a List value',
+    check(new GraphQLList(GraphQLString), yieldItems(), {
+      data: { nest: { test: ['one', '2', 'true'] } },
+    }),
+  );
 
   function getArgs() {
     return arguments;
   }
 
-  it('Accepts function arguments as a List value', check(
-    new GraphQLList(GraphQLString),
-    getArgs('one', 'two'),
-    { data: { nest: { test: [ 'one', 'two' ] } } }
-  ));
+  it(
+    'Accepts function arguments as a List value',
+    check(new GraphQLList(GraphQLString), getArgs('one', 'two'), {
+      data: { nest: { test: ['one', 'two'] } },
+    }),
+  );
 
-  it('Does not accept (Iterable) String-literal as a List value', check(
-    new GraphQLList(GraphQLString),
-    'Singluar',
-    { data: { nest: { test: null } },
-      errors: [ {
-        message: 'Expected Iterable, but did not find one for field DataType.test.',
-        locations: [ { line: 1, column: 10 } ],
-        path: [ 'nest', 'test' ]
-      } ] }
-  ));
-
+  it(
+    'Does not accept (Iterable) String-literal as a List value',
+    check(new GraphQLList(GraphQLString), 'Singluar', {
+      data: { nest: { test: null } },
+      errors: [
+        {
+          message:
+            'Expected Iterable, but did not find one for field DataType.test.',
+          locations: [{ line: 1, column: 10 }],
+          path: ['nest', 'test'],
+        },
+      ],
+    }),
+  );
 });
 
 describe('Execute: Handles list nullability', () => {
-
   describe('[T]', () => {
     const type = new GraphQLList(GraphQLInt);
 
     describe('Array<T>', () => {
+      it(
+        'Contains values',
+        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
+      );
 
-      it('Contains values', check(type,
-        [ 1, 2 ],
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
+      it(
+        'Contains null',
+        check(type, [1, null, 2], { data: { nest: { test: [1, null, 2] } } }),
+      );
 
-      it('Contains null', check(type,
-        [ 1, null, 2 ],
-        { data: { nest: { test: [ 1, null, 2 ] } } }
-      ));
-
-      it('Returns null', check(type,
-        null,
-        { data: { nest: { test: null } } }
-      ));
-
+      it('Returns null', check(type, null, { data: { nest: { test: null } } }));
     });
 
     describe('Promise<Array<T>>', () => {
+      it(
+        'Contains values',
+        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
+      );
 
-      it('Contains values', check(type,
-        resolved([ 1, 2 ]),
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
+      it(
+        'Contains null',
+        check(type, resolved([1, null, 2]), {
+          data: { nest: { test: [1, null, 2] } },
+        }),
+      );
 
-      it('Contains null', check(type,
-        resolved([ 1, null, 2 ]),
-        { data: { nest: { test: [ 1, null, 2 ] } } }
-      ));
+      it(
+        'Returns null',
+        check(type, resolved(null), { data: { nest: { test: null } } }),
+      );
 
-
-      it('Returns null', check(type,
-        resolved(null),
-        { data: { nest: { test: null } } }
-      ));
-
-      it('Rejected', check(type,
-        () => rejected(new Error('bad')),
-        { data: { nest: { test: null } },
+      it(
+        'Rejected',
+        check(type, () => rejected(new Error('bad')), {
+          data: { nest: { test: null } },
           errors: [
-            { message: 'bad',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test' ] }
-          ] }
-      ));
-
+            {
+              message: 'bad',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test'],
+            },
+          ],
+        }),
+      );
     });
 
     describe('Array<Promise<T>>', () => {
+      it(
+        'Contains values',
+        check(type, [resolved(1), resolved(2)], {
+          data: { nest: { test: [1, 2] } },
+        }),
+      );
 
-      it('Contains values', check(type,
-        [ resolved(1), resolved(2) ],
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
+      it(
+        'Contains null',
+        check(type, [resolved(1), resolved(null), resolved(2)], {
+          data: { nest: { test: [1, null, 2] } },
+        }),
+      );
 
-      it('Contains null', check(type,
-        [ resolved(1), resolved(null), resolved(2) ],
-        { data: { nest: { test: [ 1, null, 2 ] } } }
-      ));
-
-      it('Contains reject', check(type,
-        () => [ resolved(1), rejected(new Error('bad')), resolved(2) ],
-        { data: { nest: { test: [ 1, null, 2 ] } },
-          errors: [
-            { message: 'bad',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
-
+      it(
+        'Contains reject',
+        check(
+          type,
+          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
+          {
+            data: { nest: { test: [1, null, 2] } },
+            errors: [
+              {
+                message: 'bad',
+                locations: [{ line: 1, column: 10 }],
+                path: ['nest', 'test', 1],
+              },
+            ],
+          },
+        ),
+      );
     });
-
   });
 
   describe('[T]!', () => {
     const type = new GraphQLNonNull(new GraphQLList(GraphQLInt));
 
     describe('Array<T>', () => {
+      it(
+        'Contains values',
+        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
+      );
 
-      it('Contains values', check(type,
-        [ 1, 2 ],
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
+      it(
+        'Contains null',
+        check(type, [1, null, 2], { data: { nest: { test: [1, null, 2] } } }),
+      );
 
-      it('Contains null', check(type,
-        [ 1, null, 2 ],
-        { data: { nest: { test: [ 1, null, 2 ] } } }
-      ));
-
-      it('Returns null', check(type,
-        null,
-        { data: { nest: null },
+      it(
+        'Returns null',
+        check(type, null, {
+          data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test' ] }
-          ] }
-      ));
-
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test'],
+            },
+          ],
+        }),
+      );
     });
 
     describe('Promise<Array<T>>', () => {
+      it(
+        'Contains values',
+        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
+      );
 
-      it('Contains values', check(type,
-        resolved([ 1, 2 ]),
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
+      it(
+        'Contains null',
+        check(type, resolved([1, null, 2]), {
+          data: { nest: { test: [1, null, 2] } },
+        }),
+      );
 
-      it('Contains null', check(type,
-        resolved([ 1, null, 2 ]),
-        { data: { nest: { test: [ 1, null, 2 ] } } }
-      ));
-
-      it('Returns null', check(type,
-        resolved(null),
-        { data: { nest: null },
+      it(
+        'Returns null',
+        check(type, resolved(null), {
+          data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test' ] }
-          ] }
-      ));
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test'],
+            },
+          ],
+        }),
+      );
 
-      it('Rejected', check(type,
-        () => rejected(new Error('bad')),
-        { data: { nest: null },
+      it(
+        'Rejected',
+        check(type, () => rejected(new Error('bad')), {
+          data: { nest: null },
           errors: [
-            { message: 'bad',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test' ] }
-          ] }
-      ));
-
+            {
+              message: 'bad',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test'],
+            },
+          ],
+        }),
+      );
     });
 
     describe('Array<Promise<T>>', () => {
+      it(
+        'Contains values',
+        check(type, [resolved(1), resolved(2)], {
+          data: { nest: { test: [1, 2] } },
+        }),
+      );
 
-      it('Contains values', check(type,
-        [ resolved(1), resolved(2) ],
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
+      it(
+        'Contains null',
+        check(type, [resolved(1), resolved(null), resolved(2)], {
+          data: { nest: { test: [1, null, 2] } },
+        }),
+      );
 
-      it('Contains null', check(type,
-        [ resolved(1), resolved(null), resolved(2) ],
-        { data: { nest: { test: [ 1, null, 2 ] } } }
-      ));
-
-      it('Contains reject', check(type,
-        () => [ resolved(1), rejected(new Error('bad')), resolved(2) ],
-        { data: { nest: { test: [ 1, null, 2 ] } },
-          errors: [
-            { message: 'bad',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
-
+      it(
+        'Contains reject',
+        check(
+          type,
+          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
+          {
+            data: { nest: { test: [1, null, 2] } },
+            errors: [
+              {
+                message: 'bad',
+                locations: [{ line: 1, column: 10 }],
+                path: ['nest', 'test', 1],
+              },
+            ],
+          },
+        ),
+      );
     });
-
   });
 
   describe('[T!]', () => {
     const type = new GraphQLList(new GraphQLNonNull(GraphQLInt));
 
     describe('Array<T>', () => {
+      it(
+        'Contains values',
+        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
+      );
 
-      it('Contains values', check(type,
-        [ 1, 2 ],
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
-
-      it('Contains null', check(type,
-        [ 1, null, 2 ],
-        { data: { nest: { test: null } },
+      it(
+        'Contains null',
+        check(type, [1, null, 2], {
+          data: { nest: { test: null } },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test', 1],
+            },
+          ],
+        }),
+      );
 
-      it('Returns null', check(type,
-        null,
-        { data: { nest: { test: null } } }
-      ));
-
+      it('Returns null', check(type, null, { data: { nest: { test: null } } }));
     });
 
     describe('Promise<Array<T>>', () => {
+      it(
+        'Contains values',
+        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
+      );
 
-      it('Contains values', check(type,
-        resolved([ 1, 2 ]),
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
-
-      it('Contains null', check(type,
-        resolved([ 1, null, 2 ]),
-        { data: { nest: { test: null } },
+      it(
+        'Contains null',
+        check(type, resolved([1, null, 2]), {
+          data: { nest: { test: null } },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test', 1],
+            },
+          ],
+        }),
+      );
 
-      it('Returns null', check(type,
-        resolved(null),
-        { data: { nest: { test: null } } }
-      ));
+      it(
+        'Returns null',
+        check(type, resolved(null), { data: { nest: { test: null } } }),
+      );
 
-      it('Rejected', check(type,
-        () => rejected(new Error('bad')),
-        { data: { nest: { test: null } },
+      it(
+        'Rejected',
+        check(type, () => rejected(new Error('bad')), {
+          data: { nest: { test: null } },
           errors: [
-            { message: 'bad',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test' ] }
-          ] }
-      ));
-
+            {
+              message: 'bad',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test'],
+            },
+          ],
+        }),
+      );
     });
 
     describe('Array<Promise<T>>', () => {
+      it(
+        'Contains values',
+        check(type, [resolved(1), resolved(2)], {
+          data: { nest: { test: [1, 2] } },
+        }),
+      );
 
-      it('Contains values', check(type,
-        [ resolved(1), resolved(2) ],
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
-
-      it('Contains null', check(type,
-        [ resolved(1), resolved(null), resolved(2) ],
-        { data: { nest: { test: null } },
+      it(
+        'Contains null',
+        check(type, [resolved(1), resolved(null), resolved(2)], {
+          data: { nest: { test: null } },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test', 1],
+            },
+          ],
+        }),
+      );
 
-      it('Contains reject', check(type,
-        () => [ resolved(1), rejected(new Error('bad')), resolved(2) ],
-        { data: { nest: { test: null } },
-          errors: [
-            { message: 'bad',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
-
+      it(
+        'Contains reject',
+        check(
+          type,
+          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
+          {
+            data: { nest: { test: null } },
+            errors: [
+              {
+                message: 'bad',
+                locations: [{ line: 1, column: 10 }],
+                path: ['nest', 'test', 1],
+              },
+            ],
+          },
+        ),
+      );
     });
-
   });
 
   describe('[T!]!', () => {
-    const type =
-      new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLInt)));
+    const type = new GraphQLNonNull(
+      new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+    );
 
     describe('Array<T>', () => {
+      it(
+        'Contains values',
+        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
+      );
 
-      it('Contains values', check(type,
-        [ 1, 2 ],
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
-
-
-      it('Contains null', check(type,
-        [ 1, null, 2 ],
-        { data: { nest: null },
+      it(
+        'Contains null',
+        check(type, [1, null, 2], {
+          data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test', 1],
+            },
+          ],
+        }),
+      );
 
-      it('Returns null', check(type,
-        null,
-        { data: { nest: null },
+      it(
+        'Returns null',
+        check(type, null, {
+          data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test' ] }
-          ] }
-      ));
-
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test'],
+            },
+          ],
+        }),
+      );
     });
 
     describe('Promise<Array<T>>', () => {
+      it(
+        'Contains values',
+        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
+      );
 
-      it('Contains values', check(type,
-        resolved([ 1, 2 ]),
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
-
-      it('Contains null', check(type,
-        resolved([ 1, null, 2 ]),
-        { data: { nest: null },
+      it(
+        'Contains null',
+        check(type, resolved([1, null, 2]), {
+          data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test', 1],
+            },
+          ],
+        }),
+      );
 
-      it('Returns null', check(type,
-        resolved(null),
-        { data: { nest: null },
+      it(
+        'Returns null',
+        check(type, resolved(null), {
+          data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test' ] }
-          ] }
-      ));
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test'],
+            },
+          ],
+        }),
+      );
 
-      it('Rejected', check(type,
-        () => rejected(new Error('bad')),
-        { data: { nest: null },
+      it(
+        'Rejected',
+        check(type, () => rejected(new Error('bad')), {
+          data: { nest: null },
           errors: [
-            { message: 'bad',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test' ] }
-          ] }
-      ));
-
+            {
+              message: 'bad',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test'],
+            },
+          ],
+        }),
+      );
     });
 
     describe('Array<Promise<T>>', () => {
+      it(
+        'Contains values',
+        check(type, [resolved(1), resolved(2)], {
+          data: { nest: { test: [1, 2] } },
+        }),
+      );
 
-      it('Contains values', check(type,
-        [ resolved(1), resolved(2) ],
-        { data: { nest: { test: [ 1, 2 ] } } }
-      ));
-
-      it('Contains null', check(type,
-        [ resolved(1), resolved(null), resolved(2) ],
-        { data: { nest: null },
+      it(
+        'Contains null',
+        check(type, [resolved(1), resolved(null), resolved(2)], {
+          data: { nest: null },
           errors: [
-            { message: 'Cannot return null for non-nullable field DataType.test.',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
+            {
+              message:
+                'Cannot return null for non-nullable field DataType.test.',
+              locations: [{ line: 1, column: 10 }],
+              path: ['nest', 'test', 1],
+            },
+          ],
+        }),
+      );
 
-      it('Contains reject', check(type,
-        () => [ resolved(1), rejected(new Error('bad')), resolved(2) ],
-        { data: { nest: null },
-          errors: [
-            { message: 'bad',
-              locations: [ { line: 1, column: 10 } ],
-              path: [ 'nest', 'test', 1 ] }
-          ] }
-      ));
-
+      it(
+        'Contains reject',
+        check(
+          type,
+          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
+          {
+            data: { nest: null },
+            errors: [
+              {
+                message: 'bad',
+                locations: [{ line: 1, column: 10 }],
+                path: ['nest', 'test', 1],
+              },
+            ],
+          },
+        ),
+      );
     });
-
   });
-
 });

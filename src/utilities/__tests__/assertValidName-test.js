@@ -22,10 +22,7 @@ function dedent(string) {
   // Find smallest indent.
   const indent = lines.reduce((currentMinimum, line) => {
     const whitespace = line.match(/^ +/);
-    return Math.min(
-      whitespace ? whitespace[0].length : 0,
-      currentMinimum
-    );
+    return Math.min(whitespace ? whitespace[0].length : 0, currentMinimum);
   }, Infinity);
 
   // Remove indent from each line.
@@ -112,13 +109,15 @@ describe('formatWarning()', () => {
         at <anonymous>:1:6
     `);
     const error = createErrorObject('foo', chromeStack);
-    expect(formatWarning(error)).to.equal(dedent(`
+    expect(formatWarning(error)).to.equal(
+      dedent(`
       foo
         at z (<anonymous>:1:21)
         at y (<anonymous>:1:15)
         at x (<anonymous>:1:15)
         at <anonymous>:1:6
-    `));
+    `),
+    );
   });
 
   it('formats given a Node-style stack property', () => {
@@ -136,7 +135,8 @@ describe('formatWarning()', () => {
         at emitOne (events.js:101:20)
     `);
     const error = createErrorObject('foo', nodeStack);
-    expect(formatWarning(error)).to.equal(dedent(`
+    expect(formatWarning(error)).to.equal(
+      dedent(`
       foo
         at z (repl:1:29)
         at y (repl:1:23)
@@ -148,7 +148,8 @@ describe('formatWarning()', () => {
         at REPLServer.runBound [as eval] (domain.js:293:12)
         at REPLServer.onLine (repl.js:537:10)
         at emitOne (events.js:101:20)
-    `));
+    `),
+    );
   });
 
   it('formats given a Firefox-style stack property', () => {
@@ -159,13 +160,15 @@ describe('formatWarning()', () => {
       @debugger eval code:1:5
     `);
     const error = createErrorObject('foo', firefoxStack);
-    expect(formatWarning(error)).to.equal(dedent(`
+    expect(formatWarning(error)).to.equal(
+      dedent(`
       foo
       z@debugger eval code:1:20
       y@debugger eval code:1:14
       x@debugger eval code:1:14
       @debugger eval code:1:5
-    `));
+    `),
+    );
   });
 
   it('formats given a Safari-style stack property', () => {
@@ -180,7 +183,8 @@ describe('formatWarning()', () => {
       evaluate
     `);
     const error = createErrorObject('foo', safariStack);
-    expect(formatWarning(error)).to.equal(dedent(`
+    expect(formatWarning(error)).to.equal(
+      dedent(`
       foo
       z
       y
@@ -190,7 +194,8 @@ describe('formatWarning()', () => {
       _evaluateOn
       _evaluateAndWrap
       evaluate
-    `));
+    `),
+    );
   });
 
   it('formats in the absence of a stack property', () => {

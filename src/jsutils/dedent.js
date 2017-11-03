@@ -7,7 +7,7 @@
  * @flow
  */
 
- /**
+/**
   * fixes identation by removing leading spaces from each line
   */
 function fixIdent(str: string): string {
@@ -31,10 +31,10 @@ function fixIdent(str: string): string {
  * str === "{\n  test\n}\n";
  */
 export default function dedent(
-  strings: string | { raw: [string]},
+  strings: string | { raw: [string] },
   ...values: Array<string>
 ) {
-  const raw = typeof strings === 'string' ? [ strings ] : strings.raw;
+  const raw = typeof strings === 'string' ? [strings] : strings.raw;
   let res = '';
   // interpolation
   for (let i = 0; i < raw.length; i++) {

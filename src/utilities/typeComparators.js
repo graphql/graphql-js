@@ -13,14 +13,8 @@ import {
   GraphQLList,
   GraphQLNonNull,
 } from '../type/definition';
-import type {
-  GraphQLType,
-  GraphQLCompositeType
-} from '../type/definition';
-import type {
-  GraphQLSchema
-} from '../type/schema';
-
+import type { GraphQLType, GraphQLCompositeType } from '../type/definition';
+import type { GraphQLSchema } from '../type/schema';
 
 /**
  * Provided two types, return true if the types are equal (invariant).
@@ -52,7 +46,7 @@ export function isEqualType(typeA: GraphQLType, typeB: GraphQLType): boolean {
 export function isTypeSubTypeOf(
   schema: GraphQLSchema,
   maybeSubType: GraphQLType,
-  superType: GraphQLType
+  superType: GraphQLType,
 ): boolean {
   // Equivalent type is a valid subtype
   if (maybeSubType === superType) {
@@ -83,9 +77,11 @@ export function isTypeSubTypeOf(
 
   // If superType type is an abstract type, maybeSubType type may be a currently
   // possible object type.
-  if (isAbstractType(superType) &&
-      maybeSubType instanceof GraphQLObjectType &&
-      schema.isPossibleType(superType, maybeSubType)) {
+  if (
+    isAbstractType(superType) &&
+    maybeSubType instanceof GraphQLObjectType &&
+    schema.isPossibleType(superType, maybeSubType)
+  ) {
     return true;
   }
 
@@ -105,7 +101,7 @@ export function isTypeSubTypeOf(
 export function doTypesOverlap(
   schema: GraphQLSchema,
   typeA: GraphQLCompositeType,
-  typeB: GraphQLCompositeType
+  typeB: GraphQLCompositeType,
 ): boolean {
   // So flow is aware this is constant
   const _typeB = typeB;
@@ -119,9 +115,9 @@ export function doTypesOverlap(
     if (isAbstractType(_typeB)) {
       // If both types are abstract, then determine if there is any intersection
       // between possible concrete types of each.
-      return schema.getPossibleTypes(typeA).some(
-        type => schema.isPossibleType(_typeB, type)
-      );
+      return schema
+        .getPossibleTypes(typeA)
+        .some(type => schema.isPossibleType(_typeB, type));
     }
     // Determine if the latter type is a possible concrete type of the former.
     return schema.isPossibleType(typeA, _typeB);

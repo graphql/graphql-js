@@ -29,7 +29,7 @@ describe('Printer', () => {
   it('produces helpful error messages', () => {
     const badAst1 = { random: 'Data' };
     expect(() => print(badAst1)).to.throw(
-      'Invalid AST Node: {"random":"Data"}'
+      'Invalid AST Node: {"random":"Data"}',
     );
   });
 
@@ -51,7 +51,7 @@ describe('Printer', () => {
     `);
 
     const queryAstWithArtifacts = parse(
-      'query ($foo: TestType) @testDirective { id, name }'
+      'query ($foo: TestType) @testDirective { id, name }',
     );
     expect(print(queryAstWithArtifacts)).to.equal(dedent`
       query ($foo: TestType) @testDirective {
@@ -61,7 +61,7 @@ describe('Printer', () => {
     `);
 
     const mutationAstWithArtifacts = parse(
-      'mutation ($foo: TestType) @testDirective { id, name }'
+      'mutation ($foo: TestType) @testDirective { id, name }',
     );
     expect(print(mutationAstWithArtifacts)).to.equal(dedent`
       mutation ($foo: TestType) @testDirective {
@@ -71,14 +71,11 @@ describe('Printer', () => {
     `);
   });
 
-
-  const kitchenSink = readFileSync(
-    join(__dirname, '/kitchen-sink.graphql'),
-    { encoding: 'utf8' }
-  );
+  const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
+    encoding: 'utf8',
+  });
 
   it('prints kitchen sink', () => {
-
     const ast = parse(kitchenSink);
 
     const printed = print(ast);
@@ -135,6 +132,5 @@ describe('Printer', () => {
         query
       }
     `);
-
   });
 });

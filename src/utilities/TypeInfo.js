@@ -33,13 +33,12 @@ import type { GraphQLDirective } from '../type/directives';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
-  TypeNameMetaFieldDef
+  TypeNameMetaFieldDef,
 } from '../type/introspection';
 import type { GraphQLSchema } from '../type/schema';
 import type { ASTNode, FieldNode } from '../language/ast';
 import { typeFromAST } from './typeFromAST';
 import find from '../jsutils/find';
-
 
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
@@ -62,7 +61,7 @@ export class TypeInfo {
     // NOTE: this experimental optional second parameter is only needed in order
     // to support non-spec-compliant codebases. You should never need to use it.
     // It may disappear in the future.
-    getFieldDefFn?: typeof getFieldDef
+    getFieldDefFn?: typeof getFieldDef,
   ): void {
     this._schema = schema;
     this._typeStack = [];
@@ -112,13 +111,13 @@ export class TypeInfo {
   }
 
   // Flow does not yet handle this case.
-  enter(node: any/* ASTNode */) {
+  enter(node: any /* ASTNode */) {
     const schema = this._schema;
     switch (node.kind) {
       case Kind.SELECTION_SET:
         const namedType = getNamedType(this.getType());
         this._parentTypeStack.push(
-          isCompositeType(namedType) ? namedType : undefined
+          isCompositeType(namedType) ? namedType : undefined,
         );
         break;
       case Kind.FIELD:
@@ -147,17 +146,15 @@ export class TypeInfo {
       case Kind.INLINE_FRAGMENT:
       case Kind.FRAGMENT_DEFINITION:
         const typeConditionAST = node.typeCondition;
-        const outputType = typeConditionAST ?
-          typeFromAST(schema, typeConditionAST) :
-          this.getType();
-        this._typeStack.push(
-          isOutputType(outputType) ? outputType : undefined
-        );
+        const outputType = typeConditionAST
+          ? typeFromAST(schema, typeConditionAST)
+          : this.getType();
+        this._typeStack.push(isOutputType(outputType) ? outputType : undefined);
         break;
       case Kind.VARIABLE_DEFINITION:
         const inputType = typeFromAST(schema, node.type);
         this._inputTypeStack.push(
-          isInputType(inputType) ? inputType : undefined
+          isInputType(inputType) ? inputType : undefined,
         );
         break;
       case Kind.ARGUMENT:
@@ -167,7 +164,7 @@ export class TypeInfo {
         if (fieldOrDirective) {
           argDef = find(
             fieldOrDirective.args,
-            arg => arg.name === node.name.value
+            arg => arg.name === node.name.value,
           );
           if (argDef) {
             argType = argDef.type;
@@ -179,7 +176,7 @@ export class TypeInfo {
       case Kind.LIST:
         const listType = getNullableType(this.getInputType());
         this._inputTypeStack.push(
-          listType instanceof GraphQLList ? listType.ofType : undefined
+          listType instanceof GraphQLList ? listType.ofType : undefined,
         );
         break;
       case Kind.OBJECT_FIELD:
@@ -245,22 +242,25 @@ export class TypeInfo {
 function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLType,
-  fieldNode: FieldNode
+  fieldNode: FieldNode,
 ): ?GraphQLField<*, *> {
   const name = fieldNode.name.value;
-  if (name === SchemaMetaFieldDef.name &&
-      schema.getQueryType() === parentType) {
+  if (
+    name === SchemaMetaFieldDef.name &&
+    schema.getQueryType() === parentType
+  ) {
     return SchemaMetaFieldDef;
   }
-  if (name === TypeMetaFieldDef.name &&
-      schema.getQueryType() === parentType) {
+  if (name === TypeMetaFieldDef.name && schema.getQueryType() === parentType) {
     return TypeMetaFieldDef;
   }
   if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
     return TypeNameMetaFieldDef;
   }
-  if (parentType instanceof GraphQLObjectType ||
-      parentType instanceof GraphQLInterfaceType) {
+  if (
+    parentType instanceof GraphQLObjectType ||
+    parentType instanceof GraphQLInterfaceType
+  ) {
     return parentType.getFields()[name];
   }
 }

@@ -8,7 +8,7 @@
  */
 
 import invariant from '../jsutils/invariant';
-import type {ObjMap} from '../jsutils/ObjMap';
+import type { ObjMap } from '../jsutils/ObjMap';
 import { GraphQLError } from '../error';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import * as Kind from '../language/kinds';
@@ -26,12 +26,11 @@ import type {
   GraphQLOutputType,
   GraphQLCompositeType,
   GraphQLField,
-  GraphQLArgument
+  GraphQLArgument,
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules } from './specifiedRules';
-
 
 /**
  * Implements the "Validation" section of the spec.
@@ -60,13 +59,13 @@ export function validate(
   invariant(
     schema instanceof GraphQLSchema,
     'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
-    'not multiple versions of GraphQL installed in your node_modules directory.'
+      'not multiple versions of GraphQL installed in your node_modules directory.',
   );
   return visitUsingRules(
     schema,
     typeInfo || new TypeInfo(schema),
     ast,
-    rules || specifiedRules
+    rules || specifiedRules,
   );
 }
 
@@ -80,7 +79,7 @@ function visitUsingRules(
   schema: GraphQLSchema,
   typeInfo: TypeInfo,
   documentAST: DocumentNode,
-  rules: Array<any>
+  rules: Array<any>,
 ): Array<GraphQLError> {
   const context = new ValidationContext(schema, documentAST, typeInfo);
   const visitors = rules.map(rule => rule(context));
@@ -106,7 +105,7 @@ export class ValidationContext {
   _fragmentSpreads: Map<SelectionSetNode, Array<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
     OperationDefinitionNode,
-    Array<FragmentDefinitionNode>
+    Array<FragmentDefinitionNode>,
   >;
   _variableUsages: Map<NodeWithSelectionSet, Array<VariableUsage>>;
   _recursiveVariableUsages: Map<OperationDefinitionNode, Array<VariableUsage>>;
@@ -114,7 +113,7 @@ export class ValidationContext {
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
-    typeInfo: TypeInfo
+    typeInfo: TypeInfo,
   ): void {
     this._schema = schema;
     this._ast = ast;
@@ -145,13 +144,15 @@ export class ValidationContext {
   getFragment(name: string): ?FragmentDefinitionNode {
     let fragments = this._fragments;
     if (!fragments) {
-      this._fragments = fragments =
-        this.getDocument().definitions.reduce((frags, statement) => {
+      this._fragments = fragments = this.getDocument().definitions.reduce(
+        (frags, statement) => {
           if (statement.kind === Kind.FRAGMENT_DEFINITION) {
             frags[statement.name.value] = statement;
           }
           return frags;
-        }, Object.create(null));
+        },
+        Object.create(null),
+      );
     }
     return fragments[name];
   }
@@ -160,7 +161,7 @@ export class ValidationContext {
     let spreads = this._fragmentSpreads.get(node);
     if (!spreads) {
       spreads = [];
-      const setsToVisit: Array<SelectionSetNode> = [ node ];
+      const setsToVisit: Array<SelectionSetNode> = [node];
       while (setsToVisit.length !== 0) {
         const set = setsToVisit.pop();
         for (let i = 0; i < set.selections.length; i++) {
@@ -178,13 +179,13 @@ export class ValidationContext {
   }
 
   getRecursivelyReferencedFragments(
-    operation: OperationDefinitionNode
+    operation: OperationDefinitionNode,
   ): Array<FragmentDefinitionNode> {
     let fragments = this._recursivelyReferencedFragments.get(operation);
     if (!fragments) {
       fragments = [];
       const collectedNames = Object.create(null);
-      const nodesToVisit: Array<SelectionSetNode> = [ operation.selectionSet ];
+      const nodesToVisit: Array<SelectionSetNode> = [operation.selectionSet];
       while (nodesToVisit.length !== 0) {
         const node = nodesToVisit.pop();
         const spreads = this.getFragmentSpreads(node);
@@ -210,12 +211,15 @@ export class ValidationContext {
     if (!usages) {
       const newUsages = [];
       const typeInfo = new TypeInfo(this._schema);
-      visit(node, visitWithTypeInfo(typeInfo, {
-        VariableDefinition: () => false,
-        Variable(variable) {
-          newUsages.push({ node: variable, type: typeInfo.getInputType() });
-        }
-      }));
+      visit(
+        node,
+        visitWithTypeInfo(typeInfo, {
+          VariableDefinition: () => false,
+          Variable(variable) {
+            newUsages.push({ node: variable, type: typeInfo.getInputType() });
+          },
+        }),
+      );
       usages = newUsages;
       this._variableUsages.set(node, usages);
     }
@@ -223,7 +227,7 @@ export class ValidationContext {
   }
 
   getRecursiveVariableUsages(
-    operation: OperationDefinitionNode
+    operation: OperationDefinitionNode,
   ): Array<VariableUsage> {
     let usages = this._recursiveVariableUsages.get(operation);
     if (!usages) {
@@ -232,7 +236,7 @@ export class ValidationContext {
       for (let i = 0; i < fragments.length; i++) {
         Array.prototype.push.apply(
           usages,
-          this.getVariableUsages(fragments[i])
+          this.getVariableUsages(fragments[i]),
         );
       }
       this._recursiveVariableUsages.set(operation, usages);

@@ -16,7 +16,7 @@ import { $$asyncIterator } from 'iterall';
  */
 export default function eventEmitterAsyncIterator(
   eventEmitter: EventEmitter,
-  eventName: string
+  eventName: string,
 ): AsyncIterator<mixed> {
   const pullQueue = [];
   const pushQueue = [];

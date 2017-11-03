@@ -11,7 +11,6 @@ import type { ValidationContext } from '../index';
 import type { VariableDefinitionNode } from '../../language/ast';
 import { GraphQLError } from '../../error';
 
-
 export function duplicateVariableMessage(variableName: string): string {
   return `There can be only one variable named "${variableName}".`;
 }
@@ -30,13 +29,15 @@ export function UniqueVariableNames(context: ValidationContext): any {
     VariableDefinition(node: VariableDefinitionNode) {
       const variableName = node.variable.name.value;
       if (knownVariableNames[variableName]) {
-        context.reportError(new GraphQLError(
-          duplicateVariableMessage(variableName),
-          [ knownVariableNames[variableName], node.variable.name ]
-        ));
+        context.reportError(
+          new GraphQLError(duplicateVariableMessage(variableName), [
+            knownVariableNames[variableName],
+            node.variable.name,
+          ]),
+        );
       } else {
         knownVariableNames[variableName] = node.variable.name;
       }
-    }
+    },
   };
 }

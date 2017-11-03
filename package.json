@@ -25,6 +25,7 @@
     "testonly": "babel-node ./node_modules/.bin/_mocha $npm_package_options_mocha",
     "t": "babel-node ./node_modules/.bin/_mocha --require ./resources/mocha-bootload",
     "lint": "eslint --rulesdir ./resources/lint src || (printf '\\033[33mTry: \\033[7m npm run lint -- --fix \\033[0m\\n' && exit 1)",
+    "prettier": "prettier --write 'src/**/*.js'",
     "check": "flow check",
     "check-cover": "for file in {src/*.js,src/**/*.js}; do echo $file; flow coverage $file; done",
     "build": "babel src --optional runtime --ignore __tests__ --out-dir dist/ && cp package.json dist/ && npm run build-dot-flow",
@@ -56,9 +57,11 @@
     "eslint": "4.4.1",
     "eslint-plugin-babel": "4.1.2",
     "eslint-plugin-flowtype": "2.35.0",
+    "eslint-plugin-prettier": "^2.3.1",
     "flow-bin": "^0.58.0",
     "isparta": "4.0.0",
     "mocha": "3.5.0",
+    "prettier": "^1.7.4",
     "sane": "2.0.0"
   }
 }

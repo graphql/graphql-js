@@ -90,7 +90,7 @@ const episodeEnum = new GraphQLEnumType({
       value: 6,
       description: 'Released in 1983.',
     },
-  }
+  },
 });
 
 /**
@@ -119,8 +119,9 @@ const characterInterface = new GraphQLInterfaceType({
     },
     friends: {
       type: new GraphQLList(characterInterface),
-      description: 'The friends of the character, or an empty list if they ' +
-                   'have none.',
+      description:
+        'The friends of the character, or an empty list if they ' +
+        'have none.',
     },
     appearsIn: {
       type: new GraphQLList(episodeEnum),
@@ -138,7 +139,7 @@ const characterInterface = new GraphQLInterfaceType({
     if (character.type === 'Droid') {
       return droidType;
     }
-  }
+  },
 });
 
 /**
@@ -187,7 +188,7 @@ const humanType = new GraphQLObjectType({
       },
     },
   }),
-  interfaces: [ characterInterface ]
+  interfaces: [characterInterface],
 });
 
 /**
@@ -237,7 +238,7 @@ const droidType = new GraphQLObjectType({
       description: 'The primary function of the droid.',
     },
   }),
-  interfaces: [ characterInterface ]
+  interfaces: [characterInterface],
 });
 
 /**
@@ -261,10 +262,11 @@ const queryType = new GraphQLObjectType({
       type: characterInterface,
       args: {
         episode: {
-          description: 'If omitted, returns the hero of the whole saga. If ' +
-                       'provided, returns the hero of that particular episode.',
-          type: episodeEnum
-        }
+          description:
+            'If omitted, returns the hero of the whole saga. If ' +
+            'provided, returns the hero of that particular episode.',
+          type: episodeEnum,
+        },
       },
       resolve: (root, { episode }) => getHero(episode),
     },
@@ -273,8 +275,8 @@ const queryType = new GraphQLObjectType({
       args: {
         id: {
           description: 'id of the human',
-          type: new GraphQLNonNull(GraphQLString)
-        }
+          type: new GraphQLNonNull(GraphQLString),
+        },
       },
       resolve: (root, { id }) => getHuman(id),
     },
@@ -283,12 +285,12 @@ const queryType = new GraphQLObjectType({
       args: {
         id: {
           description: 'id of the droid',
-          type: new GraphQLNonNull(GraphQLString)
-        }
+          type: new GraphQLNonNull(GraphQLString),
+        },
       },
       resolve: (root, { id }) => getDroid(id),
     },
-  })
+  }),
 });
 
 /**
@@ -297,5 +299,5 @@ const queryType = new GraphQLObjectType({
  */
 export const StarWarsSchema = new GraphQLSchema({
   query: queryType,
-  types: [ humanType, droidType ]
+  types: [humanType, droidType],
 });

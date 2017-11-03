@@ -20,12 +20,11 @@ import {
   isAbstractType,
 } from '../../type/definition';
 
-
 export function undefinedFieldMessage(
   fieldName: string,
   type: string,
   suggestedTypeNames: Array<string>,
-  suggestedFieldNames: Array<string>
+  suggestedFieldNames: Array<string>,
 ): string {
   let message = `Cannot query field "${fieldName}" on type "${type}".`;
   if (suggestedTypeNames.length !== 0) {
@@ -54,26 +53,32 @@ export function FieldsOnCorrectType(context: ValidationContext): any {
           const schema = context.getSchema();
           const fieldName = node.name.value;
           // First determine if there are any suggested types to condition on.
-          const suggestedTypeNames =
-            getSuggestedTypeNames(schema, type, fieldName);
+          const suggestedTypeNames = getSuggestedTypeNames(
+            schema,
+            type,
+            fieldName,
+          );
           // If there are no suggested types, then perhaps this was a typo?
-          const suggestedFieldNames = suggestedTypeNames.length !== 0 ?
-            [] :
-            getSuggestedFieldNames(schema, type, fieldName);
+          const suggestedFieldNames =
+            suggestedTypeNames.length !== 0
+              ? []
+              : getSuggestedFieldNames(schema, type, fieldName);
 
           // Report an error, including helpful suggestions.
-          context.reportError(new GraphQLError(
-            undefinedFieldMessage(
-              fieldName,
-              type.name,
-              suggestedTypeNames,
-              suggestedFieldNames
+          context.reportError(
+            new GraphQLError(
+              undefinedFieldMessage(
+                fieldName,
+                type.name,
+                suggestedTypeNames,
+                suggestedFieldNames,
+              ),
+              [node],
             ),
-            [ node ]
-          ));
+          );
         }
       }
-    }
+    },
   };
 }
 
@@ -86,7 +91,7 @@ export function FieldsOnCorrectType(context: ValidationContext): any {
 function getSuggestedTypeNames(
   schema: GraphQLSchema,
   type: GraphQLOutputType,
-  fieldName: string
+  fieldName: string,
 ): Array<string> {
   if (isAbstractType(type)) {
     const suggestedObjectTypes = [];
@@ -108,8 +113,9 @@ function getSuggestedTypeNames(
     });
 
     // Suggest interface types based on how common they are.
-    const suggestedInterfaceTypes = Object.keys(interfaceUsageCount)
-      .sort((a, b) => interfaceUsageCount[b] - interfaceUsageCount[a]);
+    const suggestedInterfaceTypes = Object.keys(interfaceUsageCount).sort(
+      (a, b) => interfaceUsageCount[b] - interfaceUsageCount[a],
+    );
 
     // Suggest both interface and object types.
     return suggestedInterfaceTypes.concat(suggestedObjectTypes);
@@ -126,10 +132,12 @@ function getSuggestedTypeNames(
 function getSuggestedFieldNames(
   schema: GraphQLSchema,
   type: GraphQLOutputType,
-  fieldName: string
+  fieldName: string,
 ): Array<string> {
-  if (type instanceof GraphQLObjectType ||
-      type instanceof GraphQLInterfaceType) {
+  if (
+    type instanceof GraphQLObjectType ||
+    type instanceof GraphQLInterfaceType
+  ) {
     const possibleFieldNames = Object.keys(type.getFields());
     return suggestionList(fieldName, possibleFieldNames);
   }

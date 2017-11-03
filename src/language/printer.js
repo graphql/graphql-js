@@ -31,9 +31,9 @@ const printDocASTReducer = {
     const selectionSet = node.selectionSet;
     // Anonymous queries with no directives or variable definitions can use
     // the query short form.
-    return !name && !directives && !varDefs && op === 'query' ?
-      selectionSet :
-      join([ op, join([ name, varDefs ]), directives, selectionSet ], ' ');
+    return !name && !directives && !varDefs && op === 'query'
+      ? selectionSet
+      : join([op, join([name, varDefs]), directives, selectionSet], ' ');
   },
 
   VariableDefinition: ({ variable, type, defaultValue }) =>
@@ -42,11 +42,14 @@ const printDocASTReducer = {
   SelectionSet: ({ selections }) => block(selections),
 
   Field: ({ alias, name, arguments: args, directives, selectionSet }) =>
-    join([
-      wrap('', alias, ': ') + name + wrap('(', join(args, ', '), ')'),
-      join(directives, ' '),
-      selectionSet
-    ], ' '),
+    join(
+      [
+        wrap('', alias, ': ') + name + wrap('(', join(args, ', '), ')'),
+        join(directives, ' '),
+        selectionSet,
+      ],
+      ' ',
+    ),
 
   Argument: ({ name, value }) => name + ': ' + value,
 
@@ -56,12 +59,10 @@ const printDocASTReducer = {
     '...' + name + wrap(' ', join(directives, ' ')),
 
   InlineFragment: ({ typeCondition, directives, selectionSet }) =>
-    join([
-      '...',
-      wrap('on ', typeCondition),
-      join(directives, ' '),
-      selectionSet
-    ], ' '),
+    join(
+      ['...', wrap('on ', typeCondition), join(directives, ' '), selectionSet],
+      ' ',
+    ),
 
   FragmentDefinition: ({ name, typeCondition, directives, selectionSet }) =>
     `fragment ${name} on ${typeCondition} ` +
@@ -94,80 +95,64 @@ const printDocASTReducer = {
   // Type System Definitions
 
   SchemaDefinition: ({ directives, operationTypes }) =>
-    join([
-      'schema',
-      join(directives, ' '),
-      block(operationTypes),
-    ], ' '),
+    join(['schema', join(directives, ' '), block(operationTypes)], ' '),
 
-  OperationTypeDefinition: ({ operation, type }) =>
-    operation + ': ' + type,
+  OperationTypeDefinition: ({ operation, type }) => operation + ': ' + type,
 
   ScalarTypeDefinition: ({ name, directives }) =>
-    join([ 'scalar', name, join(directives, ' ') ], ' '),
+    join(['scalar', name, join(directives, ' ')], ' '),
 
   ObjectTypeDefinition: ({ name, interfaces, directives, fields }) =>
-    join([
-      'type',
-      name,
-      wrap('implements ', join(interfaces, ', ')),
-      join(directives, ' '),
-      block(fields)
-    ], ' '),
+    join(
+      [
+        'type',
+        name,
+        wrap('implements ', join(interfaces, ', ')),
+        join(directives, ' '),
+        block(fields),
+      ],
+      ' ',
+    ),
 
   FieldDefinition: ({ name, arguments: args, type, directives }) =>
     name +
     wrap('(', join(args, ', '), ')') +
-    ': ' + type +
+    ': ' +
+    type +
     wrap(' ', join(directives, ' ')),
 
   InputValueDefinition: ({ name, type, defaultValue, directives }) =>
-    join([
-      name + ': ' + type,
-      wrap('= ', defaultValue),
-      join(directives, ' ')
-    ], ' '),
+    join(
+      [name + ': ' + type, wrap('= ', defaultValue), join(directives, ' ')],
+      ' ',
+    ),
 
   InterfaceTypeDefinition: ({ name, directives, fields }) =>
-    join([
-      'interface',
-      name,
-      join(directives, ' '),
-      block(fields)
-    ], ' '),
+    join(['interface', name, join(directives, ' '), block(fields)], ' '),
 
   UnionTypeDefinition: ({ name, directives, types }) =>
-    join([
-      'union',
-      name,
-      join(directives, ' '),
-      '= ' + join(types, ' | ')
-    ], ' '),
+    join(
+      ['union', name, join(directives, ' '), '= ' + join(types, ' | ')],
+      ' ',
+    ),
 
   EnumTypeDefinition: ({ name, directives, values }) =>
-    join([
-      'enum',
-      name,
-      join(directives, ' '),
-      block(values)
-    ], ' '),
+    join(['enum', name, join(directives, ' '), block(values)], ' '),
 
   EnumValueDefinition: ({ name, directives }) =>
-    join([ name, join(directives, ' ') ], ' '),
+    join([name, join(directives, ' ')], ' '),
 
   InputObjectTypeDefinition: ({ name, directives, fields }) =>
-    join([
-      'input',
-      name,
-      join(directives, ' '),
-      block(fields)
-    ], ' '),
+    join(['input', name, join(directives, ' '), block(fields)], ' '),
 
   TypeExtensionDefinition: ({ definition }) => `extend ${definition}`,
 
   DirectiveDefinition: ({ name, arguments: args, locations }) =>
-    'directive @' + name + wrap('(', join(args, ', '), ')') +
-    ' on ' + join(locations, ' | '),
+    'directive @' +
+    name +
+    wrap('(', join(args, ', '), ')') +
+    ' on ' +
+    join(locations, ' | '),
 };
 
 /**
@@ -183,9 +168,9 @@ function join(maybeArray, separator) {
  * indented "{ }" block.
  */
 function block(array) {
-  return array && array.length !== 0 ?
-    indent('{\n' + join(array, '\n')) + '\n}' :
-    '{}';
+  return array && array.length !== 0
+    ? indent('{\n' + join(array, '\n')) + '\n}'
+    : '{}';
 }
 
 /**
@@ -193,9 +178,7 @@ function block(array) {
  * print an empty string.
  */
 function wrap(start, maybeString, end) {
-  return maybeString ?
-    start + maybeString + (end || '') :
-    '';
+  return maybeString ? start + maybeString + (end || '') : '';
 }
 
 function indent(maybeString) {

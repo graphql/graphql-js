@@ -11,7 +11,6 @@ import { parse } from '../../language';
 import { getOperationAST } from '../getOperationAST';
 
 describe('getOperationAST', () => {
-
   it('Gets an operation from a simple document', () => {
     const doc = parse('{ field }');
     expect(getOperationAST(doc)).to.equal(doc.definitions[0]);
@@ -65,5 +64,4 @@ describe('getOperationAST', () => {
     expect(getOperationAST(doc, 'TestM')).to.equal(doc.definitions[1]);
     expect(getOperationAST(doc, 'TestS')).to.equal(doc.definitions[2]);
   });
-
 });

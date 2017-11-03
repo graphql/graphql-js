@@ -20,9 +20,9 @@ export default function asyncIteratorReject(error: Error): AsyncIterator<void> {
      https://github.com/facebook/flow/issues/3258 */
   return ({
     next() {
-      const result = isComplete ?
-        Promise.resolve({ value: undefined, done: true }) :
-        Promise.reject(error);
+      const result = isComplete
+        ? Promise.resolve({ value: undefined, done: true })
+        : Promise.reject(error);
       isComplete = true;
       return result;
     },

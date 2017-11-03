@@ -9,7 +9,6 @@
 
 import type { DirectiveLocationEnum } from '../type/directives';
 
-
 export const introspectionQuery = `
   query IntrospectionQuery {
     __schema {
@@ -105,15 +104,15 @@ export const introspectionQuery = `
 `;
 
 export type IntrospectionQuery = {
-  __schema: IntrospectionSchema
+  __schema: IntrospectionSchema,
 };
 
 export type IntrospectionSchema = {
-  queryType: IntrospectionNamedTypeRef;
-  mutationType: ?IntrospectionNamedTypeRef;
-  subscriptionType: ?IntrospectionNamedTypeRef;
-  types: Array<IntrospectionType>;
-  directives: Array<IntrospectionDirective>;
+  queryType: IntrospectionNamedTypeRef,
+  mutationType: ?IntrospectionNamedTypeRef,
+  subscriptionType: ?IntrospectionNamedTypeRef,
+  types: Array<IntrospectionType>,
+  directives: Array<IntrospectionDirective>,
 };
 
 export type IntrospectionType =
@@ -125,46 +124,46 @@ export type IntrospectionType =
   | IntrospectionInputObjectType;
 
 export type IntrospectionScalarType = {
-  kind: 'SCALAR';
-  name: string;
-  description: ?string;
+  kind: 'SCALAR',
+  name: string,
+  description: ?string,
 };
 
 export type IntrospectionObjectType = {
-  kind: 'OBJECT';
-  name: string;
-  description: ?string;
-  fields: Array<IntrospectionField>;
-  interfaces: Array<IntrospectionNamedTypeRef>;
+  kind: 'OBJECT',
+  name: string,
+  description: ?string,
+  fields: Array<IntrospectionField>,
+  interfaces: Array<IntrospectionNamedTypeRef>,
 };
 
 export type IntrospectionInterfaceType = {
-  kind: 'INTERFACE';
-  name: string;
-  description: ?string;
-  fields: Array<IntrospectionField>;
-  possibleTypes: Array<IntrospectionNamedTypeRef>;
+  kind: 'INTERFACE',
+  name: string,
+  description: ?string,
+  fields: Array<IntrospectionField>,
+  possibleTypes: Array<IntrospectionNamedTypeRef>,
 };
 
 export type IntrospectionUnionType = {
-  kind: 'UNION';
-  name: string;
-  description: ?string;
-  possibleTypes: Array<IntrospectionNamedTypeRef>;
+  kind: 'UNION',
+  name: string,
+  description: ?string,
+  possibleTypes: Array<IntrospectionNamedTypeRef>,
 };
 
 export type IntrospectionEnumType = {
-  kind: 'ENUM';
-  name: string;
-  description: ?string;
-  enumValues: Array<IntrospectionEnumValue>;
+  kind: 'ENUM',
+  name: string,
+  description: ?string,
+  enumValues: Array<IntrospectionEnumValue>,
 };
 
 export type IntrospectionInputObjectType = {
-  kind: 'INPUT_OBJECT';
-  name: string;
-  description: ?string;
-  inputFields: Array<IntrospectionInputValue>;
+  kind: 'INPUT_OBJECT',
+  name: string,
+  description: ?string,
+  inputFields: Array<IntrospectionInputValue>,
 };
 
 export type IntrospectionTypeRef =
@@ -173,46 +172,46 @@ export type IntrospectionTypeRef =
   | IntrospectionNonNullTypeRef;
 
 export type IntrospectionNamedTypeRef = {
-  kind: string;
-  name: string;
+  kind: string,
+  name: string,
 };
 
 export type IntrospectionListTypeRef = {
-  kind: 'LIST';
-  ofType?: IntrospectionTypeRef;
+  kind: 'LIST',
+  ofType?: IntrospectionTypeRef,
 };
 
 export type IntrospectionNonNullTypeRef = {
-  kind: 'NON_NULL';
-  ofType?: IntrospectionTypeRef;
+  kind: 'NON_NULL',
+  ofType?: IntrospectionTypeRef,
 };
 
 export type IntrospectionField = {
-  name: string;
-  description: ?string;
-  args: Array<IntrospectionInputValue>;
-  type: IntrospectionTypeRef;
-  isDeprecated: boolean;
-  deprecationReason: ?string;
+  name: string,
+  description: ?string,
+  args: Array<IntrospectionInputValue>,
+  type: IntrospectionTypeRef,
+  isDeprecated: boolean,
+  deprecationReason: ?string,
 };
 
 export type IntrospectionInputValue = {
-  name: string;
-  description: ?string;
-  type: IntrospectionTypeRef;
-  defaultValue: ?string;
+  name: string,
+  description: ?string,
+  type: IntrospectionTypeRef,
+  defaultValue: ?string,
 };
 
 export type IntrospectionEnumValue = {
-  name: string;
-  description: ?string;
-  isDeprecated: boolean;
-  deprecationReason: ?string;
+  name: string,
+  description: ?string,
+  isDeprecated: boolean,
+  deprecationReason: ?string,
 };
 
 export type IntrospectionDirective = {
-  name: string;
-  description: ?string;
-  locations: Array<DirectiveLocationEnum>;
-  args: Array<IntrospectionInputValue>;
+  name: string,
+  description: ?string,
+  locations: Array<DirectiveLocationEnum>,
+  args: Array<IntrospectionInputValue>,
 };

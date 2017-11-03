@@ -14,7 +14,6 @@ import { Source } from '../language/source';
 import { parse } from '../language/parser';
 import { validate } from '../validation/validate';
 
-
 /**
  * Helper function to test a query and the expected response.
  */
