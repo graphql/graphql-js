@@ -121,14 +121,14 @@ export function buildClientSchema(
   // preferring cached instances before building new instances.
   function getType<T: IntrospectionTypeRef>(typeRef: T): GraphQLType {
     if (typeRef.kind === TypeKind.LIST) {
-      const itemRef: ?T = typeRef.ofType;
+      const itemRef = typeRef.ofType;
       if (!itemRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
       return new GraphQLList(getType(itemRef));
     }
     if (typeRef.kind === TypeKind.NON_NULL) {
-      const nullableRef: ?T = typeRef.ofType;
+      const nullableRef = typeRef.ofType;
       if (!nullableRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
