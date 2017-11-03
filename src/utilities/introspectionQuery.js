@@ -179,30 +179,30 @@ export type IntrospectionInputObjectType = {|
   +inputFields: Array<IntrospectionInputValue>;
 |};
 
-export type IntrospectionList<T> = {|
+export type IntrospectionListTypeRef<T> = {|
   +kind: 'LIST',
   +ofType?: T,
 |};
 
-export type IntrospectionNonNull<T> = {|
+export type IntrospectionNonNullTypeRef<T> = {|
   +kind: 'NON_NULL',
   +ofType?: T,
 |};
 
 export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionType>
-  | IntrospectionList<IntrospectionTypeRef>
-  | IntrospectionNonNull<IntrospectionTypeRef>;
+  | IntrospectionListTypeRef<IntrospectionTypeRef>
+  | IntrospectionNonNullTypeRef<IntrospectionTypeRef>;
 
 export type IntrospectionOutputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionOutputType>
-  | IntrospectionList<IntrospectionOutputTypeRef>
-  | IntrospectionNonNull<IntrospectionOutputTypeRef>;
+  | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
+  | IntrospectionNonNullTypeRef<IntrospectionOutputTypeRef>;
 
 export type IntrospectionInputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionInputType>
-  | IntrospectionList<IntrospectionInputTypeRef>
-  | IntrospectionNonNull<IntrospectionInputTypeRef>;
+  | IntrospectionListTypeRef<IntrospectionInputTypeRef>
+  | IntrospectionNonNullTypeRef<IntrospectionInputTypeRef>;
 
 export type IntrospectionNamedTypeRef<T> = {|
   +kind: $PropertyType<T, 'kind'>;
