@@ -119,7 +119,7 @@ export function buildClientSchema(
 
   // Given a type reference in introspection, return the GraphQLType instance.
   // preferring cached instances before building new instances.
-  function getType<T: IntrospectionTypeRef>(typeRef: T): GraphQLType {
+  function getType(typeRef: IntrospectionTypeRef): GraphQLType {
     if (typeRef.kind === TypeKind.LIST) {
       const itemRef = typeRef.ofType;
       if (!itemRef) {

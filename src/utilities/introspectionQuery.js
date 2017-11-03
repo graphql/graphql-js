@@ -105,15 +105,15 @@ export const introspectionQuery = `
 `;
 
 export type IntrospectionQuery = {|
-  +__schema: IntrospectionSchema
+  +__schema: IntrospectionSchema;
 |};
 
 export type IntrospectionSchema = {|
   +queryType: IntrospectionNamedTypeRef<IntrospectionObjectType>;
   +mutationType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>;
   +subscriptionType: ?IntrospectionNamedTypeRef<IntrospectionObjectType>;
-  +types: Array<IntrospectionType>;
-  +directives: Array<IntrospectionDirective>;
+  +types: $ReadOnlyArray<IntrospectionType>;
+  +directives: $ReadOnlyArray<IntrospectionDirective>;
 |};
 
 export type IntrospectionType =
@@ -146,65 +146,86 @@ export type IntrospectionObjectType = {|
   +kind: 'OBJECT';
   +name: string;
   +description: ?string;
-  +fields: Array<IntrospectionField>;
-  +interfaces: Array<IntrospectionNamedTypeRef<IntrospectionInterfaceType>>;
+  +fields: $ReadOnlyArray<IntrospectionField>;
+  +interfaces: $ReadOnlyArray<
+    IntrospectionNamedTypeRef<IntrospectionInterfaceType>
+  >;
 |};
 
 export type IntrospectionInterfaceType = {|
   +kind: 'INTERFACE';
   +name: string;
   +description: ?string;
-  +fields: Array<IntrospectionField>;
-  +possibleTypes: Array<IntrospectionNamedTypeRef<IntrospectionObjectType>>;
+  +fields: $ReadOnlyArray<IntrospectionField>;
+  +possibleTypes: $ReadOnlyArray<
+    IntrospectionNamedTypeRef<IntrospectionObjectType>
+  >;
 |};
 
 export type IntrospectionUnionType = {|
   +kind: 'UNION';
   +name: string;
   +description: ?string;
-  +possibleTypes: Array<IntrospectionNamedTypeRef<IntrospectionObjectType>>;
+  +possibleTypes: $ReadOnlyArray<
+    IntrospectionNamedTypeRef<IntrospectionObjectType>
+  >;
 |};
 
 export type IntrospectionEnumType = {|
   +kind: 'ENUM';
   +name: string;
   +description: ?string;
-  +enumValues: Array<IntrospectionEnumValue>;
+  +enumValues: $ReadOnlyArray<IntrospectionEnumValue>;
 |};
 
 export type IntrospectionInputObjectType = {|
   +kind: 'INPUT_OBJECT';
   +name: string;
   +description: ?string;
-  +inputFields: Array<IntrospectionInputValue>;
+  +inputFields: $ReadOnlyArray<IntrospectionInputValue>;
 |};
 
-export type IntrospectionListTypeRef<T> = {|
-  +kind: 'LIST',
-  +ofType?: T,
+export type IntrospectionListTypeRef<
+  T: IntrospectionTypeRef = IntrospectionTypeRef
+> = {|
+  +kind: 'LIST';
+  +ofType?: T;
 |};
 
-export type IntrospectionNonNullTypeRef<T> = {|
-  +kind: 'NON_NULL',
-  +ofType?: T,
+export type IntrospectionNonNullTypeRef<
+  T: IntrospectionTypeRef = IntrospectionTypeRef
+> = {|
+  +kind: 'NON_NULL';
+  +ofType?: T;
 |};
 
 export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionType>
   | IntrospectionListTypeRef<IntrospectionTypeRef>
-  | IntrospectionNonNullTypeRef<IntrospectionTypeRef>;
+  | IntrospectionNonNullTypeRef<
+      | IntrospectionNamedTypeRef<IntrospectionType>
+      | IntrospectionListTypeRef<IntrospectionTypeRef>
+    >;
 
 export type IntrospectionOutputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionOutputType>
   | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
-  | IntrospectionNonNullTypeRef<IntrospectionOutputTypeRef>;
+  | IntrospectionNonNullTypeRef<
+      | IntrospectionNamedTypeRef<IntrospectionOutputType>
+      | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
+    >;
 
 export type IntrospectionInputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionInputType>
   | IntrospectionListTypeRef<IntrospectionInputTypeRef>
-  | IntrospectionNonNullTypeRef<IntrospectionInputTypeRef>;
+  | IntrospectionNonNullTypeRef<
+      | IntrospectionNamedTypeRef<IntrospectionInputType>
+      | IntrospectionListTypeRef<IntrospectionInputTypeRef>
+    >;
 
-export type IntrospectionNamedTypeRef<T> = {|
+export type IntrospectionNamedTypeRef<
+  T: IntrospectionType = IntrospectionType
+> = {|
   +kind: $PropertyType<T, 'kind'>;
   +name: string;
 |};
@@ -212,7 +233,7 @@ export type IntrospectionNamedTypeRef<T> = {|
 export type IntrospectionField = {|
   +name: string;
   +description: ?string;
-  +args: Array<IntrospectionInputValue>;
+  +args: $ReadOnlyArray<IntrospectionInputValue>;
   +type: IntrospectionOutputTypeRef;
   +isDeprecated: boolean;
   +deprecationReason: ?string;
@@ -235,6 +256,6 @@ export type IntrospectionEnumValue = {|
 export type IntrospectionDirective = {|
   +name: string;
   +description: ?string;
-  +locations: Array<DirectiveLocationEnum>;
-  +args: Array<IntrospectionInputValue>;
+  +locations: $ReadOnlyArray<DirectiveLocationEnum>;
+  +args: $ReadOnlyArray<IntrospectionInputValue>;
 |};
