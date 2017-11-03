@@ -10,10 +10,7 @@
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
-import {
-  getDescription,
-  getDeprecationReason,
-} from './buildASTSchema';
+import { getDescription, getDeprecationReason } from './buildASTSchema';
 import { valueFromAST } from './valueFromAST';
 import { GraphQLError } from '../error/GraphQLError';
 import { GraphQLSchema } from '../type/schema';
@@ -31,9 +28,7 @@ import {
   assertOutputType,
 } from '../type/definition';
 
-import {
-  GraphQLDirective,
-} from '../type/directives';
+import { GraphQLDirective } from '../type/directives';
 
 import {
   __Schema,
@@ -63,9 +58,7 @@ import type {
   GraphQLOutputType,
 } from '../type/definition';
 
-import type {
-  DirectiveLocationEnum
-} from '../type/directives';
+import type { DirectiveLocationEnum } from '../type/directives';
 
 import type {
   DocumentNode,
@@ -82,7 +75,6 @@ import type {
   DirectiveDefinitionNode,
 } from '../language/ast';
 
-
 /**
  * Produces a new schema given an existing schema and a document which may
  * contain GraphQL type extensions and definitions. The original schema will
@@ -97,16 +89,16 @@ import type {
  */
 export function extendSchema(
   schema: GraphQLSchema,
-  documentAST: DocumentNode
+  documentAST: DocumentNode,
 ): GraphQLSchema {
   invariant(
     schema instanceof GraphQLSchema,
-    'Must provide valid GraphQLSchema'
+    'Must provide valid GraphQLSchema',
   );
 
   invariant(
     documentAST && documentAST.kind === Kind.DOCUMENT,
-    'Must provide valid Document AST'
+    'Must provide valid Document AST',
   );
 
   // Collect the type definitions and extensions found in the document.
@@ -115,7 +107,7 @@ export function extendSchema(
 
   // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
-  const directiveDefinitions : Array<DirectiveDefinitionNode> = [];
+  const directiveDefinitions: Array<DirectiveDefinitionNode> = [];
 
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const def = documentAST.definitions[i];
@@ -132,8 +124,8 @@ export function extendSchema(
         if (schema.getType(typeName)) {
           throw new GraphQLError(
             `Type "${typeName}" already exists in the schema. It cannot also ` +
-            'be defined in this type definition.',
-            [ def ]
+              'be defined in this type definition.',
+            [def],
           );
         }
         typeDefinitionMap[typeName] = def;
@@ -146,21 +138,21 @@ export function extendSchema(
         if (!existingType) {
           throw new GraphQLError(
             `Cannot extend type "${extendedTypeName}" because it does not ` +
-            'exist in the existing schema.',
-            [ def.definition ]
+              'exist in the existing schema.',
+            [def.definition],
           );
         }
         if (!(existingType instanceof GraphQLObjectType)) {
           throw new GraphQLError(
             `Cannot extend non-object type "${extendedTypeName}".`,
-            [ def.definition ]
+            [def.definition],
           );
         }
         let extensions = typeExtensionsMap[extendedTypeName];
         if (extensions) {
           extensions.push(def);
         } else {
-          extensions = [ def ];
+          extensions = [def];
         }
         typeExtensionsMap[extendedTypeName] = extensions;
         break;
@@ -170,8 +162,8 @@ export function extendSchema(
         if (existingDirective) {
           throw new GraphQLError(
             `Directive "${directiveName}" already exists in the schema. It ` +
-            'cannot be redefined.',
-            [ def ]
+              'cannot be redefined.',
+            [def],
           );
         }
         directiveDefinitions.push(def);
@@ -181,9 +173,11 @@ export function extendSchema(
 
   // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
-  if (Object.keys(typeExtensionsMap).length === 0 &&
-      Object.keys(typeDefinitionMap).length === 0 &&
-      directiveDefinitions.length === 0) {
+  if (
+    Object.keys(typeExtensionsMap).length === 0 &&
+    Object.keys(typeDefinitionMap).length === 0 &&
+    directiveDefinitions.length === 0
+  ) {
     return schema;
   }
 
@@ -211,20 +205,20 @@ export function extendSchema(
   const queryType = getTypeFromDef(schema.getQueryType());
 
   const existingMutationType = schema.getMutationType();
-  const mutationType = existingMutationType ?
-    getTypeFromDef(existingMutationType) :
-    null;
+  const mutationType = existingMutationType
+    ? getTypeFromDef(existingMutationType)
+    : null;
 
   const existingSubscriptionType = schema.getSubscriptionType();
-  const subscriptionType = existingSubscriptionType ?
-    getTypeFromDef(existingSubscriptionType) :
-    null;
+  const subscriptionType = existingSubscriptionType
+    ? getTypeFromDef(existingSubscriptionType)
+    : null;
 
   // Iterate through all types, getting the type definition for each, ensuring
   // that any type not directly referenced by a field will get created.
   const typeMap = schema.getTypeMap();
   const types = Object.keys(typeMap).map(typeName =>
-    getTypeFromDef(typeMap[typeName])
+    getTypeFromDef(typeMap[typeName]),
   );
 
   // Do the same with new types, appending to the list of defined types.
@@ -250,7 +244,7 @@ export function extendSchema(
     invariant(existingDirectives, 'schema must have default directives');
 
     const newDirectives = directiveDefinitions.map(directiveNode =>
-      getDirective(directiveNode)
+      getDirective(directiveNode),
     );
     return existingDirectives.concat(newDirectives);
   }
@@ -266,8 +260,8 @@ export function extendSchema(
     if (!type) {
       throw new GraphQLError(
         `Unknown type: "${node.name.value}". Ensure that this type exists ` +
-        'either in the original schema, or is added in a type definition.',
-        [ node ]
+          'either in the original schema, or is added in a type definition.',
+        [node],
       );
     }
     return type;
@@ -350,7 +344,7 @@ export function extendSchema(
   }
 
   function extendInterfaceType(
-    type: GraphQLInterfaceType
+    type: GraphQLInterfaceType,
   ): GraphQLInterfaceType {
     return new GraphQLInterfaceType({
       name: type.name,
@@ -372,7 +366,7 @@ export function extendSchema(
   }
 
   function extendImplementedInterfaces(
-    type: GraphQLObjectType
+    type: GraphQLObjectType,
   ): Array<GraphQLInterfaceType> {
     const interfaces = type.getInterfaces().map(getTypeFromDef);
 
@@ -385,8 +379,8 @@ export function extendSchema(
           if (interfaces.some(def => def.name === interfaceName)) {
             throw new GraphQLError(
               `Type "${type.name}" already implements "${interfaceName}". ` +
-              'It cannot also be implemented in this type extension.',
-              [ namedType ]
+                'It cannot also be implemented in this type extension.',
+              [namedType],
             );
           }
           interfaces.push(getInterfaceTypeFromAST(namedType));
@@ -421,8 +415,8 @@ export function extendSchema(
           if (oldFieldMap[fieldName]) {
             throw new GraphQLError(
               `Field "${type.name}.${fieldName}" already exists in the ` +
-              'schema. It cannot also be defined in this type extension.',
-              [ field ]
+                'schema. It cannot also be defined in this type extension.',
+              [field],
             );
           }
           newFieldMap[fieldName] = {
@@ -451,11 +445,16 @@ export function extendSchema(
 
   function buildType(typeNode: TypeDefinitionNode): GraphQLNamedType {
     switch (typeNode.kind) {
-      case Kind.OBJECT_TYPE_DEFINITION: return buildObjectType(typeNode);
-      case Kind.INTERFACE_TYPE_DEFINITION: return buildInterfaceType(typeNode);
-      case Kind.UNION_TYPE_DEFINITION: return buildUnionType(typeNode);
-      case Kind.SCALAR_TYPE_DEFINITION: return buildScalarType(typeNode);
-      case Kind.ENUM_TYPE_DEFINITION: return buildEnumType(typeNode);
+      case Kind.OBJECT_TYPE_DEFINITION:
+        return buildObjectType(typeNode);
+      case Kind.INTERFACE_TYPE_DEFINITION:
+        return buildInterfaceType(typeNode);
+      case Kind.UNION_TYPE_DEFINITION:
+        return buildUnionType(typeNode);
+      case Kind.SCALAR_TYPE_DEFINITION:
+        return buildScalarType(typeNode);
+      case Kind.ENUM_TYPE_DEFINITION:
+        return buildEnumType(typeNode);
       case Kind.INPUT_OBJECT_TYPE_DEFINITION:
         return buildInputObjectType(typeNode);
     }
@@ -534,13 +533,13 @@ export function extendSchema(
   }
 
   function getDirective(
-    directiveNode: DirectiveDefinitionNode
+    directiveNode: DirectiveDefinitionNode,
   ): GraphQLDirective {
     return new GraphQLDirective({
       name: directiveNode.name.value,
       description: getDescription(directiveNode),
       locations: directiveNode.locations.map(
-        node => ((node.value: any): DirectiveLocationEnum)
+        node => ((node.value: any): DirectiveLocationEnum),
       ),
       args:
         directiveNode.arguments && buildInputValues(directiveNode.arguments),
@@ -549,8 +548,9 @@ export function extendSchema(
   }
 
   function buildImplementedInterfaces(typeNode: ObjectTypeDefinitionNode) {
-    return typeNode.interfaces &&
-      typeNode.interfaces.map(getInterfaceTypeFromAST);
+    return (
+      typeNode.interfaces && typeNode.interfaces.map(getInterfaceTypeFromAST)
+    );
   }
 
   function buildFieldMap(typeNode) {
@@ -563,7 +563,7 @@ export function extendSchema(
         args: buildInputValues(field.arguments),
         deprecationReason: getDeprecationReason(field),
         astNode: field,
-      })
+      }),
     );
   }
 
@@ -579,7 +579,7 @@ export function extendSchema(
           defaultValue: valueFromAST(value.defaultValue, type),
           astNode: value,
         };
-      }
+      },
     );
   }
 
@@ -610,6 +610,6 @@ export function extendSchema(
 
 function cannotExecuteExtendedSchema() {
   throw new Error(
-    'Extended Schema cannot use Interface or Union types for execution.'
+    'Extended Schema cannot use Interface or Union types for execution.',
   );
 }

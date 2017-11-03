@@ -3,7 +3,8 @@
 
   "plugins": [
     "babel",
-    "flowtype"
+    "flowtype",
+    "prettier"
   ],
 
   "env": {
@@ -39,6 +40,8 @@
   },
 
   "rules": {
+    "prettier/prettier": 2,
+
     "flowtype/space-after-type-colon": [2, "always"],
     "flowtype/space-before-type-colon": [2, "never"],
     "flowtype/space-before-generic-bracket": [2, "never"],
@@ -48,7 +51,6 @@
     "flowtype/use-flow-type": 2,
     "flowtype/semi": 2,
 
-    "array-bracket-spacing": [2, "always"],
     "arrow-parens": [2, "as-needed"],
     "arrow-spacing": 2,
     "block-scoped-var": 0,
@@ -70,7 +72,6 @@
     "eqeqeq": ["error", "smart"],
     "func-names": 0,
     "func-style": 0,
-    "generator-star-spacing": [2, {"before": false, "after": true}],
     "guard-for-in": 2,
     "handle-callback-err": [2, "error"],
     "id-length": 0,
@@ -194,20 +195,17 @@
     "object-shorthand": [2, "always"],
     "one-var": [2, "never"],
     "operator-assignment": [2, "always"],
-    "operator-linebreak": [2, "after"],
     "padded-blocks": 0,
     "prefer-const": 2,
     "prefer-reflect": 0,
     "prefer-spread": 0,
     "quote-props": [2, "as-needed", {"numbers": true}],
-    "quotes": [2, "single"],
     "radix": 2,
     "require-yield": 0,
     "semi": [2, "always"],
     "semi-spacing": [2, {"before": false, "after": true}],
     "sort-vars": 0,
     "space-before-blocks": [2, "always"],
-    "space-before-function-paren": [2, {"anonymous": "always", "named": "never"}],
     "space-in-parens": 0,
     "space-infix-ops": [2, {"int32Hint": false}],
     "space-unary-ops": [2, {"words": true, "nonwords": false}],

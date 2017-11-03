@@ -20,7 +20,6 @@ import {
 } from '../type/definition';
 import type { GraphQLInputType } from '../type/definition';
 
-
 /**
  * Given a JavaScript value and a GraphQL type, determine if the value will be
  * accepted for that type. This is primarily useful for validating the
@@ -28,12 +27,12 @@ import type { GraphQLInputType } from '../type/definition';
  */
 export function isValidJSValue(
   value: mixed,
-  type: GraphQLInputType
+  type: GraphQLInputType,
 ): Array<string> {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
     if (isNullish(value)) {
-      return [ `Expected "${String(type)}", found null.` ];
+      return [`Expected "${String(type)}", found null.`];
     }
     return isValidJSValue(value, type.ofType);
   }
@@ -48,9 +47,12 @@ export function isValidJSValue(
     if (isCollection(value)) {
       const errors = [];
       forEach((value: any), (item, index) => {
-        errors.push.apply(errors, isValidJSValue(item, itemType).map(error =>
-          `In element #${index}: ${error}`
-        ));
+        errors.push.apply(
+          errors,
+          isValidJSValue(item, itemType).map(
+            error => `In element #${index}: ${error}`,
+          ),
+        );
       });
       return errors;
     }
@@ -60,7 +62,7 @@ export function isValidJSValue(
   // Input objects check each defined field.
   if (type instanceof GraphQLInputObjectType) {
     if (typeof value !== 'object' || value === null) {
-      return [ `Expected "${type.name}", found not an object.` ];
+      return [`Expected "${type.name}", found not an object.`];
     }
     const fields = type.getFields();
 
@@ -75,11 +77,13 @@ export function isValidJSValue(
 
     // Ensure every defined field is valid.
     Object.keys(fields).forEach(fieldName => {
-      const newErrors =
-        isValidJSValue((value: any)[fieldName], fields[fieldName].type);
-      errors.push(...(newErrors.map(error =>
-        `In field "${fieldName}": ${error}`
-      )));
+      const newErrors = isValidJSValue(
+        (value: any)[fieldName],
+        fields[fieldName].type,
+      );
+      errors.push(
+        ...newErrors.map(error => `In field "${fieldName}": ${error}`),
+      );
     });
 
     return errors;
@@ -87,7 +91,7 @@ export function isValidJSValue(
 
   invariant(
     type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type'
+    'Must be input type',
   );
 
   // Scalar/Enum input checks to ensure the type can parse the value to
@@ -95,14 +99,12 @@ export function isValidJSValue(
   try {
     const parseResult = type.parseValue(value);
     if (isNullish(parseResult) && !type.isValidValue(value)) {
-      return [
-        `Expected type "${type.name}", found ${JSON.stringify(value)}.`
-      ];
+      return [`Expected type "${type.name}", found ${JSON.stringify(value)}.`];
     }
   } catch (error) {
     return [
       `Expected type "${type.name}", found ${JSON.stringify(value)}: ` +
-      error.message
+        error.message,
     ];
   }
 

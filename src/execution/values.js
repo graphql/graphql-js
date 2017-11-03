@@ -30,10 +30,7 @@ import {
   GraphQLNonNull,
 } from '../type/definition';
 import type { ObjMap } from '../jsutils/ObjMap';
-import type {
-  GraphQLInputType,
-  GraphQLField
-} from '../type/definition';
+import type { GraphQLInputType, GraphQLField } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 import type {
@@ -42,7 +39,6 @@ import type {
   VariableNode,
   VariableDefinitionNode,
 } from '../language/ast';
-
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -56,7 +52,7 @@ import type {
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: Array<VariableDefinitionNode>,
-  inputs: ObjMap<mixed>
+  inputs: ObjMap<mixed>,
 ): { [variable: string]: mixed } {
   const coercedValues = {};
   for (let i = 0; i < varDefNodes.length; i++) {
@@ -66,8 +62,8 @@ export function getVariableValues(
     if (!isInputType(varType)) {
       throw new GraphQLError(
         `Variable "$${varName}" expected value of type ` +
-        `"${print(varDefNode.type)}" which cannot be used as an input type.`,
-        [ varDefNode.type ]
+          `"${print(varDefNode.type)}" which cannot be used as an input type.`,
+        [varDefNode.type],
       );
     }
 
@@ -80,8 +76,8 @@ export function getVariableValues(
       if (varType instanceof GraphQLNonNull) {
         throw new GraphQLError(
           `Variable "$${varName}" of required type ` +
-          `"${String(varType)}" was not provided.`,
-          [ varDefNode ]
+            `"${String(varType)}" was not provided.`,
+          [varDefNode],
         );
       }
     } else {
@@ -90,8 +86,8 @@ export function getVariableValues(
         const message = errors ? '\n' + errors.join('\n') : '';
         throw new GraphQLError(
           `Variable "$${varName}" got invalid value ` +
-          `${JSON.stringify(value)}.${message}`,
-          [ varDefNode ]
+            `${JSON.stringify(value)}.${message}`,
+          [varDefNode],
         );
       }
 
@@ -114,7 +110,7 @@ export function getVariableValues(
 export function getArgumentValues(
   def: GraphQLField<*, *> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
-  variableValues?: ?ObjMap<mixed>
+  variableValues?: ?ObjMap<mixed>,
 ): { [argument: string]: mixed } {
   const coercedValues = {};
   const argDefs = def.args;
@@ -135,8 +131,8 @@ export function getArgumentValues(
       } else if (argType instanceof GraphQLNonNull) {
         throw new GraphQLError(
           `Argument "${name}" of required type ` +
-          `"${String(argType)}" was not provided.`,
-          [ node ]
+            `"${String(argType)}" was not provided.`,
+          [node],
         );
       }
     } else if (argumentNode.value.kind === Kind.VARIABLE) {
@@ -155,9 +151,9 @@ export function getArgumentValues(
       } else if (argType instanceof GraphQLNonNull) {
         throw new GraphQLError(
           `Argument "${name}" of required type "${String(argType)}" was ` +
-          `provided the variable "$${variableName}" which was not provided ` +
-          'a runtime value.',
-          [ argumentNode.value ]
+            `provided the variable "$${variableName}" which was not provided ` +
+            'a runtime value.',
+          [argumentNode.value],
         );
       }
     } else {
@@ -168,7 +164,7 @@ export function getArgumentValues(
         const message = errors ? '\n' + errors.join('\n') : '';
         throw new GraphQLError(
           `Argument "${name}" got invalid value ${print(valueNode)}.${message}`,
-          [ argumentNode.value ]
+          [argumentNode.value],
         );
       }
       coercedValues[name] = coercedValue;
@@ -191,12 +187,14 @@ export function getArgumentValues(
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: { directives?: ?Array<DirectiveNode> },
-  variableValues?: ?ObjMap<mixed>
+  variableValues?: ?ObjMap<mixed>,
 ): void | { [argument: string]: mixed } {
-  const directiveNode = node.directives && find(
-    node.directives,
-    directive => directive.name.value === directiveDef.name
-  );
+  const directiveNode =
+    node.directives &&
+    find(
+      node.directives,
+      directive => directive.name.value === directiveDef.name,
+    );
 
   if (directiveNode) {
     return getArgumentValues(directiveDef, directiveNode, variableValues);
@@ -248,7 +246,7 @@ export function coerceValue(type: GraphQLInputType, value: mixed): mixed {
     if (isInvalid(coercedValue)) {
       return; // Intentionally return no value.
     }
-    return [ coerceValue(itemType, _value) ];
+    return [coerceValue(itemType, _value)];
   }
 
   if (type instanceof GraphQLInputObjectType) {
@@ -280,7 +278,7 @@ export function coerceValue(type: GraphQLInputType, value: mixed): mixed {
 
   invariant(
     type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type'
+    'Must be input type',
   );
 
   const parsed = type.parseValue(_value);

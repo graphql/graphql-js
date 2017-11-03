@@ -51,16 +51,19 @@ import type { GraphQLFieldResolver } from '../type/definition';
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-declare function subscribe({|
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?ObjMap<mixed>,
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>
-|}, ..._: []): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
+declare function subscribe(
+  {|
+    schema: GraphQLSchema,
+    document: DocumentNode,
+    rootValue?: mixed,
+    contextValue?: mixed,
+    variableValues?: ?ObjMap<mixed>,
+    operationName?: ?string,
+    fieldResolver?: ?GraphQLFieldResolver<any, any>,
+    subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
+  |},
+  ..._: []
+): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function subscribe(
   schema: GraphQLSchema,
@@ -70,7 +73,7 @@ declare function subscribe(
   variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>
+  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
 ): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
 export function subscribe(
   argsOrSchema,
@@ -80,33 +83,33 @@ export function subscribe(
   variableValues,
   operationName,
   fieldResolver,
-  subscribeFieldResolver
+  subscribeFieldResolver,
 ) {
   // Extract arguments from object args if provided.
   const args = arguments.length === 1 ? argsOrSchema : undefined;
   const schema = args ? args.schema : argsOrSchema;
 
-  return args ?
-    subscribeImpl(
-      schema,
-      args.document,
-      args.rootValue,
-      args.contextValue,
-      args.variableValues,
-      args.operationName,
-      args.fieldResolver,
-      args.subscribeFieldResolver
-    ) :
-    subscribeImpl(
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
-      subscribeFieldResolver
-    );
+  return args
+    ? subscribeImpl(
+        schema,
+        args.document,
+        args.rootValue,
+        args.contextValue,
+        args.variableValues,
+        args.operationName,
+        args.fieldResolver,
+        args.subscribeFieldResolver,
+      )
+    : subscribeImpl(
+        schema,
+        document,
+        rootValue,
+        contextValue,
+        variableValues,
+        operationName,
+        fieldResolver,
+        subscribeFieldResolver,
+      );
 }
 
 /**
@@ -116,7 +119,7 @@ export function subscribe(
  */
 function reportGraphQLError(error) {
   if (error instanceof GraphQLError) {
-    return { errors: [ error ] };
+    return { errors: [error] };
   }
   throw error;
 }
@@ -129,7 +132,7 @@ function subscribeImpl(
   variableValues,
   operationName,
   fieldResolver,
-  subscribeFieldResolver
+  subscribeFieldResolver,
 ) {
   const sourcePromise = createSourceEventStream(
     schema,
@@ -138,7 +141,7 @@ function subscribeImpl(
     contextValue,
     variableValues,
     operationName,
-    subscribeFieldResolver
+    subscribeFieldResolver,
   );
 
   // For each payload yielded from a subscription, map it over the normal
@@ -147,25 +150,23 @@ function subscribeImpl(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = payload => execute(
-    schema,
-    document,
-    payload,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver
-  );
+  const mapSourceToResponse = payload =>
+    execute(
+      schema,
+      document,
+      payload,
+      contextValue,
+      variableValues,
+      operationName,
+      fieldResolver,
+    );
 
   // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
   return sourcePromise.then(
-    sourceStream => mapAsyncIterator(
-      sourceStream,
-      mapSourceToResponse,
-      reportGraphQLError
-    ),
-    reportGraphQLError
+    sourceStream =>
+      mapAsyncIterator(sourceStream, mapSourceToResponse, reportGraphQLError),
+    reportGraphQLError,
   );
 }
 
@@ -194,15 +195,11 @@ export function createSourceEventStream(
   contextValue?: mixed,
   variableValues?: ObjMap<mixed>,
   operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>
+  fieldResolver?: ?GraphQLFieldResolver<any, any>,
 ): Promise<AsyncIterable<mixed>> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
-  assertValidExecutionArguments(
-    schema,
-    document,
-    variableValues
-  );
+  assertValidExecutionArguments(schema, document, variableValues);
 
   return new Promise((resolve, reject) => {
     // If a valid context cannot be created due to incorrect arguments,
@@ -214,7 +211,7 @@ export function createSourceEventStream(
       contextValue,
       variableValues,
       operationName,
-      fieldResolver
+      fieldResolver,
     );
 
     const type = getOperationRootType(schema, exeContext.operation);
@@ -223,17 +220,14 @@ export function createSourceEventStream(
       type,
       exeContext.operation.selectionSet,
       Object.create(null),
-      Object.create(null)
+      Object.create(null),
     );
     const responseNames = Object.keys(fields);
     const responseName = responseNames[0];
     const fieldNodes = fields[responseName];
     const fieldNode = fieldNodes[0];
     const fieldDef = getFieldDef(schema, type, fieldNode.name.value);
-    invariant(
-      fieldDef,
-      'This subscription is not defined by the schema.'
-    );
+    invariant(fieldDef, 'This subscription is not defined by the schema.');
 
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
@@ -241,45 +235,45 @@ export function createSourceEventStream(
 
     const path = addPath(undefined, responseName);
 
-    const info = buildResolveInfo(
-      exeContext,
-      fieldDef,
-      fieldNodes,
-      type,
-      path
-    );
+    const info = buildResolveInfo(exeContext, fieldDef, fieldNodes, type, path);
 
     // resolveFieldValueOrError implements the "ResolveFieldEventStream"
     // algorithm from GraphQL specification. It differs from
     // "ResolveFieldValue" due to providing a different `resolveFn`.
-    Promise.resolve(resolveFieldValueOrError(
-      exeContext,
-      fieldDef,
-      fieldNodes,
-      resolveFn,
-      rootValue,
-      info
-    )).then((subscription: any) => {
-      // Reject with a located GraphQLError if subscription source fails
-      // to resolve.
-      if (subscription instanceof Error) {
-        const error = locatedError(
-          subscription,
-          fieldNodes,
-          responsePathAsArray(path),
-        );
-        reject(error);
-      }
+    Promise.resolve(
+      resolveFieldValueOrError(
+        exeContext,
+        fieldDef,
+        fieldNodes,
+        resolveFn,
+        rootValue,
+        info,
+      ),
+    )
+      .then((subscription: any) => {
+        // Reject with a located GraphQLError if subscription source fails
+        // to resolve.
+        if (subscription instanceof Error) {
+          const error = locatedError(
+            subscription,
+            fieldNodes,
+            responsePathAsArray(path),
+          );
+          reject(error);
+        }
 
-      if (!isAsyncIterable(subscription)) {
-        reject(new Error(
-          'Subscription must return Async Iterable. ' +
-            'Received: ' + String(subscription)
-        ));
-      }
+        if (!isAsyncIterable(subscription)) {
+          reject(
+            new Error(
+              'Subscription must return Async Iterable. ' +
+                'Received: ' +
+                String(subscription),
+            ),
+          );
+        }
 
-      resolve(subscription);
-    })
-    .catch(reject);
+        resolve(subscription);
+      })
+      .catch(reject);
   });
 }

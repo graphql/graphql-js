@@ -19,7 +19,6 @@ export {
   isCompositeType,
   isAbstractType,
   isNamedType,
-
   // Assertions
   assertType,
   assertInputType,
@@ -28,11 +27,9 @@ export {
   assertCompositeType,
   assertAbstractType,
   assertNamedType,
-
   // Un-modifiers
   getNullableType,
   getNamedType,
-
   // Definitions
   GraphQLScalarType,
   GraphQLObjectType,
@@ -47,16 +44,13 @@ export {
 export {
   // "Enum" of Directive Locations
   DirectiveLocation,
-
   // Directives Definition
   GraphQLDirective,
-
   // Built-in Directives defined by the Spec
   specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
-
   // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
 } from './directives';
@@ -73,7 +67,6 @@ export {
 export {
   // "Enum" of Type Kinds
   TypeKind,
-
   // GraphQL Types for introspection.
   __Schema,
   __Directive,
@@ -83,7 +76,6 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
-
   // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,

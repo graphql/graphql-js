@@ -9,7 +9,7 @@ import {
   GraphQLSchema,
   GraphQLInterfaceType,
   GraphQLObjectType,
-  GraphQLString
+  GraphQLString,
 } from '../';
 
 import { describe, it } from 'mocha';
@@ -20,13 +20,13 @@ const InterfaceType = new GraphQLInterfaceType({
   fields: { fieldName: { type: GraphQLString } },
   resolveType() {
     return ImplementingType;
-  }
+  },
 });
 
 const ImplementingType = new GraphQLObjectType({
   name: 'Object',
-  interfaces: [ InterfaceType ],
-  fields: { fieldName: { type: GraphQLString, resolve: () => '' }}
+  interfaces: [InterfaceType],
+  fields: { fieldName: { type: GraphQLString, resolve: () => '' } },
 });
 
 const Schema = new GraphQLSchema({
@@ -37,10 +37,10 @@ const Schema = new GraphQLSchema({
         type: InterfaceType,
         resolve() {
           return {};
-        }
-      }
-    }
-  })
+        },
+      },
+    },
+  }),
 });
 
 describe('Type System: Schema', () => {
@@ -51,8 +51,8 @@ describe('Type System: Schema', () => {
       };
       expect(checkPossible).to.throw(
         'Could not find possible implementing types for Interface in schema. ' +
-        'Check that schema.types is defined and is an array of all possible ' +
-        'types in the schema.'
+          'Check that schema.types is defined and is an array of all possible ' +
+          'types in the schema.',
       );
     });
   });

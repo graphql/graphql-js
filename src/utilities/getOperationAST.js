@@ -10,7 +10,6 @@
 import { OPERATION_DEFINITION } from '../language/kinds';
 import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 
-
 /**
  * Returns an operation AST given a document AST and optionally an operation
  * name. If a name is not provided, an operation is only returned if only one is
@@ -18,7 +17,7 @@ import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
  */
 export function getOperationAST(
   documentAST: DocumentNode,
-  operationName: ?string
+  operationName: ?string,
 ): ?OperationDefinitionNode {
   let operation = null;
   for (let i = 0; i < documentAST.definitions.length; i++) {

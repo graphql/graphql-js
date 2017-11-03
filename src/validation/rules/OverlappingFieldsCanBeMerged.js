@@ -10,7 +10,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import find from '../../jsutils/find';
-import type {ObjMap} from '../../jsutils/ObjMap';
+import type { ObjMap } from '../../jsutils/ObjMap';
 import type {
   SelectionSetNode,
   FieldNode,
@@ -31,25 +31,31 @@ import type {
   GraphQLNamedType,
   GraphQLOutputType,
   GraphQLCompositeType,
-  GraphQLField
+  GraphQLField,
 } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
-
 export function fieldsConflictMessage(
   responseName: string,
-  reason: ConflictReasonMessage
+  reason: ConflictReasonMessage,
 ): string {
-  return `Fields "${responseName}" conflict because ${reasonMessage(reason)}` +
+  return (
+    `Fields "${responseName}" conflict because ${reasonMessage(reason)}` +
     '. Use different aliases on the fields to fetch both if this was ' +
-    'intentional.';
+    'intentional.'
+  );
 }
 
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
-    return reason.map(([ responseName, subreason ]) =>
-      `subfields "${responseName}" conflict because ${reasonMessage(subreason)}`
-    ).join(' and ');
+    return reason
+      .map(
+        ([responseName, subreason]) =>
+          `subfields "${responseName}" conflict because ${reasonMessage(
+            subreason,
+          )}`,
+      )
+      .join(' and ');
   }
   return reason;
 }
@@ -79,26 +85,27 @@ export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
         cachedFieldsAndFragmentNames,
         comparedFragments,
         context.getParentType(),
-        selectionSet
+        selectionSet,
       );
-      conflicts.forEach(
-        ([ [ responseName, reason ], fields1, fields2 ]) =>
-          context.reportError(new GraphQLError(
+      conflicts.forEach(([[responseName, reason], fields1, fields2]) =>
+        context.reportError(
+          new GraphQLError(
             fieldsConflictMessage(responseName, reason),
-            fields1.concat(fields2)
-          ))
+            fields1.concat(fields2),
+          ),
+        ),
       );
-    }
+    },
   };
 }
 
-type Conflict = [ ConflictReason, Array<FieldNode>, Array<FieldNode> ];
+type Conflict = [ConflictReason, Array<FieldNode>, Array<FieldNode>];
 // Field name and reason.
-type ConflictReason = [ string, ConflictReasonMessage ];
+type ConflictReason = [string, ConflictReasonMessage];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining a field node in a context.
-type NodeAndDef = [ GraphQLCompositeType, FieldNode, ?GraphQLField<*, *> ];
+type NodeAndDef = [GraphQLCompositeType, FieldNode, ?GraphQLField<*, *>];
 // Map of array of those.
 type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
 
@@ -165,15 +172,15 @@ function findConflictsWithinSelectionSet(
   cachedFieldsAndFragmentNames,
   comparedFragments: PairSet,
   parentType: ?GraphQLNamedType,
-  selectionSet: SelectionSetNode
+  selectionSet: SelectionSetNode,
 ): Array<Conflict> {
   const conflicts = [];
 
-  const [ fieldMap, fragmentNames ] = getFieldsAndFragmentNames(
+  const [fieldMap, fragmentNames] = getFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
     parentType,
-    selectionSet
+    selectionSet,
   );
 
   // (A) Find find all conflicts "within" the fields of this selection set.
@@ -183,7 +190,7 @@ function findConflictsWithinSelectionSet(
     conflicts,
     cachedFieldsAndFragmentNames,
     comparedFragments,
-    fieldMap
+    fieldMap,
   );
 
   // (B) Then collect conflicts between these fields and those represented by
@@ -196,7 +203,7 @@ function findConflictsWithinSelectionSet(
       comparedFragments,
       false,
       fieldMap,
-      fragmentNames[i]
+      fragmentNames[i],
     );
     // (C) Then compare this fragment with all other fragments found in this
     // selection set to collect conflicts between fragments spread together.
@@ -210,7 +217,7 @@ function findConflictsWithinSelectionSet(
         comparedFragments,
         false,
         fragmentNames[i],
-        fragmentNames[j]
+        fragmentNames[j],
       );
     }
   }
@@ -226,17 +233,17 @@ function collectConflictsBetweenFieldsAndFragment(
   comparedFragments: PairSet,
   areMutuallyExclusive: boolean,
   fieldMap: NodeAndDefCollection,
-  fragmentName: string
+  fragmentName: string,
 ): void {
   const fragment = context.getFragment(fragmentName);
   if (!fragment) {
     return;
   }
 
-  const [ fieldMap2, fragmentNames2 ] = getReferencedFieldsAndFragmentNames(
+  const [fieldMap2, fragmentNames2] = getReferencedFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
-    fragment
+    fragment,
   );
 
   // (D) First collect any conflicts between the provided collection of fields
@@ -248,7 +255,7 @@ function collectConflictsBetweenFieldsAndFragment(
     comparedFragments,
     areMutuallyExclusive,
     fieldMap,
-    fieldMap2
+    fieldMap2,
   );
 
   // (E) Then collect any conflicts between the provided collection of fields
@@ -261,7 +268,7 @@ function collectConflictsBetweenFieldsAndFragment(
       comparedFragments,
       areMutuallyExclusive,
       fieldMap,
-      fragmentNames2[i]
+      fragmentNames2[i],
     );
   }
 }
@@ -275,7 +282,7 @@ function collectConflictsBetweenFragments(
   comparedFragments: PairSet,
   areMutuallyExclusive: boolean,
   fragmentName1: string,
-  fragmentName2: string
+  fragmentName2: string,
 ): void {
   const fragment1 = context.getFragment(fragmentName1);
   const fragment2 = context.getFragment(fragmentName2);
@@ -296,15 +303,15 @@ function collectConflictsBetweenFragments(
   }
   comparedFragments.add(fragmentName1, fragmentName2, areMutuallyExclusive);
 
-  const [ fieldMap1, fragmentNames1 ] = getReferencedFieldsAndFragmentNames(
+  const [fieldMap1, fragmentNames1] = getReferencedFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
-    fragment1
+    fragment1,
   );
-  const [ fieldMap2, fragmentNames2 ] = getReferencedFieldsAndFragmentNames(
+  const [fieldMap2, fragmentNames2] = getReferencedFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
-    fragment2
+    fragment2,
   );
 
   // (F) First, collect all conflicts between these two collections of fields
@@ -316,7 +323,7 @@ function collectConflictsBetweenFragments(
     comparedFragments,
     areMutuallyExclusive,
     fieldMap1,
-    fieldMap2
+    fieldMap2,
   );
 
   // (G) Then collect conflicts between the first fragment and any nested
@@ -329,7 +336,7 @@ function collectConflictsBetweenFragments(
       comparedFragments,
       areMutuallyExclusive,
       fragmentName1,
-      fragmentNames2[j]
+      fragmentNames2[j],
     );
   }
 
@@ -343,7 +350,7 @@ function collectConflictsBetweenFragments(
       comparedFragments,
       areMutuallyExclusive,
       fragmentNames1[i],
-      fragmentName2
+      fragmentName2,
     );
   }
 }
@@ -359,21 +366,21 @@ function findConflictsBetweenSubSelectionSets(
   parentType1: ?GraphQLNamedType,
   selectionSet1: SelectionSetNode,
   parentType2: ?GraphQLNamedType,
-  selectionSet2: SelectionSetNode
+  selectionSet2: SelectionSetNode,
 ): Array<Conflict> {
   const conflicts = [];
 
-  const [ fieldMap1, fragmentNames1 ] = getFieldsAndFragmentNames(
+  const [fieldMap1, fragmentNames1] = getFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
     parentType1,
-    selectionSet1
+    selectionSet1,
   );
-  const [ fieldMap2, fragmentNames2 ] = getFieldsAndFragmentNames(
+  const [fieldMap2, fragmentNames2] = getFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
     parentType2,
-    selectionSet2
+    selectionSet2,
   );
 
   // (H) First, collect all conflicts between these two collections of field.
@@ -384,7 +391,7 @@ function findConflictsBetweenSubSelectionSets(
     comparedFragments,
     areMutuallyExclusive,
     fieldMap1,
-    fieldMap2
+    fieldMap2,
   );
 
   // (I) Then collect conflicts between the first collection of fields and
@@ -397,7 +404,7 @@ function findConflictsBetweenSubSelectionSets(
       comparedFragments,
       areMutuallyExclusive,
       fieldMap1,
-      fragmentNames2[j]
+      fragmentNames2[j],
     );
   }
 
@@ -411,7 +418,7 @@ function findConflictsBetweenSubSelectionSets(
       comparedFragments,
       areMutuallyExclusive,
       fieldMap2,
-      fragmentNames1[i]
+      fragmentNames1[i],
     );
   }
 
@@ -427,7 +434,7 @@ function findConflictsBetweenSubSelectionSets(
         comparedFragments,
         areMutuallyExclusive,
         fragmentNames1[i],
-        fragmentNames2[j]
+        fragmentNames2[j],
       );
     }
   }
@@ -440,7 +447,7 @@ function collectConflictsWithin(
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames,
   comparedFragments: PairSet,
-  fieldMap: NodeAndDefCollection
+  fieldMap: NodeAndDefCollection,
 ): void {
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
@@ -461,7 +468,7 @@ function collectConflictsWithin(
             false, // within one collection is never mutually exclusive
             responseName,
             fields[i],
-            fields[j]
+            fields[j],
           );
           if (conflict) {
             conflicts.push(conflict);
@@ -484,7 +491,7 @@ function collectConflictsBetween(
   comparedFragments: PairSet,
   parentFieldsAreMutuallyExclusive: boolean,
   fieldMap1: NodeAndDefCollection,
-  fieldMap2: NodeAndDefCollection
+  fieldMap2: NodeAndDefCollection,
 ): void {
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
@@ -504,7 +511,7 @@ function collectConflictsBetween(
             parentFieldsAreMutuallyExclusive,
             responseName,
             fields1[i],
-            fields2[j]
+            fields2[j],
           );
           if (conflict) {
             conflicts.push(conflict);
@@ -524,10 +531,10 @@ function findConflict(
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
   field1: NodeAndDef,
-  field2: NodeAndDef
+  field2: NodeAndDef,
 ): ?Conflict {
-  const [ parentType1, node1, def1 ] = field1;
-  const [ parentType2, node2, def2 ] = field2;
+  const [parentType1, node1, def1] = field1;
+  const [parentType2, node2, def2] = field2;
 
   // If it is known that two fields could not possibly apply at the same
   // time, due to the parent types, then it is safe to permit them to diverge
@@ -539,9 +546,9 @@ function findConflict(
   // thus may not safely diverge.
   const areMutuallyExclusive =
     parentFieldsAreMutuallyExclusive ||
-    parentType1 !== parentType2 &&
-    parentType1 instanceof GraphQLObjectType &&
-    parentType2 instanceof GraphQLObjectType;
+    (parentType1 !== parentType2 &&
+      parentType1 instanceof GraphQLObjectType &&
+      parentType2 instanceof GraphQLObjectType);
 
   // The return type for each field.
   const type1 = def1 && def1.type;
@@ -553,28 +560,30 @@ function findConflict(
     const name2 = node2.name.value;
     if (name1 !== name2) {
       return [
-        [ responseName, `${name1} and ${name2} are different fields` ],
-        [ node1 ],
-        [ node2 ]
+        [responseName, `${name1} and ${name2} are different fields`],
+        [node1],
+        [node2],
       ];
     }
 
     // Two field calls must have the same arguments.
     if (!sameArguments(node1.arguments || [], node2.arguments || [])) {
       return [
-        [ responseName, 'they have differing arguments' ],
-        [ node1 ],
-        [ node2 ]
+        [responseName, 'they have differing arguments'],
+        [node1],
+        [node2],
       ];
     }
   }
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
     return [
-      [ responseName,
-        `they return conflicting types ${String(type1)} and ${String(type2)}` ],
-      [ node1 ],
-      [ node2 ]
+      [
+        responseName,
+        `they return conflicting types ${String(type1)} and ${String(type2)}`,
+      ],
+      [node1],
+      [node2],
     ];
   }
 
@@ -592,7 +601,7 @@ function findConflict(
       getNamedType(type1),
       selectionSet1,
       getNamedType(type2),
-      selectionSet2
+      selectionSet2,
     );
     return subfieldConflicts(conflicts, responseName, node1, node2);
   }
@@ -600,7 +609,7 @@ function findConflict(
 
 function sameArguments(
   arguments1: Array<ArgumentNode>,
-  arguments2: Array<ArgumentNode>
+  arguments2: Array<ArgumentNode>,
 ): boolean {
   if (arguments1.length !== arguments2.length) {
     return false;
@@ -608,7 +617,7 @@ function sameArguments(
   return arguments1.every(argument1 => {
     const argument2 = find(
       arguments2,
-      argument => argument.name.value === argument1.name.value
+      argument => argument.name.value === argument1.name.value,
     );
     if (!argument2) {
       return false;
@@ -626,27 +635,27 @@ function sameValue(value1, value2) {
 // later recursively. However List and Non-Null types must match.
 function doTypesConflict(
   type1: GraphQLOutputType,
-  type2: GraphQLOutputType
+  type2: GraphQLOutputType,
 ): boolean {
   if (type1 instanceof GraphQLList) {
-    return type2 instanceof GraphQLList ?
-      doTypesConflict(type1.ofType, type2.ofType) :
-      true;
+    return type2 instanceof GraphQLList
+      ? doTypesConflict(type1.ofType, type2.ofType)
+      : true;
   }
   if (type2 instanceof GraphQLList) {
-    return type1 instanceof GraphQLList ?
-      doTypesConflict(type1.ofType, type2.ofType) :
-      true;
+    return type1 instanceof GraphQLList
+      ? doTypesConflict(type1.ofType, type2.ofType)
+      : true;
   }
   if (type1 instanceof GraphQLNonNull) {
-    return type2 instanceof GraphQLNonNull ?
-      doTypesConflict(type1.ofType, type2.ofType) :
-      true;
+    return type2 instanceof GraphQLNonNull
+      ? doTypesConflict(type1.ofType, type2.ofType)
+      : true;
   }
   if (type2 instanceof GraphQLNonNull) {
-    return type1 instanceof GraphQLNonNull ?
-      doTypesConflict(type1.ofType, type2.ofType) :
-      true;
+    return type1 instanceof GraphQLNonNull
+      ? doTypesConflict(type1.ofType, type2.ofType)
+      : true;
   }
   if (isLeafType(type1) || isLeafType(type2)) {
     return type1 !== type2;
@@ -661,8 +670,8 @@ function getFieldsAndFragmentNames(
   context: ValidationContext,
   cachedFieldsAndFragmentNames,
   parentType: ?GraphQLNamedType,
-  selectionSet: SelectionSetNode
-): [ NodeAndDefCollection, Array<string> ] {
+  selectionSet: SelectionSetNode,
+): [NodeAndDefCollection, Array<string>] {
   let cached = cachedFieldsAndFragmentNames.get(selectionSet);
   if (!cached) {
     const nodeAndDefs = Object.create(null);
@@ -672,9 +681,9 @@ function getFieldsAndFragmentNames(
       parentType,
       selectionSet,
       nodeAndDefs,
-      fragmentNames
+      fragmentNames,
     );
-    cached = [ nodeAndDefs, Object.keys(fragmentNames) ];
+    cached = [nodeAndDefs, Object.keys(fragmentNames)];
     cachedFieldsAndFragmentNames.set(selectionSet, cached);
   }
   return cached;
@@ -685,7 +694,7 @@ function getFieldsAndFragmentNames(
 function getReferencedFieldsAndFragmentNames(
   context: ValidationContext,
   cachedFieldsAndFragmentNames,
-  fragment: FragmentDefinitionNode
+  fragment: FragmentDefinitionNode,
 ) {
   // Short-circuit building a type from the node if possible.
   const cached = cachedFieldsAndFragmentNames.get(fragment.selectionSet);
@@ -698,7 +707,7 @@ function getReferencedFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
     fragmentType,
-    fragment.selectionSet
+    fragment.selectionSet,
   );
 }
 
@@ -707,7 +716,7 @@ function _collectFieldsAndFragmentNames(
   parentType: ?GraphQLNamedType,
   selectionSet: SelectionSetNode,
   nodeAndDefs,
-  fragmentNames
+  fragmentNames,
 ): void {
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
@@ -715,31 +724,34 @@ function _collectFieldsAndFragmentNames(
       case Kind.FIELD:
         const fieldName = selection.name.value;
         let fieldDef;
-        if (parentType instanceof GraphQLObjectType ||
-            parentType instanceof GraphQLInterfaceType) {
+        if (
+          parentType instanceof GraphQLObjectType ||
+          parentType instanceof GraphQLInterfaceType
+        ) {
           fieldDef = parentType.getFields()[fieldName];
         }
-        const responseName =
-          selection.alias ? selection.alias.value : fieldName;
+        const responseName = selection.alias
+          ? selection.alias.value
+          : fieldName;
         if (!nodeAndDefs[responseName]) {
           nodeAndDefs[responseName] = [];
         }
-        nodeAndDefs[responseName].push([ parentType, selection, fieldDef ]);
+        nodeAndDefs[responseName].push([parentType, selection, fieldDef]);
         break;
       case Kind.FRAGMENT_SPREAD:
         fragmentNames[selection.name.value] = true;
         break;
       case Kind.INLINE_FRAGMENT:
         const typeCondition = selection.typeCondition;
-        const inlineFragmentType = typeCondition ?
-          typeFromAST(context.getSchema(), typeCondition) :
-          parentType;
+        const inlineFragmentType = typeCondition
+          ? typeFromAST(context.getSchema(), typeCondition)
+          : parentType;
         _collectFieldsAndFragmentNames(
           context,
           inlineFragmentType,
           selection.selectionSet,
           nodeAndDefs,
-          fragmentNames
+          fragmentNames,
         );
         break;
     }
@@ -752,19 +764,18 @@ function subfieldConflicts(
   conflicts: Array<Conflict>,
   responseName: string,
   node1: FieldNode,
-  node2: FieldNode
+  node2: FieldNode,
 ): ?Conflict {
   if (conflicts.length > 0) {
     return [
-      [ responseName, conflicts.map(([ reason ]) => reason) ],
+      [responseName, conflicts.map(([reason]) => reason)],
+      conflicts.reduce((allFields, [, fields1]) => allFields.concat(fields1), [
+        node1,
+      ]),
       conflicts.reduce(
-        (allFields, [ , fields1 ]) => allFields.concat(fields1),
-        [ node1 ]
+        (allFields, [, , fields2]) => allFields.concat(fields2),
+        [node2],
       ),
-      conflicts.reduce(
-        (allFields, [ , , fields2 ]) => allFields.concat(fields2),
-        [ node2 ]
-      )
     ];
   }
 }

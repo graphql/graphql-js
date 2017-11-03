@@ -8,18 +8,22 @@
 export const QueryDocumentKeys = {
   Name: [],
 
-  Document: [ 'definitions' ],
-  OperationDefinition:
-    [ 'name', 'variableDefinitions', 'directives', 'selectionSet' ],
-  VariableDefinition: [ 'variable', 'type', 'defaultValue' ],
-  Variable: [ 'name' ],
-  SelectionSet: [ 'selections' ],
-  Field: [ 'alias', 'name', 'arguments', 'directives', 'selectionSet' ],
-  Argument: [ 'name', 'value' ],
+  Document: ['definitions'],
+  OperationDefinition: [
+    'name',
+    'variableDefinitions',
+    'directives',
+    'selectionSet',
+  ],
+  VariableDefinition: ['variable', 'type', 'defaultValue'],
+  Variable: ['name'],
+  SelectionSet: ['selections'],
+  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
+  Argument: ['name', 'value'],
 
-  FragmentSpread: [ 'name', 'directives' ],
-  InlineFragment: [ 'typeCondition', 'directives', 'selectionSet' ],
-  FragmentDefinition: [ 'name', 'typeCondition', 'directives', 'selectionSet' ],
+  FragmentSpread: ['name', 'directives'],
+  InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
+  FragmentDefinition: ['name', 'typeCondition', 'directives', 'selectionSet'],
 
   IntValue: [],
   FloatValue: [],
@@ -27,32 +31,32 @@ export const QueryDocumentKeys = {
   BooleanValue: [],
   NullValue: [],
   EnumValue: [],
-  ListValue: [ 'values' ],
-  ObjectValue: [ 'fields' ],
-  ObjectField: [ 'name', 'value' ],
+  ListValue: ['values'],
+  ObjectValue: ['fields'],
+  ObjectField: ['name', 'value'],
 
-  Directive: [ 'name', 'arguments' ],
+  Directive: ['name', 'arguments'],
 
-  NamedType: [ 'name' ],
-  ListType: [ 'type' ],
-  NonNullType: [ 'type' ],
+  NamedType: ['name'],
+  ListType: ['type'],
+  NonNullType: ['type'],
 
-  SchemaDefinition: [ 'directives', 'operationTypes' ],
-  OperationTypeDefinition: [ 'type' ],
+  SchemaDefinition: ['directives', 'operationTypes'],
+  OperationTypeDefinition: ['type'],
 
-  ScalarTypeDefinition: [ 'name', 'directives' ],
-  ObjectTypeDefinition: [ 'name', 'interfaces', 'directives', 'fields' ],
-  FieldDefinition: [ 'name', 'arguments', 'type', 'directives' ],
-  InputValueDefinition: [ 'name', 'type', 'defaultValue', 'directives' ],
-  InterfaceTypeDefinition: [ 'name', 'directives', 'fields' ],
-  UnionTypeDefinition: [ 'name', 'directives', 'types' ],
-  EnumTypeDefinition: [ 'name', 'directives', 'values' ],
-  EnumValueDefinition: [ 'name', 'directives' ],
-  InputObjectTypeDefinition: [ 'name', 'directives', 'fields' ],
+  ScalarTypeDefinition: ['name', 'directives'],
+  ObjectTypeDefinition: ['name', 'interfaces', 'directives', 'fields'],
+  FieldDefinition: ['name', 'arguments', 'type', 'directives'],
+  InputValueDefinition: ['name', 'type', 'defaultValue', 'directives'],
+  InterfaceTypeDefinition: ['name', 'directives', 'fields'],
+  UnionTypeDefinition: ['name', 'directives', 'types'],
+  EnumTypeDefinition: ['name', 'directives', 'values'],
+  EnumValueDefinition: ['name', 'directives'],
+  InputObjectTypeDefinition: ['name', 'directives', 'fields'],
 
-  TypeExtensionDefinition: [ 'definition' ],
+  TypeExtensionDefinition: ['definition'],
 
-  DirectiveDefinition: [ 'name', 'arguments', 'locations' ],
+  DirectiveDefinition: ['name', 'arguments', 'locations'],
 };
 
 export const BREAK = {};
@@ -148,7 +152,7 @@ export function visit(root, visitor, keyMap) {
 
   let stack;
   let inArray = Array.isArray(root);
-  let keys = [ root ];
+  let keys = [root];
   let index = -1;
   let edits = [];
   let parent;
@@ -199,7 +203,7 @@ export function visit(root, visitor, keyMap) {
       inArray = stack.inArray;
       stack = stack.prev;
     } else {
-      key = parent ? inArray ? index : keys[index] : undefined;
+      key = parent ? (inArray ? index : keys[index]) : undefined;
       node = parent ? parent[key] : newRoot;
       if (node === null || node === undefined) {
         continue;
@@ -228,7 +232,7 @@ export function visit(root, visitor, keyMap) {
             continue;
           }
         } else if (result !== undefined) {
-          edits.push([ key, result ]);
+          edits.push([key, result]);
           if (!isLeaving) {
             if (isNode(result)) {
               node = result;
@@ -242,7 +246,7 @@ export function visit(root, visitor, keyMap) {
     }
 
     if (result === undefined && isEdited) {
-      edits.push([ key, node ]);
+      edits.push([key, node]);
     }
 
     if (!isLeaving) {
@@ -268,7 +272,6 @@ export function visit(root, visitor, keyMap) {
 function isNode(maybeNode) {
   return maybeNode && typeof maybeNode.kind === 'string';
 }
-
 
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
@@ -313,10 +316,9 @@ export function visitInParallel(visitors) {
           skipping[i] = null;
         }
       }
-    }
+    },
   };
 }
-
 
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance
@@ -346,10 +348,9 @@ export function visitWithTypeInfo(typeInfo, visitor) {
       }
       typeInfo.leave(node);
       return result;
-    }
+    },
   };
 }
-
 
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
@@ -362,8 +363,9 @@ export function getVisitFn(visitor, kind, isLeaving) {
       // { Kind() {} }
       return kindVisitor;
     }
-    const kindSpecificVisitor =
-      isLeaving ? kindVisitor.leave : kindVisitor.enter;
+    const kindSpecificVisitor = isLeaving
+      ? kindVisitor.leave
+      : kindVisitor.enter;
     if (typeof kindSpecificVisitor === 'function') {
       // { Kind: { enter() {}, leave() {} } }
       return kindSpecificVisitor;

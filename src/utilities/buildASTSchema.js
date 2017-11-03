@@ -9,7 +9,7 @@
 
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
-import type {ObjMap} from '../jsutils/ObjMap';
+import type { ObjMap } from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
@@ -74,9 +74,7 @@ import {
   GraphQLDeprecatedDirective,
 } from '../type/directives';
 
-import type {
-  DirectiveLocationEnum
-} from '../type/directives';
+import type { DirectiveLocationEnum } from '../type/directives';
 
 import {
   __Schema,
@@ -89,10 +87,9 @@ import {
   __TypeKind,
 } from '../type/introspection';
 
-
 function buildWrappedType(
   innerType: GraphQLType,
-  inputTypeNode: TypeNode
+  inputTypeNode: TypeNode,
 ): GraphQLType {
   if (inputTypeNode.kind === Kind.LIST_TYPE) {
     return new GraphQLList(buildWrappedType(innerType, inputTypeNode.type));
@@ -176,7 +173,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
         }
         if (!nodeMap[typeName]) {
           throw new Error(
-            `Specified query type "${typeName}" not found in document.`
+            `Specified query type "${typeName}" not found in document.`,
           );
         }
         queryTypeName = typeName;
@@ -186,7 +183,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
         }
         if (!nodeMap[typeName]) {
           throw new Error(
-            `Specified mutation type "${typeName}" not found in document.`
+            `Specified mutation type "${typeName}" not found in document.`,
           );
         }
         mutationTypeName = typeName;
@@ -196,7 +193,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
         }
         if (!nodeMap[typeName]) {
           throw new Error(
-            `Specified subscription type "${typeName}" not found in document.`
+            `Specified subscription type "${typeName}" not found in document.`,
           );
         }
         subscriptionTypeName = typeName;
@@ -216,7 +213,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
 
   if (!queryTypeName) {
     throw new Error(
-      'Must provide schema definition with query type or a type named Query.'
+      'Must provide schema definition with query type or a type named Query.',
     );
   }
 
@@ -255,25 +252,25 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
 
   return new GraphQLSchema({
     query: getObjectType(nodeMap[queryTypeName]),
-    mutation: mutationTypeName ?
-      getObjectType(nodeMap[mutationTypeName]) :
-      null,
-    subscription: subscriptionTypeName ?
-      getObjectType(nodeMap[subscriptionTypeName]) :
-      null,
+    mutation: mutationTypeName
+      ? getObjectType(nodeMap[mutationTypeName])
+      : null,
+    subscription: subscriptionTypeName
+      ? getObjectType(nodeMap[subscriptionTypeName])
+      : null,
     types,
     directives,
     astNode: schemaDef,
   });
 
   function getDirective(
-    directiveNode: DirectiveDefinitionNode
+    directiveNode: DirectiveDefinitionNode,
   ): GraphQLDirective {
     return new GraphQLDirective({
       name: directiveNode.name.value,
       description: getDescription(directiveNode),
       locations: directiveNode.locations.map(
-        node => ((node.value: any): DirectiveLocationEnum)
+        node => ((node.value: any): DirectiveLocationEnum),
       ),
       args: directiveNode.arguments && makeInputValues(directiveNode.arguments),
       astNode: directiveNode,
@@ -284,7 +281,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
     const type = typeDefNamed(typeNode.name.value);
     invariant(
       type instanceof GraphQLObjectType,
-      'AST must provide object type.'
+      'AST must provide object type.',
     );
     return (type: any);
   }
@@ -356,7 +353,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 
   function makeFieldDefMap(
-    def: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode
+    def: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
   ) {
     return keyValMap(
       def.fields,
@@ -367,13 +364,14 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
         args: makeInputValues(field.arguments),
         deprecationReason: getDeprecationReason(field),
         astNode: field,
-      })
+      }),
     );
   }
 
   function makeImplementedInterfaces(def: ObjectTypeDefinitionNode) {
-    return def.interfaces &&
-      def.interfaces.map(iface => produceInterfaceType(iface));
+    return (
+      def.interfaces && def.interfaces.map(iface => produceInterfaceType(iface))
+    );
   }
 
   function makeInputValues(values: Array<InputValueDefinitionNode>) {
@@ -388,7 +386,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
           defaultValue: valueFromAST(value.defaultValue, type),
           astNode: value,
         };
-      }
+      },
     );
   }
 
@@ -413,7 +411,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
           description: getDescription(enumValue),
           deprecationReason: getDeprecationReason(enumValue),
           astNode: enumValue,
-        })
+        }),
       ),
       astNode: def,
     });
@@ -459,7 +457,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
  * deprecation reason.
  */
 export function getDeprecationReason(
-  node: EnumValueDefinitionNode | FieldDefinitionNode
+  node: EnumValueDefinitionNode | FieldDefinitionNode,
 ): ?string {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   return deprecated && (deprecated.reason: any);
@@ -480,7 +478,8 @@ export function getDescription(node: { loc?: Location }): ?string {
   while (
     token &&
     token.kind === TokenKind.COMMENT &&
-    token.next && token.prev &&
+    token.next &&
+    token.prev &&
     token.line + 1 === token.next.line &&
     token.line !== token.prev.line
   ) {
@@ -519,6 +518,6 @@ function leadingSpaces(str) {
 
 function cannotExecuteSchema() {
   throw new Error(
-    'Generated Schema cannot use Interface or Union types for execution.'
+    'Generated Schema cannot use Interface or Union types for execution.',
   );
 }

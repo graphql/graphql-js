@@ -10,7 +10,6 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
-
 export function unusedFragMessage(fragName: string): string {
   return `Fragment "${fragName}" is never used.`;
 }
@@ -38,21 +37,22 @@ export function NoUnusedFragments(context: ValidationContext): any {
       leave() {
         const fragmentNameUsed = Object.create(null);
         operationDefs.forEach(operation => {
-          context.getRecursivelyReferencedFragments(operation).forEach(
-            fragment => { fragmentNameUsed[fragment.name.value] = true; }
-          );
+          context
+            .getRecursivelyReferencedFragments(operation)
+            .forEach(fragment => {
+              fragmentNameUsed[fragment.name.value] = true;
+            });
         });
 
         fragmentDefs.forEach(fragmentDef => {
           const fragName = fragmentDef.name.value;
           if (fragmentNameUsed[fragName] !== true) {
-            context.reportError(new GraphQLError(
-              unusedFragMessage(fragName),
-              [ fragmentDef ]
-            ));
+            context.reportError(
+              new GraphQLError(unusedFragMessage(fragName), [fragmentDef]),
+            );
           }
         });
-      }
-    }
+      },
+    },
   };
 }

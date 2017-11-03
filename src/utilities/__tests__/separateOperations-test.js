@@ -11,11 +11,8 @@ import dedent from '../../jsutils/dedent';
 import { separateOperations } from '../separateOperations';
 import { parse, print } from '../../language';
 
-
 describe('separateOperations', () => {
-
   it('separates one AST into multiple, maintaining document order', () => {
-
     const ast = parse(`
       {
         ...Y
@@ -55,7 +52,7 @@ describe('separateOperations', () => {
 
     const separatedASTs = separateOperations(ast);
 
-    expect(Object.keys(separatedASTs)).to.deep.equal([ '', 'One', 'Two' ]);
+    expect(Object.keys(separatedASTs)).to.deep.equal(['', 'One', 'Two']);
 
     expect(print(separatedASTs[''])).to.equal(dedent`
       {
@@ -114,11 +111,9 @@ describe('separateOperations', () => {
         something
       }
     `);
-
   });
 
   it('survives circular dependencies', () => {
-
     const ast = parse(`
       query One {
         ...A
@@ -139,7 +134,7 @@ describe('separateOperations', () => {
 
     const separatedASTs = separateOperations(ast);
 
-    expect(Object.keys(separatedASTs)).to.deep.equal([ 'One', 'Two' ]);
+    expect(Object.keys(separatedASTs)).to.deep.equal(['One', 'Two']);
 
     expect(print(separatedASTs.One)).to.equal(dedent`
       query One {
@@ -168,7 +163,5 @@ describe('separateOperations', () => {
         ...B
       }
     `);
-
   });
-
 });

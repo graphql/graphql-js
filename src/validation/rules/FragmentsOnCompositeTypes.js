@@ -14,19 +14,20 @@ import { isCompositeType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
-
 export function inlineFragmentOnNonCompositeErrorMessage(
-  type: GraphQLType
+  type: GraphQLType,
 ): string {
   return `Fragment cannot condition on non composite type "${String(type)}".`;
 }
 
 export function fragmentOnNonCompositeErrorMessage(
   fragName: string,
-  type: GraphQLType
+  type: GraphQLType,
 ): string {
-  return `Fragment "${fragName}" cannot condition on non composite ` +
-    `type "${String(type)}".`;
+  return (
+    `Fragment "${fragName}" cannot condition on non composite ` +
+    `type "${String(type)}".`
+  );
 }
 
 /**
@@ -42,24 +43,30 @@ export function FragmentsOnCompositeTypes(context: ValidationContext): any {
       if (node.typeCondition) {
         const type = typeFromAST(context.getSchema(), node.typeCondition);
         if (type && !isCompositeType(type)) {
-          context.reportError(new GraphQLError(
-            inlineFragmentOnNonCompositeErrorMessage(print(node.typeCondition)),
-            [ node.typeCondition ]
-          ));
+          context.reportError(
+            new GraphQLError(
+              inlineFragmentOnNonCompositeErrorMessage(
+                print(node.typeCondition),
+              ),
+              [node.typeCondition],
+            ),
+          );
         }
       }
     },
     FragmentDefinition(node) {
       const type = typeFromAST(context.getSchema(), node.typeCondition);
       if (type && !isCompositeType(type)) {
-        context.reportError(new GraphQLError(
-          fragmentOnNonCompositeErrorMessage(
-            node.name.value,
-            print(node.typeCondition)
+        context.reportError(
+          new GraphQLError(
+            fragmentOnNonCompositeErrorMessage(
+              node.name.value,
+              print(node.typeCondition),
+            ),
+            [node.typeCondition],
           ),
-          [ node.typeCondition ]
-        ));
+        );
       }
-    }
+    },
   };
 }

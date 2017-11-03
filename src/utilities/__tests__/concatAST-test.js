@@ -11,9 +11,7 @@ import dedent from '../../jsutils/dedent';
 import { concatAST } from '../concatAST';
 import { Source, parse, print } from '../../language';
 
-
 describe('concatAST', () => {
-
   it('concats two ASTs together', () => {
     const sourceA = new Source(`
       { a, b, ...Frag }
@@ -27,7 +25,7 @@ describe('concatAST', () => {
 
     const astA = parse(sourceA);
     const astB = parse(sourceB);
-    const astC = concatAST([ astA, astB ]);
+    const astC = concatAST([astA, astB]);
 
     expect(print(astC)).to.equal(dedent`
       {
@@ -41,5 +39,4 @@ describe('concatAST', () => {
       }
     `);
   });
-
 });

@@ -8,10 +8,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { isValidJSValue } from '../isValidJSValue';
-import {
-  GraphQLInt,
-  GraphQLFloat,
-} from '../../type';
+import { GraphQLInt, GraphQLFloat } from '../../type';
 
 function expectNoErrors(result) {
   expect(result).to.be.an.instanceof(Array);

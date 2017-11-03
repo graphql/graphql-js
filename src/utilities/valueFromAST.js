@@ -11,7 +11,7 @@ import keyMap from '../jsutils/keyMap';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
-import type {ObjMap} from '../jsutils/ObjMap';
+import type { ObjMap } from '../jsutils/ObjMap';
 import * as Kind from '../language/kinds';
 import {
   GraphQLScalarType,
@@ -27,7 +27,6 @@ import type {
   ListValueNode,
   ObjectValueNode,
 } from '../language/ast';
-
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -52,7 +51,7 @@ import type {
 export function valueFromAST(
   valueNode: ?ValueNode,
   type: GraphQLInputType,
-  variables?: ?ObjMap<mixed>
+  variables?: ?ObjMap<mixed>,
 ): mixed | void {
   if (!valueNode) {
     // When there is no node, then there is also no value.
@@ -111,7 +110,7 @@ export function valueFromAST(
     if (isInvalid(coercedValue)) {
       return; // Invalid: intentionally return no value.
     }
-    return [ coercedValue ];
+    return [coercedValue];
   }
 
   if (type instanceof GraphQLInputObjectType) {
@@ -122,7 +121,7 @@ export function valueFromAST(
     const fields = type.getFields();
     const fieldNodes = keyMap(
       (valueNode: ObjectValueNode).fields,
-      field => field.name.value
+      field => field.name.value,
     );
     const fieldNames = Object.keys(fields);
     for (let i = 0; i < fieldNames.length; i++) {
@@ -148,7 +147,7 @@ export function valueFromAST(
 
   invariant(
     type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type'
+    'Must be input type',
   );
 
   const parsed = type.parseLiteral(valueNode);
@@ -164,6 +163,8 @@ export function valueFromAST(
 // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 function isMissingVariable(valueNode, variables) {
-  return valueNode.kind === Kind.VARIABLE &&
-    (!variables || isInvalid(variables[(valueNode: VariableNode).name.value]));
+  return (
+    valueNode.kind === Kind.VARIABLE &&
+    (!variables || isInvalid(variables[(valueNode: VariableNode).name.value]))
+  );
 }

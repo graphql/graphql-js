@@ -13,17 +13,14 @@ import { print } from '../../language/printer';
 import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 import type { GraphQLType } from '../../type/definition';
 
-
 export function badValueMessage(
   argName: string,
   type: GraphQLType,
   value: string,
-  verboseErrors?: string[]
+  verboseErrors?: string[],
 ): string {
   const message = verboseErrors ? '\n' + verboseErrors.join('\n') : '';
-  return (
-    `Argument "${argName}" has invalid value ${value}.${message}`
-  );
+  return `Argument "${argName}" has invalid value ${value}.${message}`;
 }
 
 /**
@@ -39,18 +36,20 @@ export function ArgumentsOfCorrectType(context: ValidationContext): any {
       if (argDef) {
         const errors = isValidLiteralValue(argDef.type, node.value);
         if (errors && errors.length > 0) {
-          context.reportError(new GraphQLError(
-            badValueMessage(
-              node.name.value,
-              argDef.type,
-              print(node.value),
-              errors
+          context.reportError(
+            new GraphQLError(
+              badValueMessage(
+                node.name.value,
+                argDef.type,
+                print(node.value),
+                errors,
+              ),
+              [node.value],
             ),
-            [ node.value ]
-          ));
+          );
         }
       }
       return false;
-    }
+    },
   };
 }

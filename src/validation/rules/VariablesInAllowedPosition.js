@@ -14,14 +14,15 @@ import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import type { GraphQLType } from '../../type/definition';
 
-
 export function badVarPosMessage(
   varName: string,
   varType: GraphQLType,
-  expectedType: GraphQLType
+  expectedType: GraphQLType,
 ): string {
-  return `Variable "$${varName}" of type "${String(varType)}" used in ` +
-    `position expecting type "${String(expectedType)}".`;
+  return (
+    `Variable "$${varName}" of type "${String(varType)}" used in ` +
+    `position expecting type "${String(expectedType)}".`
+  );
 }
 
 /**
@@ -53,24 +54,26 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
               varType &&
               !isTypeSubTypeOf(schema, effectiveType(varType, varDef), type)
             ) {
-              context.reportError(new GraphQLError(
-                badVarPosMessage(varName, varType, type),
-                [ varDef, node ]
-              ));
+              context.reportError(
+                new GraphQLError(badVarPosMessage(varName, varType, type), [
+                  varDef,
+                  node,
+                ]),
+              );
             }
           }
         });
-      }
+      },
     },
     VariableDefinition(node) {
       varDefMap[node.variable.name.value] = node;
-    }
+    },
   };
 }
 
 // If a variable definition has a default value, it's effectively non-null.
 function effectiveType(varType, varDef) {
-  return !varDef.defaultValue || varType instanceof GraphQLNonNull ?
-    varType :
-    new GraphQLNonNull(varType);
+  return !varDef.defaultValue || varType instanceof GraphQLNonNull
+    ? varType
+    : new GraphQLNonNull(varType);
 }

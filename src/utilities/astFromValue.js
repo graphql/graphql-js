@@ -34,7 +34,6 @@ import {
 } from '../type/definition';
 import { GraphQLID } from '../type/scalars';
 
-
 /**
  * Produces a GraphQL Value AST given a JavaScript value.
  *
@@ -52,10 +51,7 @@ import { GraphQLID } from '../type/scalars';
  * | null          | NullValue            |
  *
  */
-export function astFromValue(
-  value: mixed,
-  type: GraphQLInputType
-): ?ValueNode {
+export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   // Ensure flow knows that we treat function params as const.
   const _value = value;
 
@@ -109,7 +105,7 @@ export function astFromValue(
         fieldNodes.push({
           kind: Kind.OBJECT_FIELD,
           name: { kind: Kind.NAME, value: fieldName },
-          value: fieldValue
+          value: fieldValue,
         });
       }
     });
@@ -118,7 +114,7 @@ export function astFromValue(
 
   invariant(
     type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must provide Input Type, cannot use: ' + String(type)
+    'Must provide Input Type, cannot use: ' + String(type),
   );
 
   // Since value is an internally represented value, it must be serialized
@@ -136,9 +132,9 @@ export function astFromValue(
   // JavaScript numbers can be Int or Float values.
   if (typeof serialized === 'number') {
     const stringNum = String(serialized);
-    return /^[0-9]+$/.test(stringNum) ?
-      ({ kind: Kind.INT, value: stringNum }: IntValueNode) :
-      ({ kind: Kind.FLOAT, value: stringNum }: FloatValueNode);
+    return /^[0-9]+$/.test(stringNum)
+      ? ({ kind: Kind.INT, value: stringNum }: IntValueNode)
+      : ({ kind: Kind.FLOAT, value: stringNum }: FloatValueNode);
   }
 
   if (typeof serialized === 'string') {
@@ -156,7 +152,7 @@ export function astFromValue(
     // then remove the quotes.
     return ({
       kind: Kind.STRING,
-      value: JSON.stringify(serialized).slice(1, -1)
+      value: JSON.stringify(serialized).slice(1, -1),
     }: StringValueNode);
   }
 

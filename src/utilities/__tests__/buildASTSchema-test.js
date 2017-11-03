@@ -32,20 +32,17 @@ function cycleOutput(body) {
 }
 
 describe('Schema Builder', () => {
-
   it('can use built schema for limited execution', async () => {
-    const schema = buildASTSchema(parse(`
+    const schema = buildASTSchema(
+      parse(`
       schema { query: Query }
       type Query {
         str: String
       }
-    `));
-
-    const result = await graphql(
-      schema,
-      '{ str }',
-      { str: 123 }
+    `),
     );
+
+    const result = await graphql(schema, '{ str }', { str: 123 });
     expect(result.data).to.deep.equal({ str: '123' });
   });
 
@@ -55,9 +52,11 @@ describe('Schema Builder', () => {
         add(x: Int, y: Int): Int
       }
     `);
-    expect(await graphql(
-      schema, '{ add(x: 34, y: 55) }', { add: ({x, y}) => x + y }
-    )).to.deep.equal({ data: { add: 89 }});
+    expect(
+      await graphql(schema, '{ add(x: 34, y: 55) }', {
+        add: ({ x, y }) => x + y,
+      }),
+    ).to.deep.equal({ data: { add: 89 } });
   });
 
   it('Simple type', () => {
@@ -140,9 +139,9 @@ describe('Schema Builder', () => {
     expect(schema.getDirectives().length).to.equal(3);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
-    expect(
-      schema.getDirective('deprecated')
-    ).to.equal(GraphQLDeprecatedDirective);
+    expect(schema.getDirective('deprecated')).to.equal(
+      GraphQLDeprecatedDirective,
+    );
   });
 
   it('Overriding directives excludes specified', () => {
@@ -162,12 +161,12 @@ describe('Schema Builder', () => {
     const schema = buildASTSchema(parse(body));
     expect(schema.getDirectives().length).to.equal(3);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
-    expect(
-      schema.getDirective('include')
-    ).to.not.equal(GraphQLIncludeDirective);
-    expect(
-      schema.getDirective('deprecated')
-    ).to.not.equal(GraphQLDeprecatedDirective);
+    expect(schema.getDirective('include')).to.not.equal(
+      GraphQLIncludeDirective,
+    );
+    expect(schema.getDirective('deprecated')).to.not.equal(
+      GraphQLDeprecatedDirective,
+    );
   });
 
   it('Adding directives maintains @skip & @include', () => {
@@ -206,7 +205,6 @@ describe('Schema Builder', () => {
     const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
-
 
   it('Recursive type', () => {
     const body = dedent`
@@ -597,43 +595,49 @@ describe('Schema Builder', () => {
     const testType = schema.getType('TestType');
     const testDirective = schema.getDirective('test');
 
-    const restoredIDL = printSchema(buildSchema(
-      print(schema.astNode) + '\n' +
-      print(query.astNode) + '\n' +
-      print(testInput.astNode) + '\n' +
-      print(testEnum.astNode) + '\n' +
-      print(testUnion.astNode) + '\n' +
-      print(testInterface.astNode) + '\n' +
-      print(testType.astNode) + '\n' +
-      print(testDirective.astNode)
-    ));
+    const restoredIDL = printSchema(
+      buildSchema(
+        print(schema.astNode) +
+          '\n' +
+          print(query.astNode) +
+          '\n' +
+          print(testInput.astNode) +
+          '\n' +
+          print(testEnum.astNode) +
+          '\n' +
+          print(testUnion.astNode) +
+          '\n' +
+          print(testInterface.astNode) +
+          '\n' +
+          print(testType.astNode) +
+          '\n' +
+          print(testDirective.astNode),
+      ),
+    );
     expect(restoredIDL).to.be.equal(printSchema(schema));
 
     const testField = query.getFields().testField;
     expect(print(testField.astNode)).to.equal(
-      'testField(testArg: TestInput): TestUnion'
+      'testField(testArg: TestInput): TestUnion',
     );
-    expect(print(testField.args[0].astNode)).to.equal(
-      'testArg: TestInput'
-    );
+    expect(print(testField.args[0].astNode)).to.equal('testArg: TestInput');
     expect(print(testInput.getFields().testInputField.astNode)).to.equal(
-      'testInputField: TestEnum'
+      'testInputField: TestEnum',
     );
     expect(print(testEnum.getValue('TEST_VALUE').astNode)).to.equal(
-      'TEST_VALUE'
+      'TEST_VALUE',
     );
     expect(print(testInterface.getFields().interfaceField.astNode)).to.equal(
-      'interfaceField: String'
+      'interfaceField: String',
     );
     expect(print(testType.getFields().interfaceField.astNode)).to.equal(
-      'interfaceField: String'
+      'interfaceField: String',
     );
     expect(print(testDirective.args[0].astNode)).to.equal('arg: Int');
   });
 });
 
 describe('Failures', () => {
-
   it('Requires a schema definition or Query type', () => {
     const body = dedent`
       type Hello {
@@ -642,7 +646,7 @@ describe('Failures', () => {
     `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc)).to.throw(
-      'Must provide schema definition with query type or a type named Query.'
+      'Must provide schema definition with query type or a type named Query.',
     );
   });
 
@@ -661,8 +665,9 @@ describe('Failures', () => {
       }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Must provide only one schema definition.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Must provide only one schema definition.',
+    );
   });
 
   it('Requires a query type', () => {
@@ -677,7 +682,7 @@ describe('Failures', () => {
     `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc)).to.throw(
-      'Must provide schema definition with query type or a type named Query.'
+      'Must provide schema definition with query type or a type named Query.',
     );
   });
 
@@ -697,8 +702,9 @@ describe('Failures', () => {
       }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Must provide only one query type in schema.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Must provide only one query type in schema.',
+    );
   });
 
   it('Allows only a single mutation type', () => {
@@ -718,8 +724,9 @@ describe('Failures', () => {
       }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Must provide only one mutation type in schema.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Must provide only one mutation type in schema.',
+    );
   });
 
   it('Allows only a single subscription type', () => {
@@ -739,8 +746,9 @@ describe('Failures', () => {
       }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Must provide only one subscription type in schema.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Must provide only one subscription type in schema.',
+    );
   });
 
   it('Unknown type referenced', () => {
@@ -754,8 +762,9 @@ describe('Failures', () => {
       }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Type "Bar" not found in document.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Type "Bar" not found in document.',
+    );
   });
 
   it('Unknown type in interface list', () => {
@@ -767,8 +776,9 @@ describe('Failures', () => {
       type Hello implements Bar { }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Type "Bar" not found in document.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Type "Bar" not found in document.',
+    );
   });
 
   it('Unknown type in union list', () => {
@@ -781,8 +791,9 @@ describe('Failures', () => {
       type Hello { testUnion: TestUnion }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Type "Bar" not found in document.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Type "Bar" not found in document.',
+    );
   });
 
   it('Unknown query type', () => {
@@ -796,8 +807,9 @@ describe('Failures', () => {
       }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Specified query type "Wat" not found in document.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Specified query type "Wat" not found in document.',
+    );
   });
 
   it('Unknown mutation type', () => {
@@ -812,8 +824,9 @@ describe('Failures', () => {
       }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Specified mutation type "Wat" not found in document.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Specified mutation type "Wat" not found in document.',
+    );
   });
 
   it('Unknown subscription type', () => {
@@ -833,8 +846,9 @@ describe('Failures', () => {
       }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Specified subscription type "Awesome" not found in document.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Specified subscription type "Awesome" not found in document.',
+    );
   });
 
   it('Does not consider operation names', () => {
@@ -846,8 +860,9 @@ describe('Failures', () => {
       query Foo { field }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Specified query type "Foo" not found in document.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Specified query type "Foo" not found in document.',
+    );
   });
 
   it('Does not consider fragment names', () => {
@@ -859,8 +874,9 @@ describe('Failures', () => {
       fragment Foo on Type { field }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Specified query type "Foo" not found in document.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Specified query type "Foo" not found in document.',
+    );
   });
 
   it('Forbids duplicate type definitions', () => {
@@ -878,7 +894,8 @@ describe('Failures', () => {
       }
     `;
     const doc = parse(body);
-    expect(() => buildASTSchema(doc))
-      .to.throw('Type "Repeated" was defined more than once.');
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Type "Repeated" was defined more than once.',
+    );
   });
 });

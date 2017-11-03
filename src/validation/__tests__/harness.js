@@ -22,7 +22,7 @@ import {
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
-  GraphQLID
+  GraphQLID,
 } from '../../type';
 import {
   GraphQLDirective,
@@ -30,14 +30,13 @@ import {
   GraphQLSkipDirective,
 } from '../../type/directives';
 
-
 const Being = new GraphQLInterfaceType({
   name: 'Being',
   fields: () => ({
     name: {
       type: GraphQLString,
       args: { surname: { type: GraphQLBoolean } },
-    }
+    },
   }),
 });
 
@@ -47,7 +46,7 @@ const Pet = new GraphQLInterfaceType({
     name: {
       type: GraphQLString,
       args: { surname: { type: GraphQLBoolean } },
-    }
+    },
   }),
 });
 
@@ -57,7 +56,7 @@ const Canine = new GraphQLInterfaceType({
     name: {
       type: GraphQLString,
       args: { surname: { type: GraphQLBoolean } },
-    }
+    },
   }),
 });
 
@@ -93,7 +92,7 @@ const Dog = new GraphQLObjectType({
         atOtherHomes: {
           type: GraphQLBoolean,
           defaultValue: true,
-        }
+        },
       },
     },
     isAtLocation: {
@@ -101,7 +100,7 @@ const Dog = new GraphQLObjectType({
       args: { x: { type: GraphQLInt }, y: { type: GraphQLInt } },
     },
   }),
-  interfaces: [ Being, Pet, Canine ],
+  interfaces: [Being, Pet, Canine],
 });
 
 const Cat = new GraphQLObjectType({
@@ -117,28 +116,28 @@ const Cat = new GraphQLObjectType({
     meowVolume: { type: GraphQLInt },
     furColor: { type: FurColor },
   }),
-  interfaces: [ Being, Pet ],
+  interfaces: [Being, Pet],
 });
 
 const CatOrDog = new GraphQLUnionType({
   name: 'CatOrDog',
-  types: [ Dog, Cat ],
+  types: [Dog, Cat],
   resolveType(/* value */) {
     // not used for validation
-  }
+  },
 });
 
 const Intelligent = new GraphQLInterfaceType({
   name: 'Intelligent',
   fields: {
-    iq: { type: GraphQLInt }
-  }
+    iq: { type: GraphQLInt },
+  },
 });
 
 const Human = new GraphQLObjectType({
   name: 'Human',
   isTypeOf: () => true,
-  interfaces: [ Being, Intelligent ],
+  interfaces: [Being, Intelligent],
   fields: () => ({
     name: {
       type: GraphQLString,
@@ -147,13 +146,13 @@ const Human = new GraphQLObjectType({
     pets: { type: new GraphQLList(Pet) },
     relatives: { type: new GraphQLList(Human) },
     iq: { type: GraphQLInt },
-  })
+  }),
 });
 
 const Alien = new GraphQLObjectType({
   name: 'Alien',
   isTypeOf: () => true,
-  interfaces: [ Being, Intelligent ],
+  interfaces: [Being, Intelligent],
   fields: {
     iq: { type: GraphQLInt },
     name: {
@@ -161,23 +160,23 @@ const Alien = new GraphQLObjectType({
       args: { surname: { type: GraphQLBoolean } },
     },
     numEyes: { type: GraphQLInt },
-  }
+  },
 });
 
 const DogOrHuman = new GraphQLUnionType({
   name: 'DogOrHuman',
-  types: [ Dog, Human ],
+  types: [Dog, Human],
   resolveType(/* value */) {
     // not used for validation
-  }
+  },
 });
 
 const HumanOrAlien = new GraphQLUnionType({
   name: 'HumanOrAlien',
-  types: [ Human, Alien ],
+  types: [Human, Alien],
   resolveType(/* value */) {
     // not used for validation
-  }
+  },
 });
 
 const FurColor = new GraphQLEnumType({
@@ -188,7 +187,7 @@ const FurColor = new GraphQLEnumType({
     TAN: { value: 2 },
     SPOTTED: { value: 3 },
     NO_FUR: { value: null },
-    UNKNOWN: { value: undefined }
+    UNKNOWN: { value: undefined },
   },
 });
 
@@ -200,7 +199,7 @@ const ComplexInput = new GraphQLInputObjectType({
     stringField: { type: GraphQLString },
     booleanField: { type: GraphQLBoolean },
     stringListField: { type: new GraphQLList(GraphQLString) },
-  }
+  },
 });
 
 const ComplicatedArgs = new GraphQLObjectType({
@@ -283,13 +282,12 @@ const ComplicatedArgs = new GraphQLObjectType({
   }),
 });
 
-
 const QueryRoot = new GraphQLObjectType({
   name: 'QueryRoot',
   fields: () => ({
     human: {
       args: { id: { type: GraphQLID } },
-      type: Human
+      type: Human,
     },
     alien: { type: Alien },
     dog: { type: Dog },
@@ -299,88 +297,88 @@ const QueryRoot = new GraphQLObjectType({
     dogOrHuman: { type: DogOrHuman },
     humanOrAlien: { type: HumanOrAlien },
     complicatedArgs: { type: ComplicatedArgs },
-  })
+  }),
 });
 
 export const testSchema = new GraphQLSchema({
   query: QueryRoot,
-  types: [ Cat, Dog, Human, Alien ],
+  types: [Cat, Dog, Human, Alien],
   directives: [
     GraphQLIncludeDirective,
     GraphQLSkipDirective,
     new GraphQLDirective({
       name: 'onQuery',
-      locations: [ 'QUERY' ],
+      locations: ['QUERY'],
     }),
     new GraphQLDirective({
       name: 'onMutation',
-      locations: [ 'MUTATION' ],
+      locations: ['MUTATION'],
     }),
     new GraphQLDirective({
       name: 'onSubscription',
-      locations: [ 'SUBSCRIPTION' ],
+      locations: ['SUBSCRIPTION'],
     }),
     new GraphQLDirective({
       name: 'onField',
-      locations: [ 'FIELD' ],
+      locations: ['FIELD'],
     }),
     new GraphQLDirective({
       name: 'onFragmentDefinition',
-      locations: [ 'FRAGMENT_DEFINITION' ],
+      locations: ['FRAGMENT_DEFINITION'],
     }),
     new GraphQLDirective({
       name: 'onFragmentSpread',
-      locations: [ 'FRAGMENT_SPREAD' ],
+      locations: ['FRAGMENT_SPREAD'],
     }),
     new GraphQLDirective({
       name: 'onInlineFragment',
-      locations: [ 'INLINE_FRAGMENT' ],
+      locations: ['INLINE_FRAGMENT'],
     }),
     new GraphQLDirective({
       name: 'onSchema',
-      locations: [ 'SCHEMA' ],
+      locations: ['SCHEMA'],
     }),
     new GraphQLDirective({
       name: 'onScalar',
-      locations: [ 'SCALAR' ],
+      locations: ['SCALAR'],
     }),
     new GraphQLDirective({
       name: 'onObject',
-      locations: [ 'OBJECT' ],
+      locations: ['OBJECT'],
     }),
     new GraphQLDirective({
       name: 'onFieldDefinition',
-      locations: [ 'FIELD_DEFINITION' ],
+      locations: ['FIELD_DEFINITION'],
     }),
     new GraphQLDirective({
       name: 'onArgumentDefinition',
-      locations: [ 'ARGUMENT_DEFINITION' ],
+      locations: ['ARGUMENT_DEFINITION'],
     }),
     new GraphQLDirective({
       name: 'onInterface',
-      locations: [ 'INTERFACE' ],
+      locations: ['INTERFACE'],
     }),
     new GraphQLDirective({
       name: 'onUnion',
-      locations: [ 'UNION' ],
+      locations: ['UNION'],
     }),
     new GraphQLDirective({
       name: 'onEnum',
-      locations: [ 'ENUM' ],
+      locations: ['ENUM'],
     }),
     new GraphQLDirective({
       name: 'onEnumValue',
-      locations: [ 'ENUM_VALUE' ],
+      locations: ['ENUM_VALUE'],
     }),
     new GraphQLDirective({
       name: 'onInputObject',
-      locations: [ 'INPUT_OBJECT' ],
+      locations: ['INPUT_OBJECT'],
     }),
     new GraphQLDirective({
       name: 'onInputFieldDefinition',
-      locations: [ 'INPUT_FIELD_DEFINITION' ],
+      locations: ['INPUT_FIELD_DEFINITION'],
     }),
-  ]
+  ],
 });
 
 function expectValid(schema, rules, queryString) {
@@ -395,17 +393,17 @@ function expectInvalid(schema, rules, queryString, expectedErrors) {
 }
 
 export function expectPassesRule(rule, queryString) {
-  return expectValid(testSchema, [ rule ], queryString);
+  return expectValid(testSchema, [rule], queryString);
 }
 
 export function expectFailsRule(rule, queryString, errors) {
-  return expectInvalid(testSchema, [ rule ], queryString, errors);
+  return expectInvalid(testSchema, [rule], queryString, errors);
 }
 
 export function expectPassesRuleWithSchema(schema, rule, queryString, errors) {
-  return expectValid(schema, [ rule ], queryString, errors);
+  return expectValid(schema, [rule], queryString, errors);
 }
 
 export function expectFailsRuleWithSchema(schema, rule, queryString, errors) {
-  return expectInvalid(schema, [ rule ], queryString, errors);
+  return expectInvalid(schema, [rule], queryString, errors);
 }

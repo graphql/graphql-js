@@ -13,10 +13,9 @@ import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
 import type { GraphQLType } from '../../type/definition';
 
-
 export function unknownTypeMessage(
   type: GraphQLType,
-  suggestedTypes: Array<string>
+  suggestedTypes: Array<string>,
 ): string {
   let message = `Unknown type "${String(type)}".`;
   if (suggestedTypes.length) {
@@ -49,12 +48,12 @@ export function KnownTypeNames(context: ValidationContext): any {
           new GraphQLError(
             unknownTypeMessage(
               typeName,
-              suggestionList(typeName, Object.keys(schema.getTypeMap()))
+              suggestionList(typeName, Object.keys(schema.getTypeMap())),
             ),
-            [ node ]
-          )
+            [node],
+          ),
         );
       }
-    }
+    },
   };
 }
