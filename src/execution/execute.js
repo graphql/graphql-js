@@ -55,6 +55,7 @@ import type {
   InlineFragmentNode,
   FragmentDefinitionNode,
 } from '../language/ast';
+import { assertValidSchema } from '../validation/validateSchema';
 
 
 /**
@@ -179,6 +180,8 @@ function executeImpl(
   operationName,
   fieldResolver
 ) {
+  assertValidSchema(schema);
+
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(
     schema,

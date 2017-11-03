@@ -64,6 +64,7 @@ export class GraphQLSchema {
   _typeMap: TypeMap;
   _implementations: ObjMap<Array<GraphQLObjectType>>;
   _possibleTypeMap: ?ObjMap<ObjMap<boolean>>;
+  __valid: ?boolean;
 
   constructor(config: GraphQLSchemaConfig): void {
     invariant(
