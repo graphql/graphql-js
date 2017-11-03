@@ -66,9 +66,14 @@ import type {
   IntrospectionUnionType,
   IntrospectionEnumType,
   IntrospectionInputObjectType,
+  IntrospectionInputType,
+  IntrospectionOutputType,
+  IntrospectionList,
+  IntrospectionNonNull,
   IntrospectionTypeRef,
-  IntrospectionListTypeRef,
-  IntrospectionNonNullTypeRef,
+  IntrospectionInputTypeRef,
+  IntrospectionOutputTypeRef,
+  IntrospectionNamedTypeRef,
 } from './introspectionQuery';
 
 
@@ -118,16 +123,16 @@ export function buildClientSchema(
 
   // Given a type reference in introspection, return the GraphQLType instance.
   // preferring cached instances before building new instances.
-  function getType(typeRef: IntrospectionTypeRef): GraphQLType {
+  function getType<T: IntrospectionTypeRef>(typeRef: T): GraphQLType {
     if (typeRef.kind === TypeKind.LIST) {
-      const itemRef = ((typeRef: any): IntrospectionListTypeRef).ofType;
+      const itemRef: ?T = typeRef.ofType;
       if (!itemRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
       return new GraphQLList(getType(itemRef));
     }
     if (typeRef.kind === TypeKind.NON_NULL) {
-      const nullableRef = ((typeRef: any): IntrospectionNonNullTypeRef).ofType;
+      const nullableRef: ?T = typeRef.ofType;
       if (!nullableRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
@@ -161,7 +166,7 @@ export function buildClientSchema(
     return typeDef;
   }
 
-  function getInputType(typeRef: IntrospectionTypeRef): GraphQLInputType {
+  function getInputType(typeRef: IntrospectionInputTypeRef): GraphQLInputType {
     const type = getType(typeRef);
     invariant(
       isInputType(type),
@@ -170,7 +175,7 @@ export function buildClientSchema(
     return type;
   }
 
-  function getOutputType(typeRef: IntrospectionTypeRef): GraphQLOutputType {
+  function getOutputType(typeRef: IntrospectionOutputTypeRef): GraphQLOutputType {
     const type = getType(typeRef);
     invariant(
       isOutputType(type),
@@ -179,7 +184,7 @@ export function buildClientSchema(
     return type;
   }
 
-  function getObjectType(typeRef: IntrospectionTypeRef): GraphQLObjectType {
+  function getObjectType(typeRef: IntrospectionNamedTypeRef<IntrospectionObjectType>): GraphQLObjectType {
     const type = getType(typeRef);
     invariant(
       type instanceof GraphQLObjectType,
