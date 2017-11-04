@@ -33,7 +33,7 @@ import type {ObjMap} from './ObjMap';
  *
  */
 export default function keyMap<T>(
-  list: Array<T>,
+  list: $ReadOnlyArray<T>,
   keyFn: (item: T) => string
 ): ObjMap<T> {
   return list.reduce(
