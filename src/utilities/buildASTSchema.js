@@ -11,6 +11,7 @@ import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 import type {ObjMap} from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
+import { resolveTypeForGeneratedSchema } from './resolveTypeForGeneratedSchema';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
 import type { Source } from '../language/source';
@@ -398,7 +399,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
       description: getDescription(def),
       fields: () => makeFieldDefMap(def),
       astNode: def,
-      resolveType: cannotExecuteSchema,
+      resolveType: resolveTypeForGeneratedSchema,
     });
   }
 
@@ -424,7 +425,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
       name: def.name.value,
       description: getDescription(def),
       types: def.types.map(t => produceObjectType(t)),
-      resolveType: cannotExecuteSchema,
+      resolveType: resolveTypeForGeneratedSchema,
       astNode: def,
     });
   }
@@ -515,10 +516,4 @@ function leadingSpaces(str) {
     }
   }
   return i;
-}
-
-function cannotExecuteSchema() {
-  throw new Error(
-    'Generated Schema cannot use Interface or Union types for execution.'
-  );
 }
