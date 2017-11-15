@@ -999,4 +999,18 @@ describe('extendSchema', () => {
     });
 
   });
+
+  it('allows replacing existing field with resolveConflict function', () => {
+    const ast = parse(`
+      extend type Bar {
+        foo: Foo
+      }
+    `);
+    expect(() =>
+      extendSchema(testSchema, ast, { resolveConflict: orig => orig})
+    ).not.to.throw(
+      'Field "Bar.foo" already exists in the schema. It cannot also be ' +
+      'defined in this type extension.'
+    );
+  });
 });
