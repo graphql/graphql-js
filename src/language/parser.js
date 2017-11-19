@@ -282,7 +282,7 @@ function parseOperationDefinition(lexer: Lexer<*>): OperationDefinitionNode {
     };
   }
   const operation = parseOperationType(lexer);
-  let name;
+  let name = null;
   if (peek(lexer, TokenKind.NAME)) {
     name = parseName(lexer);
   }
@@ -317,7 +317,7 @@ function parseOperationType(lexer: Lexer<*>): OperationTypeNode {
  */
 function parseVariableDefinitions(
   lexer: Lexer<*>
-): Array<VariableDefinitionNode> {
+): ?Array<VariableDefinitionNode> {
   return peek(lexer, TokenKind.PAREN_L) ?
     many(
       lexer,
@@ -325,7 +325,7 @@ function parseVariableDefinitions(
       parseVariableDefinition,
       TokenKind.PAREN_R
     ) :
-    [];
+    null;
 }
 
 /**
