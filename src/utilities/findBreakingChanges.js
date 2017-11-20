@@ -45,6 +45,8 @@ export const DangerousChangeType = {
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
+  NULLABLE_INPUT_FIELD_ADDED: 'NULLABLE_INPUT_FIELD_ADDED',
+  NULLABLE_ARG_ADDED: 'NULLABLE_ARG_ADDED',
 };
 
 export type BreakingChange = {
@@ -87,7 +89,9 @@ export function findDangerousChanges(
   return [
     ...findArgChanges(oldSchema, newSchema).dangerousChanges,
     ...findValuesAddedToEnums(oldSchema, newSchema),
-    ...findTypesAddedToUnions(oldSchema, newSchema)
+    ...findTypesAddedToUnions(oldSchema, newSchema),
+    ...findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema)
+      .dangerousFieldChanges
   ];
 }
 
@@ -222,12 +226,20 @@ export function findArgChanges(
         const oldArgDef = oldArgs.find(
           arg => arg.name === newArgDef.name
         );
-        if (!oldArgDef && newArgDef.type instanceof GraphQLNonNull) {
-          breakingChanges.push({
-            type: BreakingChangeType.NON_NULL_ARG_ADDED,
-            description: `A non-null arg ${newArgDef.name} on ` +
-              `${newType.name}.${fieldName} was added`,
-          });
+        if (!oldArgDef) {
+          if (newArgDef.type instanceof GraphQLNonNull) {
+            breakingChanges.push({
+              type: BreakingChangeType.NON_NULL_ARG_ADDED,
+              description: `A non-null arg ${newArgDef.name} on ` +
+                `${newType.name}.${fieldName} was added`,
+            });
+          } else {
+            dangerousChanges.push({
+              type: DangerousChangeType.NULLABLE_ARG_ADDED,
+              description: `A nullable arg ${newArgDef.name} on ` +
+                `${newType.name}.${fieldName} was added`,
+            });
+          }
         }
       });
     });
@@ -273,7 +285,8 @@ export function findFieldsThatChangedType(
 ): Array<BreakingChange> {
   return [
     ...findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema),
-    ...findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema),
+    ...findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema)
+      .breakingFieldChanges,
   ];
 }
 
@@ -332,11 +345,15 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
 export function findFieldsThatChangedTypeOnInputObjectTypes(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema
-): Array<BreakingChange> {
+): {
+  breakingFieldChanges: Array<BreakingChange>,
+  dangerousFieldChanges: Array<DangerousChange>
+} {
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
 
   const breakingFieldChanges = [];
+  const dangerousFieldChanges = [];
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
@@ -377,21 +394,29 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(
         }
       }
     });
-    // Check if a non-null field was added to the input object type
+    // Check if a field was added to the input object type
     Object.keys(newTypeFieldsDef).forEach(fieldName => {
-      if (
-        !(fieldName in oldTypeFieldsDef) &&
-        newTypeFieldsDef[fieldName].type instanceof GraphQLNonNull
-      ) {
-        breakingFieldChanges.push({
-          type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
-          description: `A non-null field ${fieldName} on ` +
-            `input type ${newType.name} was added.`,
-        });
+      if (!(fieldName in oldTypeFieldsDef)) {
+        if (newTypeFieldsDef[fieldName].type instanceof GraphQLNonNull) {
+          breakingFieldChanges.push({
+            type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
+            description: `A non-null field ${fieldName} on ` +
+              `input type ${newType.name} was added.`,
+          });
+        } else {
+          dangerousFieldChanges.push({
+            type: DangerousChangeType.NULLABLE_INPUT_FIELD_ADDED,
+            description: `A nullable field ${fieldName} on ` +
+              `input type ${newType.name} was added.`,
+          });
+        }
       }
     });
   });
-  return breakingFieldChanges;
+  return {
+    breakingFieldChanges,
+    dangerousFieldChanges,
+  };
 }
 
 function isChangeSafeForObjectOrInterfaceField(
@@ -647,3 +672,4 @@ export function findInterfacesRemovedFromObjectTypes(
   });
   return breakingChanges;
 }
+
