@@ -34,7 +34,7 @@ import {
   findValuesAddedToEnums,
   findArgChanges,
   findInterfacesRemovedFromObjectTypes,
-  findInterfacesAddedToObjectTypes
+  findInterfacesAddedToObjectTypes,
 } from '../findBreakingChanges';
 
 describe('findBreakingChanges', () => {
