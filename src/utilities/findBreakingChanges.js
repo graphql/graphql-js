@@ -44,6 +44,7 @@ export const BreakingChangeType = {
 export const DangerousChangeType = {
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
+  INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT',
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
 };
 
@@ -87,7 +88,8 @@ export function findDangerousChanges(
   return [
     ...findArgChanges(oldSchema, newSchema).dangerousChanges,
     ...findValuesAddedToEnums(oldSchema, newSchema),
-    ...findTypesAddedToUnions(oldSchema, newSchema)
+    ...findInterfacesAddedToObjectTypes(oldSchema, newSchema),
+    ...findTypesAddedToUnions(oldSchema, newSchema),
   ];
 }
 
@@ -646,4 +648,37 @@ export function findInterfacesRemovedFromObjectTypes(
     });
   });
   return breakingChanges;
+}
+
+export function findInterfacesAddedToObjectTypes(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema
+): Array<DangerousChange> {
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+  const interfacesAddedToObjectTypes = [];
+
+  Object.keys(newTypeMap).forEach(typeName => {
+    const oldType = oldTypeMap[typeName];
+    const newType = newTypeMap[typeName];
+    if (
+      !(oldType instanceof GraphQLObjectType) ||
+      !(newType instanceof GraphQLObjectType)
+    ) {
+      return;
+    }
+
+    const oldInterfaces = oldType.getInterfaces();
+    const newInterfaces = newType.getInterfaces();
+    newInterfaces.forEach(newInterface => {
+      if (!oldInterfaces.some(int => int.name === newInterface.name)) {
+        interfacesAddedToObjectTypes.push({
+          type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+          description: `${newInterface.name} added to interfaces implemented ` +
+          `by ${typeName}.`
+        });
+      }
+    });
+  });
+  return interfacesAddedToObjectTypes;
 }
