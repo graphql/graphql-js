@@ -1481,7 +1481,7 @@ describe('findDangerousChanges', () => {
       }
     ]);
   });
-  
+
   it('should detect if a type was added to a union type', () => {
     const type1 = new GraphQLObjectType({
       name: 'Type1',
