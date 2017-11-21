@@ -1,11 +1,10 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import { GraphQLScalarType } from './definition';
@@ -88,14 +87,23 @@ export const GraphQLFloat = new GraphQLScalarType({
   }
 });
 
+function coerceString(value: mixed): ?string {
+  if (Array.isArray(value)) {
+    throw new TypeError(
+      `String cannot represent an array value: [${String(value)}]`
+    );
+  }
+  return String(value);
+}
+
 export const GraphQLString = new GraphQLScalarType({
   name: 'String',
   description:
     'The `String` scalar type represents textual data, represented as UTF-8 ' +
     'character sequences. The String type is most often used by GraphQL to ' +
     'represent free-form human-readable text.',
-  serialize: String,
-  parseValue: String,
+  serialize: coerceString,
+  parseValue: coerceString,
   parseLiteral(ast) {
     return ast.kind === Kind.STRING ? ast.value : null;
   }

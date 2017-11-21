@@ -1,14 +1,14 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import { visit } from '../language/visitor';
+import type {ObjMap} from '../jsutils/ObjMap';
 import type {
   DocumentNode,
   OperationDefinitionNode,
@@ -22,8 +22,7 @@ import type {
  */
 export function separateOperations(
   documentAST: DocumentNode
-): { [operationName: string]: DocumentNode } {
-
+): ObjMap<DocumentNode> {
   const operations = [];
   const fragments = Object.create(null);
   const positions = new Map();
@@ -77,7 +76,7 @@ export function separateOperations(
   return separatedDocumentASTs;
 }
 
-type DepGraph = {[from: string]: {[to: string]: boolean}};
+type DepGraph = ObjMap<ObjMap<boolean>>;
 
 // Provides the empty string for anonymous operations.
 function opName(operation: OperationDefinitionNode): string {
@@ -87,7 +86,7 @@ function opName(operation: OperationDefinitionNode): string {
 // From a dependency graph, collects a list of transitive dependencies by
 // recursing through a dependency graph.
 function collectTransitiveDependencies(
-  collected: {[key: string]: boolean},
+  collected: ObjMap<boolean>,
   depGraph: DepGraph,
   fromName: string
 ): void {

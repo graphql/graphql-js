@@ -1,19 +1,22 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 const ERROR_PREFIX_RX = /^Error: /;
 
 // Silences warnings if an environment flag is enabled
-const noNameWarning =
-  Boolean(process && process.env && process.env.GRAPHQL_NO_NAME_WARNING);
+const noNameWarning = Boolean(
+  typeof process !== 'undefined' &&
+    process &&
+    process.env &&
+    process.env.GRAPHQL_NO_NAME_WARNING
+);
 
 // Ensures console warnings are only issued once.
 let hasWarnedAboutDunder = false;

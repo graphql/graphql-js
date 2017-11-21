@@ -1,16 +1,16 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import find from '../../jsutils/find';
+import type {ObjMap} from '../../jsutils/ObjMap';
 import type {
   SelectionSetNode,
   FieldNode,
@@ -100,7 +100,7 @@ type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining a field node in a context.
 type NodeAndDef = [ GraphQLCompositeType, FieldNode, ?GraphQLField<*, *> ];
 // Map of array of those.
-type NodeAndDefCollection = { [key: string]: Array<NodeAndDef> };
+type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
 
 /**
  * Algorithm:
@@ -774,7 +774,7 @@ function subfieldConflicts(
  * not matter. We do this by maintaining a sort of double adjacency sets.
  */
 class PairSet {
-  _data: {[a: string]: {[b: string]: boolean}};
+  _data: ObjMap<ObjMap<boolean>>;
 
   constructor(): void {
     this._data = Object.create(null);

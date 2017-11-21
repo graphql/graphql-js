@@ -18,7 +18,6 @@ node -e "var package = require('./package.json'); \
 
 cp README.md npm/
 cp LICENSE npm/
-cp PATENTS npm/
 
 cd npm
 git init

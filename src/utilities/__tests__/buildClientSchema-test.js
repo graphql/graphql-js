@@ -1,10 +1,8 @@
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
 import { describe, it } from 'mocha';
@@ -738,9 +736,8 @@ describe('Type System: build schema from introspection', () => {
       expect(
         () => buildClientSchema(incompleteIntrospection)
       ).to.throw(
-        'Invalid or incomplete schema, unknown kind: undefined. Ensure ' +
-        'that a full introspection query is used in order to build a ' +
-        'client schema.'
+        'Invalid or incomplete introspection result. Ensure that a full ' +
+        'introspection query is used in order to build a client schema'
       );
     });
 

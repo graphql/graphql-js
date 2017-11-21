@@ -1,15 +1,15 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import type {ObjMap} from '../jsutils/ObjMap';
 import * as Kind from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
 import type {
@@ -70,17 +70,18 @@ export function assertType(type: mixed): GraphQLType {
 /**
  * These types may be used as input types for arguments and directives.
  */
-export type GraphQLInputType =
+type GraphQLInputType_<T> =
   GraphQLScalarType |
   GraphQLEnumType |
   GraphQLInputObjectType |
-  GraphQLList<GraphQLInputType> |
+  GraphQLList<T> |
   GraphQLNonNull<
     GraphQLScalarType |
     GraphQLEnumType |
     GraphQLInputObjectType |
-    GraphQLList<GraphQLInputType>
+    GraphQLList<T>
   >;
+export type GraphQLInputType = GraphQLInputType_<*>;
 
 export function isInputType(type: ?GraphQLType): boolean %checks {
   return (
@@ -210,14 +211,15 @@ export function assertAbstractType(type: ?GraphQLType): GraphQLAbstractType {
 /**
  * These types can all accept null as a value.
  */
-export type GraphQLNullableType =
+type GraphQLNullableType_<T> =
   GraphQLScalarType |
   GraphQLObjectType |
   GraphQLInterfaceType |
   GraphQLUnionType |
   GraphQLEnumType |
   GraphQLInputObjectType |
-  GraphQLList<*>;
+  GraphQLList<T>;
+export type GraphQLNullableType = GraphQLNullableType_<*>;
 
 export function getNullableType<T: GraphQLType>(
   type: ?T
@@ -623,7 +625,7 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
 
 export type GraphQLFieldResolver<TSource, TContext> = (
   source: TSource,
-  args: { [argName: string]: any },
+  args: {[argument: string]: any},
   context: TContext,
   info: GraphQLResolveInfo
 ) => mixed;
@@ -635,10 +637,10 @@ export type GraphQLResolveInfo = {
   parentType: GraphQLCompositeType;
   path: ResponsePath;
   schema: GraphQLSchema;
-  fragments: { [fragmentName: string]: FragmentDefinitionNode };
+  fragments: ObjMap<FragmentDefinitionNode>;
   rootValue: mixed;
   operation: OperationDefinitionNode;
-  variableValues: { [variableName: string]: mixed };
+  variableValues: {[variable: string]: mixed};
 };
 
 export type ResponsePath = { prev: ResponsePath, key: string | number } | void;
@@ -653,9 +655,7 @@ export type GraphQLFieldConfig<TSource, TContext> = {
   astNode?: ?FieldDefinitionNode;
 };
 
-export type GraphQLFieldConfigArgumentMap = {
-  [argName: string]: GraphQLArgumentConfig;
-};
+export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
 
 export type GraphQLArgumentConfig = {
   type: GraphQLInputType;
@@ -664,9 +664,8 @@ export type GraphQLArgumentConfig = {
   astNode?: ?InputValueDefinitionNode;
 };
 
-export type GraphQLFieldConfigMap<TSource, TContext> = {
-  [fieldName: string]: GraphQLFieldConfig<TSource, TContext>;
-};
+export type GraphQLFieldConfigMap<TSource, TContext> =
+  ObjMap<GraphQLFieldConfig<TSource, TContext>>;
 
 export type GraphQLField<TSource, TContext> = {
   name: string;
@@ -688,9 +687,8 @@ export type GraphQLArgument = {
   astNode?: ?InputValueDefinitionNode;
 };
 
-export type GraphQLFieldMap<TSource, TContext> = {
-  [fieldName: string]: GraphQLField<TSource, TContext>;
-};
+export type GraphQLFieldMap<TSource, TContext> =
+  ObjMap<GraphQLField<TSource, TContext>>;
 
 
 
@@ -800,7 +798,6 @@ export class GraphQLUnionType {
 
   _typeConfig: GraphQLUnionTypeConfig<*, *>;
   _types: Array<GraphQLObjectType>;
-  _possibleTypeNames: {[typeName: string]: boolean};
 
   constructor(config: GraphQLUnionTypeConfig<*, *>): void {
     assertValidName(config.name);
@@ -917,7 +914,7 @@ export class GraphQLEnumType/* <T> */ {
   _enumConfig: GraphQLEnumTypeConfig/* <T> */;
   _values: Array<GraphQLEnumValue/* <T> */>;
   _valueLookup: Map<any/* T */, GraphQLEnumValue>;
-  _nameLookup: { [valueName: string]: GraphQLEnumValue };
+  _nameLookup: ObjMap<GraphQLEnumValue>;
 
   constructor(config: GraphQLEnumTypeConfig/* <T> */): void {
     this.name = config.name;
@@ -980,7 +977,7 @@ export class GraphQLEnumType/* <T> */ {
     return this._valueLookup;
   }
 
-  _getNameLookup(): { [valueName: string]: GraphQLEnumValue } {
+  _getNameLookup(): ObjMap<GraphQLEnumValue> {
     if (!this._nameLookup) {
       const lookup = Object.create(null);
       this.getValues().forEach(value => {
@@ -1054,9 +1051,8 @@ export type GraphQLEnumTypeConfig/* <T> */ = {
   isIntrospection?: boolean;
 };
 
-export type GraphQLEnumValueConfigMap/* <T> */ = {
-  [valueName: string]: GraphQLEnumValueConfig/* <T> */;
-};
+export type GraphQLEnumValueConfigMap/* <T> */ =
+  ObjMap<GraphQLEnumValueConfig/* <T> */>;
 
 export type GraphQLEnumValueConfig/* <T> */ = {
   value?: any/* T */;
@@ -1178,9 +1174,8 @@ export type GraphQLInputFieldConfig = {
   astNode?: ?InputValueDefinitionNode;
 };
 
-export type GraphQLInputFieldConfigMap = {
-  [fieldName: string]: GraphQLInputFieldConfig;
-};
+export type GraphQLInputFieldConfigMap =
+  ObjMap<GraphQLInputFieldConfig>;
 
 export type GraphQLInputField = {
   name: string;
@@ -1190,9 +1185,8 @@ export type GraphQLInputField = {
   astNode?: ?InputValueDefinitionNode;
 };
 
-export type GraphQLInputFieldMap = {
-  [fieldName: string]: GraphQLInputField;
-};
+export type GraphQLInputFieldMap =
+  ObjMap<GraphQLInputField>;
 
 
 
@@ -1208,8 +1202,8 @@ export type GraphQLInputFieldMap = {
  *     const PersonType = new GraphQLObjectType({
  *       name: 'Person',
  *       fields: () => ({
- *         parents: { type: new GraphQLList(Person) },
- *         children: { type: new GraphQLList(Person) },
+ *         parents: { type: new GraphQLList(PersonType) },
+ *         children: { type: new GraphQLList(PersonType) },
  *       })
  *     })
  *

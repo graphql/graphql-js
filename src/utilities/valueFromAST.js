@@ -1,17 +1,17 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import keyMap from '../jsutils/keyMap';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
+import type {ObjMap} from '../jsutils/ObjMap';
 import * as Kind from '../language/kinds';
 import {
   GraphQLScalarType,
@@ -52,7 +52,7 @@ import type {
 export function valueFromAST(
   valueNode: ?ValueNode,
   type: GraphQLInputType,
-  variables?: ?{ [key: string]: mixed }
+  variables?: ?ObjMap<mixed>
 ): mixed | void {
   if (!valueNode) {
     // When there is no node, then there is also no value.

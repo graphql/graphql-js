@@ -1,11 +1,10 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import type { ValidationContext } from '../index';
@@ -15,17 +14,16 @@ import invariant from '../../jsutils/invariant';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
 import * as Kind from '../../language/kinds';
-import type { GraphQLType } from '../../type/definition';
 
 
 export function unknownArgMessage(
   argName: string,
   fieldName: string,
-  type: GraphQLType,
+  typeName: string,
   suggestedArgs: Array<string>
 ): string {
   let message = `Unknown argument "${argName}" on field "${fieldName}" of ` +
-    `type "${String(type)}".`;
+    `type "${typeName}".`;
   if (suggestedArgs.length) {
     message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
   }

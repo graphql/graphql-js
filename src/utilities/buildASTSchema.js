@@ -1,15 +1,15 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
+import type {ObjMap} from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
@@ -134,7 +134,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   let schemaDef: ?SchemaDefinitionNode;
 
   const typeDefs: Array<TypeDefinitionNode> = [];
-  const nodeMap: {[name: string]: TypeDefinitionNode} = Object.create(null);
+  const nodeMap: ObjMap<TypeDefinitionNode> = Object.create(null);
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
   for (let i = 0; i < ast.definitions.length; i++) {
     const d = ast.definitions[i];
@@ -316,26 +316,16 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 
   function typeDefNamed(typeName: string): GraphQLNamedType {
-    if (innerTypeMap[typeName]) {
-      return innerTypeMap[typeName];
+    if (!innerTypeMap[typeName]) {
+      if (!nodeMap[typeName]) {
+        throw new Error(`Type "${typeName}" not found in document.`);
+      }
+      innerTypeMap[typeName] = makeSchemaDef(nodeMap[typeName]);
     }
-
-    if (!nodeMap[typeName]) {
-      throw new Error(`Type "${typeName}" not found in document.`);
-    }
-
-    const innerTypeDef = makeSchemaDef(nodeMap[typeName]);
-    if (!innerTypeDef) {
-      throw new Error(`Nothing constructed for "${typeName}".`);
-    }
-    innerTypeMap[typeName] = innerTypeDef;
-    return innerTypeDef;
+    return innerTypeMap[typeName];
   }
 
   function makeSchemaDef(def) {
-    if (!def) {
-      throw new Error('def must be defined');
-    }
     switch (def.kind) {
       case Kind.OBJECT_TYPE_DEFINITION:
         return makeTypeDef(def);
@@ -403,9 +393,8 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 
   function makeInterfaceDef(def: InterfaceTypeDefinitionNode) {
-    const typeName = def.name.value;
     return new GraphQLInterfaceType({
-      name: typeName,
+      name: def.name.value,
       description: getDescription(def),
       fields: () => makeFieldDefMap(def),
       astNode: def,
@@ -414,7 +403,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 
   function makeEnumDef(def: EnumTypeDefinitionNode) {
-    const enumType = new GraphQLEnumType({
+    return new GraphQLEnumType({
       name: def.name.value,
       description: getDescription(def),
       values: keyValMap(
@@ -428,8 +417,6 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
       ),
       astNode: def,
     });
-
-    return enumType;
   }
 
   function makeUnionDef(def: UnionTypeDefinitionNode) {

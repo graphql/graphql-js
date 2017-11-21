@@ -1,16 +1,16 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
 import { execute } from './execution/execute';
+import type { ObjMap } from './jsutils/ObjMap';
 import type { Source } from './language/source';
 import type { GraphQLFieldResolver } from './type/definition';
 import type { GraphQLSchema } from './type/schema';
@@ -51,7 +51,7 @@ declare function graphql({|
   source: string | Source,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 |}, ..._: []): Promise<ExecutionResult>;
@@ -61,7 +61,7 @@ declare function graphql(
   source: Source | string,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): Promise<ExecutionResult>;
@@ -75,20 +75,18 @@ export function graphql(
   fieldResolver
 ) {
   // Extract arguments from object args if provided.
-  const args = arguments.length === 1 ? argsOrSchema : undefined;
-  const schema = args ? args.schema : argsOrSchema;
-  return args ?
+  return arguments.length === 1 ?
     graphqlImpl(
-      schema,
-      args.source,
-      args.rootValue,
-      args.contextValue,
-      args.variableValues,
-      args.operationName,
-      args.fieldResolver
+      argsOrSchema.schema,
+      argsOrSchema.source,
+      argsOrSchema.rootValue,
+      argsOrSchema.contextValue,
+      argsOrSchema.variableValues,
+      argsOrSchema.operationName,
+      argsOrSchema.fieldResolver
     ) :
     graphqlImpl(
-      schema,
+      argsOrSchema,
       source,
       rootValue,
       contextValue,

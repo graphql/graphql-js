@@ -1,10 +1,8 @@
 /**
- *  Copyright (c) 2017, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2017-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  *
  * @flow
  */
@@ -53,7 +51,9 @@ export default function eventEmitterAsyncIterator(
     }
   }
 
-  return {
+  /* TODO: Flow doesn't support symbols as keys:
+     https://github.com/facebook/flow/issues/3258 */
+  return ({
     next() {
       return listening ? pullValue() : this.return();
     },
@@ -68,5 +68,5 @@ export default function eventEmitterAsyncIterator(
     [$$asyncIterator]() {
       return this;
     },
-  };
+  }: any);
 }

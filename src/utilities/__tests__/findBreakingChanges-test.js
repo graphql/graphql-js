@@ -1,10 +1,8 @@
 /**
- *  Copyright (c) 2016, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2016-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
 import { expect } from 'chai';
@@ -30,6 +28,7 @@ import {
   findFieldsThatChangedType,
   findRemovedTypes,
   findTypesRemovedFromUnions,
+  findTypesAddedToUnions,
   findTypesThatChangedKind,
   findValuesRemovedFromEnums,
   findValuesAddedToEnums,
@@ -1214,6 +1213,36 @@ describe('findBreakingChanges', () => {
       }
     });
 
+    const interface1 = new GraphQLInterfaceType({
+      name: 'Interface1',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+      resolveType: () => null,
+    });
+
+    const typeThatLosesInterfaceOld = new GraphQLObjectType({
+      name: 'TypeThatGainsInterface1',
+      interfaces: [
+        interface1
+      ],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const typeThaLosesInterfaceNew = new GraphQLObjectType({
+      name: 'TypeThatGainsInterface1',
+      interfaces: [],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
     const oldSchema = new GraphQLSchema({
       query: queryType,
       types: [
@@ -1222,7 +1251,8 @@ describe('findBreakingChanges', () => {
         typeThatHasBreakingFieldChangesOld,
         unionTypeThatLosesATypeOld,
         enumTypeThatLosesAValueOld,
-        argThatChanges
+        argThatChanges,
+        typeThatLosesInterfaceOld
       ]
     });
 
@@ -1234,6 +1264,8 @@ describe('findBreakingChanges', () => {
         unionTypeThatLosesATypeNew,
         enumTypeThatLosesAValueNew,
         argChanged,
+        typeThaLosesInterfaceNew,
+        interface1
       ]
     });
 
@@ -1279,6 +1311,11 @@ describe('findBreakingChanges', () => {
         description: 'ArgThatChanges.field1 arg id has changed ' +
           'type from Int to String',
       },
+      {
+        type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+        description: 'TypeThatGainsInterface1 no longer implements ' +
+        'interface Interface1.',
+      }
     ];
     expect(findBreakingChanges(oldSchema, newSchema)).to.eql(
       expectedBreakingChanges
@@ -1444,6 +1481,60 @@ describe('findDangerousChanges', () => {
       }
     ]);
   });
+  
+  it('should detect if a type was added to a union type', () => {
+    const type1 = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    // logially equivalent to type1; findTypesRemovedFromUnions should not
+    // treat this as different than type1
+    const type1a = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    const type2 = new GraphQLObjectType({
+      name: 'Type2',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+
+    const oldUnionType = new GraphQLUnionType({
+      name: 'UnionType1',
+      types: [ type1 ],
+      resolveType: () => null,
+    });
+    const newUnionType = new GraphQLUnionType({
+      name: 'UnionType1',
+      types: [ type1a, type2 ],
+      resolveType: () => null,
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldUnionType,
+      ]
+    });
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newUnionType,
+      ]
+    });
+
+    expect(findTypesAddedToUnions(oldSchema, newSchema)).to.eql([
+      {
+        type: DangerousChangeType.TYPE_ADDED_TO_UNION,
+        description: 'Type2 was added to union type UnionType1.',
+      },
+    ]);
+  });
 
   it('should find all dangerous changes', () => {
     const enumThatGainsAValueOld = new GraphQLEnumType({
@@ -1475,6 +1566,29 @@ describe('findDangerousChanges', () => {
           },
         },
       },
+    });
+
+    const typeInUnion1 = new GraphQLObjectType({
+      name: 'TypeInUnion1',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    const typeInUnion2 = new GraphQLObjectType({
+      name: 'TypeInUnion2',
+      fields: {
+        field1: { type: GraphQLString },
+      }
+    });
+    const unionTypeThatGainsATypeOld = new GraphQLUnionType({
+      name: 'UnionTypeThatGainsAType',
+      types: [ typeInUnion1 ],
+      resolveType: () => null,
+    });
+    const unionTypeThatGainsATypeNew = new GraphQLUnionType({
+      name: 'UnionTypeThatGainsAType',
+      types: [ typeInUnion1, typeInUnion2 ],
+      resolveType: () => null,
     });
 
     const newType = new GraphQLObjectType({
@@ -1527,7 +1641,8 @@ describe('findDangerousChanges', () => {
       types: [
         oldType,
         enumThatGainsAValueOld,
-        typeThatGainsInterfaceOld
+        typeThatGainsInterfaceOld,
+        unionTypeThatGainsATypeOld
       ]
     });
 
@@ -1536,7 +1651,8 @@ describe('findDangerousChanges', () => {
       types: [
         newType,
         enumThatGainsAValueNew,
-        typeThaGainsInterfaceNew
+        typeThaGainsInterfaceNew,
+        unionTypeThatGainsATypeNew
       ]
     });
 
@@ -1553,6 +1669,11 @@ describe('findDangerousChanges', () => {
         description: 'Interface1 added to interfaces implemented ' +
         'by TypeThatGainsInterface1.',
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT
+      },
+      {
+        type: DangerousChangeType.TYPE_ADDED_TO_UNION,
+        description: 'TypeInUnion2 was added to union type ' +
+          'UnionTypeThatGainsAType.',
       }
     ];
 

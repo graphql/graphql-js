@@ -1,17 +1,17 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
+import { isCompositeType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
 
 
@@ -44,8 +44,8 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
     InlineFragment(node) {
       const fragType = context.getType();
       const parentType = context.getParentType();
-      if (fragType &&
-          parentType &&
+      if (isCompositeType(fragType) &&
+          isCompositeType(parentType) &&
           !doTypesOverlap(context.getSchema(), fragType, parentType)) {
         context.reportError(new GraphQLError(
           typeIncompatibleAnonSpreadMessage(parentType, fragType),

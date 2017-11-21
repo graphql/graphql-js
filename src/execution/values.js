@@ -1,11 +1,10 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import { createIterator, isCollection } from 'iterall';
@@ -30,6 +29,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
 } from '../type/definition';
+import type { ObjMap } from '../jsutils/ObjMap';
 import type {
   GraphQLInputType,
   GraphQLField
@@ -48,13 +48,17 @@ import type {
  * Prepares an object map of variableValues of the correct type based on the
  * provided variable definitions and arbitrary input. If the input cannot be
  * parsed to match the variable definitions, a GraphQLError will be thrown.
+ *
+ * Note: The returned value is a plain Object with a prototype, since it is
+ * exposed to user code. Care should be taken to not pull values from the
+ * Object prototype.
  */
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: Array<VariableDefinitionNode>,
-  inputs: { [key: string]: mixed }
-): { [key: string]: mixed } {
-  const coercedValues = Object.create(null);
+  inputs: ObjMap<mixed>
+): { [variable: string]: mixed } {
+  const coercedValues = {};
   for (let i = 0; i < varDefNodes.length; i++) {
     const varDefNode = varDefNodes[i];
     const varName = varDefNode.variable.name.value;
@@ -102,18 +106,22 @@ export function getVariableValues(
 /**
  * Prepares an object map of argument values given a list of argument
  * definitions and list of argument AST nodes.
+ *
+ * Note: The returned value is a plain Object with a prototype, since it is
+ * exposed to user code. Care should be taken to not pull values from the
+ * Object prototype.
  */
 export function getArgumentValues(
   def: GraphQLField<*, *> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
-  variableValues?: ?{ [key: string]: mixed }
-): { [key: string]: mixed } {
+  variableValues?: ?ObjMap<mixed>
+): { [argument: string]: mixed } {
+  const coercedValues = {};
   const argDefs = def.args;
   const argNodes = node.arguments;
   if (!argDefs || !argNodes) {
-    return {};
+    return coercedValues;
   }
-  const coercedValues = Object.create(null);
   const argNodeMap = keyMap(argNodes, arg => arg.name.value);
   for (let i = 0; i < argDefs.length; i++) {
     const argDef = argDefs[i];
@@ -133,7 +141,11 @@ export function getArgumentValues(
       }
     } else if (argumentNode.value.kind === Kind.VARIABLE) {
       const variableName = (argumentNode.value: VariableNode).name.value;
-      if (variableValues && !isInvalid(variableValues[variableName])) {
+      if (
+        variableValues &&
+        Object.prototype.hasOwnProperty.call(variableValues, variableName) &&
+        !isInvalid(variableValues[variableName])
+      ) {
         // Note: this does not check that this variable value is correct.
         // This assumes that this query has been validated and the variable
         // usage here is of the correct type.
@@ -171,12 +183,16 @@ export function getArgumentValues(
  * of variable values.
  *
  * If the directive does not exist on the node, returns undefined.
+ *
+ * Note: The returned value is a plain Object with a prototype, since it is
+ * exposed to user code. Care should be taken to not pull values from the
+ * Object prototype.
  */
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: { directives?: ?Array<DirectiveNode> },
-  variableValues?: ?{ [key: string]: mixed }
-): void | { [key: string]: mixed } {
+  variableValues?: ?ObjMap<mixed>
+): void | { [argument: string]: mixed } {
   const directiveNode = node.directives && find(
     node.directives,
     directive => directive.name.value === directiveDef.name
@@ -190,7 +206,7 @@ export function getDirectiveValues(
 /**
  * Given a type and any value, return a runtime value coerced to match the type.
  */
-function coerceValue(type: GraphQLInputType, value: mixed): mixed {
+export function coerceValue(type: GraphQLInputType, value: mixed): mixed {
   // Ensure flow knows that we treat function params as const.
   const _value = value;
 

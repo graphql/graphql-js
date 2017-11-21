@@ -1,10 +1,8 @@
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
 // 80+ char lines are useful in describe/it, so ignore in this file.
@@ -13,6 +11,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../execute';
+import { coerceValue } from '../values';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -590,6 +589,56 @@ describe('Execute: Handles inputs', () => {
           path: [ 'fieldWithNonNullableStringInput' ]
         } ]
       });
+    });
+
+    it('reports error for array passed into string input', async () => {
+      const doc = `
+        query SetsNonNullable($value: String!) {
+          fieldWithNonNullableStringInput(input: $value)
+        }
+      `;
+      const ast = parse(doc);
+      const variables = {value: [ 1, 2, 3 ]};
+
+      expect(
+        await execute(schema, ast, null, null, variables)
+      ).to.deep.equal({
+        errors: [ {
+          message:
+            'Variable "$value" got invalid value [1,2,3].\nExpected type ' +
+            '"String", found [1,2,3]: String cannot represent an array value: [1,2,3]',
+          locations: [ { line: 2, column: 31 } ],
+          path: undefined,
+        } ]
+      });
+    });
+
+    it('coercing an array to GraphQLString throws TypeError', async () => {
+      let caughtError;
+      try {
+        coerceValue(GraphQLString, [ 1, 2, 3 ]);
+      } catch (error) {
+        caughtError = error;
+      }
+
+      expect(caughtError instanceof TypeError).to.equal(true);
+      expect(caughtError && caughtError.message).to.equal(
+        'String cannot represent an array value: [1,2,3]'
+      );
+    });
+
+    it('serializing an array via GraphQLString throws TypeError', async () => {
+      let caughtError;
+      try {
+        GraphQLString.serialize([ 1, 2, 3 ]);
+      } catch (error) {
+        caughtError = error;
+      }
+
+      expect(caughtError instanceof TypeError).to.equal(true);
+      expect(caughtError && caughtError.message).to.equal(
+        'String cannot represent an array value: [1,2,3]'
+      );
     });
 
     it('reports error for non-provided variables for non-nullable inputs', async () => {

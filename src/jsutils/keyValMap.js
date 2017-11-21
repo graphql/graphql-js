@@ -1,12 +1,13 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
+
+import type {ObjMap} from './ObjMap';
 
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
@@ -26,10 +27,10 @@
  *
  */
 export default function keyValMap<T, V>(
-  list: Array<T>,
+  list: $ReadOnlyArray<T>,
   keyFn: (item: T) => string,
   valFn: (item: T) => V
-): {[key: string]: V} {
+): ObjMap<V> {
   return list.reduce(
     (map, item) => ((map[keyFn(item)] = valFn(item)), map),
     Object.create(null)

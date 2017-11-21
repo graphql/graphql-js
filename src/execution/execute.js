@@ -1,18 +1,18 @@
-/* @flow */
 /**
- *  Copyright (c) 2015, Facebook, Inc.
- *  All rights reserved.
+ * Copyright (c) 2015-present, Facebook, Inc.
  *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
 import { forEach, isCollection } from 'iterall';
-
 import { GraphQLError, locatedError } from '../error';
 import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
+import type {ObjMap} from '../jsutils/ObjMap';
+
 import { typeFromAST } from '../utilities/typeFromAST';
 import * as Kind from '../language/kinds';
 import {
@@ -85,11 +85,11 @@ import type {
  */
 export type ExecutionContext = {
   schema: GraphQLSchema;
-  fragments: {[key: string]: FragmentDefinitionNode};
+  fragments: ObjMap<FragmentDefinitionNode>;
   rootValue: mixed;
   contextValue: mixed;
   operation: OperationDefinitionNode;
-  variableValues: {[key: string]: mixed};
+  variableValues: {[variable: string]: mixed},
   fieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
 };
@@ -102,8 +102,18 @@ export type ExecutionContext = {
  */
 export type ExecutionResult = {
   errors?: Array<GraphQLError>;
-  data?: ?{[key: string]: mixed};
+  data?: ObjMap<mixed>;
 };
+
+export type ExecutionArgs = {|
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{[variable: string]: mixed},
+  operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>
+|};
 
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.
@@ -115,22 +125,17 @@ export type ExecutionResult = {
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-declare function execute({|
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
-  operationName?: ?string,
-  fieldResolver?: ?GraphQLFieldResolver<any, any>
-|}, ..._: []): Promise<ExecutionResult>;
+declare function execute(
+  ExecutionArgs,
+  ..._: []
+): Promise<ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function execute(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
+  variableValues?: ?{[variable: string]: mixed},
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>
 ): Promise<ExecutionResult>;
@@ -144,20 +149,18 @@ export function execute(
   fieldResolver
 ) {
   // Extract arguments from object args if provided.
-  const args = arguments.length === 1 ? argsOrSchema : undefined;
-  const schema = args ? args.schema : argsOrSchema;
-  return args ?
+  return arguments.length === 1 ?
     executeImpl(
-      schema,
-      args.document,
-      args.rootValue,
-      args.contextValue,
-      args.variableValues,
-      args.operationName,
-      args.fieldResolver
+      argsOrSchema.schema,
+      argsOrSchema.document,
+      argsOrSchema.rootValue,
+      argsOrSchema.contextValue,
+      argsOrSchema.variableValues,
+      argsOrSchema.operationName,
+      argsOrSchema.fieldResolver
     ) :
     executeImpl(
-      schema,
+      argsOrSchema,
       document,
       rootValue,
       contextValue,
@@ -246,7 +249,7 @@ export function addPath(prev: ResponsePath, key: string | number) {
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: ?{[key: string]: mixed}
+  rawVariableValues: ?ObjMap<mixed>
 ): void {
   invariant(schema, 'Must provide schema');
   invariant(document, 'Must provide document');
@@ -276,14 +279,13 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: mixed,
   contextValue: mixed,
-  rawVariableValues: ?{[key: string]: mixed},
+  rawVariableValues: ?ObjMap<mixed>,
   operationName: ?string,
   fieldResolver: ?GraphQLFieldResolver<any, any>
 ): ExecutionContext {
   const errors: Array<GraphQLError> = [];
   let operation: ?OperationDefinitionNode;
-  const fragments: {[name: string]: FragmentDefinitionNode} =
-    Object.create(null);
+  const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   document.definitions.forEach(definition => {
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
@@ -338,7 +340,7 @@ function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: mixed
-): ?{[key: string]: mixed} {
+): ?(Promise<?ObjMap<mixed>> | ObjMap<mixed>) {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
@@ -418,8 +420,8 @@ function executeFieldsSerially(
   parentType: GraphQLObjectType,
   sourceValue: mixed,
   path: ResponsePath,
-  fields: {[key: string]: Array<FieldNode>}
-): Promise<{[key: string]: mixed}> {
+  fields: ObjMap<Array<FieldNode>>,
+): Promise<ObjMap<mixed>> {
   return Object.keys(fields).reduce(
     (prevPromise, responseName) => prevPromise.then(results => {
       const fieldNodes = fields[responseName];
@@ -457,8 +459,8 @@ function executeFields(
   parentType: GraphQLObjectType,
   sourceValue: mixed,
   path: ResponsePath,
-  fields: {[key: string]: Array<FieldNode>}
-): {[key: string]: mixed} {
+  fields: ObjMap<Array<FieldNode>>,
+): Promise<ObjMap<mixed>> | ObjMap<mixed> {
   let containsPromise = false;
 
   const finalResults = Object.keys(fields).reduce(
@@ -508,9 +510,9 @@ export function collectFields(
   exeContext: ExecutionContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: {[key: string]: Array<FieldNode>},
-  visitedFragmentNames: {[key: string]: boolean}
-): {[key: string]: Array<FieldNode>} {
+  fields: ObjMap<Array<FieldNode>>,
+  visitedFragmentNames: ObjMap<boolean>,
+): ObjMap<Array<FieldNode>> {
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
     switch (selection.kind) {
@@ -613,15 +615,13 @@ function doesFragmentConditionMatch(
 }
 
 /**
- * This function transforms a JS object `{[key: string]: Promise<T>}` into
- * a `Promise<{[key: string]: T}>`
+ * This function transforms a JS object `ObjMap<Promise<T>>` into
+ * a `Promise<ObjMap<T>>`
  *
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
-function promiseForObject<T>(
-  object: {[key: string]: Promise<T>}
-): Promise<{[key: string]: T}> {
+function promiseForObject<T>(object: ObjMap<Promise<T>>): Promise<ObjMap<T>> {
   const keys = Object.keys(object);
   const valuesAndPromises = keys.map(name => object[name]);
   return Promise.all(valuesAndPromises).then(
