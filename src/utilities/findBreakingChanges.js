@@ -44,7 +44,7 @@ export const BreakingChangeType = {
 export const DangerousChangeType = {
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
-  INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT'
+  INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT',
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
 };
 
@@ -88,8 +88,8 @@ export function findDangerousChanges(
   return [
     ...findArgChanges(oldSchema, newSchema).dangerousChanges,
     ...findValuesAddedToEnums(oldSchema, newSchema),
-    ...findInterfacesAddedToObjectTypes(oldSchema, newSchema)
-    ...findTypesAddedToUnions(oldSchema, newSchema)
+    ...findInterfacesAddedToObjectTypes(oldSchema, newSchema),
+    ...findTypesAddedToUnions(oldSchema, newSchema),
   ];
 }
 
