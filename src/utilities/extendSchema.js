@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2015-present, Facebook, Inc.
  *
  * This source code is licensed under the MIT license found in the
@@ -82,6 +82,9 @@ import type {
   DirectiveDefinitionNode,
 } from '../language/ast';
 
+export type ExtendOptions = {
+  resolveConflict: <T: *>(T, T) => T
+};
 
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -97,7 +100,8 @@ import type {
  */
 export function extendSchema(
   schema: GraphQLSchema,
-  documentAST: DocumentNode
+  documentAST: DocumentNode,
+  { resolveConflict }: ExtendOptions = {}
 ): GraphQLSchema {
   invariant(
     schema instanceof GraphQLSchema,
@@ -418,19 +422,24 @@ export function extendSchema(
       extensions.forEach(extension => {
         extension.definition.fields.forEach(field => {
           const fieldName = field.name.value;
+          let result = field;
           if (oldFieldMap[fieldName]) {
-            throw new GraphQLError(
-              `Field "${type.name}.${fieldName}" already exists in the ` +
-              'schema. It cannot also be defined in this type extension.',
-              [ field ]
-            );
+            if (resolveConflict) {
+              result = resolveConflict(oldFieldMap[fieldName].astNode, field);
+            } else {
+              throw new GraphQLError(
+                `Field "${type.name}.${fieldName}" already exists in the ` +
+                'schema. It cannot also be defined in this type extension.',
+                [ field ]
+              );
+            }
           }
           newFieldMap[fieldName] = {
-            description: getDescription(field),
-            type: buildOutputFieldType(field.type),
-            args: buildInputValues(field.arguments),
-            deprecationReason: getDeprecationReason(field),
-            astNode: field,
+            description: getDescription(result),
+            type: buildOutputFieldType(result.type),
+            args: buildInputValues(result.arguments),
+            deprecationReason: getDeprecationReason(result),
+            astNode: result,
           };
         });
       });
