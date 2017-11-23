@@ -270,6 +270,56 @@ describe('Parser', () => {
     );
   });
 
+  it('creates ast from nameless query without variables', () => {
+
+    const source = new Source(`query {
+  node {
+    id
+  }
+}
+`);
+    const result = parse(source);
+
+    expect(result).to.containSubset(
+      { kind: Kind.DOCUMENT,
+        loc: { start: 0, end: 30 },
+        definitions:
+        [ { kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 29 },
+          operation: 'query',
+          name: null,
+          variableDefinitions: null,
+          directives: [],
+          selectionSet:
+          { kind: Kind.SELECTION_SET,
+            loc: { start: 6, end: 29 },
+            selections:
+            [ { kind: Kind.FIELD,
+              loc: { start: 10, end: 27 },
+              alias: null,
+              name:
+              { kind: Kind.NAME,
+                loc: { start: 10, end: 14 },
+                value: 'node' },
+              arguments: [],
+              directives: [],
+              selectionSet:
+              { kind: Kind.SELECTION_SET,
+                loc: { start: 15, end: 27 },
+                selections:
+                [ { kind: Kind.FIELD,
+                  loc: { start: 21, end: 23 },
+                  alias: null,
+                  name:
+                  { kind: Kind.NAME,
+                    loc: { start: 21, end: 23 },
+                    value: 'id' },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null } ] } } ] } } ] }
+    );
+  });
+
   it('allows parsing without source location information', () => {
     const source = new Source('{ id }');
     const result = parse(source, { noLocation: true });
