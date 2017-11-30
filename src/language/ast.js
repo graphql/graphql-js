@@ -66,6 +66,7 @@ type TokenKind = '<SOF>'
                | 'Int'
                | 'Float'
                | 'String'
+               | 'BlockString'
                | 'Comment';
 
 /**
@@ -288,6 +289,7 @@ export type StringValueNode = {
   kind: 'StringValue';
   loc?: Location;
   value: string;
+  block?: boolean;
 };
 
 export type BooleanValueNode = {

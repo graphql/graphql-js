@@ -326,6 +326,22 @@ describe('Parser', () => {
       });
     });
 
+    it('parses block strings', () => {
+      expect(parseValue('["""long""" "short"]')).to.containSubset({
+        kind: Kind.LIST,
+        loc: { start: 0, end: 20 },
+        values: [
+          { kind: Kind.STRING,
+            loc: { start: 1, end: 11},
+            value: 'long',
+            block: true },
+          { kind: Kind.STRING,
+            loc: { start: 12, end: 19},
+            value: 'short',
+            block: false } ]
+      });
+    });
+
   });
 
   describe('parseType', () => {

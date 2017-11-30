@@ -127,7 +127,9 @@ describe('Printer', () => {
       }
 
       fragment frag on Friend {
-        foo(size: $size, bar: $b, obj: {key: "value"})
+        foo(size: $size, bar: $b, obj: {key: "value", block: """
+        block string uses \"""
+        """})
       }
 
       {
