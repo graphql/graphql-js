@@ -218,7 +218,7 @@ describe('Parser', () => {
           loc: { start: 0, end: 40 },
           operation: 'query',
           name: null,
-          variableDefinitions: null,
+          variableDefinitions: [],
           directives: [],
           selectionSet:
           { kind: Kind.SELECTION_SET,
@@ -288,7 +288,7 @@ describe('Parser', () => {
           loc: { start: 0, end: 29 },
           operation: 'query',
           name: null,
-          variableDefinitions: null,
+          variableDefinitions: [],
           directives: [],
           selectionSet:
           { kind: Kind.SELECTION_SET,
