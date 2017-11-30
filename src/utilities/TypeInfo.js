@@ -149,7 +149,7 @@ export class TypeInfo {
         const typeConditionAST = node.typeCondition;
         const outputType = typeConditionAST ?
           typeFromAST(schema, typeConditionAST) :
-          this.getType();
+          getNamedType(this.getType());
         this._typeStack.push(
           isOutputType(outputType) ? outputType : undefined
         );

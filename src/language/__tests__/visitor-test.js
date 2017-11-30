@@ -1070,7 +1070,9 @@ describe('Visitor', () => {
 
       const typeInfo = new TypeInfo(testSchema);
 
-      const ast = parse('{ human(id: 4) { name, pets { name }, unknown } }');
+      const ast = parse(
+        '{ human(id: 4) { name, pets { ... { name } }, unknown } }'
+      );
       visit(ast, visitWithTypeInfo(typeInfo, {
         enter(node) {
           const parentType = typeInfo.getParentType();
@@ -1122,10 +1124,14 @@ describe('Visitor', () => {
         [ 'enter', 'Name', 'pets', 'Human', '[Pet]', null ],
         [ 'leave', 'Name', 'pets', 'Human', '[Pet]', null ],
         [ 'enter', 'SelectionSet', null, 'Pet', '[Pet]', null ],
+        [ 'enter', 'InlineFragment', null, 'Pet', 'Pet', null ],
+        [ 'enter', 'SelectionSet', null, 'Pet', 'Pet', null ],
         [ 'enter', 'Field', null, 'Pet', 'String', null ],
         [ 'enter', 'Name', 'name', 'Pet', 'String', null ],
         [ 'leave', 'Name', 'name', 'Pet', 'String', null ],
         [ 'leave', 'Field', null, 'Pet', 'String', null ],
+        [ 'leave', 'SelectionSet', null, 'Pet', 'Pet', null ],
+        [ 'leave', 'InlineFragment', null, 'Pet', 'Pet', null ],
         [ 'leave', 'SelectionSet', null, 'Pet', '[Pet]', null ],
         [ 'leave', 'Field', null, 'Human', '[Pet]', null ],
         [ 'enter', 'Field', null, 'Human', null, null ],
