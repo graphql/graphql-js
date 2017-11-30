@@ -275,17 +275,16 @@ function parseOperationDefinition(lexer: Lexer<*>): OperationDefinitionNode {
       kind: OPERATION_DEFINITION,
       operation: 'query',
       name: null,
-      variableDefinitions: null,
+      variableDefinitions: [],
       directives: [],
       selectionSet: parseSelectionSet(lexer),
       loc: loc(lexer, start)
     };
   }
   const operation = parseOperationType(lexer);
-  let name = null;
-  if (peek(lexer, TokenKind.NAME)) {
-    name = parseName(lexer);
-  }
+  const name = peek(lexer, TokenKind.NAME) ?
+    parseName(lexer) :
+    null;
   return {
     kind: OPERATION_DEFINITION,
     operation,
@@ -317,7 +316,7 @@ function parseOperationType(lexer: Lexer<*>): OperationTypeNode {
  */
 function parseVariableDefinitions(
   lexer: Lexer<*>
-): ?Array<VariableDefinitionNode> {
+): Array<VariableDefinitionNode> {
   return peek(lexer, TokenKind.PAREN_L) ?
     many(
       lexer,
@@ -325,7 +324,7 @@ function parseVariableDefinitions(
       parseVariableDefinition,
       TokenKind.PAREN_R
     ) :
-    null;
+    [];
 }
 
 /**
