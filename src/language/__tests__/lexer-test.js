@@ -575,6 +575,13 @@ describe('Lexer', () => {
     );
 
     expect(
+      () => lexOne('1.e1')
+    ).to.throw(
+      'Syntax Error GraphQL request (1:3) Invalid number, ' +
+      'expected digit but got: "e".'
+    );
+
+    expect(
       () => lexOne('.123')
     ).to.throw(
       'Syntax Error GraphQL request (1:1) Cannot parse the unexpected character ".".'
