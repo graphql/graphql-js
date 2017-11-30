@@ -58,7 +58,7 @@ export function isValidJSValue(
   }
 
   // Input objects check each defined field.
-  if (type instanceof GraphQLInputObjectType) {
+  if (type.kind === 'GraphQLInputObjectType') {
     if (typeof value !== 'object' || value === null) {
       return [ `Expected "${type.name}", found not an object.` ];
     }
@@ -86,7 +86,7 @@ export function isValidJSValue(
   }
 
   invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
+    type.kind === 'GraphQLScalarType' || type.kind === 'GraphQLEnumType',
     'Must be input type'
   );
 

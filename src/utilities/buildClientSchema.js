@@ -134,7 +134,7 @@ export function buildClientSchema(
       }
       const nullableType = getType(nullableRef);
       invariant(
-        !(nullableType instanceof GraphQLNonNull),
+        nullableType.kind !== 'GraphQLNonNull',
         'No nesting nonnull.'
       );
       return new GraphQLNonNull(nullableType);
@@ -187,7 +187,7 @@ export function buildClientSchema(
   ): GraphQLObjectType {
     const type = getType(typeRef);
     invariant(
-      type instanceof GraphQLObjectType,
+      type.kind === 'GraphQLObjectType',
       'Introspection must provide object type for possibleTypes.'
     );
     return type;
@@ -198,7 +198,7 @@ export function buildClientSchema(
   ): GraphQLInterfaceType {
     const type = getType(typeRef);
     invariant(
-      type instanceof GraphQLInterfaceType,
+      type.kind === 'GraphQLInterfaceType',
       'Introspection must provide interface type for interfaces.'
     );
     return type;

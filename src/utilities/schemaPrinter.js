@@ -136,18 +136,18 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
 }
 
 export function printType(type: GraphQLType): string {
-  if (type instanceof GraphQLScalarType) {
+  if (type.kind === 'GraphQLScalarType') {
     return printScalar(type);
-  } else if (type instanceof GraphQLObjectType) {
+  } else if (type.kind === 'GraphQLObjectType') {
     return printObject(type);
-  } else if (type instanceof GraphQLInterfaceType) {
+  } else if (type.kind === 'GraphQLInterfaceType') {
     return printInterface(type);
-  } else if (type instanceof GraphQLUnionType) {
+  } else if (type.kind === 'GraphQLUnionType') {
     return printUnion(type);
-  } else if (type instanceof GraphQLEnumType) {
+  } else if (type.kind === 'GraphQLEnumType') {
     return printEnum(type);
   }
-  invariant(type instanceof GraphQLInputObjectType);
+  invariant(type.kind === 'GraphQLInputObjectType');
   return printInputObject(type);
 }
 

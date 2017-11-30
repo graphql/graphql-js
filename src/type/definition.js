@@ -304,6 +304,7 @@ function resolveThunk<T>(thunk: Thunk<T>): T {
  *
  */
 export class GraphQLScalarType {
+  kind: 'GraphQLScalarType';
   name: string;
   description: ?string;
   astNode: ?ScalarTypeDefinitionNode;
@@ -424,6 +425,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
  *
  */
 export class GraphQLObjectType {
+  kind: 'GraphQLObjectType';
   name: string;
   description: ?string;
   astNode: ?ObjectTypeDefinitionNode;
@@ -711,6 +713,7 @@ export type GraphQLFieldMap<TSource, TContext> =
  *
  */
 export class GraphQLInterfaceType {
+  kind: 'GraphQLInterfaceType';
   name: string;
   description: ?string;
   astNode: ?InterfaceTypeDefinitionNode;
@@ -791,6 +794,7 @@ export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
  *
  */
 export class GraphQLUnionType {
+  kind: 'GraphQLUnionType';
   name: string;
   description: ?string;
   astNode: ?UnionTypeDefinitionNode;
@@ -907,6 +911,7 @@ export type GraphQLUnionTypeConfig<TSource, TContext> = {
  * will be used as its internal value.
  */
 export class GraphQLEnumType/* <T> */ {
+  kind: 'GraphQLEnumType';
   name: string;
   description: ?string;
   astNode: ?EnumTypeDefinitionNode;
@@ -1093,6 +1098,7 @@ export type GraphQLEnumValue/* <T> */ = {
  *
  */
 export class GraphQLInputObjectType {
+  kind: 'GraphQLInputObjectType';
   name: string;
   description: ?string;
   astNode: ?InputObjectTypeDefinitionNode;
@@ -1209,6 +1215,7 @@ export type GraphQLInputFieldMap =
  *
  */
 export class GraphQLList<T: GraphQLType> {
+  kind: 'GraphQLList';
   ofType: T;
 
   constructor(type: T): void {
@@ -1254,6 +1261,7 @@ GraphQLList.prototype.toJSON =
  * Note: the enforcement of non-nullability occurs within the executor.
  */
 export class GraphQLNonNull<T: GraphQLNullableType> {
+  kind: 'GraphQLNonNull';
   ofType: T;
 
   constructor(type: T): void {

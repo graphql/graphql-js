@@ -84,7 +84,7 @@ export function isTypeSubTypeOf(
   // If superType type is an abstract type, maybeSubType type may be a currently
   // possible object type.
   if (isAbstractType(superType) &&
-      maybeSubType instanceof GraphQLObjectType &&
+      maybeSubType.kind === 'GraphQLObjectType' &&
       schema.isPossibleType(superType, maybeSubType)) {
     return true;
   }

@@ -114,7 +114,7 @@ export function valueFromAST(
     return [ coercedValue ];
   }
 
-  if (type instanceof GraphQLInputObjectType) {
+  if (type.kind === 'GraphQLInputObjectType') {
     if (valueNode.kind !== Kind.OBJECT) {
       return; // Invalid: intentionally return no value.
     }
@@ -147,7 +147,7 @@ export function valueFromAST(
   }
 
   invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
+    type.kind === 'GraphQLScalarType' || type.kind === 'GraphQLEnumType',
     'Must be input type'
   );
 
