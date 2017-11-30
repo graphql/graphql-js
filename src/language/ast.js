@@ -187,7 +187,6 @@ export type OperationDefinitionNode = {
   selectionSet: SelectionSetNode;
 };
 
-// Note: subscription is an experimental non-spec addition.
 export type OperationTypeNode = 'query' | 'mutation' | 'subscription';
 
 export type VariableDefinitionNode = {
