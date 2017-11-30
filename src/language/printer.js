@@ -72,9 +72,9 @@ const printDocASTReducer = {
 
   IntValue: ({ value }) => value,
   FloatValue: ({ value }) => value,
-  StringValue: ({ value, block: isBlockString }) =>
+  StringValue: ({ value, block: isBlockString }, key) =>
     isBlockString ?
-      printBlockString(value) :
+      printBlockString(value, key === 'description') :
       JSON.stringify(value),
   BooleanValue: ({ value }) => JSON.stringify(value),
   NullValue: () => 'null',
@@ -106,71 +106,109 @@ const printDocASTReducer = {
   OperationTypeDefinition: ({ operation, type }) =>
     operation + ': ' + type,
 
-  ScalarTypeDefinition: ({ name, directives }) =>
-    join([ 'scalar', name, join(directives, ' ') ], ' '),
-
-  ObjectTypeDefinition: ({ name, interfaces, directives, fields }) =>
+  ScalarTypeDefinition: ({ description, name, directives }) =>
     join([
-      'type',
-      name,
-      wrap('implements ', join(interfaces, ', ')),
-      join(directives, ' '),
-      block(fields)
-    ], ' '),
+      description,
+      join([ 'scalar', name, join(directives, ' ') ], ' ')
+    ], '\n'),
 
-  FieldDefinition: ({ name, arguments: args, type, directives }) =>
-    name +
-    wrap('(', join(args, ', '), ')') +
-    ': ' + type +
-    wrap(' ', join(directives, ' ')),
-
-  InputValueDefinition: ({ name, type, defaultValue, directives }) =>
+  ObjectTypeDefinition: ({
+    description,
+    name,
+    interfaces,
+    directives,
+    fields
+  }) =>
     join([
-      name + ': ' + type,
-      wrap('= ', defaultValue),
-      join(directives, ' ')
-    ], ' '),
+      description,
+      join([
+        'type',
+        name,
+        wrap('implements ', join(interfaces, ', ')),
+        join(directives, ' '),
+        block(fields)
+      ], ' ')
+    ], '\n'),
 
-  InterfaceTypeDefinition: ({ name, directives, fields }) =>
+  FieldDefinition:
+    ({ description, name, arguments: args, type, directives }) =>
+      join([
+        description,
+        name +
+        wrap('(', join(args, ', '), ')') +
+        ': ' + type +
+        wrap(' ', join(directives, ' ')),
+      ], '\n'),
+
+  InputValueDefinition:
+    ({ description, name, type, defaultValue, directives }) =>
+      join([
+        description,
+        join([
+          name + ': ' + type,
+          wrap('= ', defaultValue),
+          join(directives, ' ')
+        ], ' '),
+      ], '\n'),
+
+  InterfaceTypeDefinition: ({ description, name, directives, fields }) =>
     join([
-      'interface',
-      name,
-      join(directives, ' '),
-      block(fields)
-    ], ' '),
+      description,
+      join([
+        'interface',
+        name,
+        join(directives, ' '),
+        block(fields)
+      ], ' '),
+    ], '\n'),
 
-  UnionTypeDefinition: ({ name, directives, types }) =>
+  UnionTypeDefinition: ({ description, name, directives, types }) =>
     join([
-      'union',
-      name,
-      join(directives, ' '),
-      '= ' + join(types, ' | ')
-    ], ' '),
+      description,
+      join([
+        'union',
+        name,
+        join(directives, ' '),
+        '= ' + join(types, ' | ')
+      ], ' '),
+    ], '\n'),
 
-  EnumTypeDefinition: ({ name, directives, values }) =>
+  EnumTypeDefinition: ({ description, name, directives, values }) =>
     join([
-      'enum',
-      name,
-      join(directives, ' '),
-      block(values)
-    ], ' '),
+      description,
+      join([
+        'enum',
+        name,
+        join(directives, ' '),
+        block(values)
+      ], ' '),
+    ], '\n'),
 
-  EnumValueDefinition: ({ name, directives }) =>
-    join([ name, join(directives, ' ') ], ' '),
-
-  InputObjectTypeDefinition: ({ name, directives, fields }) =>
+  EnumValueDefinition: ({ description, name, directives }) =>
     join([
-      'input',
-      name,
-      join(directives, ' '),
-      block(fields)
-    ], ' '),
+      description,
+      join([ name, join(directives, ' ') ], ' '),
+    ], '\n'),
+
+  InputObjectTypeDefinition: ({ description, name, directives, fields }) =>
+    join([
+      description,
+      join([
+        'input',
+        name,
+        join(directives, ' '),
+        block(fields)
+      ], ' '),
+    ], '\n'),
 
   TypeExtensionDefinition: ({ definition }) => `extend ${definition}`,
 
-  DirectiveDefinition: ({ name, arguments: args, locations }) =>
-    'directive @' + name + wrap('(', join(args, ', '), ')') +
-    ' on ' + join(locations, ' | '),
+  DirectiveDefinition: ({ description, name, arguments: args, locations }) =>
+    join([
+      description,
+      'directive @' + name + wrap('(', join(args, ', '), ')') +
+      ' on ' + join(locations, ' | '),
+    ], '\n'),
 };
 
 /**
@@ -210,8 +248,10 @@ function indent(maybeString) {
  * trailing blank line. However, if a block string starts with whitespace and is
  * a single-line, adding a leading blank line would strip that whitespace.
  */
-function printBlockString(value) {
+function printBlockString(value, isDescription) {
   return (value[0] === ' ' || value[0] === '\t') && value.indexOf('\n') === -1 ?
     `"""${value.replace(/"""/g, '\\"""')}"""` :
-    indent('"""\n' + value.replace(/"""/g, '\\"""')) + '\n"""';
+    isDescription ?
+      '"""\n' + value.replace(/"""/g, '\\"""') + '\n"""' :
+      indent('"""\n' + value.replace(/"""/g, '\\"""')) + '\n"""';
 }

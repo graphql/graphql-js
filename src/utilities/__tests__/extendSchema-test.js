@@ -135,7 +135,7 @@ describe('extendSchema', () => {
   it('can describe the extended fields', async () => {
     const ast = parse(`
       extend type Query {
-        # New field description.
+        "New field description."
         newField: String
       }
     `);
@@ -144,6 +144,39 @@ describe('extendSchema', () => {
     expect(
       extendedSchema.getType('Query').getFields().newField.description
     ).to.equal('New field description.');
+  });
+
+  it('can describe the extended fields with legacy comments', async () => {
+    const ast = parse(`
+      extend type Query {
+        # New field description.
+        newField: String
+      }
+    `);
+    const extendedSchema = extendSchema(testSchema, ast, {
+      commentDescriptions: true
+    });
+
+    expect(
+      extendedSchema.getType('Query').getFields().newField.description
+    ).to.equal('New field description.');
+  });
+
+  it('describes extended fields with strings when present', async () => {
+    const ast = parse(`
+      extend type Query {
+        # New field description.
+        "Actually use this description."
+        newField: String
+      }
+    `);
+    const extendedSchema = extendSchema(testSchema, ast, {
+      commentDescriptions: true
+    });
+
+    expect(
+      extendedSchema.getType('Query').getFields().newField.description
+    ).to.equal('Actually use this description.');
   });
 
   it('extends objects by adding new fields', () => {
@@ -836,11 +869,26 @@ describe('extendSchema', () => {
 
   it('sets correct description when extending with a new directive', () => {
     const ast = parse(`
-      # new directive
+      """
+      new directive
+      """
       directive @new on QUERY
     `);
 
     const extendedSchema = extendSchema(testSchema, ast);
+    const newDirective = extendedSchema.getDirective('new');
+    expect(newDirective.description).to.equal('new directive');
+  });
+
+  it('sets correct description using legacy comments', () => {
+    const ast = parse(`
+      # new directive
+      directive @new on QUERY
+    `);
+
+    const extendedSchema = extendSchema(testSchema, ast, {
+      commentDescriptions: true
+    });
     const newDirective = extendedSchema.getDirective('new');
     expect(newDirective.description).to.equal('new directive');
   });
