@@ -22,7 +22,7 @@ export function locatedError(
 ): GraphQLError {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
-  if (originalError && originalError.path) {
+  if (originalError && Array.isArray(originalError.path)) {
     return (originalError: any);
   }
 
