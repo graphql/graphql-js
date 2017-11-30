@@ -74,7 +74,7 @@ const printDocASTReducer = {
   FloatValue: ({ value }) => value,
   StringValue: ({ value, block: isBlockString }) =>
     isBlockString ?
-      `"""\n${value.replace(/"""/g, '\\"""')}\n"""` :
+      printBlockString(value) :
       JSON.stringify(value),
   BooleanValue: ({ value }) => JSON.stringify(value),
   NullValue: () => 'null',
@@ -203,4 +203,15 @@ function wrap(start, maybeString, end) {
 
 function indent(maybeString) {
   return maybeString && maybeString.replace(/\n/g, '\n  ');
+}
+
+/**
+ * Print a block string in the indented block form by adding a leading and
+ * trailing blank line. However, if a block string starts with whitespace and is
+ * a single-line, adding a leading blank line would strip that whitespace.
+ */
+function printBlockString(value) {
+  return (value[0] === ' ' || value[0] === '\t') && value.indexOf('\n') === -1 ?
+    `"""${value.replace(/"""/g, '\\"""')}"""` :
+    indent('"""\n' + value.replace(/"""/g, '\\"""')) + '\n"""';
 }

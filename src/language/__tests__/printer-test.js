@@ -71,6 +71,37 @@ describe('Printer', () => {
     `);
   });
 
+  it('correctly prints single-line block strings with leading space', () => {
+    const mutationAstWithArtifacts = parse(
+      '{ field(arg: """    space-led value""") }'
+    );
+    expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+      {
+        field(arg: """    space-led value""")
+      }
+    `);
+  });
+
+  it('correctly prints block strings with a first line indentation', () => {
+    const mutationAstWithArtifacts = parse(`
+      {
+        field(arg: """
+              first
+            line
+          indentation
+        """)
+      }
+    `);
+    expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+      {
+        field(arg: """
+              first
+            line
+          indentation
+        """)
+      }
+    `);
+  });
 
   const kitchenSink = readFileSync(
     join(__dirname, '/kitchen-sink.graphql'),
@@ -128,7 +159,7 @@ describe('Printer', () => {
 
       fragment frag on Friend {
         foo(size: $size, bar: $b, obj: {key: "value", block: """
-        block string uses \"""
+          block string uses \"""
         """})
       }
 
