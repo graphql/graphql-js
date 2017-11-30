@@ -326,7 +326,7 @@ describe('Parser', () => {
       });
     });
 
-    it('parses multi-line strings', () => {
+    it('parses block strings', () => {
       expect(parseValue('["""long""" "short"]')).to.containSubset({
         kind: Kind.LIST,
         loc: { start: 0, end: 20 },
@@ -334,11 +334,11 @@ describe('Parser', () => {
           { kind: Kind.STRING,
             loc: { start: 1, end: 11},
             value: 'long',
-            multiLine: true },
+            block: true },
           { kind: Kind.STRING,
             loc: { start: 12, end: 19},
             value: 'short',
-            multiLine: false } ]
+            block: false } ]
       });
     });
 

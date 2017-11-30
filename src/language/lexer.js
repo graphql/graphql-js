@@ -10,7 +10,7 @@
 import type { Token } from './ast';
 import type { Source } from './source';
 import { syntaxError } from '../error';
-import removeIndentation from '../jsutils/removeIndentation';
+import blockStringValue from './blockStringValue';
 
 /**
  * Given a Source object, this returns a Lexer for that source.
@@ -101,7 +101,7 @@ const NAME = 'Name';
 const INT = 'Int';
 const FLOAT = 'Float';
 const STRING = 'String';
-const MULTI_LINE_STRING = 'MultiLineString';
+const BLOCK_STRING = 'BlockString';
 const COMMENT = 'Comment';
 
 /**
@@ -128,7 +128,7 @@ export const TokenKind = {
   INT,
   FLOAT,
   STRING,
-  MULTI_LINE_STRING,
+  BLOCK_STRING,
   COMMENT
 };
 
@@ -275,7 +275,7 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     case 34:
       if (charCodeAt.call(body, position + 1) === 34 &&
           charCodeAt.call(body, position + 2) === 34) {
-        return readMultiLineString(source, position, line, col, prev);
+        return readBlockString(source, position, line, col, prev);
       }
       return readString(source, position, line, col, prev);
   }
@@ -524,11 +524,11 @@ function readString(source, start, line, col, prev): Token {
 }
 
 /**
- * Reads a multi-line string token from the source file.
+ * Reads a block string token from the source file.
  *
  * """("?"?(\\"""|\\(?!=""")|[^"\\]))*"""
  */
-function readMultiLineString(source, start, line, col, prev): Token {
+function readBlockString(source, start, line, col, prev): Token {
   const body = source.body;
   let position = start + 3;
   let chunkStart = position;
@@ -547,13 +547,13 @@ function readMultiLineString(source, start, line, col, prev): Token {
     ) {
       rawValue += slice.call(body, chunkStart, position);
       return new Tok(
-        MULTI_LINE_STRING,
+        BLOCK_STRING,
         start,
         position + 3,
         line,
         col,
         prev,
-        removeIndentation(rawValue)
+        blockStringValue(rawValue)
       );
     }
 

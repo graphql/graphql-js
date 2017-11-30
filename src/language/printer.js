@@ -72,8 +72,10 @@ const printDocASTReducer = {
 
   IntValue: ({ value }) => value,
   FloatValue: ({ value }) => value,
-  StringValue: ({ value, multiLine }) =>
-    multiLine ? printMultiLineString(value) : JSON.stringify(value),
+  StringValue: ({ value, block: isBlockString }) =>
+    isBlockString ?
+      `"""\n${value.replace(/"""/g, '\\"""')}\n"""` :
+      JSON.stringify(value),
   BooleanValue: ({ value }) => JSON.stringify(value),
   NullValue: () => 'null',
   EnumValue: ({ value }) => value,
@@ -201,19 +203,4 @@ function wrap(start, maybeString, end) {
 
 function indent(maybeString) {
   return maybeString && maybeString.replace(/\n/g, '\n  ');
-}
-
-function printMultiLineString(value) {
-  const hasLineBreak = value.indexOf('\n') !== -1;
-  const hasLeadingSpace = value[0] === ' ' || value[0] === '\t';
-  let printed = '"""';
-  if (hasLineBreak && !hasLeadingSpace) {
-    printed += '\n';
-  }
-  printed += value.replace(/"""/g, '\\"""');
-  if (hasLineBreak) {
-    printed += '\n';
-  }
-  printed += '"""';
-  return printed;
 }

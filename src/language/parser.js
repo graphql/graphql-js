@@ -543,12 +543,12 @@ function parseValueLiteral(lexer: Lexer<*>, isConst: boolean): ValueNode {
         loc: loc(lexer, token)
       };
     case TokenKind.STRING:
-    case TokenKind.MULTI_LINE_STRING:
+    case TokenKind.BLOCK_STRING:
       lexer.advance();
       return {
         kind: (STRING: 'StringValue'),
         value: ((token.value: any): string),
-        multiLine: token.kind === TokenKind.MULTI_LINE_STRING,
+        block: token.kind === TokenKind.BLOCK_STRING,
         loc: loc(lexer, token)
       };
     case TokenKind.NAME:

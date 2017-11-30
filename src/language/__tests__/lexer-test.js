@@ -289,12 +289,12 @@ describe('Lexer', () => {
     );
   });
 
-  it('lexes multi-line strings', () => {
+  it('lexes block strings', () => {
 
     expect(
       lexOne('"""simple"""')
     ).to.containSubset({
-      kind: TokenKind.MULTI_LINE_STRING,
+      kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 12,
       value: 'simple'
@@ -312,7 +312,7 @@ describe('Lexer', () => {
     expect(
       lexOne('"""contains " quote"""')
     ).to.containSubset({
-      kind: TokenKind.MULTI_LINE_STRING,
+      kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 22,
       value: 'contains " quote'
@@ -321,7 +321,7 @@ describe('Lexer', () => {
     expect(
       lexOne('"""contains \\""" triplequote"""')
     ).to.containSubset({
-      kind: TokenKind.MULTI_LINE_STRING,
+      kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 31,
       value: 'contains """ triplequote'
@@ -330,7 +330,7 @@ describe('Lexer', () => {
     expect(
       lexOne('"""multi\nline"""')
     ).to.containSubset({
-      kind: TokenKind.MULTI_LINE_STRING,
+      kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 16,
       value: 'multi\nline'
@@ -339,7 +339,7 @@ describe('Lexer', () => {
     expect(
       lexOne('"""multi\rline\r\nnormalized"""')
     ).to.containSubset({
-      kind: TokenKind.MULTI_LINE_STRING,
+      kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 28,
       value: 'multi\nline\nnormalized'
@@ -348,7 +348,7 @@ describe('Lexer', () => {
     expect(
       lexOne('"""unescaped \\n\\r\\b\\t\\f\\u1234"""')
     ).to.containSubset({
-      kind: TokenKind.MULTI_LINE_STRING,
+      kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 32,
       value: 'unescaped \\n\\r\\b\\t\\f\\u1234'
@@ -357,7 +357,7 @@ describe('Lexer', () => {
     expect(
       lexOne('"""slashes \\\\ \\/"""')
     ).to.containSubset({
-      kind: TokenKind.MULTI_LINE_STRING,
+      kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 19,
       value: 'slashes \\\\ \\/'
@@ -372,7 +372,7 @@ describe('Lexer', () => {
 
         """`)
     ).to.containSubset({
-      kind: TokenKind.MULTI_LINE_STRING,
+      kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 68,
       value: 'spans\n  multiple\n    lines'
@@ -380,7 +380,7 @@ describe('Lexer', () => {
 
   });
 
-  it('lex reports useful multi-line string errors', () => {
+  it('lex reports useful block string errors', () => {
 
     expect(
       () => lexOne('"""')
