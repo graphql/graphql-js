@@ -154,21 +154,17 @@ extend type Hello {
       kind: 'Document',
       definitions: [
         {
-          kind: 'TypeExtensionDefinition',
-          definition: {
-            kind: 'ObjectTypeDefinition',
-            name: nameNode('Hello', { start: 13, end: 18 }),
-            interfaces: [],
-            directives: [],
-            fields: [
-              fieldNode(
-                nameNode('world', { start: 23, end: 28 }),
-                typeNode('String', { start: 30, end: 36 }),
-                { start: 23, end: 36 }
-              )
-            ],
-            loc: { start: 8, end: 38 },
-          },
+          kind: 'ObjectTypeExtension',
+          name: nameNode('Hello', { start: 13, end: 18 }),
+          interfaces: [],
+          directives: [],
+          fields: [
+            fieldNode(
+              nameNode('world', { start: 23, end: 28 }),
+              typeNode('String', { start: 30, end: 36 }),
+              { start: 23, end: 36 }
+            )
+          ],
           loc: { start: 1, end: 38 },
         }
       ],
@@ -177,13 +173,45 @@ extend type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
+  it('Extension without fields', () => {
+    const body = 'extend type Hello implements Greeting';
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeExtension',
+          name: nameNode('Hello', { start: 12, end: 17 }),
+          interfaces: [ typeNode('Greeting', { start: 29, end: 37 }) ],
+          directives: [],
+          fields: [],
+          loc: { start: 0, end: 37 },
+        }
+      ],
+      loc: { start: 0, end: 37 }
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Extension without anything throws', () => {
+    expect(() => parse(`
+      extend type Hello
+    `)).to.throw('Syntax Error GraphQL request (3:5) Unexpected <EOF>');
+  });
+
   it('Extension do not include descriptions', () => {
     expect(() => parse(`
       "Description"
       extend type Hello {
         world: String
       }
-    `)).to.throw('Syntax Error GraphQL request (2:7)');
+    `)).to.throw('Syntax Error GraphQL request (3:7)');
+
+    expect(() => parse(`
+      extend "Description" type Hello {
+        world: String
+      }
+    `)).to.throw('Syntax Error GraphQL request (2:14)');
   });
 
   it('Simple non-null type', () => {
@@ -219,9 +247,8 @@ type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
-
   it('Simple type inheriting interface', () => {
-    const body = 'type Hello implements World { }';
+    const body = 'type Hello implements World { field: String }';
     const doc = parse(body);
     const expected = {
       kind: 'Document',
@@ -231,17 +258,23 @@ type Hello {
           name: nameNode('Hello', { start: 5, end: 10 }),
           interfaces: [ typeNode('World', { start: 22, end: 27 }) ],
           directives: [],
-          fields: [],
-          loc: { start: 0, end: 31 },
+          fields: [
+            fieldNode(
+              nameNode('field', { start: 30, end: 35 }),
+              typeNode('String', { start: 37, end: 43 }),
+              { start: 30, end: 43 }
+            )
+          ],
+          loc: { start: 0, end: 45 },
         }
       ],
-      loc: { start: 0, end: 31 },
+      loc: { start: 0, end: 45 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Simple type inheriting multiple interfaces', () => {
-    const body = 'type Hello implements Wo, rld { }';
+    const body = 'type Hello implements Wo, rld { field: String }';
     const doc = parse(body);
     const expected = {
       kind: 'Document',
@@ -254,11 +287,17 @@ type Hello {
             typeNode('rld', { start: 26, end: 29 })
           ],
           directives: [],
-          fields: [],
-          loc: { start: 0, end: 33 },
+          fields: [
+            fieldNode(
+              nameNode('field', { start: 32, end: 37 }),
+              typeNode('String', { start: 39, end: 45 }),
+              { start: 32, end: 45 }
+            )
+          ],
+          loc: { start: 0, end: 47 },
         }
       ],
-      loc: { start: 0, end: 33 },
+      loc: { start: 0, end: 47 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -630,6 +669,14 @@ input Hello {
   world(foo: Int): String
 }`;
     expect(() => parse(body)).to.throw('Error');
+  });
+
+  it('Directive with incorrect locations', () => {
+    expect(() => parse(`
+      directive @foo on FIELD | INCORRECT_LOCATION
+    `)).to.throw(
+      'Syntax Error GraphQL request (2:33) Unexpected Name "INCORRECT_LOCATION"'
+    );
   });
 
 });

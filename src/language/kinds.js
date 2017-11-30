@@ -68,7 +68,7 @@ export const INPUT_OBJECT_TYPE_DEFINITION = 'InputObjectTypeDefinition';
 
 // Type Extensions
 
-export const TYPE_EXTENSION_DEFINITION = 'TypeExtensionDefinition';
+export const OBJECT_TYPE_EXTENSION = 'ObjectTypeExtension';
 
 // Directive Definitions
 

@@ -134,6 +134,8 @@ describe('Validate: Known directives', () => {
           myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
         }
 
+        extend type MyObj @onObject
+
         scalar MyScalar @onScalar
 
         interface MyInterface @onInterface {

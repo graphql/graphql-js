@@ -45,9 +45,6 @@ export {
 } from './definition';
 
 export {
-  // "Enum" of Directive Locations
-  DirectiveLocation,
-
   // Directives Definition
   GraphQLDirective,
 
@@ -89,8 +86,6 @@ export {
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from './introspection';
-
-export type { DirectiveLocationEnum } from './directives';
 
 export type {
   GraphQLType,

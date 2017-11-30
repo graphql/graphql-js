@@ -11,7 +11,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import find from '../../jsutils/find';
 import * as Kind from '../../language/kinds';
-import { DirectiveLocation } from '../../type/directives';
+import { DirectiveLocation } from '../../language/directiveLocation';
 
 
 export function unknownDirectiveMessage(directiveName: string): string {
@@ -77,7 +77,8 @@ function getDirectiveLocationForASTPath(ancestors) {
     case Kind.FRAGMENT_DEFINITION: return DirectiveLocation.FRAGMENT_DEFINITION;
     case Kind.SCHEMA_DEFINITION: return DirectiveLocation.SCHEMA;
     case Kind.SCALAR_TYPE_DEFINITION: return DirectiveLocation.SCALAR;
-    case Kind.OBJECT_TYPE_DEFINITION: return DirectiveLocation.OBJECT;
+    case Kind.OBJECT_TYPE_DEFINITION:
+    case Kind.OBJECT_TYPE_EXTENSION: return DirectiveLocation.OBJECT;
     case Kind.FIELD_DEFINITION: return DirectiveLocation.FIELD_DEFINITION;
     case Kind.INTERFACE_TYPE_DEFINITION: return DirectiveLocation.INTERFACE;
     case Kind.UNION_TYPE_DEFINITION: return DirectiveLocation.UNION;

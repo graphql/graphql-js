@@ -153,7 +153,7 @@ export type ASTNode =
   | EnumTypeDefinitionNode
   | EnumValueDefinitionNode
   | InputObjectTypeDefinitionNode
-  | TypeExtensionDefinitionNode
+  | ObjectTypeExtensionNode
   | DirectiveDefinitionNode;
 
 // Name
@@ -363,12 +363,13 @@ export type NonNullTypeNode = {
   type: NamedTypeNode | ListTypeNode;
 };
 
+
 // Type System Definition
 
 export type TypeSystemDefinitionNode =
   | SchemaDefinitionNode
   | TypeDefinitionNode
-  | TypeExtensionDefinitionNode
+  | TypeExtensionNode
   | DirectiveDefinitionNode;
 
 export type SchemaDefinitionNode = {
@@ -384,6 +385,9 @@ export type OperationTypeDefinitionNode = {
   operation: OperationTypeNode;
   type: NamedTypeNode;
 };
+
+
+// Type Definition
 
 export type TypeDefinitionNode =
   | ScalarTypeDefinitionNode
@@ -475,11 +479,23 @@ export type InputObjectTypeDefinitionNode = {
   fields: Array<InputValueDefinitionNode>;
 };
 
-export type TypeExtensionDefinitionNode = {
-  kind: 'TypeExtensionDefinition';
+
+// Type Extensions
+
+export type TypeExtensionNode =
+  | ObjectTypeExtensionNode;
+
+export type ObjectTypeExtensionNode = {
+  kind: 'ObjectTypeExtension';
   loc?: Location;
-  definition: ObjectTypeDefinitionNode;
+  name: NameNode;
+  interfaces?: ?Array<NamedTypeNode>;
+  directives?: ?Array<DirectiveNode>;
+  fields?: ?Array<FieldDefinitionNode>;
 };
+
+
+// Directive Definitions
 
 export type DirectiveDefinitionNode = {
   kind: 'DirectiveDefinition';

@@ -7,6 +7,9 @@
  * @flow
  */
 
+// Spec Section: "Executable Definitions"
+import { ExecutableDefinitions } from './rules/ExecutableDefinitions';
+
 // Spec Section: "Operation Name Uniqueness"
 import { UniqueOperationNames } from './rules/UniqueOperationNames';
 
@@ -98,6 +101,7 @@ import type { ValidationContext } from './index';
  * most clear output when encountering multiple validation errors.
  */
 export const specifiedRules: Array<(context: ValidationContext) => any> = [
+  ExecutableDefinitions,
   UniqueOperationNames,
   LoneAnonymousOperation,
   SingleFieldSubscriptions,

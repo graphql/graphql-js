@@ -7,7 +7,7 @@
  * @flow
  */
 
-import type { DirectiveLocationEnum } from '../type/directives';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 
 export const introspectionQuery = `

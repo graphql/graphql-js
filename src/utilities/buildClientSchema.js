@@ -46,7 +46,9 @@ import {
   GraphQLID
 } from '../type/scalars';
 
-import { DirectiveLocation, GraphQLDirective } from '../type/directives';
+import { GraphQLDirective } from '../type/directives';
+
+import { DirectiveLocation } from '../language/directiveLocation';
 
 import { TypeKind } from '../type/introspection';
 
