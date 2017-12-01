@@ -238,7 +238,7 @@ export function responsePathAsArray(
  * Given a ResponsePath and a key, return a new ResponsePath containing the
  * new key.
  */
-export function addPath(prev: ResponsePath, key: string | number) {
+export function addPath(prev: ResponsePath | void, key: string | number) {
   return { prev, key };
 }
 
@@ -419,7 +419,7 @@ function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  path: ResponsePath,
+  path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
 ): Promise<ObjMap<mixed>> {
   return Object.keys(fields).reduce(
@@ -458,7 +458,7 @@ function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  path: ResponsePath,
+  path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
 ): Promise<ObjMap<mixed>> | ObjMap<mixed> {
   let containsPromise = false;
