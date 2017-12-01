@@ -270,11 +270,12 @@ function printDirective(directive, options) {
 }
 
 function printDeprecated(fieldOrEnumVal) {
-  const reason = fieldOrEnumVal.deprecationReason;
-  if (isNullish(reason)) {
+  if (!fieldOrEnumVal.isDeprecated) {
     return '';
   }
+  const reason = fieldOrEnumVal.deprecationReason;
   if (
+    isNullish(reason) ||
     reason === '' ||
     reason === DEFAULT_DEPRECATION_REASON
   ) {
