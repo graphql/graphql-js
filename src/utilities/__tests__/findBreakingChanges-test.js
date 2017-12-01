@@ -25,7 +25,8 @@ import {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-  findFieldsThatChangedType,
+  findFieldsThatChangedTypeOnObjectOrInterfaceTypes,
+  findFieldsThatChangedTypeOnInputObjectTypes,
   findRemovedTypes,
   findTypesRemovedFromUnions,
   findTypesAddedToUnions,
@@ -260,7 +261,10 @@ describe('findBreakingChanges', () => {
         description: 'Type1.field18 changed type from [[Int!]!] to [[Int!]].',
       },
     ];
-    expect(findFieldsThatChangedType(oldSchema, newSchema)).to.eql(
+    expect(findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
+      oldSchema,
+      newSchema
+    )).to.eql(
       expectedFieldChanges
     );
   });
@@ -437,7 +441,10 @@ describe('findBreakingChanges', () => {
             '[[Int!]!].',
         },
       ];
-      expect(findFieldsThatChangedType(oldSchema, newSchema)).to.eql(
+      expect(findFieldsThatChangedTypeOnInputObjectTypes(
+        oldSchema,
+        newSchema
+      ).breakingChanges).to.eql(
         expectedFieldChanges,
       );
     }
@@ -487,7 +494,10 @@ describe('findBreakingChanges', () => {
           'InputType1 was added.',
       },
     ];
-    expect(findFieldsThatChangedType(oldSchema, newSchema)).to.eql(
+    expect(findFieldsThatChangedTypeOnInputObjectTypes(
+      oldSchema,
+      newSchema
+    ).breakingChanges).to.eql(
       expectedFieldChanges,
     );
   });
@@ -1526,6 +1536,56 @@ describe('findDangerousChanges', () => {
     ]);
   });
 
+  it('should detect if a nullable field was added to an input', () => {
+    const oldInputType = new GraphQLInputObjectType({
+      name: 'InputType1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const newInputType = new GraphQLInputObjectType({
+      name: 'InputType1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+        field2: {
+          type: GraphQLInt,
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldInputType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newInputType,
+      ]
+    });
+
+    const expectedFieldChanges = [
+      {
+        type: DangerousChangeType.NULLABLE_INPUT_FIELD_ADDED,
+        description: 'A nullable field field2 on input type ' +
+          'InputType1 was added.',
+      },
+    ];
+
+    expect(findFieldsThatChangedTypeOnInputObjectTypes(
+      oldSchema,
+      newSchema
+    ).dangerousChanges).to.eql(expectedFieldChanges);
+  });
+
   it('should find all dangerous changes', () => {
     const enumThatGainsAValueOld = new GraphQLEnumType({
       name: 'EnumType1',
@@ -1667,5 +1727,61 @@ describe('findDangerousChanges', () => {
     expect(findDangerousChanges(oldSchema, newSchema)).to.eql(
       expectedDangerousChanges
     );
+  });
+
+  it('should detect if a nullable field argument was added', () => {
+    const oldType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            arg1: {
+              type: GraphQLString,
+            },
+          },
+        },
+      },
+    });
+
+    const newType = new GraphQLObjectType({
+      name: 'Type1',
+      fields: {
+        field1: {
+          type: GraphQLString,
+          args: {
+            arg1: {
+              type: GraphQLString,
+            },
+            arg2: {
+              type: GraphQLString,
+            },
+          },
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        oldType,
+      ]
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [
+        newType,
+      ]
+    });
+
+    expect(
+      findArgChanges(oldSchema, newSchema).dangerousChanges
+    ).to.eql([
+      {
+        type: DangerousChangeType.NULLABLE_ARG_ADDED,
+        description: 'A nullable arg arg2 on Type1.field1 was added',
+      },
+    ]);
   });
 });

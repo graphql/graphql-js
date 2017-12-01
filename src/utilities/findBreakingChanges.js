@@ -46,6 +46,8 @@ export const DangerousChangeType = {
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
   INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT',
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
+  NULLABLE_INPUT_FIELD_ADDED: 'NULLABLE_INPUT_FIELD_ADDED',
+  NULLABLE_ARG_ADDED: 'NULLABLE_ARG_ADDED',
 };
 
 export type BreakingChange = {
@@ -69,7 +71,9 @@ export function findBreakingChanges(
   return [
     ...findRemovedTypes(oldSchema, newSchema),
     ...findTypesThatChangedKind(oldSchema, newSchema),
-    ...findFieldsThatChangedType(oldSchema, newSchema),
+    ...findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema),
+    ...findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema)
+      .breakingChanges,
     ...findTypesRemovedFromUnions(oldSchema, newSchema),
     ...findValuesRemovedFromEnums(oldSchema, newSchema),
     ...findArgChanges(oldSchema, newSchema).breakingChanges,
@@ -90,6 +94,8 @@ export function findDangerousChanges(
     ...findValuesAddedToEnums(oldSchema, newSchema),
     ...findInterfacesAddedToObjectTypes(oldSchema, newSchema),
     ...findTypesAddedToUnions(oldSchema, newSchema),
+    ...findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema)
+      .dangerousChanges
   ];
 }
 
@@ -224,12 +230,20 @@ export function findArgChanges(
         const oldArgDef = oldArgs.find(
           arg => arg.name === newArgDef.name
         );
-        if (!oldArgDef && newArgDef.type instanceof GraphQLNonNull) {
-          breakingChanges.push({
-            type: BreakingChangeType.NON_NULL_ARG_ADDED,
-            description: `A non-null arg ${newArgDef.name} on ` +
-              `${newType.name}.${fieldName} was added`,
-          });
+        if (!oldArgDef) {
+          if (newArgDef.type instanceof GraphQLNonNull) {
+            breakingChanges.push({
+              type: BreakingChangeType.NON_NULL_ARG_ADDED,
+              description: `A non-null arg ${newArgDef.name} on ` +
+                `${newType.name}.${fieldName} was added`,
+            });
+          } else {
+            dangerousChanges.push({
+              type: DangerousChangeType.NULLABLE_ARG_ADDED,
+              description: `A nullable arg ${newArgDef.name} on ` +
+                `${newType.name}.${fieldName} was added`,
+            });
+          }
         }
       });
     });
@@ -263,30 +277,14 @@ function typeKindName(type: GraphQLNamedType): string {
   throw new TypeError('Unknown type ' + type.constructor.name);
 }
 
-/**
- * Given two schemas, returns an Array containing descriptions of any breaking
- * changes in the newSchema related to the fields on a type. This includes if
- * a field has been removed from a type, if a field has changed type, or if
- * a non-null field is added to an input type.
- */
-export function findFieldsThatChangedType(
-  oldSchema: GraphQLSchema,
-  newSchema: GraphQLSchema
-): Array<BreakingChange> {
-  return [
-    ...findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema),
-    ...findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema),
-  ];
-}
-
-function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
+export function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
 
-  const breakingFieldChanges = [];
+  const breakingChanges = [];
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
@@ -303,7 +301,7 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
     Object.keys(oldTypeFieldsDef).forEach(fieldName => {
       // Check if the field is missing on the type in the new schema.
       if (!(fieldName in newTypeFieldsDef)) {
-        breakingFieldChanges.push({
+        breakingChanges.push({
           type: BreakingChangeType.FIELD_REMOVED,
           description: `${typeName}.${fieldName} was removed.`,
         });
@@ -319,7 +317,7 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
           const newFieldTypeString = isNamedType(newFieldType) ?
             newFieldType.name :
             newFieldType.toString();
-          breakingFieldChanges.push({
+          breakingChanges.push({
             type: BreakingChangeType.FIELD_CHANGED_KIND,
             description: `${typeName}.${fieldName} changed type from ` +
               `${oldFieldTypeString} to ${newFieldTypeString}.`,
@@ -328,17 +326,21 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
       }
     });
   });
-  return breakingFieldChanges;
+  return breakingChanges;
 }
 
 export function findFieldsThatChangedTypeOnInputObjectTypes(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema
-): Array<BreakingChange> {
+): {
+  breakingChanges: Array<BreakingChange>,
+  dangerousChanges: Array<DangerousChange>
+} {
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
 
-  const breakingFieldChanges = [];
+  const breakingChanges = [];
+  const dangerousChanges = [];
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
@@ -354,7 +356,7 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(
     Object.keys(oldTypeFieldsDef).forEach(fieldName => {
       // Check if the field is missing on the type in the new schema.
       if (!(fieldName in newTypeFieldsDef)) {
-        breakingFieldChanges.push({
+        breakingChanges.push({
           type: BreakingChangeType.FIELD_REMOVED,
           description: `${typeName}.${fieldName} was removed.`,
         });
@@ -371,7 +373,7 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(
           const newFieldTypeString = isNamedType(newFieldType) ?
             newFieldType.name :
             newFieldType.toString();
-          breakingFieldChanges.push({
+          breakingChanges.push({
             type: BreakingChangeType.FIELD_CHANGED_KIND,
             description: `${typeName}.${fieldName} changed type from ` +
               `${oldFieldTypeString} to ${newFieldTypeString}.`,
@@ -379,21 +381,29 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(
         }
       }
     });
-    // Check if a non-null field was added to the input object type
+    // Check if a field was added to the input object type
     Object.keys(newTypeFieldsDef).forEach(fieldName => {
-      if (
-        !(fieldName in oldTypeFieldsDef) &&
-        newTypeFieldsDef[fieldName].type instanceof GraphQLNonNull
-      ) {
-        breakingFieldChanges.push({
-          type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
-          description: `A non-null field ${fieldName} on ` +
-            `input type ${newType.name} was added.`,
-        });
+      if (!(fieldName in oldTypeFieldsDef)) {
+        if (newTypeFieldsDef[fieldName].type instanceof GraphQLNonNull) {
+          breakingChanges.push({
+            type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
+            description: `A non-null field ${fieldName} on ` +
+              `input type ${newType.name} was added.`,
+          });
+        } else {
+          dangerousChanges.push({
+            type: DangerousChangeType.NULLABLE_INPUT_FIELD_ADDED,
+            description: `A nullable field ${fieldName} on ` +
+              `input type ${newType.name} was added.`,
+          });
+        }
       }
     });
   });
-  return breakingFieldChanges;
+  return {
+    breakingChanges,
+    dangerousChanges,
+  };
 }
 
 function isChangeSafeForObjectOrInterfaceField(
