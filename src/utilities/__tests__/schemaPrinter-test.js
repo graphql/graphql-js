@@ -329,7 +329,6 @@ describe('Type System Printer', () => {
   it('Print Interface', () => {
     const FooType = new GraphQLInterfaceType({
       name: 'Foo',
-      resolveType: () => null,
       fields: { str: { type: GraphQLString } },
     });
 
@@ -371,13 +370,11 @@ describe('Type System Printer', () => {
   it('Print Multiple Interface', () => {
     const FooType = new GraphQLInterfaceType({
       name: 'Foo',
-      resolveType: () => null,
       fields: { str: { type: GraphQLString } },
     });
 
     const BaazType = new GraphQLInterfaceType({
       name: 'Baaz',
-      resolveType: () => null,
       fields: { int: { type: GraphQLInt } },
     });
 
@@ -441,13 +438,11 @@ describe('Type System Printer', () => {
 
     const SingleUnion = new GraphQLUnionType({
       name: 'SingleUnion',
-      resolveType: () => null,
       types: [ FooType ],
     });
 
     const MultipleUnion = new GraphQLUnionType({
       name: 'MultipleUnion',
-      resolveType: () => null,
       types: [ FooType, BarType ],
     });
 

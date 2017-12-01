@@ -118,7 +118,6 @@ describe('typeComparators', () => {
     it('member is subtype of union', () => {
       const member = new GraphQLObjectType({
         name: 'Object',
-        isTypeOf: () => true,
         fields: {
           field: { type: GraphQLString }
         }
@@ -139,7 +138,6 @@ describe('typeComparators', () => {
       });
       const impl = new GraphQLObjectType({
         name: 'Object',
-        isTypeOf: () => true,
         interfaces: [ iface ],
         fields: {
           field: { type: GraphQLString }

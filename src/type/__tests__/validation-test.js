@@ -38,19 +38,16 @@ const SomeObjectType = new GraphQLObjectType({
 
 const ObjectWithIsTypeOf = new GraphQLObjectType({
   name: 'ObjectWithIsTypeOf',
-  isTypeOf: () => true,
   fields: { f: { type: GraphQLString} }
 });
 
 const SomeUnionType = new GraphQLUnionType({
   name: 'SomeUnion',
-  resolveType: () => null,
   types: [ SomeObjectType ]
 });
 
 const SomeInterfaceType = new GraphQLInterfaceType({
   name: 'SomeInterface',
-  resolveType: () => null,
   fields: { f: { type: GraphQLString } }
 });
 
@@ -256,7 +253,6 @@ describe('Type System: A Schema must contain uniquely named types', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: { f: { type: GraphQLString } },
       });
 
@@ -517,7 +513,6 @@ describe('Type System: Object interfaces must be array', () => {
     expect(() => {
       const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: { f: { type: GraphQLString } }
       });
 
@@ -533,7 +528,6 @@ describe('Type System: Object interfaces must be array', () => {
     expect(() => {
       const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: { f: { type: GraphQLString } }
       });
 
@@ -561,13 +555,11 @@ describe('Type System: Object interfaces must be array', () => {
     expect(() => {
       const NonUniqInterface = new GraphQLInterfaceType({
         name: 'NonUniqInterface',
-        resolveType: () => null,
         fields: { f: { type: GraphQLString } },
       });
 
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: { f: { type: GraphQLString } },
       });
 
@@ -603,7 +595,6 @@ describe('Type System: Union types must be array', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
-        resolveType: () => null,
         types: [ SomeObjectType ],
       }))
     ).not.to.throw();
@@ -613,7 +604,6 @@ describe('Type System: Union types must be array', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
-        resolveType: () => null,
         types: () => [ SomeObjectType ],
       }))
     ).not.to.throw();
@@ -623,7 +613,6 @@ describe('Type System: Union types must be array', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
-        resolveType: () => null,
       }))
     ).to.throw(
       'Must provide Array of types or a function which returns such an array ' +
@@ -635,7 +624,6 @@ describe('Type System: Union types must be array', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
-        resolveType: () => null,
         types: []
       }))
     ).to.throw(
@@ -648,7 +636,6 @@ describe('Type System: Union types must be array', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
-        resolveType: () => null,
         types: {
           SomeObjectType
         },
@@ -663,7 +650,6 @@ describe('Type System: Union types must be array', () => {
     expect(
       () => schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
-        resolveType: () => null,
         types: [
           SomeObjectType,
           SomeObjectType,
@@ -882,7 +868,6 @@ describe('Type System: Object types must be assertable', () => {
     expect(() => {
       schemaWithFieldType(new GraphQLObjectType({
         name: 'AnotherObject',
-        isTypeOf: () => true,
         fields: { f: { type: GraphQLString } }
       }));
     }).not.to.throw();
@@ -909,7 +894,6 @@ describe('Type System: Interface types must be resolvable', () => {
     expect(() => {
       const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: { f: { type: GraphQLString } }
       });
 
@@ -930,7 +914,6 @@ describe('Type System: Interface types must be resolvable', () => {
 
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
-        isTypeOf: () => true,
         interfaces: [ InterfaceTypeWithoutResolveType ],
         fields: { f: { type: GraphQLString } }
       }));
@@ -941,13 +924,11 @@ describe('Type System: Interface types must be resolvable', () => {
     expect(() => {
       const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: { f: { type: GraphQLString } }
       });
 
       schemaWithFieldType(new GraphQLObjectType({
         name: 'SomeObject',
-        isTypeOf: () => true,
         interfaces: [ AnotherInterfaceType ],
         fields: { f: { type: GraphQLString } }
       }));
@@ -966,26 +947,6 @@ describe('Type System: Interface types must be resolvable', () => {
     );
   });
 
-  it('rejects an Interface type not defining resolveType with implementing type not defining isTypeOf', () => {
-    expect(() => {
-      const InterfaceTypeWithoutResolveType = new GraphQLInterfaceType({
-        name: 'InterfaceTypeWithoutResolveType',
-        fields: { f: { type: GraphQLString } }
-      });
-
-      schemaWithFieldType(new GraphQLObjectType({
-        name: 'SomeObject',
-        interfaces: [ InterfaceTypeWithoutResolveType ],
-        fields: { f: { type: GraphQLString } }
-      }));
-    }).to.throw(
-      'Interface Type InterfaceTypeWithoutResolveType does not provide a ' +
-      '"resolveType" function and implementing Type SomeObject does not ' +
-      'provide a "isTypeOf" function. ' +
-      'There is no way to resolve this implementing type during execution.'
-    );
-  });
-
 });
 
 
@@ -995,7 +956,6 @@ describe('Type System: Union types must be resolvable', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
-        resolveType: () => null,
         types: [ SomeObjectType ],
       }))
     ).not.to.throw();
@@ -1014,7 +974,6 @@ describe('Type System: Union types must be resolvable', () => {
     expect(() =>
       schemaWithFieldType(new GraphQLUnionType({
         name: 'SomeUnion',
-        resolveType: () => null,
         types: [ ObjectWithIsTypeOf ],
       }))
     ).not.to.throw();
@@ -1029,19 +988,6 @@ describe('Type System: Union types must be resolvable', () => {
       }))
     ).to.throw(
       'SomeUnion must provide "resolveType" as a function.'
-    );
-  });
-
-  it('rejects a Union type not defining resolveType of Object types not defining isTypeOf', () => {
-    expect(() =>
-      schemaWithFieldType(new GraphQLUnionType({
-        name: 'SomeUnion',
-        types: [ SomeObjectType ],
-      }))
-    ).to.throw(
-      'Union type "SomeUnion" does not provide a "resolveType" function and ' +
-      'possible type "SomeObject" does not provide an "isTypeOf" function. ' +
-      'There is no way to resolve this possible type during execution.'
     );
   });
 
@@ -1373,7 +1319,6 @@ describe('Type System: Objects can only implement interfaces', () => {
     expect(() => {
       const AnotherInterfaceType = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: { f: { type: GraphQLString } }
       });
 
@@ -1405,7 +1350,6 @@ describe('Type System: Unions must represent Object types', () => {
   function schemaWithUnionOfType(type) {
     const BadUnionType = new GraphQLUnionType({
       name: 'BadUnion',
-      resolveType: () => null,
       types: [ type ],
     });
 
@@ -1664,7 +1608,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: {
             type: GraphQLString,
@@ -1696,7 +1639,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: {
             type: GraphQLString,
@@ -1729,7 +1671,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: {
             type: GraphQLString,
@@ -1762,7 +1703,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: {
             type: GraphQLString,
@@ -1798,7 +1738,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: {
             type: GraphQLString,
@@ -1828,7 +1767,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: { type: GraphQLString }
         }
@@ -1867,7 +1805,6 @@ describe('Objects must adhere to Interface they implement', () => {
 
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: { type: TypeA }
         }
@@ -1892,7 +1829,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: () => ({
           field: { type: AnotherInterface }
         })
@@ -1914,7 +1850,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: { type: SomeUnionType }
         }
@@ -1936,7 +1871,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: {
             type: GraphQLString,
@@ -1968,7 +1902,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: {
             type: GraphQLString,
@@ -2003,7 +1936,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) }
         }
@@ -2025,7 +1957,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: { type: new GraphQLList(GraphQLString) }
         }
@@ -2050,7 +1981,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: { type: GraphQLString }
         }
@@ -2075,7 +2005,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: { type: GraphQLString }
         }
@@ -2097,7 +2026,6 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(() => {
       const AnotherInterface = new GraphQLInterfaceType({
         name: 'AnotherInterface',
-        resolveType: () => null,
         fields: {
           field: { type: new GraphQLNonNull(GraphQLString) }
         }

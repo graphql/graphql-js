@@ -1092,7 +1092,9 @@ function ensureValidRuntimeType(
     throw new GraphQLError(
       `Abstract type ${returnType.name} must resolve to an Object type at ` +
       `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
-      `value "${String(result)}", received "${String(runtimeType)}".`,
+      `value "${String(result)}", received "${String(runtimeType)}". ` +
+      `Either the ${returnType.name} type should provide a "resolveType" ` +
+      'function or each possible types should provide an "isTypeOf" function.',
       fieldNodes
     );
   }
@@ -1197,7 +1199,12 @@ function collectAndExecuteSubfields(
 
 /**
  * If a resolveType function is not given, then a default resolve behavior is
- * used which tests each possible type for the abstract type by calling
+ * used which attempts two strategies:
+ *
+ * First, See if the provided value has a `__typename` field defined, if so, use
+ * that value as name of the resolved type.
+ *
+ * Otherwise, test each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
 function defaultResolveTypeFn(
@@ -1205,7 +1212,17 @@ function defaultResolveTypeFn(
   context: mixed,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType
-): ?GraphQLObjectType | Promise<?GraphQLObjectType> {
+): ?GraphQLObjectType | string | Promise<?GraphQLObjectType | string> {
+  // First, look for `__typename`.
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof value.__typename === 'string'
+  ) {
+    return value.__typename;
+  }
+
+  // Otherwise, test each possible type.
   const possibleTypes = info.schema.getPossibleTypes(abstractType);
   const promisedIsTypeOfResults = [];
 

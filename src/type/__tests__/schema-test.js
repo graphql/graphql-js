@@ -18,9 +18,6 @@ import { expect } from 'chai';
 const InterfaceType = new GraphQLInterfaceType({
   name: 'Interface',
   fields: { fieldName: { type: GraphQLString } },
-  resolveType() {
-    return ImplementingType;
-  }
 });
 
 const ImplementingType = new GraphQLObjectType({

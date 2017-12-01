@@ -185,7 +185,6 @@ describe('Type System: build schema from introspection', () => {
   it('builds a schema with an interface', async () => {
     const friendlyType = new GraphQLInterfaceType({
       name: 'Friendly',
-      resolveType: () => null,
       fields: () => ({
         bestFriend: {
           type: friendlyType,
@@ -223,7 +222,6 @@ describe('Type System: build schema from introspection', () => {
   it('builds a schema with an implicit interface', async () => {
     const friendlyType = new GraphQLInterfaceType({
       name: 'Friendly',
-      resolveType: () => null,
       fields: () => ({
         bestFriend: {
           type: friendlyType,
@@ -265,7 +263,6 @@ describe('Type System: build schema from introspection', () => {
     });
     const friendlyType = new GraphQLUnionType({
       name: 'Friendly',
-      resolveType: () => null,
       types: [ dogType, humanType ]
     });
     const schema = new GraphQLSchema({

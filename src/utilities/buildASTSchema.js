@@ -410,7 +410,6 @@ export function buildASTSchema(
       description: getDescription(def, options),
       fields: () => makeFieldDefMap(def),
       astNode: def,
-      resolveType: cannotExecuteSchema,
     });
   }
 
@@ -436,7 +435,6 @@ export function buildASTSchema(
       name: def.name.value,
       description: getDescription(def, options),
       types: def.types.map(t => produceObjectType(t)),
-      resolveType: cannotExecuteSchema,
       astNode: def,
     });
   }
@@ -522,10 +520,4 @@ function getLeadingCommentBlock(node: { loc?: Location }): void | string {
  */
 export function buildSchema(source: string | Source): GraphQLSchema {
   return buildASTSchema(parse(source));
-}
-
-function cannotExecuteSchema() {
-  throw new Error(
-    'Generated Schema cannot use Interface or Union types for execution.'
-  );
 }

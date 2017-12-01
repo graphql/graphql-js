@@ -423,6 +423,137 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
   });
 
+  it('Specifying Union type using __typename', async () => {
+    const schema = buildSchema(`
+      schema {
+        query: Root
+      }
+
+      type Root {
+        fruits: [Fruit]
+      }
+
+      union Fruit = Apple | Banana
+
+      type Apple {
+        color: String
+      }
+
+      type Banana {
+        length: Int
+      }
+    `);
+
+    const query = `
+      {
+        fruits {
+          ... on Apple {
+            color
+          }
+          ... on Banana {
+            length
+          }
+        }
+      }
+    `;
+
+    const root = {
+      fruits: [
+        {
+          color: 'green',
+          __typename: 'Apple',
+        },
+        {
+          length: 5,
+          __typename: 'Banana',
+        }
+      ]
+    };
+
+    expect(await graphql(schema, query, root)).to.deep.equal({
+      data: {
+        fruits: [
+          {
+            color: 'green',
+          },
+          {
+            length: 5,
+          }
+        ]
+      }
+    });
+  });
+
+  it('Specifying Interface type using __typename', async () => {
+    const schema = buildSchema(`
+      schema {
+        query: Root
+      }
+
+      type Root {
+        characters: [Character]
+      }
+
+      interface Character {
+        name: String!
+      }
+
+      type Human implements Character {
+        name: String!
+        totalCredits: Int
+      }
+
+      type Droid implements Character {
+        name: String!
+        primaryFunction: String
+      }
+    `);
+
+    const query = `
+      {
+        characters {
+          name
+          ... on Human {
+            totalCredits
+          }
+          ... on Droid {
+            primaryFunction
+          }
+        }
+      }
+    `;
+
+    const root = {
+      characters: [
+        {
+          name: 'Han Solo',
+          totalCredits: 10,
+          __typename: 'Human',
+        },
+        {
+          name: 'R2-D2',
+          primaryFunction: 'Astromech',
+          __typename: 'Droid',
+        }
+      ]
+    };
+
+    expect(await graphql(schema, query, root)).to.deep.equal({
+      data: {
+        characters: [
+          {
+            name: 'Han Solo',
+            totalCredits: 10,
+          },
+          {
+            name: 'R2-D2',
+            primaryFunction: 'Astromech',
+          }
+        ]
+      }
+    });
+  });
+
   it('Custom Scalar', () => {
     const body = dedent`
       schema {

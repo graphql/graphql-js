@@ -98,7 +98,6 @@ describe('findBreakingChanges', () => {
     const unionType1 = new GraphQLUnionType({
       name: 'Type1',
       types: [ objectType ],
-      resolveType: () => null,
     });
 
     const oldSchema = new GraphQLSchema({
@@ -524,12 +523,10 @@ describe('findBreakingChanges', () => {
     const oldUnionType = new GraphQLUnionType({
       name: 'UnionType1',
       types: [ type1, type2 ],
-      resolveType: () => null,
     });
     const newUnionType = new GraphQLUnionType({
       name: 'UnionType1',
       types: [ type1a, type3 ],
-      resolveType: () => null,
     });
 
     const oldSchema = new GraphQLSchema({
@@ -1067,7 +1064,6 @@ describe('findBreakingChanges', () => {
       fields: {
         field1: { type: GraphQLString },
       },
-      resolveType: () => null,
     });
     const oldType = new GraphQLObjectType({
       name: 'Type1',
@@ -1189,12 +1185,10 @@ describe('findBreakingChanges', () => {
     const unionTypeThatLosesATypeOld = new GraphQLUnionType({
       name: 'UnionTypeThatLosesAType',
       types: [ typeInUnion1, typeInUnion2 ],
-      resolveType: () => null,
     });
     const unionTypeThatLosesATypeNew = new GraphQLUnionType({
       name: 'UnionTypeThatLosesAType',
       types: [ typeInUnion1 ],
-      resolveType: () => null,
     });
 
     const enumTypeThatLosesAValueOld = new GraphQLEnumType({
@@ -1218,7 +1212,6 @@ describe('findBreakingChanges', () => {
       fields: {
         field1: { type: GraphQLString },
       },
-      resolveType: () => null,
     });
 
     const typeThatLosesInterfaceOld = new GraphQLObjectType({
@@ -1434,7 +1427,6 @@ describe('findDangerousChanges', () => {
       fields: {
         field1: { type: GraphQLString },
       },
-      resolveType: () => null,
     });
     const oldType = new GraphQLObjectType({
       name: 'Type1',
@@ -1507,12 +1499,10 @@ describe('findDangerousChanges', () => {
     const oldUnionType = new GraphQLUnionType({
       name: 'UnionType1',
       types: [ type1 ],
-      resolveType: () => null,
     });
     const newUnionType = new GraphQLUnionType({
       name: 'UnionType1',
       types: [ type1a, type2 ],
-      resolveType: () => null,
     });
 
     const oldSchema = new GraphQLSchema({
@@ -1583,12 +1573,10 @@ describe('findDangerousChanges', () => {
     const unionTypeThatGainsATypeOld = new GraphQLUnionType({
       name: 'UnionTypeThatGainsAType',
       types: [ typeInUnion1 ],
-      resolveType: () => null,
     });
     const unionTypeThatGainsATypeNew = new GraphQLUnionType({
       name: 'UnionTypeThatGainsAType',
       types: [ typeInUnion1, typeInUnion2 ],
-      resolveType: () => null,
     });
 
     const newType = new GraphQLObjectType({
@@ -1611,7 +1599,6 @@ describe('findDangerousChanges', () => {
       fields: {
         field1: { type: GraphQLString },
       },
-      resolveType: () => null,
     });
 
     const typeThatGainsInterfaceOld = new GraphQLObjectType({

@@ -89,10 +89,7 @@ const BlogSubscription = new GraphQLObjectType({
   }
 });
 
-const ObjectType = new GraphQLObjectType({
-  name: 'Object',
-  isTypeOf: () => true
-});
+const ObjectType = new GraphQLObjectType({ name: 'Object' });
 const InterfaceType = new GraphQLInterfaceType({ name: 'Interface' });
 const UnionType =
   new GraphQLUnionType({ name: 'Union', types: [ ObjectType ] });
@@ -281,7 +278,6 @@ describe('Type System: Example', () => {
         f: { type: GraphQLInt }
       },
       interfaces: [ SomeInterface ],
-      isTypeOf: () => true
     });
 
     const schema = new GraphQLSchema({
@@ -311,7 +307,6 @@ describe('Type System: Example', () => {
         f: { type: GraphQLInt }
       },
       interfaces: () => [ SomeInterface ],
-      isTypeOf: () => true
     });
 
     const schema = new GraphQLSchema({

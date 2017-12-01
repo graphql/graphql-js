@@ -508,15 +508,6 @@ function defineInterfaces(
       `${type.name} may declare it implements ${iface.name} only once.`
     );
     implementedTypeNames[iface.name] = true;
-    if (typeof iface.resolveType !== 'function') {
-      invariant(
-        typeof type.isTypeOf === 'function',
-        `Interface Type ${iface.name} does not provide a "resolveType" ` +
-        `function and implementing Type ${type.name} does not provide a ` +
-        '"isTypeOf" function. There is no way to resolve this implementing ' +
-        'type during execution.'
-      );
-    }
   });
   return interfaces;
 }
@@ -863,15 +854,6 @@ function defineTypes(
       `${unionType.name} can include ${objType.name} type only once.`
     );
     includedTypeNames[objType.name] = true;
-    if (typeof unionType.resolveType !== 'function') {
-      invariant(
-        typeof objType.isTypeOf === 'function',
-        `Union type "${unionType.name}" does not provide a "resolveType" ` +
-        `function and possible type "${objType.name}" does not provide an ` +
-        '"isTypeOf" function. There is no way to resolve this possible type ' +
-        'during execution.'
-      );
-    }
   });
 
   return types;

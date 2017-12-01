@@ -72,7 +72,6 @@ const DogCommand = new GraphQLEnumType({
 
 const Dog = new GraphQLObjectType({
   name: 'Dog',
-  isTypeOf: () => true,
   fields: () => ({
     name: {
       type: GraphQLString,
@@ -106,7 +105,6 @@ const Dog = new GraphQLObjectType({
 
 const Cat = new GraphQLObjectType({
   name: 'Cat',
-  isTypeOf: () => true,
   fields: () => ({
     name: {
       type: GraphQLString,
@@ -123,9 +121,6 @@ const Cat = new GraphQLObjectType({
 const CatOrDog = new GraphQLUnionType({
   name: 'CatOrDog',
   types: [ Dog, Cat ],
-  resolveType(/* value */) {
-    // not used for validation
-  }
 });
 
 const Intelligent = new GraphQLInterfaceType({
@@ -137,7 +132,6 @@ const Intelligent = new GraphQLInterfaceType({
 
 const Human = new GraphQLObjectType({
   name: 'Human',
-  isTypeOf: () => true,
   interfaces: [ Being, Intelligent ],
   fields: () => ({
     name: {
@@ -152,7 +146,6 @@ const Human = new GraphQLObjectType({
 
 const Alien = new GraphQLObjectType({
   name: 'Alien',
-  isTypeOf: () => true,
   interfaces: [ Being, Intelligent ],
   fields: {
     iq: { type: GraphQLInt },
@@ -167,17 +160,11 @@ const Alien = new GraphQLObjectType({
 const DogOrHuman = new GraphQLUnionType({
   name: 'DogOrHuman',
   types: [ Dog, Human ],
-  resolveType(/* value */) {
-    // not used for validation
-  }
 });
 
 const HumanOrAlien = new GraphQLUnionType({
   name: 'HumanOrAlien',
   types: [ Human, Alien ],
-  resolveType(/* value */) {
-    // not used for validation
-  }
 });
 
 const FurColor = new GraphQLEnumType({

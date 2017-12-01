@@ -471,7 +471,6 @@ describe('Validate: Overlapping fields can be merged', () => {
 
     const SomeBox = new GraphQLInterfaceType({
       name: 'SomeBox',
-      resolveType: () => StringBox,
       fields: () => ({
         deepBox: { type: SomeBox },
         unrelatedField: { type: GraphQLString }
@@ -506,7 +505,6 @@ describe('Validate: Overlapping fields can be merged', () => {
 
     const NonNullStringBox1 = new GraphQLInterfaceType({
       name: 'NonNullStringBox1',
-      resolveType: () => StringBox,
       fields: {
         scalar: { type: new GraphQLNonNull(GraphQLString) }
       }
@@ -524,7 +522,6 @@ describe('Validate: Overlapping fields can be merged', () => {
 
     const NonNullStringBox2 = new GraphQLInterfaceType({
       name: 'NonNullStringBox2',
-      resolveType: () => StringBox,
       fields: {
         scalar: { type: new GraphQLNonNull(GraphQLString) }
       }

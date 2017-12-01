@@ -486,7 +486,6 @@ export function extendSchema(
       description: getDescription(typeNode, options),
       fields: () => buildFieldMap(typeNode),
       astNode: typeNode,
-      resolveType: cannotExecuteExtendedSchema,
     });
   }
 
@@ -496,7 +495,6 @@ export function extendSchema(
       description: getDescription(typeNode, options),
       types: typeNode.types.map(getObjectTypeFromAST),
       astNode: typeNode,
-      resolveType: cannotExecuteExtendedSchema,
     });
   }
 
@@ -608,10 +606,4 @@ export function extendSchema(
     }
     return getOutputTypeFromAST(typeNode);
   }
-}
-
-function cannotExecuteExtendedSchema() {
-  throw new Error(
-    'Extended Schema cannot use Interface or Union types for execution.'
-  );
 }

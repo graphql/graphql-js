@@ -29,7 +29,6 @@ import {
 // Test schema.
 const SomeInterfaceType = new GraphQLInterfaceType({
   name: 'SomeInterface',
-  resolveType: () => FooType,
   fields: () => ({
     name: { type: GraphQLString },
     some: { type: SomeInterfaceType },
@@ -65,7 +64,6 @@ const BizType = new GraphQLObjectType({
 
 const SomeUnionType = new GraphQLUnionType({
   name: 'SomeUnion',
-  resolveType: () => FooType,
   types: [ FooType, BizType ],
 });
 

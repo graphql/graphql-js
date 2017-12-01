@@ -264,7 +264,6 @@ export function buildClientSchema(
       name: interfaceIntrospection.name,
       description: interfaceIntrospection.description,
       fields: () => buildFieldDefMap(interfaceIntrospection),
-      resolveType: cannotExecuteClientSchema,
     });
   }
 
@@ -281,7 +280,6 @@ export function buildClientSchema(
       name: unionIntrospection.name,
       description: unionIntrospection.description,
       types: unionIntrospection.possibleTypes.map(getObjectType),
-      resolveType: cannotExecuteClientSchema,
     });
   }
 
@@ -437,10 +435,4 @@ export function buildClientSchema(
     types,
     directives,
   });
-}
-
-function cannotExecuteClientSchema() {
-  throw new Error(
-    'Client Schema cannot use Interface or Union types for execution.'
-  );
 }
