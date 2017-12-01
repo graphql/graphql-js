@@ -53,7 +53,7 @@ export const GraphQLInt = new GraphQLScalarType({
         return num;
       }
     }
-    return null;
+    return undefined;
   }
 });
 
@@ -83,7 +83,7 @@ export const GraphQLFloat = new GraphQLScalarType({
   parseLiteral(ast) {
     return ast.kind === Kind.FLOAT || ast.kind === Kind.INT ?
       parseFloat(ast.value) :
-      null;
+      undefined;
   }
 });
 
@@ -105,7 +105,7 @@ export const GraphQLString = new GraphQLScalarType({
   serialize: coerceString,
   parseValue: coerceString,
   parseLiteral(ast) {
-    return ast.kind === Kind.STRING ? ast.value : null;
+    return ast.kind === Kind.STRING ? ast.value : undefined;
   }
 });
 
@@ -115,7 +115,7 @@ export const GraphQLBoolean = new GraphQLScalarType({
   serialize: Boolean,
   parseValue: Boolean,
   parseLiteral(ast) {
-    return ast.kind === Kind.BOOLEAN ? ast.value : null;
+    return ast.kind === Kind.BOOLEAN ? ast.value : undefined;
   }
 });
 
@@ -132,6 +132,6 @@ export const GraphQLID = new GraphQLScalarType({
   parseLiteral(ast) {
     return ast.kind === Kind.STRING || ast.kind === Kind.INT ?
       ast.value :
-      null;
+      undefined;
   }
 });

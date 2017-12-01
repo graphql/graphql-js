@@ -109,7 +109,7 @@ export function isValidLiteralValue(
   );
 
   // Scalars determine if a literal values is valid.
-  if (!type.isValidLiteral(valueNode)) {
+  if (!type.isValidLiteral(valueNode, null)) {
     return [ `Expected type "${type.name}", found ${print(valueNode)}.` ];
   }
 

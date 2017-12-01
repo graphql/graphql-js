@@ -9,7 +9,6 @@
 
 import keyMap from '../jsutils/keyMap';
 import invariant from '../jsutils/invariant';
-import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import type {ObjMap} from '../jsutils/ObjMap';
 import * as Kind from '../language/kinds';
@@ -151,14 +150,13 @@ export function valueFromAST(
     'Must be input type'
   );
 
-  const parsed = type.parseLiteral(valueNode);
-  if (isNullish(parsed) && !type.isValidLiteral(valueNode)) {
-    // Invalid values represent a failure to parse correctly, in which case
-    // no value is returned.
-    return;
+  // Scalar and Enum values implement methods which perform this translation.
+  if (type.isValidLiteral(valueNode, variables)) {
+    return type.parseLiteral(valueNode, variables);
   }
 
-  return parsed;
+  // Invalid values represent a failure to parse correctly, in which case
+  // no value is returned.
 }
 
 // Returns true if the provided valueNode is a variable which is not defined

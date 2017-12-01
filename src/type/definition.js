@@ -8,10 +8,11 @@
  */
 
 import invariant from '../jsutils/invariant';
-import isNullish from '../jsutils/isNullish';
+import isInvalid from '../jsutils/isInvalid';
 import type {ObjMap} from '../jsutils/ObjMap';
 import * as Kind from '../language/kinds';
 import { assertValidName } from '../utilities/assertValidName';
+import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 import type {
   ScalarTypeDefinitionNode,
   ObjectTypeDefinitionNode,
@@ -339,27 +340,30 @@ export class GraphQLScalarType {
   }
 
   // Determines if an internal value is valid for this type.
-  // Equivalent to checking for if the parsedValue is nullish.
   isValidValue(value: mixed): boolean {
-    return !isNullish(this.parseValue(value));
+    return !isInvalid(this.parseValue(value));
   }
 
   // Parses an externally provided value to use as an input.
   parseValue(value: mixed): mixed {
     const parser = this._scalarConfig.parseValue;
-    return parser && !isNullish(value) ? parser(value) : undefined;
+    if (isInvalid(value)) {
+      return undefined;
+    }
+    return parser ? parser(value) : value;
   }
 
   // Determines if an internal value is valid for this type.
-  // Equivalent to checking for if the parsedLiteral is nullish.
-  isValidLiteral(valueNode: ValueNode): boolean {
-    return !isNullish(this.parseLiteral(valueNode));
+  isValidLiteral(valueNode: ValueNode, variables: ?ObjMap<mixed>): boolean {
+    return !isInvalid(this.parseLiteral(valueNode, variables));
   }
 
   // Parses an externally provided literal value to use as an input.
-  parseLiteral(valueNode: ValueNode): mixed {
+  parseLiteral(valueNode: ValueNode, variables: ?ObjMap<mixed>): mixed {
     const parser = this._scalarConfig.parseLiteral;
-    return parser ? parser(valueNode) : undefined;
+    return parser ?
+      parser(valueNode, variables) :
+      valueFromASTUntyped(valueNode, variables);
   }
 
   toString(): string {
@@ -381,7 +385,10 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   astNode?: ?ScalarTypeDefinitionNode;
   serialize: (value: mixed) => ?TExternal;
   parseValue?: (value: mixed) => ?TInternal;
-  parseLiteral?: (valueNode: ValueNode) => ?TInternal;
+  parseLiteral?: (
+    valueNode: ValueNode,
+    variables: ?ObjMap<mixed>,
+  ) => ?TInternal;
 };
 
 
@@ -952,12 +959,14 @@ export class GraphQLEnumType/* <T> */ {
     }
   }
 
-  isValidLiteral(valueNode: ValueNode): boolean {
+  isValidLiteral(valueNode: ValueNode, _variables: ?ObjMap<mixed>): boolean {
+    // Note: variables will be resolved to a value before calling this function.
     return valueNode.kind === Kind.ENUM &&
       this._getNameLookup()[valueNode.value] !== undefined;
   }
 
-  parseLiteral(valueNode: ValueNode): ?any/* T */ {
+  parseLiteral(valueNode: ValueNode, _variables: ?ObjMap<mixed>): ?any/* T */ {
+    // Note: variables will be resolved to a value before calling this function.
     if (valueNode.kind === Kind.ENUM) {
       const enumValue = this._getNameLookup()[valueNode.value];
       if (enumValue) {

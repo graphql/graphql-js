@@ -55,8 +55,11 @@ export {
 // Create a GraphQLType from a GraphQL language AST.
 export { typeFromAST } from './typeFromAST';
 
-// Create a JavaScript value from a GraphQL language AST.
+// Create a JavaScript value from a GraphQL language AST with a type.
 export { valueFromAST } from './valueFromAST';
+
+// Create a JavaScript value from a GraphQL language AST without a type.
+export { valueFromASTUntyped } from './valueFromASTUntyped';
 
 // Create a GraphQL language AST from a JavaScript value.
 export { astFromValue } from './astFromValue';
