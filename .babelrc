@@ -1,5 +1,6 @@
 {
   "presets": [["env", {
+    "modules": false,
     "targets": {
       "node": 4,
       "browsers": [
@@ -12,6 +13,7 @@
     }
   }]],
   "plugins": [
+    "./resources/common-js-modules",
     "./resources/inline-invariant",
     "syntax-async-functions",
     "syntax-async-generators",
