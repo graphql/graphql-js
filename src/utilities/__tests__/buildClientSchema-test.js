@@ -741,7 +741,7 @@ describe('Type System: build schema from introspection', () => {
       );
     });
 
-    it('throws when null interfaces given', () => {
+    it('throws when missing interfaces', () => {
       const nullInterfaceIntrospection = {
         __schema: {
           queryType: { name: 'QueryType' },
@@ -757,7 +757,6 @@ describe('Type System: build schema from introspection', () => {
                   isDeprecated: false,
                 }
               ],
-              interfaces: null,
             }
           ]
         }
@@ -769,7 +768,7 @@ describe('Type System: build schema from introspection', () => {
         'Introspection result missing interfaces: {"kind":"OBJECT",' +
         '"name":"QueryType","fields":[{"name":"aString","args":[],' +
         '"type":{"kind":"SCALAR","name":"String","ofType":null},' +
-        '"isDeprecated":false}],"interfaces":null}'
+        '"isDeprecated":false}]}'
       );
     });
 
