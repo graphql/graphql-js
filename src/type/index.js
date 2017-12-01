@@ -68,6 +68,7 @@ export {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  GraphQLDateTime,
 } from './scalars';
 
 export {
