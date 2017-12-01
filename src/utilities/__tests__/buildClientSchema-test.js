@@ -762,6 +762,37 @@ describe('Type System: build schema from introspection', () => {
       );
     });
 
+    it('throws when missing interfaces', () => {
+      const nullInterfaceIntrospection = {
+        __schema: {
+          queryType: { name: 'QueryType' },
+          types: [
+            {
+              kind: 'OBJECT',
+              name: 'QueryType',
+              fields: [
+                {
+                  name: 'aString',
+                  args: [],
+                  type: { kind: 'SCALAR', name: 'String', ofType: null },
+                  isDeprecated: false,
+                }
+              ],
+            }
+          ]
+        }
+      };
+
+      expect(
+        () => buildClientSchema(nullInterfaceIntrospection)
+      ).to.throw(
+        'Introspection result missing interfaces: {"kind":"OBJECT",' +
+        '"name":"QueryType","fields":[{"name":"aString","args":[],' +
+        '"type":{"kind":"SCALAR","name":"String","ofType":null},' +
+        '"isDeprecated":false}]}'
+      );
+    });
+
   });
 
   describe('very deep decorators are not supported', () => {
