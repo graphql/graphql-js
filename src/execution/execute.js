@@ -10,6 +10,7 @@
 import { forEach, isCollection } from 'iterall';
 import { GraphQLError, locatedError } from '../error';
 import invariant from '../jsutils/invariant';
+import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import type {ObjMap} from '../jsutils/ObjMap';
 
@@ -1013,7 +1014,7 @@ function completeLeafValue(
 ): mixed {
   invariant(returnType.serialize, 'Missing serialize method on type');
   const serializedResult = returnType.serialize(result);
-  if (isNullish(serializedResult)) {
+  if (isInvalid(serializedResult)) {
     throw new Error(
       `Expected a value of type "${String(returnType)}" but ` +
       `received: ${String(result)}`

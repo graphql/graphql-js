@@ -294,12 +294,19 @@ function resolveThunk<T>(thunk: Thunk<T>): T {
  * Scalars (or Enums) and are defined with a name and a series of functions
  * used to parse input from ast or variables and to ensure validity.
  *
+ * If a type's serialize function does not return a value (i.e. it returns
+ * `undefined`) then an error will be raised and a `null` value will be returned
+ * in the response. If the serialize function returns `null`, then no error will
+ * be included in the response.
+ *
  * Example:
  *
  *     const OddType = new GraphQLScalarType({
  *       name: 'Odd',
  *       serialize(value) {
- *         return value % 2 === 1 ? value : null;
+ *         if (value % 2 === 1) {
+ *           return value;
+ *         }
  *       }
  *     });
  *
@@ -924,7 +931,9 @@ export class GraphQLEnumType/* <T> */ {
 
   serialize(value: any/* T */): ?string {
     const enumValue = this._getValueLookup().get(value);
-    return enumValue ? enumValue.name : null;
+    if (enumValue) {
+      return enumValue.name;
+    }
   }
 
   isValidValue(value: mixed): boolean {
