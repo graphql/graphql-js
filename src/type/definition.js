@@ -307,6 +307,7 @@ function resolveThunk<T>(thunk: Thunk<T>): T {
 export class GraphQLScalarType {
   name: string;
   description: ?string;
+  allowNullSerialize: ?boolean;
   astNode: ?ScalarTypeDefinitionNode;
 
   _scalarConfig: GraphQLScalarTypeConfig<*, *>;
@@ -316,6 +317,7 @@ export class GraphQLScalarType {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this.allowNullSerialize = Boolean(config.allowNullSerialize);
     invariant(
       typeof config.serialize === 'function',
       `${this.name} must provide "serialize" function. If this custom Scalar ` +
@@ -382,6 +384,7 @@ GraphQLScalarType.prototype.toJSON =
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   name: string;
   description?: ?string;
+  allowNullSerialize?: ?boolean;
   astNode?: ?ScalarTypeDefinitionNode;
   serialize: (value: mixed) => ?TExternal;
   parseValue?: (value: mixed) => ?TInternal;
