@@ -643,7 +643,7 @@ export type GraphQLResolveInfo = {
   variableValues: {[variable: string]: mixed};
 };
 
-export type ResponsePath = { prev: ?ResponsePath, key: string | number };
+export type ResponsePath = { prev: ResponsePath | void, key: string | number };
 
 export type GraphQLFieldConfig<TSource, TContext> = {
   type: GraphQLOutputType;
