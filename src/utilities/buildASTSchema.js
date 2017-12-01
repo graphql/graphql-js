@@ -169,13 +169,7 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
     mutation: nodeMap.Mutation ? 'Mutation' : null,
     subscription: nodeMap.Subscription ? 'Subscription' : null,
   };
-
-  if (!operationTypes.query) {
-    throw new Error(
-      'Must provide schema definition with query type or a type named Query.'
-    );
-  }
-
+  
   const innerTypeMap = {
     String: GraphQLString,
     Int: GraphQLInt,
@@ -207,6 +201,12 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
 
   if (!directives.some(directive => directive.name === 'deprecated')) {
     directives.push(GraphQLDeprecatedDirective);
+  }
+  
+  if (!operationTypes.query) {
+    throw new Error(
+      'Must provide schema definition with query type or a type named Query.'
+    );
   }
 
   return new GraphQLSchema({
