@@ -341,6 +341,30 @@ describe('Type System: build schema from introspection', () => {
     await testSchema(schema);
   });
 
+  it('builds a schema with default value on custom scalar field', async () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'ArgFields',
+        fields: {
+          testField: {
+            type: GraphQLString,
+            args: {
+              testArg: {
+                type: new GraphQLScalarType({
+                  name: 'CustomScalar',
+                  serialize: value => value
+                }),
+                defaultValue: 'default'
+              }
+            }
+          }
+        }
+      })
+    });
+
+    await testSchema(schema);
+  });
+
   it('builds a schema with an enum', async () => {
     const foodEnum = new GraphQLEnumType({
       name: 'Food',

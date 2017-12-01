@@ -61,6 +61,10 @@ export { valueFromAST } from './valueFromAST';
 // Create a GraphQL language AST from a JavaScript value.
 export { astFromValue } from './astFromValue';
 
+// Create a JavaScript value from a GraphQL language AST representation
+// of Scalar.
+export { scalarValueFromAST } from './scalarValueFromAST';
+
 // A helper to use within recursive-descent visitors which need to be aware of
 // the GraphQL type system.
 export { TypeInfo } from './TypeInfo';
