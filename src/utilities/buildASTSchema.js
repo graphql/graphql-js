@@ -165,9 +165,9 @@ export function buildASTSchema(ast: DocumentNode): GraphQLSchema {
   }
 
   const operationTypes = schemaDef ? getOperationTypes(schemaDef) : {
-    query: nodeMap.Query && 'Query',
-    mutation: nodeMap.Mutation && 'Mutation',
-    subscription: nodeMap.Subscription && 'Subscription',
+    query: nodeMap.Query ? 'Query' : null,
+    mutation: nodeMap.Mutation ? 'Mutation' : null,
+    subscription: nodeMap.Subscription ? 'Subscription' : null,
   };
 
   if (!operationTypes.query) {
