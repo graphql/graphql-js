@@ -801,7 +801,7 @@ describe('Subscription Publish Phase', () => {
     });
   });
 
-  it('should handle error during execuction of source event', async () => {
+  it('should handle error during execution of source event', async () => {
     const erroringEmailSchema = emailSchemaWithResolvers(
       async function* () {
         yield { email: { subject: 'Hello' } };
