@@ -369,54 +369,56 @@ describe('Subscription Initialization Phase', () => {
     );
   });
 
-  it('returns an error if subscribe function returns error', async () => {
-    const erroringEmailSchema = emailSchemaWithResolvers(() => {
+  it('resolves to an error for subscription resolver errors', async () => {
+    // Returning an error
+    const subscriptionReturningErrorSchema = emailSchemaWithResolvers(() => {
       return new Error('test error');
     });
+    await testReportsError(subscriptionReturningErrorSchema);
 
-    const result = await subscribe(
-      erroringEmailSchema,
-      parse(`
-        subscription {
-          importantEmail
-        }
-      `),
-    );
-
-    expect(result).to.deep.equal({
-      errors: [
-        {
-          message: 'test error',
-          locations: [{ line: 3, column: 11 }],
-          path: ['importantEmail'],
-        },
-      ],
-    });
-  });
-
-  it('returns an ExecutionResult for resolver errors', async () => {
-    const erroringEmailSchema = emailSchemaWithResolvers(() => {
+    // Throwing an error
+    const subscriptionThrowingErrorSchema = emailSchemaWithResolvers(() => {
       throw new Error('test error');
     });
+    await testReportsError(subscriptionThrowingErrorSchema);
 
-    const result = await subscribe(
-      erroringEmailSchema,
-      parse(`
-        subscription {
-          importantEmail
-        }
-      `),
+    // Resolving to an error
+    const subscriptionResolvingErrorSchema = emailSchemaWithResolvers(
+      async () => {
+        return new Error('test error');
+      },
     );
+    await testReportsError(subscriptionResolvingErrorSchema);
 
-    expect(result).to.deep.equal({
-      errors: [
-        {
-          message: 'test error',
-          locations: [{ line: 3, column: 11 }],
-          path: ['importantEmail'],
-        },
-      ],
-    });
+    // Rejecting with an error
+    const subscriptionRejectingErrorSchema = emailSchemaWithResolvers(
+      async () => {
+        throw new Error('test error');
+      },
+    );
+    await testReportsError(subscriptionRejectingErrorSchema);
+
+    async function testReportsError(schema) {
+      // Promise<AsyncIterable<ExecutionResult> | ExecutionResult>
+      const result = await subscribe(
+        schema,
+        parse(`
+          subscription {
+            importantEmail
+          }
+        `),
+      );
+
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message: 'test error',
+            locations: [{ line: 3, column: 13 }],
+            path: ['importantEmail'],
+          },
+        ],
+      });
+    }
   });
 
   it('resolves to an error if variables were wrong type', async () => {
