@@ -25,7 +25,8 @@ declare class GraphQLError extends Error {
     source?: ?Source,
     positions?: ?Array<number>,
     path?: ?Array<string | number>,
-    originalError?: ?Error
+    originalError?: ?Error,
+    extensions?: ?{ [key: string]: mixed },
   ): void;
 
   /**
@@ -75,6 +76,11 @@ declare class GraphQLError extends Error {
    * The original error thrown from a field resolver during execution.
    */
   originalError: ?Error;
+
+  /**
+   * The original error thrown from a field resolver during execution.
+   */
+  extensions: ?{ [key: string]: mixed };
 }
 
 export function GraphQLError( // eslint-disable-line no-redeclare
@@ -83,7 +89,8 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   source?: ?Source,
   positions?: ?Array<number>,
   path?: ?Array<string | number>,
-  originalError?: ?Error
+  originalError?: ?Error,
+  extensions?: ?{ [key: string]: mixed }
 ) {
   // Compute locations in the source for the given nodes/positions.
   let _source = source;
@@ -145,7 +152,10 @@ export function GraphQLError( // eslint-disable-line no-redeclare
     },
     originalError: {
       value: originalError
-    }
+    },
+    extensions: {
+      value: extensions
+    },
   });
 
   // Include (non-enumerable) stack trace.

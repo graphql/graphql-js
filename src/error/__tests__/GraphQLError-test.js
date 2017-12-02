@@ -137,4 +137,23 @@ describe('GraphQLError', () => {
     });
   });
 
+  it('default error formatter includes extension fields', () => {
+    const e = new GraphQLError(
+      'msg',
+      null,
+      null,
+      null,
+      null,
+      null,
+      { foo: 'bar' }
+    );
+
+    expect(formatError(e)).to.deep.equal({
+      message: 'msg',
+      locations: undefined,
+      path: undefined,
+      foo: 'bar'
+    });
+  });
+
 });
