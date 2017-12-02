@@ -24,6 +24,7 @@ import {
 } from '../execution/execute';
 import { GraphQLSchema } from '../type/schema';
 import invariant from '../jsutils/invariant';
+import emptyAsyncIterator from './emptyAsyncIterator';
 import mapAsyncIterator from './mapAsyncIterator';
 
 import type { ObjMap } from '../jsutils/ObjMap';
@@ -227,10 +228,10 @@ export function createSourceEventStream(
     const fieldNodes = fields[responseName];
     const fieldNode = fieldNodes[0];
     const fieldDef = getFieldDef(schema, type, fieldNode.name.value);
-    invariant(
-      fieldDef,
-      'This subscription is not defined by the schema.'
-    );
+
+    if (!fieldDef) {
+      return resolve(emptyAsyncIterator());
+    }
 
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
