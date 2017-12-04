@@ -8,8 +8,13 @@
  */
 
 // The GraphQL query recommended for a full schema introspection.
-export { introspectionQuery } from './introspectionQuery';
+export {
+  getIntrospectionQuery,
+  // Deprecated, use getIntrospectionQuery()
+  introspectionQuery,
+} from './introspectionQuery';
 export type {
+  IntrospectionOptions,
   IntrospectionQuery,
   IntrospectionSchema,
   IntrospectionType,

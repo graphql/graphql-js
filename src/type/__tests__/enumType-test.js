@@ -15,7 +15,7 @@ import {
   GraphQLInt,
   GraphQLString,
   GraphQLBoolean,
-  introspectionQuery,
+  getIntrospectionQuery,
 } from '../../';
 
 describe('Type System: Enum Values', () => {
@@ -411,7 +411,7 @@ describe('Type System: Enum Values', () => {
   });
 
   it('can be introspected without error', async () => {
-    const result = await graphql(schema, introspectionQuery);
+    const result = await graphql(schema, getIntrospectionQuery());
     expect(result).to.not.have.property('errors');
   });
 });

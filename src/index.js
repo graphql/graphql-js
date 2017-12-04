@@ -268,7 +268,10 @@ export type { GraphQLFormattedError, GraphQLErrorLocation } from './error';
 
 // Utilities for operating on GraphQL type schema and parsed sources.
 export {
-  // The GraphQL query recommended for a full schema introspection.
+  // Produce the GraphQL query recommended for a full schema introspection.
+  // Accepts optional IntrospectionOptions.
+  getIntrospectionQuery,
+  // Deprecated: use getIntrospectionQuery
   introspectionQuery,
   // Gets the target Operation from a Document
   getOperationAST,
@@ -325,6 +328,7 @@ export {
 export type {
   BreakingChange,
   DangerousChange,
+  IntrospectionOptions,
   IntrospectionDirective,
   IntrospectionEnumType,
   IntrospectionEnumValue,
