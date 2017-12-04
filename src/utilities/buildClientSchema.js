@@ -14,6 +14,8 @@ import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
 import { GraphQLSchema } from '../type/schema';
 
+import { DirectiveLocation } from '../language/directiveLocation';
+
 import {
   isInputType,
   isOutputType,
@@ -27,37 +29,18 @@ import {
   GraphQLNonNull,
 } from '../type/definition';
 
-import {
-  __Schema,
-  __Directive,
-  __DirectiveLocation,
-  __Type,
-  __Field,
-  __InputValue,
-  __EnumValue,
-  __TypeKind,
-} from '../type/introspection';
-
-import {
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
-  GraphQLBoolean,
-  GraphQLID
-} from '../type/scalars';
-
-import { GraphQLDirective } from '../type/directives';
-
-import { DirectiveLocation } from '../language/directiveLocation';
-
-import { TypeKind } from '../type/introspection';
-
 import type {
   GraphQLType,
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLNamedType,
 } from '../type/definition';
+
+import { GraphQLDirective } from '../type/directives';
+
+import { introspectionTypes, TypeKind } from '../type/introspection';
+
+import { specifiedScalarTypes } from '../type/scalars';
 
 import type {
   IntrospectionQuery,
@@ -73,7 +56,6 @@ import type {
   IntrospectionOutputTypeRef,
   IntrospectionNamedTypeRef,
 } from './introspectionQuery';
-
 
 /**
  * Build a GraphQLSchema for use by client tools.
@@ -103,21 +85,10 @@ export function buildClientSchema(
   // A cache to use to store the actual GraphQLType definition objects by name.
   // Initialize to the GraphQL built in scalars. All functions below are inline
   // so that this type def cache is within the scope of the closure.
-  const typeDefCache = {
-    String: GraphQLString,
-    Int: GraphQLInt,
-    Float: GraphQLFloat,
-    Boolean: GraphQLBoolean,
-    ID: GraphQLID,
-    __Schema,
-    __Directive,
-    __DirectiveLocation,
-    __Type,
-    __Field,
-    __InputValue,
-    __EnumValue,
-    __TypeKind,
-  };
+  const typeDefCache = keyMap(
+    specifiedScalarTypes.concat(introspectionTypes),
+    type => type.name
+  );
 
   // Given a type reference in introspection, return the GraphQLType instance.
   // preferring cached instances before building new instances.
