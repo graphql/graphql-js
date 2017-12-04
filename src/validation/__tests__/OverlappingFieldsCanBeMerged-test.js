@@ -962,4 +962,55 @@ describe('Validate: Overlapping fields can be merged', () => {
     });
   });
 
+  it('does not infinite loop on recursive fragment', () => {
+    expectPassesRule(OverlappingFieldsCanBeMerged, `
+      fragment fragA on Human {name relatives { name ...fragA } },
+    `);
+  });
+
+  it('does not infinite loop on immediately spread fragment', () => {
+    expectPassesRule(OverlappingFieldsCanBeMerged, `
+      fragment fragA on Human {name ...fragA },
+    `);
+  });
+
+  it('finds invalid case even with immediately spread fragment', () => {
+    // You would not expect this to have three error messages, and you would be
+    // right. The trickiness here is that we don't detect the immediate spread
+    // on first spreading, because it's in the context of the selection set. So
+    // by the time we detect and eliminate it, we've already spread it in once,
+    // and hence we get multiple error messages. We could change the algorithm
+    // to track that we're in an immediate fragment spread, but that would add
+    // complexity that only is needed in this error case.
+
+    // Because this is an invalid query by another rule (NoFragmentCycles), I'm
+    // not too worried about this case... and since we used to infinite loop,
+    // this is strictly better.
+    expectFailsRule(OverlappingFieldsCanBeMerged, `
+      fragment sameAliasesWithDifferentFieldTargets on Dog {
+        ...sameAliasesWithDifferentFieldTargets
+        fido: name
+        fido: nickname
+      }
+    `, [
+      { message: fieldsConflictMessage(
+          'fido',
+          'name and nickname are different fields'
+        ),
+        locations: [ { line: 4, column: 9 }, { line: 5, column: 9 } ],
+        path: undefined },
+      { message: fieldsConflictMessage(
+          'fido',
+          'name and nickname are different fields'
+        ),
+        locations: [ { line: 4, column: 9 }, { line: 5, column: 9 } ],
+        path: undefined },
+      { message: fieldsConflictMessage(
+          'fido',
+          'nickname and name are different fields'
+        ),
+        locations: [ { line: 5, column: 9 }, { line: 4, column: 9 } ],
+        path: undefined }
+    ]);
+  });
 });
