@@ -22,7 +22,7 @@ import {
   isAbstractType,
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
-import { DirectiveLocation } from './directives';
+import { DirectiveLocation } from '../language/directiveLocation';
 import type { GraphQLField } from './definition';
 
 

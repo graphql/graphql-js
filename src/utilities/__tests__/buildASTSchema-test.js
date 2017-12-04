@@ -942,7 +942,9 @@ describe('Failures', () => {
         query: Hello
       }
 
-      type Hello implements Bar { }
+      type Hello implements Bar {
+        field: String
+      }
     `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc))

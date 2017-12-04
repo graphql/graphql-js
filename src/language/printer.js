@@ -201,7 +201,14 @@ const printDocASTReducer = {
       ], ' '),
     ], '\n'),
 
-  TypeExtensionDefinition: ({ definition }) => `extend ${definition}`,
+  ObjectTypeExtension: ({ name, interfaces, directives, fields }) =>
+    join([
+      'extend type',
+      name,
+      wrap('implements ', join(interfaces, ', ')),
+      join(directives, ' '),
+      block(fields),
+    ], ' '),
 
   DirectiveDefinition: ({ description, name, arguments: args, locations }) =>
     join([
@@ -226,7 +233,7 @@ function join(maybeArray, separator) {
 function block(array) {
   return array && array.length !== 0 ?
     indent('{\n' + join(array, '\n')) + '\n}' :
-    '{}';
+    '';
 }
 
 /**

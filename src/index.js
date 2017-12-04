@@ -55,9 +55,6 @@ export {
   // "Enum" of Type Kinds
   TypeKind,
 
-  // "Enum" of Directive Locations
-  DirectiveLocation,
-
   // Scalars
   GraphQLInt,
   GraphQLFloat,
@@ -113,8 +110,6 @@ export {
 } from './type';
 
 export type {
-  DirectiveLocationEnum,
-
   GraphQLType,
   GraphQLInputType,
   GraphQLOutputType,
@@ -173,6 +168,7 @@ export {
   getVisitFn,
   Kind,
   TokenKind,
+  DirectiveLocation,
   BREAK,
 } from './language';
 
@@ -226,8 +222,10 @@ export type {
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
-  TypeExtensionDefinitionNode,
+  TypeExtensionNode,
+  ObjectTypeExtensionNode,
   DirectiveDefinitionNode,
+  DirectiveLocationEnum,
 } from './language';
 
 

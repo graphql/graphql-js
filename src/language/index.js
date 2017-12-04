@@ -73,6 +73,10 @@ export type {
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
-  TypeExtensionDefinitionNode,
+  TypeExtensionNode,
+  ObjectTypeExtensionNode,
   DirectiveDefinitionNode,
 } from './ast';
+
+export { DirectiveLocation } from './directiveLocation';
+export type { DirectiveLocationEnum } from './directiveLocation';

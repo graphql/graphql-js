@@ -965,11 +965,11 @@ describe('Execute: Handles basic execution tasks', () => {
     ]);
   });
 
-  it('fails to execute a query containing a type definition', async () => {
+  it('executes ignoring invalid non-executable definitions', async () => {
     const query = parse(`
       { foo }
 
-      type Query { foo: String }
+      type Query { bar: String }
     `);
 
     const schema = new GraphQLSchema({
@@ -983,14 +983,9 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const result = await execute(schema, query);
     expect(result).to.deep.equal({
-      errors: [
-        {
-          message: 'GraphQL cannot execute a request containing a ' +
-            'ObjectTypeDefinition.',
-          locations: [ { line: 4, column: 7 } ],
-          path: undefined,
-        }
-      ]
+      data: {
+        foo: null,
+      },
     });
   });
 

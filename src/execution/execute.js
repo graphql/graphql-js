@@ -303,10 +303,6 @@ export function buildExecutionContext(
       case Kind.FRAGMENT_DEFINITION:
         fragments[definition.name.value] = definition;
         break;
-      default: throw new GraphQLError(
-        `GraphQL cannot execute a request containing a ${definition.kind}.`,
-        [ definition ]
-      );
     }
   });
   if (!operation) {
