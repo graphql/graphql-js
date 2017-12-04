@@ -19,7 +19,7 @@ import {
   GraphQLEnumType,
 } from '../../';
 
-import { introspectionQuery } from '../../utilities/introspectionQuery';
+import { getIntrospectionQuery } from '../../utilities/introspectionQuery';
 
 describe('Introspection', () => {
   it('executes an introspection query', async () => {
@@ -33,7 +33,7 @@ describe('Introspection', () => {
     });
 
     return expect(
-      await graphql(EmptySchema, introspectionQuery),
+      await graphql(EmptySchema, getIntrospectionQuery()),
     ).to.containSubset({
       data: {
         __schema: {

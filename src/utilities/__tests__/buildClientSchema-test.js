@@ -8,7 +8,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { buildClientSchema } from '../buildClientSchema';
-import { introspectionQuery } from '../introspectionQuery';
+import { getIntrospectionQuery } from '../introspectionQuery';
 import {
   graphql,
   GraphQLSchema,
@@ -35,9 +35,15 @@ import { GraphQLDirective } from '../../type/directives';
 // query against the client-side schema, it should get a result identical to
 // what was returned by the server.
 async function testSchema(serverSchema) {
-  const initialIntrospection = await graphql(serverSchema, introspectionQuery);
+  const initialIntrospection = await graphql(
+    serverSchema,
+    getIntrospectionQuery(),
+  );
   const clientSchema = buildClientSchema(initialIntrospection.data);
-  const secondIntrospection = await graphql(clientSchema, introspectionQuery);
+  const secondIntrospection = await graphql(
+    clientSchema,
+    getIntrospectionQuery(),
+  );
   expect(secondIntrospection).to.deep.equal(initialIntrospection);
 }
 
@@ -126,7 +132,7 @@ describe('Type System: build schema from introspection', () => {
 
     await testSchema(schema);
 
-    const introspection = await graphql(schema, introspectionQuery);
+    const introspection = await graphql(schema, getIntrospectionQuery());
     const clientSchema = buildClientSchema(introspection.data);
 
     // Built-ins are used
@@ -407,7 +413,7 @@ describe('Type System: build schema from introspection', () => {
 
     await testSchema(schema);
 
-    const introspection = await graphql(schema, introspectionQuery);
+    const introspection = await graphql(schema, getIntrospectionQuery());
     const clientSchema = buildClientSchema(introspection.data);
     const clientFoodEnum = clientSchema.getType('Food');
 
@@ -658,7 +664,10 @@ describe('Type System: build schema from introspection', () => {
     };
 
     const clientSchema = buildClientSchema(oldIntrospection);
-    const secondIntrospection = await graphql(clientSchema, introspectionQuery);
+    const secondIntrospection = await graphql(
+      clientSchema,
+      getIntrospectionQuery(),
+    );
     expect(secondIntrospection.data).to.containSubset(newIntrospection);
   });
 
@@ -719,7 +728,7 @@ describe('Type System: build schema from introspection', () => {
       }),
     });
 
-    const introspection = await graphql(schema, introspectionQuery);
+    const introspection = await graphql(schema, getIntrospectionQuery());
     const clientSchema = buildClientSchema(introspection.data);
 
     const result = await graphql(
@@ -818,7 +827,7 @@ describe('Type System: build schema from introspection', () => {
         }),
       });
 
-      const introspection = await graphql(schema, introspectionQuery);
+      const introspection = await graphql(schema, getIntrospectionQuery());
       expect(() => buildClientSchema(introspection.data)).to.throw(
         'Decorated type deeper than introspection query.',
       );
@@ -848,7 +857,7 @@ describe('Type System: build schema from introspection', () => {
         }),
       });
 
-      const introspection = await graphql(schema, introspectionQuery);
+      const introspection = await graphql(schema, getIntrospectionQuery());
       expect(() => buildClientSchema(introspection.data)).to.throw(
         'Decorated type deeper than introspection query.',
       );
@@ -877,7 +886,7 @@ describe('Type System: build schema from introspection', () => {
         }),
       });
 
-      const introspection = await graphql(schema, introspectionQuery);
+      const introspection = await graphql(schema, getIntrospectionQuery());
       buildClientSchema(introspection.data);
     });
   });
