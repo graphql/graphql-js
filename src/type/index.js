@@ -49,6 +49,7 @@ export {
   GraphQLDirective,
 
   // Built-in Directives defined by the Spec
+  isSpecifiedDirective,
   specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
@@ -60,6 +61,8 @@ export {
 
 // Common built-in scalar instances.
 export {
+  isSpecifiedScalarType,
+  specifiedScalarTypes,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
@@ -72,6 +75,8 @@ export {
   TypeKind,
 
   // GraphQL Types for introspection.
+  isIntrospectionType,
+  introspectionTypes,
   __Schema,
   __Directive,
   __DirectiveLocation,

@@ -20,10 +20,11 @@ import {
   GraphQLList,
   GraphQLNonNull,
   isAbstractType,
+  isNamedType,
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from '../language/directiveLocation';
-import type { GraphQLField } from './definition';
+import type { GraphQLField, GraphQLNamedType, GraphQLType } from './definition';
 
 
 export const __Schema = new GraphQLObjectType({
@@ -451,3 +452,20 @@ export const TypeNameMetaFieldDef: GraphQLField<*, *> = {
   args: [],
   resolve: (source, args, context, { parentType }) => parentType.name
 };
+
+export const introspectionTypes: Array<GraphQLNamedType> = [
+  __Schema,
+  __Directive,
+  __DirectiveLocation,
+  __Type,
+  __Field,
+  __InputValue,
+  __EnumValue,
+  __TypeKind,
+];
+
+export function isIntrospectionType(type: ?GraphQLType): boolean %checks {
+  return isNamedType(type) && introspectionTypes.some(
+    introspectionType => introspectionType.name === type.name
+  );
+}

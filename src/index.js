@@ -56,6 +56,7 @@ export {
   TypeKind,
 
   // Scalars
+  specifiedScalarTypes,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
@@ -77,6 +78,7 @@ export {
   TypeNameMetaFieldDef,
 
   // GraphQL Types for introspection.
+  introspectionTypes,
   __Schema,
   __Directive,
   __DirectiveLocation,
@@ -94,6 +96,9 @@ export {
   isCompositeType,
   isAbstractType,
   isNamedType,
+  isSpecifiedScalarType,
+  isIntrospectionType,
+  isSpecifiedDirective,
 
   // Assertions
   assertType,

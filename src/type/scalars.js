@@ -7,8 +7,9 @@
  * @flow
  */
 
-import { GraphQLScalarType } from './definition';
+import { GraphQLScalarType, isNamedType } from './definition';
 import * as Kind from '../language/kinds';
+import type { GraphQLType } from './definition';
 
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
@@ -135,3 +136,17 @@ export const GraphQLID = new GraphQLScalarType({
       undefined;
   }
 });
+
+export const specifiedScalarTypes: Array<GraphQLScalarType> = [
+  GraphQLString,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLBoolean,
+  GraphQLID,
+];
+
+export function isSpecifiedScalarType(type: ?GraphQLType): boolean %checks {
+  return isNamedType(type) && specifiedScalarTypes.some(
+    specifiedScalarType => specifiedScalarType.name === type.name
+  );
+}
