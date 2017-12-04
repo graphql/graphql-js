@@ -10,10 +10,11 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
-
 export function duplicateDirectiveMessage(directiveName: string): string {
-  return `The directive "${directiveName}" can only be used once at ` +
-    'this location.';
+  return (
+    `The directive "${directiveName}" can only be used once at ` +
+    'this location.'
+  );
 }
 
 /**
@@ -33,15 +34,17 @@ export function UniqueDirectivesPerLocation(context: ValidationContext): any {
         node.directives.forEach(directive => {
           const directiveName = directive.name.value;
           if (knownDirectives[directiveName]) {
-            context.reportError(new GraphQLError(
-              duplicateDirectiveMessage(directiveName),
-              [ knownDirectives[directiveName], directive ]
-            ));
+            context.reportError(
+              new GraphQLError(duplicateDirectiveMessage(directiveName), [
+                knownDirectives[directiveName],
+                directive,
+              ]),
+            );
           } else {
             knownDirectives[directiveName] = directive;
           }
         });
       }
-    }
+    },
   };
 }

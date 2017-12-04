@@ -12,68 +12,92 @@ import {
   singleFieldOnlyMessage,
 } from '../rules/SingleFieldSubscriptions';
 
-
 describe('Validate: Subscriptions with single field', () => {
-
   it('valid subscription', () => {
-    expectPassesRule(SingleFieldSubscriptions, `
+    expectPassesRule(
+      SingleFieldSubscriptions,
+      `
       subscription ImportantEmails {
         importantEmails
       }
-    `);
+    `,
+    );
   });
 
   it('fails with more than one root field', () => {
-    expectFailsRule(SingleFieldSubscriptions, `
+    expectFailsRule(
+      SingleFieldSubscriptions,
+      `
       subscription ImportantEmails {
         importantEmails
         notImportantEmails
       }
-    `, [ {
-      message: singleFieldOnlyMessage('ImportantEmails'),
-      locations: [ { line: 4, column: 9 } ],
-      path: undefined,
-    } ]);
+    `,
+      [
+        {
+          message: singleFieldOnlyMessage('ImportantEmails'),
+          locations: [{ line: 4, column: 9 }],
+          path: undefined,
+        },
+      ],
+    );
   });
 
   it('fails with more than one root field including introspection', () => {
-    expectFailsRule(SingleFieldSubscriptions, `
+    expectFailsRule(
+      SingleFieldSubscriptions,
+      `
       subscription ImportantEmails {
         importantEmails
         __typename
       }
-    `, [ {
-      message: singleFieldOnlyMessage('ImportantEmails'),
-      locations: [ { line: 4, column: 9 } ],
-      path: undefined,
-    } ]);
+    `,
+      [
+        {
+          message: singleFieldOnlyMessage('ImportantEmails'),
+          locations: [{ line: 4, column: 9 }],
+          path: undefined,
+        },
+      ],
+    );
   });
 
   it('fails with many more than one root field', () => {
-    expectFailsRule(SingleFieldSubscriptions, `
+    expectFailsRule(
+      SingleFieldSubscriptions,
+      `
       subscription ImportantEmails {
         importantEmails
         notImportantEmails
         spamEmails
       }
-    `, [ {
-      message: singleFieldOnlyMessage('ImportantEmails'),
-      locations: [ { line: 4, column: 9 }, { line: 5, column: 9 } ],
-      path: undefined,
-    } ]);
+    `,
+      [
+        {
+          message: singleFieldOnlyMessage('ImportantEmails'),
+          locations: [{ line: 4, column: 9 }, { line: 5, column: 9 }],
+          path: undefined,
+        },
+      ],
+    );
   });
 
   it('fails with more than one root field in anonymous subscriptions', () => {
-    expectFailsRule(SingleFieldSubscriptions, `
+    expectFailsRule(
+      SingleFieldSubscriptions,
+      `
       subscription {
         importantEmails
         notImportantEmails
       }
-    `, [ {
-      message: singleFieldOnlyMessage(null),
-      locations: [ { line: 4, column: 9 } ],
-      path: undefined,
-    } ]);
+    `,
+      [
+        {
+          message: singleFieldOnlyMessage(null),
+          locations: [{ line: 4, column: 9 }],
+          path: undefined,
+        },
+      ],
+    );
   });
-
 });

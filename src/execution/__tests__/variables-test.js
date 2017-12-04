@@ -20,7 +20,7 @@ import {
   GraphQLList,
   GraphQLString,
   GraphQLNonNull,
-  GraphQLScalarType
+  GraphQLScalarType,
 } from '../../type';
 
 const TestComplexScalar = new GraphQLScalarType({
@@ -52,7 +52,7 @@ const TestInputObject = new GraphQLInputObjectType({
     b: { type: new GraphQLList(GraphQLString) },
     c: { type: new GraphQLNonNull(GraphQLString) },
     d: { type: TestComplexScalar },
-  }
+  },
 });
 
 const TestNestedInputObject = new GraphQLInputObjectType({
@@ -69,65 +69,71 @@ const TestType = new GraphQLObjectType({
     fieldWithObjectInput: {
       type: GraphQLString,
       args: { input: { type: TestInputObject } },
-      resolve: (_, { input }) => input && JSON.stringify(input)
+      resolve: (_, { input }) => input && JSON.stringify(input),
     },
     fieldWithNullableStringInput: {
       type: GraphQLString,
       args: { input: { type: GraphQLString } },
-      resolve: (_, { input }) => input && JSON.stringify(input)
+      resolve: (_, { input }) => input && JSON.stringify(input),
     },
     fieldWithNonNullableStringInput: {
       type: GraphQLString,
       args: { input: { type: new GraphQLNonNull(GraphQLString) } },
-      resolve: (_, { input }) => input && JSON.stringify(input)
+      resolve: (_, { input }) => input && JSON.stringify(input),
     },
     fieldWithDefaultArgumentValue: {
       type: GraphQLString,
       args: { input: { type: GraphQLString, defaultValue: 'Hello World' } },
-      resolve: (_, { input }) => input && JSON.stringify(input)
+      resolve: (_, { input }) => input && JSON.stringify(input),
     },
     fieldWithNestedInputObject: {
       type: GraphQLString,
       args: {
         input: {
-          type: TestNestedInputObject, defaultValue: 'Hello World'
-        }
+          type: TestNestedInputObject,
+          defaultValue: 'Hello World',
+        },
       },
-      resolve: (_, { input }) => input && JSON.stringify(input)
+      resolve: (_, { input }) => input && JSON.stringify(input),
     },
     list: {
       type: GraphQLString,
       args: { input: { type: new GraphQLList(GraphQLString) } },
-      resolve: (_, { input }) => input && JSON.stringify(input)
+      resolve: (_, { input }) => input && JSON.stringify(input),
     },
     nnList: {
       type: GraphQLString,
-      args: { input: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) } },
-      resolve: (_, { input }) => input && JSON.stringify(input)
+      args: {
+        input: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
+      },
+      resolve: (_, { input }) => input && JSON.stringify(input),
     },
     listNN: {
       type: GraphQLString,
-      args: { input: { type: new GraphQLList(new GraphQLNonNull(GraphQLString)) } },
-      resolve: (_, { input }) => input && JSON.stringify(input)
+      args: {
+        input: { type: new GraphQLList(new GraphQLNonNull(GraphQLString)) },
+      },
+      resolve: (_, { input }) => input && JSON.stringify(input),
     },
     nnListNN: {
       type: GraphQLString,
-      args: { input: { type:
-        new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLString)))
-      } },
-      resolve: (_, { input }) => input && JSON.stringify(input)
+      args: {
+        input: {
+          type: new GraphQLNonNull(
+            new GraphQLList(new GraphQLNonNull(GraphQLString)),
+          ),
+        },
+      },
+      resolve: (_, { input }) => input && JSON.stringify(input),
     },
-  }
+  },
 });
 
 const schema = new GraphQLSchema({ query: TestType });
 
 describe('Execute: Handles inputs', () => {
-
   describe('Handles objects and nullability', () => {
-
     describe('using inline structs', () => {
-
       it('executes with complex input', async () => {
         const doc = `
         {
@@ -138,8 +144,8 @@ describe('Execute: Handles inputs', () => {
 
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
-          }
+            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+          },
         });
       });
 
@@ -153,8 +159,8 @@ describe('Execute: Handles inputs', () => {
 
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
-          }
+            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+          },
         });
       });
 
@@ -168,8 +174,8 @@ describe('Execute: Handles inputs', () => {
 
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":null,"b":null,"c":"C","d":null}'
-          }
+            fieldWithObjectInput: '{"a":null,"b":null,"c":"C","d":null}',
+          },
         });
       });
 
@@ -183,8 +189,8 @@ describe('Execute: Handles inputs', () => {
 
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"b":["A",null,"C"],"c":"C"}'
-          }
+            fieldWithObjectInput: '{"b":["A",null,"C"],"c":"C"}',
+          },
         });
       });
 
@@ -200,14 +206,16 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.containSubset({
           data: {
-            fieldWithObjectInput: null
+            fieldWithObjectInput: null,
           },
-          errors: [ {
-            message:
-              'Argument "input" got invalid value ["foo", "bar", "baz"].\n' +
-              'Expected "TestInputObject", found not an object.',
-            path: [ 'fieldWithObjectInput' ]
-          } ]
+          errors: [
+            {
+              message:
+                'Argument "input" got invalid value ["foo", "bar", "baz"].\n' +
+                'Expected "TestInputObject", found not an object.',
+              path: ['fieldWithObjectInput'],
+            },
+          ],
         });
       });
 
@@ -222,14 +230,12 @@ describe('Execute: Handles inputs', () => {
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
             fieldWithObjectInput: '{"c":"foo","d":"DeserializedValue"}',
-          }
+          },
         });
       });
-
     });
 
     describe('using variables', () => {
-
       const doc = `
         query q($input: TestInputObject) {
           fieldWithObjectInput(input: $input)
@@ -238,13 +244,13 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       it('executes with complex input', async () => {
-        const params = { input: { a: 'foo', b: [ 'bar' ], c: 'baz' } };
+        const params = { input: { a: 'foo', b: ['bar'], c: 'baz' } };
         const result = await execute(schema, ast, null, null, params);
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
-          }
+            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+          },
         });
       });
 
@@ -259,8 +265,8 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
-          }
+            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+          },
         });
       });
 
@@ -270,8 +276,8 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}'
-          }
+            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+          },
         });
       });
 
@@ -281,8 +287,8 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"c":"foo","d":"DeserializedValue"}'
-          }
+            fieldWithObjectInput: '{"c":"foo","d":"DeserializedValue"}',
+          },
         });
       });
 
@@ -297,10 +303,10 @@ describe('Execute: Handles inputs', () => {
                 'Variable "$input" got invalid value ' +
                 '{"a":"foo","b":"bar","c":null}.' +
                 '\nIn field "c": Expected "String!", found null.',
-              locations: [ { line: 2, column: 17 } ],
+              locations: [{ line: 2, column: 17 }],
               path: undefined,
-            }
-          ]
+            },
+          ],
         });
       });
 
@@ -314,10 +320,10 @@ describe('Execute: Handles inputs', () => {
               message:
                 'Variable "$input" got invalid value "foo bar".' +
                 '\nExpected "TestInputObject", found not an object.',
-              locations: [ { line: 2, column: 17 } ],
+              locations: [{ line: 2, column: 17 }],
               path: undefined,
-            }
-          ]
+            },
+          ],
         });
       });
 
@@ -331,10 +337,10 @@ describe('Execute: Handles inputs', () => {
               message:
                 'Variable "$input" got invalid value {"a":"foo","b":"bar"}.' +
                 '\nIn field "c": Expected "String!", found null.',
-              locations: [ { line: 2, column: 17 } ],
+              locations: [{ line: 2, column: 17 }],
               path: undefined,
-            }
-          ]
+            },
+          ],
         });
       });
 
@@ -356,16 +362,16 @@ describe('Execute: Handles inputs', () => {
                 '\nIn field "na": In field "c": Expected "String!", ' +
                 'found null.' +
                 '\nIn field "nb": Expected "String!", found null.',
-              locations: [ { line: 2, column: 19 } ],
+              locations: [{ line: 2, column: 19 }],
               path: undefined,
-            }
-          ]
+            },
+          ],
         });
       });
 
       it('errors on addition of unknown input field', async () => {
         const params = {
-          input: { a: 'foo', b: 'bar', c: 'baz', extra: 'dog' }
+          input: { a: 'foo', b: 'bar', c: 'baz', extra: 'dog' },
         };
 
         const result = await execute(schema, ast, null, null, params);
@@ -376,13 +382,12 @@ describe('Execute: Handles inputs', () => {
                 'Variable "$input" got invalid value ' +
                 '{"a":"foo","b":"bar","c":"baz","extra":"dog"}.' +
                 '\nIn field "extra": Unknown field.',
-              locations: [ { line: 2, column: 17 } ],
+              locations: [{ line: 2, column: 17 }],
               path: undefined,
-            }
-          ]
+            },
+          ],
         });
       });
-
     });
   });
 
@@ -397,8 +402,8 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: null
-        }
+          fieldWithNullableStringInput: null,
+        },
       });
     });
 
@@ -412,8 +417,8 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: null
-        }
+          fieldWithNullableStringInput: null,
+        },
       });
     });
 
@@ -427,8 +432,8 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: null
-        }
+          fieldWithNullableStringInput: null,
+        },
       });
     });
 
@@ -441,11 +446,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { value: null })
+        await execute(schema, ast, null, null, { value: null }),
       ).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: null
-        }
+          fieldWithNullableStringInput: null,
+        },
       });
     });
 
@@ -458,11 +463,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { value: 'a' })
+        await execute(schema, ast, null, null, { value: 'a' }),
       ).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: '"a"'
-        }
+          fieldWithNullableStringInput: '"a"',
+        },
       });
     });
 
@@ -476,8 +481,8 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: '"a"'
-        }
+          fieldWithNullableStringInput: '"a"',
+        },
       });
     });
   });
@@ -492,8 +497,8 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, parse(doc))).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: '"default"'
-        }
+          fieldWithNonNullableStringInput: '"default"',
+        },
       });
     });
 
@@ -510,10 +515,10 @@ describe('Execute: Handles inputs', () => {
           {
             message:
               'Variable "$value" of required type "String!" was not provided.',
-            locations: [ { line: 2, column: 31 } ],
+            locations: [{ line: 2, column: 31 }],
             path: undefined,
-          }
-        ]
+          },
+        ],
       });
     });
 
@@ -532,10 +537,10 @@ describe('Execute: Handles inputs', () => {
             message:
               'Variable "$value" got invalid value null.\n' +
               'Expected "String!", found null.',
-            locations: [ { line: 2, column: 31 } ],
+            locations: [{ line: 2, column: 31 }],
             path: undefined,
-          }
-        ]
+          },
+        ],
       });
     });
 
@@ -548,11 +553,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { value: 'a' })
+        await execute(schema, ast, null, null, { value: 'a' }),
       ).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: '"a"'
-        }
+          fieldWithNonNullableStringInput: '"a"',
+        },
       });
     });
 
@@ -566,8 +571,8 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: '"a"'
-        }
+          fieldWithNonNullableStringInput: '"a"',
+        },
       });
     });
 
@@ -581,13 +586,16 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: null
+          fieldWithNonNullableStringInput: null,
         },
-        errors: [ {
-          message: 'Argument "input" of required type "String!" was not provided.',
-          locations: [ { line: 3, column: 9 } ],
-          path: [ 'fieldWithNonNullableStringInput' ]
-        } ]
+        errors: [
+          {
+            message:
+              'Argument "input" of required type "String!" was not provided.',
+            locations: [{ line: 3, column: 9 }],
+            path: ['fieldWithNonNullableStringInput'],
+          },
+        ],
       });
     });
 
@@ -598,46 +606,46 @@ describe('Execute: Handles inputs', () => {
         }
       `;
       const ast = parse(doc);
-      const variables = {value: [ 1, 2, 3 ]};
+      const variables = { value: [1, 2, 3] };
 
-      expect(
-        await execute(schema, ast, null, null, variables)
-      ).to.deep.equal({
-        errors: [ {
-          message:
-            'Variable "$value" got invalid value [1,2,3].\nExpected type ' +
-            '"String", found [1,2,3]: String cannot represent an array value: [1,2,3]',
-          locations: [ { line: 2, column: 31 } ],
-          path: undefined,
-        } ]
+      expect(await execute(schema, ast, null, null, variables)).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$value" got invalid value [1,2,3].\nExpected type ' +
+              '"String", found [1,2,3]: String cannot represent an array value: [1,2,3]',
+            locations: [{ line: 2, column: 31 }],
+            path: undefined,
+          },
+        ],
       });
     });
 
     it('coercing an array to GraphQLString throws TypeError', async () => {
       let caughtError;
       try {
-        coerceValue(GraphQLString, [ 1, 2, 3 ]);
+        coerceValue(GraphQLString, [1, 2, 3]);
       } catch (error) {
         caughtError = error;
       }
 
       expect(caughtError instanceof TypeError).to.equal(true);
       expect(caughtError && caughtError.message).to.equal(
-        'String cannot represent an array value: [1,2,3]'
+        'String cannot represent an array value: [1,2,3]',
       );
     });
 
     it('serializing an array via GraphQLString throws TypeError', async () => {
       let caughtError;
       try {
-        GraphQLString.serialize([ 1, 2, 3 ]);
+        GraphQLString.serialize([1, 2, 3]);
       } catch (error) {
         caughtError = error;
       }
 
       expect(caughtError instanceof TypeError).to.equal(true);
       expect(caughtError && caughtError.message).to.equal(
-        'String cannot represent an array value: [1,2,3]'
+        'String cannot represent an array value: [1,2,3]',
       );
     });
 
@@ -656,15 +664,17 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: null
+          fieldWithNonNullableStringInput: null,
         },
-        errors: [ {
-          message:
-            'Argument "input" of required type "String!" was provided the ' +
-            'variable "$foo" which was not provided a runtime value.',
-          locations: [ { line: 3, column: 48 } ],
-          path: [ 'fieldWithNonNullableStringInput' ]
-        } ]
+        errors: [
+          {
+            message:
+              'Argument "input" of required type "String!" was provided the ' +
+              'variable "$foo" which was not provided a runtime value.',
+            locations: [{ line: 3, column: 48 }],
+            path: ['fieldWithNonNullableStringInput'],
+          },
+        ],
       });
     });
   });
@@ -679,11 +689,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { input: null })
+        await execute(schema, ast, null, null, { input: null }),
       ).to.deep.equal({
         data: {
-          list: null
-        }
+          list: null,
+        },
       });
     });
 
@@ -696,11 +706,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { input: [ 'A' ] })
+        await execute(schema, ast, null, null, { input: ['A'] }),
       ).to.deep.equal({
         data: {
-          list: '["A"]'
-        }
+          list: '["A"]',
+        },
       });
     });
 
@@ -713,11 +723,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { input: [ 'A', null, 'B' ] })
+        await execute(schema, ast, null, null, { input: ['A', null, 'B'] }),
       ).to.deep.equal({
         data: {
-          list: '["A",null,"B"]'
-        }
+          list: '["A",null,"B"]',
+        },
       });
     });
 
@@ -736,10 +746,10 @@ describe('Execute: Handles inputs', () => {
             message:
               'Variable "$input" got invalid value null.\n' +
               'Expected "[String]!", found null.',
-            locations: [ { line: 2, column: 17 } ],
+            locations: [{ line: 2, column: 17 }],
             path: undefined,
-          }
-        ]
+          },
+        ],
       });
     });
 
@@ -752,11 +762,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { input: [ 'A' ] })
+        await execute(schema, ast, null, null, { input: ['A'] }),
       ).to.deep.equal({
         data: {
-          nnList: '["A"]'
-        }
+          nnList: '["A"]',
+        },
       });
     });
 
@@ -769,11 +779,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { input: [ 'A', null, 'B' ] })
+        await execute(schema, ast, null, null, { input: ['A', null, 'B'] }),
       ).to.deep.equal({
         data: {
-          nnList: '["A",null,"B"]'
-        }
+          nnList: '["A",null,"B"]',
+        },
       });
     });
 
@@ -786,11 +796,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { input: null })
+        await execute(schema, ast, null, null, { input: null }),
       ).to.deep.equal({
         data: {
-          listNN: null
-        }
+          listNN: null,
+        },
       });
     });
 
@@ -803,11 +813,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { input: [ 'A' ] })
+        await execute(schema, ast, null, null, { input: ['A'] }),
       ).to.deep.equal({
         data: {
-          listNN: '["A"]'
-        }
+          listNN: '["A"]',
+        },
       });
     });
 
@@ -818,7 +828,7 @@ describe('Execute: Handles inputs', () => {
         }
       `;
       const ast = parse(doc);
-      const vars = { input: [ 'A', null, 'B' ] };
+      const vars = { input: ['A', null, 'B'] };
 
       const result = await execute(schema, ast, null, null, vars);
       expect(result).to.deep.equal({
@@ -827,10 +837,10 @@ describe('Execute: Handles inputs', () => {
             message:
               'Variable "$input" got invalid value ["A",null,"B"].' +
               '\nIn element #1: Expected "String!", found null.',
-            locations: [ { line: 2, column: 17 } ],
+            locations: [{ line: 2, column: 17 }],
             path: undefined,
-          }
-        ]
+          },
+        ],
       });
     });
 
@@ -849,10 +859,10 @@ describe('Execute: Handles inputs', () => {
             message:
               'Variable "$input" got invalid value null.\n' +
               'Expected "[String!]!", found null.',
-            locations: [ { line: 2, column: 17 } ],
+            locations: [{ line: 2, column: 17 }],
             path: undefined,
-          }
-        ]
+          },
+        ],
       });
     });
 
@@ -865,11 +875,11 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
 
       expect(
-        await execute(schema, ast, null, null, { input: [ 'A' ] })
+        await execute(schema, ast, null, null, { input: ['A'] }),
       ).to.deep.equal({
         data: {
-          nnListNN: '["A"]'
-        }
+          nnListNN: '["A"]',
+        },
       });
     });
 
@@ -880,7 +890,7 @@ describe('Execute: Handles inputs', () => {
         }
       `;
       const ast = parse(doc);
-      const vars = { input: [ 'A', null, 'B' ] };
+      const vars = { input: ['A', null, 'B'] };
 
       const result = await execute(schema, ast, null, null, vars);
       expect(result).to.deep.equal({
@@ -889,10 +899,10 @@ describe('Execute: Handles inputs', () => {
             message:
               'Variable "$input" got invalid value ["A",null,"B"].' +
               '\nIn element #1: Expected "String!", found null.',
-            locations: [ { line: 2, column: 17 } ],
+            locations: [{ line: 2, column: 17 }],
             path: undefined,
-          }
-        ]
+          },
+        ],
       });
     });
 
@@ -903,7 +913,7 @@ describe('Execute: Handles inputs', () => {
         }
       `;
       const ast = parse(doc);
-      const vars = { input: { list: [ 'A', 'B' ] } };
+      const vars = { input: { list: ['A', 'B'] } };
 
       const result = await execute(schema, ast, null, null, vars);
       expect(result).to.deep.equal({
@@ -912,10 +922,10 @@ describe('Execute: Handles inputs', () => {
             message:
               'Variable "$input" expected value of type "TestType!" which ' +
               'cannot be used as an input type.',
-            locations: [ { line: 2, column: 25 } ],
+            locations: [{ line: 2, column: 25 }],
             path: undefined,
-          }
-        ]
+          },
+        ],
       });
     });
 
@@ -935,17 +945,15 @@ describe('Execute: Handles inputs', () => {
             message:
               'Variable "$input" expected value of type "UnknownType!" which ' +
               'cannot be used as an input type.',
-            locations: [ { line: 2, column: 25 } ],
+            locations: [{ line: 2, column: 25 }],
             path: undefined,
-          }
-        ]
+          },
+        ],
       });
     });
-
   });
 
   describe('Execute: Uses argument default values', () => {
-
     it('when no argument provided', async () => {
       const ast = parse(`{
         fieldWithDefaultArgumentValue
@@ -953,8 +961,8 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithDefaultArgumentValue: '"Hello World"'
-        }
+          fieldWithDefaultArgumentValue: '"Hello World"',
+        },
       });
     });
 
@@ -965,8 +973,8 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithDefaultArgumentValue: '"Hello World"'
-        }
+          fieldWithDefaultArgumentValue: '"Hello World"',
+        },
       });
     });
 
@@ -977,18 +985,18 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithDefaultArgumentValue: null
+          fieldWithDefaultArgumentValue: null,
         },
-        errors: [ {
-          message:
-            'Argument "input" got invalid value WRONG_TYPE.\n' +
-            'Expected type "String", found WRONG_TYPE.',
-          locations: [ { line: 2, column: 46 } ],
-          path: [ 'fieldWithDefaultArgumentValue' ]
-        } ]
+        errors: [
+          {
+            message:
+              'Argument "input" got invalid value WRONG_TYPE.\n' +
+              'Expected type "String", found WRONG_TYPE.',
+            locations: [{ line: 2, column: 46 }],
+            path: ['fieldWithDefaultArgumentValue'],
+          },
+        ],
       });
     });
-
   });
-
 });

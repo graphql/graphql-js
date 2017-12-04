@@ -17,9 +17,8 @@ import {
   GraphQLUnionType,
   GraphQLList,
   GraphQLString,
-  GraphQLBoolean
+  GraphQLBoolean,
 } from '../../type';
-
 
 class Dog {
   constructor(name, barks) {
@@ -46,33 +45,33 @@ class Person {
 const NamedType = new GraphQLInterfaceType({
   name: 'Named',
   fields: {
-    name: { type: GraphQLString }
-  }
+    name: { type: GraphQLString },
+  },
 });
 
 const DogType = new GraphQLObjectType({
   name: 'Dog',
-  interfaces: [ NamedType ],
+  interfaces: [NamedType],
   fields: {
     name: { type: GraphQLString },
-    barks: { type: GraphQLBoolean }
+    barks: { type: GraphQLBoolean },
   },
-  isTypeOf: value => value instanceof Dog
+  isTypeOf: value => value instanceof Dog,
 });
 
 const CatType = new GraphQLObjectType({
   name: 'Cat',
-  interfaces: [ NamedType ],
+  interfaces: [NamedType],
   fields: {
     name: { type: GraphQLString },
-    meows: { type: GraphQLBoolean }
+    meows: { type: GraphQLBoolean },
   },
-  isTypeOf: value => value instanceof Cat
+  isTypeOf: value => value instanceof Cat,
 });
 
 const PetType = new GraphQLUnionType({
   name: 'Pet',
-  types: [ DogType, CatType ],
+  types: [DogType, CatType],
   resolveType(value) {
     if (value instanceof Dog) {
       return DogType;
@@ -80,32 +79,31 @@ const PetType = new GraphQLUnionType({
     if (value instanceof Cat) {
       return CatType;
     }
-  }
+  },
 });
 
 const PersonType = new GraphQLObjectType({
   name: 'Person',
-  interfaces: [ NamedType ],
+  interfaces: [NamedType],
   fields: {
     name: { type: GraphQLString },
     pets: { type: new GraphQLList(PetType) },
     friends: { type: new GraphQLList(NamedType) },
   },
-  isTypeOf: value => value instanceof Person
+  isTypeOf: value => value instanceof Person,
 });
 
 const schema = new GraphQLSchema({
   query: PersonType,
-  types: [ PetType ]
+  types: [PetType],
 });
 
 const garfield = new Cat('Garfield', false);
 const odie = new Dog('Odie', true);
 const liz = new Person('Liz');
-const john = new Person('John', [ garfield, odie ], [ liz, odie ]);
+const john = new Person('John', [garfield, odie], [liz, odie]);
 
 describe('Execute: Union and intersection types', () => {
-
   it('can introspect on union and intersection types', async () => {
     const ast = parse(`
       {
@@ -130,43 +128,31 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(
-      await execute(schema, ast)
-    ).to.deep.equal({
+    return expect(await execute(schema, ast)).to.deep.equal({
       data: {
         Named: {
           kind: 'INTERFACE',
           name: 'Named',
-          fields: [
-            { name: 'name' }
-          ],
+          fields: [{ name: 'name' }],
           interfaces: null,
-          possibleTypes: [
-            { name: 'Person' },
-            { name: 'Dog' },
-            { name: 'Cat' },
-          ],
+          possibleTypes: [{ name: 'Person' }, { name: 'Dog' }, { name: 'Cat' }],
           enumValues: null,
-          inputFields: null
+          inputFields: null,
         },
         Pet: {
           kind: 'UNION',
           name: 'Pet',
           fields: null,
           interfaces: null,
-          possibleTypes: [
-            { name: 'Dog' },
-            { name: 'Cat' }
-          ],
+          possibleTypes: [{ name: 'Dog' }, { name: 'Cat' }],
           enumValues: null,
-          inputFields: null
-        }
-      }
+          inputFields: null,
+        },
+      },
     });
   });
 
   it('executes using union types', async () => {
-
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
     const ast = parse(`
       {
@@ -181,22 +167,19 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(
-      await execute(schema, ast, john)
-    ).to.deep.equal({
+    return expect(await execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
         pets: [
           { __typename: 'Cat', name: 'Garfield', meows: false },
-          { __typename: 'Dog', name: 'Odie', barks: true }
-        ]
-      }
+          { __typename: 'Dog', name: 'Odie', barks: true },
+        ],
+      },
     });
   });
 
   it('executes union types with inline fragments', async () => {
-
     // This is the valid version of the query in the above test.
     const ast = parse(`
       {
@@ -216,22 +199,19 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(
-      await execute(schema, ast, john)
-    ).to.deep.equal({
+    return expect(await execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
         pets: [
           { __typename: 'Cat', name: 'Garfield', meows: false },
-          { __typename: 'Dog', name: 'Odie', barks: true }
-        ]
-      }
+          { __typename: 'Dog', name: 'Odie', barks: true },
+        ],
+      },
     });
   });
 
   it('executes using interface types', async () => {
-
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
     const ast = parse(`
       {
@@ -246,22 +226,19 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(
-      await execute(schema, ast, john)
-    ).to.deep.equal({
+    return expect(await execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
         friends: [
           { __typename: 'Person', name: 'Liz' },
-          { __typename: 'Dog', name: 'Odie', barks: true }
-        ]
-      }
+          { __typename: 'Dog', name: 'Odie', barks: true },
+        ],
+      },
     });
   });
 
   it('executes union types with inline fragments', async () => {
-
     // This is the valid version of the query in the above test.
     const ast = parse(`
       {
@@ -280,22 +257,19 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(
-      await execute(schema, ast, john)
-    ).to.deep.equal({
+    return expect(await execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
         friends: [
           { __typename: 'Person', name: 'Liz' },
-          { __typename: 'Dog', name: 'Odie', barks: true }
-        ]
-      }
+          { __typename: 'Dog', name: 'Odie', barks: true },
+        ],
+      },
     });
   });
 
   it('allows fragment conditions to be abstract types', async () => {
-
     const ast = parse(`
       {
         __typename
@@ -328,21 +302,19 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(
-      await execute(schema, ast, john)
-    ).to.deep.equal({
+    return expect(await execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
         pets: [
           { __typename: 'Cat', name: 'Garfield', meows: false },
-          { __typename: 'Dog', name: 'Odie', barks: true }
+          { __typename: 'Dog', name: 'Odie', barks: true },
         ],
         friends: [
           { __typename: 'Person', name: 'Liz' },
-          { __typename: 'Dog', name: 'Odie', barks: true }
-        ]
-      }
+          { __typename: 'Dog', name: 'Odie', barks: true },
+        ],
+      },
     });
   });
 
@@ -354,19 +326,19 @@ describe('Execute: Union and intersection types', () => {
     const NamedType2 = new GraphQLInterfaceType({
       name: 'Named',
       fields: {
-        name: { type: GraphQLString }
+        name: { type: GraphQLString },
       },
       resolveType(obj, context, { schema: _schema, rootValue }) {
         encounteredContext = context;
         encounteredSchema = _schema;
         encounteredRootValue = rootValue;
         return PersonType2;
-      }
+      },
     });
 
     const PersonType2 = new GraphQLObjectType({
       name: 'Person',
-      interfaces: [ NamedType2 ],
+      interfaces: [NamedType2],
       fields: {
         name: { type: GraphQLString },
         friends: { type: new GraphQLList(NamedType2) },
@@ -374,19 +346,17 @@ describe('Execute: Union and intersection types', () => {
     });
 
     const schema2 = new GraphQLSchema({
-      query: PersonType2
+      query: PersonType2,
     });
 
-    const john2 = new Person('John', [], [ liz ]);
+    const john2 = new Person('John', [], [liz]);
 
     const context = { authToken: '123abc' };
 
     const ast = parse('{ name, friends { name } }');
 
-    expect(
-      await execute(schema2, ast, john2, context)
-    ).to.deep.equal({
-      data: { name: 'John', friends: [ { name: 'Liz' } ] }
+    expect(await execute(schema2, ast, john2, context)).to.deep.equal({
+      data: { name: 'John', friends: [{ name: 'Liz' }] },
     });
 
     expect(encounteredContext).to.equal(context);

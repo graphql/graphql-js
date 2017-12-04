@@ -13,11 +13,10 @@ import {
   unknownDirectiveArgMessage,
 } from '../rules/KnownArgumentNames';
 
-
 function unknownArg(argName, fieldName, typeName, suggestedArgs, line, column) {
   return {
     message: unknownArgMessage(argName, fieldName, typeName, suggestedArgs),
-    locations: [ { line, column } ],
+    locations: [{ line, column }],
     path: undefined,
   };
 }
@@ -27,59 +26,75 @@ function unknownDirectiveArg(
   directiveName,
   suggestedArgs,
   line,
-  column
+  column,
 ) {
   return {
     message: unknownDirectiveArgMessage(argName, directiveName, suggestedArgs),
-    locations: [ { line, column } ],
+    locations: [{ line, column }],
     path: undefined,
   };
 }
 
 describe('Validate: Known argument names', () => {
-
   it('single arg is known', () => {
-    expectPassesRule(KnownArgumentNames, `
+    expectPassesRule(
+      KnownArgumentNames,
+      `
       fragment argOnRequiredArg on Dog {
         doesKnowCommand(dogCommand: SIT)
       }
-    `);
+    `,
+    );
   });
 
   it('multiple args are known', () => {
-    expectPassesRule(KnownArgumentNames, `
+    expectPassesRule(
+      KnownArgumentNames,
+      `
       fragment multipleArgs on ComplicatedArgs {
         multipleReqs(req1: 1, req2: 2)
       }
-    `);
+    `,
+    );
   });
 
   it('ignores args of unknown fields', () => {
-    expectPassesRule(KnownArgumentNames, `
+    expectPassesRule(
+      KnownArgumentNames,
+      `
       fragment argOnUnknownField on Dog {
         unknownField(unknownArg: SIT)
       }
-    `);
+    `,
+    );
   });
 
   it('multiple args in reverse order are known', () => {
-    expectPassesRule(KnownArgumentNames, `
+    expectPassesRule(
+      KnownArgumentNames,
+      `
       fragment multipleArgsReverseOrder on ComplicatedArgs {
         multipleReqs(req2: 2, req1: 1)
       }
-    `);
+    `,
+    );
   });
 
   it('no args on optional arg', () => {
-    expectPassesRule(KnownArgumentNames, `
+    expectPassesRule(
+      KnownArgumentNames,
+      `
       fragment noArgOnOptionalArg on Dog {
         isHousetrained
       }
-    `);
+    `,
+    );
   });
 
   it('args are known deeply', () => {
-    expectPassesRule(KnownArgumentNames, `
+    expectPassesRule(
+      KnownArgumentNames,
+      `
       {
         dog {
           doesKnowCommand(dogCommand: SIT)
@@ -92,50 +107,64 @@ describe('Validate: Known argument names', () => {
           }
         }
       }
-    `);
+    `,
+    );
   });
 
   it('directive args are known', () => {
-    expectPassesRule(KnownArgumentNames, `
+    expectPassesRule(
+      KnownArgumentNames,
+      `
       {
         dog @skip(if: true)
       }
-    `);
+    `,
+    );
   });
 
   it('undirective args are invalid', () => {
-    expectFailsRule(KnownArgumentNames, `
+    expectFailsRule(
+      KnownArgumentNames,
+      `
       {
         dog @skip(unless: true)
       }
-    `, [
-      unknownDirectiveArg('unless', 'skip', [], 3, 19),
-    ]);
+    `,
+      [unknownDirectiveArg('unless', 'skip', [], 3, 19)],
+    );
   });
 
   it('invalid arg name', () => {
-    expectFailsRule(KnownArgumentNames, `
+    expectFailsRule(
+      KnownArgumentNames,
+      `
       fragment invalidArgName on Dog {
         doesKnowCommand(unknown: true)
       }
-    `, [
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 25),
-    ]);
+    `,
+      [unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 25)],
+    );
   });
 
   it('unknown args amongst known args', () => {
-    expectFailsRule(KnownArgumentNames, `
+    expectFailsRule(
+      KnownArgumentNames,
+      `
       fragment oneGoodArgOneInvalidArg on Dog {
         doesKnowCommand(whoknows: 1, dogCommand: SIT, unknown: true)
       }
-    `, [
-      unknownArg('whoknows', 'doesKnowCommand', 'Dog', [], 3, 25),
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 55),
-    ]);
+    `,
+      [
+        unknownArg('whoknows', 'doesKnowCommand', 'Dog', [], 3, 25),
+        unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 55),
+      ],
+    );
   });
 
   it('unknown args deeply', () => {
-    expectFailsRule(KnownArgumentNames, `
+    expectFailsRule(
+      KnownArgumentNames,
+      `
       {
         dog {
           doesKnowCommand(unknown: true)
@@ -148,10 +177,11 @@ describe('Validate: Known argument names', () => {
           }
         }
       }
-    `, [
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 4, 27),
-      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 9, 31),
-    ]);
+    `,
+      [
+        unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 4, 27),
+        unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 9, 31),
+      ],
+    );
   });
-
 });

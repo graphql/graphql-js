@@ -12,12 +12,10 @@ import * as Kind from '../language/kinds';
 import type {
   NamedTypeNode,
   ListTypeNode,
-  NonNullTypeNode
+  NonNullTypeNode,
 } from '../language/ast';
 import { GraphQLList, GraphQLNonNull } from '../type/definition';
-import type {
-  GraphQLNamedType,
-} from '../type/definition';
+import type { GraphQLNamedType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
 /**
@@ -30,18 +28,18 @@ import type { GraphQLSchema } from '../type/schema';
 /* eslint-disable no-redeclare */
 declare function typeFromASTType(
   schema: GraphQLSchema,
-  typeNode: NamedTypeNode
+  typeNode: NamedTypeNode,
 ): void | GraphQLNamedType;
 declare function typeFromASTType(
   schema: GraphQLSchema,
-  typeNode: ListTypeNode
+  typeNode: ListTypeNode,
 ): void | GraphQLList<*>;
 declare function typeFromASTType(
   schema: GraphQLSchema,
-  typeNode: NonNullTypeNode
+  typeNode: NonNullTypeNode,
 ): void | GraphQLNonNull<*>;
 function typeFromASTImpl(schema, typeNode) {
-/* eslint-enable no-redeclare */
+  /* eslint-enable no-redeclare */
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);

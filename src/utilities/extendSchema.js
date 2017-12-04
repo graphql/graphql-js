@@ -21,21 +21,13 @@ import {
   GraphQLUnionType,
 } from '../type/definition';
 
-import {
-  GraphQLDirective,
-} from '../type/directives';
+import { GraphQLDirective } from '../type/directives';
 
 import * as Kind from '../language/kinds';
 
-import type {
-  GraphQLType,
-  GraphQLNamedType,
-} from '../type/definition';
+import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 
-import type {
-  DocumentNode,
-  DirectiveDefinitionNode,
-} from '../language/ast';
+import type { DocumentNode, DirectiveDefinitionNode } from '../language/ast';
 
 type Options = {| commentDescriptions?: boolean |};
 
@@ -64,12 +56,12 @@ export function extendSchema(
 ): GraphQLSchema {
   invariant(
     schema instanceof GraphQLSchema,
-    'Must provide valid GraphQLSchema'
+    'Must provide valid GraphQLSchema',
   );
 
   invariant(
     documentAST && documentAST.kind === Kind.DOCUMENT,
-    'Must provide valid Document AST'
+    'Must provide valid Document AST',
   );
 
   // Collect the type definitions and extensions found in the document.
@@ -78,7 +70,7 @@ export function extendSchema(
 
   // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
-  const directiveDefinitions : Array<DirectiveDefinitionNode> = [];
+  const directiveDefinitions: Array<DirectiveDefinitionNode> = [];
 
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const def = documentAST.definitions[i];
@@ -95,8 +87,8 @@ export function extendSchema(
         if (schema.getType(typeName)) {
           throw new GraphQLError(
             `Type "${typeName}" already exists in the schema. It cannot also ` +
-            'be defined in this type definition.',
-            [ def ]
+              'be defined in this type definition.',
+            [def],
           );
         }
         typeDefinitionMap[typeName] = def;
@@ -109,21 +101,21 @@ export function extendSchema(
         if (!existingType) {
           throw new GraphQLError(
             `Cannot extend type "${extendedTypeName}" because it does not ` +
-            'exist in the existing schema.',
-            [ def ]
+              'exist in the existing schema.',
+            [def],
           );
         }
         if (!(existingType instanceof GraphQLObjectType)) {
           throw new GraphQLError(
             `Cannot extend non-object type "${extendedTypeName}".`,
-            [ def ]
+            [def],
           );
         }
         let extensions = typeExtensionsMap[extendedTypeName];
         if (extensions) {
           extensions.push(def);
         } else {
-          extensions = [ def ];
+          extensions = [def];
         }
         typeExtensionsMap[extendedTypeName] = extensions;
         break;
@@ -133,8 +125,8 @@ export function extendSchema(
         if (existingDirective) {
           throw new GraphQLError(
             `Directive "${directiveName}" already exists in the schema. It ` +
-            'cannot be redefined.',
-            [ def ]
+              'cannot be redefined.',
+            [def],
           );
         }
         directiveDefinitions.push(def);
@@ -144,9 +136,11 @@ export function extendSchema(
 
   // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
-  if (Object.keys(typeExtensionsMap).length === 0 &&
-      Object.keys(typeDefinitionMap).length === 0 &&
-      directiveDefinitions.length === 0) {
+  if (
+    Object.keys(typeExtensionsMap).length === 0 &&
+    Object.keys(typeDefinitionMap).length === 0 &&
+    directiveDefinitions.length === 0
+  ) {
     return schema;
   }
 
@@ -162,33 +156,34 @@ export function extendSchema(
       if (node) {
         throw new GraphQLError(
           `Unknown type: "${typeName}". Ensure that this type exists ` +
-          'either in the original schema, or is added in a type definition.',
-          [ node ]
+            'either in the original schema, or is added in a type definition.',
+          [node],
         );
       }
       throw GraphQLError('Missing type from schema');
-    }
+    },
   );
 
   // Get the root Query, Mutation, and Subscription object types.
-  const queryType =
-    definitionBuilder.buildObjectType(schema.getQueryType().name);
+  const queryType = definitionBuilder.buildObjectType(
+    schema.getQueryType().name,
+  );
 
   const existingMutationType = schema.getMutationType();
-  const mutationType = existingMutationType ?
-    definitionBuilder.buildObjectType(existingMutationType.name) :
-    null;
+  const mutationType = existingMutationType
+    ? definitionBuilder.buildObjectType(existingMutationType.name)
+    : null;
 
   const existingSubscriptionType = schema.getSubscriptionType();
-  const subscriptionType = existingSubscriptionType ?
-    definitionBuilder.buildObjectType(existingSubscriptionType.name) :
-    null;
+  const subscriptionType = existingSubscriptionType
+    ? definitionBuilder.buildObjectType(existingSubscriptionType.name)
+    : null;
 
   // Iterate through all types, getting the type definition for each, ensuring
   // that any type not directly referenced by a field will get created.
   const typeMap = schema.getTypeMap();
   const types = Object.keys(typeMap).map(typeName =>
-    definitionBuilder.buildType(typeName)
+    definitionBuilder.buildType(typeName),
   );
 
   // Do the same with new types, appending to the list of defined types.
@@ -214,7 +209,7 @@ export function extendSchema(
     invariant(existingDirectives, 'schema must have default directives');
 
     const newDirectives = directiveDefinitions.map(directiveNode =>
-      definitionBuilder.buildDirective(directiveNode)
+      definitionBuilder.buildDirective(directiveNode),
     );
     return existingDirectives.concat(newDirectives);
   }
@@ -258,7 +253,7 @@ export function extendSchema(
   }
 
   function extendInterfaceType(
-    type: GraphQLInterfaceType
+    type: GraphQLInterfaceType,
   ): GraphQLInterfaceType {
     return new GraphQLInterfaceType({
       name: type.name,
@@ -280,7 +275,7 @@ export function extendSchema(
   }
 
   function extendImplementedInterfaces(
-    type: GraphQLObjectType
+    type: GraphQLObjectType,
   ): Array<GraphQLInterfaceType> {
     const interfaces = type.getInterfaces().map(getTypeFromDef);
 
@@ -293,8 +288,8 @@ export function extendSchema(
           if (interfaces.some(def => def.name === interfaceName)) {
             throw new GraphQLError(
               `Type "${type.name}" already implements "${interfaceName}". ` +
-              'It cannot also be implemented in this type extension.',
-              [ namedType ]
+                'It cannot also be implemented in this type extension.',
+              [namedType],
             );
           }
           interfaces.push(definitionBuilder.buildInterfaceType(namedType));
@@ -329,8 +324,8 @@ export function extendSchema(
           if (oldFieldMap[fieldName]) {
             throw new GraphQLError(
               `Field "${type.name}.${fieldName}" already exists in the ` +
-              'schema. It cannot also be defined in this type extension.',
-              [ field ]
+                'schema. It cannot also be defined in this type extension.',
+              [field],
             );
           }
           newFieldMap[fieldName] = definitionBuilder.buildField(field);

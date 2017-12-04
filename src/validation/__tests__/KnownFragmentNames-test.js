@@ -12,19 +12,19 @@ import {
   unknownFragmentMessage,
 } from '../rules/KnownFragmentNames';
 
-
 function undefFrag(fragName, line, column) {
   return {
     message: unknownFragmentMessage(fragName),
-    locations: [ { line, column } ],
+    locations: [{ line, column }],
     path: undefined,
   };
 }
 
 describe('Validate: Known fragment names', () => {
-
   it('known fragment names are valid', () => {
-    expectPassesRule(KnownFragmentNames, `
+    expectPassesRule(
+      KnownFragmentNames,
+      `
       {
         human(id: 4) {
           ...HumanFields1
@@ -46,11 +46,14 @@ describe('Validate: Known fragment names', () => {
       fragment HumanFields3 on Human {
         name
       }
-    `);
+    `,
+    );
   });
 
   it('unknown fragment names are invalid', () => {
-    expectFailsRule(KnownFragmentNames, `
+    expectFailsRule(
+      KnownFragmentNames,
+      `
       {
         human(id: 4) {
           ...UnknownFragment1
@@ -63,11 +66,12 @@ describe('Validate: Known fragment names', () => {
         name
         ...UnknownFragment3
       }
-    `, [
-      undefFrag('UnknownFragment1', 4, 14),
-      undefFrag('UnknownFragment2', 6, 16),
-      undefFrag('UnknownFragment3', 12, 12)
-    ]);
+    `,
+      [
+        undefFrag('UnknownFragment1', 4, 14),
+        undefFrag('UnknownFragment2', 6, 16),
+        undefFrag('UnknownFragment3', 12, 12),
+      ],
+    );
   });
-
 });

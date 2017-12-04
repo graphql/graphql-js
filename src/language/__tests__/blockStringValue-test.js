@@ -10,7 +10,6 @@ import { describe, it } from 'mocha';
 import blockStringValue from '../blockStringValue';
 
 describe('blockStringValue', () => {
-
   it('removes uniform indentation from a string', () => {
     const rawValue = [
       '',
@@ -20,13 +19,9 @@ describe('blockStringValue', () => {
       '    Yours,',
       '      GraphQL.',
     ].join('\n');
-    expect(blockStringValue(rawValue)).to.equal([
-      'Hello,',
-      '  World!',
-      '',
-      'Yours,',
-      '  GraphQL.',
-    ].join('\n'));
+    expect(blockStringValue(rawValue)).to.equal(
+      ['Hello,', '  World!', '', 'Yours,', '  GraphQL.'].join('\n'),
+    );
   });
 
   it('removes empty leading and trailing lines', () => {
@@ -41,13 +36,9 @@ describe('blockStringValue', () => {
       '',
       '',
     ].join('\n');
-    expect(blockStringValue(rawValue)).to.equal([
-      'Hello,',
-      '  World!',
-      '',
-      'Yours,',
-      '  GraphQL.',
-    ].join('\n'));
+    expect(blockStringValue(rawValue)).to.equal(
+      ['Hello,', '  World!', '', 'Yours,', '  GraphQL.'].join('\n'),
+    );
   });
 
   it('removes blank leading and trailing lines', () => {
@@ -62,13 +53,9 @@ describe('blockStringValue', () => {
       '        ',
       '  ',
     ].join('\n');
-    expect(blockStringValue(rawValue)).to.equal([
-      'Hello,',
-      '  World!',
-      '',
-      'Yours,',
-      '  GraphQL.',
-    ].join('\n'));
+    expect(blockStringValue(rawValue)).to.equal(
+      ['Hello,', '  World!', '', 'Yours,', '  GraphQL.'].join('\n'),
+    );
   });
 
   it('retains indentation from first line', () => {
@@ -79,13 +66,9 @@ describe('blockStringValue', () => {
       '    Yours,',
       '      GraphQL.',
     ].join('\n');
-    expect(blockStringValue(rawValue)).to.equal([
-      '    Hello,',
-      '  World!',
-      '',
-      'Yours,',
-      '  GraphQL.',
-    ].join('\n'));
+    expect(blockStringValue(rawValue)).to.equal(
+      ['    Hello,', '  World!', '', 'Yours,', '  GraphQL.'].join('\n'),
+    );
   });
 
   it('does not alter trailing spaces', () => {
@@ -98,13 +81,14 @@ describe('blockStringValue', () => {
       '      GraphQL. ',
       '               ',
     ].join('\n');
-    expect(blockStringValue(rawValue)).to.equal([
-      'Hello,     ',
-      '  World!   ',
-      '           ',
-      'Yours,     ',
-      '  GraphQL. ',
-    ].join('\n'));
+    expect(blockStringValue(rawValue)).to.equal(
+      [
+        'Hello,     ',
+        '  World!   ',
+        '           ',
+        'Yours,     ',
+        '  GraphQL. ',
+      ].join('\n'),
+    );
   });
-
 });

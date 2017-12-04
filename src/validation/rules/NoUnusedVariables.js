@@ -10,14 +10,13 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
-
 export function unusedVariableMessage(
   varName: string,
-  opName: ?string
+  opName: ?string,
 ): string {
-  return opName ?
-    `Variable "$${varName}" is never used in operation "${opName}".` :
-    `Variable "$${varName}" is never used.`;
+  return opName
+    ? `Variable "$${varName}" is never used in operation "${opName}".`
+    : `Variable "$${varName}" is never used.`;
 }
 
 /**
@@ -46,16 +45,17 @@ export function NoUnusedVariables(context: ValidationContext): any {
         variableDefs.forEach(variableDef => {
           const variableName = variableDef.variable.name.value;
           if (variableNameUsed[variableName] !== true) {
-            context.reportError(new GraphQLError(
-              unusedVariableMessage(variableName, opName),
-              [ variableDef ]
-            ));
+            context.reportError(
+              new GraphQLError(unusedVariableMessage(variableName, opName), [
+                variableDef,
+              ]),
+            );
           }
         });
-      }
+      },
     },
     VariableDefinition(def) {
       variableDefs.push(def);
-    }
+    },
   };
 }

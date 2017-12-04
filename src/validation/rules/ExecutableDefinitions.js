@@ -15,9 +15,7 @@ import {
 } from '../../language/kinds';
 
 export function nonExecutableDefinitionMessage(defName: string): string {
-  return (
-    `The "${defName}" definition is not executable.`
-  );
+  return `The "${defName}" definition is not executable.`;
 }
 
 /**
@@ -34,15 +32,15 @@ export function ExecutableDefinitions(context: ValidationContext): any {
           definition.kind !== OPERATION_DEFINITION &&
           definition.kind !== FRAGMENT_DEFINITION
         ) {
-          context.reportError(new GraphQLError(
-            nonExecutableDefinitionMessage(
-              definition.name.value,
+          context.reportError(
+            new GraphQLError(
+              nonExecutableDefinitionMessage(definition.name.value),
+              [definition.name],
             ),
-            [ definition.name ]
-          ));
+          );
         }
       });
       return false;
-    }
+    },
   };
 }

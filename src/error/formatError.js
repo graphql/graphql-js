@@ -10,7 +10,6 @@
 import invariant from '../jsutils/invariant';
 import type { GraphQLError } from './GraphQLError';
 
-
 /**
  * Given a GraphQLError, format it according to the rules described by the
  * Response Format, Errors section of the GraphQL Specification.
@@ -21,17 +20,17 @@ export function formatError(error: GraphQLError): GraphQLFormattedError {
     ...error.extensions,
     message: error.message,
     locations: error.locations,
-    path: error.path
+    path: error.path,
   };
 }
 
 export type GraphQLFormattedError = {
   message: string,
   locations: ?Array<GraphQLErrorLocation>,
-  path: ?Array<string | number>
+  path: ?Array<string | number>,
 };
 
 export type GraphQLErrorLocation = {
   line: number,
-  column: number
+  column: number,
 };

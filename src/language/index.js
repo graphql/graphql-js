@@ -29,7 +29,6 @@ export type {
   Location,
   Token,
   ASTNode,
-
   // Each kind of AST node
   NameNode,
   DocumentNode,

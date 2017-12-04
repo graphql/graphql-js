@@ -8,11 +8,8 @@
  */
 
 import { visit } from '../language/visitor';
-import type {ObjMap} from '../jsutils/ObjMap';
-import type {
-  DocumentNode,
-  OperationDefinitionNode,
-} from '../language/ast';
+import type { ObjMap } from '../jsutils/ObjMap';
+import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 
 /**
  * separateOperations accepts a single AST document which may contain many
@@ -21,7 +18,7 @@ import type {
  * refers to.
  */
 export function separateOperations(
-  documentAST: DocumentNode
+  documentAST: DocumentNode,
 ): ObjMap<DocumentNode> {
   const operations = [];
   const fragments = Object.create(null);
@@ -44,9 +41,10 @@ export function separateOperations(
     },
     FragmentSpread(node) {
       const toName = node.name.value;
-      (depGraph[fromName] ||
-        (depGraph[fromName] = Object.create(null)))[toName] = true;
-    }
+      (depGraph[fromName] || (depGraph[fromName] = Object.create(null)))[
+        toName
+      ] = true;
+    },
   });
 
   // For each operation, produce a new synthesized AST which includes only what
@@ -59,17 +57,17 @@ export function separateOperations(
 
     // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
-    const definitions = [ operation ];
+    const definitions = [operation];
     Object.keys(dependencies).forEach(name => {
       definitions.push(fragments[name]);
     });
     definitions.sort(
-      (n1, n2) => (positions.get(n1) || 0) - (positions.get(n2) || 0)
+      (n1, n2) => (positions.get(n1) || 0) - (positions.get(n2) || 0),
     );
 
     separatedDocumentASTs[operationName] = {
       kind: 'Document',
-      definitions
+      definitions,
     };
   });
 
@@ -88,7 +86,7 @@ function opName(operation: OperationDefinitionNode): string {
 function collectTransitiveDependencies(
   collected: ObjMap<boolean>,
   depGraph: DepGraph,
-  fromName: string
+  fromName: string,
 ): void {
   const immediateDeps = depGraph[fromName];
   if (immediateDeps) {

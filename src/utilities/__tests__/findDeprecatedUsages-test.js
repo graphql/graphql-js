@@ -17,13 +17,12 @@ import {
 } from '../../type';
 
 describe('findDeprecatedUsages', () => {
-
   const enumType = new GraphQLEnumType({
     name: 'EnumType',
     values: {
       ONE: {},
-      TWO: { deprecationReason: 'Some enum reason.' }
-    }
+      TWO: { deprecationReason: 'Some enum reason.' },
+    },
   });
 
   const schema = new GraphQLSchema({
@@ -39,15 +38,15 @@ describe('findDeprecatedUsages', () => {
         deprecatedField: {
           type: GraphQLString,
           deprecationReason: 'Some field reason.',
-        }
-      }
-    })
+        },
+      },
+    }),
   });
 
   it('should report empty set for no deprecated usages', () => {
     const errors = findDeprecatedUsages(
       schema,
-      parse('{ normalField(enumArg: ONE) }')
+      parse('{ normalField(enumArg: ONE) }'),
     );
 
     expect(errors.length).to.equal(0);
@@ -56,27 +55,26 @@ describe('findDeprecatedUsages', () => {
   it('should report usage of deprecated fields', () => {
     const errors = findDeprecatedUsages(
       schema,
-      parse('{ normalField, deprecatedField }')
+      parse('{ normalField, deprecatedField }'),
     );
 
     const errorMessages = errors.map(err => err.message);
 
     expect(errorMessages).to.deep.equal([
-      'The field Query.deprecatedField is deprecated. Some field reason.'
+      'The field Query.deprecatedField is deprecated. Some field reason.',
     ]);
   });
 
   it('should report usage of deprecated enums', () => {
     const errors = findDeprecatedUsages(
       schema,
-      parse('{ normalField(enumArg: TWO) }')
+      parse('{ normalField(enumArg: TWO) }'),
     );
 
     const errorMessages = errors.map(err => err.message);
 
     expect(errorMessages).to.deep.equal([
-      'The enum value EnumType.TWO is deprecated. Some enum reason.'
+      'The enum value EnumType.TWO is deprecated. Some enum reason.',
     ]);
   });
-
 });

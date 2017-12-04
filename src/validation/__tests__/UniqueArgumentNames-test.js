@@ -12,130 +12,160 @@ import {
   duplicateArgMessage,
 } from '../rules/UniqueArgumentNames';
 
-
 function duplicateArg(argName, l1, c1, l2, c2) {
   return {
     message: duplicateArgMessage(argName),
-    locations: [ { line: l1, column: c1 }, { line: l2, column: c2 } ],
+    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
     path: undefined,
   };
 }
 
 describe('Validate: Unique argument names', () => {
-
   it('no arguments on field', () => {
-    expectPassesRule(UniqueArgumentNames, `
+    expectPassesRule(
+      UniqueArgumentNames,
+      `
       {
         field
       }
-    `);
+    `,
+    );
   });
 
   it('no arguments on directive', () => {
-    expectPassesRule(UniqueArgumentNames, `
+    expectPassesRule(
+      UniqueArgumentNames,
+      `
       {
         field @directive
       }
-    `);
+    `,
+    );
   });
 
   it('argument on field', () => {
-    expectPassesRule(UniqueArgumentNames, `
+    expectPassesRule(
+      UniqueArgumentNames,
+      `
       {
         field(arg: "value")
       }
-    `);
+    `,
+    );
   });
 
   it('argument on directive', () => {
-    expectPassesRule(UniqueArgumentNames, `
+    expectPassesRule(
+      UniqueArgumentNames,
+      `
       {
         field @directive(arg: "value")
       }
-    `);
+    `,
+    );
   });
 
   it('same argument on two fields', () => {
-    expectPassesRule(UniqueArgumentNames, `
+    expectPassesRule(
+      UniqueArgumentNames,
+      `
       {
         one: field(arg: "value")
         two: field(arg: "value")
       }
-    `);
+    `,
+    );
   });
 
   it('same argument on field and directive', () => {
-    expectPassesRule(UniqueArgumentNames, `
+    expectPassesRule(
+      UniqueArgumentNames,
+      `
       {
         field(arg: "value") @directive(arg: "value")
       }
-    `);
+    `,
+    );
   });
 
   it('same argument on two directives', () => {
-    expectPassesRule(UniqueArgumentNames, `
+    expectPassesRule(
+      UniqueArgumentNames,
+      `
       {
         field @directive1(arg: "value") @directive2(arg: "value")
       }
-    `);
+    `,
+    );
   });
 
   it('multiple field arguments', () => {
-    expectPassesRule(UniqueArgumentNames, `
+    expectPassesRule(
+      UniqueArgumentNames,
+      `
       {
         field(arg1: "value", arg2: "value", arg3: "value")
       }
-    `);
+    `,
+    );
   });
 
   it('multiple directive arguments', () => {
-    expectPassesRule(UniqueArgumentNames, `
+    expectPassesRule(
+      UniqueArgumentNames,
+      `
       {
         field @directive(arg1: "value", arg2: "value", arg3: "value")
       }
-    `);
+    `,
+    );
   });
 
   it('duplicate field arguments', () => {
-    expectFailsRule(UniqueArgumentNames, `
+    expectFailsRule(
+      UniqueArgumentNames,
+      `
       {
         field(arg1: "value", arg1: "value")
       }
-    `, [
-      duplicateArg('arg1', 3, 15, 3, 30)
-    ]);
+    `,
+      [duplicateArg('arg1', 3, 15, 3, 30)],
+    );
   });
 
   it('many duplicate field arguments', () => {
-    expectFailsRule(UniqueArgumentNames, `
+    expectFailsRule(
+      UniqueArgumentNames,
+      `
       {
         field(arg1: "value", arg1: "value", arg1: "value")
       }
-    `, [
-      duplicateArg('arg1', 3, 15, 3, 30),
-      duplicateArg('arg1', 3, 15, 3, 45)
-    ]);
+    `,
+      [duplicateArg('arg1', 3, 15, 3, 30), duplicateArg('arg1', 3, 15, 3, 45)],
+    );
   });
 
   it('duplicate directive arguments', () => {
-    expectFailsRule(UniqueArgumentNames, `
+    expectFailsRule(
+      UniqueArgumentNames,
+      `
       {
         field @directive(arg1: "value", arg1: "value")
       }
-    `, [
-      duplicateArg('arg1', 3, 26, 3, 41)
-    ]);
+    `,
+      [duplicateArg('arg1', 3, 26, 3, 41)],
+    );
   });
 
   it('many duplicate directive arguments', () => {
-    expectFailsRule(UniqueArgumentNames, `
+    expectFailsRule(
+      UniqueArgumentNames,
+      `
       {
         field @directive(arg1: "value", arg1: "value", arg1: "value")
       }
-    `, [
-      duplicateArg('arg1', 3, 26, 3, 41),
-      duplicateArg('arg1', 3, 26, 3, 56)
-    ]);
+    `,
+      [duplicateArg('arg1', 3, 26, 3, 41), duplicateArg('arg1', 3, 26, 3, 56)],
+    );
   });
-
 });

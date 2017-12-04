@@ -11,7 +11,7 @@ import { getLocation } from '../language/location';
 import type { Source } from '../language/source';
 import { GraphQLError } from './GraphQLError';
 
-import type {SourceLocation} from '../language/location';
+import type { SourceLocation } from '../language/location';
 
 /**
  * Produces a GraphQLError representing a syntax error, containing useful
@@ -20,7 +20,7 @@ import type {SourceLocation} from '../language/location';
 export function syntaxError(
   source: Source,
   position: number,
-  description: string
+  description: string,
 ): GraphQLError {
   const location = getLocation(source, position);
   const line = location.line + source.locationOffset.line - 1;
@@ -28,10 +28,11 @@ export function syntaxError(
   const column = location.column + columnOffset;
   const error = new GraphQLError(
     `Syntax Error ${source.name} (${line}:${column}) ${description}` +
-      '\n\n' + highlightSourceAtLocation(source, location),
+      '\n\n' +
+      highlightSourceAtLocation(source, location),
     undefined,
     source,
-    [ position ]
+    [position],
   );
   return error;
 }
@@ -52,19 +53,22 @@ function highlightSourceAtLocation(source, location) {
   const lines = source.body.split(/\r\n|[\n\r]/g);
   lines[0] = whitespace(source.locationOffset.column - 1) + lines[0];
   return (
-    (line >= 2 ?
-      lpad(padLen, prevLineNum) + ': ' + lines[line - 2] + '\n' : '') +
-    lpad(padLen, lineNum) + ': ' + lines[line - 1] + '\n' +
-    whitespace(2 + padLen + location.column - 1 + columnOffset) + '^\n' +
-    (line < lines.length ?
-      lpad(padLen, nextLineNum) + ': ' + lines[line] + '\n' : '')
+    (line >= 2
+      ? lpad(padLen, prevLineNum) + ': ' + lines[line - 2] + '\n'
+      : '') +
+    lpad(padLen, lineNum) +
+    ': ' +
+    lines[line - 1] +
+    '\n' +
+    whitespace(2 + padLen + location.column - 1 + columnOffset) +
+    '^\n' +
+    (line < lines.length
+      ? lpad(padLen, nextLineNum) + ': ' + lines[line] + '\n'
+      : '')
   );
 }
 
-function getColumnOffset(
-  source: Source,
-  location: SourceLocation
-): number {
+function getColumnOffset(source: Source, location: SourceLocation): number {
   return location.line === 1 ? source.locationOffset.column - 1 : 0;
 }
 

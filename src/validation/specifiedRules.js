@@ -62,9 +62,7 @@ import { NoUnusedVariables } from './rules/NoUnusedVariables';
 import { KnownDirectives } from './rules/KnownDirectives';
 
 // Spec Section: "Directives Are Unique Per Location"
-import {
-  UniqueDirectivesPerLocation
-} from './rules/UniqueDirectivesPerLocation';
+import { UniqueDirectivesPerLocation } from './rules/UniqueDirectivesPerLocation';
 
 // Spec Section: "Argument Names"
 import { KnownArgumentNames } from './rules/KnownArgumentNames';
@@ -85,9 +83,7 @@ import { DefaultValuesOfCorrectType } from './rules/DefaultValuesOfCorrectType';
 import { VariablesInAllowedPosition } from './rules/VariablesInAllowedPosition';
 
 // Spec Section: "Field Selection Merging"
-import {
-  OverlappingFieldsCanBeMerged
-} from './rules/OverlappingFieldsCanBeMerged';
+import { OverlappingFieldsCanBeMerged } from './rules/OverlappingFieldsCanBeMerged';
 
 // Spec Section: "Input Object Field Uniqueness"
 import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';

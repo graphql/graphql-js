@@ -22,7 +22,7 @@ import blockStringValue from './blockStringValue';
  */
 export function createLexer<TOptions>(
   source: Source,
-  options: TOptions
+  options: TOptions,
 ): Lexer<TOptions> {
   const startOfFileToken = new Tok(SOF, 0, 0, 0, 0, null);
   const lexer: Lexer<TOptions> = {
@@ -33,14 +33,14 @@ export function createLexer<TOptions>(
     line: 1,
     lineStart: 0,
     advance: advanceLexer,
-    lookahead
+    lookahead,
   };
   return lexer;
 }
 
 function advanceLexer() {
   this.lastToken = this.token;
-  const token = this.token = this.lookahead();
+  const token = (this.token = this.lookahead());
   return token;
 }
 
@@ -58,39 +58,39 @@ function lookahead() {
  * The return type of createLexer.
  */
 export type Lexer<TOptions> = {
-  source: Source;
-  options: TOptions;
+  source: Source,
+  options: TOptions,
 
   /**
    * The previously focused non-ignored token.
    */
-  lastToken: Token;
+  lastToken: Token,
 
   /**
    * The currently focused non-ignored token.
    */
-  token: Token;
+  token: Token,
 
   /**
    * The (1-indexed) line containing the current token.
    */
-  line: number;
+  line: number,
 
   /**
    * The character offset at which the current line begins.
    */
-  lineStart: number;
+  lineStart: number,
 
   /**
    * Advances the token stream to the next non-ignored token.
    */
-  advance(): Token;
+  advance(): Token,
 
   /**
    * Looks ahead and returns the next non-ignored token, but does not change
    * the Lexer's state.
    */
-  lookahead(): Token;
+  lookahead(): Token,
 };
 
 // Each kind of token.
@@ -141,7 +141,7 @@ export const TokenKind = {
   FLOAT,
   STRING,
   BLOCK_STRING,
-  COMMENT
+  COMMENT,
 };
 
 /**
@@ -165,7 +165,7 @@ function Tok(
   line: number,
   column: number,
   prev: Token | null,
-  value?: string
+  value?: string,
 ) {
   this.kind = kind;
   this.start = start;
@@ -183,18 +183,20 @@ Tok.prototype.toJSON = Tok.prototype.inspect = function toJSON() {
     kind: this.kind,
     value: this.value,
     line: this.line,
-    column: this.column
+    column: this.column,
   };
 };
 
 function printCharCode(code) {
   return (
     // NaN/undefined represents access beyond the end of the file.
-    isNaN(code) ? EOF :
-    // Trust JSON for ASCII.
-    code < 0x007F ? JSON.stringify(String.fromCharCode(code)) :
-    // Otherwise print the escaped form.
-    `"\\u${('00' + code.toString(16).toUpperCase()).slice(-4)}"`
+    isNaN(code)
+      ? EOF
+      : // Trust JSON for ASCII.
+        code < 0x007f
+        ? JSON.stringify(String.fromCharCode(code))
+        : // Otherwise print the escaped form.
+          `"\\u${('00' + code.toString(16).toUpperCase()).slice(-4)}"`
   );
 }
 
@@ -221,38 +223,48 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
   const code = charCodeAt.call(body, position);
 
   // SourceCharacter
-  if (code < 0x0020 && code !== 0x0009 && code !== 0x000A && code !== 0x000D) {
+  if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
     throw syntaxError(
       source,
       position,
-      `Cannot contain the invalid character ${printCharCode(code)}.`
+      `Cannot contain the invalid character ${printCharCode(code)}.`,
     );
   }
 
   switch (code) {
     // !
-    case 33: return new Tok(BANG, position, position + 1, line, col, prev);
+    case 33:
+      return new Tok(BANG, position, position + 1, line, col, prev);
     // #
-    case 35: return readComment(source, position, line, col, prev);
+    case 35:
+      return readComment(source, position, line, col, prev);
     // $
-    case 36: return new Tok(DOLLAR, position, position + 1, line, col, prev);
+    case 36:
+      return new Tok(DOLLAR, position, position + 1, line, col, prev);
     // (
-    case 40: return new Tok(PAREN_L, position, position + 1, line, col, prev);
+    case 40:
+      return new Tok(PAREN_L, position, position + 1, line, col, prev);
     // )
-    case 41: return new Tok(PAREN_R, position, position + 1, line, col, prev);
+    case 41:
+      return new Tok(PAREN_R, position, position + 1, line, col, prev);
     // .
     case 46:
-      if (charCodeAt.call(body, position + 1) === 46 &&
-          charCodeAt.call(body, position + 2) === 46) {
+      if (
+        charCodeAt.call(body, position + 1) === 46 &&
+        charCodeAt.call(body, position + 2) === 46
+      ) {
         return new Tok(SPREAD, position, position + 3, line, col, prev);
       }
       break;
     // :
-    case 58: return new Tok(COLON, position, position + 1, line, col, prev);
+    case 58:
+      return new Tok(COLON, position, position + 1, line, col, prev);
     // =
-    case 61: return new Tok(EQUALS, position, position + 1, line, col, prev);
+    case 61:
+      return new Tok(EQUALS, position, position + 1, line, col, prev);
     // @
-    case 64: return new Tok(AT, position, position + 1, line, col, prev);
+    case 64:
+      return new Tok(AT, position, position + 1, line, col, prev);
     // [
     case 91:
       return new Tok(BRACKET_L, position, position + 1, line, col, prev);
@@ -263,49 +275,103 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     case 123:
       return new Tok(BRACE_L, position, position + 1, line, col, prev);
     // |
-    case 124: return new Tok(PIPE, position, position + 1, line, col, prev);
+    case 124:
+      return new Tok(PIPE, position, position + 1, line, col, prev);
     // }
     case 125:
       return new Tok(BRACE_R, position, position + 1, line, col, prev);
     // A-Z _ a-z
-    case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72:
-    case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80:
-    case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88:
-    case 89: case 90:
+    case 65:
+    case 66:
+    case 67:
+    case 68:
+    case 69:
+    case 70:
+    case 71:
+    case 72:
+    case 73:
+    case 74:
+    case 75:
+    case 76:
+    case 77:
+    case 78:
+    case 79:
+    case 80:
+    case 81:
+    case 82:
+    case 83:
+    case 84:
+    case 85:
+    case 86:
+    case 87:
+    case 88:
+    case 89:
+    case 90:
     case 95:
-    case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104:
-    case 105: case 106: case 107: case 108: case 109: case 110: case 111:
-    case 112: case 113: case 114: case 115: case 116: case 117: case 118:
-    case 119: case 120: case 121: case 122:
+    case 97:
+    case 98:
+    case 99:
+    case 100:
+    case 101:
+    case 102:
+    case 103:
+    case 104:
+    case 105:
+    case 106:
+    case 107:
+    case 108:
+    case 109:
+    case 110:
+    case 111:
+    case 112:
+    case 113:
+    case 114:
+    case 115:
+    case 116:
+    case 117:
+    case 118:
+    case 119:
+    case 120:
+    case 121:
+    case 122:
       return readName(source, position, line, col, prev);
     // - 0-9
     case 45:
-    case 48: case 49: case 50: case 51: case 52:
-    case 53: case 54: case 55: case 56: case 57:
+    case 48:
+    case 49:
+    case 50:
+    case 51:
+    case 52:
+    case 53:
+    case 54:
+    case 55:
+    case 56:
+    case 57:
       return readNumber(source, position, code, line, col, prev);
     // "
     case 34:
-      if (charCodeAt.call(body, position + 1) === 34 &&
-          charCodeAt.call(body, position + 2) === 34) {
+      if (
+        charCodeAt.call(body, position + 1) === 34 &&
+        charCodeAt.call(body, position + 2) === 34
+      ) {
         return readBlockString(source, position, line, col, prev);
       }
       return readString(source, position, line, col, prev);
   }
 
-  throw syntaxError(
-    source,
-    position,
-    unexpectedCharacterMessage(code)
-  );
+  throw syntaxError(source, position, unexpectedCharacterMessage(code));
 }
 
 /**
  * Report a message that an unexpected character was encountered.
  */
 function unexpectedCharacterMessage(code) {
-  if (code === 39) { // '
-    return 'Unexpected single quote character (\'), did you mean to use ' +
-      'a double quote (")?';
+  if (code === 39) {
+    // '
+    return (
+      "Unexpected single quote character ('), did you mean to use " +
+      'a double quote (")?'
+    );
   }
 
   return 'Cannot parse the unexpected character ' + printCharCode(code) + '.';
@@ -319,20 +385,22 @@ function unexpectedCharacterMessage(code) {
 function positionAfterWhitespace(
   body: string,
   startPosition: number,
-  lexer: Lexer<*>
+  lexer: Lexer<*>,
 ): number {
   const bodyLength = body.length;
   let position = startPosition;
   while (position < bodyLength) {
     const code = charCodeAt.call(body, position);
     // tab | space | comma | BOM
-    if (code === 9 || code === 32 || code === 44 || code === 0xFEFF) {
+    if (code === 9 || code === 32 || code === 44 || code === 0xfeff) {
       ++position;
-    } else if (code === 10) { // new line
+    } else if (code === 10) {
+      // new line
       ++position;
       ++lexer.line;
       lexer.lineStart = position;
-    } else if (code === 13) { // carriage return
+    } else if (code === 13) {
+      // carriage return
       if (charCodeAt.call(body, position + 1) === 10) {
         position += 2;
       } else {
@@ -362,7 +430,7 @@ function readComment(source, start, line, col, prev): Token {
   } while (
     code !== null &&
     // SourceCharacter but not LineTerminator
-    (code > 0x001F || code === 0x0009)
+    (code > 0x001f || code === 0x0009)
   );
 
   return new Tok(
@@ -372,7 +440,7 @@ function readComment(source, start, line, col, prev): Token {
     line,
     col,
     prev,
-    slice.call(body, start + 1, position)
+    slice.call(body, start + 1, position),
   );
 }
 
@@ -389,17 +457,19 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
   let position = start;
   let isFloat = false;
 
-  if (code === 45) { // -
+  if (code === 45) {
+    // -
     code = charCodeAt.call(body, ++position);
   }
 
-  if (code === 48) { // 0
+  if (code === 48) {
+    // 0
     code = charCodeAt.call(body, ++position);
     if (code >= 48 && code <= 57) {
       throw syntaxError(
         source,
         position,
-        `Invalid number, unexpected digit after 0: ${printCharCode(code)}.`
+        `Invalid number, unexpected digit after 0: ${printCharCode(code)}.`,
       );
     }
   } else {
@@ -407,7 +477,8 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
     code = charCodeAt.call(body, position);
   }
 
-  if (code === 46) { // .
+  if (code === 46) {
+    // .
     isFloat = true;
 
     code = charCodeAt.call(body, ++position);
@@ -415,11 +486,13 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
     code = charCodeAt.call(body, position);
   }
 
-  if (code === 69 || code === 101) { // E e
+  if (code === 69 || code === 101) {
+    // E e
     isFloat = true;
 
     code = charCodeAt.call(body, ++position);
-    if (code === 43 || code === 45) { // + -
+    if (code === 43 || code === 45) {
+      // + -
       code = charCodeAt.call(body, ++position);
     }
     position = readDigits(source, position, code);
@@ -432,7 +505,7 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
     line,
     col,
     prev,
-    slice.call(body, start, position)
+    slice.call(body, start, position),
   );
 }
 
@@ -443,7 +516,8 @@ function readDigits(source, start, firstCode) {
   const body = source.body;
   let position = start;
   let code = firstCode;
-  if (code >= 48 && code <= 57) { // 0 - 9
+  if (code >= 48 && code <= 57) {
+    // 0 - 9
     do {
       code = charCodeAt.call(body, ++position);
     } while (code >= 48 && code <= 57); // 0 - 9
@@ -452,7 +526,7 @@ function readDigits(source, start, firstCode) {
   throw syntaxError(
     source,
     position,
-    `Invalid number, expected digit but got: ${printCharCode(code)}.`
+    `Invalid number, expected digit but got: ${printCharCode(code)}.`,
   );
 }
 
@@ -472,7 +546,8 @@ function readString(source, start, line, col, prev): Token {
     position < body.length &&
     (code = charCodeAt.call(body, position)) !== null &&
     // not LineTerminator
-    code !== 0x000A && code !== 0x000D
+    code !== 0x000a &&
+    code !== 0x000d
   ) {
     // Closing Quote (")
     if (code === 34) {
@@ -485,36 +560,53 @@ function readString(source, start, line, col, prev): Token {
       throw syntaxError(
         source,
         position,
-        `Invalid character within String: ${printCharCode(code)}.`
+        `Invalid character within String: ${printCharCode(code)}.`,
       );
     }
 
     ++position;
-    if (code === 92) { // \
+    if (code === 92) {
+      // \
       value += slice.call(body, chunkStart, position - 1);
       code = charCodeAt.call(body, position);
       switch (code) {
-        case 34: value += '"'; break;
-        case 47: value += '/'; break;
-        case 92: value += '\\'; break;
-        case 98: value += '\b'; break;
-        case 102: value += '\f'; break;
-        case 110: value += '\n'; break;
-        case 114: value += '\r'; break;
-        case 116: value += '\t'; break;
+        case 34:
+          value += '"';
+          break;
+        case 47:
+          value += '/';
+          break;
+        case 92:
+          value += '\\';
+          break;
+        case 98:
+          value += '\b';
+          break;
+        case 102:
+          value += '\f';
+          break;
+        case 110:
+          value += '\n';
+          break;
+        case 114:
+          value += '\r';
+          break;
+        case 116:
+          value += '\t';
+          break;
         case 117: // u
           const charCode = uniCharCode(
             charCodeAt.call(body, position + 1),
             charCodeAt.call(body, position + 2),
             charCodeAt.call(body, position + 3),
-            charCodeAt.call(body, position + 4)
+            charCodeAt.call(body, position + 4),
           );
           if (charCode < 0) {
             throw syntaxError(
               source,
               position,
               'Invalid character escape sequence: ' +
-              `\\u${body.slice(position + 1, position + 5)}.`
+                `\\u${body.slice(position + 1, position + 5)}.`,
             );
           }
           value += String.fromCharCode(charCode);
@@ -524,7 +616,9 @@ function readString(source, start, line, col, prev): Token {
           throw syntaxError(
             source,
             position,
-            `Invalid character escape sequence: \\${String.fromCharCode(code)}.`
+            `Invalid character escape sequence: \\${String.fromCharCode(
+              code,
+            )}.`,
           );
       }
       ++position;
@@ -565,7 +659,7 @@ function readBlockString(source, start, line, col, prev): Token {
         line,
         col,
         prev,
-        blockStringValue(rawValue)
+        blockStringValue(rawValue),
       );
     }
 
@@ -573,13 +667,13 @@ function readBlockString(source, start, line, col, prev): Token {
     if (
       code < 0x0020 &&
       code !== 0x0009 &&
-      code !== 0x000A &&
-      code !== 0x000D
+      code !== 0x000a &&
+      code !== 0x000d
     ) {
       throw syntaxError(
         source,
         position,
-        `Invalid character within String: ${printCharCode(code)}.`
+        `Invalid character within String: ${printCharCode(code)}.`,
       );
     }
 
@@ -612,7 +706,9 @@ function readBlockString(source, start, line, col, prev): Token {
  * which means the result of ORing the char2hex() will also be negative.
  */
 function uniCharCode(a, b, c, d) {
-  return char2hex(a) << 12 | char2hex(b) << 8 | char2hex(c) << 4 | char2hex(d);
+  return (
+    (char2hex(a) << 12) | (char2hex(b) << 8) | (char2hex(c) << 4) | char2hex(d)
+  );
 }
 
 /**
@@ -624,12 +720,13 @@ function uniCharCode(a, b, c, d) {
  * Returns -1 on error.
  */
 function char2hex(a) {
-  return (
-    a >= 48 && a <= 57 ? a - 48 : // 0-9
-    a >= 65 && a <= 70 ? a - 55 : // A-F
-    a >= 97 && a <= 102 ? a - 87 : // a-f
-    -1
-  );
+  return a >= 48 && a <= 57
+    ? a - 48 // 0-9
+    : a >= 65 && a <= 70
+      ? a - 55 // A-F
+      : a >= 97 && a <= 102
+        ? a - 87 // a-f
+        : -1;
 }
 
 /**
@@ -645,12 +742,10 @@ function readName(source, position, line, col, prev): Token {
   while (
     end !== bodyLength &&
     (code = charCodeAt.call(body, end)) !== null &&
-    (
-      code === 95 || // _
-      code >= 48 && code <= 57 || // 0-9
-      code >= 65 && code <= 90 || // A-Z
-      code >= 97 && code <= 122 // a-z
-    )
+    (code === 95 || // _
+    (code >= 48 && code <= 57) || // 0-9
+    (code >= 65 && code <= 90) || // A-Z
+      (code >= 97 && code <= 122)) // a-z
   ) {
     ++end;
   }
@@ -661,6 +756,6 @@ function readName(source, position, line, col, prev): Token {
     line,
     col,
     prev,
-    slice.call(body, position, end)
+    slice.call(body, position, end),
   );
 }

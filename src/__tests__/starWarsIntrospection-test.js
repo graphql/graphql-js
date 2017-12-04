@@ -31,52 +31,52 @@ describe('Star Wars Introspection Tests', () => {
         __schema: {
           types: [
             {
-              name: 'Query'
+              name: 'Query',
             },
             {
-              name: 'Episode'
+              name: 'Episode',
             },
             {
-              name: 'Character'
+              name: 'Character',
             },
             {
-              name: 'String'
+              name: 'String',
             },
             {
-              name: 'Human'
+              name: 'Human',
             },
             {
-              name: 'Droid'
+              name: 'Droid',
             },
             {
-              name: '__Schema'
+              name: '__Schema',
             },
             {
-              name: '__Type'
+              name: '__Type',
             },
             {
-              name: '__TypeKind'
+              name: '__TypeKind',
             },
             {
-              name: 'Boolean'
+              name: 'Boolean',
             },
             {
-              name: '__Field'
+              name: '__Field',
             },
             {
-              name: '__InputValue'
+              name: '__InputValue',
             },
             {
-              name: '__EnumValue'
+              name: '__EnumValue',
             },
             {
-              name: '__Directive'
+              name: '__Directive',
             },
             {
-              name: '__DirectiveLocation'
-            }
-          ]
-        }
+              name: '__DirectiveLocation',
+            },
+          ],
+        },
       };
       const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
@@ -95,9 +95,9 @@ describe('Star Wars Introspection Tests', () => {
       const expected = {
         __schema: {
           queryType: {
-            name: 'Query'
+            name: 'Query',
           },
-        }
+        },
       };
       const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
@@ -113,8 +113,8 @@ describe('Star Wars Introspection Tests', () => {
       `;
       const expected = {
         __type: {
-          name: 'Droid'
-        }
+          name: 'Droid',
+        },
       };
       const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
@@ -132,8 +132,8 @@ describe('Star Wars Introspection Tests', () => {
       const expected = {
         __type: {
           name: 'Droid',
-          kind: 'OBJECT'
-        }
+          kind: 'OBJECT',
+        },
       };
       const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
@@ -151,8 +151,8 @@ describe('Star Wars Introspection Tests', () => {
       const expected = {
         __type: {
           name: 'Character',
-          kind: 'INTERFACE'
-        }
+          kind: 'INTERFACE',
+        },
       };
       const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
@@ -181,46 +181,46 @@ describe('Star Wars Introspection Tests', () => {
               name: 'id',
               type: {
                 name: null,
-                kind: 'NON_NULL'
-              }
+                kind: 'NON_NULL',
+              },
             },
             {
               name: 'name',
               type: {
                 name: 'String',
-                kind: 'SCALAR'
-              }
+                kind: 'SCALAR',
+              },
             },
             {
               name: 'friends',
               type: {
                 name: null,
-                kind: 'LIST'
-              }
+                kind: 'LIST',
+              },
             },
             {
               name: 'appearsIn',
               type: {
                 name: null,
-                kind: 'LIST'
-              }
+                kind: 'LIST',
+              },
             },
             {
               name: 'secretBackstory',
               type: {
                 name: 'String',
-                kind: 'SCALAR'
-              }
+                kind: 'SCALAR',
+              },
             },
             {
               name: 'primaryFunction',
               type: {
                 name: 'String',
-                kind: 'SCALAR'
-              }
-            }
-          ]
-        }
+                kind: 'SCALAR',
+              },
+            },
+          ],
+        },
       };
 
       const result = await graphql(StarWarsSchema, query);
@@ -257,17 +257,17 @@ describe('Star Wars Introspection Tests', () => {
                 kind: 'NON_NULL',
                 ofType: {
                   name: 'String',
-                  kind: 'SCALAR'
-                }
-              }
+                  kind: 'SCALAR',
+                },
+              },
             },
             {
               name: 'name',
               type: {
                 name: 'String',
                 kind: 'SCALAR',
-                ofType: null
-              }
+                ofType: null,
+              },
             },
             {
               name: 'friends',
@@ -276,9 +276,9 @@ describe('Star Wars Introspection Tests', () => {
                 kind: 'LIST',
                 ofType: {
                   name: 'Character',
-                  kind: 'INTERFACE'
-                }
-              }
+                  kind: 'INTERFACE',
+                },
+              },
             },
             {
               name: 'appearsIn',
@@ -287,28 +287,28 @@ describe('Star Wars Introspection Tests', () => {
                 kind: 'LIST',
                 ofType: {
                   name: 'Episode',
-                  kind: 'ENUM'
-                }
-              }
+                  kind: 'ENUM',
+                },
+              },
             },
             {
               name: 'secretBackstory',
               type: {
                 name: 'String',
                 kind: 'SCALAR',
-                ofType: null
-              }
+                ofType: null,
+              },
             },
             {
               name: 'primaryFunction',
               type: {
                 name: 'String',
                 kind: 'SCALAR',
-                ofType: null
-              }
-            }
-          ]
-        }
+                ofType: null,
+              },
+            },
+          ],
+        },
       };
       const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
@@ -348,17 +348,18 @@ describe('Star Wars Introspection Tests', () => {
                 args: [
                   {
                     defaultValue: null,
-                    description: 'If omitted, returns the hero of the whole ' +
-                                 'saga. If provided, returns the hero of ' +
-                                 'that particular episode.',
+                    description:
+                      'If omitted, returns the hero of the whole ' +
+                      'saga. If provided, returns the hero of ' +
+                      'that particular episode.',
                     name: 'episode',
                     type: {
                       kind: 'ENUM',
                       name: 'Episode',
-                      ofType: null
-                    }
-                  }
-                ]
+                      ofType: null,
+                    },
+                  },
+                ],
               },
               {
                 name: 'human',
@@ -371,12 +372,12 @@ describe('Star Wars Introspection Tests', () => {
                       name: null,
                       ofType: {
                         kind: 'SCALAR',
-                        name: 'String'
-                      }
+                        name: 'String',
+                      },
                     },
-                    defaultValue: null
-                  }
-                ]
+                    defaultValue: null,
+                  },
+                ],
               },
               {
                 name: 'droid',
@@ -389,18 +390,17 @@ describe('Star Wars Introspection Tests', () => {
                       name: null,
                       ofType: {
                         kind: 'SCALAR',
-                        name: 'String'
-                      }
+                        name: 'String',
+                      },
                     },
-                    defaultValue: null
-                  }
-                ]
-              }
-            ]
-          }
-        }
+                    defaultValue: null,
+                  },
+                ],
+              },
+            ],
+          },
+        },
       };
-
 
       const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
@@ -418,8 +418,8 @@ describe('Star Wars Introspection Tests', () => {
       const expected = {
         __type: {
           name: 'Droid',
-          description: 'A mechanical creature in the Star Wars universe.'
-        }
+          description: 'A mechanical creature in the Star Wars universe.',
+        },
       };
       const result = await graphql(StarWarsSchema, query);
       expect(result).to.deep.equal({ data: expected });
