@@ -301,11 +301,11 @@ describe('Lexer', () => {
     });
 
     expect(
-      lexOne('" white space "')
+      lexOne('""" white space """')
     ).to.containSubset({
-      kind: TokenKind.STRING,
+      kind: TokenKind.BLOCK_STRING,
       start: 0,
-      end: 15,
+      end: 19,
       value: ' white space '
     });
 
