@@ -962,4 +962,41 @@ describe('Validate: Overlapping fields can be merged', () => {
     });
   });
 
+  it('does not infinite loop on recursive fragment', () => {
+    expectPassesRule(OverlappingFieldsCanBeMerged, `
+      fragment fragA on Human { name, relatives { name, ...fragA } }
+    `);
+  });
+
+  it('does not infinite loop on immediately recursive fragment', () => {
+    expectPassesRule(OverlappingFieldsCanBeMerged, `
+      fragment fragA on Human { name, ...fragA }
+    `);
+  });
+
+  it('does not infinite loop on transitively recursive fragment', () => {
+    expectPassesRule(OverlappingFieldsCanBeMerged, `
+      fragment fragA on Human { name, ...fragB }
+      fragment fragB on Human { name, ...fragC }
+      fragment fragC on Human { name, ...fragA }
+    `);
+  });
+
+  it('finds invalid case even with immediately recursive fragment', () => {
+    expectFailsRule(OverlappingFieldsCanBeMerged, `
+      fragment sameAliasesWithDifferentFieldTargets on Dog {
+        ...sameAliasesWithDifferentFieldTargets
+        fido: name
+        fido: nickname
+      }
+    `, [
+      { message: fieldsConflictMessage(
+          'fido',
+          'name and nickname are different fields'
+        ),
+        locations: [ { line: 4, column: 9 }, { line: 5, column: 9 } ],
+        path: undefined },
+    ]);
+  });
+
 });
