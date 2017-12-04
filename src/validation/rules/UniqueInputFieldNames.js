@@ -10,7 +10,6 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 
-
 export function duplicateInputFieldMessage(fieldName: string): string {
   return `There can be only one input field named "${fieldName}".`;
 }
@@ -33,19 +32,21 @@ export function UniqueInputFieldNames(context: ValidationContext): any {
       },
       leave() {
         knownNames = knownNameStack.pop();
-      }
+      },
     },
     ObjectField(node) {
       const fieldName = node.name.value;
       if (knownNames[fieldName]) {
-        context.reportError(new GraphQLError(
-          duplicateInputFieldMessage(fieldName),
-          [ knownNames[fieldName], node.name ]
-        ));
+        context.reportError(
+          new GraphQLError(duplicateInputFieldMessage(fieldName), [
+            knownNames[fieldName],
+            node.name,
+          ]),
+        );
       } else {
         knownNames[fieldName] = node.name;
       }
       return false;
-    }
+    },
   };
 }

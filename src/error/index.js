@@ -14,5 +14,5 @@ export { formatError } from './formatError';
 
 export type {
   GraphQLFormattedError,
-  GraphQLErrorLocation
+  GraphQLErrorLocation,
 } from './formatError';

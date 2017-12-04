@@ -11,7 +11,7 @@ import { print } from '../language/printer';
 import type {
   ValueNode,
   ListValueNode,
-  ObjectValueNode
+  ObjectValueNode,
 } from '../language/ast';
 import * as Kind from '../language/kinds';
 import {
@@ -19,12 +19,11 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
-  GraphQLNonNull
+  GraphQLNonNull,
 } from '../type/definition';
 import type { GraphQLInputType } from '../type/definition';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
-
 
 /**
  * Utility for validators which determines if a value literal node is valid
@@ -35,17 +34,17 @@ import keyMap from '../jsutils/keyMap';
  */
 export function isValidLiteralValue(
   type: GraphQLInputType,
-  valueNode: ValueNode
+  valueNode: ValueNode,
 ): Array<string> {
   // A value must be provided if the type is non-null.
   if (type instanceof GraphQLNonNull) {
-    if (!valueNode || (valueNode.kind === Kind.NULL)) {
-      return [ `Expected "${String(type)}", found null.` ];
+    if (!valueNode || valueNode.kind === Kind.NULL) {
+      return [`Expected "${String(type)}", found null.`];
     }
     return isValidLiteralValue(type.ofType, valueNode);
   }
 
-  if (!valueNode || (valueNode.kind === Kind.NULL)) {
+  if (!valueNode || valueNode.kind === Kind.NULL) {
     return [];
   }
 
@@ -61,9 +60,9 @@ export function isValidLiteralValue(
     if (valueNode.kind === Kind.LIST) {
       return (valueNode: ListValueNode).values.reduce((acc, item, index) => {
         const errors = isValidLiteralValue(itemType, item);
-        return acc.concat(errors.map(error =>
-          `In element #${index}: ${error}`
-        ));
+        return acc.concat(
+          errors.map(error => `In element #${index}: ${error}`),
+        );
       }, []);
     }
     return isValidLiteralValue(itemType, valueNode);
@@ -72,7 +71,7 @@ export function isValidLiteralValue(
   // Input objects check each defined field and look for undefined fields.
   if (type instanceof GraphQLInputObjectType) {
     if (valueNode.kind !== Kind.OBJECT) {
-      return [ `Expected "${type.name}", found not an object.` ];
+      return [`Expected "${type.name}", found not an object.`];
     }
     const fields = type.getFields();
 
@@ -83,7 +82,7 @@ export function isValidLiteralValue(
     fieldNodes.forEach(providedFieldNode => {
       if (!fields[providedFieldNode.name.value]) {
         errors.push(
-          `In field "${providedFieldNode.name.value}": Unknown field.`
+          `In field "${providedFieldNode.name.value}": Unknown field.`,
         );
       }
     });
@@ -93,11 +92,9 @@ export function isValidLiteralValue(
     Object.keys(fields).forEach(fieldName => {
       const result = isValidLiteralValue(
         fields[fieldName].type,
-        fieldNodeMap[fieldName] && fieldNodeMap[fieldName].value
+        fieldNodeMap[fieldName] && fieldNodeMap[fieldName].value,
       );
-      errors.push(...(result.map(error =>
-        `In field "${fieldName}": ${error}`
-      )));
+      errors.push(...result.map(error => `In field "${fieldName}": ${error}`));
     });
 
     return errors;
@@ -105,12 +102,12 @@ export function isValidLiteralValue(
 
   invariant(
     type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type'
+    'Must be input type',
   );
 
   // Scalars determine if a literal values is valid.
   if (!type.isValidLiteral(valueNode, null)) {
-    return [ `Expected type "${type.name}", found ${print(valueNode)}.` ];
+    return [`Expected type "${type.name}", found ${print(valueNode)}.`];
   }
 
   return [];

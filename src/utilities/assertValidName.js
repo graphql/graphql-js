@@ -15,7 +15,7 @@ const noNameWarning = Boolean(
   typeof process !== 'undefined' &&
     process &&
     process.env &&
-    process.env.GRAPHQL_NO_NAME_WARNING
+    process.env.GRAPHQL_NO_NAME_WARNING,
 );
 
 // Ensures console warnings are only issued once.
@@ -24,14 +24,9 @@ let hasWarnedAboutDunder = false;
 /**
  * Upholds the spec rules about naming.
  */
-export function assertValidName(
-  name: string,
-  isIntrospection?: boolean
-): void {
+export function assertValidName(name: string, isIntrospection?: boolean): void {
   if (!name || typeof name !== 'string') {
-    throw new Error(
-      `Must be named. Unexpected name: ${name}.`
-    );
+    throw new Error(`Must be named. Unexpected name: ${name}.`);
   }
   if (
     !isIntrospection &&
@@ -44,8 +39,8 @@ export function assertValidName(
     if (console && console.warn) {
       const error = new Error(
         `Name "${name}" must not begin with "__", which is reserved by ` +
-        'GraphQL introspection. In a future release of graphql this will ' +
-        'become a hard error.'
+          'GraphQL introspection. In a future release of graphql this will ' +
+          'become a hard error.',
       );
       console.warn(formatWarning(error));
     }
@@ -53,7 +48,7 @@ export function assertValidName(
   }
   if (!NAME_RX.test(name)) {
     throw new Error(
-      `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`
+      `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`,
     );
   }
 }

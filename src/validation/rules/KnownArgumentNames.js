@@ -15,14 +15,14 @@ import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
 import * as Kind from '../../language/kinds';
 
-
 export function unknownArgMessage(
   argName: string,
   fieldName: string,
   typeName: string,
-  suggestedArgs: Array<string>
+  suggestedArgs: Array<string>,
 ): string {
-  let message = `Unknown argument "${argName}" on field "${fieldName}" of ` +
+  let message =
+    `Unknown argument "${argName}" on field "${fieldName}" of ` +
     `type "${typeName}".`;
   if (suggestedArgs.length) {
     message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
@@ -33,10 +33,11 @@ export function unknownArgMessage(
 export function unknownDirectiveArgMessage(
   argName: string,
   directiveName: string,
-  suggestedArgs: Array<string>
+  suggestedArgs: Array<string>,
 ): string {
-  let message =
-    `Unknown argument "${argName}" on directive "@${directiveName}".`;
+  let message = `Unknown argument "${argName}" on directive "@${
+    directiveName
+  }".`;
   if (suggestedArgs.length) {
     message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
   }
@@ -58,23 +59,25 @@ export function KnownArgumentNames(context: ValidationContext): any {
         if (fieldDef) {
           const fieldArgDef = find(
             fieldDef.args,
-            arg => arg.name === node.name.value
+            arg => arg.name === node.name.value,
           );
           if (!fieldArgDef) {
             const parentType = context.getParentType();
             invariant(parentType);
-            context.reportError(new GraphQLError(
-              unknownArgMessage(
-                node.name.value,
-                fieldDef.name,
-                parentType.name,
-                suggestionList(
+            context.reportError(
+              new GraphQLError(
+                unknownArgMessage(
                   node.name.value,
-                  fieldDef.args.map(arg => arg.name)
-                )
+                  fieldDef.name,
+                  parentType.name,
+                  suggestionList(
+                    node.name.value,
+                    fieldDef.args.map(arg => arg.name),
+                  ),
+                ),
+                [node],
               ),
-              [ node ]
-            ));
+            );
           }
         }
       } else if (argumentOf.kind === Kind.DIRECTIVE) {
@@ -82,23 +85,25 @@ export function KnownArgumentNames(context: ValidationContext): any {
         if (directive) {
           const directiveArgDef = find(
             directive.args,
-            arg => arg.name === node.name.value
+            arg => arg.name === node.name.value,
           );
           if (!directiveArgDef) {
-            context.reportError(new GraphQLError(
-              unknownDirectiveArgMessage(
-                node.name.value,
-                directive.name,
-                suggestionList(
+            context.reportError(
+              new GraphQLError(
+                unknownDirectiveArgMessage(
                   node.name.value,
-                  directive.args.map(arg => arg.name)
-                )
+                  directive.name,
+                  suggestionList(
+                    node.name.value,
+                    directive.args.map(arg => arg.name),
+                  ),
+                ),
+                [node],
               ),
-              [ node ]
-            ));
+            );
           }
         }
       }
-    }
+    },
   };
 }

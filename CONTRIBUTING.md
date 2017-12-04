@@ -69,6 +69,9 @@ This will watch the file system run any relevant lint, tests, and type checks au
 
 ## Coding Style
 
+This project uses [Prettier](https://prettier.io/) for standard formatting. To
+ensure your pull request matches the style guides, run `npm run prettier`.
+
 * 2 spaces for indentation (no tabs)
 * 80 character line length strongly preferred.
 * Prefer `'` over `"`

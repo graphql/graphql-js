@@ -11,10 +11,9 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { FragmentDefinitionNode } from '../../language/ast';
 
-
 export function cycleErrorMessage(
   fragName: string,
-  spreadNames: Array<string>
+  spreadNames: Array<string>,
 ): string {
   const via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
   return `Cannot spread fragment "${fragName}" within itself${via}.`;
@@ -71,13 +70,12 @@ export function NoFragmentCycles(context: ValidationContext): any {
         spreadPath.pop();
       } else {
         const cyclePath = spreadPath.slice(cycleIndex);
-        context.reportError(new GraphQLError(
-          cycleErrorMessage(
-            spreadName,
-            cyclePath.map(s => s.name.value)
+        context.reportError(
+          new GraphQLError(
+            cycleErrorMessage(spreadName, cyclePath.map(s => s.name.value)),
+            cyclePath.concat(spreadNode),
           ),
-          cyclePath.concat(spreadNode)
-        ));
+        );
       }
     }
 

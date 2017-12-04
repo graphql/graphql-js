@@ -12,7 +12,6 @@ import EventEmitter from 'events';
 import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
 
 describe('eventEmitterAsyncIterator', () => {
-
   it('subscribe async-iterator mock', async () => {
     // Create an AsyncIterator from an EventEmitter
     const emitter = new EventEmitter();
@@ -23,12 +22,14 @@ describe('eventEmitterAsyncIterator', () => {
     expect(emitter.emit('publish', 'Banana')).to.equal(true);
 
     // Read payloads
-    expect(await iterator.next()).to.deep.equal(
-      { done: false, value: 'Apple' }
-    );
-    expect(await iterator.next()).to.deep.equal(
-      { done: false, value: 'Banana' }
-    );
+    expect(await iterator.next()).to.deep.equal({
+      done: false,
+      value: 'Apple',
+    });
+    expect(await iterator.next()).to.deep.equal({
+      done: false,
+      value: 'Banana',
+    });
 
     // Read ahead
     const i3 = iterator.next().then(x => x);
@@ -39,8 +40,8 @@ describe('eventEmitterAsyncIterator', () => {
     expect(emitter.emit('publish', 'Durian')).to.equal(true);
 
     // Await out of order to get correct results
-    expect(await i4).to.deep.equal({ done: false, value: 'Durian'});
-    expect(await i3).to.deep.equal({ done: false, value: 'Coconut'});
+    expect(await i4).to.deep.equal({ done: false, value: 'Durian' });
+    expect(await i3).to.deep.equal({ done: false, value: 'Coconut' });
 
     // Read ahead
     const i5 = iterator.next().then(x => x);
@@ -55,8 +56,9 @@ describe('eventEmitterAsyncIterator', () => {
     expect(await i5).to.deep.equal({ done: true, value: undefined });
 
     // And next returns empty completion value
-    expect(await iterator.next()).to.deep.equal(
-      { done: true, value: undefined }
-    );
+    expect(await iterator.next()).to.deep.equal({
+      done: true,
+      value: undefined,
+    });
   });
 });

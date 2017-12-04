@@ -29,9 +29,9 @@ describe('Star Wars Query Tests', () => {
       expect(result).to.deep.equal({
         data: {
           hero: {
-            name: 'R2-D2'
-          }
-        }
+            name: 'R2-D2',
+          },
+        },
       });
     });
 
@@ -50,9 +50,9 @@ describe('Star Wars Query Tests', () => {
       expect(result).to.deep.equal({
         data: {
           hero: {
-            name: 'R2-D2'
-          }
-        }
+            name: 'R2-D2',
+          },
+        },
       });
     });
 
@@ -84,9 +84,9 @@ describe('Star Wars Query Tests', () => {
               {
                 name: 'Leia Organa',
               },
-            ]
-          }
-        }
+            ],
+          },
+        },
       });
     });
   });
@@ -115,7 +115,7 @@ describe('Star Wars Query Tests', () => {
             friends: [
               {
                 name: 'Luke Skywalker',
-                appearsIn: [ 'NEWHOPE', 'EMPIRE', 'JEDI' ],
+                appearsIn: ['NEWHOPE', 'EMPIRE', 'JEDI'],
                 friends: [
                   {
                     name: 'Han Solo',
@@ -129,11 +129,11 @@ describe('Star Wars Query Tests', () => {
                   {
                     name: 'R2-D2',
                   },
-                ]
+                ],
               },
               {
                 name: 'Han Solo',
-                appearsIn: [ 'NEWHOPE', 'EMPIRE', 'JEDI' ],
+                appearsIn: ['NEWHOPE', 'EMPIRE', 'JEDI'],
                 friends: [
                   {
                     name: 'Luke Skywalker',
@@ -144,11 +144,11 @@ describe('Star Wars Query Tests', () => {
                   {
                     name: 'R2-D2',
                   },
-                ]
+                ],
               },
               {
                 name: 'Leia Organa',
-                appearsIn: [ 'NEWHOPE', 'EMPIRE', 'JEDI' ],
+                appearsIn: ['NEWHOPE', 'EMPIRE', 'JEDI'],
                 friends: [
                   {
                     name: 'Luke Skywalker',
@@ -162,11 +162,11 @@ describe('Star Wars Query Tests', () => {
                   {
                     name: 'R2-D2',
                   },
-                ]
+                ],
               },
-            ]
-          }
-        }
+            ],
+          },
+        },
       });
     });
   });
@@ -184,9 +184,9 @@ describe('Star Wars Query Tests', () => {
       expect(result).to.deep.equal({
         data: {
           human: {
-            name: 'Luke Skywalker'
-          }
-        }
+            name: 'Luke Skywalker',
+          },
+        },
       });
     });
 
@@ -203,9 +203,9 @@ describe('Star Wars Query Tests', () => {
       expect(result).to.deep.equal({
         data: {
           human: {
-            name: 'Luke Skywalker'
-          }
-        }
+            name: 'Luke Skywalker',
+          },
+        },
       });
     });
 
@@ -222,9 +222,9 @@ describe('Star Wars Query Tests', () => {
       expect(result).to.deep.equal({
         data: {
           human: {
-            name: 'Han Solo'
-          }
-        }
+            name: 'Han Solo',
+          },
+        },
       });
     });
 
@@ -240,8 +240,8 @@ describe('Star Wars Query Tests', () => {
       const result = await graphql(StarWarsSchema, query, null, null, params);
       expect(result).to.deep.equal({
         data: {
-          human: null
-        }
+          human: null,
+        },
       });
     });
   });
@@ -259,9 +259,9 @@ describe('Star Wars Query Tests', () => {
       expect(result).to.deep.equal({
         data: {
           luke: {
-            name: 'Luke Skywalker'
-          }
-        }
+            name: 'Luke Skywalker',
+          },
+        },
       });
     });
 
@@ -280,12 +280,12 @@ describe('Star Wars Query Tests', () => {
       expect(result).to.deep.equal({
         data: {
           luke: {
-            name: 'Luke Skywalker'
+            name: 'Luke Skywalker',
           },
           leia: {
-            name: 'Leia Organa'
-          }
-        }
+            name: 'Leia Organa',
+          },
+        },
       });
     });
   });
@@ -309,13 +309,13 @@ describe('Star Wars Query Tests', () => {
         data: {
           luke: {
             name: 'Luke Skywalker',
-            homePlanet: 'Tatooine'
+            homePlanet: 'Tatooine',
           },
           leia: {
             name: 'Leia Organa',
-            homePlanet: 'Alderaan'
-          }
-        }
+            homePlanet: 'Alderaan',
+          },
+        },
       });
     });
 
@@ -340,13 +340,13 @@ describe('Star Wars Query Tests', () => {
         data: {
           luke: {
             name: 'Luke Skywalker',
-            homePlanet: 'Tatooine'
+            homePlanet: 'Tatooine',
           },
           leia: {
             name: 'Leia Organa',
-            homePlanet: 'Alderaan'
-          }
-        }
+            homePlanet: 'Alderaan',
+          },
+        },
       });
     });
   });
@@ -366,9 +366,9 @@ describe('Star Wars Query Tests', () => {
         data: {
           hero: {
             __typename: 'Droid',
-            name: 'R2-D2'
-          }
-        }
+            name: 'R2-D2',
+          },
+        },
       });
     });
 
@@ -386,9 +386,9 @@ describe('Star Wars Query Tests', () => {
         data: {
           hero: {
             __typename: 'Human',
-            name: 'Luke Skywalker'
-          }
-        }
+            name: 'Luke Skywalker',
+          },
+        },
       });
     });
   });
@@ -408,16 +408,16 @@ describe('Star Wars Query Tests', () => {
         data: {
           hero: {
             name: 'R2-D2',
-            secretBackstory: null
-          }
+            secretBackstory: null,
+          },
         },
         errors: [
           {
             message: 'secretBackstory is secret.',
-            locations: [ { line: 5, column: 13 } ],
-            path: [ 'hero', 'secretBackstory' ]
-          }
-        ]
+            locations: [{ line: 5, column: 13 }],
+            path: ['hero', 'secretBackstory'],
+          },
+        ],
       });
     });
 
@@ -451,26 +451,26 @@ describe('Star Wars Query Tests', () => {
                 name: 'Leia Organa',
                 secretBackstory: null,
               },
-            ]
-          }
+            ],
+          },
         },
         errors: [
           {
             message: 'secretBackstory is secret.',
-            locations: [ { line: 7, column: 15 } ],
-            path: [ 'hero', 'friends', 0, 'secretBackstory' ]
+            locations: [{ line: 7, column: 15 }],
+            path: ['hero', 'friends', 0, 'secretBackstory'],
           },
           {
             message: 'secretBackstory is secret.',
-            locations: [ { line: 7, column: 15 } ],
-            path: [ 'hero', 'friends', 1, 'secretBackstory' ]
+            locations: [{ line: 7, column: 15 }],
+            path: ['hero', 'friends', 1, 'secretBackstory'],
           },
           {
             message: 'secretBackstory is secret.',
-            locations: [ { line: 7, column: 15 } ],
-            path: [ 'hero', 'friends', 2, 'secretBackstory' ]
-          }
-        ]
+            locations: [{ line: 7, column: 15 }],
+            path: ['hero', 'friends', 2, 'secretBackstory'],
+          },
+        ],
       });
     });
 
@@ -489,15 +489,15 @@ describe('Star Wars Query Tests', () => {
           mainHero: {
             name: 'R2-D2',
             story: null,
-          }
+          },
         },
         errors: [
           {
             message: 'secretBackstory is secret.',
-            locations: [ { line: 5, column: 13 } ],
-            path: [ 'mainHero', 'story' ]
-          }
-        ]
+            locations: [{ line: 5, column: 13 }],
+            path: ['mainHero', 'story'],
+          },
+        ],
       });
     });
   });

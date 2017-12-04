@@ -10,7 +10,7 @@
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
-import type {ObjMap} from '../jsutils/ObjMap';
+import type { ObjMap } from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
 import blockStringValue from '../language/blockStringValue';
 import { TokenKind } from '../language/lexer';
@@ -40,9 +40,7 @@ import type {
   DirectiveDefinitionNode,
 } from '../language/ast';
 
-import type {
-  DirectiveLocationEnum
-} from '../language/directiveLocation';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 import {
   GraphQLScalarType,
@@ -82,7 +80,7 @@ type Options = {| commentDescriptions?: boolean |};
 
 function buildWrappedType(
   innerType: GraphQLType,
-  inputTypeNode: TypeNode
+  inputTypeNode: TypeNode,
 ): GraphQLType {
   if (inputTypeNode.kind === Kind.LIST_TYPE) {
     return new GraphQLList(buildWrappedType(innerType, inputTypeNode.type));
@@ -163,26 +161,28 @@ export function buildASTSchema(
     }
   }
 
-  const operationTypes = schemaDef ? getOperationTypes(schemaDef) : {
-    query: nodeMap.Query ? 'Query' : null,
-    mutation: nodeMap.Mutation ? 'Mutation' : null,
-    subscription: nodeMap.Subscription ? 'Subscription' : null,
-  };
+  const operationTypes = schemaDef
+    ? getOperationTypes(schemaDef)
+    : {
+        query: nodeMap.Query ? 'Query' : null,
+        mutation: nodeMap.Mutation ? 'Mutation' : null,
+        subscription: nodeMap.Subscription ? 'Subscription' : null,
+      };
 
   const definitionBuilder = new ASTDefinitionBuilder(
     nodeMap,
     options,
     typeName => {
       throw new Error(`Type "${typeName}" not found in document.`);
-    }
+    },
   );
 
-  const types = typeDefs.map(
-    def => definitionBuilder.buildType(def.name.value)
+  const types = typeDefs.map(def =>
+    definitionBuilder.buildType(def.name.value),
   );
 
-  const directives = directiveDefs.map(
-    def => definitionBuilder.buildDirective(def)
+  const directives = directiveDefs.map(def =>
+    definitionBuilder.buildDirective(def),
   );
 
   // If specified directives were not explicitly declared, add them.
@@ -200,18 +200,18 @@ export function buildASTSchema(
 
   if (!operationTypes.query) {
     throw new Error(
-      'Must provide schema definition with query type or a type named Query.'
+      'Must provide schema definition with query type or a type named Query.',
     );
   }
 
   return new GraphQLSchema({
     query: definitionBuilder.buildObjectType(operationTypes.query),
-    mutation: operationTypes.mutation ?
-      definitionBuilder.buildObjectType(operationTypes.mutation) :
-      null,
-    subscription: operationTypes.subscription ?
-      definitionBuilder.buildObjectType(operationTypes.subscription) :
-      null,
+    mutation: operationTypes.mutation
+      ? definitionBuilder.buildObjectType(operationTypes.mutation)
+      : null,
+    subscription: operationTypes.subscription
+      ? definitionBuilder.buildObjectType(operationTypes.subscription)
+      : null,
     types,
     directives,
     astNode: schemaDef,
@@ -227,7 +227,7 @@ export function buildASTSchema(
       }
       if (!nodeMap[typeName]) {
         throw new Error(
-          `Specified ${operation} type "${typeName}" not found in document.`
+          `Specified ${operation} type "${typeName}" not found in document.`,
         );
       }
       opTypes[operation] = typeName;
@@ -239,7 +239,7 @@ export function buildASTSchema(
 type TypeDefinitionsMap = ObjMap<TypeDefinitionNode>;
 type TypeResolver = (
   typeName: string,
-  node?: ?NamedTypeNode
+  node?: ?NamedTypeNode,
 ) => GraphQLNamedType;
 
 export class ASTDefinitionBuilder {
@@ -251,7 +251,7 @@ export class ASTDefinitionBuilder {
   constructor(
     typeDefinitionsMap: TypeDefinitionsMap,
     options: ?Options,
-    resolveType: TypeResolver
+    resolveType: TypeResolver,
   ) {
     this._typeDefinitionsMap = typeDefinitionsMap;
     this._options = options;
@@ -259,7 +259,7 @@ export class ASTDefinitionBuilder {
     // Initialize to the GraphQL built in scalars and introspection types.
     this._cache = keyMap(
       specifiedScalarTypes.concat(introspectionTypes),
-      type => type.name
+      type => type.name,
     );
   }
 
@@ -312,15 +312,16 @@ export class ASTDefinitionBuilder {
       name: directiveNode.name.value,
       description: getDescription(directiveNode, this._options),
       locations: directiveNode.locations.map(
-        node => ((node.value: any): DirectiveLocationEnum)
+        node => ((node.value: any): DirectiveLocationEnum),
       ),
-      args: directiveNode.arguments &&
+      args:
+        directiveNode.arguments &&
         this._makeInputValues(directiveNode.arguments),
       astNode: directiveNode,
     });
   }
 
-  buildField(field: FieldDefinitionNode): GraphQLFieldConfig<*,*> {
+  buildField(field: FieldDefinitionNode): GraphQLFieldConfig<*, *> {
     return {
       type: this._buildOutputType(field.type),
       description: getDescription(field, this._options),
@@ -361,18 +362,20 @@ export class ASTDefinitionBuilder {
   }
 
   _makeFieldDefMap(
-    def: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode
+    def: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
   ) {
     return keyValMap(
       def.fields,
       field => field.name.value,
-      field => this.buildField(field)
+      field => this.buildField(field),
     );
   }
 
   _makeImplementedInterfaces(def: ObjectTypeDefinitionNode) {
-    return def.interfaces &&
-      def.interfaces.map(iface => this.buildInterfaceType(iface));
+    return (
+      def.interfaces &&
+      def.interfaces.map(iface => this.buildInterfaceType(iface))
+    );
   }
 
   _makeInputValues(values: Array<InputValueDefinitionNode>) {
@@ -387,7 +390,7 @@ export class ASTDefinitionBuilder {
           defaultValue: valueFromAST(value.defaultValue, type),
           astNode: value,
         };
-      }
+      },
     );
   }
 
@@ -411,7 +414,7 @@ export class ASTDefinitionBuilder {
           description: getDescription(enumValue, this._options),
           deprecationReason: getDeprecationReason(enumValue),
           astNode: enumValue,
-        })
+        }),
       ),
       astNode: def,
     });
@@ -450,7 +453,7 @@ export class ASTDefinitionBuilder {
  * deprecation reason.
  */
 function getDeprecationReason(
-  node: EnumValueDefinitionNode | FieldDefinitionNode
+  node: EnumValueDefinitionNode | FieldDefinitionNode,
 ): ?string {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   return deprecated && (deprecated.reason: any);
@@ -490,7 +493,8 @@ function getLeadingCommentBlock(node: { loc?: Location }): void | string {
   while (
     token &&
     token.kind === TokenKind.COMMENT &&
-    token.next && token.prev &&
+    token.next &&
+    token.prev &&
     token.line + 1 === token.next.line &&
     token.line !== token.prev.line
   ) {

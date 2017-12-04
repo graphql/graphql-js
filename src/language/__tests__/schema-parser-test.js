@@ -83,11 +83,11 @@ type Hello {
             fieldNode(
               nameNode('world', { start: 16, end: 21 }),
               typeNode('String', { start: 23, end: 29 }),
-              { start: 16, end: 29 }
-            )
+              { start: 16, end: 29 },
+            ),
           ],
           loc: { start: 1, end: 31 },
-        }
+        },
       ],
       loc: { start: 0, end: 31 },
     };
@@ -110,8 +110,8 @@ type Hello {
             kind: 'StringValue',
             value: 'Description',
             loc: { start: 1, end: 14 },
-          }
-        }
+          },
+        },
       ],
       loc: { start: 0, end: 45 },
     });
@@ -136,8 +136,8 @@ type Hello {
             kind: 'StringValue',
             value: 'Description',
             loc: { start: 1, end: 20 },
-          }
-        }
+          },
+        },
       ],
       loc: { start: 0, end: 85 },
     });
@@ -162,13 +162,13 @@ extend type Hello {
             fieldNode(
               nameNode('world', { start: 23, end: 28 }),
               typeNode('String', { start: 30, end: 36 }),
-              { start: 23, end: 36 }
-            )
+              { start: 23, end: 36 },
+            ),
           ],
           loc: { start: 1, end: 38 },
-        }
+        },
       ],
-      loc: { start: 0, end: 39 }
+      loc: { start: 0, end: 39 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -182,36 +182,42 @@ extend type Hello {
         {
           kind: 'ObjectTypeExtension',
           name: nameNode('Hello', { start: 12, end: 17 }),
-          interfaces: [ typeNode('Greeting', { start: 29, end: 37 }) ],
+          interfaces: [typeNode('Greeting', { start: 29, end: 37 })],
           directives: [],
           fields: [],
           loc: { start: 0, end: 37 },
-        }
+        },
       ],
-      loc: { start: 0, end: 37 }
+      loc: { start: 0, end: 37 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
   it('Extension without anything throws', () => {
-    expect(() => parse(`
+    expect(() =>
+      parse(`
       extend type Hello
-    `)).to.throw('Syntax Error GraphQL request (3:5) Unexpected <EOF>');
+    `),
+    ).to.throw('Syntax Error GraphQL request (3:5) Unexpected <EOF>');
   });
 
   it('Extension do not include descriptions', () => {
-    expect(() => parse(`
+    expect(() =>
+      parse(`
       "Description"
       extend type Hello {
         world: String
       }
-    `)).to.throw('Syntax Error GraphQL request (3:7)');
+    `),
+    ).to.throw('Syntax Error GraphQL request (3:7)');
 
-    expect(() => parse(`
+    expect(() =>
+      parse(`
       extend "Description" type Hello {
         world: String
       }
-    `)).to.throw('Syntax Error GraphQL request (2:14)');
+    `),
+    ).to.throw('Syntax Error GraphQL request (2:14)');
   });
 
   it('Simple non-null type', () => {
@@ -236,11 +242,11 @@ type Hello {
                 type: typeNode('String', { start: 23, end: 29 }),
                 loc: { start: 23, end: 30 },
               },
-              { start: 16, end: 30 }
-            )
+              { start: 16, end: 30 },
+            ),
           ],
           loc: { start: 1, end: 32 },
-        }
+        },
       ],
       loc: { start: 0, end: 32 },
     };
@@ -256,17 +262,17 @@ type Hello {
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
-          interfaces: [ typeNode('World', { start: 22, end: 27 }) ],
+          interfaces: [typeNode('World', { start: 22, end: 27 })],
           directives: [],
           fields: [
             fieldNode(
               nameNode('field', { start: 30, end: 35 }),
               typeNode('String', { start: 37, end: 43 }),
-              { start: 30, end: 43 }
-            )
+              { start: 30, end: 43 },
+            ),
           ],
           loc: { start: 0, end: 45 },
-        }
+        },
       ],
       loc: { start: 0, end: 45 },
     };
@@ -284,18 +290,18 @@ type Hello {
           name: nameNode('Hello', { start: 5, end: 10 }),
           interfaces: [
             typeNode('Wo', { start: 22, end: 24 }),
-            typeNode('rld', { start: 26, end: 29 })
+            typeNode('rld', { start: 26, end: 29 }),
           ],
           directives: [],
           fields: [
             fieldNode(
               nameNode('field', { start: 32, end: 37 }),
               typeNode('String', { start: 39, end: 45 }),
-              { start: 32, end: 45 }
-            )
+              { start: 32, end: 45 },
+            ),
           ],
           loc: { start: 0, end: 47 },
-        }
+        },
       ],
       loc: { start: 0, end: 47 },
     };
@@ -312,9 +318,9 @@ type Hello {
           kind: 'EnumTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
           directives: [],
-          values: [ enumValueNode('WORLD', { start: 13, end: 18 }) ],
+          values: [enumValueNode('WORLD', { start: 13, end: 18 })],
           loc: { start: 0, end: 20 },
-        }
+        },
       ],
       loc: { start: 0, end: 20 },
     };
@@ -336,7 +342,7 @@ type Hello {
             enumValueNode('RLD', { start: 17, end: 20 }),
           ],
           loc: { start: 0, end: 22 },
-        }
+        },
       ],
       loc: { start: 0, end: 22 },
     };
@@ -360,11 +366,11 @@ interface Hello {
             fieldNode(
               nameNode('world', { start: 21, end: 26 }),
               typeNode('String', { start: 28, end: 34 }),
-              { start: 21, end: 34 }
-            )
+              { start: 21, end: 34 },
+            ),
           ],
           loc: { start: 1, end: 36 },
-        }
+        },
       ],
       loc: { start: 0, end: 36 },
     };
@@ -394,14 +400,14 @@ type Hello {
                   nameNode('flag', { start: 22, end: 26 }),
                   typeNode('Boolean', { start: 28, end: 35 }),
                   null,
-                  { start: 22, end: 35 }
-                )
+                  { start: 22, end: 35 },
+                ),
               ],
-              { start: 16, end: 44 }
-            )
+              { start: 16, end: 44 },
+            ),
           ],
           loc: { start: 1, end: 46 },
-        }
+        },
       ],
       loc: { start: 0, end: 46 },
     };
@@ -435,14 +441,14 @@ type Hello {
                     value: true,
                     loc: { start: 38, end: 42 },
                   },
-                  { start: 22, end: 42 }
-                )
+                  { start: 22, end: 42 },
+                ),
               ],
-              { start: 16, end: 51 }
-            )
+              { start: 16, end: 51 },
+            ),
           ],
           loc: { start: 1, end: 53 },
-        }
+        },
       ],
       loc: { start: 0, end: 53 },
     };
@@ -473,17 +479,17 @@ type Hello {
                   {
                     kind: 'ListType',
                     type: typeNode('String', { start: 31, end: 37 }),
-                    loc: { start: 30, end: 38 }
+                    loc: { start: 30, end: 38 },
                   },
                   null,
-                  { start: 22, end: 38 }
-                )
+                  { start: 22, end: 38 },
+                ),
               ],
-              { start: 16, end: 47 }
-            )
+              { start: 16, end: 47 },
+            ),
           ],
           loc: { start: 1, end: 49 },
-        }
+        },
       ],
       loc: { start: 0, end: 49 },
     };
@@ -513,20 +519,20 @@ type Hello {
                   nameNode('argOne', { start: 22, end: 28 }),
                   typeNode('Boolean', { start: 30, end: 37 }),
                   null,
-                  { start: 22, end: 37 }
+                  { start: 22, end: 37 },
                 ),
                 inputValueNode(
                   nameNode('argTwo', { start: 39, end: 45 }),
                   typeNode('Int', { start: 47, end: 50 }),
                   null,
-                  { start: 39, end: 50 }
+                  { start: 39, end: 50 },
                 ),
               ],
-              { start: 16, end: 59 }
-            )
+              { start: 16, end: 59 },
+            ),
           ],
           loc: { start: 1, end: 61 },
-        }
+        },
       ],
       loc: { start: 0, end: 61 },
     };
@@ -543,9 +549,9 @@ type Hello {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
           directives: [],
-          types: [ typeNode('World', { start: 14, end: 19 }) ],
+          types: [typeNode('World', { start: 14, end: 19 })],
           loc: { start: 0, end: 19 },
-        }
+        },
       ],
       loc: { start: 0, end: 19 },
     };
@@ -567,7 +573,7 @@ type Hello {
             typeNode('Rld', { start: 19, end: 22 }),
           ],
           loc: { start: 0, end: 22 },
-        }
+        },
       ],
       loc: { start: 0, end: 22 },
     };
@@ -589,7 +595,7 @@ type Hello {
             typeNode('Rld', { start: 21, end: 24 }),
           ],
           loc: { start: 0, end: 24 },
-        }
+        },
       ],
       loc: { start: 0, end: 24 },
     };
@@ -627,7 +633,7 @@ type Hello {
           name: nameNode('Hello', { start: 7, end: 12 }),
           directives: [],
           loc: { start: 0, end: 12 },
-        }
+        },
       ],
       loc: { start: 0, end: 12 },
     };
@@ -652,11 +658,11 @@ input Hello {
               nameNode('world', { start: 17, end: 22 }),
               typeNode('String', { start: 24, end: 30 }),
               null,
-              { start: 17, end: 30 }
-            )
+              { start: 17, end: 30 },
+            ),
           ],
           loc: { start: 1, end: 32 },
-        }
+        },
       ],
       loc: { start: 0, end: 32 },
     };
@@ -672,11 +678,12 @@ input Hello {
   });
 
   it('Directive with incorrect locations', () => {
-    expect(() => parse(`
+    expect(() =>
+      parse(`
       directive @foo on FIELD | INCORRECT_LOCATION
-    `)).to.throw(
-      'Syntax Error GraphQL request (2:33) Unexpected Name "INCORRECT_LOCATION"'
+    `),
+    ).to.throw(
+      'Syntax Error GraphQL request (2:33) Unexpected Name "INCORRECT_LOCATION"',
     );
   });
-
 });

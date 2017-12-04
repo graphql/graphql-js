@@ -10,7 +10,7 @@
 import { isInputType, GraphQLNonNull } from './definition';
 import type {
   GraphQLFieldConfigArgumentMap,
-  GraphQLArgument
+  GraphQLArgument,
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import invariant from '../jsutils/invariant';
@@ -20,7 +20,6 @@ import {
   DirectiveLocation,
   type DirectiveLocationEnum,
 } from '../language/directiveLocation';
-
 
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
@@ -38,7 +37,7 @@ export class GraphQLDirective {
     assertValidName(config.name);
     invariant(
       Array.isArray(config.locations),
-      'Must provide locations for directive.'
+      'Must provide locations for directive.',
     );
     this.name = config.name;
     this.description = config.description;
@@ -51,7 +50,7 @@ export class GraphQLDirective {
     } else {
       invariant(
         !Array.isArray(args),
-        `@${config.name} args must be an object with argument names as keys.`
+        `@${config.name} args must be an object with argument names as keys.`,
       );
       this.args = Object.keys(args).map(argName => {
         assertValidName(argName);
@@ -59,7 +58,7 @@ export class GraphQLDirective {
         invariant(
           isInputType(arg.type),
           `@${config.name}(${argName}:) argument type must be ` +
-          `Input Type but got: ${String(arg.type)}.`
+            `Input Type but got: ${String(arg.type)}.`,
         );
         return {
           name: argName,
@@ -70,16 +69,15 @@ export class GraphQLDirective {
         };
       });
     }
-
   }
 }
 
 type GraphQLDirectiveConfig = {
-  name: string;
-  description?: ?string;
-  locations: Array<DirectiveLocationEnum>;
-  args?: ?GraphQLFieldConfigArgumentMap;
-  astNode?: ?DirectiveDefinitionNode;
+  name: string,
+  description?: ?string,
+  locations: Array<DirectiveLocationEnum>,
+  args?: ?GraphQLFieldConfigArgumentMap,
+  astNode?: ?DirectiveDefinitionNode,
 };
 
 /**
@@ -98,8 +96,8 @@ export const GraphQLIncludeDirective = new GraphQLDirective({
   args: {
     if: {
       type: new GraphQLNonNull(GraphQLBoolean),
-      description: 'Included when true.'
-    }
+      description: 'Included when true.',
+    },
   },
 });
 
@@ -119,8 +117,8 @@ export const GraphQLSkipDirective = new GraphQLDirective({
   args: {
     if: {
       type: new GraphQLNonNull(GraphQLBoolean),
-      description: 'Skipped when true.'
-    }
+      description: 'Skipped when true.',
+    },
   },
 });
 
@@ -134,12 +132,8 @@ export const DEFAULT_DEPRECATION_REASON = 'No longer supported';
  */
 export const GraphQLDeprecatedDirective = new GraphQLDirective({
   name: 'deprecated',
-  description:
-    'Marks an element of a GraphQL schema as no longer supported.',
-  locations: [
-    DirectiveLocation.FIELD_DEFINITION,
-    DirectiveLocation.ENUM_VALUE,
-  ],
+  description: 'Marks an element of a GraphQL schema as no longer supported.',
+  locations: [DirectiveLocation.FIELD_DEFINITION, DirectiveLocation.ENUM_VALUE],
   args: {
     reason: {
       type: GraphQLString,
@@ -147,8 +141,8 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
         'Explains why this element was deprecated, usually also including a ' +
         'suggestion for how to access supported similar data. Formatted ' +
         'in [Markdown](https://daringfireball.net/projects/markdown/).',
-      defaultValue: DEFAULT_DEPRECATION_REASON
-    }
+      defaultValue: DEFAULT_DEPRECATION_REASON,
+    },
   },
 });
 
@@ -162,9 +156,9 @@ export const specifiedDirectives: Array<GraphQLDirective> = [
 ];
 
 export function isSpecifiedDirective(
-  directive: GraphQLDirective
+  directive: GraphQLDirective,
 ): boolean %checks {
   return specifiedDirectives.some(
-    specifiedDirective => specifiedDirective.name === directive.name
+    specifiedDirective => specifiedDirective.name === directive.name,
   );
 }

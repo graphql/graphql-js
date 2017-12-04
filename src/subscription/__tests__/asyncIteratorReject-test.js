@@ -11,7 +11,6 @@ import { describe, it } from 'mocha';
 import asyncIteratorReject from '../asyncIteratorReject';
 
 describe('asyncIteratorReject', () => {
-
   it('creates a failing async iterator', async () => {
     const error = new Error('Oh no, Mr. Bill!');
     const iter = asyncIteratorReject(error);

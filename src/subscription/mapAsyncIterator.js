@@ -16,7 +16,7 @@ import { $$asyncIterator, getAsyncIterator } from 'iterall';
 export default function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T>,
   callback: T => Promise<U> | U,
-  rejectCallback?: any => Promise<U> | U
+  rejectCallback?: any => Promise<U> | U,
 ): AsyncGenerator<U, void, void> {
   const iterator = getAsyncIterator(iterable);
   let $return;
@@ -30,9 +30,9 @@ export default function mapAsyncIterator<T, U>(
   }
 
   function mapResult(result) {
-    return result.done ?
-      result :
-      asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
+    return result.done
+      ? result
+      : asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
   }
 
   let mapReject;
@@ -50,9 +50,9 @@ export default function mapAsyncIterator<T, U>(
       return iterator.next().then(mapResult, mapReject);
     },
     return() {
-      return $return ?
-        $return.call(iterator).then(mapResult, mapReject) :
-        Promise.resolve({ value: undefined, done: true });
+      return $return
+        ? $return.call(iterator).then(mapResult, mapReject)
+        : Promise.resolve({ value: undefined, done: true });
     },
     throw(error) {
       if (typeof iterator.throw === 'function') {
@@ -68,7 +68,7 @@ export default function mapAsyncIterator<T, U>(
 
 function asyncMapValue<T, U>(
   value: T,
-  callback: T => Promise<U> | U
+  callback: T => Promise<U> | U,
 ): Promise<U> {
   return new Promise(resolve => resolve(callback(value)));
 }

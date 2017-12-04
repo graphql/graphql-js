@@ -18,7 +18,6 @@ import type { Source } from '../language/source';
  * GraphQL document and/or execution result that correspond to the Error.
  */
 declare class GraphQLError extends Error {
-
   constructor(
     message: string,
     nodes?: ?Array<*>,
@@ -90,7 +89,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   positions?: ?Array<number>,
   path?: ?Array<string | number>,
   originalError?: ?Error,
-  extensions?: ?{ [key: string]: mixed }
+  extensions?: ?{ [key: string]: mixed },
 ) {
   // Compute locations in the source for the given nodes/positions.
   let _source = source;
@@ -101,7 +100,8 @@ export function GraphQLError( // eslint-disable-line no-redeclare
 
   let _positions = positions;
   if (!_positions && nodes) {
-    _positions = nodes.filter(node => Boolean(node.loc))
+    _positions = nodes
+      .filter(node => Boolean(node.loc))
       .map(node => node.loc.start);
   }
   if (_positions && _positions.length === 0) {
@@ -121,7 +121,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       // resulting output. This ensures that the simplest possible GraphQL
       // service adheres to the spec.
       enumerable: true,
-      writable: true
+      writable: true,
     },
     locations: {
       // Coercing falsey values to undefined ensures they will not be included
@@ -130,7 +130,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       // By being enumerable, JSON.stringify will include `locations` in the
       // resulting output. This ensures that the simplest possible GraphQL
       // service adheres to the spec.
-      enumerable: true
+      enumerable: true,
     },
     path: {
       // Coercing falsey values to undefined ensures they will not be included
@@ -139,10 +139,10 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       // By being enumerable, JSON.stringify will include `path` in the
       // resulting output. This ensures that the simplest possible GraphQL
       // service adheres to the spec.
-      enumerable: true
+      enumerable: true,
     },
     nodes: {
-      value: nodes || undefined
+      value: nodes || undefined,
     },
     source: {
       value: _source || undefined,
@@ -151,10 +151,10 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       value: _positions || undefined,
     },
     originalError: {
-      value: originalError
+      value: originalError,
     },
     extensions: {
-      value: extensions
+      value: extensions,
     },
   });
 
@@ -163,7 +163,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
     Object.defineProperty(this, 'stack', {
       value: originalError.stack,
       writable: true,
-      configurable: true
+      configurable: true,
     });
   } else if (Error.captureStackTrace) {
     Error.captureStackTrace(this, GraphQLError);
@@ -171,12 +171,12 @@ export function GraphQLError( // eslint-disable-line no-redeclare
     Object.defineProperty(this, 'stack', {
       value: Error().stack,
       writable: true,
-      configurable: true
+      configurable: true,
     });
   }
 }
 
 (GraphQLError: any).prototype = Object.create(Error.prototype, {
   constructor: { value: GraphQLError },
-  name: { value: 'GraphQLError' }
+  name: { value: 'GraphQLError' },
 });

@@ -22,19 +22,19 @@ const MIN_INT = -2147483648;
 function coerceInt(value: mixed): ?number {
   if (value === '') {
     throw new TypeError(
-      'Int cannot represent non 32-bit signed integer value: (empty string)'
+      'Int cannot represent non 32-bit signed integer value: (empty string)',
     );
   }
   const num = Number(value);
   if (num !== num || num > MAX_INT || num < MIN_INT) {
     throw new TypeError(
-      'Int cannot represent non 32-bit signed integer value: ' + String(value)
+      'Int cannot represent non 32-bit signed integer value: ' + String(value),
     );
   }
   const int = Math.floor(num);
   if (int !== num) {
     throw new TypeError(
-      'Int cannot represent non-integer value: ' + String(value)
+      'Int cannot represent non-integer value: ' + String(value),
     );
   }
   return int;
@@ -55,13 +55,13 @@ export const GraphQLInt = new GraphQLScalarType({
       }
     }
     return undefined;
-  }
+  },
 });
 
 function coerceFloat(value: mixed): ?number {
   if (value === '') {
     throw new TypeError(
-      'Float cannot represent non numeric value: (empty string)'
+      'Float cannot represent non numeric value: (empty string)',
     );
   }
   const num = Number(value);
@@ -69,7 +69,7 @@ function coerceFloat(value: mixed): ?number {
     return num;
   }
   throw new TypeError(
-    'Float cannot represent non numeric value: ' + String(value)
+    'Float cannot represent non numeric value: ' + String(value),
   );
 }
 
@@ -82,16 +82,16 @@ export const GraphQLFloat = new GraphQLScalarType({
   serialize: coerceFloat,
   parseValue: coerceFloat,
   parseLiteral(ast) {
-    return ast.kind === Kind.FLOAT || ast.kind === Kind.INT ?
-      parseFloat(ast.value) :
-      undefined;
-  }
+    return ast.kind === Kind.FLOAT || ast.kind === Kind.INT
+      ? parseFloat(ast.value)
+      : undefined;
+  },
 });
 
 function coerceString(value: mixed): ?string {
   if (Array.isArray(value)) {
     throw new TypeError(
-      `String cannot represent an array value: [${String(value)}]`
+      `String cannot represent an array value: [${String(value)}]`,
     );
   }
   return String(value);
@@ -107,7 +107,7 @@ export const GraphQLString = new GraphQLScalarType({
   parseValue: coerceString,
   parseLiteral(ast) {
     return ast.kind === Kind.STRING ? ast.value : undefined;
-  }
+  },
 });
 
 export const GraphQLBoolean = new GraphQLScalarType({
@@ -117,7 +117,7 @@ export const GraphQLBoolean = new GraphQLScalarType({
   parseValue: Boolean,
   parseLiteral(ast) {
     return ast.kind === Kind.BOOLEAN ? ast.value : undefined;
-  }
+  },
 });
 
 export const GraphQLID = new GraphQLScalarType({
@@ -131,10 +131,10 @@ export const GraphQLID = new GraphQLScalarType({
   serialize: String,
   parseValue: String,
   parseLiteral(ast) {
-    return ast.kind === Kind.STRING || ast.kind === Kind.INT ?
-      ast.value :
-      undefined;
-  }
+    return ast.kind === Kind.STRING || ast.kind === Kind.INT
+      ? ast.value
+      : undefined;
+  },
 });
 
 export const specifiedScalarTypes: Array<GraphQLScalarType> = [
@@ -146,7 +146,10 @@ export const specifiedScalarTypes: Array<GraphQLScalarType> = [
 ];
 
 export function isSpecifiedScalarType(type: ?GraphQLType): boolean %checks {
-  return isNamedType(type) && specifiedScalarTypes.some(
-    specifiedScalarType => specifiedScalarType.name === type.name
+  return (
+    isNamedType(type) &&
+    specifiedScalarTypes.some(
+      specifiedScalarType => specifiedScalarType.name === type.name,
+    )
   );
 }

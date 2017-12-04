@@ -55,9 +55,9 @@ export function valueFromASTUntyped(
       );
     case Kind.VARIABLE:
       const variableName = valueNode.name.value;
-      return variables && !isInvalid(variables[variableName]) ?
-        variables[variableName] :
-        undefined;
+      return variables && !isInvalid(variables[variableName])
+        ? variables[variableName]
+        : undefined;
     default:
       throw new Error('Unexpected value kind: ' + (valueNode.kind: empty));
   }

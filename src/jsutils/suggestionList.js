@@ -13,7 +13,7 @@
  */
 export default function suggestionList(
   input: string,
-  options: Array<string>
+  options: Array<string>,
 ): Array<string> {
   const optionsByDistance = Object.create(null);
   const oLength = options.length;
@@ -26,7 +26,7 @@ export default function suggestionList(
     }
   }
   return Object.keys(optionsByDistance).sort(
-    (a , b) => optionsByDistance[a] - optionsByDistance[b]
+    (a, b) => optionsByDistance[a] - optionsByDistance[b],
   );
 }
 
@@ -52,7 +52,7 @@ function lexicalDistance(a, b) {
   const bLength = b.length;
 
   for (i = 0; i <= aLength; i++) {
-    d[i] = [ i ];
+    d[i] = [i];
   }
 
   for (j = 1; j <= bLength; j++) {
@@ -66,12 +66,10 @@ function lexicalDistance(a, b) {
       d[i][j] = Math.min(
         d[i - 1][j] + 1,
         d[i][j - 1] + 1,
-        d[i - 1][j - 1] + cost
+        d[i - 1][j - 1] + cost,
       );
 
-      if (i > 1 && j > 1 &&
-          a[i - 1] === b[j - 2] &&
-          a[i - 2] === b[j - 1]) {
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
         d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
       }
     }

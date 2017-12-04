@@ -15,29 +15,32 @@ import {
   nonExecutableDefinitionMessage,
 } from '../rules/ExecutableDefinitions';
 
-
 function nonExecutableDefinition(defName, line, column) {
   return {
     message: nonExecutableDefinitionMessage(defName),
-    locations: [ { line, column } ],
+    locations: [{ line, column }],
     path: undefined,
   };
 }
 
 describe('Validate: Executable definitions', () => {
-
   it('with only operation', () => {
-    expectPassesRule(ExecutableDefinitions, `
+    expectPassesRule(
+      ExecutableDefinitions,
+      `
       query Foo {
         dog {
           name
         }
       }
-    `);
+    `,
+    );
   });
 
   it('with operation and fragment', () => {
-    expectPassesRule(ExecutableDefinitions, `
+    expectPassesRule(
+      ExecutableDefinitions,
+      `
       query Foo {
         dog {
           name
@@ -48,11 +51,14 @@ describe('Validate: Executable definitions', () => {
       fragment Frag on Dog {
         name
       }
-    `);
+    `,
+    );
   });
 
   it('with type definition', () => {
-    expectFailsRule(ExecutableDefinitions, `
+    expectFailsRule(
+      ExecutableDefinitions,
+      `
       query Foo {
         dog {
           name
@@ -66,10 +72,11 @@ describe('Validate: Executable definitions', () => {
       extend type Dog {
         color: String
       }
-    `, [
+    `,
+      [
         nonExecutableDefinition('Cow', 8, 12),
         nonExecutableDefinition('Dog', 12, 19),
-      ]);
+      ],
+    );
   });
-
 });

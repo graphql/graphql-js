@@ -32,39 +32,39 @@ const SomeInterfaceType = new GraphQLInterfaceType({
   fields: () => ({
     name: { type: GraphQLString },
     some: { type: SomeInterfaceType },
-  })
+  }),
 });
 
 const FooType = new GraphQLObjectType({
   name: 'Foo',
-  interfaces: [ SomeInterfaceType ],
+  interfaces: [SomeInterfaceType],
   fields: () => ({
     name: { type: GraphQLString },
     some: { type: SomeInterfaceType },
     tree: { type: new GraphQLNonNull(new GraphQLList(FooType)) },
-  })
+  }),
 });
 
 const BarType = new GraphQLObjectType({
   name: 'Bar',
-  interfaces: [ SomeInterfaceType ],
+  interfaces: [SomeInterfaceType],
   fields: () => ({
     name: { type: GraphQLString },
     some: { type: SomeInterfaceType },
     foo: { type: FooType },
-  })
+  }),
 });
 
 const BizType = new GraphQLObjectType({
   name: 'Biz',
   fields: () => ({
     fizz: { type: GraphQLString },
-  })
+  }),
 });
 
 const SomeUnionType = new GraphQLUnionType({
   name: 'SomeUnion',
-  types: [ FooType, BizType ],
+  types: [FooType, BizType],
 });
 
 const SomeEnumType = new GraphQLEnumType({
@@ -72,7 +72,7 @@ const SomeEnumType = new GraphQLEnumType({
   values: {
     ONE: { value: 1 },
     TWO: { value: 2 },
-  }
+  },
 });
 
 const testSchema = new GraphQLSchema({
@@ -84,15 +84,14 @@ const testSchema = new GraphQLSchema({
       someEnum: { type: SomeEnumType },
       someInterface: {
         args: { id: { type: new GraphQLNonNull(GraphQLID) } },
-        type: SomeInterfaceType
+        type: SomeInterfaceType,
       },
-    })
+    }),
   }),
-  types: [ FooType, BarType ]
+  types: [FooType, BarType],
 });
 
 describe('extendSchema', () => {
-
   it('returns the original schema when there are no type definitions', () => {
     const ast = parse('{ field }');
     const extendedSchema = extendSchema(testSchema, ast);
@@ -122,11 +121,9 @@ describe('extendSchema', () => {
     const extendedSchema = extendSchema(testSchema, ast);
     const clientQuery = parse('{ newField }');
 
-    const result = await execute(
-      extendedSchema,
-      clientQuery,
-      { newField: 123 }
-    );
+    const result = await execute(extendedSchema, clientQuery, {
+      newField: 123,
+    });
     expect(result.data).to.deep.equal({ newField: '123' });
   });
 
@@ -140,7 +137,7 @@ describe('extendSchema', () => {
     const extendedSchema = extendSchema(testSchema, ast);
 
     expect(
-      extendedSchema.getType('Query').getFields().newField.description
+      extendedSchema.getType('Query').getFields().newField.description,
     ).to.equal('New field description.');
   });
 
@@ -152,11 +149,11 @@ describe('extendSchema', () => {
       }
     `);
     const extendedSchema = extendSchema(testSchema, ast, {
-      commentDescriptions: true
+      commentDescriptions: true,
     });
 
     expect(
-      extendedSchema.getType('Query').getFields().newField.description
+      extendedSchema.getType('Query').getFields().newField.description,
     ).to.equal('New field description.');
   });
 
@@ -169,11 +166,11 @@ describe('extendSchema', () => {
       }
     `);
     const extendedSchema = extendSchema(testSchema, ast, {
-      commentDescriptions: true
+      commentDescriptions: true,
     });
 
     expect(
-      extendedSchema.getType('Query').getFields().newField.description
+      extendedSchema.getType('Query').getFields().newField.description,
     ).to.equal('Actually use this description.');
   });
 
@@ -263,8 +260,10 @@ describe('extendSchema', () => {
 
       directive @test(arg: Int) on FIELD
     `);
-    const extendedTwiceSchema = extendSchema(extendedSchema,
-      secondExtensionAst);
+    const extendedTwiceSchema = extendSchema(
+      extendedSchema,
+      secondExtensionAst,
+    );
 
     const query = extendedTwiceSchema.getType('Query');
     const testInput = extendedTwiceSchema.getType('TestInput');
@@ -278,40 +277,45 @@ describe('extendSchema', () => {
     expect(testType.extensionASTNodes).to.have.lengthOf(0);
 
     const restoredExtensionAST = parse(
-      print(query.extensionASTNodes[0]) + '\n' +
-      print(query.extensionASTNodes[1]) + '\n' +
-      print(testInput.astNode) + '\n' +
-      print(testEnum.astNode) + '\n' +
-      print(testUnion.astNode) + '\n' +
-      print(testInterface.astNode) + '\n' +
-      print(testType.astNode) + '\n' +
-      print(testDirective.astNode)
+      print(query.extensionASTNodes[0]) +
+        '\n' +
+        print(query.extensionASTNodes[1]) +
+        '\n' +
+        print(testInput.astNode) +
+        '\n' +
+        print(testEnum.astNode) +
+        '\n' +
+        print(testUnion.astNode) +
+        '\n' +
+        print(testInterface.astNode) +
+        '\n' +
+        print(testType.astNode) +
+        '\n' +
+        print(testDirective.astNode),
     );
     expect(
-      printSchema(extendSchema(schemaFromIDL, restoredExtensionAST))
+      printSchema(extendSchema(schemaFromIDL, restoredExtensionAST)),
     ).to.be.equal(printSchema(extendedTwiceSchema));
 
     const newField = query.getFields().newField;
     expect(print(newField.astNode)).to.equal(
-      'newField(testArg: TestInput): TestEnum'
+      'newField(testArg: TestInput): TestEnum',
     );
-    expect(print(newField.args[0].astNode)).to.equal(
-      'testArg: TestInput'
-    );
+    expect(print(newField.args[0].astNode)).to.equal('testArg: TestInput');
     expect(print(query.getFields().oneMoreNewField.astNode)).to.equal(
-      'oneMoreNewField: TestUnion'
+      'oneMoreNewField: TestUnion',
     );
     expect(print(testInput.getFields().testInputField.astNode)).to.equal(
-      'testInputField: TestEnum'
+      'testInputField: TestEnum',
     );
     expect(print(testEnum.getValue('TEST_VALUE').astNode)).to.equal(
-      'TEST_VALUE'
+      'TEST_VALUE',
     );
     expect(print(testInterface.getFields().interfaceField.astNode)).to.equal(
-      'interfaceField: String'
+      'interfaceField: String',
     );
     expect(print(testType.getFields().interfaceField.astNode)).to.equal(
-      'interfaceField: String'
+      'interfaceField: String',
     );
     expect(print(testDirective.args[0].astNode)).to.equal('arg: Int');
   });
@@ -329,8 +333,7 @@ describe('extendSchema', () => {
     const extendedSchema = extendSchema(testSchema, ast);
     const deprecatedFieldDef = extendedSchema
       .getType('TypeWithDeprecatedField')
-      .getFields()
-      .newDeprecatedField;
+      .getFields().newDeprecatedField;
     expect(deprecatedFieldDef.isDeprecated).to.equal(true);
     expect(deprecatedFieldDef.deprecationReason).to.equal('not used anymore');
 
@@ -348,8 +351,8 @@ describe('extendSchema', () => {
       }
     `);
     const extendedSchema = extendSchema(testSchema, ast);
-    const deprecatedFieldDef =
-      extendedSchema.getType('Foo').getFields().deprecatedField;
+    const deprecatedFieldDef = extendedSchema.getType('Foo').getFields()
+      .deprecatedField;
     expect(deprecatedFieldDef.isDeprecated).to.equal(true);
     expect(deprecatedFieldDef.deprecationReason).to.equal('not used anymore');
   });
@@ -803,19 +806,19 @@ describe('extendSchema', () => {
         name: 'Query',
         fields: () => ({
           queryField: { type: GraphQLString },
-        })
+        }),
       }),
       mutation: new GraphQLObjectType({
         name: 'Mutation',
         fields: () => ({
           mutationField: { type: GraphQLString },
-        })
+        }),
       }),
       subscription: new GraphQLObjectType({
         name: 'Subscription',
         fields: () => ({
           subscriptionField: { type: GraphQLString },
-        })
+        }),
       }),
     });
 
@@ -885,7 +888,7 @@ describe('extendSchema', () => {
     `);
 
     const extendedSchema = extendSchema(testSchema, ast, {
-      commentDescriptions: true
+      commentDescriptions: true,
     });
     const newDirective = extendedSchema.getDirective('new');
     expect(newDirective.description).to.equal('new directive');
@@ -919,11 +922,9 @@ describe('extendSchema', () => {
       directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD
     `);
 
-    expect(() =>
-      extendSchema(testSchema, ast)
-    ).to.throw(
+    expect(() => extendSchema(testSchema, ast)).to.throw(
       'Directive "include" already exists in the schema. It cannot be ' +
-      'redefined.'
+        'redefined.',
     );
   });
 
@@ -938,11 +939,9 @@ describe('extendSchema', () => {
       directive @meow(if: Boolean!) on FIELD | QUERY
     `);
 
-    expect(() =>
-      extendSchema(extendedSchema, replacementAst)
-    ).to.throw(
+    expect(() => extendSchema(extendedSchema, replacementAst)).to.throw(
       'Directive "meow" already exists in the schema. It cannot be ' +
-      'redefined.'
+        'redefined.',
     );
   });
 
@@ -952,11 +951,9 @@ describe('extendSchema', () => {
         baz: String
       }
     `);
-    expect(() =>
-      extendSchema(testSchema, ast)
-    ).to.throw(
+    expect(() => extendSchema(testSchema, ast)).to.throw(
       'Type "Bar" already exists in the schema. It cannot also be defined ' +
-      'in this type definition.'
+        'in this type definition.',
     );
   });
 
@@ -966,11 +963,9 @@ describe('extendSchema', () => {
         foo: Foo
       }
     `);
-    expect(() =>
-      extendSchema(testSchema, ast)
-    ).to.throw(
+    expect(() => extendSchema(testSchema, ast)).to.throw(
       'Field "Bar.foo" already exists in the schema. It cannot also be ' +
-      'defined in this type extension.'
+        'defined in this type extension.',
     );
   });
 
@@ -980,11 +975,9 @@ describe('extendSchema', () => {
         otherField: String
       }
     `);
-    expect(() =>
-      extendSchema(testSchema, ast)
-    ).to.throw(
+    expect(() => extendSchema(testSchema, ast)).to.throw(
       'Type "Foo" already implements "SomeInterface". It cannot also be ' +
-      'implemented in this type extension.'
+        'implemented in this type extension.',
     );
   });
 
@@ -994,11 +987,9 @@ describe('extendSchema', () => {
         quix: Quix
       }
     `);
-    expect(() =>
-      extendSchema(testSchema, ast)
-    ).to.throw(
+    expect(() => extendSchema(testSchema, ast)).to.throw(
       'Unknown type: "Quix". Ensure that this type exists either in the ' +
-      'original schema, or is added in a type definition.'
+        'original schema, or is added in a type definition.',
     );
   });
 
@@ -1008,26 +999,21 @@ describe('extendSchema', () => {
         baz: String
       }
     `);
-    expect(() =>
-      extendSchema(testSchema, ast)
-    ).to.throw(
+    expect(() => extendSchema(testSchema, ast)).to.throw(
       'Cannot extend type "UnknownType" because it does not exist in the ' +
-      'existing schema.'
+        'existing schema.',
     );
   });
 
   describe('does not allow extending a non-object type', () => {
-
     it('not an interface', () => {
       const ast = parse(`
         extend type SomeInterface {
           baz: String
         }
       `);
-      expect(() =>
-        extendSchema(testSchema, ast)
-      ).to.throw(
-        'Cannot extend non-object type "SomeInterface".'
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Cannot extend non-object type "SomeInterface".',
       );
     });
 
@@ -1037,12 +1023,9 @@ describe('extendSchema', () => {
           baz: String
         }
       `);
-      expect(() =>
-        extendSchema(testSchema, ast)
-      ).to.throw(
-        'Cannot extend non-object type "String".'
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Cannot extend non-object type "String".',
       );
     });
-
   });
 });

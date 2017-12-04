@@ -45,7 +45,7 @@ export function printSchema(schema: GraphQLSchema, options?: Options): string {
     schema,
     n => !isSpecifiedDirective(n),
     isDefinedType,
-    options
+    options,
   );
 }
 
@@ -57,7 +57,7 @@ export function printIntrospectionSchema(
     schema,
     isSpecifiedDirective,
     isIntrospectionType,
-    options
+    options,
   );
 }
 
@@ -69,7 +69,7 @@ function printFilteredSchema(
   schema: GraphQLSchema,
   directiveFilter: (type: GraphQLDirective) => boolean,
   typeFilter: (type: GraphQLNamedType) => boolean,
-  options
+  options,
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
   const typeMap = schema.getTypeMap();
@@ -78,10 +78,15 @@ function printFilteredSchema(
     .map(typeName => typeMap[typeName])
     .filter(typeFilter);
 
-  return [ printSchemaDefinition(schema) ].concat(
-    directives.map(directive => printDirective(directive, options)),
-    types.map(type => printType(type, options))
-  ).filter(Boolean).join('\n\n') + '\n';
+  return (
+    [printSchemaDefinition(schema)]
+      .concat(
+        directives.map(directive => printDirective(directive, options)),
+        types.map(type => printType(type, options)),
+      )
+      .filter(Boolean)
+      .join('\n\n') + '\n'
+  );
 }
 
 function printSchemaDefinition(schema: GraphQLSchema): ?string {
@@ -140,10 +145,7 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   return true;
 }
 
-export function printType(
-  type: GraphQLType,
-  options?: Options,
-): string {
+export function printType(type: GraphQLType, options?: Options): string {
   if (type instanceof GraphQLScalarType) {
     return printScalar(type, options);
   } else if (type instanceof GraphQLObjectType) {
@@ -160,65 +162,94 @@ export function printType(
 }
 
 function printScalar(type: GraphQLScalarType, options): string {
-  return printDescription(options, type) +
-    `scalar ${type.name}`;
+  return printDescription(options, type) + `scalar ${type.name}`;
 }
 
 function printObject(type: GraphQLObjectType, options): string {
   const interfaces = type.getInterfaces();
-  const implementedInterfaces = interfaces.length ?
-    ' implements ' + interfaces.map(i => i.name).join(', ') : '';
-  return printDescription(options, type) +
+  const implementedInterfaces = interfaces.length
+    ? ' implements ' + interfaces.map(i => i.name).join(', ')
+    : '';
+  return (
+    printDescription(options, type) +
     `type ${type.name}${implementedInterfaces} {\n` +
-      printFields(options, type) + '\n' +
-    '}';
+    printFields(options, type) +
+    '\n' +
+    '}'
+  );
 }
 
 function printInterface(type: GraphQLInterfaceType, options): string {
-  return printDescription(options, type) +
+  return (
+    printDescription(options, type) +
     `interface ${type.name} {\n` +
-      printFields(options, type) + '\n' +
-    '}';
+    printFields(options, type) +
+    '\n' +
+    '}'
+  );
 }
 
 function printUnion(type: GraphQLUnionType, options): string {
-  return printDescription(options, type) +
-    `union ${type.name} = ${type.getTypes().join(' | ')}`;
+  return (
+    printDescription(options, type) +
+    `union ${type.name} = ${type.getTypes().join(' | ')}`
+  );
 }
 
 function printEnum(type: GraphQLEnumType, options): string {
-  return printDescription(options, type) +
+  return (
+    printDescription(options, type) +
     `enum ${type.name} {\n` +
-      printEnumValues(type.getValues(), options) + '\n' +
-    '}';
+    printEnumValues(type.getValues(), options) +
+    '\n' +
+    '}'
+  );
 }
 
 function printEnumValues(values, options): string {
-  return values.map((value, i) =>
-    printDescription(options, value, '  ', !i) + '  ' +
-    value.name + printDeprecated(value)
-  ).join('\n');
+  return values
+    .map(
+      (value, i) =>
+        printDescription(options, value, '  ', !i) +
+        '  ' +
+        value.name +
+        printDeprecated(value),
+    )
+    .join('\n');
 }
 
 function printInputObject(type: GraphQLInputObjectType, options): string {
   const fieldMap = type.getFields();
   const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
-  return printDescription(options, type) +
+  return (
+    printDescription(options, type) +
     `input ${type.name} {\n` +
-      fields.map((f, i) =>
-        printDescription(options, f, '  ', !i) + '  ' + printInputValue(f)
-      ).join('\n') + '\n' +
-    '}';
+    fields
+      .map(
+        (f, i) =>
+          printDescription(options, f, '  ', !i) + '  ' + printInputValue(f),
+      )
+      .join('\n') +
+    '\n' +
+    '}'
+  );
 }
 
 function printFields(options, type) {
   const fieldMap = type.getFields();
   const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
-  return fields.map((f, i) =>
-    printDescription(options, f, '  ', !i) + '  ' +
-    f.name + printArgs(options, f.args, '  ') + ': ' +
-    String(f.type) + printDeprecated(f)
-  ).join('\n');
+  return fields
+    .map(
+      (f, i) =>
+        printDescription(options, f, '  ', !i) +
+        '  ' +
+        f.name +
+        printArgs(options, f.args, '  ') +
+        ': ' +
+        String(f.type) +
+        printDeprecated(f),
+    )
+    .join('\n');
 }
 
 function printArgs(options, args, indentation = '') {
@@ -231,11 +262,21 @@ function printArgs(options, args, indentation = '') {
     return '(' + args.map(printInputValue).join(', ') + ')';
   }
 
-  return '(\n' + args.map((arg, i) =>
-    printDescription(options, arg, '  ' + indentation, !i) +
-    '  ' + indentation +
-    printInputValue(arg)
-  ).join('\n') + '\n' + indentation + ')';
+  return (
+    '(\n' +
+    args
+      .map(
+        (arg, i) =>
+          printDescription(options, arg, '  ' + indentation, !i) +
+          '  ' +
+          indentation +
+          printInputValue(arg),
+      )
+      .join('\n') +
+    '\n' +
+    indentation +
+    ')'
+  );
 }
 
 function printInputValue(arg) {
@@ -247,9 +288,14 @@ function printInputValue(arg) {
 }
 
 function printDirective(directive, options) {
-  return printDescription(options, directive) +
-    'directive @' + directive.name + printArgs(options, directive.args) +
-    ' on ' + directive.locations.join(' | ');
+  return (
+    printDescription(options, directive) +
+    'directive @' +
+    directive.name +
+    printArgs(options, directive.args) +
+    ' on ' +
+    directive.locations.join(' | ')
+  );
 }
 
 function printDeprecated(fieldOrEnumVal) {
@@ -264,15 +310,16 @@ function printDeprecated(fieldOrEnumVal) {
   ) {
     return ' @deprecated';
   }
-  return ' @deprecated(reason: ' +
-    print(astFromValue(reason, GraphQLString)) + ')';
+  return (
+    ' @deprecated(reason: ' + print(astFromValue(reason, GraphQLString)) + ')'
+  );
 }
 
 function printDescription(
   options,
   def,
   indentation = '',
-  firstInBlock = true
+  firstInBlock = true,
 ): string {
   if (!def.description) {
     return '';
@@ -333,13 +380,13 @@ function descriptionLines(description: string, maxLen: number): Array<string> {
 
 function breakLine(line: string, maxLen: number): Array<string> {
   if (line.length < maxLen + 5) {
-    return [ line ];
+    return [line];
   }
   const parts = line.split(new RegExp(`((?: |^).{15,${maxLen - 40}}(?= |$))`));
   if (parts.length < 4) {
-    return [ line ];
+    return [line];
   }
-  const sublines = [ parts[0] + parts[1] + parts[2] ];
+  const sublines = [parts[0] + parts[1] + parts[2]];
   for (let i = 3; i < parts.length; i += 2) {
     sublines.push(parts[i].slice(1) + parts[i + 1]);
   }

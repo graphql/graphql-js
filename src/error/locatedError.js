@@ -9,7 +9,6 @@
 
 import { GraphQLError } from './GraphQLError';
 
-
 /**
  * Given an arbitrary Error, presumably thrown while attempting to execute a
  * GraphQL operation, produce a new GraphQLError aware of the location in the
@@ -18,7 +17,7 @@ import { GraphQLError } from './GraphQLError';
 export function locatedError(
   originalError: ?Error,
   nodes: Array<*>,
-  path: Array<string | number>
+  path: Array<string | number>,
 ): GraphQLError {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
@@ -26,12 +25,12 @@ export function locatedError(
     return (originalError: any);
   }
 
-  const message = originalError ?
-    originalError.message || String(originalError) :
-    'An unknown error occurred.';
+  const message = originalError
+    ? originalError.message || String(originalError)
+    : 'An unknown error occurred.';
   return new GraphQLError(
     message,
-    originalError && (originalError: any).nodes || nodes,
+    (originalError && (originalError: any).nodes) || nodes,
     originalError && (originalError: any).source,
     originalError && (originalError: any).positions,
     path,

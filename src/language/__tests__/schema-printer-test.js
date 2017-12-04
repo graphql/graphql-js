@@ -13,11 +13,10 @@ import { parse } from '../parser';
 import { print } from '../printer';
 
 describe('Printer', () => {
-
   it('prints minimal ast', () => {
     const ast = {
       kind: 'ScalarTypeDefinition',
-      name: { kind: 'Name', value: 'foo' }
+      name: { kind: 'Name', value: 'foo' },
     };
     expect(print(ast)).to.equal('scalar foo');
   });
@@ -25,13 +24,13 @@ describe('Printer', () => {
   it('produces helpful error messages', () => {
     const badAst1 = { random: 'Data' };
     expect(() => print(badAst1)).to.throw(
-      'Invalid AST Node: {"random":"Data"}'
+      'Invalid AST Node: {"random":"Data"}',
     );
   });
 
   const kitchenSink = readFileSync(
     join(__dirname, '/schema-kitchen-sink.graphql'),
-    { encoding: 'utf8' }
+    { encoding: 'utf8' },
   );
 
   it('does not alter ast', () => {
@@ -42,14 +41,13 @@ describe('Printer', () => {
   });
 
   it('prints kitchen sink', () => {
-
     const ast = parse(kitchenSink);
 
     const printed = print(ast);
 
     /* eslint-disable max-len */
     expect(printed).to.equal(
-`schema {
+      `schema {
   query: QueryType
   mutation: MutationType
 }
@@ -121,7 +119,7 @@ directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @include2(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-`);
-
+`,
+    );
   });
 });

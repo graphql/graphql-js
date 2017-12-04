@@ -12,35 +12,39 @@ import {
   duplicateVariableMessage,
 } from '../rules/UniqueVariableNames';
 
-
 function duplicateVariable(name, l1, c1, l2, c2) {
   return {
     message: duplicateVariableMessage(name),
-    locations: [ { line: l1, column: c1 }, { line: l2, column: c2 } ],
+    locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
     path: undefined,
   };
 }
 
 describe('Validate: Unique variable names', () => {
-
   it('unique variable names', () => {
-    expectPassesRule(UniqueVariableNames, `
+    expectPassesRule(
+      UniqueVariableNames,
+      `
       query A($x: Int, $y: String) { __typename }
       query B($x: String, $y: Int) { __typename }
-    `);
+    `,
+    );
   });
 
   it('duplicate variable names', () => {
-    expectFailsRule(UniqueVariableNames, `
+    expectFailsRule(
+      UniqueVariableNames,
+      `
       query A($x: Int, $x: Int, $x: String) { __typename }
       query B($x: String, $x: Int) { __typename }
       query C($x: Int, $x: Int) { __typename }
-    `, [
-      duplicateVariable('x', 2, 16, 2, 25),
-      duplicateVariable('x', 2, 16, 2, 34),
-      duplicateVariable('x', 3, 16, 3, 28),
-      duplicateVariable('x', 4, 16, 4, 25)
-    ]);
+    `,
+      [
+        duplicateVariable('x', 2, 16, 2, 25),
+        duplicateVariable('x', 2, 16, 2, 34),
+        duplicateVariable('x', 3, 16, 3, 28),
+        duplicateVariable('x', 4, 16, 4, 25),
+      ],
+    );
   });
-
 });

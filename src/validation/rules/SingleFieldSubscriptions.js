@@ -11,10 +11,11 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { OperationDefinitionNode } from '../../language/ast';
 
-
 export function singleFieldOnlyMessage(name: ?string): string {
-  return (name ? `Subscription "${name}" ` : 'Anonymous Subscription ') +
-    'must select only one top level field.';
+  return (
+    (name ? `Subscription "${name}" ` : 'Anonymous Subscription ') +
+    'must select only one top level field.'
+  );
 }
 
 /**
@@ -27,12 +28,14 @@ export function SingleFieldSubscriptions(context: ValidationContext): any {
     OperationDefinition(node: OperationDefinitionNode) {
       if (node.operation === 'subscription') {
         if (node.selectionSet.selections.length !== 1) {
-          context.reportError(new GraphQLError(
-            singleFieldOnlyMessage(node.name && node.name.value),
-            node.selectionSet.selections.slice(1)
-          ));
+          context.reportError(
+            new GraphQLError(
+              singleFieldOnlyMessage(node.name && node.name.value),
+              node.selectionSet.selections.slice(1),
+            ),
+          );
         }
       }
-    }
+    },
   };
 }

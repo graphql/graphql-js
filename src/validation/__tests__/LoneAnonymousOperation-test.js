@@ -12,35 +12,41 @@ import {
   anonOperationNotAloneMessage,
 } from '../rules/LoneAnonymousOperation';
 
-
 function anonNotAlone(line, column) {
   return {
     message: anonOperationNotAloneMessage(),
-    locations: [ { line, column } ],
+    locations: [{ line, column }],
     path: undefined,
   };
 }
 
 describe('Validate: Anonymous operation must be alone', () => {
-
   it('no operations', () => {
-    expectPassesRule(LoneAnonymousOperation, `
+    expectPassesRule(
+      LoneAnonymousOperation,
+      `
       fragment fragA on Type {
         field
       }
-    `);
+    `,
+    );
   });
 
   it('one anon operation', () => {
-    expectPassesRule(LoneAnonymousOperation, `
+    expectPassesRule(
+      LoneAnonymousOperation,
+      `
       {
         field
       }
-    `);
+    `,
+    );
   });
 
   it('multiple named operations', () => {
-    expectPassesRule(LoneAnonymousOperation, `
+    expectPassesRule(
+      LoneAnonymousOperation,
+      `
       query Foo {
         field
       }
@@ -48,58 +54,66 @@ describe('Validate: Anonymous operation must be alone', () => {
       query Bar {
         field
       }
-    `);
+    `,
+    );
   });
 
   it('anon operation with fragment', () => {
-    expectPassesRule(LoneAnonymousOperation, `
+    expectPassesRule(
+      LoneAnonymousOperation,
+      `
       {
         ...Foo
       }
       fragment Foo on Type {
         field
       }
-    `);
+    `,
+    );
   });
 
   it('multiple anon operations', () => {
-    expectFailsRule(LoneAnonymousOperation, `
+    expectFailsRule(
+      LoneAnonymousOperation,
+      `
       {
         fieldA
       }
       {
         fieldB
       }
-    `, [
-      anonNotAlone(2, 7),
-      anonNotAlone(5, 7)
-    ]);
+    `,
+      [anonNotAlone(2, 7), anonNotAlone(5, 7)],
+    );
   });
 
   it('anon operation with a mutation', () => {
-    expectFailsRule(LoneAnonymousOperation, `
+    expectFailsRule(
+      LoneAnonymousOperation,
+      `
       {
         fieldA
       }
       mutation Foo {
         fieldB
       }
-    `, [
-      anonNotAlone(2, 7)
-    ]);
+    `,
+      [anonNotAlone(2, 7)],
+    );
   });
 
   it('anon operation with a subscription', () => {
-    expectFailsRule(LoneAnonymousOperation, `
+    expectFailsRule(
+      LoneAnonymousOperation,
+      `
       {
         fieldA
       }
       subscription Foo {
         fieldB
       }
-    `, [
-      anonNotAlone(2, 7)
-    ]);
+    `,
+      [anonNotAlone(2, 7)],
+    );
   });
-
 });
