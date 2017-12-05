@@ -273,6 +273,10 @@ export {
   getIntrospectionQuery,
   // Deprecated: use getIntrospectionQuery
   introspectionQuery,
+  // Convert a GraphQLSchema to an IntrospectionSchema
+  introspectionFromSchema,
+  // Clean a server-provided IntrospectionQuery to give exactly-typed objects
+  cleanIntrospectionResponse,
   // Gets the target Operation from a Document
   getOperationAST,
   // Build a GraphQLSchema from an introspection result.

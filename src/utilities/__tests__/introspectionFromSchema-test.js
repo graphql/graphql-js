@@ -8,7 +8,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { introspectionQuery } from '../introspectionQuery';
-import { introspectionQueryFromGraphQLSchema } from '../introspectionFromSchema';
+import { introspectionFromSchema } from '../introspectionFromSchema';
 import { cleanIntrospectionResponse } from '../cleanIntrospectionResponse';
 import {
   graphql,
@@ -36,8 +36,8 @@ import {
 async function testSchema(schema) {
   const serverResponse = await graphql(schema, introspectionQuery);
   const serverIntrospection = cleanIntrospectionResponse(serverResponse.data);
-  const introspectionFromSchema = introspectionQueryFromGraphQLSchema(schema);
-  expect(introspectionFromSchema).to.deep.equal(serverIntrospection);
+  const fromSchema = introspectionFromSchema(schema);
+  expect(fromSchema).to.deep.equal(serverIntrospection.__schema);
 }
 
 describe('Type System: build introspection from schema', () => {

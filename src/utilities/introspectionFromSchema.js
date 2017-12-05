@@ -32,7 +32,6 @@ import { TypeKind } from '../type/introspection';
 import type { GraphQLSchema } from '../type/schema';
 import { astFromValue } from './astFromValue';
 import type {
-  IntrospectionQuery,
   IntrospectionDirective,
   IntrospectionField,
   IntrospectionInputValue,
@@ -48,30 +47,18 @@ import type {
 import invariant from 'invariant';
 
 /**
- * Build an IntrospectionQuery from a GraphQLSchema
- *
- * Useful for converting between the two Schema types, and is the inverse
- * of buildClientSchema. The primary use case is outside of the server context,
- * for instance when doing schema comparisons.
- *
- * This is a synchronous equivalent of:
- *  await graphql(schema, introspectionQuery)
- */
-export function introspectionQueryFromGraphQLSchema(
-  schema: GraphQLSchema,
-): IntrospectionQuery {
-  return {
-    __schema: introspectionSchemaFromGraphQLSchema(schema),
-  };
-}
-
-/**
  * Build an IntrospectionSchema from a GraphQLSchema
  *
  * IntrospectionSchema is useful for utilities that care about type and field
  * relationships, but do not need to traverse through those relationships.
+ *
+ * This is the inverse of buildClientSchema. The primary use case is outside
+ * of the server context, for instance when doing schema comparisons.
+ *
+ * This is a synchronous equivalent of:
+ *  const {__schema} = await graphql(schema, introspectionQuery);
  */
-export function introspectionSchemaFromGraphQLSchema(
+export function introspectionFromSchema(
   schema: GraphQLSchema,
 ): IntrospectionSchema {
   function getType(type: GraphQLType): IntrospectionType {
