@@ -26,9 +26,8 @@ export function locatedError(
     return (originalError: any);
   }
 
-  const message = originalError
-    ? originalError.message || String(originalError)
-    : 'An unknown error occurred.';
+  const message =
+    (originalError && originalError.message) || 'An unknown error occurred.';
   return new GraphQLError(
     message,
     (originalError && (originalError: any).nodes) || nodes,

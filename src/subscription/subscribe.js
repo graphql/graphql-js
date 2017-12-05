@@ -198,7 +198,7 @@ export function createSourceEventStream(
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);
 
-  return new Promise((resolve, reject) => {
+  try {
     // If a valid context cannot be created due to incorrect arguments,
     // this will throw an error.
     const exeContext = buildExecutionContext(
@@ -234,43 +234,34 @@ export function createSourceEventStream(
 
     const info = buildResolveInfo(exeContext, fieldDef, fieldNodes, type, path);
 
-    // resolveFieldValueOrError implements the "ResolveFieldEventStream"
-    // algorithm from GraphQL specification. It differs from
-    // "ResolveFieldValue" due to providing a different `resolveFn`.
-    Promise.resolve(
-      resolveFieldValueOrError(
-        exeContext,
-        fieldDef,
-        fieldNodes,
-        resolveFn,
-        rootValue,
-        info,
-      ),
-    )
-      .then((subscription: any) => {
-        // Reject with a located GraphQLError if subscription source fails
-        // to resolve.
-        if (subscription instanceof Error) {
-          const error = locatedError(
-            subscription,
-            fieldNodes,
-            responsePathAsArray(path),
-          );
-          reject(error);
-        }
+    const result = resolveFieldValueOrError(
+      exeContext,
+      fieldDef,
+      fieldNodes,
+      resolveFn,
+      rootValue,
+      info,
+    );
 
-        if (!isAsyncIterable(subscription)) {
-          reject(
-            new Error(
-              'Subscription must return Async Iterable. ' +
-                'Received: ' +
-                String(subscription),
-            ),
-          );
-        }
+    // Coerce to Promise for easier error handling.
+    return Promise.resolve(result).then(eventStream => {
+      // If eventStream is an Error, rethrow a located error.
+      if (eventStream instanceof Error) {
+        throw locatedError(eventStream, fieldNodes, responsePathAsArray(path));
+      }
 
-        resolve(subscription);
-      })
-      .catch(reject);
-  });
+      // Assert field returned an event stream, otherwise yield an error.
+      if (!isAsyncIterable(eventStream)) {
+        throw new Error(
+          'Subscription field must return Async Iterable. Received: ' +
+            String(eventStream),
+        );
+      }
+
+      // Note: isAsyncIterable above ensures this will be correct.
+      return ((eventStream: any): AsyncIterable<mixed>);
+    });
+  } catch (error) {
+    return Promise.reject(error);
+  }
 }

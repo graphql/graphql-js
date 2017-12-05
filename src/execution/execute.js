@@ -753,7 +753,15 @@ export function resolveFieldValueOrError<TSource>(
     // used to represent an authenticated user, or request-specific caches.
     const context = exeContext.contextValue;
 
-    return resolveFn(source, args, context, info);
+    const result = resolveFn(source, args, context, info);
+    const promise = getPromise(result);
+    return !promise
+      ? result
+      : promise.then(undefined, error =>
+          // Sometimes a non-error is thrown, wrap it as an Error for a
+          // consistent interface.
+          Promise.resolve(error instanceof Error ? error : new Error(error)),
+        );
   } catch (error) {
     // Sometimes a non-error is thrown, wrap it as an Error for a
     // consistent interface.
