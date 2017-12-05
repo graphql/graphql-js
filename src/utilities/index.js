@@ -44,8 +44,14 @@ export { getOperationAST } from './getOperationAST';
 // Build a GraphQLSchema from an introspection result.
 export { buildClientSchema } from './buildClientSchema';
 
+// Converting between GraphQLSchema and IntrospectionQuery
+export { introspectionFromSchema } from './introspectionFromSchema';
+
 // Build a GraphQLSchema from GraphQL Schema language.
 export { buildASTSchema, buildSchema } from './buildASTSchema';
+
+// Clean a server-provided IntrospectionQuery to give exactly-typed objects
+export { cleanIntrospectionResponse } from './cleanIntrospectionResponse';
 
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
 export { extendSchema } from './extendSchema';
