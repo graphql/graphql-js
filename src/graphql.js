@@ -46,18 +46,16 @@ import type { ExecutionResult } from './execution/execute';
  *    If not provided, the default field resolver is used (which looks for a
  *    value or method on the source value with the field's name).
  */
-declare function graphql(
-  {|
-    schema: GraphQLSchema,
-    source: string | Source,
-    rootValue?: mixed,
-    contextValue?: mixed,
-    variableValues?: ?ObjMap<mixed>,
-    operationName?: ?string,
-    fieldResolver?: ?GraphQLFieldResolver<any, any>,
-  |},
-  ..._: []
-): Promise<ExecutionResult>;
+export type GraphQLArgs = {|
+  schema: GraphQLSchema,
+  source: string | Source,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?ObjMap<mixed>,
+  operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>,
+|};
+declare function graphql(GraphQLArgs, ..._: []): Promise<ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function graphql(
   schema: GraphQLSchema,
@@ -77,26 +75,87 @@ export function graphql(
   operationName,
   fieldResolver,
 ) {
+  // Always return a Promise for a consistent API.
+  return new Promise(resolve =>
+    resolve(
+      // Extract arguments from object args if provided.
+      arguments.length === 1
+        ? graphqlImpl(
+            argsOrSchema.schema,
+            argsOrSchema.source,
+            argsOrSchema.rootValue,
+            argsOrSchema.contextValue,
+            argsOrSchema.variableValues,
+            argsOrSchema.operationName,
+            argsOrSchema.fieldResolver,
+          )
+        : graphqlImpl(
+            argsOrSchema,
+            source,
+            rootValue,
+            contextValue,
+            variableValues,
+            operationName,
+            fieldResolver,
+          ),
+    ),
+  );
+}
+
+/**
+ * The graphqlSync function also fulfills GraphQL operations by parsing,
+ * validating, and executing a GraphQL document along side a GraphQL schema.
+ * However, it guarantees to complete synchronously (or throw an error) assuming
+ * that all field resolvers are also synchronous.
+ */
+declare function graphqlSync(GraphQLArgs, ..._: []): ExecutionResult;
+/* eslint-disable no-redeclare */
+declare function graphqlSync(
+  schema: GraphQLSchema,
+  source: Source | string,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?ObjMap<mixed>,
+  operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>,
+): ExecutionResult;
+export function graphqlSync(
+  argsOrSchema,
+  source,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  fieldResolver,
+) {
   // Extract arguments from object args if provided.
-  return arguments.length === 1
-    ? graphqlImpl(
-        argsOrSchema.schema,
-        argsOrSchema.source,
-        argsOrSchema.rootValue,
-        argsOrSchema.contextValue,
-        argsOrSchema.variableValues,
-        argsOrSchema.operationName,
-        argsOrSchema.fieldResolver,
-      )
-    : graphqlImpl(
-        argsOrSchema,
-        source,
-        rootValue,
-        contextValue,
-        variableValues,
-        operationName,
-        fieldResolver,
-      );
+  const result =
+    arguments.length === 1
+      ? graphqlImpl(
+          argsOrSchema.schema,
+          argsOrSchema.source,
+          argsOrSchema.rootValue,
+          argsOrSchema.contextValue,
+          argsOrSchema.variableValues,
+          argsOrSchema.operationName,
+          argsOrSchema.fieldResolver,
+        )
+      : graphqlImpl(
+          argsOrSchema,
+          source,
+          rootValue,
+          contextValue,
+          variableValues,
+          operationName,
+          fieldResolver,
+        );
+
+  // Assert that the execution was synchronous.
+  if (result.then) {
+    throw new Error('GraphQL execution failed to complete synchronously.');
+  }
+
+  return result;
 }
 
 function graphqlImpl(
@@ -107,33 +166,29 @@ function graphqlImpl(
   variableValues,
   operationName,
   fieldResolver,
-) {
-  return new Promise(resolve => {
-    // Parse
-    let document;
-    try {
-      document = parse(source);
-    } catch (syntaxError) {
-      return resolve({ errors: [syntaxError] });
-    }
+): Promise<ExecutionResult> | ExecutionResult {
+  // Parse
+  let document;
+  try {
+    document = parse(source);
+  } catch (syntaxError) {
+    return { errors: [syntaxError] };
+  }
 
-    // Validate
-    const validationErrors = validate(schema, document);
-    if (validationErrors.length > 0) {
-      return resolve({ errors: validationErrors });
-    }
+  // Validate
+  const validationErrors = validate(schema, document);
+  if (validationErrors.length > 0) {
+    return { errors: validationErrors };
+  }
 
-    // Execute
-    resolve(
-      execute(
-        schema,
-        document,
-        rootValue,
-        contextValue,
-        variableValues,
-        operationName,
-        fieldResolver,
-      ),
-    );
-  });
+  // Execute
+  return execute(
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+  );
 }

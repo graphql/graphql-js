@@ -118,14 +118,19 @@ export type ExecutionArgs = {|
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.
  *
- * Returns a Promise that will eventually be resolved and never rejected.
+ * Returns either a synchronous ExecutionResult (if all encountered resolvers
+ * are synchronous), or a Promise of an ExecutionResult that will eventually be
+ * resolved and never rejected.
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-declare function execute(ExecutionArgs, ..._: []): Promise<ExecutionResult>;
+declare function execute(
+  ExecutionArgs,
+  ..._: []
+): Promise<ExecutionResult> | ExecutionResult;
 /* eslint-disable no-redeclare */
 declare function execute(
   schema: GraphQLSchema,
@@ -135,7 +140,7 @@ declare function execute(
   variableValues?: ?{ [variable: string]: mixed },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
-): Promise<ExecutionResult>;
+): Promise<ExecutionResult> | ExecutionResult;
 export function execute(
   argsOrSchema,
   document,
@@ -193,7 +198,7 @@ function executeImpl(
       fieldResolver,
     );
   } catch (error) {
-    return Promise.resolve({ errors: [error] });
+    return { errors: [error] };
   }
 
   // Return a Promise that will eventually resolve to the data described by
@@ -203,12 +208,25 @@ function executeImpl(
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  return Promise.resolve(
-    executeOperation(context, context.operation, rootValue),
-  ).then(
-    data =>
-      context.errors.length === 0 ? { data } : { errors: context.errors, data },
-  );
+  const data = executeOperation(context, context.operation, rootValue);
+  return buildResponse(context, data);
+}
+
+/**
+ * Given a completed execution context and data, build the { errors, data }
+ * response defined by the "Response" section of the GraphQL specification.
+ */
+function buildResponse(
+  context: ExecutionContext,
+  data: Promise<ObjMap<mixed> | null> | ObjMap<mixed> | null,
+) {
+  const promise = getPromise(data);
+  if (promise) {
+    return promise.then(resolved => buildResponse(context, resolved));
+  }
+  return context.errors.length === 0
+    ? { data }
+    : { errors: context.errors, data };
 }
 
 /**
@@ -333,7 +351,7 @@ function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: mixed,
-): ?(Promise<?ObjMap<mixed>> | ObjMap<mixed>) {
+): Promise<ObjMap<mixed> | null> | ObjMap<mixed> | null {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
