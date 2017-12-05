@@ -31,7 +31,7 @@ import {
 
 // Test property:
 // Given a server's schema, a client querying the introspectionQuery returns
-// the exact same result as running the
+// an uncleaned response that, once cleaned, exactly matches the direct
 // GraphQLSchema => IntrospectionQuery conversion
 async function testSchema(schema) {
   const serverResponse = await graphql(schema, introspectionQuery);
