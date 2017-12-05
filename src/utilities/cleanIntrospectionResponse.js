@@ -17,7 +17,6 @@ import type {
   IntrospectionInputValue,
   IntrospectionOutputTypeRef,
   IntrospectionQuery,
-  IntrospectionSchema,
   IntrospectionType,
 } from './introspectionQuery';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
