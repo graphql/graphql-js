@@ -32,7 +32,7 @@
  */
 
 // The primary entry point into fulfilling a GraphQL request.
-export { graphql } from './graphql';
+export { graphql, graphqlSync } from './graphql';
 
 // Create and operate on GraphQL type definitions and schema.
 export {
