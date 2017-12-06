@@ -52,7 +52,12 @@ import type {
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
   TypeExtensionNode,
+  ScalarTypeExtensionNode,
   ObjectTypeExtensionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
   DirectiveDefinitionNode,
 } from './ast';
 
@@ -92,7 +97,12 @@ import {
   ENUM_TYPE_DEFINITION,
   ENUM_VALUE_DEFINITION,
   INPUT_OBJECT_TYPE_DEFINITION,
+  SCALAR_TYPE_EXTENSION,
   OBJECT_TYPE_EXTENSION,
+  INTERFACE_TYPE_EXTENSION,
+  UNION_TYPE_EXTENSION,
+  ENUM_TYPE_EXTENSION,
+  INPUT_OBJECT_TYPE_EXTENSION,
   DIRECTIVE_DEFINITION,
 } from './kinds';
 import { DirectiveLocation } from './directiveLocation';
@@ -832,7 +842,7 @@ function parseScalarTypeDefinition(lexer: Lexer<*>): ScalarTypeDefinitionNode {
 /**
  * ObjectTypeDefinition :
  *   Description?
- *   type Name ImplementsInterfaces? Directives[Const]? FieldDefinitions
+ *   type Name ImplementsInterfaces? Directives[Const]? FieldsDefinition?
  */
 function parseObjectTypeDefinition(lexer: Lexer<*>): ObjectTypeDefinitionNode {
   const start = lexer.token;
@@ -841,7 +851,7 @@ function parseObjectTypeDefinition(lexer: Lexer<*>): ObjectTypeDefinitionNode {
   const name = parseName(lexer);
   const interfaces = parseImplementsInterfaces(lexer);
   const directives = parseDirectives(lexer, true);
-  const fields = parseFieldDefinitions(lexer);
+  const fields = parseFieldsDefinition(lexer);
   return {
     kind: OBJECT_TYPE_DEFINITION,
     description,
@@ -868,15 +878,12 @@ function parseImplementsInterfaces(lexer: Lexer<*>): Array<NamedTypeNode> {
 }
 
 /**
- * FieldDefinitions : { FieldDefinition+ }
+ * FieldsDefinition : { FieldDefinition+ }
  */
-function parseFieldDefinitions(lexer: Lexer<*>): Array<FieldDefinitionNode> {
-  return many(
-    lexer,
-    TokenKind.BRACE_L,
-    parseFieldDefinition,
-    TokenKind.BRACE_R,
-  );
+function parseFieldsDefinition(lexer: Lexer<*>): Array<FieldDefinitionNode> {
+  return peek(lexer, TokenKind.BRACE_L)
+    ? many(lexer, TokenKind.BRACE_L, parseFieldDefinition, TokenKind.BRACE_R)
+    : [];
 }
 
 /**
@@ -940,7 +947,7 @@ function parseInputValueDef(lexer: Lexer<*>): InputValueDefinitionNode {
 
 /**
  * InterfaceTypeDefinition :
- *   - Description? interface Name Directives[Const]? FieldDefinitions
+ *   - Description? interface Name Directives[Const]? FieldsDefinition?
  */
 function parseInterfaceTypeDefinition(
   lexer: Lexer<*>,
@@ -950,7 +957,7 @@ function parseInterfaceTypeDefinition(
   expectKeyword(lexer, 'interface');
   const name = parseName(lexer);
   const directives = parseDirectives(lexer, true);
-  const fields = parseFieldDefinitions(lexer);
+  const fields = parseFieldsDefinition(lexer);
   return {
     kind: INTERFACE_TYPE_DEFINITION,
     description,
@@ -963,7 +970,7 @@ function parseInterfaceTypeDefinition(
 
 /**
  * UnionTypeDefinition :
- *   - Description? union Name Directives[Const]? = UnionMembers
+ *   - Description? union Name Directives[Const]? MemberTypesDefinition?
  */
 function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
   const start = lexer.token;
@@ -971,8 +978,7 @@ function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
   expectKeyword(lexer, 'union');
   const name = parseName(lexer);
   const directives = parseDirectives(lexer, true);
-  expect(lexer, TokenKind.EQUALS);
-  const types = parseUnionMembers(lexer);
+  const types = parseMemberTypesDefinition(lexer);
   return {
     kind: UNION_TYPE_DEFINITION,
     description,
@@ -984,23 +990,27 @@ function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
 }
 
 /**
- * UnionMembers :
+ * MemberTypesDefinition : = MemberTypes
+ *
+ * MemberTypes :
  *   - `|`? NamedType
- *   - UnionMembers | NamedType
+ *   - MemberTypes | NamedType
  */
-function parseUnionMembers(lexer: Lexer<*>): Array<NamedTypeNode> {
-  // Optional leading pipe
-  skip(lexer, TokenKind.PIPE);
-  const members = [];
-  do {
-    members.push(parseNamedType(lexer));
-  } while (skip(lexer, TokenKind.PIPE));
-  return members;
+function parseMemberTypesDefinition(lexer: Lexer<*>): Array<NamedTypeNode> {
+  const types = [];
+  if (skip(lexer, TokenKind.EQUALS)) {
+    // Optional leading pipe
+    skip(lexer, TokenKind.PIPE);
+    do {
+      types.push(parseNamedType(lexer));
+    } while (skip(lexer, TokenKind.PIPE));
+  }
+  return types;
 }
 
 /**
  * EnumTypeDefinition :
- *   - Description? enum Name Directives[Const]? { EnumValueDefinition+ }
+ *   - Description? enum Name Directives[Const]? EnumValuesDefinition?
  */
 function parseEnumTypeDefinition(lexer: Lexer<*>): EnumTypeDefinitionNode {
   const start = lexer.token;
@@ -1008,12 +1018,7 @@ function parseEnumTypeDefinition(lexer: Lexer<*>): EnumTypeDefinitionNode {
   expectKeyword(lexer, 'enum');
   const name = parseName(lexer);
   const directives = parseDirectives(lexer, true);
-  const values = many(
-    lexer,
-    TokenKind.BRACE_L,
-    parseEnumValueDefinition,
-    TokenKind.BRACE_R,
-  );
+  const values = parseEnumValuesDefinition(lexer);
   return {
     kind: ENUM_TYPE_DEFINITION,
     description,
@@ -1022,6 +1027,22 @@ function parseEnumTypeDefinition(lexer: Lexer<*>): EnumTypeDefinitionNode {
     values,
     loc: loc(lexer, start),
   };
+}
+
+/**
+ * EnumValuesDefinition : { EnumValueDefinition+ }
+ */
+function parseEnumValuesDefinition(
+  lexer: Lexer<*>,
+): Array<EnumValueDefinitionNode> {
+  return peek(lexer, TokenKind.BRACE_L)
+    ? many(
+        lexer,
+        TokenKind.BRACE_L,
+        parseEnumValueDefinition,
+        TokenKind.BRACE_R,
+      )
+    : [];
 }
 
 /**
@@ -1045,7 +1066,7 @@ function parseEnumValueDefinition(lexer: Lexer<*>): EnumValueDefinitionNode {
 
 /**
  * InputObjectTypeDefinition :
- *   - Description? input Name Directives[Const]? { InputValueDefinition+ }
+ *   - Description? input Name Directives[Const]? InputFieldsDefinition?
  */
 function parseInputObjectTypeDefinition(
   lexer: Lexer<*>,
@@ -1055,12 +1076,7 @@ function parseInputObjectTypeDefinition(
   expectKeyword(lexer, 'input');
   const name = parseName(lexer);
   const directives = parseDirectives(lexer, true);
-  const fields = many(
-    lexer,
-    TokenKind.BRACE_L,
-    parseInputValueDef,
-    TokenKind.BRACE_R,
-  );
+  const fields = parseInputFieldsDefinition(lexer);
   return {
     kind: INPUT_OBJECT_TYPE_DEFINITION,
     description,
@@ -1072,16 +1088,42 @@ function parseInputObjectTypeDefinition(
 }
 
 /**
+ * InputFieldsDefinition : { InputValueDefinition+ }
+ */
+function parseInputFieldsDefinition(
+  lexer: Lexer<*>,
+): Array<InputValueDefinitionNode> {
+  return peek(lexer, TokenKind.BRACE_L)
+    ? many(lexer, TokenKind.BRACE_L, parseInputValueDef, TokenKind.BRACE_R)
+    : [];
+}
+
+/**
  * TypeExtension :
+ *   - ScalarTypeExtension
  *   - ObjectTypeExtension
+ *   - InterfaceTypeExtension
+ *   - UnionTypeExtension
+ *   - EnumTypeExtension
+ *   - InputObjectTypeDefinition
  */
 function parseTypeExtension(lexer: Lexer<*>): TypeExtensionNode {
   const keywordToken = lexer.lookahead();
 
   if (keywordToken.kind === TokenKind.NAME) {
     switch (keywordToken.value) {
+      case 'scalar':
+        return parseScalarTypeExtension(lexer);
       case 'type':
         return parseObjectTypeExtension(lexer);
+      case 'interface':
+        return parseInterfaceTypeExtension(lexer);
+      case 'union':
+        return parseUnionTypeExtension(lexer);
+      case 'enum':
+        return parseEnumTypeExtension(lexer);
+      case 'input':
+        return parseInputObjectTypeExtension(lexer);
     }
   }
 
@@ -1089,8 +1131,29 @@ function parseTypeExtension(lexer: Lexer<*>): TypeExtensionNode {
 }
 
 /**
+ * ScalarTypeExtension :
+ *   - extend scalar Name Directives[Const]
+ */
+function parseScalarTypeExtension(lexer: Lexer<*>): ScalarTypeExtensionNode {
+  const start = lexer.token;
+  expectKeyword(lexer, 'extend');
+  expectKeyword(lexer, 'scalar');
+  const name = parseName(lexer);
+  const directives = parseDirectives(lexer, true);
+  if (directives.length === 0) {
+    throw unexpected(lexer);
+  }
+  return {
+    kind: SCALAR_TYPE_EXTENSION,
+    name,
+    directives,
+    loc: loc(lexer, start),
+  };
+}
+
+/**
  * ObjectTypeExtension :
- *  - extend type Name ImplementsInterfaces? Directives[Const]? FieldDefinitions
+ *  - extend type Name ImplementsInterfaces? Directives[Const]? FieldsDefinition
  *  - extend type Name ImplementsInterfaces? Directives[Const]
  *  - extend type Name ImplementsInterfaces
  */
@@ -1101,9 +1164,7 @@ function parseObjectTypeExtension(lexer: Lexer<*>): ObjectTypeExtensionNode {
   const name = parseName(lexer);
   const interfaces = parseImplementsInterfaces(lexer);
   const directives = parseDirectives(lexer, true);
-  const fields = peek(lexer, TokenKind.BRACE_L)
-    ? parseFieldDefinitions(lexer)
-    : [];
+  const fields = parseFieldsDefinition(lexer);
   if (
     interfaces.length === 0 &&
     directives.length === 0 &&
@@ -1115,6 +1176,106 @@ function parseObjectTypeExtension(lexer: Lexer<*>): ObjectTypeExtensionNode {
     kind: OBJECT_TYPE_EXTENSION,
     name,
     interfaces,
+    directives,
+    fields,
+    loc: loc(lexer, start),
+  };
+}
+
+/**
+ * InterfaceTypeExtension :
+ *   - extend interface Name Directives[Const]? FieldsDefinition
+ *   - extend interface Name Directives[Const]
+ */
+function parseInterfaceTypeExtension(
+  lexer: Lexer<*>,
+): InterfaceTypeExtensionNode {
+  const start = lexer.token;
+  expectKeyword(lexer, 'extend');
+  expectKeyword(lexer, 'interface');
+  const name = parseName(lexer);
+  const directives = parseDirectives(lexer, true);
+  const fields = parseFieldsDefinition(lexer);
+  if (directives.length === 0 && fields.length === 0) {
+    throw unexpected(lexer);
+  }
+  return {
+    kind: INTERFACE_TYPE_EXTENSION,
+    name,
+    directives,
+    fields,
+    loc: loc(lexer, start),
+  };
+}
+
+/**
+ * UnionTypeExtension :
+ *   - extend union Name Directives[Const]? MemberTypesDefinition
+ *   - extend union Name Directives[Const]
+ */
+function parseUnionTypeExtension(lexer: Lexer<*>): UnionTypeExtensionNode {
+  const start = lexer.token;
+  expectKeyword(lexer, 'extend');
+  expectKeyword(lexer, 'union');
+  const name = parseName(lexer);
+  const directives = parseDirectives(lexer, true);
+  const types = parseMemberTypesDefinition(lexer);
+  if (directives.length === 0 && types.length === 0) {
+    throw unexpected(lexer);
+  }
+  return {
+    kind: UNION_TYPE_EXTENSION,
+    name,
+    directives,
+    types,
+    loc: loc(lexer, start),
+  };
+}
+
+/**
+ * EnumTypeExtension :
+ *   - extend enum Name Directives[Const]? EnumValuesDefinition
+ *   - extend enum Name Directives[Const]
+ */
+function parseEnumTypeExtension(lexer: Lexer<*>): EnumTypeExtensionNode {
+  const start = lexer.token;
+  expectKeyword(lexer, 'extend');
+  expectKeyword(lexer, 'enum');
+  const name = parseName(lexer);
+  const directives = parseDirectives(lexer, true);
+  const values = parseEnumValuesDefinition(lexer);
+  if (directives.length === 0 && values.length === 0) {
+    throw unexpected(lexer);
+  }
+  return {
+    kind: ENUM_TYPE_EXTENSION,
+    name,
+    directives,
+    values,
+    loc: loc(lexer, start),
+  };
+}
+
+/**
+ * InputObjectTypeExtension :
+ *   - extend input Name Directives[Const]? InputFieldsDefinition
+ *   - extend input Name Directives[Const]
+ */
+function parseInputObjectTypeExtension(
+  lexer: Lexer<*>,
+): InputObjectTypeExtensionNode {
+  const start = lexer.token;
+  expectKeyword(lexer, 'extend');
+  expectKeyword(lexer, 'input');
+  const name = parseName(lexer);
+  const directives = parseDirectives(lexer, true);
+  const fields = parseInputFieldsDefinition(lexer);
+  if (directives.length === 0 && fields.length === 0) {
+    throw unexpected(lexer);
+  }
+  return {
+    kind: INPUT_OBJECT_TYPE_EXTENSION,
+    name,
     directives,
     fields,
     loc: loc(lexer, start),

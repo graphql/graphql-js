@@ -131,6 +131,14 @@ export function extendSchema(
         }
         directiveDefinitions.push(def);
         break;
+      case Kind.SCALAR_TYPE_EXTENSION:
+      case Kind.INTERFACE_TYPE_EXTENSION:
+      case Kind.UNION_TYPE_EXTENSION:
+      case Kind.ENUM_TYPE_EXTENSION:
+      case Kind.INPUT_OBJECT_TYPE_EXTENSION:
+        throw new Error(
+          `The ${def.kind} kind is not yet supported by extendSchema().`,
+        );
     }
   }
 

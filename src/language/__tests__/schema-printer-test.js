@@ -70,6 +70,14 @@ type AnnotatedObject @onObject(arg: "value") {
   annotatedField(arg: Type = "default" @onArg): Type @onField
 }
 
+type UndefinedType
+
+extend type Foo {
+  seven(argument: [String]): Type
+}
+
+extend type Foo @onType
+
 interface Bar {
   one: Type
   four(argument: String = "string"): String
@@ -79,15 +87,31 @@ interface AnnotatedInterface @onInterface {
   annotatedField(arg: Type @onArg): Type @onField
 }
 
+interface UndefinedInterface
+
+extend interface Bar {
+  two(argument: InputType!): Type
+}
+
+extend interface Bar @onInterface
+
 union Feed = Story | Article | Advert
 
 union AnnotatedUnion @onUnion = A | B
 
 union AnnotatedUnionTwo @onUnion = A | B
 
+union UndefinedUnion
+
+extend union Feed = Photo | Video
+
+extend union Feed @onUnion
+
 scalar CustomScalar
 
 scalar AnnotatedScalar @onScalar
+
+extend scalar CustomScalar @onScalar
 
 enum Site {
   DESKTOP
@@ -99,20 +123,30 @@ enum AnnotatedEnum @onEnum {
   OTHER_VALUE
 }
 
+enum UndefinedEnum
+
+extend enum Site {
+  VR
+}
+
+extend enum Site @onEnum
+
 input InputType {
   key: String!
   answer: Int = 42
 }
 
-input AnnotatedInput @onInputObjectType {
+input AnnotatedInput @onInputObject {
   annotatedField: Type @onField
 }
 
-extend type Foo {
-  seven(argument: [String]): Type
+input UndefinedInput
+
+extend input InputType {
+  other: Float = 1.23e4
 }
 
-extend type Foo @onType
+extend input InputType @onInputObject
 
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
