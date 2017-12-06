@@ -755,18 +755,16 @@ export function resolveFieldValueOrError<TSource>(
 
     const result = resolveFn(source, args, context, info);
     const promise = getPromise(result);
-    return !promise
-      ? result
-      : promise.then(undefined, error =>
-          // Sometimes a non-error is thrown, wrap it as an Error for a
-          // consistent interface.
-          Promise.resolve(error instanceof Error ? error : new Error(error)),
-        );
+    return promise ? promise.then(undefined, asErrorInstance) : result;
   } catch (error) {
-    // Sometimes a non-error is thrown, wrap it as an Error for a
-    // consistent interface.
-    return error instanceof Error ? error : new Error(error);
+    return asErrorInstance(error);
   }
+}
+
+// Sometimes a non-error is thrown, wrap it as an Error instance to ensure a
+// consistent Error interface.
+function asErrorInstance(error: mixed): Error {
+  return error instanceof Error ? error : new Error(error || undefined);
 }
 
 // This is a small wrapper around completeValue which detects and logs errors
@@ -846,13 +844,21 @@ function completeValueWithLocatedError(
     if (promise) {
       return promise.then(undefined, error =>
         Promise.reject(
-          locatedError(error, fieldNodes, responsePathAsArray(path)),
+          locatedError(
+            asErrorInstance(error),
+            fieldNodes,
+            responsePathAsArray(path),
+          ),
         ),
       );
     }
     return completed;
   } catch (error) {
-    throw locatedError(error, fieldNodes, responsePathAsArray(path));
+    throw locatedError(
+      asErrorInstance(error),
+      fieldNodes,
+      responsePathAsArray(path),
+    );
   }
 }
 

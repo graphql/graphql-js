@@ -234,6 +234,9 @@ export function createSourceEventStream(
 
     const info = buildResolveInfo(exeContext, fieldDef, fieldNodes, type, path);
 
+    // resolveFieldValueOrError implements the "ResolveFieldEventStream"
+    // algorithm from GraphQL specification. It differs from
+    // "ResolveFieldValue" due to providing a different `resolveFn`.
     const result = resolveFieldValueOrError(
       exeContext,
       fieldDef,
@@ -243,7 +246,7 @@ export function createSourceEventStream(
       info,
     );
 
-    // Coerce to Promise for easier error handling.
+    // Coerce to Promise for easier error handling and consistent return type.
     return Promise.resolve(result).then(eventStream => {
       // If eventStream is an Error, rethrow a located error.
       if (eventStream instanceof Error) {

@@ -18,7 +18,7 @@ export function formatError(error: GraphQLError): GraphQLFormattedError {
   invariant(error, 'Received null or undefined error.');
   return {
     ...error.extensions,
-    message: error.message,
+    message: error.message || 'An unknown error occurred.',
     locations: error.locations,
     path: error.path,
   };
