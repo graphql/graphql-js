@@ -74,7 +74,25 @@ import type {
   GraphQLFieldConfig,
 } from '../type/definition';
 
-type Options = {| commentDescriptions?: boolean |};
+type Options = {|
+  /**
+   * When building a schema from a GraphQL service's introspection result, it
+   * might be safe to assume the schema is valid. Set to true to assume the
+   * produced schema is valid.
+   *
+   * Default: false
+   */
+  assumeValid?: boolean,
+
+  /**
+   * Descriptions are defined as preceding string literals, however an older
+   * experimental version of the SDL supported preceding comments as
+   * descriptions. Set to true to enable this deprecated behavior.
+   *
+   * Default: false
+   */
+  commentDescriptions?: boolean,
+|};
 
 function buildWrappedType(
   innerType: GraphQLType,
@@ -213,6 +231,7 @@ export function buildASTSchema(
     types,
     directives,
     astNode: schemaDef,
+    assumeValid: options && options.assumeValid,
   });
 
   function getOperationTypes(schema: SchemaDefinitionNode) {

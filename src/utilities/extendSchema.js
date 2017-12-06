@@ -29,7 +29,25 @@ import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 
 import type { DocumentNode, DirectiveDefinitionNode } from '../language/ast';
 
-type Options = {| commentDescriptions?: boolean |};
+type Options = {|
+  /**
+   * When extending a schema with a known valid extension, it might be safe to
+   * assume the schema is valid. Set to true to assume the produced schema
+   * is valid.
+   *
+   * Default: false
+   */
+  assumeValid?: boolean,
+
+  /**
+   * Descriptions are defined as preceding string literals, however an older
+   * experimental version of the SDL supported preceding comments as
+   * descriptions. Set to true to enable this deprecated behavior.
+   *
+   * Default: false
+   */
+  commentDescriptions?: boolean,
+|};
 
 /**
  * Produces a new schema given an existing schema and a document which may

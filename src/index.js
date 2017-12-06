@@ -100,6 +100,9 @@ export {
   // Un-modifiers
   getNullableType,
   getNamedType,
+  // Validate GraphQL schema.
+  validateSchema,
+  assertValidSchema,
 } from './type';
 
 export type {

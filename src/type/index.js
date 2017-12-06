@@ -121,3 +121,5 @@ export type {
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
 } from './definition';
+
+export { validateSchema, assertValidSchema } from './validate';

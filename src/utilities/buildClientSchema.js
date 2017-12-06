@@ -57,6 +57,17 @@ import type {
   IntrospectionNamedTypeRef,
 } from './introspectionQuery';
 
+type Options = {|
+  /**
+   * When building a schema from a GraphQL service's introspection result, it
+   * might be safe to assume the schema is valid. Set to true to assume the
+   * produced schema is valid.
+   *
+   * Default: false
+   */
+  assumeValid?: boolean,
+|};
+
 /**
  * Build a GraphQLSchema for use by client tools.
  *
@@ -71,6 +82,7 @@ import type {
  */
 export function buildClientSchema(
   introspection: IntrospectionQuery,
+  options?: Options,
 ): GraphQLSchema {
   // Get the schema from the introspection result.
   const schemaIntrospection = introspection.__schema;
@@ -408,5 +420,6 @@ export function buildClientSchema(
     subscription: subscriptionType,
     types,
     directives,
+    assumeValid: options && options.assumeValid,
   });
 }
