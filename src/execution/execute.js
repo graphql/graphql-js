@@ -753,12 +753,18 @@ export function resolveFieldValueOrError<TSource>(
     // used to represent an authenticated user, or request-specific caches.
     const context = exeContext.contextValue;
 
-    return resolveFn(source, args, context, info);
+    const result = resolveFn(source, args, context, info);
+    const promise = getPromise(result);
+    return promise ? promise.then(undefined, asErrorInstance) : result;
   } catch (error) {
-    // Sometimes a non-error is thrown, wrap it as an Error for a
-    // consistent interface.
-    return error instanceof Error ? error : new Error(error);
+    return asErrorInstance(error);
   }
+}
+
+// Sometimes a non-error is thrown, wrap it as an Error instance to ensure a
+// consistent Error interface.
+function asErrorInstance(error: mixed): Error {
+  return error instanceof Error ? error : new Error(error || undefined);
 }
 
 // This is a small wrapper around completeValue which detects and logs errors
@@ -838,13 +844,21 @@ function completeValueWithLocatedError(
     if (promise) {
       return promise.then(undefined, error =>
         Promise.reject(
-          locatedError(error, fieldNodes, responsePathAsArray(path)),
+          locatedError(
+            asErrorInstance(error),
+            fieldNodes,
+            responsePathAsArray(path),
+          ),
         ),
       );
     }
     return completed;
   } catch (error) {
-    throw locatedError(error, fieldNodes, responsePathAsArray(path));
+    throw locatedError(
+      asErrorInstance(error),
+      fieldNodes,
+      responsePathAsArray(path),
+    );
   }
 }
 

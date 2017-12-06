@@ -16,7 +16,7 @@ import type { ASTNode } from '../language/ast';
  * document responsible for the original Error.
  */
 export function locatedError(
-  originalError: ?Error,
+  originalError: Error,
   nodes: $ReadOnlyArray<ASTNode>,
   path: $ReadOnlyArray<string | number>,
 ): GraphQLError {
@@ -26,11 +26,8 @@ export function locatedError(
     return (originalError: any);
   }
 
-  const message = originalError
-    ? originalError.message || String(originalError)
-    : 'An unknown error occurred.';
   return new GraphQLError(
-    message,
+    originalError && originalError.message,
     (originalError && (originalError: any).nodes) || nodes,
     originalError && (originalError: any).source,
     originalError && (originalError: any).positions,
