@@ -48,7 +48,8 @@ function lookahead() {
   let token = this.token;
   if (token.kind !== EOF) {
     do {
-      token = token.next || (token.next = readToken(this, token));
+      // Note: next is only mutable during parsing, so we cast to allow this.
+      token = token.next || ((token: any).next = readToken(this, token));
     } while (token.kind === COMMENT);
   }
   return token;

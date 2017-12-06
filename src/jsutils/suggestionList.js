@@ -13,7 +13,7 @@
  */
 export default function suggestionList(
   input: string,
-  options: Array<string>,
+  options: $ReadOnlyArray<string>,
 ): Array<string> {
   const optionsByDistance = Object.create(null);
   const oLength = options.length;

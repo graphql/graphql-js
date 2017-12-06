@@ -257,7 +257,7 @@ function parseOperationDefinition(lexer: Lexer<*>): OperationDefinitionNode {
     return {
       kind: OPERATION_DEFINITION,
       operation: 'query',
-      name: null,
+      name: undefined,
       variableDefinitions: [],
       directives: [],
       selectionSet: parseSelectionSet(lexer),
@@ -265,7 +265,10 @@ function parseOperationDefinition(lexer: Lexer<*>): OperationDefinitionNode {
     };
   }
   const operation = parseOperationType(lexer);
-  const name = peek(lexer, TokenKind.NAME) ? parseName(lexer) : null;
+  let name;
+  if (peek(lexer, TokenKind.NAME)) {
+    name = parseName(lexer);
+  }
   return {
     kind: OPERATION_DEFINITION,
     operation,
@@ -316,7 +319,7 @@ function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
     type: (expect(lexer, TokenKind.COLON), parseTypeReference(lexer)),
     defaultValue: skip(lexer, TokenKind.EQUALS)
       ? parseValueLiteral(lexer, true)
-      : null,
+      : undefined,
     loc: loc(lexer, start),
   };
 }
@@ -378,7 +381,6 @@ function parseField(lexer: Lexer<*>): FieldNode {
     alias = nameOrAlias;
     name = parseName(lexer);
   } else {
-    alias = null;
     name = nameOrAlias;
   }
 
@@ -390,7 +392,7 @@ function parseField(lexer: Lexer<*>): FieldNode {
     directives: parseDirectives(lexer, false),
     selectionSet: peek(lexer, TokenKind.BRACE_L)
       ? parseSelectionSet(lexer)
-      : null,
+      : undefined,
     loc: loc(lexer, start),
   };
 }
@@ -453,7 +455,7 @@ function parseFragment(
       loc: loc(lexer, start),
     };
   }
-  let typeCondition = null;
+  let typeCondition;
   if (lexer.token.value === 'on') {
     lexer.advance();
     typeCondition = parseNamedType(lexer);
@@ -920,7 +922,7 @@ function parseInputValueDef(lexer: Lexer<*>): InputValueDefinitionNode {
   const name = parseName(lexer);
   expect(lexer, TokenKind.COLON);
   const type = parseTypeReference(lexer);
-  let defaultValue = null;
+  let defaultValue;
   if (skip(lexer, TokenKind.EQUALS)) {
     defaultValue = parseConstValue(lexer);
   }

@@ -399,7 +399,7 @@ type Hello {
                 inputValueNode(
                   nameNode('flag', { start: 22, end: 26 }),
                   typeNode('Boolean', { start: 28, end: 35 }),
-                  null,
+                  undefined,
                   { start: 22, end: 35 },
                 ),
               ],
@@ -481,7 +481,7 @@ type Hello {
                     type: typeNode('String', { start: 31, end: 37 }),
                     loc: { start: 30, end: 38 },
                   },
-                  null,
+                  undefined,
                   { start: 22, end: 38 },
                 ),
               ],
@@ -518,13 +518,13 @@ type Hello {
                 inputValueNode(
                   nameNode('argOne', { start: 22, end: 28 }),
                   typeNode('Boolean', { start: 30, end: 37 }),
-                  null,
+                  undefined,
                   { start: 22, end: 37 },
                 ),
                 inputValueNode(
                   nameNode('argTwo', { start: 39, end: 45 }),
                   typeNode('Int', { start: 47, end: 50 }),
-                  null,
+                  undefined,
                   { start: 39, end: 50 },
                 ),
               ],
@@ -657,7 +657,7 @@ input Hello {
             inputValueNode(
               nameNode('world', { start: 17, end: 22 }),
               typeNode('String', { start: 24, end: 30 }),
-              null,
+              undefined,
               { start: 17, end: 30 },
             ),
           ],
