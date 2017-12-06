@@ -149,7 +149,7 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
 /**
  * The full list of specified directives.
  */
-export const specifiedDirectives: Array<GraphQLDirective> = [
+export const specifiedDirectives: $ReadOnlyArray<*> = [
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,

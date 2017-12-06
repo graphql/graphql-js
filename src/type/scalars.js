@@ -137,7 +137,7 @@ export const GraphQLID = new GraphQLScalarType({
   },
 });
 
-export const specifiedScalarTypes: Array<GraphQLScalarType> = [
+export const specifiedScalarTypes: $ReadOnlyArray<*> = [
   GraphQLString,
   GraphQLInt,
   GraphQLFloat,

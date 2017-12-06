@@ -637,8 +637,8 @@ function findConflict(
 }
 
 function sameArguments(
-  arguments1: Array<ArgumentNode>,
-  arguments2: Array<ArgumentNode>,
+  arguments1: $ReadOnlyArray<ArgumentNode>,
+  arguments2: $ReadOnlyArray<ArgumentNode>,
 ): boolean {
   if (arguments1.length !== arguments2.length) {
     return false;

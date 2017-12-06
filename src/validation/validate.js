@@ -51,9 +51,9 @@ import { specifiedRules } from './specifiedRules';
 export function validate(
   schema: GraphQLSchema,
   ast: DocumentNode,
-  rules?: Array<any>,
+  rules?: $ReadOnlyArray<any>,
   typeInfo?: TypeInfo,
-): Array<GraphQLError> {
+): $ReadOnlyArray<GraphQLError> {
   invariant(schema, 'Must provide schema');
   invariant(ast, 'Must provide document');
   invariant(
@@ -79,8 +79,8 @@ function visitUsingRules(
   schema: GraphQLSchema,
   typeInfo: TypeInfo,
   documentAST: DocumentNode,
-  rules: Array<any>,
-): Array<GraphQLError> {
+  rules: $ReadOnlyArray<any>,
+): $ReadOnlyArray<GraphQLError> {
   const context = new ValidationContext(schema, documentAST, typeInfo);
   const visitors = rules.map(rule => rule(context));
   // Visit the whole document with each instance of all provided rules.
@@ -102,13 +102,16 @@ export class ValidationContext {
   _typeInfo: TypeInfo;
   _errors: Array<GraphQLError>;
   _fragments: ObjMap<FragmentDefinitionNode>;
-  _fragmentSpreads: Map<SelectionSetNode, Array<FragmentSpreadNode>>;
+  _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
     OperationDefinitionNode,
-    Array<FragmentDefinitionNode>,
+    $ReadOnlyArray<FragmentDefinitionNode>,
   >;
-  _variableUsages: Map<NodeWithSelectionSet, Array<VariableUsage>>;
-  _recursiveVariableUsages: Map<OperationDefinitionNode, Array<VariableUsage>>;
+  _variableUsages: Map<NodeWithSelectionSet, $ReadOnlyArray<VariableUsage>>;
+  _recursiveVariableUsages: Map<
+    OperationDefinitionNode,
+    $ReadOnlyArray<VariableUsage>,
+  >;
 
   constructor(
     schema: GraphQLSchema,
@@ -129,7 +132,7 @@ export class ValidationContext {
     this._errors.push(error);
   }
 
-  getErrors(): Array<GraphQLError> {
+  getErrors(): $ReadOnlyArray<GraphQLError> {
     return this._errors;
   }
 
@@ -157,7 +160,9 @@ export class ValidationContext {
     return fragments[name];
   }
 
-  getFragmentSpreads(node: SelectionSetNode): Array<FragmentSpreadNode> {
+  getFragmentSpreads(
+    node: SelectionSetNode,
+  ): $ReadOnlyArray<FragmentSpreadNode> {
     let spreads = this._fragmentSpreads.get(node);
     if (!spreads) {
       spreads = [];
@@ -180,7 +185,7 @@ export class ValidationContext {
 
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
-  ): Array<FragmentDefinitionNode> {
+  ): $ReadOnlyArray<FragmentDefinitionNode> {
     let fragments = this._recursivelyReferencedFragments.get(operation);
     if (!fragments) {
       fragments = [];
@@ -206,7 +211,7 @@ export class ValidationContext {
     return fragments;
   }
 
-  getVariableUsages(node: NodeWithSelectionSet): Array<VariableUsage> {
+  getVariableUsages(node: NodeWithSelectionSet): $ReadOnlyArray<VariableUsage> {
     let usages = this._variableUsages.get(node);
     if (!usages) {
       const newUsages = [];
@@ -228,7 +233,7 @@ export class ValidationContext {
 
   getRecursiveVariableUsages(
     operation: OperationDefinitionNode,
-  ): Array<VariableUsage> {
+  ): $ReadOnlyArray<VariableUsage> {
     let usages = this._recursiveVariableUsages.get(operation);
     if (!usages) {
       usages = this.getVariableUsages(operation);

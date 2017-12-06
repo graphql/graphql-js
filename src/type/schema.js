@@ -59,7 +59,7 @@ export class GraphQLSchema {
   _queryType: GraphQLObjectType;
   _mutationType: ?GraphQLObjectType;
   _subscriptionType: ?GraphQLObjectType;
-  _directives: Array<GraphQLDirective>;
+  _directives: $ReadOnlyArray<GraphQLDirective>;
   _typeMap: TypeMap;
   _implementations: ObjMap<Array<GraphQLObjectType>>;
   _possibleTypeMap: ?ObjMap<ObjMap<boolean>>;
@@ -176,7 +176,7 @@ export class GraphQLSchema {
 
   getPossibleTypes(
     abstractType: GraphQLAbstractType,
-  ): Array<GraphQLObjectType> {
+  ): $ReadOnlyArray<GraphQLObjectType> {
     if (abstractType instanceof GraphQLUnionType) {
       return abstractType.getTypes();
     }
@@ -210,7 +210,7 @@ export class GraphQLSchema {
     return Boolean(possibleTypeMap[abstractType.name][possibleType.name]);
   }
 
-  getDirectives(): Array<GraphQLDirective> {
+  getDirectives(): $ReadOnlyArray<GraphQLDirective> {
     return this._directives;
   }
 
