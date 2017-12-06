@@ -151,7 +151,12 @@ export type ASTNode =
   | EnumTypeDefinitionNode
   | EnumValueDefinitionNode
   | InputObjectTypeDefinitionNode
+  | ScalarTypeExtensionNode
   | ObjectTypeExtensionNode
+  | InterfaceTypeExtensionNode
+  | UnionTypeExtensionNode
+  | EnumTypeExtensionNode
+  | InputObjectTypeExtensionNode
   | DirectiveDefinitionNode;
 
 // Name
@@ -398,7 +403,7 @@ export type ObjectTypeDefinitionNode = {
   +name: NameNode,
   +interfaces?: Array<NamedTypeNode>,
   +directives?: Array<DirectiveNode>,
-  +fields: Array<FieldDefinitionNode>,
+  +fields?: Array<FieldDefinitionNode>,
 };
 
 export type FieldDefinitionNode = {
@@ -427,7 +432,7 @@ export type InterfaceTypeDefinitionNode = {
   +description?: StringValueNode,
   +name: NameNode,
   +directives?: Array<DirectiveNode>,
-  +fields: Array<FieldDefinitionNode>,
+  +fields?: Array<FieldDefinitionNode>,
 };
 
 export type UnionTypeDefinitionNode = {
@@ -436,7 +441,7 @@ export type UnionTypeDefinitionNode = {
   +description?: StringValueNode,
   +name: NameNode,
   +directives?: Array<DirectiveNode>,
-  +types: Array<NamedTypeNode>,
+  +types?: Array<NamedTypeNode>,
 };
 
 export type EnumTypeDefinitionNode = {
@@ -445,7 +450,7 @@ export type EnumTypeDefinitionNode = {
   +description?: StringValueNode,
   +name: NameNode,
   +directives?: Array<DirectiveNode>,
-  +values: Array<EnumValueDefinitionNode>,
+  +values?: Array<EnumValueDefinitionNode>,
 };
 
 export type EnumValueDefinitionNode = {
@@ -462,12 +467,25 @@ export type InputObjectTypeDefinitionNode = {
   +description?: StringValueNode,
   +name: NameNode,
   +directives?: Array<DirectiveNode>,
-  +fields: Array<InputValueDefinitionNode>,
+  +fields?: Array<InputValueDefinitionNode>,
 };
 
 // Type Extensions
 
-export type TypeExtensionNode = ObjectTypeExtensionNode;
+export type TypeExtensionNode =
+  | ScalarTypeExtensionNode
+  | ObjectTypeExtensionNode
+  | InterfaceTypeExtensionNode
+  | UnionTypeExtensionNode
+  | EnumTypeExtensionNode
+  | InputObjectTypeExtensionNode;
+
+export type ScalarTypeExtensionNode = {
+  kind: 'ScalarTypeExtension',
+  loc?: Location,
+  name: NameNode,
+  directives?: ?Array<DirectiveNode>,
+};
 
 export type ObjectTypeExtensionNode = {
   +kind: 'ObjectTypeExtension',
@@ -476,6 +494,38 @@ export type ObjectTypeExtensionNode = {
   +interfaces?: Array<NamedTypeNode>,
   +directives?: Array<DirectiveNode>,
   +fields?: Array<FieldDefinitionNode>,
+};
+
+export type InterfaceTypeExtensionNode = {
+  kind: 'InterfaceTypeExtension',
+  loc?: Location,
+  name: NameNode,
+  directives?: ?Array<DirectiveNode>,
+  fields?: ?Array<FieldDefinitionNode>,
+};
+
+export type UnionTypeExtensionNode = {
+  kind: 'UnionTypeExtension',
+  loc?: Location,
+  name: NameNode,
+  directives?: ?Array<DirectiveNode>,
+  types?: ?Array<NamedTypeNode>,
+};
+
+export type EnumTypeExtensionNode = {
+  kind: 'EnumTypeExtension',
+  loc?: Location,
+  name: NameNode,
+  directives?: ?Array<DirectiveNode>,
+  values?: ?Array<EnumValueDefinitionNode>,
+};
+
+export type InputObjectTypeExtensionNode = {
+  kind: 'InputObjectTypeExtension',
+  loc?: Location,
+  name: NameNode,
+  directives?: ?Array<DirectiveNode>,
+  fields?: ?Array<InputValueDefinitionNode>,
 };
 
 // Directive Definitions

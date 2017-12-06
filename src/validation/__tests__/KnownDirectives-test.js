@@ -156,19 +156,29 @@ describe('Validate: Known directives', () => {
 
         scalar MyScalar @onScalar
 
+        extend scalar MyScalar @onScalar
+
         interface MyInterface @onInterface {
           myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
         }
 
+        extend interface MyInterface @onInterface
+
         union MyUnion @onUnion = MyObj | Other
+
+        extend union MyUnion @onUnion
 
         enum MyEnum @onEnum {
           MY_VALUE @onEnumValue
         }
 
+        extend enum MyEnum @onEnum
+
         input MyInput @onInputObject {
           myField: Int @onInputFieldDefinition
         }
+
+        extend input MyInput @onInputObject
 
         schema @onSchema {
           query: MyQuery

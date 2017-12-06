@@ -362,11 +362,13 @@ export class ASTDefinitionBuilder {
   _makeFieldDefMap(
     def: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
   ) {
-    return keyValMap(
-      def.fields,
-      field => field.name.value,
-      field => this.buildField(field),
-    );
+    return def.fields
+      ? keyValMap(
+          def.fields,
+          field => field.name.value,
+          field => this.buildField(field),
+        )
+      : {};
   }
 
   _makeImplementedInterfaces(def: ObjectTypeDefinitionNode) {
@@ -405,15 +407,17 @@ export class ASTDefinitionBuilder {
     return new GraphQLEnumType({
       name: def.name.value,
       description: getDescription(def, this._options),
-      values: keyValMap(
-        def.values,
-        enumValue => enumValue.name.value,
-        enumValue => ({
-          description: getDescription(enumValue, this._options),
-          deprecationReason: getDeprecationReason(enumValue),
-          astNode: enumValue,
-        }),
-      ),
+      values: def.values
+        ? keyValMap(
+            def.values,
+            enumValue => enumValue.name.value,
+            enumValue => ({
+              description: getDescription(enumValue, this._options),
+              deprecationReason: getDeprecationReason(enumValue),
+              astNode: enumValue,
+            }),
+          )
+        : {},
       astNode: def,
     });
   }
@@ -422,7 +426,7 @@ export class ASTDefinitionBuilder {
     return new GraphQLUnionType({
       name: def.name.value,
       description: getDescription(def, this._options),
-      types: def.types.map(t => this.buildObjectType(t)),
+      types: def.types ? def.types.map(t => this.buildObjectType(t)) : [],
       astNode: def,
     });
   }
@@ -440,7 +444,7 @@ export class ASTDefinitionBuilder {
     return new GraphQLInputObjectType({
       name: def.name.value,
       description: getDescription(def, this._options),
-      fields: () => this._makeInputValues(def.fields),
+      fields: () => (def.fields ? this._makeInputValues(def.fields) : {}),
       astNode: def,
     });
   }
