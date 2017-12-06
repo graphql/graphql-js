@@ -161,7 +161,7 @@ export function printType(type: GraphQLType, options?: Options): string {
   return printInputObject(type, options);
 }
 
-function printScalar(type: GraphQLScalarType, options): string {
+function printScalar(type: GraphQLScalarType<any>, options): string {
   return printDescription(options, type) + `scalar ${type.name}`;
 }
 
