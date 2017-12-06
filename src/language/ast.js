@@ -484,7 +484,7 @@ export type ScalarTypeExtensionNode = {
   kind: 'ScalarTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: ?Array<DirectiveNode>,
+  directives?: Array<DirectiveNode>,
 };
 
 export type ObjectTypeExtensionNode = {
@@ -500,32 +500,32 @@ export type InterfaceTypeExtensionNode = {
   kind: 'InterfaceTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: ?Array<DirectiveNode>,
-  fields?: ?Array<FieldDefinitionNode>,
+  directives?: Array<DirectiveNode>,
+  fields?: Array<FieldDefinitionNode>,
 };
 
 export type UnionTypeExtensionNode = {
   kind: 'UnionTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: ?Array<DirectiveNode>,
-  types?: ?Array<NamedTypeNode>,
+  directives?: Array<DirectiveNode>,
+  types?: Array<NamedTypeNode>,
 };
 
 export type EnumTypeExtensionNode = {
   kind: 'EnumTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: ?Array<DirectiveNode>,
-  values?: ?Array<EnumValueDefinitionNode>,
+  directives?: Array<DirectiveNode>,
+  values?: Array<EnumValueDefinitionNode>,
 };
 
 export type InputObjectTypeExtensionNode = {
   kind: 'InputObjectTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: ?Array<DirectiveNode>,
-  fields?: ?Array<InputValueDefinitionNode>,
+  directives?: Array<DirectiveNode>,
+  fields?: Array<InputValueDefinitionNode>,
 };
 
 // Directive Definitions
