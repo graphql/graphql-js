@@ -8,7 +8,7 @@
  */
 
 import invariant from '../jsutils/invariant';
-import type { GraphQLError } from './GraphQLError';
+import type { GraphQLError, GraphQLErrorLocation } from './GraphQLError';
 
 /**
  * Given a GraphQLError, format it according to the rules described by the
@@ -25,12 +25,9 @@ export function formatError(error: GraphQLError): GraphQLFormattedError {
 }
 
 export type GraphQLFormattedError = {
-  message: string,
-  locations: ?Array<GraphQLErrorLocation>,
-  path: ?Array<string | number>,
-};
-
-export type GraphQLErrorLocation = {
-  line: number,
-  column: number,
+  +message: string,
+  +locations: $ReadOnlyArray<GraphQLErrorLocation> | void,
+  +path: $ReadOnlyArray<string | number> | void,
+  // Extensions
+  +[key: string]: mixed,
 };

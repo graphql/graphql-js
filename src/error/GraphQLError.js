@@ -11,6 +11,11 @@ import { getLocation } from '../language/location';
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
 
+export type GraphQLErrorLocation = {|
+  +line: number,
+  +column: number,
+|};
+
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
@@ -20,10 +25,10 @@ import type { Source } from '../language/source';
 declare class GraphQLError extends Error {
   constructor(
     message: string,
-    nodes?: ?Array<*>,
+    nodes?: ?$ReadOnlyArray<ASTNode>,
     source?: ?Source,
-    positions?: ?Array<number>,
-    path?: ?Array<string | number>,
+    positions?: ?$ReadOnlyArray<number>,
+    path?: ?$ReadOnlyArray<string | number>,
     originalError?: ?Error,
     extensions?: ?{ [key: string]: mixed },
   ): void;
@@ -32,6 +37,8 @@ declare class GraphQLError extends Error {
    * A message describing the Error for debugging purposes.
    *
    * Enumerable, and appears in the result of JSON.stringify().
+   *
+   * Note: should be treated as readonly, despite invariant usage.
    */
   message: string;
 
@@ -45,7 +52,7 @@ declare class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  locations: Array<{ line: number, column: number }> | void;
+  +locations: $ReadOnlyArray<GraphQLErrorLocation> | void;
 
   /**
    * An array describing the JSON-path into the execution response which
@@ -53,41 +60,41 @@ declare class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  path: Array<string | number> | void;
+  +path: $ReadOnlyArray<string | number> | void;
 
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
-  nodes: Array<ASTNode> | void;
+  +nodes: $ReadOnlyArray<ASTNode> | void;
 
   /**
    * The source GraphQL document corresponding to this error.
    */
-  source: Source | void;
+  +source: Source | void;
 
   /**
    * An array of character offsets within the source GraphQL document
    * which correspond to this error.
    */
-  positions: Array<number> | void;
+  +positions: $ReadOnlyArray<number> | void;
 
   /**
    * The original error thrown from a field resolver during execution.
    */
-  originalError: ?Error;
+  +originalError: ?Error;
 
   /**
    * The original error thrown from a field resolver during execution.
    */
-  extensions: ?{ [key: string]: mixed };
+  +extensions: ?{ [key: string]: mixed };
 }
 
 export function GraphQLError( // eslint-disable-line no-redeclare
   message: string,
-  nodes?: ?Array<*>,
+  nodes?: ?$ReadOnlyArray<ASTNode>,
   source?: ?Source,
-  positions?: ?Array<number>,
-  path?: ?Array<string | number>,
+  positions?: ?$ReadOnlyArray<number>,
+  path?: ?$ReadOnlyArray<string | number>,
   originalError?: ?Error,
   extensions?: ?{ [key: string]: mixed },
 ) {
@@ -100,9 +107,12 @@ export function GraphQLError( // eslint-disable-line no-redeclare
 
   let _positions = positions;
   if (!_positions && nodes) {
-    _positions = nodes
-      .filter(node => Boolean(node.loc))
-      .map(node => node.loc.start);
+    _positions = nodes.reduce((list, node) => {
+      if (node.loc) {
+        list.push(node.loc.start);
+      }
+      return list;
+    }, []);
   }
   if (_positions && _positions.length === 0) {
     _positions = undefined;

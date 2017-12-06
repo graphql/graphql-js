@@ -101,7 +101,7 @@ export type ExecutionContext = {
  *   - `data` is the result of a successful execution of the query.
  */
 export type ExecutionResult = {
-  errors?: Array<GraphQLError>,
+  errors?: $ReadOnlyArray<GraphQLError>,
   data?: ObjMap<mixed>,
 };
 
@@ -235,7 +235,7 @@ function buildResponse(
  */
 export function responsePathAsArray(
   path: ResponsePath,
-): Array<string | number> {
+): $ReadOnlyArray<string | number> {
   const flattened = [];
   let curr = path;
   while (curr) {
@@ -663,7 +663,7 @@ function resolveField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: mixed,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   path: ResponsePath,
 ): mixed {
   const fieldNode = fieldNodes[0];
@@ -708,7 +708,7 @@ function resolveField(
 export function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<*, *>,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   parentType: GraphQLObjectType,
   path: ResponsePath,
 ): GraphQLResolveInfo {
@@ -733,7 +733,7 @@ export function buildResolveInfo(
 export function resolveFieldValueOrError<TSource>(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<TSource, *>,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   resolveFn: GraphQLFieldResolver<TSource, *>,
   source: TSource,
   info: GraphQLResolveInfo,
@@ -766,7 +766,7 @@ export function resolveFieldValueOrError<TSource>(
 function completeValueCatchingError(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
@@ -820,7 +820,7 @@ function completeValueCatchingError(
 function completeValueWithLocatedError(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
@@ -872,7 +872,7 @@ function completeValueWithLocatedError(
 function completeValue(
   exeContext: ExecutionContext,
   returnType: GraphQLType,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
@@ -972,7 +972,7 @@ function completeValue(
 function completeListValue(
   exeContext: ExecutionContext,
   returnType: GraphQLList<*>,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
@@ -1034,7 +1034,7 @@ function completeLeafValue(returnType: GraphQLLeafType, result: mixed): mixed {
 function completeAbstractValue(
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
@@ -1085,7 +1085,7 @@ function ensureValidRuntimeType(
   runtimeTypeOrName: ?GraphQLObjectType | string,
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   result: mixed,
 ): GraphQLObjectType {
@@ -1123,7 +1123,7 @@ function ensureValidRuntimeType(
 function completeObjectValue(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
@@ -1169,7 +1169,7 @@ function completeObjectValue(
 function invalidReturnTypeError(
   returnType: GraphQLObjectType,
   result: mixed,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
 ): GraphQLError {
   return new GraphQLError(
     `Expected value of type "${returnType.name}" but got: ${String(result)}.`,
@@ -1180,7 +1180,7 @@ function invalidReturnTypeError(
 function collectAndExecuteSubfields(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
-  fieldNodes: Array<FieldNode>,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,

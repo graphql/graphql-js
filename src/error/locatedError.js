@@ -8,6 +8,7 @@
  */
 
 import { GraphQLError } from './GraphQLError';
+import type { ASTNode } from '../language/ast';
 
 /**
  * Given an arbitrary Error, presumably thrown while attempting to execute a
@@ -16,8 +17,8 @@ import { GraphQLError } from './GraphQLError';
  */
 export function locatedError(
   originalError: ?Error,
-  nodes: Array<*>,
-  path: Array<string | number>,
+  nodes: $ReadOnlyArray<ASTNode>,
+  path: $ReadOnlyArray<string | number>,
 ): GraphQLError {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.

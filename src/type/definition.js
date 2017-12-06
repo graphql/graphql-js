@@ -619,20 +619,23 @@ export type GraphQLFieldResolver<TSource, TContext> = (
   info: GraphQLResolveInfo,
 ) => mixed;
 
-export type GraphQLResolveInfo = {
-  fieldName: string,
-  fieldNodes: Array<FieldNode>,
-  returnType: GraphQLOutputType,
-  parentType: GraphQLObjectType,
-  path: ResponsePath,
-  schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
-  rootValue: mixed,
-  operation: OperationDefinitionNode,
-  variableValues: { [variable: string]: mixed },
-};
+export type GraphQLResolveInfo = {|
+  +fieldName: string,
+  +fieldNodes: $ReadOnlyArray<FieldNode>,
+  +returnType: GraphQLOutputType,
+  +parentType: GraphQLObjectType,
+  +path: ResponsePath,
+  +schema: GraphQLSchema,
+  +fragments: ObjMap<FragmentDefinitionNode>,
+  +rootValue: mixed,
+  +operation: OperationDefinitionNode,
+  +variableValues: { [variable: string]: mixed },
+|};
 
-export type ResponsePath = { prev: ResponsePath | void, key: string | number };
+export type ResponsePath = {|
+  +prev: ResponsePath | void,
+  +key: string | number,
+|};
 
 export type GraphQLFieldConfig<TSource, TContext> = {
   type: GraphQLOutputType,

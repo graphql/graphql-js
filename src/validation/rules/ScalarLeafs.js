@@ -43,17 +43,18 @@ export function ScalarLeafs(context: ValidationContext): any {
   return {
     Field(node: FieldNode) {
       const type = context.getType();
+      const selectionSet = node.selectionSet;
       if (type) {
         if (isLeafType(getNamedType(type))) {
-          if (node.selectionSet) {
+          if (selectionSet) {
             context.reportError(
               new GraphQLError(
                 noSubselectionAllowedMessage(node.name.value, type),
-                [node.selectionSet],
+                [selectionSet],
               ),
             );
           }
-        } else if (!node.selectionSet) {
+        } else if (!selectionSet) {
           context.reportError(
             new GraphQLError(
               requiredSubselectionMessage(node.name.value, type),
