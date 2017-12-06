@@ -12,7 +12,7 @@ const MAX_LENGTH = 5;
 /**
  * Given [ A, B, C ] return '"A", "B", or "C"'.
  */
-export default function quotedOrList(items: Array<string>): string {
+export default function quotedOrList(items: $ReadOnlyArray<string>): string {
   const selected = items.slice(0, MAX_LENGTH);
   return selected
     .map(item => `"${item}"`)

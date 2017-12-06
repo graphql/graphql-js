@@ -221,7 +221,7 @@ describe('Parser', () => {
           kind: Kind.OPERATION_DEFINITION,
           loc: { start: 0, end: 40 },
           operation: 'query',
-          name: null,
+          name: undefined,
           variableDefinitions: [],
           directives: [],
           selectionSet: {
@@ -231,7 +231,7 @@ describe('Parser', () => {
               {
                 kind: Kind.FIELD,
                 loc: { start: 4, end: 38 },
-                alias: null,
+                alias: undefined,
                 name: {
                   kind: Kind.NAME,
                   loc: { start: 4, end: 8 },
@@ -261,7 +261,7 @@ describe('Parser', () => {
                     {
                       kind: Kind.FIELD,
                       loc: { start: 22, end: 24 },
-                      alias: null,
+                      alias: undefined,
                       name: {
                         kind: Kind.NAME,
                         loc: { start: 22, end: 24 },
@@ -269,12 +269,12 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      selectionSet: null,
+                      selectionSet: undefined,
                     },
                     {
                       kind: Kind.FIELD,
                       loc: { start: 30, end: 34 },
-                      alias: null,
+                      alias: undefined,
                       name: {
                         kind: Kind.NAME,
                         loc: { start: 30, end: 34 },
@@ -282,7 +282,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      selectionSet: null,
+                      selectionSet: undefined,
                     },
                   ],
                 },
@@ -311,7 +311,7 @@ describe('Parser', () => {
           kind: Kind.OPERATION_DEFINITION,
           loc: { start: 0, end: 29 },
           operation: 'query',
-          name: null,
+          name: undefined,
           variableDefinitions: [],
           directives: [],
           selectionSet: {
@@ -321,7 +321,7 @@ describe('Parser', () => {
               {
                 kind: Kind.FIELD,
                 loc: { start: 10, end: 27 },
-                alias: null,
+                alias: undefined,
                 name: {
                   kind: Kind.NAME,
                   loc: { start: 10, end: 14 },
@@ -336,7 +336,7 @@ describe('Parser', () => {
                     {
                       kind: Kind.FIELD,
                       loc: { start: 21, end: 23 },
-                      alias: null,
+                      alias: undefined,
                       name: {
                         kind: Kind.NAME,
                         loc: { start: 21, end: 23 },
@@ -344,7 +344,7 @@ describe('Parser', () => {
                       },
                       arguments: [],
                       directives: [],
-                      selectionSet: null,
+                      selectionSet: undefined,
                     },
                   ],
                 },

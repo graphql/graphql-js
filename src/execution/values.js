@@ -186,7 +186,7 @@ export function getArgumentValues(
  */
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
-  node: { directives?: ?Array<DirectiveNode> },
+  node: { +directives?: $ReadOnlyArray<DirectiveNode> },
   variableValues?: ?ObjMap<mixed>,
 ): void | { [argument: string]: mixed } {
   const directiveNode =

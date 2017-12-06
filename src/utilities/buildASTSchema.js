@@ -21,9 +21,7 @@ import { getDirectiveValues } from '../execution/values';
 import * as Kind from '../language/kinds';
 
 import type {
-  Location,
   DocumentNode,
-  StringValueNode,
   TypeNode,
   NamedTypeNode,
   SchemaDefinitionNode,
@@ -325,7 +323,7 @@ export class ASTDefinitionBuilder {
     return {
       type: this._buildOutputType(field.type),
       description: getDescription(field, this._options),
-      args: this._makeInputValues(field.arguments),
+      args: field.arguments && this._makeInputValues(field.arguments),
       deprecationReason: getDeprecationReason(field),
       astNode: field,
     };
@@ -378,7 +376,7 @@ export class ASTDefinitionBuilder {
     );
   }
 
-  _makeInputValues(values: Array<InputValueDefinitionNode>) {
+  _makeInputValues(values: $ReadOnlyArray<InputValueDefinitionNode>) {
     return keyValMap(
       values,
       value => value.name.value,
@@ -468,10 +466,7 @@ function getDeprecationReason(
  *        Provide true to use preceding comments as the description.
  *
  */
-function getDescription(
-  node: { loc?: Location, description?: ?StringValueNode },
-  options: ?Options,
-): void | string {
+function getDescription(node, options: ?Options): void | string {
   if (node.description) {
     return node.description.value;
   }
@@ -483,7 +478,7 @@ function getDescription(
   }
 }
 
-function getLeadingCommentBlock(node: { loc?: Location }): void | string {
+function getLeadingCommentBlock(node): void | string {
   const loc = node.loc;
   if (!loc) {
     return;

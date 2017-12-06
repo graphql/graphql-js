@@ -8,7 +8,7 @@
  */
 
 export default function find<T>(
-  list: Array<T>,
+  list: $ReadOnlyArray<T>,
   predicate: (item: T) => boolean,
 ): ?T {
   for (let i = 0; i < list.length; i++) {
