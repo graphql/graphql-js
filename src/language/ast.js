@@ -172,7 +172,7 @@ export type NameNode = {
 export type DocumentNode = {
   +kind: 'Document',
   +loc?: Location,
-  +definitions: Array<DefinitionNode>,
+  +definitions: $ReadOnlyArray<DefinitionNode>,
 };
 
 export type DefinitionNode =
@@ -185,8 +185,8 @@ export type OperationDefinitionNode = {
   +loc?: Location,
   +operation: OperationTypeNode,
   +name?: NameNode,
-  +variableDefinitions?: Array<VariableDefinitionNode>,
-  +directives?: Array<DirectiveNode>,
+  +variableDefinitions?: $ReadOnlyArray<VariableDefinitionNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet: SelectionSetNode,
 };
 
@@ -209,7 +209,7 @@ export type VariableNode = {
 export type SelectionSetNode = {
   kind: 'SelectionSet',
   loc?: Location,
-  selections: Array<SelectionNode>,
+  selections: $ReadOnlyArray<SelectionNode>,
 };
 
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
@@ -219,8 +219,8 @@ export type FieldNode = {
   +loc?: Location,
   +alias?: NameNode,
   +name: NameNode,
-  +arguments?: Array<ArgumentNode>,
-  +directives?: Array<DirectiveNode>,
+  +arguments?: $ReadOnlyArray<ArgumentNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet?: SelectionSetNode,
 };
 
@@ -237,14 +237,14 @@ export type FragmentSpreadNode = {
   +kind: 'FragmentSpread',
   +loc?: Location,
   +name: NameNode,
-  +directives?: Array<DirectiveNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
 };
 
 export type InlineFragmentNode = {
   +kind: 'InlineFragment',
   +loc?: Location,
   +typeCondition?: NamedTypeNode,
-  +directives?: Array<DirectiveNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet: SelectionSetNode,
 };
 
@@ -253,7 +253,7 @@ export type FragmentDefinitionNode = {
   +loc?: Location,
   +name: NameNode,
   +typeCondition: NamedTypeNode,
-  +directives?: Array<DirectiveNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet: SelectionSetNode,
 };
 
@@ -309,13 +309,13 @@ export type EnumValueNode = {
 export type ListValueNode = {
   +kind: 'ListValue',
   +loc?: Location,
-  +values: Array<ValueNode>,
+  +values: $ReadOnlyArray<ValueNode>,
 };
 
 export type ObjectValueNode = {
   +kind: 'ObjectValue',
   +loc?: Location,
-  +fields: Array<ObjectFieldNode>,
+  +fields: $ReadOnlyArray<ObjectFieldNode>,
 };
 
 export type ObjectFieldNode = {
@@ -331,7 +331,7 @@ export type DirectiveNode = {
   +kind: 'Directive',
   +loc?: Location,
   +name: NameNode,
-  +arguments?: Array<ArgumentNode>,
+  +arguments?: $ReadOnlyArray<ArgumentNode>,
 };
 
 // Type Reference
@@ -367,8 +367,8 @@ export type TypeSystemDefinitionNode =
 export type SchemaDefinitionNode = {
   +kind: 'SchemaDefinition',
   +loc?: Location,
-  +directives: Array<DirectiveNode>,
-  +operationTypes: Array<OperationTypeDefinitionNode>,
+  +directives: $ReadOnlyArray<DirectiveNode>,
+  +operationTypes: $ReadOnlyArray<OperationTypeDefinitionNode>,
 };
 
 export type OperationTypeDefinitionNode = {
@@ -393,7 +393,7 @@ export type ScalarTypeDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
-  +directives?: Array<DirectiveNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
 };
 
 export type ObjectTypeDefinitionNode = {
@@ -401,9 +401,9 @@ export type ObjectTypeDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
-  +interfaces?: Array<NamedTypeNode>,
-  +directives?: Array<DirectiveNode>,
-  +fields?: Array<FieldDefinitionNode>,
+  +interfaces?: $ReadOnlyArray<NamedTypeNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +fields?: $ReadOnlyArray<FieldDefinitionNode>,
 };
 
 export type FieldDefinitionNode = {
@@ -411,9 +411,9 @@ export type FieldDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
-  +arguments?: Array<InputValueDefinitionNode>,
+  +arguments?: $ReadOnlyArray<InputValueDefinitionNode>,
   +type: TypeNode,
-  +directives?: Array<DirectiveNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
 };
 
 export type InputValueDefinitionNode = {
@@ -423,7 +423,7 @@ export type InputValueDefinitionNode = {
   +name: NameNode,
   +type: TypeNode,
   +defaultValue?: ValueNode,
-  +directives?: Array<DirectiveNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
 };
 
 export type InterfaceTypeDefinitionNode = {
@@ -431,8 +431,8 @@ export type InterfaceTypeDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
-  +directives?: Array<DirectiveNode>,
-  +fields?: Array<FieldDefinitionNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +fields?: $ReadOnlyArray<FieldDefinitionNode>,
 };
 
 export type UnionTypeDefinitionNode = {
@@ -440,8 +440,8 @@ export type UnionTypeDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
-  +directives?: Array<DirectiveNode>,
-  +types?: Array<NamedTypeNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +types?: $ReadOnlyArray<NamedTypeNode>,
 };
 
 export type EnumTypeDefinitionNode = {
@@ -449,8 +449,8 @@ export type EnumTypeDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
-  +directives?: Array<DirectiveNode>,
-  +values?: Array<EnumValueDefinitionNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +values?: $ReadOnlyArray<EnumValueDefinitionNode>,
 };
 
 export type EnumValueDefinitionNode = {
@@ -458,7 +458,7 @@ export type EnumValueDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
-  +directives?: Array<DirectiveNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
 };
 
 export type InputObjectTypeDefinitionNode = {
@@ -466,8 +466,8 @@ export type InputObjectTypeDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
-  +directives?: Array<DirectiveNode>,
-  +fields?: Array<InputValueDefinitionNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +fields?: $ReadOnlyArray<InputValueDefinitionNode>,
 };
 
 // Type Extensions
@@ -484,48 +484,48 @@ export type ScalarTypeExtensionNode = {
   kind: 'ScalarTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: Array<DirectiveNode>,
+  directives?: $ReadOnlyArray<DirectiveNode>,
 };
 
 export type ObjectTypeExtensionNode = {
   +kind: 'ObjectTypeExtension',
   +loc?: Location,
   +name: NameNode,
-  +interfaces?: Array<NamedTypeNode>,
-  +directives?: Array<DirectiveNode>,
-  +fields?: Array<FieldDefinitionNode>,
+  +interfaces?: $ReadOnlyArray<NamedTypeNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +fields?: $ReadOnlyArray<FieldDefinitionNode>,
 };
 
 export type InterfaceTypeExtensionNode = {
   kind: 'InterfaceTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: Array<DirectiveNode>,
-  fields?: Array<FieldDefinitionNode>,
+  directives?: $ReadOnlyArray<DirectiveNode>,
+  fields?: $ReadOnlyArray<FieldDefinitionNode>,
 };
 
 export type UnionTypeExtensionNode = {
   kind: 'UnionTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: Array<DirectiveNode>,
-  types?: Array<NamedTypeNode>,
+  directives?: $ReadOnlyArray<DirectiveNode>,
+  types?: $ReadOnlyArray<NamedTypeNode>,
 };
 
 export type EnumTypeExtensionNode = {
   kind: 'EnumTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: Array<DirectiveNode>,
-  values?: Array<EnumValueDefinitionNode>,
+  directives?: $ReadOnlyArray<DirectiveNode>,
+  values?: $ReadOnlyArray<EnumValueDefinitionNode>,
 };
 
 export type InputObjectTypeExtensionNode = {
   kind: 'InputObjectTypeExtension',
   loc?: Location,
   name: NameNode,
-  directives?: Array<DirectiveNode>,
-  fields?: Array<InputValueDefinitionNode>,
+  directives?: $ReadOnlyArray<DirectiveNode>,
+  fields?: $ReadOnlyArray<InputValueDefinitionNode>,
 };
 
 // Directive Definitions
@@ -535,6 +535,6 @@ export type DirectiveDefinitionNode = {
   +loc?: Location,
   +description?: StringValueNode,
   +name: NameNode,
-  +arguments?: Array<InputValueDefinitionNode>,
-  +locations: Array<NameNode>,
+  +arguments?: $ReadOnlyArray<InputValueDefinitionNode>,
+  +locations: $ReadOnlyArray<NameNode>,
 };

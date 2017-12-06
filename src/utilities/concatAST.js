@@ -14,7 +14,7 @@ import type { DocumentNode } from '../language/ast';
  * concatenate the ASTs together into batched AST, useful for validating many
  * GraphQL source files which together represent one conceptual application.
  */
-export function concatAST(asts: Array<DocumentNode>): DocumentNode {
+export function concatAST(asts: $ReadOnlyArray<DocumentNode>): DocumentNode {
   const batchDefinitions = [];
   for (let i = 0; i < asts.length; i++) {
     const definitions = asts[i].definitions;

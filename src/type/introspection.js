@@ -24,7 +24,7 @@ import {
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from '../language/directiveLocation';
-import type { GraphQLField, GraphQLNamedType, GraphQLType } from './definition';
+import type { GraphQLField, GraphQLType } from './definition';
 
 export const __Schema = new GraphQLObjectType({
   name: '__Schema',
@@ -462,7 +462,7 @@ export const TypeNameMetaFieldDef: GraphQLField<*, *> = {
   resolve: (source, args, context, { parentType }) => parentType.name,
 };
 
-export const introspectionTypes: Array<GraphQLNamedType> = [
+export const introspectionTypes: $ReadOnlyArray<*> = [
   __Schema,
   __Directive,
   __DirectiveLocation,
