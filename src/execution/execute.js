@@ -393,11 +393,18 @@ export function getOperationRootType(
 ): GraphQLObjectType {
   switch (operation.operation) {
     case 'query':
-      return schema.getQueryType();
+      const queryType = schema.getQueryType();
+      if (!queryType) {
+        throw new GraphQLError(
+          'Schema does not define the required query root type.',
+          [operation],
+        );
+      }
+      return queryType;
     case 'mutation':
       const mutationType = schema.getMutationType();
       if (!mutationType) {
-        throw new GraphQLError('Schema is not configured for mutations', [
+        throw new GraphQLError('Schema is not configured for mutations.', [
           operation,
         ]);
       }
@@ -405,14 +412,14 @@ export function getOperationRootType(
     case 'subscription':
       const subscriptionType = schema.getSubscriptionType();
       if (!subscriptionType) {
-        throw new GraphQLError('Schema is not configured for subscriptions', [
+        throw new GraphQLError('Schema is not configured for subscriptions.', [
           operation,
         ]);
       }
       return subscriptionType;
     default:
       throw new GraphQLError(
-        'Can only execute queries, mutations and subscriptions',
+        'Can only execute queries, mutations and subscriptions.',
         [operation],
       );
   }

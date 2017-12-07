@@ -816,18 +816,6 @@ describe('Schema Builder', () => {
 });
 
 describe('Failures', () => {
-  it('Requires a schema definition or Query type', () => {
-    const body = dedent`
-      type Hello {
-        bar: Bar
-      }
-    `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
-      'Must provide schema definition with query type or a type named Query.',
-    );
-  });
-
   it('Allows only a single schema definition', () => {
     const body = dedent`
       schema {
@@ -845,22 +833,6 @@ describe('Failures', () => {
     const doc = parse(body);
     expect(() => buildASTSchema(doc)).to.throw(
       'Must provide only one schema definition.',
-    );
-  });
-
-  it('Requires a query type', () => {
-    const body = dedent`
-      schema {
-        mutation: Hello
-      }
-
-      type Hello {
-        bar: Bar
-      }
-    `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
-      'Must provide schema definition with query type or a type named Query.',
     );
   });
 

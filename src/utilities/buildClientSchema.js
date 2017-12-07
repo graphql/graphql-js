@@ -397,7 +397,9 @@ export function buildClientSchema(
   );
 
   // Get the root Query, Mutation, and Subscription types.
-  const queryType = getObjectType(schemaIntrospection.queryType);
+  const queryType = schemaIntrospection.queryType
+    ? getObjectType(schemaIntrospection.queryType)
+    : null;
 
   const mutationType = schemaIntrospection.mutationType
     ? getObjectType(schemaIntrospection.mutationType)
