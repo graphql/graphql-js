@@ -47,6 +47,7 @@ import {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
 } from '../type/directives';
+import { assertValidSchema } from '../type/validate';
 import type {
   DocumentNode,
   OperationDefinitionNode,
@@ -262,14 +263,10 @@ export function assertValidExecutionArguments(
   document: DocumentNode,
   rawVariableValues: ?ObjMap<mixed>,
 ): void {
-  invariant(schema, 'Must provide schema');
   invariant(document, 'Must provide document');
-  invariant(
-    schema instanceof GraphQLSchema,
-    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
-      'not multiple versions of GraphQL installed in your ' +
-      'node_modules directory.',
-  );
+
+  // If the schema used for execution is invalid, throw an error.
+  assertValidSchema(schema);
 
   // Variables, if provided, must be an object.
   invariant(

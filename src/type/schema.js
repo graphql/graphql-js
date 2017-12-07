@@ -22,6 +22,7 @@ import type {
 } from './definition';
 import type { SchemaDefinitionNode } from '../language/ast';
 import { GraphQLDirective, specifiedDirectives } from './directives';
+import type { GraphQLError } from '../error/GraphQLError';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
@@ -63,6 +64,8 @@ export class GraphQLSchema {
   _typeMap: TypeMap;
   _implementations: ObjMap<Array<GraphQLObjectType>>;
   _possibleTypeMap: ?ObjMap<ObjMap<boolean>>;
+  // Used as a cache for validateSchema().
+  __validationErrors: ?$ReadOnlyArray<GraphQLError>;
 
   constructor(config: GraphQLSchemaConfig): void {
     invariant(typeof config === 'object', 'Must provide configuration object.');
@@ -152,6 +155,12 @@ export class GraphQLSchema {
           .forEach(iface => assertObjectImplementsInterface(this, type, iface));
       }
     });
+
+    // If this schema was built from a source known to be valid, then it may be
+    // marked with assumeValid to avoid an additional type system validation.
+    if (config.assumeValid) {
+      this.__validationErrors = [];
+    }
   }
 
   getQueryType(): GraphQLObjectType {
@@ -228,6 +237,7 @@ type GraphQLSchemaConfig = {
   types?: ?Array<GraphQLNamedType>,
   directives?: ?Array<GraphQLDirective>,
   astNode?: ?SchemaDefinitionNode,
+  assumeValid?: boolean,
 };
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {

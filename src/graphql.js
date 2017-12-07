@@ -7,6 +7,7 @@
  * @flow
  */
 
+import { validateSchema } from './type/validate';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
 import { execute } from './execution/execute';
@@ -167,6 +168,12 @@ function graphqlImpl(
   operationName,
   fieldResolver,
 ): Promise<ExecutionResult> | ExecutionResult {
+  // Validate Schema
+  const schemaValidationErrors = validateSchema(schema);
+  if (schemaValidationErrors.length > 0) {
+    return { errors: schemaValidationErrors };
+  }
+
   // Parse
   let document;
   try {

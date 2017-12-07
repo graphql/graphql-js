@@ -29,6 +29,7 @@ import type {
   GraphQLArgument,
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
+import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules } from './specifiedRules';
 
@@ -54,13 +55,9 @@ export function validate(
   rules?: $ReadOnlyArray<any>,
   typeInfo?: TypeInfo,
 ): $ReadOnlyArray<GraphQLError> {
-  invariant(schema, 'Must provide schema');
   invariant(ast, 'Must provide document');
-  invariant(
-    schema instanceof GraphQLSchema,
-    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
-      'not multiple versions of GraphQL installed in your node_modules directory.',
-  );
+  // If the schema used for validation is invalid, throw an error.
+  assertValidSchema(schema);
   return visitUsingRules(
     schema,
     typeInfo || new TypeInfo(schema),
