@@ -7,20 +7,11 @@
  * @flow
  */
 
-const MAX_LENGTH = 5;
+import orList from './orList';
 
 /**
  * Given [ A, B, C ] return '"A", "B", or "C"'.
  */
 export default function quotedOrList(items: $ReadOnlyArray<string>): string {
-  const selected = items.slice(0, MAX_LENGTH);
-  return selected
-    .map(item => `"${item}"`)
-    .reduce(
-      (list, quoted, index) =>
-        list +
-        (selected.length > 2 ? ', ' : ' ') +
-        (index === selected.length - 1 ? 'or ' : '') +
-        quoted,
-    );
+  return orList(items.map(item => `"${item}"`));
 }

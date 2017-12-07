@@ -11,16 +11,6 @@ export { validate, ValidationContext } from './validate';
 
 export { specifiedRules } from './specifiedRules';
 
-// Spec Section: "Argument Values Type Correctness"
-export {
-  ArgumentsOfCorrectType as ArgumentsOfCorrectTypeRule,
-} from './rules/ArgumentsOfCorrectType';
-
-// Spec Section: "Variable Default Values Are Correctly Typed"
-export {
-  DefaultValuesOfCorrectType as DefaultValuesOfCorrectTypeRule,
-} from './rules/DefaultValuesOfCorrectType';
-
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 export {
   FieldsOnCorrectType as FieldsOnCorrectTypeRule,
@@ -127,10 +117,20 @@ export {
   UniqueVariableNames as UniqueVariableNamesRule,
 } from './rules/UniqueVariableNames';
 
+// Spec Section: "Values Type Correctness"
+export {
+  ValuesOfCorrectType as ValuesOfCorrectTypeRule,
+} from './rules/ValuesOfCorrectType';
+
 // Spec Section: "Variables are Input Types"
 export {
   VariablesAreInputTypes as VariablesAreInputTypesRule,
 } from './rules/VariablesAreInputTypes';
+
+// Spec Section: "Variables Default Value Is Allowed"
+export {
+  VariablesDefaultValueAllowed as VariablesDefaultValueAllowedRule,
+} from './rules/VariablesDefaultValueAllowed';
 
 // Spec Section: "All Variable Usages Are Allowed"
 export {

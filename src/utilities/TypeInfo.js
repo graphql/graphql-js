@@ -62,6 +62,9 @@ export class TypeInfo {
     // to support non-spec-compliant codebases. You should never need to use it.
     // It may disappear in the future.
     getFieldDefFn?: typeof getFieldDef,
+    // Initial type may be provided in rare cases to facilitate traversals
+    // beginning somewhere other than documents.
+    initialType?: GraphQLType,
   ): void {
     this._schema = schema;
     this._typeStack = [];
@@ -72,6 +75,17 @@ export class TypeInfo {
     this._argument = null;
     this._enumValue = null;
     this._getFieldDef = getFieldDefFn || getFieldDef;
+    if (initialType) {
+      if (isInputType(initialType)) {
+        this._inputTypeStack.push(initialType);
+      }
+      if (isCompositeType(initialType)) {
+        this._parentTypeStack.push(initialType);
+      }
+      if (isOutputType(initialType)) {
+        this._typeStack.push(initialType);
+      }
+    }
   }
 
   getType(): ?GraphQLOutputType {
@@ -89,6 +103,12 @@ export class TypeInfo {
   getInputType(): ?GraphQLInputType {
     if (this._inputTypeStack.length > 0) {
       return this._inputTypeStack[this._inputTypeStack.length - 1];
+    }
+  }
+
+  getParentInputType(): ?GraphQLInputType {
+    if (this._inputTypeStack.length > 1) {
+      return this._inputTypeStack[this._inputTypeStack.length - 2];
     }
   }
 
@@ -183,10 +203,9 @@ export class TypeInfo {
         break;
       case Kind.LIST:
         const listType: mixed = getNullableType(this.getInputType());
-        let itemType: mixed;
-        if (isListType(listType)) {
-          itemType = listType.ofType;
-        }
+        const itemType: mixed = isListType(listType)
+          ? listType.ofType
+          : listType;
         this._inputTypeStack.push(isInputType(itemType) ? itemType : undefined);
         break;
       case Kind.OBJECT_FIELD:
