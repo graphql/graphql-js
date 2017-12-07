@@ -311,21 +311,24 @@ describe('Subscription Initialization Phase', () => {
       }
     `);
 
-    expectPromiseToThrow(
+    await expectPromiseToThrow(
       () => subscribe(null, document),
-      'Must provide schema',
+      'Must provide schema.',
     );
 
-    expectPromiseToThrow(() => subscribe({ document }), 'Must provide schema');
+    await expectPromiseToThrow(
+      () => subscribe({ document }),
+      'Must provide schema.',
+    );
   });
 
   it('throws an error if document is missing', async () => {
-    expectPromiseToThrow(
+    await expectPromiseToThrow(
       () => subscribe(emailSchema, null),
       'Must provide document',
     );
 
-    expectPromiseToThrow(
+    await expectPromiseToThrow(
       () => subscribe({ schema: emailSchema }),
       'Must provide document',
     );
@@ -369,9 +372,9 @@ describe('Subscription Initialization Phase', () => {
 
     const pubsub = new EventEmitter();
 
-    expectPromiseToThrow(
+    await expectPromiseToThrow(
       () => createSubscription(pubsub, invalidEmailSchema),
-      'Subscription must return Async Iterable. Received: test',
+      'Subscription field must return Async Iterable. Received: test',
     );
   });
 
