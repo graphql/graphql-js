@@ -7,7 +7,6 @@
  * @flow
  */
 
-import invariant from '../jsutils/invariant';
 import { GraphQLSchema } from './schema';
 import type { GraphQLError } from '../error/GraphQLError';
 
@@ -22,13 +21,33 @@ export function validateSchema(
   schema: GraphQLSchema,
 ): $ReadOnlyArray<GraphQLError> {
   // First check to ensure the provided value is in fact a GraphQLSchema.
-  invariant(schema, 'Must provide schema');
-  invariant(
-    schema instanceof GraphQLSchema,
-    'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
-      'not multiple versions of GraphQL installed in your ' +
-      'node_modules directory.',
-  );
+  if (!(schema instanceof GraphQLSchema)) {
+    if (!schema) {
+      throw new Error('Must provide schema.');
+    }
+
+    // Provide as descriptive an error as possible when attempting to use a
+    // schema cross-realm.
+    if (Object.getPrototypeOf(schema).constructor.name === 'GraphQLSchema') {
+      throw new Error(`Cannot use a GraphQLSchema from another module or realm.
+
+Ensure that there is only one instance of "graphql" in the node_modules
+directory. If different versions of "graphql" are the dependencies of other
+relied on modules, use "resolutions" to ensure only one version is installed.
+
+https://yarnpkg.com/en/docs/selective-version-resolutions
+
+Duplicate "graphql" modules cannot be used at the same time since different
+versions may have different capabilities and behavior. The data from one
+version used in the function from another could produce confusing and
+spurious results.`);
+    } else {
+      throw new Error(
+        'Schema must be an instance of GraphQLSchema. ' +
+          `Received: ${String(schema)}`,
+      );
+    }
+  }
 
   // If this Schema has already been validated, return the previous results.
   if (schema.__validationErrors) {
