@@ -144,18 +144,32 @@ export function valueFromAST(
     return coercedObj;
   }
 
-  invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type',
-  );
-
-  // Scalar and Enum values implement methods which perform this translation.
-  if (type.isValidLiteral(valueNode, variables)) {
-    return type.parseLiteral(valueNode, variables);
+  if (type instanceof GraphQLEnumType) {
+    if (valueNode.kind !== Kind.ENUM) {
+      return; // Invalid: intentionally return no value.
+    }
+    const enumValue = type.getValue(valueNode.value);
+    if (!enumValue) {
+      return; // Invalid: intentionally return no value.
+    }
+    return enumValue.value;
   }
 
+  invariant(type instanceof GraphQLScalarType, 'Must be scalar type');
+
+  // Scalars fulfill parsing a literal value via parseLiteral().
   // Invalid values represent a failure to parse correctly, in which case
   // no value is returned.
+  let result;
+  try {
+    result = type.parseLiteral(valueNode, variables);
+  } catch (_error) {
+    return; // Invalid: intentionally return no value.
+  }
+  if (isInvalid(result)) {
+    return; // Invalid: intentionally return no value.
+  }
+  return result;
 }
 
 // Returns true if the provided valueNode is a variable which is not defined
