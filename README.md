@@ -122,7 +122,7 @@ npm install graphql@git://github.com/graphql/graphql-js.git#npm
 ### Contributing
 
 We actively welcome pull requests, learn how to
-[contribute](https://github.com/graphql/graphql-js/blob/master/CONTRIBUTING.md).
+[contribute](https://github.com/graphql/graphql-js/blob/master/.github/CONTRIBUTING.md).
 
 ### Changelog
 
