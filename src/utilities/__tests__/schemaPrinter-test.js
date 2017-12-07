@@ -26,6 +26,8 @@ import {
   GraphQLList,
   GraphQLNonNull,
 } from '../../';
+import { GraphQLDirective } from '../../type/directives';
+import { DirectiveLocation } from '../../language/directiveLocation';
 
 function printForTest(schema) {
   return printSchema(schema);
@@ -560,6 +562,33 @@ describe('Type System Printer', () => {
 
       type Root {
         rgb: RGB
+      }
+    `);
+  });
+
+  it('Prints custom directives', () => {
+    const Query = new GraphQLObjectType({
+      name: 'Query',
+      fields: {
+        field: { type: GraphQLString },
+      },
+    });
+
+    const CustomDirective = new GraphQLDirective({
+      name: 'customDirective',
+      locations: [ DirectiveLocation.FIELD ],
+    });
+
+    const Schema = new GraphQLSchema({
+      query: Query,
+      directives: [CustomDirective]
+    });
+    const output = printForTest(Schema);
+    expect(output).to.equal(dedent`
+      directive @customDirective on FIELD
+
+      type Query {
+        field: String
       }
     `);
   });
