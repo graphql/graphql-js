@@ -67,18 +67,17 @@ export function assertType(type: mixed): GraphQLType {
 /**
  * These types may be used as input types for arguments and directives.
  */
-type GraphQLInputType_<T> =
+export type GraphQLInputType =
   | GraphQLScalarType
   | GraphQLEnumType
   | GraphQLInputObjectType
-  | GraphQLList<T>
+  | GraphQLList<GraphQLInputType>
   | GraphQLNonNull<
       | GraphQLScalarType
       | GraphQLEnumType
       | GraphQLInputObjectType
-      | GraphQLList<T>,
+      | GraphQLList<GraphQLInputType>,
     >;
-export type GraphQLInputType = GraphQLInputType_<*>;
 
 export function isInputType(type: ?GraphQLType): boolean %checks {
   return (
@@ -200,15 +199,14 @@ export function assertAbstractType(type: ?GraphQLType): GraphQLAbstractType {
 /**
  * These types can all accept null as a value.
  */
-type GraphQLNullableType_<T> =
+export type GraphQLNullableType =
   | GraphQLScalarType
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
   | GraphQLEnumType
   | GraphQLInputObjectType
-  | GraphQLList<T>;
-export type GraphQLNullableType = GraphQLNullableType_<*>;
+  | GraphQLList<*>;
 
 export function getNullableType<T: GraphQLType>(
   type: ?T,
