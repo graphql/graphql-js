@@ -576,12 +576,12 @@ describe('Type System Printer', () => {
 
     const CustomDirective = new GraphQLDirective({
       name: 'customDirective',
-      locations: [ DirectiveLocation.FIELD ],
+      locations: [DirectiveLocation.FIELD],
     });
 
     const Schema = new GraphQLSchema({
       query: Query,
-      directives: [CustomDirective]
+      directives: [CustomDirective],
     });
     const output = printForTest(Schema);
     expect(output).to.equal(dedent`
