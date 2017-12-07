@@ -25,7 +25,7 @@ export type GraphQLErrorLocation = {|
 declare class GraphQLError extends Error {
   constructor(
     message: string,
-    nodes?: ?$ReadOnlyArray<ASTNode>,
+    nodes?: $ReadOnlyArray<ASTNode> | ASTNode | void,
     source?: ?Source,
     positions?: ?$ReadOnlyArray<number>,
     path?: ?$ReadOnlyArray<string | number>,
@@ -91,23 +91,28 @@ declare class GraphQLError extends Error {
 
 export function GraphQLError( // eslint-disable-line no-redeclare
   message: string,
-  nodes?: ?$ReadOnlyArray<ASTNode>,
+  nodes?: $ReadOnlyArray<ASTNode> | ASTNode | void,
   source?: ?Source,
   positions?: ?$ReadOnlyArray<number>,
   path?: ?$ReadOnlyArray<string | number>,
   originalError?: ?Error,
   extensions?: ?{ [key: string]: mixed },
 ) {
+  // Compute list of blame nodes.
+  const _nodes = Array.isArray(nodes)
+    ? nodes.length !== 0 ? nodes : undefined
+    : nodes ? [nodes] : undefined;
+
   // Compute locations in the source for the given nodes/positions.
   let _source = source;
-  if (!_source && nodes && nodes.length > 0) {
-    const node = nodes[0];
+  if (!_source && _nodes) {
+    const node = _nodes[0];
     _source = node && node.loc && node.loc.source;
   }
 
   let _positions = positions;
-  if (!_positions && nodes) {
-    _positions = nodes.reduce((list, node) => {
+  if (!_positions && _nodes) {
+    _positions = _nodes.reduce((list, node) => {
       if (node.loc) {
         list.push(node.loc.start);
       }
@@ -152,7 +157,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       enumerable: true,
     },
     nodes: {
-      value: nodes || undefined,
+      value: _nodes || undefined,
     },
     source: {
       value: _source || undefined,
