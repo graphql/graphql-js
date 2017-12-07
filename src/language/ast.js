@@ -481,10 +481,10 @@ export type TypeExtensionNode =
   | InputObjectTypeExtensionNode;
 
 export type ScalarTypeExtensionNode = {
-  kind: 'ScalarTypeExtension',
-  loc?: Location,
-  name: NameNode,
-  directives?: $ReadOnlyArray<DirectiveNode>,
+  +kind: 'ScalarTypeExtension',
+  +loc?: Location,
+  +name: NameNode,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
 };
 
 export type ObjectTypeExtensionNode = {
@@ -497,35 +497,35 @@ export type ObjectTypeExtensionNode = {
 };
 
 export type InterfaceTypeExtensionNode = {
-  kind: 'InterfaceTypeExtension',
-  loc?: Location,
-  name: NameNode,
-  directives?: $ReadOnlyArray<DirectiveNode>,
-  fields?: $ReadOnlyArray<FieldDefinitionNode>,
+  +kind: 'InterfaceTypeExtension',
+  +loc?: Location,
+  +name: NameNode,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +fields?: $ReadOnlyArray<FieldDefinitionNode>,
 };
 
 export type UnionTypeExtensionNode = {
-  kind: 'UnionTypeExtension',
-  loc?: Location,
-  name: NameNode,
-  directives?: $ReadOnlyArray<DirectiveNode>,
-  types?: $ReadOnlyArray<NamedTypeNode>,
+  +kind: 'UnionTypeExtension',
+  +loc?: Location,
+  +name: NameNode,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +types?: $ReadOnlyArray<NamedTypeNode>,
 };
 
 export type EnumTypeExtensionNode = {
-  kind: 'EnumTypeExtension',
-  loc?: Location,
-  name: NameNode,
-  directives?: $ReadOnlyArray<DirectiveNode>,
-  values?: $ReadOnlyArray<EnumValueDefinitionNode>,
+  +kind: 'EnumTypeExtension',
+  +loc?: Location,
+  +name: NameNode,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +values?: $ReadOnlyArray<EnumValueDefinitionNode>,
 };
 
 export type InputObjectTypeExtensionNode = {
-  kind: 'InputObjectTypeExtension',
-  loc?: Location,
-  name: NameNode,
-  directives?: $ReadOnlyArray<DirectiveNode>,
-  fields?: $ReadOnlyArray<InputValueDefinitionNode>,
+  +kind: 'InputObjectTypeExtension',
+  +loc?: Location,
+  +name: NameNode,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +fields?: $ReadOnlyArray<InputValueDefinitionNode>,
 };
 
 // Directive Definitions
