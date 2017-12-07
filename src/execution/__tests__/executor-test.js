@@ -536,6 +536,58 @@ describe('Execute: Handles basic execution tasks', () => {
     ]);
   });
 
+  it('nulls error subtree for promise rejection #1071', async () => {
+    const query = `
+      query {
+        foods {
+          name
+        }
+      }
+    `;
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          foods: {
+            type: new GraphQLList(
+              new GraphQLObjectType({
+                name: 'Food',
+                fields: {
+                  name: { type: GraphQLString },
+                },
+              }),
+            ),
+            resolve() {
+              return Promise.reject(new Error('Dangit'));
+            },
+          },
+        },
+      }),
+    });
+
+    const ast = parse(query);
+    const result = await execute(schema, ast);
+
+    expect(result).to.deep.equal({
+      data: {
+        foods: null,
+      },
+      errors: [
+        {
+          locations: [
+            {
+              column: 9,
+              line: 3,
+            },
+          ],
+          message: 'Dangit',
+          path: ['foods'],
+        },
+      ],
+    });
+  });
+
   it('Full response path is included for non-nullable fields', async () => {
     const A = new GraphQLObjectType({
       name: 'A',
