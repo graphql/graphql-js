@@ -61,6 +61,19 @@ describe('GraphQLError', () => {
     expect(e.locations).to.deep.equal([{ line: 2, column: 7 }]);
   });
 
+  it('converts single node to positions and locations', () => {
+    const source = new Source(`{
+      field
+    }`);
+    const ast = parse(source);
+    const fieldNode = ast.definitions[0].selectionSet.selections[0];
+    const e = new GraphQLError('msg', fieldNode); // Non-array value.
+    expect(e.nodes).to.deep.equal([fieldNode]);
+    expect(e.source).to.equal(source);
+    expect(e.positions).to.deep.equal([8]);
+    expect(e.locations).to.deep.equal([{ line: 2, column: 7 }]);
+  });
+
   it('converts node with loc.start === 0 to positions and locations', () => {
     const source = new Source(`{
       field
