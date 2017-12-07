@@ -332,11 +332,6 @@ export class GraphQLScalarType {
     return serializer(value);
   }
 
-  // Determines if an internal value is valid for this type.
-  isValidValue(value: mixed): boolean {
-    return !isInvalid(this.parseValue(value));
-  }
-
   // Parses an externally provided value to use as an input.
   parseValue(value: mixed): mixed {
     const parser = this._scalarConfig.parseValue;
@@ -344,11 +339,6 @@ export class GraphQLScalarType {
       return undefined;
     }
     return parser ? parser(value) : value;
-  }
-
-  // Determines if an internal value is valid for this type.
-  isValidLiteral(valueNode: ValueNode, variables: ?ObjMap<mixed>): boolean {
-    return !isInvalid(this.parseLiteral(valueNode, variables));
   }
 
   // Parses an externally provided literal value to use as an input.
@@ -919,12 +909,6 @@ export class GraphQLEnumType /* <T> */ {
     }
   }
 
-  isValidValue(value: mixed): boolean {
-    return (
-      typeof value === 'string' && this._getNameLookup()[value] !== undefined
-    );
-  }
-
   parseValue(value: mixed): ?any /* T */ {
     if (typeof value === 'string') {
       const enumValue = this._getNameLookup()[value];
@@ -932,14 +916,6 @@ export class GraphQLEnumType /* <T> */ {
         return enumValue.value;
       }
     }
-  }
-
-  isValidLiteral(valueNode: ValueNode, _variables: ?ObjMap<mixed>): boolean {
-    // Note: variables will be resolved to a value before calling this function.
-    return (
-      valueNode.kind === Kind.ENUM &&
-      this._getNameLookup()[valueNode.value] !== undefined
-    );
   }
 
   parseLiteral(valueNode: ValueNode, _variables: ?ObjMap<mixed>): ?any /* T */ {

@@ -29,6 +29,7 @@ import {
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
 } from '../../type/directives';
+import { GraphQLScalarType } from '../../type/definition';
 
 const Being = new GraphQLInterfaceType({
   name: 'Being',
@@ -269,6 +270,19 @@ const ComplicatedArgs = new GraphQLObjectType({
   }),
 });
 
+const InvalidScalar = new GraphQLScalarType({
+  name: 'Invalid',
+  serialize(value) {
+    return value;
+  },
+  parseLiteral(node) {
+    throw new Error('Invalid scalar is always invalid: ' + node.value);
+  },
+  parseValue(node) {
+    throw new Error('Invalid scalar is always invalid: ' + node);
+  },
+});
+
 const QueryRoot = new GraphQLObjectType({
   name: 'QueryRoot',
   fields: () => ({
@@ -284,6 +298,12 @@ const QueryRoot = new GraphQLObjectType({
     dogOrHuman: { type: DogOrHuman },
     humanOrAlien: { type: HumanOrAlien },
     complicatedArgs: { type: ComplicatedArgs },
+    invalidArg: {
+      args: {
+        arg: { type: InvalidScalar },
+      },
+      type: GraphQLString,
+    },
   }),
 });
 

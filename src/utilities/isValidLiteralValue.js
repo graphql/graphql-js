@@ -23,6 +23,7 @@ import {
 } from '../type/definition';
 import type { GraphQLInputType } from '../type/definition';
 import invariant from '../jsutils/invariant';
+import isInvalid from '../jsutils/isInvalid';
 import keyMap from '../jsutils/keyMap';
 
 /**
@@ -100,14 +101,26 @@ export function isValidLiteralValue(
     return errors;
   }
 
-  invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type',
-  );
+  if (type instanceof GraphQLEnumType) {
+    if (valueNode.kind !== Kind.ENUM || !type.getValue(valueNode.value)) {
+      return [`Expected type "${type.name}", found ${print(valueNode)}.`];
+    }
 
-  // Scalars determine if a literal values is valid.
-  if (!type.isValidLiteral(valueNode, null)) {
-    return [`Expected type "${type.name}", found ${print(valueNode)}.`];
+    return [];
+  }
+
+  invariant(type instanceof GraphQLScalarType, 'Must be a scalar type');
+
+  // Scalars determine if a literal value is valid via parseLiteral().
+  try {
+    const parseResult = type.parseLiteral(valueNode, null);
+    if (isInvalid(parseResult)) {
+      return [`Expected type "${type.name}", found ${print(valueNode)}.`];
+    }
+  } catch (error) {
+    const printed = print(valueNode);
+    const message = error.message;
+    return [`Expected type "${type.name}", found ${printed}; ${message}`];
   }
 
   return [];

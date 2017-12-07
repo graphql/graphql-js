@@ -36,6 +36,26 @@ describe('Validate: Supports full validation', () => {
     );
   });
 
+  it('detects bad scalar parse', () => {
+    const doc = `
+      query {
+        invalidArg(arg: "bad value")
+      }
+    `;
+
+    const errors = validate(testSchema, parse(doc));
+    expect(errors).to.deep.equal([
+      {
+        locations: [{ line: 3, column: 25 }],
+        message:
+          'Argument "arg" has invalid value "bad value".\n' +
+          'Expected type "Invalid", found "bad value"; ' +
+          'Invalid scalar is always invalid: bad value',
+        path: undefined,
+      },
+    ]);
+  });
+
   // NOTE: experimental
   it('validates using a custom TypeInfo', () => {
     // This TypeInfo will never return a valid field.

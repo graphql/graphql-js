@@ -10,6 +10,7 @@
 import { forEach, isCollection } from 'iterall';
 
 import invariant from '../jsutils/invariant';
+import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import {
   GraphQLScalarType,
@@ -89,23 +90,28 @@ export function isValidJSValue(
     return errors;
   }
 
-  invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type',
-  );
+  // Enum types only accept certain values
+  if (type instanceof GraphQLEnumType) {
+    if (typeof value !== 'string' || !type.getValue(value)) {
+      const printed = JSON.stringify(value);
+      return [`Expected type "${type.name}", found ${printed}.`];
+    }
 
-  // Scalar/Enum input checks to ensure the type can parse the value to
-  // a non-null value.
+    return [];
+  }
+
+  invariant(type instanceof GraphQLScalarType, 'Must be scalar type');
+
+  // Scalars determine if a value is valid via parseValue().
   try {
     const parseResult = type.parseValue(value);
-    if (isNullish(parseResult) && !type.isValidValue(value)) {
+    if (isInvalid(parseResult)) {
       return [`Expected type "${type.name}", found ${JSON.stringify(value)}.`];
     }
   } catch (error) {
-    return [
-      `Expected type "${type.name}", found ${JSON.stringify(value)}: ` +
-        error.message,
-    ];
+    const printed = JSON.stringify(value);
+    const message = error.message;
+    return [`Expected type "${type.name}", found ${printed}; ${message}`];
   }
 
   return [];
