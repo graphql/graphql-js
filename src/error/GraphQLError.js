@@ -65,7 +65,10 @@ declare class GraphQLError extends Error {
   +nodes: $ReadOnlyArray<ASTNode> | void;
 
   /**
-   * The source GraphQL document corresponding to this error.
+   * The source GraphQL document for the first location of this error.
+   *
+   * Note that if this Error represents more than one node, the source may not
+   * represent nodes after the first node.
    */
   +source: Source | void;
 
@@ -121,9 +124,15 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   }
 
   let _locations;
-  const _source2 = _source; // seems here Flow need a const to resolve type.
-  if (_source2 && _positions) {
-    _locations = _positions.map(pos => getLocation(_source2, pos));
+  if (positions && source) {
+    _locations = positions.map(pos => getLocation(source, pos));
+  } else if (_nodes) {
+    _locations = _nodes.reduce((list, node) => {
+      if (node.loc) {
+        list.push(getLocation(node.loc.source, node.loc.start));
+      }
+      return list;
+    }, []);
   }
 
   Object.defineProperties(this, {
