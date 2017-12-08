@@ -7,6 +7,7 @@
  * @flow
  */
 
+import { getLocation } from '../language/location';
 import type { SourceLocation } from '../language/location';
 import type { Source } from '../language/source';
 import type { GraphQLError } from './GraphQLError';
@@ -16,15 +17,27 @@ import type { GraphQLError } from './GraphQLError';
  * about the error's position in the source.
  */
 export function printError(error: GraphQLError): string {
-  const source = error.source;
-  const locations = error.locations || [];
-  const printedLocations = locations.map(
-    location =>
-      source
-        ? highlightSourceAtLocation(source, location)
-        : ` (${location.line}:${location.column})`,
-  );
-  return error.message + printedLocations.join('');
+  const printedLocations = [];
+  if (error.nodes) {
+    error.nodes.forEach(node => {
+      if (node.loc) {
+        printedLocations.push(
+          highlightSourceAtLocation(
+            node.loc.source,
+            getLocation(node.loc.source, node.loc.start),
+          ),
+        );
+      }
+    });
+  } else if (error.source && error.locations) {
+    const source = error.source;
+    error.locations.forEach(location => {
+      printedLocations.push(highlightSourceAtLocation(source, location));
+    });
+  }
+  return printedLocations.length === 0
+    ? error.message
+    : [error.message, ...printedLocations].join('\n\n') + '\n';
 }
 
 /**
@@ -46,21 +59,14 @@ function highlightSourceAtLocation(
   const padLen = nextLineNum.length;
   const lines = source.body.split(/\r\n|[\n\r]/g);
   lines[0] = whitespace(source.locationOffset.column - 1) + lines[0];
-  return (
-    `\n\n${source.name} (${contextLine}:${contextColumn})\n` +
-    (line >= 2
-      ? lpad(padLen, prevLineNum) + ': ' + lines[line - 2] + '\n'
-      : '') +
-    lpad(padLen, lineNum) +
-    ': ' +
-    lines[line - 1] +
-    '\n' +
-    whitespace(2 + padLen + contextColumn - 1) +
-    '^\n' +
-    (line < lines.length
-      ? lpad(padLen, nextLineNum) + ': ' + lines[line] + '\n'
-      : '')
-  );
+  const outputLines = [
+    `${source.name} (${contextLine}:${contextColumn})`,
+    line >= 2 && lpad(padLen, prevLineNum) + ': ' + lines[line - 2],
+    lpad(padLen, lineNum) + ': ' + lines[line - 1],
+    whitespace(2 + padLen + contextColumn - 1) + '^',
+    line < lines.length && lpad(padLen, nextLineNum) + ': ' + lines[line],
+  ];
+  return outputLines.filter(Boolean).join('\n');
 }
 
 function getColumnOffset(source: Source, location: SourceLocation): number {
