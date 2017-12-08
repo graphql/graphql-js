@@ -1236,6 +1236,34 @@ function collectAndExecuteSubfields(
   result: mixed,
 ): mixed {
   // Collect sub-fields to execute to complete this value.
+  const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
+  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+}
+
+/**
+ * A memoized collection of relevant subfields in the context of the return
+ * type. Memoizing ensures the subfields are not repeatedly calculated, which
+ * saves overhead when resolving lists of values.
+ */
+const subfieldCache: WeakMap<
+  $ReadOnlyArray<FieldNode>,
+  WeakMap<GraphQLObjectType, ObjMap<Array<FieldNode>>>,
+> = new WeakMap();
+function collectSubfields(
+  exeContext: ExecutionContext,
+  returnType: GraphQLObjectType,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
+): ObjMap<Array<FieldNode>> {
+  let cacheByReturnType = subfieldCache.get(fieldNodes);
+  if (cacheByReturnType) {
+    const cachedSubFieldNodes = cacheByReturnType.get(returnType);
+    if (cachedSubFieldNodes) {
+      return cachedSubFieldNodes;
+    }
+  } else {
+    cacheByReturnType = new WeakMap();
+    subfieldCache.set(fieldNodes, cacheByReturnType);
+  }
   let subFieldNodes = Object.create(null);
   const visitedFragmentNames = Object.create(null);
   for (let i = 0; i < fieldNodes.length; i++) {
@@ -1250,8 +1278,8 @@ function collectAndExecuteSubfields(
       );
     }
   }
-
-  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+  cacheByReturnType.set(returnType, subFieldNodes);
+  return subFieldNodes;
 }
 
 /**
