@@ -145,6 +145,7 @@ export type {
 // Parse and operate on GraphQL language source files.
 export {
   Source,
+  SourceLocation,
   getLocation,
   // Parse
   parse,
@@ -265,10 +266,10 @@ export {
   VariablesInAllowedPositionRule,
 } from './validation';
 
-// Create and format GraphQL errors.
-export { GraphQLError, formatError } from './error';
+// Create, format, and print GraphQL errors.
+export { GraphQLError, formatError, printError } from './error';
 
-export type { GraphQLFormattedError, GraphQLErrorLocation } from './error';
+export type { GraphQLFormattedError } from './error';
 
 // Utilities for operating on GraphQL type schema and parsed sources.
 export {

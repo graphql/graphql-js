@@ -8,6 +8,7 @@
  */
 
 export { getLocation } from './location';
+export type { SourceLocation } from './location';
 import * as Kind from './kinds';
 export { Kind };
 export { createLexer, TokenKind } from './lexer';

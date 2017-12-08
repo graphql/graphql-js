@@ -14,6 +14,16 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import dedent from '../../jsutils/dedent';
 
+function expectSyntaxError(text, message, location) {
+  try {
+    parse(text);
+    expect.fail('Expected to throw syntax error');
+  } catch (error) {
+    expect(error.message).to.contain(message);
+    expect(error.locations).to.deep.equal([location]);
+  }
+}
+
 describe('Parser', () => {
   it('asserts that a source to parse was provided', () => {
     expect(() => parse()).to.throw('Must provide Source. Received: undefined');
@@ -33,9 +43,14 @@ describe('Parser', () => {
       caughtError = error;
     }
 
-    expect(caughtError.message).to.equal(dedent`
-      Syntax Error GraphQL request (1:2) Expected Name, found <EOF>
+    expect(caughtError.message).to.equal(
+      'Syntax Error: Expected Name, found <EOF>',
+    );
 
+    expect(String(caughtError)).to.equal(dedent`
+      Syntax Error: Expected Name, found <EOF>
+
+      GraphQL request (1:2)
       1: {
           ^
       `);
@@ -44,32 +59,42 @@ describe('Parser', () => {
 
     expect(caughtError.locations).to.deep.equal([{ line: 1, column: 2 }]);
 
-    expect(() =>
-      parse(dedent`
-        { ...MissingOn }
-        fragment MissingOn Type
-      `),
-    ).to.throw(
-      'Syntax Error GraphQL request (2:20) Expected "on", found Name "Type"',
+    expectSyntaxError(
+      `
+      { ...MissingOn }
+      fragment MissingOn Type`,
+      'Expected "on", found Name "Type"',
+      { line: 3, column: 26 },
     );
 
-    expect(() => parse('{ field: {} }')).to.throw(
-      'Syntax Error GraphQL request (1:10) Expected Name, found {',
+    expectSyntaxError('{ field: {} }', 'Expected Name, found {', {
+      line: 1,
+      column: 10,
+    });
+
+    expectSyntaxError(
+      'notanoperation Foo { field }',
+      'Unexpected Name "notanoperation"',
+      { line: 1, column: 1 },
     );
 
-    expect(() => parse('notanoperation Foo { field }')).to.throw(
-      'Syntax Error GraphQL request (1:1) Unexpected Name "notanoperation"',
-    );
-
-    expect(() => parse('...')).to.throw(
-      'Syntax Error GraphQL request (1:1) Unexpected ...',
-    );
+    expectSyntaxError('...', 'Unexpected ...', { line: 1, column: 1 });
   });
 
   it('parse provides useful error when using source', () => {
-    expect(() => parse(new Source('query', 'MyQuery.graphql'))).to.throw(
-      'Syntax Error MyQuery.graphql (1:6) Expected {, found <EOF>',
-    );
+    let caughtError;
+    try {
+      parse(new Source('query', 'MyQuery.graphql'));
+    } catch (error) {
+      caughtError = error;
+    }
+    expect(String(caughtError)).to.equal(dedent`
+      Syntax Error: Expected {, found <EOF>
+
+      MyQuery.graphql (1:6)
+      1: query
+              ^
+    `);
   });
 
   it('parses variable inline values', () => {
@@ -79,21 +104,25 @@ describe('Parser', () => {
   });
 
   it('parses constant default values', () => {
-    expect(() =>
-      parse('query Foo($x: Complex = { a: { b: [ $var ] } }) { field }'),
-    ).to.throw('Syntax Error GraphQL request (1:37) Unexpected $');
+    expectSyntaxError(
+      'query Foo($x: Complex = { a: { b: [ $var ] } }) { field }',
+      'Unexpected $',
+      { line: 1, column: 37 },
+    );
   });
 
   it('does not accept fragments named "on"', () => {
-    expect(() => parse('fragment on on on { on }')).to.throw(
-      'Syntax Error GraphQL request (1:10) Unexpected Name "on"',
-    );
+    expectSyntaxError('fragment on on on { on }', 'Unexpected Name "on"', {
+      line: 1,
+      column: 10,
+    });
   });
 
   it('does not accept fragments spread of "on"', () => {
-    expect(() => parse('{ ...on }')).to.throw(
-      'Syntax Error GraphQL request (1:9) Expected Name, found }',
-    );
+    expectSyntaxError('{ ...on }', 'Expected Name, found }', {
+      line: 1,
+      column: 9,
+    });
   });
 
   it('parses multi-byte characters', async () => {

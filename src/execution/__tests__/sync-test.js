@@ -84,10 +84,7 @@ describe('Execute: synchronously when possible', () => {
       expect(result).to.containSubset({
         errors: [
           {
-            message:
-              'Syntax Error GraphQL request (1:29) Expected Name, found {\n\n' +
-              '1: fragment Example on Query { { { syncField }\n' +
-              '                               ^\n',
+            message: 'Syntax Error: Expected Name, found {',
             locations: [{ line: 1, column: 29 }],
           },
         ],

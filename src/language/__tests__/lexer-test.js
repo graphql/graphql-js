@@ -15,13 +15,24 @@ function lexOne(str) {
   return lexer.advance();
 }
 
+function expectSyntaxError(text, message, location) {
+  try {
+    lexOne(text);
+    expect.fail('Expected to throw syntax error');
+  } catch (error) {
+    expect(error.message).to.contain(message);
+    expect(error.locations).to.deep.equal([location]);
+  }
+}
+
 /* eslint-disable max-len */
 
 describe('Lexer', () => {
   it('disallows uncommon control characters', () => {
-    expect(() => lexOne('\u0007')).to.throw(
-      'Syntax Error GraphQL request (1:1) ' +
-        'Cannot contain the invalid character "\\u0007"',
+    expectSyntaxError(
+      '\u0007',
+      'Cannot contain the invalid character "\\u0007"',
+      { line: 1, column: 1 },
     );
   });
 
@@ -94,17 +105,21 @@ describe('Lexer', () => {
   });
 
   it('errors respect whitespace', () => {
-    expect(() =>
+    let caughtError;
+    try {
       lexOne(`
 
     ?
 
 
-`),
-    ).to.throw(
-      'Syntax Error GraphQL request (3:5) ' +
-        'Cannot parse the unexpected character "?".\n' +
+`);
+    } catch (error) {
+      caughtError = error;
+    }
+    expect(String(caughtError)).to.equal(
+      'Syntax Error: Cannot parse the unexpected character "?".\n' +
         '\n' +
+        'GraphQL request (3:5)\n' +
         '2: \n' +
         '3:     ?\n' +
         '       ^\n' +
@@ -113,14 +128,18 @@ describe('Lexer', () => {
   });
 
   it('updates line numbers in error for file context', () => {
-    expect(() => {
+    let caughtError;
+    try {
       const str = '' + '\n' + '\n' + '     ?\n' + '\n';
       const source = new Source(str, 'foo.js', { line: 11, column: 12 });
-      return createLexer(source).advance();
-    }).to.throw(
-      'Syntax Error foo.js (13:6) ' +
-        'Cannot parse the unexpected character "?".\n' +
+      createLexer(source).advance();
+    } catch (error) {
+      caughtError = error;
+    }
+    expect(String(caughtError)).to.equal(
+      'Syntax Error: Cannot parse the unexpected character "?".\n' +
         '\n' +
+        'foo.js (13:6)\n' +
         '12: \n' +
         '13:      ?\n' +
         '         ^\n' +
@@ -129,13 +148,17 @@ describe('Lexer', () => {
   });
 
   it('updates column numbers in error for file context', () => {
-    expect(() => {
+    let caughtError;
+    try {
       const source = new Source('?', 'foo.js', { line: 1, column: 5 });
-      return createLexer(source).advance();
-    }).to.throw(
-      'Syntax Error foo.js (1:5) ' +
-        'Cannot parse the unexpected character "?".\n' +
+      createLexer(source).advance();
+    } catch (error) {
+      caughtError = error;
+    }
+    expect(String(caughtError)).to.equal(
+      'Syntax Error: Cannot parse the unexpected character "?".\n' +
         '\n' +
+        'foo.js (1:5)\n' +
         '1:     ?\n' +
         '       ^\n',
     );
@@ -186,61 +209,82 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful string errors', () => {
-    expect(() => lexOne('"')).to.throw(
-      'Syntax Error GraphQL request (1:2) Unterminated string.',
-    );
+    expectSyntaxError('"', 'Unterminated string.', { line: 1, column: 2 });
 
-    expect(() => lexOne('"no end quote')).to.throw(
-      'Syntax Error GraphQL request (1:14) Unterminated string.',
-    );
+    expectSyntaxError('"no end quote', 'Unterminated string.', {
+      line: 1,
+      column: 14,
+    });
 
-    expect(() => lexOne("'single quotes'")).to.throw(
-      "Syntax Error GraphQL request (1:1) Unexpected single quote character ('), " +
+    expectSyntaxError(
+      "'single quotes'",
+      "Unexpected single quote character ('), " +
         'did you mean to use a double quote (")?',
+      { line: 1, column: 1 },
     );
 
-    expect(() => lexOne('"contains unescaped \u0007 control char"')).to.throw(
-      'Syntax Error GraphQL request (1:21) Invalid character within String: "\\u0007".',
+    expectSyntaxError(
+      '"contains unescaped \u0007 control char"',
+      'Invalid character within String: "\\u0007".',
+      { line: 1, column: 21 },
     );
 
-    expect(() => lexOne('"null-byte is not \u0000 end of file"')).to.throw(
-      'Syntax Error GraphQL request (1:19) Invalid character within String: "\\u0000".',
+    expectSyntaxError(
+      '"null-byte is not \u0000 end of file"',
+      'Invalid character within String: "\\u0000".',
+      { line: 1, column: 19 },
     );
 
-    expect(() => lexOne('"multi\nline"')).to.throw(
-      'Syntax Error GraphQL request (1:7) Unterminated string',
+    expectSyntaxError('"multi\nline"', 'Unterminated string', {
+      line: 1,
+      column: 7,
+    });
+
+    expectSyntaxError('"multi\rline"', 'Unterminated string', {
+      line: 1,
+      column: 7,
+    });
+
+    expectSyntaxError(
+      '"bad \\z esc"',
+      'Invalid character escape sequence: \\z.',
+      { line: 1, column: 7 },
     );
 
-    expect(() => lexOne('"multi\rline"')).to.throw(
-      'Syntax Error GraphQL request (1:7) Unterminated string',
+    expectSyntaxError(
+      '"bad \\x esc"',
+      'Invalid character escape sequence: \\x.',
+      { line: 1, column: 7 },
     );
 
-    expect(() => lexOne('"bad \\z esc"')).to.throw(
-      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\z.',
+    expectSyntaxError(
+      '"bad \\u1 esc"',
+      'Invalid character escape sequence: \\u1 es.',
+      { line: 1, column: 7 },
     );
 
-    expect(() => lexOne('"bad \\x esc"')).to.throw(
-      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\x.',
+    expectSyntaxError(
+      '"bad \\u0XX1 esc"',
+      'Invalid character escape sequence: \\u0XX1.',
+      { line: 1, column: 7 },
     );
 
-    expect(() => lexOne('"bad \\u1 esc"')).to.throw(
-      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\u1 es.',
+    expectSyntaxError(
+      '"bad \\uXXXX esc"',
+      'Invalid character escape sequence: \\uXXXX.',
+      { line: 1, column: 7 },
     );
 
-    expect(() => lexOne('"bad \\u0XX1 esc"')).to.throw(
-      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\u0XX1.',
+    expectSyntaxError(
+      '"bad \\uFXXX esc"',
+      'Invalid character escape sequence: \\uFXXX.',
+      { line: 1, column: 7 },
     );
 
-    expect(() => lexOne('"bad \\uXXXX esc"')).to.throw(
-      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\uXXXX.',
-    );
-
-    expect(() => lexOne('"bad \\uFXXX esc"')).to.throw(
-      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\uFXXX.',
-    );
-
-    expect(() => lexOne('"bad \\uXXXF esc"')).to.throw(
-      'Syntax Error GraphQL request (1:7) Invalid character escape sequence: \\uXXXF.',
+    expectSyntaxError(
+      '"bad \\uXXXF esc"',
+      'Invalid character escape sequence: \\uXXXF.',
+      { line: 1, column: 7 },
     );
   });
 
@@ -318,22 +362,23 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful block string errors', () => {
-    expect(() => lexOne('"""')).to.throw(
-      'Syntax Error GraphQL request (1:4) Unterminated string.',
+    expectSyntaxError('"""', 'Unterminated string.', { line: 1, column: 4 });
+
+    expectSyntaxError('"""no end quote', 'Unterminated string.', {
+      line: 1,
+      column: 16,
+    });
+
+    expectSyntaxError(
+      '"""contains unescaped \u0007 control char"""',
+      'Invalid character within String: "\\u0007".',
+      { line: 1, column: 23 },
     );
 
-    expect(() => lexOne('"""no end quote')).to.throw(
-      'Syntax Error GraphQL request (1:16) Unterminated string.',
-    );
-
-    expect(() =>
-      lexOne('"""contains unescaped \u0007 control char"""'),
-    ).to.throw(
-      'Syntax Error GraphQL request (1:23) Invalid character within String: "\\u0007".',
-    );
-
-    expect(() => lexOne('"""null-byte is not \u0000 end of file"""')).to.throw(
-      'Syntax Error GraphQL request (1:21) Invalid character within String: "\\u0000".',
+    expectSyntaxError(
+      '"""null-byte is not \u0000 end of file"""',
+      'Invalid character within String: "\\u0000".',
+      { line: 1, column: 21 },
     );
   });
 
@@ -452,48 +497,51 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful number errors', () => {
-    expect(() => lexOne('00')).to.throw(
-      'Syntax Error GraphQL request (1:2) Invalid number, ' +
-        'unexpected digit after 0: "0".',
+    expectSyntaxError('00', 'Invalid number, unexpected digit after 0: "0".', {
+      line: 1,
+      column: 2,
+    });
+
+    expectSyntaxError('+1', 'Cannot parse the unexpected character "+".', {
+      line: 1,
+      column: 1,
+    });
+
+    expectSyntaxError('1.', 'Invalid number, expected digit but got: <EOF>.', {
+      line: 1,
+      column: 3,
+    });
+
+    expectSyntaxError('1.e1', 'Invalid number, expected digit but got: "e".', {
+      line: 1,
+      column: 3,
+    });
+
+    expectSyntaxError('.123', 'Cannot parse the unexpected character ".".', {
+      line: 1,
+      column: 1,
+    });
+
+    expectSyntaxError('1.A', 'Invalid number, expected digit but got: "A".', {
+      line: 1,
+      column: 3,
+    });
+
+    expectSyntaxError('-A', 'Invalid number, expected digit but got: "A".', {
+      line: 1,
+      column: 2,
+    });
+
+    expectSyntaxError(
+      '1.0e',
+      'Invalid number, expected digit but got: <EOF>.',
+      { line: 1, column: 5 },
     );
 
-    expect(() => lexOne('+1')).to.throw(
-      'Syntax Error GraphQL request (1:1) Cannot parse the unexpected character "+".',
-    );
-
-    expect(() => lexOne('1.')).to.throw(
-      'Syntax Error GraphQL request (1:3) Invalid number, ' +
-        'expected digit but got: <EOF>.',
-    );
-
-    expect(() => lexOne('1.e1')).to.throw(
-      'Syntax Error GraphQL request (1:3) Invalid number, ' +
-        'expected digit but got: "e".',
-    );
-
-    expect(() => lexOne('.123')).to.throw(
-      'Syntax Error GraphQL request (1:1) Cannot parse the unexpected character ".".',
-    );
-
-    expect(() => lexOne('1.A')).to.throw(
-      'Syntax Error GraphQL request (1:3) Invalid number, ' +
-        'expected digit but got: "A".',
-    );
-
-    expect(() => lexOne('-A')).to.throw(
-      'Syntax Error GraphQL request (1:2) Invalid number, ' +
-        'expected digit but got: "A".',
-    );
-
-    expect(() => lexOne('1.0e')).to.throw(
-      'Syntax Error GraphQL request (1:5) Invalid number, ' +
-        'expected digit but got: <EOF>.',
-    );
-
-    expect(() => lexOne('1.0eA')).to.throw(
-      'Syntax Error GraphQL request (1:5) Invalid number, ' +
-        'expected digit but got: "A".',
-    );
+    expectSyntaxError('1.0eA', 'Invalid number, expected digit but got: "A".', {
+      line: 1,
+      column: 5,
+    });
   });
 
   it('lexes punctuation', () => {
@@ -590,22 +638,26 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful unknown character error', () => {
-    expect(() => lexOne('..')).to.throw(
-      'Syntax Error GraphQL request (1:1) Cannot parse the unexpected character ".".',
+    expectSyntaxError('..', 'Cannot parse the unexpected character ".".', {
+      line: 1,
+      column: 1,
+    });
+
+    expectSyntaxError('?', 'Cannot parse the unexpected character "?".', {
+      line: 1,
+      column: 1,
+    });
+
+    expectSyntaxError(
+      '\u203B',
+      'Cannot parse the unexpected character "\\u203B".',
+      { line: 1, column: 1 },
     );
 
-    expect(() => lexOne('?')).to.throw(
-      'Syntax Error GraphQL request (1:1) Cannot parse the unexpected character "?".',
-    );
-
-    expect(() => lexOne('\u203B')).to.throw(
-      'Syntax Error GraphQL request (1:1) ' +
-        'Cannot parse the unexpected character "\\u203B".',
-    );
-
-    expect(() => lexOne('\u200b')).to.throw(
-      'Syntax Error GraphQL request (1:1) ' +
-        'Cannot parse the unexpected character "\\u200B".',
+    expectSyntaxError(
+      '\u200b',
+      'Cannot parse the unexpected character "\\u200B".',
+      { line: 1, column: 1 },
     );
   });
 
@@ -619,9 +671,16 @@ describe('Lexer', () => {
       end: 1,
       value: 'a',
     });
-    expect(() => lexer.advance()).to.throw(
-      'Syntax Error GraphQL request (1:3) Invalid number, expected digit but got: "b".',
+    let caughtError;
+    try {
+      lexer.advance();
+    } catch (error) {
+      caughtError = error;
+    }
+    expect(caughtError.message).to.equal(
+      'Syntax Error: Invalid number, expected digit but got: "b".',
     );
+    expect(caughtError.locations).to.deep.equal([{ line: 1, column: 3 }]);
   });
 
   it('produces double linked list of tokens, including comments', () => {

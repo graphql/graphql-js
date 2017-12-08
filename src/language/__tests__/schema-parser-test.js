@@ -13,6 +13,16 @@ function printJson(obj) {
   return JSON.stringify(obj, null, 2);
 }
 
+function expectSyntaxError(text, message, location) {
+  try {
+    parse(text);
+    expect.fail('Expected to throw syntax error');
+  } catch (error) {
+    expect(error.message).to.contain(message);
+    expect(error.locations).to.deep.equal([location]);
+  }
+}
+
 function typeNode(name, loc) {
   return {
     kind: 'NamedType',
@@ -194,30 +204,31 @@ extend type Hello {
   });
 
   it('Extension without anything throws', () => {
-    expect(() =>
-      parse(`
-      extend type Hello
-    `),
-    ).to.throw('Syntax Error GraphQL request (3:5) Unexpected <EOF>');
+    expectSyntaxError('extend type Hello', 'Unexpected <EOF>', {
+      line: 1,
+      column: 18,
+    });
   });
 
   it('Extension do not include descriptions', () => {
-    expect(() =>
-      parse(`
+    expectSyntaxError(
+      `
       "Description"
       extend type Hello {
         world: String
-      }
-    `),
-    ).to.throw('Syntax Error GraphQL request (3:7)');
+      }`,
+      'Unexpected Name "extend"',
+      { line: 3, column: 7 },
+    );
 
-    expect(() =>
-      parse(`
+    expectSyntaxError(
+      `
       extend "Description" type Hello {
         world: String
-      }
-    `),
-    ).to.throw('Syntax Error GraphQL request (2:14)');
+      }`,
+      'Unexpected String "Description"',
+      { line: 2, column: 14 },
+    );
   });
 
   it('Simple non-null type', () => {
@@ -603,23 +614,32 @@ type Hello {
   });
 
   it('Union fails with no types', () => {
-    const body = 'union Hello = |';
-    expect(() => parse(body)).to.throw();
+    expectSyntaxError('union Hello = |', 'Expected Name, found <EOF>', {
+      line: 1,
+      column: 16,
+    });
   });
 
   it('Union fails with leading douple pipe', () => {
-    const body = 'union Hello = || Wo | Rld';
-    expect(() => parse(body)).to.throw();
+    expectSyntaxError('union Hello = || Wo | Rld', 'Expected Name, found |', {
+      line: 1,
+      column: 16,
+    });
   });
 
   it('Union fails with double pipe', () => {
-    const body = 'union Hello = Wo || Rld';
-    expect(() => parse(body)).to.throw();
+    expectSyntaxError('union Hello = Wo || Rld', 'Expected Name, found |', {
+      line: 1,
+      column: 19,
+    });
   });
 
   it('Union fails with trailing pipe', () => {
-    const body = 'union Hello = | Wo | Rld |';
-    expect(() => parse(body)).to.throw();
+    expectSyntaxError(
+      'union Hello = | Wo | Rld |',
+      'Expected Name, found <EOF>',
+      { line: 1, column: 27 },
+    );
   });
 
   it('Scalar', () => {
@@ -670,20 +690,22 @@ input Hello {
   });
 
   it('Simple input object with args should fail', () => {
-    const body = `
-input Hello {
-  world(foo: Int): String
-}`;
-    expect(() => parse(body)).to.throw('Error');
+    expectSyntaxError(
+      `
+      input Hello {
+        world(foo: Int): String
+      }`,
+      'Expected :, found (',
+      { line: 3, column: 14 },
+    );
   });
 
   it('Directive with incorrect locations', () => {
-    expect(() =>
-      parse(`
-      directive @foo on FIELD | INCORRECT_LOCATION
-    `),
-    ).to.throw(
-      'Syntax Error GraphQL request (2:33) Unexpected Name "INCORRECT_LOCATION"',
+    expectSyntaxError(
+      `
+      directive @foo on FIELD | INCORRECT_LOCATION`,
+      'Unexpected Name "INCORRECT_LOCATION"',
+      { line: 2, column: 33 },
     );
   });
 });
