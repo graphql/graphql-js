@@ -274,7 +274,7 @@ describe('extendSchema', () => {
     const testDirective = extendedTwiceSchema.getDirective('test');
 
     expect(query.extensionASTNodes).to.have.lengthOf(2);
-    expect(testType.extensionASTNodes).to.have.lengthOf(0);
+    expect(testType.extensionASTNodes).to.equal(undefined);
 
     const restoredExtensionAST = parse(
       print(query.extensionASTNodes[0]) +

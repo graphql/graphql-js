@@ -214,19 +214,18 @@ export function buildASTSchema(
     directives.push(GraphQLDeprecatedDirective);
   }
 
-  if (!operationTypes.query) {
-    throw new Error(
-      'Must provide schema definition with query type or a type named Query.',
-    );
-  }
-
+  // Note: While this could make early assertions to get the correctly
+  // typed values below, that would throw immediately while type system
+  // validation with validateSchema() will produce more actionable results.
   return new GraphQLSchema({
-    query: definitionBuilder.buildObjectType(operationTypes.query),
+    query: operationTypes.query
+      ? (definitionBuilder.buildType(operationTypes.query): any)
+      : null,
     mutation: operationTypes.mutation
-      ? definitionBuilder.buildObjectType(operationTypes.mutation)
+      ? (definitionBuilder.buildType(operationTypes.mutation): any)
       : null,
     subscription: operationTypes.subscription
-      ? definitionBuilder.buildObjectType(operationTypes.subscription)
+      ? (definitionBuilder.buildType(operationTypes.subscription): any)
       : null,
     types,
     directives,
@@ -393,7 +392,10 @@ export class ASTDefinitionBuilder {
   _makeImplementedInterfaces(def: ObjectTypeDefinitionNode) {
     return (
       def.interfaces &&
-      def.interfaces.map(iface => this.buildInterfaceType(iface))
+      // Note: While this could make early assertions to get the correctly
+      // typed values, that would throw immediately while type system
+      // validation with validateSchema() will produce more actionable results.
+      def.interfaces.map(iface => (this.buildType(iface): any))
     );
   }
 

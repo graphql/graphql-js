@@ -27,7 +27,6 @@ import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import type { ObjMap } from '../jsutils/ObjMap';
-import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 /**
  * Schema Definition
@@ -57,7 +56,7 @@ import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
  */
 export class GraphQLSchema {
   astNode: ?SchemaDefinitionNode;
-  _queryType: GraphQLObjectType;
+  _queryType: ?GraphQLObjectType;
   _mutationType: ?GraphQLObjectType;
   _subscriptionType: ?GraphQLObjectType;
   _directives: $ReadOnlyArray<GraphQLDirective>;
@@ -68,49 +67,34 @@ export class GraphQLSchema {
   __validationErrors: ?$ReadOnlyArray<GraphQLError>;
 
   constructor(config: GraphQLSchemaConfig): void {
-    invariant(typeof config === 'object', 'Must provide configuration object.');
+    // If this schema was built from a source known to be valid, then it may be
+    // marked with assumeValid to avoid an additional type system validation.
+    if (config && config.assumeValid) {
+      this.__validationErrors = [];
+    } else {
+      // Otherwise check for common mistakes during construction to produce
+      // clear and early error messages.
+      invariant(
+        typeof config === 'object',
+        'Must provide configuration object.',
+      );
+      invariant(
+        !config.types || Array.isArray(config.types),
+        `"types" must be Array if provided but got: ${String(config.types)}.`,
+      );
+      invariant(
+        !config.directives || Array.isArray(config.directives),
+        '"directives" must be Array if provided but got: ' +
+          `${String(config.directives)}.`,
+      );
+    }
 
-    invariant(
-      config.query instanceof GraphQLObjectType,
-      `Schema query must be Object Type but got: ${String(config.query)}.`,
-    );
     this._queryType = config.query;
-
-    invariant(
-      !config.mutation || config.mutation instanceof GraphQLObjectType,
-      `Schema mutation must be Object Type if provided but got: ${String(
-        config.mutation,
-      )}.`,
-    );
     this._mutationType = config.mutation;
-
-    invariant(
-      !config.subscription || config.subscription instanceof GraphQLObjectType,
-      `Schema subscription must be Object Type if provided but got: ${String(
-        config.subscription,
-      )}.`,
-    );
     this._subscriptionType = config.subscription;
-
-    invariant(
-      !config.types || Array.isArray(config.types),
-      `Schema types must be Array if provided but got: ${String(
-        config.types,
-      )}.`,
-    );
-
-    invariant(
-      !config.directives ||
-        (Array.isArray(config.directives) &&
-          config.directives.every(
-            directive => directive instanceof GraphQLDirective,
-          )),
-      'Schema directives must be Array<GraphQLDirective> if provided ' +
-        `but got: ${String(config.directives)}.`,
-    );
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives || specifiedDirectives;
-    this.astNode = config.astNode || null;
+    this.astNode = config.astNode;
 
     // Build type map now to detect any errors within this schema.
     let initialTypes: Array<?GraphQLNamedType> = [
@@ -145,25 +129,9 @@ export class GraphQLSchema {
         });
       }
     });
-
-    // Enforce correct interface implementations.
-    Object.keys(this._typeMap).forEach(typeName => {
-      const type = this._typeMap[typeName];
-      if (type instanceof GraphQLObjectType) {
-        type
-          .getInterfaces()
-          .forEach(iface => assertObjectImplementsInterface(this, type, iface));
-      }
-    });
-
-    // If this schema was built from a source known to be valid, then it may be
-    // marked with assumeValid to avoid an additional type system validation.
-    if (config.assumeValid) {
-      this.__validationErrors = [];
-    }
   }
 
-  getQueryType(): GraphQLObjectType {
+  getQueryType(): ?GraphQLObjectType {
     return this._queryType;
   }
 
@@ -231,7 +199,7 @@ export class GraphQLSchema {
 type TypeMap = ObjMap<GraphQLNamedType>;
 
 type GraphQLSchemaConfig = {
-  query: GraphQLObjectType,
+  query?: ?GraphQLObjectType,
   mutation?: ?GraphQLObjectType,
   subscription?: ?GraphQLObjectType,
   types?: ?Array<GraphQLNamedType>,
@@ -292,74 +260,4 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   return reducedMap;
-}
-
-function assertObjectImplementsInterface(
-  schema: GraphQLSchema,
-  object: GraphQLObjectType,
-  iface: GraphQLInterfaceType,
-): void {
-  const objectFieldMap = object.getFields();
-  const ifaceFieldMap = iface.getFields();
-
-  // Assert each interface field is implemented.
-  Object.keys(ifaceFieldMap).forEach(fieldName => {
-    const objectField = objectFieldMap[fieldName];
-    const ifaceField = ifaceFieldMap[fieldName];
-
-    // Assert interface field exists on object.
-    invariant(
-      objectField,
-      `"${iface.name}" expects field "${fieldName}" but "${object.name}" ` +
-        'does not provide it.',
-    );
-
-    // Assert interface field type is satisfied by object field type, by being
-    // a valid subtype. (covariant)
-    invariant(
-      isTypeSubTypeOf(schema, objectField.type, ifaceField.type),
-      `${iface.name}.${fieldName} expects type "${String(ifaceField.type)}" ` +
-        'but ' +
-        `${object.name}.${fieldName} provides type "${String(
-          objectField.type,
-        )}".`,
-    );
-
-    // Assert each interface field arg is implemented.
-    ifaceField.args.forEach(ifaceArg => {
-      const argName = ifaceArg.name;
-      const objectArg = find(objectField.args, arg => arg.name === argName);
-
-      // Assert interface field arg exists on object field.
-      invariant(
-        objectArg,
-        `${iface.name}.${fieldName} expects argument "${argName}" but ` +
-          `${object.name}.${fieldName} does not provide it.`,
-      );
-
-      // Assert interface field arg type matches object field arg type.
-      // (invariant)
-      invariant(
-        isEqualType(ifaceArg.type, objectArg.type),
-        `${iface.name}.${fieldName}(${argName}:) expects type ` +
-          `"${String(ifaceArg.type)}" but ` +
-          `${object.name}.${fieldName}(${argName}:) provides type ` +
-          `"${String(objectArg.type)}".`,
-      );
-    });
-
-    // Assert additional arguments must not be required.
-    objectField.args.forEach(objectArg => {
-      const argName = objectArg.name;
-      const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
-      if (!ifaceArg) {
-        invariant(
-          !(objectArg.type instanceof GraphQLNonNull),
-          `${object.name}.${fieldName}(${argName}:) is of required type ` +
-            `"${String(objectArg.type)}" but is not also provided by the ` +
-            `interface ${iface.name}.${fieldName}.`,
-        );
-      }
-    });
-  });
 }
