@@ -7,14 +7,11 @@
  * @flow
  */
 
+import { printError } from './printError';
 import { getLocation } from '../language/location';
+import type { SourceLocation } from '../language/location';
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
-
-export type GraphQLErrorLocation = {|
-  +line: number,
-  +column: number,
-|};
 
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
@@ -52,7 +49,7 @@ declare class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  +locations: $ReadOnlyArray<GraphQLErrorLocation> | void;
+  +locations: $ReadOnlyArray<SourceLocation> | void;
 
   /**
    * An array describing the JSON-path into the execution response which
@@ -194,4 +191,9 @@ export function GraphQLError( // eslint-disable-line no-redeclare
 (GraphQLError: any).prototype = Object.create(Error.prototype, {
   constructor: { value: GraphQLError },
   name: { value: 'GraphQLError' },
+  toString: {
+    value: function toString() {
+      return printError(this);
+    },
+  },
 });
