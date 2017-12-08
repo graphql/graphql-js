@@ -192,19 +192,22 @@ export function extendSchema(
   );
 
   // Get the root Query, Mutation, and Subscription object types.
+  // Note: While this could make early assertions to get the correctly
+  // typed values below, that would throw immediately while type system
+  // validation with validateSchema() will produce more actionable results.
   const existingQueryType = schema.getQueryType();
   const queryType = existingQueryType
-    ? definitionBuilder.buildObjectType(existingQueryType.name)
+    ? (definitionBuilder.buildType(existingQueryType.name): any)
     : null;
 
   const existingMutationType = schema.getMutationType();
   const mutationType = existingMutationType
-    ? definitionBuilder.buildObjectType(existingMutationType.name)
+    ? (definitionBuilder.buildType(existingMutationType.name): any)
     : null;
 
   const existingSubscriptionType = schema.getSubscriptionType();
   const subscriptionType = existingSubscriptionType
-    ? definitionBuilder.buildObjectType(existingSubscriptionType.name)
+    ? (definitionBuilder.buildType(existingSubscriptionType.name): any)
     : null;
 
   // Iterate through all types, getting the type definition for each, ensuring
@@ -312,15 +315,10 @@ export function extendSchema(
     if (extensions) {
       extensions.forEach(extension => {
         extension.interfaces.forEach(namedType => {
-          const interfaceName = namedType.name.value;
-          if (interfaces.some(def => def.name === interfaceName)) {
-            throw new GraphQLError(
-              `Type "${type.name}" already implements "${interfaceName}". ` +
-                'It cannot also be implemented in this type extension.',
-              [namedType],
-            );
-          }
-          interfaces.push(definitionBuilder.buildInterfaceType(namedType));
+          // Note: While this could make early assertions to get the correctly
+          // typed values, that would throw immediately while type system
+          // validation with validateSchema() will produce more actionable results.
+          interfaces.push((definitionBuilder.buildType(namedType): any));
         });
       });
     }

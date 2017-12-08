@@ -8,26 +8,45 @@
  */
 
 import {
-  isType,
   isObjectType,
   isInterfaceType,
+  isUnionType,
+  isEnumType,
+  isInputObjectType,
   isNonNullType,
+  isNamedType,
+  isInputType,
+  isOutputType,
 } from './definition';
-import type { GraphQLInterfaceType, GraphQLObjectType } from './definition';
+import type {
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+} from './definition';
 import { isDirective } from './directives';
+import type { GraphQLDirective } from './directives';
+import { isIntrospectionType } from './introspection';
 import { isSchema } from './schema';
 import type { GraphQLSchema } from './schema';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
-import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
+import { GraphQLError } from '../error/GraphQLError';
 import type {
   ASTNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
+  InterfaceTypeDefinitionNode,
+  InterfaceTypeExtensionNode,
   FieldDefinitionNode,
+  EnumValueDefinitionNode,
   InputValueDefinitionNode,
   NamedTypeNode,
   TypeNode,
 } from '../language/ast';
-import { GraphQLError } from '../error/GraphQLError';
+import { isValidNameError } from '../utilities/assertValidName';
+import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's
@@ -51,10 +70,10 @@ export function validateSchema(
   }
 
   // Validate the schema, producing a list of errors.
-  const context = new SchemaValidationContext();
-  validateRootTypes(context, schema);
-  validateDirectives(context, schema);
-  validateTypes(context, schema);
+  const context = new SchemaValidationContext(schema);
+  validateRootTypes(context);
+  validateDirectives(context);
+  validateTypes(context);
 
   // Persist the results of validation before returning to ensure validation
   // does not run multiple times for this schema.
@@ -75,10 +94,12 @@ export function assertValidSchema(schema: GraphQLSchema): void {
 }
 
 class SchemaValidationContext {
-  _errors: Array<GraphQLError>;
+  +_errors: Array<GraphQLError>;
+  +schema: GraphQLSchema;
 
-  constructor() {
+  constructor(schema) {
     this._errors = [];
+    this.schema = schema;
   }
 
   reportError(
@@ -86,7 +107,11 @@ class SchemaValidationContext {
     nodes?: $ReadOnlyArray<?ASTNode> | ?ASTNode,
   ): void {
     const _nodes = (Array.isArray(nodes) ? nodes : [nodes]).filter(Boolean);
-    this._errors.push(new GraphQLError(message, _nodes));
+    this.addError(new GraphQLError(message, _nodes));
+  }
+
+  addError(error: GraphQLError): void {
+    this._errors.push(error);
   }
 
   getErrors(): $ReadOnlyArray<GraphQLError> {
@@ -94,13 +119,14 @@ class SchemaValidationContext {
   }
 }
 
-function validateRootTypes(context, schema) {
+function validateRootTypes(context) {
+  const schema = context.schema;
   const queryType = schema.getQueryType();
   if (!queryType) {
     context.reportError(`Query root type must be provided.`, schema.astNode);
   } else if (!isObjectType(queryType)) {
     context.reportError(
-      `Query root type must be Object type but got: ${String(queryType)}.`,
+      `Query root type must be Object type, it cannot be ${String(queryType)}.`,
       getOperationTypeNode(schema, queryType, 'query'),
     );
   }
@@ -108,7 +134,7 @@ function validateRootTypes(context, schema) {
   const mutationType = schema.getMutationType();
   if (mutationType && !isObjectType(mutationType)) {
     context.reportError(
-      'Mutation root type must be Object type if provided but got: ' +
+      'Mutation root type must be Object type if provided, it cannot be ' +
         `${String(mutationType)}.`,
       getOperationTypeNode(schema, mutationType, 'mutation'),
     );
@@ -117,7 +143,7 @@ function validateRootTypes(context, schema) {
   const subscriptionType = schema.getSubscriptionType();
   if (subscriptionType && !isObjectType(subscriptionType)) {
     context.reportError(
-      'Subscription root type must be Object type if provided but got: ' +
+      'Subscription root type must be Object type if provided, it cannot be ' +
         `${String(subscriptionType)}.`,
       getOperationTypeNode(schema, subscriptionType, 'subscription'),
     );
@@ -138,65 +164,200 @@ function getOperationTypeNode(
   return operationTypeNode ? operationTypeNode.type : type && type.astNode;
 }
 
-function validateDirectives(
-  context: SchemaValidationContext,
-  schema: GraphQLSchema,
-): void {
-  const directives = schema.getDirectives();
+function validateDirectives(context: SchemaValidationContext): void {
+  const directives = context.schema.getDirectives();
   directives.forEach(directive => {
+    // Ensure all directives are in fact GraphQL directives.
     if (!isDirective(directive)) {
       context.reportError(
         `Expected directive but got: ${String(directive)}.`,
         directive && directive.astNode,
       );
+      return;
     }
+
+    // Ensure they are named correctly.
+    validateName(context, directive);
+
+    // TODO: Ensure proper locations.
+
+    // Ensure the arguments are valid.
+    const argNames = Object.create(null);
+    directive.args.forEach(arg => {
+      const argName = arg.name;
+
+      // Ensure they are named correctly.
+      validateName(context, arg);
+
+      // Ensure they are unique per directive.
+      if (argNames[argName]) {
+        context.reportError(
+          `Argument @${directive.name}(${argName}:) can only be defined once.`,
+          getAllDirectiveArgNodes(directive, argName),
+        );
+        return; // continue loop
+      }
+      argNames[argName] = true;
+
+      // Ensure the type is an input type.
+      if (!isInputType(arg.type)) {
+        context.reportError(
+          `The type of @${directive.name}(${argName}:) must be Input Type ` +
+            `but got: ${String(arg.type)}.`,
+          getDirectiveArgTypeNode(directive, argName),
+        );
+      }
+    });
   });
 }
 
-function validateTypes(
+function validateName(
   context: SchemaValidationContext,
-  schema: GraphQLSchema,
+  node: { +name: string, +astNode: ?ASTNode },
 ): void {
-  const typeMap = schema.getTypeMap();
+  // Ensure names are valid, however introspection types opt out.
+  const error = isValidNameError(node.name, node.astNode || undefined);
+  if (error && !isIntrospectionType((node: any))) {
+    context.addError(error);
+  }
+}
+
+function validateTypes(context: SchemaValidationContext): void {
+  const typeMap = context.schema.getTypeMap();
   Object.keys(typeMap).forEach(typeName => {
     const type = typeMap[typeName];
 
     // Ensure all provided types are in fact GraphQL type.
-    if (!isType(type)) {
+    if (!isNamedType(type)) {
       context.reportError(
-        `Expected GraphQL type but got: ${String(type)}.`,
+        `Expected GraphQL named type but got: ${String(type)}.`,
         type && type.astNode,
+      );
+      return;
+    }
+
+    // Ensure they are named correctly.
+    validateName(context, type);
+
+    if (isObjectType(type)) {
+      // Ensure fields are valid
+      validateFields(context, type);
+
+      // Ensure objects implement the interfaces they claim to.
+      validateObjectInterfaces(context, type);
+    } else if (isInterfaceType(type)) {
+      // Ensure fields are valid.
+      validateFields(context, type);
+    } else if (isUnionType(type)) {
+      // Ensure Unions include valid member types.
+      validateUnionMembers(context, type);
+    } else if (isEnumType(type)) {
+      // Ensure Enums have valid values.
+      validateEnumValues(context, type);
+    } else if (isInputObjectType(type)) {
+      // Ensure Input Object fields are valid.
+      validateInputFields(context, type);
+    }
+  });
+}
+
+function validateFields(
+  context: SchemaValidationContext,
+  type: GraphQLObjectType | GraphQLInterfaceType,
+): void {
+  const fieldMap = type.getFields();
+  const fieldNames = Object.keys(fieldMap);
+
+  // Objects and Interfaces both must define one or more fields.
+  if (fieldNames.length === 0) {
+    context.reportError(
+      `Type ${type.name} must define one or more fields.`,
+      getAllObjectOrInterfaceNodes(type),
+    );
+  }
+
+  fieldNames.forEach(fieldName => {
+    const field = fieldMap[fieldName];
+
+    // Ensure they are named correctly.
+    validateName(context, field);
+
+    // Ensure they were defined at most once.
+    const fieldNodes = getAllFieldNodes(type, fieldName);
+    if (fieldNodes.length > 1) {
+      context.reportError(
+        `Field ${type.name}.${fieldName} can only be defined once.`,
+        fieldNodes,
+      );
+      return; // continue loop
+    }
+
+    // Ensure the type is an output type
+    if (!isOutputType(field.type)) {
+      context.reportError(
+        `The type of ${type.name}.${fieldName} must be Output Type ` +
+          `but got: ${String(field.type)}.`,
+        getFieldTypeNode(type, fieldName),
       );
     }
 
-    // Ensure objects implement the interfaces they claim to.
-    if (isObjectType(type)) {
-      const implementedTypeNames = Object.create(null);
+    // Ensure the arguments are valid
+    const argNames = Object.create(null);
+    field.args.forEach(arg => {
+      const argName = arg.name;
 
-      type.getInterfaces().forEach(iface => {
-        if (implementedTypeNames[iface.name]) {
-          context.reportError(
-            `${type.name} must declare it implements ${iface.name} only once.`,
-            getAllImplementsInterfaceNode(type, iface),
-          );
-        }
-        implementedTypeNames[iface.name] = true;
-        validateObjectImplementsInterface(context, schema, type, iface);
-      });
+      // Ensure they are named correctly.
+      validateName(context, arg);
+
+      // Ensure they are unique per field.
+      if (argNames[argName]) {
+        context.reportError(
+          `Field argument ${type.name}.${fieldName}(${argName}:) can only ` +
+            'be defined once.',
+          getAllFieldArgNodes(type, fieldName, argName),
+        );
+      }
+      argNames[argName] = true;
+
+      // Ensure the type is an input type
+      if (!isInputType(arg.type)) {
+        context.reportError(
+          `The type of ${type.name}.${fieldName}(${argName}:) must be Input ` +
+            `Type but got: ${String(arg.type)}.`,
+          getFieldArgTypeNode(type, fieldName, argName),
+        );
+      }
+    });
+  });
+}
+
+function validateObjectInterfaces(
+  context: SchemaValidationContext,
+  object: GraphQLObjectType,
+): void {
+  const implementedTypeNames = Object.create(null);
+  object.getInterfaces().forEach(iface => {
+    if (implementedTypeNames[iface.name]) {
+      context.reportError(
+        `Type ${object.name} can only implement ${iface.name} once.`,
+        getAllImplementsInterfaceNodes(object, iface),
+      );
+      return; // continue loop
     }
+    implementedTypeNames[iface.name] = true;
+    validateObjectImplementsInterface(context, object, iface);
   });
 }
 
 function validateObjectImplementsInterface(
   context: SchemaValidationContext,
-  schema: GraphQLSchema,
   object: GraphQLObjectType,
   iface: GraphQLInterfaceType,
 ): void {
   if (!isInterfaceType(iface)) {
     context.reportError(
-      `${String(object)} must only implement Interface types, it cannot ` +
-        `implement ${String(iface)}.`,
+      `Type ${String(object)} must only implement Interface types, ` +
+        `it cannot implement ${String(iface)}.`,
       getImplementsInterfaceNode(object, iface),
     );
     return;
@@ -213,8 +374,8 @@ function validateObjectImplementsInterface(
     // Assert interface field exists on object.
     if (!objectField) {
       context.reportError(
-        `"${iface.name}" expects field "${fieldName}" but "${object.name}" ` +
-          'does not provide it.',
+        `Interface field ${iface.name}.${fieldName} expected but ` +
+          `${object.name} does not provide it.`,
         [getFieldNode(iface, fieldName), object.astNode],
       );
       // Continue loop over fields.
@@ -223,11 +384,11 @@ function validateObjectImplementsInterface(
 
     // Assert interface field type is satisfied by object field type, by being
     // a valid subtype. (covariant)
-    if (!isTypeSubTypeOf(schema, objectField.type, ifaceField.type)) {
+    if (!isTypeSubTypeOf(context.schema, objectField.type, ifaceField.type)) {
       context.reportError(
-        `${iface.name}.${fieldName} expects type ` +
-          `"${String(ifaceField.type)}" but ${object.name}.${fieldName} is ` +
-          `type "${String(objectField.type)}".`,
+        `Interface field ${iface.name}.${fieldName} expects type ` +
+          `${String(ifaceField.type)} but ${object.name}.${fieldName} ` +
+          `is type ${String(objectField.type)}.`,
         [
           getFieldTypeNode(iface, fieldName),
           getFieldTypeNode(object, fieldName),
@@ -243,8 +404,8 @@ function validateObjectImplementsInterface(
       // Assert interface field arg exists on object field.
       if (!objectArg) {
         context.reportError(
-          `${iface.name}.${fieldName} expects argument "${argName}" but ` +
-            `${object.name}.${fieldName} does not provide it.`,
+          `Interface field argument ${iface.name}.${fieldName}(${argName}:) ` +
+            `expected but ${object.name}.${fieldName} does not provide it.`,
           [
             getFieldArgNode(iface, fieldName, argName),
             getFieldNode(object, fieldName),
@@ -259,10 +420,10 @@ function validateObjectImplementsInterface(
       // TODO: change to contravariant?
       if (!isEqualType(ifaceArg.type, objectArg.type)) {
         context.reportError(
-          `${iface.name}.${fieldName}(${argName}:) expects type ` +
-            `"${String(ifaceArg.type)}" but ` +
+          `Interface field argument ${iface.name}.${fieldName}(${argName}:) ` +
+            `expects type ${String(ifaceArg.type)} but ` +
             `${object.name}.${fieldName}(${argName}:) is type ` +
-            `"${String(objectArg.type)}".`,
+            `${String(objectArg.type)}.`,
           [
             getFieldArgTypeNode(iface, fieldName, argName),
             getFieldArgTypeNode(object, fieldName, argName),
@@ -279,9 +440,9 @@ function validateObjectImplementsInterface(
       const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
       if (!ifaceArg && isNonNullType(objectArg.type)) {
         context.reportError(
-          `${object.name}.${fieldName}(${argName}:) is of required type ` +
-            `"${String(objectArg.type)}" but is not also provided by the ` +
-            `interface ${iface.name}.${fieldName}.`,
+          `Object field argument ${object.name}.${fieldName}(${argName}:) ` +
+            `is of required type ${String(objectArg.type)} but is not also ` +
+            `provided by the Interface field ${iface.name}.${fieldName}.`,
           [
             getFieldArgTypeNode(object, fieldName, argName),
             getFieldNode(iface, fieldName),
@@ -292,19 +453,148 @@ function validateObjectImplementsInterface(
   });
 }
 
+function validateUnionMembers(
+  context: SchemaValidationContext,
+  union: GraphQLUnionType,
+): void {
+  const memberTypes = union.getTypes();
+
+  if (memberTypes.length === 0) {
+    context.reportError(
+      `Union type ${union.name} must define one or more member types.`,
+      union.astNode,
+    );
+  }
+
+  const includedTypeNames = Object.create(null);
+  memberTypes.forEach(memberType => {
+    if (includedTypeNames[memberType.name]) {
+      context.reportError(
+        `Union type ${union.name} can only include type ` +
+          `${memberType.name} once.`,
+        getUnionMemberTypeNodes(union, memberType.name),
+      );
+      return; // continue loop
+    }
+    includedTypeNames[memberType.name] = true;
+    if (!isObjectType(memberType)) {
+      context.reportError(
+        `Union type ${union.name} can only include Object types, ` +
+          `it cannot include ${String(memberType)}.`,
+        getUnionMemberTypeNodes(union, String(memberType)),
+      );
+    }
+  });
+}
+
+function validateEnumValues(
+  context: SchemaValidationContext,
+  enumType: GraphQLEnumType,
+): void {
+  const enumValues = enumType.getValues();
+
+  if (enumValues.length === 0) {
+    context.reportError(
+      `Enum type ${enumType.name} must define one or more values.`,
+      enumType.astNode,
+    );
+  }
+
+  enumValues.forEach(enumValue => {
+    const valueName = enumValue.name;
+
+    // Ensure no duplicates.
+    const allNodes = getEnumValueNodes(enumType, valueName);
+    if (allNodes && allNodes.length > 1) {
+      context.reportError(
+        `Enum type ${enumType.name} can include value ${valueName} only once.`,
+        allNodes,
+      );
+    }
+
+    // Ensure valid name.
+    validateName(context, enumValue);
+    if (valueName === 'true' || valueName === 'false' || valueName === 'null') {
+      context.reportError(
+        `Enum type ${enumType.name} cannot include value: ${valueName}.`,
+        enumValue.astNode,
+      );
+    }
+  });
+}
+
+function validateInputFields(
+  context: SchemaValidationContext,
+  inputObj: GraphQLInputObjectType,
+): void {
+  const fieldMap = inputObj.getFields();
+  const fieldNames = Object.keys(fieldMap);
+
+  if (fieldNames.length === 0) {
+    context.reportError(
+      `Input Object type ${inputObj.name} must define one or more fields.`,
+      inputObj.astNode,
+    );
+  }
+
+  // Ensure the arguments are valid
+  fieldNames.forEach(fieldName => {
+    const field = fieldMap[fieldName];
+
+    // Ensure they are named correctly.
+    validateName(context, field);
+
+    // TODO: Ensure they are unique per field.
+
+    // Ensure the type is an input type
+    if (!isInputType(field.type)) {
+      context.reportError(
+        `The type of ${inputObj.name}.${fieldName} must be Input Type ` +
+          `but got: ${String(field.type)}.`,
+        field.astNode && field.astNode.type,
+      );
+    }
+  });
+}
+
+function getAllObjectNodes(
+  type: GraphQLObjectType,
+): $ReadOnlyArray<ObjectTypeDefinitionNode | ObjectTypeExtensionNode> {
+  return type.astNode
+    ? type.extensionASTNodes
+      ? [type.astNode].concat(type.extensionASTNodes)
+      : [type.astNode]
+    : type.extensionASTNodes || [];
+}
+
+function getAllObjectOrInterfaceNodes(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+): $ReadOnlyArray<
+  | ObjectTypeDefinitionNode
+  | ObjectTypeExtensionNode
+  | InterfaceTypeDefinitionNode
+  | InterfaceTypeExtensionNode,
+> {
+  return type.astNode
+    ? type.extensionASTNodes
+      ? [type.astNode].concat(type.extensionASTNodes)
+      : [type.astNode]
+    : type.extensionASTNodes || [];
+}
+
 function getImplementsInterfaceNode(
   type: GraphQLObjectType,
   iface: GraphQLInterfaceType,
 ): ?NamedTypeNode {
-  return getAllImplementsInterfaceNode(type, iface)[0];
+  return getAllImplementsInterfaceNodes(type, iface)[0];
 }
 
-function getAllImplementsInterfaceNode(
+function getAllImplementsInterfaceNodes(
   type: GraphQLObjectType,
   iface: GraphQLInterfaceType,
-): Array<NamedTypeNode> {
+): $ReadOnlyArray<NamedTypeNode> {
   const implementsNodes = [];
-  const astNodes = [type.astNode].concat(type.extensionASTNodes || []);
+  const astNodes = getAllObjectNodes(type);
   for (let i = 0; i < astNodes.length; i++) {
     const astNode = astNodes[i];
     if (astNode && astNode.interfaces) {
@@ -322,17 +612,26 @@ function getFieldNode(
   type: GraphQLObjectType | GraphQLInterfaceType,
   fieldName: string,
 ): ?FieldDefinitionNode {
-  const astNodes = [type.astNode].concat(type.extensionASTNodes || []);
+  return getAllFieldNodes(type, fieldName)[0];
+}
+
+function getAllFieldNodes(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  fieldName: string,
+): $ReadOnlyArray<FieldDefinitionNode> {
+  const fieldNodes = [];
+  const astNodes = getAllObjectOrInterfaceNodes(type);
   for (let i = 0; i < astNodes.length; i++) {
     const astNode = astNodes[i];
-    const fieldNode =
-      astNode &&
-      astNode.fields &&
-      astNode.fields.find(node => node.name.value === fieldName);
-    if (fieldNode) {
-      return fieldNode;
+    if (astNode && astNode.fields) {
+      astNode.fields.forEach(node => {
+        if (node.name.value === fieldName) {
+          fieldNodes.push(node);
+        }
+      });
     }
   }
+  return fieldNodes;
 }
 
 function getFieldTypeNode(
@@ -348,12 +647,24 @@ function getFieldArgNode(
   fieldName: string,
   argName: string,
 ): ?InputValueDefinitionNode {
+  return getAllFieldArgNodes(type, fieldName, argName)[0];
+}
+
+function getAllFieldArgNodes(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  fieldName: string,
+  argName: string,
+): $ReadOnlyArray<InputValueDefinitionNode> {
+  const argNodes = [];
   const fieldNode = getFieldNode(type, fieldName);
-  return (
-    fieldNode &&
-    fieldNode.arguments &&
-    fieldNode.arguments.find(node => node.name.value === argName)
-  );
+  if (fieldNode && fieldNode.arguments) {
+    fieldNode.arguments.forEach(node => {
+      if (node.name.value === argName) {
+        argNodes.push(node);
+      }
+    });
+  }
+  return argNodes;
 }
 
 function getFieldArgTypeNode(
@@ -363,4 +674,50 @@ function getFieldArgTypeNode(
 ): ?TypeNode {
   const fieldArgNode = getFieldArgNode(type, fieldName, argName);
   return fieldArgNode && fieldArgNode.type;
+}
+
+function getAllDirectiveArgNodes(
+  directive: GraphQLDirective,
+  argName: string,
+): $ReadOnlyArray<InputValueDefinitionNode> {
+  const argNodes = [];
+  const directiveNode = directive.astNode;
+  if (directiveNode && directiveNode.arguments) {
+    directiveNode.arguments.forEach(node => {
+      if (node.name.value === argName) {
+        argNodes.push(node);
+      }
+    });
+  }
+  return argNodes;
+}
+
+function getDirectiveArgTypeNode(
+  directive: GraphQLDirective,
+  argName: string,
+): ?TypeNode {
+  const argNode = getAllDirectiveArgNodes(directive, argName)[0];
+  return argNode && argNode.type;
+}
+
+function getUnionMemberTypeNodes(
+  union: GraphQLUnionType,
+  typeName: string,
+): ?$ReadOnlyArray<NamedTypeNode> {
+  return (
+    union.astNode &&
+    union.astNode.types &&
+    union.astNode.types.filter(type => type.name.value === typeName)
+  );
+}
+
+function getEnumValueNodes(
+  enumType: GraphQLEnumType,
+  valueName: string,
+): ?$ReadOnlyArray<EnumValueDefinitionNode> {
+  return (
+    enumType.astNode &&
+    enumType.astNode.values &&
+    enumType.astNode.values.filter(value => value.name.value === valueName)
+  );
 }

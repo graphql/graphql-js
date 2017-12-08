@@ -970,18 +970,6 @@ describe('extendSchema', () => {
     );
   });
 
-  it('does not allow implementing an existing interface', () => {
-    const ast = parse(`
-      extend type Foo implements SomeInterface {
-        otherField: String
-      }
-    `);
-    expect(() => extendSchema(testSchema, ast)).to.throw(
-      'Type "Foo" already implements "SomeInterface". It cannot also be ' +
-        'implemented in this type extension.',
-    );
-  });
-
   it('does not allow referencing an unknown type', () => {
     const ast = parse(`
       extend type Bar {

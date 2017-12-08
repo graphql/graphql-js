@@ -7,17 +7,14 @@
  * @flow
  */
 
-import { isInputType } from './definition';
-import { GraphQLNonNull } from './wrappers';
-
 import type {
   GraphQLFieldConfigArgumentMap,
   GraphQLArgument,
 } from './definition';
+import { GraphQLNonNull } from './wrappers';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
-import { assertValidName } from '../utilities/assertValidName';
 import type { DirectiveDefinitionNode } from '../language/ast';
 import {
   DirectiveLocation,
@@ -47,16 +44,15 @@ export class GraphQLDirective {
   astNode: ?DirectiveDefinitionNode;
 
   constructor(config: GraphQLDirectiveConfig): void {
-    invariant(config.name, 'Directive must be named.');
-    assertValidName(config.name);
-    invariant(
-      Array.isArray(config.locations),
-      'Must provide locations for directive.',
-    );
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
     this.astNode = config.astNode;
+    invariant(config.name, 'Directive must be named.');
+    invariant(
+      Array.isArray(config.locations),
+      'Must provide locations for directive.',
+    );
 
     const args = config.args;
     if (!args) {
@@ -67,13 +63,7 @@ export class GraphQLDirective {
         `@${config.name} args must be an object with argument names as keys.`,
       );
       this.args = Object.keys(args).map(argName => {
-        assertValidName(argName);
         const arg = args[argName];
-        invariant(
-          isInputType(arg.type),
-          `@${config.name}(${argName}:) argument type must be ` +
-            `Input Type but got: ${String(arg.type)}.`,
-        );
         return {
           name: argName,
           description: arg.description === undefined ? null : arg.description,
