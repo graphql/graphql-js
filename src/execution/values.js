@@ -7,30 +7,19 @@
  * @flow
  */
 
-import { createIterator, isCollection } from 'iterall';
-
 import { GraphQLError } from '../error';
 import find from '../jsutils/find';
-import invariant from '../jsutils/invariant';
-import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import keyMap from '../jsutils/keyMap';
+import { coerceValue } from '../utilities/coerceValue';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
-import { isValidJSValue } from '../utilities/isValidJSValue';
 import { isValidLiteralValue } from '../utilities/isValidLiteralValue';
 import * as Kind from '../language/kinds';
 import { print } from '../language/printer';
-import {
-  isInputType,
-  GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-} from '../type/definition';
+import { isInputType, GraphQLNonNull } from '../type/definition';
 import type { ObjMap } from '../jsutils/ObjMap';
-import type { GraphQLInputType, GraphQLField } from '../type/definition';
+import type { GraphQLField } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 import type {
@@ -39,6 +28,11 @@ import type {
   VariableNode,
   VariableDefinitionNode,
 } from '../language/ast';
+
+type CoercedVariableValues = {|
+  errors: $ReadOnlyArray<GraphQLError> | void,
+  coerced: { [variable: string]: mixed } | void,
+|};
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -53,50 +47,60 @@ export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: Array<VariableDefinitionNode>,
   inputs: ObjMap<mixed>,
-): { [variable: string]: mixed } {
+): CoercedVariableValues {
+  const errors = [];
   const coercedValues = {};
   for (let i = 0; i < varDefNodes.length; i++) {
     const varDefNode = varDefNodes[i];
     const varName = varDefNode.variable.name.value;
     const varType = typeFromAST(schema, varDefNode.type);
     if (!isInputType(varType)) {
-      throw new GraphQLError(
-        `Variable "$${varName}" expected value of type ` +
-          `"${print(varDefNode.type)}" which cannot be used as an input type.`,
-        [varDefNode.type],
+      errors.push(
+        new GraphQLError(
+          `Variable "$${varName}" expected value of type ` +
+            `"${print(
+              varDefNode.type,
+            )}" which cannot be used as an input type.`,
+          [varDefNode.type],
+        ),
       );
-    }
-
-    const value = inputs[varName];
-    if (isInvalid(value)) {
-      const defaultValue = varDefNode.defaultValue;
-      if (defaultValue) {
-        coercedValues[varName] = valueFromAST(defaultValue, varType);
-      }
-      if (varType instanceof GraphQLNonNull) {
-        throw new GraphQLError(
-          `Variable "$${varName}" of required type ` +
-            `"${String(varType)}" was not provided.`,
-          [varDefNode],
-        );
-      }
     } else {
-      const errors = isValidJSValue(value, varType);
-      if (errors.length) {
-        const message = errors ? '\n' + errors.join('\n') : '';
-        throw new GraphQLError(
-          `Variable "$${varName}" got invalid value ` +
-            `${JSON.stringify(value)}.${message}`,
-          [varDefNode],
-        );
+      const value = inputs[varName];
+      if (isInvalid(value)) {
+        if (varType instanceof GraphQLNonNull) {
+          errors.push(
+            new GraphQLError(
+              `Variable "$${varName}" of required type ` +
+                `"${String(varType)}" was not provided.`,
+              [varDefNode],
+            ),
+          );
+        } else if (varDefNode.defaultValue) {
+          coercedValues[varName] = valueFromAST(
+            varDefNode.defaultValue,
+            varType,
+          );
+        }
+      } else {
+        const coerced = coerceValue(value, varType, varDefNode);
+        const coercionErrors = coerced.errors;
+        if (coercionErrors) {
+          const messagePrelude = `Variable "$${
+            varName
+          }" got invalid value ${JSON.stringify(value)}; `;
+          coercionErrors.forEach(error => {
+            error.message = messagePrelude + error.message;
+          });
+          errors.push(...coercionErrors);
+        } else {
+          coercedValues[varName] = coerced.value;
+        }
       }
-
-      const coercedValue = coerceValue(varType, value);
-      invariant(!isInvalid(coercedValue), 'Should have reported error.');
-      coercedValues[varName] = coercedValue;
     }
   }
-  return coercedValues;
+  return errors.length === 0
+    ? { errors: undefined, coerced: coercedValues }
+    : { errors, coerced: undefined };
 }
 
 /**
@@ -199,94 +203,4 @@ export function getDirectiveValues(
   if (directiveNode) {
     return getArgumentValues(directiveDef, directiveNode, variableValues);
   }
-}
-
-/**
- * Given a type and any value, return a runtime value coerced to match the type.
- */
-export function coerceValue(type: GraphQLInputType, value: mixed): mixed {
-  // Ensure flow knows that we treat function params as const.
-  const _value = value;
-
-  if (isInvalid(_value)) {
-    return; // Intentionally return no value.
-  }
-
-  if (type instanceof GraphQLNonNull) {
-    if (_value === null) {
-      return; // Intentionally return no value.
-    }
-    return coerceValue(type.ofType, _value);
-  }
-
-  if (_value === null) {
-    // Intentionally return the value null.
-    return null;
-  }
-
-  if (type instanceof GraphQLList) {
-    const itemType = type.ofType;
-    if (isCollection(_value)) {
-      const coercedValues = [];
-      const valueIter = createIterator(_value);
-      if (!valueIter) {
-        return; // Intentionally return no value.
-      }
-      let step;
-      while (!(step = valueIter.next()).done) {
-        const itemValue = coerceValue(itemType, step.value);
-        if (isInvalid(itemValue)) {
-          return; // Intentionally return no value.
-        }
-        coercedValues.push(itemValue);
-      }
-      return coercedValues;
-    }
-    const coercedValue = coerceValue(itemType, _value);
-    if (isInvalid(coercedValue)) {
-      return; // Intentionally return no value.
-    }
-    return [coerceValue(itemType, _value)];
-  }
-
-  if (type instanceof GraphQLInputObjectType) {
-    if (typeof _value !== 'object') {
-      return; // Intentionally return no value.
-    }
-    const coercedObj = Object.create(null);
-    const fields = type.getFields();
-    const fieldNames = Object.keys(fields);
-    for (let i = 0; i < fieldNames.length; i++) {
-      const fieldName = fieldNames[i];
-      const field = fields[fieldName];
-      if (isInvalid(_value[fieldName])) {
-        if (!isInvalid(field.defaultValue)) {
-          coercedObj[fieldName] = field.defaultValue;
-        } else if (field.type instanceof GraphQLNonNull) {
-          return; // Intentionally return no value.
-        }
-        continue;
-      }
-      const fieldValue = coerceValue(field.type, _value[fieldName]);
-      if (isInvalid(fieldValue)) {
-        return; // Intentionally return no value.
-      }
-      coercedObj[fieldName] = fieldValue;
-    }
-    return coercedObj;
-  }
-
-  invariant(
-    type instanceof GraphQLScalarType || type instanceof GraphQLEnumType,
-    'Must be input type',
-  );
-
-  const parsed = type.parseValue(_value);
-  if (isNullish(parsed)) {
-    // null or invalid values represent a failure to parse correctly,
-    // in which case no value is returned.
-    return;
-  }
-
-  return parsed;
 }

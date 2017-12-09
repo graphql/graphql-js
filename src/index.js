@@ -307,7 +307,9 @@ export {
   // A helper to use within recursive-descent visitors which need to be aware of
   // the GraphQL type system.
   TypeInfo,
-  // Determine if JavaScript values adhere to a GraphQL type.
+  // Coerces a JavaScript value to a GraphQL type, or produces errors.
+  coerceValue,
+  // @deprecated use coerceValue
   isValidJSValue,
   // Determine if AST values adhere to a GraphQL type.
   isValidLiteralValue,

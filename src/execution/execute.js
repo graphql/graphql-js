@@ -187,19 +187,19 @@ function executeImpl(
 
   // If a valid context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  let context;
-  try {
-    context = buildExecutionContext(
-      schema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
-    );
-  } catch (error) {
-    return { errors: [error] };
+  const context = buildExecutionContext(
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+  );
+
+  // Return early errors if execution context failed.
+  if (Array.isArray(context)) {
+    return { errors: context };
   }
 
   // Return a Promise that will eventually resolve to the data described by
@@ -291,20 +291,18 @@ export function buildExecutionContext(
   rawVariableValues: ?ObjMap<mixed>,
   operationName: ?string,
   fieldResolver: ?GraphQLFieldResolver<any, any>,
-): ExecutionContext {
+): $ReadOnlyArray<GraphQLError> | ExecutionContext {
   const errors: Array<GraphQLError> = [];
-  let operation: ?OperationDefinitionNode;
+  let operation: OperationDefinitionNode | void;
+  let hasMultipleAssumedOperations = false;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
-  document.definitions.forEach(definition => {
+  for (let i = 0; i < document.definitions.length; i++) {
+    const definition = document.definitions[i];
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
         if (!operationName && operation) {
-          throw new GraphQLError(
-            'Must provide operation name if query contains ' +
-              'multiple operations.',
-          );
-        }
-        if (
+          hasMultipleAssumedOperations = true;
+        } else if (
           !operationName ||
           (definition.name && definition.name.value === operationName)
         ) {
@@ -315,19 +313,46 @@ export function buildExecutionContext(
         fragments[definition.name.value] = definition;
         break;
     }
-  });
+  }
+
   if (!operation) {
     if (operationName) {
-      throw new GraphQLError(`Unknown operation named "${operationName}".`);
+      errors.push(
+        new GraphQLError(`Unknown operation named "${operationName}".`),
+      );
     } else {
-      throw new GraphQLError('Must provide an operation.');
+      errors.push(new GraphQLError('Must provide an operation.'));
+    }
+  } else if (hasMultipleAssumedOperations) {
+    errors.push(
+      new GraphQLError(
+        'Must provide operation name if query contains ' +
+          'multiple operations.',
+      ),
+    );
+  }
+
+  let variableValues;
+  if (operation) {
+    const coercedVariableValues = getVariableValues(
+      schema,
+      operation.variableDefinitions || [],
+      rawVariableValues || {},
+    );
+
+    if (coercedVariableValues.errors) {
+      errors.push(...coercedVariableValues.errors);
+    } else {
+      variableValues = coercedVariableValues.coerced;
     }
   }
-  const variableValues = getVariableValues(
-    schema,
-    operation.variableDefinitions || [],
-    rawVariableValues || {},
-  );
+
+  if (errors.length !== 0) {
+    return errors;
+  }
+
+  invariant(operation, 'Has operation if no errors.');
+  invariant(variableValues, 'Has variables if no errors.');
 
   return {
     schema,

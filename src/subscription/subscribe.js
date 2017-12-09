@@ -160,8 +160,15 @@ function subscribeImpl(
   // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
   return sourcePromise.then(
-    sourceStream =>
-      mapAsyncIterator(sourceStream, mapSourceToResponse, reportGraphQLError),
+    resultOrStream =>
+      // Note: Flow can't refine isAsyncIterable, so explicit casts are used.
+      isAsyncIterable(resultOrStream)
+        ? mapAsyncIterator(
+            ((resultOrStream: any): AsyncIterable<mixed>),
+            mapSourceToResponse,
+            reportGraphQLError,
+          )
+        : ((resultOrStream: any): ExecutionResult),
     reportGraphQLError,
   );
 }
@@ -192,7 +199,7 @@ export function createSourceEventStream(
   variableValues?: ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
-): Promise<AsyncIterable<mixed>> {
+): Promise<AsyncIterable<mixed> | ExecutionResult> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);
@@ -209,6 +216,11 @@ export function createSourceEventStream(
       operationName,
       fieldResolver,
     );
+
+    // Return early errors if execution context failed.
+    if (Array.isArray(exeContext)) {
+      return Promise.resolve({ errors: exeContext });
+    }
 
     const type = getOperationRootType(schema, exeContext.operation);
     const fields = collectFields(
@@ -260,15 +272,14 @@ export function createSourceEventStream(
       }
 
       // Assert field returned an event stream, otherwise yield an error.
-      if (!isAsyncIterable(eventStream)) {
-        throw new Error(
-          'Subscription field must return Async Iterable. Received: ' +
-            String(eventStream),
-        );
+      if (isAsyncIterable(eventStream)) {
+        // Note: isAsyncIterable above ensures this will be correct.
+        return ((eventStream: any): AsyncIterable<mixed>);
       }
-
-      // Note: isAsyncIterable above ensures this will be correct.
-      return ((eventStream: any): AsyncIterable<mixed>);
+      throw new Error(
+        'Subscription field must return Async Iterable. Received: ' +
+          String(eventStream),
+      );
     });
   } catch (error) {
     return Promise.reject(error);

@@ -474,14 +474,16 @@ describe('Subscription Initialization Phase', () => {
       errors: [
         {
           message:
-            'Variable "$priority" got invalid value "meow".\nExpected ' +
-            'type "Int", found "meow"; Int cannot represent non 32-bit signed ' +
+            'Variable "$priority" got invalid value "meow"; Expected ' +
+            'type Int; Int cannot represent non 32-bit signed ' +
             'integer value: meow',
           locations: [{ line: 2, column: 21 }],
           path: undefined,
         },
       ],
     });
+
+    expect(result.errors[0].originalError).not.to.equal(undefined);
   });
 });
 
