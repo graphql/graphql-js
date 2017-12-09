@@ -175,7 +175,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       value: originalError,
     },
     extensions: {
-      value: extensions,
+      value: extensions || (originalError && (originalError: any).extensions),
     },
   });
 

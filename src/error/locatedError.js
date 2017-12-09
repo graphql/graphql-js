@@ -33,6 +33,5 @@ export function locatedError(
     originalError && (originalError: any).positions,
     path,
     originalError,
-    originalError && (originalError: any).extensions,
   );
 }
