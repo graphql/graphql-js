@@ -8,16 +8,16 @@
  */
 
 import keyMap from '../jsutils/keyMap';
-import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import type { ObjMap } from '../jsutils/ObjMap';
 import * as Kind from '../language/kinds';
 import {
-  GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
+  isScalarType,
+  isEnumType,
+  isInputObjectType,
+  isListType,
+  isNonNullType,
 } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import type { GraphQLInputType } from '../type/definition';
 import type {
   ValueNode,
@@ -57,7 +57,7 @@ export function valueFromAST(
     return;
   }
 
-  if (type instanceof GraphQLNonNull) {
+  if (isNonNullType(type)) {
     if (valueNode.kind === Kind.NULL) {
       return; // Invalid: intentionally return no value.
     }
@@ -81,7 +81,7 @@ export function valueFromAST(
     return variables[variableName];
   }
 
-  if (type instanceof GraphQLList) {
+  if (isListType(type)) {
     const itemType = type.ofType;
     if (valueNode.kind === Kind.LIST) {
       const coercedValues = [];
@@ -90,7 +90,7 @@ export function valueFromAST(
         if (isMissingVariable(itemNodes[i], variables)) {
           // If an array contains a missing variable, it is either coerced to
           // null or if the item type is non-null, it considered invalid.
-          if (itemType instanceof GraphQLNonNull) {
+          if (isNonNullType(itemType)) {
             return; // Invalid: intentionally return no value.
           }
           coercedValues.push(null);
@@ -111,7 +111,7 @@ export function valueFromAST(
     return [coercedValue];
   }
 
-  if (type instanceof GraphQLInputObjectType) {
+  if (isInputObjectType(type)) {
     if (valueNode.kind !== Kind.OBJECT) {
       return; // Invalid: intentionally return no value.
     }
@@ -129,7 +129,7 @@ export function valueFromAST(
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (!isInvalid(field.defaultValue)) {
           coercedObj[fieldName] = field.defaultValue;
-        } else if (field.type instanceof GraphQLNonNull) {
+        } else if (isNonNullType(field.type)) {
           return; // Invalid: intentionally return no value.
         }
         continue;
@@ -143,7 +143,7 @@ export function valueFromAST(
     return coercedObj;
   }
 
-  if (type instanceof GraphQLEnumType) {
+  if (isEnumType(type)) {
     if (valueNode.kind !== Kind.ENUM) {
       return; // Invalid: intentionally return no value.
     }
@@ -154,21 +154,24 @@ export function valueFromAST(
     return enumValue.value;
   }
 
-  invariant(type instanceof GraphQLScalarType, 'Must be scalar type');
+  if (isScalarType(type)) {
+    // Scalars fulfill parsing a literal value via parseLiteral().
+    // Invalid values represent a failure to parse correctly, in which case
+    // no value is returned.
+    let result;
+    try {
+      result = type.parseLiteral(valueNode, variables);
+    } catch (_error) {
+      return; // Invalid: intentionally return no value.
+    }
+    if (isInvalid(result)) {
+      return; // Invalid: intentionally return no value.
+    }
+    return result;
+  }
 
-  // Scalars fulfill parsing a literal value via parseLiteral().
-  // Invalid values represent a failure to parse correctly, in which case
-  // no value is returned.
-  let result;
-  try {
-    result = type.parseLiteral(valueNode, variables);
-  } catch (_error) {
-    return; // Invalid: intentionally return no value.
-  }
-  if (isInvalid(result)) {
-    return; // Invalid: intentionally return no value.
-  }
-  return result;
+  /* istanbul ignore next */
+  throw new Error(`Unknown type: ${(type: empty)}.`);
 }
 
 // Returns true if the provided valueNode is a variable which is not defined

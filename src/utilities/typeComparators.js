@@ -7,8 +7,12 @@
  * @flow
  */
 
-import { isAbstractType, GraphQLObjectType } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
+import {
+  isObjectType,
+  isListType,
+  isNonNullType,
+  isAbstractType,
+} from '../type/definition';
 import type { GraphQLType, GraphQLCompositeType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
@@ -22,12 +26,12 @@ export function isEqualType(typeA: GraphQLType, typeB: GraphQLType): boolean {
   }
 
   // If either type is non-null, the other must also be non-null.
-  if (typeA instanceof GraphQLNonNull && typeB instanceof GraphQLNonNull) {
+  if (isNonNullType(typeA) && isNonNullType(typeB)) {
     return isEqualType(typeA.ofType, typeB.ofType);
   }
 
   // If either type is a list, the other must also be a list.
-  if (typeA instanceof GraphQLList && typeB instanceof GraphQLList) {
+  if (isListType(typeA) && isListType(typeB)) {
     return isEqualType(typeA.ofType, typeB.ofType);
   }
 
@@ -50,23 +54,25 @@ export function isTypeSubTypeOf(
   }
 
   // If superType is non-null, maybeSubType must also be non-null.
-  if (superType instanceof GraphQLNonNull) {
-    if (maybeSubType instanceof GraphQLNonNull) {
+  if (isNonNullType(superType)) {
+    if (isNonNullType(maybeSubType)) {
       return isTypeSubTypeOf(schema, maybeSubType.ofType, superType.ofType);
     }
     return false;
-  } else if (maybeSubType instanceof GraphQLNonNull) {
+  }
+  if (isNonNullType(maybeSubType)) {
     // If superType is nullable, maybeSubType may be non-null or nullable.
     return isTypeSubTypeOf(schema, maybeSubType.ofType, superType);
   }
 
   // If superType type is a list, maybeSubType type must also be a list.
-  if (superType instanceof GraphQLList) {
-    if (maybeSubType instanceof GraphQLList) {
+  if (isListType(superType)) {
+    if (isListType(maybeSubType)) {
       return isTypeSubTypeOf(schema, maybeSubType.ofType, superType.ofType);
     }
     return false;
-  } else if (maybeSubType instanceof GraphQLList) {
+  }
+  if (isListType(maybeSubType)) {
     // If superType is not a list, maybeSubType must also be not a list.
     return false;
   }
@@ -75,7 +81,7 @@ export function isTypeSubTypeOf(
   // possible object type.
   if (
     isAbstractType(superType) &&
-    maybeSubType instanceof GraphQLObjectType &&
+    isObjectType(maybeSubType) &&
     schema.isPossibleType(superType, maybeSubType)
   ) {
     return true;

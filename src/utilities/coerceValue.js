@@ -13,11 +13,12 @@ import isNullish from '../jsutils/isNullish';
 import { GraphQLError } from '../error';
 import type { ASTNode } from '../language/ast';
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLScalarType,
+  isScalarType,
+  isEnumType,
+  isInputObjectType,
+  isListType,
+  isNonNullType,
 } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import type { GraphQLInputType } from '../type/definition';
 
 type CoercedValue = {|
@@ -41,7 +42,7 @@ export function coerceValue(
   path?: Path,
 ): CoercedValue {
   // A value must be provided if the type is non-null.
-  if (type instanceof GraphQLNonNull) {
+  if (isNonNullType(type)) {
     if (isNullish(value)) {
       return ofErrors([
         coercionError(
@@ -59,7 +60,7 @@ export function coerceValue(
     return ofValue(null);
   }
 
-  if (type instanceof GraphQLScalarType) {
+  if (isScalarType(type)) {
     // Scalars determine if a value is valid via parseValue(), which can
     // throw to indicate failure. If it throws, maintain a reference to
     // the original error.
@@ -78,7 +79,7 @@ export function coerceValue(
     }
   }
 
-  if (type instanceof GraphQLEnumType) {
+  if (isEnumType(type)) {
     if (typeof value === 'string') {
       const enumValue = type.getValue(value);
       if (enumValue) {
@@ -90,7 +91,7 @@ export function coerceValue(
     ]);
   }
 
-  if (type instanceof GraphQLList) {
+  if (isListType(type)) {
     const itemType = type.ofType;
     if (isCollection(value)) {
       let errors;
@@ -115,7 +116,7 @@ export function coerceValue(
     return coercedItem.errors ? coercedItem : ofValue([coercedItem.value]);
   }
 
-  if (type instanceof GraphQLInputObjectType) {
+  if (isInputObjectType(type)) {
     if (typeof value !== 'object') {
       return ofErrors([
         coercionError(`Expected object type ${type.name}`, blameNode, path),
@@ -133,7 +134,7 @@ export function coerceValue(
         if (isInvalid(fieldValue)) {
           if (!isInvalid(field.defaultValue)) {
             coercedValue[fieldName] = field.defaultValue;
-          } else if (field.type instanceof GraphQLNonNull) {
+          } else if (isNonNullType(field.type)) {
             errors = add(
               errors,
               coercionError(
@@ -178,7 +179,8 @@ export function coerceValue(
     return errors ? ofErrors(errors) : ofValue(coercedValue);
   }
 
-  throw new Error(`Unexpected type ${String((type: empty))}`);
+  /* istanbul ignore next */
+  throw new Error(`Unexpected type: ${(type: empty)}.`);
 }
 
 function ofValue(value) {

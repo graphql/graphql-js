@@ -7,6 +7,7 @@
  * @flow
  */
 
+import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import type { ObjMap } from '../jsutils/ObjMap';
@@ -50,20 +51,144 @@ export type GraphQLType =
 
 export function isType(type: mixed): boolean %checks {
   return (
-    type instanceof GraphQLScalarType ||
-    type instanceof GraphQLObjectType ||
-    type instanceof GraphQLInterfaceType ||
-    type instanceof GraphQLUnionType ||
-    type instanceof GraphQLEnumType ||
-    type instanceof GraphQLInputObjectType ||
-    type instanceof GraphQLList ||
-    type instanceof GraphQLNonNull
+    isScalarType(type) ||
+    isObjectType(type) ||
+    isInterfaceType(type) ||
+    isUnionType(type) ||
+    isEnumType(type) ||
+    isInputObjectType(type) ||
+    isListType(type) ||
+    isNonNullType(type)
   );
 }
 
 export function assertType(type: mixed): GraphQLType {
   invariant(isType(type), `Expected ${String(type)} to be a GraphQL type.`);
   return (type: any);
+}
+
+/**
+ * There are predicates for each kind of GraphQL type.
+ */
+
+declare function isScalarType(type: mixed): boolean %checks(type instanceof
+  GraphQLScalarType);
+// eslint-disable-next-line no-redeclare
+export function isScalarType(type) {
+  return instanceOf(type, GraphQLScalarType);
+}
+
+export function assertScalarType(type: mixed): GraphQLScalarType {
+  invariant(
+    isScalarType(type),
+    `Expected ${String(type)} to be a GraphQL Scalar type.`,
+  );
+  return type;
+}
+
+declare function isObjectType(type: mixed): boolean %checks(type instanceof
+  GraphQLObjectType);
+// eslint-disable-next-line no-redeclare
+export function isObjectType(type) {
+  return instanceOf(type, GraphQLObjectType);
+}
+
+export function assertObjectType(type: mixed): GraphQLObjectType {
+  invariant(
+    isObjectType(type),
+    `Expected ${String(type)} to be a GraphQL Object type.`,
+  );
+  return type;
+}
+
+declare function isInterfaceType(type: mixed): boolean %checks(type instanceof
+  GraphQLInterfaceType);
+// eslint-disable-next-line no-redeclare
+export function isInterfaceType(type) {
+  return instanceOf(type, GraphQLInterfaceType);
+}
+
+export function assertInterfaceType(type: mixed): GraphQLInterfaceType {
+  invariant(
+    isInterfaceType(type),
+    `Expected ${String(type)} to be a GraphQL Interface type.`,
+  );
+  return type;
+}
+
+declare function isUnionType(type: mixed): boolean %checks(type instanceof
+  GraphQLUnionType);
+// eslint-disable-next-line no-redeclare
+export function isUnionType(type) {
+  return instanceOf(type, GraphQLUnionType);
+}
+
+export function assertUnionType(type: mixed): GraphQLUnionType {
+  invariant(
+    isUnionType(type),
+    `Expected ${String(type)} to be a GraphQL Union type.`,
+  );
+  return type;
+}
+
+declare function isEnumType(type: mixed): boolean %checks(type instanceof
+  GraphQLEnumType);
+// eslint-disable-next-line no-redeclare
+export function isEnumType(type) {
+  return instanceOf(type, GraphQLEnumType);
+}
+
+export function assertEnumType(type: mixed): GraphQLEnumType {
+  invariant(
+    isEnumType(type),
+    `Expected ${String(type)} to be a GraphQL Enum type.`,
+  );
+  return type;
+}
+
+declare function isInputObjectType(type: mixed): boolean %checks(type instanceof
+  GraphQLInputObjectType);
+// eslint-disable-next-line no-redeclare
+export function isInputObjectType(type) {
+  return instanceOf(type, GraphQLInputObjectType);
+}
+
+export function assertInputObjectType(type: mixed): GraphQLInputObjectType {
+  invariant(
+    isInputObjectType(type),
+    `Expected ${String(type)} to be a GraphQL Input Object type.`,
+  );
+  return type;
+}
+
+declare function isListType(type: mixed): boolean %checks(type instanceof
+  GraphQLList);
+// eslint-disable-next-line no-redeclare
+export function isListType(type) {
+  return instanceOf(type, GraphQLList);
+}
+
+export function assertListType(type: mixed): GraphQLList<any> {
+  invariant(
+    isListType(type),
+    `Expected ${String(type)} to be a GraphQL List type.`,
+  );
+  return type;
+}
+
+declare function isNonNullType(type: mixed): boolean %checks(type instanceof
+  GraphQLNonNull);
+// eslint-disable-next-line no-redeclare
+export function isNonNullType(type) {
+  return instanceOf(type, GraphQLNonNull);
+}
+
+export function assertNonNullType(type: mixed): GraphQLNonNull<any> {
+  invariant(
+    isNonNullType(type),
+    `Expected ${String(type)} to be a GraphQL Non-Null type.`,
+  );
+  return type;
 }
 
 /**
@@ -81,17 +206,16 @@ export type GraphQLInputType =
       | GraphQLList<GraphQLInputType>,
     >;
 
-export function isInputType(type: ?GraphQLType): boolean %checks {
+export function isInputType(type: mixed): boolean %checks {
   return (
-    type instanceof GraphQLScalarType ||
-    type instanceof GraphQLEnumType ||
-    type instanceof GraphQLInputObjectType ||
-    (type instanceof GraphQLNonNull && isInputType(type.ofType)) ||
-    (type instanceof GraphQLList && isInputType(type.ofType))
+    isScalarType(type) ||
+    isEnumType(type) ||
+    isInputObjectType(type) ||
+    (isWrappingType(type) && isInputType(type.ofType))
   );
 }
 
-export function assertInputType(type: ?GraphQLType): GraphQLInputType {
+export function assertInputType(type: mixed): GraphQLInputType {
   invariant(
     isInputType(type),
     `Expected ${String(type)} to be a GraphQL input type.`,
@@ -118,19 +242,18 @@ export type GraphQLOutputType =
       | GraphQLList<GraphQLOutputType>,
     >;
 
-export function isOutputType(type: ?GraphQLType): boolean %checks {
+export function isOutputType(type: mixed): boolean %checks {
   return (
-    type instanceof GraphQLScalarType ||
-    type instanceof GraphQLObjectType ||
-    type instanceof GraphQLInterfaceType ||
-    type instanceof GraphQLUnionType ||
-    type instanceof GraphQLEnumType ||
-    (type instanceof GraphQLNonNull && isOutputType(type.ofType)) ||
-    (type instanceof GraphQLList && isOutputType(type.ofType))
+    isScalarType(type) ||
+    isObjectType(type) ||
+    isInterfaceType(type) ||
+    isUnionType(type) ||
+    isEnumType(type) ||
+    (isWrappingType(type) && isOutputType(type.ofType))
   );
 }
 
-export function assertOutputType(type: ?GraphQLType): GraphQLOutputType {
+export function assertOutputType(type: mixed): GraphQLOutputType {
   invariant(
     isOutputType(type),
     `Expected ${String(type)} to be a GraphQL output type.`,
@@ -143,11 +266,11 @@ export function assertOutputType(type: ?GraphQLType): GraphQLOutputType {
  */
 export type GraphQLLeafType = GraphQLScalarType | GraphQLEnumType;
 
-export function isLeafType(type: ?GraphQLType): boolean %checks {
-  return type instanceof GraphQLScalarType || type instanceof GraphQLEnumType;
+export function isLeafType(type: mixed): boolean %checks {
+  return isScalarType(type) || isEnumType(type);
 }
 
-export function assertLeafType(type: ?GraphQLType): GraphQLLeafType {
+export function assertLeafType(type: mixed): GraphQLLeafType {
   invariant(
     isLeafType(type),
     `Expected ${String(type)} to be a GraphQL leaf type.`,
@@ -163,15 +286,11 @@ export type GraphQLCompositeType =
   | GraphQLInterfaceType
   | GraphQLUnionType;
 
-export function isCompositeType(type: ?GraphQLType): boolean %checks {
-  return (
-    type instanceof GraphQLObjectType ||
-    type instanceof GraphQLInterfaceType ||
-    type instanceof GraphQLUnionType
-  );
+export function isCompositeType(type: mixed): boolean %checks {
+  return isObjectType(type) || isInterfaceType(type) || isUnionType(type);
 }
 
-export function assertCompositeType(type: ?GraphQLType): GraphQLCompositeType {
+export function assertCompositeType(type: mixed): GraphQLCompositeType {
   invariant(
     isCompositeType(type),
     `Expected ${String(type)} to be a GraphQL composite type.`,
@@ -184,16 +303,32 @@ export function assertCompositeType(type: ?GraphQLType): GraphQLCompositeType {
  */
 export type GraphQLAbstractType = GraphQLInterfaceType | GraphQLUnionType;
 
-export function isAbstractType(type: ?GraphQLType): boolean %checks {
-  return (
-    type instanceof GraphQLInterfaceType || type instanceof GraphQLUnionType
-  );
+export function isAbstractType(type: mixed): boolean %checks {
+  return isInterfaceType(type) || isUnionType(type);
 }
 
-export function assertAbstractType(type: ?GraphQLType): GraphQLAbstractType {
+export function assertAbstractType(type: mixed): GraphQLAbstractType {
   invariant(
     isAbstractType(type),
     `Expected ${String(type)} to be a GraphQL abstract type.`,
+  );
+  return type;
+}
+
+/**
+ * These types wrap and modify other types
+ */
+
+export type GraphQLWrappingType = GraphQLList<any> | GraphQLNonNull<any>;
+
+export function isWrappingType(type: mixed): boolean %checks {
+  return isListType(type) || isNonNullType(type);
+}
+
+export function assertWrappingType(type: mixed): GraphQLWrappingType {
+  invariant(
+    isWrappingType(type),
+    `Expected ${String(type)} to be a GraphQL wrapping type.`,
   );
   return type;
 }
@@ -210,6 +345,18 @@ export type GraphQLNullableType =
   | GraphQLInputObjectType
   | GraphQLList<any>;
 
+export function isNullableType(type: mixed): boolean %checks {
+  return isType(type) && !isNonNullType(type);
+}
+
+export function assertNullableType(type: mixed): GraphQLNullableType {
+  invariant(
+    isNullableType(type),
+    `Expected ${String(type)} to be a GraphQL nullable type.`,
+  );
+  return type;
+}
+
 /* eslint-disable no-redeclare */
 declare function getNullableType(type: void | null): void;
 declare function getNullableType<T: GraphQLNullableType>(type: T): T;
@@ -217,7 +364,7 @@ declare function getNullableType<T>(type: GraphQLNonNull<T>): T;
 export function getNullableType(type) {
   /* eslint-enable no-redeclare */
   if (type) {
-    return type instanceof GraphQLNonNull ? type.ofType : type;
+    return isNonNullType(type) ? type.ofType : type;
   }
 }
 
@@ -232,18 +379,18 @@ export type GraphQLNamedType =
   | GraphQLEnumType
   | GraphQLInputObjectType;
 
-export function isNamedType(type: ?GraphQLType): boolean %checks {
+export function isNamedType(type: mixed): boolean %checks {
   return (
-    type instanceof GraphQLScalarType ||
-    type instanceof GraphQLObjectType ||
-    type instanceof GraphQLInterfaceType ||
-    type instanceof GraphQLUnionType ||
-    type instanceof GraphQLEnumType ||
-    type instanceof GraphQLInputObjectType
+    isScalarType(type) ||
+    isObjectType(type) ||
+    isInterfaceType(type) ||
+    isUnionType(type) ||
+    isEnumType(type) ||
+    isInputObjectType(type)
   );
 }
 
-export function assertNamedType(type: ?GraphQLType): GraphQLNamedType {
+export function assertNamedType(type: mixed): GraphQLNamedType {
   invariant(
     isNamedType(type),
     `Expected ${String(type)} to be a GraphQL named type.`,
@@ -257,14 +404,11 @@ declare function getNamedType(type: GraphQLType): GraphQLNamedType;
 export function getNamedType(type) {
   /* eslint-enable no-redeclare */
   if (type) {
-    let unmodifiedType = type;
-    while (
-      unmodifiedType instanceof GraphQLList ||
-      unmodifiedType instanceof GraphQLNonNull
-    ) {
-      unmodifiedType = unmodifiedType.ofType;
+    let unwrappedType = type;
+    while (isWrappingType(unwrappedType)) {
+      unwrappedType = unwrappedType.ofType;
     }
-    return unmodifiedType;
+    return unwrappedType;
   }
 }
 
@@ -821,7 +965,7 @@ function defineTypes(
   const includedTypeNames = Object.create(null);
   types.forEach(objType => {
     invariant(
-      objType instanceof GraphQLObjectType,
+      isObjectType(objType),
       `${unionType.name} may only contain Object types, it cannot contain: ` +
         `${String(objType)}.`,
     );

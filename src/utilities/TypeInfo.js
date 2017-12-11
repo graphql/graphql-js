@@ -9,17 +9,17 @@
 
 import * as Kind from '../language/kinds';
 import {
+  isObjectType,
+  isInterfaceType,
+  isEnumType,
+  isInputObjectType,
+  isListType,
   isCompositeType,
   isInputType,
   isOutputType,
   getNullableType,
   getNamedType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLInputObjectType,
-  GraphQLEnumType,
 } from '../type/definition';
-import { GraphQLList } from '../type/wrappers';
 import type {
   GraphQLType,
   GraphQLInputType,
@@ -176,13 +176,13 @@ export class TypeInfo {
       case Kind.LIST:
         const listType = getNullableType(this.getInputType());
         this._inputTypeStack.push(
-          listType instanceof GraphQLList ? listType.ofType : undefined,
+          isListType(listType) ? listType.ofType : undefined,
         );
         break;
       case Kind.OBJECT_FIELD:
         const objectType = getNamedType(this.getInputType());
         let fieldType;
-        if (objectType instanceof GraphQLInputObjectType) {
+        if (isInputObjectType(objectType)) {
           const inputField = objectType.getFields()[node.name.value];
           fieldType = inputField ? inputField.type : undefined;
         }
@@ -191,7 +191,7 @@ export class TypeInfo {
       case Kind.ENUM:
         const enumType = getNamedType(this.getInputType());
         let enumValue;
-        if (enumType instanceof GraphQLEnumType) {
+        if (isEnumType(enumType)) {
           enumValue = enumType.getValue(node.value);
         }
         this._enumValue = enumValue;
@@ -257,10 +257,7 @@ function getFieldDef(
   if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
     return TypeNameMetaFieldDef;
   }
-  if (
-    parentType instanceof GraphQLObjectType ||
-    parentType instanceof GraphQLInterfaceType
-  ) {
+  if (isObjectType(parentType) || isInterfaceType(parentType)) {
     return parentType.getFields()[name];
   }
 }

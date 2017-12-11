@@ -8,16 +8,16 @@
  */
 
 import {
+  isScalarType,
+  isObjectType,
+  isInterfaceType,
+  isUnionType,
+  isEnumType,
+  isInputObjectType,
+  isNonNullType,
+  isListType,
   isNamedType,
-  GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLInterfaceType,
-  GraphQLObjectType,
-  GraphQLUnionType,
 } from '../type/definition';
-
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import type {
   GraphQLNamedType,
@@ -140,7 +140,7 @@ export function findTypesThatChangedKind(
     }
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (!(oldType instanceof newType.constructor)) {
+    if (oldType.constructor !== newType.constructor) {
       breakingChanges.push({
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
@@ -175,11 +175,9 @@ export function findArgChanges(
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
     if (
-      !(
-        oldType instanceof GraphQLObjectType ||
-        oldType instanceof GraphQLInterfaceType
-      ) ||
-      !(newType instanceof oldType.constructor)
+      !(isObjectType(oldType) || isInterfaceType(oldType)) ||
+      !(isObjectType(newType) || isInterfaceType(newType)) ||
+      newType.constructor !== oldType.constructor
     ) {
       return;
     }
@@ -235,7 +233,7 @@ export function findArgChanges(
         const oldArgs = oldTypeFields[fieldName].args;
         const oldArgDef = oldArgs.find(arg => arg.name === newArgDef.name);
         if (!oldArgDef) {
-          if (newArgDef.type instanceof GraphQLNonNull) {
+          if (isNonNullType(newArgDef.type)) {
             breakingChanges.push({
               type: BreakingChangeType.NON_NULL_ARG_ADDED,
               description:
@@ -262,22 +260,22 @@ export function findArgChanges(
 }
 
 function typeKindName(type: GraphQLNamedType): string {
-  if (type instanceof GraphQLScalarType) {
+  if (isScalarType(type)) {
     return 'a Scalar type';
   }
-  if (type instanceof GraphQLObjectType) {
+  if (isObjectType(type)) {
     return 'an Object type';
   }
-  if (type instanceof GraphQLInterfaceType) {
+  if (isInterfaceType(type)) {
     return 'an Interface type';
   }
-  if (type instanceof GraphQLUnionType) {
+  if (isUnionType(type)) {
     return 'a Union type';
   }
-  if (type instanceof GraphQLEnumType) {
+  if (isEnumType(type)) {
     return 'an Enum type';
   }
-  if (type instanceof GraphQLInputObjectType) {
+  if (isInputObjectType(type)) {
     return 'an Input type';
   }
   throw new TypeError('Unknown type ' + type.constructor.name);
@@ -295,11 +293,9 @@ export function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
     if (
-      !(
-        oldType instanceof GraphQLObjectType ||
-        oldType instanceof GraphQLInterfaceType
-      ) ||
-      !(newType instanceof oldType.constructor)
+      !(isObjectType(oldType) || isInterfaceType(oldType)) ||
+      !(isObjectType(newType) || isInterfaceType(newType)) ||
+      newType.constructor !== oldType.constructor
     ) {
       return;
     }
@@ -355,10 +351,7 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (
-      !(oldType instanceof GraphQLInputObjectType) ||
-      !(newType instanceof GraphQLInputObjectType)
-    ) {
+    if (!isInputObjectType(oldType) || !isInputObjectType(newType)) {
       return;
     }
 
@@ -398,7 +391,7 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(
     // Check if a field was added to the input object type
     Object.keys(newTypeFieldsDef).forEach(fieldName => {
       if (!(fieldName in oldTypeFieldsDef)) {
-        if (newTypeFieldsDef[fieldName].type instanceof GraphQLNonNull) {
+        if (isNonNullType(newTypeFieldsDef[fieldName].type)) {
           breakingChanges.push({
             type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
             description:
@@ -431,25 +424,25 @@ function isChangeSafeForObjectOrInterfaceField(
       // if they're both named types, see if their names are equivalent
       (isNamedType(newType) && oldType.name === newType.name) ||
       // moving from nullable to non-null of the same underlying type is safe
-      (newType instanceof GraphQLNonNull &&
+      (isNonNullType(newType) &&
         isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
     );
-  } else if (oldType instanceof GraphQLList) {
+  } else if (isListType(oldType)) {
     return (
       // if they're both lists, make sure the underlying types are compatible
-      (newType instanceof GraphQLList &&
+      (isListType(newType) &&
         isChangeSafeForObjectOrInterfaceField(
           oldType.ofType,
           newType.ofType,
         )) ||
       // moving from nullable to non-null of the same underlying type is safe
-      (newType instanceof GraphQLNonNull &&
+      (isNonNullType(newType) &&
         isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
     );
-  } else if (oldType instanceof GraphQLNonNull) {
+  } else if (isNonNullType(oldType)) {
     // if they're both non-null, make sure the underlying types are compatible
     return (
-      newType instanceof GraphQLNonNull &&
+      isNonNullType(newType) &&
       isChangeSafeForObjectOrInterfaceField(oldType.ofType, newType.ofType)
     );
   }
@@ -463,23 +456,23 @@ function isChangeSafeForInputObjectFieldOrFieldArg(
   if (isNamedType(oldType)) {
     // if they're both named types, see if their names are equivalent
     return isNamedType(newType) && oldType.name === newType.name;
-  } else if (oldType instanceof GraphQLList) {
+  } else if (isListType(oldType)) {
     // if they're both lists, make sure the underlying types are compatible
     return (
-      newType instanceof GraphQLList &&
+      isListType(newType) &&
       isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType.ofType)
     );
-  } else if (oldType instanceof GraphQLNonNull) {
+  } else if (isNonNullType(oldType)) {
     return (
       // if they're both non-null, make sure the underlying types are
       // compatible
-      (newType instanceof GraphQLNonNull &&
+      (isNonNullType(newType) &&
         isChangeSafeForInputObjectFieldOrFieldArg(
           oldType.ofType,
           newType.ofType,
         )) ||
       // moving from non-null to nullable of the same underlying type is safe
-      (!(newType instanceof GraphQLNonNull) &&
+      (!isNonNullType(newType) &&
         isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType))
     );
   }
@@ -501,10 +494,7 @@ export function findTypesRemovedFromUnions(
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (
-      !(oldType instanceof GraphQLUnionType) ||
-      !(newType instanceof GraphQLUnionType)
-    ) {
+    if (!isUnionType(oldType) || !isUnionType(newType)) {
       return;
     }
     const typeNamesInNewUnion = Object.create(null);
@@ -538,10 +528,7 @@ export function findTypesAddedToUnions(
   Object.keys(newTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (
-      !(oldType instanceof GraphQLUnionType) ||
-      !(newType instanceof GraphQLUnionType)
-    ) {
+    if (!isUnionType(oldType) || !isUnionType(newType)) {
       return;
     }
     const typeNamesInOldUnion = Object.create(null);
@@ -574,10 +561,7 @@ export function findValuesRemovedFromEnums(
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (
-      !(oldType instanceof GraphQLEnumType) ||
-      !(newType instanceof GraphQLEnumType)
-    ) {
+    if (!isEnumType(oldType) || !isEnumType(newType)) {
       return;
     }
     const valuesInNewEnum = Object.create(null);
@@ -611,10 +595,7 @@ export function findValuesAddedToEnums(
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (
-      !(oldType instanceof GraphQLEnumType) ||
-      !(newType instanceof GraphQLEnumType)
-    ) {
+    if (!isEnumType(oldType) || !isEnumType(newType)) {
       return;
     }
 
@@ -645,10 +626,7 @@ export function findInterfacesRemovedFromObjectTypes(
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (
-      !(oldType instanceof GraphQLObjectType) ||
-      !(newType instanceof GraphQLObjectType)
-    ) {
+    if (!isObjectType(oldType) || !isObjectType(newType)) {
       return;
     }
 
@@ -679,10 +657,7 @@ export function findInterfacesAddedToObjectTypes(
   Object.keys(newTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (
-      !(oldType instanceof GraphQLObjectType) ||
-      !(newType instanceof GraphQLObjectType)
-    ) {
+    if (!isObjectType(oldType) || !isObjectType(newType)) {
       return;
     }
 

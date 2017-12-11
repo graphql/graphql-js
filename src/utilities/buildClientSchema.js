@@ -25,6 +25,9 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  assertNullableType,
+  assertObjectType,
+  assertInterfaceType,
 } from '../type/definition';
 
 import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
@@ -117,11 +120,7 @@ export function buildClientSchema(
         throw new Error('Decorated type deeper than introspection query.');
       }
       const nullableType = getType(nullableRef);
-      invariant(
-        !(nullableType instanceof GraphQLNonNull),
-        'No nesting nonnull.',
-      );
-      return GraphQLNonNull(nullableType);
+      return GraphQLNonNull(assertNullableType(nullableType));
     }
     if (!typeRef.name) {
       throw new Error('Unknown type reference: ' + JSON.stringify(typeRef));
@@ -170,22 +169,14 @@ export function buildClientSchema(
     typeRef: IntrospectionNamedTypeRef<IntrospectionObjectType>,
   ): GraphQLObjectType {
     const type = getType(typeRef);
-    invariant(
-      type instanceof GraphQLObjectType,
-      'Introspection must provide object type for possibleTypes.',
-    );
-    return type;
+    return assertObjectType(type);
   }
 
   function getInterfaceType(
     typeRef: IntrospectionTypeRef,
   ): GraphQLInterfaceType {
     const type = getType(typeRef);
-    invariant(
-      type instanceof GraphQLInterfaceType,
-      'Introspection must provide interface type for interfaces.',
-    );
-    return type;
+    return assertInterfaceType(type);
   }
 
   // Given a type's introspection result, construct the correct

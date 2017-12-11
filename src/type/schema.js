@@ -8,24 +8,37 @@
  */
 
 import {
-  GraphQLObjectType,
-  GraphQLInputObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
+  isObjectType,
+  isInterfaceType,
+  isUnionType,
+  isInputObjectType,
+  isWrappingType,
 } from './definition';
-import { GraphQLList, GraphQLNonNull } from './wrappers';
 import type {
   GraphQLType,
   GraphQLNamedType,
   GraphQLAbstractType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
 } from './definition';
 import type { SchemaDefinitionNode } from '../language/ast';
 import { GraphQLDirective, specifiedDirectives } from './directives';
 import type { GraphQLError } from '../error/GraphQLError';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
+import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import type { ObjMap } from '../jsutils/ObjMap';
+
+/**
+ * Test if the given value is a GraphQL schema.
+ */
+declare function isSchema(schema: mixed): boolean %checks(schema instanceof
+  GraphQLSchema);
+// eslint-disable-next-line no-redeclare
+export function isSchema(schema) {
+  return instanceOf(schema, GraphQLSchema);
+}
 
 /**
  * Schema Definition
@@ -117,7 +130,7 @@ export class GraphQLSchema {
     this._implementations = Object.create(null);
     Object.keys(this._typeMap).forEach(typeName => {
       const type = this._typeMap[typeName];
-      if (type instanceof GraphQLObjectType) {
+      if (isObjectType(type)) {
         type.getInterfaces().forEach(iface => {
           const impls = this._implementations[iface.name];
           if (impls) {
@@ -153,11 +166,10 @@ export class GraphQLSchema {
   getPossibleTypes(
     abstractType: GraphQLAbstractType,
   ): $ReadOnlyArray<GraphQLObjectType> {
-    if (abstractType instanceof GraphQLUnionType) {
+    if (isUnionType(abstractType)) {
       return abstractType.getTypes();
     }
-    invariant(abstractType instanceof GraphQLInterfaceType);
-    return this._implementations[abstractType.name];
+    return this._implementations[(abstractType: GraphQLInterfaceType).name];
   }
 
   isPossibleType(
@@ -211,7 +223,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (!type) {
     return map;
   }
-  if (type instanceof GraphQLList || type instanceof GraphQLNonNull) {
+  if (isWrappingType(type)) {
     return typeMapReducer(map, type.ofType);
   }
   if (map[type.name]) {
@@ -226,18 +238,15 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
 
   let reducedMap = map;
 
-  if (type instanceof GraphQLUnionType) {
+  if (isUnionType(type)) {
     reducedMap = type.getTypes().reduce(typeMapReducer, reducedMap);
   }
 
-  if (type instanceof GraphQLObjectType) {
+  if (isObjectType(type)) {
     reducedMap = type.getInterfaces().reduce(typeMapReducer, reducedMap);
   }
 
-  if (
-    type instanceof GraphQLObjectType ||
-    type instanceof GraphQLInterfaceType
-  ) {
+  if (isObjectType(type) || isInterfaceType(type)) {
     const fieldMap = type.getFields();
     Object.keys(fieldMap).forEach(fieldName => {
       const field = fieldMap[fieldName];
@@ -250,7 +259,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
     });
   }
 
-  if (type instanceof GraphQLInputObjectType) {
+  if (isInputObjectType(type)) {
     const fieldMap = type.getFields();
     Object.keys(fieldMap).forEach(fieldName => {
       const field = fieldMap[fieldName];

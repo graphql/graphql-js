@@ -7,7 +7,6 @@
  * @flow
  */
 
-import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import type { ObjMap } from '../jsutils/ObjMap';
@@ -47,8 +46,11 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  assertObjectType,
+  assertInterfaceType,
   assertInputType,
   assertOutputType,
+  assertNullableType,
 } from '../type/definition';
 
 import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
@@ -103,8 +105,7 @@ function buildWrappedType(
   }
   if (inputTypeNode.kind === Kind.NON_NULL_TYPE) {
     const wrappedType = buildWrappedType(innerType, inputTypeNode.type);
-    invariant(!(wrappedType instanceof GraphQLNonNull), 'No nesting nonnull.');
-    return GraphQLNonNull(wrappedType);
+    return GraphQLNonNull(assertNullableType(wrappedType));
   }
   return innerType;
 }
@@ -308,14 +309,12 @@ export class ASTDefinitionBuilder {
 
   buildObjectType(ref: string | NamedTypeNode): GraphQLObjectType {
     const type = this.buildType(ref);
-    invariant(type instanceof GraphQLObjectType, 'Expected Object type.');
-    return type;
+    return assertObjectType(type);
   }
 
   buildInterfaceType(ref: string | NamedTypeNode): GraphQLInterfaceType {
     const type = this.buildType(ref);
-    invariant(type instanceof GraphQLInterfaceType, 'Expected Interface type.');
-    return type;
+    return assertInterfaceType(type);
   }
 
   _buildWrappedType(typeNode: TypeNode): GraphQLType {

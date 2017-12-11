@@ -22,12 +22,15 @@ import {
   getDirectiveValues,
 } from './values';
 import {
-  GraphQLObjectType,
+  isObjectType,
   isAbstractType,
   isLeafType,
+  isListType,
+  isNonNullType,
 } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
+import type { GraphQLList } from '../type/wrappers';
 import type {
+  GraphQLObjectType,
   GraphQLOutputType,
   GraphQLLeafType,
   GraphQLAbstractType,
@@ -807,7 +810,7 @@ function completeValueCatchingError(
 ): mixed {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
-  if (returnType instanceof GraphQLNonNull) {
+  if (isNonNullType(returnType)) {
     return completeValueWithLocatedError(
       exeContext,
       returnType,
@@ -934,7 +937,7 @@ function completeValue(
 
   // If field type is NonNull, complete for inner type, and throw field error
   // if result is null.
-  if (returnType instanceof GraphQLNonNull) {
+  if (isNonNullType(returnType)) {
     const completed = completeValue(
       exeContext,
       returnType.ofType,
@@ -959,7 +962,7 @@ function completeValue(
   }
 
   // If field type is List, complete each item in the list with the inner type
-  if (returnType instanceof GraphQLList) {
+  if (isListType(returnType)) {
     return completeListValue(
       exeContext,
       returnType,
@@ -990,7 +993,7 @@ function completeValue(
   }
 
   // If field type is Object, execute and complete all sub-selections.
-  if (returnType instanceof GraphQLObjectType) {
+  if (isObjectType(returnType)) {
     return completeObjectValue(
       exeContext,
       returnType,
@@ -1002,6 +1005,7 @@ function completeValue(
   }
 
   // Not reachable. All possible output types have been considered.
+  /* istanbul ignore next */
   throw new Error(
     `Cannot complete value of unexpected type "${String(
       (returnType: empty),
@@ -1015,7 +1019,7 @@ function completeValue(
  */
 function completeListValue(
   exeContext: ExecutionContext,
-  returnType: GraphQLList<*>,
+  returnType: GraphQLList<GraphQLOutputType>,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
@@ -1138,7 +1142,7 @@ function ensureValidRuntimeType(
       ? exeContext.schema.getType(runtimeTypeOrName)
       : runtimeTypeOrName;
 
-  if (!(runtimeType instanceof GraphQLObjectType)) {
+  if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
       `Abstract type ${returnType.name} must resolve to an Object type at ` +
         `runtime for field ${info.parentType.name}.${info.fieldName} with ` +

@@ -58,7 +58,7 @@ export function valueFromASTUntyped(
       return variables && !isInvalid(variables[variableName])
         ? variables[variableName]
         : undefined;
-    default:
-      throw new Error('Unexpected value kind: ' + (valueNode.kind: empty));
   }
+  /* istanbul ignore next */
+  throw new Error('Unexpected value kind: ' + (valueNode.kind: empty));
 }

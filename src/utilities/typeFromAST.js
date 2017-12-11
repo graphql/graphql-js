@@ -7,7 +7,6 @@
  * @flow
  */
 
-import invariant from '../jsutils/invariant';
 import * as Kind from '../language/kinds';
 import type {
   NamedTypeNode,
@@ -49,8 +48,11 @@ function typeFromASTImpl(schema, typeNode) {
     innerType = typeFromAST(schema, typeNode.type);
     return innerType && GraphQLNonNull(innerType);
   }
-  invariant(typeNode.kind === Kind.NAMED_TYPE, 'Must be a named type.');
-  return schema.getType(typeNode.name.value);
+  if (typeNode.kind === Kind.NAMED_TYPE) {
+    return schema.getType(typeNode.name.value);
+  }
+  /* istanbul ignore next */
+  throw new Error(`Unexpected type kind: ${(typeNode.kind: empty)}.`);
 }
 // This will export typeFromAST with the correct type, but currently exposes
 // ~26 errors: https://gist.github.com/4a29403a99a8186fcb15064d69c5f3ae

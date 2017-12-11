@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import { isNonNullType } from '../../type/definition';
 import { GraphQLNonNull } from '../../type/wrappers';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
@@ -73,7 +74,7 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
 
 // If a variable definition has a default value, it's effectively non-null.
 function effectiveType(varType, varDef) {
-  return !varDef.defaultValue || varType instanceof GraphQLNonNull
+  return !varDef.defaultValue || isNonNullType(varType)
     ? varType
     : GraphQLNonNull(varType);
 }

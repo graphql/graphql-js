@@ -15,8 +15,8 @@ import type { FieldNode } from '../../language/ast';
 import type { GraphQLSchema } from '../../type/schema';
 import type { GraphQLOutputType } from '../../type/definition';
 import {
-  GraphQLObjectType,
-  GraphQLInterfaceType,
+  isObjectType,
+  isInterfaceType,
   isAbstractType,
 } from '../../type/definition';
 
@@ -134,10 +134,7 @@ function getSuggestedFieldNames(
   type: GraphQLOutputType,
   fieldName: string,
 ): Array<string> {
-  if (
-    type instanceof GraphQLObjectType ||
-    type instanceof GraphQLInterfaceType
-  ) {
+  if (isObjectType(type) || isInterfaceType(type)) {
     const possibleFieldNames = Object.keys(type.getFields());
     return suggestionList(fieldName, possibleFieldNames);
   }

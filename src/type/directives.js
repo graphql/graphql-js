@@ -15,6 +15,7 @@ import type {
   GraphQLArgument,
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
+import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import { assertValidName } from '../utilities/assertValidName';
 import type { DirectiveDefinitionNode } from '../language/ast';
@@ -22,6 +23,17 @@ import {
   DirectiveLocation,
   type DirectiveLocationEnum,
 } from '../language/directiveLocation';
+
+/**
+ * Test if the given value is a GraphQL directive.
+ */
+declare function isDirective(
+  directive: mixed,
+): boolean %checks(directive instanceof GraphQLDirective);
+// eslint-disable-next-line no-redeclare
+export function isDirective(directive) {
+  return instanceOf(directive, GraphQLDirective);
+}
 
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution

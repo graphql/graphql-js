@@ -7,19 +7,26 @@
  * @flow
  */
 
-import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 import {
+  isScalarType,
+  isObjectType,
+  isInterfaceType,
+  isUnionType,
+  isEnumType,
+  isInputObjectType,
+} from '../type/definition';
+import type {
+  GraphQLNamedType,
   GraphQLScalarType,
+  GraphQLEnumType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
-  GraphQLEnumType,
   GraphQLInputObjectType,
 } from '../type/definition';
 import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
@@ -28,7 +35,6 @@ import {
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
 } from '../type/directives';
-
 import { isIntrospectionType } from '../type/introspection';
 
 type Options = {| commentDescriptions?: boolean |};
@@ -145,20 +151,22 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   return true;
 }
 
-export function printType(type: GraphQLType, options?: Options): string {
-  if (type instanceof GraphQLScalarType) {
+export function printType(type: GraphQLNamedType, options?: Options): string {
+  if (isScalarType(type)) {
     return printScalar(type, options);
-  } else if (type instanceof GraphQLObjectType) {
+  } else if (isObjectType(type)) {
     return printObject(type, options);
-  } else if (type instanceof GraphQLInterfaceType) {
+  } else if (isInterfaceType(type)) {
     return printInterface(type, options);
-  } else if (type instanceof GraphQLUnionType) {
+  } else if (isUnionType(type)) {
     return printUnion(type, options);
-  } else if (type instanceof GraphQLEnumType) {
+  } else if (isEnumType(type)) {
     return printEnum(type, options);
+  } else if (isInputObjectType(type)) {
+    return printInputObject(type, options);
   }
-  invariant(type instanceof GraphQLInputObjectType);
-  return printInputObject(type, options);
+  /* istanbul ignore next */
+  throw new Error(`Unknown type: ${(type: empty)}.`);
 }
 
 function printScalar(type: GraphQLScalarType, options): string {

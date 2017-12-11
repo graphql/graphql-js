@@ -8,6 +8,7 @@
  */
 
 export default function invariant(condition: mixed, message: string) {
+  /* istanbul ignore else */
   if (!condition) {
     throw new Error(message);
   }
