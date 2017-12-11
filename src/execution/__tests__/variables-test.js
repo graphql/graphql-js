@@ -11,7 +11,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../execute';
-import { coerceValue } from '../values';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -301,8 +300,8 @@ describe('Execute: Handles inputs', () => {
             {
               message:
                 'Variable "$input" got invalid value ' +
-                '{"a":"foo","b":"bar","c":null}.' +
-                '\nIn field "c": Expected "String!", found null.',
+                '{"a":"foo","b":"bar","c":null}; ' +
+                'Expected non-nullable type String! at value.c.',
               locations: [{ line: 2, column: 17 }],
               path: undefined,
             },
@@ -318,8 +317,8 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value "foo bar".' +
-                '\nExpected "TestInputObject", found not an object.',
+                'Variable "$input" got invalid value "foo bar"; ' +
+                'Expected object type TestInputObject.',
               locations: [{ line: 2, column: 17 }],
               path: undefined,
             },
@@ -335,8 +334,8 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value {"a":"foo","b":"bar"}.' +
-                '\nIn field "c": Expected "String!", found null.',
+                'Variable "$input" got invalid value {"a":"foo","b":"bar"}; ' +
+                'Field value.c of required type String! was not provided.',
               locations: [{ line: 2, column: 17 }],
               path: undefined,
             },
@@ -358,10 +357,15 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value {"na":{"a":"foo"}}.' +
-                '\nIn field "na": In field "c": Expected "String!", ' +
-                'found null.' +
-                '\nIn field "nb": Expected "String!", found null.',
+                'Variable "$input" got invalid value {"na":{"a":"foo"}}; ' +
+                'Field value.na.c of required type String! was not provided.',
+              locations: [{ line: 2, column: 19 }],
+              path: undefined,
+            },
+            {
+              message:
+                'Variable "$input" got invalid value {"na":{"a":"foo"}}; ' +
+                'Field value.nb of required type String! was not provided.',
               locations: [{ line: 2, column: 19 }],
               path: undefined,
             },
@@ -380,8 +384,8 @@ describe('Execute: Handles inputs', () => {
             {
               message:
                 'Variable "$input" got invalid value ' +
-                '{"a":"foo","b":"bar","c":"baz","extra":"dog"}.' +
-                '\nIn field "extra": Unknown field.',
+                '{"a":"foo","b":"bar","c":"baz","extra":"dog"}; ' +
+                'Field "extra" is not defined by type TestInputObject.',
               locations: [{ line: 2, column: 17 }],
               path: undefined,
             },
@@ -535,8 +539,8 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$value" got invalid value null.\n' +
-              'Expected "String!", found null.',
+              'Variable "$value" got invalid value null; ' +
+              'Expected non-nullable type String!.',
             locations: [{ line: 2, column: 31 }],
             path: undefined,
           },
@@ -608,31 +612,21 @@ describe('Execute: Handles inputs', () => {
       const ast = parse(doc);
       const variables = { value: [1, 2, 3] };
 
-      expect(await execute(schema, ast, null, null, variables)).to.deep.equal({
+      const result = await execute(schema, ast, null, null, variables);
+
+      expect(result).to.deep.equal({
         errors: [
           {
             message:
-              'Variable "$value" got invalid value [1,2,3].\nExpected type ' +
-              '"String", found [1,2,3]; String cannot represent an array value: [1,2,3]',
+              'Variable "$value" got invalid value [1,2,3]; Expected type ' +
+              'String; String cannot represent an array value: [1,2,3]',
             locations: [{ line: 2, column: 31 }],
             path: undefined,
           },
         ],
       });
-    });
 
-    it('coercing an array to GraphQLString throws TypeError', async () => {
-      let caughtError;
-      try {
-        coerceValue(GraphQLString, [1, 2, 3]);
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError instanceof TypeError).to.equal(true);
-      expect(caughtError && caughtError.message).to.equal(
-        'String cannot represent an array value: [1,2,3]',
-      );
+      expect(result.errors[0].originalError).not.to.equal(undefined);
     });
 
     it('serializing an array via GraphQLString throws TypeError', async () => {
@@ -744,8 +738,8 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" got invalid value null.\n' +
-              'Expected "[String]!", found null.',
+              'Variable "$input" got invalid value null; ' +
+              'Expected non-nullable type [String]!.',
             locations: [{ line: 2, column: 17 }],
             path: undefined,
           },
@@ -835,8 +829,8 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" got invalid value ["A",null,"B"].' +
-              '\nIn element #1: Expected "String!", found null.',
+              'Variable "$input" got invalid value ["A",null,"B"]; ' +
+              'Expected non-nullable type String! at value[1].',
             locations: [{ line: 2, column: 17 }],
             path: undefined,
           },
@@ -857,8 +851,8 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" got invalid value null.\n' +
-              'Expected "[String!]!", found null.',
+              'Variable "$input" got invalid value null; ' +
+              'Expected non-nullable type [String!]!.',
             locations: [{ line: 2, column: 17 }],
             path: undefined,
           },
@@ -897,8 +891,8 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" got invalid value ["A",null,"B"].' +
-              '\nIn element #1: Expected "String!", found null.',
+              'Variable "$input" got invalid value ["A",null,"B"]; ' +
+              'Expected non-nullable type String! at value[1].',
             locations: [{ line: 2, column: 17 }],
             path: undefined,
           },

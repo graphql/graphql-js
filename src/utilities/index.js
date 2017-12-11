@@ -73,7 +73,10 @@ export { astFromValue } from './astFromValue';
 // the GraphQL type system.
 export { TypeInfo } from './TypeInfo';
 
-// Determine if JavaScript values adhere to a GraphQL type.
+// Coerces a JavaScript value to a GraphQL type, or produces errors.
+export { coerceValue } from './coerceValue';
+
+// @deprecated use coerceValue
 export { isValidJSValue } from './isValidJSValue';
 
 // Determine if AST values adhere to a GraphQL type.
