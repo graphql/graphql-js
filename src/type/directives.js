@@ -7,7 +7,9 @@
  * @flow
  */
 
-import { isInputType, GraphQLNonNull } from './definition';
+import { isInputType } from './definition';
+import { GraphQLNonNull } from './wrappers';
+
 import type {
   GraphQLFieldConfigArgumentMap,
   GraphQLArgument,
@@ -95,7 +97,7 @@ export const GraphQLIncludeDirective = new GraphQLDirective({
   ],
   args: {
     if: {
-      type: new GraphQLNonNull(GraphQLBoolean),
+      type: GraphQLNonNull(GraphQLBoolean),
       description: 'Included when true.',
     },
   },
@@ -116,7 +118,7 @@ export const GraphQLSkipDirective = new GraphQLDirective({
   ],
   args: {
     if: {
-      type: new GraphQLNonNull(GraphQLBoolean),
+      type: GraphQLNonNull(GraphQLBoolean),
       description: 'Skipped when true.',
     },
   },

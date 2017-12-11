@@ -98,13 +98,13 @@ const dataType = new GraphQLObjectType({
   name: 'DataType',
   fields: () => ({
     sync: { type: GraphQLString },
-    nonNullSync: { type: new GraphQLNonNull(GraphQLString) },
+    nonNullSync: { type: GraphQLNonNull(GraphQLString) },
     promise: { type: GraphQLString },
-    nonNullPromise: { type: new GraphQLNonNull(GraphQLString) },
+    nonNullPromise: { type: GraphQLNonNull(GraphQLString) },
     nest: { type: dataType },
-    nonNullNest: { type: new GraphQLNonNull(dataType) },
+    nonNullNest: { type: GraphQLNonNull(dataType) },
     promiseNest: { type: dataType },
-    nonNullPromiseNest: { type: new GraphQLNonNull(dataType) },
+    nonNullPromiseNest: { type: GraphQLNonNull(dataType) },
   }),
 });
 const schema = new GraphQLSchema({

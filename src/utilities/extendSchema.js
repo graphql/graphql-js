@@ -14,12 +14,11 @@ import { GraphQLError } from '../error/GraphQLError';
 import { GraphQLSchema } from '../type/schema';
 
 import {
-  GraphQLList,
-  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
 } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import { GraphQLDirective } from '../type/directives';
 
@@ -365,10 +364,10 @@ export function extendSchema(
 
   function extendFieldType<T: GraphQLType>(typeDef: T): T {
     if (typeDef instanceof GraphQLList) {
-      return (new GraphQLList(extendFieldType(typeDef.ofType)): any);
+      return (GraphQLList(extendFieldType(typeDef.ofType)): any);
     }
     if (typeDef instanceof GraphQLNonNull) {
-      return (new GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
+      return (GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
     }
     return getTypeFromDef(typeDef);
   }

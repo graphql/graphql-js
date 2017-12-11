@@ -47,11 +47,11 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
   assertInputType,
   assertOutputType,
 } from '../type/definition';
+
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import {
   GraphQLDirective,
@@ -99,12 +99,12 @@ function buildWrappedType(
   inputTypeNode: TypeNode,
 ): GraphQLType {
   if (inputTypeNode.kind === Kind.LIST_TYPE) {
-    return new GraphQLList(buildWrappedType(innerType, inputTypeNode.type));
+    return GraphQLList(buildWrappedType(innerType, inputTypeNode.type));
   }
   if (inputTypeNode.kind === Kind.NON_NULL_TYPE) {
     const wrappedType = buildWrappedType(innerType, inputTypeNode.type);
     invariant(!(wrappedType instanceof GraphQLNonNull), 'No nesting nonnull.');
-    return new GraphQLNonNull(wrappedType);
+    return GraphQLNonNull(wrappedType);
   }
   return innerType;
 }

@@ -68,9 +68,9 @@ const SomeInputObjectType = new GraphQLInputObjectType({
 
 function withModifiers(types) {
   return types
-    .concat(types.map(type => new GraphQLList(type)))
-    .concat(types.map(type => new GraphQLNonNull(type)))
-    .concat(types.map(type => new GraphQLNonNull(new GraphQLList(type))));
+    .concat(types.map(type => GraphQLList(type)))
+    .concat(types.map(type => GraphQLNonNull(type)))
+    .concat(types.map(type => GraphQLNonNull(GraphQLList(type))));
 }
 
 const outputTypes = withModifiers([
@@ -1684,70 +1684,6 @@ describe('Type System: Input Object fields must have input types', () => {
         `BadInputObject.badField field type must be Input Type but got: ${
           type
         }.`,
-      );
-    });
-  });
-});
-
-describe('Type System: List must accept GraphQL types', () => {
-  const types = withModifiers([
-    GraphQLString,
-    SomeScalarType,
-    SomeObjectType,
-    SomeUnionType,
-    SomeInterfaceType,
-    SomeEnumType,
-    SomeInputObjectType,
-  ]);
-
-  const notTypes = [{}, String, undefined, null];
-
-  types.forEach(type => {
-    it(`accepts an type as item type of list: ${type}`, () => {
-      expect(() => new GraphQLList(type)).not.to.throw();
-    });
-  });
-
-  notTypes.forEach(type => {
-    it(`rejects a non-type as item type of list: ${type}`, () => {
-      expect(() => new GraphQLList(type)).to.throw(
-        `Can only create List of a GraphQLType but got: ${type}.`,
-      );
-    });
-  });
-});
-
-describe('Type System: NonNull must accept GraphQL types', () => {
-  const nullableTypes = [
-    GraphQLString,
-    SomeScalarType,
-    SomeObjectType,
-    SomeUnionType,
-    SomeInterfaceType,
-    SomeEnumType,
-    SomeInputObjectType,
-    new GraphQLList(GraphQLString),
-    new GraphQLList(new GraphQLNonNull(GraphQLString)),
-  ];
-
-  const notNullableTypes = [
-    new GraphQLNonNull(GraphQLString),
-    {},
-    String,
-    undefined,
-    null,
-  ];
-
-  nullableTypes.forEach(type => {
-    it(`accepts an type as nullable type of non-null: ${type}`, () => {
-      expect(() => new GraphQLNonNull(type)).not.to.throw();
-    });
-  });
-
-  notNullableTypes.forEach(type => {
-    it(`rejects a non-type as nullable type of non-null: ${type}`, () => {
-      expect(() => new GraphQLNonNull(type)).to.throw(
-        `Can only create NonNull of a Nullable GraphQLType but got: ${type}.`,
       );
     });
   });

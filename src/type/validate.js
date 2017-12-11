@@ -7,12 +7,8 @@
  * @flow
  */
 
-import {
-  GraphQLInterfaceType,
-  GraphQLObjectType,
-  GraphQLNonNull,
-  isType,
-} from './definition';
+import { GraphQLInterfaceType, GraphQLObjectType, isType } from './definition';
+import { GraphQLNonNull } from '../type/wrappers';
 import { GraphQLDirective } from './directives';
 import { GraphQLSchema } from './schema';
 import find from '../jsutils/find';

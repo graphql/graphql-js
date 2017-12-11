@@ -12,9 +12,8 @@ import {
   GraphQLInputObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
-  GraphQLList,
-  GraphQLNonNull,
 } from './definition';
+import { GraphQLList, GraphQLNonNull } from './wrappers';
 import type {
   GraphQLType,
   GraphQLNamedType,

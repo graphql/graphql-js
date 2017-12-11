@@ -41,7 +41,7 @@ const FooType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     some: { type: SomeInterfaceType },
-    tree: { type: new GraphQLNonNull(new GraphQLList(FooType)) },
+    tree: { type: GraphQLNonNull(GraphQLList(FooType)) },
   }),
 });
 
@@ -83,7 +83,7 @@ const testSchema = new GraphQLSchema({
       someUnion: { type: SomeUnionType },
       someEnum: { type: SomeEnumType },
       someInterface: {
-        args: { id: { type: new GraphQLNonNull(GraphQLID) } },
+        args: { id: { type: GraphQLNonNull(GraphQLID) } },
         type: SomeInterfaceType,
       },
     }),

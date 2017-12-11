@@ -18,9 +18,8 @@ import {
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
 } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import type { GraphQLInputType } from '../type/definition';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';

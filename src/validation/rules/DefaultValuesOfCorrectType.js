@@ -10,7 +10,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
-import { GraphQLNonNull } from '../../type/definition';
+import { GraphQLNonNull } from '../../type/wrappers';
 import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 import type { GraphQLType } from '../../type/definition';
 

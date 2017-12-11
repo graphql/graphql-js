@@ -80,15 +80,15 @@ describe('valueFromAST', () => {
   });
 
   // Boolean!
-  const nonNullBool = new GraphQLNonNull(GraphQLBoolean);
+  const nonNullBool = GraphQLNonNull(GraphQLBoolean);
   // [Boolean]
-  const listOfBool = new GraphQLList(GraphQLBoolean);
+  const listOfBool = GraphQLList(GraphQLBoolean);
   // [Boolean!]
-  const listOfNonNullBool = new GraphQLList(nonNullBool);
+  const listOfNonNullBool = GraphQLList(nonNullBool);
   // [Boolean]!
-  const nonNullListOfBool = new GraphQLNonNull(listOfBool);
+  const nonNullListOfBool = GraphQLNonNull(listOfBool);
   // [Boolean!]!
-  const nonNullListOfNonNullBool = new GraphQLNonNull(listOfNonNullBool);
+  const nonNullListOfNonNullBool = GraphQLNonNull(listOfNonNullBool);
 
   it('coerces to null unless non-null', () => {
     testCase(GraphQLBoolean, 'null', null);

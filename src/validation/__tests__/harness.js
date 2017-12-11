@@ -138,8 +138,8 @@ const Human = new GraphQLObjectType({
       type: GraphQLString,
       args: { surname: { type: GraphQLBoolean } },
     },
-    pets: { type: new GraphQLList(Pet) },
-    relatives: { type: new GraphQLList(Human) },
+    pets: { type: GraphQLList(Pet) },
+    relatives: { type: GraphQLList(Human) },
     iq: { type: GraphQLInt },
   }),
 });
@@ -182,11 +182,11 @@ const FurColor = new GraphQLEnumType({
 const ComplexInput = new GraphQLInputObjectType({
   name: 'ComplexInput',
   fields: {
-    requiredField: { type: new GraphQLNonNull(GraphQLBoolean) },
+    requiredField: { type: GraphQLNonNull(GraphQLBoolean) },
     intField: { type: GraphQLInt },
     stringField: { type: GraphQLString },
     booleanField: { type: GraphQLBoolean },
-    stringListField: { type: new GraphQLList(GraphQLString) },
+    stringListField: { type: GraphQLList(GraphQLString) },
   },
 });
 
@@ -202,7 +202,7 @@ const ComplicatedArgs = new GraphQLObjectType({
     },
     nonNullIntArgField: {
       type: GraphQLString,
-      args: { nonNullIntArg: { type: new GraphQLNonNull(GraphQLInt) } },
+      args: { nonNullIntArg: { type: GraphQLNonNull(GraphQLInt) } },
     },
     stringArgField: {
       type: GraphQLString,
@@ -226,7 +226,7 @@ const ComplicatedArgs = new GraphQLObjectType({
     },
     stringListArgField: {
       type: GraphQLString,
-      args: { stringListArg: { type: new GraphQLList(GraphQLString) } },
+      args: { stringListArg: { type: GraphQLList(GraphQLString) } },
     },
     complexArgField: {
       type: GraphQLString,
@@ -235,8 +235,8 @@ const ComplicatedArgs = new GraphQLObjectType({
     multipleReqs: {
       type: GraphQLString,
       args: {
-        req1: { type: new GraphQLNonNull(GraphQLInt) },
-        req2: { type: new GraphQLNonNull(GraphQLInt) },
+        req1: { type: GraphQLNonNull(GraphQLInt) },
+        req2: { type: GraphQLNonNull(GraphQLInt) },
       },
     },
     multipleOpts: {
@@ -255,8 +255,8 @@ const ComplicatedArgs = new GraphQLObjectType({
     multipleOptAndReq: {
       type: GraphQLString,
       args: {
-        req1: { type: new GraphQLNonNull(GraphQLInt) },
-        req2: { type: new GraphQLNonNull(GraphQLInt) },
+        req1: { type: GraphQLNonNull(GraphQLInt) },
+        req2: { type: GraphQLNonNull(GraphQLInt) },
         opt1: {
           type: GraphQLInt,
           defaultValue: 0,

@@ -72,7 +72,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
         name: 'Query',
         fields: {
           pets: {
-            type: new GraphQLList(PetType),
+            type: GraphQLList(PetType),
             resolve() {
               return [new Dog('Odie', true), new Cat('Garfield', false)];
             },
@@ -145,7 +145,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
         name: 'Query',
         fields: {
           pets: {
-            type: new GraphQLList(PetType),
+            type: GraphQLList(PetType),
             resolve() {
               return [new Dog('Odie', true), new Cat('Garfield', false)];
             },
@@ -217,7 +217,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
         name: 'Query',
         fields: {
           pets: {
-            type: new GraphQLList(PetType),
+            type: GraphQLList(PetType),
             resolve() {
               return [new Dog('Odie', true), new Cat('Garfield', false)];
             },
@@ -304,7 +304,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
         name: 'Query',
         fields: {
           pets: {
-            type: new GraphQLList(PetType),
+            type: GraphQLList(PetType),
             resolve() {
               return Promise.resolve([
                 new Dog('Odie', true),
@@ -400,7 +400,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
         name: 'Query',
         fields: {
           pets: {
-            type: new GraphQLList(PetType),
+            type: GraphQLList(PetType),
             resolve() {
               return [
                 new Dog('Odie', true),
@@ -489,7 +489,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
         name: 'Query',
         fields: {
           pets: {
-            type: new GraphQLList(PetType),
+            type: GraphQLList(PetType),
             resolve() {
               return [new Dog('Odie', true), new Cat('Garfield', false)];
             },
@@ -561,7 +561,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
         name: 'Query',
         fields: {
           pets: {
-            type: new GraphQLList(PetType),
+            type: GraphQLList(PetType),
             resolve() {
               return [new Dog('Odie', true), new Cat('Garfield', false)];
             },

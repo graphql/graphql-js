@@ -50,7 +50,7 @@ describe('astFromValue', () => {
       value: true,
     });
 
-    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
+    const NonNullBoolean = GraphQLNonNull(GraphQLBoolean);
     expect(astFromValue(0, NonNullBoolean)).to.deep.equal({
       kind: 'BooleanValue',
       value: false,
@@ -169,7 +169,7 @@ describe('astFromValue', () => {
   });
 
   it('does not converts NonNull values to NullValue', () => {
-    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
+    const NonNullBoolean = GraphQLNonNull(GraphQLBoolean);
     expect(astFromValue(null, NonNullBoolean)).to.deep.equal(null);
   });
 
@@ -204,7 +204,7 @@ describe('astFromValue', () => {
 
   it('converts array values to List ASTs', () => {
     expect(
-      astFromValue(['FOO', 'BAR'], new GraphQLList(GraphQLString)),
+      astFromValue(['FOO', 'BAR'], GraphQLList(GraphQLString)),
     ).to.deep.equal({
       kind: 'ListValue',
       values: [
@@ -214,7 +214,7 @@ describe('astFromValue', () => {
     });
 
     expect(
-      astFromValue(['HELLO', 'GOODBYE'], new GraphQLList(myEnum)),
+      astFromValue(['HELLO', 'GOODBYE'], GraphQLList(myEnum)),
     ).to.deep.equal({
       kind: 'ListValue',
       values: [
@@ -225,7 +225,7 @@ describe('astFromValue', () => {
   });
 
   it('converts list singletons', () => {
-    expect(astFromValue('FOO', new GraphQLList(GraphQLString))).to.deep.equal({
+    expect(astFromValue('FOO', GraphQLList(GraphQLString))).to.deep.equal({
       kind: 'StringValue',
       value: 'FOO',
     });
