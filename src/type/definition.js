@@ -208,7 +208,7 @@ export type GraphQLNullableType =
   | GraphQLUnionType
   | GraphQLEnumType
   | GraphQLInputObjectType
-  | GraphQLList<*>;
+  | GraphQLList<any>;
 
 /* eslint-disable no-redeclare */
 declare function getNullableType(type: void | null): void;
