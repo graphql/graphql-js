@@ -48,8 +48,8 @@ const TestInputObject = new GraphQLInputObjectType({
   name: 'TestInputObject',
   fields: {
     a: { type: GraphQLString },
-    b: { type: new GraphQLList(GraphQLString) },
-    c: { type: new GraphQLNonNull(GraphQLString) },
+    b: { type: GraphQLList(GraphQLString) },
+    c: { type: GraphQLNonNull(GraphQLString) },
     d: { type: TestComplexScalar },
   },
 });
@@ -57,8 +57,8 @@ const TestInputObject = new GraphQLInputObjectType({
 const TestNestedInputObject = new GraphQLInputObjectType({
   name: 'TestNestedInputObject',
   fields: {
-    na: { type: new GraphQLNonNull(TestInputObject) },
-    nb: { type: new GraphQLNonNull(GraphQLString) },
+    na: { type: GraphQLNonNull(TestInputObject) },
+    nb: { type: GraphQLNonNull(GraphQLString) },
   },
 });
 
@@ -77,7 +77,7 @@ const TestType = new GraphQLObjectType({
     },
     fieldWithNonNullableStringInput: {
       type: GraphQLString,
-      args: { input: { type: new GraphQLNonNull(GraphQLString) } },
+      args: { input: { type: GraphQLNonNull(GraphQLString) } },
       resolve: (_, { input }) => input && JSON.stringify(input),
     },
     fieldWithDefaultArgumentValue: {
@@ -97,20 +97,20 @@ const TestType = new GraphQLObjectType({
     },
     list: {
       type: GraphQLString,
-      args: { input: { type: new GraphQLList(GraphQLString) } },
+      args: { input: { type: GraphQLList(GraphQLString) } },
       resolve: (_, { input }) => input && JSON.stringify(input),
     },
     nnList: {
       type: GraphQLString,
       args: {
-        input: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
+        input: { type: GraphQLNonNull(GraphQLList(GraphQLString)) },
       },
       resolve: (_, { input }) => input && JSON.stringify(input),
     },
     listNN: {
       type: GraphQLString,
       args: {
-        input: { type: new GraphQLList(new GraphQLNonNull(GraphQLString)) },
+        input: { type: GraphQLList(GraphQLNonNull(GraphQLString)) },
       },
       resolve: (_, { input }) => input && JSON.stringify(input),
     },
@@ -118,9 +118,7 @@ const TestType = new GraphQLObjectType({
       type: GraphQLString,
       args: {
         input: {
-          type: new GraphQLNonNull(
-            new GraphQLList(new GraphQLNonNull(GraphQLString)),
-          ),
+          type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))),
         },
       },
       resolve: (_, { input }) => input && JSON.stringify(input),

@@ -29,9 +29,8 @@ import {
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
 } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import { GraphQLID } from '../type/scalars';
 
 /**

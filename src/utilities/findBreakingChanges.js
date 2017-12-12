@@ -13,11 +13,11 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLUnionType,
 } from '../type/definition';
+
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import type {
   GraphQLNamedType,

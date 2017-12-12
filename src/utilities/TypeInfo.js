@@ -18,8 +18,8 @@ import {
   GraphQLInterfaceType,
   GraphQLInputObjectType,
   GraphQLEnumType,
-  GraphQLList,
 } from '../type/definition';
+import { GraphQLList } from '../type/wrappers';
 import type {
   GraphQLType,
   GraphQLInputType,

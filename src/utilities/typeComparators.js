@@ -7,12 +7,8 @@
  * @flow
  */
 
-import {
-  isAbstractType,
-  GraphQLObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-} from '../type/definition';
+import { isAbstractType, GraphQLObjectType } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import type { GraphQLType, GraphQLCompositeType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 

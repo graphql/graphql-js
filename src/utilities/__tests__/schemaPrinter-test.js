@@ -42,11 +42,11 @@ function printSingleFieldSchema(fieldConfig) {
 }
 
 function listOf(type) {
-  return new GraphQLList(type);
+  return GraphQLList(type);
 }
 
 function nonNull(type) {
-  return new GraphQLNonNull(type);
+  return GraphQLNonNull(type);
 }
 
 describe('Type System Printer', () => {

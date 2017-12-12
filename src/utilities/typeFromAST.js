@@ -14,7 +14,7 @@ import type {
   ListTypeNode,
   NonNullTypeNode,
 } from '../language/ast';
-import { GraphQLList, GraphQLNonNull } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import type { GraphQLNamedType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
@@ -43,11 +43,11 @@ function typeFromASTImpl(schema, typeNode) {
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
-    return innerType && new GraphQLList(innerType);
+    return innerType && GraphQLList(innerType);
   }
   if (typeNode.kind === Kind.NON_NULL_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
-    return innerType && new GraphQLNonNull(innerType);
+    return innerType && GraphQLNonNull(innerType);
   }
   invariant(typeNode.kind === Kind.NAMED_TYPE, 'Must be a named type.');
   return schema.getType(typeNode.name.value);

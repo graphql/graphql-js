@@ -9,7 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { GraphQLNonNull } from '../../type/definition';
+import { GraphQLNonNull } from '../../type/wrappers';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import type { GraphQLType } from '../../type/definition';
@@ -75,5 +75,5 @@ export function VariablesInAllowedPosition(context: ValidationContext): any {
 function effectiveType(varType, varDef) {
   return !varDef.defaultValue || varType instanceof GraphQLNonNull
     ? varType
-    : new GraphQLNonNull(varType);
+    : GraphQLNonNull(varType);
 }

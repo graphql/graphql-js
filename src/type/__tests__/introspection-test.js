@@ -820,7 +820,7 @@ describe('Introspection', () => {
       name: 'TestInputObject',
       fields: {
         a: { type: GraphQLString, defaultValue: 'foo' },
-        b: { type: new GraphQLList(GraphQLString) },
+        b: { type: GraphQLList(GraphQLString) },
         c: { type: GraphQLString, defaultValue: null },
       },
     });

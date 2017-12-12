@@ -15,10 +15,9 @@ import type { ASTNode } from '../language/ast';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
   GraphQLScalarType,
 } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import type { GraphQLInputType } from '../type/definition';
 
 type CoercedValue = {|

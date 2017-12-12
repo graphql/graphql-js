@@ -23,11 +23,10 @@ import {
 } from './values';
 import {
   GraphQLObjectType,
-  GraphQLList,
-  GraphQLNonNull,
   isAbstractType,
   isLeafType,
 } from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import type {
   GraphQLType,
   GraphQLLeafType,

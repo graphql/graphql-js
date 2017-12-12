@@ -17,7 +17,9 @@ import { valueFromAST } from '../utilities/valueFromAST';
 import { isValidLiteralValue } from '../utilities/isValidLiteralValue';
 import * as Kind from '../language/kinds';
 import { print } from '../language/printer';
-import { isInputType, GraphQLNonNull } from '../type/definition';
+import { isInputType } from '../type/definition';
+import { GraphQLNonNull } from '../type/wrappers';
+
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { GraphQLField } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';

@@ -22,11 +22,10 @@ import { print } from '../../language/printer';
 import {
   getNamedType,
   isLeafType,
-  GraphQLList,
-  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
 } from '../../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../../type/wrappers';
 import type {
   GraphQLNamedType,
   GraphQLOutputType,

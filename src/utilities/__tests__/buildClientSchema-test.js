@@ -287,17 +287,15 @@ describe('Type System: build schema from introspection', () => {
         name: 'ComplexFields',
         fields: {
           string: { type: GraphQLString },
-          listOfString: { type: new GraphQLList(GraphQLString) },
+          listOfString: { type: GraphQLList(GraphQLString) },
           nonNullString: {
-            type: new GraphQLNonNull(GraphQLString),
+            type: GraphQLNonNull(GraphQLString),
           },
           nonNullListOfString: {
-            type: new GraphQLNonNull(new GraphQLList(GraphQLString)),
+            type: GraphQLNonNull(GraphQLList(GraphQLString)),
           },
           nonNullListOfNonNullString: {
-            type: new GraphQLNonNull(
-              new GraphQLList(new GraphQLNonNull(GraphQLString)),
-            ),
+            type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))),
           },
         },
       }),
@@ -327,11 +325,11 @@ describe('Type System: build schema from introspection', () => {
             args: {
               listArg: {
                 description: 'This is an list of int arg',
-                type: new GraphQLList(GraphQLInt),
+                type: GraphQLList(GraphQLInt),
               },
               requiredArg: {
                 description: 'This is a required arg',
-                type: new GraphQLNonNull(GraphQLBoolean),
+                type: GraphQLNonNull(GraphQLBoolean),
               },
             },
           },
@@ -473,11 +471,11 @@ describe('Type System: build schema from introspection', () => {
       fields: {
         street: {
           description: 'What street is this address?',
-          type: new GraphQLNonNull(GraphQLString),
+          type: GraphQLNonNull(GraphQLString),
         },
         city: {
           description: 'The city the address is within?',
-          type: new GraphQLNonNull(GraphQLString),
+          type: GraphQLNonNull(GraphQLString),
         },
         country: {
           description: 'The country (blank will assume USA).',
@@ -533,7 +531,7 @@ describe('Type System: build schema from introspection', () => {
             type: GraphQLString,
             args: {
               listArg: {
-                type: new GraphQLList(GraphQLInt),
+                type: GraphQLList(GraphQLInt),
                 defaultValue: [1, 2, 3],
               },
             },
@@ -809,14 +807,12 @@ describe('Type System: build schema from introspection', () => {
           name: 'Query',
           fields: {
             foo: {
-              type: new GraphQLList(
-                new GraphQLList(
-                  new GraphQLList(
-                    new GraphQLList(
-                      new GraphQLList(
-                        new GraphQLList(
-                          new GraphQLList(new GraphQLList(GraphQLString)),
-                        ),
+              type: GraphQLList(
+                GraphQLList(
+                  GraphQLList(
+                    GraphQLList(
+                      GraphQLList(
+                        GraphQLList(GraphQLList(GraphQLList(GraphQLString))),
                       ),
                     ),
                   ),
@@ -839,13 +835,13 @@ describe('Type System: build schema from introspection', () => {
           name: 'Query',
           fields: {
             foo: {
-              type: new GraphQLList(
-                new GraphQLNonNull(
-                  new GraphQLList(
-                    new GraphQLNonNull(
-                      new GraphQLList(
-                        new GraphQLNonNull(
-                          new GraphQLList(new GraphQLNonNull(GraphQLString)),
+              type: GraphQLList(
+                GraphQLNonNull(
+                  GraphQLList(
+                    GraphQLNonNull(
+                      GraphQLList(
+                        GraphQLNonNull(
+                          GraphQLList(GraphQLNonNull(GraphQLString)),
                         ),
                       ),
                     ),
@@ -870,12 +866,12 @@ describe('Type System: build schema from introspection', () => {
           fields: {
             foo: {
               // e.g., fully non-null 3D matrix
-              type: new GraphQLNonNull(
-                new GraphQLList(
-                  new GraphQLNonNull(
-                    new GraphQLList(
-                      new GraphQLNonNull(
-                        new GraphQLList(new GraphQLNonNull(GraphQLString)),
+              type: GraphQLNonNull(
+                GraphQLList(
+                  GraphQLNonNull(
+                    GraphQLList(
+                      GraphQLNonNull(
+                        GraphQLList(GraphQLNonNull(GraphQLString)),
                       ),
                     ),
                   ),

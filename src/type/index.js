@@ -37,9 +37,13 @@ export {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+} from './definition';
+
+export {
+  // Type Wrappers
   GraphQLList,
   GraphQLNonNull,
-} from './definition';
+} from './wrappers';
 
 export {
   // Directives Definition

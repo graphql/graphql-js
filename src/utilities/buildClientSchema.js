@@ -25,9 +25,9 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
 } from '../type/definition';
+
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import type {
   GraphQLType,
@@ -109,7 +109,7 @@ export function buildClientSchema(
       if (!itemRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
-      return new GraphQLList(getType(itemRef));
+      return GraphQLList(getType(itemRef));
     }
     if (typeRef.kind === TypeKind.NON_NULL) {
       const nullableRef = typeRef.ofType;
@@ -121,7 +121,7 @@ export function buildClientSchema(
         !(nullableType instanceof GraphQLNonNull),
         'No nesting nonnull.',
       );
-      return new GraphQLNonNull(nullableType);
+      return GraphQLNonNull(nullableType);
     }
     if (!typeRef.name) {
       throw new Error('Unknown type reference: ' + JSON.stringify(typeRef));

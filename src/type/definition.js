@@ -31,6 +31,7 @@ import type {
   ValueNode,
 } from '../language/ast';
 import type { GraphQLSchema } from './schema';
+import { GraphQLList, GraphQLNonNull } from './wrappers';
 
 // Predicates & Assertions
 
@@ -47,7 +48,7 @@ export type GraphQLType =
   | GraphQLList<any>
   | GraphQLNonNull<any>;
 
-export function isType(type: mixed): boolean {
+export function isType(type: mixed): boolean %checks {
   return (
     type instanceof GraphQLScalarType ||
     type instanceof GraphQLObjectType ||
@@ -209,10 +210,15 @@ export type GraphQLNullableType =
   | GraphQLInputObjectType
   | GraphQLList<*>;
 
-export function getNullableType<T: GraphQLType>(
-  type: ?T,
-): ?(T & GraphQLNullableType) {
-  return type instanceof GraphQLNonNull ? type.ofType : type;
+/* eslint-disable no-redeclare */
+declare function getNullableType(type: void | null): void;
+declare function getNullableType<T: GraphQLNullableType>(type: T): T;
+declare function getNullableType<T>(type: GraphQLNonNull<T>): T;
+export function getNullableType(type) {
+  /* eslint-enable no-redeclare */
+  if (type) {
+    return type instanceof GraphQLNonNull ? type.ofType : type;
+  }
 }
 
 /**
@@ -266,9 +272,9 @@ export function getNamedType(type) {
  * Used while defining GraphQL types to allow for circular references in
  * otherwise immutable type definitions.
  */
-export type Thunk<T> = (() => T) | T;
+export type Thunk<+T> = (() => T) | T;
 
-function resolveThunk<T>(thunk: Thunk<T>): T {
+function resolveThunk<+T>(thunk: Thunk<T>): T {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
@@ -1033,8 +1039,8 @@ export type GraphQLEnumValue /* <T> */ = {
  *     const GeoPoint = new GraphQLInputObjectType({
  *       name: 'GeoPoint',
  *       fields: {
- *         lat: { type: new GraphQLNonNull(GraphQLFloat) },
- *         lon: { type: new GraphQLNonNull(GraphQLFloat) },
+ *         lat: { type: GraphQLNonNull(GraphQLFloat) },
+ *         lon: { type: GraphQLNonNull(GraphQLFloat) },
  *         alt: { type: GraphQLFloat, defaultValue: 0 },
  *       }
  *     });
@@ -1134,88 +1140,3 @@ export type GraphQLInputField = {
 };
 
 export type GraphQLInputFieldMap = ObjMap<GraphQLInputField>;
-
-/**
- * List Modifier
- *
- * A list is a kind of type marker, a wrapping type which points to another
- * type. Lists are often created within the context of defining the fields of
- * an object type.
- *
- * Example:
- *
- *     const PersonType = new GraphQLObjectType({
- *       name: 'Person',
- *       fields: () => ({
- *         parents: { type: new GraphQLList(PersonType) },
- *         children: { type: new GraphQLList(PersonType) },
- *       })
- *     })
- *
- */
-export class GraphQLList<T: GraphQLType> {
-  ofType: T;
-
-  constructor(type: T): void {
-    invariant(
-      isType(type),
-      `Can only create List of a GraphQLType but got: ${String(type)}.`,
-    );
-    this.ofType = type;
-  }
-
-  toString(): string {
-    return '[' + String(this.ofType) + ']';
-  }
-
-  toJSON: () => string;
-  inspect: () => string;
-}
-
-// Also provide toJSON and inspect aliases for toString.
-GraphQLList.prototype.toJSON = GraphQLList.prototype.inspect =
-  GraphQLList.prototype.toString;
-
-/**
- * Non-Null Modifier
- *
- * A non-null is a kind of type marker, a wrapping type which points to another
- * type. Non-null types enforce that their values are never null and can ensure
- * an error is raised if this ever occurs during a request. It is useful for
- * fields which you can make a strong guarantee on non-nullability, for example
- * usually the id field of a database row will never be null.
- *
- * Example:
- *
- *     const RowType = new GraphQLObjectType({
- *       name: 'Row',
- *       fields: () => ({
- *         id: { type: new GraphQLNonNull(GraphQLString) },
- *       })
- *     })
- *
- * Note: the enforcement of non-nullability occurs within the executor.
- */
-export class GraphQLNonNull<T: GraphQLNullableType> {
-  ofType: T;
-
-  constructor(type: T): void {
-    invariant(
-      isType(type) && !(type instanceof GraphQLNonNull),
-      'Can only create NonNull of a Nullable GraphQLType but got: ' +
-        `${String(type)}.`,
-    );
-    this.ofType = type;
-  }
-
-  toString(): string {
-    return this.ofType.toString() + '!';
-  }
-
-  toJSON: () => string;
-  inspect: () => string;
-}
-
-// Also provide toJSON and inspect aliases for toString.
-GraphQLNonNull.prototype.toJSON = GraphQLNonNull.prototype.inspect =
-  GraphQLNonNull.prototype.toString;

@@ -10,7 +10,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import keyMap from '../../jsutils/keyMap';
-import { GraphQLNonNull } from '../../type/definition';
+import { GraphQLNonNull } from '../../type/wrappers';
 import type { GraphQLType } from '../../type/definition';
 
 export function missingFieldArgMessage(
