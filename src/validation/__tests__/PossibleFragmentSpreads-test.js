@@ -138,6 +138,16 @@ describe('Validate: Possible fragment spreads', () => {
     );
   });
 
+  it('ignores incorrect type (caught by FragmentsOnCompositeTypes)', () => {
+    expectPassesRule(
+      PossibleFragmentSpreads,
+      `
+      fragment petFragment on Pet { ...badInADifferentWay }
+      fragment badInADifferentWay on String { name }
+    `,
+    );
+  });
+
   it('different object into object', () => {
     expectFailsRule(
       PossibleFragmentSpreads,

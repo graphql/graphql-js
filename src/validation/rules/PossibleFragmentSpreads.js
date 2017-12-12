@@ -82,5 +82,10 @@ export function PossibleFragmentSpreads(context: ValidationContext): any {
 
 function getFragmentType(context, name) {
   const frag = context.getFragment(name);
-  return frag && typeFromAST(context.getSchema(), frag.typeCondition);
+  if (frag) {
+    const type = typeFromAST(context.getSchema(), frag.typeCondition);
+    if (isCompositeType(type)) {
+      return type;
+    }
+  }
 }

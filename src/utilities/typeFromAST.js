@@ -25,19 +25,19 @@ import type { GraphQLSchema } from '../type/schema';
  * found in the schema, then undefined will be returned.
  */
 /* eslint-disable no-redeclare */
-declare function typeFromASTType(
+declare function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NamedTypeNode,
-): void | GraphQLNamedType;
-declare function typeFromASTType(
+): GraphQLNamedType | void;
+declare function typeFromAST(
   schema: GraphQLSchema,
   typeNode: ListTypeNode,
-): void | GraphQLList<*>;
-declare function typeFromASTType(
+): GraphQLList<any> | void;
+declare function typeFromAST(
   schema: GraphQLSchema,
   typeNode: NonNullTypeNode,
-): void | GraphQLNonNull<*>;
-function typeFromASTImpl(schema, typeNode) {
+): GraphQLNonNull<any> | void;
+export function typeFromAST(schema, typeNode) {
   /* eslint-enable no-redeclare */
   let innerType;
   if (typeNode.kind === Kind.LIST_TYPE) {
@@ -54,7 +54,3 @@ function typeFromASTImpl(schema, typeNode) {
   /* istanbul ignore next */
   throw new Error(`Unexpected type kind: ${(typeNode.kind: empty)}.`);
 }
-// This will export typeFromAST with the correct type, but currently exposes
-// ~26 errors: https://gist.github.com/4a29403a99a8186fcb15064d69c5f3ae
-// export var typeFromAST: typeof typeFromASTType = typeFromASTImpl;
-export const typeFromAST: $FlowFixMe = typeFromASTImpl;
