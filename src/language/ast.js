@@ -252,6 +252,9 @@ export type FragmentDefinitionNode = {
   +kind: 'FragmentDefinition',
   +loc?: Location,
   +name: NameNode,
+  // Note: fragment variable definitions are experimental and may be changed
+  // or removed in the future.
+  +variableDefinitions?: $ReadOnlyArray<VariableDefinitionNode>,
   +typeCondition: NamedTypeNode,
   +directives?: $ReadOnlyArray<DirectiveNode>,
   +selectionSet: SelectionSetNode,

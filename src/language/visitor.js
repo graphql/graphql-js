@@ -23,7 +23,15 @@ export const QueryDocumentKeys = {
 
   FragmentSpread: ['name', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
-  FragmentDefinition: ['name', 'typeCondition', 'directives', 'selectionSet'],
+  FragmentDefinition: [
+    'name',
+    // Note: fragment variable definitions are experimental and may be changed
+    // or removed in the future.
+    'variableDefinitions',
+    'typeCondition',
+    'directives',
+    'selectionSet',
+  ],
 
   IntValue: [],
   FloatValue: [],

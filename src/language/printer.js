@@ -64,9 +64,17 @@ const printDocASTReducer = {
       ' ',
     ),
 
-  FragmentDefinition: ({ name, typeCondition, directives, selectionSet }) =>
-    `fragment ${name} on ${typeCondition} ` +
-    wrap('', join(directives, ' '), ' ') +
+  FragmentDefinition: ({
+    name,
+    typeCondition,
+    variableDefinitions,
+    directives,
+    selectionSet,
+  }) =>
+    // Note: fragment variable definitions are experimental and may be changed
+    // or removed in the future.
+    `fragment ${name}${wrap('(', join(variableDefinitions, ', '), ')')} ` +
+    `on ${typeCondition} ${wrap('', join(directives, ' '), ' ')}` +
     selectionSet,
 
   // Value

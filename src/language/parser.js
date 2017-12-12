@@ -117,6 +117,24 @@ export type ParseOptions = {
    * disables that behavior for performance or testing.
    */
   noLocation?: boolean,
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser will understand and parse variable definitions
+   * contained in a fragment definition. They'll be represented in the
+   * `variableDefinitions` field of the FragmentDefinitionNode.
+   *
+   * The syntax is identical to normal, query-defined variables. For example:
+   *
+   *   fragment A($var: Boolean = false) on T  {
+   *     ...
+   *   }
+   *
+   * Note: this feature is experimental and may change or be removed in the
+   * future.
+   */
+  experimentalFragmentVariables?: boolean,
 };
 
 /**
@@ -488,6 +506,20 @@ function parseFragment(
 function parseFragmentDefinition(lexer: Lexer<*>): FragmentDefinitionNode {
   const start = lexer.token;
   expectKeyword(lexer, 'fragment');
+  // Experimental support for defining variables within fragments changes
+  // the grammar of FragmentDefinition:
+  //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
+  if (lexer.options.experimentalFragmentVariables) {
+    return {
+      kind: FRAGMENT_DEFINITION,
+      name: parseFragmentName(lexer),
+      variableDefinitions: parseVariableDefinitions(lexer),
+      typeCondition: (expectKeyword(lexer, 'on'), parseNamedType(lexer)),
+      directives: parseDirectives(lexer, false),
+      selectionSet: parseSelectionSet(lexer),
+      loc: loc(lexer, start),
+    };
+  }
   return {
     kind: FRAGMENT_DEFINITION,
     name: parseFragmentName(lexer),
