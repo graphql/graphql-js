@@ -12,6 +12,7 @@ import keyMap from '../jsutils/keyMap';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { GraphQLError } from '../error/GraphQLError';
 import { GraphQLSchema } from '../type/schema';
+import { assertValidSchema } from '../type/validate';
 
 import {
   GraphQLObjectType,
@@ -71,10 +72,7 @@ export function extendSchema(
   documentAST: DocumentNode,
   options?: Options,
 ): GraphQLSchema {
-  invariant(
-    schema instanceof GraphQLSchema,
-    'Must provide valid GraphQLSchema',
-  );
+  assertValidSchema(schema);
 
   invariant(
     documentAST && documentAST.kind === Kind.DOCUMENT,
