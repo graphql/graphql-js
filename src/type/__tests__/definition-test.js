@@ -23,7 +23,7 @@ import {
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
-import { isInputType, isOutputType } from '../definition';
+import { isObjectType, isInputType, isOutputType } from '../definition';
 
 const BlogImage = new GraphQLObjectType({
   name: 'Image',
@@ -118,19 +118,19 @@ describe('Type System: Example', () => {
     const articleFieldType = articleField ? articleField.type : null;
 
     const titleField =
-      articleFieldType instanceof GraphQLObjectType &&
+      isObjectType(articleFieldType) &&
       articleFieldType.getFields()[('title': string)];
     expect(titleField && titleField.name).to.equal('title');
     expect(titleField && titleField.type).to.equal(GraphQLString);
     expect(titleField && titleField.type.name).to.equal('String');
 
     const authorField =
-      articleFieldType instanceof GraphQLObjectType &&
+      isObjectType(articleFieldType) &&
       articleFieldType.getFields()[('author': string)];
 
     const authorFieldType = authorField ? authorField.type : null;
     const recentArticleField =
-      authorFieldType instanceof GraphQLObjectType &&
+      isObjectType(authorFieldType) &&
       authorFieldType.getFields()[('recentArticle': string)];
 
     expect(recentArticleField && recentArticleField.type).to.equal(BlogArticle);
@@ -374,12 +374,6 @@ describe('Type System: Example', () => {
     });
   });
 
-  it('prohibits nesting NonNull inside NonNull', () => {
-    expect(() => GraphQLNonNull(GraphQLNonNull(GraphQLInt))).to.throw(
-      'Can only create NonNull of a Nullable GraphQLType but got: Int!.',
-    );
-  });
-
   it('prohibits putting non-Object types in unions', () => {
     const badUnionTypes = [
       GraphQLInt,
@@ -476,7 +470,7 @@ describe('Type System: Example', () => {
   });
 });
 
-describe('Type System: List must accept GraphQL types', () => {
+describe('Type System: List must accept only types', () => {
   const types = [
     GraphQLString,
     ScalarType,
@@ -506,7 +500,7 @@ describe('Type System: List must accept GraphQL types', () => {
   });
 });
 
-describe('Type System: NonNull must accept GraphQL types', () => {
+describe('Type System: NonNull must only accept non-nullable types', () => {
   const nullableTypes = [
     GraphQLString,
     ScalarType,
@@ -536,7 +530,7 @@ describe('Type System: NonNull must accept GraphQL types', () => {
   notNullableTypes.forEach(type => {
     it(`rejects a non-type as nullable type of non-null: ${type}`, () => {
       expect(() => GraphQLNonNull(type)).to.throw(
-        `Can only create NonNull of a Nullable GraphQLType but got: ${type}.`,
+        `Expected ${type} to be a GraphQL nullable type.`,
       );
     });
   });

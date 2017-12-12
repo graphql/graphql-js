@@ -15,13 +15,13 @@ import type {
 } from '../language/ast';
 import * as Kind from '../language/kinds';
 import {
-  GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
+  isScalarType,
+  isEnumType,
+  isInputObjectType,
+  isListType,
+  isNonNullType,
 } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import type { GraphQLInputType } from '../type/definition';
-import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import keyMap from '../jsutils/keyMap';
 
@@ -37,7 +37,7 @@ export function isValidLiteralValue(
   valueNode: ValueNode,
 ): Array<string> {
   // A value must be provided if the type is non-null.
-  if (type instanceof GraphQLNonNull) {
+  if (isNonNullType(type)) {
     if (!valueNode || valueNode.kind === Kind.NULL) {
       return [`Expected "${String(type)}", found null.`];
     }
@@ -55,7 +55,7 @@ export function isValidLiteralValue(
   }
 
   // Lists accept a non-list value as a list of one.
-  if (type instanceof GraphQLList) {
+  if (isListType(type)) {
     const itemType = type.ofType;
     if (valueNode.kind === Kind.LIST) {
       return (valueNode: ListValueNode).values.reduce((acc, item, index) => {
@@ -69,7 +69,7 @@ export function isValidLiteralValue(
   }
 
   // Input objects check each defined field and look for undefined fields.
-  if (type instanceof GraphQLInputObjectType) {
+  if (isInputObjectType(type)) {
     if (valueNode.kind !== Kind.OBJECT) {
       return [`Expected "${type.name}", found not an object.`];
     }
@@ -100,7 +100,7 @@ export function isValidLiteralValue(
     return errors;
   }
 
-  if (type instanceof GraphQLEnumType) {
+  if (isEnumType(type)) {
     if (valueNode.kind !== Kind.ENUM || !type.getValue(valueNode.value)) {
       return [`Expected type "${type.name}", found ${print(valueNode)}.`];
     }
@@ -108,19 +108,22 @@ export function isValidLiteralValue(
     return [];
   }
 
-  invariant(type instanceof GraphQLScalarType, 'Must be a scalar type');
-
-  // Scalars determine if a literal value is valid via parseLiteral().
-  try {
-    const parseResult = type.parseLiteral(valueNode, null);
-    if (isInvalid(parseResult)) {
-      return [`Expected type "${type.name}", found ${print(valueNode)}.`];
+  if (isScalarType(type)) {
+    // Scalars determine if a literal value is valid via parseLiteral().
+    try {
+      const parseResult = type.parseLiteral(valueNode, null);
+      if (isInvalid(parseResult)) {
+        return [`Expected type "${type.name}", found ${print(valueNode)}.`];
+      }
+    } catch (error) {
+      const printed = print(valueNode);
+      const message = error.message;
+      return [`Expected type "${type.name}", found ${printed}; ${message}`];
     }
-  } catch (error) {
-    const printed = print(valueNode);
-    const message = error.message;
-    return [`Expected type "${type.name}", found ${printed}; ${message}`];
+
+    return [];
   }
 
-  return [];
+  /* istanbul ignore next */
+  throw new Error(`Unknown type: ${(type: empty)}.`);
 }

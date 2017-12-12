@@ -21,11 +21,12 @@ import * as Kind from '../../language/kinds';
 import { print } from '../../language/printer';
 import {
   getNamedType,
+  isNonNullType,
   isLeafType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
+  isObjectType,
+  isListType,
+  isInterfaceType,
 } from '../../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../../type/wrappers';
 import type {
   GraphQLNamedType,
   GraphQLOutputType,
@@ -575,8 +576,8 @@ function findConflict(
   const areMutuallyExclusive =
     parentFieldsAreMutuallyExclusive ||
     (parentType1 !== parentType2 &&
-      parentType1 instanceof GraphQLObjectType &&
-      parentType2 instanceof GraphQLObjectType);
+      isObjectType(parentType1) &&
+      isObjectType(parentType2));
 
   // The return type for each field.
   const type1 = def1 && def1.type;
@@ -665,25 +666,21 @@ function doTypesConflict(
   type1: GraphQLOutputType,
   type2: GraphQLOutputType,
 ): boolean {
-  if (type1 instanceof GraphQLList) {
-    return type2 instanceof GraphQLList
+  if (isListType(type1)) {
+    return isListType(type2)
       ? doTypesConflict(type1.ofType, type2.ofType)
       : true;
   }
-  if (type2 instanceof GraphQLList) {
-    return type1 instanceof GraphQLList
+  if (isListType(type2)) {
+    return true;
+  }
+  if (isNonNullType(type1)) {
+    return isNonNullType(type2)
       ? doTypesConflict(type1.ofType, type2.ofType)
       : true;
   }
-  if (type1 instanceof GraphQLNonNull) {
-    return type2 instanceof GraphQLNonNull
-      ? doTypesConflict(type1.ofType, type2.ofType)
-      : true;
-  }
-  if (type2 instanceof GraphQLNonNull) {
-    return type1 instanceof GraphQLNonNull
-      ? doTypesConflict(type1.ofType, type2.ofType)
-      : true;
+  if (isNonNullType(type2)) {
+    return true;
   }
   if (isLeafType(type1) || isLeafType(type2)) {
     return type1 !== type2;
@@ -752,10 +749,7 @@ function _collectFieldsAndFragmentNames(
       case Kind.FIELD:
         const fieldName = selection.name.value;
         let fieldDef;
-        if (
-          parentType instanceof GraphQLObjectType ||
-          parentType instanceof GraphQLInterfaceType
-        ) {
+        if (isObjectType(parentType) || isInterfaceType(parentType)) {
           fieldDef = parentType.getFields()[fieldName];
         }
         const responseName = selection.alias

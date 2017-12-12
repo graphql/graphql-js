@@ -10,7 +10,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import keyMap from '../../jsutils/keyMap';
-import { GraphQLNonNull } from '../../type/wrappers';
+import { isNonNullType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
 
 export function missingFieldArgMessage(
@@ -55,7 +55,7 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
         const argNodeMap = keyMap(argNodes, arg => arg.name.value);
         fieldDef.args.forEach(argDef => {
           const argNode = argNodeMap[argDef.name];
-          if (!argNode && argDef.type instanceof GraphQLNonNull) {
+          if (!argNode && isNonNullType(argDef.type)) {
             context.reportError(
               new GraphQLError(
                 missingFieldArgMessage(
@@ -83,7 +83,7 @@ export function ProvidedNonNullArguments(context: ValidationContext): any {
         const argNodeMap = keyMap(argNodes, arg => arg.name.value);
         directiveDef.args.forEach(argDef => {
           const argNode = argNodeMap[argDef.name];
-          if (!argNode && argDef.type instanceof GraphQLNonNull) {
+          if (!argNode && isNonNullType(argDef.type)) {
             context.reportError(
               new GraphQLError(
                 missingDirectiveArgMessage(

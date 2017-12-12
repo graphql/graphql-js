@@ -7,25 +7,49 @@
  * @flow
  */
 
-// GraphQL Schema definition
-export { GraphQLSchema } from './schema';
+export {
+  // Predicate
+  isSchema,
+  // GraphQL Schema definition
+  GraphQLSchema,
+} from './schema';
 
 export {
   // Predicates
   isType,
+  isScalarType,
+  isObjectType,
+  isInterfaceType,
+  isUnionType,
+  isEnumType,
+  isInputObjectType,
+  isListType,
+  isNonNullType,
   isInputType,
   isOutputType,
   isLeafType,
   isCompositeType,
   isAbstractType,
+  isWrappingType,
+  isNullableType,
   isNamedType,
   // Assertions
   assertType,
+  assertScalarType,
+  assertObjectType,
+  assertInterfaceType,
+  assertUnionType,
+  assertEnumType,
+  assertInputObjectType,
+  assertListType,
+  assertNonNullType,
   assertInputType,
   assertOutputType,
   assertLeafType,
   assertCompositeType,
   assertAbstractType,
+  assertWrappingType,
+  assertNullableType,
   assertNamedType,
   // Un-modifiers
   getNullableType,
@@ -46,6 +70,8 @@ export {
 } from './wrappers';
 
 export {
+  // Predicate
+  isDirective,
   // Directives Definition
   GraphQLDirective,
   // Built-in Directives defined by the Spec
@@ -96,6 +122,7 @@ export type {
   GraphQLLeafType,
   GraphQLCompositeType,
   GraphQLAbstractType,
+  GraphQLWrappingType,
   GraphQLNullableType,
   GraphQLNamedType,
   Thunk,

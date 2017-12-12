@@ -11,12 +11,16 @@ import isInvalid from '../jsutils/isInvalid';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import {
-  GraphQLScalarType,
   GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLEnumType,
-  GraphQLInputObjectType,
+  isScalarType,
+  isObjectType,
+  isInterfaceType,
+  isUnionType,
+  isEnumType,
+  isInputObjectType,
+  isListType,
+  isNonNullType,
   isAbstractType,
   isNamedType,
 } from './definition';
@@ -212,21 +216,21 @@ export const __Type = new GraphQLObjectType({
     kind: {
       type: GraphQLNonNull(__TypeKind),
       resolve(type) {
-        if (type instanceof GraphQLScalarType) {
+        if (isScalarType(type)) {
           return TypeKind.SCALAR;
-        } else if (type instanceof GraphQLObjectType) {
+        } else if (isObjectType(type)) {
           return TypeKind.OBJECT;
-        } else if (type instanceof GraphQLInterfaceType) {
+        } else if (isInterfaceType(type)) {
           return TypeKind.INTERFACE;
-        } else if (type instanceof GraphQLUnionType) {
+        } else if (isUnionType(type)) {
           return TypeKind.UNION;
-        } else if (type instanceof GraphQLEnumType) {
+        } else if (isEnumType(type)) {
           return TypeKind.ENUM;
-        } else if (type instanceof GraphQLInputObjectType) {
+        } else if (isInputObjectType(type)) {
           return TypeKind.INPUT_OBJECT;
-        } else if (type instanceof GraphQLList) {
+        } else if (isListType(type)) {
           return TypeKind.LIST;
-        } else if (type instanceof GraphQLNonNull) {
+        } else if (isNonNullType(type)) {
           return TypeKind.NON_NULL;
         }
         throw new Error('Unknown kind of type: ' + type);
@@ -240,10 +244,7 @@ export const __Type = new GraphQLObjectType({
         includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
       },
       resolve(type, { includeDeprecated }) {
-        if (
-          type instanceof GraphQLObjectType ||
-          type instanceof GraphQLInterfaceType
-        ) {
+        if (isObjectType(type) || isInterfaceType(type)) {
           const fieldMap = type.getFields();
           let fields = Object.keys(fieldMap).map(
             fieldName => fieldMap[fieldName],
@@ -259,7 +260,7 @@ export const __Type = new GraphQLObjectType({
     interfaces: {
       type: GraphQLList(GraphQLNonNull(__Type)),
       resolve(type) {
-        if (type instanceof GraphQLObjectType) {
+        if (isObjectType(type)) {
           return type.getInterfaces();
         }
       },
@@ -278,7 +279,7 @@ export const __Type = new GraphQLObjectType({
         includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
       },
       resolve(type, { includeDeprecated }) {
-        if (type instanceof GraphQLEnumType) {
+        if (isEnumType(type)) {
           let values = type.getValues();
           if (!includeDeprecated) {
             values = values.filter(value => !value.deprecationReason);
@@ -290,7 +291,7 @@ export const __Type = new GraphQLObjectType({
     inputFields: {
       type: GraphQLList(GraphQLNonNull(__InputValue)),
       resolve(type) {
-        if (type instanceof GraphQLInputObjectType) {
+        if (isInputObjectType(type)) {
           const fieldMap = type.getFields();
           return Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
         }

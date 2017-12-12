@@ -7,8 +7,7 @@
  * @flow
  */
 
-import invariant from '../jsutils/invariant';
-import { isType, assertType } from './definition';
+import { assertType, assertNullableType } from './definition';
 import type { GraphQLType, GraphQLNullableType } from './definition';
 
 /**
@@ -38,8 +37,7 @@ declare class GraphQLList<+T: GraphQLType> {
 // eslint-disable-next-line no-redeclare
 export function GraphQLList(ofType) {
   if (this instanceof GraphQLList) {
-    assertType(ofType);
-    this.ofType = ofType;
+    this.ofType = assertType(ofType);
   } else {
     return new GraphQLList(ofType);
   }
@@ -80,13 +78,7 @@ declare class GraphQLNonNull<+T: GraphQLNullableType> {
 // eslint-disable-next-line no-redeclare
 export function GraphQLNonNull(ofType) {
   if (this instanceof GraphQLNonNull) {
-    invariant(
-      isType(ofType) && !(ofType instanceof GraphQLNonNull),
-      `Can only create NonNull of a Nullable GraphQLType but got: ${String(
-        ofType,
-      )}.`,
-    );
-    this.ofType = ofType;
+    this.ofType = assertNullableType(ofType);
   } else {
     return new GraphQLNonNull(ofType);
   }

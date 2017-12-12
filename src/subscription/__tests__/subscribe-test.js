@@ -313,12 +313,12 @@ describe('Subscription Initialization Phase', () => {
 
     await expectPromiseToThrow(
       () => subscribe(null, document),
-      'Must provide schema.',
+      'Expected null to be a GraphQL schema.',
     );
 
     await expectPromiseToThrow(
       () => subscribe({ document }),
-      'Must provide schema.',
+      'Expected undefined to be a GraphQL schema.',
     );
   });
 

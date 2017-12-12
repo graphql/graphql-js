@@ -23,7 +23,8 @@ import {
   GraphQLEnumType,
   GraphQLNonNull,
   GraphQLList,
-  GraphQLScalarType,
+  isScalarType,
+  isNonNullType,
 } from '../../type';
 
 // Test schema.
@@ -910,11 +911,11 @@ describe('extendSchema', () => {
 
     expect(args.length).to.equal(2);
     expect(arg0.name).to.equal('enable');
-    expect(arg0.type).to.be.instanceof(GraphQLNonNull);
-    expect(arg0.type.ofType).to.be.instanceof(GraphQLScalarType);
+    expect(isNonNullType(arg0.type)).to.equal(true);
+    expect(isScalarType(arg0.type.ofType)).to.equal(true);
 
     expect(arg1.name).to.equal('tag');
-    expect(arg1.type).to.be.instanceof(GraphQLScalarType);
+    expect(isScalarType(arg1.type)).to.equal(true);
   });
 
   it('does not allow replacing a default directive', () => {

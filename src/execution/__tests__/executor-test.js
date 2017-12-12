@@ -39,7 +39,7 @@ describe('Execute: Handles basic execution tasks', () => {
       execute({
         document: parse('{ field }'),
       }),
-    ).to.throw('Must provide schema');
+    ).to.throw('Expected undefined to be a GraphQL schema.');
   });
 
   it('accepts an object with named properties as arguments', async () => {

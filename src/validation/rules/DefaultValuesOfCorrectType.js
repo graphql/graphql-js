@@ -10,7 +10,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
-import { GraphQLNonNull } from '../../type/wrappers';
+import { isNonNullType } from '../../type/definition';
 import { isValidLiteralValue } from '../../utilities/isValidLiteralValue';
 import type { GraphQLType } from '../../type/definition';
 
@@ -51,7 +51,7 @@ export function DefaultValuesOfCorrectType(context: ValidationContext): any {
       const name = node.variable.name.value;
       const defaultValue = node.defaultValue;
       const type = context.getInputType();
-      if (type instanceof GraphQLNonNull && defaultValue) {
+      if (isNonNullType(type) && defaultValue) {
         context.reportError(
           new GraphQLError(
             defaultForNonNullArgMessage(name, type, type.ofType),

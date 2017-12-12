@@ -7,11 +7,18 @@
  * @flow
  */
 
-import { GraphQLInterfaceType, GraphQLObjectType, isType } from './definition';
-import { GraphQLNonNull } from '../type/wrappers';
-import { GraphQLDirective } from './directives';
-import { GraphQLSchema } from './schema';
+import {
+  isType,
+  isObjectType,
+  isInterfaceType,
+  isNonNullType,
+} from './definition';
+import type { GraphQLInterfaceType, GraphQLObjectType } from './definition';
+import { isDirective } from './directives';
+import { isSchema } from './schema';
+import type { GraphQLSchema } from './schema';
 import find from '../jsutils/find';
+import invariant from '../jsutils/invariant';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 import type {
   ASTNode,
@@ -33,33 +40,10 @@ export function validateSchema(
   schema: GraphQLSchema,
 ): $ReadOnlyArray<GraphQLError> {
   // First check to ensure the provided value is in fact a GraphQLSchema.
-  if (!(schema instanceof GraphQLSchema)) {
-    if (!schema) {
-      throw new Error('Must provide schema.');
-    }
-
-    // Provide as descriptive an error as possible when attempting to use a
-    // schema cross-realm.
-    if (Object.getPrototypeOf(schema).constructor.name === 'GraphQLSchema') {
-      throw new Error(`Cannot use a GraphQLSchema from another module or realm.
-
-Ensure that there is only one instance of "graphql" in the node_modules
-directory. If different versions of "graphql" are the dependencies of other
-relied on modules, use "resolutions" to ensure only one version is installed.
-
-https://yarnpkg.com/en/docs/selective-version-resolutions
-
-Duplicate "graphql" modules cannot be used at the same time since different
-versions may have different capabilities and behavior. The data from one
-version used in the function from another could produce confusing and
-spurious results.`);
-    } else {
-      throw new Error(
-        'Schema must be an instance of GraphQLSchema. ' +
-          `Received: ${String(schema)}`,
-      );
-    }
-  }
+  invariant(
+    isSchema(schema),
+    `Expected ${String(schema)} to be a GraphQL schema.`,
+  );
 
   // If this Schema has already been validated, return the previous results.
   if (schema.__validationErrors) {
@@ -114,7 +98,7 @@ function validateRootTypes(context, schema) {
   const queryType = schema.getQueryType();
   if (!queryType) {
     context.reportError(`Query root type must be provided.`, schema.astNode);
-  } else if (!(queryType instanceof GraphQLObjectType)) {
+  } else if (!isObjectType(queryType)) {
     context.reportError(
       `Query root type must be Object type but got: ${String(queryType)}.`,
       getOperationTypeNode(schema, queryType, 'query'),
@@ -122,7 +106,7 @@ function validateRootTypes(context, schema) {
   }
 
   const mutationType = schema.getMutationType();
-  if (mutationType && !(mutationType instanceof GraphQLObjectType)) {
+  if (mutationType && !isObjectType(mutationType)) {
     context.reportError(
       'Mutation root type must be Object type if provided but got: ' +
         `${String(mutationType)}.`,
@@ -131,7 +115,7 @@ function validateRootTypes(context, schema) {
   }
 
   const subscriptionType = schema.getSubscriptionType();
-  if (subscriptionType && !(subscriptionType instanceof GraphQLObjectType)) {
+  if (subscriptionType && !isObjectType(subscriptionType)) {
     context.reportError(
       'Subscription root type must be Object type if provided but got: ' +
         `${String(subscriptionType)}.`,
@@ -160,7 +144,7 @@ function validateDirectives(
 ): void {
   const directives = schema.getDirectives();
   directives.forEach(directive => {
-    if (!(directive instanceof GraphQLDirective)) {
+    if (!isDirective(directive)) {
       context.reportError(
         `Expected directive but got: ${String(directive)}.`,
         directive && directive.astNode,
@@ -186,7 +170,7 @@ function validateTypes(
     }
 
     // Ensure objects implement the interfaces they claim to.
-    if (type instanceof GraphQLObjectType) {
+    if (isObjectType(type)) {
       const implementedTypeNames = Object.create(null);
 
       type.getInterfaces().forEach(iface => {
@@ -209,7 +193,7 @@ function validateObjectImplementsInterface(
   object: GraphQLObjectType,
   iface: GraphQLInterfaceType,
 ): void {
-  if (!(iface instanceof GraphQLInterfaceType)) {
+  if (!isInterfaceType(iface)) {
     context.reportError(
       `${String(object)} must only implement Interface types, it cannot ` +
         `implement ${String(iface)}.`,
@@ -293,7 +277,7 @@ function validateObjectImplementsInterface(
     objectField.args.forEach(objectArg => {
       const argName = objectArg.name;
       const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
-      if (!ifaceArg && objectArg.type instanceof GraphQLNonNull) {
+      if (!ifaceArg && isNonNullType(objectArg.type)) {
         context.reportError(
           `${object.name}.${fieldName}(${argName}:) is of required type ` +
             `"${String(objectArg.type)}" but is not also provided by the ` +

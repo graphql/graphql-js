@@ -17,9 +17,7 @@ import { valueFromAST } from '../utilities/valueFromAST';
 import { isValidLiteralValue } from '../utilities/isValidLiteralValue';
 import * as Kind from '../language/kinds';
 import { print } from '../language/printer';
-import { isInputType } from '../type/definition';
-import { GraphQLNonNull } from '../type/wrappers';
-
+import { isInputType, isNonNullType } from '../type/definition';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { GraphQLField } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
@@ -69,7 +67,7 @@ export function getVariableValues(
     } else {
       const value = inputs[varName];
       if (isInvalid(value)) {
-        if (varType instanceof GraphQLNonNull) {
+        if (isNonNullType(varType)) {
           errors.push(
             new GraphQLError(
               `Variable "$${varName}" of required type ` +
@@ -134,7 +132,7 @@ export function getArgumentValues(
     if (!argumentNode) {
       if (!isInvalid(defaultValue)) {
         coercedValues[name] = defaultValue;
-      } else if (argType instanceof GraphQLNonNull) {
+      } else if (isNonNullType(argType)) {
         throw new GraphQLError(
           `Argument "${name}" of required type ` +
             `"${String(argType)}" was not provided.`,
@@ -154,7 +152,7 @@ export function getArgumentValues(
         coercedValues[name] = variableValues[variableName];
       } else if (!isInvalid(defaultValue)) {
         coercedValues[name] = defaultValue;
-      } else if (argType instanceof GraphQLNonNull) {
+      } else if (isNonNullType(argType)) {
         throw new GraphQLError(
           `Argument "${name}" of required type "${String(argType)}" was ` +
             `provided the variable "$${variableName}" which was not provided ` +

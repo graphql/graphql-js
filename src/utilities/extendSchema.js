@@ -11,9 +11,14 @@ import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { GraphQLError } from '../error/GraphQLError';
-import { GraphQLSchema } from '../type/schema';
+import { isSchema, GraphQLSchema } from '../type/schema';
 
 import {
+  isObjectType,
+  isInterfaceType,
+  isUnionType,
+  isListType,
+  isNonNullType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -71,10 +76,7 @@ export function extendSchema(
   documentAST: DocumentNode,
   options?: Options,
 ): GraphQLSchema {
-  invariant(
-    schema instanceof GraphQLSchema,
-    'Must provide valid GraphQLSchema',
-  );
+  invariant(isSchema(schema), 'Must provide valid GraphQLSchema');
 
   invariant(
     documentAST && documentAST.kind === Kind.DOCUMENT,
@@ -122,7 +124,7 @@ export function extendSchema(
             [def],
           );
         }
-        if (!(existingType instanceof GraphQLObjectType)) {
+        if (!isObjectType(existingType)) {
           throw new GraphQLError(
             `Cannot extend non-object type "${extendedTypeName}".`,
             [def],
@@ -248,13 +250,13 @@ export function extendSchema(
   // Given a type's introspection result, construct the correct
   // GraphQLType instance.
   function extendType(type: GraphQLNamedType): GraphQLNamedType {
-    if (type instanceof GraphQLObjectType) {
+    if (isObjectType(type)) {
       return extendObjectType(type);
     }
-    if (type instanceof GraphQLInterfaceType) {
+    if (isInterfaceType(type)) {
       return extendInterfaceType(type);
     }
-    if (type instanceof GraphQLUnionType) {
+    if (isUnionType(type)) {
       return extendUnionType(type);
     }
     return type;
@@ -363,10 +365,10 @@ export function extendSchema(
   }
 
   function extendFieldType<T: GraphQLType>(typeDef: T): T {
-    if (typeDef instanceof GraphQLList) {
+    if (isListType(typeDef)) {
       return (GraphQLList(extendFieldType(typeDef.ofType)): any);
     }
-    if (typeDef instanceof GraphQLNonNull) {
+    if (isNonNullType(typeDef)) {
       return (GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
     }
     return getTypeFromDef(typeDef);
