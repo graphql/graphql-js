@@ -28,7 +28,7 @@ import {
 } from '../type/definition';
 import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import type {
-  GraphQLType,
+  GraphQLOutputType,
   GraphQLLeafType,
   GraphQLAbstractType,
   GraphQLField,
@@ -799,7 +799,7 @@ function asErrorInstance(error: mixed): Error {
 // in the execution context.
 function completeValueCatchingError(
   exeContext: ExecutionContext,
-  returnType: GraphQLType,
+  returnType: GraphQLOutputType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
@@ -853,7 +853,7 @@ function completeValueCatchingError(
 // location information.
 function completeValueWithLocatedError(
   exeContext: ExecutionContext,
-  returnType: GraphQLType,
+  returnType: GraphQLOutputType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
@@ -913,7 +913,7 @@ function completeValueWithLocatedError(
  */
 function completeValue(
   exeContext: ExecutionContext,
-  returnType: GraphQLType,
+  returnType: GraphQLOutputType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
@@ -1003,7 +1003,9 @@ function completeValue(
 
   // Not reachable. All possible output types have been considered.
   throw new Error(
-    `Cannot complete value of unexpected type "${String(returnType)}".`,
+    `Cannot complete value of unexpected type "${String(
+      (returnType: empty),
+    )}".`,
   );
 }
 
