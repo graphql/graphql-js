@@ -76,6 +76,7 @@ export function graphql(
   operationName,
   fieldResolver,
 ) {
+  /* eslint-enable no-redeclare */
   // Always return a Promise for a consistent API.
   return new Promise(resolve =>
     resolve(

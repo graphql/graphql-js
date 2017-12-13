@@ -84,6 +84,7 @@ export function subscribe(
   fieldResolver,
   subscribeFieldResolver,
 ) {
+  /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
   return arguments.length === 1
     ? subscribeImpl(
