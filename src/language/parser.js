@@ -19,6 +19,7 @@ import type {
   VariableNode,
   DocumentNode,
   DefinitionNode,
+  ExecutableDefinitionNode,
   OperationDefinitionNode,
   OperationTypeNode,
   VariableDefinitionNode,
@@ -213,26 +214,17 @@ function parseDocument(lexer: Lexer<*>): DocumentNode {
 
 /**
  * Definition :
- *   - OperationDefinition
- *   - FragmentDefinition
+ *   - ExecutableDefinition
  *   - TypeSystemDefinition
  */
 function parseDefinition(lexer: Lexer<*>): DefinitionNode {
-  if (peek(lexer, TokenKind.BRACE_L)) {
-    return parseOperationDefinition(lexer);
-  }
-
   if (peek(lexer, TokenKind.NAME)) {
     switch (lexer.token.value) {
       case 'query':
       case 'mutation':
       case 'subscription':
-        return parseOperationDefinition(lexer);
-
       case 'fragment':
-        return parseFragmentDefinition(lexer);
-
-      // Note: The schema definition language is an experimental addition.
+        return parseExecutableDefinition(lexer);
       case 'schema':
       case 'scalar':
       case 'type':
@@ -242,13 +234,37 @@ function parseDefinition(lexer: Lexer<*>): DefinitionNode {
       case 'input':
       case 'extend':
       case 'directive':
+        // Note: The schema definition language is an experimental addition.
         return parseTypeSystemDefinition(lexer);
     }
+  } else if (peek(lexer, TokenKind.BRACE_L)) {
+    return parseExecutableDefinition(lexer);
+  } else if (peekDescription(lexer)) {
+    // Note: The schema definition language is an experimental addition.
+    return parseTypeSystemDefinition(lexer);
   }
 
-  // Note: The schema definition language is an experimental addition.
-  if (peekDescription(lexer)) {
-    return parseTypeSystemDefinition(lexer);
+  throw unexpected(lexer);
+}
+
+/**
+ * ExecutableDefinition :
+ *   - OperationDefinition
+ *   - FragmentDefinition
+ */
+function parseExecutableDefinition(lexer: Lexer<*>): ExecutableDefinitionNode {
+  if (peek(lexer, TokenKind.NAME)) {
+    switch (lexer.token.value) {
+      case 'query':
+      case 'mutation':
+      case 'subscription':
+        return parseOperationDefinition(lexer);
+
+      case 'fragment':
+        return parseFragmentDefinition(lexer);
+    }
+  } else if (peek(lexer, TokenKind.BRACE_L)) {
+    return parseOperationDefinition(lexer);
   }
 
   throw unexpected(lexer);
@@ -1321,14 +1337,31 @@ function parseDirectiveLocations(lexer: Lexer<*>): Array<NameNode> {
 }
 
 /*
- * DirectiveLocation: one of
- *   `QUERY`                 `SCHEMA`                `ENUM`
- *   `MUTATION`              `SCALAR`                `ENUM_VALUE`
- *   `SUBSCRIPTION`          `OBJECT`                `INPUT_OBJECT`
- *   `FIELD`                 `FIELD_DEFINITION`      `INPUT_FIELD_DEFINITION`
- *   `FRAGMENT_DEFINITION`   `ARGUMENT_DEFINITION`
- *   `FRAGMENT_SPREAD`       `INTERFACE`
- *   `INLINE_FRAGMENT`       `UNION`
+ * DirectiveLocation :
+ *   - ExecutableDirectiveLocation
+ *   - TypeSystemDirectiveLocation
+ *
+ * ExecutableDirectiveLocation : one of
+ *   `QUERY`
+ *   `MUTATION`
+ *   `SUBSCRIPTION`
+ *   `FIELD`
+ *   `FRAGMENT_DEFINITION`
+ *   `FRAGMENT_SPREAD`
+ *   `INLINE_FRAGMENT`
+ *
+ * TypeSystemDirectiveLocation : one of
+ *   `SCHEMA`
+ *   `SCALAR`
+ *   `OBJECT`
+ *   `FIELD_DEFINITION`
+ *   `ARGUMENT_DEFINITION`
+ *   `INTERFACE`
+ *   `UNION`
+ *   `ENUM`
+ *   `ENUM_VALUE`
+ *   `INPUT_OBJECT`
+ *   `INPUT_FIELD_DEFINITION`
  */
 function parseDirectiveLocation(lexer: Lexer<*>): NameNode {
   const start = lexer.token;
