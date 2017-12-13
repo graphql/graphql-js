@@ -40,17 +40,13 @@ import type {
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 import {
+  assertNullableType,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  assertObjectType,
-  assertInterfaceType,
-  assertInputType,
-  assertOutputType,
-  assertNullableType,
 } from '../type/definition';
 
 import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
@@ -71,8 +67,6 @@ import { GraphQLSchema } from '../type/schema';
 import type {
   GraphQLType,
   GraphQLNamedType,
-  GraphQLInputType,
-  GraphQLOutputType,
   GraphQLFieldConfig,
 } from '../type/definition';
 
@@ -299,24 +293,6 @@ export class ASTDefinitionBuilder {
     return this._buildType(ref.name.value, ref);
   }
 
-  _buildInputType(typeNode: TypeNode): GraphQLInputType {
-    return assertInputType(this._buildWrappedType(typeNode));
-  }
-
-  _buildOutputType(typeNode: TypeNode): GraphQLOutputType {
-    return assertOutputType(this._buildWrappedType(typeNode));
-  }
-
-  buildObjectType(ref: string | NamedTypeNode): GraphQLObjectType {
-    const type = this.buildType(ref);
-    return assertObjectType(type);
-  }
-
-  buildInterfaceType(ref: string | NamedTypeNode): GraphQLInterfaceType {
-    const type = this.buildType(ref);
-    return assertInterfaceType(type);
-  }
-
   _buildWrappedType(typeNode: TypeNode): GraphQLType {
     const typeDef = this.buildType(getNamedTypeNode(typeNode));
     return buildWrappedType(typeDef, typeNode);
@@ -338,7 +314,10 @@ export class ASTDefinitionBuilder {
 
   buildField(field: FieldDefinitionNode): GraphQLFieldConfig<*, *> {
     return {
-      type: this._buildOutputType(field.type),
+      // Note: While this could make assertions to get the correctly typed
+      // value, that would throw immediately while type system validation
+      // with validateSchema() will produce more actionable results.
+      type: (this._buildWrappedType(field.type): any),
       description: getDescription(field, this._options),
       args: field.arguments && this._makeInputValues(field.arguments),
       deprecationReason: getDeprecationReason(field),
@@ -403,7 +382,10 @@ export class ASTDefinitionBuilder {
       values,
       value => value.name.value,
       value => {
-        const type = this._buildInputType(value.type);
+        // Note: While this could make assertions to get the correctly typed
+        // value, that would throw immediately while type system validation
+        // with validateSchema() will produce more actionable results.
+        const type: any = this._buildWrappedType(value.type);
         return {
           type,
           description: getDescription(value, this._options),
@@ -446,7 +428,10 @@ export class ASTDefinitionBuilder {
     return new GraphQLUnionType({
       name: def.name.value,
       description: getDescription(def, this._options),
-      types: def.types ? def.types.map(t => this.buildObjectType(t)) : [],
+      // Note: While this could make assertions to get the correctly typed
+      // values below, that would throw immediately while type system
+      // validation with validateSchema() will produce more actionable results.
+      types: def.types ? def.types.map(t => (this.buildType(t): any)) : [],
       astNode: def,
     });
   }

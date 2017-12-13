@@ -7,65 +7,42 @@
  * @flow
  */
 
+import { GraphQLError } from '../error/GraphQLError';
+import type { ASTNode } from '../language/ast';
+import invariant from '../jsutils/invariant';
+
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
-const ERROR_PREFIX_RX = /^Error: /;
-
-// Silences warnings if an environment flag is enabled
-const noNameWarning = Boolean(
-  typeof process !== 'undefined' &&
-    process &&
-    process.env &&
-    process.env.GRAPHQL_NO_NAME_WARNING,
-);
-
-// Ensures console warnings are only issued once.
-let hasWarnedAboutDunder = false;
 
 /**
  * Upholds the spec rules about naming.
  */
-export function assertValidName(name: string, isIntrospection?: boolean): void {
-  if (!name || typeof name !== 'string') {
-    throw new Error(`Must be named. Unexpected name: ${name}.`);
+export function assertValidName(name: string): string {
+  const error = isValidNameError(name);
+  if (error) {
+    throw error;
   }
-  if (
-    !isIntrospection &&
-    !hasWarnedAboutDunder &&
-    !noNameWarning &&
-    name.slice(0, 2) === '__'
-  ) {
-    hasWarnedAboutDunder = true;
-    /* eslint-disable no-console */
-    if (console && console.warn) {
-      const error = new Error(
-        `Name "${name}" must not begin with "__", which is reserved by ` +
-          'GraphQL introspection. In a future release of graphql this will ' +
-          'become a hard error.',
-      );
-      console.warn(formatWarning(error));
-    }
-    /* eslint-enable no-console */
-  }
-  if (!NAME_RX.test(name)) {
-    throw new Error(
-      `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`,
-    );
-  }
+  return name;
 }
 
 /**
- * Returns a human-readable warning based an the supplied Error object,
- * including stack trace information if available.
+ * Returns an Error if a name is invalid.
  */
-export function formatWarning(error: Error): string {
-  let formatted = '';
-  const errorString = String(error).replace(ERROR_PREFIX_RX, '');
-  const stack = error.stack;
-  if (stack) {
-    formatted = stack.replace(ERROR_PREFIX_RX, '');
+export function isValidNameError(
+  name: string,
+  node?: ASTNode | void,
+): GraphQLError | void {
+  invariant(typeof name === 'string', 'Expected string');
+  if (name.length > 1 && name[0] === '_' && name[1] === '_') {
+    return new GraphQLError(
+      `Name "${name}" must not begin with "__", which is reserved by ` +
+        'GraphQL introspection.',
+      node,
+    );
   }
-  if (formatted.indexOf(errorString) === -1) {
-    formatted = errorString + '\n' + formatted;
+  if (!NAME_RX.test(name)) {
+    return new GraphQLError(
+      `Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${name}" does not.`,
+      node,
+    );
   }
-  return formatted.trim();
 }
