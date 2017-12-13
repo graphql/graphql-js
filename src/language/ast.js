@@ -176,9 +176,12 @@ export type DocumentNode = {
 };
 
 export type DefinitionNode =
-  | OperationDefinitionNode
-  | FragmentDefinitionNode
+  | ExecutableDefinitionNode
   | TypeSystemDefinitionNode; // experimental non-spec addition.
+
+export type ExecutableDefinitionNode =
+  | OperationDefinitionNode
+  | FragmentDefinitionNode;
 
 export type OperationDefinitionNode = {
   +kind: 'OperationDefinition',
