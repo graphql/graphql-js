@@ -113,9 +113,13 @@ export class TypeInfo {
   // Flow does not yet handle this case.
   enter(node: any /* ASTNode */) {
     const schema = this._schema;
+    // Note: many of the types below are explicitly typed as "mixed" to drop
+    // any assumptions of a valid schema to ensure runtime types are properly
+    // checked before continuing since TypeInfo is used as part of validation
+    // which occurs before guarantees of schema and document validity.
     switch (node.kind) {
       case Kind.SELECTION_SET:
-        const namedType = getNamedType(this.getType());
+        const namedType: mixed = getNamedType(this.getType());
         this._parentTypeStack.push(
           isCompositeType(namedType) ? namedType : undefined,
         );
@@ -123,17 +127,21 @@ export class TypeInfo {
       case Kind.FIELD:
         const parentType = this.getParentType();
         let fieldDef;
+        let fieldType: mixed;
         if (parentType) {
           fieldDef = this._getFieldDef(schema, parentType, node);
+          if (fieldDef) {
+            fieldType = fieldDef.type;
+          }
         }
         this._fieldDefStack.push(fieldDef);
-        this._typeStack.push(fieldDef && fieldDef.type);
+        this._typeStack.push(isOutputType(fieldType) ? fieldType : undefined);
         break;
       case Kind.DIRECTIVE:
         this._directive = schema.getDirective(node.name.value);
         break;
       case Kind.OPERATION_DEFINITION:
-        let type;
+        let type: mixed;
         if (node.operation === 'query') {
           type = schema.getQueryType();
         } else if (node.operation === 'mutation') {
@@ -141,25 +149,25 @@ export class TypeInfo {
         } else if (node.operation === 'subscription') {
           type = schema.getSubscriptionType();
         }
-        this._typeStack.push(type);
+        this._typeStack.push(isObjectType(type) ? type : undefined);
         break;
       case Kind.INLINE_FRAGMENT:
       case Kind.FRAGMENT_DEFINITION:
         const typeConditionAST = node.typeCondition;
-        const outputType = typeConditionAST
+        const outputType: mixed = typeConditionAST
           ? typeFromAST(schema, typeConditionAST)
           : getNamedType(this.getType());
         this._typeStack.push(isOutputType(outputType) ? outputType : undefined);
         break;
       case Kind.VARIABLE_DEFINITION:
-        const inputType = typeFromAST(schema, node.type);
+        const inputType: mixed = typeFromAST(schema, node.type);
         this._inputTypeStack.push(
           isInputType(inputType) ? inputType : undefined,
         );
         break;
       case Kind.ARGUMENT:
         let argDef;
-        let argType;
+        let argType: mixed;
         const fieldOrDirective = this.getDirective() || this.getFieldDef();
         if (fieldOrDirective) {
           argDef = find(
@@ -171,25 +179,31 @@ export class TypeInfo {
           }
         }
         this._argument = argDef;
-        this._inputTypeStack.push(argType);
+        this._inputTypeStack.push(isInputType(argType) ? argType : undefined);
         break;
       case Kind.LIST:
-        const listType = getNullableType(this.getInputType());
-        this._inputTypeStack.push(
-          isListType(listType) ? listType.ofType : undefined,
-        );
+        const listType: mixed = getNullableType(this.getInputType());
+        let itemType: mixed;
+        if (isListType(listType)) {
+          itemType = listType.ofType;
+        }
+        this._inputTypeStack.push(isInputType(itemType) ? itemType : undefined);
         break;
       case Kind.OBJECT_FIELD:
-        const objectType = getNamedType(this.getInputType());
-        let fieldType;
+        const objectType: mixed = getNamedType(this.getInputType());
+        let inputFieldType: mixed;
         if (isInputObjectType(objectType)) {
           const inputField = objectType.getFields()[node.name.value];
-          fieldType = inputField ? inputField.type : undefined;
+          if (inputField) {
+            inputFieldType = inputField.type;
+          }
         }
-        this._inputTypeStack.push(fieldType);
+        this._inputTypeStack.push(
+          isInputType(inputFieldType) ? inputFieldType : undefined,
+        );
         break;
       case Kind.ENUM:
-        const enumType = getNamedType(this.getInputType());
+        const enumType: mixed = getNamedType(this.getInputType());
         let enumValue;
         if (isEnumType(enumType)) {
           enumValue = enumType.getValue(node.value);
