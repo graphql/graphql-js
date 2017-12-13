@@ -3,11 +3,19 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
 
-export const QueryDocumentKeys = {
-  Name: [],
+import type { ASTNode, KindToASTNodeType } from './ast';
+import invariant from '../jsutils/invariant';
 
+type KindValues = $Keys<KindToASTNodeType>;
+type DocumentKeysType = {
+  [nodeName: KindValues]: $ReadOnlyArray<string>,
+};
+export const QueryDocumentKeys: DocumentKeysType = {
+  Name: [],
   Document: ['definitions'],
   OperationDefinition: [
     'name',
@@ -76,7 +84,31 @@ export const QueryDocumentKeys = {
   DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
 };
 
-export const BREAK = {};
+class Break {}
+export const BREAK = new Break();
+
+type VisitorFn<T> = (
+  node: T,
+  key: ?(string | number),
+  parent: ?ASTNode,
+  path: $ReadOnlyArray<string | number>,
+  ancestors: $ReadOnlyArray<ASTNode>,
+) => Break | false | ASTNode | mixed | void;
+
+type KindVisitor = {|
+  ...$ObjMap<KindToASTNodeType, <T>(T) => VisitorFn<T>>,
+|};
+
+type NodeVisitor<T> =
+  | VisitorFn<T>
+  | {| enter?: VisitorFn<T>, leave?: VisitorFn<T> |};
+
+type Visitor = {|
+  enter?: VisitorFn<ASTNode> | KindVisitor,
+  leave?: VisitorFn<ASTNode> | KindVisitor,
+
+  ...$ObjMap<KindToASTNodeType, <T>(T) => NodeVisitor<T>>,
+|};
 
 /**
  * visit() will walk through an AST using a depth first traversal, calling
@@ -164,130 +196,140 @@ export const BREAK = {};
  *       }
  *     })
  */
-export function visit(root, visitor, keyMap) {
+export function visit(
+  root: ASTNode,
+  visitor: Visitor,
+  keyMap?: DocumentKeysType,
+): any {
   const visitorKeys = keyMap || QueryDocumentKeys;
-
-  let stack;
-  let inArray = Array.isArray(root);
-  let keys = [root];
-  let index = -1;
-  let edits = [];
-  let parent;
   const path = [];
   const ancestors = [];
-  let newRoot = root;
+  let node = root;
+  let parent;
+  let isLeaving = false;
+  let editStack = { depth: 0, value: {}, prev: null };
 
-  do {
-    index++;
-    const isLeaving = index === keys.length;
-    let key;
-    let node;
-    const isEdited = isLeaving && edits.length !== 0;
-    if (isLeaving) {
-      key = ancestors.length === 0 ? undefined : path.pop();
-      node = parent;
-      parent = ancestors.pop();
-      if (isEdited) {
-        if (inArray) {
-          node = node.slice();
-        } else {
-          const clone = {};
-          for (const k in node) {
-            if (node.hasOwnProperty(k)) {
-              clone[k] = node[k];
-            }
-          }
-          node = clone;
-        }
-        let editOffset = 0;
-        for (let ii = 0; ii < edits.length; ii++) {
-          let editKey = edits[ii][0];
-          const editValue = edits[ii][1];
-          if (inArray) {
-            editKey -= editOffset;
-          }
-          if (inArray && editValue === null) {
-            node.splice(editKey, 1);
-            editOffset++;
-          } else {
-            node[editKey] = editValue;
-          }
-        }
-      }
-      index = stack.index;
-      keys = stack.keys;
-      edits = stack.edits;
-      inArray = stack.inArray;
-      stack = stack.prev;
-    } else {
-      key = parent ? (inArray ? index : keys[index]) : undefined;
-      node = parent ? parent[key] : newRoot;
-      if (node === null || node === undefined) {
-        continue;
-      }
-      if (parent) {
-        path.push(key);
-      }
+  for (;;) {
+    if (!isNode(node)) {
+      throw new Error('Invalid AST Node: ' + JSON.stringify(node));
     }
+    const isInArray = typeof path[path.length - 1] === 'number';
+    const curKey = path[path.length - (isInArray ? 2 : 1)];
+    const curIndex = isInArray ? path[path.length - 1] : undefined;
+    const visitFn = getVisitFn(visitor, node.kind, isLeaving);
 
-    let result;
-    if (!Array.isArray(node)) {
-      if (!isNode(node)) {
-        throw new Error('Invalid AST Node: ' + JSON.stringify(node));
-      }
-      const visitFn = getVisitFn(visitor, node.kind, isLeaving);
-      if (visitFn) {
-        result = visitFn.call(visitor, node, key, parent, path, ancestors);
-
-        if (result === BREAK) {
-          break;
-        }
-
-        if (result === false) {
-          if (!isLeaving) {
-            path.pop();
-            continue;
-          }
-        } else if (result !== undefined) {
-          edits.push([key, result]);
-          if (!isLeaving) {
-            if (isNode(result)) {
-              node = result;
-            } else {
-              path.pop();
-              continue;
-            }
-          }
+    if (visitFn) {
+      const key = path[path.length - 1];
+      const result = visitFn.call(visitor, node, key, parent, path, ancestors);
+      if (result === BREAK) {
+        return root;
+      } else if (result === false) {
+        isLeaving = true;
+      } else if (result !== undefined) {
+        node = (result: any);
+        if (!isNode(result)) {
+          isLeaving = true;
         }
       }
-    }
-
-    if (result === undefined && isEdited) {
-      edits.push([key, node]);
     }
 
     if (!isLeaving) {
-      stack = { inArray, index, keys, edits, prev: stack };
-      inArray = Array.isArray(node);
-      keys = inArray ? node : visitorKeys[node.kind] || [];
-      index = -1;
-      edits = [];
-      if (parent) {
-        ancestors.push(parent);
+      const newParent = node;
+      isLeaving = !switchToNextNode(node);
+      if (!isLeaving) {
+        parent = newParent;
+        ancestors.push(newParent);
       }
-      parent = node;
+      continue;
     }
-  } while (stack !== undefined);
 
-  if (edits.length !== 0) {
-    newRoot = edits[edits.length - 1][1];
+    if (parent === undefined) {
+      break;
+    }
+
+    const oldValue = isInArray ? parent[curKey][curIndex] : parent[curKey];
+    if (node !== oldValue) {
+      if (editStack.depth < ancestors.length) {
+        editStack = { depth: ancestors.length, value: {}, prev: editStack };
+      }
+      const edits = editStack.value;
+      if (curIndex !== undefined) {
+        edits[curKey] = edits[curKey] || parent[curKey].slice();
+        edits[curKey][curIndex] = node;
+      } else {
+        edits[curKey] = node;
+      }
+    }
+
+    path.pop();
+    if (isInArray) {
+      path.pop();
+    }
+    isLeaving = !switchToNextNode(parent, curKey, curIndex);
+    if (isLeaving) {
+      node = ancestors.pop();
+      parent = ancestors[ancestors.length - 1];
+      if (editStack.depth === ancestors.length + 1) {
+        node = applyEdits(node, editStack.value);
+        invariant(editStack.prev != null);
+        editStack = editStack.prev;
+      }
+    }
   }
 
-  return newRoot;
+  return node;
+
+  function switchToNextNode(baseNode, prevKey, prevIndex) {
+    if (prevKey !== undefined && prevIndex !== undefined) {
+      const nextIndex = prevIndex + 1;
+      if (nextIndex < baseNode[prevKey].length) {
+        node = baseNode[prevKey][nextIndex];
+        path.push(prevKey, nextIndex);
+        return true;
+      }
+    }
+
+    const keys = visitorKeys[baseNode.kind] || [];
+    let keyIndex = prevKey == null ? 0 : keys.indexOf(prevKey) + 1;
+    for (; keyIndex < keys.length; ++keyIndex) {
+      const nextKey = keys[keyIndex];
+      const keyValue = baseNode[nextKey];
+
+      if (keyValue != null) {
+        if (!Array.isArray(keyValue)) {
+          node = keyValue;
+          path.push(nextKey);
+          return true;
+        } else if (keyValue.length > 0) {
+          node = keyValue[0];
+          path.push(nextKey, 0);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function applyEdits(oldNode, edits) {
+    const newNode = {};
+    for (const key in oldNode) {
+      if (Object.prototype.hasOwnProperty.call(oldNode, key)) {
+        const editedValue = edits[key];
+        if (editedValue === undefined) {
+          newNode[key] = oldNode[key];
+        } else if (Array.isArray(editedValue)) {
+          newNode[key] = editedValue.filter(value => value !== null);
+        } else if (editedValue !== null) {
+          newNode[key] = editedValue;
+        }
+      }
+    }
+    return newNode;
+  }
 }
 
-function isNode(maybeNode) {
-  return maybeNode && typeof maybeNode.kind === 'string';
+function isNode(maybeNode: mixed): boolean %checks {
+  return maybeNode != null && typeof maybeNode.kind === 'string';
 }
 
 /**
@@ -296,7 +338,7 @@ function isNode(maybeNode) {
  *
  * If a prior visitor edits a node, no following visitors will see that node.
  */
-export function visitInParallel(visitors) {
+export function visitInParallel(visitors: $ReadOnlyArray<Visitor>): Visitor {
   const skipping = new Array(visitors.length);
 
   return {
@@ -337,11 +379,15 @@ export function visitInParallel(visitors) {
   };
 }
 
+interface TypeInfo { enter(ASTNode): void; leave(ASTNode): void }
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance
  * along with visiting visitor.
  */
-export function visitWithTypeInfo(typeInfo, visitor) {
+export function visitWithTypeInfo(
+  typeInfo: TypeInfo,
+  visitor: Visitor,
+): Visitor {
   return {
     enter(node) {
       typeInfo.enter(node);
@@ -351,7 +397,7 @@ export function visitWithTypeInfo(typeInfo, visitor) {
         if (result !== undefined) {
           typeInfo.leave(node);
           if (isNode(result)) {
-            typeInfo.enter(result);
+            typeInfo.enter(((result: any): ASTNode));
           }
         }
         return result;
@@ -373,7 +419,11 @@ export function visitWithTypeInfo(typeInfo, visitor) {
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.
  */
-export function getVisitFn(visitor, kind, isLeaving) {
+export function getVisitFn(
+  visitor: Visitor,
+  kind: KindValues,
+  isLeaving: boolean,
+): VisitorFn<ASTNode> | void {
   const kindVisitor = visitor[kind];
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {

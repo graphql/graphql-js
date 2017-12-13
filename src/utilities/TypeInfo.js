@@ -110,8 +110,7 @@ export class TypeInfo {
     return this._enumValue;
   }
 
-  // Flow does not yet handle this case.
-  enter(node: any /* ASTNode */) {
+  enter(node: ASTNode) {
     const schema = this._schema;
     switch (node.kind) {
       case Kind.SELECTION_SET:

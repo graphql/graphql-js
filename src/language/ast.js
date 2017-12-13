@@ -538,3 +538,56 @@ export type DirectiveDefinitionNode = {
   +arguments?: $ReadOnlyArray<InputValueDefinitionNode>,
   +locations: $ReadOnlyArray<NameNode>,
 };
+
+export type KindToASTNodeType = {|
+  Name?: NameNode,
+  Document?: DocumentNode,
+  OperationDefinition?: OperationDefinitionNode,
+  VariableDefinition?: VariableDefinitionNode,
+  Variable?: VariableNode,
+  SelectionSet?: SelectionSetNode,
+  Field?: FieldNode,
+  Argument?: ArgumentNode,
+
+  FragmentSpread?: FragmentSpreadNode,
+  InlineFragment?: InlineFragmentNode,
+  FragmentDefinition?: FragmentDefinitionNode,
+
+  IntValue?: IntValueNode,
+  FloatValue?: FloatValueNode,
+  StringValue?: StringValueNode,
+  BooleanValue?: BooleanValueNode,
+  NullValue?: NullValueNode,
+  EnumValue?: EnumValueNode,
+  ListValue?: ListValueNode,
+  ObjectValue?: ObjectValueNode,
+  ObjectField?: ObjectFieldNode,
+
+  Directive?: DirectiveNode,
+
+  NamedType?: NamedTypeNode,
+  ListType?: ListTypeNode,
+  NonNullType?: NonNullTypeNode,
+
+  SchemaDefinition?: SchemaDefinitionNode,
+  OperationTypeDefinition?: OperationTypeDefinitionNode,
+
+  ScalarTypeDefinition?: ScalarTypeDefinitionNode,
+  ObjectTypeDefinition?: ObjectTypeDefinitionNode,
+  FieldDefinition?: FieldDefinitionNode,
+  InputValueDefinition?: InputValueDefinitionNode,
+  InterfaceTypeDefinition?: InterfaceTypeDefinitionNode,
+  UnionTypeDefinition?: UnionTypeDefinitionNode,
+  EnumTypeDefinition?: EnumTypeDefinitionNode,
+  EnumValueDefinition?: EnumValueDefinitionNode,
+  InputObjectTypeDefinition?: InputObjectTypeDefinitionNode,
+
+  ScalarTypeExtension?: ScalarTypeExtensionNode,
+  ObjectTypeExtension?: ObjectTypeExtensionNode,
+  InterfaceTypeExtension?: InterfaceTypeExtensionNode,
+  UnionTypeExtension?: UnionTypeExtensionNode,
+  EnumTypeExtension?: EnumTypeExtensionNode,
+  InputObjectTypeExtension?: InputObjectTypeExtensionNode,
+
+  DirectiveDefinition?: DirectiveDefinitionNode,
+|};
