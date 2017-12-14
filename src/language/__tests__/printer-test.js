@@ -103,6 +103,22 @@ describe('Printer', () => {
     `);
   });
 
+  it('Experimental: correctly prints fragment defined variables', () => {
+    const fragmentWithVariable = parse(
+      `
+        fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
+          id
+        }
+      `,
+      { experimentalFragmentVariables: true },
+    );
+    expect(print(fragmentWithVariable)).to.equal(dedent`
+      fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
+        id
+      }
+    `);
+  });
+
   const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
     encoding: 'utf8',
   });

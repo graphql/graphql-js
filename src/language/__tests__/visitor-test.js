@@ -290,6 +290,53 @@ describe('Visitor', () => {
     ]);
   });
 
+  it('Experimental: visits variables defined in fragments', () => {
+    const ast = parse('fragment a($v: Boolean = false) on t { f }', {
+      experimentalFragmentVariables: true,
+    });
+    const visited = [];
+
+    visit(ast, {
+      enter(node) {
+        visited.push(['enter', node.kind, node.value]);
+      },
+      leave(node) {
+        visited.push(['leave', node.kind, node.value]);
+      },
+    });
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Document', undefined],
+      ['enter', 'FragmentDefinition', undefined],
+      ['enter', 'Name', 'a'],
+      ['leave', 'Name', 'a'],
+      ['enter', 'VariableDefinition', undefined],
+      ['enter', 'Variable', undefined],
+      ['enter', 'Name', 'v'],
+      ['leave', 'Name', 'v'],
+      ['leave', 'Variable', undefined],
+      ['enter', 'NamedType', undefined],
+      ['enter', 'Name', 'Boolean'],
+      ['leave', 'Name', 'Boolean'],
+      ['leave', 'NamedType', undefined],
+      ['enter', 'BooleanValue', false],
+      ['leave', 'BooleanValue', false],
+      ['leave', 'VariableDefinition', undefined],
+      ['enter', 'NamedType', undefined],
+      ['enter', 'Name', 't'],
+      ['leave', 'Name', 't'],
+      ['leave', 'NamedType', undefined],
+      ['enter', 'SelectionSet', undefined],
+      ['enter', 'Field', undefined],
+      ['enter', 'Name', 'f'],
+      ['leave', 'Name', 'f'],
+      ['leave', 'Field', undefined],
+      ['leave', 'SelectionSet', undefined],
+      ['leave', 'FragmentDefinition', undefined],
+      ['leave', 'Document', undefined],
+    ]);
+  });
+
   const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
     encoding: 'utf8',
   });
