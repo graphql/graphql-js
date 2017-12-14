@@ -161,8 +161,21 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Argument "fromEnum" has invalid value "GREEN".' +
-            '\nExpected type "Color", found "GREEN".',
+            'Expected type Color, found "GREEN"; Did you mean the enum value: GREEN?',
+          locations: [{ line: 1, column: 23 }],
+        },
+      ],
+    });
+  });
+
+  it('does not accept values not in the enum', async () => {
+    expect(
+      await graphql(schema, '{ colorEnum(fromEnum: GREENISH) }'),
+    ).to.jsonEqual({
+      errors: [
+        {
+          message:
+            'Expected type Color, found GREENISH; Did you mean the enum value: GREEN?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -180,6 +193,7 @@ describe('Type System: Enum Values', () => {
         {
           message: 'Expected a value of type "Color" but received: GREEN',
           locations: [{ line: 1, column: 3 }],
+          path: ['colorEnum'],
         },
       ],
     });
@@ -189,9 +203,7 @@ describe('Type System: Enum Values', () => {
     expect(await graphql(schema, '{ colorEnum(fromEnum: 1) }')).to.jsonEqual({
       errors: [
         {
-          message:
-            'Argument "fromEnum" has invalid value 1.' +
-            '\nExpected type "Color", found 1.',
+          message: 'Expected type Color, found 1.',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -203,9 +215,7 @@ describe('Type System: Enum Values', () => {
       {
         errors: [
           {
-            message:
-              'Argument "fromInt" has invalid value GREEN.' +
-              '\nExpected type "Int", found GREEN.',
+            message: 'Expected type Int, found GREEN.',
             locations: [{ line: 1, column: 22 }],
           },
         ],

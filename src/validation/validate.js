@@ -258,6 +258,10 @@ export class ValidationContext {
     return this._typeInfo.getInputType();
   }
 
+  getParentInputType(): ?GraphQLInputType {
+    return this._typeInfo.getParentInputType();
+  }
+
   getFieldDef(): ?GraphQLField<*, *> {
     return this._typeInfo.getFieldDef();
   }

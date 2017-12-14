@@ -14,7 +14,6 @@ import keyMap from '../jsutils/keyMap';
 import { coerceValue } from '../utilities/coerceValue';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
-import { isValidLiteralValue } from '../utilities/isValidLiteralValue';
 import * as Kind from '../language/kinds';
 import { print } from '../language/printer';
 import { isInputType, isNonNullType } from '../type/definition';
@@ -164,10 +163,11 @@ export function getArgumentValues(
       const valueNode = argumentNode.value;
       const coercedValue = valueFromAST(valueNode, argType, variableValues);
       if (isInvalid(coercedValue)) {
-        const errors = isValidLiteralValue(argType, valueNode);
-        const message = errors ? '\n' + errors.join('\n') : '';
+        // Note: ValuesOfCorrectType validation should catch this before
+        // execution. This is a runtime check to ensure execution does not
+        // continue with an invalid argument value.
         throw new GraphQLError(
-          `Argument "${name}" got invalid value ${print(valueNode)}.${message}`,
+          `Argument "${name}" has invalid value ${print(valueNode)}.`,
           [argumentNode.value],
         );
       }
