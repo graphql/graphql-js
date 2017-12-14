@@ -11,6 +11,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { parse } from '../parser';
 import { print } from '../printer';
+import dedent from '../../jsutils/dedent';
 
 describe('Printer', () => {
   it('prints minimal ast', () => {
@@ -45,115 +46,113 @@ describe('Printer', () => {
 
     const printed = print(ast);
 
-    /* eslint-disable max-len */
-    expect(printed).to.equal(
-      `schema {
-  query: QueryType
-  mutation: MutationType
-}
+    expect(printed).to.equal(dedent`
+      schema {
+        query: QueryType
+        mutation: MutationType
+      }
 
-"""
-This is a description
-of the \`Foo\` type.
-"""
-type Foo implements Bar {
-  one: Type
-  two(argument: InputType!): Type
-  three(argument: InputType, other: String): Int
-  four(argument: String = "string"): String
-  five(argument: [String] = ["string", "string"]): String
-  six(argument: InputType = {key: "value"}): Type
-  seven(argument: Int = null): Type
-}
+      """
+      This is a description
+      of the \`Foo\` type.
+      """
+      type Foo implements Bar {
+        one: Type
+        two(argument: InputType!): Type
+        three(argument: InputType, other: String): Int
+        four(argument: String = "string"): String
+        five(argument: [String] = ["string", "string"]): String
+        six(argument: InputType = {key: "value"}): Type
+        seven(argument: Int = null): Type
+      }
 
-type AnnotatedObject @onObject(arg: "value") {
-  annotatedField(arg: Type = "default" @onArg): Type @onField
-}
+      type AnnotatedObject @onObject(arg: "value") {
+        annotatedField(arg: Type = "default" @onArg): Type @onField
+      }
 
-type UndefinedType
+      type UndefinedType
 
-extend type Foo {
-  seven(argument: [String]): Type
-}
+      extend type Foo {
+        seven(argument: [String]): Type
+      }
 
-extend type Foo @onType
+      extend type Foo @onType
 
-interface Bar {
-  one: Type
-  four(argument: String = "string"): String
-}
+      interface Bar {
+        one: Type
+        four(argument: String = "string"): String
+      }
 
-interface AnnotatedInterface @onInterface {
-  annotatedField(arg: Type @onArg): Type @onField
-}
+      interface AnnotatedInterface @onInterface {
+        annotatedField(arg: Type @onArg): Type @onField
+      }
 
-interface UndefinedInterface
+      interface UndefinedInterface
 
-extend interface Bar {
-  two(argument: InputType!): Type
-}
+      extend interface Bar {
+        two(argument: InputType!): Type
+      }
 
-extend interface Bar @onInterface
+      extend interface Bar @onInterface
 
-union Feed = Story | Article | Advert
+      union Feed = Story | Article | Advert
 
-union AnnotatedUnion @onUnion = A | B
+      union AnnotatedUnion @onUnion = A | B
 
-union AnnotatedUnionTwo @onUnion = A | B
+      union AnnotatedUnionTwo @onUnion = A | B
 
-union UndefinedUnion
+      union UndefinedUnion
 
-extend union Feed = Photo | Video
+      extend union Feed = Photo | Video
 
-extend union Feed @onUnion
+      extend union Feed @onUnion
 
-scalar CustomScalar
+      scalar CustomScalar
 
-scalar AnnotatedScalar @onScalar
+      scalar AnnotatedScalar @onScalar
 
-extend scalar CustomScalar @onScalar
+      extend scalar CustomScalar @onScalar
 
-enum Site {
-  DESKTOP
-  MOBILE
-}
+      enum Site {
+        DESKTOP
+        MOBILE
+      }
 
-enum AnnotatedEnum @onEnum {
-  ANNOTATED_VALUE @onEnumValue
-  OTHER_VALUE
-}
+      enum AnnotatedEnum @onEnum {
+        ANNOTATED_VALUE @onEnumValue
+        OTHER_VALUE
+      }
 
-enum UndefinedEnum
+      enum UndefinedEnum
 
-extend enum Site {
-  VR
-}
+      extend enum Site {
+        VR
+      }
 
-extend enum Site @onEnum
+      extend enum Site @onEnum
 
-input InputType {
-  key: String!
-  answer: Int = 42
-}
+      input InputType {
+        key: String!
+        answer: Int = 42
+      }
 
-input AnnotatedInput @onInputObject {
-  annotatedField: Type @onField
-}
+      input AnnotatedInput @onInputObject {
+        annotatedField: Type @onField
+      }
 
-input UndefinedInput
+      input UndefinedInput
 
-extend input InputType {
-  other: Float = 1.23e4
-}
+      extend input InputType {
+        other: Float = 1.23e4
+      }
 
-extend input InputType @onInputObject
+      extend input InputType @onInputObject
 
-directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+      directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
-directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+      directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
-directive @include2(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-`,
-    );
+      directive @include2(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+    `);
   });
 });
