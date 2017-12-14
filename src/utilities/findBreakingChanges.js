@@ -684,8 +684,11 @@ export function findRemovedDirectives(
 ): Array<BreakingChange> {
   const removedDirectives = [];
 
+  const newSchemaDirectiveNames = new Set(
+    newSchema.getDirectives().map(directive => directive.name),
+  );
   oldSchema.getDirectives().forEach(directive => {
-    if (!newSchema.getDirective(directive.name)) {
+    if (!newSchemaDirectiveNames.has(directive.name)) {
       removedDirectives.push({
         type: BreakingChangeType.DIRECTIVE_REMOVED,
         description: `${directive.name} was removed`,
