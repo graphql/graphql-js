@@ -153,6 +153,7 @@ export function execute(
   operationName,
   fieldResolver,
 ) {
+  /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
   return arguments.length === 1
     ? executeImpl(
