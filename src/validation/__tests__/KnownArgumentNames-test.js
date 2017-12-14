@@ -134,6 +134,18 @@ describe('Validate: Known argument names', () => {
     );
   });
 
+  it('misspelled directive args are reported', () => {
+    expectFailsRule(
+      KnownArgumentNames,
+      `
+      {
+        dog @skip(iff: true)
+      }
+    `,
+      [unknownDirectiveArg('iff', 'skip', ['if'], 3, 19)],
+    );
+  });
+
   it('invalid arg name', () => {
     expectFailsRule(
       KnownArgumentNames,
@@ -143,6 +155,27 @@ describe('Validate: Known argument names', () => {
       }
     `,
       [unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 25)],
+    );
+  });
+
+  it('misspelled arg name is reported', () => {
+    expectFailsRule(
+      KnownArgumentNames,
+      `
+      fragment invalidArgName on Dog {
+        doesKnowCommand(dogcommand: true)
+      }
+    `,
+      [
+        unknownArg(
+          'dogcommand',
+          'doesKnowCommand',
+          'Dog',
+          ['dogCommand'],
+          3,
+          25,
+        ),
+      ],
     );
   });
 
