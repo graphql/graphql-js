@@ -37,12 +37,17 @@ import {
   findInterfacesRemovedFromObjectTypes,
   findInterfacesAddedToObjectTypes,
   findRemovedDirectives,
+  findRemovedDirectiveArguments,
 } from '../findBreakingChanges';
 
 import {
   GraphQLSkipDirective,
   GraphQLIncludeDirective,
+  GraphQLDeprecatedDirective,
+  GraphQLDirective,
 } from '../../type/directives';
+
+import { DirectiveLocation } from '../../language/directiveLocation';
 
 describe('findBreakingChanges', () => {
   const queryType = new GraphQLObjectType({
@@ -1679,7 +1684,7 @@ describe('findDangerousChanges', () => {
     ]);
   });
 
-  it('should detect if a directive was removed', () => {
+  it('should detect if a directive was explicitly removed', () => {
     const oldSchema = new GraphQLSchema({
       directives: [GraphQLSkipDirective, GraphQLIncludeDirective],
     });
@@ -1692,6 +1697,53 @@ describe('findDangerousChanges', () => {
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
         description: `${GraphQLIncludeDirective.name} was removed`,
+      },
+    ]);
+  });
+
+  it('should detect if a directive was implicitly removed', () => {
+    const oldSchema = new GraphQLSchema({});
+
+    const newSchema = new GraphQLSchema({
+      directives: [GraphQLSkipDirective, GraphQLIncludeDirective],
+    });
+
+    expect(findRemovedDirectives(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.DIRECTIVE_REMOVED,
+        description: `${GraphQLDeprecatedDirective.name} was removed`,
+      },
+    ]);
+  });
+
+  it('should detect if a directive argument was removed', () => {
+    const oldSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: 'DirectiveWithArg',
+          locations: [DirectiveLocation.FIELD_DEFINITION],
+          args: {
+            arg1: {
+              name: 'arg1',
+            },
+          },
+        }),
+      ],
+    });
+
+    const newSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: 'DirectiveWithArg',
+          locations: [DirectiveLocation.FIELD_DEFINITION],
+        }),
+      ],
+    });
+
+    expect(findRemovedDirectiveArguments(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.DIRECTIVE_ARGUMENT_REMOVED,
+        description: 'arg1 was removed from DirectiveWithArg',
       },
     ]);
   });

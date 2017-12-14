@@ -23,7 +23,10 @@ import type {
   GraphQLNamedType,
   GraphQLFieldMap,
   GraphQLType,
+  GraphQLArgument,
 } from '../type/definition';
+
+import { GraphQLDirective } from '../type/directives';
 
 import { GraphQLSchema } from '../type/schema';
 
@@ -40,6 +43,7 @@ export const BreakingChangeType = {
   NON_NULL_INPUT_FIELD_ADDED: 'NON_NULL_INPUT_FIELD_ADDED',
   INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
   DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
+  DIRECTIVE_ARGUMENT_REMOVED: 'DIRECTIVE_ARGUMENT_REMOVED',
 };
 
 export const DangerousChangeType = {
@@ -79,6 +83,7 @@ export function findBreakingChanges(
     ...findValuesRemovedFromEnums(oldSchema, newSchema),
     ...findArgChanges(oldSchema, newSchema).breakingChanges,
     ...findInterfacesRemovedFromObjectTypes(oldSchema, newSchema),
+    // ...findRemovedDirectives(oldSchema, newSchema),
   ];
 }
 
@@ -697,4 +702,46 @@ export function findRemovedDirectives(
   });
 
   return removedDirectives;
+}
+
+function findRemovedArgumentsForDirective(
+  oldDirective: GraphQLDirective,
+  newDirective: GraphQLDirective,
+): Array<GraphQLArgument> {
+  const removedArgs = [];
+  const newArgumentMap = newDirective.getArgumentMap();
+  const oldArgumentMap = oldDirective.getArgumentMap();
+
+  Object.keys(oldArgumentMap).forEach(argName => {
+    if (!newArgumentMap[argName]) {
+      removedArgs.push(oldArgumentMap[argName]);
+    }
+  });
+
+  return removedArgs;
+}
+
+export function findRemovedDirectiveArguments(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const removedDirectiveArguments = [];
+
+  newSchema.getDirectives().forEach(newDirective => {
+    const oldDirective = oldSchema.getDirective(newDirective.name);
+    if (!oldDirective) {
+      return;
+    }
+
+    findRemovedArgumentsForDirective(oldDirective, newDirective).forEach(
+      arg => {
+        removedDirectiveArguments.push({
+          type: BreakingChangeType.DIRECTIVE_ARGUMENT_REMOVED,
+          description: `${arg.name} was removed from ${newDirective.name}`,
+        });
+      },
+    );
+  });
+
+  return removedDirectiveArguments;
 }
