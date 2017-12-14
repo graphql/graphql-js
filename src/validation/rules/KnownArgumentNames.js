@@ -52,9 +52,9 @@ export function unknownDirectiveArgMessage(
  */
 export function KnownArgumentNames(context: ValidationContext): any {
   return {
-    Argument(node, key, parent, path, ancestors) {
-      const argumentOf = ancestors[ancestors.length - 1];
-      if (argumentOf.kind === Kind.FIELD) {
+    Argument(node, key, parent) {
+      invariant(parent);
+      if (parent.kind === Kind.FIELD) {
         const fieldDef = context.getFieldDef();
         if (fieldDef) {
           const fieldArgDef = find(
@@ -80,7 +80,7 @@ export function KnownArgumentNames(context: ValidationContext): any {
             );
           }
         }
-      } else if (argumentOf.kind === Kind.DIRECTIVE) {
+      } else if (parent.kind === Kind.DIRECTIVE) {
         const directive = context.getDirective();
         if (directive) {
           const directiveArgDef = find(
