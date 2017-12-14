@@ -36,7 +36,13 @@ import {
   findArgChanges,
   findInterfacesRemovedFromObjectTypes,
   findInterfacesAddedToObjectTypes,
+  findRemovedDirectives,
 } from '../findBreakingChanges';
+
+import {
+  GraphQLSkipDirective,
+  GraphQLIncludeDirective,
+} from '../../type/directives';
 
 describe('findBreakingChanges', () => {
   const queryType = new GraphQLObjectType({
@@ -1669,6 +1675,23 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.NULLABLE_ARG_ADDED,
         description: 'A nullable arg arg2 on Type1.field1 was added',
+      },
+    ]);
+  });
+
+  it('should detect if a directive was removed', () => {
+    const oldSchema = new GraphQLSchema({
+      directives: [GraphQLSkipDirective, GraphQLIncludeDirective],
+    });
+
+    const newSchema = new GraphQLSchema({
+      directives: [GraphQLSkipDirective],
+    });
+
+    expect(findRemovedDirectives(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.DIRECTIVE_REMOVED,
+        description: `${GraphQLIncludeDirective.name} was removed`,
       },
     ]);
   });

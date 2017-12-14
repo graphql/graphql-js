@@ -39,6 +39,7 @@ export const BreakingChangeType = {
   NON_NULL_ARG_ADDED: 'NON_NULL_ARG_ADDED',
   NON_NULL_INPUT_FIELD_ADDED: 'NON_NULL_INPUT_FIELD_ADDED',
   INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
+  DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
 };
 
 export const DangerousChangeType = {
@@ -675,4 +676,22 @@ export function findInterfacesAddedToObjectTypes(
     });
   });
   return interfacesAddedToObjectTypes;
+}
+
+export function findRemovedDirectives(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const removedDirectives = [];
+
+  oldSchema.getDirectives().forEach(directive => {
+    if (!newSchema.getDirective(directive.name)) {
+      removedDirectives.push({
+        type: BreakingChangeType.DIRECTIVE_REMOVED,
+        description: `${directive.name} was removed`,
+      });
+    }
+  })
+
+  return removedDirectives;
 }
