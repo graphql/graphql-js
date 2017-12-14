@@ -691,7 +691,7 @@ export function findRemovedDirectives(
         description: `${directive.name} was removed`,
       });
     }
-  })
+  });
 
   return removedDirectives;
 }
