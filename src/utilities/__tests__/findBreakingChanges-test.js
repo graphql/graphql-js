@@ -1261,6 +1261,154 @@ describe('findBreakingChanges', () => {
       expectedBreakingChanges,
     );
   });
+
+  it('should detect if a directive was explicitly removed', () => {
+    const oldSchema = new GraphQLSchema({
+      directives: [GraphQLSkipDirective, GraphQLIncludeDirective],
+    });
+
+    const newSchema = new GraphQLSchema({
+      directives: [GraphQLSkipDirective],
+    });
+
+    expect(findRemovedDirectives(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.DIRECTIVE_REMOVED,
+        description: `${GraphQLIncludeDirective.name} was removed`,
+      },
+    ]);
+  });
+
+  it('should detect if a directive was implicitly removed', () => {
+    const oldSchema = new GraphQLSchema({});
+
+    const newSchema = new GraphQLSchema({
+      directives: [GraphQLSkipDirective, GraphQLIncludeDirective],
+    });
+
+    expect(findRemovedDirectives(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.DIRECTIVE_REMOVED,
+        description: `${GraphQLDeprecatedDirective.name} was removed`,
+      },
+    ]);
+  });
+
+  it('should detect if a directive argument was removed', () => {
+    const oldSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: 'DirectiveWithArg',
+          locations: [DirectiveLocation.FIELD_DEFINITION],
+          args: {
+            arg1: {
+              name: 'arg1',
+            },
+          },
+        }),
+      ],
+    });
+
+    const newSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: 'DirectiveWithArg',
+          locations: [DirectiveLocation.FIELD_DEFINITION],
+        }),
+      ],
+    });
+
+    expect(findRemovedDirectiveArguments(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.DIRECTIVE_ARGUMENT_REMOVED,
+        description: 'arg1 was removed from DirectiveWithArg',
+      },
+    ]);
+  });
+
+  it('should detect if a non-nullable directive argument was added', () => {
+    const directiveName = 'Directive1';
+
+    const oldSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: directiveName,
+          locations: [DirectiveLocation.FIELD_DEFINITION],
+        }),
+      ],
+    });
+
+    const newSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: directiveName,
+          locations: [DirectiveLocation.FIELD_DEFINITION],
+          args: {
+            arg1: {
+              name: 'arg1',
+              type: GraphQLNonNull(GraphQLBoolean),
+            },
+          },
+        }),
+      ],
+    });
+
+    expect(findAddedNonNullDirectiveArguments(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
+        description: 'A non-null arg arg1 on directive Directive1 was added',
+      },
+    ]);
+  });
+
+  it('should detect locations removed from a directive', () => {
+    const directiveName = 'Directive1';
+    const d1 = new GraphQLDirective({
+      name: directiveName,
+      locations: [DirectiveLocation.FIELD_DEFINITION, DirectiveLocation.QUERY],
+    });
+
+    const d2 = new GraphQLDirective({
+      name: directiveName,
+      locations: [DirectiveLocation.FIELD_DEFINITION],
+    });
+
+    expect(findRemovedLocationsForDirective(d1, d2)).to.eql([
+      DirectiveLocation.QUERY,
+    ]);
+  });
+
+  it('should detect locations removed directives within a schema', () => {
+    const directiveName = 'Directive1';
+
+    const oldSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: directiveName,
+          locations: [
+            DirectiveLocation.FIELD_DEFINITION,
+            DirectiveLocation.QUERY,
+          ],
+        }),
+      ],
+    });
+
+    const newSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: directiveName,
+          locations: [DirectiveLocation.FIELD_DEFINITION],
+        }),
+      ],
+    });
+
+    expect(findRemovedDirectiveLocations(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
+        description: 'QUERY was removed from Directive1',
+      },
+    ]);
+  });
 });
 
 describe('findDangerousChanges', () => {
@@ -1683,154 +1831,6 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.NULLABLE_ARG_ADDED,
         description: 'A nullable arg arg2 on Type1.field1 was added',
-      },
-    ]);
-  });
-
-  it('should detect if a directive was explicitly removed', () => {
-    const oldSchema = new GraphQLSchema({
-      directives: [GraphQLSkipDirective, GraphQLIncludeDirective],
-    });
-
-    const newSchema = new GraphQLSchema({
-      directives: [GraphQLSkipDirective],
-    });
-
-    expect(findRemovedDirectives(oldSchema, newSchema)).to.eql([
-      {
-        type: BreakingChangeType.DIRECTIVE_REMOVED,
-        description: `${GraphQLIncludeDirective.name} was removed`,
-      },
-    ]);
-  });
-
-  it('should detect if a directive was implicitly removed', () => {
-    const oldSchema = new GraphQLSchema({});
-
-    const newSchema = new GraphQLSchema({
-      directives: [GraphQLSkipDirective, GraphQLIncludeDirective],
-    });
-
-    expect(findRemovedDirectives(oldSchema, newSchema)).to.eql([
-      {
-        type: BreakingChangeType.DIRECTIVE_REMOVED,
-        description: `${GraphQLDeprecatedDirective.name} was removed`,
-      },
-    ]);
-  });
-
-  it('should detect if a directive argument was removed', () => {
-    const oldSchema = new GraphQLSchema({
-      directives: [
-        new GraphQLDirective({
-          name: 'DirectiveWithArg',
-          locations: [DirectiveLocation.FIELD_DEFINITION],
-          args: {
-            arg1: {
-              name: 'arg1',
-            },
-          },
-        }),
-      ],
-    });
-
-    const newSchema = new GraphQLSchema({
-      directives: [
-        new GraphQLDirective({
-          name: 'DirectiveWithArg',
-          locations: [DirectiveLocation.FIELD_DEFINITION],
-        }),
-      ],
-    });
-
-    expect(findRemovedDirectiveArguments(oldSchema, newSchema)).to.eql([
-      {
-        type: BreakingChangeType.DIRECTIVE_ARGUMENT_REMOVED,
-        description: 'arg1 was removed from DirectiveWithArg',
-      },
-    ]);
-  });
-
-  it('should detect if a non-nullable directive argument was added', () => {
-    const directiveName = 'Directive1';
-
-    const oldSchema = new GraphQLSchema({
-      directives: [
-        new GraphQLDirective({
-          name: directiveName,
-          locations: [DirectiveLocation.FIELD_DEFINITION],
-        }),
-      ],
-    });
-
-    const newSchema = new GraphQLSchema({
-      directives: [
-        new GraphQLDirective({
-          name: directiveName,
-          locations: [DirectiveLocation.FIELD_DEFINITION],
-          args: {
-            arg1: {
-              name: 'arg1',
-              type: GraphQLNonNull(GraphQLBoolean),
-            },
-          },
-        }),
-      ],
-    });
-
-    expect(findAddedNonNullDirectiveArguments(oldSchema, newSchema)).to.eql([
-      {
-        type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
-        description: 'A non-null arg arg1 on directive Directive1 was added',
-      },
-    ]);
-  });
-
-  it('should detect locations removed from a directive', () => {
-    const directiveName = 'Directive1';
-    const d1 = new GraphQLDirective({
-      name: directiveName,
-      locations: [DirectiveLocation.FIELD_DEFINITION, DirectiveLocation.QUERY],
-    });
-
-    const d2 = new GraphQLDirective({
-      name: directiveName,
-      locations: [DirectiveLocation.FIELD_DEFINITION],
-    });
-
-    expect(findRemovedLocationsForDirective(d1, d2)).to.eql([
-      DirectiveLocation.QUERY,
-    ]);
-  });
-
-  it('should detect locations removed directives within a schema', () => {
-    const directiveName = 'Directive1';
-
-    const oldSchema = new GraphQLSchema({
-      directives: [
-        new GraphQLDirective({
-          name: directiveName,
-          locations: [
-            DirectiveLocation.FIELD_DEFINITION,
-            DirectiveLocation.QUERY,
-          ],
-        }),
-      ],
-    });
-
-    const newSchema = new GraphQLSchema({
-      directives: [
-        new GraphQLDirective({
-          name: directiveName,
-          locations: [DirectiveLocation.FIELD_DEFINITION],
-        }),
-      ],
-    });
-
-    expect(findRemovedDirectiveLocations(oldSchema, newSchema)).to.eql([
-      {
-        type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
-        description: 'QUERY was removed from Directive1',
       },
     ]);
   });
