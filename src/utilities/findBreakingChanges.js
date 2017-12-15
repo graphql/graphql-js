@@ -45,7 +45,7 @@ export const BreakingChangeType = {
   NON_NULL_INPUT_FIELD_ADDED: 'NON_NULL_INPUT_FIELD_ADDED',
   INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
   DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
-  DIRECTIVE_ARGUMENT_REMOVED: 'DIRECTIVE_ARGUMENT_REMOVED',
+  DIRECTIVE_ARG_REMOVED: 'DIRECTIVE_ARG_REMOVED',
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED',
   NON_NULL_DIRECTIVE_ARG_ADDED: 'NON_NULL_DIRECTIVE_ARG_ADDED',
 };
@@ -708,28 +708,27 @@ export function findRemovedDirectives(
   return removedDirectives;
 }
 
-function findRemovedArgumentsForDirective(
+function findRemovedArgsForDirective(
   oldDirective: GraphQLDirective,
   newDirective: GraphQLDirective,
 ): Array<GraphQLArgument> {
   const removedArgs = [];
-  const oldArgumentMap = oldDirective.getArgumentMap();
-  const newArgumentMap = newDirective.getArgumentMap();
+  const newArgMap = newDirective.getArgumentMap();
 
-  Object.keys(oldArgumentMap).forEach(argName => {
-    if (!newArgumentMap[argName]) {
-      removedArgs.push(oldArgumentMap[argName]);
+  oldDirective.args.forEach(arg => {
+    if (!newArgMap[arg.name]) {
+      removedArgs.push(arg);
     }
   });
 
   return removedArgs;
 }
 
-export function findRemovedDirectiveArguments(
+export function findRemovedDirectiveArgs(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
-  const removedDirectiveArguments = [];
+  const removedDirectiveArgs = [];
 
   newSchema.getDirectives().forEach(newDirective => {
     const oldDirective = oldSchema.getDirective(newDirective.name);
@@ -737,37 +736,34 @@ export function findRemovedDirectiveArguments(
       return;
     }
 
-    findRemovedArgumentsForDirective(oldDirective, newDirective).forEach(
-      arg => {
-        removedDirectiveArguments.push({
-          type: BreakingChangeType.DIRECTIVE_ARGUMENT_REMOVED,
-          description: `${arg.name} was removed from ${newDirective.name}`,
-        });
-      },
-    );
+    findRemovedArgsForDirective(oldDirective, newDirective).forEach(arg => {
+      removedDirectiveArgs.push({
+        type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
+        description: `${arg.name} was removed from ${newDirective.name}`,
+      });
+    });
   });
 
-  return removedDirectiveArguments;
+  return removedDirectiveArgs;
 }
 
-function findAddedArgumentsForDirective(
+function findAddedArgsForDirective(
   oldDirective: GraphQLDirective,
   newDirective: GraphQLDirective,
 ): Array<GraphQLArgument> {
   const addedArgs = [];
-  const oldArgumentMap = oldDirective.getArgumentMap();
-  const newArgumentMap = newDirective.getArgumentMap();
+  const oldArgMap = oldDirective.getArgumentMap();
 
-  Object.keys(newArgumentMap).forEach(argName => {
-    if (!oldArgumentMap[argName]) {
-      addedArgs.push(newArgumentMap[argName]);
+  newDirective.args.forEach(arg => {
+    if (!oldArgMap[arg.name]) {
+      addedArgs.push(arg);
     }
   });
 
   return addedArgs;
 }
 
-export function findAddedNonNullDirectiveArguments(
+export function findAddedNonNullDirectiveArgs(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
@@ -779,7 +775,7 @@ export function findAddedNonNullDirectiveArguments(
       return;
     }
 
-    findAddedArgumentsForDirective(oldDirective, newDirective).forEach(arg => {
+    findAddedArgsForDirective(oldDirective, newDirective).forEach(arg => {
       if (!isNonNullType(arg.type)) {
         return;
       }

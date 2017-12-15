@@ -37,8 +37,8 @@ import {
   findInterfacesRemovedFromObjectTypes,
   findInterfacesAddedToObjectTypes,
   findRemovedDirectives,
-  findRemovedDirectiveArguments,
-  findAddedNonNullDirectiveArguments,
+  findRemovedDirectiveArgs,
+  findAddedNonNullDirectiveArgs,
   findRemovedLocationsForDirective,
   findRemovedDirectiveLocations,
 } from '../findBreakingChanges';
@@ -1318,9 +1318,9 @@ describe('findBreakingChanges', () => {
       ],
     });
 
-    expect(findRemovedDirectiveArguments(oldSchema, newSchema)).to.eql([
+    expect(findRemovedDirectiveArgs(oldSchema, newSchema)).to.eql([
       {
-        type: BreakingChangeType.DIRECTIVE_ARGUMENT_REMOVED,
+        type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
         description: 'arg1 was removed from DirectiveWithArg',
       },
     ]);
@@ -1353,7 +1353,7 @@ describe('findBreakingChanges', () => {
       ],
     });
 
-    expect(findAddedNonNullDirectiveArguments(oldSchema, newSchema)).to.eql([
+    expect(findAddedNonNullDirectiveArgs(oldSchema, newSchema)).to.eql([
       {
         type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
         description: 'A non-null arg arg1 on directive Directive1 was added',
