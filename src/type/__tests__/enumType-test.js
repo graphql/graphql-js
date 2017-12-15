@@ -161,7 +161,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected type Color, found "GREEN"; Did you mean the enum value: GREEN?',
+            'Expected type Color, found "GREEN"; Did you mean the enum value GREEN?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -175,7 +175,21 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected type Color, found GREENISH; Did you mean the enum value: GREEN?',
+            'Expected type Color, found GREENISH; Did you mean the enum value GREEN?',
+          locations: [{ line: 1, column: 23 }],
+        },
+      ],
+    });
+  });
+
+  it('does not accept values with incorrect casing', async () => {
+    expect(
+      await graphql(schema, '{ colorEnum(fromEnum: green) }'),
+    ).to.jsonEqual({
+      errors: [
+        {
+          message:
+            'Expected type Color, found green; Did you mean the enum value GREEN?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
