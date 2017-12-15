@@ -1178,6 +1178,44 @@ describe('findBreakingChanges', () => {
       },
     });
 
+    const directiveThatIsRemoved = GraphQLSkipDirective;
+    const directiveThatRemovesArgOld = new GraphQLDirective({
+      name: 'DirectiveThatRemovesArg',
+      locations: [DirectiveLocation.FIELD_DEFINITION],
+      args: {
+        arg1: {
+          name: 'arg1',
+        },
+      },
+    });
+    const directiveThatRemovesArgNew = new GraphQLDirective({
+      name: 'DirectiveThatRemovesArg',
+      locations: [DirectiveLocation.FIELD_DEFINITION],
+    });
+    const nonNullDirectiveAddedOld = new GraphQLDirective({
+      name: 'NonNullDirectiveAdded',
+      locations: [DirectiveLocation.FIELD_DEFINITION],
+    });
+    const nonNullDirectiveAddedNew = new GraphQLDirective({
+      name: 'NonNullDirectiveAdded',
+      locations: [DirectiveLocation.FIELD_DEFINITION],
+      args: {
+        arg1: {
+          name: 'arg1',
+          type: GraphQLNonNull(GraphQLBoolean),
+        },
+      },
+    });
+    const directiveRemovedLocationOld = new GraphQLDirective({
+      name: 'Directive Name',
+      locations: [DirectiveLocation.FIELD_DEFINITION, DirectiveLocation.QUERY],
+    });
+
+    const directiveRemovedLocationNew = new GraphQLDirective({
+      name: 'Directive Name',
+      locations: [DirectiveLocation.FIELD_DEFINITION],
+    });
+
     const oldSchema = new GraphQLSchema({
       query: queryType,
       types: [
@@ -1188,6 +1226,12 @@ describe('findBreakingChanges', () => {
         enumTypeThatLosesAValueOld,
         argThatChanges,
         typeThatLosesInterfaceOld,
+      ],
+      directives: [
+        directiveThatIsRemoved,
+        directiveThatRemovesArgOld,
+        nonNullDirectiveAddedOld,
+        directiveRemovedLocationOld,
       ],
     });
 
@@ -1201,6 +1245,11 @@ describe('findBreakingChanges', () => {
         argChanged,
         typeThaLosesInterfaceNew,
         interface1,
+      ],
+      directives: [
+        directiveThatRemovesArgNew,
+        nonNullDirectiveAddedNew,
+        directiveRemovedLocationNew,
       ],
     });
 
@@ -1255,6 +1304,24 @@ describe('findBreakingChanges', () => {
         description:
           'TypeThatGainsInterface1 no longer implements ' +
           'interface Interface1.',
+      },
+      {
+        type: BreakingChangeType.DIRECTIVE_REMOVED,
+        description: 'skip was removed',
+      },
+      {
+        type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
+        description: 'arg1 was removed from DirectiveThatRemovesArg',
+      },
+      {
+        type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
+        description:
+          'A non-null arg arg1 on directive ' +
+          'NonNullDirectiveAdded was added',
+      },
+      {
+        type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
+        description: 'QUERY was removed from Directive Name',
       },
     ];
     expect(findBreakingChanges(oldSchema, newSchema)).to.eql(
@@ -1327,12 +1394,10 @@ describe('findBreakingChanges', () => {
   });
 
   it('should detect if a non-nullable directive argument was added', () => {
-    const directiveName = 'Directive1';
-
     const oldSchema = new GraphQLSchema({
       directives: [
         new GraphQLDirective({
-          name: directiveName,
+          name: 'DirectiveName',
           locations: [DirectiveLocation.FIELD_DEFINITION],
         }),
       ],
@@ -1341,7 +1406,7 @@ describe('findBreakingChanges', () => {
     const newSchema = new GraphQLSchema({
       directives: [
         new GraphQLDirective({
-          name: directiveName,
+          name: 'DirectiveName',
           locations: [DirectiveLocation.FIELD_DEFINITION],
           args: {
             arg1: {
@@ -1356,20 +1421,19 @@ describe('findBreakingChanges', () => {
     expect(findAddedNonNullDirectiveArgs(oldSchema, newSchema)).to.eql([
       {
         type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
-        description: 'A non-null arg arg1 on directive Directive1 was added',
+        description: 'A non-null arg arg1 on directive DirectiveName was added',
       },
     ]);
   });
 
   it('should detect locations removed from a directive', () => {
-    const directiveName = 'Directive1';
     const d1 = new GraphQLDirective({
-      name: directiveName,
+      name: 'Directive Name',
       locations: [DirectiveLocation.FIELD_DEFINITION, DirectiveLocation.QUERY],
     });
 
     const d2 = new GraphQLDirective({
-      name: directiveName,
+      name: 'Directive Name',
       locations: [DirectiveLocation.FIELD_DEFINITION],
     });
 
@@ -1379,12 +1443,10 @@ describe('findBreakingChanges', () => {
   });
 
   it('should detect locations removed directives within a schema', () => {
-    const directiveName = 'Directive1';
-
     const oldSchema = new GraphQLSchema({
       directives: [
         new GraphQLDirective({
-          name: directiveName,
+          name: 'Directive Name',
           locations: [
             DirectiveLocation.FIELD_DEFINITION,
             DirectiveLocation.QUERY,
@@ -1396,7 +1458,7 @@ describe('findBreakingChanges', () => {
     const newSchema = new GraphQLSchema({
       directives: [
         new GraphQLDirective({
-          name: directiveName,
+          name: 'Directive Name',
           locations: [DirectiveLocation.FIELD_DEFINITION],
         }),
       ],
@@ -1405,7 +1467,7 @@ describe('findBreakingChanges', () => {
     expect(findRemovedDirectiveLocations(oldSchema, newSchema)).to.eql([
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
-        description: 'QUERY was removed from Directive1',
+        description: 'QUERY was removed from Directive Name',
       },
     ]);
   });

@@ -87,7 +87,10 @@ export function findBreakingChanges(
     ...findValuesRemovedFromEnums(oldSchema, newSchema),
     ...findArgChanges(oldSchema, newSchema).breakingChanges,
     ...findInterfacesRemovedFromObjectTypes(oldSchema, newSchema),
-    // ...findRemovedDirectives(oldSchema, newSchema),
+    ...findRemovedDirectives(oldSchema, newSchema),
+    ...findRemovedDirectiveArgs(oldSchema, newSchema),
+    ...findAddedNonNullDirectiveArgs(oldSchema, newSchema),
+    ...findRemovedDirectiveLocations(oldSchema, newSchema),
   ];
 }
 
