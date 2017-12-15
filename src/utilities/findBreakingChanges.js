@@ -23,9 +23,15 @@ import type {
   GraphQLNamedType,
   GraphQLFieldMap,
   GraphQLType,
+  GraphQLArgument,
 } from '../type/definition';
 
+import { GraphQLDirective } from '../type/directives';
 import { GraphQLSchema } from '../type/schema';
+import keyMap from '../jsutils/keyMap';
+
+import type { ObjMap } from '../jsutils/ObjMap';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export const BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
@@ -39,6 +45,10 @@ export const BreakingChangeType = {
   NON_NULL_ARG_ADDED: 'NON_NULL_ARG_ADDED',
   NON_NULL_INPUT_FIELD_ADDED: 'NON_NULL_INPUT_FIELD_ADDED',
   INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
+  DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
+  DIRECTIVE_ARG_REMOVED: 'DIRECTIVE_ARG_REMOVED',
+  DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED',
+  NON_NULL_DIRECTIVE_ARG_ADDED: 'NON_NULL_DIRECTIVE_ARG_ADDED',
 };
 
 export const DangerousChangeType = {
@@ -78,6 +88,10 @@ export function findBreakingChanges(
     ...findValuesRemovedFromEnums(oldSchema, newSchema),
     ...findArgChanges(oldSchema, newSchema).breakingChanges,
     ...findInterfacesRemovedFromObjectTypes(oldSchema, newSchema),
+    ...findRemovedDirectives(oldSchema, newSchema),
+    ...findRemovedDirectiveArgs(oldSchema, newSchema),
+    ...findAddedNonNullDirectiveArgs(oldSchema, newSchema),
+    ...findRemovedDirectiveLocations(oldSchema, newSchema),
   ];
 }
 
@@ -675,4 +689,163 @@ export function findInterfacesAddedToObjectTypes(
     });
   });
   return interfacesAddedToObjectTypes;
+}
+
+export function findRemovedDirectives(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const removedDirectives = [];
+
+  const newSchemaDirectiveMap = getDirectiveMapForSchema(newSchema);
+  oldSchema.getDirectives().forEach(directive => {
+    if (!newSchemaDirectiveMap[directive.name]) {
+      removedDirectives.push({
+        type: BreakingChangeType.DIRECTIVE_REMOVED,
+        description: `${directive.name} was removed`,
+      });
+    }
+  });
+
+  return removedDirectives;
+}
+
+function findRemovedArgsForDirective(
+  oldDirective: GraphQLDirective,
+  newDirective: GraphQLDirective,
+): Array<GraphQLArgument> {
+  const removedArgs = [];
+  const newArgMap = getArgumentMapForDirective(newDirective);
+
+  oldDirective.args.forEach(arg => {
+    if (!newArgMap[arg.name]) {
+      removedArgs.push(arg);
+    }
+  });
+
+  return removedArgs;
+}
+
+export function findRemovedDirectiveArgs(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const removedDirectiveArgs = [];
+  const oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
+
+  newSchema.getDirectives().forEach(newDirective => {
+    const oldDirective = oldSchemaDirectiveMap[newDirective.name];
+    if (!oldDirective) {
+      return;
+    }
+
+    findRemovedArgsForDirective(oldDirective, newDirective).forEach(arg => {
+      removedDirectiveArgs.push({
+        type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
+        description: `${arg.name} was removed from ${newDirective.name}`,
+      });
+    });
+  });
+
+  return removedDirectiveArgs;
+}
+
+function findAddedArgsForDirective(
+  oldDirective: GraphQLDirective,
+  newDirective: GraphQLDirective,
+): Array<GraphQLArgument> {
+  const addedArgs = [];
+  const oldArgMap = getArgumentMapForDirective(oldDirective);
+
+  newDirective.args.forEach(arg => {
+    if (!oldArgMap[arg.name]) {
+      addedArgs.push(arg);
+    }
+  });
+
+  return addedArgs;
+}
+
+export function findAddedNonNullDirectiveArgs(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const addedNonNullableArgs = [];
+  const oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
+
+  newSchema.getDirectives().forEach(newDirective => {
+    const oldDirective = oldSchemaDirectiveMap[newDirective.name];
+    if (!oldDirective) {
+      return;
+    }
+
+    findAddedArgsForDirective(oldDirective, newDirective).forEach(arg => {
+      if (!isNonNullType(arg.type)) {
+        return;
+      }
+
+      addedNonNullableArgs.push({
+        type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
+        description:
+          `A non-null arg ${arg.name} on directive ` +
+          `${newDirective.name} was added`,
+      });
+    });
+  });
+
+  return addedNonNullableArgs;
+}
+
+export function findRemovedLocationsForDirective(
+  oldDirective: GraphQLDirective,
+  newDirective: GraphQLDirective,
+): Array<DirectiveLocationEnum> {
+  const removedLocations = [];
+  const newLocationSet = new Set(newDirective.locations);
+
+  oldDirective.locations.forEach(oldLocation => {
+    if (!newLocationSet.has(oldLocation)) {
+      removedLocations.push(oldLocation);
+    }
+  });
+
+  return removedLocations;
+}
+
+export function findRemovedDirectiveLocations(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const removedLocations = [];
+  const oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
+
+  newSchema.getDirectives().forEach(newDirective => {
+    const oldDirective = oldSchemaDirectiveMap[newDirective.name];
+    if (!oldDirective) {
+      return;
+    }
+
+    findRemovedLocationsForDirective(oldDirective, newDirective).forEach(
+      location => {
+        removedLocations.push({
+          type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
+          description: `${location} was removed from ${newDirective.name}`,
+        });
+      },
+    );
+  });
+
+  return removedLocations;
+}
+
+function getDirectiveMapForSchema(
+  schema: GraphQLSchema,
+): ObjMap<GraphQLDirective> {
+  return keyMap(schema.getDirectives(), dir => dir.name);
+}
+
+function getArgumentMapForDirective(
+  directive: GraphQLDirective,
+): ObjMap<GraphQLArgument> {
+  return keyMap(directive.args, arg => arg.name);
 }
