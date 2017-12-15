@@ -78,7 +78,7 @@ export class GraphQLDirective {
 
   getArgumentMap(): ObjMap<GraphQLArgument> {
     const argMap = Object.create(null);
-    this.args.forEach(arg => argMap[arg.name] = arg);
+    this.args.forEach(arg => (argMap[arg.name] = arg));
     return argMap;
   }
 }
