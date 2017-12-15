@@ -693,11 +693,9 @@ export function findRemovedDirectives(
 ): Array<BreakingChange> {
   const removedDirectives = [];
 
-  const newSchemaDirectiveNames = new Set(
-    newSchema.getDirectives().map(directive => directive.name),
-  );
+  const newSchemaDirectiveMap = newSchema.getDirectiveMap();
   oldSchema.getDirectives().forEach(directive => {
-    if (!newSchemaDirectiveNames.has(directive.name)) {
+    if (!newSchemaDirectiveMap[directive.name]) {
       removedDirectives.push({
         type: BreakingChangeType.DIRECTIVE_REMOVED,
         description: `${directive.name} was removed`,
@@ -729,9 +727,10 @@ export function findRemovedDirectiveArgs(
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const removedDirectiveArgs = [];
+  const oldSchemaDirectiveMap = oldSchema.getDirectiveMap();
 
   newSchema.getDirectives().forEach(newDirective => {
-    const oldDirective = oldSchema.getDirective(newDirective.name);
+    const oldDirective = oldSchemaDirectiveMap[newDirective.name];
     if (!oldDirective) {
       return;
     }
@@ -768,9 +767,10 @@ export function findAddedNonNullDirectiveArgs(
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const addedNonNullableArgs = [];
+  const oldSchemaDirectiveMap = oldSchema.getDirectiveMap();
 
   newSchema.getDirectives().forEach(newDirective => {
-    const oldDirective = oldSchema.getDirective(newDirective.name);
+    const oldDirective = oldSchemaDirectiveMap[newDirective.name];
     if (!oldDirective) {
       return;
     }
@@ -813,9 +813,10 @@ export function findRemovedDirectiveLocations(
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const removedLocations = [];
+  const oldSchemaDirectiveMap = oldSchema.getDirectiveMap();
 
   newSchema.getDirectives().forEach(newDirective => {
-    const oldDirective = oldSchema.getDirective(newDirective.name);
+    const oldDirective = oldSchemaDirectiveMap[newDirective.name];
     if (!oldDirective) {
       return;
     }
