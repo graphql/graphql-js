@@ -39,6 +39,7 @@ import {
   findRemovedDirectives,
   findRemovedDirectiveArguments,
   findAddedNonNullDirectiveArguments,
+  findRemovedLocationsForDirective,
 } from '../findBreakingChanges';
 
 import {
@@ -1781,6 +1782,25 @@ describe('findDangerousChanges', () => {
         type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
         description: 'A non-null arg arg1 on directive Directive1 was added',
       },
+    ]);
+  });
+  it('should detect removed directive locations', () => {
+    const directiveName = 'Directive1';
+    const d1 = new GraphQLDirective({
+      name: directiveName,
+      locations: [
+        DirectiveLocation.FIELD_DEFINITION,
+        DirectiveLocation.QUERY,
+      ]
+    });
+
+    const d2 = new GraphQLDirective({
+      name: directiveName,
+      locations: [DirectiveLocation.FIELD_DEFINITION]
+    });
+
+    expect(findRemovedLocationsForDirective(d1, d2)).to.eql([
+      DirectiveLocation.QUERY,
     ]);
   });
 });

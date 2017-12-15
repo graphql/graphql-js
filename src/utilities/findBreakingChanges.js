@@ -26,6 +26,8 @@ import type {
   GraphQLArgument,
 } from '../type/definition';
 
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
+
 import { GraphQLDirective } from '../type/directives';
 
 import { GraphQLSchema } from '../type/schema';
@@ -747,7 +749,7 @@ export function findRemovedDirectiveArguments(
   return removedDirectiveArguments;
 }
 
-export function findAddedArgumentsForDirective(
+function findAddedArgumentsForDirective(
   oldDirective: GraphQLDirective,
   newDirective: GraphQLDirective,
 ): Array<GraphQLArgument> {
@@ -791,4 +793,20 @@ export function findAddedNonNullDirectiveArguments(
   });
 
   return addedNonNullableArgs;
+}
+
+export function findRemovedLocationsForDirective(
+  oldDirective: GraphQLDirective,
+  newDirective: GraphQLDirective,
+): Array<DirectiveLocationEnum> {
+  const removedLocations = [];
+  const newLocationSet = new Set(newDirective.locations);
+
+  oldDirective.locations.forEach(oldLocation => {
+    if (!newLocationSet.has(oldLocation)) {
+      removedLocations.push(oldLocation);
+    }
+  });
+
+  return removedLocations;
 }
