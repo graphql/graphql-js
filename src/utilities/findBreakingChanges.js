@@ -46,6 +46,7 @@ export const BreakingChangeType = {
   INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
   DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
   DIRECTIVE_ARGUMENT_REMOVED: 'DIRECTIVE_ARGUMENT_REMOVED',
+  DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED',
   NON_NULL_DIRECTIVE_ARG_ADDED: 'NON_NULL_DIRECTIVE_ARG_ADDED',
 };
 
@@ -806,6 +807,31 @@ export function findRemovedLocationsForDirective(
     if (!newLocationSet.has(oldLocation)) {
       removedLocations.push(oldLocation);
     }
+  });
+
+  return removedLocations;
+}
+
+export function findRemovedDirectiveLocations(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const removedLocations = [];
+
+  newSchema.getDirectives().forEach(newDirective => {
+    const oldDirective = oldSchema.getDirective(newDirective.name);
+    if (!oldDirective) {
+      return;
+    }
+
+    findRemovedLocationsForDirective(oldDirective, newDirective).forEach(
+      location => {
+        removedLocations.push({
+          type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
+          description: `${location} was removed from ${newDirective.name}`,
+        });
+      },
+    );
   });
 
   return removedLocations;
