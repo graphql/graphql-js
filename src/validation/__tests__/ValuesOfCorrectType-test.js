@@ -6,31 +6,44 @@
  */
 
 import { describe, it } from 'mocha';
+import { expect } from 'chai';
 import { expectPassesRule, expectFailsRule } from './harness';
 import {
-  ArgumentsOfCorrectType,
+  ValuesOfCorrectType,
   badValueMessage,
-} from '../rules/ArgumentsOfCorrectType';
+  requiredFieldMessage,
+  unknownFieldMessage,
+} from '../rules/ValuesOfCorrectType';
 
-function badValue(argName, typeName, value, line, column, errors) {
-  let realErrors;
-  if (!errors) {
-    realErrors = [`Expected type "${typeName}", found ${value}.`];
-  } else {
-    realErrors = errors;
-  }
+function badValue(typeName, value, line, column, message) {
   return {
-    message: badValueMessage(argName, typeName, value, realErrors),
+    message: badValueMessage(typeName, value, message),
     locations: [{ line, column }],
     path: undefined,
   };
 }
 
-describe('Validate: Argument values of correct type', () => {
+function requiredField(typeName, fieldName, fieldTypeName, line, column) {
+  return {
+    message: requiredFieldMessage(typeName, fieldName, fieldTypeName),
+    locations: [{ line, column }],
+    path: undefined,
+  };
+}
+
+function unknownField(typeName, fieldName, line, column) {
+  return {
+    message: unknownFieldMessage(typeName, fieldName),
+    locations: [{ line, column }],
+    path: undefined,
+  };
+}
+
+describe('Validate: Values of correct type', () => {
   describe('Valid values', () => {
     it('Good int value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -43,7 +56,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Good negative int value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -56,7 +69,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Good boolean value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -69,7 +82,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Good string value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -82,7 +95,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Good float value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -95,7 +108,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Good negative float value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -108,7 +121,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Int into Float', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -121,7 +134,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Int into ID', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -134,7 +147,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('String into ID', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -147,7 +160,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Good enum value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog {
@@ -160,7 +173,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Enum with undefined value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -173,7 +186,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Enum with null value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -186,7 +199,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('null into nullable type', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -197,7 +210,7 @@ describe('Validate: Argument values of correct type', () => {
       );
 
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog(a: null, b: null, c:{ requiredField: true, intField: null }) {
@@ -212,7 +225,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Invalid String values', () => {
     it('Int into String', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -220,13 +233,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('stringArg', 'String', '1', 4, 39)],
+        [badValue('String', '1', 4, 39)],
       );
     });
 
     it('Float into String', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -234,13 +247,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('stringArg', 'String', '1.0', 4, 39)],
+        [badValue('String', '1.0', 4, 39)],
       );
     });
 
     it('Boolean into String', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -248,13 +261,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('stringArg', 'String', 'true', 4, 39)],
+        [badValue('String', 'true', 4, 39)],
       );
     });
 
     it('Unquoted String into String', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -262,7 +275,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('stringArg', 'String', 'BAR', 4, 39)],
+        [badValue('String', 'BAR', 4, 39)],
       );
     });
   });
@@ -270,7 +283,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Invalid Int values', () => {
     it('String into Int', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -278,13 +291,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('intArg', 'Int', '"3"', 4, 33)],
+        [badValue('Int', '"3"', 4, 33)],
       );
     });
 
     it('Big Int into Int', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -292,13 +305,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('intArg', 'Int', '829384293849283498239482938', 4, 33)],
+        [badValue('Int', '829384293849283498239482938', 4, 33)],
       );
     });
 
     it('Unquoted String into Int', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -306,13 +319,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('intArg', 'Int', 'FOO', 4, 33)],
+        [badValue('Int', 'FOO', 4, 33)],
       );
     });
 
     it('Simple Float into Int', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -320,13 +333,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('intArg', 'Int', '3.0', 4, 33)],
+        [badValue('Int', '3.0', 4, 33)],
       );
     });
 
     it('Float into Int', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -334,7 +347,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('intArg', 'Int', '3.333', 4, 33)],
+        [badValue('Int', '3.333', 4, 33)],
       );
     });
   });
@@ -342,7 +355,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Invalid Float values', () => {
     it('String into Float', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -350,13 +363,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('floatArg', 'Float', '"3.333"', 4, 37)],
+        [badValue('Float', '"3.333"', 4, 37)],
       );
     });
 
     it('Boolean into Float', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -364,13 +377,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('floatArg', 'Float', 'true', 4, 37)],
+        [badValue('Float', 'true', 4, 37)],
       );
     });
 
     it('Unquoted into Float', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -378,7 +391,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('floatArg', 'Float', 'FOO', 4, 37)],
+        [badValue('Float', 'FOO', 4, 37)],
       );
     });
   });
@@ -386,7 +399,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Invalid Boolean value', () => {
     it('Int into Boolean', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -394,13 +407,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('booleanArg', 'Boolean', '2', 4, 41)],
+        [badValue('Boolean', '2', 4, 41)],
       );
     });
 
     it('Float into Boolean', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -408,13 +421,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('booleanArg', 'Boolean', '1.0', 4, 41)],
+        [badValue('Boolean', '1.0', 4, 41)],
       );
     });
 
     it('String into Boolean', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -422,13 +435,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('booleanArg', 'Boolean', '"true"', 4, 41)],
+        [badValue('Boolean', '"true"', 4, 41)],
       );
     });
 
     it('Unquoted into Boolean', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -436,7 +449,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('booleanArg', 'Boolean', 'TRUE', 4, 41)],
+        [badValue('Boolean', 'TRUE', 4, 41)],
       );
     });
   });
@@ -444,7 +457,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Invalid ID value', () => {
     it('Float into ID', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -452,13 +465,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('idArg', 'ID', '1.0', 4, 31)],
+        [badValue('ID', '1.0', 4, 31)],
       );
     });
 
     it('Boolean into ID', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -466,13 +479,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('idArg', 'ID', 'true', 4, 31)],
+        [badValue('ID', 'true', 4, 31)],
       );
     });
 
     it('Unquoted into ID', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -480,7 +493,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('idArg', 'ID', 'SOMETHING', 4, 31)],
+        [badValue('ID', 'SOMETHING', 4, 31)],
       );
     });
   });
@@ -488,7 +501,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Invalid Enum value', () => {
     it('Int into Enum', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog {
@@ -496,13 +509,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('dogCommand', 'DogCommand', '2', 4, 41)],
+        [badValue('DogCommand', '2', 4, 41)],
       );
     });
 
     it('Float into Enum', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog {
@@ -510,13 +523,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('dogCommand', 'DogCommand', '1.0', 4, 41)],
+        [badValue('DogCommand', '1.0', 4, 41)],
       );
     });
 
     it('String into Enum', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog {
@@ -524,13 +537,21 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('dogCommand', 'DogCommand', '"SIT"', 4, 41)],
+        [
+          badValue(
+            'DogCommand',
+            '"SIT"',
+            4,
+            41,
+            'Did you mean the enum value: SIT?',
+          ),
+        ],
       );
     });
 
     it('Boolean into Enum', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog {
@@ -538,13 +559,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('dogCommand', 'DogCommand', 'true', 4, 41)],
+        [badValue('DogCommand', 'true', 4, 41)],
       );
     });
 
     it('Unknown Enum Value into Enum', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog {
@@ -552,13 +573,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('dogCommand', 'DogCommand', 'JUGGLE', 4, 41)],
+        [badValue('DogCommand', 'JUGGLE', 4, 41)],
       );
     });
 
     it('Different case Enum Value into Enum', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog {
@@ -566,7 +587,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('dogCommand', 'DogCommand', 'sit', 4, 41)],
+        [badValue('DogCommand', 'sit', 4, 41)],
       );
     });
   });
@@ -574,7 +595,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Valid List value', () => {
     it('Good list value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -587,7 +608,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Empty list value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -600,7 +621,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Null value', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -613,7 +634,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Single value into List', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -628,7 +649,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Invalid List value', () => {
     it('Incorrect item type', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -636,17 +657,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [
-          badValue('stringListArg', '[String]', '["one", 2]', 4, 47, [
-            'In element #1: Expected type "String", found 2.',
-          ]),
-        ],
+        [badValue('String', '2', 4, 55)],
       );
     });
 
     it('Single value of incorrect type', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -654,7 +671,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('stringListArg', 'String', '1', 4, 47)],
+        [badValue('[String]', '1', 4, 47)],
       );
     });
   });
@@ -662,7 +679,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Valid non-nullable value', () => {
     it('Arg on optional arg', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog {
@@ -675,7 +692,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('No Arg on optional arg', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog {
@@ -688,7 +705,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Multiple args', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -701,7 +718,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Multiple args reverse order', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -714,7 +731,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('No args on multiple optional', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -727,7 +744,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('One arg on multiple optional', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -740,7 +757,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Second arg on multiple optional', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -753,7 +770,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Multiple reqs on mixedList', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -766,7 +783,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Multiple reqs and one opt on mixedList', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -779,7 +796,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('All reqs and opts on mixedList', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -794,7 +811,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Invalid non-nullable value', () => {
     it('Incorrect value type', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -802,16 +819,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [
-          badValue('req2', 'Int', '"two"', 4, 32),
-          badValue('req1', 'Int', '"one"', 4, 45),
-        ],
+        [badValue('Int!', '"two"', 4, 32), badValue('Int!', '"one"', 4, 45)],
       );
     });
 
-    it('Incorrect value and missing argument', () => {
+    it('Incorrect value and missing argument (ProvidedNonNullArguments)', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -819,13 +833,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [badValue('req1', 'Int', '"one"', 4, 32)],
+        [badValue('Int!', '"one"', 4, 32)],
       );
     });
 
     it('Null value', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -833,11 +847,7 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [
-          badValue('req1', 'Int!', 'null', 4, 32, [
-            'Expected "Int!", found null.',
-          ]),
-        ],
+        [badValue('Int!', 'null', 4, 32)],
       );
     });
   });
@@ -845,7 +855,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Valid input object value', () => {
     it('Optional arg, despite required field in type', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -858,7 +868,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Partial object, only required', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -871,7 +881,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Partial object, required field can be falsey', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -884,7 +894,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Partial object, including required', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -897,7 +907,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Full object', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -916,7 +926,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('Full object with fields in different order', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -937,7 +947,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Invalid input object value', () => {
     it('Partial object, missing required', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -945,17 +955,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [
-          badValue('complexArg', 'ComplexInput', '{intField: 4}', 4, 41, [
-            'In field "requiredField": Expected "Boolean!", found null.',
-          ]),
-        ],
+        [requiredField('ComplexInput', 'requiredField', 'Boolean!', 4, 41)],
       );
     });
 
     it('Partial object, invalid field type', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -966,25 +972,13 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
-        [
-          badValue(
-            'complexArg',
-            'ComplexInput',
-            '{stringListField: ["one", 2], requiredField: true}',
-            4,
-            41,
-            [
-              'In field "stringListField": In element #1: ' +
-                'Expected type "String", found 2.',
-            ],
-          ),
-        ],
+        [badValue('String', '2', 5, 40)],
       );
     });
 
     it('Partial object, unknown field arg', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           complicatedArgs {
@@ -995,16 +989,44 @@ describe('Validate: Argument values of correct type', () => {
           }
         }
       `,
+        [unknownField('ComplexInput', 'unknownField', 6, 15)],
+      );
+    });
+
+    it('reports original error for custom scalar which throws', () => {
+      const errors = expectFailsRule(
+        ValuesOfCorrectType,
+        `
+        {
+          invalidArg(arg: 123)
+        }
+      `,
         [
           badValue(
-            'complexArg',
-            'ComplexInput',
-            '{requiredField: true, unknownField: "value"}',
-            4,
-            41,
-            ['In field "unknownField": Unknown field.'],
+            'Invalid',
+            '123',
+            3,
+            27,
+            'Invalid scalar is always invalid: 123',
           ),
         ],
+      );
+      expect(errors[0].originalError.message).to.equal(
+        'Invalid scalar is always invalid: 123',
+      );
+    });
+
+    it('allows custom scalar to accept complex literals', () => {
+      expectPassesRule(
+        ValuesOfCorrectType,
+        `
+        {
+          test1: anyArg(arg: 123)
+          test2: anyArg(arg: "abc")
+          test3: anyArg(arg: [123, "abc"])
+          test4: anyArg(arg: {deep: [123, "abc"]})
+        }
+      `,
       );
     });
   });
@@ -1012,7 +1034,7 @@ describe('Validate: Argument values of correct type', () => {
   describe('Directive arguments', () => {
     it('with directives of valid types', () => {
       expectPassesRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog @include(if: true) {
@@ -1028,7 +1050,7 @@ describe('Validate: Argument values of correct type', () => {
 
     it('with directive with incorrect types', () => {
       expectFailsRule(
-        ArgumentsOfCorrectType,
+        ValuesOfCorrectType,
         `
         {
           dog @include(if: "yes") {
@@ -1037,9 +1059,119 @@ describe('Validate: Argument values of correct type', () => {
         }
       `,
         [
-          badValue('if', 'Boolean', '"yes"', 3, 28),
-          badValue('if', 'Boolean', 'ENUM', 4, 28),
+          badValue('Boolean!', '"yes"', 3, 28),
+          badValue('Boolean!', 'ENUM', 4, 28),
         ],
+      );
+    });
+  });
+
+  describe('Variable default values', () => {
+    it('variables with valid default values', () => {
+      expectPassesRule(
+        ValuesOfCorrectType,
+        `
+        query WithDefaultValues(
+          $a: Int = 1,
+          $b: String = "ok",
+          $c: ComplexInput = { requiredField: true, intField: 3 }
+        ) {
+          dog { name }
+        }
+      `,
+      );
+    });
+
+    it('variables with valid default null values', () => {
+      expectPassesRule(
+        ValuesOfCorrectType,
+        `
+        query WithDefaultValues(
+          $a: Int = null,
+          $b: String = null,
+          $c: ComplexInput = { requiredField: true, intField: null }
+        ) {
+          dog { name }
+        }
+      `,
+      );
+    });
+
+    it('variables with invalid default null values', () => {
+      expectFailsRule(
+        ValuesOfCorrectType,
+        `
+        query WithDefaultValues(
+          $a: Int! = null,
+          $b: String! = null,
+          $c: ComplexInput = { requiredField: null, intField: null }
+        ) {
+          dog { name }
+        }
+      `,
+        [
+          badValue('Int!', 'null', 3, 22),
+          badValue('String!', 'null', 4, 25),
+          badValue('Boolean!', 'null', 5, 47),
+        ],
+      );
+    });
+
+    it('variables with invalid default values', () => {
+      expectFailsRule(
+        ValuesOfCorrectType,
+        `
+        query InvalidDefaultValues(
+          $a: Int = "one",
+          $b: String = 4,
+          $c: ComplexInput = "notverycomplex"
+        ) {
+          dog { name }
+        }
+      `,
+        [
+          badValue('Int', '"one"', 3, 21),
+          badValue('String', '4', 4, 24),
+          badValue('ComplexInput', '"notverycomplex"', 5, 30),
+        ],
+      );
+    });
+
+    it('variables with complex invalid default values', () => {
+      expectFailsRule(
+        ValuesOfCorrectType,
+        `
+        query WithDefaultValues(
+          $a: ComplexInput = { requiredField: 123, intField: "abc" }
+        ) {
+          dog { name }
+        }
+      `,
+        [badValue('Boolean!', '123', 3, 47), badValue('Int', '"abc"', 3, 62)],
+      );
+    });
+
+    it('complex variables missing required field', () => {
+      expectFailsRule(
+        ValuesOfCorrectType,
+        `
+        query MissingRequiredField($a: ComplexInput = {intField: 3}) {
+          dog { name }
+        }
+      `,
+        [requiredField('ComplexInput', 'requiredField', 'Boolean!', 2, 55)],
+      );
+    });
+
+    it('list variables with invalid item', () => {
+      expectFailsRule(
+        ValuesOfCorrectType,
+        `
+        query InvalidItem($a: [String] = ["one", 2]) {
+          dog { name }
+        }
+      `,
+        [badValue('String', '2', 2, 50)],
       );
     });
   });

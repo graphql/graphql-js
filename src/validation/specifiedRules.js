@@ -70,14 +70,14 @@ import { KnownArgumentNames } from './rules/KnownArgumentNames';
 // Spec Section: "Argument Uniqueness"
 import { UniqueArgumentNames } from './rules/UniqueArgumentNames';
 
-// Spec Section: "Argument Values Type Correctness"
-import { ArgumentsOfCorrectType } from './rules/ArgumentsOfCorrectType';
+// Spec Section: "Value Type Correctness"
+import { ValuesOfCorrectType } from './rules/ValuesOfCorrectType';
 
 // Spec Section: "Argument Optionality"
 import { ProvidedNonNullArguments } from './rules/ProvidedNonNullArguments';
 
-// Spec Section: "Variable Default Values Are Correctly Typed"
-import { DefaultValuesOfCorrectType } from './rules/DefaultValuesOfCorrectType';
+// Spec Section: "Variables Default Value Is Allowed"
+import { VariablesDefaultValueAllowed } from './rules/VariablesDefaultValueAllowed';
 
 // Spec Section: "All Variable Usages Are Allowed"
 import { VariablesInAllowedPosition } from './rules/VariablesInAllowedPosition';
@@ -118,9 +118,9 @@ export const specifiedRules: Array<(context: ValidationContext) => any> = [
   UniqueDirectivesPerLocation,
   KnownArgumentNames,
   UniqueArgumentNames,
-  ArgumentsOfCorrectType,
+  ValuesOfCorrectType,
   ProvidedNonNullArguments,
-  DefaultValuesOfCorrectType,
+  VariablesDefaultValueAllowed,
   VariablesInAllowedPosition,
   OverlappingFieldsCanBeMerged,
   UniqueInputFieldNames,

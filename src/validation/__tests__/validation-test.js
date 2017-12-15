@@ -48,8 +48,7 @@ describe('Validate: Supports full validation', () => {
       {
         locations: [{ line: 3, column: 25 }],
         message:
-          'Argument "arg" has invalid value "bad value".\n' +
-          'Expected type "Invalid", found "bad value"; ' +
+          'Expected type Invalid, found "bad value"; ' +
           'Invalid scalar is always invalid: bad value',
         path: undefined,
       },

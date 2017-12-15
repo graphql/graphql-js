@@ -5,9 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// 80+ char lines are useful in describe/it, so ignore in this file.
-/* eslint-disable max-len */
-
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import {

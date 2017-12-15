@@ -5,9 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// 80+ char lines are useful in describe/it, so ignore in this file.
-/* eslint-disable max-len */
-
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../execute';
@@ -208,9 +205,9 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Argument "input" got invalid value ["foo", "bar", "baz"].\n' +
-                'Expected "TestInputObject", found not an object.',
+                'Argument "input" has invalid value ["foo", "bar", "baz"].',
               path: ['fieldWithObjectInput'],
+              locations: [{ line: 3, column: 39 }],
             },
           ],
         });
@@ -981,9 +978,7 @@ describe('Execute: Handles inputs', () => {
         },
         errors: [
           {
-            message:
-              'Argument "input" got invalid value WRONG_TYPE.\n' +
-              'Expected type "String", found WRONG_TYPE.',
+            message: 'Argument "input" has invalid value WRONG_TYPE.',
             locations: [{ line: 2, column: 46 }],
             path: ['fieldWithDefaultArgumentValue'],
           },

@@ -393,9 +393,8 @@ describe('Execute: Handles basic execution tasks', () => {
         throw new Error('Error getting syncError');
       },
       syncRawError() {
-        /* eslint-disable */
+        // eslint-disable-next-line no-throw-literal
         throw 'Error getting syncRawError';
-        /* eslint-enable */
       },
       syncReturnError() {
         return new Error('Error getting syncReturnError');

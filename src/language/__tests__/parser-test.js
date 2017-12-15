@@ -391,6 +391,16 @@ describe('Parser', () => {
     expect(result.loc).to.equal(undefined);
   });
 
+  it('Experimental: allows parsing fragment defined variables', () => {
+    const source = new Source(
+      'fragment a($v: Boolean = false) on t { f(v: $v) }',
+    );
+    expect(() =>
+      parse(source, { experimentalFragmentVariables: true }),
+    ).to.not.throw();
+    expect(() => parse(source)).to.throw('Syntax Error');
+  });
+
   it('contains location information that only stringifys start/end', () => {
     const source = new Source('{ id }');
     const result = parse(source);

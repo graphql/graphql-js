@@ -283,6 +283,19 @@ const InvalidScalar = new GraphQLScalarType({
   },
 });
 
+const AnyScalar = new GraphQLScalarType({
+  name: 'Any',
+  serialize(value) {
+    return value;
+  },
+  parseLiteral(node) {
+    return node; // Allows any value
+  },
+  parseValue(value) {
+    return value; // Allows any value
+  },
+});
+
 const QueryRoot = new GraphQLObjectType({
   name: 'QueryRoot',
   fields: () => ({
@@ -301,6 +314,12 @@ const QueryRoot = new GraphQLObjectType({
     invalidArg: {
       args: {
         arg: { type: InvalidScalar },
+      },
+      type: GraphQLString,
+    },
+    anyArg: {
+      args: {
+        arg: { type: AnyScalar },
       },
       type: GraphQLString,
     },
@@ -397,6 +416,7 @@ function expectInvalid(schema, rules, queryString, expectedErrors) {
   const errors = validate(schema, parse(queryString), rules);
   expect(errors).to.have.length.of.at.least(1, 'Should not validate');
   expect(errors.map(formatError)).to.deep.equal(expectedErrors);
+  return errors;
 }
 
 export function expectPassesRule(rule, queryString) {

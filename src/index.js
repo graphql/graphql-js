@@ -261,8 +261,6 @@ export {
   // All validation rules in the GraphQL Specification.
   specifiedRules,
   // Individual validation rules.
-  ArgumentsOfCorrectTypeRule,
-  DefaultValuesOfCorrectTypeRule,
   FieldsOnCorrectTypeRule,
   FragmentsOnCompositeTypesRule,
   KnownArgumentNamesRule,
@@ -285,7 +283,9 @@ export {
   UniqueInputFieldNamesRule,
   UniqueOperationNamesRule,
   UniqueVariableNamesRule,
+  ValuesOfCorrectTypeRule,
   VariablesAreInputTypesRule,
+  VariablesDefaultValueAllowedRule,
   VariablesInAllowedPositionRule,
 } from './validation';
 

@@ -25,8 +25,6 @@ function expectSyntaxError(text, message, location) {
   }
 }
 
-/* eslint-disable max-len */
-
 describe('Lexer', () => {
   it('disallows uncommon control characters', () => {
     expectSyntaxError(

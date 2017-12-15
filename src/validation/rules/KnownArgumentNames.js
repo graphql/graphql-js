@@ -9,11 +9,9 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import find from '../../jsutils/find';
-import invariant from '../../jsutils/invariant';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
-import * as Kind from '../../language/kinds';
+import { FIELD, DIRECTIVE } from '../../language/kinds';
 
 export function unknownArgMessage(
   argName: string,
@@ -53,17 +51,13 @@ export function unknownDirectiveArgMessage(
 export function KnownArgumentNames(context: ValidationContext): any {
   return {
     Argument(node, key, parent, path, ancestors) {
-      const argumentOf = ancestors[ancestors.length - 1];
-      if (argumentOf.kind === Kind.FIELD) {
-        const fieldDef = context.getFieldDef();
-        if (fieldDef) {
-          const fieldArgDef = find(
-            fieldDef.args,
-            arg => arg.name === node.name.value,
-          );
-          if (!fieldArgDef) {
-            const parentType = context.getParentType();
-            invariant(parentType);
+      const argDef = context.getArgument();
+      if (!argDef) {
+        const argumentOf = ancestors[ancestors.length - 1];
+        if (argumentOf.kind === FIELD) {
+          const fieldDef = context.getFieldDef();
+          const parentType = context.getParentType();
+          if (fieldDef && parentType) {
             context.reportError(
               new GraphQLError(
                 unknownArgMessage(
@@ -79,15 +73,9 @@ export function KnownArgumentNames(context: ValidationContext): any {
               ),
             );
           }
-        }
-      } else if (argumentOf.kind === Kind.DIRECTIVE) {
-        const directive = context.getDirective();
-        if (directive) {
-          const directiveArgDef = find(
-            directive.args,
-            arg => arg.name === node.name.value,
-          );
-          if (!directiveArgDef) {
+        } else if (argumentOf.kind === DIRECTIVE) {
+          const directive = context.getDirective();
+          if (directive) {
             context.reportError(
               new GraphQLError(
                 unknownDirectiveArgMessage(
