@@ -205,12 +205,6 @@ export class GraphQLSchema {
   getDirective(name: string): ?GraphQLDirective {
     return find(this.getDirectives(), directive => directive.name === name);
   }
-
-  getDirectiveMap(): ObjMap<GraphQLDirective> {
-    const directiveMap = Object.create(null);
-    this.getDirectives().forEach(dir => (directiveMap[dir.name] = dir));
-    return directiveMap;
-  }
 }
 
 type TypeMap = ObjMap<GraphQLNamedType>;

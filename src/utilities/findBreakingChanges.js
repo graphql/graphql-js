@@ -27,10 +27,9 @@ import type {
 } from '../type/definition';
 
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
-
 import { GraphQLDirective } from '../type/directives';
-
 import { GraphQLSchema } from '../type/schema';
+import type { ObjMap } from '../jsutils/ObjMap';
 
 export const BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
@@ -696,7 +695,7 @@ export function findRemovedDirectives(
 ): Array<BreakingChange> {
   const removedDirectives = [];
 
-  const newSchemaDirectiveMap = newSchema.getDirectiveMap();
+  const newSchemaDirectiveMap = getDirectiveMapForSchema(newSchema);
   oldSchema.getDirectives().forEach(directive => {
     if (!newSchemaDirectiveMap[directive.name]) {
       removedDirectives.push({
@@ -730,7 +729,7 @@ export function findRemovedDirectiveArgs(
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const removedDirectiveArgs = [];
-  const oldSchemaDirectiveMap = oldSchema.getDirectiveMap();
+  const oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
 
   newSchema.getDirectives().forEach(newDirective => {
     const oldDirective = oldSchemaDirectiveMap[newDirective.name];
@@ -770,7 +769,7 @@ export function findAddedNonNullDirectiveArgs(
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const addedNonNullableArgs = [];
-  const oldSchemaDirectiveMap = oldSchema.getDirectiveMap();
+  const oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
 
   newSchema.getDirectives().forEach(newDirective => {
     const oldDirective = oldSchemaDirectiveMap[newDirective.name];
@@ -816,7 +815,7 @@ export function findRemovedDirectiveLocations(
   newSchema: GraphQLSchema,
 ): Array<BreakingChange> {
   const removedLocations = [];
-  const oldSchemaDirectiveMap = oldSchema.getDirectiveMap();
+  const oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
 
   newSchema.getDirectives().forEach(newDirective => {
     const oldDirective = oldSchemaDirectiveMap[newDirective.name];
@@ -835,4 +834,12 @@ export function findRemovedDirectiveLocations(
   });
 
   return removedLocations;
+}
+
+function getDirectiveMapForSchema(
+  schema: GraphQLSchema,
+): ObjMap<GraphQLDirective> {
+  const directiveMap = Object.create(null);
+  schema.getDirectives().forEach(dir => (directiveMap[dir.name] = dir));
+  return directiveMap;
 }
