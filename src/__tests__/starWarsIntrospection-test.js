@@ -12,9 +12,6 @@ import { describe, it } from 'mocha';
 import { StarWarsSchema } from './starWarsSchema.js';
 import { graphql } from '../graphql';
 
-// 80+ char lines are useful in describe/it, so ignore in this file.
-/* eslint-disable max-len */
-
 describe('Star Wars Introspection Tests', () => {
   describe('Basic Introspection', () => {
     it('Allows querying the schema for types', async () => {
