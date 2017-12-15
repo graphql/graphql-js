@@ -44,6 +44,7 @@ export const BreakingChangeType = {
   INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
   DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
   DIRECTIVE_ARGUMENT_REMOVED: 'DIRECTIVE_ARGUMENT_REMOVED',
+  NON_NULL_DIRECTIVE_ARG_ADDED: 'NON_NULL_DIRECTIVE_ARG_ADDED',
 };
 
 export const DangerousChangeType = {
@@ -709,8 +710,8 @@ function findRemovedArgumentsForDirective(
   newDirective: GraphQLDirective,
 ): Array<GraphQLArgument> {
   const removedArgs = [];
-  const newArgumentMap = newDirective.getArgumentMap();
   const oldArgumentMap = oldDirective.getArgumentMap();
+  const newArgumentMap = newDirective.getArgumentMap();
 
   Object.keys(oldArgumentMap).forEach(argName => {
     if (!newArgumentMap[argName]) {
@@ -744,4 +745,50 @@ export function findRemovedDirectiveArguments(
   });
 
   return removedDirectiveArguments;
+}
+
+export function findAddedArgumentsForDirective(
+  oldDirective: GraphQLDirective,
+  newDirective: GraphQLDirective,
+): Array<GraphQLArgument> {
+  const addedArgs = [];
+  const oldArgumentMap = oldDirective.getArgumentMap();
+  const newArgumentMap = newDirective.getArgumentMap();
+
+  Object.keys(newArgumentMap).forEach(argName => {
+    if (!oldArgumentMap[argName]) {
+      addedArgs.push(newArgumentMap[argName]);
+    }
+  });
+
+  return addedArgs;
+}
+
+export function findAddedNonNullDirectiveArguments(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const addedNonNullableArgs = [];
+
+  newSchema.getDirectives().forEach(newDirective => {
+    const oldDirective = oldSchema.getDirective(newDirective.name);
+    if (!oldDirective) {
+      return;
+    }
+
+    findAddedArgumentsForDirective(oldDirective, newDirective).forEach(arg => {
+      if (!isNonNullType(arg.type)) {
+        return;
+      }
+
+      addedNonNullableArgs.push({
+        type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
+        description:
+          `A non-null arg ${arg.name} on directive ` +
+          `${newDirective.name} was added`,
+      });
+    });
+  });
+
+  return addedNonNullableArgs;
 }

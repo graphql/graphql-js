@@ -38,6 +38,7 @@ import {
   findInterfacesAddedToObjectTypes,
   findRemovedDirectives,
   findRemovedDirectiveArguments,
+  findAddedNonNullDirectiveArguments,
 } from '../findBreakingChanges';
 
 import {
@@ -1744,6 +1745,41 @@ describe('findDangerousChanges', () => {
       {
         type: BreakingChangeType.DIRECTIVE_ARGUMENT_REMOVED,
         description: 'arg1 was removed from DirectiveWithArg',
+      },
+    ]);
+  });
+
+  it('should detect if a non-nullable directive argument was added', () => {
+    const directiveName = 'Directive1';
+
+    const oldSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: directiveName,
+          locations: [DirectiveLocation.FIELD_DEFINITION],
+        }),
+      ],
+    });
+
+    const newSchema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: directiveName,
+          locations: [DirectiveLocation.FIELD_DEFINITION],
+          args: {
+            arg1: {
+              name: 'arg1',
+              type: GraphQLNonNull(GraphQLBoolean),
+            },
+          },
+        }),
+      ],
+    });
+
+    expect(findAddedNonNullDirectiveArguments(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
+        description: 'A non-null arg arg1 on directive Directive1 was added',
       },
     ]);
   });
