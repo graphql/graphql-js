@@ -20,7 +20,7 @@ import {
   getNullableType,
   getNamedType,
 } from '../../type/definition';
-import type { GraphQLEnumType } from '../../type/definition';
+import type { GraphQLType } from '../../type/definition';
 import isInvalid from '../../jsutils/isInvalid';
 import keyMap from '../../jsutils/keyMap';
 import orList from '../../jsutils/orList';
@@ -51,8 +51,12 @@ export function requiredFieldMessage(
 export function unknownFieldMessage(
   typeName: string,
   fieldName: string,
+  message?: string,
 ): string {
-  return `Field "${fieldName}" is not defined by type ${typeName}.`;
+  return (
+    `Field "${fieldName}" is not defined by type ${typeName}` +
+    (message ? `; ${message}` : '.')
+  );
 }
 
 /**
@@ -105,10 +109,18 @@ export function ValuesOfCorrectType(context: ValidationContext): any {
     ObjectField(node) {
       const parentType = getNamedType(context.getParentInputType());
       const fieldType = context.getInputType();
-      if (!fieldType && parentType) {
+      if (!fieldType && isInputObjectType(parentType)) {
+        const suggestions = suggestionList(
+          node.name.value,
+          Object.keys(parentType.getFields()),
+        );
+        const didYouMean =
+          suggestions.length !== 0
+            ? `Did you mean ${orList(suggestions)}?`
+            : undefined;
         context.reportError(
           new GraphQLError(
-            unknownFieldMessage(parentType.name, node.name.value),
+            unknownFieldMessage(parentType.name, node.name.value, didYouMean),
             node,
           ),
         );
@@ -152,12 +164,13 @@ function isValidScalar(context: ValidationContext, node: ValueNode): void {
   const type = getNamedType(locationType);
 
   if (!isScalarType(type)) {
-    const suggestions = isEnumType(type)
-      ? enumTypeSuggestion(type, node)
-      : undefined;
     context.reportError(
       new GraphQLError(
-        badValueMessage(String(locationType), print(node), suggestions),
+        badValueMessage(
+          String(locationType),
+          print(node),
+          enumTypeSuggestion(type, node),
+        ),
         node,
       ),
     );
@@ -191,12 +204,14 @@ function isValidScalar(context: ValidationContext, node: ValueNode): void {
   }
 }
 
-function enumTypeSuggestion(type: GraphQLEnumType, node: ValueNode): string {
-  const suggestions = suggestionList(
-    print(node),
-    type.getValues().map(value => value.name),
-  );
-  return suggestions.length === 0
-    ? ''
-    : `Did you mean the enum value: ${orList(suggestions)}?`;
+function enumTypeSuggestion(type: GraphQLType, node: ValueNode): string | void {
+  if (isEnumType(type)) {
+    const suggestions = suggestionList(
+      print(node),
+      type.getValues().map(value => value.name),
+    );
+    if (suggestions.length !== 0) {
+      return `Did you mean the enum value ${orList(suggestions)}?`;
+    }
+  }
 }

@@ -31,9 +31,9 @@ function requiredField(typeName, fieldName, fieldTypeName, line, column) {
   };
 }
 
-function unknownField(typeName, fieldName, line, column) {
+function unknownField(typeName, fieldName, line, column, message) {
   return {
-    message: unknownFieldMessage(typeName, fieldName),
+    message: unknownFieldMessage(typeName, fieldName, message),
     locations: [{ line, column }],
     path: undefined,
   };
@@ -543,7 +543,7 @@ describe('Validate: Values of correct type', () => {
             '"SIT"',
             4,
             41,
-            'Did you mean the enum value: SIT?',
+            'Did you mean the enum value SIT?',
           ),
         ],
       );
@@ -587,7 +587,15 @@ describe('Validate: Values of correct type', () => {
           }
         }
       `,
-        [badValue('DogCommand', 'sit', 4, 41)],
+        [
+          badValue(
+            'DogCommand',
+            'sit',
+            4,
+            41,
+            'Did you mean the enum value SIT?',
+          ),
+        ],
       );
     });
   });
@@ -989,7 +997,15 @@ describe('Validate: Values of correct type', () => {
           }
         }
       `,
-        [unknownField('ComplexInput', 'unknownField', 6, 15)],
+        [
+          unknownField(
+            'ComplexInput',
+            'unknownField',
+            6,
+            15,
+            'Did you mean intField or booleanField?',
+          ),
+        ],
       );
     });
 

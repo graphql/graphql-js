@@ -10,6 +10,8 @@
 import { forEach, isCollection } from 'iterall';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
+import orList from '../jsutils/orList';
+import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error';
 import type { ASTNode } from '../language/ast';
 import {
@@ -46,7 +48,7 @@ export function coerceValue(
     if (isNullish(value)) {
       return ofErrors([
         coercionError(
-          `Expected non-nullable type ${String(type)}`,
+          `Expected non-nullable type ${String(type)} not to be null`,
           blameNode,
           path,
         ),
@@ -74,7 +76,13 @@ export function coerceValue(
       return ofValue(parseResult);
     } catch (error) {
       return ofErrors([
-        coercionError(`Expected type ${type.name}`, blameNode, path, error),
+        coercionError(
+          `Expected type ${type.name}`,
+          blameNode,
+          path,
+          error.message,
+          error,
+        ),
       ]);
     }
   }
@@ -86,8 +94,16 @@ export function coerceValue(
         return ofValue(enumValue.value);
       }
     }
+    const suggestions = suggestionList(
+      String(value),
+      type.getValues().map(enumValue => enumValue.name),
+    );
+    const didYouMean =
+      suggestions.length !== 0
+        ? `did you mean ${orList(suggestions)}?`
+        : undefined;
     return ofErrors([
-      coercionError(`Expected type ${type.name}`, blameNode, path),
+      coercionError(`Expected type ${type.name}`, blameNode, path, didYouMean),
     ]);
   }
 
@@ -119,7 +135,11 @@ export function coerceValue(
   if (isInputObjectType(type)) {
     if (typeof value !== 'object') {
       return ofErrors([
-        coercionError(`Expected object type ${type.name}`, blameNode, path),
+        coercionError(
+          `Expected type ${type.name} to be an object`,
+          blameNode,
+          path,
+        ),
       ]);
     }
     let errors;
@@ -164,12 +184,18 @@ export function coerceValue(
     for (const fieldName in value) {
       if (hasOwnProperty.call(value, fieldName)) {
         if (!fields[fieldName]) {
+          const suggestions = suggestionList(fieldName, Object.keys(fields));
+          const didYouMean =
+            suggestions.length !== 0
+              ? `did you mean ${orList(suggestions)}?`
+              : undefined;
           errors = add(
             errors,
             coercionError(
               `Field "${fieldName}" is not defined by type ${type.name}`,
               blameNode,
               path,
+              didYouMean,
             ),
           );
         }
@@ -199,15 +225,13 @@ function atPath(prev, key) {
   return { prev, key };
 }
 
-function coercionError(message, blameNode, path, originalError) {
+function coercionError(message, blameNode, path, subMessage, originalError) {
   const pathStr = printPath(path);
   // Return a GraphQLError instance
   return new GraphQLError(
     message +
       (pathStr ? ' at ' + pathStr : '') +
-      (originalError && originalError.message
-        ? '; ' + originalError.message
-        : '.'),
+      (subMessage ? '; ' + subMessage : '.'),
     blameNode,
     undefined,
     undefined,
