@@ -35,7 +35,7 @@ import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export const BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
-  FIELD_REMOVED: 'FIELD_REMOVED',
+  FIELD_REMOVED: 'FIELD_REMOVED'
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND',
   TYPE_REMOVED: 'TYPE_REMOVED',
   TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION',
