@@ -13,6 +13,7 @@ import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import type { ObjMap } from '../jsutils/ObjMap';
+import type { MaybePromise } from '../jsutils/MaybePromise';
 
 import { typeFromAST } from '../utilities/typeFromAST';
 import * as Kind from '../language/kinds';
@@ -133,7 +134,7 @@ export type ExecutionArgs = {|
 declare function execute(
   ExecutionArgs,
   ..._: []
-): Promise<ExecutionResult> | ExecutionResult;
+): MaybePromise<ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function execute(
   schema: GraphQLSchema,
@@ -143,7 +144,7 @@ declare function execute(
   variableValues?: ?{ [variable: string]: mixed },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
-): Promise<ExecutionResult> | ExecutionResult;
+): MaybePromise<ExecutionResult>;
 export function execute(
   argsOrSchema,
   document,
@@ -222,7 +223,7 @@ function executeImpl(
  */
 function buildResponse(
   context: ExecutionContext,
-  data: Promise<ObjMap<mixed> | null> | ObjMap<mixed> | null,
+  data: MaybePromise<ObjMap<mixed> | null>,
 ) {
   const promise = getPromise(data);
   if (promise) {
@@ -376,7 +377,7 @@ function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: mixed,
-): Promise<ObjMap<mixed> | null> | ObjMap<mixed> | null {
+): MaybePromise<ObjMap<mixed> | null> {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
@@ -503,7 +504,7 @@ function executeFields(
   sourceValue: mixed,
   path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
-): Promise<ObjMap<mixed>> | ObjMap<mixed> {
+): MaybePromise<ObjMap<mixed>> {
   let containsPromise = false;
 
   const finalResults = Object.keys(fields).reduce((results, responseName) => {
