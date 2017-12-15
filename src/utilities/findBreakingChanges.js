@@ -26,10 +26,12 @@ import type {
   GraphQLArgument,
 } from '../type/definition';
 
-import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import { GraphQLDirective } from '../type/directives';
 import { GraphQLSchema } from '../type/schema';
+import keyMap from '../jsutils/keyMap';
+
 import type { ObjMap } from '../jsutils/ObjMap';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 export const BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
@@ -839,15 +841,11 @@ export function findRemovedDirectiveLocations(
 function getDirectiveMapForSchema(
   schema: GraphQLSchema,
 ): ObjMap<GraphQLDirective> {
-  const directiveMap = Object.create(null);
-  schema.getDirectives().forEach(dir => (directiveMap[dir.name] = dir));
-  return directiveMap;
+  return keyMap(schema.getDirectives(), dir => dir.name);
 }
 
 function getArgumentMapForDirective(
   directive: GraphQLDirective,
 ): ObjMap<GraphQLArgument> {
-  const argMap = Object.create(null);
-  directive.args.forEach(arg => (argMap[arg.name] = arg));
-  return argMap;
+  return keyMap(directive.args, arg => arg.name);
 }
