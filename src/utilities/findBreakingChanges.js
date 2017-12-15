@@ -713,7 +713,7 @@ function findRemovedArgsForDirective(
   newDirective: GraphQLDirective,
 ): Array<GraphQLArgument> {
   const removedArgs = [];
-  const newArgMap = newDirective.getArgumentMap();
+  const newArgMap = getArgumentMapForDirective(newDirective);
 
   oldDirective.args.forEach(arg => {
     if (!newArgMap[arg.name]) {
@@ -753,7 +753,7 @@ function findAddedArgsForDirective(
   newDirective: GraphQLDirective,
 ): Array<GraphQLArgument> {
   const addedArgs = [];
-  const oldArgMap = oldDirective.getArgumentMap();
+  const oldArgMap = getArgumentMapForDirective(oldDirective);
 
   newDirective.args.forEach(arg => {
     if (!oldArgMap[arg.name]) {
@@ -842,4 +842,12 @@ function getDirectiveMapForSchema(
   const directiveMap = Object.create(null);
   schema.getDirectives().forEach(dir => (directiveMap[dir.name] = dir));
   return directiveMap;
+}
+
+function getArgumentMapForDirective(
+  directive: GraphQLDirective,
+): ObjMap<GraphQLArgument> {
+  const argMap = Object.create(null);
+  directive.args.forEach(arg => (argMap[arg.name] = arg));
+  return argMap;
 }

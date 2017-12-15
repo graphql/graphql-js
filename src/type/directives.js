@@ -20,7 +20,6 @@ import {
   DirectiveLocation,
   type DirectiveLocationEnum,
 } from '../language/directiveLocation';
-import type { ObjMap } from '../jsutils/ObjMap';
 
 /**
  * Test if the given value is a GraphQL directive.
@@ -74,12 +73,6 @@ export class GraphQLDirective {
         };
       });
     }
-  }
-
-  getArgumentMap(): ObjMap<GraphQLArgument> {
-    const argMap = Object.create(null);
-    this.args.forEach(arg => (argMap[arg.name] = arg));
-    return argMap;
   }
 }
 
