@@ -192,7 +192,7 @@ export function visit(root, visitor, keyMap) {
     let node;
     const isEdited = isLeaving && edits.length !== 0;
     if (isLeaving) {
-      key = ancestors.length === 0 ? undefined : path.pop();
+      key = ancestors.length === 0 ? undefined : path[path.length - 1];
       node = parent;
       parent = ancestors.pop();
       if (isEdited) {
@@ -274,7 +274,9 @@ export function visit(root, visitor, keyMap) {
       edits.push([key, node]);
     }
 
-    if (!isLeaving) {
+    if (isLeaving) {
+      path.pop();
+    } else {
       stack = { inArray, index, keys, edits, prev: stack };
       inArray = Array.isArray(node);
       keys = inArray ? node : visitorKeys[node.kind] || [];
