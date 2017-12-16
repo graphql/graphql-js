@@ -11,13 +11,13 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
-import type { GraphQLType } from '../../type/definition';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function unknownTypeMessage(
-  type: GraphQLType,
+  typeName: string,
   suggestedTypes: Array<string>,
 ): string {
-  let message = `Unknown type "${String(type)}".`;
+  let message = `Unknown type "${typeName}".`;
   if (suggestedTypes.length) {
     message += ` Did you mean ${quotedOrList(suggestedTypes)}?`;
   }
@@ -30,7 +30,7 @@ export function unknownTypeMessage(
  * A GraphQL document is only valid if referenced types (specifically
  * variable definitions and fragment conditions) are defined by the type schema.
  */
-export function KnownTypeNames(context: ValidationContext): any {
+export function KnownTypeNames(context: ValidationContext): ASTVisitor {
   return {
     // TODO: when validating IDL, re-enable these. Experimental version does not
     // add unreferenced types, resulting in false-positive errors. Squelched

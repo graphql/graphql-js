@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 import { isNonNullType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
 
@@ -30,7 +31,9 @@ export function defaultForRequiredVarMessage(
  * A GraphQL document is only valid if all variable default values are allowed
  * due to a variable not being required.
  */
-export function VariablesDefaultValueAllowed(context: ValidationContext): any {
+export function VariablesDefaultValueAllowed(
+  context: ValidationContext,
+): ASTVisitor {
   return {
     VariableDefinition(node) {
       const name = node.variable.name.value;

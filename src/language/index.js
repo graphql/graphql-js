@@ -22,6 +22,7 @@ export {
   getVisitFn,
   BREAK,
 } from './visitor';
+export type { ASTVisitor, Visitor, VisitFn, VisitorKeyMap } from './visitor';
 
 export type { Lexer } from './lexer';
 export type { ParseOptions } from './parser';
@@ -30,6 +31,7 @@ export type {
   Location,
   Token,
   ASTNode,
+  ASTKindToNode,
   // Each kind of AST node
   NameNode,
   DocumentNode,

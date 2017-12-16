@@ -12,6 +12,7 @@ import { GraphQLError } from '../../error';
 import keyMap from '../../jsutils/keyMap';
 import { isNonNullType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function missingFieldArgMessage(
   fieldName: string,
@@ -41,7 +42,9 @@ export function missingDirectiveArgMessage(
  * A field or directive is only valid if all required (non-null) field arguments
  * have been provided.
  */
-export function ProvidedNonNullArguments(context: ValidationContext): any {
+export function ProvidedNonNullArguments(
+  context: ValidationContext,
+): ASTVisitor {
   return {
     Field: {
       // Validate on leave to allow for deeper errors to appear first.

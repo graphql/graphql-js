@@ -10,6 +10,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { OperationDefinitionNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function singleFieldOnlyMessage(name: ?string): string {
   return (
@@ -23,7 +24,9 @@ export function singleFieldOnlyMessage(name: ?string): string {
  *
  * A GraphQL subscription is valid only if it contains a single root field.
  */
-export function SingleFieldSubscriptions(context: ValidationContext): any {
+export function SingleFieldSubscriptions(
+  context: ValidationContext,
+): ASTVisitor {
   return {
     OperationDefinition(node: OperationDefinitionNode) {
       if (node.operation === 'subscription') {

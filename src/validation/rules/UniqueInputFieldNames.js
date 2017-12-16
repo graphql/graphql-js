@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function duplicateInputFieldMessage(fieldName: string): string {
   return `There can be only one input field named "${fieldName}".`;
@@ -20,7 +21,7 @@ export function duplicateInputFieldMessage(fieldName: string): string {
  * A GraphQL input object value is only valid if all supplied fields are
  * uniquely named.
  */
-export function UniqueInputFieldNames(context: ValidationContext): any {
+export function UniqueInputFieldNames(context: ValidationContext): ASTVisitor {
   const knownNameStack = [];
   let knownNames = Object.create(null);
 

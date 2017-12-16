@@ -20,6 +20,7 @@ import type {
   FragmentSpreadNode,
   FragmentDefinitionNode,
 } from '../language/ast';
+import type { ASTVisitor } from '../language/visitor';
 import { GraphQLSchema } from '../type/schema';
 import type {
   GraphQLInputType,
@@ -76,7 +77,7 @@ function visitUsingRules(
   schema: GraphQLSchema,
   typeInfo: TypeInfo,
   documentAST: DocumentNode,
-  rules: $ReadOnlyArray<any>,
+  rules: $ReadOnlyArray<(ValidationContext) => ASTVisitor>,
 ): $ReadOnlyArray<GraphQLError> {
   const context = new ValidationContext(schema, documentAST, typeInfo);
   const visitors = rules.map(rule => rule(context));

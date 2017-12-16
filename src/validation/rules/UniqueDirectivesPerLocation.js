@@ -9,6 +9,8 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { DirectiveNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function duplicateDirectiveMessage(directiveName: string): string {
   return (
@@ -23,15 +25,20 @@ export function duplicateDirectiveMessage(directiveName: string): string {
  * A GraphQL document is only valid if all directives at a given location
  * are uniquely named.
  */
-export function UniqueDirectivesPerLocation(context: ValidationContext): any {
+export function UniqueDirectivesPerLocation(
+  context: ValidationContext,
+): ASTVisitor {
   return {
     // Many different AST nodes may contain directives. Rather than listing
     // them all, just listen for entering any node, and check to see if it
     // defines any directives.
     enter(node) {
-      if (node.directives) {
+      // Flow can't refine that node.directives will only contain directives,
+      // so we cast so the rest of the code is well typed.
+      const directives: ?$ReadOnlyArray<DirectiveNode> = (node: any).directives;
+      if (directives) {
         const knownDirectives = Object.create(null);
-        node.directives.forEach(directive => {
+        directives.forEach(directive => {
           const directiveName = directive.name.value;
           if (knownDirectives[directiveName]) {
             context.reportError(

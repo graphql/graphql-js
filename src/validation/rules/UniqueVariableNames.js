@@ -10,6 +10,7 @@
 import type { ValidationContext } from '../index';
 import type { VariableDefinitionNode } from '../../language/ast';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function duplicateVariableMessage(variableName: string): string {
   return `There can be only one variable named "${variableName}".`;
@@ -20,7 +21,7 @@ export function duplicateVariableMessage(variableName: string): string {
  *
  * A GraphQL operation is only valid if all its variables are uniquely named.
  */
-export function UniqueVariableNames(context: ValidationContext): any {
+export function UniqueVariableNames(context: ValidationContext): ASTVisitor {
   let knownVariableNames = Object.create(null);
   return {
     OperationDefinition() {

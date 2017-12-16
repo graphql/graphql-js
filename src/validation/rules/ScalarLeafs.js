@@ -12,6 +12,7 @@ import { GraphQLError } from '../../error';
 import type { FieldNode } from '../../language/ast';
 import { getNamedType, isLeafType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function noSubselectionAllowedMessage(
   fieldName: string,
@@ -39,7 +40,7 @@ export function requiredSubselectionMessage(
  * A GraphQL document is valid only if all leaf fields (fields without
  * sub selections) are of scalar or enum types.
  */
-export function ScalarLeafs(context: ValidationContext): any {
+export function ScalarLeafs(context: ValidationContext): ASTVisitor {
   return {
     Field(node: FieldNode) {
       const type = context.getType();

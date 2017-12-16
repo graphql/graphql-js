@@ -12,10 +12,12 @@ import { GraphQLError } from '../../error';
 import {
   FRAGMENT_DEFINITION,
   OPERATION_DEFINITION,
+  SCHEMA_DEFINITION,
 } from '../../language/kinds';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function nonExecutableDefinitionMessage(defName: string): string {
-  return `The "${defName}" definition is not executable.`;
+  return `The ${defName} definition is not executable.`;
 }
 
 /**
@@ -24,7 +26,7 @@ export function nonExecutableDefinitionMessage(defName: string): string {
  * A GraphQL document is only valid for execution if all definitions are either
  * operation or fragment definitions.
  */
-export function ExecutableDefinitions(context: ValidationContext): any {
+export function ExecutableDefinitions(context: ValidationContext): ASTVisitor {
   return {
     Document(node) {
       node.definitions.forEach(definition => {
@@ -34,8 +36,12 @@ export function ExecutableDefinitions(context: ValidationContext): any {
         ) {
           context.reportError(
             new GraphQLError(
-              nonExecutableDefinitionMessage(definition.name.value),
-              [definition.name],
+              nonExecutableDefinitionMessage(
+                definition.kind === SCHEMA_DEFINITION
+                  ? 'schema'
+                  : definition.name.value,
+              ),
+              [definition],
             ),
           );
         }

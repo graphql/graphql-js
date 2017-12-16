@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function duplicateArgMessage(argName: string): string {
   return `There can be only one argument named "${argName}".`;
@@ -20,7 +21,7 @@ export function duplicateArgMessage(argName: string): string {
  * A GraphQL field or directive is only valid if all supplied arguments are
  * uniquely named.
  */
-export function UniqueArgumentNames(context: ValidationContext): any {
+export function UniqueArgumentNames(context: ValidationContext): ASTVisitor {
   let knownArgNames = Object.create(null);
   return {
     Field() {
