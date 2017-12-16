@@ -19,6 +19,7 @@ import type {
 } from '../../language/ast';
 import * as Kind from '../../language/kinds';
 import { print } from '../../language/printer';
+import type { ASTVisitor } from '../../language/visitor';
 import {
   getNamedType,
   isNonNullType,
@@ -67,7 +68,9 @@ function reasonMessage(reason: ConflictReasonMessage): string {
  * fragments) either correspond to distinct response names or can be merged
  * without ambiguity.
  */
-export function OverlappingFieldsCanBeMerged(context: ValidationContext): any {
+export function OverlappingFieldsCanBeMerged(
+  context: ValidationContext,
+): ASTVisitor {
   // A memoization for when two fragments are compared "between" each other for
   // conflicts. Two fragments may be compared many times, so memoizing this can
   // dramatically improve the performance of this validator.

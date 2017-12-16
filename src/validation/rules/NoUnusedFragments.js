@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function unusedFragMessage(fragName: string): string {
   return `Fragment "${fragName}" is never used.`;
@@ -20,7 +21,7 @@ export function unusedFragMessage(fragName: string): string {
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
  */
-export function NoUnusedFragments(context: ValidationContext): any {
+export function NoUnusedFragments(context: ValidationContext): ASTVisitor {
   const operationDefs = [];
   const fragmentDefs = [];
 

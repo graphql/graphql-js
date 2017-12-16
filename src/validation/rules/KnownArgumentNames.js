@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
 import { FIELD, DIRECTIVE } from '../../language/kinds';
@@ -48,7 +49,7 @@ export function unknownDirectiveArgMessage(
  * A GraphQL field is only valid if all supplied arguments are defined by
  * that field.
  */
-export function KnownArgumentNames(context: ValidationContext): any {
+export function KnownArgumentNames(context: ValidationContext): ASTVisitor {
   return {
     Argument(node, key, parent, path, ancestors) {
       const argDef = context.getArgument();

@@ -3,7 +3,56 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
  */
+
+import type { ASTNode, ASTKindToNode } from './ast';
+import type { TypeInfo } from '../utilities/TypeInfo';
+
+/**
+ * A visitor is provided to visit, it contains the collection of
+ * relevant functions to be called during the visitor's traversal.
+ */
+export type ASTVisitor = Visitor<ASTKindToNode>;
+export type Visitor<KindToNode, Nodes = $Values<KindToNode>> =
+  | EnterLeave<
+      | VisitFn<Nodes>
+      | ShapeMap<KindToNode, <Node>(Node) => VisitFn<Nodes, Node>>,
+    >
+  | ShapeMap<
+      KindToNode,
+      <Node>(Node) => VisitFn<Nodes, Node> | EnterLeave<VisitFn<Nodes, Node>>,
+    >;
+type EnterLeave<T> = {| +enter?: T, +leave?: T |};
+type ShapeMap<O, F> = $Shape<$ObjMap<O, F>>;
+
+/**
+ * A visitor is comprised of visit functions, which are called on each node
+ * during the visitor's traversal.
+ */
+export type VisitFn<TAnyNode, TVisitedNode: TAnyNode = TAnyNode> = (
+  // The current node being visiting.
+  node: TVisitedNode,
+  // The index or key to this node from the parent node or Array.
+  key: string | number | void,
+  // The parent immediately above this node, which may be an Array.
+  parent: TAnyNode | $ReadOnlyArray<TAnyNode> | void,
+  // The key path to get to this node from the root node.
+  path: $ReadOnlyArray<string | number>,
+  // All nodes and Arrays visited before reaching this node.
+  // These correspond to array indices in `path`.
+  // Note: ancestors includes arrays which contain the visited node.
+  ancestors: $ReadOnlyArray<TAnyNode | $ReadOnlyArray<TAnyNode>>,
+) => any;
+
+/**
+ * A KeyMap describes each the traversable properties of each kind of node.
+ */
+export type VisitorKeyMap<KindToNode> = $ObjMap<
+  KindToNode,
+  <T>(T) => $ReadOnlyArray<$Keys<T>>,
+>;
 
 export const QueryDocumentKeys = {
   Name: [],
@@ -172,24 +221,28 @@ export const BREAK = {};
  *       }
  *     })
  */
-export function visit(root, visitor, keyMap) {
-  const visitorKeys = keyMap || QueryDocumentKeys;
-
-  let stack;
+export function visit(
+  root: ASTNode,
+  visitor: Visitor<ASTKindToNode>,
+  visitorKeys: VisitorKeyMap<ASTKindToNode> = QueryDocumentKeys,
+): mixed {
+  /* eslint-disable no-undef-init */
+  let stack: any = undefined;
   let inArray = Array.isArray(root);
-  let keys = [root];
+  let keys: any = [root];
   let index = -1;
   let edits = [];
-  let parent;
-  const path = [];
+  let node: any = undefined;
+  let key: any = undefined;
+  let parent: any = undefined;
+  const path: any = [];
   const ancestors = [];
   let newRoot = root;
+  /* eslint-enable no-undef-init */
 
   do {
     index++;
     const isLeaving = index === keys.length;
-    let key;
-    let node;
     const isEdited = isLeaving && edits.length !== 0;
     if (isLeaving) {
       key = ancestors.length === 0 ? undefined : path[path.length - 1];
@@ -209,7 +262,7 @@ export function visit(root, visitor, keyMap) {
         }
         let editOffset = 0;
         for (let ii = 0; ii < edits.length; ii++) {
-          let editKey = edits[ii][0];
+          let editKey: any = edits[ii][0];
           const editValue = edits[ii][1];
           if (inArray) {
             editKey -= editOffset;
@@ -296,8 +349,8 @@ export function visit(root, visitor, keyMap) {
   return newRoot;
 }
 
-function isNode(maybeNode) {
-  return maybeNode && typeof maybeNode.kind === 'string';
+function isNode(maybeNode): boolean %checks {
+  return Boolean(maybeNode && typeof maybeNode.kind === 'string');
 }
 
 /**
@@ -306,7 +359,9 @@ function isNode(maybeNode) {
  *
  * If a prior visitor edits a node, no following visitors will see that node.
  */
-export function visitInParallel(visitors) {
+export function visitInParallel(
+  visitors: Array<Visitor<ASTKindToNode>>,
+): Visitor<ASTKindToNode> {
   const skipping = new Array(visitors.length);
 
   return {
@@ -351,7 +406,10 @@ export function visitInParallel(visitors) {
  * Creates a new visitor instance which maintains a provided TypeInfo instance
  * along with visiting visitor.
  */
-export function visitWithTypeInfo(typeInfo, visitor) {
+export function visitWithTypeInfo(
+  typeInfo: TypeInfo,
+  visitor: Visitor<ASTKindToNode>,
+): Visitor<ASTKindToNode> {
   return {
     enter(node) {
       typeInfo.enter(node);
@@ -383,7 +441,11 @@ export function visitWithTypeInfo(typeInfo, visitor) {
  * Given a visitor instance, if it is leaving or not, and a node kind, return
  * the function the visitor runtime should call.
  */
-export function getVisitFn(visitor, kind, isLeaving) {
+export function getVisitFn(
+  visitor: Visitor<any>,
+  kind: string,
+  isLeaving: boolean,
+): ?VisitFn<any> {
   const kindVisitor = visitor[kind];
   if (kindVisitor) {
     if (!isLeaving && typeof kindVisitor === 'function') {

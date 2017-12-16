@@ -12,6 +12,7 @@ import { GraphQLError } from '../../error';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
 import type { FieldNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 import type { GraphQLSchema } from '../../type/schema';
 import type { GraphQLOutputType } from '../../type/definition';
 import {
@@ -42,7 +43,7 @@ export function undefinedFieldMessage(
  * A GraphQL document is only valid if all fields selected are defined by the
  * parent type, or are an allowed meta field such as __typename.
  */
-export function FieldsOnCorrectType(context: ValidationContext): any {
+export function FieldsOnCorrectType(context: ValidationContext): ASTVisitor {
   return {
     Field(node: FieldNode) {
       const type = context.getParentType();

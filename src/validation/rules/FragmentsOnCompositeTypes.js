@@ -10,6 +10,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
+import type { ASTVisitor } from '../../language/visitor';
 import { isCompositeType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
@@ -37,18 +38,19 @@ export function fragmentOnNonCompositeErrorMessage(
  * can only be spread into a composite type (object, interface, or union), the
  * type condition must also be a composite type.
  */
-export function FragmentsOnCompositeTypes(context: ValidationContext): any {
+export function FragmentsOnCompositeTypes(
+  context: ValidationContext,
+): ASTVisitor {
   return {
     InlineFragment(node) {
-      if (node.typeCondition) {
-        const type = typeFromAST(context.getSchema(), node.typeCondition);
+      const typeCondition = node.typeCondition;
+      if (typeCondition) {
+        const type = typeFromAST(context.getSchema(), typeCondition);
         if (type && !isCompositeType(type)) {
           context.reportError(
             new GraphQLError(
-              inlineFragmentOnNonCompositeErrorMessage(
-                print(node.typeCondition),
-              ),
-              [node.typeCondition],
+              inlineFragmentOnNonCompositeErrorMessage(print(typeCondition)),
+              [typeCondition],
             ),
           );
         }

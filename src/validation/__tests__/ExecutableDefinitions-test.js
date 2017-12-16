@@ -71,8 +71,27 @@ describe('Validate: Executable definitions', () => {
       }
     `,
       [
-        nonExecutableDefinition('Cow', 8, 12),
-        nonExecutableDefinition('Dog', 12, 19),
+        nonExecutableDefinition('Cow', 8, 7),
+        nonExecutableDefinition('Dog', 12, 7),
+      ],
+    );
+  });
+
+  it('with schema definition', () => {
+    expectFailsRule(
+      ExecutableDefinitions,
+      `
+      schema {
+        query: Query
+      }
+
+      type Query {
+        test: String
+      }
+    `,
+      [
+        nonExecutableDefinition('schema', 2, 7),
+        nonExecutableDefinition('Query', 6, 7),
       ],
     );
   });

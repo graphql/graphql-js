@@ -11,6 +11,7 @@ import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { ValueNode } from '../../language/ast';
 import { print } from '../../language/printer';
+import type { ASTVisitor } from '../../language/visitor';
 import {
   isScalarType,
   isEnumType,
@@ -65,7 +66,7 @@ export function unknownFieldMessage(
  * A GraphQL document is only valid if all value literals are of the type
  * expected at their position.
  */
-export function ValuesOfCorrectType(context: ValidationContext): any {
+export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
   return {
     NullValue(node) {
       const type = context.getInputType();

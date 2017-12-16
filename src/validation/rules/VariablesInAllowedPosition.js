@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 import { isNonNullType } from '../../type/definition';
 import { GraphQLNonNull } from '../../type/wrappers';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
@@ -29,7 +30,9 @@ export function badVarPosMessage(
 /**
  * Variables passed to field arguments conform to type
  */
-export function VariablesInAllowedPosition(context: ValidationContext): any {
+export function VariablesInAllowedPosition(
+  context: ValidationContext,
+): ASTVisitor {
   let varDefMap = Object.create(null);
 
   return {

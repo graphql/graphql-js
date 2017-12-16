@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function undefinedVarMessage(varName: string, opName: ?string): string {
   return opName
@@ -22,7 +23,7 @@ export function undefinedVarMessage(varName: string, opName: ?string): string {
  * A GraphQL operation is only valid if all variables encountered, both directly
  * and via fragment spreads, are defined by that operation.
  */
-export function NoUndefinedVariables(context: ValidationContext): any {
+export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
   let variableNameDefined = Object.create(null);
 
   return {

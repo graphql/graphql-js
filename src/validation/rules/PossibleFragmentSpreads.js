@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import { isCompositeType } from '../../type/definition';
@@ -42,7 +43,9 @@ export function typeIncompatibleAnonSpreadMessage(
  * be true: if there is a non-empty intersection of the possible parent types,
  * and possible types which pass the type condition.
  */
-export function PossibleFragmentSpreads(context: ValidationContext): any {
+export function PossibleFragmentSpreads(
+  context: ValidationContext,
+): ASTVisitor {
   return {
     InlineFragment(node) {
       const fragType = context.getType();

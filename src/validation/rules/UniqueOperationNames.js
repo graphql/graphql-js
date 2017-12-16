@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function duplicateOperationNameMessage(operationName: string): string {
   return `There can be only one operation named "${operationName}".`;
@@ -19,7 +20,7 @@ export function duplicateOperationNameMessage(operationName: string): string {
  *
  * A GraphQL document is only valid if all defined operations have unique names.
  */
-export function UniqueOperationNames(context: ValidationContext): any {
+export function UniqueOperationNames(context: ValidationContext): ASTVisitor {
   const knownOperationNames = Object.create(null);
   return {
     OperationDefinition(node) {

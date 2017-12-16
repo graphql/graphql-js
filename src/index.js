@@ -190,10 +190,16 @@ export {
 export type {
   Lexer,
   ParseOptions,
+  // Visitor utilities
+  ASTVisitor,
+  Visitor,
+  VisitFn,
+  VisitorKeyMap,
   // AST nodes
   Location,
   Token,
   ASTNode,
+  ASTKindToNode,
   NameNode,
   DocumentNode,
   DefinitionNode,

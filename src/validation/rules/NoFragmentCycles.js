@@ -10,6 +10,7 @@
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
 import type { FragmentDefinitionNode } from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function cycleErrorMessage(
   fragName: string,
@@ -19,7 +20,7 @@ export function cycleErrorMessage(
   return `Cannot spread fragment "${fragName}" within itself${via}.`;
 }
 
-export function NoFragmentCycles(context: ValidationContext): any {
+export function NoFragmentCycles(context: ValidationContext): ASTVisitor {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
   const visitedFrags = Object.create(null);

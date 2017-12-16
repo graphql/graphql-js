@@ -9,6 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
+import type { ASTVisitor } from '../../language/visitor';
 
 export function unusedVariableMessage(
   varName: string,
@@ -25,7 +26,7 @@ export function unusedVariableMessage(
  * A GraphQL operation is only valid if all variables defined by an operation
  * are used, either directly or within a spread fragment.
  */
-export function NoUnusedVariables(context: ValidationContext): any {
+export function NoUnusedVariables(context: ValidationContext): ASTVisitor {
   let variableDefs = [];
 
   return {
