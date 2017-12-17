@@ -7,8 +7,7 @@
  * @flow
  */
 
-import { GraphQLScalarType, isNamedType } from './definition';
-import { GraphQLList, GraphQLNonNull } from './wrappers';
+import { GraphQLScalarType } from './definition';
 import * as Kind from '../language/kinds';
 import type { GraphQLType } from './definition';
 

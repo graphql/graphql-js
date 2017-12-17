@@ -22,7 +22,6 @@ import {
   isListType,
   isNonNullType,
   isAbstractType,
-  isNamedType,
 } from './definition';
 import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import { GraphQLString, GraphQLBoolean } from './scalars';
