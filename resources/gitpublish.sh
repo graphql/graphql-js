@@ -6,23 +6,35 @@
 #     "graphql": "git://github.com/graphql/graphql-js.git#npm"
 #
 
-babel src --ignore __tests__ --out-dir npm
+# Build
+npm run build
 
-# Ensure a vanilla package.json before deploying so other tools do not interpret
-# The built output as requiring any further transformation.
-node -e "var package = require('./package.json'); \
-  delete package.scripts; \
-  delete package.options; \
-  delete package.devDependencies; \
-  require('fs').writeFileSync('./npm/package.json', JSON.stringify(package, null, 2));"
+# Create empty npm directory
+rm -rf npm
+git clone -b npm "https://${GH_TOKEN}@github.com/graphql/graphql-js.git" npm
 
+# Remove existing files first
+rm -rf npm/**/*
+rm -rf npm/*
+
+# Copy over necessary files
+cp -r dist/* npm/
 cp README.md npm/
 cp LICENSE npm/
 
+# Reference current commit
+HEADREV=`git rev-parse HEAD`
+echo $HEADREV
+
+# Deploy
 cd npm
-git init
 git config user.name "Travis CI"
 git config user.email "github@fb.com"
-git add .
-git commit -m "Deploy master to NPM branch"
-git push --force --quiet "https://${GH_TOKEN}@github.com/graphql/graphql-js.git" master:npm
+git add -A .
+if git diff --staged --quiet; then
+  echo "Nothing to publish"
+else
+  git commit -a -m "Deploy $HEADREV to NPM branch"
+  git push > /dev/null 2>&1
+  echo "Pushed"
+fi
