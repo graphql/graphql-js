@@ -18,16 +18,5 @@ fi;
 
 # When Travis CI publishes to NPM, the published files are available in the root
 # directory, which allows for a clean include or require of sub-modules.
-#
-#    var language = require('graphql/language');
-#
-babel src --ignore __tests__ --out-dir ./;
-find ./src -name '*.js' -not -path '*/__tests__*' | while read filepath; do cp $filepath `echo $filepath | sed 's/\\/src\\//\\//g'`.flow; done;
-
-# Ensure a vanilla package.json before deploying so other tools do not interpret
-# The built output as requiring any further transformation.
-node -e "var package = require('./package.json'); \
-  delete package.scripts; \
-  delete package.options; \
-  delete package.devDependencies; \
-  require('fs').writeFileSync('package.json', JSON.stringify(package));"
+npm run build
+cp -r ./dist/* ./
