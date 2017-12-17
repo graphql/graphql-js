@@ -225,7 +225,7 @@ export function visit(
   root: ASTNode,
   visitor: Visitor<ASTKindToNode>,
   visitorKeys: VisitorKeyMap<ASTKindToNode> = QueryDocumentKeys,
-): mixed {
+): any {
   /* eslint-disable no-undef-init */
   let stack: any = undefined;
   let inArray = Array.isArray(root);
