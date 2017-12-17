@@ -446,7 +446,7 @@ function resolveThunk<+T>(thunk: Thunk<T>): T {
  *
  */
 export class GraphQLScalarType {
-  +name: string;
+  name: string;
   description: ?string;
   astNode: ?ScalarTypeDefinitionNode;
 
@@ -559,7 +559,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
  *
  */
 export class GraphQLObjectType {
-  +name: string;
+  name: string;
   description: ?string;
   astNode: ?ObjectTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
@@ -804,7 +804,7 @@ export type GraphQLFieldMap<TSource, TContext> = ObjMap<
  *
  */
 export class GraphQLInterfaceType {
-  +name: string;
+  name: string;
   description: ?string;
   astNode: ?InterfaceTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<InterfaceTypeExtensionNode>;
@@ -886,7 +886,7 @@ export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
  *
  */
 export class GraphQLUnionType {
-  +name: string;
+  name: string;
   description: ?string;
   astNode: ?UnionTypeDefinitionNode;
   resolveType: ?GraphQLTypeResolver<*, *>;
@@ -975,7 +975,7 @@ export type GraphQLUnionTypeConfig<TSource, TContext> = {
  * will be used as its internal value.
  */
 export class GraphQLEnumType /* <T> */ {
-  +name: string;
+  name: string;
   description: ?string;
   astNode: ?EnumTypeDefinitionNode;
 
@@ -1142,7 +1142,7 @@ export type GraphQLEnumValue /* <T> */ = {
  *
  */
 export class GraphQLInputObjectType {
-  +name: string;
+  name: string;
   description: ?string;
   astNode: ?InputObjectTypeDefinitionNode;
 
