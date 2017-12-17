@@ -125,7 +125,8 @@ export function GraphQLError( // eslint-disable-line no-redeclare
 
   let _locations;
   if (positions && source) {
-    _locations = positions.map(pos => getLocation(source, pos));
+    const providedSource = source;
+    _locations = positions.map(pos => getLocation(providedSource, pos));
   } else if (_nodes) {
     _locations = _nodes.reduce((list, node) => {
       if (node.loc) {
