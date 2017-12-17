@@ -8,6 +8,7 @@
  */
 
 import { GraphQLScalarType, isNamedType } from './definition';
+import { GraphQLList, GraphQLNonNull } from './wrappers';
 import * as Kind from '../language/kinds';
 import type { GraphQLType } from './definition';
 
@@ -145,11 +146,22 @@ export const specifiedScalarTypes: $ReadOnlyArray<*> = [
   GraphQLID,
 ];
 
-export function isSpecifiedScalarType(type: ?GraphQLType): boolean %checks {
+export function isSpecifiedScalarType(
+  type: $ReadOnly<?GraphQLType>,
+): boolean %checks {
   return (
-    isNamedType(type) &&
-    specifiedScalarTypes.some(
-      specifiedScalarType => specifiedScalarType.name === type.name,
-    )
+    // Cannot use function calls to %checks unless flow's
+    // experimental.const_params=true is set.
+
+    // equivalent of isNamedType(type), given we only care about scalars
+    type instanceof GraphQLScalarType &&
+    // specifiedScalarTypes.some(
+    //   specifiedScalarType => specifiedScalarType.name === type.name
+    // )
+    (GraphQLString.name === type.name ||
+      GraphQLInt.name === type.name ||
+      GraphQLFloat.name === type.name ||
+      GraphQLBoolean.name === type.name ||
+      GraphQLID.name === type.name)
   );
 }

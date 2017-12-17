@@ -467,9 +467,23 @@ export const introspectionTypes: $ReadOnlyArray<*> = [
 
 export function isIntrospectionType(type: ?GraphQLType): boolean %checks {
   return (
-    isNamedType(type) &&
-    introspectionTypes.some(
-      introspectionType => introspectionType.name === type.name,
-    )
+    // Cannot use function calls to %checks unless flow's
+    // experimental.const_params=true is set.
+
+    // isNamedType(type)
+    type !== null &&
+    type !== undefined &&
+    !(type instanceof GraphQLList || type instanceof GraphQLNonNull) &&
+    // introspectionTypes.some(
+    //   introspectionType => introspectionType.name === type.name
+    // )
+    (__Schema.name === type.name ||
+      __Directive.name === type.name ||
+      __DirectiveLocation.name === type.name ||
+      __Type.name === type.name ||
+      __Field.name === type.name ||
+      __InputValue.name === type.name ||
+      __EnumValue.name === type.name ||
+      __TypeKind.name === type.name)
   );
 }
