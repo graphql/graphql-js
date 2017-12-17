@@ -9,7 +9,6 @@
 [libs]
 
 [options]
-experimental.const_params=true
 
 [version]
 ^0.61.0
