@@ -64,7 +64,7 @@
     "eslint-plugin-babel": "4.1.2",
     "eslint-plugin-flowtype": "2.35.0",
     "eslint-plugin-prettier": "^2.3.1",
-    "flow-bin": "0.60.0",
+    "flow-bin": "0.61.0",
     "isparta": "4.0.0",
     "mocha": "3.5.0",
     "prettier": "^1.8.2",
