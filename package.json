@@ -19,7 +19,7 @@
     "url": "http://github.com/graphql/graphql-js.git"
   },
   "options": {
-    "mocha": "--require ./resources/mocha-bootload --check-leaks --full-trace src/**/__tests__/**/*-test.js"
+    "mocha": "--require ./resources/mocha-bootload --check-leaks --full-trace --timeout 5000 src/**/__tests__/**/*-test.js"
   },
   "scripts": {
     "test": "npm run lint && npm run check && npm run testonly",
