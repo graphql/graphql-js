@@ -28,6 +28,7 @@
     "prettier": "prettier --write 'src/**/*.js'",
     "check": "flow check",
     "check-cover": "for file in {src/*.js,src/**/*.js}; do echo $file; flow coverage $file; done",
+    "benchmark": "node resources/benchmark.js",
     "build": "npm run build:clean && npm run build:cp && npm run build:npm && npm run build:npm-flow && npm run build:module && npm run build:module-flow && npm run build:package-json",
     "build:clean": "rm -rf ./dist && mkdir ./dist",
     "build:cp": "cp README.md LICENSE ./dist",
@@ -53,10 +54,13 @@
     "babel-plugin-transform-flow-strip-types": "6.22.0",
     "babel-plugin-transform-object-rest-spread": "6.26.0",
     "babel-preset-env": "^1.5.2",
+    "beautify-benchmark": "0.2.4",
+    "benchmark": "2.1.4",
     "chai": "4.1.2",
     "chai-json-equal": "0.0.1",
     "chai-spies-next": "0.9.3",
     "chai-subset": "1.6.0",
+    "chalk": "2.3.0",
     "coveralls": "3.0.0",
     "eslint": "4.16.0",
     "eslint-plugin-babel": "4.1.2",
@@ -64,8 +68,10 @@
     "eslint-plugin-prettier": "2.5.0",
     "flow-bin": "0.64.0",
     "isparta": "4.0.0",
+    "microtime": "2.1.7",
     "mocha": "5.0.0",
     "prettier": "1.10.2",
-    "sane": "2.3.0"
+    "sane": "2.3.0",
+    "shelljs": "0.8.1"
   }
 }
