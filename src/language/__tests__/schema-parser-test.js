@@ -203,6 +203,38 @@ extend type Hello {
     expect(printJson(doc)).to.equal(printJson(expected));
   });
 
+  it('Extension without fields followed by extension', () => {
+    const body = `
+      extend type Hello implements Greeting
+
+      extend type Hello implements SecondGreeting
+    `;
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeExtension',
+          name: nameNode('Hello', { start: 12, end: 17 }),
+          interfaces: [typeNode('Greeting', { start: 29, end: 37 })],
+          directives: [],
+          fields: [],
+          loc: { start: 0, end: 37 },
+        },
+        {
+          kind: 'ObjectTypeExtension',
+          name: nameNode('Hello', { start: 12, end: 17 }),
+          interfaces: [typeNode('SecondGreeting', { start: 29, end: 37 })],
+          directives: [],
+          fields: [],
+          loc: { start: 0, end: 37 },
+        },
+      ],
+      loc: { start: 0, end: 37 },
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
   it('Extension without anything throws', () => {
     expectSyntaxError('extend type Hello', 'Unexpected <EOF>', {
       line: 1,
