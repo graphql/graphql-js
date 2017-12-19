@@ -11,6 +11,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 import { $$asyncIterator, getAsyncIterator } from 'iterall';
 
+
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
