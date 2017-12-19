@@ -16,6 +16,7 @@ import type { Source } from './language/source';
 import type { GraphQLFieldResolver } from './type/definition';
 import type { GraphQLSchema } from './type/schema';
 import type { ExecutionResult } from './execution/execute';
+import type { MaybePromise } from './jsutils/MaybePromise';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -168,7 +169,7 @@ function graphqlImpl(
   variableValues,
   operationName,
   fieldResolver,
-): Promise<ExecutionResult> | ExecutionResult {
+): MaybePromise<ExecutionResult> {
   // Validate Schema
   const schemaValidationErrors = validateSchema(schema);
   if (schemaValidationErrors.length > 0) {
