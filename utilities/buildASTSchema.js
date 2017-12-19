@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ASTDefinitionBuilder = undefined;
 exports.buildASTSchema = buildASTSchema;
+exports.getDescription = getDescription;
 exports.buildSchema = buildSchema;
 
 var _keyMap = require('../jsutils/keyMap');

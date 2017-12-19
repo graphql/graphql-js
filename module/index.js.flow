@@ -315,6 +315,8 @@ export {
   buildASTSchema,
   // Build a GraphQLSchema from a GraphQL schema language document.
   buildSchema,
+  // Get the description from a schema AST node.
+  getDescription,
   // Extends an existing GraphQLSchema from a parsed GraphQL Schema
   // language AST.
   extendSchema,

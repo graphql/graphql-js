@@ -51,6 +51,12 @@ Object.defineProperty(exports, 'buildSchema', {
     return _buildASTSchema.buildSchema;
   }
 });
+Object.defineProperty(exports, 'getDescription', {
+  enumerable: true,
+  get: function get() {
+    return _buildASTSchema.getDescription;
+  }
+});
 
 var _extendSchema = require('./extendSchema');
 

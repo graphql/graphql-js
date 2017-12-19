@@ -35,6 +35,8 @@ import type {
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
   DirectiveDefinitionNode,
+  StringValueNode,
+  Location,
 } from '../language/ast';
 
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
@@ -475,7 +477,10 @@ function getDeprecationReason(
  *        Provide true to use preceding comments as the description.
  *
  */
-function getDescription(node, options: ?Options): void | string {
+export function getDescription(
+  node: { +description?: StringValueNode, +loc?: Location },
+  options: ?Options,
+): void | string {
   if (node.description) {
     return node.description.value;
   }

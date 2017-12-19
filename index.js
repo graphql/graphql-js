@@ -855,6 +855,12 @@ Object.defineProperty(exports, 'buildSchema', {
     return _utilities.buildSchema;
   }
 });
+Object.defineProperty(exports, 'getDescription', {
+  enumerable: true,
+  get: function get() {
+    return _utilities.getDescription;
+  }
+});
 Object.defineProperty(exports, 'extendSchema', {
   enumerable: true,
   get: function get() {

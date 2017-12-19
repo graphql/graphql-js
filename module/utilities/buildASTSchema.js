@@ -404,7 +404,7 @@ function getDeprecationReason(node) {
  *        Provide true to use preceding comments as the description.
  *
  */
-function getDescription(node, options) {
+export function getDescription(node, options) {
   if (node.description) {
     return node.description.value;
   }
