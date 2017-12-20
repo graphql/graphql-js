@@ -498,8 +498,17 @@ describe('Type System Printer', () => {
   });
 
   it('Custom Scalar', () => {
+    const EvenType = new GraphQLScalarType({
+      name: 'Even',
+      ofType: GraphQLInt,
+      serialize(value) {
+        return value % 2 === 1 ? value : null;
+      },
+    });
+
     const OddType = new GraphQLScalarType({
       name: 'Odd',
+      // No ofType in this test case.
       serialize(value) {
         return value % 2 === 1 ? value : null;
       },
@@ -508,6 +517,7 @@ describe('Type System Printer', () => {
     const Root = new GraphQLObjectType({
       name: 'Root',
       fields: {
+        even: { type: EvenType },
         odd: { type: OddType },
       },
     });
@@ -519,9 +529,12 @@ describe('Type System Printer', () => {
         query: Root
       }
 
+      scalar Even as Int
+
       scalar Odd
 
       type Root {
+        even: Even
         odd: Odd
       }
     `);
@@ -780,10 +793,10 @@ describe('Type System Printer', () => {
       types in GraphQL as represented by the \`__TypeKind\` enum.
 
       Depending on the kind of a type, certain fields describe information about that
-      type. Scalar types provide no information beyond a name and description, while
-      Enum types provide their values. Object and Interface types provide the fields
-      they describe. Abstract types, Union and Interface, provide the Object types
-      possible at runtime. List and NonNull types compose other types.
+      type. Scalar types provide a name, description and how they serialize, while
+      Enum types provide their possible values. Object and Interface types provide the
+      fields they describe. Abstract types, Union and Interface, provide the Object
+      types possible at runtime. List and NonNull types compose other types.
       """
       type __Type {
         kind: __TypeKind!
@@ -799,7 +812,9 @@ describe('Type System Printer', () => {
 
       """An enum describing what kind of type a given \`__Type\` is."""
       enum __TypeKind {
-        """Indicates this type is a scalar."""
+        """
+        Indicates this type is a scalar. \`ofType\` may represent how this scalar is serialized.
+        """
         SCALAR
 
         """
@@ -1000,10 +1015,10 @@ describe('Type System Printer', () => {
       # types in GraphQL as represented by the \`__TypeKind\` enum.
       #
       # Depending on the kind of a type, certain fields describe information about that
-      # type. Scalar types provide no information beyond a name and description, while
-      # Enum types provide their values. Object and Interface types provide the fields
-      # they describe. Abstract types, Union and Interface, provide the Object types
-      # possible at runtime. List and NonNull types compose other types.
+      # type. Scalar types provide a name, description and how they serialize, while
+      # Enum types provide their possible values. Object and Interface types provide the
+      # fields they describe. Abstract types, Union and Interface, provide the Object
+      # types possible at runtime. List and NonNull types compose other types.
       type __Type {
         kind: __TypeKind!
         name: String
@@ -1018,7 +1033,7 @@ describe('Type System Printer', () => {
 
       # An enum describing what kind of type a given \`__Type\` is.
       enum __TypeKind {
-        # Indicates this type is a scalar.
+        # Indicates this type is a scalar. \`ofType\` may represent how this scalar is serialized.
         SCALAR
 
         # Indicates this type is an object. \`fields\` and \`interfaces\` are valid fields.

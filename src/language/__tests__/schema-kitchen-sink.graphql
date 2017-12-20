@@ -65,6 +65,8 @@ extend union Feed @onUnion
 
 scalar CustomScalar
 
+scalar StringEncodedCustomScalar as String
+
 scalar AnnotatedScalar @onScalar
 
 extend scalar CustomScalar @onScalar

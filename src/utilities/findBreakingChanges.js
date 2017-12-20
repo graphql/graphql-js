@@ -161,6 +161,18 @@ export function findTypesThatChangedKind(
           `${typeName} changed from ` +
           `${typeKindName(oldType)} to ${typeKindName(newType)}.`,
       });
+    } else if (isScalarType(oldType) && isScalarType(newType)) {
+      const oldOfType = oldType.ofType;
+      const newOfType = newType.ofType;
+      if (oldOfType && newOfType && oldOfType !== newOfType) {
+        breakingChanges.push({
+          type: BreakingChangeType.TYPE_CHANGED_KIND,
+          description:
+            `${typeName} changed from ` +
+            `${typeKindName(oldType)} serialized as ${oldOfType.name} ` +
+            `to ${typeKindName(newType)} serialized as ${newOfType.name}.`,
+        });
+      }
     }
   });
   return breakingChanges;
