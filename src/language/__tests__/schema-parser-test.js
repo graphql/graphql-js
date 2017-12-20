@@ -708,4 +708,17 @@ input Hello {
       { line: 2, column: 33 },
     );
   });
+
+  it('Option: allowLegacySDLEmptyFields supports type with empty fields', () => {
+    const body = 'type Hello { }';
+    expect(() => parse(body)).to.throw('Syntax Error: Expected Name, found }');
+    const doc = parse(body, { allowLegacySDLEmptyFields: true });
+    expect(doc).to.containSubset({
+      definitions: [
+        {
+          fields: [],
+        },
+      ],
+    });
+  });
 });
