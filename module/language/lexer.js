@@ -60,6 +60,7 @@ var SOF = '<SOF>';
 var EOF = '<EOF>';
 var BANG = '!';
 var DOLLAR = '$';
+var AMP = '&';
 var PAREN_L = '(';
 var PAREN_R = ')';
 var SPREAD = '...';
@@ -87,6 +88,7 @@ export var TokenKind = {
   EOF: EOF,
   BANG: BANG,
   DOLLAR: DOLLAR,
+  AMP: AMP,
   PAREN_L: PAREN_L,
   PAREN_R: PAREN_R,
   SPREAD: SPREAD,
@@ -187,6 +189,9 @@ function readToken(lexer, prev) {
     // $
     case 36:
       return new Tok(DOLLAR, position, position + 1, line, col, prev);
+    // &
+    case 38:
+      return new Tok(AMP, position, position + 1, line, col, prev);
     // (
     case 40:
       return new Tok(PAREN_L, position, position + 1, line, col, prev);

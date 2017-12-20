@@ -767,15 +767,21 @@ function parseObjectTypeDefinition(lexer) {
 }
 
 /**
- * ImplementsInterfaces : implements NamedType+
+ * ImplementsInterfaces :
+ *   - implements `&`? NamedType
+ *   - ImplementsInterfaces & NamedType
  */
 function parseImplementsInterfaces(lexer) {
   var types = [];
   if (lexer.token.value === 'implements') {
     lexer.advance();
+    // Optional leading ampersand
+    skip(lexer, _lexer.TokenKind.AMP);
     do {
       types.push(parseNamedType(lexer));
-    } while (peek(lexer, _lexer.TokenKind.NAME));
+    } while (skip(lexer, _lexer.TokenKind.AMP) ||
+    // Legacy support for the SDL?
+    lexer.options.allowLegacySDLImplementsInterfaces && peek(lexer, _lexer.TokenKind.NAME));
   }
   return types;
 }
@@ -784,6 +790,12 @@ function parseImplementsInterfaces(lexer) {
  * FieldsDefinition : { FieldDefinition+ }
  */
 function parseFieldsDefinition(lexer) {
+  // Legacy support for the SDL?
+  if (lexer.options.allowLegacySDLEmptyFields && peek(lexer, _lexer.TokenKind.BRACE_L) && lexer.lookahead().kind === _lexer.TokenKind.BRACE_R) {
+    lexer.advance();
+    lexer.advance();
+    return [];
+  }
   return peek(lexer, _lexer.TokenKind.BRACE_L) ? many(lexer, _lexer.TokenKind.BRACE_L, parseFieldDefinition, _lexer.TokenKind.BRACE_R) : [];
 }
 

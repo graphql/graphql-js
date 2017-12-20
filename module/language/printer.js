@@ -186,7 +186,7 @@ var printDocASTReducer = {
         interfaces = _ref23.interfaces,
         directives = _ref23.directives,
         fields = _ref23.fields;
-    return join([description, join(['type', name, wrap('implements ', join(interfaces, ', ')), join(directives, ' '), block(fields)], ' ')], '\n');
+    return join([description, join(['type', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ')], '\n');
   },
 
   FieldDefinition: function FieldDefinition(_ref24) {
@@ -257,7 +257,7 @@ var printDocASTReducer = {
         interfaces = _ref32.interfaces,
         directives = _ref32.directives,
         fields = _ref32.fields;
-    return join(['extend type', name, wrap('implements ', join(interfaces, ', ')), join(directives, ' '), block(fields)], ' ');
+    return join(['extend type', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ');
   },
 
   InterfaceTypeExtension: function InterfaceTypeExtension(_ref33) {
