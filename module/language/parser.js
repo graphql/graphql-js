@@ -771,6 +771,12 @@ function parseImplementsInterfaces(lexer) {
  * FieldsDefinition : { FieldDefinition+ }
  */
 function parseFieldsDefinition(lexer) {
+  // Legacy support for the SDL?
+  if (lexer.options.allowLegacySDLEmptyFields && peek(lexer, TokenKind.BRACE_L) && lexer.lookahead().kind === TokenKind.BRACE_R) {
+    lexer.advance();
+    lexer.advance();
+    return [];
+  }
   return peek(lexer, TokenKind.BRACE_L) ? many(lexer, TokenKind.BRACE_L, parseFieldDefinition, TokenKind.BRACE_R) : [];
 }
 
@@ -856,7 +862,7 @@ function parseInterfaceTypeDefinition(lexer) {
 
 /**
  * UnionTypeDefinition :
- *   - Description? union Name Directives[Const]? MemberTypesDefinition?
+ *   - Description? union Name Directives[Const]? UnionMemberTypes?
  */
 function parseUnionTypeDefinition(lexer) {
   var start = lexer.token;
@@ -864,7 +870,7 @@ function parseUnionTypeDefinition(lexer) {
   expectKeyword(lexer, 'union');
   var name = parseName(lexer);
   var directives = parseDirectives(lexer, true);
-  var types = parseMemberTypesDefinition(lexer);
+  var types = parseUnionMemberTypes(lexer);
   return {
     kind: UNION_TYPE_DEFINITION,
     description: description,
@@ -876,13 +882,11 @@ function parseUnionTypeDefinition(lexer) {
 }
 
 /**
- * MemberTypesDefinition : = MemberTypes
- *
- * MemberTypes :
- *   - `|`? NamedType
- *   - MemberTypes | NamedType
+ * UnionMemberTypes :
+ *   - = `|`? NamedType
+ *   - UnionMemberTypes | NamedType
  */
-function parseMemberTypesDefinition(lexer) {
+function parseUnionMemberTypes(lexer) {
   var types = [];
   if (skip(lexer, TokenKind.EQUALS)) {
     // Optional leading pipe
@@ -1075,7 +1079,7 @@ function parseInterfaceTypeExtension(lexer) {
 
 /**
  * UnionTypeExtension :
- *   - extend union Name Directives[Const]? MemberTypesDefinition
+ *   - extend union Name Directives[Const]? UnionMemberTypes
  *   - extend union Name Directives[Const]
  */
 function parseUnionTypeExtension(lexer) {
@@ -1084,7 +1088,7 @@ function parseUnionTypeExtension(lexer) {
   expectKeyword(lexer, 'union');
   var name = parseName(lexer);
   var directives = parseDirectives(lexer, true);
-  var types = parseMemberTypesDefinition(lexer);
+  var types = parseUnionMemberTypes(lexer);
   if (directives.length === 0 && types.length === 0) {
     throw unexpected(lexer);
   }
