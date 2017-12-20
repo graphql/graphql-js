@@ -130,7 +130,7 @@ const printDocASTReducer = {
           [
             'type',
             name,
-            wrap('implements ', join(interfaces, ', ')),
+            wrap('implements ', join(interfaces, ' & ')),
             join(directives, ' '),
             block(fields),
           ],
@@ -226,7 +226,7 @@ const printDocASTReducer = {
       [
         'extend type',
         name,
-        wrap('implements ', join(interfaces, ', ')),
+        wrap('implements ', join(interfaces, ' & ')),
         join(directives, ' '),
         block(fields),
       ],

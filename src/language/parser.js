@@ -130,6 +130,16 @@ export type ParseOptions = {
   allowLegacySDLEmptyFields?: boolean,
 
   /**
+   * If enabled, the parser will parse implemented interfaces with no `&`
+   * character between each interface. Otherwise, the parser will follow the
+   * current specification.
+   *
+   * This option is provided to ease adoption of the final SDL specification
+   * and will be removed in a future major release.
+   */
+  allowLegacySDLImplementsInterfaces?: boolean,
+
+  /**
    * EXPERIMENTAL:
    *
    * If enabled, the parser will understand and parse variable definitions
@@ -922,15 +932,24 @@ function parseObjectTypeDefinition(lexer: Lexer<*>): ObjectTypeDefinitionNode {
 }
 
 /**
- * ImplementsInterfaces : implements NamedType+
+ * ImplementsInterfaces :
+ *   - implements `&`? NamedType
+ *   - ImplementsInterfaces & NamedType
  */
 function parseImplementsInterfaces(lexer: Lexer<*>): Array<NamedTypeNode> {
   const types = [];
   if (lexer.token.value === 'implements') {
     lexer.advance();
+    // Optional leading ampersand
+    skip(lexer, TokenKind.AMP);
     do {
       types.push(parseNamedType(lexer));
-    } while (peek(lexer, TokenKind.NAME));
+    } while (
+      skip(lexer, TokenKind.AMP) ||
+      // Legacy support for the SDL?
+      (lexer.options.allowLegacySDLImplementsInterfaces &&
+        peek(lexer, TokenKind.NAME))
+    );
   }
   return types;
 }
