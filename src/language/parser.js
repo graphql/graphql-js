@@ -1018,7 +1018,7 @@ function parseInterfaceTypeDefinition(
 
 /**
  * UnionTypeDefinition :
- *   - Description? union Name Directives[Const]? MemberTypesDefinition?
+ *   - Description? union Name Directives[Const]? UnionMemberTypes?
  */
 function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
   const start = lexer.token;
@@ -1026,7 +1026,7 @@ function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
   expectKeyword(lexer, 'union');
   const name = parseName(lexer);
   const directives = parseDirectives(lexer, true);
-  const types = parseMemberTypesDefinition(lexer);
+  const types = parseUnionMemberTypes(lexer);
   return {
     kind: UNION_TYPE_DEFINITION,
     description,
@@ -1038,13 +1038,11 @@ function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
 }
 
 /**
- * MemberTypesDefinition : = MemberTypes
- *
- * MemberTypes :
- *   - `|`? NamedType
- *   - MemberTypes | NamedType
+ * UnionMemberTypes :
+ *   - = `|`? NamedType
+ *   - UnionMemberTypes | NamedType
  */
-function parseMemberTypesDefinition(lexer: Lexer<*>): Array<NamedTypeNode> {
+function parseUnionMemberTypes(lexer: Lexer<*>): Array<NamedTypeNode> {
   const types = [];
   if (skip(lexer, TokenKind.EQUALS)) {
     // Optional leading pipe
@@ -1258,7 +1256,7 @@ function parseInterfaceTypeExtension(
 
 /**
  * UnionTypeExtension :
- *   - extend union Name Directives[Const]? MemberTypesDefinition
+ *   - extend union Name Directives[Const]? UnionMemberTypes
  *   - extend union Name Directives[Const]
  */
 function parseUnionTypeExtension(lexer: Lexer<*>): UnionTypeExtensionNode {
@@ -1267,7 +1265,7 @@ function parseUnionTypeExtension(lexer: Lexer<*>): UnionTypeExtensionNode {
   expectKeyword(lexer, 'union');
   const name = parseName(lexer);
   const directives = parseDirectives(lexer, true);
-  const types = parseMemberTypesDefinition(lexer);
+  const types = parseUnionMemberTypes(lexer);
   if (directives.length === 0 && types.length === 0) {
     throw unexpected(lexer);
   }
