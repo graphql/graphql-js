@@ -215,22 +215,22 @@ extend type Hello {
       definitions: [
         {
           kind: 'ObjectTypeExtension',
-          name: nameNode('Hello', { start: 12, end: 17 }),
-          interfaces: [typeNode('Greeting', { start: 29, end: 37 })],
+          name: nameNode('Hello', { start: 19, end: 24 }),
+          interfaces: [typeNode('Greeting', { start: 36, end: 44 })],
           directives: [],
           fields: [],
-          loc: { start: 0, end: 37 },
+          loc: { start: 7, end: 44 },
         },
         {
           kind: 'ObjectTypeExtension',
-          name: nameNode('Hello', { start: 12, end: 17 }),
-          interfaces: [typeNode('SecondGreeting', { start: 29, end: 37 })],
+          name: nameNode('Hello', { start: 64, end: 69 }),
+          interfaces: [typeNode('SecondGreeting', { start: 81, end: 95 })],
           directives: [],
           fields: [],
-          loc: { start: 0, end: 37 },
+          loc: { start: 52, end: 95 },
         },
       ],
-      loc: { start: 0, end: 37 },
+      loc: { start: 0, end: 100 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
