@@ -120,6 +120,16 @@ export type ParseOptions = {
   noLocation?: boolean,
 
   /**
+   * If enabled, the parser will parse empty fields sets in the Schema
+   * Definition Language. Otherwise, the parser will follow the current
+   * specification.
+   *
+   * This option is provided to ease adoption of the final SDL specification
+   * and will be removed in a future major release.
+   */
+  allowLegacySDLEmptyFields?: boolean,
+
+  /**
    * EXPERIMENTAL:
    *
    * If enabled, the parser will understand and parse variable definitions
@@ -929,6 +939,16 @@ function parseImplementsInterfaces(lexer: Lexer<*>): Array<NamedTypeNode> {
  * FieldsDefinition : { FieldDefinition+ }
  */
 function parseFieldsDefinition(lexer: Lexer<*>): Array<FieldDefinitionNode> {
+  // Legacy support for the SDL?
+  if (
+    lexer.options.allowLegacySDLEmptyFields &&
+    peek(lexer, TokenKind.BRACE_L) &&
+    lexer.lookahead().kind === TokenKind.BRACE_R
+  ) {
+    lexer.advance();
+    lexer.advance();
+    return [];
+  }
   return peek(lexer, TokenKind.BRACE_L)
     ? many(lexer, TokenKind.BRACE_L, parseFieldDefinition, TokenKind.BRACE_R)
     : [];
