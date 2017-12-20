@@ -291,7 +291,7 @@ type Hello {
   });
 
   it('Simple type inheriting multiple interfaces', () => {
-    const body = 'type Hello implements Wo, rld { field: String }';
+    const body = 'type Hello implements Wo & rld { field: String }';
     const doc = parse(body);
     const expected = {
       kind: 'Document',
@@ -301,20 +301,49 @@ type Hello {
           name: nameNode('Hello', { start: 5, end: 10 }),
           interfaces: [
             typeNode('Wo', { start: 22, end: 24 }),
-            typeNode('rld', { start: 26, end: 29 }),
+            typeNode('rld', { start: 27, end: 30 }),
           ],
           directives: [],
           fields: [
             fieldNode(
-              nameNode('field', { start: 32, end: 37 }),
-              typeNode('String', { start: 39, end: 45 }),
-              { start: 32, end: 45 },
+              nameNode('field', { start: 33, end: 38 }),
+              typeNode('String', { start: 40, end: 46 }),
+              { start: 33, end: 46 },
             ),
           ],
-          loc: { start: 0, end: 47 },
+          loc: { start: 0, end: 48 },
         },
       ],
-      loc: { start: 0, end: 47 },
+      loc: { start: 0, end: 48 },
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Simple type inheriting multiple interfaces with leading ampersand', () => {
+    const body = 'type Hello implements & Wo & rld { field: String }';
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeDefinition',
+          name: nameNode('Hello', { start: 5, end: 10 }),
+          interfaces: [
+            typeNode('Wo', { start: 24, end: 26 }),
+            typeNode('rld', { start: 29, end: 32 }),
+          ],
+          directives: [],
+          fields: [
+            fieldNode(
+              nameNode('field', { start: 35, end: 40 }),
+              typeNode('String', { start: 42, end: 48 }),
+              { start: 35, end: 48 },
+            ),
+          ],
+          loc: { start: 0, end: 50 },
+        },
+      ],
+      loc: { start: 0, end: 50 },
     };
     expect(printJson(doc)).to.equal(printJson(expected));
   });
@@ -717,6 +746,22 @@ input Hello {
       definitions: [
         {
           fields: [],
+        },
+      ],
+    });
+  });
+
+  it('Option: allowLegacySDLImplementsInterfaces', () => {
+    const body = 'type Hello implements Wo rld { field: String }';
+    expect(() => parse(body)).to.throw('Syntax Error: Unexpected Name "rld"');
+    const doc = parse(body, { allowLegacySDLImplementsInterfaces: true });
+    expect(doc).to.containSubset({
+      definitions: [
+        {
+          interfaces: [
+            typeNode('Wo', { start: 22, end: 24 }),
+            typeNode('rld', { start: 25, end: 28 }),
+          ],
         },
       ],
     });

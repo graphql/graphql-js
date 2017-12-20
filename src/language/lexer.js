@@ -99,6 +99,7 @@ const SOF = '<SOF>';
 const EOF = '<EOF>';
 const BANG = '!';
 const DOLLAR = '$';
+const AMP = '&';
 const PAREN_L = '(';
 const PAREN_R = ')';
 const SPREAD = '...';
@@ -126,6 +127,7 @@ export const TokenKind = {
   EOF,
   BANG,
   DOLLAR,
+  AMP,
   PAREN_L,
   PAREN_R,
   SPREAD,
@@ -242,6 +244,9 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     // $
     case 36:
       return new Tok(DOLLAR, position, position + 1, line, col, prev);
+    // &
+    case 38:
+      return new Tok(AMP, position, position + 1, line, col, prev);
     // (
     case 40:
       return new Tok(PAREN_L, position, position + 1, line, col, prev);
