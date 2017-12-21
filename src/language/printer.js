@@ -110,113 +110,68 @@ const printDocASTReducer = {
 
   OperationTypeDefinition: ({ operation, type }) => operation + ': ' + type,
 
-  ScalarTypeDefinition: ({ description, name, directives }) =>
-    join(
-      [description, join(['scalar', name, join(directives, ' ')], ' ')],
-      '\n',
-    ),
+  ScalarTypeDefinition: addDescription(({ name, directives }) =>
+    join(['scalar', name, join(directives, ' ')], ' '),
+  ),
 
-  ObjectTypeDefinition: ({
-    description,
-    name,
-    interfaces,
-    directives,
-    fields,
-  }) =>
-    join(
-      [
-        description,
-        join(
-          [
-            'type',
-            name,
-            wrap('implements ', join(interfaces, ' & ')),
-            join(directives, ' '),
-            block(fields),
-          ],
-          ' ',
-        ),
-      ],
-      '\n',
-    ),
+  ObjectTypeDefinition: addDescription(
+    ({ name, interfaces, directives, fields }) =>
+      join(
+        [
+          'type',
+          name,
+          wrap('implements ', join(interfaces, ' & ')),
+          join(directives, ' '),
+          block(fields),
+        ],
+        ' ',
+      ),
+  ),
 
-  FieldDefinition: ({ description, name, arguments: args, type, directives }) =>
-    join(
-      [
-        description,
-        name +
-          wrap('(', join(args, ', '), ')') +
-          ': ' +
-          type +
-          wrap(' ', join(directives, ' ')),
-      ],
-      '\n',
-    ),
+  FieldDefinition: addDescription(
+    ({ name, arguments: args, type, directives }) =>
+      name +
+      wrap('(', join(args, ', '), ')') +
+      ': ' +
+      type +
+      wrap(' ', join(directives, ' ')),
+  ),
 
-  InputValueDefinition: ({
-    description,
-    name,
-    type,
-    defaultValue,
-    directives,
-  }) =>
+  InputValueDefinition: addDescription(
+    ({ name, type, defaultValue, directives }) =>
+      join(
+        [name + ': ' + type, wrap('= ', defaultValue), join(directives, ' ')],
+        ' ',
+      ),
+  ),
+
+  InterfaceTypeDefinition: addDescription(({ name, directives, fields }) =>
+    join(['interface', name, join(directives, ' '), block(fields)], ' '),
+  ),
+
+  UnionTypeDefinition: addDescription(({ name, directives, types }) =>
     join(
       [
-        description,
-        join(
-          [name + ': ' + type, wrap('= ', defaultValue), join(directives, ' ')],
-          ' ',
-        ),
+        'union',
+        name,
+        join(directives, ' '),
+        types && types.length !== 0 ? '= ' + join(types, ' | ') : '',
       ],
-      '\n',
+      ' ',
     ),
+  ),
 
-  InterfaceTypeDefinition: ({ description, name, directives, fields }) =>
-    join(
-      [
-        description,
-        join(['interface', name, join(directives, ' '), block(fields)], ' '),
-      ],
-      '\n',
-    ),
+  EnumTypeDefinition: addDescription(({ name, directives, values }) =>
+    join(['enum', name, join(directives, ' '), block(values)], ' '),
+  ),
 
-  UnionTypeDefinition: ({ description, name, directives, types }) =>
-    join(
-      [
-        description,
-        join(
-          [
-            'union',
-            name,
-            join(directives, ' '),
-            types && types.length !== 0 ? '= ' + join(types, ' | ') : '',
-          ],
-          ' ',
-        ),
-      ],
-      '\n',
-    ),
+  EnumValueDefinition: addDescription(({ name, directives }) =>
+    join([name, join(directives, ' ')], ' '),
+  ),
 
-  EnumTypeDefinition: ({ description, name, directives, values }) =>
-    join(
-      [
-        description,
-        join(['enum', name, join(directives, ' '), block(values)], ' '),
-      ],
-      '\n',
-    ),
-
-  EnumValueDefinition: ({ description, name, directives }) =>
-    join([description, join([name, join(directives, ' ')], ' ')], '\n'),
-
-  InputObjectTypeDefinition: ({ description, name, directives, fields }) =>
-    join(
-      [
-        description,
-        join(['input', name, join(directives, ' '), block(fields)], ' '),
-      ],
-      '\n',
-    ),
+  InputObjectTypeDefinition: addDescription(({ name, directives, fields }) =>
+    join(['input', name, join(directives, ' '), block(fields)], ' '),
+  ),
 
   ScalarTypeExtension: ({ name, directives }) =>
     join(['extend scalar', name, join(directives, ' ')], ' '),
@@ -253,19 +208,19 @@ const printDocASTReducer = {
   InputObjectTypeExtension: ({ name, directives, fields }) =>
     join(['extend input', name, join(directives, ' '), block(fields)], ' '),
 
-  DirectiveDefinition: ({ description, name, arguments: args, locations }) =>
-    join(
-      [
-        description,
-        'directive @' +
-          name +
-          wrap('(', join(args, ', '), ')') +
-          ' on ' +
-          join(locations, ' | '),
-      ],
-      '\n',
-    ),
+  DirectiveDefinition: addDescription(
+    ({ name, arguments: args, locations }) =>
+      'directive @' +
+      name +
+      wrap('(', join(args, ', '), ')') +
+      ' on ' +
+      join(locations, ' | '),
+  ),
 };
+
+function addDescription(cb) {
+  return node => join([node.description, cb(node)], '\n');
+}
 
 /**
  * Given maybeArray, print an empty string if it is null or empty, otherwise
