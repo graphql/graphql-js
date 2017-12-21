@@ -173,78 +173,69 @@ var printDocASTReducer = {
     return operation + ': ' + type;
   },
 
-  ScalarTypeDefinition: function ScalarTypeDefinition(_ref22) {
-    var description = _ref22.description,
-        name = _ref22.name,
+  ScalarTypeDefinition: addDescription(function (_ref22) {
+    var name = _ref22.name,
         directives = _ref22.directives;
-    return join([description, join(['scalar', name, join(directives, ' ')], ' ')], '\n');
-  },
+    return join(['scalar', name, join(directives, ' ')], ' ');
+  }),
 
-  ObjectTypeDefinition: function ObjectTypeDefinition(_ref23) {
-    var description = _ref23.description,
-        name = _ref23.name,
+  ObjectTypeDefinition: addDescription(function (_ref23) {
+    var name = _ref23.name,
         interfaces = _ref23.interfaces,
         directives = _ref23.directives,
         fields = _ref23.fields;
-    return join([description, join(['type', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ')], '\n');
-  },
+    return join(['type', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ');
+  }),
 
-  FieldDefinition: function FieldDefinition(_ref24) {
-    var description = _ref24.description,
-        name = _ref24.name,
+  FieldDefinition: addDescription(function (_ref24) {
+    var name = _ref24.name,
         args = _ref24.arguments,
         type = _ref24.type,
         directives = _ref24.directives;
-    return join([description, name + wrap('(', join(args, ', '), ')') + ': ' + type + wrap(' ', join(directives, ' '))], '\n');
-  },
+    return name + wrap('(', join(args, ', '), ')') + ': ' + type + wrap(' ', join(directives, ' '));
+  }),
 
-  InputValueDefinition: function InputValueDefinition(_ref25) {
-    var description = _ref25.description,
-        name = _ref25.name,
+  InputValueDefinition: addDescription(function (_ref25) {
+    var name = _ref25.name,
         type = _ref25.type,
         defaultValue = _ref25.defaultValue,
         directives = _ref25.directives;
-    return join([description, join([name + ': ' + type, wrap('= ', defaultValue), join(directives, ' ')], ' ')], '\n');
-  },
+    return join([name + ': ' + type, wrap('= ', defaultValue), join(directives, ' ')], ' ');
+  }),
 
-  InterfaceTypeDefinition: function InterfaceTypeDefinition(_ref26) {
-    var description = _ref26.description,
-        name = _ref26.name,
+  InterfaceTypeDefinition: addDescription(function (_ref26) {
+    var name = _ref26.name,
         directives = _ref26.directives,
         fields = _ref26.fields;
-    return join([description, join(['interface', name, join(directives, ' '), block(fields)], ' ')], '\n');
-  },
+    return join(['interface', name, join(directives, ' '), block(fields)], ' ');
+  }),
 
-  UnionTypeDefinition: function UnionTypeDefinition(_ref27) {
-    var description = _ref27.description,
-        name = _ref27.name,
+  UnionTypeDefinition: addDescription(function (_ref27) {
+    var name = _ref27.name,
         directives = _ref27.directives,
         types = _ref27.types;
-    return join([description, join(['union', name, join(directives, ' '), types && types.length !== 0 ? '= ' + join(types, ' | ') : ''], ' ')], '\n');
-  },
+    return join(['union', name, join(directives, ' '), types && types.length !== 0 ? '= ' + join(types, ' | ') : ''], ' ');
+  }),
 
-  EnumTypeDefinition: function EnumTypeDefinition(_ref28) {
-    var description = _ref28.description,
-        name = _ref28.name,
+  EnumTypeDefinition: addDescription(function (_ref28) {
+    var name = _ref28.name,
         directives = _ref28.directives,
         values = _ref28.values;
-    return join([description, join(['enum', name, join(directives, ' '), block(values)], ' ')], '\n');
-  },
+    return join(['enum', name, join(directives, ' '), block(values)], ' ');
+  }),
 
-  EnumValueDefinition: function EnumValueDefinition(_ref29) {
-    var description = _ref29.description,
-        name = _ref29.name,
+  EnumValueDefinition: addDescription(function (_ref29) {
+    var name = _ref29.name,
         directives = _ref29.directives;
-    return join([description, join([name, join(directives, ' ')], ' ')], '\n');
-  },
+    return join([name, join(directives, ' ')], ' ');
+  }),
 
-  InputObjectTypeDefinition: function InputObjectTypeDefinition(_ref30) {
-    var description = _ref30.description,
-        name = _ref30.name,
+  InputObjectTypeDefinition: addDescription(function (_ref30) {
+    var name = _ref30.name,
         directives = _ref30.directives,
         fields = _ref30.fields;
-    return join([description, join(['input', name, join(directives, ' '), block(fields)], ' ')], '\n');
-  },
+    return join(['input', name, join(directives, ' '), block(fields)], ' ');
+  }),
 
   ScalarTypeExtension: function ScalarTypeExtension(_ref31) {
     var name = _ref31.name,
@@ -288,14 +279,19 @@ var printDocASTReducer = {
     return join(['extend input', name, join(directives, ' '), block(fields)], ' ');
   },
 
-  DirectiveDefinition: function DirectiveDefinition(_ref37) {
-    var description = _ref37.description,
-        name = _ref37.name,
+  DirectiveDefinition: addDescription(function (_ref37) {
+    var name = _ref37.name,
         args = _ref37.arguments,
         locations = _ref37.locations;
-    return join([description, 'directive @' + name + wrap('(', join(args, ', '), ')') + ' on ' + join(locations, ' | ')], '\n');
-  }
+    return 'directive @' + name + wrap('(', join(args, ', '), ')') + ' on ' + join(locations, ' | ');
+  })
 };
+
+function addDescription(cb) {
+  return function (node) {
+    return join([node.description, cb(node)], '\n');
+  };
+}
 
 /**
  * Given maybeArray, print an empty string if it is null or empty, otherwise
