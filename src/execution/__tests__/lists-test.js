@@ -114,69 +114,45 @@ describe('Execute: Accepts any iterable as list value', () => {
 });
 
 describe('Execute: Handles list nullability', () => {
-  describe('[T]', () => {
-    const type = GraphQLList(GraphQLInt);
-
+  function allChecks(type, expected) {
     describe('Array<T>', () => {
-      it(
-        'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [1, null, 2], { data: { nest: { test: [1, null, 2] } } }),
-      );
-
-      it('Returns null', check(type, null, { data: { nest: { test: null } } }));
+      it('Contains values', check(type, [1, 2], expected.containsValues));
+      it('Contains null', check(type, [1, null, 2], expected.containsNull));
+      it('Returns null', check(type, null, expected.returnsNull));
     });
 
     describe('Promise<Array<T>>', () => {
       it(
         'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
+        check(type, resolved([1, 2]), expected.containsValues),
       );
 
       it(
         'Contains null',
-        check(type, resolved([1, null, 2]), {
-          data: { nest: { test: [1, null, 2] } },
-        }),
+        check(type, resolved([1, null, 2]), expected.containsNull),
       );
 
-      it(
-        'Returns null',
-        check(type, resolved(null), { data: { nest: { test: null } } }),
-      );
+      it('Returns null', check(type, resolved(null), expected.returnsNull));
 
       it(
         'Rejected',
-        check(type, () => rejected(new Error('bad')), {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
+        check(type, () => rejected(new Error('bad')), expected.rejected),
       );
     });
 
     describe('Array<Promise<T>>', () => {
       it(
         'Contains values',
-        check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
-        }),
+        check(type, [resolved(1), resolved(2)], expected.containsValues),
       );
 
       it(
         'Contains null',
-        check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: { test: [1, null, 2] } },
-        }),
+        check(
+          type,
+          [resolved(1), resolved(null), resolved(2)],
+          expected.containsNull,
+        ),
       );
 
       it(
@@ -184,371 +160,82 @@ describe('Execute: Handles list nullability', () => {
         check(
           type,
           () => [resolved(1), rejected(new Error('bad')), resolved(2)],
-          {
-            data: { nest: { test: [1, null, 2] } },
-            errors: [
-              {
-                message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
-              },
-            ],
-          },
+          expected.containsReject,
         ),
       );
+    });
+  }
+
+  const dataOk = { nest: { test: [1, 2] } };
+  const dataOkWithNull = { nest: { test: [1, null, 2] } };
+  const dataNull = { nest: null };
+  const dataNull1 = { nest: { test: null } };
+  const errorsBad = [
+    {
+      message: 'bad',
+      locations: [{ line: 1, column: 10 }],
+      path: ['nest', 'test'],
+    },
+  ];
+  const errorsBad1 = [
+    {
+      message: 'bad',
+      locations: [{ line: 1, column: 10 }],
+      path: ['nest', 'test', 1],
+    },
+  ];
+  const errorsNonNull = [
+    {
+      message: 'Cannot return null for non-nullable field DataType.test.',
+      locations: [{ line: 1, column: 10 }],
+      path: ['nest', 'test'],
+    },
+  ];
+  const errorsNonNull1 = [
+    {
+      message: 'Cannot return null for non-nullable field DataType.test.',
+      locations: [{ line: 1, column: 10 }],
+      path: ['nest', 'test', 1],
+    },
+  ];
+
+  describe('[T]', () => {
+    allChecks(GraphQLList(GraphQLInt), {
+      containsValues: { data: dataOk },
+      containsNull: { data: dataOkWithNull },
+      returnsNull: { data: dataNull1 },
+      rejected: { data: dataNull1, errors: errorsBad },
+      containsReject: { data: dataOkWithNull, errors: errorsBad1 },
     });
   });
 
   describe('[T]!', () => {
-    const type = GraphQLNonNull(GraphQLList(GraphQLInt));
-
-    describe('Array<T>', () => {
-      it(
-        'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [1, null, 2], { data: { nest: { test: [1, null, 2] } } }),
-      );
-
-      it(
-        'Returns null',
-        check(type, null, {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
-    });
-
-    describe('Promise<Array<T>>', () => {
-      it(
-        'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, resolved([1, null, 2]), {
-          data: { nest: { test: [1, null, 2] } },
-        }),
-      );
-
-      it(
-        'Returns null',
-        check(type, resolved(null), {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Rejected',
-        check(type, () => rejected(new Error('bad')), {
-          data: { nest: null },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
-    });
-
-    describe('Array<Promise<T>>', () => {
-      it(
-        'Contains values',
-        check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
-        }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: { test: [1, null, 2] } },
-        }),
-      );
-
-      it(
-        'Contains reject',
-        check(
-          type,
-          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
-          {
-            data: { nest: { test: [1, null, 2] } },
-            errors: [
-              {
-                message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
-              },
-            ],
-          },
-        ),
-      );
+    allChecks(GraphQLNonNull(GraphQLList(GraphQLInt)), {
+      containsValues: { data: dataOk },
+      containsNull: { data: dataOkWithNull },
+      returnsNull: { data: dataNull, errors: errorsNonNull },
+      rejected: { data: dataNull, errors: errorsBad },
+      containsReject: { data: dataOkWithNull, errors: errorsBad1 },
     });
   });
 
   describe('[T!]', () => {
-    const type = GraphQLList(GraphQLNonNull(GraphQLInt));
-
-    describe('Array<T>', () => {
-      it(
-        'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [1, null, 2], {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it('Returns null', check(type, null, { data: { nest: { test: null } } }));
-    });
-
-    describe('Promise<Array<T>>', () => {
-      it(
-        'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, resolved([1, null, 2]), {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Returns null',
-        check(type, resolved(null), { data: { nest: { test: null } } }),
-      );
-
-      it(
-        'Rejected',
-        check(type, () => rejected(new Error('bad')), {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
-    });
-
-    describe('Array<Promise<T>>', () => {
-      it(
-        'Contains values',
-        check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
-        }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: { test: null } },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Contains reject',
-        check(
-          type,
-          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
-          {
-            data: { nest: { test: null } },
-            errors: [
-              {
-                message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
-              },
-            ],
-          },
-        ),
-      );
+    allChecks(GraphQLList(GraphQLNonNull(GraphQLInt)), {
+      containsValues: { data: dataOk },
+      containsNull: { data: dataNull1, errors: errorsNonNull1 },
+      returnsNull: { data: dataNull1 },
+      rejected: { data: dataNull1, errors: errorsBad },
+      containsReject: { data: dataNull1, errors: errorsBad1 },
     });
   });
 
   describe('[T!]!', () => {
-    const type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt)));
-
-    describe('Array<T>', () => {
-      it(
-        'Contains values',
-        check(type, [1, 2], { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [1, null, 2], {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Returns null',
-        check(type, null, {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
-    });
-
-    describe('Promise<Array<T>>', () => {
-      it(
-        'Contains values',
-        check(type, resolved([1, 2]), { data: { nest: { test: [1, 2] } } }),
-      );
-
-      it(
-        'Contains null',
-        check(type, resolved([1, null, 2]), {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Returns null',
-        check(type, resolved(null), {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Rejected',
-        check(type, () => rejected(new Error('bad')), {
-          data: { nest: null },
-          errors: [
-            {
-              message: 'bad',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test'],
-            },
-          ],
-        }),
-      );
-    });
-
-    describe('Array<Promise<T>>', () => {
-      it(
-        'Contains values',
-        check(type, [resolved(1), resolved(2)], {
-          data: { nest: { test: [1, 2] } },
-        }),
-      );
-
-      it(
-        'Contains null',
-        check(type, [resolved(1), resolved(null), resolved(2)], {
-          data: { nest: null },
-          errors: [
-            {
-              message:
-                'Cannot return null for non-nullable field DataType.test.',
-              locations: [{ line: 1, column: 10 }],
-              path: ['nest', 'test', 1],
-            },
-          ],
-        }),
-      );
-
-      it(
-        'Contains reject',
-        check(
-          type,
-          () => [resolved(1), rejected(new Error('bad')), resolved(2)],
-          {
-            data: { nest: null },
-            errors: [
-              {
-                message: 'bad',
-                locations: [{ line: 1, column: 10 }],
-                path: ['nest', 'test', 1],
-              },
-            ],
-          },
-        ),
-      );
+    allChecks(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt))), {
+      containsValues: { data: dataOk },
+      containsNull: { data: dataNull, errors: errorsNonNull1 },
+      returnsNull: { data: dataNull, errors: errorsNonNull },
+      rejected: { data: dataNull, errors: errorsBad },
+      containsReject: { data: dataNull, errors: errorsBad1 },
     });
   });
 });
