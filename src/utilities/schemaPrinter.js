@@ -176,7 +176,7 @@ function printScalar(type: GraphQLScalarType, options): string {
 function printObject(type: GraphQLObjectType, options): string {
   const interfaces = type.getInterfaces();
   const implementedInterfaces = interfaces.length
-    ? ' implements ' + interfaces.map(i => i.name).join(', ')
+    ? ' implements ' + interfaces.map(i => i.name).join(' & ')
     : '';
   return (
     printDescription(options, type) +

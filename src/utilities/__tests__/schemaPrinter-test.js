@@ -9,6 +9,7 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import dedent from '../../jsutils/dedent';
 import { printSchema, printIntrospectionSchema } from '../schemaPrinter';
+import { buildSchema } from '../buildASTSchema';
 import {
   GraphQLSchema,
   GraphQLInputObjectType,
@@ -27,7 +28,10 @@ import { GraphQLDirective } from '../../type/directives';
 import { DirectiveLocation } from '../../language/directiveLocation';
 
 function printForTest(schema) {
-  return printSchema(schema);
+  const schemaText = printSchema(schema);
+  // keep printSchema and buildSchema in sync
+  expect(printSchema(buildSchema(schemaText))).to.equal(schemaText);
+  return schemaText;
 }
 
 function printSingleFieldSchema(fieldConfig) {
@@ -388,7 +392,7 @@ describe('Type System Printer', () => {
         int: Int
       }
 
-      type Bar implements Foo, Baaz {
+      type Bar implements Foo & Baaz {
         str: String
         int: Int
       }
