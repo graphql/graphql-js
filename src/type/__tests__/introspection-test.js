@@ -819,7 +819,7 @@ describe('Introspection', () => {
     const TestInputObject = new GraphQLInputObjectType({
       name: 'TestInputObject',
       fields: {
-        a: { type: GraphQLString, defaultValue: 'foo' },
+        a: { type: GraphQLString, defaultValue: 'tes\t de\fault' },
         b: { type: GraphQLList(GraphQLString) },
         c: { type: GraphQLString, defaultValue: null },
       },
@@ -839,15 +839,13 @@ describe('Introspection', () => {
     const schema = new GraphQLSchema({ query: TestType });
     const request = `
       {
-        __schema {
-          types {
-            kind
+        __type(name: "TestInputObject") {
+          kind
+          name
+          inputFields {
             name
-            inputFields {
-              name
-              type { ...TypeRef }
-              defaultValue
-            }
+            type { ...TypeRef }
+            defaultValue
           }
         }
       }
@@ -870,46 +868,42 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.containSubset({
+    return expect(graphqlSync(schema, request)).to.deep.equal({
       data: {
-        __schema: {
-          types: [
+        __type: {
+          kind: 'INPUT_OBJECT',
+          name: 'TestInputObject',
+          inputFields: [
             {
-              kind: 'INPUT_OBJECT',
-              name: 'TestInputObject',
-              inputFields: [
-                {
-                  name: 'a',
-                  type: {
-                    kind: 'SCALAR',
-                    name: 'String',
-                    ofType: null,
-                  },
-                  defaultValue: '"foo"',
+              name: 'a',
+              type: {
+                kind: 'SCALAR',
+                name: 'String',
+                ofType: null,
+              },
+              defaultValue: '"tes\\t de\\fault"',
+            },
+            {
+              name: 'b',
+              type: {
+                kind: 'LIST',
+                name: null,
+                ofType: {
+                  kind: 'SCALAR',
+                  name: 'String',
+                  ofType: null,
                 },
-                {
-                  name: 'b',
-                  type: {
-                    kind: 'LIST',
-                    name: null,
-                    ofType: {
-                      kind: 'SCALAR',
-                      name: 'String',
-                      ofType: null,
-                    },
-                  },
-                  defaultValue: null,
-                },
-                {
-                  name: 'c',
-                  type: {
-                    kind: 'SCALAR',
-                    name: 'String',
-                    ofType: null,
-                  },
-                  defaultValue: 'null',
-                },
-              ],
+              },
+              defaultValue: null,
+            },
+            {
+              name: 'c',
+              type: {
+                kind: 'SCALAR',
+                name: 'String',
+                ofType: null,
+              },
+              defaultValue: 'null',
             },
           ],
         },
