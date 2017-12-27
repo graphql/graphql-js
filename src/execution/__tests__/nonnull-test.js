@@ -108,17 +108,52 @@ const schema = new GraphQLSchema({
   query: dataType,
 });
 
+// avoids also doing any nests
+function patch(data) {
+  return JSON.parse(
+    JSON.stringify(data)
+      .replace(/\bsync\b/g, 'promise')
+      .replace(/\bsyncNonNull\b/g, 'promiseNonNull'),
+  );
+}
+
 function check(description, syncOnly, doc, expectedThrow, expectedReturn) {
-  // const syncPromise = syncOnly ? [true] : [true, false];
-  [
-    { words: 'throws', data: throwingData, expected: expectedThrow },
-    { words: 'returns null', data: nullingData, expected: expectedReturn },
-  ].forEach(desc =>
-    it(description + ' that ' + desc.words + ' synchronously', async () => {
-      return expect(
-        await execute(schema, parse(doc), desc.data),
-      ).to.containSubset(desc.expected);
-    }),
+  const descs = [
+    [
+      {
+        doc,
+        words: 'throws',
+        data: throwingData,
+        expected: expectedThrow,
+        sync: 'synchronously',
+      },
+      {
+        doc,
+        words: 'returns null',
+        data: nullingData,
+        expected: expectedReturn,
+        sync: 'synchronously',
+      },
+    ],
+  ];
+  if (!syncOnly) {
+    descs.push(
+      descs[0].map(d => ({
+        ...d,
+        doc: patch(d.doc),
+        expected: patch(d.expected),
+        sync: 'in a promise',
+      })),
+    );
+  }
+  descs.forEach(desc =>
+    desc.forEach(desc2 =>
+      it(description + ' that ' + desc2.words + ' ' + desc2.sync, async () =>
+        expect(
+          await execute(schema, parse(desc2.doc), desc2.data),
+        ).to.containSubset(desc2.expected),
+      ),
+    ),
   );
 }
 
@@ -148,52 +183,6 @@ describe('Execute: handles non-nullable types', () => {
       },
     },
   );
-
-  it('nulls a nullable field that throws in a promise', async () => {
-    const doc = `
-      query Q {
-        promise
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
-      data: {
-        promise: null,
-      },
-      errors: [
-        {
-          message: promiseError.message,
-          locations: [{ line: 3, column: 9 }],
-        },
-      ],
-    };
-
-    return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
-
-  it('nulls a nullable field that returns null in a promise', async () => {
-    const doc = `
-      query Q {
-        promise
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
-      data: {
-        promise: null,
-      },
-    };
-
-    return expect(await execute(schema, ast, nullingData)).to.containSubset(
-      expected,
-    );
-  });
 
   check(
     'nulls a synchronously returned object that contains a non-nullable field',
@@ -230,63 +219,6 @@ describe('Execute: handles non-nullable types', () => {
     },
   );
 
-  it('nulls a synchronously returned object that contains a non-nullable field that throws in a promise', async () => {
-    const doc = `
-      query Q {
-        syncNest {
-          promiseNonNull,
-        }
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
-      data: {
-        syncNest: null,
-      },
-      errors: [
-        {
-          message: promiseNonNullError.message,
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    };
-
-    return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
-
-  it('nulls a synchronously returned object that contains a non-nullable field that returns null in a promise', async () => {
-    const doc = `
-      query Q {
-        syncNest {
-          promiseNonNull,
-        }
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
-      data: {
-        syncNest: null,
-      },
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.promiseNonNull.',
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    };
-
-    return expect(await execute(schema, ast, nullingData)).to.containSubset(
-      expected,
-    );
-  });
-
   check(
     'nulls an object returned in a promise that contains a non-nullable field',
     false,
@@ -321,63 +253,6 @@ describe('Execute: handles non-nullable types', () => {
       ],
     },
   );
-
-  it('nulls an object returned in a promise that contains a non-nullable field that throws in a promise', async () => {
-    const doc = `
-      query Q {
-        promiseNest {
-          promiseNonNull,
-        }
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
-      data: {
-        promiseNest: null,
-      },
-      errors: [
-        {
-          message: promiseNonNullError.message,
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    };
-
-    return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
-
-  it('nulls an object returned in a promise that contains a non-nullable field that returns null in a promise', async () => {
-    const doc = `
-      query Q {
-        promiseNest {
-          promiseNonNull,
-        }
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
-      data: {
-        promiseNest: null,
-      },
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.promiseNonNull.',
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    };
-
-    return expect(await execute(schema, ast, nullingData)).to.containSubset(
-      expected,
-    );
-  });
 
   check(
     'nulls a complex tree of nullable fields, each',
@@ -653,45 +528,4 @@ describe('Execute: handles non-nullable types', () => {
       ],
     },
   );
-
-  it('nulls the top level if non-nullable field throws in a promise', async () => {
-    const doc = `
-      query Q { promiseNonNull }
-    `;
-
-    const expected = {
-      data: null,
-      errors: [
-        {
-          message: promiseNonNullError.message,
-          locations: [{ line: 2, column: 17 }],
-        },
-      ],
-    };
-
-    return expect(
-      await execute(schema, parse(doc), throwingData),
-    ).to.containSubset(expected);
-  });
-
-  it('nulls the top level if non-nullable field returns null in a promise', async () => {
-    const doc = `
-      query Q { promiseNonNull }
-    `;
-
-    const expected = {
-      data: null,
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.promiseNonNull.',
-          locations: [{ line: 2, column: 17 }],
-        },
-      ],
-    };
-
-    return expect(
-      await execute(schema, parse(doc), nullingData),
-    ).to.containSubset(expected);
-  });
 });
