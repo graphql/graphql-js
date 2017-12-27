@@ -117,21 +117,21 @@ function patch(data) {
   );
 }
 
-function check(description, syncOnly, doc, expectedThrow, expectedReturn) {
+function check(description, syncOnly, doc, expectedReturn, expectedThrow) {
   const descs = [
     [
-      {
-        doc,
-        words: 'throws',
-        data: throwingData,
-        expected: expectedThrow,
-        sync: 'synchronously',
-      },
       {
         doc,
         words: 'returns null',
         data: nullingData,
         expected: expectedReturn,
+        sync: 'synchronously',
+      },
+      {
+        doc,
+        words: 'throws',
+        data: throwingData,
+        expected: { data: expectedReturn.data, ...expectedThrow },
         sync: 'synchronously',
       },
     ],
@@ -170,17 +170,14 @@ describe('Execute: handles non-nullable types', () => {
       data: {
         sync: null,
       },
+    },
+    {
       errors: [
         {
           message: syncError.message,
           locations: [{ line: 3, column: 9 }],
         },
       ],
-    },
-    {
-      data: {
-        sync: null,
-      },
     },
   );
 
@@ -200,19 +197,16 @@ describe('Execute: handles non-nullable types', () => {
       },
       errors: [
         {
-          message: syncNonNullError.message,
+          message:
+            'Cannot return null for non-nullable field DataType.syncNonNull.',
           locations: [{ line: 4, column: 11 }],
         },
       ],
     },
     {
-      data: {
-        syncNest: null,
-      },
       errors: [
         {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
+          message: syncNonNullError.message,
           locations: [{ line: 4, column: 11 }],
         },
       ],
@@ -235,19 +229,16 @@ describe('Execute: handles non-nullable types', () => {
       },
       errors: [
         {
-          message: syncNonNullError.message,
+          message:
+            'Cannot return null for non-nullable field DataType.syncNonNull.',
           locations: [{ line: 4, column: 11 }],
         },
       ],
     },
     {
-      data: {
-        promiseNest: null,
-      },
       errors: [
         {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
+          message: syncNonNullError.message,
           locations: [{ line: 4, column: 11 }],
         },
       ],
@@ -312,6 +303,8 @@ describe('Execute: handles non-nullable types', () => {
           },
         },
       },
+    },
+    {
       errors: [
         {
           message: syncError.message,
@@ -362,34 +355,6 @@ describe('Execute: handles non-nullable types', () => {
           locations: [{ line: 24, column: 13 }],
         },
       ],
-    },
-    {
-      data: {
-        syncNest: {
-          sync: null,
-          promise: null,
-          syncNest: {
-            sync: null,
-            promise: null,
-          },
-          promiseNest: {
-            sync: null,
-            promise: null,
-          },
-        },
-        promiseNest: {
-          sync: null,
-          promise: null,
-          syncNest: {
-            sync: null,
-            promise: null,
-          },
-          promiseNest: {
-            sync: null,
-            promise: null,
-          },
-        },
-      },
     },
   );
 
@@ -453,49 +418,43 @@ describe('Execute: handles non-nullable types', () => {
       },
       errors: [
         {
-          message: syncNonNullError.message,
+          message:
+            'Cannot return null for non-nullable field DataType.syncNonNull.',
           locations: [{ line: 8, column: 19 }],
         },
         {
-          message: syncNonNullError.message,
+          message:
+            'Cannot return null for non-nullable field DataType.syncNonNull.',
           locations: [{ line: 19, column: 19 }],
         },
         {
-          message: promiseNonNullError.message,
+          message:
+            'Cannot return null for non-nullable field DataType.promiseNonNull.',
           locations: [{ line: 30, column: 19 }],
         },
         {
-          message: promiseNonNullError.message,
+          message:
+            'Cannot return null for non-nullable field DataType.promiseNonNull.',
           locations: [{ line: 41, column: 19 }],
         },
       ],
     },
     {
-      data: {
-        syncNest: null,
-        promiseNest: null,
-        anotherNest: null,
-        anotherPromiseNest: null,
-      },
       errors: [
         {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
+          message: syncNonNullError.message,
           locations: [{ line: 8, column: 19 }],
         },
         {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
+          message: syncNonNullError.message,
           locations: [{ line: 19, column: 19 }],
         },
         {
-          message:
-            'Cannot return null for non-nullable field DataType.promiseNonNull.',
+          message: promiseNonNullError.message,
           locations: [{ line: 30, column: 19 }],
         },
         {
-          message:
-            'Cannot return null for non-nullable field DataType.promiseNonNull.',
+          message: promiseNonNullError.message,
           locations: [{ line: 41, column: 19 }],
         },
       ],
@@ -512,17 +471,16 @@ describe('Execute: handles non-nullable types', () => {
       data: null,
       errors: [
         {
-          message: syncNonNullError.message,
+          message:
+            'Cannot return null for non-nullable field DataType.syncNonNull.',
           locations: [{ line: 2, column: 17 }],
         },
       ],
     },
     {
-      data: null,
       errors: [
         {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
+          message: syncNonNullError.message,
           locations: [{ line: 2, column: 17 }],
         },
       ],
