@@ -108,17 +108,30 @@ const schema = new GraphQLSchema({
   query: dataType,
 });
 
+function check(description, syncOnly, doc, expectedThrow, expectedReturn) {
+  // const syncPromise = syncOnly ? [true] : [true, false];
+  [
+    { words: 'throws', data: throwingData, expected: expectedThrow },
+    { words: 'returns null', data: nullingData, expected: expectedReturn },
+  ].forEach(desc =>
+    it(description + ' that ' + desc.words + ' synchronously', async () => {
+      return expect(
+        await execute(schema, parse(doc), desc.data),
+      ).to.containSubset(desc.expected);
+    }),
+  );
+}
+
 describe('Execute: handles non-nullable types', () => {
-  it('nulls a nullable field that throws synchronously', async () => {
-    const doc = `
+  check(
+    'nulls a nullable field',
+    false,
+    `
       query Q {
         sync
       }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
+    `,
+    {
       data: {
         sync: null,
       },
@@ -128,12 +141,13 @@ describe('Execute: handles non-nullable types', () => {
           locations: [{ line: 3, column: 9 }],
         },
       ],
-    };
-
-    return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
+    },
+    {
+      data: {
+        sync: null,
+      },
+    },
+  );
 
   it('nulls a nullable field that throws in a promise', async () => {
     const doc = `
@@ -161,26 +175,6 @@ describe('Execute: handles non-nullable types', () => {
     );
   });
 
-  it('nulls a nullable field that returns null synchronously', async () => {
-    const doc = `
-      query Q {
-        sync
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
-      data: {
-        sync: null,
-      },
-    };
-
-    return expect(await execute(schema, ast, nullingData)).to.containSubset(
-      expected,
-    );
-  });
-
   it('nulls a nullable field that returns null in a promise', async () => {
     const doc = `
       query Q {
@@ -201,18 +195,17 @@ describe('Execute: handles non-nullable types', () => {
     );
   });
 
-  it('nulls a synchronously returned object that contains a non-nullable field that throws synchronously', async () => {
-    const doc = `
+  check(
+    'nulls a synchronously returned object that contains a non-nullable field',
+    false,
+    `
       query Q {
         syncNest {
           syncNonNull,
         }
       }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
+    `,
+    {
       data: {
         syncNest: null,
       },
@@ -222,12 +215,20 @@ describe('Execute: handles non-nullable types', () => {
           locations: [{ line: 4, column: 11 }],
         },
       ],
-    };
-
-    return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
+    },
+    {
+      data: {
+        syncNest: null,
+      },
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field DataType.syncNonNull.',
+          locations: [{ line: 4, column: 11 }],
+        },
+      ],
+    },
+  );
 
   it('nulls a synchronously returned object that contains a non-nullable field that throws in a promise', async () => {
     const doc = `
@@ -253,35 +254,6 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
-
-  it('nulls a synchronously returned object that contains a non-nullable field that returns null synchronously', async () => {
-    const doc = `
-      query Q {
-        syncNest {
-          syncNonNull,
-        }
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
-      data: {
-        syncNest: null,
-      },
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    };
-
-    return expect(await execute(schema, ast, nullingData)).to.containSubset(
       expected,
     );
   });
@@ -315,18 +287,17 @@ describe('Execute: handles non-nullable types', () => {
     );
   });
 
-  it('nulls an object returned in a promise that contains a non-nullable field that throws synchronously', async () => {
-    const doc = `
+  check(
+    'nulls an object returned in a promise that contains a non-nullable field',
+    false,
+    `
       query Q {
         promiseNest {
           syncNonNull,
         }
       }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
+    `,
+    {
       data: {
         promiseNest: null,
       },
@@ -336,12 +307,20 @@ describe('Execute: handles non-nullable types', () => {
           locations: [{ line: 4, column: 11 }],
         },
       ],
-    };
-
-    return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
+    },
+    {
+      data: {
+        promiseNest: null,
+      },
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field DataType.syncNonNull.',
+          locations: [{ line: 4, column: 11 }],
+        },
+      ],
+    },
+  );
 
   it('nulls an object returned in a promise that contains a non-nullable field that throws in a promise', async () => {
     const doc = `
@@ -367,35 +346,6 @@ describe('Execute: handles non-nullable types', () => {
     };
 
     return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
-
-  it('nulls an object returned in a promise that contains a non-nullable field that returns null synchronously', async () => {
-    const doc = `
-      query Q {
-        promiseNest {
-          syncNonNull,
-        }
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
-      data: {
-        promiseNest: null,
-      },
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    };
-
-    return expect(await execute(schema, ast, nullingData)).to.containSubset(
       expected,
     );
   });
@@ -429,8 +379,10 @@ describe('Execute: handles non-nullable types', () => {
     );
   });
 
-  it('nulls a complex tree of nullable fields, each that throws', async () => {
-    const doc = `
+  check(
+    'nulls a complex tree of nullable fields, each',
+    true,
+    `
       query Q {
         syncNest {
           sync
@@ -457,11 +409,8 @@ describe('Execute: handles non-nullable types', () => {
           }
         }
       }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
+    `,
+    {
       data: {
         syncNest: {
           sync: null,
@@ -538,46 +487,8 @@ describe('Execute: handles non-nullable types', () => {
           locations: [{ line: 24, column: 13 }],
         },
       ],
-    };
-
-    return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
-
-  it('nulls a complex tree of nullable fields, each that returns null', async () => {
-    const doc = `
-      query Q {
-        syncNest {
-          sync
-          promise
-          syncNest {
-            sync
-            promise
-          }
-          promiseNest {
-            sync
-            promise
-          }
-        }
-        promiseNest {
-          sync
-          promise
-          syncNest {
-            sync
-            promise
-          }
-          promiseNest {
-            sync
-            promise
-          }
-        }
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
+    },
+    {
       data: {
         syncNest: {
           sync: null,
@@ -604,15 +515,13 @@ describe('Execute: handles non-nullable types', () => {
           },
         },
       },
-    };
+    },
+  );
 
-    return expect(await execute(schema, ast, nullingData)).to.containSubset(
-      expected,
-    );
-  });
-
-  it('nulls the first nullable object after a field in a long chain of non-null fields throws', async () => {
-    const doc = `
+  check(
+    'nulls the first nullable object after a field in a long chain of non-null fields',
+    true,
+    `
       query Q {
         syncNest {
           syncNonNullNest {
@@ -659,11 +568,8 @@ describe('Execute: handles non-nullable types', () => {
           }
         }
       }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
+    `,
+    {
       data: {
         syncNest: null,
         promiseNest: null,
@@ -688,66 +594,8 @@ describe('Execute: handles non-nullable types', () => {
           locations: [{ line: 41, column: 19 }],
         },
       ],
-    };
-
-    return expect(await execute(schema, ast, throwingData)).to.containSubset(
-      expected,
-    );
-  });
-
-  it('nulls the first nullable object after a field in a long chain of non-null fields returns null', async () => {
-    const doc = `
-      query Q {
-        syncNest {
-          syncNonNullNest {
-            promiseNonNullNest {
-              syncNonNullNest {
-                promiseNonNullNest {
-                  syncNonNull
-                }
-              }
-            }
-          }
-        }
-        promiseNest {
-          syncNonNullNest {
-            promiseNonNullNest {
-              syncNonNullNest {
-                promiseNonNullNest {
-                  syncNonNull
-                }
-              }
-            }
-          }
-        }
-        anotherNest: syncNest {
-          syncNonNullNest {
-            promiseNonNullNest {
-              syncNonNullNest {
-                promiseNonNullNest {
-                  promiseNonNull
-                }
-              }
-            }
-          }
-        }
-        anotherPromiseNest: promiseNest {
-          syncNonNullNest {
-            promiseNonNullNest {
-              syncNonNullNest {
-                promiseNonNullNest {
-                  promiseNonNull
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
-
-    const ast = parse(doc);
-
-    const expected = {
+    },
+    {
       data: {
         syncNest: null,
         promiseNest: null,
@@ -776,19 +624,16 @@ describe('Execute: handles non-nullable types', () => {
           locations: [{ line: 41, column: 19 }],
         },
       ],
-    };
+    },
+  );
 
-    return expect(await execute(schema, ast, nullingData)).to.containSubset(
-      expected,
-    );
-  });
-
-  it('nulls the top level if non-nullable field throws synchronously', async () => {
-    const doc = `
+  check(
+    'nulls the top level if non-nullable field',
+    false,
+    `
       query Q { syncNonNull }
-    `;
-
-    const expected = {
+    `,
+    {
       data: null,
       errors: [
         {
@@ -796,12 +641,18 @@ describe('Execute: handles non-nullable types', () => {
           locations: [{ line: 2, column: 17 }],
         },
       ],
-    };
-
-    return expect(
-      await execute(schema, parse(doc), throwingData),
-    ).to.containSubset(expected);
-  });
+    },
+    {
+      data: null,
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field DataType.syncNonNull.',
+          locations: [{ line: 2, column: 17 }],
+        },
+      ],
+    },
+  );
 
   it('nulls the top level if non-nullable field throws in a promise', async () => {
     const doc = `
@@ -820,27 +671,6 @@ describe('Execute: handles non-nullable types', () => {
 
     return expect(
       await execute(schema, parse(doc), throwingData),
-    ).to.containSubset(expected);
-  });
-
-  it('nulls the top level if non-nullable field returns null synchronously', async () => {
-    const doc = `
-      query Q { syncNonNull }
-    `;
-
-    const expected = {
-      data: null,
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
-          locations: [{ line: 2, column: 17 }],
-        },
-      ],
-    };
-
-    return expect(
-      await execute(schema, parse(doc), nullingData),
     ).to.containSubset(expected);
   });
 
