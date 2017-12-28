@@ -307,6 +307,8 @@ export {
   getIntrospectionQuery,
   // Deprecated: use getIntrospectionQuery
   introspectionQuery,
+  // Sort the result of Introspection Query.
+  sortIntrospectionQuery,
   // Gets the target Operation from a Document
   getOperationAST,
   // Build a GraphQLSchema from an introspection result.
