@@ -12,7 +12,7 @@ import { GraphQLError } from '../../error';
 import type { ASTVisitor } from '../../language/visitor';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
-import { FIELD, DIRECTIVE } from '../../language/kinds';
+import { Kind } from '../../language/kinds';
 
 export function unknownArgMessage(
   argName: string,
@@ -53,7 +53,7 @@ export function KnownArgumentNames(context: ValidationContext): ASTVisitor {
       const argDef = context.getArgument();
       if (!argDef) {
         const argumentOf = ancestors[ancestors.length - 1];
-        if (argumentOf.kind === FIELD) {
+        if (argumentOf.kind === Kind.FIELD) {
           const fieldDef = context.getFieldDef();
           const parentType = context.getParentType();
           if (fieldDef && parentType) {
@@ -72,7 +72,7 @@ export function KnownArgumentNames(context: ValidationContext): ASTVisitor {
               ),
             );
           }
-        } else if (argumentOf.kind === DIRECTIVE) {
+        } else if (argumentOf.kind === Kind.DIRECTIVE) {
           const directive = context.getDirective();
           if (directive) {
             context.reportError(

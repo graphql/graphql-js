@@ -15,7 +15,7 @@ import { join } from 'path';
 import { TypeInfo } from '../../utilities/TypeInfo';
 import { testSchema } from '../../validation/__tests__/harness';
 import { getNamedType, isCompositeType } from '../../type';
-import * as Kind from '../kinds';
+import { Kind } from '../kinds';
 
 function getNodeByPath(ast, path) {
   let result = ast;

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import * as Kind from '../kinds';
+import { Kind } from '../kinds';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parse, parseValue, parseType } from '../parser';

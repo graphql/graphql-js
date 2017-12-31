@@ -9,8 +9,8 @@
 
 export { getLocation } from './location';
 export type { SourceLocation } from './location';
-import * as Kind from './kinds';
-export { Kind };
+export { Kind } from './kinds';
+export type { KindEnum } from './kinds';
 export { createLexer, TokenKind } from './lexer';
 export { parse, parseValue, parseType } from './parser';
 export { print } from './printer';
