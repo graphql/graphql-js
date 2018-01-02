@@ -10,6 +10,8 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLString,
+  GraphQLInputObjectType,
+  GraphQLDirective,
 } from '../';
 
 import { describe, it } from 'mocha';
@@ -26,6 +28,25 @@ const ImplementingType = new GraphQLObjectType({
   fields: { fieldName: { type: GraphQLString, resolve: () => '' } },
 });
 
+const DirectiveInputType = new GraphQLInputObjectType({
+  name: 'DirInput',
+  fields: {
+    field: {
+      type: GraphQLString,
+    },
+  },
+});
+
+const Directive = new GraphQLDirective({
+  name: 'dir',
+  locations: ['OBJECT'],
+  args: {
+    arg: {
+      type: DirectiveInputType,
+    },
+  },
+});
+
 const Schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
@@ -38,6 +59,7 @@ const Schema = new GraphQLSchema({
       },
     },
   }),
+  directives: [Directive],
 });
 
 describe('Type System: Schema', () => {
@@ -51,6 +73,12 @@ describe('Type System: Schema', () => {
           'Check that schema.types is defined and is an array of all possible ' +
           'types in the schema.',
       );
+    });
+  });
+
+  describe('Type Map', () => {
+    it('includes input types only used in directives', () => {
+      expect(Schema.getTypeMap()).to.include.key('DirInput');
     });
   });
 });
