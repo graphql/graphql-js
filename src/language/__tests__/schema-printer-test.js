@@ -13,7 +13,7 @@ import { parse } from '../parser';
 import { print } from '../printer';
 import dedent from '../../jsutils/dedent';
 
-describe('Printer', () => {
+describe('Printer: SDL document', () => {
   it('prints minimal ast', () => {
     const ast = {
       kind: 'ScalarTypeDefinition',
