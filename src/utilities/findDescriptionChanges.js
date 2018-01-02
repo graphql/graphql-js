@@ -9,6 +9,28 @@ import {
 } from '../type/definition';
 import type { GraphQLFieldMap } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
+import invariant from '../jsutils/invariant';
+
+export const DescribedObjectType = {
+  FIELD: 'FIELD',
+  TYPE: 'TYPE',
+  ARGUMENT: 'ARGUMENT',
+  ENUM_VALUE: 'ENUM_VALUE',
+};
+
+export const DescriptionChangeType = {
+  OBJECT_ADDED: 'OBJECT_ADDED',
+  DESCRIPTION_ADDED: 'DESCRIPTION_ADDED',
+  DESCRIPTION_CHANGED: 'DESCRIPTION_CHANGED',
+};
+
+export type DescriptionChange = {
+  object: $Keys<typeof DescribedObjectType>,
+  change: $Keys<typeof DescriptionChangeType>,
+  description: string,
+  oldThing: any,
+  newThing: any,
+};
 
 /**
  * Given two schemas, returns an Array containing descriptions of any
@@ -17,37 +39,32 @@ import { GraphQLSchema } from '../type/schema';
 export function findDescriptionChanges(
   oldSchema: GraphQLSchema,
   newSchema: GraphQLSchema,
-): Array<string> {
+): Array<DescriptionChange> {
   const oldTypeMap = oldSchema.getTypeMap();
   const newTypeMap = newSchema.getTypeMap();
 
-  const descriptionChanges: Array<string> = [];
+  const descriptionChanges: Array<?DescriptionChange> = [];
 
   Object.keys(newTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
 
-    if (newType.description) {
-      if (!oldType) {
-        descriptionChanges.push(
-          `Description added on new type ${newType.name}.`,
-        );
-      } else if (!oldType.description) {
-        descriptionChanges.push(`Description added on type ${newType.name}.`);
-      } else if (oldType.description !== newType.description) {
-        descriptionChanges.push(`Description changed on type ${newType.name}.`);
-      }
-    }
-
-    if (oldType && !(newType instanceof oldType.constructor)) {
-      return;
-    }
+    descriptionChanges.push(
+      generateDescriptionChange(newType, oldType, DescribedObjectType.TYPE),
+    );
 
     if (
       newType instanceof GraphQLObjectType ||
       newType instanceof GraphQLInterfaceType ||
       newType instanceof GraphQLInputObjectType
     ) {
+      invariant(
+        !oldType ||
+          oldType instanceof GraphQLObjectType ||
+          oldType instanceof GraphQLInterfaceType ||
+          oldType instanceof GraphQLInputObjectType,
+        'Expected oldType to also have fields',
+      );
       const oldTypeFields: ?GraphQLFieldMap<*, *> = oldType
         ? oldType.getFields()
         : null;
@@ -57,21 +74,13 @@ export function findDescriptionChanges(
         const oldField = oldTypeFields ? oldTypeFields[fieldName] : null;
         const newField = newTypeFields[fieldName];
 
-        if (newField.description) {
-          if (!oldField) {
-            descriptionChanges.push(
-              `Description added on new field ${newType.name}.${newField.name}`,
-            );
-          } else if (!oldField.description) {
-            descriptionChanges.push(
-              `Description added on field ${newType.name}.${newField.name}.`,
-            );
-          } else if (oldField.description !== newField.description) {
-            descriptionChanges.push(
-              `Description changed on field ${newType.name}.${newField.name}.`,
-            );
-          }
-        }
+        descriptionChanges.push(
+          generateDescriptionChange(
+            newField,
+            oldField,
+            DescribedObjectType.FIELD,
+          ),
+        );
 
         if (!newField.args) {
           return;
@@ -82,30 +91,20 @@ export function findDescriptionChanges(
             ? oldField.args.find(arg => arg.name === newArg.name)
             : null;
 
-          if (newArg.description) {
-            if (!oldArg) {
-              descriptionChanges.push(
-                `Description added on new arg ${newType.name}.${
-                  newField.name
-                }.${newArg.name}.`,
-              );
-            } else if (!oldArg.description) {
-              descriptionChanges.push(
-                `Description added on arg ${newType.name}.${newField.name}.${
-                  newArg.name
-                }.`,
-              );
-            } else if (oldArg.description !== newArg.description) {
-              descriptionChanges.push(
-                `Description changed on arg ${newType.name}.${newField.name}.${
-                  newArg.name
-                }.`,
-              );
-            }
-          }
+          descriptionChanges.push(
+            generateDescriptionChange(
+              newArg,
+              oldArg,
+              DescribedObjectType.ARGUMENT,
+            ),
+          );
         });
       });
     } else if (newType instanceof GraphQLEnumType) {
+      invariant(
+        !oldType || oldType instanceof GraphQLEnumType,
+        'Expected oldType to also have values',
+      );
       const oldValues = oldType ? oldType.getValues() : null;
       const newValues = newType.getValues();
       newValues.forEach(newValue => {
@@ -113,30 +112,52 @@ export function findDescriptionChanges(
           ? oldValues.find(value => value.name === newValue.name)
           : null;
 
-        if (newValue.description) {
-          if (!oldValue) {
-            descriptionChanges.push(
-              `Description added on enum value ${newType.name}.${
-                newValue.name
-              }.`,
-            );
-          } else if (!oldValue.description) {
-            descriptionChanges.push(
-              `Description added on enum value ${newType.name}.${
-                newValue.name
-              }.`,
-            );
-          } else if (oldValue.description !== newValue.description) {
-            descriptionChanges.push(
-              `Description changed on enum value ${newType.name}.${
-                newValue.name
-              }.`,
-            );
-          }
-        }
+        descriptionChanges.push(
+          generateDescriptionChange(
+            newValue,
+            oldValue,
+            DescribedObjectType.ENUM_VALUE,
+          ),
+        );
       });
     }
   });
 
-  return descriptionChanges;
+  return descriptionChanges.filter(Boolean);
+}
+
+function generateDescriptionChange(
+  newThing,
+  oldThing,
+  objectType: $Keys<typeof DescribedObjectType>,
+): ?DescriptionChange {
+  if (!newThing.description) {
+    return;
+  }
+
+  if (!oldThing) {
+    return {
+      object: objectType,
+      change: DescriptionChangeType.OBJECT_ADDED,
+      oldThing,
+      newThing,
+      description: `New ${objectType} ${newThing.name} added with description.`,
+    };
+  } else if (!oldThing.description) {
+    return {
+      object: objectType,
+      change: DescriptionChangeType.DESCRIPTION_ADDED,
+      oldThing,
+      newThing,
+      description: `Description added on ${objectType} ${newThing.name}.`,
+    };
+  } else if (oldThing.description !== newThing.description) {
+    return {
+      object: objectType,
+      change: DescriptionChangeType.DESCRIPTION_CHANGED,
+      oldThing,
+      newThing,
+      description: `Description changed on ${objectType} ${newThing.name}.`,
+    };
+  }
 }

@@ -43,9 +43,9 @@ describe('findDescriptionChanges', () => {
       query: queryType,
       types: [typeNew],
     });
-    expect(findDescriptionChanges(oldSchema, newSchema)).to.eql([
-      'Description added on type Type.',
-    ]);
+    expect(findDescriptionChanges(oldSchema, newSchema)[0].description).to.eql(
+      'Description added on TYPE Type.',
+    );
     expect(findDescriptionChanges(oldSchema, oldSchema)).to.eql([]);
     expect(findDescriptionChanges(newSchema, newSchema)).to.eql([]);
   });
@@ -67,9 +67,9 @@ describe('findDescriptionChanges', () => {
       query: queryType,
       types: [type],
     });
-    expect(findDescriptionChanges(oldSchema, newSchema)).to.eql([
-      'Description added on new type Type.',
-    ]);
+    expect(findDescriptionChanges(oldSchema, newSchema)[0].description).to.eql(
+      'New TYPE Type added with description.',
+    );
     expect(findDescriptionChanges(oldSchema, oldSchema)).to.eql([]);
     expect(findDescriptionChanges(newSchema, newSchema)).to.eql([]);
   });
