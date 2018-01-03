@@ -13,6 +13,7 @@ import {
   isUnionType,
   isInputObjectType,
   isWrappingType,
+  getNamedType,
 } from './definition';
 import type {
   GraphQLType,
@@ -22,7 +23,11 @@ import type {
   GraphQLInterfaceType,
 } from './definition';
 import type { SchemaDefinitionNode } from '../language/ast';
-import { GraphQLDirective, specifiedDirectives } from './directives';
+import {
+  GraphQLDirective,
+  isDirective,
+  specifiedDirectives,
+} from './directives';
 import type { GraphQLError } from '../error/GraphQLError';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
@@ -120,6 +125,10 @@ export class GraphQLSchema {
     if (types) {
       initialTypes = initialTypes.concat(types);
     }
+
+    initialTypes = initialTypes.concat(
+      ...this._directives.map(directive => getDirectiveArgTypes(directive)),
+    );
 
     this._typeMap = initialTypes.reduce(
       typeMapReducer,
@@ -268,4 +277,12 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   return reducedMap;
+}
+
+function getDirectiveArgTypes(directive: GraphQLDirective) {
+  // directives are not validated until validateSchema() is called, so be defensive
+  if (!isDirective(directive)) {
+    return [];
+  }
+  return directive.args.map(arg => arg.type);
 }

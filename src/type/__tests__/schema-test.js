@@ -16,6 +16,7 @@ import {
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { GraphQLList } from '../wrappers';
 
 const InterfaceType = new GraphQLInterfaceType({
   name: 'Interface',
@@ -37,12 +38,24 @@ const DirectiveInputType = new GraphQLInputObjectType({
   },
 });
 
+const WrappedDirectiveInputType = new GraphQLInputObjectType({
+  name: 'WrappedDirInput',
+  fields: {
+    field: {
+      type: GraphQLString,
+    },
+  },
+});
+
 const Directive = new GraphQLDirective({
   name: 'dir',
   locations: ['OBJECT'],
   args: {
     arg: {
       type: DirectiveInputType,
+    },
+    argList: {
+      type: new GraphQLList(WrappedDirectiveInputType),
     },
   },
 });
@@ -79,6 +92,7 @@ describe('Type System: Schema', () => {
   describe('Type Map', () => {
     it('includes input types only used in directives', () => {
       expect(Schema.getTypeMap()).to.include.key('DirInput');
+      expect(Schema.getTypeMap()).to.include.key('WrappedDirInput');
     });
   });
 });
