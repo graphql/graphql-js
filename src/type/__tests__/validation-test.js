@@ -760,9 +760,7 @@ describe('Type System: Object fields must have output types', () => {
       const schema = schemaWithObjectFieldOfType(type);
       expect(validateSchema(schema)).to.containSubset([
         {
-          message: `The type of BadObject.badField must be Output Type but got: ${
-            type
-          }.`,
+          message: `The type of BadObject.badField must be Output Type but got: ${type}.`,
         },
       ]);
     });
@@ -902,9 +900,7 @@ describe('Type System: Interface fields must have output types', () => {
       const schema = schemaWithInterfaceFieldOfType(type);
       expect(validateSchema(schema)).to.containSubset([
         {
-          message: `The type of BadInterface.badField must be Output Type but got: ${
-            type
-          }.`,
+          message: `The type of BadInterface.badField must be Output Type but got: ${type}.`,
         },
       ]);
     });
@@ -980,9 +976,7 @@ describe('Type System: Field arguments must have input types', () => {
       const schema = schemaWithArgOfType(type);
       expect(validateSchema(schema)).to.containSubset([
         {
-          message: `The type of BadObject.badField(badArg:) must be Input Type but got: ${
-            type
-          }.`,
+          message: `The type of BadObject.badField(badArg:) must be Input Type but got: ${type}.`,
         },
       ]);
     });
@@ -1054,9 +1048,7 @@ describe('Type System: Input Object fields must have input types', () => {
       const schema = schemaWithInputFieldOfType(type);
       expect(validateSchema(schema)).to.containSubset([
         {
-          message: `The type of BadInputObject.badField must be Input Type but got: ${
-            type
-          }.`,
+          message: `The type of BadInputObject.badField must be Input Type but got: ${type}.`,
         },
       ]);
     });

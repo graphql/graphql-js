@@ -34,9 +34,7 @@ export function unknownDirectiveArgMessage(
   directiveName: string,
   suggestedArgs: Array<string>,
 ): string {
-  let message = `Unknown argument "${argName}" on directive "@${
-    directiveName
-  }".`;
+  let message = `Unknown argument "${argName}" on directive "@${directiveName}".`;
   if (suggestedArgs.length) {
     message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
   }
