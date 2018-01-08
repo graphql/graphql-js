@@ -84,9 +84,9 @@ export function getVariableValues(
         const coerced = coerceValue(value, varType, varDefNode);
         const coercionErrors = coerced.errors;
         if (coercionErrors) {
-          const messagePrelude = `Variable "$${
-            varName
-          }" got invalid value ${JSON.stringify(value)}; `;
+          const messagePrelude = `Variable "$${varName}" got invalid value ${JSON.stringify(
+            value,
+          )}; `;
           coercionErrors.forEach(error => {
             error.message = messagePrelude + error.message;
           });

@@ -131,8 +131,7 @@ function astFromValue(value, type) {
     // JavaScript numbers can be Int or Float values.
     if (typeof serialized === 'number') {
       var stringNum = String(serialized);
-      return (/^[0-9]+$/.test(stringNum) ? { kind: Kind.INT, value: stringNum } : { kind: Kind.FLOAT, value: stringNum }
-      );
+      return integerStringRegExp.test(stringNum) ? { kind: Kind.INT, value: stringNum } : { kind: Kind.FLOAT, value: stringNum };
     }
 
     if (typeof serialized === 'string') {
@@ -142,15 +141,13 @@ function astFromValue(value, type) {
       }
 
       // ID types can use Int literals.
-      if (type === _scalars.GraphQLID && /^[0-9]+$/.test(serialized)) {
+      if (type === _scalars.GraphQLID && integerStringRegExp.test(serialized)) {
         return { kind: Kind.INT, value: serialized };
       }
 
-      // Use JSON stringify, which uses the same string encoding as GraphQL,
-      // then remove the quotes.
       return {
         kind: Kind.STRING,
-        value: JSON.stringify(serialized).slice(1, -1)
+        value: serialized
       };
     }
 
@@ -160,3 +157,10 @@ function astFromValue(value, type) {
   /* istanbul ignore next */
   throw new Error('Unknown type: ' + type + '.');
 }
+
+/**
+ * IntValue:
+ *   - NegativeSign? 0
+ *   - NegativeSign? NonZeroDigit ( Digit+ )?
+ */
+var integerStringRegExp = /^-?(0|[1-9][0-9]*)$/;

@@ -11,17 +11,7 @@ import { forEach, isCollection } from 'iterall';
 
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
-import type {
-  ValueNode,
-  IntValueNode,
-  FloatValueNode,
-  StringValueNode,
-  BooleanValueNode,
-  NullValueNode,
-  EnumValueNode,
-  ListValueNode,
-  ObjectValueNode,
-} from '../language/ast';
+import type { ValueNode } from '../language/ast';
 import * as Kind from '../language/kinds';
 import type { GraphQLInputType } from '../type/definition';
 import {
@@ -64,7 +54,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
 
   // only explicit null, not undefined, NaN
   if (_value === null) {
-    return ({ kind: Kind.NULL }: NullValueNode);
+    return { kind: Kind.NULL };
   }
 
   // undefined, NaN
@@ -84,7 +74,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
           valuesNodes.push(itemNode);
         }
       });
-      return ({ kind: Kind.LIST, values: valuesNodes }: ListValueNode);
+      return { kind: Kind.LIST, values: valuesNodes };
     }
     return astFromValue(_value, itemType);
   }
@@ -108,7 +98,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
         });
       }
     });
-    return ({ kind: Kind.OBJECT, fields: fieldNodes }: ObjectValueNode);
+    return { kind: Kind.OBJECT, fields: fieldNodes };
   }
 
   if (isScalarType(type) || isEnumType(type)) {
@@ -121,34 +111,32 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
 
     // Others serialize based on their corresponding JavaScript scalar types.
     if (typeof serialized === 'boolean') {
-      return ({ kind: Kind.BOOLEAN, value: serialized }: BooleanValueNode);
+      return { kind: Kind.BOOLEAN, value: serialized };
     }
 
     // JavaScript numbers can be Int or Float values.
     if (typeof serialized === 'number') {
       const stringNum = String(serialized);
-      return /^[0-9]+$/.test(stringNum)
-        ? ({ kind: Kind.INT, value: stringNum }: IntValueNode)
-        : ({ kind: Kind.FLOAT, value: stringNum }: FloatValueNode);
+      return integerStringRegExp.test(stringNum)
+        ? { kind: Kind.INT, value: stringNum }
+        : { kind: Kind.FLOAT, value: stringNum };
     }
 
     if (typeof serialized === 'string') {
       // Enum types use Enum literals.
       if (isEnumType(type)) {
-        return ({ kind: Kind.ENUM, value: serialized }: EnumValueNode);
+        return { kind: Kind.ENUM, value: serialized };
       }
 
       // ID types can use Int literals.
-      if (type === GraphQLID && /^[0-9]+$/.test(serialized)) {
-        return ({ kind: Kind.INT, value: serialized }: IntValueNode);
+      if (type === GraphQLID && integerStringRegExp.test(serialized)) {
+        return { kind: Kind.INT, value: serialized };
       }
 
-      // Use JSON stringify, which uses the same string encoding as GraphQL,
-      // then remove the quotes.
-      return ({
+      return {
         kind: Kind.STRING,
-        value: JSON.stringify(serialized).slice(1, -1),
-      }: StringValueNode);
+        value: serialized,
+      };
     }
 
     throw new TypeError('Cannot convert value to AST: ' + String(serialized));
@@ -157,3 +145,10 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   /* istanbul ignore next */
   throw new Error(`Unknown type: ${(type: empty)}.`);
 }
+
+/**
+ * IntValue:
+ *   - NegativeSign? 0
+ *   - NegativeSign? NonZeroDigit ( Digit+ )?
+ */
+const integerStringRegExp = /^-?(0|[1-9][0-9]*)$/;
