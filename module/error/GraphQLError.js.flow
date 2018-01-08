@@ -84,7 +84,7 @@ declare class GraphQLError extends Error {
   +originalError: ?Error;
 
   /**
-   * The original error thrown from a field resolver during execution.
+   * Extension fields to add to the formatted error.
    */
   +extensions: ?{ [key: string]: mixed };
 }

@@ -22,7 +22,11 @@ import type {
   GraphQLInterfaceType,
 } from './definition';
 import type { SchemaDefinitionNode } from '../language/ast';
-import { GraphQLDirective, specifiedDirectives } from './directives';
+import {
+  GraphQLDirective,
+  isDirective,
+  specifiedDirectives,
+} from './directives';
 import type { GraphQLError } from '../error/GraphQLError';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
@@ -121,10 +125,17 @@ export class GraphQLSchema {
       initialTypes = initialTypes.concat(types);
     }
 
-    this._typeMap = initialTypes.reduce(
-      typeMapReducer,
-      (Object.create(null): TypeMap),
-    );
+    // Keep track of all types referenced within the schema.
+    let typeMap: TypeMap = Object.create(null);
+
+    // First by deeply visiting all initial types.
+    typeMap = initialTypes.reduce(typeMapReducer, typeMap);
+
+    // Then by deeply visiting all directive types.
+    typeMap = this._directives.reduce(typeMapDirectiveReducer, typeMap);
+
+    // Storing the resulting map for reference by the schema.
+    this._typeMap = typeMap;
 
     // Keep track of all implementations by interface name.
     this._implementations = Object.create(null);
@@ -268,4 +279,18 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   return reducedMap;
+}
+
+function typeMapDirectiveReducer(
+  map: TypeMap,
+  directive: ?GraphQLDirective,
+): TypeMap {
+  // Directives are not validated until validateSchema() is called.
+  if (!isDirective(directive)) {
+    return map;
+  }
+  return directive.args.reduce(
+    (_map, arg) => typeMapReducer(_map, arg.type),
+    map,
+  );
 }

@@ -13,7 +13,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 import { isObjectType, isInterfaceType, isUnionType, isInputObjectType, isWrappingType } from './definition';
 
-import { GraphQLDirective, specifiedDirectives } from './directives';
+import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
 
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
@@ -88,7 +88,17 @@ export var GraphQLSchema = function () {
       initialTypes = initialTypes.concat(types);
     }
 
-    this._typeMap = initialTypes.reduce(typeMapReducer, Object.create(null));
+    // Keep track of all types referenced within the schema.
+    var typeMap = Object.create(null);
+
+    // First by deeply visiting all initial types.
+    typeMap = initialTypes.reduce(typeMapReducer, typeMap);
+
+    // Then by deeply visiting all directive types.
+    typeMap = this._directives.reduce(typeMapDirectiveReducer, typeMap);
+
+    // Storing the resulting map for reference by the schema.
+    this._typeMap = typeMap;
 
     // Keep track of all implementations by interface name.
     this._implementations = Object.create(null);
@@ -213,4 +223,14 @@ function typeMapReducer(map, type) {
   }
 
   return reducedMap;
+}
+
+function typeMapDirectiveReducer(map, directive) {
+  // Directives are not validated until validateSchema() is called.
+  if (!isDirective(directive)) {
+    return map;
+  }
+  return directive.args.reduce(function (_map, arg) {
+    return typeMapReducer(_map, arg.type);
+  }, map);
 }
