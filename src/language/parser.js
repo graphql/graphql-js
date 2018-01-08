@@ -49,6 +49,7 @@ import type {
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
   UnionTypeDefinitionNode,
+  InputUnionTypeDefinitionNode,
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
@@ -57,6 +58,7 @@ import type {
   ObjectTypeExtensionNode,
   InterfaceTypeExtensionNode,
   UnionTypeExtensionNode,
+  InputUnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
   DirectiveDefinitionNode,
@@ -95,6 +97,7 @@ import {
   INPUT_VALUE_DEFINITION,
   INTERFACE_TYPE_DEFINITION,
   UNION_TYPE_DEFINITION,
+  INPUT_UNION_TYPE_DEFINITION,
   ENUM_TYPE_DEFINITION,
   ENUM_VALUE_DEFINITION,
   INPUT_OBJECT_TYPE_DEFINITION,
@@ -102,6 +105,7 @@ import {
   OBJECT_TYPE_EXTENSION,
   INTERFACE_TYPE_EXTENSION,
   UNION_TYPE_EXTENSION,
+  INPUT_UNION_TYPE_EXTENSION,
   ENUM_TYPE_EXTENSION,
   INPUT_OBJECT_TYPE_EXTENSION,
   DIRECTIVE_DEFINITION,
@@ -268,6 +272,7 @@ function parseDefinition(lexer: Lexer<*>): DefinitionNode {
       case 'type':
       case 'interface':
       case 'union':
+      case 'inputUnion':
       case 'enum':
       case 'input':
       case 'extend':
@@ -804,6 +809,7 @@ export function parseNamedType(lexer: Lexer<*>): NamedTypeNode {
  *   - ObjectTypeDefinition
  *   - InterfaceTypeDefinition
  *   - UnionTypeDefinition
+ *   - InputUnionTypeDefinition
  *   - EnumTypeDefinition
  *   - InputObjectTypeDefinition
  */
@@ -823,6 +829,8 @@ function parseTypeSystemDefinition(lexer: Lexer<*>): TypeSystemDefinitionNode {
         return parseInterfaceTypeDefinition(lexer);
       case 'union':
         return parseUnionTypeDefinition(lexer);
+      case 'inputUnion':
+        return parseInputUnionTypeDefinition(lexer);
       case 'enum':
         return parseEnumTypeDefinition(lexer);
       case 'input':
@@ -1077,6 +1085,29 @@ function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
 }
 
 /**
+ * InputUnionTypeDefinition :
+ *   - Description? inputUnion Name Directives[Const]? UnionMemberTypes?
+ */
+function parseInputUnionTypeDefinition(
+  lexer: Lexer<*>,
+): InputUnionTypeDefinitionNode {
+  const start = lexer.token;
+  const description = parseDescription(lexer);
+  expectKeyword(lexer, 'inputUnion');
+  const name = parseName(lexer);
+  const directives = parseDirectives(lexer, true);
+  const types = parseUnionMemberTypes(lexer);
+  return {
+    kind: INPUT_UNION_TYPE_DEFINITION,
+    description,
+    name,
+    directives,
+    types,
+    loc: loc(lexer, start),
+  };
+}
+
+/**
  * UnionMemberTypes :
  *   - = `|`? NamedType
  *   - UnionMemberTypes | NamedType
@@ -1205,6 +1236,8 @@ function parseTypeExtension(lexer: Lexer<*>): TypeExtensionNode {
         return parseInterfaceTypeExtension(lexer);
       case 'union':
         return parseUnionTypeExtension(lexer);
+      case 'inputUnion':
+        return parseInputUnionTypeExtension(lexer);
       case 'enum':
         return parseEnumTypeExtension(lexer);
       case 'input':
@@ -1310,6 +1343,32 @@ function parseUnionTypeExtension(lexer: Lexer<*>): UnionTypeExtensionNode {
   }
   return {
     kind: UNION_TYPE_EXTENSION,
+    name,
+    directives,
+    types,
+    loc: loc(lexer, start),
+  };
+}
+
+/**
+ * InputUnionTypeExtension :
+ *   - extend inputUnion Name Directives[Const]? UnionMemberTypes
+ *   - extend inputUnion Name Directives[Const]
+ */
+function parseInputUnionTypeExtension(
+  lexer: Lexer<*>,
+): InputUnionTypeExtensionNode {
+  const start = lexer.token;
+  expectKeyword(lexer, 'extend');
+  expectKeyword(lexer, 'inputUnion');
+  const name = parseName(lexer);
+  const directives = parseDirectives(lexer, true);
+  const types = parseUnionMemberTypes(lexer);
+  if (directives.length === 0 && types.length === 0) {
+    throw unexpected(lexer);
+  }
+  return {
+    kind: INPUT_UNION_TYPE_EXTENSION,
     name,
     directives,
     types,

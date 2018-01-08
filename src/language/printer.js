@@ -161,6 +161,18 @@ const printDocASTReducer = {
     ),
   ),
 
+  InputUnionTypeDefinition: addDescription(({ name, directives, types }) =>
+    join(
+      [
+        'inputUnion',
+        name,
+        join(directives, ' '),
+        types && types.length !== 0 ? '= ' + join(types, ' | ') : '',
+      ],
+      ' ',
+    ),
+  ),
+
   EnumTypeDefinition: addDescription(({ name, directives, values }) =>
     join(['enum', name, join(directives, ' '), block(values)], ' '),
   ),

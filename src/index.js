@@ -43,6 +43,7 @@ export {
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
+  GraphQLInputUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
@@ -86,6 +87,7 @@ export {
   isObjectType,
   isInterfaceType,
   isUnionType,
+  isInputUnionType,
   isEnumType,
   isInputObjectType,
   isListType,
@@ -107,6 +109,7 @@ export {
   assertObjectType,
   assertInterfaceType,
   assertUnionType,
+  assertInputUnionType,
   assertEnumType,
   assertInputObjectType,
   assertListType,
@@ -165,6 +168,7 @@ export type {
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
   GraphQLDirectiveConfig,
+  GraphQLInputUnionTypeConfig,
 } from './type';
 
 // Parse and operate on GraphQL language source files.
@@ -241,6 +245,7 @@ export type {
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
   UnionTypeDefinitionNode,
+  InputUnionTypeDefinitionNode,
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
@@ -392,4 +397,5 @@ export type {
   IntrospectionType,
   IntrospectionTypeRef,
   IntrospectionUnionType,
+  IntrospectionInputUnionType,
 } from './utilities';

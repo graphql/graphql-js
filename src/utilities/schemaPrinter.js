@@ -17,6 +17,7 @@ import {
   isObjectType,
   isInterfaceType,
   isUnionType,
+  isInputUnionType,
   isEnumType,
   isInputObjectType,
 } from '../type/definition';
@@ -27,6 +28,7 @@ import type {
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
+  GraphQLInputUnionType,
   GraphQLInputObjectType,
 } from '../type/definition';
 import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
@@ -160,6 +162,8 @@ export function printType(type: GraphQLNamedType, options?: Options): string {
     return printInterface(type, options);
   } else if (isUnionType(type)) {
     return printUnion(type, options);
+  } else if (isInputUnionType(type)) {
+    return printInputUnion(type, options);
   } else if (isEnumType(type)) {
     return printEnum(type, options);
   } else if (isInputObjectType(type)) {
@@ -201,6 +205,13 @@ function printUnion(type: GraphQLUnionType, options): string {
   return (
     printDescription(options, type) +
     `union ${type.name} = ${type.getTypes().join(' | ')}`
+  );
+}
+
+function printInputUnion(type: GraphQLInputUnionType, options): string {
+  return (
+    printDescription(options, type) +
+    `inputUnion ${type.name} = ${type.getTypes().join(' | ')}`
   );
 }
 

@@ -11,6 +11,7 @@ import {
   isObjectType,
   isInterfaceType,
   isUnionType,
+  isInputUnionType,
   isEnumType,
   isInputObjectType,
   isNonNullType,
@@ -22,6 +23,7 @@ import type {
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
+  GraphQLInputUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
 } from './definition';
@@ -200,7 +202,7 @@ function validateDirectives(context: SchemaValidationContext): void {
       argNames[argName] = true;
 
       // Ensure the type is an input type.
-      if (!isInputType(arg.type)) {
+      if (!isInputType(arg.type) && !isInputUnionType(arg.type)) {
         context.reportError(
           `The type of @${directive.name}(${argName}:) must be Input Type ` +
             `but got: ${String(arg.type)}.`,
@@ -261,6 +263,9 @@ function validateTypes(context: SchemaValidationContext): void {
     } else if (isUnionType(type)) {
       // Ensure Unions include valid member types.
       validateUnionMembers(context, type);
+    } else if (isInputUnionType(type)) {
+      // Ensure Unions include valid member types.
+      validateInputUnionMembers(context, type);
     } else if (isEnumType(type)) {
       // Ensure Enums have valid values.
       validateEnumValues(context, type);
@@ -330,7 +335,7 @@ function validateFields(
       argNames[argName] = true;
 
       // Ensure the type is an input type
-      if (!isInputType(arg.type)) {
+      if (!isInputType(arg.type) && !isInputUnionType(arg.type)) {
         context.reportError(
           `The type of ${type.name}.${fieldName}(${argName}:) must be Input ` +
             `Type but got: ${String(arg.type)}.`,
@@ -463,6 +468,44 @@ function validateObjectImplementsInterface(
   });
 }
 
+function validateInputUnionMembers(
+  context: SchemaValidationContext,
+  inputUnion: GraphQLInputUnionType,
+): void {
+  const memberTypes = inputUnion.getTypes();
+
+  if (memberTypes.length === 0) {
+    context.reportError(
+      `Input Union type ${
+        inputUnion.name
+      } must define one or more member types.`,
+      inputUnion.astNode,
+    );
+  }
+
+  const includedTypeNames = Object.create(null);
+  memberTypes.forEach(memberType => {
+    if (includedTypeNames[memberType.name]) {
+      context.reportError(
+        `Input Union type ${inputUnion.name} can only include type ` +
+          `${memberType.name} once.`,
+        getInputUnionMemberTypeNodes(inputUnion, memberType.name),
+      );
+      return; // continue loop
+    }
+    includedTypeNames[memberType.name] = true;
+    if (!isInputObjectType(memberType)) {
+      context.reportError(
+        `Input Union type ${
+          inputUnion.name
+        } can only include Input Object types, ` +
+          `it cannot include ${String(memberType)}.`,
+        getInputUnionMemberTypeNodes(inputUnion, String(memberType)),
+      );
+    }
+  });
+}
+
 function validateUnionMembers(
   context: SchemaValidationContext,
   union: GraphQLUnionType,
@@ -557,7 +600,7 @@ function validateInputFields(
     // TODO: Ensure they are unique per field.
 
     // Ensure the type is an input type
-    if (!isInputType(field.type)) {
+    if (!isInputType(field.type) && !isInputUnionType(field.type)) {
       context.reportError(
         `The type of ${inputObj.name}.${fieldName} must be Input Type ` +
           `but got: ${String(field.type)}.`,
@@ -718,6 +761,17 @@ function getUnionMemberTypeNodes(
     union.astNode &&
     union.astNode.types &&
     union.astNode.types.filter(type => type.name.value === typeName)
+  );
+}
+
+function getInputUnionMemberTypeNodes(
+  inputUnion: GraphQLInputUnionType,
+  typeName: string,
+): ?$ReadOnlyArray<NamedTypeNode> {
+  return (
+    inputUnion.astNode &&
+    inputUnion.astNode.types &&
+    inputUnion.astNode.types.filter(type => type.name.value === typeName)
   );
 }
 

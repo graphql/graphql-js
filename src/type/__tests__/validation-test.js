@@ -13,6 +13,7 @@ import {
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
+  GraphQLInputUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
@@ -60,6 +61,11 @@ const SomeInputObjectType = new GraphQLInputObjectType({
   },
 });
 
+const SomeInputUnionType = new GraphQLInputUnionType({
+  name: 'SomeInputUnion',
+  types: [SomeInputObjectType],
+});
+
 function withModifiers(types) {
   return types
     .concat(types.map(type => GraphQLList(type)))
@@ -76,7 +82,10 @@ const outputTypes = withModifiers([
   SomeInterfaceType,
 ]);
 
-const notOutputTypes = withModifiers([SomeInputObjectType]).concat(Number);
+const notOutputTypes = withModifiers([
+  SomeInputObjectType,
+  SomeInputUnionType,
+]).concat(Number);
 
 const inputTypes = withModifiers([
   GraphQLString,

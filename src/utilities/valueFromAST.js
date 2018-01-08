@@ -15,6 +15,7 @@ import {
   isScalarType,
   isEnumType,
   isInputObjectType,
+  isInputUnionType,
   isListType,
   isNonNullType,
 } from '../type/definition';
@@ -111,36 +112,36 @@ export function valueFromAST(
     return [coercedValue];
   }
 
+  if (isInputUnionType(type)) {
+    if (valueNode.kind !== Kind.OBJECT) {
+      return; // Invalid: intentionally return no value.
+    }
+    const fieldNodes = keyMap(
+      (valueNode: ObjectValueNode).fields,
+      field => field.name.value,
+    );
+    const inputType = getTargetInputType(type.getTypeMap(), fieldNodes);
+    if (!inputType) {
+      return; // Invalid: intentionally return no value.
+    }
+    const fields = inputType.getFields();
+    // eslint-disable-next-line no-unused-vars
+    const { __inputname, ...rest } = fieldNodes;
+    const initialObj = Object.create(null);
+    initialObj['__inputname'] = inputType.name;
+    return coerceObject(fields, rest, variables, initialObj);
+  }
+
   if (isInputObjectType(type)) {
     if (valueNode.kind !== Kind.OBJECT) {
       return; // Invalid: intentionally return no value.
     }
-    const coercedObj = Object.create(null);
     const fields = type.getFields();
     const fieldNodes = keyMap(
       (valueNode: ObjectValueNode).fields,
       field => field.name.value,
     );
-    const fieldNames = Object.keys(fields);
-    for (let i = 0; i < fieldNames.length; i++) {
-      const fieldName = fieldNames[i];
-      const field = fields[fieldName];
-      const fieldNode = fieldNodes[fieldName];
-      if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
-        if (!isInvalid(field.defaultValue)) {
-          coercedObj[fieldName] = field.defaultValue;
-        } else if (isNonNullType(field.type)) {
-          return; // Invalid: intentionally return no value.
-        }
-        continue;
-      }
-      const fieldValue = valueFromAST(fieldNode.value, field.type, variables);
-      if (isInvalid(fieldValue)) {
-        return; // Invalid: intentionally return no value.
-      }
-      coercedObj[fieldName] = fieldValue;
-    }
-    return coercedObj;
+    return coerceObject(fields, fieldNodes, variables);
   }
 
   if (isEnumType(type)) {
@@ -181,4 +182,39 @@ function isMissingVariable(valueNode, variables) {
     valueNode.kind === Kind.VARIABLE &&
     (!variables || isInvalid(variables[(valueNode: VariableNode).name.value]))
   );
+}
+
+function getTargetInputType(inputTypeMap, fieldNodes) {
+  const inputTypeNode = fieldNodes.__inputname;
+  if (inputTypeNode && inputTypeNode.value.kind === Kind.STRING) {
+    return inputTypeMap[inputTypeNode.value.value];
+  }
+}
+
+function coerceObject(
+  fields,
+  fieldNodes,
+  variables,
+  coercedObj = Object.create(null),
+) {
+  const fieldNames = Object.keys(fields);
+  for (let i = 0; i < fieldNames.length; i++) {
+    const fieldName = fieldNames[i];
+    const field = fields[fieldName];
+    const fieldNode = fieldNodes[fieldName];
+    if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
+      if (!isInvalid(field.defaultValue)) {
+        coercedObj[fieldName] = field.defaultValue;
+      } else if (isNonNullType(field.type)) {
+        return; // Invalid: intentionally return no value.
+      }
+      continue;
+    }
+    const fieldValue = valueFromAST(fieldNode.value, field.type, variables);
+    if (isInvalid(fieldValue)) {
+      return; // Invalid: intentionally return no value.
+    }
+    coercedObj[fieldName] = fieldValue;
+  }
+  return coercedObj;
 }

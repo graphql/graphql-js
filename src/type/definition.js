@@ -20,6 +20,7 @@ import type {
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
   UnionTypeDefinitionNode,
+  InputUnionTypeDefinitionNode,
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
@@ -44,6 +45,7 @@ export type GraphQLType =
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
+  | GraphQLInputUnionType
   | GraphQLEnumType
   | GraphQLInputObjectType
   | GraphQLList<any>
@@ -55,6 +57,7 @@ export function isType(type: mixed): boolean %checks {
     isObjectType(type) ||
     isInterfaceType(type) ||
     isUnionType(type) ||
+    isInputUnionType(type) ||
     isEnumType(type) ||
     isInputObjectType(type) ||
     isListType(type) ||
@@ -131,6 +134,21 @@ export function assertUnionType(type: mixed): GraphQLUnionType {
   return type;
 }
 
+declare function isInputUnionType(type: mixed): boolean %checks(type instanceof
+  GraphQLInputUnionType);
+// eslint-disable-next-line no-redeclare
+export function isInputUnionType(type) {
+  return instanceOf(type, GraphQLInputUnionType);
+}
+
+export function assertInputUnionType(type: mixed): GraphQLUnionType {
+  invariant(
+    isInputUnionType(type),
+    `Expected ${String(type)} to be a GraphQL Input Union type.`,
+  );
+  return type;
+}
+
 declare function isEnumType(type: mixed): boolean %checks(type instanceof
   GraphQLEnumType);
 // eslint-disable-next-line no-redeclare
@@ -198,11 +216,13 @@ export type GraphQLInputType =
   | GraphQLScalarType
   | GraphQLEnumType
   | GraphQLInputObjectType
+  | GraphQLInputUnionType
   | GraphQLList<GraphQLInputType>
   | GraphQLNonNull<
       | GraphQLScalarType
       | GraphQLEnumType
       | GraphQLInputObjectType
+      | GraphQLInputUnionType
       | GraphQLList<GraphQLInputType>,
     >;
 
@@ -211,6 +231,7 @@ export function isInputType(type: mixed): boolean %checks {
     isScalarType(type) ||
     isEnumType(type) ||
     isInputObjectType(type) ||
+    isInputUnionType(type) ||
     (isWrappingType(type) && isInputType(type.ofType))
   );
 }
@@ -341,6 +362,7 @@ export type GraphQLNullableType =
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
+  | GraphQLInputUnionType
   | GraphQLEnumType
   | GraphQLInputObjectType
   | GraphQLList<any>;
@@ -376,6 +398,7 @@ export type GraphQLNamedType =
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
+  | GraphQLInputUnionType
   | GraphQLEnumType
   | GraphQLInputObjectType;
 
@@ -385,6 +408,7 @@ export function isNamedType(type: mixed): boolean %checks {
     isObjectType(type) ||
     isInterfaceType(type) ||
     isUnionType(type) ||
+    isInputUnionType(type) ||
     isEnumType(type) ||
     isInputObjectType(type)
   );
@@ -1224,3 +1248,87 @@ export type GraphQLInputField = {
 };
 
 export type GraphQLInputFieldMap = ObjMap<GraphQLInputField>;
+
+/**
+ * Input Union Type Definition
+ *
+ * An input union type defines a heterogeneous set of input object types
+ * possible to fulfill an input field. The `__typename` must be specified
+ * in the input object.
+ *
+ * Example:
+ *
+ *     const PetInputType = new GraphQLInputUnionType({
+ *       name: 'PetInput',
+ *       types: [ DogInputType, CatInputType ],
+ *     });
+ *
+ */
+export class GraphQLInputUnionType {
+  name: string;
+  description: ?string;
+  astNode: ?InputUnionTypeDefinitionNode;
+
+  _typeConfig: GraphQLInputUnionTypeConfig;
+  _types: Array<GraphQLInputObjectType>;
+  _typeMap: ObjMap<GraphQLInputObjectType>;
+
+  constructor(config: GraphQLInputUnionTypeConfig): void {
+    this.name = config.name;
+    this.description = config.description;
+    this.astNode = config.astNode;
+    this._typeConfig = config;
+    invariant(typeof config.name === 'string', 'Must provide name.');
+    if (config.resolveType) {
+      invariant(
+        typeof config.resolveType === 'function',
+        `${this.name} must provide "resolveType" as a function.`,
+      );
+    }
+  }
+
+  getTypes(): Array<GraphQLInputObjectType> {
+    return (
+      this._types ||
+      (this._types = Object.keys(this.getTypeMap()).map(
+        typename => this._typeMap[typename],
+      ))
+    );
+  }
+
+  getTypeMap(): ObjMap<GraphQLInputObjectType> {
+    return this._typeMap || (this._typeMap = this._defineTypeMap());
+  }
+
+  _defineTypeMap(): ObjMap<GraphQLInputObjectType> {
+    const types = resolveThunk(this._typeConfig.types) || [];
+    invariant(
+      Array.isArray(types),
+      'Must provide Array of types or a function which returns ' +
+        `such an array for Input Union ${this.name}.`,
+    );
+    const resultTypeMap = Object.create(null);
+    types.forEach(type => {
+      resultTypeMap[type.name] = type;
+    });
+    return resultTypeMap;
+  }
+
+  toString(): string {
+    return this.name;
+  }
+
+  toJSON: () => string;
+  inspect: () => string;
+}
+
+// Also provide toJSON and inspect aliases for toString.
+GraphQLInputUnionType.prototype.toJSON = GraphQLInputUnionType.prototype.inspect =
+  GraphQLInputUnionType.prototype.toString;
+
+export type GraphQLInputUnionTypeConfig = {
+  name: string,
+  types: Thunk<Array<GraphQLInputObjectType>>,
+  description?: ?string,
+  astNode?: ?InputUnionTypeDefinitionNode,
+};

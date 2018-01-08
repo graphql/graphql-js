@@ -17,6 +17,7 @@ import {
   isObjectType,
   isInterfaceType,
   isUnionType,
+  isInputUnionType,
   isEnumType,
   isInputObjectType,
   isListType,
@@ -181,6 +182,10 @@ export const __DirectiveLocation = new GraphQLEnumType({
       value: DirectiveLocation.UNION,
       description: 'Location adjacent to a union definition.',
     },
+    INPUT_UNION: {
+      value: DirectiveLocation.INPUT_UNION,
+      description: 'Location adjacent to an input union definition.',
+    },
     ENUM: {
       value: DirectiveLocation.ENUM,
       description: 'Location adjacent to an enum definition.',
@@ -224,6 +229,8 @@ export const __Type = new GraphQLObjectType({
           return TypeKind.INTERFACE;
         } else if (isUnionType(type)) {
           return TypeKind.UNION;
+        } else if (isInputUnionType(type)) {
+          return TypeKind.INPUT_UNION;
         } else if (isEnumType(type)) {
           return TypeKind.ENUM;
         } else if (isInputObjectType(type)) {
@@ -368,6 +375,7 @@ export const TypeKind = {
   OBJECT: 'OBJECT',
   INTERFACE: 'INTERFACE',
   UNION: 'UNION',
+  INPUT_UNION: 'INPUT_UNION',
   ENUM: 'ENUM',
   INPUT_OBJECT: 'INPUT_OBJECT',
   LIST: 'LIST',
@@ -399,6 +407,12 @@ export const __TypeKind = new GraphQLEnumType({
       value: TypeKind.UNION,
       description:
         'Indicates this type is a union. ' +
+        '`possibleTypes` is a valid field.',
+    },
+    INPUT_UNION: {
+      value: TypeKind.INPUT_UNION,
+      description:
+        'Indicates this type is a union of input objects. ' +
         '`possibleTypes` is a valid field.',
     },
     ENUM: {

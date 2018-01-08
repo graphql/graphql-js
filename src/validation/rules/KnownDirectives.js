@@ -98,6 +98,9 @@ function getDirectiveLocationForASTPath(ancestors) {
       case Kind.UNION_TYPE_DEFINITION:
       case Kind.UNION_TYPE_EXTENSION:
         return DirectiveLocation.UNION;
+      case Kind.INPUT_UNION_TYPE_DEFINITION:
+      case Kind.INPUT_UNION_TYPE_EXTENSION:
+        return DirectiveLocation.INPUT_UNION;
       case Kind.ENUM_TYPE_DEFINITION:
       case Kind.ENUM_TYPE_EXTENSION:
         return DirectiveLocation.ENUM;

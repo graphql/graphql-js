@@ -18,6 +18,7 @@ import {
   isScalarType,
   isEnumType,
   isInputObjectType,
+  isInputUnionType,
   isListType,
   isNonNullType,
 } from '../type/definition';
@@ -77,6 +78,13 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
       return { kind: Kind.LIST, values: valuesNodes };
     }
     return astFromValue(_value, itemType);
+  }
+
+  // Ensure the input value is valid
+  if (isInputUnionType(type)) {
+    throw new TypeError(
+      'Input Unions are not supported as a direct input value',
+    );
   }
 
   // Populate the fields of the input object by creating ASTs from each value

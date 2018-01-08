@@ -770,6 +770,25 @@ input Hello {
     );
   });
 
+  it('inputUnion object', () => {
+    const body = `
+inputUnion HelloWorld = Hello | World`;
+    const doc = parse(body);
+    const expected = [
+      {
+        kind: 'InputUnionTypeDefinition',
+        name: nameNode('HelloWorld', { start: 12, end: 22 }),
+        directives: [],
+        types: [
+          typeNode('Hello', { start: 25, end: 30 }),
+          typeNode('World', { start: 33, end: 38 }),
+        ],
+        loc: { start: 1, end: 38 },
+      },
+    ];
+    expect(printJson(doc.definitions)).to.equal(printJson(expected));
+  });
+
   it('Option: allowLegacySDLEmptyFields supports type with empty fields', () => {
     const body = 'type Hello { }';
     expect(() => parse(body)).to.throw('Syntax Error: Expected Name, found }');

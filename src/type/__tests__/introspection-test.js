@@ -1324,6 +1324,12 @@ describe('Introspection', () => {
             },
             {
               description:
+                'Indicates this type is a union of input objects. ' +
+                '`possibleTypes` is a valid field.',
+              name: 'INPUT_UNION',
+            },
+            {
+              description:
                 'Indicates this type is an enum. ' +
                 '`enumValues` is a valid field.',
               name: 'ENUM',

@@ -119,6 +119,7 @@ export const QueryDocumentKeys = {
   ],
   InterfaceTypeDefinition: ['description', 'name', 'directives', 'fields'],
   UnionTypeDefinition: ['description', 'name', 'directives', 'types'],
+  InputUnionTypeDefinition: ['description', 'name', 'directives', 'types'],
   EnumTypeDefinition: ['description', 'name', 'directives', 'values'],
   EnumValueDefinition: ['description', 'name', 'directives'],
   InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
@@ -127,6 +128,7 @@ export const QueryDocumentKeys = {
   ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
   InterfaceTypeExtension: ['name', 'directives', 'fields'],
   UnionTypeExtension: ['name', 'directives', 'types'],
+  InputUnionTypeExtension: ['name', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 
