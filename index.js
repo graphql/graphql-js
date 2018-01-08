@@ -837,6 +837,12 @@ Object.defineProperty(exports, 'getOperationAST', {
     return _utilities.getOperationAST;
   }
 });
+Object.defineProperty(exports, 'introspectionFromSchema', {
+  enumerable: true,
+  get: function get() {
+    return _utilities.introspectionFromSchema;
+  }
+});
 Object.defineProperty(exports, 'buildClientSchema', {
   enumerable: true,
   get: function get() {

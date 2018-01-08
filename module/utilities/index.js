@@ -16,6 +16,9 @@ introspectionQuery } from './introspectionQuery';
 // Gets the target Operation from a Document
 export { getOperationAST } from './getOperationAST';
 
+// Convert a GraphQLSchema to an IntrospectionQuery
+export { introspectionFromSchema } from './introspectionFromSchema';
+
 // Build a GraphQLSchema from an introspection result.
 export { buildClientSchema } from './buildClientSchema';
 

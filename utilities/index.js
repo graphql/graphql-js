@@ -28,6 +28,15 @@ Object.defineProperty(exports, 'getOperationAST', {
   }
 });
 
+var _introspectionFromSchema = require('./introspectionFromSchema');
+
+Object.defineProperty(exports, 'introspectionFromSchema', {
+  enumerable: true,
+  get: function get() {
+    return _introspectionFromSchema.introspectionFromSchema;
+  }
+});
+
 var _buildClientSchema = require('./buildClientSchema');
 
 Object.defineProperty(exports, 'buildClientSchema', {
