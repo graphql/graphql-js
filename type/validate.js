@@ -171,9 +171,14 @@ function validateDirectives(context) {
 }
 
 function validateName(context, node) {
+  // If a schema explicitly allows some legacy name which is no longer valid,
+  // allow it to be assumed valid.
+  if (context.schema.__allowedLegacyNames && context.schema.__allowedLegacyNames.indexOf(node.name) !== -1) {
+    return;
+  }
   // Ensure names are valid, however introspection types opt out.
   var error = (0, _assertValidName.isValidNameError)(node.name, node.astNode || undefined);
-  if (error && !(0, _introspection.isIntrospectionType)(node)) {
+  if (error) {
     context.addError(error);
   }
 }
@@ -189,8 +194,10 @@ function validateTypes(context) {
       return;
     }
 
-    // Ensure they are named correctly.
-    validateName(context, type);
+    // Ensure it is named correctly (excluding introspection types).
+    if (!(0, _introspection.isIntrospectionType)(type)) {
+      validateName(context, type);
+    }
 
     if ((0, _definition.isObjectType)(type)) {
       // Ensure fields are valid

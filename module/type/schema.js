@@ -56,6 +56,7 @@ export function isSchema(schema) {
  *
  */
 export var GraphQLSchema = function () {
+  // Used as a cache for validateSchema().
   function GraphQLSchema(config) {
     var _this = this;
 
@@ -71,6 +72,8 @@ export var GraphQLSchema = function () {
       !((typeof config === 'undefined' ? 'undefined' : _typeof(config)) === 'object') ? invariant(0, 'Must provide configuration object.') : void 0;
       !(!config.types || Array.isArray(config.types)) ? invariant(0, '"types" must be Array if provided but got: ' + String(config.types) + '.') : void 0;
       !(!config.directives || Array.isArray(config.directives)) ? invariant(0, '"directives" must be Array if provided but got: ' + (String(config.directives) + '.')) : void 0;
+      !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? invariant(0, '"allowedLegacyNames" must be Array if provided but got: ' + (String(config.allowedLegacyNames) + '.')) : void 0;
+      this.__allowedLegacyNames = config.allowedLegacyNames;
     }
 
     this._queryType = config.query;
@@ -116,7 +119,7 @@ export var GraphQLSchema = function () {
       }
     });
   }
-  // Used as a cache for validateSchema().
+  // Referenced by validateSchema().
 
 
   GraphQLSchema.prototype.getQueryType = function getQueryType() {

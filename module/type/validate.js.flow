@@ -215,9 +215,17 @@ function validateName(
   context: SchemaValidationContext,
   node: { +name: string, +astNode: ?ASTNode },
 ): void {
+  // If a schema explicitly allows some legacy name which is no longer valid,
+  // allow it to be assumed valid.
+  if (
+    context.schema.__allowedLegacyNames &&
+    context.schema.__allowedLegacyNames.indexOf(node.name) !== -1
+  ) {
+    return;
+  }
   // Ensure names are valid, however introspection types opt out.
   const error = isValidNameError(node.name, node.astNode || undefined);
-  if (error && !isIntrospectionType((node: any))) {
+  if (error) {
     context.addError(error);
   }
 }
@@ -236,8 +244,10 @@ function validateTypes(context: SchemaValidationContext): void {
       return;
     }
 
-    // Ensure they are named correctly.
-    validateName(context, type);
+    // Ensure it is named correctly (excluding introspection types).
+    if (!isIntrospectionType(type)) {
+      validateName(context, type);
+    }
 
     if (isObjectType(type)) {
       // Ensure fields are valid
