@@ -13,7 +13,6 @@ import {
   isUnionType,
   isInputObjectType,
   isWrappingType,
-  getNamedType,
 } from './definition';
 import type {
   GraphQLType,
@@ -126,14 +125,17 @@ export class GraphQLSchema {
       initialTypes = initialTypes.concat(types);
     }
 
-    initialTypes = initialTypes.concat(
-      ...this._directives.map(directive => getDirectiveArgTypes(directive)),
-    );
+    // Keep track of all types referenced within the schema.
+    let typeMap: TypeMap = Object.create(null);
 
-    this._typeMap = initialTypes.reduce(
-      typeMapReducer,
-      (Object.create(null): TypeMap),
-    );
+    // First by deeply visiting all initial types.
+    typeMap = initialTypes.reduce(typeMapReducer, typeMap);
+
+    // Then by deeply visiting all directive types.
+    typeMap = this._directives.reduce(typeMapDirectiveReducer, typeMap);
+
+    // Storing the resulting map for reference by the schema.
+    this._typeMap = typeMap;
 
     // Keep track of all implementations by interface name.
     this._implementations = Object.create(null);
@@ -279,10 +281,16 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   return reducedMap;
 }
 
-function getDirectiveArgTypes(directive: GraphQLDirective) {
-  // directives are not validated until validateSchema() is called, so be defensive
+function typeMapDirectiveReducer(
+  map: TypeMap,
+  directive: ?GraphQLDirective,
+): TypeMap {
+  // Directives are not validated until validateSchema() is called.
   if (!isDirective(directive)) {
-    return [];
+    return map;
   }
-  return directive.args.map(arg => arg.type);
+  return directive.args.reduce(
+    (_map, arg) => typeMapReducer(_map, arg.type),
+    map,
+  );
 }
