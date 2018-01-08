@@ -76,7 +76,7 @@ export class GraphQLDirective {
   }
 }
 
-type GraphQLDirectiveConfig = {
+export type GraphQLDirectiveConfig = {
   name: string,
   description?: ?string,
   locations: Array<DirectiveLocationEnum>,
