@@ -38,6 +38,9 @@ export type {
   IntrospectionDirective,
 } from './introspectionQuery';
 
+// Sort the result of Introspection Query.
+export { sortIntrospectionQuery } from './sortIntrospection';
+
 // Gets the target Operation from a Document
 export { getOperationAST } from './getOperationAST';
 
