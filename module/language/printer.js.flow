@@ -85,7 +85,7 @@ const printDocASTReducer = {
     isBlockString
       ? printBlockString(value, key === 'description')
       : JSON.stringify(value),
-  BooleanValue: ({ value }) => JSON.stringify(value),
+  BooleanValue: ({ value }) => (value ? 'true' : 'false'),
   NullValue: () => 'null',
   EnumValue: ({ value }) => value,
   ListValue: ({ values }) => '[' + join(values, ', ') + ']',

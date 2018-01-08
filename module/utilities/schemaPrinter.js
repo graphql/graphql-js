@@ -137,7 +137,7 @@ function printObject(type, options) {
   var interfaces = type.getInterfaces();
   var implementedInterfaces = interfaces.length ? ' implements ' + interfaces.map(function (i) {
     return i.name;
-  }).join(', ') : '';
+  }).join(' & ') : '';
   return printDescription(options, type) + ('type ' + type.name + implementedInterfaces + ' {\n') + printFields(options, type) + '\n' + '}';
 }
 

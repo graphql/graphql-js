@@ -113,7 +113,7 @@ var printDocASTReducer = {
   },
   BooleanValue: function BooleanValue(_ref11) {
     var value = _ref11.value;
-    return JSON.stringify(value);
+    return value ? 'true' : 'false';
   },
   NullValue: function NullValue() {
     return 'null';
