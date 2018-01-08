@@ -10,10 +10,13 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLString,
+  GraphQLInputObjectType,
+  GraphQLDirective,
 } from '../';
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { GraphQLList } from '../wrappers';
 
 const InterfaceType = new GraphQLInterfaceType({
   name: 'Interface',
@@ -24,6 +27,37 @@ const ImplementingType = new GraphQLObjectType({
   name: 'Object',
   interfaces: [InterfaceType],
   fields: { fieldName: { type: GraphQLString, resolve: () => '' } },
+});
+
+const DirectiveInputType = new GraphQLInputObjectType({
+  name: 'DirInput',
+  fields: {
+    field: {
+      type: GraphQLString,
+    },
+  },
+});
+
+const WrappedDirectiveInputType = new GraphQLInputObjectType({
+  name: 'WrappedDirInput',
+  fields: {
+    field: {
+      type: GraphQLString,
+    },
+  },
+});
+
+const Directive = new GraphQLDirective({
+  name: 'dir',
+  locations: ['OBJECT'],
+  args: {
+    arg: {
+      type: DirectiveInputType,
+    },
+    argList: {
+      type: new GraphQLList(WrappedDirectiveInputType),
+    },
+  },
 });
 
 const Schema = new GraphQLSchema({
@@ -38,6 +72,7 @@ const Schema = new GraphQLSchema({
       },
     },
   }),
+  directives: [Directive],
 });
 
 describe('Type System: Schema', () => {
@@ -51,6 +86,13 @@ describe('Type System: Schema', () => {
           'Check that schema.types is defined and is an array of all possible ' +
           'types in the schema.',
       );
+    });
+  });
+
+  describe('Type Map', () => {
+    it('includes input types only used in directives', () => {
+      expect(Schema.getTypeMap()).to.include.key('DirInput');
+      expect(Schema.getTypeMap()).to.include.key('WrappedDirInput');
     });
   });
 });
