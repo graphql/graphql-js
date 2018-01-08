@@ -220,7 +220,7 @@ export class GraphQLSchema {
 
 type TypeMap = ObjMap<GraphQLNamedType>;
 
-type GraphQLSchemaConfig = {
+export type GraphQLSchemaConfig = {
   query?: ?GraphQLObjectType,
   mutation?: ?GraphQLObjectType,
   subscription?: ?GraphQLObjectType,

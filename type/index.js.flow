@@ -14,6 +14,8 @@ export {
   GraphQLSchema,
 } from './schema';
 
+export type { GraphQLSchemaConfig } from './schema';
+
 export {
   // Predicates
   isType,
@@ -83,6 +85,8 @@ export {
   // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
 } from './directives';
+
+export type { GraphQLDirectiveConfig } from './directives';
 
 // Common built-in scalar instances.
 export {

@@ -138,6 +138,7 @@ export type {
   GraphQLNullableType,
   GraphQLNamedType,
   Thunk,
+  GraphQLSchemaConfig,
   GraphQLArgument,
   GraphQLArgumentConfig,
   GraphQLEnumTypeConfig,
@@ -163,6 +164,7 @@ export type {
   GraphQLScalarTypeConfig,
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
+  GraphQLDirectiveConfig,
 } from './type';
 
 // Parse and operate on GraphQL language source files.
