@@ -697,7 +697,7 @@ describe('extendSchema', () => {
         fizz: String
       }
 
-      type Foo implements SomeInterface, NewInterface {
+      type Foo implements SomeInterface & NewInterface {
         name: String
         some: SomeInterface
         tree: [Foo]!
@@ -761,7 +761,7 @@ describe('extendSchema', () => {
         foo: Foo
       }
 
-      type Biz implements NewInterface, SomeInterface {
+      type Biz implements NewInterface & SomeInterface {
         fizz: String
         buzz: String
         name: String
