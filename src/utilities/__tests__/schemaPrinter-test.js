@@ -197,6 +197,22 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints String Field With String Arg With Default', () => {
+    const output = printSingleFieldSchema({
+      type: GraphQLString,
+      args: { argOne: { type: GraphQLString, defaultValue: 'tes\t de\fault' } },
+    });
+    expect(output).to.equal(dedent`
+      schema {
+        query: Root
+      }
+
+      type Root {
+        singleField(argOne: String = "tes\t de\fault"): String
+      }
+    `);
+  });
+
   it('Prints String Field With Int Arg With Default Null', () => {
     const output = printSingleFieldSchema({
       type: GraphQLString,
