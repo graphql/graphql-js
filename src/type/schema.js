@@ -81,6 +81,8 @@ export class GraphQLSchema {
   _possibleTypeMap: ?ObjMap<ObjMap<boolean>>;
   // Used as a cache for validateSchema().
   __validationErrors: ?$ReadOnlyArray<GraphQLError>;
+  // Referenced by validateSchema().
+  __allowedLegacyNames: ?$ReadOnlyArray<string>;
 
   constructor(config: GraphQLSchemaConfig): void {
     // If this schema was built from a source known to be valid, then it may be
@@ -103,6 +105,12 @@ export class GraphQLSchema {
         '"directives" must be Array if provided but got: ' +
           `${String(config.directives)}.`,
       );
+      invariant(
+        !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames),
+        '"allowedLegacyNames" must be Array if provided but got: ' +
+          `${String(config.allowedLegacyNames)}.`,
+      );
+      this.__allowedLegacyNames = config.allowedLegacyNames;
     }
 
     this._queryType = config.query;
@@ -228,6 +236,15 @@ type GraphQLSchemaConfig = {
   directives?: ?Array<GraphQLDirective>,
   astNode?: ?SchemaDefinitionNode,
   assumeValid?: boolean,
+  /**
+   * If provided, the schema will consider fields or types with names included
+   * in this list valid, even if they do not adhere to the specification's
+   * schema validation rules.
+   *
+   * This option is provided to ease adoption and may be removed in a future
+   * major release.
+   */
+  allowedLegacyNames?: ?Array<string>,
 };
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
