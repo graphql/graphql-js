@@ -13,7 +13,11 @@ import { print } from '../printer';
 import { join } from 'path';
 import dedent from '../../jsutils/dedent';
 
-describe('Printer', () => {
+describe('Printer: Query document', () => {
+  const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
+    encoding: 'utf8',
+  });
+
   it('does not alter ast', () => {
     const ast = parse(kitchenSink);
     const astBefore = JSON.stringify(ast);
@@ -71,36 +75,53 @@ describe('Printer', () => {
     `);
   });
 
-  it('correctly prints single-line block strings with leading space', () => {
-    const mutationAstWithArtifacts = parse(
-      '{ field(arg: """    space-led value""") }',
-    );
-    expect(print(mutationAstWithArtifacts)).to.equal(dedent`
-      {
-        field(arg: """    space-led value""")
-      }
-    `);
-  });
+  describe('block string', () => {
+    it('correctly prints single-line with leading space', () => {
+      const mutationAstWithArtifacts = parse(
+        '{ field(arg: """    space-led value""") }',
+      );
+      expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+        {
+          field(arg: """    space-led value""")
+        }
+      `);
+    });
 
-  it('correctly prints block strings with a first line indentation', () => {
-    const mutationAstWithArtifacts = parse(`
-      {
-        field(arg: """
-              first
-            line
-          indentation
-        """)
-      }
-    `);
-    expect(print(mutationAstWithArtifacts)).to.equal(dedent`
-      {
-        field(arg: """
-              first
-            line
-          indentation
-        """)
-      }
-    `);
+    it('correctly prints string with a first line indentation', () => {
+      const mutationAstWithArtifacts = parse(`
+        {
+          field(arg: """
+                first
+              line
+            indentation
+          """)
+        }
+      `);
+      expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+        {
+          field(arg: """
+                first
+              line
+            indentation
+          """)
+        }
+      `);
+    });
+
+    it('correctly prints single-line with leading space and quotation', () => {
+      const mutationAstWithArtifacts = parse(`
+        {
+          field(arg: """    space-led value "quoted string"
+          """)
+        }
+      `);
+      expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+        {
+          field(arg: """    space-led value "quoted string"
+          """)
+        }
+      `);
+    });
   });
 
   it('Experimental: correctly prints fragment defined variables', () => {
@@ -117,10 +138,6 @@ describe('Printer', () => {
         id
       }
     `);
-  });
-
-  const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
-    encoding: 'utf8',
   });
 
   it('prints kitchen sink', () => {
