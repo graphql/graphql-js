@@ -125,7 +125,6 @@ export function valueFromAST(
       return; // Invalid: intentionally return no value.
     }
     const fields = inputType.getFields();
-    // eslint-disable-next-line no-unused-vars
     const { __inputname, ...rest } = fieldNodes;
     const initialObj = Object.create(null);
     initialObj['__inputname'] = inputType.name;

@@ -151,7 +151,6 @@ export function coerceValue(
         ),
       ]);
     }
-    // eslint-disable-next-line no-unused-vars
     const { __inputname, ...rest } = value;
     return coerceObject(validTypeMap[inputName], rest, path, blameNode, {
       __inputname: inputName,
