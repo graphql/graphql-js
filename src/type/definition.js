@@ -1253,7 +1253,7 @@ export type GraphQLInputFieldMap = ObjMap<GraphQLInputField>;
  * Input Union Type Definition
  *
  * An input union type defines a heterogeneous set of input object types
- * possible to fulfill an input field. The `__typename` must be specified
+ * possible to fulfill an input field. The `__inputname` must be specified
  * in the input object.
  *
  * Example:
