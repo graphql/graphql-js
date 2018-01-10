@@ -12,6 +12,7 @@ import { GraphQLError, locatedError } from '../error';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
+import memoize3 from '../jsutils/memoize3';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { MaybePromise } from '../jsutils/MaybePromise';
 
@@ -1245,25 +1246,12 @@ function collectAndExecuteSubfields(
  * type. Memoizing ensures the subfields are not repeatedly calculated, which
  * saves overhead when resolving lists of values.
  */
-const subfieldCache: WeakMap<
-  $ReadOnlyArray<FieldNode>,
-  WeakMap<GraphQLObjectType, ObjMap<Array<FieldNode>>>,
-> = new WeakMap();
-function collectSubfields(
+const collectSubfields = memoize3(_collectSubfields);
+function _collectSubfields(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
 ): ObjMap<Array<FieldNode>> {
-  let cacheByReturnType = subfieldCache.get(fieldNodes);
-  if (cacheByReturnType) {
-    const cachedSubFieldNodes = cacheByReturnType.get(returnType);
-    if (cachedSubFieldNodes) {
-      return cachedSubFieldNodes;
-    }
-  } else {
-    cacheByReturnType = new WeakMap();
-    subfieldCache.set(fieldNodes, cacheByReturnType);
-  }
   let subFieldNodes = Object.create(null);
   const visitedFragmentNames = Object.create(null);
   for (let i = 0; i < fieldNodes.length; i++) {
@@ -1278,7 +1266,6 @@ function collectSubfields(
       );
     }
   }
-  cacheByReturnType.set(returnType, subFieldNodes);
   return subFieldNodes;
 }
 
