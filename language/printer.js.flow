@@ -236,7 +236,7 @@ function join(maybeArray, separator) {
  */
 function block(array) {
   return array && array.length !== 0
-    ? indent('{\n' + join(array, '\n')) + '\n}'
+    ? '{\n' + indent(join(array, '\n')) + '\n}'
     : '';
 }
 
@@ -249,7 +249,7 @@ function wrap(start, maybeString, end) {
 }
 
 function indent(maybeString) {
-  return maybeString && maybeString.replace(/\n/g, '\n  ');
+  return maybeString && '  ' + maybeString.replace(/\n/g, '\n  ');
 }
 
 /**
@@ -258,9 +258,8 @@ function indent(maybeString) {
  * a single-line, adding a leading blank line would strip that whitespace.
  */
 function printBlockString(value, isDescription) {
+  const escaped = value.replace(/"""/g, '\\"""');
   return (value[0] === ' ' || value[0] === '\t') && value.indexOf('\n') === -1
-    ? `"""${value.replace(/"""/g, '\\"""')}"""`
-    : isDescription
-      ? '"""\n' + value.replace(/"""/g, '\\"""') + '\n"""'
-      : indent('"""\n' + value.replace(/"""/g, '\\"""')) + '\n"""';
+    ? `"""${escaped.replace(/"$/, '"\n')}"""`
+    : `"""\n${isDescription ? escaped : indent(escaped)}\n"""`;
 }

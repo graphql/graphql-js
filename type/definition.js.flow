@@ -714,9 +714,13 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
   info: GraphQLResolveInfo,
 ) => MaybePromise<boolean>;
 
-export type GraphQLFieldResolver<TSource, TContext> = (
+export type GraphQLFieldResolver<
+  TSource,
+  TContext,
+  TArgs = { [argument: string]: any },
+> = (
   source: TSource,
-  args: { [argument: string]: any },
+  args: TArgs,
   context: TContext,
   info: GraphQLResolveInfo,
 ) => mixed;
@@ -739,11 +743,15 @@ export type ResponsePath = {|
   +key: string | number,
 |};
 
-export type GraphQLFieldConfig<TSource, TContext> = {
+export type GraphQLFieldConfig<
+  TSource,
+  TContext,
+  TArgs = { [argument: string]: any },
+> = {
   type: GraphQLOutputType,
   args?: GraphQLFieldConfigArgumentMap,
-  resolve?: GraphQLFieldResolver<TSource, TContext>,
-  subscribe?: GraphQLFieldResolver<TSource, TContext>,
+  resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
+  subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   deprecationReason?: ?string,
   description?: ?string,
   astNode?: ?FieldDefinitionNode,
@@ -762,13 +770,17 @@ export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldConfig<TSource, TContext>,
 >;
 
-export type GraphQLField<TSource, TContext> = {
+export type GraphQLField<
+  TSource,
+  TContext,
+  TArgs = { [argument: string]: any },
+> = {
   name: string,
   description: ?string,
   type: GraphQLOutputType,
   args: Array<GraphQLArgument>,
-  resolve?: GraphQLFieldResolver<TSource, TContext>,
-  subscribe?: GraphQLFieldResolver<TSource, TContext>,
+  resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
+  subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   isDeprecated?: boolean,
   deprecationReason?: ?string,
   astNode?: ?FieldDefinitionNode,
