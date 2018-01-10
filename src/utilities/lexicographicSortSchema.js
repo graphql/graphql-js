@@ -18,13 +18,13 @@ import {
   GraphQLEnumType,
   GraphQLInputObjectType,
 } from '../type/definition';
-import { transformSchema } from './transformSchema';
+import { SchemaTransformer } from './transformSchema';
 
 /**
  * Sort GraphQLSchema.
  */
 export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
-  return transformSchema(schema, {
+  const transformer = new SchemaTransformer(schema, {
     Schema(config) {
       return new GraphQLSchema({
         ...config,
@@ -74,6 +74,8 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       });
     },
   });
+
+  return transformer.transformSchema();
 }
 
 function sortFields(fields) {

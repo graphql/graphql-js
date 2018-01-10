@@ -47,6 +47,7 @@ import {
 type ExactSchemaConfig = $Exact<GraphQLSchemaConfig> & {
   types: Array<*>,
   directives: Array<*>,
+  allowedLegacyNames: Array<*>,
 };
 
 type ExactDirectiveConfig = $Exact<GraphQLDirectiveConfig> & {
@@ -89,54 +90,76 @@ type TypeTransformer = {
   ) => GraphQLInputObjectType,
 };
 
-export function transformSchema(
-  schema: GraphQLSchema,
-  transformer: TypeTransformer,
-): GraphQLSchema {
-  const cache: ObjMap<GraphQLNamedType> = Object.create(null);
-  const transformMaybeType = maybeType =>
-    maybeType && transformNamedType(maybeType);
-  const schemaConfig = {
-    types: objectValues(schema.getTypeMap()).map(transformNamedType),
-    directives: schema.getDirectives().map(transformDirective),
-    query: transformMaybeType(schema.getQueryType()),
-    mutation: transformMaybeType(schema.getMutationType()),
-    subscription: transformMaybeType(schema.getSubscriptionType()),
-    astNode: schema.astNode,
-  };
-  return transformer.Schema
-    ? transformer.Schema(schemaConfig)
-    : new GraphQLSchema(schemaConfig);
+/**
+ * Note: This class is not a part of public API and is a subject to changes
+ * in the future.
+ */
+export class SchemaTransformer {
+  _schema: GraphQLSchema;
+  _transformer: TypeTransformer;
+  _cache: ObjMap<GraphQLNamedType>;
 
-  function transformDirective(directive) {
+  constructor(schema: GraphQLSchema, transformer: TypeTransformer) {
+    this._schema = schema;
+    this._transformer = transformer;
+    this._cache = Object.create(null);
+  }
+
+  transformSchema(): GraphQLSchema {
+    const oldTypes = objectValues(this._schema.getTypeMap());
+    const oldDirectives = this._schema.getDirectives();
+    const transformMaybeType = maybeType =>
+      maybeType && this._transformNamedType(maybeType);
+    const schemaConfig = {
+      types: oldTypes.map(type => this._transformNamedType(type)),
+      directives: oldDirectives.map(directive =>
+        this._transformDirective(directive),
+      ),
+      query: transformMaybeType(this._schema.getQueryType()),
+      mutation: transformMaybeType(this._schema.getMutationType()),
+      subscription: transformMaybeType(this._schema.getSubscriptionType()),
+      astNode: this._schema.astNode,
+      allowedLegacyNames: (this._schema.__allowedLegacyNames || []).slice(),
+    };
+    return this._transformer.Schema
+      ? this._transformer.Schema(schemaConfig)
+      : new GraphQLSchema(schemaConfig);
+  }
+
+  transformType(name: string): ?GraphQLNamedType {
+    const type = this._schema.getTypeMap()[name];
+    return type && this._transformNamedType(type);
+  }
+
+  _transformDirective(directive: GraphQLDirective): GraphQLDirective {
     const config = {
       name: directive.name,
       description: directive.description,
       locations: directive.locations,
-      args: transformArgs(directive.args),
+      args: this._transformArgs(directive.args),
       astNode: directive.astNode,
     };
-    return transformer.Directive
-      ? transformer.Directive(config)
+    return this._transformer.Directive
+      ? this._transformer.Directive(config)
       : new GraphQLDirective(config);
   }
 
-  function transformArgs(args) {
+  _transformArgs(args: *): * {
     return keyValMap(
       args,
       arg => arg.name,
       arg => ({
         ...arg,
-        type: transformType(arg.type),
+        type: this._transformType(arg.type),
       }),
     );
   }
 
-  function transformFields(fieldsMap) {
+  _transformFields(fieldsMap: *): * {
     return () =>
       mapValues(fieldsMap, field => ({
-        type: transformType(field.type),
-        args: transformArgs(field.args),
+        type: this._transformType(field.type),
+        args: this._transformArgs(field.args),
         resolve: field.resolve,
         subscribe: field.subscribe,
         deprecationReason: field.deprecationReason,
@@ -145,45 +168,45 @@ export function transformSchema(
       }));
   }
 
-  function transformInputFields(fieldsMap) {
+  _transformInputFields(fieldsMap: *): * {
     return () =>
       mapValues(fieldsMap, field => ({
-        type: transformType(field.type),
+        type: this.transformType(field.type),
         defaultValue: field.defaultValue,
         description: field.description,
         astNode: field.astNode,
       }));
   }
 
-  function transformType(type) {
+  _transformType(type: *): * {
     if (isListType(type)) {
-      return new GraphQLList(transformType(type.ofType));
+      return new GraphQLList(this._transformType(type.ofType));
     } else if (isNonNullType(type)) {
-      return new GraphQLNonNull(transformType(type.ofType));
+      return new GraphQLNonNull(this._transformType(type.ofType));
     }
-    return transformNamedType(type);
+    return this._transformNamedType(type);
   }
 
-  function transformTypes<T: GraphQLNamedType>(arr: Array<T>): () => Array<T> {
-    return () => arr.map(transformNamedType);
+  _transformTypes<T: GraphQLNamedType>(arr: Array<T>): () => Array<T> {
+    return () => arr.map(type => this._transformNamedType(type));
   }
 
-  function transformNamedType<T: GraphQLNamedType>(type: T): T {
+  _transformNamedType<T: GraphQLNamedType>(type: T): T {
     if (isSpecifiedScalarType(type) || isIntrospectionType(type)) {
       return type;
     }
 
-    let newType = cache[type.name];
+    let newType = this._cache[type.name];
     if (!newType) {
-      newType = transformNamedTypeImpl(type);
-      cache[type.name] = newType;
+      newType = this._transformNamedTypeImpl(type);
+      this._cache[type.name] = newType;
     }
     invariant(type.constructor === newType.constructor);
     invariant(type.name === newType.name);
     return ((newType: any): T);
   }
 
-  function transformNamedTypeImpl(type) {
+  _transformNamedTypeImpl(type: *): * {
     if (isScalarType(type)) {
       const config = {
         name: type.name,
@@ -193,44 +216,44 @@ export function transformSchema(
         parseValue: type._scalarConfig.parseValue,
         parseLiteral: type._scalarConfig.parseLiteral,
       };
-      return transformer.ScalarType
-        ? transformer.ScalarType(config)
+      return this._transformer.ScalarType
+        ? this._transformer.ScalarType(config)
         : new GraphQLScalarType(config);
     } else if (isObjectType(type)) {
-      const config = {
+      const config: ExactObjectTypeConfig = {
         name: type.name,
-        interfaces: transformTypes(type.getInterfaces()),
-        fields: transformFields(type.getFields()),
+        interfaces: this._transformTypes(type.getInterfaces()),
+        fields: this._transformFields(type.getFields()),
         isTypeOf: type.isTypeOf,
         description: type.description,
         astNode: type.astNode,
         extensionASTNodes: type.extensionASTNodes || [],
       };
-      return transformer.ObjectType
-        ? transformer.ObjectType(config)
+      return this._transformer.ObjectType
+        ? this._transformer.ObjectType(config)
         : new GraphQLObjectType(config);
     } else if (isInterfaceType(type)) {
       const config = {
         name: type.name,
-        fields: transformFields(type.getFields()),
+        fields: this._transformFields(type.getFields()),
         resolveType: type.resolveType,
         description: type.description,
         astNode: type.astNode,
         extensionASTNodes: type.extensionASTNodes || [],
       };
-      return transformer.InterfaceType
-        ? transformer.InterfaceType(config)
+      return this._transformer.InterfaceType
+        ? this._transformer.InterfaceType(config)
         : new GraphQLInterfaceType(config);
     } else if (isUnionType(type)) {
       const config = {
         name: type.name,
-        types: transformTypes(type.getTypes()),
+        types: this._transformTypes(type.getTypes()),
         resolveType: type.resolveType,
         description: type.description,
         astNode: type.astNode,
       };
-      return transformer.UnionType
-        ? transformer.UnionType(config)
+      return this._transformer.UnionType
+        ? this._transformer.UnionType(config)
         : new GraphQLUnionType(config);
     } else if (isEnumType(type)) {
       const config = {
@@ -248,18 +271,18 @@ export function transformSchema(
         description: type.description,
         astNode: type.astNode,
       };
-      return transformer.EnumType
-        ? transformer.EnumType(config)
+      return this._transformer.EnumType
+        ? this._transformer.EnumType(config)
         : new GraphQLEnumType(config);
     } else if (isInputObjectType(type)) {
       const config = {
         name: type.name,
-        fields: transformInputFields(type.getFields()),
+        fields: this._transformInputFields(type.getFields()),
         description: type.description,
         astNode: type.astNode,
       };
-      return transformer.InputObjectType
-        ? transformer.InputObjectType(config)
+      return this._transformer.InputObjectType
+        ? this._transformer.InputObjectType(config)
         : new GraphQLInputObjectType(config);
     }
     throw new Error(`Unknown type: "${type}"`);
