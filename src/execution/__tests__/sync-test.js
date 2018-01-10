@@ -31,6 +31,17 @@ describe('Execute: synchronously when possible', () => {
         },
       },
     }),
+    mutation: new GraphQLObjectType({
+      name: 'Mutation',
+      fields: {
+        syncMutationField: {
+          type: GraphQLString,
+          resolve(rootValue) {
+            return rootValue;
+          },
+        },
+      },
+    }),
   });
 
   it('does not return a Promise for initial errors', () => {
@@ -59,6 +70,16 @@ describe('Execute: synchronously when possible', () => {
       rootValue: 'rootValue',
     });
     expect(result).to.deep.equal({ data: { syncField: 'rootValue' } });
+  });
+
+  it('does not return a Promise if mutation fields are all synchronous', () => {
+    const doc = 'mutation Example { syncMutationField }';
+    const result = execute({
+      schema,
+      document: parse(doc),
+      rootValue: 'rootValue',
+    });
+    expect(result).to.deep.equal({ data: { syncMutationField: 'rootValue' } });
   });
 
   it('returns a Promise if any field is asynchronous', async () => {

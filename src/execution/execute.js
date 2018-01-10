@@ -9,10 +9,13 @@
 
 import { forEach, isCollection } from 'iterall';
 import { GraphQLError, locatedError } from '../error';
+import getPromise from '../jsutils/getPromise';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import memoize3 from '../jsutils/memoize3';
+import promiseForObject from '../jsutils/promiseForObject';
+import promiseReduce from '../jsutils/promiseReduce';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { MaybePromise } from '../jsutils/MaybePromise';
 
@@ -465,33 +468,33 @@ function executeFieldsSerially(
   sourceValue: mixed,
   path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
-): Promise<ObjMap<mixed>> {
-  return Object.keys(fields).reduce(
-    (prevPromise, responseName) =>
-      prevPromise.then(results => {
-        const fieldNodes = fields[responseName];
-        const fieldPath = addPath(path, responseName);
-        const result = resolveField(
-          exeContext,
-          parentType,
-          sourceValue,
-          fieldNodes,
-          fieldPath,
-        );
-        if (result === undefined) {
-          return results;
-        }
-        const promise = getPromise(result);
-        if (promise) {
-          return promise.then(resolvedResult => {
-            results[responseName] = resolvedResult;
-            return results;
-          });
-        }
-        results[responseName] = result;
+): MaybePromise<ObjMap<mixed>> {
+  return promiseReduce(
+    Object.keys(fields),
+    (results, responseName) => {
+      const fieldNodes = fields[responseName];
+      const fieldPath = addPath(path, responseName);
+      const result = resolveField(
+        exeContext,
+        parentType,
+        sourceValue,
+        fieldNodes,
+        fieldPath,
+      );
+      if (result === undefined) {
         return results;
-      }),
-    Promise.resolve({}),
+      }
+      const promise = getPromise(result);
+      if (promise) {
+        return promise.then(resolvedResult => {
+          results[responseName] = resolvedResult;
+          return results;
+        });
+      }
+      results[responseName] = result;
+      return results;
+    },
+    Object.create(null),
   );
 }
 
@@ -660,24 +663,6 @@ function doesFragmentConditionMatch(
     return exeContext.schema.isPossibleType(conditionalType, type);
   }
   return false;
-}
-
-/**
- * This function transforms a JS object `ObjMap<Promise<T>>` into
- * a `Promise<ObjMap<T>>`
- *
- * This is akin to bluebird's `Promise.props`, but implemented only using
- * `Promise.all` so it will work with any implementation of ES6 promises.
- */
-function promiseForObject<T>(object: ObjMap<Promise<T>>): Promise<ObjMap<T>> {
-  const keys = Object.keys(object);
-  const valuesAndPromises = keys.map(name => object[name]);
-  return Promise.all(valuesAndPromises).then(values =>
-    values.reduce((resolvedObject, value, i) => {
-      resolvedObject[keys[i]] = value;
-      return resolvedObject;
-    }, Object.create(null)),
-  );
 }
 
 /**
@@ -1345,20 +1330,6 @@ export const defaultFieldResolver: GraphQLFieldResolver<any, *> = function(
     return property;
   }
 };
-
-/**
- * Only returns the value if it acts like a Promise, i.e. has a "then" function,
- * otherwise returns void.
- */
-function getPromise<T>(value: Promise<T> | mixed): Promise<T> | void {
-  if (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof value.then === 'function'
-  ) {
-    return (value: any);
-  }
-}
 
 /**
  * This method looks up the field on the given type defintion.
