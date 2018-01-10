@@ -12,6 +12,7 @@ import { GraphQLError, locatedError } from '../error';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
+import memoize3 from '../jsutils/memoize3';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { MaybePromise } from '../jsutils/MaybePromise';
 
@@ -1236,6 +1237,21 @@ function collectAndExecuteSubfields(
   result: mixed,
 ): mixed {
   // Collect sub-fields to execute to complete this value.
+  const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
+  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+}
+
+/**
+ * A memoized collection of relevant subfields in the context of the return
+ * type. Memoizing ensures the subfields are not repeatedly calculated, which
+ * saves overhead when resolving lists of values.
+ */
+const collectSubfields = memoize3(_collectSubfields);
+function _collectSubfields(
+  exeContext: ExecutionContext,
+  returnType: GraphQLObjectType,
+  fieldNodes: $ReadOnlyArray<FieldNode>,
+): ObjMap<Array<FieldNode>> {
   let subFieldNodes = Object.create(null);
   const visitedFragmentNames = Object.create(null);
   for (let i = 0; i < fieldNodes.length; i++) {
@@ -1250,8 +1266,7 @@ function collectAndExecuteSubfields(
       );
     }
   }
-
-  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+  return subFieldNodes;
 }
 
 /**

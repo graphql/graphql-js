@@ -41,6 +41,10 @@ var _isNullish = require('../jsutils/isNullish');
 
 var _isNullish2 = _interopRequireDefault(_isNullish);
 
+var _memoize = require('../jsutils/memoize3');
+
+var _memoize2 = _interopRequireDefault(_memoize);
+
 var _typeFromAST = require('../utilities/typeFromAST');
 
 var _kinds = require('../language/kinds');
@@ -787,6 +791,17 @@ function invalidReturnTypeError(returnType, result, fieldNodes) {
 
 function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, info, path, result) {
   // Collect sub-fields to execute to complete this value.
+  var subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
+  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+}
+
+/**
+ * A memoized collection of relevant subfields in the context of the return
+ * type. Memoizing ensures the subfields are not repeatedly calculated, which
+ * saves overhead when resolving lists of values.
+ */
+var collectSubfields = (0, _memoize2.default)(_collectSubfields);
+function _collectSubfields(exeContext, returnType, fieldNodes) {
   var subFieldNodes = Object.create(null);
   var visitedFragmentNames = Object.create(null);
   for (var i = 0; i < fieldNodes.length; i++) {
@@ -795,8 +810,7 @@ function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, info, pa
       subFieldNodes = collectFields(exeContext, returnType, selectionSet, subFieldNodes, visitedFragmentNames);
     }
   }
-
-  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+  return subFieldNodes;
 }
 
 /**
