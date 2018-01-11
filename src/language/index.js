@@ -24,7 +24,7 @@ export {
 } from './visitor';
 export type { ASTVisitor, Visitor, VisitFn, VisitorKeyMap } from './visitor';
 
-export type { Lexer } from './lexer';
+export type { Lexer, TokenKindEnum } from './lexer';
 export type { ParseOptions } from './parser';
 
 export type {

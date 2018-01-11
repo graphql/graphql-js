@@ -11,7 +11,7 @@ import { Source } from './source';
 import { syntaxError } from '../error';
 import type { GraphQLError } from '../error';
 import { createLexer, TokenKind, getTokenDesc } from './lexer';
-import type { Lexer } from './lexer';
+import type { Lexer, TokenKindEnum } from './lexer';
 import type {
   Location,
   Token,
@@ -1426,7 +1426,7 @@ Loc.prototype.toJSON = Loc.prototype.inspect = function toJSON() {
 /**
  * Determines if the next token is of a given kind
  */
-function peek(lexer: Lexer<*>, kind: string): boolean {
+function peek(lexer: Lexer<*>, kind: TokenKindEnum): boolean {
   return lexer.token.kind === kind;
 }
 
@@ -1434,7 +1434,7 @@ function peek(lexer: Lexer<*>, kind: string): boolean {
  * If the next token is of the given kind, return true after advancing
  * the lexer. Otherwise, do not change the parser state and return false.
  */
-function skip(lexer: Lexer<*>, kind: string): boolean {
+function skip(lexer: Lexer<*>, kind: TokenKindEnum): boolean {
   const match = lexer.token.kind === kind;
   if (match) {
     lexer.advance();
@@ -1446,7 +1446,7 @@ function skip(lexer: Lexer<*>, kind: string): boolean {
  * If the next token is of the given kind, return that token after advancing
  * the lexer. Otherwise, do not change the parser state and throw an error.
  */
-function expect(lexer: Lexer<*>, kind: string): Token {
+function expect(lexer: Lexer<*>, kind: TokenKindEnum): Token {
   const token = lexer.token;
   if (token.kind === kind) {
     lexer.advance();
@@ -1498,9 +1498,9 @@ function unexpected(lexer: Lexer<*>, atToken?: ?Token): GraphQLError {
  */
 function any<T>(
   lexer: Lexer<*>,
-  openKind: string,
+  openKind: TokenKindEnum,
   parseFn: (lexer: Lexer<*>) => T,
-  closeKind: string,
+  closeKind: TokenKindEnum,
 ): Array<T> {
   expect(lexer, openKind);
   const nodes = [];
@@ -1518,9 +1518,9 @@ function any<T>(
  */
 function many<T>(
   lexer: Lexer<*>,
-  openKind: string,
+  openKind: TokenKindEnum,
   parseFn: (lexer: Lexer<*>) => T,
-  closeKind: string,
+  closeKind: TokenKindEnum,
 ): Array<T> {
   expect(lexer, openKind);
   const nodes = [parseFn(lexer)];
