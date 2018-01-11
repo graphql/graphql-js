@@ -212,7 +212,7 @@ describe('Type System Printer', () => {
       }
 
       type Root {
-        singleField(argOne: String = "tes\t de\fault"): String
+        singleField(argOne: String = "tes\\t de\\fault"): String
       }
     `);
   });
