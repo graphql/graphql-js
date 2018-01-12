@@ -171,6 +171,10 @@ Tok.prototype.toJSON = Tok.prototype.inspect = function toJSON() {
   };
 };
 
+function literalTok(kind, position, line, col, prev) {
+  return new Tok(kind, position, position + kind.length, line, col, prev);
+}
+
 function printCharCode(code) {
   return (
     // NaN/undefined represents access beyond the end of the file.
@@ -215,62 +219,58 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     );
   }
 
-  function literalTok(kind: TokenKindEnum) {
-    return new Tok(kind, position, position + kind.length, line, col, prev);
-  }
-
   switch (code) {
     // !
     case 33:
-      return literalTok(TokenKind.BANG);
+      return literalTok(TokenKind.BANG, position, line, col, prev);
     // #
     case 35:
       return readComment(source, position, line, col, prev);
     // $
     case 36:
-      return literalTok(TokenKind.DOLLAR);
+      return literalTok(TokenKind.DOLLAR, position, line, col, prev);
     // &
     case 38:
-      return literalTok(TokenKind.AMP);
+      return literalTok(TokenKind.AMP, position, line, col, prev);
     // (
     case 40:
-      return literalTok(TokenKind.PAREN_L);
+      return literalTok(TokenKind.PAREN_L, position, line, col, prev);
     // )
     case 41:
-      return literalTok(TokenKind.PAREN_R);
+      return literalTok(TokenKind.PAREN_R, position, line, col, prev);
     // .
     case 46:
       if (
         charCodeAt.call(body, position + 1) === 46 &&
         charCodeAt.call(body, position + 2) === 46
       ) {
-        return literalTok(TokenKind.SPREAD);
+        return literalTok(TokenKind.SPREAD, position, line, col, prev);
       }
       break;
     // :
     case 58:
-      return literalTok(TokenKind.COLON);
+      return literalTok(TokenKind.COLON, position, line, col, prev);
     // =
     case 61:
-      return literalTok(TokenKind.EQUALS);
+      return literalTok(TokenKind.EQUALS, position, line, col, prev);
     // @
     case 64:
-      return literalTok(TokenKind.AT);
+      return literalTok(TokenKind.AT, position, line, col, prev);
     // [
     case 91:
-      return literalTok(TokenKind.BRACKET_L);
+      return literalTok(TokenKind.BRACKET_L, position, line, col, prev);
     // ]
     case 93:
-      return literalTok(TokenKind.BRACKET_R);
+      return literalTok(TokenKind.BRACKET_R, position, line, col, prev);
     // {
     case 123:
-      return literalTok(TokenKind.BRACE_L);
+      return literalTok(TokenKind.BRACE_L, position, line, col, prev);
     // |
     case 124:
-      return literalTok(TokenKind.PIPE);
+      return literalTok(TokenKind.PIPE, position, line, col, prev);
     // }
     case 125:
-      return literalTok(TokenKind.BRACE_R);
+      return literalTok(TokenKind.BRACE_R, position, line, col, prev);
     // A-Z _ a-z
     case 65:
     case 66:
