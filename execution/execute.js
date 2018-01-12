@@ -29,6 +29,10 @@ var _iterall = require('iterall');
 
 var _error = require('../error');
 
+var _getPromise = require('../jsutils/getPromise');
+
+var _getPromise2 = _interopRequireDefault(_getPromise);
+
 var _invariant = require('../jsutils/invariant');
 
 var _invariant2 = _interopRequireDefault(_invariant);
@@ -44,6 +48,14 @@ var _isNullish2 = _interopRequireDefault(_isNullish);
 var _memoize = require('../jsutils/memoize3');
 
 var _memoize2 = _interopRequireDefault(_memoize);
+
+var _promiseForObject = require('../jsutils/promiseForObject');
+
+var _promiseForObject2 = _interopRequireDefault(_promiseForObject);
+
+var _promiseReduce = require('../jsutils/promiseReduce');
+
+var _promiseReduce2 = _interopRequireDefault(_promiseReduce);
 
 var _typeFromAST = require('../utilities/typeFromAST');
 
@@ -152,7 +164,7 @@ function executeImpl(schema, document, rootValue, contextValue, variableValues, 
  * response defined by the "Response" section of the GraphQL specification.
  */
 function buildResponse(context, data) {
-  var promise = getPromise(data);
+  var promise = (0, _getPromise2.default)(data);
   if (promise) {
     return promise.then(function (resolved) {
       return buildResponse(context, resolved);
@@ -280,7 +292,7 @@ function executeOperation(exeContext, operation, rootValue) {
   // Similar to completeValueCatchingError.
   try {
     var result = operation.operation === 'mutation' ? executeFieldsSerially(exeContext, type, rootValue, path, fields) : executeFields(exeContext, type, rootValue, path, fields);
-    var promise = getPromise(result);
+    var promise = (0, _getPromise2.default)(result);
     if (promise) {
       return promise.then(undefined, function (error) {
         exeContext.errors.push(error);
@@ -327,25 +339,23 @@ function getOperationRootType(schema, operation) {
  * for "write" mode.
  */
 function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields) {
-  return Object.keys(fields).reduce(function (prevPromise, responseName) {
-    return prevPromise.then(function (results) {
-      var fieldNodes = fields[responseName];
-      var fieldPath = addPath(path, responseName);
-      var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
-      if (result === undefined) {
-        return results;
-      }
-      var promise = getPromise(result);
-      if (promise) {
-        return promise.then(function (resolvedResult) {
-          results[responseName] = resolvedResult;
-          return results;
-        });
-      }
-      results[responseName] = result;
+  return (0, _promiseReduce2.default)(Object.keys(fields), function (results, responseName) {
+    var fieldNodes = fields[responseName];
+    var fieldPath = addPath(path, responseName);
+    var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
+    if (result === undefined) {
       return results;
-    });
-  }, Promise.resolve({}));
+    }
+    var promise = (0, _getPromise2.default)(result);
+    if (promise) {
+      return promise.then(function (resolvedResult) {
+        results[responseName] = resolvedResult;
+        return results;
+      });
+    }
+    results[responseName] = result;
+    return results;
+  }, Object.create(null));
 }
 
 /**
@@ -363,7 +373,7 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
       return results;
     }
     results[responseName] = result;
-    if (getPromise(result)) {
+    if ((0, _getPromise2.default)(result)) {
       containsPromise = true;
     }
     return results;
@@ -378,7 +388,7 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
   // of resolving that field, which is possibly a promise. Return
   // a promise that will return this same map, but with any
   // promises replaced with the values they resolved to.
-  return promiseForObject(finalResults);
+  return (0, _promiseForObject2.default)(finalResults);
 }
 
 /**
@@ -462,26 +472,6 @@ function doesFragmentConditionMatch(exeContext, fragment, type) {
 }
 
 /**
- * This function transforms a JS object `ObjMap<Promise<T>>` into
- * a `Promise<ObjMap<T>>`
- *
- * This is akin to bluebird's `Promise.props`, but implemented only using
- * `Promise.all` so it will work with any implementation of ES6 promises.
- */
-function promiseForObject(object) {
-  var keys = Object.keys(object);
-  var valuesAndPromises = keys.map(function (name) {
-    return object[name];
-  });
-  return Promise.all(valuesAndPromises).then(function (values) {
-    return values.reduce(function (resolvedObject, value, i) {
-      resolvedObject[keys[i]] = value;
-      return resolvedObject;
-    }, Object.create(null));
-  });
-}
-
-/**
  * Implements the logic to compute the key of a given field's entry
  */
 function getFieldEntryKey(node) {
@@ -546,7 +536,7 @@ function resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, s
     var context = exeContext.contextValue;
 
     var result = resolveFn(source, args, context, info);
-    var promise = getPromise(result);
+    var promise = (0, _getPromise2.default)(result);
     return promise ? promise.then(undefined, asErrorInstance) : result;
   } catch (error) {
     return asErrorInstance(error);
@@ -572,7 +562,7 @@ function completeValueCatchingError(exeContext, returnType, fieldNodes, info, pa
   // a null value for this field if one is encountered.
   try {
     var completed = completeValueWithLocatedError(exeContext, returnType, fieldNodes, info, path, result);
-    var promise = getPromise(completed);
+    var promise = (0, _getPromise2.default)(completed);
     if (promise) {
       // If `completeValueWithLocatedError` returned a rejected promise, log
       // the rejection error and resolve to null.
@@ -597,7 +587,7 @@ function completeValueCatchingError(exeContext, returnType, fieldNodes, info, pa
 function completeValueWithLocatedError(exeContext, returnType, fieldNodes, info, path, result) {
   try {
     var completed = completeValue(exeContext, returnType, fieldNodes, info, path, result);
-    var promise = getPromise(completed);
+    var promise = (0, _getPromise2.default)(completed);
     if (promise) {
       return promise.then(undefined, function (error) {
         return Promise.reject((0, _error.locatedError)(asErrorInstance(error), fieldNodes, responsePathAsArray(path)));
@@ -632,7 +622,7 @@ function completeValueWithLocatedError(exeContext, returnType, fieldNodes, info,
  */
 function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
   // If result is a Promise, apply-lift over completeValue.
-  var promise = getPromise(result);
+  var promise = (0, _getPromise2.default)(result);
   if (promise) {
     return promise.then(function (resolved) {
       return completeValue(exeContext, returnType, fieldNodes, info, path, resolved);
@@ -704,7 +694,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
     var fieldPath = addPath(path, index);
     var completedItem = completeValueCatchingError(exeContext, itemType, fieldNodes, info, fieldPath, item);
 
-    if (!containsPromise && getPromise(completedItem)) {
+    if (!containsPromise && (0, _getPromise2.default)(completedItem)) {
       containsPromise = true;
     }
     completedResults.push(completedItem);
@@ -733,7 +723,7 @@ function completeLeafValue(returnType, result) {
 function completeAbstractValue(exeContext, returnType, fieldNodes, info, path, result) {
   var runtimeType = returnType.resolveType ? returnType.resolveType(result, exeContext.contextValue, info) : defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
 
-  var promise = getPromise(runtimeType);
+  var promise = (0, _getPromise2.default)(runtimeType);
   if (promise) {
     return promise.then(function (resolvedRuntimeType) {
       return completeObjectValue(exeContext, ensureValidRuntimeType(resolvedRuntimeType, exeContext, returnType, fieldNodes, info, result), fieldNodes, info, path, result);
@@ -767,7 +757,7 @@ function completeObjectValue(exeContext, returnType, fieldNodes, info, path, res
   if (returnType.isTypeOf) {
     var isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
 
-    var promise = getPromise(isTypeOf);
+    var promise = (0, _getPromise2.default)(isTypeOf);
     if (promise) {
       return promise.then(function (isTypeOfResult) {
         if (!isTypeOfResult) {
@@ -839,7 +829,7 @@ function defaultResolveTypeFn(value, context, info, abstractType) {
     if (type.isTypeOf) {
       var isTypeOfResult = type.isTypeOf(value, context, info);
 
-      var promise = getPromise(isTypeOfResult);
+      var promise = (0, _getPromise2.default)(isTypeOfResult);
       if (promise) {
         promisedIsTypeOfResults[i] = promise;
       } else if (isTypeOfResult) {
@@ -875,16 +865,6 @@ var defaultFieldResolver = exports.defaultFieldResolver = function defaultFieldR
     return property;
   }
 };
-
-/**
- * Only returns the value if it acts like a Promise, i.e. has a "then" function,
- * otherwise returns void.
- */
-function getPromise(value) {
-  if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null && typeof value.then === 'function') {
-    return value;
-  }
-}
 
 /**
  * This method looks up the field on the given type defintion.

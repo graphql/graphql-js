@@ -11,10 +11,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 import { forEach, isCollection } from 'iterall';
 import { GraphQLError, locatedError } from '../error';
+import getPromise from '../jsutils/getPromise';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import memoize3 from '../jsutils/memoize3';
+import promiseForObject from '../jsutils/promiseForObject';
+import promiseReduce from '../jsutils/promiseReduce';
 
 
 import { typeFromAST } from '../utilities/typeFromAST';
@@ -288,25 +291,23 @@ export function getOperationRootType(schema, operation) {
  * for "write" mode.
  */
 function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields) {
-  return Object.keys(fields).reduce(function (prevPromise, responseName) {
-    return prevPromise.then(function (results) {
-      var fieldNodes = fields[responseName];
-      var fieldPath = addPath(path, responseName);
-      var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
-      if (result === undefined) {
-        return results;
-      }
-      var promise = getPromise(result);
-      if (promise) {
-        return promise.then(function (resolvedResult) {
-          results[responseName] = resolvedResult;
-          return results;
-        });
-      }
-      results[responseName] = result;
+  return promiseReduce(Object.keys(fields), function (results, responseName) {
+    var fieldNodes = fields[responseName];
+    var fieldPath = addPath(path, responseName);
+    var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
+    if (result === undefined) {
       return results;
-    });
-  }, Promise.resolve({}));
+    }
+    var promise = getPromise(result);
+    if (promise) {
+      return promise.then(function (resolvedResult) {
+        results[responseName] = resolvedResult;
+        return results;
+      });
+    }
+    results[responseName] = result;
+    return results;
+  }, Object.create(null));
 }
 
 /**
@@ -420,26 +421,6 @@ function doesFragmentConditionMatch(exeContext, fragment, type) {
     return exeContext.schema.isPossibleType(conditionalType, type);
   }
   return false;
-}
-
-/**
- * This function transforms a JS object `ObjMap<Promise<T>>` into
- * a `Promise<ObjMap<T>>`
- *
- * This is akin to bluebird's `Promise.props`, but implemented only using
- * `Promise.all` so it will work with any implementation of ES6 promises.
- */
-function promiseForObject(object) {
-  var keys = Object.keys(object);
-  var valuesAndPromises = keys.map(function (name) {
-    return object[name];
-  });
-  return Promise.all(valuesAndPromises).then(function (values) {
-    return values.reduce(function (resolvedObject, value, i) {
-      resolvedObject[keys[i]] = value;
-      return resolvedObject;
-    }, Object.create(null));
-  });
 }
 
 /**
@@ -836,16 +817,6 @@ export var defaultFieldResolver = function defaultFieldResolver(source, args, co
     return property;
   }
 };
-
-/**
- * Only returns the value if it acts like a Promise, i.e. has a "then" function,
- * otherwise returns void.
- */
-function getPromise(value) {
-  if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null && typeof value.then === 'function') {
-    return value;
-  }
-}
 
 /**
  * This method looks up the field on the given type defintion.
