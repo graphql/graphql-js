@@ -11,7 +11,7 @@ import dedent from '../dedent';
 
 describe('dedent', () => {
   it('removes indentation in typical usage', () => {
-    expect(dedent`
+    const output = dedent`
       type Query {
         me: User
       }
@@ -20,94 +20,127 @@ describe('dedent', () => {
         id: ID
         name: String
       }
-      `).to.equal(
-      'type Query {\n  me: User\n}\n\n' +
-        'type User {\n  id: ID\n  name: String\n}\n',
+      `;
+    expect(output).to.equal(
+      [
+        'type Query {',
+        '  me: User',
+        '}',
+        '',
+        'type User {',
+        '  id: ID',
+        '  name: String',
+        '}',
+        '',
+      ].join('\n'),
     );
   });
 
   it('removes only the first level of indentation', () => {
-    expect(dedent`
+    const output = dedent`
             qux
               quux
                 quuux
                   quuuux
-      `).to.equal('qux\n  quux\n    quuux\n      quuuux\n');
+      `;
+    expect(output).to.equal(
+      ['qux', '  quux', '    quuux', '      quuuux', ''].join('\n'),
+    );
   });
 
   it('does not escape special characters', () => {
-    expect(dedent`
+    const output = dedent`
       type Root {
         field(arg: String = "wi\th de\fault"): String
       }
-      `).to.equal(
-      'type Root {\n  field(arg: String = "wi\th de\fault"): String\n}\n',
+      `;
+    expect(output).to.equal(
+      [
+        'type Root {',
+        '  field(arg: String = "wi\th de\fault"): String',
+        '}',
+        '',
+      ].join('\n'),
     );
   });
 
   it('also works as an ordinary function on strings', () => {
-    expect(
-      dedent(`
+    const output = dedent(`
       type Query {
         me: User
       }
-      `),
-    ).to.equal('type Query {\n  me: User\n}\n');
+      `);
+    expect(output).to.equal(['type Query {', '  me: User', '}', ''].join('\n'));
   });
 
   it('also removes indentation using tabs', () => {
-    expect(dedent`
+    const output = dedent`
         \t\t    type Query {
         \t\t      me: User
         \t\t    }
-      `).to.equal('type Query {\n  me: User\n}\n');
+      `;
+    expect(output).to.equal(['type Query {', '  me: User', '}', ''].join('\n'));
   });
 
   it('removes leading newlines', () => {
-    expect(dedent`
+    const output = dedent`
 
 
       type Query {
         me: User
-      }`).to.equal('type Query {\n  me: User\n}');
+      }`;
+    expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
   });
 
   it('does not remove trailing newlines', () => {
-    expect(dedent`
+    const output = dedent`
       type Query {
         me: User
       }
 
-      `).to.equal('type Query {\n  me: User\n}\n\n');
+      `;
+    expect(output).to.equal(
+      ['type Query {', '  me: User', '}', '', ''].join('\n'),
+    );
   });
 
   it('removes all trailing spaces and tabs', () => {
-    expect(dedent`
+    const output = dedent`
       type Query {
         me: User
       }
-          \t\t  \t `).to.equal('type Query {\n  me: User\n}\n');
+          \t\t  \t `;
+    expect(output).to.equal(['type Query {', '  me: User', '}', ''].join('\n'));
   });
 
   it('works on text without leading newline', () => {
-    expect(dedent`      type Query {
+    const output = dedent`      type Query {
         me: User
-      }`).to.equal('type Query {\n  me: User\n}');
+      }`;
+    expect(output).to.equal(['type Query {', '  me: User', '}'].join('\n'));
   });
 
   it('supports expression interpolation', () => {
     const name = 'Luke Skywalker';
     const age = 42;
-    expect(dedent`
+    const output = dedent`
         {
           "me": {
             "name": "${name}"
             "age": ${age}
           }
         }
-      `).to.equal(
-      '{\n  "me": {\n    "name": "Luke Skywalker"\n' +
-        '    "age": 42\n  }\n}\n',
+      `;
+    expect(output).to.equal(
+      [
+        '{',
+        '  "me": {',
+        '    "name": "Luke Skywalker"',
+        '    "age": 42',
+        '  }',
+        '}',
+        '',
+      ].join('\n'),
     );
   });
 });
