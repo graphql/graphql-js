@@ -8,18 +8,18 @@
  */
 
 /**
- * fixes identation by removing leading spaces from each line
+ * fixes indentation by removing leading spaces from each line
  */
-function fixIdent(str: string): string {
-  const indent = /^\n?( *)/.exec(str)[1]; // figure out ident
+function fixIndent(str: string): string {
+  const indent = /^\n?( *)/.exec(str)[1]; // figure out indent
   return str
-    .replace(RegExp('^' + indent, 'mg'), '') // remove ident
+    .replace(RegExp('^' + indent, 'mg'), '') // remove indent
     .replace(/^\n*/m, '') //  remove leading newline
     .replace(/ *$/, ''); // remove trailing spaces
 }
 
 /**
- * An ES6 string tag that fixes identation. Also removes leading newlines
+ * An ES6 string tag that fixes indentation. Also removes leading newlines
  * but keeps trailing ones
  *
  * Example usage:
@@ -45,5 +45,5 @@ export default function dedent(
     }
   }
 
-  return fixIdent(res);
+  return fixIndent(res);
 }
