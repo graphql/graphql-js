@@ -94,4 +94,20 @@ describe('dedent', () => {
         me: User
       }`).to.equal('type Query {\n  me: User\n}');
   });
+
+  it('supports expression interpolation', () => {
+    const name = 'Luke Skywalker';
+    const age = 42;
+    expect(dedent`
+        {
+          "me": {
+            "name": "${name}"
+            "age": ${age}
+          }
+        }
+      `).to.equal(
+      '{\n  "me": {\n    "name": "Luke Skywalker"\n' +
+        '    "age": 42\n  }\n}\n',
+    );
+  });
 });
