@@ -171,10 +171,6 @@ Tok.prototype.toJSON = Tok.prototype.inspect = function toJSON() {
   };
 };
 
-function literalTok(kind, position, line, col, prev) {
-  return new Tok(kind, position, position + kind.length, line, col, prev);
-}
-
 function printCharCode(code) {
   return (
     // NaN/undefined represents access beyond the end of the file.
