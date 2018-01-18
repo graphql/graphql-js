@@ -19,10 +19,12 @@ import { DirectiveLocation } from '../language/directiveLocation';
 import {
   isInputType,
   isOutputType,
+  isInputObjectType,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
+  GraphQLInputUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   assertNullableType,
@@ -52,6 +54,7 @@ import type {
   IntrospectionObjectType,
   IntrospectionInterfaceType,
   IntrospectionUnionType,
+  IntrospectionInputUnionType,
   IntrospectionEnumType,
   IntrospectionInputObjectType,
   IntrospectionTypeRef,
@@ -154,6 +157,17 @@ export function buildClientSchema(
     return type;
   }
 
+  function getInputObjectType(
+    typeRef: IntrospectionInputObjectType,
+  ): GraphQLInputObjectType {
+    const type = getType(typeRef);
+    invariant(
+      isInputObjectType(type),
+      'Introspection must provide input type for arguments.',
+    );
+    return type;
+  }
+
   function getOutputType(
     typeRef: IntrospectionOutputTypeRef,
   ): GraphQLOutputType {
@@ -192,6 +206,8 @@ export function buildClientSchema(
           return buildInterfaceDef(type);
         case TypeKind.UNION:
           return buildUnionDef(type);
+        case TypeKind.INPUT_UNION:
+          return buildInputUnionDef(type);
         case TypeKind.ENUM:
           return buildEnumDef(type);
         case TypeKind.INPUT_OBJECT:
@@ -255,6 +271,22 @@ export function buildClientSchema(
       name: unionIntrospection.name,
       description: unionIntrospection.description,
       types: unionIntrospection.possibleTypes.map(getObjectType),
+    });
+  }
+
+  function buildInputUnionDef(
+    inputUnionIntrospection: IntrospectionInputUnionType,
+  ): GraphQLInputUnionType {
+    if (!inputUnionIntrospection.possibleTypes) {
+      throw new Error(
+        'Introspection result missing possibleTypes: ' +
+          JSON.stringify(inputUnionIntrospection),
+      );
+    }
+    return new GraphQLInputUnionType({
+      name: inputUnionIntrospection.name,
+      description: inputUnionIntrospection.description,
+      types: inputUnionIntrospection.possibleTypes.map(getInputObjectType),
     });
   }
 

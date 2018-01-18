@@ -131,6 +131,7 @@ export type IntrospectionType =
   | IntrospectionObjectType
   | IntrospectionInterfaceType
   | IntrospectionUnionType
+  | IntrospectionInputUnionType
   | IntrospectionEnumType
   | IntrospectionInputObjectType;
 
@@ -144,6 +145,7 @@ export type IntrospectionOutputType =
 export type IntrospectionInputType =
   | IntrospectionScalarType
   | IntrospectionEnumType
+  | IntrospectionInputUnionType
   | IntrospectionInputObjectType;
 
 export type IntrospectionScalarType = {
@@ -179,6 +181,13 @@ export type IntrospectionUnionType = {
   +possibleTypes: $ReadOnlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>,
   >,
+};
+
+export type IntrospectionInputUnionType = {
+  +kind: 'INPUT_UNION',
+  +name: string,
+  +description?: ?string,
+  +possibleTypes: $ReadOnlyArray<IntrospectionInputObjectType>,
 };
 
 export type IntrospectionEnumType = {

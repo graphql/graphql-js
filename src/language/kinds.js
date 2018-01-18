@@ -62,6 +62,7 @@ export const FIELD_DEFINITION = 'FieldDefinition';
 export const INPUT_VALUE_DEFINITION = 'InputValueDefinition';
 export const INTERFACE_TYPE_DEFINITION = 'InterfaceTypeDefinition';
 export const UNION_TYPE_DEFINITION = 'UnionTypeDefinition';
+export const INPUT_UNION_TYPE_DEFINITION = 'InputUnionTypeDefinition';
 export const ENUM_TYPE_DEFINITION = 'EnumTypeDefinition';
 export const ENUM_VALUE_DEFINITION = 'EnumValueDefinition';
 export const INPUT_OBJECT_TYPE_DEFINITION = 'InputObjectTypeDefinition';
@@ -72,6 +73,7 @@ export const SCALAR_TYPE_EXTENSION = 'ScalarTypeExtension';
 export const OBJECT_TYPE_EXTENSION = 'ObjectTypeExtension';
 export const INTERFACE_TYPE_EXTENSION = 'InterfaceTypeExtension';
 export const UNION_TYPE_EXTENSION = 'UnionTypeExtension';
+export const INPUT_UNION_TYPE_EXTENSION = 'InputUnionTypeExtension';
 export const ENUM_TYPE_EXTENSION = 'EnumTypeExtension';
 export const INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension';
 

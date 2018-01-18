@@ -146,6 +146,8 @@ describe('Printer: SDL document', () => {
         other: Float = 1.23e4
       }
 
+      inputUnion InputOrAnnotated = InputType | AnnotatedInput
+
       extend input InputType @onInputObject
 
       directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT

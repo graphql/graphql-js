@@ -15,6 +15,7 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
+  GraphQLInputUnionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLString,
@@ -23,6 +24,7 @@ import {
   isObjectType,
   isInterfaceType,
   isUnionType,
+  isInputUnionType,
   isEnumType,
   isInputObjectType,
   isListType,
@@ -40,6 +42,7 @@ import {
   assertObjectType,
   assertInterfaceType,
   assertUnionType,
+  assertInputUnionType,
   assertEnumType,
   assertInputObjectType,
   assertListType,
@@ -59,6 +62,10 @@ import {
 const ObjectType = new GraphQLObjectType({ name: 'Object' });
 const InterfaceType = new GraphQLInterfaceType({ name: 'Interface' });
 const UnionType = new GraphQLUnionType({ name: 'Union', types: [ObjectType] });
+const InputUnionType = new GraphQLInputUnionType({
+  name: 'Union',
+  types: [new GraphQLInputObjectType({ name: 'InputUnionObject' })],
+});
 const EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
 const InputObjectType = new GraphQLInputObjectType({ name: 'InputObject' });
 const ScalarType = new GraphQLScalarType({
@@ -163,6 +170,30 @@ describe('Type predicates', () => {
     it('returns false for non-union type', () => {
       expect(isUnionType(ObjectType)).to.equal(false);
       expect(() => assertUnionType(ObjectType)).to.throw();
+    });
+  });
+
+  describe('isInputUnionType', () => {
+    it('returns true for input union type', () => {
+      expect(isInputUnionType(InputUnionType)).to.equal(true);
+      expect(() => assertInputUnionType(InputUnionType)).not.to.throw();
+    });
+
+    it('returns false for union type', () => {
+      expect(isInputUnionType(UnionType)).to.equal(false);
+      expect(() => assertInputUnionType(UnionType)).to.throw();
+    });
+
+    it('returns false for wrapped input union type', () => {
+      expect(isInputUnionType(GraphQLList(InputUnionType))).to.equal(false);
+      expect(() =>
+        assertInputUnionType(GraphQLList(InputUnionType)),
+      ).to.throw();
+    });
+
+    it('returns false for non-union type', () => {
+      expect(isInputUnionType(ObjectType)).to.equal(false);
+      expect(() => assertInputUnionType(ObjectType)).to.throw();
     });
   });
 

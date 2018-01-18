@@ -98,6 +98,7 @@ export function extendSchema(
       case Kind.INTERFACE_TYPE_DEFINITION:
       case Kind.ENUM_TYPE_DEFINITION:
       case Kind.UNION_TYPE_DEFINITION:
+      case Kind.INPUT_UNION_TYPE_DEFINITION:
       case Kind.SCALAR_TYPE_DEFINITION:
       case Kind.INPUT_OBJECT_TYPE_DEFINITION:
         // Sanity check that none of the defined types conflict with the

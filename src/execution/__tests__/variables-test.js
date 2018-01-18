@@ -13,6 +13,7 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLInputObjectType,
+  GraphQLInputUnionType,
   GraphQLList,
   GraphQLString,
   GraphQLNonNull,
@@ -59,12 +60,46 @@ const TestNestedInputObject = new GraphQLInputObjectType({
   },
 });
 
+const TestUnionInputObjectA = new GraphQLInputObjectType({
+  name: 'TestUnionInputObjectA',
+  fields: {
+    a: { type: GraphQLString },
+    b: { type: GraphQLList(GraphQLString) },
+  },
+});
+
+const TestUnionInputObjectB = new GraphQLInputObjectType({
+  name: 'TestUnionInputObjectB',
+  fields: {
+    c: { type: GraphQLNonNull(GraphQLString) },
+    d: { type: TestComplexScalar },
+  },
+});
+
+const TestInputUnion = new GraphQLInputUnionType({
+  name: 'TestInputUnion',
+  types: [TestUnionInputObjectA, TestUnionInputObjectB],
+});
+
+const TestNestedInputUnion = new GraphQLInputObjectType({
+  name: 'TestNestedInputUnion',
+  fields: {
+    na: { type: GraphQLNonNull(TestInputUnion) },
+    nb: { type: GraphQLNonNull(GraphQLString) },
+  },
+});
+
 const TestType = new GraphQLObjectType({
   name: 'TestType',
   fields: {
     fieldWithObjectInput: {
       type: GraphQLString,
       args: { input: { type: TestInputObject } },
+      resolve: (_, { input }) => input && JSON.stringify(input),
+    },
+    fieldWithUnionInput: {
+      type: GraphQLString,
+      args: { input: { type: TestInputUnion } },
       resolve: (_, { input }) => input && JSON.stringify(input),
     },
     fieldWithNullableStringInput: {
@@ -87,6 +122,15 @@ const TestType = new GraphQLObjectType({
       args: {
         input: {
           type: TestNestedInputObject,
+        },
+      },
+      resolve: (_, { input }) => input && JSON.stringify(input),
+    },
+    fieldWithNestedUnionInput: {
+      type: GraphQLString,
+      args: {
+        input: {
+          type: TestNestedInputUnion,
           defaultValue: 'Hello World',
         },
       },
@@ -229,6 +273,115 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
+    describe('using inline structs with union input', () => {
+      it('executes with complex input', async () => {
+        const doc = `
+        {
+          a: fieldWithUnionInput(input: {__inputname: "TestUnionInputObjectA", a: "foo", b: ["bar"]})
+          b: fieldWithUnionInput(input: {__inputname: "TestUnionInputObjectB", c: "baz"})
+        }
+        `;
+        const ast = parse(doc);
+
+        expect(await execute(schema, ast)).to.deep.equal({
+          data: {
+            a: '{"__inputname":"TestUnionInputObjectA","a":"foo","b":["bar"]}',
+            b: '{"__inputname":"TestUnionInputObjectB","c":"baz"}',
+          },
+        });
+      });
+
+      it('properly parses single value to list', async () => {
+        const doc = `
+        {
+          fieldWithUnionInput(input: {__inputname: "TestUnionInputObjectA", a: "foo", b: "bar"})
+        }
+        `;
+        const ast = parse(doc);
+
+        expect(await execute(schema, ast)).to.deep.equal({
+          data: {
+            fieldWithUnionInput:
+              '{"__inputname":"TestUnionInputObjectA","a":"foo","b":["bar"]}',
+          },
+        });
+      });
+
+      it('properly parses null value to null', async () => {
+        const doc = `
+        {
+          a: fieldWithUnionInput(input: {__inputname: "TestUnionInputObjectA", a: null, b: null, c: "C", d: null})
+          b: fieldWithUnionInput(input: {__inputname: "TestUnionInputObjectB", c: "C", d: null})
+        }
+        `;
+        const ast = parse(doc);
+
+        expect(await execute(schema, ast)).to.deep.equal({
+          data: {
+            a: '{"__inputname":"TestUnionInputObjectA","a":null,"b":null}',
+            b: '{"__inputname":"TestUnionInputObjectB","c":"C","d":null}',
+          },
+        });
+      });
+
+      it('properly parses null value in list', async () => {
+        const doc = `
+        {
+          fieldWithUnionInput(input: {__inputname: "TestUnionInputObjectA", b: ["A",null,"C"]})
+        }
+        `;
+        const ast = parse(doc);
+
+        expect(await execute(schema, ast)).to.deep.equal({
+          data: {
+            fieldWithUnionInput:
+              '{"__inputname":"TestUnionInputObjectA","b":["A",null,"C"]}',
+          },
+        });
+      });
+
+      it('does not use incorrect value', async () => {
+        const doc = `
+        {
+          fieldWithUnionInput(input: ["foo", "bar", "baz"])
+        }
+        `;
+        const ast = parse(doc);
+
+        const result = await execute(schema, ast);
+
+        expect(result).to.containSubset({
+          data: {
+            fieldWithUnionInput: null,
+          },
+          errors: [
+            {
+              message:
+                'Argument "input" has invalid value ["foo", "bar", "baz"].',
+              path: ['fieldWithUnionInput'],
+              locations: [{ line: 3, column: 38 }],
+            },
+          ],
+        });
+      });
+
+      it('properly runs parseLiteral on complex scalar types', async () => {
+        const doc = `
+        {
+          fieldWithUnionInput(input: {__inputname:"TestUnionInputObjectB", c: "foo", d: "SerializedValue"})
+        }
+        `;
+        const ast = parse(doc);
+
+        expect(await execute(schema, ast)).to.deep.equal({
+          data: {
+            fieldWithUnionInput:
+              '{"__inputname":"TestUnionInputObjectB","c":"foo","d":"DeserializedValue"}',
+          },
+        });
+      });
+    });
+
     describe('using variables', () => {
       const doc = `
         query q($input: TestInputObject) {
@@ -341,7 +494,7 @@ describe('Execute: Handles inputs', () => {
       it('errors on deep nested errors and with many errors', async () => {
         const nestedDoc = `
           query q($input: TestNestedInputObject) {
-            fieldWithNestedObjectInput(input: $input)
+            fieldWithNestedInputObject(input: $input)
           }
         `;
         const nestedAst = parse(nestedDoc);
@@ -381,6 +534,186 @@ describe('Execute: Handles inputs', () => {
                 'Variable "$input" got invalid value ' +
                 '{"a":"foo","b":"bar","c":"baz","extra":"dog"}; ' +
                 'Field "extra" is not defined by type TestInputObject.',
+              locations: [{ line: 2, column: 17 }],
+              path: undefined,
+            },
+          ],
+        });
+      });
+    });
+
+    describe('using variables with union input', () => {
+      const doc = `
+        query q($input: TestInputUnion) {
+          fieldWithUnionInput(input: $input)
+        }
+      `;
+      const ast = parse(doc);
+
+      it('executes with complex input', async () => {
+        const params = {
+          input: { a: 'foo', b: ['bar'], __inputname: 'TestUnionInputObjectA' },
+        };
+        const result = await execute(schema, ast, null, null, params);
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithUnionInput:
+              '{"__inputname":"TestUnionInputObjectA","a":"foo","b":["bar"]}',
+          },
+        });
+      });
+
+      it('uses default value when not provided', async () => {
+        const withDefaultsAST = parse(`
+          query q($input: TestInputUnion = {__inputname:"TestUnionInputObjectA", a: "foo", b: ["bar"], c: "baz"}) {
+            fieldWithUnionInput(input: $input)
+          }
+        `);
+
+        const result = await execute(schema, withDefaultsAST);
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithUnionInput:
+              '{"__inputname":"TestUnionInputObjectA","a":"foo","b":["bar"]}',
+          },
+        });
+      });
+
+      it('properly parses single value to list', async () => {
+        const params = {
+          input: { a: 'foo', b: 'bar', __inputname: 'TestUnionInputObjectA' },
+        };
+        const result = await execute(schema, ast, null, null, params);
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithUnionInput:
+              '{"__inputname":"TestUnionInputObjectA","a":"foo","b":["bar"]}',
+          },
+        });
+      });
+
+      it('executes with complex scalar input', async () => {
+        const params = {
+          input: {
+            c: 'foo',
+            d: 'SerializedValue',
+            __inputname: 'TestUnionInputObjectB',
+          },
+        };
+        const result = await execute(schema, ast, null, null, params);
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithUnionInput:
+              '{"__inputname":"TestUnionInputObjectB","c":"foo","d":"DeserializedValue"}',
+          },
+        });
+      });
+
+      it('errors on null for nested non-null', async () => {
+        const params = {
+          input: { __inputname: 'TestUnionInputObjectB', c: null },
+        };
+
+        const result = await execute(schema, ast, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value ' +
+                '{"__inputname":"TestUnionInputObjectB","c":null}; ' +
+                'Expected non-nullable type String! not to be null at value.c.',
+              locations: [{ line: 2, column: 17 }],
+              path: undefined,
+            },
+          ],
+        });
+      });
+
+      it('errors on incorrect type', async () => {
+        const params = { input: 'foo bar' };
+
+        const result = await execute(schema, ast, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value "foo bar"; ' +
+                'Expected type TestInputUnion to be an object.',
+              locations: [{ line: 2, column: 17 }],
+              path: undefined,
+            },
+          ],
+        });
+      });
+
+      it('errors on omission of nested non-null', async () => {
+        const params = { input: { __inputname: 'TestUnionInputObjectB' } };
+
+        const result = await execute(schema, ast, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value {"__inputname":"TestUnionInputObjectB"}; ' +
+                'Field value.c of required type String! was not provided.',
+              locations: [{ line: 2, column: 17 }],
+              path: undefined,
+            },
+          ],
+        });
+      });
+
+      it('errors on deep nested errors and with many errors', async () => {
+        const nestedDoc = `
+          query q($input: TestNestedInputObject) {
+            fieldWithNestedUnionInput(input: $input)
+          }
+        `;
+        const nestedAst = parse(nestedDoc);
+        const params = { input: { na: { a: 'foo' } } };
+
+        const result = await execute(schema, nestedAst, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value {"na":{"a":"foo"}}; ' +
+                'Field value.na.c of required type String! was not provided.',
+              locations: [{ line: 2, column: 19 }],
+              path: undefined,
+            },
+            {
+              message:
+                'Variable "$input" got invalid value {"na":{"a":"foo"}}; ' +
+                'Field value.nb of required type String! was not provided.',
+              locations: [{ line: 2, column: 19 }],
+              path: undefined,
+            },
+          ],
+        });
+      });
+
+      it('errors on addition of unknown input field', async () => {
+        const params = {
+          input: {
+            __inputname: 'TestUnionInputObjectB',
+            c: 'baz',
+            extra: 'dog',
+          },
+        };
+
+        const result = await execute(schema, ast, null, null, params);
+        expect(result).to.deep.equal({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value ' +
+                '{"__inputname":"TestUnionInputObjectB","c":"baz","extra":"dog"}; ' +
+                'Field "extra" is not defined by type TestUnionInputObjectB.',
               locations: [{ line: 2, column: 17 }],
               path: undefined,
             },

@@ -149,6 +149,7 @@ export type ASTNode =
   | InputValueDefinitionNode
   | InterfaceTypeDefinitionNode
   | UnionTypeDefinitionNode
+  | InputUnionTypeDefinitionNode
   | EnumTypeDefinitionNode
   | EnumValueDefinitionNode
   | InputObjectTypeDefinitionNode
@@ -156,6 +157,7 @@ export type ASTNode =
   | ObjectTypeExtensionNode
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
+  | InputUnionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
   | DirectiveDefinitionNode;
@@ -196,6 +198,7 @@ export type ASTKindToNode = {
   InputValueDefinition: InputValueDefinitionNode,
   InterfaceTypeDefinition: InterfaceTypeDefinitionNode,
   UnionTypeDefinition: UnionTypeDefinitionNode,
+  InputUnionTypeDefinition: InputUnionTypeDefinitionNode,
   EnumTypeDefinition: EnumTypeDefinitionNode,
   EnumValueDefinition: EnumValueDefinitionNode,
   InputObjectTypeDefinition: InputObjectTypeDefinitionNode,
@@ -203,6 +206,7 @@ export type ASTKindToNode = {
   ObjectTypeExtension: ObjectTypeExtensionNode,
   InterfaceTypeExtension: InterfaceTypeExtensionNode,
   UnionTypeExtension: UnionTypeExtensionNode,
+  InputUnionTypeExtension: InputUnionTypeExtensionNode,
   EnumTypeExtension: EnumTypeExtensionNode,
   InputObjectTypeExtension: InputObjectTypeExtensionNode,
   DirectiveDefinition: DirectiveDefinitionNode,
@@ -440,6 +444,7 @@ export type TypeDefinitionNode =
   | ObjectTypeDefinitionNode
   | InterfaceTypeDefinitionNode
   | UnionTypeDefinitionNode
+  | InputUnionTypeDefinitionNode
   | EnumTypeDefinitionNode
   | InputObjectTypeDefinitionNode;
 
@@ -499,6 +504,15 @@ export type UnionTypeDefinitionNode = {
   +types?: $ReadOnlyArray<NamedTypeNode>,
 };
 
+export type InputUnionTypeDefinitionNode = {
+  +kind: 'InputUnionTypeDefinition',
+  +loc?: Location,
+  +description?: StringValueNode,
+  +name: NameNode,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +types?: $ReadOnlyArray<NamedTypeNode>,
+};
+
 export type EnumTypeDefinitionNode = {
   +kind: 'EnumTypeDefinition',
   +loc?: Location,
@@ -532,6 +546,7 @@ export type TypeExtensionNode =
   | ObjectTypeExtensionNode
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
+  | InputUnionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode;
 
@@ -561,6 +576,14 @@ export type InterfaceTypeExtensionNode = {
 
 export type UnionTypeExtensionNode = {
   +kind: 'UnionTypeExtension',
+  +loc?: Location,
+  +name: NameNode,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +types?: $ReadOnlyArray<NamedTypeNode>,
+};
+
+export type InputUnionTypeExtensionNode = {
+  +kind: 'InputUnionTypeExtension',
   +loc?: Location,
   +name: NameNode,
   +directives?: $ReadOnlyArray<DirectiveNode>,

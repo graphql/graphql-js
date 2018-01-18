@@ -717,6 +717,9 @@ describe('Type System Printer', () => {
         """Location adjacent to a union definition."""
         UNION
 
+        """Location adjacent to an input union definition."""
+        INPUT_UNION
+
         """Location adjacent to an enum definition."""
         ENUM
 
@@ -837,6 +840,11 @@ describe('Type System Printer', () => {
         """Indicates this type is a union. \`possibleTypes\` is a valid field."""
         UNION
 
+        """
+        Indicates this type is a union of input objects. \`possibleTypes\` is a valid field.
+        """
+        INPUT_UNION
+
         """Indicates this type is an enum. \`enumValues\` is a valid field."""
         ENUM
 
@@ -952,6 +960,9 @@ describe('Type System Printer', () => {
         # Location adjacent to a union definition.
         UNION
 
+        # Location adjacent to an input union definition.
+        INPUT_UNION
+
         # Location adjacent to an enum definition.
         ENUM
 
@@ -1051,6 +1062,9 @@ describe('Type System Printer', () => {
 
         # Indicates this type is a union. \`possibleTypes\` is a valid field.
         UNION
+
+        # Indicates this type is a union of input objects. \`possibleTypes\` is a valid field.
+        INPUT_UNION
 
         # Indicates this type is an enum. \`enumValues\` is a valid field.
         ENUM

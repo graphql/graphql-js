@@ -23,6 +23,7 @@ export {
   isObjectType,
   isInterfaceType,
   isUnionType,
+  isInputUnionType,
   isEnumType,
   isInputObjectType,
   isListType,
@@ -41,6 +42,7 @@ export {
   assertObjectType,
   assertInterfaceType,
   assertUnionType,
+  assertInputUnionType,
   assertEnumType,
   assertInputObjectType,
   assertListType,
@@ -61,6 +63,7 @@ export {
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
+  GraphQLInputUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
 } from './definition';
@@ -155,6 +158,7 @@ export type {
   GraphQLScalarTypeConfig,
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
+  GraphQLInputUnionTypeConfig,
 } from './definition';
 
 export { validateSchema, assertValidSchema } from './validate';

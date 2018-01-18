@@ -13,6 +13,7 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
+  GraphQLInputUnionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLInt,
@@ -95,6 +96,10 @@ const InterfaceType = new GraphQLInterfaceType({ name: 'Interface' });
 const UnionType = new GraphQLUnionType({ name: 'Union', types: [ObjectType] });
 const EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
 const InputObjectType = new GraphQLInputObjectType({ name: 'InputObject' });
+const InputUnionType = new GraphQLInputUnionType({
+  name: 'InputUnion',
+  types: [InputObjectType],
+});
 const ScalarType = new GraphQLScalarType({
   name: 'Scalar',
   serialize() {},
@@ -343,6 +348,7 @@ describe('Type System: Example', () => {
     expect(String(BlogArticle)).to.equal('Article');
     expect(String(InterfaceType)).to.equal('Interface');
     expect(String(UnionType)).to.equal('Union');
+    expect(String(InputUnionType)).to.equal('InputUnion');
     expect(String(EnumType)).to.equal('Enum');
     expect(String(InputObjectType)).to.equal('InputObject');
     expect(String(GraphQLNonNull(GraphQLInt))).to.equal('Int!');
