@@ -145,7 +145,8 @@ describe('Printer: Query document', () => {
 
     const printed = print(ast);
 
-    expect(printed).to.equal(dedent`
+    expect(printed).to.equal(
+      dedent(String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) {
         whoever123is: node(id: [123, 456]) {
           id
@@ -198,6 +199,7 @@ describe('Printer: Query document', () => {
         unnamed(truthy: true, falsey: false, nullish: null)
         query
       }
-    `);
+    `),
+    );
   });
 });
