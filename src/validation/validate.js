@@ -11,7 +11,7 @@ import invariant from '../jsutils/invariant';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { GraphQLError } from '../error';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import type {
   DocumentNode,
   OperationDefinitionNode,

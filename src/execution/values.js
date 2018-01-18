@@ -14,7 +14,7 @@ import keyMap from '../jsutils/keyMap';
 import { coerceValue } from '../utilities/coerceValue';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 import { isInputType, isNonNullType } from '../type/definition';
 import type { ObjMap } from '../jsutils/ObjMap';

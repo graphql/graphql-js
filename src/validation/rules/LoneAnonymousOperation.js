@@ -9,7 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import { OPERATION_DEFINITION } from '../../language/kinds';
+import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function anonOperationNotAloneMessage(): string {
@@ -27,7 +27,7 @@ export function LoneAnonymousOperation(context: ValidationContext): ASTVisitor {
   return {
     Document(node) {
       operationCount = node.definitions.filter(
-        definition => definition.kind === OPERATION_DEFINITION,
+        definition => definition.kind === Kind.OPERATION_DEFINITION,
       ).length;
     },
     OperationDefinition(node) {

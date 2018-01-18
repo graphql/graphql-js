@@ -17,7 +17,7 @@ import type {
   ArgumentNode,
   FragmentDefinitionNode,
 } from '../../language/ast';
-import * as Kind from '../../language/kinds';
+import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
 import {

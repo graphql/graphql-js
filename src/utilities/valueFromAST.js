@@ -10,7 +10,7 @@
 import keyMap from '../jsutils/keyMap';
 import isInvalid from '../jsutils/isInvalid';
 import type { ObjMap } from '../jsutils/ObjMap';
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import {
   isScalarType,
   isEnumType,
