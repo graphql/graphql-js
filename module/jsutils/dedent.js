@@ -8,18 +8,18 @@
  */
 
 /**
- * fixes indentation by removing leading spaces from each line
+ * fixes indentation by removing leading spaces and tabs from each line
  */
 function fixIndent(str) {
-  var indent = /^\n?( *)/.exec(str)[1]; // figure out indent
-  return str.replace(RegExp('^' + indent, 'mg'), '') // remove indent
-  .replace(/^\n*/m, '') //  remove leading newline
-  .replace(/ *$/, ''); // remove trailing spaces
+  var trimmedStr = str.replace(/^\n*/m, '') //  remove leading newline
+  .replace(/[ \t]*$/, ''); // remove trailing spaces and tabs
+  var indent = /^[ \t]*/.exec(trimmedStr)[0]; // figure out indent
+  return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
 }
 
 /**
  * An ES6 string tag that fixes indentation. Also removes leading newlines
- * but keeps trailing ones
+ * and trailing spaces and tabs, but keeps trailing newlines.
  *
  * Example usage:
  * const str = dedent`
@@ -30,16 +30,21 @@ function fixIndent(str) {
  * str === "{\n  test\n}\n";
  */
 export default function dedent(strings) {
-  var raw = typeof strings === 'string' ? [strings] : strings.raw;
-  var res = '';
-  // interpolation
-  for (var i = 0; i < raw.length; i++) {
-    res += raw[i].replace(/\\`/g, '`'); // handle escaped backticks
-
-    if (i < (arguments.length <= 1 ? 0 : arguments.length - 1)) {
-      res += arguments.length <= i + 1 ? undefined : arguments[i + 1];
-    }
+  for (var _len = arguments.length, values = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    values[_key - 1] = arguments[_key];
   }
 
-  return fixIndent(res);
+  // when used as an ordinary function, allow passing a singleton string
+  var strArray = typeof strings === 'string' ? [strings] : strings;
+  var numValues = values.length;
+
+  var str = strArray.reduce(function (prev, cur, index) {
+    var next = prev + cur;
+    if (index < numValues) {
+      next += values[index]; // interpolation
+    }
+    return next;
+  }, '');
+
+  return fixIndent(str);
 }

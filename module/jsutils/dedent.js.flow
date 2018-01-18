@@ -8,19 +8,19 @@
  */
 
 /**
- * fixes indentation by removing leading spaces from each line
+ * fixes indentation by removing leading spaces and tabs from each line
  */
 function fixIndent(str: string): string {
-  const indent = /^\n?( *)/.exec(str)[1]; // figure out indent
-  return str
-    .replace(RegExp('^' + indent, 'mg'), '') // remove indent
+  const trimmedStr = str
     .replace(/^\n*/m, '') //  remove leading newline
-    .replace(/ *$/, ''); // remove trailing spaces
+    .replace(/[ \t]*$/, ''); // remove trailing spaces and tabs
+  const indent = /^[ \t]*/.exec(trimmedStr)[0]; // figure out indent
+  return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
 }
 
 /**
  * An ES6 string tag that fixes indentation. Also removes leading newlines
- * but keeps trailing ones
+ * and trailing spaces and tabs, but keeps trailing newlines.
  *
  * Example usage:
  * const str = dedent`
@@ -31,19 +31,20 @@ function fixIndent(str: string): string {
  * str === "{\n  test\n}\n";
  */
 export default function dedent(
-  strings: string | { raw: [string] },
+  strings: string | Array<string>,
   ...values: Array<string>
-) {
-  const raw = typeof strings === 'string' ? [strings] : strings.raw;
-  let res = '';
-  // interpolation
-  for (let i = 0; i < raw.length; i++) {
-    res += raw[i].replace(/\\`/g, '`'); // handle escaped backticks
+): string {
+  // when used as an ordinary function, allow passing a singleton string
+  const strArray = typeof strings === 'string' ? [strings] : strings;
+  const numValues = values.length;
 
-    if (i < values.length) {
-      res += values[i];
+  const str = strArray.reduce((prev, cur, index) => {
+    let next = prev + cur;
+    if (index < numValues) {
+      next += values[index]; // interpolation
     }
-  }
+    return next;
+  }, '');
 
-  return fixIndent(res);
+  return fixIndent(str);
 }
