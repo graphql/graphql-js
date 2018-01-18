@@ -200,21 +200,21 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
   const body = source.body;
   const bodyLength = body.length;
 
-  const position = positionAfterWhitespace(body, prev.end, lexer);
+  const pos = positionAfterWhitespace(body, prev.end, lexer);
   const line = lexer.line;
-  const col = 1 + position - lexer.lineStart;
+  const col = 1 + pos - lexer.lineStart;
 
-  if (position >= bodyLength) {
+  if (pos >= bodyLength) {
     return new Tok(TokenKind.EOF, bodyLength, bodyLength, line, col, prev);
   }
 
-  const code = charCodeAt.call(body, position);
+  const code = charCodeAt.call(body, pos);
 
   // SourceCharacter
   if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
     throw syntaxError(
       source,
-      position,
+      pos,
       `Cannot contain the invalid character ${printCharCode(code)}.`,
     );
   }
@@ -222,55 +222,55 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
   switch (code) {
     // !
     case 33:
-      return literalTok(TokenKind.BANG, position, line, col, prev);
+      return new Tok(TokenKind.BANG, pos, pos + 1, line, col, prev);
     // #
     case 35:
-      return readComment(source, position, line, col, prev);
+      return readComment(source, pos, line, col, prev);
     // $
     case 36:
-      return literalTok(TokenKind.DOLLAR, position, line, col, prev);
+      return new Tok(TokenKind.DOLLAR, pos, pos + 1, line, col, prev);
     // &
     case 38:
-      return literalTok(TokenKind.AMP, position, line, col, prev);
+      return new Tok(TokenKind.AMP, pos, pos + 1, line, col, prev);
     // (
     case 40:
-      return literalTok(TokenKind.PAREN_L, position, line, col, prev);
+      return new Tok(TokenKind.PAREN_L, pos, pos + 1, line, col, prev);
     // )
     case 41:
-      return literalTok(TokenKind.PAREN_R, position, line, col, prev);
+      return new Tok(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
     // .
     case 46:
       if (
-        charCodeAt.call(body, position + 1) === 46 &&
-        charCodeAt.call(body, position + 2) === 46
+        charCodeAt.call(body, pos + 1) === 46 &&
+        charCodeAt.call(body, pos + 2) === 46
       ) {
-        return literalTok(TokenKind.SPREAD, position, line, col, prev);
+        return new Tok(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
       }
       break;
     // :
     case 58:
-      return literalTok(TokenKind.COLON, position, line, col, prev);
+      return new Tok(TokenKind.COLON, pos, pos + 1, line, col, prev);
     // =
     case 61:
-      return literalTok(TokenKind.EQUALS, position, line, col, prev);
+      return new Tok(TokenKind.EQUALS, pos, pos + 1, line, col, prev);
     // @
     case 64:
-      return literalTok(TokenKind.AT, position, line, col, prev);
+      return new Tok(TokenKind.AT, pos, pos + 1, line, col, prev);
     // [
     case 91:
-      return literalTok(TokenKind.BRACKET_L, position, line, col, prev);
+      return new Tok(TokenKind.BRACKET_L, pos, pos + 1, line, col, prev);
     // ]
     case 93:
-      return literalTok(TokenKind.BRACKET_R, position, line, col, prev);
+      return new Tok(TokenKind.BRACKET_R, pos, pos + 1, line, col, prev);
     // {
     case 123:
-      return literalTok(TokenKind.BRACE_L, position, line, col, prev);
+      return new Tok(TokenKind.BRACE_L, pos, pos + 1, line, col, prev);
     // |
     case 124:
-      return literalTok(TokenKind.PIPE, position, line, col, prev);
+      return new Tok(TokenKind.PIPE, pos, pos + 1, line, col, prev);
     // }
     case 125:
-      return literalTok(TokenKind.BRACE_R, position, line, col, prev);
+      return new Tok(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
     // A-Z _ a-z
     case 65:
     case 66:
@@ -325,7 +325,7 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     case 120:
     case 121:
     case 122:
-      return readName(source, position, line, col, prev);
+      return readName(source, pos, line, col, prev);
     // - 0-9
     case 45:
     case 48:
@@ -338,19 +338,19 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     case 55:
     case 56:
     case 57:
-      return readNumber(source, position, code, line, col, prev);
+      return readNumber(source, pos, code, line, col, prev);
     // "
     case 34:
       if (
-        charCodeAt.call(body, position + 1) === 34 &&
-        charCodeAt.call(body, position + 2) === 34
+        charCodeAt.call(body, pos + 1) === 34 &&
+        charCodeAt.call(body, pos + 2) === 34
       ) {
-        return readBlockString(source, position, line, col, prev);
+        return readBlockString(source, pos, line, col, prev);
       }
-      return readString(source, position, line, col, prev);
+      return readString(source, pos, line, col, prev);
   }
 
-  throw syntaxError(source, position, unexpectedCharacterMessage(code));
+  throw syntaxError(source, pos, unexpectedCharacterMessage(code));
 }
 
 /**
@@ -733,28 +733,28 @@ function char2hex(a) {
  *
  * [_A-Za-z][_0-9A-Za-z]*
  */
-function readName(source, position, line, col, prev): Token {
+function readName(source, start, line, col, prev): Token {
   const body = source.body;
   const bodyLength = body.length;
-  let end = position + 1;
+  let position = start + 1;
   let code = 0;
   while (
-    end !== bodyLength &&
-    (code = charCodeAt.call(body, end)) !== null &&
+    position !== bodyLength &&
+    (code = charCodeAt.call(body, position)) !== null &&
     (code === 95 || // _
     (code >= 48 && code <= 57) || // 0-9
     (code >= 65 && code <= 90) || // A-Z
       (code >= 97 && code <= 122)) // a-z
   ) {
-    ++end;
+    ++position;
   }
   return new Tok(
     TokenKind.NAME,
+    start,
     position,
-    end,
     line,
     col,
     prev,
-    slice.call(body, position, end),
+    slice.call(body, start, position),
   );
 }
