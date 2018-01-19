@@ -26,6 +26,8 @@ import {
 } from '../../';
 import { GraphQLDirective } from '../../type/directives';
 import { DirectiveLocation } from '../../language/directiveLocation';
+import { parse } from '../../language/parser';
+import { GraphQLError } from '../../error/GraphQLError';
 
 function printForTest(schema) {
   const schemaText = printSchema(schema);
@@ -849,7 +851,20 @@ describe('Type System Printer', () => {
     `;
     expect(output).to.equal(introspectionSchema);
   });
-
+  it('Prints a parseable schema when a comment ends with a doublequote (")', () => {
+    const Root = new GraphQLObjectType({
+      name: 'Root',
+      fields: {
+        onlyField: {
+          type: GraphQLString,
+          description: 'This field is "awesome"',
+        },
+      },
+    });
+    const Schema = new GraphQLSchema({ query: Root });
+    const output = printSchema(Schema);
+    expect(() => parse(output)).not.to.throw(GraphQLError);
+  });
   it('Print Introspection Schema with comment descriptions', () => {
     const Query = new GraphQLObjectType({
       name: 'Query',
