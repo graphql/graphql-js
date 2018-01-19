@@ -26,8 +26,6 @@ import {
 } from '../../';
 import { GraphQLDirective } from '../../type/directives';
 import { DirectiveLocation } from '../../language/directiveLocation';
-import { parse } from '../../language/parser';
-import { GraphQLError } from '../../error/GraphQLError';
 
 function printForTest(schema) {
   const schemaText = printSchema(schema);
@@ -851,19 +849,31 @@ describe('Type System Printer', () => {
     `;
     expect(output).to.equal(introspectionSchema);
   });
-  it('Prints a parseable schema when a comment ends with a doublequote (")', () => {
-    const Root = new GraphQLObjectType({
-      name: 'Root',
-      fields: {
-        onlyField: {
-          type: GraphQLString,
-          description: 'This field is "awesome"',
-        },
-      },
+  it('Prints a field description that ends with a doublequote (")s', () => {
+    const description = 'This field is "awesome"';
+    const output = printSingleFieldSchema({
+      type: GraphQLString,
+      description,
     });
-    const Schema = new GraphQLSchema({ query: Root });
-    const output = printSchema(Schema);
-    expect(() => parse(output)).not.to.throw(GraphQLError);
+    expect(output).to.equal(dedent`
+      schema {
+        query: Root
+      }
+
+      type Root {
+        """This field is "awesome" """
+        singleField: String
+      }
+    `);
+    const recreatedRoot = buildSchema(output).getTypeMap()['Root'];
+    const recreatedField = recreatedRoot.getFields()['singleField'];
+
+    /* Note: Additional space added to prevent parser from confusing trailing double
+     * quote inside description with the end of the block string. It shouldn't
+     * affect result since descriptions are interpreted as Markdown so trailing
+     * spaces are ignored.
+     */
+    expect(recreatedField.description).to.equal(description + ' ');
   });
   it('Print Introspection Schema with comment descriptions', () => {
     const Query = new GraphQLObjectType({
