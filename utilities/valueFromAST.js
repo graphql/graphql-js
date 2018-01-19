@@ -15,11 +15,7 @@ var _isInvalid2 = _interopRequireDefault(_isInvalid);
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _definition = require('../type/definition');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -60,18 +56,18 @@ function valueFromAST(valueNode, type, variables) {
   }
 
   if ((0, _definition.isNonNullType)(type)) {
-    if (valueNode.kind === Kind.NULL) {
+    if (valueNode.kind === _kinds.Kind.NULL) {
       return; // Invalid: intentionally return no value.
     }
     return valueFromAST(valueNode, type.ofType, variables);
   }
 
-  if (valueNode.kind === Kind.NULL) {
+  if (valueNode.kind === _kinds.Kind.NULL) {
     // This is explicitly returning the value null.
     return null;
   }
 
-  if (valueNode.kind === Kind.VARIABLE) {
+  if (valueNode.kind === _kinds.Kind.VARIABLE) {
     var variableName = valueNode.name.value;
     if (!variables || (0, _isInvalid2.default)(variables[variableName])) {
       // No valid return value.
@@ -85,7 +81,7 @@ function valueFromAST(valueNode, type, variables) {
 
   if ((0, _definition.isListType)(type)) {
     var itemType = type.ofType;
-    if (valueNode.kind === Kind.LIST) {
+    if (valueNode.kind === _kinds.Kind.LIST) {
       var coercedValues = [];
       var itemNodes = valueNode.values;
       for (var i = 0; i < itemNodes.length; i++) {
@@ -114,7 +110,7 @@ function valueFromAST(valueNode, type, variables) {
   }
 
   if ((0, _definition.isInputObjectType)(type)) {
-    if (valueNode.kind !== Kind.OBJECT) {
+    if (valueNode.kind !== _kinds.Kind.OBJECT) {
       return; // Invalid: intentionally return no value.
     }
     var coercedObj = Object.create(null);
@@ -145,7 +141,7 @@ function valueFromAST(valueNode, type, variables) {
   }
 
   if ((0, _definition.isEnumType)(type)) {
-    if (valueNode.kind !== Kind.ENUM) {
+    if (valueNode.kind !== _kinds.Kind.ENUM) {
       return; // Invalid: intentionally return no value.
     }
     var enumValue = type.getValue(valueNode.value);
@@ -178,5 +174,5 @@ function valueFromAST(valueNode, type, variables) {
 // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 function isMissingVariable(valueNode, variables) {
-  return valueNode.kind === Kind.VARIABLE && (!variables || (0, _isInvalid2.default)(variables[valueNode.name.value]));
+  return valueNode.kind === _kinds.Kind.VARIABLE && (!variables || (0, _isInvalid2.default)(variables[valueNode.name.value]));
 }

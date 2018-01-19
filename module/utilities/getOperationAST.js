@@ -7,7 +7,7 @@
  * 
  */
 
-import { OPERATION_DEFINITION } from '../language/kinds';
+import { Kind } from '../language/kinds';
 
 
 /**
@@ -19,7 +19,7 @@ export function getOperationAST(documentAST, operationName) {
   var operation = null;
   for (var i = 0; i < documentAST.definitions.length; i++) {
     var definition = documentAST.definitions[i];
-    if (definition.kind === OPERATION_DEFINITION) {
+    if (definition.kind === Kind.OPERATION_DEFINITION) {
       if (!operationName) {
         // If no operation name was provided, only return an Operation if there
         // is one defined in the document. Upon encountering the second, return

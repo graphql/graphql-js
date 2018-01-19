@@ -61,8 +61,6 @@ var _typeFromAST = require('../utilities/typeFromAST');
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _values = require('./values');
 
 var _definition = require('../type/definition');
@@ -74,8 +72,6 @@ var _introspection = require('../type/introspection');
 var _directives = require('../type/directives');
 
 var _validate = require('../type/validate');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -223,14 +219,14 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
   for (var i = 0; i < document.definitions.length; i++) {
     var definition = document.definitions[i];
     switch (definition.kind) {
-      case Kind.OPERATION_DEFINITION:
+      case _kinds.Kind.OPERATION_DEFINITION:
         if (!operationName && operation) {
           hasMultipleAssumedOperations = true;
         } else if (!operationName || definition.name && definition.name.value === operationName) {
           operation = definition;
         }
         break;
-      case Kind.FRAGMENT_DEFINITION:
+      case _kinds.Kind.FRAGMENT_DEFINITION:
         fragments[definition.name.value] = definition;
         break;
     }
@@ -403,7 +399,7 @@ function collectFields(exeContext, runtimeType, selectionSet, fields, visitedFra
   for (var i = 0; i < selectionSet.selections.length; i++) {
     var selection = selectionSet.selections[i];
     switch (selection.kind) {
-      case Kind.FIELD:
+      case _kinds.Kind.FIELD:
         if (!shouldIncludeNode(exeContext, selection)) {
           continue;
         }
@@ -413,13 +409,13 @@ function collectFields(exeContext, runtimeType, selectionSet, fields, visitedFra
         }
         fields[name].push(selection);
         break;
-      case Kind.INLINE_FRAGMENT:
+      case _kinds.Kind.INLINE_FRAGMENT:
         if (!shouldIncludeNode(exeContext, selection) || !doesFragmentConditionMatch(exeContext, selection, runtimeType)) {
           continue;
         }
         collectFields(exeContext, runtimeType, selection.selectionSet, fields, visitedFragmentNames);
         break;
-      case Kind.FRAGMENT_SPREAD:
+      case _kinds.Kind.FRAGMENT_SPREAD:
         var fragName = selection.name.value;
         if (visitedFragmentNames[fragName] || !shouldIncludeNode(exeContext, selection)) {
           continue;

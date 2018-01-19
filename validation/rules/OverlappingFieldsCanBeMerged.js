@@ -14,15 +14,11 @@ var _find2 = _interopRequireDefault(_find);
 
 var _kinds = require('../../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _printer = require('../../language/printer');
 
 var _definition = require('../../type/definition');
 
 var _typeFromAST = require('../../utilities/typeFromAST');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -490,7 +486,7 @@ function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeA
   for (var i = 0; i < selectionSet.selections.length; i++) {
     var selection = selectionSet.selections[i];
     switch (selection.kind) {
-      case Kind.FIELD:
+      case _kinds.Kind.FIELD:
         var fieldName = selection.name.value;
         var fieldDef = void 0;
         if ((0, _definition.isObjectType)(parentType) || (0, _definition.isInterfaceType)(parentType)) {
@@ -502,10 +498,10 @@ function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeA
         }
         nodeAndDefs[responseName].push([parentType, selection, fieldDef]);
         break;
-      case Kind.FRAGMENT_SPREAD:
+      case _kinds.Kind.FRAGMENT_SPREAD:
         fragmentNames[selection.name.value] = true;
         break;
-      case Kind.INLINE_FRAGMENT:
+      case _kinds.Kind.INLINE_FRAGMENT:
         var typeCondition = selection.typeCondition;
         var inlineFragmentType = typeCondition ? (0, _typeFromAST.typeFromAST)(context.getSchema(), typeCondition) : parentType;
         _collectFieldsAndFragmentNames(context, inlineFragmentType, selection.selectionSet, nodeAndDefs, fragmentNames);

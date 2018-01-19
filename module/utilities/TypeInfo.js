@@ -9,7 +9,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * 
  */
 
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import { isObjectType, isInterfaceType, isEnumType, isInputObjectType, isListType, isCompositeType, isInputType, isOutputType, getNullableType, getNamedType } from '../type/definition';
 
 import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from '../type/introspection';

@@ -7,7 +7,7 @@
  * @flow
  */
 
-import { OPERATION_DEFINITION } from '../language/kinds';
+import { Kind } from '../language/kinds';
 import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
 
 /**
@@ -22,7 +22,7 @@ export function getOperationAST(
   let operation = null;
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const definition = documentAST.definitions[i];
-    if (definition.kind === OPERATION_DEFINITION) {
+    if (definition.kind === Kind.OPERATION_DEFINITION) {
       if (!operationName) {
         // If no operation name was provided, only return an Operation if there
         // is one defined in the document. Upon encountering the second, return

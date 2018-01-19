@@ -12,74 +12,73 @@ Object.defineProperty(exports, "__esModule", {
  * 
  */
 
-// Name
+/**
+ * The set of allowed kind values for AST nodes.
+ */
+var Kind = exports.Kind = Object.freeze({
+  // Name
+  NAME: 'Name',
 
-var NAME = exports.NAME = 'Name';
+  // Document
+  DOCUMENT: 'Document',
+  OPERATION_DEFINITION: 'OperationDefinition',
+  VARIABLE_DEFINITION: 'VariableDefinition',
+  VARIABLE: 'Variable',
+  SELECTION_SET: 'SelectionSet',
+  FIELD: 'Field',
+  ARGUMENT: 'Argument',
 
-// Document
+  // Fragments
+  FRAGMENT_SPREAD: 'FragmentSpread',
+  INLINE_FRAGMENT: 'InlineFragment',
+  FRAGMENT_DEFINITION: 'FragmentDefinition',
 
-var DOCUMENT = exports.DOCUMENT = 'Document';
-var OPERATION_DEFINITION = exports.OPERATION_DEFINITION = 'OperationDefinition';
-var VARIABLE_DEFINITION = exports.VARIABLE_DEFINITION = 'VariableDefinition';
-var VARIABLE = exports.VARIABLE = 'Variable';
-var SELECTION_SET = exports.SELECTION_SET = 'SelectionSet';
-var FIELD = exports.FIELD = 'Field';
-var ARGUMENT = exports.ARGUMENT = 'Argument';
+  // Values
+  INT: 'IntValue',
+  FLOAT: 'FloatValue',
+  STRING: 'StringValue',
+  BOOLEAN: 'BooleanValue',
+  NULL: 'NullValue',
+  ENUM: 'EnumValue',
+  LIST: 'ListValue',
+  OBJECT: 'ObjectValue',
+  OBJECT_FIELD: 'ObjectField',
 
-// Fragments
+  // Directives
+  DIRECTIVE: 'Directive',
 
-var FRAGMENT_SPREAD = exports.FRAGMENT_SPREAD = 'FragmentSpread';
-var INLINE_FRAGMENT = exports.INLINE_FRAGMENT = 'InlineFragment';
-var FRAGMENT_DEFINITION = exports.FRAGMENT_DEFINITION = 'FragmentDefinition';
+  // Types
+  NAMED_TYPE: 'NamedType',
+  LIST_TYPE: 'ListType',
+  NON_NULL_TYPE: 'NonNullType',
 
-// Values
+  // Type System Definitions
+  SCHEMA_DEFINITION: 'SchemaDefinition',
+  OPERATION_TYPE_DEFINITION: 'OperationTypeDefinition',
 
-var INT = exports.INT = 'IntValue';
-var FLOAT = exports.FLOAT = 'FloatValue';
-var STRING = exports.STRING = 'StringValue';
-var BOOLEAN = exports.BOOLEAN = 'BooleanValue';
-var NULL = exports.NULL = 'NullValue';
-var ENUM = exports.ENUM = 'EnumValue';
-var LIST = exports.LIST = 'ListValue';
-var OBJECT = exports.OBJECT = 'ObjectValue';
-var OBJECT_FIELD = exports.OBJECT_FIELD = 'ObjectField';
+  // Type Definitions
+  SCALAR_TYPE_DEFINITION: 'ScalarTypeDefinition',
+  OBJECT_TYPE_DEFINITION: 'ObjectTypeDefinition',
+  FIELD_DEFINITION: 'FieldDefinition',
+  INPUT_VALUE_DEFINITION: 'InputValueDefinition',
+  INTERFACE_TYPE_DEFINITION: 'InterfaceTypeDefinition',
+  UNION_TYPE_DEFINITION: 'UnionTypeDefinition',
+  ENUM_TYPE_DEFINITION: 'EnumTypeDefinition',
+  ENUM_VALUE_DEFINITION: 'EnumValueDefinition',
+  INPUT_OBJECT_TYPE_DEFINITION: 'InputObjectTypeDefinition',
 
-// Directives
+  // Type Extensions
+  SCALAR_TYPE_EXTENSION: 'ScalarTypeExtension',
+  OBJECT_TYPE_EXTENSION: 'ObjectTypeExtension',
+  INTERFACE_TYPE_EXTENSION: 'InterfaceTypeExtension',
+  UNION_TYPE_EXTENSION: 'UnionTypeExtension',
+  ENUM_TYPE_EXTENSION: 'EnumTypeExtension',
+  INPUT_OBJECT_TYPE_EXTENSION: 'InputObjectTypeExtension',
 
-var DIRECTIVE = exports.DIRECTIVE = 'Directive';
+  // Directive Definitions
+  DIRECTIVE_DEFINITION: 'DirectiveDefinition'
+});
 
-// Types
-
-var NAMED_TYPE = exports.NAMED_TYPE = 'NamedType';
-var LIST_TYPE = exports.LIST_TYPE = 'ListType';
-var NON_NULL_TYPE = exports.NON_NULL_TYPE = 'NonNullType';
-
-// Type System Definitions
-
-var SCHEMA_DEFINITION = exports.SCHEMA_DEFINITION = 'SchemaDefinition';
-var OPERATION_TYPE_DEFINITION = exports.OPERATION_TYPE_DEFINITION = 'OperationTypeDefinition';
-
-// Type Definitions
-
-var SCALAR_TYPE_DEFINITION = exports.SCALAR_TYPE_DEFINITION = 'ScalarTypeDefinition';
-var OBJECT_TYPE_DEFINITION = exports.OBJECT_TYPE_DEFINITION = 'ObjectTypeDefinition';
-var FIELD_DEFINITION = exports.FIELD_DEFINITION = 'FieldDefinition';
-var INPUT_VALUE_DEFINITION = exports.INPUT_VALUE_DEFINITION = 'InputValueDefinition';
-var INTERFACE_TYPE_DEFINITION = exports.INTERFACE_TYPE_DEFINITION = 'InterfaceTypeDefinition';
-var UNION_TYPE_DEFINITION = exports.UNION_TYPE_DEFINITION = 'UnionTypeDefinition';
-var ENUM_TYPE_DEFINITION = exports.ENUM_TYPE_DEFINITION = 'EnumTypeDefinition';
-var ENUM_VALUE_DEFINITION = exports.ENUM_VALUE_DEFINITION = 'EnumValueDefinition';
-var INPUT_OBJECT_TYPE_DEFINITION = exports.INPUT_OBJECT_TYPE_DEFINITION = 'InputObjectTypeDefinition';
-
-// Type Extensions
-
-var SCALAR_TYPE_EXTENSION = exports.SCALAR_TYPE_EXTENSION = 'ScalarTypeExtension';
-var OBJECT_TYPE_EXTENSION = exports.OBJECT_TYPE_EXTENSION = 'ObjectTypeExtension';
-var INTERFACE_TYPE_EXTENSION = exports.INTERFACE_TYPE_EXTENSION = 'InterfaceTypeExtension';
-var UNION_TYPE_EXTENSION = exports.UNION_TYPE_EXTENSION = 'UnionTypeExtension';
-var ENUM_TYPE_EXTENSION = exports.ENUM_TYPE_EXTENSION = 'EnumTypeExtension';
-var INPUT_OBJECT_TYPE_EXTENSION = exports.INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension';
-
-// Directive Definitions
-
-var DIRECTIVE_DEFINITION = exports.DIRECTIVE_DEFINITION = 'DirectiveDefinition';
+/**
+ * The enum type representing the possible kind values of AST nodes.
+ */

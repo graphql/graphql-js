@@ -11,7 +11,7 @@ import { Source } from './source';
 import { syntaxError } from '../error';
 import type { GraphQLError } from '../error';
 import { createLexer, TokenKind, getTokenDesc } from './lexer';
-import type { Lexer } from './lexer';
+import type { Lexer, TokenKindEnum } from './lexer';
 import type {
   Location,
   Token,
@@ -62,50 +62,7 @@ import type {
   DirectiveDefinitionNode,
 } from './ast';
 
-import {
-  NAME,
-  VARIABLE,
-  DOCUMENT,
-  OPERATION_DEFINITION,
-  VARIABLE_DEFINITION,
-  SELECTION_SET,
-  FIELD,
-  ARGUMENT,
-  FRAGMENT_SPREAD,
-  INLINE_FRAGMENT,
-  FRAGMENT_DEFINITION,
-  INT,
-  FLOAT,
-  STRING,
-  BOOLEAN,
-  NULL,
-  ENUM,
-  LIST,
-  OBJECT,
-  OBJECT_FIELD,
-  DIRECTIVE,
-  NAMED_TYPE,
-  LIST_TYPE,
-  NON_NULL_TYPE,
-  SCHEMA_DEFINITION,
-  OPERATION_TYPE_DEFINITION,
-  SCALAR_TYPE_DEFINITION,
-  OBJECT_TYPE_DEFINITION,
-  FIELD_DEFINITION,
-  INPUT_VALUE_DEFINITION,
-  INTERFACE_TYPE_DEFINITION,
-  UNION_TYPE_DEFINITION,
-  ENUM_TYPE_DEFINITION,
-  ENUM_VALUE_DEFINITION,
-  INPUT_OBJECT_TYPE_DEFINITION,
-  SCALAR_TYPE_EXTENSION,
-  OBJECT_TYPE_EXTENSION,
-  INTERFACE_TYPE_EXTENSION,
-  UNION_TYPE_EXTENSION,
-  ENUM_TYPE_EXTENSION,
-  INPUT_OBJECT_TYPE_EXTENSION,
-  DIRECTIVE_DEFINITION,
-} from './kinds';
+import { Kind } from './kinds';
 import { DirectiveLocation } from './directiveLocation';
 
 /**
@@ -224,7 +181,7 @@ export function parseType(
 function parseName(lexer: Lexer<*>): NameNode {
   const token = expect(lexer, TokenKind.NAME);
   return {
-    kind: NAME,
+    kind: Kind.NAME,
     value: ((token.value: any): string),
     loc: loc(lexer, token),
   };
@@ -244,7 +201,7 @@ function parseDocument(lexer: Lexer<*>): DocumentNode {
   } while (!skip(lexer, TokenKind.EOF));
 
   return {
-    kind: DOCUMENT,
+    kind: Kind.DOCUMENT,
     definitions,
     loc: loc(lexer, start),
   };
@@ -319,7 +276,7 @@ function parseOperationDefinition(lexer: Lexer<*>): OperationDefinitionNode {
   const start = lexer.token;
   if (peek(lexer, TokenKind.BRACE_L)) {
     return {
-      kind: OPERATION_DEFINITION,
+      kind: Kind.OPERATION_DEFINITION,
       operation: 'query',
       name: undefined,
       variableDefinitions: [],
@@ -334,7 +291,7 @@ function parseOperationDefinition(lexer: Lexer<*>): OperationDefinitionNode {
     name = parseName(lexer);
   }
   return {
-    kind: OPERATION_DEFINITION,
+    kind: Kind.OPERATION_DEFINITION,
     operation,
     name,
     variableDefinitions: parseVariableDefinitions(lexer),
@@ -378,7 +335,7 @@ function parseVariableDefinitions(
 function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
   const start = lexer.token;
   return {
-    kind: VARIABLE_DEFINITION,
+    kind: Kind.VARIABLE_DEFINITION,
     variable: parseVariable(lexer),
     type: (expect(lexer, TokenKind.COLON), parseTypeReference(lexer)),
     defaultValue: skip(lexer, TokenKind.EQUALS)
@@ -395,7 +352,7 @@ function parseVariable(lexer: Lexer<*>): VariableNode {
   const start = lexer.token;
   expect(lexer, TokenKind.DOLLAR);
   return {
-    kind: VARIABLE,
+    kind: Kind.VARIABLE,
     name: parseName(lexer),
     loc: loc(lexer, start),
   };
@@ -407,7 +364,7 @@ function parseVariable(lexer: Lexer<*>): VariableNode {
 function parseSelectionSet(lexer: Lexer<*>): SelectionSetNode {
   const start = lexer.token;
   return {
-    kind: SELECTION_SET,
+    kind: Kind.SELECTION_SET,
     selections: many(
       lexer,
       TokenKind.BRACE_L,
@@ -449,7 +406,7 @@ function parseField(lexer: Lexer<*>): FieldNode {
   }
 
   return {
-    kind: FIELD,
+    kind: Kind.FIELD,
     alias,
     name,
     arguments: parseArguments(lexer, false),
@@ -480,7 +437,7 @@ function parseArguments(
 function parseArgument(lexer: Lexer<*>): ArgumentNode {
   const start = lexer.token;
   return {
-    kind: ARGUMENT,
+    kind: Kind.ARGUMENT,
     name: parseName(lexer),
     value: (expect(lexer, TokenKind.COLON), parseValueLiteral(lexer, false)),
     loc: loc(lexer, start),
@@ -490,7 +447,7 @@ function parseArgument(lexer: Lexer<*>): ArgumentNode {
 function parseConstArgument(lexer: Lexer<*>): ArgumentNode {
   const start = lexer.token;
   return {
-    kind: ARGUMENT,
+    kind: Kind.ARGUMENT,
     name: parseName(lexer),
     value: (expect(lexer, TokenKind.COLON), parseConstValue(lexer)),
     loc: loc(lexer, start),
@@ -513,7 +470,7 @@ function parseFragment(
   expect(lexer, TokenKind.SPREAD);
   if (peek(lexer, TokenKind.NAME) && lexer.token.value !== 'on') {
     return {
-      kind: FRAGMENT_SPREAD,
+      kind: Kind.FRAGMENT_SPREAD,
       name: parseFragmentName(lexer),
       directives: parseDirectives(lexer, false),
       loc: loc(lexer, start),
@@ -525,7 +482,7 @@ function parseFragment(
     typeCondition = parseNamedType(lexer);
   }
   return {
-    kind: INLINE_FRAGMENT,
+    kind: Kind.INLINE_FRAGMENT,
     typeCondition,
     directives: parseDirectives(lexer, false),
     selectionSet: parseSelectionSet(lexer),
@@ -547,7 +504,7 @@ function parseFragmentDefinition(lexer: Lexer<*>): FragmentDefinitionNode {
   //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
   if (lexer.options.experimentalFragmentVariables) {
     return {
-      kind: FRAGMENT_DEFINITION,
+      kind: Kind.FRAGMENT_DEFINITION,
       name: parseFragmentName(lexer),
       variableDefinitions: parseVariableDefinitions(lexer),
       typeCondition: (expectKeyword(lexer, 'on'), parseNamedType(lexer)),
@@ -557,7 +514,7 @@ function parseFragmentDefinition(lexer: Lexer<*>): FragmentDefinitionNode {
     };
   }
   return {
-    kind: FRAGMENT_DEFINITION,
+    kind: Kind.FRAGMENT_DEFINITION,
     name: parseFragmentName(lexer),
     typeCondition: (expectKeyword(lexer, 'on'), parseNamedType(lexer)),
     directives: parseDirectives(lexer, false),
@@ -606,14 +563,14 @@ function parseValueLiteral(lexer: Lexer<*>, isConst: boolean): ValueNode {
     case TokenKind.INT:
       lexer.advance();
       return {
-        kind: (INT: 'IntValue'),
+        kind: Kind.INT,
         value: ((token.value: any): string),
         loc: loc(lexer, token),
       };
     case TokenKind.FLOAT:
       lexer.advance();
       return {
-        kind: (FLOAT: 'FloatValue'),
+        kind: Kind.FLOAT,
         value: ((token.value: any): string),
         loc: loc(lexer, token),
       };
@@ -624,20 +581,20 @@ function parseValueLiteral(lexer: Lexer<*>, isConst: boolean): ValueNode {
       if (token.value === 'true' || token.value === 'false') {
         lexer.advance();
         return {
-          kind: (BOOLEAN: 'BooleanValue'),
+          kind: Kind.BOOLEAN,
           value: token.value === 'true',
           loc: loc(lexer, token),
         };
       } else if (token.value === 'null') {
         lexer.advance();
         return {
-          kind: (NULL: 'NullValue'),
+          kind: Kind.NULL,
           loc: loc(lexer, token),
         };
       }
       lexer.advance();
       return {
-        kind: (ENUM: 'EnumValue'),
+        kind: Kind.ENUM,
         value: ((token.value: any): string),
         loc: loc(lexer, token),
       };
@@ -654,7 +611,7 @@ function parseStringLiteral(lexer: Lexer<*>): StringValueNode {
   const token = lexer.token;
   lexer.advance();
   return {
-    kind: (STRING: 'StringValue'),
+    kind: Kind.STRING,
     value: ((token.value: any): string),
     block: token.kind === TokenKind.BLOCK_STRING,
     loc: loc(lexer, token),
@@ -678,7 +635,7 @@ function parseList(lexer: Lexer<*>, isConst: boolean): ListValueNode {
   const start = lexer.token;
   const item = isConst ? parseConstValue : parseValueValue;
   return {
-    kind: LIST,
+    kind: Kind.LIST,
     values: any(lexer, TokenKind.BRACKET_L, item, TokenKind.BRACKET_R),
     loc: loc(lexer, start),
   };
@@ -697,7 +654,7 @@ function parseObject(lexer: Lexer<*>, isConst: boolean): ObjectValueNode {
     fields.push(parseObjectField(lexer, isConst));
   }
   return {
-    kind: OBJECT,
+    kind: Kind.OBJECT,
     fields,
     loc: loc(lexer, start),
   };
@@ -709,7 +666,7 @@ function parseObject(lexer: Lexer<*>, isConst: boolean): ObjectValueNode {
 function parseObjectField(lexer: Lexer<*>, isConst: boolean): ObjectFieldNode {
   const start = lexer.token;
   return {
-    kind: OBJECT_FIELD,
+    kind: Kind.OBJECT_FIELD,
     name: parseName(lexer),
     value: (expect(lexer, TokenKind.COLON), parseValueLiteral(lexer, isConst)),
     loc: loc(lexer, start),
@@ -739,7 +696,7 @@ function parseDirective(lexer: Lexer<*>, isConst: boolean): DirectiveNode {
   const start = lexer.token;
   expect(lexer, TokenKind.AT);
   return {
-    kind: DIRECTIVE,
+    kind: Kind.DIRECTIVE,
     name: parseName(lexer),
     arguments: parseArguments(lexer, isConst),
     loc: loc(lexer, start),
@@ -761,7 +718,7 @@ export function parseTypeReference(lexer: Lexer<*>): TypeNode {
     type = parseTypeReference(lexer);
     expect(lexer, TokenKind.BRACKET_R);
     type = ({
-      kind: LIST_TYPE,
+      kind: Kind.LIST_TYPE,
       type,
       loc: loc(lexer, start),
     }: ListTypeNode);
@@ -770,7 +727,7 @@ export function parseTypeReference(lexer: Lexer<*>): TypeNode {
   }
   if (skip(lexer, TokenKind.BANG)) {
     return ({
-      kind: NON_NULL_TYPE,
+      kind: Kind.NON_NULL_TYPE,
       type,
       loc: loc(lexer, start),
     }: NonNullTypeNode);
@@ -784,7 +741,7 @@ export function parseTypeReference(lexer: Lexer<*>): TypeNode {
 export function parseNamedType(lexer: Lexer<*>): NamedTypeNode {
   const start = lexer.token;
   return {
-    kind: NAMED_TYPE,
+    kind: Kind.NAMED_TYPE,
     name: parseName(lexer),
     loc: loc(lexer, start),
   };
@@ -864,7 +821,7 @@ function parseSchemaDefinition(lexer: Lexer<*>): SchemaDefinitionNode {
     TokenKind.BRACE_R,
   );
   return {
-    kind: SCHEMA_DEFINITION,
+    kind: Kind.SCHEMA_DEFINITION,
     directives,
     operationTypes,
     loc: loc(lexer, start),
@@ -882,7 +839,7 @@ function parseOperationTypeDefinition(
   expect(lexer, TokenKind.COLON);
   const type = parseNamedType(lexer);
   return {
-    kind: OPERATION_TYPE_DEFINITION,
+    kind: Kind.OPERATION_TYPE_DEFINITION,
     operation,
     type,
     loc: loc(lexer, start),
@@ -899,7 +856,7 @@ function parseScalarTypeDefinition(lexer: Lexer<*>): ScalarTypeDefinitionNode {
   const name = parseName(lexer);
   const directives = parseDirectives(lexer, true);
   return {
-    kind: SCALAR_TYPE_DEFINITION,
+    kind: Kind.SCALAR_TYPE_DEFINITION,
     description,
     name,
     directives,
@@ -921,7 +878,7 @@ function parseObjectTypeDefinition(lexer: Lexer<*>): ObjectTypeDefinitionNode {
   const directives = parseDirectives(lexer, true);
   const fields = parseFieldsDefinition(lexer);
   return {
-    kind: OBJECT_TYPE_DEFINITION,
+    kind: Kind.OBJECT_TYPE_DEFINITION,
     description,
     name,
     interfaces,
@@ -986,7 +943,7 @@ function parseFieldDefinition(lexer: Lexer<*>): FieldDefinitionNode {
   const type = parseTypeReference(lexer);
   const directives = parseDirectives(lexer, true);
   return {
-    kind: FIELD_DEFINITION,
+    kind: Kind.FIELD_DEFINITION,
     description,
     name,
     arguments: args,
@@ -1022,7 +979,7 @@ function parseInputValueDef(lexer: Lexer<*>): InputValueDefinitionNode {
   }
   const directives = parseDirectives(lexer, true);
   return {
-    kind: INPUT_VALUE_DEFINITION,
+    kind: Kind.INPUT_VALUE_DEFINITION,
     description,
     name,
     type,
@@ -1046,7 +1003,7 @@ function parseInterfaceTypeDefinition(
   const directives = parseDirectives(lexer, true);
   const fields = parseFieldsDefinition(lexer);
   return {
-    kind: INTERFACE_TYPE_DEFINITION,
+    kind: Kind.INTERFACE_TYPE_DEFINITION,
     description,
     name,
     directives,
@@ -1067,7 +1024,7 @@ function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
   const directives = parseDirectives(lexer, true);
   const types = parseUnionMemberTypes(lexer);
   return {
-    kind: UNION_TYPE_DEFINITION,
+    kind: Kind.UNION_TYPE_DEFINITION,
     description,
     name,
     directives,
@@ -1105,7 +1062,7 @@ function parseEnumTypeDefinition(lexer: Lexer<*>): EnumTypeDefinitionNode {
   const directives = parseDirectives(lexer, true);
   const values = parseEnumValuesDefinition(lexer);
   return {
-    kind: ENUM_TYPE_DEFINITION,
+    kind: Kind.ENUM_TYPE_DEFINITION,
     description,
     name,
     directives,
@@ -1141,7 +1098,7 @@ function parseEnumValueDefinition(lexer: Lexer<*>): EnumValueDefinitionNode {
   const name = parseName(lexer);
   const directives = parseDirectives(lexer, true);
   return {
-    kind: ENUM_VALUE_DEFINITION,
+    kind: Kind.ENUM_VALUE_DEFINITION,
     description,
     name,
     directives,
@@ -1163,7 +1120,7 @@ function parseInputObjectTypeDefinition(
   const directives = parseDirectives(lexer, true);
   const fields = parseInputFieldsDefinition(lexer);
   return {
-    kind: INPUT_OBJECT_TYPE_DEFINITION,
+    kind: Kind.INPUT_OBJECT_TYPE_DEFINITION,
     description,
     name,
     directives,
@@ -1229,7 +1186,7 @@ function parseScalarTypeExtension(lexer: Lexer<*>): ScalarTypeExtensionNode {
     throw unexpected(lexer);
   }
   return {
-    kind: SCALAR_TYPE_EXTENSION,
+    kind: Kind.SCALAR_TYPE_EXTENSION,
     name,
     directives,
     loc: loc(lexer, start),
@@ -1258,7 +1215,7 @@ function parseObjectTypeExtension(lexer: Lexer<*>): ObjectTypeExtensionNode {
     throw unexpected(lexer);
   }
   return {
-    kind: OBJECT_TYPE_EXTENSION,
+    kind: Kind.OBJECT_TYPE_EXTENSION,
     name,
     interfaces,
     directives,
@@ -1285,7 +1242,7 @@ function parseInterfaceTypeExtension(
     throw unexpected(lexer);
   }
   return {
-    kind: INTERFACE_TYPE_EXTENSION,
+    kind: Kind.INTERFACE_TYPE_EXTENSION,
     name,
     directives,
     fields,
@@ -1309,7 +1266,7 @@ function parseUnionTypeExtension(lexer: Lexer<*>): UnionTypeExtensionNode {
     throw unexpected(lexer);
   }
   return {
-    kind: UNION_TYPE_EXTENSION,
+    kind: Kind.UNION_TYPE_EXTENSION,
     name,
     directives,
     types,
@@ -1333,7 +1290,7 @@ function parseEnumTypeExtension(lexer: Lexer<*>): EnumTypeExtensionNode {
     throw unexpected(lexer);
   }
   return {
-    kind: ENUM_TYPE_EXTENSION,
+    kind: Kind.ENUM_TYPE_EXTENSION,
     name,
     directives,
     values,
@@ -1359,7 +1316,7 @@ function parseInputObjectTypeExtension(
     throw unexpected(lexer);
   }
   return {
-    kind: INPUT_OBJECT_TYPE_EXTENSION,
+    kind: Kind.INPUT_OBJECT_TYPE_EXTENSION,
     name,
     directives,
     fields,
@@ -1381,7 +1338,7 @@ function parseDirectiveDefinition(lexer: Lexer<*>): DirectiveDefinitionNode {
   expectKeyword(lexer, 'on');
   const locations = parseDirectiveLocations(lexer);
   return {
-    kind: DIRECTIVE_DEFINITION,
+    kind: Kind.DIRECTIVE_DEFINITION,
     description,
     name,
     arguments: args,
@@ -1469,7 +1426,7 @@ Loc.prototype.toJSON = Loc.prototype.inspect = function toJSON() {
 /**
  * Determines if the next token is of a given kind
  */
-function peek(lexer: Lexer<*>, kind: string): boolean {
+function peek(lexer: Lexer<*>, kind: TokenKindEnum): boolean {
   return lexer.token.kind === kind;
 }
 
@@ -1477,7 +1434,7 @@ function peek(lexer: Lexer<*>, kind: string): boolean {
  * If the next token is of the given kind, return true after advancing
  * the lexer. Otherwise, do not change the parser state and return false.
  */
-function skip(lexer: Lexer<*>, kind: string): boolean {
+function skip(lexer: Lexer<*>, kind: TokenKindEnum): boolean {
   const match = lexer.token.kind === kind;
   if (match) {
     lexer.advance();
@@ -1489,7 +1446,7 @@ function skip(lexer: Lexer<*>, kind: string): boolean {
  * If the next token is of the given kind, return that token after advancing
  * the lexer. Otherwise, do not change the parser state and throw an error.
  */
-function expect(lexer: Lexer<*>, kind: string): Token {
+function expect(lexer: Lexer<*>, kind: TokenKindEnum): Token {
   const token = lexer.token;
   if (token.kind === kind) {
     lexer.advance();
@@ -1541,9 +1498,9 @@ function unexpected(lexer: Lexer<*>, atToken?: ?Token): GraphQLError {
  */
 function any<T>(
   lexer: Lexer<*>,
-  openKind: string,
+  openKind: TokenKindEnum,
   parseFn: (lexer: Lexer<*>) => T,
-  closeKind: string,
+  closeKind: TokenKindEnum,
 ): Array<T> {
   expect(lexer, openKind);
   const nodes = [];
@@ -1561,9 +1518,9 @@ function any<T>(
  */
 function many<T>(
   lexer: Lexer<*>,
-  openKind: string,
+  openKind: TokenKindEnum,
   parseFn: (lexer: Lexer<*>) => T,
-  closeKind: string,
+  closeKind: TokenKindEnum,
 ): Array<T> {
   expect(lexer, openKind);
   const nodes = [parseFn(lexer)];

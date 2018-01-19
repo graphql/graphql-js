@@ -60,13 +60,9 @@ var _isInvalid2 = _interopRequireDefault(_isInvalid);
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _valueFromASTUntyped = require('../utilities/valueFromASTUntyped');
 
 var _wrappers = require('./wrappers');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -674,7 +670,7 @@ var GraphQLEnumType /* <T> */ = exports.GraphQLEnumType = function () {
 
   GraphQLEnumType.prototype.parseLiteral = function parseLiteral(valueNode, _variables) /* T */{
     // Note: variables will be resolved to a value before calling this function.
-    if (valueNode.kind === Kind.ENUM) {
+    if (valueNode.kind === _kinds.Kind.ENUM) {
       var enumValue = this._getNameLookup()[valueNode.value];
       if (enumValue) {
         return enumValue.value;

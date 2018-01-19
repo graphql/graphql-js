@@ -33,8 +33,8 @@ function ExecutableDefinitions(context) {
   return {
     Document: function Document(node) {
       node.definitions.forEach(function (definition) {
-        if (definition.kind !== _kinds.OPERATION_DEFINITION && definition.kind !== _kinds.FRAGMENT_DEFINITION) {
-          context.reportError(new _error.GraphQLError(nonExecutableDefinitionMessage(definition.kind === _kinds.SCHEMA_DEFINITION ? 'schema' : definition.name.value), [definition]));
+        if (definition.kind !== _kinds.Kind.OPERATION_DEFINITION && definition.kind !== _kinds.Kind.FRAGMENT_DEFINITION) {
+          context.reportError(new _error.GraphQLError(nonExecutableDefinitionMessage(definition.kind === _kinds.Kind.SCHEMA_DEFINITION ? 'schema' : definition.name.value), [definition]));
         }
       });
       return false;

@@ -9,8 +9,8 @@
 
 export { getLocation } from './location';
 export type { SourceLocation } from './location';
-import * as Kind from './kinds';
-export { Kind };
+export { Kind } from './kinds';
+export type { KindEnum } from './kinds';
 export { createLexer, TokenKind } from './lexer';
 export { parse, parseValue, parseType } from './parser';
 export { print } from './printer';
@@ -24,7 +24,7 @@ export {
 } from './visitor';
 export type { ASTVisitor, Visitor, VisitFn, VisitorKeyMap } from './visitor';
 
-export type { Lexer } from './lexer';
+export type { Lexer, TokenKindEnum } from './lexer';
 export type { ParseOptions } from './parser';
 
 export type {

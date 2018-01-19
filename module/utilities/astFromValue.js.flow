@@ -12,7 +12,7 @@ import { forEach, isCollection } from 'iterall';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import type { ValueNode } from '../language/ast';
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import type { GraphQLInputType } from '../type/definition';
 import {
   isScalarType,

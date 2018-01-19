@@ -8,6 +8,7 @@
  */
 
 import type { Source } from './source';
+import type { TokenKindEnum } from './lexer';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that
@@ -41,35 +42,6 @@ export type Location = {
 };
 
 /**
- * Represents the different kinds of tokens in a GraphQL document.
- * This type is not inlined in `Token` to fix syntax highlighting on GitHub
- * *only*.
- */
-type TokenKind =
-  | '<SOF>'
-  | '<EOF>'
-  | '!'
-  | '$'
-  | '&'
-  | '('
-  | ')'
-  | '...'
-  | ':'
-  | '='
-  | '@'
-  | '['
-  | ']'
-  | '{'
-  | '|'
-  | '}'
-  | 'Name'
-  | 'Int'
-  | 'Float'
-  | 'String'
-  | 'BlockString'
-  | 'Comment';
-
-/**
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
@@ -77,7 +49,7 @@ export type Token = {
   /**
    * The kind of Token.
    */
-  +kind: TokenKind,
+  +kind: TokenKindEnum,
 
   /**
    * The character offset at which this Node begins.

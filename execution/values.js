@@ -29,13 +29,9 @@ var _valueFromAST = require('../utilities/valueFromAST');
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _printer = require('../language/printer');
 
 var _definition = require('../type/definition');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -124,7 +120,7 @@ function getArgumentValues(def, node, variableValues) {
       } else if ((0, _definition.isNonNullType)(argType)) {
         throw new _error.GraphQLError('Argument "' + name + '" of required type ' + ('"' + String(argType) + '" was not provided.'), [node]);
       }
-    } else if (argumentNode.value.kind === Kind.VARIABLE) {
+    } else if (argumentNode.value.kind === _kinds.Kind.VARIABLE) {
       var variableName = argumentNode.value.name.value;
       if (variableValues && Object.prototype.hasOwnProperty.call(variableValues, variableName) && !(0, _isInvalid2.default)(variableValues[variableName])) {
         // Note: this does not check that this variable value is correct.

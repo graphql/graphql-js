@@ -16,7 +16,7 @@ function getOperationAST(documentAST, operationName) {
   var operation = null;
   for (var i = 0; i < documentAST.definitions.length; i++) {
     var definition = documentAST.definitions[i];
-    if (definition.kind === _kinds.OPERATION_DEFINITION) {
+    if (definition.kind === _kinds.Kind.OPERATION_DEFINITION) {
       if (!operationName) {
         // If no operation name was provided, only return an Operation if there
         // is one defined in the document. Upon encountering the second, return

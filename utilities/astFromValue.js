@@ -27,13 +27,9 @@ var _isInvalid2 = _interopRequireDefault(_isInvalid);
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _definition = require('../type/definition');
 
 var _scalars = require('../type/scalars');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -60,7 +56,7 @@ function astFromValue(value, type) {
 
   if ((0, _definition.isNonNullType)(type)) {
     var astValue = astFromValue(_value, type.ofType);
-    if (astValue && astValue.kind === Kind.NULL) {
+    if (astValue && astValue.kind === _kinds.Kind.NULL) {
       return null;
     }
     return astValue;
@@ -68,7 +64,7 @@ function astFromValue(value, type) {
 
   // only explicit null, not undefined, NaN
   if (_value === null) {
-    return { kind: Kind.NULL };
+    return { kind: _kinds.Kind.NULL };
   }
 
   // undefined, NaN
@@ -88,7 +84,7 @@ function astFromValue(value, type) {
           valuesNodes.push(itemNode);
         }
       });
-      return { kind: Kind.LIST, values: valuesNodes };
+      return { kind: _kinds.Kind.LIST, values: valuesNodes };
     }
     return astFromValue(_value, itemType);
   }
@@ -106,13 +102,13 @@ function astFromValue(value, type) {
       var fieldValue = astFromValue(_value[fieldName], fieldType);
       if (fieldValue) {
         fieldNodes.push({
-          kind: Kind.OBJECT_FIELD,
-          name: { kind: Kind.NAME, value: fieldName },
+          kind: _kinds.Kind.OBJECT_FIELD,
+          name: { kind: _kinds.Kind.NAME, value: fieldName },
           value: fieldValue
         });
       }
     });
-    return { kind: Kind.OBJECT, fields: fieldNodes };
+    return { kind: _kinds.Kind.OBJECT, fields: fieldNodes };
   }
 
   if ((0, _definition.isScalarType)(type) || (0, _definition.isEnumType)(type)) {
@@ -125,28 +121,28 @@ function astFromValue(value, type) {
 
     // Others serialize based on their corresponding JavaScript scalar types.
     if (typeof serialized === 'boolean') {
-      return { kind: Kind.BOOLEAN, value: serialized };
+      return { kind: _kinds.Kind.BOOLEAN, value: serialized };
     }
 
     // JavaScript numbers can be Int or Float values.
     if (typeof serialized === 'number') {
       var stringNum = String(serialized);
-      return integerStringRegExp.test(stringNum) ? { kind: Kind.INT, value: stringNum } : { kind: Kind.FLOAT, value: stringNum };
+      return integerStringRegExp.test(stringNum) ? { kind: _kinds.Kind.INT, value: stringNum } : { kind: _kinds.Kind.FLOAT, value: stringNum };
     }
 
     if (typeof serialized === 'string') {
       // Enum types use Enum literals.
       if ((0, _definition.isEnumType)(type)) {
-        return { kind: Kind.ENUM, value: serialized };
+        return { kind: _kinds.Kind.ENUM, value: serialized };
       }
 
       // ID types can use Int literals.
       if (type === _scalars.GraphQLID && integerStringRegExp.test(serialized)) {
-        return { kind: Kind.INT, value: serialized };
+        return { kind: _kinds.Kind.INT, value: serialized };
       }
 
       return {
-        kind: Kind.STRING,
+        kind: _kinds.Kind.STRING,
         value: serialized
       };
     }

@@ -16,8 +16,6 @@ var _visitor = require('../language/visitor');
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _schema = require('../type/schema');
 
 var _validate = require('../type/validate');
@@ -25,8 +23,6 @@ var _validate = require('../type/validate');
 var _TypeInfo = require('../utilities/TypeInfo');
 
 var _specifiedRules = require('./specifiedRules');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -117,7 +113,7 @@ var ValidationContext = exports.ValidationContext = function () {
     var fragments = this._fragments;
     if (!fragments) {
       this._fragments = fragments = this.getDocument().definitions.reduce(function (frags, statement) {
-        if (statement.kind === Kind.FRAGMENT_DEFINITION) {
+        if (statement.kind === _kinds.Kind.FRAGMENT_DEFINITION) {
           frags[statement.name.value] = statement;
         }
         return frags;
@@ -135,7 +131,7 @@ var ValidationContext = exports.ValidationContext = function () {
         var set = setsToVisit.pop();
         for (var i = 0; i < set.selections.length; i++) {
           var selection = set.selections[i];
-          if (selection.kind === Kind.FRAGMENT_SPREAD) {
+          if (selection.kind === _kinds.Kind.FRAGMENT_SPREAD) {
             spreads.push(selection);
           } else if (selection.selectionSet) {
             setsToVisit.push(selection.selectionSet);

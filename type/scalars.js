@@ -10,10 +10,6 @@ var _definition = require('./definition');
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
 //
@@ -52,7 +48,7 @@ var GraphQLInt = exports.GraphQLInt = new _definition.GraphQLScalarType({
   serialize: coerceInt,
   parseValue: coerceInt,
   parseLiteral: function parseLiteral(ast) {
-    if (ast.kind === Kind.INT) {
+    if (ast.kind === _kinds.Kind.INT) {
       var num = parseInt(ast.value, 10);
       if (num <= MAX_INT && num >= MIN_INT) {
         return num;
@@ -79,7 +75,7 @@ var GraphQLFloat = exports.GraphQLFloat = new _definition.GraphQLScalarType({
   serialize: coerceFloat,
   parseValue: coerceFloat,
   parseLiteral: function parseLiteral(ast) {
-    return ast.kind === Kind.FLOAT || ast.kind === Kind.INT ? parseFloat(ast.value) : undefined;
+    return ast.kind === _kinds.Kind.FLOAT || ast.kind === _kinds.Kind.INT ? parseFloat(ast.value) : undefined;
   }
 });
 
@@ -96,7 +92,7 @@ var GraphQLString = exports.GraphQLString = new _definition.GraphQLScalarType({
   serialize: coerceString,
   parseValue: coerceString,
   parseLiteral: function parseLiteral(ast) {
-    return ast.kind === Kind.STRING ? ast.value : undefined;
+    return ast.kind === _kinds.Kind.STRING ? ast.value : undefined;
   }
 });
 
@@ -106,7 +102,7 @@ var GraphQLBoolean = exports.GraphQLBoolean = new _definition.GraphQLScalarType(
   serialize: Boolean,
   parseValue: Boolean,
   parseLiteral: function parseLiteral(ast) {
-    return ast.kind === Kind.BOOLEAN ? ast.value : undefined;
+    return ast.kind === _kinds.Kind.BOOLEAN ? ast.value : undefined;
   }
 });
 
@@ -116,7 +112,7 @@ var GraphQLID = exports.GraphQLID = new _definition.GraphQLScalarType({
   serialize: String,
   parseValue: String,
   parseLiteral: function parseLiteral(ast) {
-    return ast.kind === Kind.STRING || ast.kind === Kind.INT ? ast.value : undefined;
+    return ast.kind === _kinds.Kind.STRING || ast.kind === _kinds.Kind.INT ? ast.value : undefined;
   }
 });
 

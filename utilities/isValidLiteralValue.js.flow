@@ -10,7 +10,7 @@
 import { TypeInfo } from './TypeInfo';
 import type { GraphQLError } from '../error/GraphQLError';
 import type { ValueNode } from '../language/ast';
-import { DOCUMENT } from '../language/kinds';
+import { Kind } from '../language/kinds';
 import { visit, visitWithTypeInfo } from '../language/visitor';
 import type { GraphQLInputType } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
@@ -27,7 +27,7 @@ export function isValidLiteralValue(
   valueNode: ValueNode,
 ): $ReadOnlyArray<GraphQLError> {
   const emptySchema = new GraphQLSchema({});
-  const emptyDoc = { kind: DOCUMENT, definitions: [] };
+  const emptyDoc = { kind: Kind.DOCUMENT, definitions: [] };
   const typeInfo = new TypeInfo(emptySchema, undefined, type);
   const context = new ValidationContext(emptySchema, emptyDoc, typeInfo);
   const visitor = ValuesOfCorrectType(context);

@@ -9,11 +9,7 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import {
-  FRAGMENT_DEFINITION,
-  OPERATION_DEFINITION,
-  SCHEMA_DEFINITION,
-} from '../../language/kinds';
+import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function nonExecutableDefinitionMessage(defName: string): string {
@@ -31,13 +27,13 @@ export function ExecutableDefinitions(context: ValidationContext): ASTVisitor {
     Document(node) {
       node.definitions.forEach(definition => {
         if (
-          definition.kind !== OPERATION_DEFINITION &&
-          definition.kind !== FRAGMENT_DEFINITION
+          definition.kind !== Kind.OPERATION_DEFINITION &&
+          definition.kind !== Kind.FRAGMENT_DEFINITION
         ) {
           context.reportError(
             new GraphQLError(
               nonExecutableDefinitionMessage(
-                definition.kind === SCHEMA_DEFINITION
+                definition.kind === Kind.SCHEMA_DEFINITION
                   ? 'schema'
                   : definition.name.value,
               ),

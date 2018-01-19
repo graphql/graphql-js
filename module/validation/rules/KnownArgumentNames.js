@@ -10,7 +10,7 @@ import { GraphQLError } from '../../error'; /**
 
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
-import { FIELD, DIRECTIVE } from '../../language/kinds';
+import { Kind } from '../../language/kinds';
 
 export function unknownArgMessage(argName, fieldName, typeName, suggestedArgs) {
   var message = 'Unknown argument "' + argName + '" on field "' + fieldName + '" of ' + ('type "' + typeName + '".');
@@ -40,7 +40,7 @@ export function KnownArgumentNames(context) {
       var argDef = context.getArgument();
       if (!argDef) {
         var argumentOf = ancestors[ancestors.length - 1];
-        if (argumentOf.kind === FIELD) {
+        if (argumentOf.kind === Kind.FIELD) {
           var fieldDef = context.getFieldDef();
           var parentType = context.getParentType();
           if (fieldDef && parentType) {
@@ -48,7 +48,7 @@ export function KnownArgumentNames(context) {
               return arg.name;
             }))), [node]));
           }
-        } else if (argumentOf.kind === DIRECTIVE) {
+        } else if (argumentOf.kind === Kind.DIRECTIVE) {
           var directive = context.getDirective();
           if (directive) {
             context.reportError(new GraphQLError(unknownDirectiveArgMessage(node.name.value, directive.name, suggestionList(node.name.value, directive.args.map(function (arg) {

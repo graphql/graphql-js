@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", {
 /**
  * The set of allowed directive location values.
  */
-var DirectiveLocation = exports.DirectiveLocation = {
+var DirectiveLocation = exports.DirectiveLocation = Object.freeze({
   // Request Definitions
   QUERY: 'QUERY',
   MUTATION: 'MUTATION',
@@ -36,7 +36,7 @@ var DirectiveLocation = exports.DirectiveLocation = {
   ENUM_VALUE: 'ENUM_VALUE',
   INPUT_OBJECT: 'INPUT_OBJECT',
   INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION'
-};
+});
 
 /**
  * The enum type representing the directive location values.

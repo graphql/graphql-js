@@ -15,11 +15,7 @@ var _find2 = _interopRequireDefault(_find);
 
 var _kinds = require('../../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _directiveLocation = require('../../language/directiveLocation');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -66,7 +62,7 @@ function getDirectiveLocationForASTPath(ancestors) {
   var appliedTo = ancestors[ancestors.length - 1];
   if (!Array.isArray(appliedTo)) {
     switch (appliedTo.kind) {
-      case Kind.OPERATION_DEFINITION:
+      case _kinds.Kind.OPERATION_DEFINITION:
         switch (appliedTo.operation) {
           case 'query':
             return _directiveLocation.DirectiveLocation.QUERY;
@@ -76,41 +72,41 @@ function getDirectiveLocationForASTPath(ancestors) {
             return _directiveLocation.DirectiveLocation.SUBSCRIPTION;
         }
         break;
-      case Kind.FIELD:
+      case _kinds.Kind.FIELD:
         return _directiveLocation.DirectiveLocation.FIELD;
-      case Kind.FRAGMENT_SPREAD:
+      case _kinds.Kind.FRAGMENT_SPREAD:
         return _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD;
-      case Kind.INLINE_FRAGMENT:
+      case _kinds.Kind.INLINE_FRAGMENT:
         return _directiveLocation.DirectiveLocation.INLINE_FRAGMENT;
-      case Kind.FRAGMENT_DEFINITION:
+      case _kinds.Kind.FRAGMENT_DEFINITION:
         return _directiveLocation.DirectiveLocation.FRAGMENT_DEFINITION;
-      case Kind.SCHEMA_DEFINITION:
+      case _kinds.Kind.SCHEMA_DEFINITION:
         return _directiveLocation.DirectiveLocation.SCHEMA;
-      case Kind.SCALAR_TYPE_DEFINITION:
-      case Kind.SCALAR_TYPE_EXTENSION:
+      case _kinds.Kind.SCALAR_TYPE_DEFINITION:
+      case _kinds.Kind.SCALAR_TYPE_EXTENSION:
         return _directiveLocation.DirectiveLocation.SCALAR;
-      case Kind.OBJECT_TYPE_DEFINITION:
-      case Kind.OBJECT_TYPE_EXTENSION:
+      case _kinds.Kind.OBJECT_TYPE_DEFINITION:
+      case _kinds.Kind.OBJECT_TYPE_EXTENSION:
         return _directiveLocation.DirectiveLocation.OBJECT;
-      case Kind.FIELD_DEFINITION:
+      case _kinds.Kind.FIELD_DEFINITION:
         return _directiveLocation.DirectiveLocation.FIELD_DEFINITION;
-      case Kind.INTERFACE_TYPE_DEFINITION:
-      case Kind.INTERFACE_TYPE_EXTENSION:
+      case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
+      case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
         return _directiveLocation.DirectiveLocation.INTERFACE;
-      case Kind.UNION_TYPE_DEFINITION:
-      case Kind.UNION_TYPE_EXTENSION:
+      case _kinds.Kind.UNION_TYPE_DEFINITION:
+      case _kinds.Kind.UNION_TYPE_EXTENSION:
         return _directiveLocation.DirectiveLocation.UNION;
-      case Kind.ENUM_TYPE_DEFINITION:
-      case Kind.ENUM_TYPE_EXTENSION:
+      case _kinds.Kind.ENUM_TYPE_DEFINITION:
+      case _kinds.Kind.ENUM_TYPE_EXTENSION:
         return _directiveLocation.DirectiveLocation.ENUM;
-      case Kind.ENUM_VALUE_DEFINITION:
+      case _kinds.Kind.ENUM_VALUE_DEFINITION:
         return _directiveLocation.DirectiveLocation.ENUM_VALUE;
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
-      case Kind.INPUT_OBJECT_TYPE_EXTENSION:
+      case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
+      case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
         return _directiveLocation.DirectiveLocation.INPUT_OBJECT;
-      case Kind.INPUT_VALUE_DEFINITION:
+      case _kinds.Kind.INPUT_VALUE_DEFINITION:
         var parentNode = ancestors[ancestors.length - 3];
-        return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
+        return parentNode.kind === _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
     }
   }
 }

@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.DirectiveLocation = exports.BREAK = exports.getVisitFn = exports.visitWithTypeInfo = exports.visitInParallel = exports.visit = exports.Source = exports.print = exports.parseType = exports.parseValue = exports.parse = exports.TokenKind = exports.createLexer = exports.Kind = exports.getLocation = undefined;
 
 var _location = require('./location');
 
@@ -11,6 +10,15 @@ Object.defineProperty(exports, 'getLocation', {
   enumerable: true,
   get: function get() {
     return _location.getLocation;
+  }
+});
+
+var _kinds = require('./kinds');
+
+Object.defineProperty(exports, 'Kind', {
+  enumerable: true,
+  get: function get() {
+    return _kinds.Kind;
   }
 });
 
@@ -109,11 +117,3 @@ Object.defineProperty(exports, 'DirectiveLocation', {
     return _directiveLocation.DirectiveLocation;
   }
 });
-
-var _kinds = require('./kinds');
-
-var Kind = _interopRequireWildcard(_kinds);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-exports.Kind = Kind;

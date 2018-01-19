@@ -10,7 +10,7 @@
 /**
  * The set of allowed directive location values.
  */
-export const DirectiveLocation = {
+export const DirectiveLocation = Object.freeze({
   // Request Definitions
   QUERY: 'QUERY',
   MUTATION: 'MUTATION',
@@ -31,9 +31,9 @@ export const DirectiveLocation = {
   ENUM_VALUE: 'ENUM_VALUE',
   INPUT_OBJECT: 'INPUT_OBJECT',
   INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION',
-};
+});
 
 /**
  * The enum type representing the directive location values.
  */
-export type DirectiveLocationEnum = $Keys<typeof DirectiveLocation>;
+export type DirectiveLocationEnum = $Values<typeof DirectiveLocation>;

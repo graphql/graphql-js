@@ -34,7 +34,7 @@ function LoneAnonymousOperation(context) {
   return {
     Document: function Document(node) {
       operationCount = node.definitions.filter(function (definition) {
-        return definition.kind === _kinds.OPERATION_DEFINITION;
+        return definition.kind === _kinds.Kind.OPERATION_DEFINITION;
       }).length;
     },
     OperationDefinition: function OperationDefinition(node) {

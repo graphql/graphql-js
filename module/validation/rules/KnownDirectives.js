@@ -9,7 +9,7 @@ import { GraphQLError } from '../../error'; /**
                                              */
 
 import find from '../../jsutils/find';
-import * as Kind from '../../language/kinds';
+import { Kind } from '../../language/kinds';
 import { DirectiveLocation } from '../../language/directiveLocation';
 
 

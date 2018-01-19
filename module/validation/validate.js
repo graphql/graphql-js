@@ -13,7 +13,7 @@ import invariant from '../jsutils/invariant';
 
 import { GraphQLError } from '../error';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 
 import { GraphQLSchema } from '../type/schema';
 

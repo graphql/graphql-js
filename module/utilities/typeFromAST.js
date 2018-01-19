@@ -7,7 +7,7 @@
  * 
  */
 
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 
 import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 

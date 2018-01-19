@@ -8,7 +8,7 @@ import { GraphQLError } from '../../error'; /**
                                              * 
                                              */
 
-import { FRAGMENT_DEFINITION, OPERATION_DEFINITION, SCHEMA_DEFINITION } from '../../language/kinds';
+import { Kind } from '../../language/kinds';
 
 
 export function nonExecutableDefinitionMessage(defName) {
@@ -25,8 +25,8 @@ export function ExecutableDefinitions(context) {
   return {
     Document: function Document(node) {
       node.definitions.forEach(function (definition) {
-        if (definition.kind !== OPERATION_DEFINITION && definition.kind !== FRAGMENT_DEFINITION) {
-          context.reportError(new GraphQLError(nonExecutableDefinitionMessage(definition.kind === SCHEMA_DEFINITION ? 'schema' : definition.name.value), [definition]));
+        if (definition.kind !== Kind.OPERATION_DEFINITION && definition.kind !== Kind.FRAGMENT_DEFINITION) {
+          context.reportError(new GraphQLError(nonExecutableDefinitionMessage(definition.kind === Kind.SCHEMA_DEFINITION ? 'schema' : definition.name.value), [definition]));
         }
       });
       return false;

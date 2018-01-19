@@ -33,7 +33,7 @@ var _validate = require('../validation/validate');
 
 function isValidLiteralValue(type, valueNode) {
   var emptySchema = new _schema.GraphQLSchema({});
-  var emptyDoc = { kind: _kinds.DOCUMENT, definitions: [] };
+  var emptyDoc = { kind: _kinds.Kind.DOCUMENT, definitions: [] };
   var typeInfo = new _TypeInfo.TypeInfo(emptySchema, undefined, type);
   var context = new _validate.ValidationContext(emptySchema, emptyDoc, typeInfo);
   var visitor = (0, _ValuesOfCorrectType.ValuesOfCorrectType)(context);

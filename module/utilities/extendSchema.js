@@ -18,7 +18,7 @@ import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import { GraphQLDirective } from '../type/directives';
 
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 
 /**
  * Produces a new schema given an existing schema and a document which may

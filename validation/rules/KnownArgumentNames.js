@@ -56,7 +56,7 @@ function KnownArgumentNames(context) {
       var argDef = context.getArgument();
       if (!argDef) {
         var argumentOf = ancestors[ancestors.length - 1];
-        if (argumentOf.kind === _kinds.FIELD) {
+        if (argumentOf.kind === _kinds.Kind.FIELD) {
           var fieldDef = context.getFieldDef();
           var parentType = context.getParentType();
           if (fieldDef && parentType) {
@@ -64,7 +64,7 @@ function KnownArgumentNames(context) {
               return arg.name;
             }))), [node]));
           }
-        } else if (argumentOf.kind === _kinds.DIRECTIVE) {
+        } else if (argumentOf.kind === _kinds.Kind.DIRECTIVE) {
           var directive = context.getDirective();
           if (directive) {
             context.reportError(new _error.GraphQLError(unknownDirectiveArgMessage(node.name.value, directive.name, (0, _suggestionList2.default)(node.name.value, directive.args.map(function (arg) {

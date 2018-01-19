@@ -30,8 +30,6 @@ var _values = require('../execution/values');
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _definition = require('../type/definition');
 
 var _wrappers = require('../type/wrappers');
@@ -43,8 +41,6 @@ var _introspection = require('../type/introspection');
 var _scalars = require('../type/scalars');
 
 var _schema = require('../type/schema');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -58,10 +54,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                                                                                                                                                            */
 
 function buildWrappedType(innerType, inputTypeNode) {
-  if (inputTypeNode.kind === Kind.LIST_TYPE) {
+  if (inputTypeNode.kind === _kinds.Kind.LIST_TYPE) {
     return (0, _wrappers.GraphQLList)(buildWrappedType(innerType, inputTypeNode.type));
   }
-  if (inputTypeNode.kind === Kind.NON_NULL_TYPE) {
+  if (inputTypeNode.kind === _kinds.Kind.NON_NULL_TYPE) {
     var wrappedType = buildWrappedType(innerType, inputTypeNode.type);
     return (0, _wrappers.GraphQLNonNull)((0, _definition.assertNullableType)(wrappedType));
   }
@@ -70,7 +66,7 @@ function buildWrappedType(innerType, inputTypeNode) {
 
 function getNamedTypeNode(typeNode) {
   var namedType = typeNode;
-  while (namedType.kind === Kind.LIST_TYPE || namedType.kind === Kind.NON_NULL_TYPE) {
+  while (namedType.kind === _kinds.Kind.LIST_TYPE || namedType.kind === _kinds.Kind.NON_NULL_TYPE) {
     namedType = namedType.type;
   }
   return namedType;
@@ -93,7 +89,7 @@ function getNamedTypeNode(typeNode) {
  *
  */
 function buildASTSchema(ast, options) {
-  if (!ast || ast.kind !== Kind.DOCUMENT) {
+  if (!ast || ast.kind !== _kinds.Kind.DOCUMENT) {
     throw new Error('Must provide a document ast.');
   }
 
@@ -105,18 +101,18 @@ function buildASTSchema(ast, options) {
   for (var i = 0; i < ast.definitions.length; i++) {
     var d = ast.definitions[i];
     switch (d.kind) {
-      case Kind.SCHEMA_DEFINITION:
+      case _kinds.Kind.SCHEMA_DEFINITION:
         if (schemaDef) {
           throw new Error('Must provide only one schema definition.');
         }
         schemaDef = d;
         break;
-      case Kind.SCALAR_TYPE_DEFINITION:
-      case Kind.OBJECT_TYPE_DEFINITION:
-      case Kind.INTERFACE_TYPE_DEFINITION:
-      case Kind.ENUM_TYPE_DEFINITION:
-      case Kind.UNION_TYPE_DEFINITION:
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+      case _kinds.Kind.SCALAR_TYPE_DEFINITION:
+      case _kinds.Kind.OBJECT_TYPE_DEFINITION:
+      case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
+      case _kinds.Kind.ENUM_TYPE_DEFINITION:
+      case _kinds.Kind.UNION_TYPE_DEFINITION:
+      case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
         var _typeName = d.name.value;
         if (nodeMap[_typeName]) {
           throw new Error('Type "' + _typeName + '" was defined more than once.');
@@ -124,7 +120,7 @@ function buildASTSchema(ast, options) {
         typeDefs.push(d);
         nodeMap[_typeName] = d;
         break;
-      case Kind.DIRECTIVE_DEFINITION:
+      case _kinds.Kind.DIRECTIVE_DEFINITION:
         directiveDefs.push(d);
         break;
     }
@@ -261,17 +257,17 @@ var ASTDefinitionBuilder = exports.ASTDefinitionBuilder = function () {
 
   ASTDefinitionBuilder.prototype._makeSchemaDef = function _makeSchemaDef(def) {
     switch (def.kind) {
-      case Kind.OBJECT_TYPE_DEFINITION:
+      case _kinds.Kind.OBJECT_TYPE_DEFINITION:
         return this._makeTypeDef(def);
-      case Kind.INTERFACE_TYPE_DEFINITION:
+      case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
         return this._makeInterfaceDef(def);
-      case Kind.ENUM_TYPE_DEFINITION:
+      case _kinds.Kind.ENUM_TYPE_DEFINITION:
         return this._makeEnumDef(def);
-      case Kind.UNION_TYPE_DEFINITION:
+      case _kinds.Kind.UNION_TYPE_DEFINITION:
         return this._makeUnionDef(def);
-      case Kind.SCALAR_TYPE_DEFINITION:
+      case _kinds.Kind.SCALAR_TYPE_DEFINITION:
         return this._makeScalarDef(def);
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+      case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
         return this._makeInputObjectDef(def);
       default:
         throw new Error('Type kind "' + def.kind + '" not supported.');

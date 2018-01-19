@@ -21,7 +21,7 @@ import promiseReduce from '../jsutils/promiseReduce';
 
 
 import { typeFromAST } from '../utilities/typeFromAST';
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import { getVariableValues, getArgumentValues, getDirectiveValues } from './values';
 import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from '../type/definition';
 

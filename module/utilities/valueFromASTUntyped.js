@@ -11,7 +11,7 @@
 import keyValMap from '../jsutils/keyValMap';
 import isInvalid from '../jsutils/isInvalid';
 
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 
 
 /**

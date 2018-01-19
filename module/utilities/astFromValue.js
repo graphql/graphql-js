@@ -14,7 +14,7 @@ import { forEach, isCollection } from 'iterall';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 import { GraphQLID } from '../type/scalars';

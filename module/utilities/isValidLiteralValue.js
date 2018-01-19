@@ -9,7 +9,7 @@
 
 import { TypeInfo } from './TypeInfo';
 
-import { DOCUMENT } from '../language/kinds';
+import { Kind } from '../language/kinds';
 import { visit, visitWithTypeInfo } from '../language/visitor';
 
 import { GraphQLSchema } from '../type/schema';
@@ -23,7 +23,7 @@ import { ValidationContext } from '../validation/validate';
  */
 export function isValidLiteralValue(type, valueNode) {
   var emptySchema = new GraphQLSchema({});
-  var emptyDoc = { kind: DOCUMENT, definitions: [] };
+  var emptyDoc = { kind: Kind.DOCUMENT, definitions: [] };
   var typeInfo = new TypeInfo(emptySchema, undefined, type);
   var context = new ValidationContext(emptySchema, emptyDoc, typeInfo);
   var visitor = ValuesOfCorrectType(context);

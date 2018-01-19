@@ -19,7 +19,7 @@ import blockStringValue from './blockStringValue';
  * whenever called.
  */
 export function createLexer(source, options) {
-  var startOfFileToken = new Tok(SOF, 0, 0, 0, 0, null);
+  var startOfFileToken = new Tok(TokenKind.SOF, 0, 0, 0, 0, null);
   var lexer = {
     source: source,
     options: options,
@@ -41,11 +41,11 @@ function advanceLexer() {
 
 function lookahead() {
   var token = this.token;
-  if (token.kind !== EOF) {
+  if (token.kind !== TokenKind.EOF) {
     do {
       // Note: next is only mutable during parsing, so we cast to allow this.
       token = token.next || (token.next = readToken(this, token));
-    } while (token.kind === COMMENT);
+    } while (token.kind === TokenKind.COMMENT);
   }
   return token;
 }
@@ -55,58 +55,39 @@ function lookahead() {
  */
 
 
-// Each kind of token.
-var SOF = '<SOF>';
-var EOF = '<EOF>';
-var BANG = '!';
-var DOLLAR = '$';
-var AMP = '&';
-var PAREN_L = '(';
-var PAREN_R = ')';
-var SPREAD = '...';
-var COLON = ':';
-var EQUALS = '=';
-var AT = '@';
-var BRACKET_L = '[';
-var BRACKET_R = ']';
-var BRACE_L = '{';
-var PIPE = '|';
-var BRACE_R = '}';
-var NAME = 'Name';
-var INT = 'Int';
-var FLOAT = 'Float';
-var STRING = 'String';
-var BLOCK_STRING = 'BlockString';
-var COMMENT = 'Comment';
-
 /**
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-export var TokenKind = {
-  SOF: SOF,
-  EOF: EOF,
-  BANG: BANG,
-  DOLLAR: DOLLAR,
-  AMP: AMP,
-  PAREN_L: PAREN_L,
-  PAREN_R: PAREN_R,
-  SPREAD: SPREAD,
-  COLON: COLON,
-  EQUALS: EQUALS,
-  AT: AT,
-  BRACKET_L: BRACKET_L,
-  BRACKET_R: BRACKET_R,
-  BRACE_L: BRACE_L,
-  PIPE: PIPE,
-  BRACE_R: BRACE_R,
-  NAME: NAME,
-  INT: INT,
-  FLOAT: FLOAT,
-  STRING: STRING,
-  BLOCK_STRING: BLOCK_STRING,
-  COMMENT: COMMENT
-};
+export var TokenKind = Object.freeze({
+  SOF: '<SOF>',
+  EOF: '<EOF>',
+  BANG: '!',
+  DOLLAR: '$',
+  AMP: '&',
+  PAREN_L: '(',
+  PAREN_R: ')',
+  SPREAD: '...',
+  COLON: ':',
+  EQUALS: '=',
+  AT: '@',
+  BRACKET_L: '[',
+  BRACKET_R: ']',
+  BRACE_L: '{',
+  PIPE: '|',
+  BRACE_R: '}',
+  NAME: 'Name',
+  INT: 'Int',
+  FLOAT: 'Float',
+  STRING: 'String',
+  BLOCK_STRING: 'BlockString',
+  COMMENT: 'Comment'
+});
+
+/**
+ * The enum type representing the token kinds values.
+ */
+
 
 /**
  * A helper function to describe a token as a string for debugging
@@ -146,7 +127,7 @@ Tok.prototype.toJSON = Tok.prototype.inspect = function toJSON() {
 function printCharCode(code) {
   return (
     // NaN/undefined represents access beyond the end of the file.
-    isNaN(code) ? EOF : // Trust JSON for ASCII.
+    isNaN(code) ? TokenKind.EOF : // Trust JSON for ASCII.
     code < 0x007f ? JSON.stringify(String.fromCharCode(code)) : // Otherwise print the escaped form.
     '"\\u' + ('00' + code.toString(16).toUpperCase()).slice(-4) + '"'
   );
@@ -164,70 +145,70 @@ function readToken(lexer, prev) {
   var body = source.body;
   var bodyLength = body.length;
 
-  var position = positionAfterWhitespace(body, prev.end, lexer);
+  var pos = positionAfterWhitespace(body, prev.end, lexer);
   var line = lexer.line;
-  var col = 1 + position - lexer.lineStart;
+  var col = 1 + pos - lexer.lineStart;
 
-  if (position >= bodyLength) {
-    return new Tok(EOF, bodyLength, bodyLength, line, col, prev);
+  if (pos >= bodyLength) {
+    return new Tok(TokenKind.EOF, bodyLength, bodyLength, line, col, prev);
   }
 
-  var code = charCodeAt.call(body, position);
+  var code = charCodeAt.call(body, pos);
 
   // SourceCharacter
   if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
-    throw syntaxError(source, position, 'Cannot contain the invalid character ' + printCharCode(code) + '.');
+    throw syntaxError(source, pos, 'Cannot contain the invalid character ' + printCharCode(code) + '.');
   }
 
   switch (code) {
     // !
     case 33:
-      return new Tok(BANG, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.BANG, pos, pos + 1, line, col, prev);
     // #
     case 35:
-      return readComment(source, position, line, col, prev);
+      return readComment(source, pos, line, col, prev);
     // $
     case 36:
-      return new Tok(DOLLAR, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.DOLLAR, pos, pos + 1, line, col, prev);
     // &
     case 38:
-      return new Tok(AMP, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.AMP, pos, pos + 1, line, col, prev);
     // (
     case 40:
-      return new Tok(PAREN_L, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.PAREN_L, pos, pos + 1, line, col, prev);
     // )
     case 41:
-      return new Tok(PAREN_R, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
     // .
     case 46:
-      if (charCodeAt.call(body, position + 1) === 46 && charCodeAt.call(body, position + 2) === 46) {
-        return new Tok(SPREAD, position, position + 3, line, col, prev);
+      if (charCodeAt.call(body, pos + 1) === 46 && charCodeAt.call(body, pos + 2) === 46) {
+        return new Tok(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
       }
       break;
     // :
     case 58:
-      return new Tok(COLON, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.COLON, pos, pos + 1, line, col, prev);
     // =
     case 61:
-      return new Tok(EQUALS, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.EQUALS, pos, pos + 1, line, col, prev);
     // @
     case 64:
-      return new Tok(AT, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.AT, pos, pos + 1, line, col, prev);
     // [
     case 91:
-      return new Tok(BRACKET_L, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.BRACKET_L, pos, pos + 1, line, col, prev);
     // ]
     case 93:
-      return new Tok(BRACKET_R, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.BRACKET_R, pos, pos + 1, line, col, prev);
     // {
     case 123:
-      return new Tok(BRACE_L, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.BRACE_L, pos, pos + 1, line, col, prev);
     // |
     case 124:
-      return new Tok(PIPE, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.PIPE, pos, pos + 1, line, col, prev);
     // }
     case 125:
-      return new Tok(BRACE_R, position, position + 1, line, col, prev);
+      return new Tok(TokenKind.BRACE_R, pos, pos + 1, line, col, prev);
     // A-Z _ a-z
     case 65:
     case 66:
@@ -282,7 +263,7 @@ function readToken(lexer, prev) {
     case 120:
     case 121:
     case 122:
-      return readName(source, position, line, col, prev);
+      return readName(source, pos, line, col, prev);
     // - 0-9
     case 45:
     case 48:
@@ -295,16 +276,16 @@ function readToken(lexer, prev) {
     case 55:
     case 56:
     case 57:
-      return readNumber(source, position, code, line, col, prev);
+      return readNumber(source, pos, code, line, col, prev);
     // "
     case 34:
-      if (charCodeAt.call(body, position + 1) === 34 && charCodeAt.call(body, position + 2) === 34) {
-        return readBlockString(source, position, line, col, prev);
+      if (charCodeAt.call(body, pos + 1) === 34 && charCodeAt.call(body, pos + 2) === 34) {
+        return readBlockString(source, pos, line, col, prev);
       }
-      return readString(source, position, line, col, prev);
+      return readString(source, pos, line, col, prev);
   }
 
-  throw syntaxError(source, position, unexpectedCharacterMessage(code));
+  throw syntaxError(source, pos, unexpectedCharacterMessage(code));
 }
 
 /**
@@ -369,7 +350,7 @@ function readComment(source, start, line, col, prev) {
   // SourceCharacter but not LineTerminator
   code > 0x001f || code === 0x0009));
 
-  return new Tok(COMMENT, start, position, line, col, prev, slice.call(body, start + 1, position));
+  return new Tok(TokenKind.COMMENT, start, position, line, col, prev, slice.call(body, start + 1, position));
 }
 
 /**
@@ -422,7 +403,7 @@ function readNumber(source, start, firstCode, line, col, prev) {
     position = readDigits(source, position, code);
   }
 
-  return new Tok(isFloat ? FLOAT : INT, start, position, line, col, prev, slice.call(body, start, position));
+  return new Tok(isFloat ? TokenKind.FLOAT : TokenKind.INT, start, position, line, col, prev, slice.call(body, start, position));
 }
 
 /**
@@ -460,7 +441,7 @@ function readString(source, start, line, col, prev) {
     // Closing Quote (")
     if (code === 34) {
       value += slice.call(body, chunkStart, position);
-      return new Tok(STRING, start, position + 1, line, col, prev, value);
+      return new Tok(TokenKind.STRING, start, position + 1, line, col, prev, value);
     }
 
     // SourceCharacter
@@ -534,7 +515,7 @@ function readBlockString(source, start, line, col, prev) {
     // Closing Triple-Quote (""")
     if (code === 34 && charCodeAt.call(body, position + 1) === 34 && charCodeAt.call(body, position + 2) === 34) {
       rawValue += slice.call(body, chunkStart, position);
-      return new Tok(BLOCK_STRING, start, position + 3, line, col, prev, blockStringValue(rawValue));
+      return new Tok(TokenKind.BLOCK_STRING, start, position + 3, line, col, prev, blockStringValue(rawValue));
     }
 
     // SourceCharacter
@@ -589,17 +570,17 @@ function char2hex(a) {
  *
  * [_A-Za-z][_0-9A-Za-z]*
  */
-function readName(source, position, line, col, prev) {
+function readName(source, start, line, col, prev) {
   var body = source.body;
   var bodyLength = body.length;
-  var end = position + 1;
+  var position = start + 1;
   var code = 0;
-  while (end !== bodyLength && (code = charCodeAt.call(body, end)) !== null && (code === 95 || // _
+  while (position !== bodyLength && (code = charCodeAt.call(body, position)) !== null && (code === 95 || // _
   code >= 48 && code <= 57 || // 0-9
   code >= 65 && code <= 90 || // A-Z
   code >= 97 && code <= 122) // a-z
   ) {
-    ++end;
+    ++position;
   }
-  return new Tok(NAME, position, end, line, col, prev, slice.call(body, position, end));
+  return new Tok(TokenKind.NAME, start, position, line, col, prev, slice.call(body, start, position));
 }

@@ -7,11 +7,7 @@ exports.typeFromAST = typeFromAST;
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
 var _wrappers = require('../type/wrappers');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType
@@ -33,15 +29,15 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function typeFromAST(schema, typeNode) {
   /* eslint-enable no-redeclare */
   var innerType = void 0;
-  if (typeNode.kind === Kind.LIST_TYPE) {
+  if (typeNode.kind === _kinds.Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
     return innerType && (0, _wrappers.GraphQLList)(innerType);
   }
-  if (typeNode.kind === Kind.NON_NULL_TYPE) {
+  if (typeNode.kind === _kinds.Kind.NON_NULL_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
     return innerType && (0, _wrappers.GraphQLNonNull)(innerType);
   }
-  if (typeNode.kind === Kind.NAMED_TYPE) {
+  if (typeNode.kind === _kinds.Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);
   }
   /* istanbul ignore next */

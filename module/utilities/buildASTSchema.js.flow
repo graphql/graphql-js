@@ -16,8 +16,7 @@ import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
 import type { Source } from '../language/source';
 import { getDirectiveValues } from '../execution/values';
-
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 
 import type {
   DocumentNode,

@@ -27,10 +27,6 @@ var _directives = require('../type/directives');
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
@@ -54,7 +50,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function extendSchema(schema, documentAST, options) {
   !(0, _schema.isSchema)(schema) ? (0, _invariant2.default)(0, 'Must provide valid GraphQLSchema') : void 0;
 
-  !(documentAST && documentAST.kind === Kind.DOCUMENT) ? (0, _invariant2.default)(0, 'Must provide valid Document AST') : void 0;
+  !(documentAST && documentAST.kind === _kinds.Kind.DOCUMENT) ? (0, _invariant2.default)(0, 'Must provide valid Document AST') : void 0;
 
   // Collect the type definitions and extensions found in the document.
   var typeDefinitionMap = Object.create(null);
@@ -67,12 +63,12 @@ function extendSchema(schema, documentAST, options) {
   for (var i = 0; i < documentAST.definitions.length; i++) {
     var def = documentAST.definitions[i];
     switch (def.kind) {
-      case Kind.OBJECT_TYPE_DEFINITION:
-      case Kind.INTERFACE_TYPE_DEFINITION:
-      case Kind.ENUM_TYPE_DEFINITION:
-      case Kind.UNION_TYPE_DEFINITION:
-      case Kind.SCALAR_TYPE_DEFINITION:
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+      case _kinds.Kind.OBJECT_TYPE_DEFINITION:
+      case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
+      case _kinds.Kind.ENUM_TYPE_DEFINITION:
+      case _kinds.Kind.UNION_TYPE_DEFINITION:
+      case _kinds.Kind.SCALAR_TYPE_DEFINITION:
+      case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
         // Sanity check that none of the defined types conflict with the
         // schema's existing types.
         var typeName = def.name.value;
@@ -81,7 +77,7 @@ function extendSchema(schema, documentAST, options) {
         }
         typeDefinitionMap[typeName] = def;
         break;
-      case Kind.OBJECT_TYPE_EXTENSION:
+      case _kinds.Kind.OBJECT_TYPE_EXTENSION:
         // Sanity check that this type extension exists within the
         // schema's existing types.
         var extendedTypeName = def.name.value;
@@ -100,7 +96,7 @@ function extendSchema(schema, documentAST, options) {
         }
         typeExtensionsMap[extendedTypeName] = extensions;
         break;
-      case Kind.DIRECTIVE_DEFINITION:
+      case _kinds.Kind.DIRECTIVE_DEFINITION:
         var directiveName = def.name.value;
         var existingDirective = schema.getDirective(directiveName);
         if (existingDirective) {
@@ -108,11 +104,11 @@ function extendSchema(schema, documentAST, options) {
         }
         directiveDefinitions.push(def);
         break;
-      case Kind.SCALAR_TYPE_EXTENSION:
-      case Kind.INTERFACE_TYPE_EXTENSION:
-      case Kind.UNION_TYPE_EXTENSION:
-      case Kind.ENUM_TYPE_EXTENSION:
-      case Kind.INPUT_OBJECT_TYPE_EXTENSION:
+      case _kinds.Kind.SCALAR_TYPE_EXTENSION:
+      case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
+      case _kinds.Kind.UNION_TYPE_EXTENSION:
+      case _kinds.Kind.ENUM_TYPE_EXTENSION:
+      case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
         throw new Error('The ' + def.kind + ' kind is not yet supported by extendSchema().');
     }
   }

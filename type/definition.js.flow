@@ -11,7 +11,7 @@ import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import type { ObjMap } from '../jsutils/ObjMap';
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 import type {
   ScalarTypeDefinitionNode,

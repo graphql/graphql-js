@@ -247,6 +247,8 @@ export type {
   TypeExtensionNode,
   ObjectTypeExtensionNode,
   DirectiveDefinitionNode,
+  KindEnum,
+  TokenKindEnum,
   DirectiveLocationEnum,
 } from './language';
 

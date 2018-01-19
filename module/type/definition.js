@@ -17,7 +17,7 @@ import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 
 import { GraphQLList, GraphQLNonNull } from './wrappers';

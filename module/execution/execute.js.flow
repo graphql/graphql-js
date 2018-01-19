@@ -20,7 +20,7 @@ import type { ObjMap } from '../jsutils/ObjMap';
 import type { MaybePromise } from '../jsutils/MaybePromise';
 
 import { typeFromAST } from '../utilities/typeFromAST';
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import {
   getVariableValues,
   getArgumentValues,

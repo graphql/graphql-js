@@ -11,7 +11,7 @@ import { GraphQLError } from '../../error'; /**
 
 import find from '../../jsutils/find';
 
-import * as Kind from '../../language/kinds';
+import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 
 import { getNamedType, isNonNullType, isLeafType, isObjectType, isListType, isInterfaceType } from '../../type/definition';

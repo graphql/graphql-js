@@ -15,10 +15,6 @@ var _isInvalid2 = _interopRequireDefault(_isInvalid);
 
 var _kinds = require('../language/kinds');
 
-var Kind = _interopRequireWildcard(_kinds);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
@@ -39,27 +35,27 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function valueFromASTUntyped(valueNode, variables) {
   switch (valueNode.kind) {
-    case Kind.NULL:
+    case _kinds.Kind.NULL:
       return null;
-    case Kind.INT:
+    case _kinds.Kind.INT:
       return parseInt(valueNode.value, 10);
-    case Kind.FLOAT:
+    case _kinds.Kind.FLOAT:
       return parseFloat(valueNode.value);
-    case Kind.STRING:
-    case Kind.ENUM:
-    case Kind.BOOLEAN:
+    case _kinds.Kind.STRING:
+    case _kinds.Kind.ENUM:
+    case _kinds.Kind.BOOLEAN:
       return valueNode.value;
-    case Kind.LIST:
+    case _kinds.Kind.LIST:
       return valueNode.values.map(function (node) {
         return valueFromASTUntyped(node, variables);
       });
-    case Kind.OBJECT:
+    case _kinds.Kind.OBJECT:
       return (0, _keyValMap2.default)(valueNode.fields, function (field) {
         return field.name.value;
       }, function (field) {
         return valueFromASTUntyped(field.value, variables);
       });
-    case Kind.VARIABLE:
+    case _kinds.Kind.VARIABLE:
       var variableName = valueNode.name.value;
       return variables && !(0, _isInvalid2.default)(variables[variableName]) ? variables[variableName] : undefined;
   }

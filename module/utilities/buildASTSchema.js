@@ -18,8 +18,7 @@ import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
 
 import { getDirectiveValues } from '../execution/values';
-
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 
 import { assertNullableType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from '../type/definition';
 

@@ -7,7 +7,7 @@
  * @flow
  */
 
-import * as Kind from '../language/kinds';
+import { Kind } from '../language/kinds';
 import type {
   NamedTypeNode,
   ListTypeNode,
