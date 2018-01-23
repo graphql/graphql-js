@@ -11,6 +11,7 @@ import { forEach, isCollection } from 'iterall';
 
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
+import objectValues from '../jsutils/objectValues';
 import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 import type { GraphQLInputType } from '../type/definition';
@@ -85,15 +86,14 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     if (_value === null || typeof _value !== 'object') {
       return null;
     }
-    const fields = type.getFields();
+    const fields = objectValues(type.getFields());
     const fieldNodes = [];
-    Object.keys(fields).forEach(fieldName => {
-      const fieldType = fields[fieldName].type;
-      const fieldValue = astFromValue(_value[fieldName], fieldType);
+    fields.forEach(field => {
+      const fieldValue = astFromValue(_value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({
           kind: Kind.OBJECT_FIELD,
-          name: { kind: Kind.NAME, value: fieldName },
+          name: { kind: Kind.NAME, value: field.name },
           value: fieldValue,
         });
       }

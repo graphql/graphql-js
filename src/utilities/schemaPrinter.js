@@ -9,6 +9,7 @@
 
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
+import objectValues from '../jsutils/objectValues';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import type { GraphQLSchema } from '../type/schema';
@@ -79,9 +80,8 @@ function printFilteredSchema(
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
   const typeMap = schema.getTypeMap();
-  const types = Object.keys(typeMap)
-    .sort((name1, name2) => name1.localeCompare(name2))
-    .map(typeName => typeMap[typeName])
+  const types = objectValues(typeMap)
+    .sort((type1, type2) => type1.name.localeCompare(type2.name))
     .filter(typeFilter);
 
   return (
@@ -227,8 +227,7 @@ function printEnumValues(values, options): string {
 }
 
 function printInputObject(type: GraphQLInputObjectType, options): string {
-  const fieldMap = type.getFields();
-  const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
+  const fields = objectValues(type.getFields());
   return (
     printDescription(options, type) +
     `input ${type.name} {\n` +
@@ -244,8 +243,7 @@ function printInputObject(type: GraphQLInputObjectType, options): string {
 }
 
 function printFields(options, type) {
-  const fieldMap = type.getFields();
-  const fields = Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
+  const fields = objectValues(type.getFields());
   return fields
     .map(
       (f, i) =>
