@@ -24,7 +24,7 @@ export default function memoize3<T: (a1: any, a2: any, a3: any) => any>(
       cache2 = cache1.get(a2);
       if (cache2) {
         const cachedValue = cache2.get(a3);
-        if (cachedValue) {
+        if (cachedValue !== undefined) {
           return cachedValue;
         }
       }

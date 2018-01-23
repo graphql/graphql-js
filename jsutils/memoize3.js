@@ -28,7 +28,7 @@ function memoize3(fn) {
       cache2 = cache1.get(a2);
       if (cache2) {
         var cachedValue = cache2.get(a3);
-        if (cachedValue) {
+        if (cachedValue !== undefined) {
           return cachedValue;
         }
       }
