@@ -170,7 +170,6 @@ export type {
 // Parse and operate on GraphQL language source files.
 export {
   Source,
-  SourceLocation,
   getLocation,
   // Parse
   parse,
@@ -192,6 +191,7 @@ export {
 export type {
   Lexer,
   ParseOptions,
+  SourceLocation,
   // Visitor utilities
   ASTVisitor,
   Visitor,
