@@ -61,7 +61,7 @@ getNullableType, getNamedType,
 validateSchema, assertValidSchema } from './type';
 
 // Parse and operate on GraphQL language source files.
-export { Source, SourceLocation, getLocation,
+export { Source, getLocation,
 // Parse
 parse, parseValue, parseType,
 // Print

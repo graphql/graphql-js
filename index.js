@@ -492,12 +492,6 @@ Object.defineProperty(exports, 'Source', {
     return _language.Source;
   }
 });
-Object.defineProperty(exports, 'SourceLocation', {
-  enumerable: true,
-  get: function get() {
-    return _language.SourceLocation;
-  }
-});
 Object.defineProperty(exports, 'getLocation', {
   enumerable: true,
   get: function get() {
