@@ -32,6 +32,7 @@ import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
+import objectValues from '../jsutils/objectValues';
 import type { ObjMap } from '../jsutils/ObjMap';
 
 /**
@@ -275,10 +276,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   if (isObjectType(type) || isInterfaceType(type)) {
-    const fieldMap = type.getFields();
-    Object.keys(fieldMap).forEach(fieldName => {
-      const field = fieldMap[fieldName];
-
+    objectValues(type.getFields()).forEach(field => {
       if (field.args) {
         const fieldArgTypes = field.args.map(arg => arg.type);
         reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
@@ -288,9 +286,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   if (isInputObjectType(type)) {
-    const fieldMap = type.getFields();
-    Object.keys(fieldMap).forEach(fieldName => {
-      const field = fieldMap[fieldName];
+    objectValues(type.getFields()).forEach(field => {
       reducedMap = typeMapReducer(reducedMap, field.type);
     });
   }
