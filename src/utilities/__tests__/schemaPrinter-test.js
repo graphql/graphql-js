@@ -35,11 +35,11 @@ function printForTest(schema) {
 }
 
 function printSingleFieldSchema(fieldConfig) {
-  const Root = new GraphQLObjectType({
-    name: 'Root',
+  const Query = new GraphQLObjectType({
+    name: 'Query',
     fields: { singleField: fieldConfig },
   });
-  return printForTest(new GraphQLSchema({ query: Root }));
+  return printForTest(new GraphQLSchema({ query: Query }));
 }
 
 function listOf(type) {
@@ -56,11 +56,7 @@ describe('Type System Printer', () => {
       type: GraphQLString,
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField: String
       }
     `);
@@ -71,11 +67,7 @@ describe('Type System Printer', () => {
       type: listOf(GraphQLString),
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField: [String]
       }
     `);
@@ -86,11 +78,7 @@ describe('Type System Printer', () => {
       type: nonNull(GraphQLString),
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField: String!
       }
     `);
@@ -101,11 +89,7 @@ describe('Type System Printer', () => {
       type: nonNull(listOf(GraphQLString)),
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField: [String]!
       }
     `);
@@ -116,11 +100,7 @@ describe('Type System Printer', () => {
       type: listOf(nonNull(GraphQLString)),
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField: [String!]
       }
     `);
@@ -131,11 +111,7 @@ describe('Type System Printer', () => {
       type: nonNull(listOf(nonNull(GraphQLString))),
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField: [String!]!
       }
     `);
@@ -175,11 +151,7 @@ describe('Type System Printer', () => {
       args: { argOne: { type: GraphQLInt } },
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField(argOne: Int): String
       }
     `);
@@ -191,11 +163,7 @@ describe('Type System Printer', () => {
       args: { argOne: { type: GraphQLInt, defaultValue: 2 } },
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField(argOne: Int = 2): String
       }
     `);
@@ -208,11 +176,7 @@ describe('Type System Printer', () => {
     });
     expect(output).to.equal(
       dedent(String.raw`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField(argOne: String = "tes\t de\fault"): String
       }
     `),
@@ -225,11 +189,7 @@ describe('Type System Printer', () => {
       args: { argOne: { type: GraphQLInt, defaultValue: null } },
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField(argOne: Int = null): String
       }
     `);
@@ -241,11 +201,7 @@ describe('Type System Printer', () => {
       args: { argOne: { type: nonNull(GraphQLInt) } },
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField(argOne: Int!): String
       }
     `);
@@ -260,11 +216,7 @@ describe('Type System Printer', () => {
       },
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField(argOne: Int, argTwo: String): String
       }
     `);
@@ -280,11 +232,7 @@ describe('Type System Printer', () => {
       },
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField(argOne: Int = 1, argTwo: String, argThree: Boolean): String
       }
     `);
@@ -300,11 +248,7 @@ describe('Type System Printer', () => {
       },
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField(argOne: Int, argTwo: String = "foo", argThree: Boolean): String
       }
     `);
@@ -320,11 +264,7 @@ describe('Type System Printer', () => {
       },
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         singleField(argOne: Int, argTwo: String, argThree: Boolean = false): String
       }
     `);
