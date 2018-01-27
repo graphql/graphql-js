@@ -552,16 +552,12 @@ describe('Type System Printer', () => {
       description,
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         """This field is awesome"""
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Root'];
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
     const recreatedField = recreatedRoot.getFields()['singleField'];
     expect(recreatedField.description).to.equal(description);
   });
@@ -573,18 +569,14 @@ describe('Type System Printer', () => {
       description,
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         """
         This field is "awesome"
         """
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Root'];
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
     const recreatedField = recreatedRoot.getFields()['singleField'];
     expect(recreatedField.description).to.equal(description);
   });
@@ -596,17 +588,13 @@ describe('Type System Printer', () => {
       description,
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         """    This field is "awesome"
         """
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Root'];
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
     const recreatedField = recreatedRoot.getFields()['singleField'];
     expect(recreatedField.description).to.equal(description);
   });
