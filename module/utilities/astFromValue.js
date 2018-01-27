@@ -13,6 +13,7 @@ import { forEach, isCollection } from 'iterall';
 
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
+import objectValues from '../jsutils/objectValues';
 
 import { Kind } from '../language/kinds';
 
@@ -81,15 +82,14 @@ export function astFromValue(value, type) {
     if (_value === null || (typeof _value === 'undefined' ? 'undefined' : _typeof(_value)) !== 'object') {
       return null;
     }
-    var fields = type.getFields();
+    var fields = objectValues(type.getFields());
     var fieldNodes = [];
-    Object.keys(fields).forEach(function (fieldName) {
-      var fieldType = fields[fieldName].type;
-      var fieldValue = astFromValue(_value[fieldName], fieldType);
+    fields.forEach(function (field) {
+      var fieldValue = astFromValue(_value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({
           kind: Kind.OBJECT_FIELD,
-          name: { kind: Kind.NAME, value: fieldName },
+          name: { kind: Kind.NAME, value: field.name },
           value: fieldValue
         });
       }

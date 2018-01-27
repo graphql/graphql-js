@@ -8,6 +8,7 @@
  */
 
 import isInvalid from '../jsutils/isInvalid';
+import objectValues from '../jsutils/objectValues';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import {
@@ -41,8 +42,7 @@ export const __Schema = new GraphQLObjectType({
       description: 'A list of all types supported by this server.',
       type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__Type))),
       resolve(schema) {
-        const typeMap = schema.getTypeMap();
-        return Object.keys(typeMap).map(key => typeMap[key]);
+        return objectValues(schema.getTypeMap());
       },
     },
     queryType: {
@@ -245,10 +245,7 @@ export const __Type = new GraphQLObjectType({
       },
       resolve(type, { includeDeprecated }) {
         if (isObjectType(type) || isInterfaceType(type)) {
-          const fieldMap = type.getFields();
-          let fields = Object.keys(fieldMap).map(
-            fieldName => fieldMap[fieldName],
-          );
+          let fields = objectValues(type.getFields());
           if (!includeDeprecated) {
             fields = fields.filter(field => !field.deprecationReason);
           }
@@ -292,8 +289,7 @@ export const __Type = new GraphQLObjectType({
       type: GraphQLList(GraphQLNonNull(__InputValue)),
       resolve(type) {
         if (isInputObjectType(type)) {
-          const fieldMap = type.getFields();
-          return Object.keys(fieldMap).map(fieldName => fieldMap[fieldName]);
+          return objectValues(type.getFields());
         }
       },
     },

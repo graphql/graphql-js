@@ -9,6 +9,7 @@
 
 import keyMap from '../jsutils/keyMap';
 import isInvalid from '../jsutils/isInvalid';
+import objectValues from '../jsutils/objectValues';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { Kind } from '../language/kinds';
 import {
@@ -116,19 +117,17 @@ export function valueFromAST(
       return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
-    const fields = type.getFields();
     const fieldNodes = keyMap(
       (valueNode: ObjectValueNode).fields,
       field => field.name.value,
     );
-    const fieldNames = Object.keys(fields);
-    for (let i = 0; i < fieldNames.length; i++) {
-      const fieldName = fieldNames[i];
-      const field = fields[fieldName];
-      const fieldNode = fieldNodes[fieldName];
+    const fields = objectValues(type.getFields());
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i];
+      const fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (!isInvalid(field.defaultValue)) {
-          coercedObj[fieldName] = field.defaultValue;
+          coercedObj[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
           return; // Invalid: intentionally return no value.
         }
@@ -138,7 +137,7 @@ export function valueFromAST(
       if (isInvalid(fieldValue)) {
         return; // Invalid: intentionally return no value.
       }
-      coercedObj[fieldName] = fieldValue;
+      coercedObj[field.name] = fieldValue;
     }
     return coercedObj;
   }

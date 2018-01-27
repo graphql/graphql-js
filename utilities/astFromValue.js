@@ -25,6 +25,10 @@ var _isInvalid = require('../jsutils/isInvalid');
 
 var _isInvalid2 = _interopRequireDefault(_isInvalid);
 
+var _objectValues = require('../jsutils/objectValues');
+
+var _objectValues2 = _interopRequireDefault(_objectValues);
+
 var _kinds = require('../language/kinds');
 
 var _definition = require('../type/definition');
@@ -95,15 +99,14 @@ function astFromValue(value, type) {
     if (_value === null || (typeof _value === 'undefined' ? 'undefined' : _typeof(_value)) !== 'object') {
       return null;
     }
-    var fields = type.getFields();
+    var fields = (0, _objectValues2.default)(type.getFields());
     var fieldNodes = [];
-    Object.keys(fields).forEach(function (fieldName) {
-      var fieldType = fields[fieldName].type;
-      var fieldValue = astFromValue(_value[fieldName], fieldType);
+    fields.forEach(function (field) {
+      var fieldValue = astFromValue(_value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({
           kind: _kinds.Kind.OBJECT_FIELD,
-          name: { kind: _kinds.Kind.NAME, value: fieldName },
+          name: { kind: _kinds.Kind.NAME, value: field.name },
           value: fieldValue
         });
       }

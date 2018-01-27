@@ -13,6 +13,10 @@ var _isInvalid = require('../jsutils/isInvalid');
 
 var _isInvalid2 = _interopRequireDefault(_isInvalid);
 
+var _objectValues = require('../jsutils/objectValues');
+
+var _objectValues2 = _interopRequireDefault(_objectValues);
+
 var _kinds = require('../language/kinds');
 
 var _definition = require('../type/definition');
@@ -39,15 +43,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * | NullValue            | null          |
  *
  */
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
-
 function valueFromAST(valueNode, type, variables) {
   if (!valueNode) {
     // When there is no node, then there is also no value.
@@ -114,18 +109,16 @@ function valueFromAST(valueNode, type, variables) {
       return; // Invalid: intentionally return no value.
     }
     var coercedObj = Object.create(null);
-    var fields = type.getFields();
     var fieldNodes = (0, _keyMap2.default)(valueNode.fields, function (field) {
       return field.name.value;
     });
-    var fieldNames = Object.keys(fields);
-    for (var _i = 0; _i < fieldNames.length; _i++) {
-      var fieldName = fieldNames[_i];
-      var field = fields[fieldName];
-      var fieldNode = fieldNodes[fieldName];
+    var fields = (0, _objectValues2.default)(type.getFields());
+    for (var _i = 0; _i < fields.length; _i++) {
+      var field = fields[_i];
+      var fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (!(0, _isInvalid2.default)(field.defaultValue)) {
-          coercedObj[fieldName] = field.defaultValue;
+          coercedObj[field.name] = field.defaultValue;
         } else if ((0, _definition.isNonNullType)(field.type)) {
           return; // Invalid: intentionally return no value.
         }
@@ -135,7 +128,7 @@ function valueFromAST(valueNode, type, variables) {
       if ((0, _isInvalid2.default)(fieldValue)) {
         return; // Invalid: intentionally return no value.
       }
-      coercedObj[fieldName] = fieldValue;
+      coercedObj[field.name] = fieldValue;
     }
     return coercedObj;
   }
@@ -173,6 +166,15 @@ function valueFromAST(valueNode, type, variables) {
 
 // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * 
+ */
+
 function isMissingVariable(valueNode, variables) {
   return valueNode.kind === _kinds.Kind.VARIABLE && (!variables || (0, _isInvalid2.default)(variables[valueNode.name.value]));
 }

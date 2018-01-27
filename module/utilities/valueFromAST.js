@@ -9,6 +9,7 @@
 
 import keyMap from '../jsutils/keyMap';
 import isInvalid from '../jsutils/isInvalid';
+import objectValues from '../jsutils/objectValues';
 
 import { Kind } from '../language/kinds';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
@@ -100,18 +101,16 @@ export function valueFromAST(valueNode, type, variables) {
       return; // Invalid: intentionally return no value.
     }
     var coercedObj = Object.create(null);
-    var fields = type.getFields();
     var fieldNodes = keyMap(valueNode.fields, function (field) {
       return field.name.value;
     });
-    var fieldNames = Object.keys(fields);
-    for (var _i = 0; _i < fieldNames.length; _i++) {
-      var fieldName = fieldNames[_i];
-      var field = fields[fieldName];
-      var fieldNode = fieldNodes[fieldName];
+    var fields = objectValues(type.getFields());
+    for (var _i = 0; _i < fields.length; _i++) {
+      var field = fields[_i];
+      var fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (!isInvalid(field.defaultValue)) {
-          coercedObj[fieldName] = field.defaultValue;
+          coercedObj[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
           return; // Invalid: intentionally return no value.
         }
@@ -121,7 +120,7 @@ export function valueFromAST(valueNode, type, variables) {
       if (isInvalid(fieldValue)) {
         return; // Invalid: intentionally return no value.
       }
-      coercedObj[fieldName] = fieldValue;
+      coercedObj[field.name] = fieldValue;
     }
     return coercedObj;
   }

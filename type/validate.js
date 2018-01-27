@@ -22,6 +22,10 @@ var _invariant = require('../jsutils/invariant');
 
 var _invariant2 = _interopRequireDefault(_invariant);
 
+var _objectValues = require('../jsutils/objectValues');
+
+var _objectValues2 = _interopRequireDefault(_objectValues);
+
 var _GraphQLError = require('../error/GraphQLError');
 
 var _assertValidName = require('../utilities/assertValidName');
@@ -185,9 +189,7 @@ function validateName(context, node) {
 
 function validateTypes(context) {
   var typeMap = context.schema.getTypeMap();
-  Object.keys(typeMap).forEach(function (typeName) {
-    var type = typeMap[typeName];
-
+  (0, _objectValues2.default)(typeMap).forEach(function (type) {
     // Ensure all provided types are in fact GraphQL type.
     if (!(0, _definition.isNamedType)(type)) {
       context.reportError('Expected GraphQL named type but got: ' + String(type) + '.', type && type.astNode);
@@ -222,30 +224,27 @@ function validateTypes(context) {
 }
 
 function validateFields(context, type) {
-  var fieldMap = type.getFields();
-  var fieldNames = Object.keys(fieldMap);
+  var fields = (0, _objectValues2.default)(type.getFields());
 
   // Objects and Interfaces both must define one or more fields.
-  if (fieldNames.length === 0) {
+  if (fields.length === 0) {
     context.reportError('Type ' + type.name + ' must define one or more fields.', getAllObjectOrInterfaceNodes(type));
   }
 
-  fieldNames.forEach(function (fieldName) {
-    var field = fieldMap[fieldName];
-
+  fields.forEach(function (field) {
     // Ensure they are named correctly.
     validateName(context, field);
 
     // Ensure they were defined at most once.
-    var fieldNodes = getAllFieldNodes(type, fieldName);
+    var fieldNodes = getAllFieldNodes(type, field.name);
     if (fieldNodes.length > 1) {
-      context.reportError('Field ' + type.name + '.' + fieldName + ' can only be defined once.', fieldNodes);
+      context.reportError('Field ' + type.name + '.' + field.name + ' can only be defined once.', fieldNodes);
       return; // continue loop
     }
 
     // Ensure the type is an output type
     if (!(0, _definition.isOutputType)(field.type)) {
-      context.reportError('The type of ' + type.name + '.' + fieldName + ' must be Output Type ' + ('but got: ' + String(field.type) + '.'), getFieldTypeNode(type, fieldName));
+      context.reportError('The type of ' + type.name + '.' + field.name + ' must be Output Type ' + ('but got: ' + String(field.type) + '.'), getFieldTypeNode(type, field.name));
     }
 
     // Ensure the arguments are valid
@@ -258,13 +257,13 @@ function validateFields(context, type) {
 
       // Ensure they are unique per field.
       if (argNames[argName]) {
-        context.reportError('Field argument ' + type.name + '.' + fieldName + '(' + argName + ':) can only ' + 'be defined once.', getAllFieldArgNodes(type, fieldName, argName));
+        context.reportError('Field argument ' + type.name + '.' + field.name + '(' + argName + ':) can only ' + 'be defined once.', getAllFieldArgNodes(type, field.name, argName));
       }
       argNames[argName] = true;
 
       // Ensure the type is an input type
       if (!(0, _definition.isInputType)(arg.type)) {
-        context.reportError('The type of ' + type.name + '.' + fieldName + '(' + argName + ':) must be Input ' + ('Type but got: ' + String(arg.type) + '.'), getFieldArgTypeNode(type, fieldName, argName));
+        context.reportError('The type of ' + type.name + '.' + field.name + '(' + argName + ':) must be Input ' + ('Type but got: ' + String(arg.type) + '.'), getFieldArgTypeNode(type, field.name, argName));
       }
     });
   });
@@ -391,17 +390,14 @@ function validateEnumValues(context, enumType) {
 }
 
 function validateInputFields(context, inputObj) {
-  var fieldMap = inputObj.getFields();
-  var fieldNames = Object.keys(fieldMap);
+  var fields = (0, _objectValues2.default)(inputObj.getFields());
 
-  if (fieldNames.length === 0) {
+  if (fields.length === 0) {
     context.reportError('Input Object type ' + inputObj.name + ' must define one or more fields.', inputObj.astNode);
   }
 
   // Ensure the arguments are valid
-  fieldNames.forEach(function (fieldName) {
-    var field = fieldMap[fieldName];
-
+  fields.forEach(function (field) {
     // Ensure they are named correctly.
     validateName(context, field);
 
@@ -409,7 +405,7 @@ function validateInputFields(context, inputObj) {
 
     // Ensure the type is an input type
     if (!(0, _definition.isInputType)(field.type)) {
-      context.reportError('The type of ' + inputObj.name + '.' + fieldName + ' must be Input Type ' + ('but got: ' + String(field.type) + '.'), field.astNode && field.astNode.type);
+      context.reportError('The type of ' + inputObj.name + '.' + field.name + ' must be Input Type ' + ('but got: ' + String(field.type) + '.'), field.astNode && field.astNode.type);
     }
   });
 }

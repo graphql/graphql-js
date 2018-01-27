@@ -19,6 +19,7 @@ import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
+import objectValues from '../jsutils/objectValues';
 
 /**
  * Test if the given value is a GraphQL schema.
@@ -203,10 +204,7 @@ function typeMapReducer(map, type) {
   }
 
   if (isObjectType(type) || isInterfaceType(type)) {
-    var fieldMap = type.getFields();
-    Object.keys(fieldMap).forEach(function (fieldName) {
-      var field = fieldMap[fieldName];
-
+    objectValues(type.getFields()).forEach(function (field) {
       if (field.args) {
         var fieldArgTypes = field.args.map(function (arg) {
           return arg.type;
@@ -218,9 +216,7 @@ function typeMapReducer(map, type) {
   }
 
   if (isInputObjectType(type)) {
-    var _fieldMap = type.getFields();
-    Object.keys(_fieldMap).forEach(function (fieldName) {
-      var field = _fieldMap[fieldName];
+    objectValues(type.getFields()).forEach(function (field) {
       reducedMap = typeMapReducer(reducedMap, field.type);
     });
   }

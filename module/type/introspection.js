@@ -8,6 +8,7 @@
  */
 
 import isInvalid from '../jsutils/isInvalid';
+import objectValues from '../jsutils/objectValues';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import { GraphQLObjectType, GraphQLEnumType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType, isNamedType } from './definition';
@@ -26,10 +27,7 @@ export var __Schema = new GraphQLObjectType({
         description: 'A list of all types supported by this server.',
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__Type))),
         resolve: function resolve(schema) {
-          var typeMap = schema.getTypeMap();
-          return Object.keys(typeMap).map(function (key) {
-            return typeMap[key];
-          });
+          return objectValues(schema.getTypeMap());
         }
       },
       queryType: {
@@ -228,10 +226,7 @@ export var __Type = new GraphQLObjectType({
           var includeDeprecated = _ref.includeDeprecated;
 
           if (isObjectType(type) || isInterfaceType(type)) {
-            var fieldMap = type.getFields();
-            var fields = Object.keys(fieldMap).map(function (fieldName) {
-              return fieldMap[fieldName];
-            });
+            var fields = objectValues(type.getFields());
             if (!includeDeprecated) {
               fields = fields.filter(function (field) {
                 return !field.deprecationReason;
@@ -283,10 +278,7 @@ export var __Type = new GraphQLObjectType({
         type: GraphQLList(GraphQLNonNull(__InputValue)),
         resolve: function resolve(type) {
           if (isInputObjectType(type)) {
-            var fieldMap = type.getFields();
-            return Object.keys(fieldMap).map(function (fieldName) {
-              return fieldMap[fieldName];
-            });
+            return objectValues(type.getFields());
           }
         }
       },

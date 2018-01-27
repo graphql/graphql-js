@@ -27,6 +27,10 @@ var _invariant = require('../jsutils/invariant');
 
 var _invariant2 = _interopRequireDefault(_invariant);
 
+var _objectValues = require('../jsutils/objectValues');
+
+var _objectValues2 = _interopRequireDefault(_objectValues);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } } /**
@@ -223,10 +227,7 @@ function typeMapReducer(map, type) {
   }
 
   if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
-    var fieldMap = type.getFields();
-    Object.keys(fieldMap).forEach(function (fieldName) {
-      var field = fieldMap[fieldName];
-
+    (0, _objectValues2.default)(type.getFields()).forEach(function (field) {
       if (field.args) {
         var fieldArgTypes = field.args.map(function (arg) {
           return arg.type;
@@ -238,9 +239,7 @@ function typeMapReducer(map, type) {
   }
 
   if ((0, _definition.isInputObjectType)(type)) {
-    var _fieldMap = type.getFields();
-    Object.keys(_fieldMap).forEach(function (fieldName) {
-      var field = _fieldMap[fieldName];
+    (0, _objectValues2.default)(type.getFields()).forEach(function (field) {
       reducedMap = typeMapReducer(reducedMap, field.type);
     });
   }

@@ -10,6 +10,10 @@ var _isInvalid = require('../jsutils/isInvalid');
 
 var _isInvalid2 = _interopRequireDefault(_isInvalid);
 
+var _objectValues = require('../jsutils/objectValues');
+
+var _objectValues2 = _interopRequireDefault(_objectValues);
+
 var _astFromValue = require('../utilities/astFromValue');
 
 var _printer = require('../language/printer');
@@ -24,6 +28,15 @@ var _directiveLocation = require('../language/directiveLocation');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * 
+ */
+
 var __Schema = exports.__Schema = new _definition.GraphQLObjectType({
   name: '__Schema',
   isIntrospection: true,
@@ -34,10 +47,7 @@ var __Schema = exports.__Schema = new _definition.GraphQLObjectType({
         description: 'A list of all types supported by this server.',
         type: (0, _wrappers.GraphQLNonNull)((0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__Type))),
         resolve: function resolve(schema) {
-          var typeMap = schema.getTypeMap();
-          return Object.keys(typeMap).map(function (key) {
-            return typeMap[key];
-          });
+          return (0, _objectValues2.default)(schema.getTypeMap());
         }
       },
       queryType: {
@@ -70,14 +80,7 @@ var __Schema = exports.__Schema = new _definition.GraphQLObjectType({
       }
     };
   }
-}); /**
-     * Copyright (c) 2015-present, Facebook, Inc.
-     *
-     * This source code is licensed under the MIT license found in the
-     * LICENSE file in the root directory of this source tree.
-     *
-     * 
-     */
+});
 
 var __Directive = exports.__Directive = new _definition.GraphQLObjectType({
   name: '__Directive',
@@ -243,10 +246,7 @@ var __Type = exports.__Type = new _definition.GraphQLObjectType({
           var includeDeprecated = _ref.includeDeprecated;
 
           if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
-            var fieldMap = type.getFields();
-            var fields = Object.keys(fieldMap).map(function (fieldName) {
-              return fieldMap[fieldName];
-            });
+            var fields = (0, _objectValues2.default)(type.getFields());
             if (!includeDeprecated) {
               fields = fields.filter(function (field) {
                 return !field.deprecationReason;
@@ -298,10 +298,7 @@ var __Type = exports.__Type = new _definition.GraphQLObjectType({
         type: (0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__InputValue)),
         resolve: function resolve(type) {
           if ((0, _definition.isInputObjectType)(type)) {
-            var fieldMap = type.getFields();
-            return Object.keys(fieldMap).map(function (fieldName) {
-              return fieldMap[fieldName];
-            });
+            return (0, _objectValues2.default)(type.getFields());
           }
         }
       },

@@ -9,6 +9,7 @@
 
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
+import objectValues from '../jsutils/objectValues';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 
@@ -42,10 +43,8 @@ function isDefinedType(type) {
 function printFilteredSchema(schema, directiveFilter, typeFilter, options) {
   var directives = schema.getDirectives().filter(directiveFilter);
   var typeMap = schema.getTypeMap();
-  var types = Object.keys(typeMap).sort(function (name1, name2) {
-    return name1.localeCompare(name2);
-  }).map(function (typeName) {
-    return typeMap[typeName];
+  var types = objectValues(typeMap).sort(function (type1, type2) {
+    return type1.name.localeCompare(type2.name);
   }).filter(typeFilter);
 
   return [printSchemaDefinition(schema)].concat(directives.map(function (directive) {
@@ -160,20 +159,14 @@ function printEnumValues(values, options) {
 }
 
 function printInputObject(type, options) {
-  var fieldMap = type.getFields();
-  var fields = Object.keys(fieldMap).map(function (fieldName) {
-    return fieldMap[fieldName];
-  });
+  var fields = objectValues(type.getFields());
   return printDescription(options, type) + ('input ' + type.name + ' {\n') + fields.map(function (f, i) {
     return printDescription(options, f, '  ', !i) + '  ' + printInputValue(f);
   }).join('\n') + '\n' + '}';
 }
 
 function printFields(options, type) {
-  var fieldMap = type.getFields();
-  var fields = Object.keys(fieldMap).map(function (fieldName) {
-    return fieldMap[fieldName];
-  });
+  var fields = objectValues(type.getFields());
   return fields.map(function (f, i) {
     return printDescription(options, f, '  ', !i) + '  ' + f.name + printArgs(options, f.args, '  ') + ': ' + String(f.type) + printDeprecated(f);
   }).join('\n');

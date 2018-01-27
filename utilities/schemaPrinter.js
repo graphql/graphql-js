@@ -15,6 +15,10 @@ var _isInvalid = require('../jsutils/isInvalid');
 
 var _isInvalid2 = _interopRequireDefault(_isInvalid);
 
+var _objectValues = require('../jsutils/objectValues');
+
+var _objectValues2 = _interopRequireDefault(_objectValues);
+
 var _astFromValue = require('../utilities/astFromValue');
 
 var _printer = require('../language/printer');
@@ -36,20 +40,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *        Provide true to use preceding comments as the description.
  *
  */
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
-
 function printSchema(schema, options) {
   return printFilteredSchema(schema, function (n) {
     return !(0, _directives.isSpecifiedDirective)(n);
   }, isDefinedType, options);
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * 
+   */
 
 function printIntrospectionSchema(schema, options) {
   return printFilteredSchema(schema, _directives.isSpecifiedDirective, _introspection.isIntrospectionType, options);
@@ -62,10 +64,8 @@ function isDefinedType(type) {
 function printFilteredSchema(schema, directiveFilter, typeFilter, options) {
   var directives = schema.getDirectives().filter(directiveFilter);
   var typeMap = schema.getTypeMap();
-  var types = Object.keys(typeMap).sort(function (name1, name2) {
-    return name1.localeCompare(name2);
-  }).map(function (typeName) {
-    return typeMap[typeName];
+  var types = (0, _objectValues2.default)(typeMap).sort(function (type1, type2) {
+    return type1.name.localeCompare(type2.name);
   }).filter(typeFilter);
 
   return [printSchemaDefinition(schema)].concat(directives.map(function (directive) {
@@ -180,20 +180,14 @@ function printEnumValues(values, options) {
 }
 
 function printInputObject(type, options) {
-  var fieldMap = type.getFields();
-  var fields = Object.keys(fieldMap).map(function (fieldName) {
-    return fieldMap[fieldName];
-  });
+  var fields = (0, _objectValues2.default)(type.getFields());
   return printDescription(options, type) + ('input ' + type.name + ' {\n') + fields.map(function (f, i) {
     return printDescription(options, f, '  ', !i) + '  ' + printInputValue(f);
   }).join('\n') + '\n' + '}';
 }
 
 function printFields(options, type) {
-  var fieldMap = type.getFields();
-  var fields = Object.keys(fieldMap).map(function (fieldName) {
-    return fieldMap[fieldName];
-  });
+  var fields = (0, _objectValues2.default)(type.getFields());
   return fields.map(function (f, i) {
     return printDescription(options, f, '  ', !i) + '  ' + f.name + printArgs(options, f.args, '  ') + ': ' + String(f.type) + printDeprecated(f);
   }).join('\n');
