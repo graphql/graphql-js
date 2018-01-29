@@ -19,8 +19,6 @@ rm -rf npm/*
 
 # Copy over necessary files
 cp -r dist/* npm/
-cp README.md npm/
-cp LICENSE npm/
 
 # Reference current commit
 HEADREV=`git rev-parse HEAD`
