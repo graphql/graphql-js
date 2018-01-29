@@ -44,7 +44,7 @@
     "gitpublish": ". ./resources/gitpublish.sh"
   },
   "dependencies": {
-    "iterall": "1.1.3"
+    "iterall": "1.1.x"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
@@ -61,14 +61,14 @@
     "chai-spies-next": "0.9.3",
     "chai-subset": "1.6.0",
     "coveralls": "3.0.0",
-    "eslint": "4.15.0",
+    "eslint": "4.16.0",
     "eslint-plugin-babel": "4.1.2",
-    "eslint-plugin-flowtype": "2.41.0",
+    "eslint-plugin-flowtype": "2.42.0",
     "eslint-plugin-prettier": "2.5.0",
-    "flow-bin": "0.63.1",
+    "flow-bin": "0.64.0",
     "isparta": "4.0.0",
     "mocha": "5.0.0",
     "prettier": "1.10.2",
-    "sane": "2.2.0"
+    "sane": "2.3.0"
   }
 }
