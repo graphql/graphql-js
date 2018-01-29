@@ -545,6 +545,60 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('One-line prints a short description', () => {
+    const description = 'This field is awesome';
+    const output = printSingleFieldSchema({
+      type: GraphQLString,
+      description,
+    });
+    expect(output).to.equal(dedent`
+      type Query {
+        """This field is awesome"""
+        singleField: String
+      }
+    `);
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
+    const recreatedField = recreatedRoot.getFields()['singleField'];
+    expect(recreatedField.description).to.equal(description);
+  });
+
+  it('Does not one-line print a description that ends with a quote', () => {
+    const description = 'This field is "awesome"';
+    const output = printSingleFieldSchema({
+      type: GraphQLString,
+      description,
+    });
+    expect(output).to.equal(dedent`
+      type Query {
+        """
+        This field is "awesome"
+        """
+        singleField: String
+      }
+    `);
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
+    const recreatedField = recreatedRoot.getFields()['singleField'];
+    expect(recreatedField.description).to.equal(description);
+  });
+
+  it('Preserves leading spaces when printing a description', () => {
+    const description = '    This field is "awesome"';
+    const output = printSingleFieldSchema({
+      type: GraphQLString,
+      description,
+    });
+    expect(output).to.equal(dedent`
+      type Query {
+        """    This field is "awesome"
+        """
+        singleField: String
+      }
+    `);
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
+    const recreatedField = recreatedRoot.getFields()['singleField'];
+    expect(recreatedField.description).to.equal(description);
+  });
+
   it('Print Introspection Schema', () => {
     const Query = new GraphQLObjectType({
       name: 'Query',
@@ -783,7 +837,30 @@ describe('Type System Printer', () => {
     `;
     expect(output).to.equal(introspectionSchema);
   });
+  it('Prints a field description that ends with a doublequote (")s', () => {
+    const description = 'This field is "awesome"';
+    const output = printSingleFieldSchema({
+      type: GraphQLString,
+      description,
+    });
+    expect(output).to.equal(dedent`
+      type Query {
+        """
+        This field is "awesome"
+        """
+        singleField: String
+      }
+    `);
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
+    const recreatedField = recreatedRoot.getFields()['singleField'];
 
+    /* Note: Additional space added to prevent parser from confusing trailing double
+     * quote inside description with the end of the block string. It shouldn't
+     * affect result since descriptions are interpreted as Markdown so trailing
+     * spaces are ignored.
+     */
+    expect(recreatedField.description).to.equal(description);
+  });
   it('Print Introspection Schema with comment descriptions', () => {
     const Query = new GraphQLObjectType({
       name: 'Query',
