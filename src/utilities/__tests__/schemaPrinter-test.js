@@ -552,16 +552,12 @@ describe('Type System Printer', () => {
       description,
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         """This field is awesome"""
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Root'];
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
     const recreatedField = recreatedRoot.getFields()['singleField'];
     expect(recreatedField.description).to.equal(description);
   });
@@ -573,18 +569,14 @@ describe('Type System Printer', () => {
       description,
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         """
         This field is "awesome"
         """
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Root'];
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
     const recreatedField = recreatedRoot.getFields()['singleField'];
     expect(recreatedField.description).to.equal(description);
   });
@@ -596,17 +588,13 @@ describe('Type System Printer', () => {
       description,
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
+      type Query {
         """    This field is "awesome"
         """
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Root'];
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
     const recreatedField = recreatedRoot.getFields()['singleField'];
     expect(recreatedField.description).to.equal(description);
   });
@@ -856,16 +844,14 @@ describe('Type System Printer', () => {
       description,
     });
     expect(output).to.equal(dedent`
-      schema {
-        query: Root
-      }
-
-      type Root {
-        """This field is "awesome" """
+      type Query {
+        """
+        This field is "awesome"
+        """
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Root'];
+    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
     const recreatedField = recreatedRoot.getFields()['singleField'];
 
     /* Note: Additional space added to prevent parser from confusing trailing double
@@ -873,7 +859,7 @@ describe('Type System Printer', () => {
      * affect result since descriptions are interpreted as Markdown so trailing
      * spaces are ignored.
      */
-    expect(recreatedField.description).to.equal(description + ' ');
+    expect(recreatedField.description).to.equal(description);
   });
   it('Print Introspection Schema with comment descriptions', () => {
     const Query = new GraphQLObjectType({

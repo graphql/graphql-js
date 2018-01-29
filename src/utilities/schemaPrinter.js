@@ -366,7 +366,7 @@ function printDescription(
 }
 
 function escapeQuote(line) {
-  return line.replace(/"$/, '" ').replace(/"""/g, '\\"""');
+  return line.replace(/"""/g, '\\"""');
 }
 
 function printDescriptionWithComments(lines, indentation, firstInBlock) {
