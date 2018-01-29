@@ -106,6 +106,8 @@ getDescription,
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema
 // language AST.
 extendSchema,
+// Sort a GraphQLSchema.
+lexographicSortSchema,
 // Print a GraphQLSchema to GraphQL Schema language.
 printSchema,
 // Prints the built-in introspection schema in the Schema Language

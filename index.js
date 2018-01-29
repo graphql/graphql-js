@@ -867,6 +867,12 @@ Object.defineProperty(exports, 'extendSchema', {
     return _utilities.extendSchema;
   }
 });
+Object.defineProperty(exports, 'lexographicSortSchema', {
+  enumerable: true,
+  get: function get() {
+    return _utilities.lexographicSortSchema;
+  }
+});
 Object.defineProperty(exports, 'printSchema', {
   enumerable: true,
   get: function get() {

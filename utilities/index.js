@@ -76,6 +76,15 @@ Object.defineProperty(exports, 'extendSchema', {
   }
 });
 
+var _lexographicSortSchema = require('./lexographicSortSchema');
+
+Object.defineProperty(exports, 'lexographicSortSchema', {
+  enumerable: true,
+  get: function get() {
+    return _lexographicSortSchema.lexographicSortSchema;
+  }
+});
+
 var _schemaPrinter = require('./schemaPrinter');
 
 Object.defineProperty(exports, 'printSchema', {
