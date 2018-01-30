@@ -1,6 +1,6 @@
 {
   "name": "graphql",
-  "version": "0.12.3",
+  "version": "0.13.0-rc.1",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "main": "index.js",
