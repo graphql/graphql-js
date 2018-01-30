@@ -188,9 +188,13 @@ function printObject(type: GraphQLObjectType, options): string {
 }
 
 function printInterface(type: GraphQLInterfaceType, options): string {
+  const interfaces = type.getInterfaces();
+  const implementedInterfaces = interfaces.length
+    ? ' implements ' + interfaces.map(i => i.name).join(' & ')
+    : '';
   return (
     printDescription(options, type) +
-    `interface ${type.name} {\n` +
+    `interface ${type.name}${implementedInterfaces} {\n` +
     printFields(options, type) +
     '\n' +
     '}'

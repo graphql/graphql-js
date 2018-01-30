@@ -1000,12 +1000,14 @@ function parseInterfaceTypeDefinition(
   const description = parseDescription(lexer);
   expectKeyword(lexer, 'interface');
   const name = parseName(lexer);
+  const interfaces = parseImplementsInterfaces(lexer);
   const directives = parseDirectives(lexer, true);
   const fields = parseFieldsDefinition(lexer);
   return {
     kind: Kind.INTERFACE_TYPE_DEFINITION,
     description,
     name,
+    interfaces,
     directives,
     fields,
     loc: loc(lexer, start),
@@ -1226,8 +1228,9 @@ function parseObjectTypeExtension(lexer: Lexer<*>): ObjectTypeExtensionNode {
 
 /**
  * InterfaceTypeExtension :
- *   - extend interface Name Directives[Const]? FieldsDefinition
- *   - extend interface Name Directives[Const]
+ *   - extend interface Name ImplementsInterfaces? Directives[Const]? FieldsDefinition
+ *   - extend interface Name ImplementsInterfaces? Directives[Const]
+ *   - extend interface Name ImplementsInterfaces
  */
 function parseInterfaceTypeExtension(
   lexer: Lexer<*>,
@@ -1236,14 +1239,20 @@ function parseInterfaceTypeExtension(
   expectKeyword(lexer, 'extend');
   expectKeyword(lexer, 'interface');
   const name = parseName(lexer);
+  const interfaces = parseImplementsInterfaces(lexer);
   const directives = parseDirectives(lexer, true);
   const fields = parseFieldsDefinition(lexer);
-  if (directives.length === 0 && fields.length === 0) {
+  if (
+    interfaces.length === 0 &&
+    directives.length === 0 &&
+    fields.length === 0
+  ) {
     throw unexpected(lexer);
   }
   return {
     kind: Kind.INTERFACE_TYPE_EXTENSION,
     name,
+    interfaces,
     directives,
     fields,
     loc: loc(lexer, start),

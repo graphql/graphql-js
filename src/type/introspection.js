@@ -257,7 +257,7 @@ export const __Type = new GraphQLObjectType({
     interfaces: {
       type: GraphQLList(GraphQLNonNull(__Type)),
       resolve(type) {
-        if (isObjectType(type)) {
+        if (isObjectType(type) || isInterfaceType(type)) {
           return type.getInterfaces();
         }
       },
@@ -389,7 +389,7 @@ export const __TypeKind = new GraphQLEnumType({
       value: TypeKind.INTERFACE,
       description:
         'Indicates this type is an interface. ' +
-        '`fields` and `possibleTypes` are valid fields.',
+        '`fields`, `interfaces`, and `possibleTypes` are valid fields.',
     },
     UNION: {
       value: TypeKind.UNION,

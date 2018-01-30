@@ -613,7 +613,7 @@ GraphQLObjectType.prototype.toJSON = GraphQLObjectType.prototype.inspect =
   GraphQLObjectType.prototype.toString;
 
 function defineInterfaces(
-  type: GraphQLObjectType,
+  type: GraphQLObjectType | GraphQLInterfaceType,
   interfacesThunk: Thunk<?Array<GraphQLInterfaceType>>,
 ): Array<GraphQLInterfaceType> {
   const interfaces = resolveThunk(interfacesThunk) || [];
@@ -825,6 +825,7 @@ export class GraphQLInterfaceType {
 
   _typeConfig: GraphQLInterfaceTypeConfig<*, *>;
   _fields: GraphQLFieldMap<*, *>;
+  _interfaces: Array<GraphQLInterfaceType>;
 
   constructor(config: GraphQLInterfaceTypeConfig<*, *>): void {
     this.name = config.name;
@@ -849,6 +850,13 @@ export class GraphQLInterfaceType {
     );
   }
 
+  getInterfaces(): Array<GraphQLInterfaceType> {
+    return (
+      this._interfaces ||
+      (this._interfaces = defineInterfaces(this, this._typeConfig.interfaces))
+    );
+  }
+
   toString(): string {
     return this.name;
   }
@@ -863,6 +871,7 @@ GraphQLInterfaceType.prototype.toJSON = GraphQLInterfaceType.prototype.inspect =
 
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
   name: string,
+  interfaces?: Thunk<?Array<GraphQLInterfaceType>>,
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,

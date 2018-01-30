@@ -281,40 +281,60 @@ describe('Type System: Example', () => {
   });
 
   it('includes interface possible types in the type map', () => {
-    const SomeInterface = new GraphQLInterfaceType({
-      name: 'SomeInterface',
+    const ParentInterface = new GraphQLInterfaceType({
+      name: 'ParentInterface',
       fields: {
         f: { type: GraphQLInt },
       },
+    });
+
+    const ChildInterface = new GraphQLInterfaceType({
+      name: 'ChildInterface',
+      fields: {
+        f: { type: GraphQLInt },
+        g: { type: GraphQLInt },
+      },
+      interfaces: [ParentInterface],
     });
 
     const SomeSubtype = new GraphQLObjectType({
       name: 'SomeSubtype',
       fields: {
         f: { type: GraphQLInt },
+        g: { type: GraphQLInt },
       },
-      interfaces: [SomeInterface],
+      interfaces: [ParentInterface, ChildInterface],
     });
 
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
         fields: {
-          iface: { type: SomeInterface },
+          iface: { type: ParentInterface },
         },
       }),
       types: [SomeSubtype],
     });
 
+    expect(schema.getTypeMap().ChildInterface).to.equal(ChildInterface);
     expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);
   });
 
   it("includes interfaces' thunk subtypes in the type map", () => {
-    const SomeInterface = new GraphQLInterfaceType({
-      name: 'SomeInterface',
+    const ParentInterface = new GraphQLInterfaceType({
+      name: 'ParentInterface',
       fields: {
         f: { type: GraphQLInt },
       },
+    });
+
+    const ChildInterface = new GraphQLInterfaceType({
+      name: 'ChildInterface',
+      fields: {
+        f: { type: GraphQLInt },
+        g: { type: GraphQLInt },
+      },
+      interfaces: () => [ParentInterface],
     });
 
     const SomeSubtype = new GraphQLObjectType({
@@ -322,19 +342,20 @@ describe('Type System: Example', () => {
       fields: {
         f: { type: GraphQLInt },
       },
-      interfaces: () => [SomeInterface],
+      interfaces: () => [ParentInterface, ChildInterface],
     });
 
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
         fields: {
-          iface: { type: SomeInterface },
+          iface: { type: ParentInterface },
         },
       }),
       types: [SomeSubtype],
     });
 
+    expect(schema.getTypeMap().ChildInterface).to.equal(ChildInterface);
     expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);
   });
 

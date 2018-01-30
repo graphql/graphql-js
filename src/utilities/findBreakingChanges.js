@@ -640,7 +640,11 @@ export function findInterfacesRemovedFromObjectTypes(
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-    if (!isObjectType(oldType) || !isObjectType(newType)) {
+
+    if (
+      !(isObjectType(oldType) && isObjectType(newType)) ||
+      !(isInterfaceType(oldType) && isInterfaceType(newType))
+    ) {
       return;
     }
 

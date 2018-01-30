@@ -813,7 +813,7 @@ describe('Type System Printer', () => {
         OBJECT
 
         """
-        Indicates this type is an interface. \`fields\` and \`possibleTypes\` are valid fields.
+        Indicates this type is an interface. \`fields\`, \`interfaces\`, and \`possibleTypes\` are valid fields.
         """
         INTERFACE
 
@@ -1025,7 +1025,7 @@ describe('Type System Printer', () => {
         # Indicates this type is an object. \`fields\` and \`interfaces\` are valid fields.
         OBJECT
 
-        # Indicates this type is an interface. \`fields\` and \`possibleTypes\` are valid fields.
+        # Indicates this type is an interface. \`fields\`, \`interfaces\`, and \`possibleTypes\` are valid fields.
         INTERFACE
 
         # Indicates this type is a union. \`possibleTypes\` is a valid field.

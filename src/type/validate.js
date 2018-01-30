@@ -253,10 +253,13 @@ function validateTypes(context: SchemaValidationContext): void {
       validateFields(context, type);
 
       // Ensure objects implement the interfaces they claim to.
-      validateObjectInterfaces(context, type);
+      validateInterfaces(context, type);
     } else if (isInterfaceType(type)) {
       // Ensure fields are valid.
       validateFields(context, type);
+
+      // Ensure interfaces implement the interfaces they claim to.
+      validateInterfaces(context, type);
     } else if (isUnionType(type)) {
       // Ensure Unions include valid member types.
       validateUnionMembers(context, type);
@@ -337,102 +340,124 @@ function validateFields(
   });
 }
 
-function validateObjectInterfaces(
+function validateInterfaces(
   context: SchemaValidationContext,
-  object: GraphQLObjectType,
+  implementing: GraphQLObjectType | GraphQLInterfaceType,
 ): void {
   const implementedTypeNames = Object.create(null);
-  object.getInterfaces().forEach(iface => {
-    if (implementedTypeNames[iface.name]) {
+  implementing.getInterfaces().forEach(implemented => {
+    if (implementedTypeNames[implemented.name]) {
       context.reportError(
-        `Type ${object.name} can only implement ${iface.name} once.`,
-        getAllImplementsInterfaceNodes(object, iface),
+        `Type ${implementing.name} can only implement ${
+          implemented.name
+        } once.`,
+        getAllImplementsInterfaceNodes(implementing, implemented),
       );
       return; // continue loop
     }
-    implementedTypeNames[iface.name] = true;
-    validateObjectImplementsInterface(context, object, iface);
+    implementedTypeNames[implemented.name] = true;
+    validateImplementsInterface(context, implementing, implemented);
   });
 }
 
-function validateObjectImplementsInterface(
+function validateImplementsInterface(
   context: SchemaValidationContext,
-  object: GraphQLObjectType,
-  iface: GraphQLInterfaceType,
+  implementing: GraphQLObjectType | GraphQLInterfaceType,
+  implemented: GraphQLInterfaceType,
 ): void {
-  if (!isInterfaceType(iface)) {
+  if (!isInterfaceType(implemented)) {
     context.reportError(
-      `Type ${String(object)} must only implement Interface types, ` +
-        `it cannot implement ${String(iface)}.`,
-      getImplementsInterfaceNode(object, iface),
+      `Type ${String(implementing)} must only implement Interface types, ` +
+        `it cannot implement ${String(implemented)}.`,
+      getImplementsInterfaceNode(implementing, implemented),
     );
     return;
   }
 
-  const objectFieldMap = object.getFields();
-  const ifaceFieldMap = iface.getFields();
+  // Assert each ancestor interface is explicitly implemented
+  validateImplementsAncestors(context, implementing, implemented);
+
+  const implementingFieldMap = implementing.getFields();
+  const implementedFieldMap = implemented.getFields();
 
   // Assert each interface field is implemented.
-  Object.keys(ifaceFieldMap).forEach(fieldName => {
-    const objectField = objectFieldMap[fieldName];
-    const ifaceField = ifaceFieldMap[fieldName];
+  Object.keys(implementedFieldMap).forEach(fieldName => {
+    const implementingField = implementingFieldMap[fieldName];
+    const implementedField = implementedFieldMap[fieldName];
 
-    // Assert interface field exists on object.
-    if (!objectField) {
+    // Assert interface field exists on implementing.
+    if (!implementingField) {
       context.reportError(
-        `Interface field ${iface.name}.${fieldName} expected but ` +
-          `${object.name} does not provide it.`,
-        [getFieldNode(iface, fieldName), object.astNode],
+        `Interface field ${implemented.name}.${fieldName} expected but ` +
+          `${implementing.name} does not provide it.`,
+        [getFieldNode(implemented, fieldName), implementing.astNode],
       );
       // Continue loop over fields.
       return;
     }
 
-    // Assert interface field type is satisfied by object field type, by being
+    // Assert interface field type is satisfied by implementing field type, by being
     // a valid subtype. (covariant)
-    if (!isTypeSubTypeOf(context.schema, objectField.type, ifaceField.type)) {
+    if (
+      !isTypeSubTypeOf(
+        context.schema,
+        implementingField.type,
+        implementedField.type,
+      )
+    ) {
       context.reportError(
-        `Interface field ${iface.name}.${fieldName} expects type ` +
-          `${String(ifaceField.type)} but ${object.name}.${fieldName} ` +
-          `is type ${String(objectField.type)}.`,
+        `Interface field ${implemented.name}.${fieldName} expects type ` +
+          `${String(implementedField.type)} but ${
+            implementing.name
+          }.${fieldName} ` +
+          `is type ${String(implementingField.type)}.`,
         [
-          getFieldTypeNode(iface, fieldName),
-          getFieldTypeNode(object, fieldName),
+          getFieldTypeNode(implemented, fieldName),
+          getFieldTypeNode(implementing, fieldName),
         ],
       );
     }
 
     // Assert each interface field arg is implemented.
-    ifaceField.args.forEach(ifaceArg => {
-      const argName = ifaceArg.name;
-      const objectArg = find(objectField.args, arg => arg.name === argName);
+    implementedField.args.forEach(implementedArg => {
+      const argName = implementedArg.name;
+      const implementingArg = find(
+        implementingField.args,
+        arg => arg.name === argName,
+      );
 
-      // Assert interface field arg exists on object field.
-      if (!objectArg) {
+      // Assert interface field arg exists on implementing field.
+      if (!implementingArg) {
         context.reportError(
-          `Interface field argument ${iface.name}.${fieldName}(${argName}:) ` +
-            `expected but ${object.name}.${fieldName} does not provide it.`,
+          `Interface field argument ${
+            implemented.name
+          }.${fieldName}(${argName}:) ` +
+            `expected but ${
+              implementing.name
+            }.${fieldName} does not provide it.`,
           [
-            getFieldArgNode(iface, fieldName, argName),
-            getFieldNode(object, fieldName),
+            getFieldArgNode(implemented, fieldName, argName),
+            getFieldNode(implementing, fieldName),
           ],
         );
         // Continue loop over arguments.
         return;
       }
 
-      // Assert interface field arg type matches object field arg type.
+      // Assert interface field arg type matches implementing field arg type.
       // (invariant)
       // TODO: change to contravariant?
-      if (!isEqualType(ifaceArg.type, objectArg.type)) {
+      if (!isEqualType(implementedArg.type, implementingArg.type)) {
         context.reportError(
-          `Interface field argument ${iface.name}.${fieldName}(${argName}:) ` +
-            `expects type ${String(ifaceArg.type)} but ` +
-            `${object.name}.${fieldName}(${argName}:) is type ` +
-            `${String(objectArg.type)}.`,
+          `Interface field argument ${
+            implemented.name
+          }.${fieldName}(${argName}:) ` +
+            `expects type ${String(implementedArg.type)} but ` +
+            `${implementing.name}.${fieldName}(${argName}:) is type ` +
+            `${String(implementingArg.type)}.`,
           [
-            getFieldArgTypeNode(iface, fieldName, argName),
-            getFieldArgTypeNode(object, fieldName, argName),
+            getFieldArgTypeNode(implemented, fieldName, argName),
+            getFieldArgTypeNode(implementing, fieldName, argName),
           ],
         );
       }
@@ -441,21 +466,46 @@ function validateObjectImplementsInterface(
     });
 
     // Assert additional arguments must not be required.
-    objectField.args.forEach(objectArg => {
-      const argName = objectArg.name;
-      const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
-      if (!ifaceArg && isNonNullType(objectArg.type)) {
+    implementingField.args.forEach(implementingArg => {
+      const argName = implementingArg.name;
+      const implementedArg = find(
+        implementedField.args,
+        arg => arg.name === argName,
+      );
+      if (!implementedArg && isNonNullType(implementingArg.type)) {
         context.reportError(
-          `Object field argument ${object.name}.${fieldName}(${argName}:) ` +
-            `is of required type ${String(objectArg.type)} but is not also ` +
-            `provided by the Interface field ${iface.name}.${fieldName}.`,
+          `Field argument ${implementing.name}.${fieldName}(${argName}:) ` +
+            `is of required type ${String(
+              implementingArg.type,
+            )} but is not also ` +
+            `provided by the Interface field ${implemented.name}.${fieldName}.`,
           [
-            getFieldArgTypeNode(object, fieldName, argName),
-            getFieldNode(iface, fieldName),
+            getFieldArgTypeNode(implementing, fieldName, argName),
+            getFieldNode(implemented, fieldName),
           ],
         );
       }
     });
+  });
+}
+
+function validateImplementsAncestors(
+  context: SchemaValidationContext,
+  implementing: GraphQLObjectType | GraphQLInterfaceType,
+  implemented: GraphQLInterfaceType,
+): void {
+  const ancestors = getAncestors(implemented, new Map());
+  ancestors.forEach((lineage, ancestor) => {
+    if (!implementing.getInterfaces().includes(ancestor)) {
+      context.reportError(
+        `Type ${implementing.name} must implement ${
+          ancestor.name
+        } because it is implemented by ${Array.from(lineage)
+          .map(({ name }) => name)
+          .join(', ')}`,
+        getAllImplementsInterfaceNodes(implementing, implemented),
+      );
+    }
   });
 }
 
@@ -560,16 +610,6 @@ function validateInputFields(
   });
 }
 
-function getAllObjectNodes(
-  type: GraphQLObjectType,
-): $ReadOnlyArray<ObjectTypeDefinitionNode | ObjectTypeExtensionNode> {
-  return type.astNode
-    ? type.extensionASTNodes
-      ? [type.astNode].concat(type.extensionASTNodes)
-      : [type.astNode]
-    : type.extensionASTNodes || [];
-}
-
 function getAllObjectOrInterfaceNodes(
   type: GraphQLObjectType | GraphQLInterfaceType,
 ): $ReadOnlyArray<
@@ -586,23 +626,23 @@ function getAllObjectOrInterfaceNodes(
 }
 
 function getImplementsInterfaceNode(
-  type: GraphQLObjectType,
-  iface: GraphQLInterfaceType,
+  implementing: GraphQLObjectType | GraphQLInterfaceType,
+  implemented: GraphQLInterfaceType,
 ): ?NamedTypeNode {
-  return getAllImplementsInterfaceNodes(type, iface)[0];
+  return getAllImplementsInterfaceNodes(implementing, implemented)[0];
 }
 
 function getAllImplementsInterfaceNodes(
-  type: GraphQLObjectType,
-  iface: GraphQLInterfaceType,
+  implementing: GraphQLObjectType | GraphQLInterfaceType,
+  implemented: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
   const implementsNodes = [];
-  const astNodes = getAllObjectNodes(type);
+  const astNodes = getAllObjectOrInterfaceNodes(implementing);
   for (let i = 0; i < astNodes.length; i++) {
     const astNode = astNodes[i];
     if (astNode && astNode.interfaces) {
       astNode.interfaces.forEach(node => {
-        if (node.name.value === iface.name) {
+        if (node.name.value === implemented.name) {
           implementsNodes.push(node);
         }
       });
@@ -723,4 +763,21 @@ function getEnumValueNodes(
     enumType.astNode.values &&
     enumType.astNode.values.filter(value => value.name.value === valueName)
   );
+}
+
+function getAncestors(
+  implementing: GraphQLObjectType | GraphQLInterfaceType,
+  ancestors: Map<
+    GraphQLInterfaceType,
+    Set<GraphQLObjectType | GraphQLInterfaceType>,
+  >,
+): Map<GraphQLInterfaceType, Set<GraphQLObjectType | GraphQLInterfaceType>> {
+  implementing.getInterfaces().forEach(implemented => {
+    const lineage = ancestors.get(implemented) || new Set();
+    lineage.add(implementing);
+    ancestors.set(implemented, lineage);
+    getAncestors(implemented, ancestors);
+  });
+
+  return ancestors;
 }

@@ -1115,6 +1115,418 @@ describe('Type System: Input Object fields must have input types', () => {
   });
 });
 
+describe('Interfaces must adhere to Interface they implement', () => {
+  it('accepts an Interface which implements an Interface', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field(input: String): String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field(input: String): String
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([]);
+  });
+
+  it('accepts an Interface which implements an Interface with more fields', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field(input: String): String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field(input: String): String
+        anotherField: String
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([]);
+  });
+
+  it('accepts an Interface which implements an Interface field along with additional optional arguments', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field(input: String): String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field(input: String, anotherInput: String): String
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([]);
+  });
+
+  it('rejects an Interface missing an Interface field', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: SomeObject
+      }
+
+      interface ParentInterface {
+        field(input: String): String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        anotherField: String
+      }
+
+      type SomeObject implements ParentInterface & ChildInterface {
+        field(input: String, anotherInput: String): String
+        anotherField: String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface field ParentInterface.field expected but ' +
+          'ChildInterface does not provide it.',
+        locations: [{ line: 7, column: 9 }, { line: 10, column: 7 }],
+      },
+    ]);
+  });
+
+  it('rejects an Interface with an incorrectly typed Interface field', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field(input: String): String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field(input: String): Int
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface field ParentInterface.field expects type String but ' +
+          'ChildInterface.field is type Int.',
+        locations: [{ line: 7, column: 31 }, { line: 11, column: 31 }],
+      },
+    ]);
+  });
+
+  it('rejects an Interface with a differently typed Interface field', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      type A { foo: String }
+      type B { foo: String }
+
+      interface ParentInterface {
+        field: A
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: B
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface field ParentInterface.field expects type A but ' +
+          'ChildInterface.field is type B.',
+        locations: [{ line: 10, column: 16 }, { line: 14, column: 16 }],
+      },
+    ]);
+  });
+
+  it('accepts an Interface with a subtyped Interface field (interface)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field: ParentInterface
+      }
+
+      type ChildInterface implements ParentInterface {
+        field: ChildInterface
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([]);
+  });
+
+  it('accepts an Interface with a subtyped Interface field (union)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      type SomeObject {
+        field: String
+      }
+
+      union SomeUnionType = SomeObject
+
+      interface ParentInterface {
+        field: SomeUnionType
+      }
+
+      type ChildInterface implements ParentInterface {
+        field: SomeObject
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([]);
+  });
+
+  it('rejects an Interface missing an Interface argument', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field(input: String): String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface field argument ParentInterface.field(input:) expected ' +
+          'but ChildInterface.field does not provide it.',
+        locations: [{ line: 7, column: 15 }, { line: 11, column: 9 }],
+      },
+    ]);
+  });
+
+  it('rejects an Interface with an incorrectly typed Interface argument', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field(input: String): String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field(input: Int): String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface field argument ParentInterface.field(input:) expects ' +
+          'type String but ChildInterface.field(input:) is type Int.',
+        locations: [{ line: 7, column: 22 }, { line: 11, column: 22 }],
+      },
+    ]);
+  });
+
+  it('rejects an Interface with both an incorrectly typed field and argument', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field(input: String): String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field(input: Int): Int
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface field ParentInterface.field expects type String but ' +
+          'ChildInterface.field is type Int.',
+        locations: [{ line: 7, column: 31 }, { line: 11, column: 28 }],
+      },
+      {
+        message:
+          'Interface field argument ParentInterface.field(input:) expects ' +
+          'type String but ChildInterface.field(input:) is type Int.',
+        locations: [{ line: 7, column: 22 }, { line: 11, column: 22 }],
+      },
+    ]);
+  });
+
+  it('rejects an Interface which implements an Interface field along with additional required arguments', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field(input: String): String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field(input: String, anotherInput: String!): String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Field argument ChildInterface.field(anotherInput:) is of ' +
+          'required type String! but is not also provided by the Interface ' +
+          'field ParentInterface.field.',
+        locations: [{ line: 11, column: 44 }, { line: 7, column: 9 }],
+      },
+    ]);
+  });
+
+  it('accepts an Interface with an equivalently wrapped Interface field type', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field: [String]!
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: [String]!
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([]);
+  });
+
+  it('rejects an Interface with a non-list Interface field list type', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field: [String]
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface field ParentInterface.field expects type [String] ' +
+          'but ChildInterface.field is type String.',
+        locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+      },
+    ]);
+  });
+
+  it('rejects an Interface with a list Interface field non-list type', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field: String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: [String]
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface field ParentInterface.field expects type String but ' +
+          'ChildInterface.field is type [String].',
+        locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+      },
+    ]);
+  });
+
+  it('accepts an Interface with a subset non-null Interface field type', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field: String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: String!
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([]);
+  });
+
+  it('rejects an Interface with a superset nullable Interface field type', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field: String!
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface field ParentInterface.field expects type String! ' +
+          'but ChildInterface.field is type String.',
+        locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+      },
+    ]);
+  });
+
+  it('rejects an Interface that does not implement all its ancestors', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      interface ParentInterface {
+        field: String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: String
+        anotherField: String
+      }
+
+      interface GrandchildInterface implements ChildInterface {
+        field: String
+        anotherField: String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Type GrandchildInterface must implement ParentInterface because it is implemented by ChildInterface',
+        locations: [{ line: 15, column: 48 }],
+      },
+    ]);
+  });
+});
+
 describe('Objects must adhere to Interface they implement', () => {
   it('accepts an Object which implements an Interface', () => {
     const schema = buildSchema(`
@@ -1378,7 +1790,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.containSubset([
       {
         message:
-          'Object field argument AnotherObject.field(anotherInput:) is of ' +
+          'Field argument AnotherObject.field(anotherInput:) is of ' +
           'required type String! but is not also provided by the Interface ' +
           'field AnotherInterface.field.',
         locations: [{ line: 11, column: 44 }, { line: 7, column: 9 }],
@@ -1488,6 +1900,45 @@ describe('Objects must adhere to Interface they implement', () => {
           'Interface field AnotherInterface.field expects type String! ' +
           'but AnotherObject.field is type String.',
         locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
+      },
+    ]);
+  });
+
+  it('rejects an Object that does not implement all its ancestors', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      interface ParentInterface {
+        field: String
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: String
+        anotherField: String
+      }
+
+      interface GrandchildInterface implements ChildInterface & ParentInterface {
+        field: String
+        anotherField: String
+      }
+
+      type AnotherObject implements GrandchildInterface {
+        field: String
+        anotherField: String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Type AnotherObject must implement ChildInterface because it is implemented by GrandchildInterface',
+        locations: [{ line: 20, column: 37 }],
+      },
+      {
+        message:
+          'Type AnotherObject must implement ParentInterface because it is implemented by ChildInterface, GrandchildInterface',
+        locations: [{ line: 20, column: 37 }],
       },
     ]);
   });

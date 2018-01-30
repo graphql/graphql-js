@@ -95,6 +95,12 @@ describe('Printer: SDL document', () => {
 
       extend interface Bar @onInterface
 
+      interface Baz implements Bar {
+        one: Type
+        two(argument: InputType!): Type
+        four(argument: String = "string"): String
+      }
+
       union Feed = Story | Article | Advert
 
       union AnnotatedUnion @onUnion = A | B

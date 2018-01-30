@@ -368,7 +368,9 @@ export class ASTDefinitionBuilder {
       : {};
   }
 
-  _makeImplementedInterfaces(def: ObjectTypeDefinitionNode) {
+  _makeImplementedInterfaces(
+    def: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
+  ) {
     return (
       def.interfaces &&
       // Note: While this could make early assertions to get the correctly
@@ -402,6 +404,7 @@ export class ASTDefinitionBuilder {
       name: def.name.value,
       description: getDescription(def, this._options),
       fields: () => this._makeFieldDefMap(def),
+      interfaces: () => this._makeImplementedInterfaces(def),
       astNode: def,
     });
   }
