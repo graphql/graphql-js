@@ -35,7 +35,7 @@ import { isIntrospectionType } from '../type/introspection';
 /**
  * Sort GraphQLSchema.
  */
-export function lexographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
+export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   const cache = Object.create(null);
 
   const sortMaybeType = maybeType => maybeType && sortNamedType(maybeType);
