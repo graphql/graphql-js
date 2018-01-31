@@ -78,8 +78,9 @@ export class GraphQLSchema {
   _subscriptionType: ?GraphQLObjectType;
   _directives: $ReadOnlyArray<GraphQLDirective>;
   _typeMap: TypeMap;
-  _implementations: ObjMap<Array<GraphQLObjectType>>;
+  _implementations: ObjMap<Array<GraphQLObjectType | GraphQLInterfaceType>>;
   _possibleTypeMap: ?ObjMap<ObjMap<boolean>>;
+  _possibleImplementationsMap: ?ObjMap<ObjMap<boolean>>;
   // Used as a cache for validateSchema().
   __validationErrors: ?$ReadOnlyArray<GraphQLError>;
   // Referenced by validateSchema().
@@ -150,7 +151,7 @@ export class GraphQLSchema {
     this._implementations = Object.create(null);
     Object.keys(this._typeMap).forEach(typeName => {
       const type = this._typeMap[typeName];
-      if (isObjectType(type)) {
+      if (isObjectType(type) || isInterfaceType(type)) {
         type.getInterfaces().forEach(iface => {
           const impls = this._implementations[iface.name];
           if (impls) {
@@ -189,7 +190,27 @@ export class GraphQLSchema {
     if (isUnionType(abstractType)) {
       return abstractType.getTypes();
     }
-    return this._implementations[(abstractType: GraphQLInterfaceType).name];
+
+    const implementations = this._implementations[
+      (abstractType: GraphQLInterfaceType).name
+    ];
+
+    const possibleTypes = [];
+    if (implementations) {
+      implementations.forEach(type => {
+        if (isObjectType(type)) {
+          possibleTypes.push(type);
+        }
+      });
+    }
+
+    return implementations && possibleTypes;
+  }
+
+  getPossibleImplementations(
+    implemented: GraphQLInterfaceType,
+  ): $ReadOnlyArray<GraphQLObjectType | GraphQLInterfaceType> {
+    return this._implementations[implemented.name];
   }
 
   isPossibleType(
@@ -216,6 +237,40 @@ export class GraphQLSchema {
     }
 
     return Boolean(possibleTypeMap[abstractType.name][possibleType.name]);
+  }
+
+  isPossibleImplementation(
+    implemented: GraphQLInterfaceType,
+    possibleImplementation: GraphQLObjectType | GraphQLInterfaceType,
+  ): boolean {
+    let possibleImplementationsMap = this._possibleImplementationsMap;
+    if (!possibleImplementationsMap) {
+      this._possibleImplementationsMap = possibleImplementationsMap = Object.create(
+        null,
+      );
+    }
+
+    if (!possibleImplementationsMap[implemented.name]) {
+      const possibleImplementations = this.getPossibleImplementations(
+        implemented,
+      );
+      invariant(
+        Array.isArray(possibleImplementations),
+        `Could not find possible implementations for ${implemented.name} ` +
+          'in schema. Check that schema.types is defined and is an array of ' +
+          'all possible types in the schema.',
+      );
+      possibleImplementationsMap[
+        implemented.name
+      ] = possibleImplementations.reduce(
+        (map, impl) => ((map[impl.name] = true), map),
+        Object.create(null),
+      );
+    }
+
+    return Boolean(
+      possibleImplementationsMap[implemented.name][possibleImplementation.name],
+    );
   }
 
   getDirectives(): $ReadOnlyArray<GraphQLDirective> {

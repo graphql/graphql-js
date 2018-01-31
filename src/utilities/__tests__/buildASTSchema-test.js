@@ -322,6 +322,28 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
   });
 
+  it('Simple interface heirarchy', () => {
+    const body = dedent`
+      schema {
+        query: Child
+      }
+
+      interface Child implements Parent {
+        str: String
+      }
+
+      type Hello implements Parent & Child {
+        str: String
+      }
+
+      interface Parent {
+        str: String
+      }
+    `;
+    const output = cycleOutput(body, 'Hello');
+    expect(output).to.equal(body);
+  });
+
   it('Simple output enum', () => {
     const body = dedent`
       schema {
@@ -672,6 +694,24 @@ describe('Schema Builder', () => {
 
       type Query {
         iface: Iface
+      }
+    `;
+    const output = cycleOutput(body);
+    expect(output).to.equal(body);
+  });
+
+  it('Unreferenced interface implementing referenced interface', () => {
+    const body = dedent`
+      interface Child implements Parent {
+        key: String
+      }
+
+      interface Parent {
+        key: String
+      }
+
+      type Query {
+        iface: Parent
       }
     `;
     const output = cycleOutput(body);

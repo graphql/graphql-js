@@ -88,6 +88,7 @@ export function findBreakingChanges(
     ...findValuesRemovedFromEnums(oldSchema, newSchema),
     ...findArgChanges(oldSchema, newSchema).breakingChanges,
     ...findInterfacesRemovedFromObjectTypes(oldSchema, newSchema),
+    ...findInterfacesRemovedFromInterfaces(oldSchema, newSchema),
     ...findRemovedDirectives(oldSchema, newSchema),
     ...findRemovedDirectiveArgs(oldSchema, newSchema),
     ...findAddedNonNullDirectiveArgs(oldSchema, newSchema),
@@ -107,6 +108,7 @@ export function findDangerousChanges(
     ...findArgChanges(oldSchema, newSchema).dangerousChanges,
     ...findValuesAddedToEnums(oldSchema, newSchema),
     ...findInterfacesAddedToObjectTypes(oldSchema, newSchema),
+    ...findInterfacesAddedToInterfaces(oldSchema, newSchema),
     ...findTypesAddedToUnions(oldSchema, newSchema),
     ...findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema)
       .dangerousChanges,
@@ -640,11 +642,7 @@ export function findInterfacesRemovedFromObjectTypes(
   Object.keys(oldTypeMap).forEach(typeName => {
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
-
-    if (
-      !(isObjectType(oldType) && isObjectType(newType)) ||
-      !(isInterfaceType(oldType) && isInterfaceType(newType))
-    ) {
+    if (!isObjectType(oldType) || !isObjectType(newType)) {
       return;
     }
 
@@ -676,6 +674,68 @@ export function findInterfacesAddedToObjectTypes(
     const oldType = oldTypeMap[typeName];
     const newType = newTypeMap[typeName];
     if (!isObjectType(oldType) || !isObjectType(newType)) {
+      return;
+    }
+
+    const oldInterfaces = oldType.getInterfaces();
+    const newInterfaces = newType.getInterfaces();
+    newInterfaces.forEach(newInterface => {
+      if (!oldInterfaces.some(int => int.name === newInterface.name)) {
+        interfacesAddedToObjectTypes.push({
+          type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+          description:
+            `${newInterface.name} added to interfaces implemented ` +
+            `by ${typeName}.`,
+        });
+      }
+    });
+  });
+  return interfacesAddedToObjectTypes;
+}
+
+export function findInterfacesRemovedFromInterfaces(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+  const breakingChanges = [];
+
+  Object.keys(oldTypeMap).forEach(typeName => {
+    const oldType = oldTypeMap[typeName];
+    const newType = newTypeMap[typeName];
+    if (!isInterfaceType(oldType) || !isInterfaceType(newType)) {
+      return;
+    }
+
+    const oldInterfaces = oldType.getInterfaces();
+    const newInterfaces = newType.getInterfaces();
+    oldInterfaces.forEach(oldInterface => {
+      if (!newInterfaces.some(int => int.name === oldInterface.name)) {
+        breakingChanges.push({
+          type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+          description:
+            `${typeName} no longer implements interface ` +
+            `${oldInterface.name}.`,
+        });
+      }
+    });
+  });
+  return breakingChanges;
+}
+
+export function findInterfacesAddedToInterfaces(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<DangerousChange> {
+  const oldTypeMap = oldSchema.getTypeMap();
+  const newTypeMap = newSchema.getTypeMap();
+  const interfacesAddedToObjectTypes = [];
+
+  Object.keys(newTypeMap).forEach(typeName => {
+    const oldType = oldTypeMap[typeName];
+    const newType = newTypeMap[typeName];
+    if (!isInterfaceType(oldType) || !isInterfaceType(newType)) {
       return;
     }
 

@@ -44,6 +44,7 @@ async function testSchema(serverSchema) {
     clientSchema,
     getIntrospectionQuery(),
   );
+
   expect(secondIntrospection).to.deep.equal(initialIntrospection);
 }
 
@@ -207,6 +208,53 @@ describe('Type System: build schema from introspection', () => {
       name: 'Human',
       interfaces: [friendlyType],
       fields: () => ({
+        bestFriend: { type: friendlyType },
+      }),
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'WithInterface',
+        fields: {
+          friendly: { type: friendlyType },
+        },
+      }),
+      types: [dogType, humanType],
+    });
+
+    await testSchema(schema);
+  });
+
+  it('builds a schema with an interface heirarchy', async () => {
+    const namedType = new GraphQLInterfaceType({
+      name: 'Named',
+      fields: () => ({
+        name: { type: new GraphQLNonNull(GraphQLString) },
+      }),
+    });
+    const friendlyType = new GraphQLInterfaceType({
+      name: 'Friendly',
+      interfaces: [namedType],
+      fields: () => ({
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        bestFriend: {
+          type: friendlyType,
+          description: 'The best friend of this friendly thing',
+        },
+      }),
+    });
+    const dogType = new GraphQLObjectType({
+      name: 'Dog',
+      interfaces: [friendlyType, namedType],
+      fields: () => ({
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        bestFriend: { type: friendlyType },
+      }),
+    });
+    const humanType = new GraphQLObjectType({
+      name: 'Human',
+      interfaces: [friendlyType, namedType],
+      fields: () => ({
+        name: { type: new GraphQLNonNull(GraphQLString) },
         bestFriend: { type: friendlyType },
       }),
     });

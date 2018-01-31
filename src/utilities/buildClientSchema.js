@@ -238,6 +238,7 @@ export function buildClientSchema(
     return new GraphQLInterfaceType({
       name: interfaceIntrospection.name,
       description: interfaceIntrospection.description,
+      interfaces: interfaceIntrospection.interfaces.map(getInterfaceType),
       fields: () => buildFieldDefMap(interfaceIntrospection),
     });
   }

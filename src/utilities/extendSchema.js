@@ -289,6 +289,7 @@ export function extendSchema(
     return new GraphQLInterfaceType({
       name: type.name,
       description: type.description,
+      interfaces: () => extendImplementedInterfaces(type),
       fields: () => extendFieldMap(type),
       astNode: type.astNode,
       resolveType: type.resolveType,
@@ -306,7 +307,7 @@ export function extendSchema(
   }
 
   function extendImplementedInterfaces(
-    type: GraphQLObjectType,
+    type: GraphQLObjectType | GraphQLInterfaceType,
   ): Array<GraphQLInterfaceType> {
     const interfaces = type.getInterfaces().map(getTypeFromDef);
 

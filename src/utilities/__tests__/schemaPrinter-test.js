@@ -374,6 +374,61 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Print Hierarchical Interface', () => {
+    const FooType = new GraphQLInterfaceType({
+      name: 'Foo',
+      fields: { str: { type: GraphQLString } },
+    });
+
+    const BaazType = new GraphQLInterfaceType({
+      name: 'Baaz',
+      interfaces: [FooType],
+      fields: {
+        int: { type: GraphQLInt },
+        str: { type: GraphQLString },
+      },
+    });
+
+    const BarType = new GraphQLObjectType({
+      name: 'Bar',
+      fields: {
+        str: { type: GraphQLString },
+        int: { type: GraphQLInt },
+      },
+      interfaces: [FooType, BaazType],
+    });
+
+    const Query = new GraphQLObjectType({
+      name: 'Query',
+      fields: { bar: { type: BarType } },
+    });
+
+    const Schema = new GraphQLSchema({
+      query: Query,
+      types: [BarType],
+    });
+    const output = printForTest(Schema);
+    expect(output).to.equal(dedent`
+      interface Baaz implements Foo {
+        int: Int
+        str: String
+      }
+
+      type Bar implements Foo & Baaz {
+        str: String
+        int: Int
+      }
+
+      interface Foo {
+        str: String
+      }
+
+      type Query {
+        bar: Bar
+      }
+    `);
+  });
+
   it('Print Unions', () => {
     const FooType = new GraphQLObjectType({
       name: 'Foo',

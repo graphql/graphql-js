@@ -8,6 +8,7 @@
  */
 
 import {
+  isInterfaceType,
   isObjectType,
   isListType,
   isNonNullType,
@@ -83,6 +84,16 @@ export function isTypeSubTypeOf(
     isAbstractType(superType) &&
     isObjectType(maybeSubType) &&
     schema.isPossibleType(superType, maybeSubType)
+  ) {
+    return true;
+  }
+
+  // If superType type is an abstract type, maybeSubType type may be a currently
+  // possible object type.
+  if (
+    isInterfaceType(superType) &&
+    (isObjectType(maybeSubType) || isInterfaceType(maybeSubType)) &&
+    schema.isPossibleImplementation(superType, maybeSubType)
   ) {
     return true;
   }

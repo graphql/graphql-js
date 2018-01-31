@@ -31,27 +31,35 @@ import {
 const SomeInterfaceType = new GraphQLInterfaceType({
   name: 'SomeInterface',
   fields: () => ({
-    name: { type: GraphQLString },
     some: { type: SomeInterfaceType },
+  }),
+});
+
+const AnotherInterfaceType = new GraphQLInterfaceType({
+  name: 'AnotherInterface',
+  interfaces: [SomeInterfaceType],
+  fields: () => ({
+    name: { type: GraphQLString },
+    some: { type: AnotherInterfaceType },
   }),
 });
 
 const FooType = new GraphQLObjectType({
   name: 'Foo',
-  interfaces: [SomeInterfaceType],
+  interfaces: [AnotherInterfaceType, SomeInterfaceType],
   fields: () => ({
     name: { type: GraphQLString },
-    some: { type: SomeInterfaceType },
+    some: { type: AnotherInterfaceType },
     tree: { type: GraphQLNonNull(GraphQLList(FooType)) },
   }),
 });
 
 const BarType = new GraphQLObjectType({
   name: 'Bar',
-  interfaces: [SomeInterfaceType],
+  interfaces: [AnotherInterfaceType, SomeInterfaceType],
   fields: () => ({
     name: { type: GraphQLString },
-    some: { type: SomeInterfaceType },
+    some: { type: AnotherInterfaceType },
     foo: { type: FooType },
   }),
 });
@@ -186,9 +194,14 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
+      }
+
+      type Bar implements AnotherInterface & SomeInterface {
+        name: String
+        some: AnotherInterface
         foo: Foo
       }
 
@@ -196,9 +209,9 @@ describe('extendSchema', () => {
         fizz: String
       }
 
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         newField: String
       }
@@ -216,7 +229,6 @@ describe('extendSchema', () => {
       }
 
       interface SomeInterface {
-        name: String
         some: SomeInterface
       }
 
@@ -369,9 +381,14 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
+      }
+
+      type Bar implements AnotherInterface & SomeInterface {
+        name: String
+        some: AnotherInterface
         foo: Foo
       }
 
@@ -379,9 +396,9 @@ describe('extendSchema', () => {
         fizz: String
       }
 
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
       }
 
@@ -398,7 +415,6 @@ describe('extendSchema', () => {
       }
 
       interface SomeInterface {
-        name: String
         some: SomeInterface
       }
 
@@ -427,9 +443,14 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
+      }
+
+      type Bar implements AnotherInterface & SomeInterface {
+        name: String
+        some: AnotherInterface
         foo: Foo
       }
 
@@ -437,9 +458,9 @@ describe('extendSchema', () => {
         fizz: String
       }
 
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         newField(arg1: String, arg2: NewInputObj!): String
       }
@@ -463,7 +484,6 @@ describe('extendSchema', () => {
       }
 
       interface SomeInterface {
-        name: String
         some: SomeInterface
       }
 
@@ -482,9 +502,14 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
+      }
+
+      type Bar implements AnotherInterface & SomeInterface {
+        name: String
+        some: AnotherInterface
         foo: Foo
       }
 
@@ -492,9 +517,9 @@ describe('extendSchema', () => {
         fizz: String
       }
 
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         newField(arg1: SomeEnum!): SomeEnum
       }
@@ -512,7 +537,6 @@ describe('extendSchema', () => {
       }
 
       interface SomeInterface {
-        name: String
         some: SomeInterface
       }
 
@@ -522,9 +546,9 @@ describe('extendSchema', () => {
 
   it('extends objects by adding implemented interfaces', () => {
     const ast = parse(`
-      extend type Biz implements SomeInterface {
+      extend type Biz implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
       }
     `);
     const originalPrint = printSchema(testSchema);
@@ -532,21 +556,26 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
+      }
+
+      type Bar implements AnotherInterface & SomeInterface {
+        name: String
+        some: AnotherInterface
         foo: Foo
       }
 
-      type Biz implements SomeInterface {
+      type Biz implements AnotherInterface & SomeInterface {
         fizz: String
         name: String
-        some: SomeInterface
+        some: AnotherInterface
       }
 
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
       }
 
@@ -563,7 +592,6 @@ describe('extendSchema', () => {
       }
 
       interface SomeInterface {
-        name: String
         some: SomeInterface
       }
 
@@ -608,9 +636,14 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
+      }
+
+      type Bar implements AnotherInterface & SomeInterface {
+        name: String
+        some: AnotherInterface
         foo: Foo
       }
 
@@ -618,9 +651,9 @@ describe('extendSchema', () => {
         fizz: String
       }
 
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         newObject: NewObject
         newInterface: NewInterface
@@ -664,7 +697,6 @@ describe('extendSchema', () => {
       }
 
       interface SomeInterface {
-        name: String
         some: SomeInterface
       }
 
@@ -687,9 +719,14 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
+      }
+
+      type Bar implements AnotherInterface & SomeInterface {
+        name: String
+        some: AnotherInterface
         foo: Foo
       }
 
@@ -697,9 +734,9 @@ describe('extendSchema', () => {
         fizz: String
       }
 
-      type Foo implements SomeInterface & NewInterface {
+      type Foo implements AnotherInterface & SomeInterface & NewInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
         baz: String
       }
@@ -721,7 +758,6 @@ describe('extendSchema', () => {
       }
 
       interface SomeInterface {
-        name: String
         some: SomeInterface
       }
 
@@ -736,9 +772,13 @@ describe('extendSchema', () => {
       }
 
       extend type Biz implements SomeInterface {
-        name: String
         some: SomeInterface
         newFieldA: Int
+      }
+
+      extend type Biz implements AnotherInterface {
+        name: String
+        some: AnotherInterface
       }
 
       extend type Biz {
@@ -755,24 +795,29 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.not.equal(testSchema);
     expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
+      interface AnotherInterface implements SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
+      }
+
+      type Bar implements AnotherInterface & SomeInterface {
+        name: String
+        some: AnotherInterface
         foo: Foo
       }
 
-      type Biz implements NewInterface & SomeInterface {
+      type Biz implements NewInterface & SomeInterface & AnotherInterface {
         fizz: String
         buzz: String
-        name: String
-        some: SomeInterface
+        some: AnotherInterface
         newFieldA: Int
+        name: String
         newFieldB: Float
       }
 
-      type Foo implements SomeInterface {
+      type Foo implements AnotherInterface & SomeInterface {
         name: String
-        some: SomeInterface
+        some: AnotherInterface
         tree: [Foo]!
       }
 
@@ -793,7 +838,6 @@ describe('extendSchema', () => {
       }
 
       interface SomeInterface {
-        name: String
         some: SomeInterface
       }
 

@@ -134,6 +134,7 @@ export function lexographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     } else if (isInterfaceType(type)) {
       return new GraphQLInterfaceType({
         name: type.name,
+        interfaces: sortTypes(type.getInterfaces()),
         fields: sortFields(type.getFields()),
         resolveType: type.resolveType,
         description: type.description,

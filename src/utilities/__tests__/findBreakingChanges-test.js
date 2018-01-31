@@ -1055,6 +1055,51 @@ describe('findBreakingChanges', () => {
     ]);
   });
 
+  it('should detect interfaces removed from interfaces', () => {
+    const interface1 = new GraphQLInterfaceType({
+      name: 'Interface1',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+    });
+    const oldInterfaceType = new GraphQLObjectType({
+      name: 'Interface2',
+      interfaces: [interface1],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const newInterfaceType = new GraphQLObjectType({
+      name: 'Interface2',
+      interfaces: [],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [oldInterfaceType],
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [newInterfaceType],
+    });
+
+    expect(findInterfacesRemovedFromObjectTypes(oldSchema, newSchema)).to.eql([
+      {
+        description: 'Interface2 no longer implements interface Interface1.',
+        type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+      },
+    ]);
+  });
+
   it('should detect all breaking changes', () => {
     const typeThatGetsRemoved = new GraphQLObjectType({
       name: 'TypeThatGetsRemoved',
@@ -1606,6 +1651,52 @@ describe('findDangerousChanges', () => {
     expect(findInterfacesAddedToObjectTypes(oldSchema, newSchema)).to.eql([
       {
         description: 'Interface1 added to interfaces implemented by Type1.',
+        type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+      },
+    ]);
+  });
+
+  it('should detect interfaces added to interfaces', () => {
+    const interface1 = new GraphQLInterfaceType({
+      name: 'Interface1',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+    });
+    const oldInterfaceType = new GraphQLObjectType({
+      name: 'Interface2',
+      interfaces: [],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const newInterfaceType = new GraphQLObjectType({
+      name: 'Interface2',
+      interfaces: [interface1],
+      fields: {
+        field1: {
+          type: GraphQLString,
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [oldInterfaceType],
+    });
+
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [newInterfaceType],
+    });
+
+    expect(findInterfacesAddedToObjectTypes(oldSchema, newSchema)).to.eql([
+      {
+        description:
+          'Interface1 added to interfaces implemented by Interface2.',
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
       },
     ]);

@@ -115,7 +115,7 @@ describe('typeComparators', () => {
       expect(isTypeSubTypeOf(schema, member, union)).to.equal(true);
     });
 
-    it('implementation is subtype of interface', () => {
+    it('implementing object is subtype of interface', () => {
       const iface = new GraphQLInterfaceType({
         name: 'Interface',
         fields: {
@@ -124,6 +124,24 @@ describe('typeComparators', () => {
       });
       const impl = new GraphQLObjectType({
         name: 'Object',
+        interfaces: [iface],
+        fields: {
+          field: { type: GraphQLString },
+        },
+      });
+      const schema = testSchema({ field: { type: impl } });
+      expect(isTypeSubTypeOf(schema, impl, iface)).to.equal(true);
+    });
+
+    it('implementing interface is subtype of interface', () => {
+      const iface = new GraphQLInterfaceType({
+        name: 'Parent',
+        fields: {
+          field: { type: GraphQLString },
+        },
+      });
+      const impl = new GraphQLInterfaceType({
+        name: 'Child',
         interfaces: [iface],
         fields: {
           field: { type: GraphQLString },
