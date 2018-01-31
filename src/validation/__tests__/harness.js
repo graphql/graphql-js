@@ -41,8 +41,21 @@ const Being = new GraphQLInterfaceType({
   }),
 });
 
+const Mammal = new GraphQLInterfaceType({
+  name: 'Mammal',
+  fields: () => ({
+    mother: {
+      type: Mammal,
+    },
+    father: {
+      type: Mammal,
+    },
+  }),
+});
+
 const Pet = new GraphQLInterfaceType({
   name: 'Pet',
+  interfaces: [Being],
   fields: () => ({
     name: {
       type: GraphQLString,
@@ -53,10 +66,17 @@ const Pet = new GraphQLInterfaceType({
 
 const Canine = new GraphQLInterfaceType({
   name: 'Canine',
+  interfaces: [Being, Mammal],
   fields: () => ({
     name: {
       type: GraphQLString,
       args: { surname: { type: GraphQLBoolean } },
+    },
+    mother: {
+      type: Canine,
+    },
+    father: {
+      type: Canine,
     },
   }),
 });
@@ -99,8 +119,14 @@ const Dog = new GraphQLObjectType({
       type: GraphQLBoolean,
       args: { x: { type: GraphQLInt }, y: { type: GraphQLInt } },
     },
+    mother: {
+      type: Dog,
+    },
+    father: {
+      type: Dog,
+    },
   }),
-  interfaces: [Being, Pet, Canine],
+  interfaces: [Being, Pet, Mammal, Canine],
 });
 
 const Cat = new GraphQLObjectType({

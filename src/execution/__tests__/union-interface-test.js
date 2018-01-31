@@ -49,23 +49,46 @@ const NamedType = new GraphQLInterfaceType({
   },
 });
 
+const LifeType = new GraphQLInterfaceType({
+  name: 'Life',
+  fields: () => ({
+    progeny: { type: GraphQLList(LifeType) },
+  }),
+});
+
+const MammalType = new GraphQLInterfaceType({
+  name: 'Mammal',
+  interfaces: [LifeType],
+  fields: () => ({
+    progeny: { type: GraphQLList(MammalType) },
+    mother: { type: MammalType },
+    father: { type: MammalType },
+  }),
+});
+
 const DogType = new GraphQLObjectType({
   name: 'Dog',
-  interfaces: [NamedType],
-  fields: {
+  interfaces: [MammalType, LifeType, NamedType],
+  fields: () => ({
     name: { type: GraphQLString },
     barks: { type: GraphQLBoolean },
-  },
+    progeny: { type: GraphQLList(DogType) },
+    mother: { type: DogType },
+    father: { type: DogType },
+  }),
   isTypeOf: value => value instanceof Dog,
 });
 
 const CatType = new GraphQLObjectType({
   name: 'Cat',
-  interfaces: [NamedType],
-  fields: {
+  interfaces: [MammalType, LifeType, NamedType],
+  fields: () => ({
     name: { type: GraphQLString },
     meows: { type: GraphQLBoolean },
-  },
+    progeny: { type: GraphQLList(CatType) },
+    mother: { type: CatType },
+    father: { type: CatType },
+  }),
   isTypeOf: value => value instanceof Cat,
 });
 
@@ -84,12 +107,15 @@ const PetType = new GraphQLUnionType({
 
 const PersonType = new GraphQLObjectType({
   name: 'Person',
-  interfaces: [NamedType],
-  fields: {
+  interfaces: [NamedType, MammalType, LifeType],
+  fields: () => ({
     name: { type: GraphQLString },
     pets: { type: GraphQLList(PetType) },
     friends: { type: GraphQLList(NamedType) },
-  },
+    progeny: { type: GraphQLList(PersonType) },
+    mother: { type: PersonType },
+    father: { type: PersonType },
+  }),
   isTypeOf: value => value instanceof Person,
 });
 
@@ -116,6 +142,15 @@ describe('Execute: Union and intersection types', () => {
           enumValues { name }
           inputFields { name }
         }
+        Mammal: __type(name: "Mammal") {
+          kind
+          name
+          fields { name }
+          interfaces { name }
+          possibleTypes { name }
+          enumValues { name }
+          inputFields { name }
+        }
         Pet: __type(name: "Pet") {
           kind
           name
@@ -134,7 +169,16 @@ describe('Execute: Union and intersection types', () => {
           kind: 'INTERFACE',
           name: 'Named',
           fields: [{ name: 'name' }],
-          interfaces: null,
+          interfaces: [],
+          possibleTypes: [{ name: 'Person' }, { name: 'Dog' }, { name: 'Cat' }],
+          enumValues: null,
+          inputFields: null,
+        },
+        Mammal: {
+          kind: 'INTERFACE',
+          name: 'Mammal',
+          fields: [{ name: 'progeny' }, { name: 'mother' }, { name: 'father' }],
+          interfaces: [{ name: 'Life' }],
           possibleTypes: [{ name: 'Person' }, { name: 'Dog' }, { name: 'Cat' }],
           enumValues: null,
           inputFields: null,
