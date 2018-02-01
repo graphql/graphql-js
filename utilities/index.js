@@ -76,12 +76,12 @@ Object.defineProperty(exports, 'extendSchema', {
   }
 });
 
-var _lexographicSortSchema = require('./lexographicSortSchema');
+var _lexicographicSortSchema = require('./lexicographicSortSchema');
 
-Object.defineProperty(exports, 'lexographicSortSchema', {
+Object.defineProperty(exports, 'lexicographicSortSchema', {
   enumerable: true,
   get: function get() {
-    return _lexographicSortSchema.lexographicSortSchema;
+    return _lexicographicSortSchema.lexicographicSortSchema;
   }
 });
 

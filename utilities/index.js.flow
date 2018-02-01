@@ -54,7 +54,7 @@ export { buildASTSchema, buildSchema, getDescription } from './buildASTSchema';
 export { extendSchema } from './extendSchema';
 
 // Sort a GraphQLSchema.
-export { lexographicSortSchema } from './lexographicSortSchema';
+export { lexicographicSortSchema } from './lexicographicSortSchema';
 
 // Print a GraphQLSchema to GraphQL Schema language.
 export {

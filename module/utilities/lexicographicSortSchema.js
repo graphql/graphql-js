@@ -1,53 +1,34 @@
-'use strict';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+import keyValMap from '../jsutils/keyValMap'; /**
+                                               * Copyright (c) 2015-present, Facebook, Inc.
+                                               *
+                                               * This source code is licensed under the MIT license found in the
+                                               * LICENSE file in the root directory of this source tree.
+                                               *
+                                               * 
+                                               */
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /**
-                                                                                                                                                                                                                                                                   * Copyright (c) 2015-present, Facebook, Inc.
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   * This source code is licensed under the MIT license found in the
-                                                                                                                                                                                                                                                                   * LICENSE file in the root directory of this source tree.
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   * 
-                                                                                                                                                                                                                                                                   */
+import objectValues from '../jsutils/objectValues';
+import { GraphQLSchema } from '../type/schema';
+import { GraphQLDirective } from '../type/directives';
+import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
-exports.lexographicSortSchema = lexographicSortSchema;
-
-var _keyValMap = require('../jsutils/keyValMap');
-
-var _keyValMap2 = _interopRequireDefault(_keyValMap);
-
-var _objectValues = require('../jsutils/objectValues');
-
-var _objectValues2 = _interopRequireDefault(_objectValues);
-
-var _schema = require('../type/schema');
-
-var _directives = require('../type/directives');
-
-var _wrappers = require('../type/wrappers');
-
-var _definition = require('../type/definition');
-
-var _scalars = require('../type/scalars');
-
-var _introspection = require('../type/introspection');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
+import { isSpecifiedScalarType } from '../type/scalars';
+import { isIntrospectionType } from '../type/introspection';
 
 /**
  * Sort GraphQLSchema.
  */
-function lexographicSortSchema(schema) {
+export function lexicographicSortSchema(schema) {
   var cache = Object.create(null);
 
   var sortMaybeType = function sortMaybeType(maybeType) {
     return maybeType && sortNamedType(maybeType);
   };
-  return new _schema.GraphQLSchema({
-    types: sortByName((0, _objectValues2.default)(schema.getTypeMap()).map(sortNamedType)),
+  return new GraphQLSchema({
+    types: sortByName(objectValues(schema.getTypeMap()).map(sortNamedType)),
     directives: sortByName(schema.getDirectives()).map(sortDirective),
     query: sortMaybeType(schema.getQueryType()),
     mutation: sortMaybeType(schema.getMutationType()),
@@ -56,7 +37,7 @@ function lexographicSortSchema(schema) {
   });
 
   function sortDirective(directive) {
-    return new _directives.GraphQLDirective({
+    return new GraphQLDirective({
       name: directive.name,
       description: directive.description,
       locations: sortBy(directive.locations, function (x) {
@@ -68,7 +49,7 @@ function lexographicSortSchema(schema) {
   }
 
   function sortArgs(args) {
-    return (0, _keyValMap2.default)(sortByName(args), function (arg) {
+    return keyValMap(sortByName(args), function (arg) {
       return arg.name;
     }, function (arg) {
       return _extends({}, arg, {
@@ -107,10 +88,10 @@ function lexographicSortSchema(schema) {
   }
 
   function sortType(type) {
-    if ((0, _definition.isListType)(type)) {
-      return new _wrappers.GraphQLList(sortType(type.ofType));
-    } else if ((0, _definition.isNonNullType)(type)) {
-      return new _wrappers.GraphQLNonNull(sortType(type.ofType));
+    if (isListType(type)) {
+      return new GraphQLList(sortType(type.ofType));
+    } else if (isNonNullType(type)) {
+      return new GraphQLNonNull(sortType(type.ofType));
     }
     return sortNamedType(type);
   }
@@ -122,7 +103,7 @@ function lexographicSortSchema(schema) {
   }
 
   function sortNamedType(type) {
-    if ((0, _scalars.isSpecifiedScalarType)(type) || (0, _introspection.isIntrospectionType)(type)) {
+    if (isSpecifiedScalarType(type) || isIntrospectionType(type)) {
       return type;
     }
 
@@ -135,10 +116,10 @@ function lexographicSortSchema(schema) {
   }
 
   function sortNamedTypeImpl(type) {
-    if ((0, _definition.isScalarType)(type)) {
+    if (isScalarType(type)) {
       return type;
-    } else if ((0, _definition.isObjectType)(type)) {
-      return new _definition.GraphQLObjectType({
+    } else if (isObjectType(type)) {
+      return new GraphQLObjectType({
         name: type.name,
         interfaces: sortTypes(type.getInterfaces()),
         fields: sortFields(type.getFields()),
@@ -147,8 +128,8 @@ function lexographicSortSchema(schema) {
         astNode: type.astNode,
         extensionASTNodes: type.extensionASTNodes
       });
-    } else if ((0, _definition.isInterfaceType)(type)) {
-      return new _definition.GraphQLInterfaceType({
+    } else if (isInterfaceType(type)) {
+      return new GraphQLInterfaceType({
         name: type.name,
         fields: sortFields(type.getFields()),
         resolveType: type.resolveType,
@@ -156,18 +137,18 @@ function lexographicSortSchema(schema) {
         astNode: type.astNode,
         extensionASTNodes: type.extensionASTNodes
       });
-    } else if ((0, _definition.isUnionType)(type)) {
-      return new _definition.GraphQLUnionType({
+    } else if (isUnionType(type)) {
+      return new GraphQLUnionType({
         name: type.name,
         types: sortTypes(type.getTypes()),
         resolveType: type.resolveType,
         description: type.description,
         astNode: type.astNode
       });
-    } else if ((0, _definition.isEnumType)(type)) {
-      return new _definition.GraphQLEnumType({
+    } else if (isEnumType(type)) {
+      return new GraphQLEnumType({
         name: type.name,
-        values: (0, _keyValMap2.default)(sortByName(type.getValues()), function (val) {
+        values: keyValMap(sortByName(type.getValues()), function (val) {
           return val.name;
         }, function (val) {
           return {
@@ -180,8 +161,8 @@ function lexographicSortSchema(schema) {
         description: type.description,
         astNode: type.astNode
       });
-    } else if ((0, _definition.isInputObjectType)(type)) {
-      return new _definition.GraphQLInputObjectType({
+    } else if (isInputObjectType(type)) {
+      return new GraphQLInputObjectType({
         name: type.name,
         fields: sortInputFields(type.getFields()),
         description: type.description,

@@ -327,7 +327,7 @@ export {
   // language AST.
   extendSchema,
   // Sort a GraphQLSchema.
-  lexographicSortSchema,
+  lexicographicSortSchema,
   // Print a GraphQLSchema to GraphQL Schema language.
   printSchema,
   // Prints the built-in introspection schema in the Schema Language
