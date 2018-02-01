@@ -10,14 +10,14 @@ import { expect } from 'chai';
 import dedent from '../../jsutils/dedent';
 import { printSchema } from '../schemaPrinter';
 import { buildSchema } from '../buildASTSchema';
-import { lexographicSortSchema } from '../lexographicSortSchema';
+import { lexicographicSortSchema } from '../lexicographicSortSchema';
 
 function sortSDL(sdl) {
   const schema = buildSchema(sdl);
-  return printSchema(lexographicSortSchema(schema));
+  return printSchema(lexicographicSortSchema(schema));
 }
 
-describe('lexographicSortSchema', () => {
+describe('lexicographicSortSchema', () => {
   it('sort fields', () => {
     const sorted = sortSDL(dedent`
       input Bar {
