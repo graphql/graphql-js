@@ -31,7 +31,12 @@ import { Kind } from '../language/kinds';
 
 import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 
-import type { DocumentNode, DirectiveDefinitionNode } from '../language/ast';
+import type {
+  DocumentNode,
+  DirectiveDefinitionNode,
+  ObjectTypeExtensionNode,
+  TypeExtensionNode,
+} from '../language/ast';
 
 type Options = {|
   /**
@@ -130,13 +135,10 @@ export function extendSchema(
             [def],
           );
         }
-        let extensions = typeExtensionsMap[extendedTypeName];
-        if (extensions) {
-          extensions.push(def);
-        } else {
-          extensions = [def];
-        }
-        typeExtensionsMap[extendedTypeName] = extensions;
+        typeExtensionsMap[extendedTypeName] = appendExtensionToTypeExtensions(
+          def,
+          typeExtensionsMap[extendedTypeName],
+        );
         break;
       case Kind.DIRECTIVE_DEFINITION:
         const directiveName = def.name.value;
@@ -150,8 +152,46 @@ export function extendSchema(
         }
         directiveDefinitions.push(def);
         break;
-      case Kind.SCALAR_TYPE_EXTENSION:
       case Kind.INTERFACE_TYPE_EXTENSION:
+        const extendedInterfaceTypeName = def.name.value;
+        const existingInterfaceType = schema.getType(extendedInterfaceTypeName);
+        if (!existingInterfaceType) {
+          throw new GraphQLError(
+            `Cannot extend interface "${extendedInterfaceTypeName}" because ` +
+              'it does not exist in the existing schema.',
+            [def],
+          );
+        }
+        if (!isInterfaceType(existingInterfaceType)) {
+          throw new GraphQLError(
+            `Cannot extend non-interface type "${extendedInterfaceTypeName}".`,
+            [def],
+          );
+        }
+        // Extend all of the object types that implement this interface
+        schema.getPossibleTypes(existingInterfaceType).forEach(concreteType => {
+          const concreteTypeName = concreteType.name;
+          const concreteExtensionDefinition: ObjectTypeExtensionNode = {
+            kind: Kind.OBJECT_TYPE_EXTENSION,
+            name: { kind: Kind.NAME, value: concreteTypeName, loc: def.loc },
+            interfaces: [],
+            directives: def.directives,
+            fields: def.fields,
+            loc: def.loc,
+          };
+          typeExtensionsMap[concreteTypeName] = appendExtensionToTypeExtensions(
+            concreteExtensionDefinition,
+            typeExtensionsMap[concreteTypeName],
+          );
+        });
+        typeExtensionsMap[
+          extendedInterfaceTypeName
+        ] = appendExtensionToTypeExtensions(
+          def,
+          typeExtensionsMap[extendedInterfaceTypeName],
+        );
+        break;
+      case Kind.SCALAR_TYPE_EXTENSION:
       case Kind.UNION_TYPE_EXTENSION:
       case Kind.ENUM_TYPE_EXTENSION:
       case Kind.INPUT_OBJECT_TYPE_EXTENSION:
@@ -232,6 +272,17 @@ export function extendSchema(
     astNode: schema.astNode,
   });
 
+  function appendExtensionToTypeExtensions(
+    extension: TypeExtensionNode,
+    existingTypeExtensions: ?Array<TypeExtensionNode>,
+  ): Array<TypeExtensionNode> {
+    if (!existingTypeExtensions) {
+      return [extension];
+    }
+    existingTypeExtensions.push(extension);
+    return existingTypeExtensions;
+  }
+
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
@@ -286,11 +337,18 @@ export function extendSchema(
   function extendInterfaceType(
     type: GraphQLInterfaceType,
   ): GraphQLInterfaceType {
+    const name = type.name;
+    const extensionASTNodes = typeExtensionsMap[name]
+      ? type.extensionASTNodes
+        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
+        : typeExtensionsMap[name]
+      : type.extensionASTNodes;
     return new GraphQLInterfaceType({
       name: type.name,
       description: type.description,
       fields: () => extendFieldMap(type),
       astNode: type.astNode,
+      extensionASTNodes,
       resolveType: type.resolveType,
     });
   }

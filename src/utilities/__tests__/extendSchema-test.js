@@ -801,6 +801,119 @@ describe('extendSchema', () => {
     `);
   });
 
+  it('extends interfaces by adding new fields', () => {
+    const ast = parse(`
+      extend interface SomeInterface {
+        newObject: NewObject
+        newInterface: NewInterface
+        newUnion: NewUnion
+        newScalar: NewScalar
+        newTree: [Foo]!
+        newField(arg1: String, arg2: NewEnum!): String
+      }
+
+      type NewObject implements NewInterface {
+        baz: String
+      }
+
+      type NewOtherObject {
+        fizz: Int
+      }
+
+      interface NewInterface {
+        baz: String
+      }
+
+      union NewUnion = NewObject | NewOtherObject
+
+      scalar NewScalar
+
+      enum NewEnum {
+        OPTION_A
+        OPTION_B
+      }
+    `);
+    const originalPrint = printSchema(testSchema);
+    const extendedSchema = extendSchema(testSchema, ast);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printSchema(testSchema)).to.equal(originalPrint);
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        name: String
+        some: SomeInterface
+        foo: Foo
+        newObject: NewObject
+        newInterface: NewInterface
+        newUnion: NewUnion
+        newScalar: NewScalar
+        newTree: [Foo]!
+        newField(arg1: String, arg2: NewEnum!): String
+      }
+
+      type Biz {
+        fizz: String
+      }
+
+      type Foo implements SomeInterface {
+        name: String
+        some: SomeInterface
+        tree: [Foo]!
+        newObject: NewObject
+        newInterface: NewInterface
+        newUnion: NewUnion
+        newScalar: NewScalar
+        newTree: [Foo]!
+        newField(arg1: String, arg2: NewEnum!): String
+      }
+
+      enum NewEnum {
+        OPTION_A
+        OPTION_B
+      }
+
+      interface NewInterface {
+        baz: String
+      }
+
+      type NewObject implements NewInterface {
+        baz: String
+      }
+
+      type NewOtherObject {
+        fizz: Int
+      }
+
+      scalar NewScalar
+
+      union NewUnion = NewObject | NewOtherObject
+
+      type Query {
+        foo: Foo
+        someUnion: SomeUnion
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+      }
+
+      enum SomeEnum {
+        ONE
+        TWO
+      }
+
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+        newObject: NewObject
+        newInterface: NewInterface
+        newUnion: NewUnion
+        newScalar: NewScalar
+        newTree: [Foo]!
+        newField(arg1: String, arg2: NewEnum!): String
+      }
+
+      union SomeUnion = Foo | Biz
+    `);
+  });
+
   it('may extend mutations and subscriptions', () => {
     const mutationSchema = new GraphQLSchema({
       query: new GraphQLObjectType({
