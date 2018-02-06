@@ -842,12 +842,6 @@ describe('extendSchema', () => {
         name: String
         some: SomeInterface
         foo: Foo
-        newObject: NewObject
-        newInterface: NewInterface
-        newUnion: NewUnion
-        newScalar: NewScalar
-        newTree: [Foo]!
-        newField(arg1: String, arg2: NewEnum!): String
       }
 
       type Biz {
@@ -858,12 +852,6 @@ describe('extendSchema', () => {
         name: String
         some: SomeInterface
         tree: [Foo]!
-        newObject: NewObject
-        newInterface: NewInterface
-        newUnion: NewUnion
-        newScalar: NewScalar
-        newTree: [Foo]!
-        newField(arg1: String, arg2: NewEnum!): String
       }
 
       enum NewEnum {

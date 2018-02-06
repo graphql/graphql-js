@@ -34,7 +34,6 @@ import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 import type {
   DocumentNode,
   DirectiveDefinitionNode,
-  ObjectTypeExtensionNode,
   TypeExtensionNode,
 } from '../language/ast';
 
@@ -168,22 +167,6 @@ export function extendSchema(
             [def],
           );
         }
-        // Extend all of the object types that implement this interface
-        schema.getPossibleTypes(existingInterfaceType).forEach(concreteType => {
-          const concreteTypeName = concreteType.name;
-          const concreteExtensionDefinition: ObjectTypeExtensionNode = {
-            kind: Kind.OBJECT_TYPE_EXTENSION,
-            name: { kind: Kind.NAME, value: concreteTypeName, loc: def.loc },
-            interfaces: [],
-            directives: def.directives,
-            fields: def.fields,
-            loc: def.loc,
-          };
-          typeExtensionsMap[concreteTypeName] = appendExtensionToTypeExtensions(
-            concreteExtensionDefinition,
-            typeExtensionsMap[concreteTypeName],
-          );
-        });
         typeExtensionsMap[
           extendedInterfaceTypeName
         ] = appendExtensionToTypeExtensions(
