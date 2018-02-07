@@ -90,6 +90,7 @@ const testSchema = new GraphQLSchema({
     }),
   }),
   types: [FooType, BarType],
+  allowedLegacyNames: ['__badName'],
 });
 
 describe('extendSchema', () => {
@@ -992,6 +993,16 @@ describe('extendSchema', () => {
       'Cannot extend type "UnknownType" because it does not exist in the ' +
         'existing schema.',
     );
+  });
+
+  it('maintains configuration of the original schema object', () => {
+    const ast = parse(`
+      extend type Query {
+        __badName: String
+      }
+    `);
+    const schema = extendSchema(testSchema, ast);
+    expect(schema.__allowedLegacyNames).to.eql(['__badName']);
   });
 
   describe('does not allow extending a non-object type', () => {
