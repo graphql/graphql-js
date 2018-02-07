@@ -11,8 +11,10 @@ import { parse, print } from '../../language';
 import { printSchema } from '../schemaPrinter';
 import { buildASTSchema, buildSchema } from '../buildASTSchema';
 import dedent from '../../jsutils/dedent';
+import { Kind } from '../../language/kinds';
 import {
-  graphql,
+  graphqlSync,
+  validateSchema,
   GraphQLSkipDirective,
   GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
@@ -32,47 +34,44 @@ function cycleOutput(body, options) {
 }
 
 describe('Schema Builder', () => {
-  it('can use built schema for limited execution', async () => {
+  it('can use built schema for limited execution', () => {
     const schema = buildASTSchema(
-      parse(`
-      schema { query: Query }
-      type Query {
-        str: String
-      }
-    `),
+      parse(dedent`
+        type Query {
+          str: String
+        }
+      `),
     );
 
-    const result = await graphql(schema, '{ str }', { str: 123 });
+    const result = graphqlSync(schema, '{ str }', { str: 123 });
     expect(result.data).to.deep.equal({ str: '123' });
   });
 
-  it('can build a schema directly from the source', async () => {
-    const schema = buildSchema(`
+  it('can build a schema directly from the source', () => {
+    const schema = buildSchema(dedent`
       type Query {
         add(x: Int, y: Int): Int
       }
     `);
-    expect(
-      await graphql(schema, '{ add(x: 34, y: 55) }', {
-        add: ({ x, y }) => x + y,
-      }),
-    ).to.deep.equal({ data: { add: 89 } });
+
+    const root = {
+      add: ({ x, y }) => x + y,
+    };
+    expect(graphqlSync(schema, '{ add(x: 34, y: 55) }', root)).to.deep.equal({
+      data: { add: 89 },
+    });
   });
 
   it('Simple type', () => {
     const body = dedent`
-      schema {
-        query: HelloScalars
-      }
-
-      type HelloScalars {
+      type Query {
         str: String
         int: Int
         float: Float
         id: ID
         bool: Boolean
       }
-      `;
+    `;
 
     const output = cycleOutput(body);
     expect(output).to.equal(body);
@@ -80,13 +79,9 @@ describe('Schema Builder', () => {
 
   it('With directives', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
       directive @foo(arg: Int) on FIELD
 
-      type Hello {
+      type Query {
         str: String
       }
     `;
@@ -96,10 +91,6 @@ describe('Schema Builder', () => {
 
   it('Supports descriptions', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
       """This is a directive"""
       directive @foo(
         """It has an argument"""
@@ -116,7 +107,7 @@ describe('Schema Builder', () => {
       }
 
       """What a great type"""
-      type Hello {
+      type Query {
         """And a field to boot"""
         str: String
       }
@@ -127,10 +118,6 @@ describe('Schema Builder', () => {
 
   it('Supports option for comment descriptions', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
       # This is a directive
       directive @foo(
         # It has an argument
@@ -147,7 +134,7 @@ describe('Schema Builder', () => {
       }
 
       # What a great type
-      type Hello {
+      type Query {
         # And a field to boot
         str: String
       }
@@ -158,11 +145,7 @@ describe('Schema Builder', () => {
 
   it('Maintains @skip & @include', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
-      type Hello {
+      type Query {
         str: String
       }
     `;
@@ -177,15 +160,11 @@ describe('Schema Builder', () => {
 
   it('Overriding directives excludes specified', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
       directive @skip on FIELD
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
 
-      type Hello {
+      type Query {
         str: String
       }
     `;
@@ -202,13 +181,9 @@ describe('Schema Builder', () => {
 
   it('Adding directives maintains @skip & @include', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
       directive @foo(arg: Int) on FIELD
 
-      type Hello {
+      type Query {
         str: String
       }
     `;
@@ -221,11 +196,7 @@ describe('Schema Builder', () => {
 
   it('Type modifiers', () => {
     const body = dedent`
-      schema {
-        query: HelloScalars
-      }
-
-      type HelloScalars {
+      type Query {
         nonNullStr: String!
         listOfStrs: [String]
         listOfNonNullStrs: [String!]
@@ -239,13 +210,9 @@ describe('Schema Builder', () => {
 
   it('Recursive type', () => {
     const body = dedent`
-      schema {
-        query: Recurse
-      }
-
-      type Recurse {
+      type Query {
         str: String
-        recurse: Recurse
+        recurse: Query
       }
     `;
     const output = cycleOutput(body);
@@ -274,11 +241,7 @@ describe('Schema Builder', () => {
 
   it('Single argument field', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
-      type Hello {
+      type Query {
         str(int: Int): String
         floatToStr(float: Float): String
         idToStr(id: ID): String
@@ -292,11 +255,7 @@ describe('Schema Builder', () => {
 
   it('Simple type with multiple arguments', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
-      type Hello {
+      type Query {
         str(int: Int, bool: Boolean): String
       }
     `;
@@ -306,11 +265,7 @@ describe('Schema Builder', () => {
 
   it('Simple type with interface', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
-      type Hello implements WorldInterface {
+      type Query implements WorldInterface {
         str: String
       }
 
@@ -324,15 +279,11 @@ describe('Schema Builder', () => {
 
   it('Simple output enum', () => {
     const body = dedent`
-      schema {
-        query: OutputEnumRoot
-      }
-
       enum Hello {
         WORLD
       }
 
-      type OutputEnumRoot {
+      type Query {
         hello: Hello
       }
     `;
@@ -342,15 +293,11 @@ describe('Schema Builder', () => {
 
   it('Simple input enum', () => {
     const body = dedent`
-      schema {
-        query: InputEnumRoot
-      }
-
       enum Hello {
         WORLD
       }
 
-      type InputEnumRoot {
+      type Query {
         str(hello: Hello): String
       }
     `;
@@ -360,16 +307,12 @@ describe('Schema Builder', () => {
 
   it('Multiple value enum', () => {
     const body = dedent`
-      schema {
-        query: OutputEnumRoot
-      }
-
       enum Hello {
         WO
         RLD
       }
 
-      type OutputEnumRoot {
+      type Query {
         hello: Hello
       }
     `;
@@ -379,13 +322,9 @@ describe('Schema Builder', () => {
 
   it('Simple Union', () => {
     const body = dedent`
-      schema {
-        query: Root
-      }
-
       union Hello = World
 
-      type Root {
+      type Query {
         hello: Hello
       }
 
@@ -399,13 +338,9 @@ describe('Schema Builder', () => {
 
   it('Multiple Union', () => {
     const body = dedent`
-      schema {
-        query: Root
-      }
-
       union Hello = WorldOne | WorldTwo
 
-      type Root {
+      type Query {
         hello: Hello
       }
 
@@ -421,13 +356,9 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
   });
 
-  it('Specifying Union type using __typename', async () => {
-    const schema = buildSchema(`
-      schema {
-        query: Root
-      }
-
-      type Root {
+  it('Specifying Union type using __typename', () => {
+    const schema = buildSchema(dedent`
+      type Query {
         fruits: [Fruit]
       }
 
@@ -468,7 +399,7 @@ describe('Schema Builder', () => {
       ],
     };
 
-    expect(await graphql(schema, query, root)).to.deep.equal({
+    expect(graphqlSync(schema, query, root)).to.deep.equal({
       data: {
         fruits: [
           {
@@ -482,13 +413,9 @@ describe('Schema Builder', () => {
     });
   });
 
-  it('Specifying Interface type using __typename', async () => {
-    const schema = buildSchema(`
-      schema {
-        query: Root
-      }
-
-      type Root {
+  it('Specifying Interface type using __typename', () => {
+    const schema = buildSchema(dedent`
+      type Query {
         characters: [Character]
       }
 
@@ -536,7 +463,7 @@ describe('Schema Builder', () => {
       ],
     };
 
-    expect(await graphql(schema, query, root)).to.deep.equal({
+    expect(graphqlSync(schema, query, root)).to.deep.equal({
       data: {
         characters: [
           {
@@ -554,13 +481,9 @@ describe('Schema Builder', () => {
 
   it('Custom Scalar', () => {
     const body = dedent`
-      schema {
-        query: Root
-      }
-
       scalar CustomScalar
 
-      type Root {
+      type Query {
         customScalar: CustomScalar
       }
     `;
@@ -569,17 +492,13 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
   });
 
-  it('Input Object', async () => {
+  it('Input Object', () => {
     const body = dedent`
-      schema {
-        query: Root
-      }
-
       input Input {
         int: Int
       }
 
-      type Root {
+      type Query {
         field(in: Input): String
       }
     `;
@@ -590,11 +509,7 @@ describe('Schema Builder', () => {
 
   it('Simple argument field with default', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
-      type Hello {
+      type Query {
         str(int: Int = 2): String
       }
     `;
@@ -604,13 +519,9 @@ describe('Schema Builder', () => {
 
   it('Custom scalar argument field with default', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
       scalar CustomScalar
 
-      type Hello {
+      type Query {
         str(int: CustomScalar = 2): String
       }
     `;
@@ -736,7 +647,7 @@ describe('Schema Builder', () => {
   });
 
   it('Correctly assign AST nodes', () => {
-    const schema = buildSchema(`
+    const schemaAST = parse(dedent`
       schema {
         query: Query
       }
@@ -763,36 +674,36 @@ describe('Schema Builder', () => {
         interfaceField: String
       }
 
-      directive @test(arg: Int) on FIELD
+      scalar TestScalar
+
+      directive @test(arg: TestScalar) on FIELD
     `);
+
+    const schema = buildASTSchema(schemaAST);
     const query = schema.getType('Query');
     const testInput = schema.getType('TestInput');
     const testEnum = schema.getType('TestEnum');
     const testUnion = schema.getType('TestUnion');
     const testInterface = schema.getType('TestInterface');
     const testType = schema.getType('TestType');
+    const testScalar = schema.getType('TestScalar');
     const testDirective = schema.getDirective('test');
 
-    const restoredIDL = printSchema(
-      buildSchema(
-        print(schema.astNode) +
-          '\n' +
-          print(query.astNode) +
-          '\n' +
-          print(testInput.astNode) +
-          '\n' +
-          print(testEnum.astNode) +
-          '\n' +
-          print(testUnion.astNode) +
-          '\n' +
-          print(testInterface.astNode) +
-          '\n' +
-          print(testType.astNode) +
-          '\n' +
-          print(testDirective.astNode),
-      ),
-    );
-    expect(restoredIDL).to.be.equal(printSchema(schema));
+    const restoredSchemaAST = {
+      kind: Kind.DOCUMENT,
+      definitions: [
+        schema.astNode,
+        query.astNode,
+        testInput.astNode,
+        testEnum.astNode,
+        testUnion.astNode,
+        testInterface.astNode,
+        testType.astNode,
+        testScalar.astNode,
+        testDirective.astNode,
+      ],
+    };
+    expect(print(restoredSchemaAST)).to.be.equal(print(schemaAST));
 
     const testField = query.getFields().testField;
     expect(print(testField.astNode)).to.equal(
@@ -811,7 +722,59 @@ describe('Schema Builder', () => {
     expect(print(testType.getFields().interfaceField.astNode)).to.equal(
       'interfaceField: String',
     );
-    expect(print(testDirective.args[0].astNode)).to.equal('arg: Int');
+    expect(print(testDirective.args[0].astNode)).to.equal('arg: TestScalar');
+  });
+
+  it('Root operation types with custom names', () => {
+    const schema = buildSchema(dedent`
+      schema {
+        query: SomeQuery
+        mutation: SomeMutation
+        subscription: SomeSubscription
+      }
+      type SomeQuery { str: String }
+      type SomeMutation { str: String }
+      type SomeSubscription { str: String }
+    `);
+
+    expect(schema.getQueryType().name).to.equal('SomeQuery');
+    expect(schema.getMutationType().name).to.equal('SomeMutation');
+    expect(schema.getSubscriptionType().name).to.equal('SomeSubscription');
+  });
+
+  it('Default root operation type names', () => {
+    const schema = buildSchema(dedent`
+      type Query { str: String }
+      type Mutation { str: String }
+      type Subscription { str: String }
+    `);
+
+    expect(schema.getQueryType().name).to.equal('Query');
+    expect(schema.getMutationType().name).to.equal('Mutation');
+    expect(schema.getSubscriptionType().name).to.equal('Subscription');
+  });
+
+  it('Default root operation type names', () => {
+    const schema = buildSchema(dedent`
+      type Query { str: String }
+      type Mutation { str: String }
+      type Subscription { str: String }
+    `);
+
+    expect(schema.getQueryType().name).to.equal('Query');
+    expect(schema.getMutationType().name).to.equal('Mutation');
+    expect(schema.getSubscriptionType().name).to.equal('Subscription');
+  });
+
+  it('can build invalid schema', () => {
+    const schema = buildSchema(dedent`
+      # Invalid schema, because it is missing query root type
+      type Mutation {
+        str: String
+      }
+    `);
+    const errors = validateSchema(schema);
+    expect(errors.length).to.be.above(0);
   });
 });
 
@@ -919,11 +882,7 @@ describe('Failures', () => {
 
   it('Unknown type in interface list', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
-      type Hello implements Bar {
+      type Query implements Bar {
         field: String
       }
     `;
@@ -935,12 +894,8 @@ describe('Failures', () => {
 
   it('Unknown type in union list', () => {
     const body = dedent`
-      schema {
-        query: Hello
-      }
-
       union TestUnion = Bar
-      type Hello { testUnion: TestUnion }
+      type Query { testUnion: TestUnion }
     `;
     const doc = parse(body);
     expect(() => buildASTSchema(doc)).to.throw(
