@@ -1002,7 +1002,7 @@ describe('extendSchema', () => {
       }
     `);
     const schema = extendSchema(testSchema, ast);
-    expect(schema.__allowedLegacyNames).to.eql(['__badName']);
+    expect(schema.__allowedLegacyNames).to.deep.equal(['__badName']);
   });
 
   describe('does not allow extending a non-object type', () => {
