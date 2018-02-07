@@ -154,7 +154,8 @@ export function extendSchema(schema, documentAST, options) {
     subscription: subscriptionType,
     types: types,
     directives: getMergedDirectives(),
-    astNode: schema.astNode
+    astNode: schema.astNode,
+    allowedLegacyNames: schema.__allowedLegacyNames && schema.__allowedLegacyNames.slice()
   });
 
   // Below are functions used for producing this schema that have closed over
