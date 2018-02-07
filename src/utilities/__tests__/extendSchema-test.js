@@ -90,7 +90,6 @@ const testSchema = new GraphQLSchema({
     }),
   }),
   types: [FooType, BarType],
-  allowedLegacyNames: ['__badName'],
 });
 
 describe('extendSchema', () => {
@@ -996,12 +995,21 @@ describe('extendSchema', () => {
   });
 
   it('maintains configuration of the original schema object', () => {
+    const testSchemaWithLegacyNames = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: () => ({
+          id: { type: GraphQLID },
+        }),
+      }),
+      allowedLegacyNames: ['__badName'],
+    });
     const ast = parse(`
       extend type Query {
         __badName: String
       }
     `);
-    const schema = extendSchema(testSchema, ast);
+    const schema = extendSchema(testSchemaWithLegacyNames, ast);
     expect(schema.__allowedLegacyNames).to.deep.equal(['__badName']);
   });
 
