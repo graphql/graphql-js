@@ -32,15 +32,7 @@ export function isValidNameError(
   node?: ASTNode | void,
 ): GraphQLError | void {
   invariant(typeof name === 'string', 'Expected string');
-  if (
-    name.length > 1 &&
-    name[0] === '_' &&
-    name[1] === '_' &&
-    // Note: this special case is not part of the spec and exists only to
-    // support legacy server configurations. Do not rely on this special case
-    // as it may be removed at any time.
-    name !== '__configs__'
-  ) {
+  if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new GraphQLError(
       `Name "${name}" must not begin with "__", which is reserved by ` +
         'GraphQL introspection.',
