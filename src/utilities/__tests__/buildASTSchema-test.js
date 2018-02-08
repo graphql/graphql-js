@@ -36,7 +36,7 @@ function cycleOutput(body, options) {
 describe('Schema Builder', () => {
   it('can use built schema for limited execution', () => {
     const schema = buildASTSchema(
-      parse(dedent`
+      parse(`
         type Query {
           str: String
         }
@@ -48,7 +48,7 @@ describe('Schema Builder', () => {
   });
 
   it('can build a schema directly from the source', () => {
-    const schema = buildSchema(dedent`
+    const schema = buildSchema(`
       type Query {
         add(x: Int, y: Int): Int
       }
