@@ -95,29 +95,26 @@ function isTypeSubTypeOf(schema, maybeSubType, superType) {
  * This function is commutative.
  */
 function doTypesOverlap(schema, typeA, typeB) {
-  // So flow is aware this is constant
-  var _typeB = typeB;
-
   // Equivalent types overlap
-  if (typeA === _typeB) {
+  if (typeA === typeB) {
     return true;
   }
 
   if ((0, _definition.isAbstractType)(typeA)) {
-    if ((0, _definition.isAbstractType)(_typeB)) {
+    if ((0, _definition.isAbstractType)(typeB)) {
       // If both types are abstract, then determine if there is any intersection
       // between possible concrete types of each.
       return schema.getPossibleTypes(typeA).some(function (type) {
-        return schema.isPossibleType(_typeB, type);
+        return schema.isPossibleType(typeB, type);
       });
     }
     // Determine if the latter type is a possible concrete type of the former.
-    return schema.isPossibleType(typeA, _typeB);
+    return schema.isPossibleType(typeA, typeB);
   }
 
-  if ((0, _definition.isAbstractType)(_typeB)) {
+  if ((0, _definition.isAbstractType)(typeB)) {
     // Determine if the former type is a possible concrete type of the latter.
-    return schema.isPossibleType(_typeB, typeA);
+    return schema.isPossibleType(typeB, typeA);
   }
 
   // Otherwise the types do not overlap.

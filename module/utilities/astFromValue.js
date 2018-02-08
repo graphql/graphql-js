@@ -38,11 +38,8 @@ import { GraphQLID } from '../type/scalars';
  *
  */
 export function astFromValue(value, type) {
-  // Ensure flow knows that we treat function params as const.
-  var _value = value;
-
   if (isNonNullType(type)) {
-    var astValue = astFromValue(_value, type.ofType);
+    var astValue = astFromValue(value, type.ofType);
     if (astValue && astValue.kind === Kind.NULL) {
       return null;
     }
@@ -50,12 +47,12 @@ export function astFromValue(value, type) {
   }
 
   // only explicit null, not undefined, NaN
-  if (_value === null) {
+  if (value === null) {
     return { kind: Kind.NULL };
   }
 
   // undefined, NaN
-  if (isInvalid(_value)) {
+  if (isInvalid(value)) {
     return null;
   }
 
@@ -63,9 +60,9 @@ export function astFromValue(value, type) {
   // the value is not an array, convert the value using the list's item type.
   if (isListType(type)) {
     var itemType = type.ofType;
-    if (isCollection(_value)) {
+    if (isCollection(value)) {
       var valuesNodes = [];
-      forEach(_value, function (item) {
+      forEach(value, function (item) {
         var itemNode = astFromValue(item, itemType);
         if (itemNode) {
           valuesNodes.push(itemNode);
@@ -73,19 +70,19 @@ export function astFromValue(value, type) {
       });
       return { kind: Kind.LIST, values: valuesNodes };
     }
-    return astFromValue(_value, itemType);
+    return astFromValue(value, itemType);
   }
 
   // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object according to the fields in the input type.
   if (isInputObjectType(type)) {
-    if (_value === null || (typeof _value === 'undefined' ? 'undefined' : _typeof(_value)) !== 'object') {
+    if (value === null || (typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== 'object') {
       return null;
     }
     var fields = objectValues(type.getFields());
     var fieldNodes = [];
     fields.forEach(function (field) {
-      var fieldValue = astFromValue(_value[field.name], field.type);
+      var fieldValue = astFromValue(value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({
           kind: Kind.OBJECT_FIELD,
@@ -100,7 +97,7 @@ export function astFromValue(value, type) {
   if (isScalarType(type) || isEnumType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
-    var serialized = type.serialize(_value);
+    var serialized = type.serialize(value);
     if (isNullish(serialized)) {
       return null;
     }

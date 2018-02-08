@@ -55,11 +55,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function astFromValue(value, type) {
-  // Ensure flow knows that we treat function params as const.
-  var _value = value;
-
   if ((0, _definition.isNonNullType)(type)) {
-    var astValue = astFromValue(_value, type.ofType);
+    var astValue = astFromValue(value, type.ofType);
     if (astValue && astValue.kind === _kinds.Kind.NULL) {
       return null;
     }
@@ -67,12 +64,12 @@ function astFromValue(value, type) {
   }
 
   // only explicit null, not undefined, NaN
-  if (_value === null) {
+  if (value === null) {
     return { kind: _kinds.Kind.NULL };
   }
 
   // undefined, NaN
-  if ((0, _isInvalid2.default)(_value)) {
+  if ((0, _isInvalid2.default)(value)) {
     return null;
   }
 
@@ -80,9 +77,9 @@ function astFromValue(value, type) {
   // the value is not an array, convert the value using the list's item type.
   if ((0, _definition.isListType)(type)) {
     var itemType = type.ofType;
-    if ((0, _iterall.isCollection)(_value)) {
+    if ((0, _iterall.isCollection)(value)) {
       var valuesNodes = [];
-      (0, _iterall.forEach)(_value, function (item) {
+      (0, _iterall.forEach)(value, function (item) {
         var itemNode = astFromValue(item, itemType);
         if (itemNode) {
           valuesNodes.push(itemNode);
@@ -90,19 +87,19 @@ function astFromValue(value, type) {
       });
       return { kind: _kinds.Kind.LIST, values: valuesNodes };
     }
-    return astFromValue(_value, itemType);
+    return astFromValue(value, itemType);
   }
 
   // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object according to the fields in the input type.
   if ((0, _definition.isInputObjectType)(type)) {
-    if (_value === null || (typeof _value === 'undefined' ? 'undefined' : _typeof(_value)) !== 'object') {
+    if (value === null || (typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== 'object') {
       return null;
     }
     var fields = (0, _objectValues2.default)(type.getFields());
     var fieldNodes = [];
     fields.forEach(function (field) {
-      var fieldValue = astFromValue(_value[field.name], field.type);
+      var fieldValue = astFromValue(value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({
           kind: _kinds.Kind.OBJECT_FIELD,
@@ -117,7 +114,7 @@ function astFromValue(value, type) {
   if ((0, _definition.isScalarType)(type) || (0, _definition.isEnumType)(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
-    var serialized = type.serialize(_value);
+    var serialized = type.serialize(value);
     if ((0, _isNullish2.default)(serialized)) {
       return null;
     }
