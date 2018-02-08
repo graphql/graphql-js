@@ -147,8 +147,12 @@ export const specifiedScalarTypes: $ReadOnlyArray<*> = [
 export function isSpecifiedScalarType(type: mixed): boolean %checks {
   return (
     isNamedType(type) &&
-    specifiedScalarTypes.some(
-      specifiedScalarType => specifiedScalarType.name === type.name,
-    )
+    // Would prefer to use specifiedScalarTypes.some(), however %checks needs
+    // a simple expression.
+    (type.name === GraphQLString.name ||
+      type.name === GraphQLInt.name ||
+      type.name === GraphQLFloat.name ||
+      type.name === GraphQLBoolean.name ||
+      type.name === GraphQLID.name)
   );
 }
