@@ -55,6 +55,16 @@ type Options = {|
    * Default: false
    */
   commentDescriptions?: boolean,
+
+  /**
+   * If provided, the schema will consider fields or types with names included
+   * in this list valid, even if they do not adhere to the specification's
+   * schema validation rules.
+   *
+   * This option is provided to ease adoption and may be removed in a future
+   * major release.
+   */
+  allowedLegacyNames?: ?Array<string>,
 |};
 
 /**
