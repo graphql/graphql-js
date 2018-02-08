@@ -896,6 +896,117 @@ describe('Type System: Objects can only implement unique interfaces', () => {
   });
 });
 
+describe('Type System: Interface extensions should be valid', () => {
+  it('rejects an Object implementing the extended interface due to missing field', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      interface AnotherInterface {
+        field: String
+      }
+
+      type AnotherObject implements AnotherInterface {
+        field: String
+      }
+    `);
+    const extendedSchema = extendSchema(
+      schema,
+      parse(`
+        extend interface AnotherInterface {
+          newField: String
+        }
+      `),
+    );
+    expect(validateSchema(extendedSchema)).to.containSubset([
+      {
+        message:
+          'Interface field AnotherInterface.newField expected but AnotherObject does not provide it.',
+        locations: [{ line: 3, column: 11 }, { line: 10, column: 7 }],
+      },
+    ]);
+  });
+
+  it('rejects an Object implementing the extended interface due to missing field args', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      interface AnotherInterface {
+        field: String
+      }
+
+      type AnotherObject implements AnotherInterface {
+        field: String
+      }
+    `);
+    const extendedSchema = extendSchema(
+      schema,
+      parse(`
+        extend interface AnotherInterface {
+          newField(test: Boolean): String
+        }
+
+        extend type AnotherObject {
+          newField: String
+        }
+      `),
+    );
+    expect(validateSchema(extendedSchema)).to.containSubset([
+      {
+        message:
+          'Interface field argument AnotherInterface.newField(test:) expected but AnotherObject.newField does not provide it.',
+        locations: [{ line: 3, column: 20 }, { line: 7, column: 11 }],
+      },
+    ]);
+  });
+
+  it('rejects Objects implementing the extended interface due to mismatching interface type', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      interface AnotherInterface {
+        field: String
+      }
+
+      type AnotherObject implements AnotherInterface {
+        field: String
+      }
+    `);
+    const extendedSchema = extendSchema(
+      schema,
+      parse(`
+        extend interface AnotherInterface {
+          newInterfaceField: NewInterface
+        }
+
+        interface NewInterface {
+          newField: String
+        }
+
+        interface MismatchingInterface {
+          newField: String
+        }
+
+        extend type AnotherObject {
+          newInterfaceField: MismatchingInterface
+        }
+      `),
+    );
+    expect(validateSchema(extendedSchema)).to.containSubset([
+      {
+        message:
+          'Interface field AnotherInterface.newInterfaceField expects type NewInterface but AnotherObject.newInterfaceField is type MismatchingInterface.',
+        locations: [{ line: 3, column: 30 }, { line: 15, column: 30 }],
+      },
+    ]);
+  });
+});
+
 describe('Type System: Interface fields must have output types', () => {
   function schemaWithInterfaceFieldOfType(fieldType) {
     const BadInterfaceType = new GraphQLInterfaceType({
