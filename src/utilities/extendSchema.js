@@ -253,6 +253,8 @@ export function extendSchema(
     types,
     directives: getMergedDirectives(),
     astNode: schema.astNode,
+    allowedLegacyNames:
+      schema.__allowedLegacyNames && schema.__allowedLegacyNames.slice(),
   });
 
   function appendExtensionToTypeExtensions(
