@@ -9,9 +9,11 @@
 
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
+import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
+import { isIntrospectionType } from '../type/introspection';
 
 import {
   isObjectType,
@@ -194,56 +196,50 @@ export function extendSchema(
     return schema;
   }
 
-  const definitionBuilder = new ASTDefinitionBuilder(
+  const astBuilder = new ASTDefinitionBuilder(
     typeDefinitionMap,
     options,
-    (typeName, node) => {
+    typeRef => {
+      const typeName = typeRef.name.value;
       const existingType = schema.getType(typeName);
       if (existingType) {
         return extendType(existingType);
       }
 
-      if (node) {
-        throw new GraphQLError(
-          `Unknown type: "${typeName}". Ensure that this type exists ` +
-            'either in the original schema, or is added in a type definition.',
-          [node],
-        );
-      }
-      throw GraphQLError('Missing type from schema');
+      throw new GraphQLError(
+        `Unknown type: "${typeName}". Ensure that this type exists ` +
+          'either in the original schema, or is added in a type definition.',
+        [typeRef],
+      );
     },
   );
+
+  const extendTypeCache = Object.create(null);
 
   // Get the root Query, Mutation, and Subscription object types.
   // Note: While this could make early assertions to get the correctly
   // typed values below, that would throw immediately while type system
   // validation with validateSchema() will produce more actionable results.
   const existingQueryType = schema.getQueryType();
-  const queryType = existingQueryType
-    ? (definitionBuilder.buildType(existingQueryType.name): any)
-    : null;
+  const queryType = existingQueryType ? extendType(existingQueryType) : null;
 
   const existingMutationType = schema.getMutationType();
   const mutationType = existingMutationType
-    ? (definitionBuilder.buildType(existingMutationType.name): any)
+    ? extendType(existingMutationType)
     : null;
 
   const existingSubscriptionType = schema.getSubscriptionType();
   const subscriptionType = existingSubscriptionType
-    ? (definitionBuilder.buildType(existingSubscriptionType.name): any)
+    ? extendType(existingSubscriptionType)
     : null;
 
-  // Iterate through all types, getting the type definition for each, ensuring
-  // that any type not directly referenced by a field will get created.
-  const typeMap = schema.getTypeMap();
-  const types = Object.keys(typeMap).map(typeName =>
-    definitionBuilder.buildType(typeName),
-  );
-
-  // Do the same with new types, appending to the list of defined types.
-  Object.keys(typeDefinitionMap).forEach(typeName => {
-    types.push(definitionBuilder.buildType(typeName));
-  });
+  const types = [
+    // Iterate through all types, getting the type definition for each, ensuring
+    // that any type not directly referenced by a field will get created.
+    ...objectValues(schema.getTypeMap()).map(type => extendType(type)),
+    // Do the same with new types.
+    ...objectValues(typeDefinitionMap).map(type => astBuilder.buildType(type)),
+  ];
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
@@ -275,30 +271,29 @@ export function extendSchema(
     const existingDirectives = schema.getDirectives();
     invariant(existingDirectives, 'schema must have default directives');
 
-    const newDirectives = directiveDefinitions.map(directiveNode =>
-      definitionBuilder.buildDirective(directiveNode),
+    return existingDirectives.concat(
+      directiveDefinitions.map(node => astBuilder.buildDirective(node)),
     );
-    return existingDirectives.concat(newDirectives);
   }
 
-  function getTypeFromDef<T: GraphQLNamedType>(typeDef: T): T {
-    const type = definitionBuilder.buildType(typeDef.name);
-    return (type: any);
-  }
+  function extendType<T: GraphQLNamedType>(type: T): T {
+    let extendedType = extendTypeCache[type.name];
 
-  // Given a type's introspection result, construct the correct
-  // GraphQLType instance.
-  function extendType(type: GraphQLNamedType): GraphQLNamedType {
-    if (isObjectType(type)) {
-      return extendObjectType(type);
+    if (!extendedType) {
+      if (isIntrospectionType(type)) {
+        extendedType = type;
+      } else if (isObjectType(type)) {
+        extendedType = extendObjectType(type);
+      } else if (isInterfaceType(type)) {
+        extendedType = extendInterfaceType(type);
+      } else if (isUnionType(type)) {
+        extendedType = extendUnionType(type);
+      } else {
+        extendedType = type;
+      }
+      extendTypeCache[type.name] = extendedType;
     }
-    if (isInterfaceType(type)) {
-      return extendInterfaceType(type);
-    }
-    if (isUnionType(type)) {
-      return extendUnionType(type);
-    }
-    return type;
+    return (extendedType: any);
   }
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
@@ -342,7 +337,7 @@ export function extendSchema(
     return new GraphQLUnionType({
       name: type.name,
       description: type.description,
-      types: type.getTypes().map(getTypeFromDef),
+      types: type.getTypes().map(extendType),
       astNode: type.astNode,
       resolveType: type.resolveType,
     });
@@ -351,7 +346,7 @@ export function extendSchema(
   function extendImplementedInterfaces(
     type: GraphQLObjectType,
   ): Array<GraphQLInterfaceType> {
-    const interfaces = type.getInterfaces().map(getTypeFromDef);
+    const interfaces = type.getInterfaces().map(extendType);
 
     // If there are any extensions to the interfaces, apply those here.
     const extensions = typeExtensionsMap[type.name];
@@ -361,7 +356,7 @@ export function extendSchema(
           // Note: While this could make early assertions to get the correctly
           // typed values, that would throw immediately while type system
           // validation with validateSchema() will produce more actionable results.
-          interfaces.push((definitionBuilder.buildType(namedType): any));
+          interfaces.push((astBuilder.buildType(namedType): any));
         });
       });
     }
@@ -397,7 +392,7 @@ export function extendSchema(
               [field],
             );
           }
-          newFieldMap[fieldName] = definitionBuilder.buildField(field);
+          newFieldMap[fieldName] = astBuilder.buildField(field);
         });
       });
     }
@@ -412,6 +407,6 @@ export function extendSchema(
     if (isNonNullType(typeDef)) {
       return (GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
     }
-    return getTypeFromDef(typeDef);
+    return extendType(typeDef);
   }
 }
