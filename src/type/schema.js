@@ -111,9 +111,9 @@ export class GraphQLSchema {
         '"allowedLegacyNames" must be Array if provided but got: ' +
           `${String(config.allowedLegacyNames)}.`,
       );
-      this.__allowedLegacyNames = config.allowedLegacyNames;
     }
 
+    this.__allowedLegacyNames = config.allowedLegacyNames;
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription;
