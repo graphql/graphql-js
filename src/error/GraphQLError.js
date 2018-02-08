@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict
  */
 
 import { printError } from './printError';
@@ -125,8 +125,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
 
   let _locations;
   if (positions && source) {
-    const providedSource = source;
-    _locations = positions.map(pos => getLocation(providedSource, pos));
+    _locations = positions.map(pos => getLocation(source, pos));
   } else if (_nodes) {
     _locations = _nodes.reduce((list, node) => {
       if (node.loc) {
