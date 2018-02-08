@@ -88,13 +88,18 @@ function extendSchema(schema, documentAST, options) {
         if (!(0, _definition.isObjectType)(existingType)) {
           throw new _GraphQLError.GraphQLError('Cannot extend non-object type "' + extendedTypeName + '".', [def]);
         }
-        var extensions = typeExtensionsMap[extendedTypeName];
-        if (extensions) {
-          extensions.push(def);
-        } else {
-          extensions = [def];
+        typeExtensionsMap[extendedTypeName] = appendExtensionToTypeExtensions(def, typeExtensionsMap[extendedTypeName]);
+        break;
+      case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
+        var extendedInterfaceTypeName = def.name.value;
+        var existingInterfaceType = schema.getType(extendedInterfaceTypeName);
+        if (!existingInterfaceType) {
+          throw new _GraphQLError.GraphQLError('Cannot extend interface "' + extendedInterfaceTypeName + '" because ' + 'it does not exist in the existing schema.', [def]);
         }
-        typeExtensionsMap[extendedTypeName] = extensions;
+        if (!(0, _definition.isInterfaceType)(existingInterfaceType)) {
+          throw new _GraphQLError.GraphQLError('Cannot extend non-interface type "' + extendedInterfaceTypeName + '".', [def]);
+        }
+        typeExtensionsMap[extendedInterfaceTypeName] = appendExtensionToTypeExtensions(def, typeExtensionsMap[extendedInterfaceTypeName]);
         break;
       case _kinds.Kind.DIRECTIVE_DEFINITION:
         var directiveName = def.name.value;
@@ -105,7 +110,6 @@ function extendSchema(schema, documentAST, options) {
         directiveDefinitions.push(def);
         break;
       case _kinds.Kind.SCALAR_TYPE_EXTENSION:
-      case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
       case _kinds.Kind.UNION_TYPE_EXTENSION:
       case _kinds.Kind.ENUM_TYPE_EXTENSION:
       case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
@@ -167,6 +171,14 @@ function extendSchema(schema, documentAST, options) {
     allowedLegacyNames: schema.__allowedLegacyNames && schema.__allowedLegacyNames.slice()
   });
 
+  function appendExtensionToTypeExtensions(extension, existingTypeExtensions) {
+    if (!existingTypeExtensions) {
+      return [extension];
+    }
+    existingTypeExtensions.push(extension);
+    return existingTypeExtensions;
+  }
+
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
@@ -219,6 +231,8 @@ function extendSchema(schema, documentAST, options) {
   }
 
   function extendInterfaceType(type) {
+    var name = type.name;
+    var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
     return new _definition.GraphQLInterfaceType({
       name: type.name,
       description: type.description,
@@ -226,6 +240,7 @@ function extendSchema(schema, documentAST, options) {
         return extendFieldMap(type);
       },
       astNode: type.astNode,
+      extensionASTNodes: extensionASTNodes,
       resolveType: type.resolveType
     });
   }
