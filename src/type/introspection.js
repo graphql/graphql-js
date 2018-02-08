@@ -464,8 +464,15 @@ export const introspectionTypes: $ReadOnlyArray<*> = [
 export function isIntrospectionType(type: mixed): boolean %checks {
   return (
     isNamedType(type) &&
-    introspectionTypes.some(
-      introspectionType => introspectionType.name === type.name,
-    )
+    // Would prefer to use introspectionTypes.some(), however %checks needs
+    // a simple expression.
+    (type.name === __Schema.name ||
+      type.name === __Directive.name ||
+      type.name === __DirectiveLocation.name ||
+      type.name === __Type.name ||
+      type.name === __Field.name ||
+      type.name === __InputValue.name ||
+      type.name === __EnumValue.name ||
+      type.name === __TypeKind.name)
   );
 }
