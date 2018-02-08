@@ -42,11 +42,8 @@ import { GraphQLID } from '../type/scalars';
  *
  */
 export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
-  // Ensure flow knows that we treat function params as const.
-  const _value = value;
-
   if (isNonNullType(type)) {
-    const astValue = astFromValue(_value, type.ofType);
+    const astValue = astFromValue(value, type.ofType);
     if (astValue && astValue.kind === Kind.NULL) {
       return null;
     }
@@ -54,12 +51,12 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   }
 
   // only explicit null, not undefined, NaN
-  if (_value === null) {
+  if (value === null) {
     return { kind: Kind.NULL };
   }
 
   // undefined, NaN
-  if (isInvalid(_value)) {
+  if (isInvalid(value)) {
     return null;
   }
 
@@ -67,9 +64,9 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   // the value is not an array, convert the value using the list's item type.
   if (isListType(type)) {
     const itemType = type.ofType;
-    if (isCollection(_value)) {
+    if (isCollection(value)) {
       const valuesNodes = [];
-      forEach((_value: any), item => {
+      forEach((value: any), item => {
         const itemNode = astFromValue(item, itemType);
         if (itemNode) {
           valuesNodes.push(itemNode);
@@ -77,19 +74,19 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
       });
       return { kind: Kind.LIST, values: valuesNodes };
     }
-    return astFromValue(_value, itemType);
+    return astFromValue(value, itemType);
   }
 
   // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object according to the fields in the input type.
   if (isInputObjectType(type)) {
-    if (_value === null || typeof _value !== 'object') {
+    if (value === null || typeof value !== 'object') {
       return null;
     }
     const fields = objectValues(type.getFields());
     const fieldNodes = [];
     fields.forEach(field => {
-      const fieldValue = astFromValue(_value[field.name], field.type);
+      const fieldValue = astFromValue(value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({
           kind: Kind.OBJECT_FIELD,
@@ -104,7 +101,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   if (isScalarType(type) || isEnumType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
-    const serialized = type.serialize(_value);
+    const serialized = type.serialize(value);
     if (isNullish(serialized)) {
       return null;
     }
