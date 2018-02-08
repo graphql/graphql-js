@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict
  */
 
 import type { ObjMap } from '../jsutils/ObjMap';
@@ -40,7 +40,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
 
   const sortMaybeType = maybeType => maybeType && sortNamedType(maybeType);
   return new GraphQLSchema({
-    types: sortByName(objectValues(schema.getTypeMap()).map(sortNamedType)),
+    types: sortTypes(objectValues(schema.getTypeMap())),
     directives: sortByName(schema.getDirectives()).map(sortDirective),
     query: sortMaybeType(schema.getQueryType()),
     mutation: sortMaybeType(schema.getMutationType()),
@@ -70,26 +70,24 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 
   function sortFields(fieldsMap) {
-    return () =>
-      sortObjMap(fieldsMap, field => ({
-        type: sortType(field.type),
-        args: sortArgs(field.args),
-        resolve: field.resolve,
-        subscribe: field.subscribe,
-        deprecationReason: field.deprecationReason,
-        description: field.description,
-        astNode: field.astNode,
-      }));
+    return sortObjMap(fieldsMap, field => ({
+      type: sortType(field.type),
+      args: sortArgs(field.args),
+      resolve: field.resolve,
+      subscribe: field.subscribe,
+      deprecationReason: field.deprecationReason,
+      description: field.description,
+      astNode: field.astNode,
+    }));
   }
 
   function sortInputFields(fieldsMap) {
-    return () =>
-      sortObjMap(fieldsMap, field => ({
-        type: sortType(field.type),
-        defaultValue: field.defaultValue,
-        description: field.description,
-        astNode: field.astNode,
-      }));
+    return sortObjMap(fieldsMap, field => ({
+      type: sortType(field.type),
+      defaultValue: field.defaultValue,
+      description: field.description,
+      astNode: field.astNode,
+    }));
   }
 
   function sortType(type) {
@@ -101,8 +99,8 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return sortNamedType(type);
   }
 
-  function sortTypes<T: GraphQLNamedType>(arr: Array<T>): () => Array<T> {
-    return () => sortByName(arr).map(sortNamedType);
+  function sortTypes<T: GraphQLNamedType>(arr: Array<T>): Array<T> {
+    return sortByName(arr).map(sortNamedType);
   }
 
   function sortNamedType<T: GraphQLNamedType>(type: T): T {
@@ -124,8 +122,8 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     } else if (isObjectType(type)) {
       return new GraphQLObjectType({
         name: type.name,
-        interfaces: sortTypes(type.getInterfaces()),
-        fields: sortFields(type.getFields()),
+        interfaces: () => sortTypes(type.getInterfaces()),
+        fields: () => sortFields(type.getFields()),
         isTypeOf: type.isTypeOf,
         description: type.description,
         astNode: type.astNode,
@@ -134,7 +132,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     } else if (isInterfaceType(type)) {
       return new GraphQLInterfaceType({
         name: type.name,
-        fields: sortFields(type.getFields()),
+        fields: () => sortFields(type.getFields()),
         resolveType: type.resolveType,
         description: type.description,
         astNode: type.astNode,
@@ -143,7 +141,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     } else if (isUnionType(type)) {
       return new GraphQLUnionType({
         name: type.name,
-        types: sortTypes(type.getTypes()),
+        types: () => sortTypes(type.getTypes()),
         resolveType: type.resolveType,
         description: type.description,
         astNode: type.astNode,
@@ -167,7 +165,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     } else if (isInputObjectType(type)) {
       return new GraphQLInputObjectType({
         name: type.name,
-        fields: sortInputFields(type.getFields()),
+        fields: () => sortInputFields(type.getFields()),
         description: type.description,
         astNode: type.astNode,
       });

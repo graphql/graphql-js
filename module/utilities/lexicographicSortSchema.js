@@ -6,7 +6,7 @@ import keyValMap from '../jsutils/keyValMap'; /**
                                                * This source code is licensed under the MIT license found in the
                                                * LICENSE file in the root directory of this source tree.
                                                *
-                                               * 
+                                               *  strict
                                                */
 
 import objectValues from '../jsutils/objectValues';
@@ -28,7 +28,7 @@ export function lexicographicSortSchema(schema) {
     return maybeType && sortNamedType(maybeType);
   };
   return new GraphQLSchema({
-    types: sortByName(objectValues(schema.getTypeMap()).map(sortNamedType)),
+    types: sortTypes(objectValues(schema.getTypeMap())),
     directives: sortByName(schema.getDirectives()).map(sortDirective),
     query: sortMaybeType(schema.getQueryType()),
     mutation: sortMaybeType(schema.getMutationType()),
@@ -59,32 +59,28 @@ export function lexicographicSortSchema(schema) {
   }
 
   function sortFields(fieldsMap) {
-    return function () {
-      return sortObjMap(fieldsMap, function (field) {
-        return {
-          type: sortType(field.type),
-          args: sortArgs(field.args),
-          resolve: field.resolve,
-          subscribe: field.subscribe,
-          deprecationReason: field.deprecationReason,
-          description: field.description,
-          astNode: field.astNode
-        };
-      });
-    };
+    return sortObjMap(fieldsMap, function (field) {
+      return {
+        type: sortType(field.type),
+        args: sortArgs(field.args),
+        resolve: field.resolve,
+        subscribe: field.subscribe,
+        deprecationReason: field.deprecationReason,
+        description: field.description,
+        astNode: field.astNode
+      };
+    });
   }
 
   function sortInputFields(fieldsMap) {
-    return function () {
-      return sortObjMap(fieldsMap, function (field) {
-        return {
-          type: sortType(field.type),
-          defaultValue: field.defaultValue,
-          description: field.description,
-          astNode: field.astNode
-        };
-      });
-    };
+    return sortObjMap(fieldsMap, function (field) {
+      return {
+        type: sortType(field.type),
+        defaultValue: field.defaultValue,
+        description: field.description,
+        astNode: field.astNode
+      };
+    });
   }
 
   function sortType(type) {
@@ -97,9 +93,7 @@ export function lexicographicSortSchema(schema) {
   }
 
   function sortTypes(arr) {
-    return function () {
-      return sortByName(arr).map(sortNamedType);
-    };
+    return sortByName(arr).map(sortNamedType);
   }
 
   function sortNamedType(type) {
@@ -121,8 +115,12 @@ export function lexicographicSortSchema(schema) {
     } else if (isObjectType(type)) {
       return new GraphQLObjectType({
         name: type.name,
-        interfaces: sortTypes(type.getInterfaces()),
-        fields: sortFields(type.getFields()),
+        interfaces: function interfaces() {
+          return sortTypes(type.getInterfaces());
+        },
+        fields: function fields() {
+          return sortFields(type.getFields());
+        },
         isTypeOf: type.isTypeOf,
         description: type.description,
         astNode: type.astNode,
@@ -131,7 +129,9 @@ export function lexicographicSortSchema(schema) {
     } else if (isInterfaceType(type)) {
       return new GraphQLInterfaceType({
         name: type.name,
-        fields: sortFields(type.getFields()),
+        fields: function fields() {
+          return sortFields(type.getFields());
+        },
         resolveType: type.resolveType,
         description: type.description,
         astNode: type.astNode,
@@ -140,7 +140,9 @@ export function lexicographicSortSchema(schema) {
     } else if (isUnionType(type)) {
       return new GraphQLUnionType({
         name: type.name,
-        types: sortTypes(type.getTypes()),
+        types: function types() {
+          return sortTypes(type.getTypes());
+        },
         resolveType: type.resolveType,
         description: type.description,
         astNode: type.astNode
@@ -164,7 +166,9 @@ export function lexicographicSortSchema(schema) {
     } else if (isInputObjectType(type)) {
       return new GraphQLInputObjectType({
         name: type.name,
-        fields: sortInputFields(type.getFields()),
+        fields: function fields() {
+          return sortInputFields(type.getFields());
+        },
         description: type.description,
         astNode: type.astNode
       });

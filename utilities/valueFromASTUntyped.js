@@ -61,7 +61,7 @@ function valueFromASTUntyped(valueNode, variables) {
   }
   /* istanbul ignore next */
   throw new Error('Unexpected value kind: ' + valueNode.kind);
-}
+} /*  strict */
 /**
  *  Copyright (c) 2017, Facebook, Inc.
  *  All rights reserved.

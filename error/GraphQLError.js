@@ -21,7 +21,7 @@ var _location = require('../language/location');
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *  strict
  */
 
 function GraphQLError( // eslint-disable-line no-redeclare
@@ -51,9 +51,8 @@ message, nodes, source, positions, path, originalError, extensions) {
 
   var _locations = void 0;
   if (positions && source) {
-    var providedSource = source;
     _locations = positions.map(function (pos) {
-      return (0, _location.getLocation)(providedSource, pos);
+      return (0, _location.getLocation)(source, pos);
     });
   } else if (_nodes) {
     _locations = _nodes.reduce(function (list, node) {

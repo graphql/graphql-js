@@ -17,7 +17,7 @@ var _GraphQLError = require('./GraphQLError');
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *  strict
  */
 
 function syntaxError(source, position, description) {

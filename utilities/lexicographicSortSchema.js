@@ -10,7 +10,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
                                                                                                                                                                                                                                                                    * This source code is licensed under the MIT license found in the
                                                                                                                                                                                                                                                                    * LICENSE file in the root directory of this source tree.
                                                                                                                                                                                                                                                                    *
-                                                                                                                                                                                                                                                                   * 
+                                                                                                                                                                                                                                                                   *  strict
                                                                                                                                                                                                                                                                    */
 
 exports.lexicographicSortSchema = lexicographicSortSchema;
@@ -47,7 +47,7 @@ function lexicographicSortSchema(schema) {
     return maybeType && sortNamedType(maybeType);
   };
   return new _schema.GraphQLSchema({
-    types: sortByName((0, _objectValues2.default)(schema.getTypeMap()).map(sortNamedType)),
+    types: sortTypes((0, _objectValues2.default)(schema.getTypeMap())),
     directives: sortByName(schema.getDirectives()).map(sortDirective),
     query: sortMaybeType(schema.getQueryType()),
     mutation: sortMaybeType(schema.getMutationType()),
@@ -78,32 +78,28 @@ function lexicographicSortSchema(schema) {
   }
 
   function sortFields(fieldsMap) {
-    return function () {
-      return sortObjMap(fieldsMap, function (field) {
-        return {
-          type: sortType(field.type),
-          args: sortArgs(field.args),
-          resolve: field.resolve,
-          subscribe: field.subscribe,
-          deprecationReason: field.deprecationReason,
-          description: field.description,
-          astNode: field.astNode
-        };
-      });
-    };
+    return sortObjMap(fieldsMap, function (field) {
+      return {
+        type: sortType(field.type),
+        args: sortArgs(field.args),
+        resolve: field.resolve,
+        subscribe: field.subscribe,
+        deprecationReason: field.deprecationReason,
+        description: field.description,
+        astNode: field.astNode
+      };
+    });
   }
 
   function sortInputFields(fieldsMap) {
-    return function () {
-      return sortObjMap(fieldsMap, function (field) {
-        return {
-          type: sortType(field.type),
-          defaultValue: field.defaultValue,
-          description: field.description,
-          astNode: field.astNode
-        };
-      });
-    };
+    return sortObjMap(fieldsMap, function (field) {
+      return {
+        type: sortType(field.type),
+        defaultValue: field.defaultValue,
+        description: field.description,
+        astNode: field.astNode
+      };
+    });
   }
 
   function sortType(type) {
@@ -116,9 +112,7 @@ function lexicographicSortSchema(schema) {
   }
 
   function sortTypes(arr) {
-    return function () {
-      return sortByName(arr).map(sortNamedType);
-    };
+    return sortByName(arr).map(sortNamedType);
   }
 
   function sortNamedType(type) {
@@ -140,8 +134,12 @@ function lexicographicSortSchema(schema) {
     } else if ((0, _definition.isObjectType)(type)) {
       return new _definition.GraphQLObjectType({
         name: type.name,
-        interfaces: sortTypes(type.getInterfaces()),
-        fields: sortFields(type.getFields()),
+        interfaces: function interfaces() {
+          return sortTypes(type.getInterfaces());
+        },
+        fields: function fields() {
+          return sortFields(type.getFields());
+        },
         isTypeOf: type.isTypeOf,
         description: type.description,
         astNode: type.astNode,
@@ -150,7 +148,9 @@ function lexicographicSortSchema(schema) {
     } else if ((0, _definition.isInterfaceType)(type)) {
       return new _definition.GraphQLInterfaceType({
         name: type.name,
-        fields: sortFields(type.getFields()),
+        fields: function fields() {
+          return sortFields(type.getFields());
+        },
         resolveType: type.resolveType,
         description: type.description,
         astNode: type.astNode,
@@ -159,7 +159,9 @@ function lexicographicSortSchema(schema) {
     } else if ((0, _definition.isUnionType)(type)) {
       return new _definition.GraphQLUnionType({
         name: type.name,
-        types: sortTypes(type.getTypes()),
+        types: function types() {
+          return sortTypes(type.getTypes());
+        },
         resolveType: type.resolveType,
         description: type.description,
         astNode: type.astNode
@@ -183,7 +185,9 @@ function lexicographicSortSchema(schema) {
     } else if ((0, _definition.isInputObjectType)(type)) {
       return new _definition.GraphQLInputObjectType({
         name: type.name,
-        fields: sortInputFields(type.getFields()),
+        fields: function fields() {
+          return sortInputFields(type.getFields());
+        },
         description: type.description,
         astNode: type.astNode
       });

@@ -21,7 +21,7 @@ var _kinds = require('../language/kinds');
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *  strict
  */
 
 var MAX_INT = 2147483647;
