@@ -105,29 +105,26 @@ export function doTypesOverlap(
   typeA: GraphQLCompositeType,
   typeB: GraphQLCompositeType,
 ): boolean {
-  // So flow is aware this is constant
-  const _typeB = typeB;
-
   // Equivalent types overlap
-  if (typeA === _typeB) {
+  if (typeA === typeB) {
     return true;
   }
 
   if (isAbstractType(typeA)) {
-    if (isAbstractType(_typeB)) {
+    if (isAbstractType(typeB)) {
       // If both types are abstract, then determine if there is any intersection
       // between possible concrete types of each.
       return schema
         .getPossibleTypes(typeA)
-        .some(type => schema.isPossibleType(_typeB, type));
+        .some(type => schema.isPossibleType(typeB, type));
     }
     // Determine if the latter type is a possible concrete type of the former.
-    return schema.isPossibleType(typeA, _typeB);
+    return schema.isPossibleType(typeA, typeB);
   }
 
-  if (isAbstractType(_typeB)) {
+  if (isAbstractType(typeB)) {
     // Determine if the former type is a possible concrete type of the latter.
-    return schema.isPossibleType(_typeB, typeA);
+    return schema.isPossibleType(typeB, typeA);
   }
 
   // Otherwise the types do not overlap.
