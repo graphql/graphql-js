@@ -23,8 +23,4 @@ describe('assertValidName()', () => {
   it('throws for names with invalid characters', () => {
     expect(() => assertValidName('>--()-->')).to.throw(/Names must match/);
   });
-
-  it('does not throw for legacy servers that use __configs__ introspection', () => {
-    expect(() => assertValidName('__configs__')).not.to.throw();
-  });
 });
