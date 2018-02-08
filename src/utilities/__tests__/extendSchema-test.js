@@ -804,6 +804,65 @@ describe('extendSchema', () => {
   it('extends interfaces by adding new fields', () => {
     const ast = parse(`
       extend interface SomeInterface {
+        newField: String
+      }
+
+      extend type Bar {
+        newField: String
+      }
+
+      extend type Foo {
+        newField: String
+      }
+    `);
+    const originalPrint = printSchema(testSchema);
+    const extendedSchema = extendSchema(testSchema, ast);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printSchema(testSchema)).to.equal(originalPrint);
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        name: String
+        some: SomeInterface
+        foo: Foo
+        newField: String
+      }
+
+      type Biz {
+        fizz: String
+      }
+
+      type Foo implements SomeInterface {
+        name: String
+        some: SomeInterface
+        tree: [Foo]!
+        newField: String
+      }
+
+      type Query {
+        foo: Foo
+        someUnion: SomeUnion
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+      }
+
+      enum SomeEnum {
+        ONE
+        TWO
+      }
+
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+        newField: String
+      }
+
+      union SomeUnion = Foo | Biz
+    `);
+  });
+
+  it('allows extension of interface with missing Object fields', () => {
+    const ast = parse(`
+      extend interface SomeInterface {
         newObject: NewObject
         newInterface: NewInterface
         newUnion: NewUnion
@@ -896,6 +955,60 @@ describe('extendSchema', () => {
         newScalar: NewScalar
         newTree: [Foo]!
         newField(arg1: String, arg2: NewEnum!): String
+      }
+
+      union SomeUnion = Foo | Biz
+    `);
+  });
+
+  it('extends interfaces multiple times', () => {
+    const ast = parse(`
+      extend interface SomeInterface {
+        newFieldA: Int
+      }
+
+      extend interface SomeInterface {
+        newFieldB(test: Boolean): String
+      }
+    `);
+    const originalPrint = printSchema(testSchema);
+    const extendedSchema = extendSchema(testSchema, ast);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printSchema(testSchema)).to.equal(originalPrint);
+    expect(printSchema(extendedSchema)).to.equal(dedent`
+      type Bar implements SomeInterface {
+        name: String
+        some: SomeInterface
+        foo: Foo
+      }
+
+      type Biz {
+        fizz: String
+      }
+
+      type Foo implements SomeInterface {
+        name: String
+        some: SomeInterface
+        tree: [Foo]!
+      }
+
+      type Query {
+        foo: Foo
+        someUnion: SomeUnion
+        someEnum: SomeEnum
+        someInterface(id: ID!): SomeInterface
+      }
+
+      enum SomeEnum {
+        ONE
+        TWO
+      }
+
+      interface SomeInterface {
+        name: String
+        some: SomeInterface
+        newFieldA: Int
+        newFieldB(test: Boolean): String
       }
 
       union SomeUnion = Foo | Biz
@@ -1095,8 +1208,20 @@ describe('extendSchema', () => {
     );
   });
 
+  it('does not allow extending an unknown interface type', () => {
+    const ast = parse(`
+      extend interface UnknownInterfaceType {
+        baz: String
+      }
+    `);
+    expect(() => extendSchema(testSchema, ast)).to.throw(
+      'Cannot extend interface "UnknownInterfaceType" because it does not ' +
+        'exist in the existing schema.',
+    );
+  });
+
   describe('does not allow extending a non-object type', () => {
-    it('not an interface', () => {
+    it('not an object', () => {
       const ast = parse(`
         extend type SomeInterface {
           baz: String
@@ -1104,6 +1229,17 @@ describe('extendSchema', () => {
       `);
       expect(() => extendSchema(testSchema, ast)).to.throw(
         'Cannot extend non-object type "SomeInterface".',
+      );
+    });
+
+    it('not an interface', () => {
+      const ast = parse(`
+        extend interface Foo {
+          baz: String
+        }
+      `);
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Cannot extend non-interface type "Foo".',
       );
     });
 

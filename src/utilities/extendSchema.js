@@ -139,18 +139,6 @@ export function extendSchema(
           typeExtensionsMap[extendedTypeName],
         );
         break;
-      case Kind.DIRECTIVE_DEFINITION:
-        const directiveName = def.name.value;
-        const existingDirective = schema.getDirective(directiveName);
-        if (existingDirective) {
-          throw new GraphQLError(
-            `Directive "${directiveName}" already exists in the schema. It ` +
-              'cannot be redefined.',
-            [def],
-          );
-        }
-        directiveDefinitions.push(def);
-        break;
       case Kind.INTERFACE_TYPE_EXTENSION:
         const extendedInterfaceTypeName = def.name.value;
         const existingInterfaceType = schema.getType(extendedInterfaceTypeName);
@@ -173,6 +161,18 @@ export function extendSchema(
           def,
           typeExtensionsMap[extendedInterfaceTypeName],
         );
+        break;
+      case Kind.DIRECTIVE_DEFINITION:
+        const directiveName = def.name.value;
+        const existingDirective = schema.getDirective(directiveName);
+        if (existingDirective) {
+          throw new GraphQLError(
+            `Directive "${directiveName}" already exists in the schema. It ` +
+              'cannot be redefined.',
+            [def],
+          );
+        }
+        directiveDefinitions.push(def);
         break;
       case Kind.SCALAR_TYPE_EXTENSION:
       case Kind.UNION_TYPE_EXTENSION:

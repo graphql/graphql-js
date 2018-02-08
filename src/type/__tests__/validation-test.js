@@ -928,32 +928,6 @@ describe('Type System: Interface extensions should be valid', () => {
     ]);
   });
 
-  it('accepts an Object implementing the extended interface with existing field', () => {
-    const schema = buildSchema(`
-      type Query {
-        test: AnotherObject
-      }
-
-      interface AnotherInterface {
-        field: String
-      }
-
-      type AnotherObject implements AnotherInterface {
-        field: String
-        newField: String
-      }
-    `);
-    const extendedSchema = extendSchema(
-      schema,
-      parse(`
-        extend interface AnotherInterface {
-          newField: String
-        }
-      `),
-    );
-    expect(validateSchema(extendedSchema)).to.deep.equal([]);
-  });
-
   it('rejects an Object implementing the extended interface due to missing field args', () => {
     const schema = buildSchema(`
       type Query {
@@ -985,7 +959,6 @@ describe('Type System: Interface extensions should be valid', () => {
         message:
           'Interface field argument AnotherInterface.newField(test:) expected but AnotherObject.newField does not provide it.',
         locations: [{ line: 3, column: 20 }, { line: 7, column: 11 }],
-        path: undefined,
       },
     ]);
   });
@@ -1031,56 +1004,6 @@ describe('Type System: Interface extensions should be valid', () => {
         locations: [{ line: 3, column: 30 }, { line: 15, column: 30 }],
       },
     ]);
-  });
-
-  it('accepts Objects implementing the extended interface by extending Objects with fields', () => {
-    const schema = buildSchema(`
-      type Query {
-        testObject: AnObject
-        testOtherObject: AnotherObject
-      }
-
-      interface AnotherInterface {
-        field: String
-      }
-
-      type AnObject implements AnotherInterface {
-        field: String
-      }
-
-      type AnotherObject implements AnotherInterface {
-        field: String
-      }
-    `);
-    const extendedSchema = extendSchema(
-      schema,
-      parse(`
-        extend interface AnotherInterface {
-          newInterfaceField: NewInterface
-        }
-
-        interface NewInterface {
-          newField: String
-        }
-
-        type NewObject implements NewInterface {
-          newField: String
-        }
-
-        type AnotherNewObject implements NewInterface {
-          newField: String
-        }
-
-        extend type AnObject {
-          newInterfaceField: NewObject
-        }
-
-        extend type AnotherObject {
-          newInterfaceField: AnotherNewObject
-        }
-      `),
-    );
-    expect(validateSchema(extendedSchema)).to.deep.equal([]);
   });
 });
 
