@@ -64,6 +64,7 @@ import { introspectionTypes } from '../type/introspection';
 import { specifiedScalarTypes } from '../type/scalars';
 
 import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchemaValidationOptions } from '../type/schema';
 
 import type {
   GraphQLType,
@@ -72,14 +73,7 @@ import type {
 } from '../type/definition';
 
 type Options = {|
-  /**
-   * When building a schema from a GraphQL service's introspection result, it
-   * might be safe to assume the schema is valid. Set to true to assume the
-   * produced schema is valid.
-   *
-   * Default: false
-   */
-  assumeValid?: boolean,
+  ...GraphQLSchemaValidationOptions,
 
   /**
    * Descriptions are defined as preceding string literals, however an older
@@ -89,16 +83,6 @@ type Options = {|
    * Default: false
    */
   commentDescriptions?: boolean,
-
-  /**
-   * If provided, the schema will consider fields or types with names included
-   * in this list valid, even if they do not adhere to the specification's
-   * schema validation rules.
-   *
-   * This option is provided to ease adoption and may be removed in a future
-   * major release.
-   */
-  allowedLegacyNames?: ?Array<string>,
 |};
 
 function buildWrappedType(

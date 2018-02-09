@@ -13,6 +13,8 @@ import { ASTDefinitionBuilder } from './buildASTSchema';
 import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
 
+import type { GraphQLSchemaValidationOptions } from '../type/schema';
+
 import {
   isObjectType,
   isInterfaceType,
@@ -38,14 +40,7 @@ import type {
 } from '../language/ast';
 
 type Options = {|
-  /**
-   * When extending a schema with a known valid extension, it might be safe to
-   * assume the schema is valid. Set to true to assume the produced schema
-   * is valid.
-   *
-   * Default: false
-   */
-  assumeValid?: boolean,
+  ...GraphQLSchemaValidationOptions,
 
   /**
    * Descriptions are defined as preceding string literals, however an older
@@ -55,17 +50,6 @@ type Options = {|
    * Default: false
    */
   commentDescriptions?: boolean,
-
-  /**
-   * If provided, the schema will consider fields or types with names included
-   * in this list valid, in addition to those already allowed on the original
-   * schema, even if they do not adhere to the specification's schema validation
-   * rules.
-   *
-   * This option is provided to ease adoption and may be removed in a future
-   * major release.
-   */
-  allowedLegacyNames?: ?Array<string>,
 |};
 
 /**

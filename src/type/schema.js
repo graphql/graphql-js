@@ -229,14 +229,16 @@ export class GraphQLSchema {
 
 type TypeMap = ObjMap<GraphQLNamedType>;
 
-export type GraphQLSchemaConfig = {
-  query?: ?GraphQLObjectType,
-  mutation?: ?GraphQLObjectType,
-  subscription?: ?GraphQLObjectType,
-  types?: ?Array<GraphQLNamedType>,
-  directives?: ?Array<GraphQLDirective>,
-  astNode?: ?SchemaDefinitionNode,
+export type GraphQLSchemaValidationOptions = {|
+  /**
+   * When building a schema from a GraphQL service's introspection result, it
+   * might be safe to assume the schema is valid. Set to true to assume the
+   * produced schema is valid.
+   *
+   * Default: false
+   */
   assumeValid?: boolean,
+
   /**
    * If provided, the schema will consider fields or types with names included
    * in this list valid, even if they do not adhere to the specification's
@@ -246,6 +248,16 @@ export type GraphQLSchemaConfig = {
    * major release.
    */
   allowedLegacyNames?: ?Array<string>,
+|};
+
+export type GraphQLSchemaConfig = {
+  query?: ?GraphQLObjectType,
+  mutation?: ?GraphQLObjectType,
+  subscription?: ?GraphQLObjectType,
+  types?: ?Array<GraphQLNamedType>,
+  directives?: ?Array<GraphQLDirective>,
+  astNode?: ?SchemaDefinitionNode,
+  ...GraphQLSchemaValidationOptions,
 };
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
