@@ -95,4 +95,66 @@ describe('Type System: Schema', () => {
       expect(Schema.getTypeMap()).to.include.key('WrappedDirInput');
     });
   });
+
+  describe('Validity', () => {
+    describe('when not assumed valid', () => {
+      it('configures the schema to still needing validation', () => {
+        expect(
+          new GraphQLSchema({
+            assumeValid: false,
+          }).__validationErrors,
+        ).to.equal(undefined);
+      });
+
+      it('configures the schema for allowed legacy names', () => {
+        expect(
+          new GraphQLSchema({
+            allowedLegacyNames: ['__badName'],
+          }).__allowedLegacyNames,
+        ).to.deep.equal(['__badName']);
+      });
+
+      it('checks the configuration for mistakes', () => {
+        expect(() => new GraphQLSchema(() => null)).to.throw();
+        expect(() => new GraphQLSchema({ types: {} })).to.throw();
+        expect(() => new GraphQLSchema({ directives: {} })).to.throw();
+        expect(() => new GraphQLSchema({ allowedLegacyNames: {} })).to.throw();
+      });
+    });
+
+    describe('when assumed valid', () => {
+      it('configures the schema to have no errors', () => {
+        expect(
+          new GraphQLSchema({
+            assumeValid: true,
+          }).__validationErrors,
+        ).to.deep.equal([]);
+      });
+
+      it('still configures the schema for allowed legacy names', () => {
+        expect(
+          new GraphQLSchema({
+            assumeValid: true,
+            allowedLegacyNames: ['__badName'],
+          }).__allowedLegacyNames,
+        ).to.deep.equal(['__badName']);
+      });
+
+      it('does not check the configuration for mistakes', () => {
+        expect(() => {
+          const config = () => null;
+          config.assumeValid = true;
+          return new GraphQLSchema(config);
+        }).to.not.throw();
+        expect(() => {
+          return new GraphQLSchema({
+            assumeValid: true,
+            types: {},
+            directives: { reduce: () => [] },
+            allowedLegacyNames: {},
+          });
+        }).to.not.throw();
+      });
+    });
+  });
 });
