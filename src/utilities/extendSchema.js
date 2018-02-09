@@ -58,8 +58,9 @@ type Options = {|
 
   /**
    * If provided, the schema will consider fields or types with names included
-   * in this list valid, even if they do not adhere to the specification's
-   * schema validation rules.
+   * in this list valid, in addition to those already allowed on the original
+   * schema, even if they do not adhere to the specification's schema validation
+   * rules.
    *
    * This option is provided to ease adoption and may be removed in a future
    * major release.
@@ -255,6 +256,14 @@ export function extendSchema(
     types.push(definitionBuilder.buildType(typeName));
   });
 
+  let allowedLegacyNames = [
+    ...(schema.__allowedLegacyNames || []),
+    ...((options && options.allowedLegacyNames) || []),
+  ];
+  if (allowedLegacyNames.length === 0) {
+    allowedLegacyNames = null;
+  }
+
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
     query: queryType,
@@ -263,8 +272,7 @@ export function extendSchema(
     types,
     directives: getMergedDirectives(),
     astNode: schema.astNode,
-    allowedLegacyNames:
-      schema.__allowedLegacyNames && schema.__allowedLegacyNames.slice(),
+    allowedLegacyNames,
   });
 
   function appendExtensionToTypeExtensions(

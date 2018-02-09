@@ -1225,18 +1225,23 @@ describe('extendSchema', () => {
       query: new GraphQLObjectType({
         name: 'Query',
         fields: () => ({
-          id: { type: GraphQLID },
+          __badName: { type: GraphQLString },
         }),
       }),
       allowedLegacyNames: ['__badName'],
     });
     const ast = parse(`
       extend type Query {
-        __badName: String
+        __anotherBadName: String
       }
     `);
-    const schema = extendSchema(testSchemaWithLegacyNames, ast);
-    expect(schema.__allowedLegacyNames).to.deep.equal(['__badName']);
+    const schema = extendSchema(testSchemaWithLegacyNames, ast, {
+      allowedLegacyNames: ['__anotherBadName'],
+    });
+    expect(schema.__allowedLegacyNames).to.deep.equal([
+      '__badName',
+      '__anotherBadName',
+    ]);
   });
 
   describe('does not allow extending a non-object type', () => {
