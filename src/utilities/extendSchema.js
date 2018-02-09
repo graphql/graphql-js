@@ -285,20 +285,23 @@ export function extendSchema(
     return (extendTypeCache[type.name]: any);
   }
 
-  // Should be called only once per type so only getExtendedType should call it.
+  // To be called at most once per type. Only getExtendedType should call this.
   function extendType<T: GraphQLNamedType>(type: T): T {
-    let extendedType = type;
-    if (!isIntrospectionType(type)) {
-      if (isObjectType(type)) {
-        extendedType = extendObjectType(type);
-      } else if (isInterfaceType(type)) {
-        extendedType = extendInterfaceType(type);
-      } else if (isUnionType(type)) {
-        extendedType = extendUnionType(type);
-      }
+    if (isIntrospectionType(type)) {
+      // Introspection types are not extended.
+      return type;
     }
-    // Workaround: Flow should figure out correct type, but it doesn't.
-    return (extendedType: any);
+    if (isObjectType(type)) {
+      return extendObjectType(type);
+    }
+    if (isInterfaceType(type)) {
+      return extendInterfaceType(type);
+    }
+    if (isUnionType(type)) {
+      return extendUnionType(type);
+    }
+    // This type is not yet extendable.
+    return type;
   }
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
