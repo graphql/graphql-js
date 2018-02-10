@@ -373,6 +373,7 @@ export {
 
 export type {
   assertValidName,
+  isValidNameError,
   BreakingChange,
   DangerousChange,
   IntrospectionOptions,
