@@ -372,6 +372,7 @@ export {
 } from './utilities';
 
 export type {
+  assertValidName,
   BreakingChange,
   DangerousChange,
   IntrospectionOptions,
