@@ -975,6 +975,12 @@ Object.defineProperty(exports, 'assertValidName', {
     return _utilities.assertValidName;
   }
 });
+Object.defineProperty(exports, 'isValidNameError', {
+  enumerable: true,
+  get: function get() {
+    return _utilities.isValidNameError;
+  }
+});
 Object.defineProperty(exports, 'findBreakingChanges', {
   enumerable: true,
   get: function get() {

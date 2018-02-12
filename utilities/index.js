@@ -225,6 +225,12 @@ Object.defineProperty(exports, 'assertValidName', {
     return _assertValidName.assertValidName;
   }
 });
+Object.defineProperty(exports, 'isValidNameError', {
+  enumerable: true,
+  get: function get() {
+    return _assertValidName.isValidNameError;
+  }
+});
 
 var _findBreakingChanges = require('./findBreakingChanges');
 
