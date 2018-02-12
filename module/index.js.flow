@@ -205,6 +205,7 @@ export type {
   NameNode,
   DocumentNode,
   DefinitionNode,
+  ExecutableDefinitionNode,
   OperationDefinitionNode,
   OperationTypeNode,
   VariableDefinitionNode,
