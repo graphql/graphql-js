@@ -247,7 +247,7 @@ export type GraphQLSchemaValidationOptions = {|
    * This option is provided to ease adoption and may be removed in a future
    * major release.
    */
-  allowedLegacyNames?: ?Array<string>,
+  allowedLegacyNames?: ?$ReadOnlyArray<string>,
 |};
 
 export type GraphQLSchemaConfig = {
