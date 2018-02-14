@@ -286,7 +286,7 @@ export function extendSchema(
   }
 
   // To be called at most once per type. Only getExtendedType should call this.
-  function extendType<T: GraphQLNamedType>(type: T): T {
+  function extendType(type) {
     if (isIntrospectionType(type)) {
       // Introspection types are not extended.
       return type;
