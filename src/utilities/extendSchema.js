@@ -240,13 +240,13 @@ export function extendSchema(
     types.push(definitionBuilder.buildType(typeName));
   });
 
-  let allowedLegacyNames = [
-    ...(schema.__allowedLegacyNames || []),
-    ...((options && options.allowedLegacyNames) || []),
-  ];
-  if (allowedLegacyNames.length === 0) {
-    allowedLegacyNames = null;
-  }
+  // Support both original legacy names and extended legacy names.
+  const schemaAllowedLegacyNames = schema.__allowedLegacyNames;
+  const extendAllowedLegacyNames = options && options.allowedLegacyNames;
+  const allowedLegacyNames = 
+    schemaAllowedLegacyNames && extendAllowedLegacyNames
+      ? schemaAllowedLegacyNames.concat(extendAllowedLegacyNames)
+      : schemaAllowedLegacyNames || extendAllowedLegacyNames;
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
