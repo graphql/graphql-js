@@ -160,6 +160,11 @@ function extendSchema(schema, documentAST, options) {
     types.push(definitionBuilder.buildType(typeName));
   });
 
+  // Support both original legacy names and extended legacy names.
+  var schemaAllowedLegacyNames = schema.__allowedLegacyNames;
+  var extendAllowedLegacyNames = options && options.allowedLegacyNames;
+  var allowedLegacyNames = schemaAllowedLegacyNames && extendAllowedLegacyNames ? schemaAllowedLegacyNames.concat(extendAllowedLegacyNames) : schemaAllowedLegacyNames || extendAllowedLegacyNames;
+
   // Then produce and return a Schema with these types.
   return new _schema.GraphQLSchema({
     query: queryType,
@@ -168,7 +173,7 @@ function extendSchema(schema, documentAST, options) {
     types: types,
     directives: getMergedDirectives(),
     astNode: schema.astNode,
-    allowedLegacyNames: schema.__allowedLegacyNames && schema.__allowedLegacyNames.slice()
+    allowedLegacyNames: allowedLegacyNames
   });
 
   function appendExtensionToTypeExtensions(extension, existingTypeExtensions) {

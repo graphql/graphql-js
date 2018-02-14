@@ -64,6 +64,7 @@ import { introspectionTypes } from '../type/introspection';
 import { specifiedScalarTypes } from '../type/scalars';
 
 import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchemaValidationOptions } from '../type/schema';
 
 import type {
   GraphQLType,
@@ -72,14 +73,7 @@ import type {
 } from '../type/definition';
 
 type Options = {|
-  /**
-   * When building a schema from a GraphQL service's introspection result, it
-   * might be safe to assume the schema is valid. Set to true to assume the
-   * produced schema is valid.
-   *
-   * Default: false
-   */
-  assumeValid?: boolean,
+  ...GraphQLSchemaValidationOptions,
 
   /**
    * Descriptions are defined as preceding string literals, however an older
@@ -227,6 +221,7 @@ export function buildASTSchema(
     directives,
     astNode: schemaDef,
     assumeValid: options && options.assumeValid,
+    allowedLegacyNames: options && options.allowedLegacyNames,
   });
 
   function getOperationTypes(schema: SchemaDefinitionNode) {

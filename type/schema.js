@@ -97,9 +97,9 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
       !(!config.types || Array.isArray(config.types)) ? (0, _invariant2.default)(0, '"types" must be Array if provided but got: ' + String(config.types) + '.') : void 0;
       !(!config.directives || Array.isArray(config.directives)) ? (0, _invariant2.default)(0, '"directives" must be Array if provided but got: ' + (String(config.directives) + '.')) : void 0;
       !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? (0, _invariant2.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + (String(config.allowedLegacyNames) + '.')) : void 0;
-      this.__allowedLegacyNames = config.allowedLegacyNames;
     }
 
+    this.__allowedLegacyNames = config.allowedLegacyNames;
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription;

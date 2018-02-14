@@ -306,6 +306,7 @@ function buildClientSchema(introspection, options) {
     subscription: subscriptionType,
     types: types,
     directives: directives,
-    assumeValid: options && options.assumeValid
+    assumeValid: options && options.assumeValid,
+    allowedLegacyNames: options && options.allowedLegacyNames
   });
 }

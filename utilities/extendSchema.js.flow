@@ -13,6 +13,8 @@ import { ASTDefinitionBuilder } from './buildASTSchema';
 import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
 
+import type { GraphQLSchemaValidationOptions } from '../type/schema';
+
 import {
   isObjectType,
   isInterfaceType,
@@ -38,14 +40,7 @@ import type {
 } from '../language/ast';
 
 type Options = {|
-  /**
-   * When extending a schema with a known valid extension, it might be safe to
-   * assume the schema is valid. Set to true to assume the produced schema
-   * is valid.
-   *
-   * Default: false
-   */
-  assumeValid?: boolean,
+  ...GraphQLSchemaValidationOptions,
 
   /**
    * Descriptions are defined as preceding string literals, however an older
@@ -245,6 +240,14 @@ export function extendSchema(
     types.push(definitionBuilder.buildType(typeName));
   });
 
+  // Support both original legacy names and extended legacy names.
+  const schemaAllowedLegacyNames = schema.__allowedLegacyNames;
+  const extendAllowedLegacyNames = options && options.allowedLegacyNames;
+  const allowedLegacyNames =
+    schemaAllowedLegacyNames && extendAllowedLegacyNames
+      ? schemaAllowedLegacyNames.concat(extendAllowedLegacyNames)
+      : schemaAllowedLegacyNames || extendAllowedLegacyNames;
+
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
     query: queryType,
@@ -253,8 +256,7 @@ export function extendSchema(
     types,
     directives: getMergedDirectives(),
     astNode: schema.astNode,
-    allowedLegacyNames:
-      schema.__allowedLegacyNames && schema.__allowedLegacyNames.slice(),
+    allowedLegacyNames,
   });
 
   function appendExtensionToTypeExtensions(

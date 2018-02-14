@@ -60,15 +60,10 @@ import type {
   IntrospectionNamedTypeRef,
 } from './introspectionQuery';
 
+import type { GraphQLSchemaValidationOptions } from '../type/schema';
+
 type Options = {|
-  /**
-   * When building a schema from a GraphQL service's introspection result, it
-   * might be safe to assume the schema is valid. Set to true to assume the
-   * produced schema is valid.
-   *
-   * Default: false
-   */
-  assumeValid?: boolean,
+  ...GraphQLSchemaValidationOptions,
 |};
 
 /**
@@ -414,5 +409,6 @@ export function buildClientSchema(
     types,
     directives,
     assumeValid: options && options.assumeValid,
+    allowedLegacyNames: options && options.allowedLegacyNames,
   });
 }

@@ -173,7 +173,8 @@ function buildASTSchema(ast, options) {
     types: types,
     directives: directives,
     astNode: schemaDef,
-    assumeValid: options && options.assumeValid
+    assumeValid: options && options.assumeValid,
+    allowedLegacyNames: options && options.allowedLegacyNames
   });
 
   function getOperationTypes(schema) {
