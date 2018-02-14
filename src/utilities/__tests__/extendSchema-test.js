@@ -818,6 +818,30 @@ describe('extendSchema', () => {
     expect(schema.__allowedLegacyNames).to.deep.equal(['__badName']);
   });
 
+  it('adds to the configuration of the original schema object', () => {
+    const testSchemaWithLegacyNames = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: () => ({
+          __badName: { type: GraphQLString },
+        }),
+      }),
+      allowedLegacyNames: ['__badName'],
+    });
+    const ast = parse(`
+      extend type Query {
+        __anotherBadName: String
+      }
+    `);
+    const schema = extendSchema(testSchemaWithLegacyNames, ast, {
+      allowedLegacyNames: ['__anotherBadName'],
+    });
+    expect(schema.__allowedLegacyNames).to.deep.equal([
+      '__badName',
+      '__anotherBadName',
+    ]);
+  });
+
   describe('does not allow extending a non-object type', () => {
     it('not an object', () => {
       const ast = parse(`

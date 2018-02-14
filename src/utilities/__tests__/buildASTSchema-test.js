@@ -764,6 +764,17 @@ describe('Schema Builder', () => {
     const errors = validateSchema(schema);
     expect(errors.length).to.be.above(0);
   });
+
+  it('Accepts legacy names', () => {
+    const doc = parse(dedent`
+      type Query {
+        __badName: String
+      }
+    `);
+    const schema = buildASTSchema(doc, { allowedLegacyNames: ['__badName'] });
+    const errors = validateSchema(schema);
+    expect(errors.length).to.equal(0);
+  });
 });
 
 describe('Failures', () => {

@@ -669,6 +669,34 @@ describe('Type System: build schema from introspection', () => {
     expect(secondIntrospection.data).to.containSubset(newIntrospection);
   });
 
+  it('builds a schema with legacy names', () => {
+    const introspection = {
+      __schema: {
+        queryType: {
+          name: 'Query',
+        },
+        types: [
+          {
+            name: 'Query',
+            kind: 'OBJECT',
+            fields: [
+              {
+                name: '__badName',
+                args: [],
+                type: { name: 'String' },
+              },
+            ],
+            interfaces: [],
+          },
+        ],
+      },
+    };
+    const schema = buildClientSchema(introspection, {
+      allowedLegacyNames: ['__badName'],
+    });
+    expect(schema.__allowedLegacyNames).to.deep.equal(['__badName']);
+  });
+
   it('builds a schema aware of deprecation', async () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
