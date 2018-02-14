@@ -243,7 +243,7 @@ export function extendSchema(
   // Support both original legacy names and extended legacy names.
   const schemaAllowedLegacyNames = schema.__allowedLegacyNames;
   const extendAllowedLegacyNames = options && options.allowedLegacyNames;
-  const allowedLegacyNames = 
+  const allowedLegacyNames =
     schemaAllowedLegacyNames && extendAllowedLegacyNames
       ? schemaAllowedLegacyNames.concat(extendAllowedLegacyNames)
       : schemaAllowedLegacyNames || extendAllowedLegacyNames;
