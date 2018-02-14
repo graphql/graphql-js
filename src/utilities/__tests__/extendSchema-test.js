@@ -8,11 +8,11 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import dedent from '../../jsutils/dedent';
-import { buildSchema } from '../buildASTSchema';
 import { extendSchema } from '../extendSchema';
-import { execute } from '../../execution';
 import { parse, print } from '../../language';
 import { printSchema } from '../schemaPrinter';
+import { Kind } from '../../language/kinds';
+import { graphqlSync } from '../../';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -25,6 +25,7 @@ import {
   GraphQLList,
   isScalarType,
   isNonNullType,
+  validateSchema,
 } from '../../type';
 
 // Test schema.
@@ -92,83 +93,91 @@ const testSchema = new GraphQLSchema({
   types: [FooType, BarType],
 });
 
+function extendTestSchema(sdl, options) {
+  const originalPrint = printSchema(testSchema);
+  const ast = parse(sdl);
+  const extendedSchema = extendSchema(testSchema, ast, options);
+  expect(printSchema(testSchema)).to.equal(originalPrint);
+  return extendedSchema;
+}
+
+const testSchemaAST = parse(printSchema(testSchema));
+const testSchemaDefinions = testSchemaAST.definitions.map(print);
+
+function printTestSchemaChanges(extendedSchema) {
+  const ast = parse(printSchema(extendedSchema));
+  ast.definitions = ast.definitions.filter(
+    node => !testSchemaDefinions.includes(print(node)),
+  );
+  return print(ast);
+}
+
 describe('extendSchema', () => {
   it('returns the original schema when there are no type definitions', () => {
-    const ast = parse('{ field }');
-    const extendedSchema = extendSchema(testSchema, ast);
+    const extendedSchema = extendTestSchema('{ field }');
     expect(extendedSchema).to.equal(testSchema);
   });
 
   it('extends without altering original schema', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Query {
         newField: String
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
     expect(printSchema(extendedSchema)).to.contain('newField');
     expect(printSchema(testSchema)).to.not.contain('newField');
   });
 
-  it('can be used for limited execution', async () => {
-    const ast = parse(`
+  it('can be used for limited execution', () => {
+    const extendedSchema = extendTestSchema(`
       extend type Query {
         newField: String
       }
     `);
-    const extendedSchema = extendSchema(testSchema, ast);
-    const clientQuery = parse('{ newField }');
 
-    const result = await execute(extendedSchema, clientQuery, {
+    const result = graphqlSync(extendedSchema, '{ newField }', {
       newField: 123,
     });
     expect(result.data).to.deep.equal({ newField: '123' });
   });
 
-  it('can describe the extended fields', async () => {
-    const ast = parse(`
+  it('can describe the extended fields', () => {
+    const extendedSchema = extendTestSchema(`
       extend type Query {
         "New field description."
         newField: String
       }
     `);
-    const extendedSchema = extendSchema(testSchema, ast);
 
     expect(
       extendedSchema.getType('Query').getFields().newField.description,
     ).to.equal('New field description.');
   });
 
-  it('can describe the extended fields with legacy comments', async () => {
-    const ast = parse(`
-      extend type Query {
+  it('can describe the extended fields with legacy comments', () => {
+    const extendedSchema = extendTestSchema(
+      `extend type Query {
         # New field description.
         newField: String
-      }
-    `);
-    const extendedSchema = extendSchema(testSchema, ast, {
-      commentDescriptions: true,
-    });
+      }`,
+      { commentDescriptions: true },
+    );
 
     expect(
       extendedSchema.getType('Query').getFields().newField.description,
     ).to.equal('New field description.');
   });
 
-  it('describes extended fields with strings when present', async () => {
-    const ast = parse(`
-      extend type Query {
+  it('describes extended fields with strings when present', () => {
+    const extendedSchema = extendTestSchema(
+      `extend type Query {
         # New field description.
         "Actually use this description."
         newField: String
-      }
-    `);
-    const extendedSchema = extendSchema(testSchema, ast, {
-      commentDescriptions: true,
-    });
+      }`,
+      { commentDescriptions: true },
+    );
 
     expect(
       extendedSchema.getType('Query').getFields().newField.description,
@@ -176,61 +185,23 @@ describe('extendSchema', () => {
   });
 
   it('extends objects by adding new fields', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Foo {
         newField: String
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
-
-      type Biz {
-        fizz: String
-      }
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Foo implements SomeInterface {
         name: String
         some: SomeInterface
         tree: [Foo]!
         newField: String
       }
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
-      interface SomeInterface {
-        name: String
-        some: SomeInterface
-      }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
   it('correctly assign AST nodes to new and extended types', () => {
-    const schemaFromIDL = buildSchema(`
-      type Query {
-        dummyField: String
-      }
-    `);
-    const extensionAst = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Query {
         newField(testArg: TestInput): TestEnum
       }
@@ -243,8 +214,7 @@ describe('extendSchema', () => {
         testInputField: TestEnum
       }
     `);
-    const extendedSchema = extendSchema(schemaFromIDL, extensionAst);
-    const secondExtensionAst = parse(`
+    const secondExtensionAST = parse(`
       extend type Query {
         oneMoreNewField: TestUnion
       }
@@ -263,7 +233,7 @@ describe('extendSchema', () => {
     `);
     const extendedTwiceSchema = extendSchema(
       extendedSchema,
-      secondExtensionAst,
+      secondExtensionAST,
     );
 
     const query = extendedTwiceSchema.getType('Query');
@@ -277,25 +247,20 @@ describe('extendSchema', () => {
     expect(query.extensionASTNodes).to.have.lengthOf(2);
     expect(testType.extensionASTNodes).to.equal(undefined);
 
-    const restoredExtensionAST = parse(
-      print(query.extensionASTNodes[0]) +
-        '\n' +
-        print(query.extensionASTNodes[1]) +
-        '\n' +
-        print(testInput.astNode) +
-        '\n' +
-        print(testEnum.astNode) +
-        '\n' +
-        print(testUnion.astNode) +
-        '\n' +
-        print(testInterface.astNode) +
-        '\n' +
-        print(testType.astNode) +
-        '\n' +
-        print(testDirective.astNode),
-    );
+    const restoredExtensionAST = {
+      kind: Kind.DOCUMENT,
+      definitions: [
+        ...query.extensionASTNodes,
+        testInput.astNode,
+        testEnum.astNode,
+        testUnion.astNode,
+        testInterface.astNode,
+        testType.astNode,
+        testDirective.astNode,
+      ],
+    };
     expect(
-      printSchema(extendSchema(schemaFromIDL, restoredExtensionAST)),
+      printSchema(extendSchema(testSchema, restoredExtensionAST)),
     ).to.be.equal(printSchema(extendedTwiceSchema));
 
     const newField = query.getFields().newField;
@@ -322,7 +287,7 @@ describe('extendSchema', () => {
   });
 
   it('builds types with deprecated fields/values', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       type TypeWithDeprecatedField {
         newDeprecatedField: String @deprecated(reason: "not used anymore")
       }
@@ -331,7 +296,6 @@ describe('extendSchema', () => {
         DEPRECATED @deprecated(reason: "do not use")
       }
     `);
-    const extendedSchema = extendSchema(testSchema, ast);
     const deprecatedFieldDef = extendedSchema
       .getType('TypeWithDeprecatedField')
       .getFields().newDeprecatedField;
@@ -346,12 +310,11 @@ describe('extendSchema', () => {
   });
 
   it('extends objects with deprecated fields', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Foo {
         deprecatedField: String @deprecated(reason: "not used anymore")
       }
     `);
-    const extendedSchema = extendSchema(testSchema, ast);
     const deprecatedFieldDef = extendedSchema.getType('Foo').getFields()
       .deprecatedField;
     expect(deprecatedFieldDef.isDeprecated).to.equal(true);
@@ -359,51 +322,13 @@ describe('extendSchema', () => {
   });
 
   it('extends objects by adding new unused types', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       type Unused {
         someField: String
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
     expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
-
-      type Biz {
-        fizz: String
-      }
-
-      type Foo implements SomeInterface {
-        name: String
-        some: SomeInterface
-        tree: [Foo]!
-      }
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
-      interface SomeInterface {
-        name: String
-        some: SomeInterface
-      }
-
-      union SomeUnion = Foo | Biz
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Unused {
         someField: String
       }
@@ -411,7 +336,7 @@ describe('extendSchema', () => {
   });
 
   it('extends objects by adding new fields with arguments', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Foo {
         newField(arg1: String, arg2: NewInputObj!): String
       }
@@ -422,21 +347,7 @@ describe('extendSchema', () => {
         field3: String!
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
-
-      type Biz {
-        fizz: String
-      }
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Foo implements SomeInterface {
         name: String
         some: SomeInterface
@@ -449,130 +360,43 @@ describe('extendSchema', () => {
         field2: [Float]
         field3: String!
       }
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
-      interface SomeInterface {
-        name: String
-        some: SomeInterface
-      }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
   it('extends objects by adding new fields with existing types', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Foo {
         newField(arg1: SomeEnum!): SomeEnum
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
-
-      type Biz {
-        fizz: String
-      }
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Foo implements SomeInterface {
         name: String
         some: SomeInterface
         tree: [Foo]!
         newField(arg1: SomeEnum!): SomeEnum
       }
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
-      interface SomeInterface {
-        name: String
-        some: SomeInterface
-      }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
   it('extends objects by adding implemented interfaces', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Biz implements SomeInterface {
         name: String
         some: SomeInterface
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Biz implements SomeInterface {
         fizz: String
         name: String
         some: SomeInterface
       }
-
-      type Foo implements SomeInterface {
-        name: String
-        some: SomeInterface
-        tree: [Foo]!
-      }
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
-      interface SomeInterface {
-        name: String
-        some: SomeInterface
-      }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
   it('extends objects by including new types', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Foo {
         newObject: NewObject
         newInterface: NewInterface
@@ -603,21 +427,7 @@ describe('extendSchema', () => {
         OPTION_B
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
-
-      type Biz {
-        fizz: String
-      }
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Foo implements SomeInterface {
         name: String
         some: SomeInterface
@@ -650,30 +460,11 @@ describe('extendSchema', () => {
       scalar NewScalar
 
       union NewUnion = NewObject | NewOtherObject
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
-      interface SomeInterface {
-        name: String
-        some: SomeInterface
-      }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
   it('extends objects by adding implemented new interfaces', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Foo implements NewInterface {
         baz: String
       }
@@ -682,21 +473,7 @@ describe('extendSchema', () => {
         baz: String
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
-
-      type Biz {
-        fizz: String
-      }
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Foo implements SomeInterface & NewInterface {
         name: String
         some: SomeInterface
@@ -707,30 +484,11 @@ describe('extendSchema', () => {
       interface NewInterface {
         baz: String
       }
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
-      interface SomeInterface {
-        name: String
-        some: SomeInterface
-      }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
   it('extends objects multiple times', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend type Biz implements NewInterface {
         buzz: String
       }
@@ -750,17 +508,7 @@ describe('extendSchema', () => {
         buzz: String
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Biz implements NewInterface & SomeInterface {
         fizz: String
         buzz: String
@@ -770,39 +518,14 @@ describe('extendSchema', () => {
         newFieldB: Float
       }
 
-      type Foo implements SomeInterface {
-        name: String
-        some: SomeInterface
-        tree: [Foo]!
-      }
-
       interface NewInterface {
         buzz: String
       }
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
-      interface SomeInterface {
-        name: String
-        some: SomeInterface
-      }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
   it('extends interfaces by adding new fields', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend interface SomeInterface {
         newField: String
       }
@@ -815,20 +538,12 @@ describe('extendSchema', () => {
         newField: String
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Bar implements SomeInterface {
         name: String
         some: SomeInterface
         foo: Foo
         newField: String
-      }
-
-      type Biz {
-        fizz: String
       }
 
       type Foo implements SomeInterface {
@@ -838,131 +553,35 @@ describe('extendSchema', () => {
         newField: String
       }
 
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
       interface SomeInterface {
         name: String
         some: SomeInterface
         newField: String
       }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
   it('allows extension of interface with missing Object fields', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend interface SomeInterface {
-        newObject: NewObject
-        newInterface: NewInterface
-        newUnion: NewUnion
-        newScalar: NewScalar
-        newTree: [Foo]!
-        newField(arg1: String, arg2: NewEnum!): String
-      }
-
-      type NewObject implements NewInterface {
-        baz: String
-      }
-
-      type NewOtherObject {
-        fizz: Int
-      }
-
-      interface NewInterface {
-        baz: String
-      }
-
-      union NewUnion = NewObject | NewOtherObject
-
-      scalar NewScalar
-
-      enum NewEnum {
-        OPTION_A
-        OPTION_B
+        newField: String
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
 
-      type Biz {
-        fizz: String
-      }
+    const errors = validateSchema(extendedSchema);
+    expect(errors.length).to.be.above(0);
 
-      type Foo implements SomeInterface {
-        name: String
-        some: SomeInterface
-        tree: [Foo]!
-      }
-
-      enum NewEnum {
-        OPTION_A
-        OPTION_B
-      }
-
-      interface NewInterface {
-        baz: String
-      }
-
-      type NewObject implements NewInterface {
-        baz: String
-      }
-
-      type NewOtherObject {
-        fizz: Int
-      }
-
-      scalar NewScalar
-
-      union NewUnion = NewObject | NewOtherObject
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       interface SomeInterface {
         name: String
         some: SomeInterface
-        newObject: NewObject
-        newInterface: NewInterface
-        newUnion: NewUnion
-        newScalar: NewScalar
-        newTree: [Foo]!
-        newField(arg1: String, arg2: NewEnum!): String
+        newField: String
       }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
   it('extends interfaces multiple times', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       extend interface SomeInterface {
         newFieldA: Int
       }
@@ -971,47 +590,13 @@ describe('extendSchema', () => {
         newFieldB(test: Boolean): String
       }
     `);
-    const originalPrint = printSchema(testSchema);
-    const extendedSchema = extendSchema(testSchema, ast);
-    expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(testSchema)).to.equal(originalPrint);
-    expect(printSchema(extendedSchema)).to.equal(dedent`
-      type Bar implements SomeInterface {
-        name: String
-        some: SomeInterface
-        foo: Foo
-      }
-
-      type Biz {
-        fizz: String
-      }
-
-      type Foo implements SomeInterface {
-        name: String
-        some: SomeInterface
-        tree: [Foo]!
-      }
-
-      type Query {
-        foo: Foo
-        someUnion: SomeUnion
-        someEnum: SomeEnum
-        someInterface(id: ID!): SomeInterface
-      }
-
-      enum SomeEnum {
-        ONE
-        TWO
-      }
-
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       interface SomeInterface {
         name: String
         some: SomeInterface
         newFieldA: Int
         newFieldB(test: Boolean): String
       }
-
-      union SomeUnion = Foo | Biz
     `);
   });
 
@@ -1073,48 +658,45 @@ describe('extendSchema', () => {
   });
 
   it('may extend directives with new simple directive', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       directive @neat on QUERY
     `);
 
-    const extendedSchema = extendSchema(testSchema, ast);
     const newDirective = extendedSchema.getDirective('neat');
     expect(newDirective.name).to.equal('neat');
     expect(newDirective.locations).to.contain('QUERY');
   });
 
   it('sets correct description when extending with a new directive', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       """
       new directive
       """
       directive @new on QUERY
     `);
 
-    const extendedSchema = extendSchema(testSchema, ast);
     const newDirective = extendedSchema.getDirective('new');
     expect(newDirective.description).to.equal('new directive');
   });
 
   it('sets correct description using legacy comments', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(
+      `
       # new directive
       directive @new on QUERY
-    `);
+    `,
+      { commentDescriptions: true },
+    );
 
-    const extendedSchema = extendSchema(testSchema, ast, {
-      commentDescriptions: true,
-    });
     const newDirective = extendedSchema.getDirective('new');
     expect(newDirective.description).to.equal('new directive');
   });
 
   it('may extend directives with new complex directive', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       directive @profile(enable: Boolean! tag: String) on QUERY | FIELD
     `);
 
-    const extendedSchema = extendSchema(testSchema, ast);
     const extendedDirective = extendedSchema.getDirective('profile');
     expect(extendedDirective.locations).to.contain('QUERY');
     expect(extendedDirective.locations).to.contain('FIELD');
@@ -1144,19 +726,16 @@ describe('extendSchema', () => {
   });
 
   it('does not allow replacing a custom directive', () => {
-    const ast = parse(`
+    const extendedSchema = extendTestSchema(`
       directive @meow(if: Boolean!) on FIELD | FRAGMENT_SPREAD
     `);
 
-    const extendedSchema = extendSchema(testSchema, ast);
-
-    const replacementAst = parse(`
+    const replacementAST = parse(`
       directive @meow(if: Boolean!) on FIELD | QUERY
     `);
 
-    expect(() => extendSchema(extendedSchema, replacementAst)).to.throw(
-      'Directive "meow" already exists in the schema. It cannot be ' +
-        'redefined.',
+    expect(() => extendSchema(extendedSchema, replacementAST)).to.throw(
+      'Directive "meow" already exists in the schema. It cannot be redefined.',
     );
   });
 
