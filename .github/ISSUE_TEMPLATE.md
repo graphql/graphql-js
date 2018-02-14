@@ -14,7 +14,7 @@ The best way to get a bug fixed is to provide a *pull request* with a simplified
 
 # Feature requests
 
-GraphQL.js is a reference implementation of the [GraphQL specification](github.com/facebook/graphql). To discuss new features which are not GraphQL.js specific and fundamentally change the way GraphQL works, open an issue against the specification.
+GraphQL.js is a reference implementation of the [GraphQL specification](https://github.com/facebook/graphql). To discuss new features which are not GraphQL.js specific and fundamentally change the way GraphQL works, open an issue against the specification.
 
 # Security bugs
 
