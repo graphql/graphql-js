@@ -23,12 +23,12 @@ describe('quotedOrList', () => {
   });
 
   it('Returns comma separated many item list', () => {
-    expect(quotedOrList(['A', 'B', 'C'])).to.equal('"A", "B", or "C"');
+    expect(quotedOrList(['A', 'B', 'C'])).to.equal('"A", "B" or "C"');
   });
 
   it('Limits to five items', () => {
     expect(quotedOrList(['A', 'B', 'C', 'D', 'E', 'F'])).to.equal(
-      '"A", "B", "C", "D", or "E"',
+      '"A", "B", "C", "D" or "E"',
     );
   });
 });

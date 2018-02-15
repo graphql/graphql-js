@@ -304,7 +304,7 @@ describe('Validate: Fields on correct type', () => {
         undefinedFieldMessage('f', 'T', ['A', 'B', 'C', 'D', 'E', 'F'], []),
       ).to.equal(
         'Cannot query field "f" on type "T". ' +
-          'Did you mean to use an inline fragment on "A", "B", "C", "D", or "E"?',
+          'Did you mean to use an inline fragment on "A", "B", "C", "D" or "E"?',
       );
     });
 
@@ -313,7 +313,7 @@ describe('Validate: Fields on correct type', () => {
         undefinedFieldMessage('f', 'T', [], ['z', 'y', 'x', 'w', 'v', 'u']),
       ).to.equal(
         'Cannot query field "f" on type "T". ' +
-          'Did you mean "z", "y", "x", "w", or "v"?',
+          'Did you mean "z", "y", "x", "w" or "v"?',
       );
     });
   });

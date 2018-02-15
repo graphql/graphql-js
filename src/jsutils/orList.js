@@ -17,7 +17,7 @@ export default function orList(items: $ReadOnlyArray<string>): string {
   return selected.reduce(
     (list, quoted, index) =>
       list +
-      (selected.length > 2 ? ', ' : ' ') +
+      (selected.length > 2 && index !== selected.length - 1 ? ', ' : ' ') +
       (index === selected.length - 1 ? 'or ' : '') +
       quoted,
   );
