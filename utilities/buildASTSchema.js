@@ -113,12 +113,12 @@ function buildASTSchema(ast, options) {
       case _kinds.Kind.ENUM_TYPE_DEFINITION:
       case _kinds.Kind.UNION_TYPE_DEFINITION:
       case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
-        var _typeName = d.name.value;
-        if (nodeMap[_typeName]) {
-          throw new Error('Type "' + _typeName + '" was defined more than once.');
+        var typeName = d.name.value;
+        if (nodeMap[typeName]) {
+          throw new Error('Type "' + typeName + '" was defined more than once.');
         }
         typeDefs.push(d);
-        nodeMap[_typeName] = d;
+        nodeMap[typeName] = d;
         break;
       case _kinds.Kind.DIRECTIVE_DEFINITION:
         directiveDefs.push(d);
@@ -127,17 +127,17 @@ function buildASTSchema(ast, options) {
   }
 
   var operationTypes = schemaDef ? getOperationTypes(schemaDef) : {
-    query: nodeMap.Query ? 'Query' : null,
-    mutation: nodeMap.Mutation ? 'Mutation' : null,
-    subscription: nodeMap.Subscription ? 'Subscription' : null
+    query: nodeMap.Query,
+    mutation: nodeMap.Mutation,
+    subscription: nodeMap.Subscription
   };
 
-  var definitionBuilder = new ASTDefinitionBuilder(nodeMap, options, function (typeName) {
-    throw new Error('Type "' + typeName + '" not found in document.');
+  var definitionBuilder = new ASTDefinitionBuilder(nodeMap, options, function (typeRef) {
+    throw new Error('Type "' + typeRef.name.value + '" not found in document.');
   });
 
   var types = typeDefs.map(function (def) {
-    return definitionBuilder.buildType(def.name.value);
+    return definitionBuilder.buildType(def);
   });
 
   var directives = directiveDefs.map(function (def) {
@@ -188,7 +188,7 @@ function buildASTSchema(ast, options) {
       if (!nodeMap[typeName]) {
         throw new Error('Specified ' + operation + ' type "' + typeName + '" not found in document.');
       }
-      opTypes[operation] = typeName;
+      opTypes[operation] = operationType.type;
     });
     return opTypes;
   }
@@ -207,23 +207,17 @@ var ASTDefinitionBuilder = exports.ASTDefinitionBuilder = function () {
     });
   }
 
-  ASTDefinitionBuilder.prototype._buildType = function _buildType(typeName, typeNode) {
+  ASTDefinitionBuilder.prototype.buildType = function buildType(node) {
+    var typeName = node.name.value;
     if (!this._cache[typeName]) {
-      var defNode = this._typeDefinitionsMap[typeName];
-      if (defNode) {
-        this._cache[typeName] = this._makeSchemaDef(defNode);
+      if (node.kind === _kinds.Kind.NAMED_TYPE) {
+        var defNode = this._typeDefinitionsMap[typeName];
+        this._cache[typeName] = defNode ? this._makeSchemaDef(defNode) : this._resolveType(node);
       } else {
-        this._cache[typeName] = this._resolveType(typeName, typeNode);
+        this._cache[typeName] = this._makeSchemaDef(node);
       }
     }
     return this._cache[typeName];
-  };
-
-  ASTDefinitionBuilder.prototype.buildType = function buildType(ref) {
-    if (typeof ref === 'string') {
-      return this._buildType(ref);
-    }
-    return this._buildType(ref.name.value, ref);
   };
 
   ASTDefinitionBuilder.prototype._buildWrappedType = function _buildWrappedType(typeNode) {

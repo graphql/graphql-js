@@ -170,22 +170,20 @@ export function buildASTSchema(
   const operationTypes = schemaDef
     ? getOperationTypes(schemaDef)
     : {
-        query: nodeMap.Query ? 'Query' : null,
-        mutation: nodeMap.Mutation ? 'Mutation' : null,
-        subscription: nodeMap.Subscription ? 'Subscription' : null,
+        query: nodeMap.Query,
+        mutation: nodeMap.Mutation,
+        subscription: nodeMap.Subscription,
       };
 
   const definitionBuilder = new ASTDefinitionBuilder(
     nodeMap,
     options,
-    typeName => {
-      throw new Error(`Type "${typeName}" not found in document.`);
+    typeRef => {
+      throw new Error(`Type "${typeRef.name.value}" not found in document.`);
     },
   );
 
-  const types = typeDefs.map(def =>
-    definitionBuilder.buildType(def.name.value),
-  );
+  const types = typeDefs.map(def => definitionBuilder.buildType(def));
 
   const directives = directiveDefs.map(def =>
     definitionBuilder.buildDirective(def),
@@ -237,17 +235,14 @@ export function buildASTSchema(
           `Specified ${operation} type "${typeName}" not found in document.`,
         );
       }
-      opTypes[operation] = typeName;
+      opTypes[operation] = operationType.type;
     });
     return opTypes;
   }
 }
 
 type TypeDefinitionsMap = ObjMap<TypeDefinitionNode>;
-type TypeResolver = (
-  typeName: string,
-  node?: ?NamedTypeNode,
-) => GraphQLNamedType;
+type TypeResolver = (typeRef: NamedTypeNode) => GraphQLNamedType;
 
 export class ASTDefinitionBuilder {
   _typeDefinitionsMap: TypeDefinitionsMap;
@@ -270,23 +265,19 @@ export class ASTDefinitionBuilder {
     );
   }
 
-  _buildType(typeName: string, typeNode?: ?NamedTypeNode): GraphQLNamedType {
+  buildType(node: NamedTypeNode | TypeDefinitionNode): GraphQLNamedType {
+    const typeName = node.name.value;
     if (!this._cache[typeName]) {
-      const defNode = this._typeDefinitionsMap[typeName];
-      if (defNode) {
-        this._cache[typeName] = this._makeSchemaDef(defNode);
+      if (node.kind === Kind.NAMED_TYPE) {
+        const defNode = this._typeDefinitionsMap[typeName];
+        this._cache[typeName] = defNode
+          ? this._makeSchemaDef(defNode)
+          : this._resolveType(node);
       } else {
-        this._cache[typeName] = this._resolveType(typeName, typeNode);
+        this._cache[typeName] = this._makeSchemaDef(node);
       }
     }
     return this._cache[typeName];
-  }
-
-  buildType(ref: string | NamedTypeNode): GraphQLNamedType {
-    if (typeof ref === 'string') {
-      return this._buildType(ref);
-    }
-    return this._buildType(ref.name.value, ref);
   }
 
   _buildWrappedType(typeNode: TypeNode): GraphQLType {

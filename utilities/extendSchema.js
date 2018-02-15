@@ -13,11 +13,17 @@ var _keyMap = require('../jsutils/keyMap');
 
 var _keyMap2 = _interopRequireDefault(_keyMap);
 
+var _objectValues = require('../jsutils/objectValues');
+
+var _objectValues2 = _interopRequireDefault(_objectValues);
+
 var _buildASTSchema = require('./buildASTSchema');
 
 var _GraphQLError = require('../error/GraphQLError');
 
 var _schema = require('../type/schema');
+
+var _introspection = require('../type/introspection');
 
 var _definition = require('../type/definition');
 
@@ -123,42 +129,36 @@ function extendSchema(schema, documentAST, options) {
     return schema;
   }
 
-  var definitionBuilder = new _buildASTSchema.ASTDefinitionBuilder(typeDefinitionMap, options, function (typeName, node) {
+  var astBuilder = new _buildASTSchema.ASTDefinitionBuilder(typeDefinitionMap, options, function (typeRef) {
+    var typeName = typeRef.name.value;
     var existingType = schema.getType(typeName);
     if (existingType) {
-      return extendType(existingType);
+      return getExtendedType(existingType);
     }
 
-    if (node) {
-      throw new _GraphQLError.GraphQLError('Unknown type: "' + typeName + '". Ensure that this type exists ' + 'either in the original schema, or is added in a type definition.', [node]);
-    }
-    throw (0, _GraphQLError.GraphQLError)('Missing type from schema');
+    throw new _GraphQLError.GraphQLError('Unknown type: "' + typeName + '". Ensure that this type exists ' + 'either in the original schema, or is added in a type definition.', [typeRef]);
   });
+
+  var extendTypeCache = Object.create(null);
 
   // Get the root Query, Mutation, and Subscription object types.
   // Note: While this could make early assertions to get the correctly
   // typed values below, that would throw immediately while type system
   // validation with validateSchema() will produce more actionable results.
   var existingQueryType = schema.getQueryType();
-  var queryType = existingQueryType ? definitionBuilder.buildType(existingQueryType.name) : null;
+  var queryType = existingQueryType ? getExtendedType(existingQueryType) : null;
 
   var existingMutationType = schema.getMutationType();
-  var mutationType = existingMutationType ? definitionBuilder.buildType(existingMutationType.name) : null;
+  var mutationType = existingMutationType ? getExtendedType(existingMutationType) : null;
 
   var existingSubscriptionType = schema.getSubscriptionType();
-  var subscriptionType = existingSubscriptionType ? definitionBuilder.buildType(existingSubscriptionType.name) : null;
+  var subscriptionType = existingSubscriptionType ? getExtendedType(existingSubscriptionType) : null;
 
-  // Iterate through all types, getting the type definition for each, ensuring
-  // that any type not directly referenced by a field will get created.
-  var typeMap = schema.getTypeMap();
-  var types = Object.keys(typeMap).map(function (typeName) {
-    return definitionBuilder.buildType(typeName);
-  });
-
-  // Do the same with new types, appending to the list of defined types.
-  Object.keys(typeDefinitionMap).forEach(function (typeName) {
-    types.push(definitionBuilder.buildType(typeName));
-  });
+  var types = [].concat((0, _objectValues2.default)(schema.getTypeMap()).map(function (type) {
+    return getExtendedType(type);
+  }), (0, _objectValues2.default)(typeDefinitionMap).map(function (type) {
+    return astBuilder.buildType(type);
+  }));
 
   // Support both original legacy names and extended legacy names.
   var schemaAllowedLegacyNames = schema.__allowedLegacyNames;
@@ -191,20 +191,24 @@ function extendSchema(schema, documentAST, options) {
     var existingDirectives = schema.getDirectives();
     !existingDirectives ? (0, _invariant2.default)(0, 'schema must have default directives') : void 0;
 
-    var newDirectives = directiveDefinitions.map(function (directiveNode) {
-      return definitionBuilder.buildDirective(directiveNode);
-    });
-    return existingDirectives.concat(newDirectives);
+    return existingDirectives.concat(directiveDefinitions.map(function (node) {
+      return astBuilder.buildDirective(node);
+    }));
   }
 
-  function getTypeFromDef(typeDef) {
-    var type = definitionBuilder.buildType(typeDef.name);
-    return type;
+  function getExtendedType(type) {
+    if (!extendTypeCache[type.name]) {
+      extendTypeCache[type.name] = extendType(type);
+    }
+    return extendTypeCache[type.name];
   }
 
-  // Given a type's introspection result, construct the correct
-  // GraphQLType instance.
+  // To be called at most once per type. Only getExtendedType should call this.
   function extendType(type) {
+    if ((0, _introspection.isIntrospectionType)(type)) {
+      // Introspection types are not extended.
+      return type;
+    }
     if ((0, _definition.isObjectType)(type)) {
       return extendObjectType(type);
     }
@@ -214,6 +218,7 @@ function extendSchema(schema, documentAST, options) {
     if ((0, _definition.isUnionType)(type)) {
       return extendUnionType(type);
     }
+    // This type is not yet extendable.
     return type;
   }
 
@@ -254,14 +259,14 @@ function extendSchema(schema, documentAST, options) {
     return new _definition.GraphQLUnionType({
       name: type.name,
       description: type.description,
-      types: type.getTypes().map(getTypeFromDef),
+      types: type.getTypes().map(getExtendedType),
       astNode: type.astNode,
       resolveType: type.resolveType
     });
   }
 
   function extendImplementedInterfaces(type) {
-    var interfaces = type.getInterfaces().map(getTypeFromDef);
+    var interfaces = type.getInterfaces().map(getExtendedType);
 
     // If there are any extensions to the interfaces, apply those here.
     var extensions = typeExtensionsMap[type.name];
@@ -271,7 +276,7 @@ function extendSchema(schema, documentAST, options) {
           // Note: While this could make early assertions to get the correctly
           // typed values, that would throw immediately while type system
           // validation with validateSchema() will produce more actionable results.
-          interfaces.push(definitionBuilder.buildType(namedType));
+          interfaces.push(astBuilder.buildType(namedType));
         });
       });
     }
@@ -305,7 +310,7 @@ function extendSchema(schema, documentAST, options) {
           if (oldFieldMap[fieldName]) {
             throw new _GraphQLError.GraphQLError('Field "' + type.name + '.' + fieldName + '" already exists in the ' + 'schema. It cannot also be defined in this type extension.', [field]);
           }
-          newFieldMap[fieldName] = definitionBuilder.buildField(field);
+          newFieldMap[fieldName] = astBuilder.buildField(field);
         });
       });
     }
@@ -320,7 +325,7 @@ function extendSchema(schema, documentAST, options) {
     if ((0, _definition.isNonNullType)(typeDef)) {
       return (0, _wrappers.GraphQLNonNull)(extendFieldType(typeDef.ofType));
     }
-    return getTypeFromDef(typeDef);
+    return getExtendedType(typeDef);
   }
 } /**
    * Copyright (c) 2015-present, Facebook, Inc.
