@@ -41,7 +41,7 @@
     "gitpublish": ". ./resources/gitpublish.sh"
   },
   "dependencies": {
-    "iterall": "1.1.x"
+    "iterall": "^1.2.0"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
