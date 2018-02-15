@@ -3,8 +3,8 @@
   "version": "0.13.0",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
-  "main": "index.js",
-  "module": "module/index.js",
+  "main": "index",
+  "module": "index.mjs",
   "homepage": "https://github.com/graphql/graphql-js",
   "bugs": {
     "url": "https://github.com/graphql/graphql-js/issues"
