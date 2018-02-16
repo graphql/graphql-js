@@ -375,6 +375,7 @@ export {
 } from './utilities';
 
 export type {
+  BuildSchemaOptions,
   BreakingChange,
   DangerousChange,
   IntrospectionOptions,

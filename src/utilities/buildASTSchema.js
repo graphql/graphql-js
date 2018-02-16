@@ -14,6 +14,7 @@ import { valueFromAST } from './valueFromAST';
 import blockStringValue from '../language/blockStringValue';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
+import type { ParseOptions } from '../language/parser';
 import type { Source } from '../language/source';
 import { getDirectiveValues } from '../execution/values';
 import { Kind } from '../language/kinds';
@@ -72,7 +73,7 @@ import type {
   GraphQLFieldConfig,
 } from '../type/definition';
 
-type Options = {|
+export type BuildSchemaOptions = {
   ...GraphQLSchemaValidationOptions,
 
   /**
@@ -83,7 +84,7 @@ type Options = {|
    * Default: false
    */
   commentDescriptions?: boolean,
-|};
+};
 
 function buildWrappedType(
   innerType: GraphQLType,
@@ -128,7 +129,7 @@ function getNamedTypeNode(typeNode: TypeNode): NamedTypeNode {
  */
 export function buildASTSchema(
   ast: DocumentNode,
-  options?: Options,
+  options?: BuildSchemaOptions,
 ): GraphQLSchema {
   if (!ast || ast.kind !== Kind.DOCUMENT) {
     throw new Error('Must provide a document ast.');
@@ -246,13 +247,13 @@ type TypeResolver = (typeRef: NamedTypeNode) => GraphQLNamedType;
 
 export class ASTDefinitionBuilder {
   _typeDefinitionsMap: TypeDefinitionsMap;
-  _options: ?Options;
+  _options: ?BuildSchemaOptions;
   _resolveType: TypeResolver;
   _cache: ObjMap<GraphQLNamedType>;
 
   constructor(
     typeDefinitionsMap: TypeDefinitionsMap,
-    options: ?Options,
+    options: ?BuildSchemaOptions,
     resolveType: TypeResolver,
   ) {
     this._typeDefinitionsMap = typeDefinitionsMap;
@@ -464,7 +465,7 @@ function getDeprecationReason(
  */
 export function getDescription(
   node: { +description?: StringValueNode, +loc?: Location },
-  options: ?Options,
+  options: ?BuildSchemaOptions,
 ): void | string {
   if (node.description) {
     return node.description.value;
@@ -503,6 +504,9 @@ function getLeadingCommentBlock(node): void | string {
  * A helper function to build a GraphQLSchema directly from a source
  * document.
  */
-export function buildSchema(source: string | Source): GraphQLSchema {
-  return buildASTSchema(parse(source));
+export function buildSchema(
+  source: string | Source,
+  options: BuildSchemaOptions & ParseOptions,
+): GraphQLSchema {
+  return buildASTSchema(parse(source, options), options);
 }
