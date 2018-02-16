@@ -452,6 +452,6 @@ function getLeadingCommentBlock(node) {
  * A helper function to build a GraphQLSchema directly from a source
  * document.
  */
-function buildSchema(source) {
-  return buildASTSchema((0, _parser.parse)(source));
+function buildSchema(source, options) {
+  return buildASTSchema((0, _parser.parse)(source, options), options);
 }
