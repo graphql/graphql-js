@@ -40,9 +40,9 @@ export type VisitFn<TAnyNode, TVisitedNode: TAnyNode = TAnyNode> = (
   parent: TAnyNode | $ReadOnlyArray<TAnyNode> | void,
   // The key path to get to this node from the root node.
   path: $ReadOnlyArray<string | number>,
-  // All nodes and Arrays visited before reaching this node.
+  // All nodes and Arrays visited before reaching parent of this node.
   // These correspond to array indices in `path`.
-  // Note: ancestors includes arrays which contain the visited node.
+  // Note: ancestors includes arrays which contain the parent of visited node.
   ancestors: $ReadOnlyArray<TAnyNode | $ReadOnlyArray<TAnyNode>>,
 ) => any;
 
