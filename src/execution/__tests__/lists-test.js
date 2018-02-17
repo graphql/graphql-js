@@ -169,15 +169,19 @@ describe('Execute: Handles list nullability', () => {
   const dataOk = { nest: { test: [1, 2] } };
   const dataOkWithNull = { nest: { test: [1, null, 2] } };
   const dataNull = { nest: null };
-  const dataNull1 = { nest: { test: null } };
-  const errorsBad = [
+  const dataNullDeep = { nest: { test: null } };
+  /*
+    In these errors, the variable name including "1" means the error
+    relates to the 1-th (i.e. second) item in the return value.
+  */
+  const errorsReject = [
     {
       message: 'bad',
       locations: [{ line: 1, column: 10 }],
       path: ['nest', 'test'],
     },
   ];
-  const errorsBad1 = [
+  const errorsReject1 = [
     {
       message: 'bad',
       locations: [{ line: 1, column: 10 }],
@@ -199,13 +203,23 @@ describe('Execute: Handles list nullability', () => {
     },
   ];
 
+  /*
+    The first arg to allChecks is a type.
+    The second arg is an object which describes the "expected" return
+    values when a field with that type's resolver behaves as follows:
+      containsValues: returns [1, 2]
+      containsNull: returns [1, null, 2]
+      returnsNull: returns null
+      rejected: is a rejecting promise
+      containsReject: returns an array that includes a rejecting promise
+  */
   describe('[T]', () => {
     allChecks(GraphQLList(GraphQLInt), {
       containsValues: { data: dataOk },
       containsNull: { data: dataOkWithNull },
-      returnsNull: { data: dataNull1 },
-      rejected: { data: dataNull1, errors: errorsBad },
-      containsReject: { data: dataOkWithNull, errors: errorsBad1 },
+      returnsNull: { data: dataNullDeep },
+      rejected: { data: dataNullDeep, errors: errorsReject },
+      containsReject: { data: dataOkWithNull, errors: errorsReject1 },
     });
   });
 
@@ -214,18 +228,18 @@ describe('Execute: Handles list nullability', () => {
       containsValues: { data: dataOk },
       containsNull: { data: dataOkWithNull },
       returnsNull: { data: dataNull, errors: errorsNonNull },
-      rejected: { data: dataNull, errors: errorsBad },
-      containsReject: { data: dataOkWithNull, errors: errorsBad1 },
+      rejected: { data: dataNull, errors: errorsReject },
+      containsReject: { data: dataOkWithNull, errors: errorsReject1 },
     });
   });
 
   describe('[T!]', () => {
     allChecks(GraphQLList(GraphQLNonNull(GraphQLInt)), {
       containsValues: { data: dataOk },
-      containsNull: { data: dataNull1, errors: errorsNonNull1 },
-      returnsNull: { data: dataNull1 },
-      rejected: { data: dataNull1, errors: errorsBad },
-      containsReject: { data: dataNull1, errors: errorsBad1 },
+      containsNull: { data: dataNullDeep, errors: errorsNonNull1 },
+      returnsNull: { data: dataNullDeep },
+      rejected: { data: dataNullDeep, errors: errorsReject },
+      containsReject: { data: dataNullDeep, errors: errorsReject1 },
     });
   });
 
@@ -234,8 +248,8 @@ describe('Execute: Handles list nullability', () => {
       containsValues: { data: dataOk },
       containsNull: { data: dataNull, errors: errorsNonNull1 },
       returnsNull: { data: dataNull, errors: errorsNonNull },
-      rejected: { data: dataNull, errors: errorsBad },
-      containsReject: { data: dataNull, errors: errorsBad1 },
+      rejected: { data: dataNull, errors: errorsReject },
+      containsReject: { data: dataNull, errors: errorsReject1 },
     });
   });
 });
