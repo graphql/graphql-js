@@ -16,4 +16,5 @@ coverage
 resources
 src
 dist
+__tests__
 npm
