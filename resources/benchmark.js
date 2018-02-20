@@ -53,7 +53,7 @@ function prepareRevision(revision) {
         (cd "${dir}" && yarn install);
       fi &&
       # Copy in local tests so the same logic applies to each revision.
-      for file in $(cd "${LOCAL_DIR}src"; find . -path '*/__tests__/*.js');
+      for file in $(cd "${LOCAL_DIR}src"; find . -path '*/__tests__/*');
         do cp "${LOCAL_DIR}src/$file" "${dir}/src/$file";
       done &&
       (cd "${dir}" && yarn run ${BUILD_CMD})
@@ -82,9 +82,13 @@ function runBenchmark(benchmark, revisions) {
   const suite = new Suite(modules[0].name, {
     onStart(event) {
       console.log('⏱️  ' + event.currentTarget.name);
+      beautifyBenchmark.reset();
     },
     onCycle(event) {
       beautifyBenchmark.add(event.target);
+    },
+    onError(event) {
+      console.error(event.target.error);
     },
     onComplete() {
       beautifyBenchmark.log();
@@ -93,7 +97,7 @@ function runBenchmark(benchmark, revisions) {
   for (let i = 0; i < revisions.length; i++) {
     suite.add(revisions[i], modules[i].measure);
   }
-  suite.run();
+  suite.run({ async: false });
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
