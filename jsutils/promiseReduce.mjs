@@ -7,7 +7,7 @@
  *  strict
  */
 
-import getPromise from './getPromise';
+import isPromise from './isPromise';
 
 
 /**
@@ -19,13 +19,8 @@ import getPromise from './getPromise';
  */
 export default function promiseReduce(values, callback, initialValue) {
   return values.reduce(function (previous, value) {
-    var promise = getPromise(previous);
-    if (promise) {
-      return promise.then(function (resolved) {
-        return callback(resolved, value);
-      });
-    }
-    // Previous is not Promise<U>, so it is U.
-    return callback(previous, value);
+    return isPromise(previous) ? previous.then(function (resolved) {
+      return callback(resolved, value);
+    }) : callback(previous, value);
   }, initialValue);
 }

@@ -9,10 +9,10 @@
 
 import { forEach, isCollection } from 'iterall';
 import { GraphQLError, locatedError } from '../error';
-import getPromise from '../jsutils/getPromise';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
+import isPromise from '../jsutils/isPromise';
 import memoize3 from '../jsutils/memoize3';
 import promiseForObject from '../jsutils/promiseForObject';
 import promiseReduce from '../jsutils/promiseReduce';
@@ -229,9 +229,8 @@ function buildResponse(
   context: ExecutionContext,
   data: MaybePromise<ObjMap<mixed> | null>,
 ) {
-  const promise = getPromise(data);
-  if (promise) {
-    return promise.then(resolved => buildResponse(context, resolved));
+  if (isPromise(data)) {
+    return data.then(resolved => buildResponse(context, resolved));
   }
   return context.errors.length === 0
     ? { data }
@@ -403,9 +402,8 @@ function executeOperation(
       operation.operation === 'mutation'
         ? executeFieldsSerially(exeContext, type, rootValue, path, fields)
         : executeFields(exeContext, type, rootValue, path, fields);
-    const promise = getPromise(result);
-    if (promise) {
-      return promise.then(undefined, error => {
+    if (isPromise(result)) {
+      return result.then(undefined, error => {
         exeContext.errors.push(error);
         return Promise.resolve(null);
       });
@@ -484,9 +482,8 @@ function executeFieldsSerially(
       if (result === undefined) {
         return results;
       }
-      const promise = getPromise(result);
-      if (promise) {
-        return promise.then(resolvedResult => {
+      if (isPromise(result)) {
+        return result.then(resolvedResult => {
           results[responseName] = resolvedResult;
           return results;
         });
@@ -525,7 +522,7 @@ function executeFields(
       return results;
     }
     results[responseName] = result;
-    if (getPromise(result)) {
+    if (!containsPromise && isPromise(result)) {
       containsPromise = true;
     }
     return results;
@@ -684,7 +681,7 @@ function resolveField(
   source: mixed,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   path: ResponsePath,
-): mixed {
+): MaybePromise<mixed> {
   const fieldNode = fieldNodes[0];
   const fieldName = fieldNode.name.value;
 
@@ -773,8 +770,7 @@ export function resolveFieldValueOrError<TSource>(
     const context = exeContext.contextValue;
 
     const result = resolveFn(source, args, context, info);
-    const promise = getPromise(result);
-    return promise ? promise.then(undefined, asErrorInstance) : result;
+    return isPromise(result) ? result.then(undefined, asErrorInstance) : result;
   } catch (error) {
     return asErrorInstance(error);
   }
@@ -795,7 +791,7 @@ function completeValueCatchingError(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<mixed> {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
   if (isNonNullType(returnType)) {
@@ -820,13 +816,12 @@ function completeValueCatchingError(
       path,
       result,
     );
-    const promise = getPromise(completed);
-    if (promise) {
+    if (isPromise(completed)) {
       // If `completeValueWithLocatedError` returned a rejected promise, log
       // the rejection error and resolve to null.
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return promise.then(undefined, error => {
+      return completed.then(undefined, error => {
         exeContext.errors.push(error);
         return Promise.resolve(null);
       });
@@ -849,7 +844,7 @@ function completeValueWithLocatedError(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<mixed> {
   try {
     const completed = completeValue(
       exeContext,
@@ -859,9 +854,8 @@ function completeValueWithLocatedError(
       path,
       result,
     );
-    const promise = getPromise(completed);
-    if (promise) {
-      return promise.then(undefined, error =>
+    if (isPromise(completed)) {
+      return completed.then(undefined, error =>
         Promise.reject(
           locatedError(
             asErrorInstance(error),
@@ -909,11 +903,10 @@ function completeValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<mixed> {
   // If result is a Promise, apply-lift over completeValue.
-  const promise = getPromise(result);
-  if (promise) {
-    return promise.then(resolved =>
+  if (isPromise(result)) {
+    return result.then(resolved =>
       completeValue(exeContext, returnType, fieldNodes, info, path, resolved),
     );
   }
@@ -1012,7 +1005,7 @@ function completeListValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<$ReadOnlyArray<mixed>> {
   invariant(
     isCollection(result),
     `Expected Iterable, but did not find one for field ${
@@ -1038,7 +1031,7 @@ function completeListValue(
       item,
     );
 
-    if (!containsPromise && getPromise(completedItem)) {
+    if (!containsPromise && isPromise(completedItem)) {
       containsPromise = true;
     }
     completedResults.push(completedItem);
@@ -1074,14 +1067,13 @@ function completeAbstractValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<ObjMap<mixed>> {
   const runtimeType = returnType.resolveType
     ? returnType.resolveType(result, exeContext.contextValue, info)
     : defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
 
-  const promise = getPromise(runtimeType);
-  if (promise) {
-    return promise.then(resolvedRuntimeType =>
+  if (isPromise(runtimeType)) {
+    return runtimeType.then(resolvedRuntimeType =>
       completeObjectValue(
         exeContext,
         ensureValidRuntimeType(
@@ -1103,7 +1095,7 @@ function completeAbstractValue(
   return completeObjectValue(
     exeContext,
     ensureValidRuntimeType(
-      ((runtimeType: any): ?GraphQLObjectType | string),
+      runtimeType,
       exeContext,
       returnType,
       fieldNodes,
@@ -1163,17 +1155,16 @@ function completeObjectValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<ObjMap<mixed>> {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
   if (returnType.isTypeOf) {
     const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
 
-    const promise = getPromise(isTypeOf);
-    if (promise) {
-      return promise.then(isTypeOfResult => {
-        if (!isTypeOfResult) {
+    if (isPromise(isTypeOf)) {
+      return isTypeOf.then(resolvedIsTypeOf => {
+        if (!resolvedIsTypeOf) {
           throw invalidReturnTypeError(returnType, result, fieldNodes);
         }
         return collectAndExecuteSubfields(
@@ -1220,7 +1211,7 @@ function collectAndExecuteSubfields(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<ObjMap<mixed>> {
   // Collect sub-fields to execute to complete this value.
   const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
   return executeFields(exeContext, returnType, result, path, subFieldNodes);
@@ -1289,9 +1280,8 @@ function defaultResolveTypeFn(
     if (type.isTypeOf) {
       const isTypeOfResult = type.isTypeOf(value, context, info);
 
-      const promise = getPromise(isTypeOfResult);
-      if (promise) {
-        promisedIsTypeOfResults[i] = promise;
+      if (isPromise(isTypeOfResult)) {
+        promisedIsTypeOfResults[i] = isTypeOfResult;
       } else if (isTypeOfResult) {
         return type;
       }

@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = promiseReduce;
 
-var _getPromise = require('./getPromise');
+var _isPromise = require('./isPromise');
 
-var _getPromise2 = _interopRequireDefault(_getPromise);
+var _isPromise2 = _interopRequireDefault(_isPromise);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20,14 +20,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function promiseReduce(values, callback, initialValue) {
   return values.reduce(function (previous, value) {
-    var promise = (0, _getPromise2.default)(previous);
-    if (promise) {
-      return promise.then(function (resolved) {
-        return callback(resolved, value);
-      });
-    }
-    // Previous is not Promise<U>, so it is U.
-    return callback(previous, value);
+    return (0, _isPromise2.default)(previous) ? previous.then(function (resolved) {
+      return callback(resolved, value);
+    }) : callback(previous, value);
   }, initialValue);
 } /**
    * Copyright (c) 2015-present, Facebook, Inc.
