@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import getPromise from './getPromise';
+import isPromise from './isPromise';
 import type { MaybePromise } from './MaybePromise';
 
 /**
@@ -22,12 +22,11 @@ export default function promiseReduce<T, U>(
   callback: (U, T) => MaybePromise<U>,
   initialValue: MaybePromise<U>,
 ): MaybePromise<U> {
-  return values.reduce((previous, value) => {
-    const promise = getPromise(previous);
-    if (promise) {
-      return promise.then(resolved => callback(resolved, value));
-    }
-    // Previous is not Promise<U>, so it is U.
-    return callback((previous: any), value);
-  }, initialValue);
+  return values.reduce(
+    (previous, value) =>
+      isPromise(previous)
+        ? previous.then(resolved => callback(resolved, value))
+        : callback(previous, value),
+    initialValue,
+  );
 }
