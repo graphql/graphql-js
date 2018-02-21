@@ -681,7 +681,7 @@ function resolveField(
   source: mixed,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   path: ResponsePath,
-): mixed {
+): MaybePromise<mixed> {
   const fieldNode = fieldNodes[0];
   const fieldName = fieldNode.name.value;
 
@@ -791,7 +791,7 @@ function completeValueCatchingError(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<mixed> {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
   if (isNonNullType(returnType)) {
@@ -844,7 +844,7 @@ function completeValueWithLocatedError(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<mixed> {
   try {
     const completed = completeValue(
       exeContext,
@@ -903,7 +903,7 @@ function completeValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<mixed> {
   // If result is a Promise, apply-lift over completeValue.
   if (isPromise(result)) {
     return result.then(resolved =>
@@ -1005,7 +1005,7 @@ function completeListValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<$ReadOnlyArray<mixed>> {
   invariant(
     isCollection(result),
     `Expected Iterable, but did not find one for field ${
@@ -1067,7 +1067,7 @@ function completeAbstractValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<ObjMap<mixed>> {
   const runtimeType = returnType.resolveType
     ? returnType.resolveType(result, exeContext.contextValue, info)
     : defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
@@ -1095,7 +1095,7 @@ function completeAbstractValue(
   return completeObjectValue(
     exeContext,
     ensureValidRuntimeType(
-      ((runtimeType: any): ?GraphQLObjectType | string),
+      runtimeType,
       exeContext,
       returnType,
       fieldNodes,
@@ -1155,7 +1155,7 @@ function completeObjectValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<ObjMap<mixed>> {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
@@ -1211,7 +1211,7 @@ function collectAndExecuteSubfields(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): mixed {
+): MaybePromise<ObjMap<mixed>> {
   // Collect sub-fields to execute to complete this value.
   const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
   return executeFields(exeContext, returnType, result, path, subFieldNodes);
