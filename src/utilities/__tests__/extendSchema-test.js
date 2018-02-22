@@ -794,7 +794,7 @@ describe('extendSchema', () => {
       }
     `);
     expect(() => extendSchema(testSchema, ast)).to.throw(
-      'Cannot extend interface "UnknownInterfaceType" because it does not ' +
+      'Cannot extend type "UnknownInterfaceType" because it does not ' +
         'exist in the existing schema.',
     );
   });

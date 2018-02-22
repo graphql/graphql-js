@@ -184,8 +184,7 @@ export function buildASTSchema(
     },
   );
 
-  const types = typeDefs.map(def => definitionBuilder.buildType(def));
-
+  const types = definitionBuilder.buildTypes(typeDefs);
   const directives = directiveDefs.map(def =>
     definitionBuilder.buildDirective(def),
   );
@@ -266,6 +265,12 @@ export class ASTDefinitionBuilder {
     );
   }
 
+  buildTypes(
+    nodes: $ReadOnlyArray<NamedTypeNode | TypeDefinitionNode>,
+  ): Array<GraphQLNamedType> {
+    return nodes.map(node => this.buildType(node));
+  }
+
   buildType(node: NamedTypeNode | TypeDefinitionNode): GraphQLNamedType {
     const typeName = node.name.value;
     if (!this._cache[typeName]) {
@@ -334,11 +339,15 @@ export class ASTDefinitionBuilder {
 
   _makeTypeDef(def: ObjectTypeDefinitionNode) {
     const typeName = def.name.value;
+    const interfaces = def.interfaces;
     return new GraphQLObjectType({
       name: typeName,
       description: getDescription(def, this._options),
       fields: () => this._makeFieldDefMap(def),
-      interfaces: () => this._makeImplementedInterfaces(def),
+      // Note: While this could make early assertions to get the correctly
+      // typed values, that would throw immediately while type system
+      // validation with validateSchema() will produce more actionable results.
+      interfaces: interfaces ? () => (this.buildTypes(interfaces): any) : [],
       astNode: def,
     });
   }
@@ -353,16 +362,6 @@ export class ASTDefinitionBuilder {
           field => this.buildField(field),
         )
       : {};
-  }
-
-  _makeImplementedInterfaces(def: ObjectTypeDefinitionNode) {
-    return (
-      def.interfaces &&
-      // Note: While this could make early assertions to get the correctly
-      // typed values, that would throw immediately while type system
-      // validation with validateSchema() will produce more actionable results.
-      def.interfaces.map(iface => (this.buildType(iface): any))
-    );
   }
 
   _makeInputValues(values: $ReadOnlyArray<InputValueDefinitionNode>) {
@@ -419,7 +418,7 @@ export class ASTDefinitionBuilder {
       // Note: While this could make assertions to get the correctly typed
       // values below, that would throw immediately while type system
       // validation with validateSchema() will produce more actionable results.
-      types: def.types ? def.types.map(t => (this.buildType(t): any)) : [],
+      types: def.types ? (this.buildTypes(def.types): any) : [],
       astNode: def,
     });
   }
