@@ -88,7 +88,7 @@ import { OverlappingFieldsCanBeMerged } from './rules/OverlappingFieldsCanBeMerg
 // Spec Section: "Input Object Field Uniqueness"
 import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
 
-import type { ValidationContext } from './index';
+import type ValidationContext from './ValidationContext';
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.
