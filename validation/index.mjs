@@ -7,7 +7,11 @@
  *  strict
  */
 
-export { validate, ValidationContext } from './validate';
+export { validate } from './validate';
+
+// https://github.com/tc39/proposal-export-default-from
+import ValidationContext from './ValidationContext';
+export { ValidationContext };
 
 export { specifiedRules } from './specifiedRules';
 

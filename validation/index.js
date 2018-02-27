@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.VariablesInAllowedPositionRule = exports.VariablesDefaultValueAllowedRule = exports.VariablesAreInputTypesRule = exports.ValuesOfCorrectTypeRule = exports.UniqueVariableNamesRule = exports.UniqueOperationNamesRule = exports.UniqueInputFieldNamesRule = exports.UniqueFragmentNamesRule = exports.UniqueDirectivesPerLocationRule = exports.UniqueArgumentNamesRule = exports.SingleFieldSubscriptionsRule = exports.ScalarLeafsRule = exports.ProvidedNonNullArgumentsRule = exports.PossibleFragmentSpreadsRule = exports.OverlappingFieldsCanBeMergedRule = exports.NoUnusedVariablesRule = exports.NoUnusedFragmentsRule = exports.NoUndefinedVariablesRule = exports.NoFragmentCyclesRule = exports.LoneAnonymousOperationRule = exports.KnownTypeNamesRule = exports.KnownFragmentNamesRule = exports.KnownDirectivesRule = exports.KnownArgumentNamesRule = exports.FragmentsOnCompositeTypesRule = exports.FieldsOnCorrectTypeRule = exports.specifiedRules = exports.ValidationContext = exports.validate = undefined;
 
 var _validate = require('./validate');
 
@@ -10,12 +11,6 @@ Object.defineProperty(exports, 'validate', {
   enumerable: true,
   get: function get() {
     return _validate.validate;
-  }
-});
-Object.defineProperty(exports, 'ValidationContext', {
-  enumerable: true,
-  get: function get() {
-    return _validate.ValidationContext;
   }
 });
 
@@ -261,3 +256,13 @@ Object.defineProperty(exports, 'VariablesInAllowedPositionRule', {
     return _VariablesInAllowedPosition.VariablesInAllowedPosition;
   }
 });
+
+var _ValidationContext = require('./ValidationContext');
+
+var _ValidationContext2 = _interopRequireDefault(_ValidationContext);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.ValidationContext = _ValidationContext2.default;
+
+// https://github.com/tc39/proposal-export-default-from

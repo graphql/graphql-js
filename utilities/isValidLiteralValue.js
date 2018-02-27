@@ -15,7 +15,11 @@ var _schema = require('../type/schema');
 
 var _ValuesOfCorrectType = require('../validation/rules/ValuesOfCorrectType');
 
-var _validate = require('../validation/validate');
+var _ValidationContext = require('../validation/ValidationContext');
+
+var _ValidationContext2 = _interopRequireDefault(_ValidationContext);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Utility which determines if a value literal node is valid for an input type.
@@ -35,7 +39,7 @@ function isValidLiteralValue(type, valueNode) {
   var emptySchema = new _schema.GraphQLSchema({});
   var emptyDoc = { kind: _kinds.Kind.DOCUMENT, definitions: [] };
   var typeInfo = new _TypeInfo.TypeInfo(emptySchema, undefined, type);
-  var context = new _validate.ValidationContext(emptySchema, emptyDoc, typeInfo);
+  var context = new _ValidationContext2.default(emptySchema, emptyDoc, typeInfo);
   var visitor = (0, _ValuesOfCorrectType.ValuesOfCorrectType)(context);
   (0, _visitor.visit)(valueNode, (0, _visitor.visitWithTypeInfo)(typeInfo, visitor));
   return context.getErrors();
