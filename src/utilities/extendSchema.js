@@ -8,33 +8,18 @@
  */
 
 import invariant from '../jsutils/invariant';
-import keyMap from '../jsutils/keyMap';
-import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
+import { SchemaTransformer } from './transformSchema';
 import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
-import { isIntrospectionType } from '../type/introspection';
-
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
-
 import {
   isObjectType,
   isInterfaceType,
-  isUnionType,
-  isListType,
-  isNonNullType,
   GraphQLObjectType,
   GraphQLInterfaceType,
-  GraphQLUnionType,
 } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
-
-import { GraphQLDirective } from '../type/directives';
-
 import { Kind } from '../language/kinds';
-
-import type { GraphQLType, GraphQLNamedType } from '../type/definition';
-
 import type {
   DocumentNode,
   DirectiveDefinitionNode,
@@ -195,10 +180,12 @@ export function extendSchema(
     typeDefinitionMap,
     options,
     typeRef => {
+      invariant(schemaTransformer);
       const typeName = typeRef.name.value;
-      const existingType = schema.getType(typeName);
-      if (existingType) {
-        return getExtendedType(existingType);
+      const type = schemaTransformer.transformType(typeName);
+
+      if (type) {
+        return type;
       }
 
       throw new GraphQLError(
@@ -209,53 +196,48 @@ export function extendSchema(
     },
   );
 
-  const extendTypeCache = Object.create(null);
+  const schemaTransformer = new SchemaTransformer(schema, {
+    Schema(config) {
+      const newDirectives = directiveDefinitions.map(node =>
+        astBuilder.buildDirective(node),
+      );
 
-  // Get the root Query, Mutation, and Subscription object types.
-  // Note: While this could make early assertions to get the correctly
-  // typed values below, that would throw immediately while type system
-  // validation with validateSchema() will produce more actionable results.
-  const existingQueryType = schema.getQueryType();
-  const queryType = existingQueryType
-    ? getExtendedType(existingQueryType)
-    : null;
+      const newTypes = [];
+      Object.keys(typeDefinitionMap).forEach(typeName => {
+        const def = typeDefinitionMap[typeName];
+        newTypes.push(astBuilder.buildType(def));
+      });
+      const extendAllowedLegacyNames = options && options.allowedLegacyNames;
 
-  const existingMutationType = schema.getMutationType();
-  const mutationType = existingMutationType
-    ? getExtendedType(existingMutationType)
-    : null;
-
-  const existingSubscriptionType = schema.getSubscriptionType();
-  const subscriptionType = existingSubscriptionType
-    ? getExtendedType(existingSubscriptionType)
-    : null;
-
-  const types = [
-    // Iterate through all types, getting the type definition for each, ensuring
-    // that any type not directly referenced by a field will get created.
-    ...objectValues(schema.getTypeMap()).map(type => getExtendedType(type)),
-    // Do the same with new types.
-    ...objectValues(typeDefinitionMap).map(type => astBuilder.buildType(type)),
-  ];
-
-  // Support both original legacy names and extended legacy names.
-  const schemaAllowedLegacyNames = schema.__allowedLegacyNames;
-  const extendAllowedLegacyNames = options && options.allowedLegacyNames;
-  const allowedLegacyNames =
-    schemaAllowedLegacyNames && extendAllowedLegacyNames
-      ? schemaAllowedLegacyNames.concat(extendAllowedLegacyNames)
-      : schemaAllowedLegacyNames || extendAllowedLegacyNames;
-
-  // Then produce and return a Schema with these types.
-  return new GraphQLSchema({
-    query: queryType,
-    mutation: mutationType,
-    subscription: subscriptionType,
-    types,
-    directives: getMergedDirectives(),
-    astNode: schema.astNode,
-    allowedLegacyNames,
+      return new GraphQLSchema({
+        ...config,
+        types: config.types.concat(newTypes),
+        directives: config.directives.concat(newDirectives),
+        allowedLegacyNames: extendAllowedLegacyNames
+          ? config.allowedLegacyNames.concat(extendAllowedLegacyNames)
+          : config.allowedLegacyNames,
+      });
+    },
+    ObjectType(config) {
+      const extensions = typeExtensionsMap[config.name] || [];
+      return new GraphQLObjectType({
+        ...config,
+        interfaces: () => extendImplementedInterfaces(config, extensions),
+        fields: () => extendFieldMap(config, extensions),
+        extensionASTNodes: config.extensionASTNodes.concat(extensions),
+      });
+    },
+    InterfaceType(config) {
+      const extensions = typeExtensionsMap[config.name] || [];
+      return new GraphQLInterfaceType({
+        ...config,
+        fields: () => extendFieldMap(config, extensions),
+        extensionASTNodes: config.extensionASTNodes.concat(extensions),
+      });
+    },
   });
+
+  return schemaTransformer.transformSchema();
 
   function appendExtensionToTypeExtensions(
     extension: TypeExtensionNode,
@@ -268,155 +250,37 @@ export function extendSchema(
     return existingTypeExtensions;
   }
 
-  // Below are functions used for producing this schema that have closed over
-  // this scope and have access to the schema, cache, and newly defined types.
-
-  function getMergedDirectives(): Array<GraphQLDirective> {
-    const existingDirectives = schema.getDirectives();
-    invariant(existingDirectives, 'schema must have default directives');
-
-    return existingDirectives.concat(
-      directiveDefinitions.map(node => astBuilder.buildDirective(node)),
-    );
-  }
-
-  function getExtendedType<T: GraphQLNamedType>(type: T): T {
-    if (!extendTypeCache[type.name]) {
-      extendTypeCache[type.name] = extendType(type);
-    }
-    return (extendTypeCache[type.name]: any);
-  }
-
-  // To be called at most once per type. Only getExtendedType should call this.
-  function extendType(type) {
-    if (isIntrospectionType(type)) {
-      // Introspection types are not extended.
-      return type;
-    }
-    if (isObjectType(type)) {
-      return extendObjectType(type);
-    }
-    if (isInterfaceType(type)) {
-      return extendInterfaceType(type);
-    }
-    if (isUnionType(type)) {
-      return extendUnionType(type);
-    }
-    // This type is not yet extendable.
-    return type;
-  }
-
-  function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
-    const name = type.name;
-    const extensionASTNodes = typeExtensionsMap[name]
-      ? type.extensionASTNodes
-        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
-        : typeExtensionsMap[name]
-      : type.extensionASTNodes;
-    return new GraphQLObjectType({
-      name,
-      description: type.description,
-      interfaces: () => extendImplementedInterfaces(type),
-      fields: () => extendFieldMap(type),
-      astNode: type.astNode,
-      extensionASTNodes,
-      isTypeOf: type.isTypeOf,
-    });
-  }
-
-  function extendInterfaceType(
-    type: GraphQLInterfaceType,
-  ): GraphQLInterfaceType {
-    const name = type.name;
-    const extensionASTNodes = typeExtensionsMap[name]
-      ? type.extensionASTNodes
-        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
-        : typeExtensionsMap[name]
-      : type.extensionASTNodes;
-    return new GraphQLInterfaceType({
-      name: type.name,
-      description: type.description,
-      fields: () => extendFieldMap(type),
-      astNode: type.astNode,
-      extensionASTNodes,
-      resolveType: type.resolveType,
-    });
-  }
-
-  function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
-    return new GraphQLUnionType({
-      name: type.name,
-      description: type.description,
-      types: type.getTypes().map(getExtendedType),
-      astNode: type.astNode,
-      resolveType: type.resolveType,
-    });
-  }
-
-  function extendImplementedInterfaces(
-    type: GraphQLObjectType,
-  ): Array<GraphQLInterfaceType> {
-    const interfaces = type.getInterfaces().map(getExtendedType);
-
-    // If there are any extensions to the interfaces, apply those here.
-    const extensions = typeExtensionsMap[type.name];
-    if (extensions) {
-      extensions.forEach(extension => {
-        extension.interfaces.forEach(namedType => {
+  function extendImplementedInterfaces(config, extensions) {
+    return config.interfaces().concat(
+      ...extensions.map(extension =>
+        extension.interfaces.map(
           // Note: While this could make early assertions to get the correctly
           // typed values, that would throw immediately while type system
           // validation with validateSchema() will produce more actionable results.
-          interfaces.push((astBuilder.buildType(namedType): any));
-        });
-      });
-    }
-
-    return interfaces;
+          type => (astBuilder.buildType(type): any),
+        ),
+      ),
+    );
   }
 
-  function extendFieldMap(type: GraphQLObjectType | GraphQLInterfaceType) {
-    const newFieldMap = Object.create(null);
-    const oldFieldMap = type.getFields();
-    Object.keys(oldFieldMap).forEach(fieldName => {
-      const field = oldFieldMap[fieldName];
-      newFieldMap[fieldName] = {
-        description: field.description,
-        deprecationReason: field.deprecationReason,
-        type: extendFieldType(field.type),
-        args: keyMap(field.args, arg => arg.name),
-        astNode: field.astNode,
-        resolve: field.resolve,
-      };
-    });
+  function extendFieldMap(config, extensions) {
+    const oldFields = config.fields();
+    const fieldMap = { ...oldFields };
 
-    // If there are any extensions to the fields, apply those here.
-    const extensions = typeExtensionsMap[type.name];
-    if (extensions) {
-      extensions.forEach(extension => {
-        extension.fields.forEach(field => {
-          const fieldName = field.name.value;
-          if (oldFieldMap[fieldName]) {
-            throw new GraphQLError(
-              `Field "${type.name}.${fieldName}" already exists in the ` +
-                'schema. It cannot also be defined in this type extension.',
-              [field],
-            );
-          }
-          newFieldMap[fieldName] = astBuilder.buildField(field);
-        });
-      });
-    }
+    for (const extension of extensions) {
+      for (const field of extension.fields) {
+        const fieldName = field.name.value;
 
-    return newFieldMap;
-  }
-
-  function extendFieldType<T: GraphQLType>(typeDef: T): T {
-    if (isListType(typeDef)) {
-      return (GraphQLList(extendFieldType(typeDef.ofType)): any);
+        if (oldFields[fieldName]) {
+          throw new GraphQLError(
+            `Field "${config.name}.${fieldName}" already exists in the ` +
+              'schema. It cannot also be defined in this type extension.',
+            [field],
+          );
+        }
+        fieldMap[fieldName] = astBuilder.buildField(field);
+      }
     }
-    if (isNonNullType(typeDef)) {
-      return (GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
-    }
-    return getExtendedType(typeDef);
+    return fieldMap;
   }
 }
