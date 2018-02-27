@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
+import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import keyMap from '../../jsutils/keyMap';
 import { isNonNullType } from '../../type/definition';
