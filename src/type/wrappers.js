@@ -34,12 +34,19 @@ declare class GraphQLList<+T: GraphQLType> {
   // Note: constructors cannot be used for covariant types. Drop the "new".
   constructor(ofType: any): void;
 }
+const listCache = new WeakMap();
 // eslint-disable-next-line no-redeclare
 export function GraphQLList(ofType) {
   if (this instanceof GraphQLList) {
     this.ofType = assertType(ofType);
   } else {
-    return new GraphQLList(ofType);
+    const cachedValue = listCache.get(ofType);
+    if (cachedValue !== undefined) {
+      return cachedValue;
+    }
+    const newValue = new GraphQLList(ofType);
+    listCache.set(ofType, newValue);
+    return newValue;
   }
 }
 
@@ -75,12 +82,19 @@ declare class GraphQLNonNull<+T: GraphQLNullableType> {
   // Note: constructors cannot be used for covariant types. Drop the "new".
   constructor(ofType: any): void;
 }
+const nnCache = new WeakMap();
 // eslint-disable-next-line no-redeclare
 export function GraphQLNonNull(ofType) {
   if (this instanceof GraphQLNonNull) {
     this.ofType = assertNullableType(ofType);
   } else {
-    return new GraphQLNonNull(ofType);
+    const cachedValue = nnCache.get(ofType);
+    if (cachedValue !== undefined) {
+      return cachedValue;
+    }
+    const newValue = new GraphQLNonNull(ofType);
+    nnCache.set(ofType, newValue);
+    return newValue;
   }
 }
 
