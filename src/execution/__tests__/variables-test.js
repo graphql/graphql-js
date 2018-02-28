@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { inspect } from 'util';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../execute';
@@ -59,67 +60,44 @@ const TestNestedInputObject = new GraphQLInputObjectType({
   },
 });
 
+function fieldWithInputArg(inputArg) {
+  return {
+    type: GraphQLString,
+    args: { input: inputArg },
+    resolve(_, args) {
+      if (args.hasOwnProperty('input')) {
+        return inspect(args.input, { depth: null });
+      }
+    },
+  };
+}
+
 const TestType = new GraphQLObjectType({
   name: 'TestType',
   fields: {
-    fieldWithObjectInput: {
+    fieldWithObjectInput: fieldWithInputArg({ type: TestInputObject }),
+    fieldWithNullableStringInput: fieldWithInputArg({ type: GraphQLString }),
+    fieldWithNonNullableStringInput: fieldWithInputArg({
+      type: GraphQLNonNull(GraphQLString),
+    }),
+    fieldWithDefaultArgumentValue: fieldWithInputArg({
       type: GraphQLString,
-      args: { input: { type: TestInputObject } },
-      resolve: (_, { input }) => input && JSON.stringify(input),
-    },
-    fieldWithNullableStringInput: {
-      type: GraphQLString,
-      args: { input: { type: GraphQLString } },
-      resolve: (_, { input }) => input && JSON.stringify(input),
-    },
-    fieldWithNonNullableStringInput: {
-      type: GraphQLString,
-      args: { input: { type: GraphQLNonNull(GraphQLString) } },
-      resolve: (_, { input }) => input && JSON.stringify(input),
-    },
-    fieldWithDefaultArgumentValue: {
-      type: GraphQLString,
-      args: { input: { type: GraphQLString, defaultValue: 'Hello World' } },
-      resolve: (_, { input }) => input && JSON.stringify(input),
-    },
-    fieldWithNestedInputObject: {
-      type: GraphQLString,
-      args: {
-        input: {
-          type: TestNestedInputObject,
-          defaultValue: 'Hello World',
-        },
-      },
-      resolve: (_, { input }) => input && JSON.stringify(input),
-    },
-    list: {
-      type: GraphQLString,
-      args: { input: { type: GraphQLList(GraphQLString) } },
-      resolve: (_, { input }) => input && JSON.stringify(input),
-    },
-    nnList: {
-      type: GraphQLString,
-      args: {
-        input: { type: GraphQLNonNull(GraphQLList(GraphQLString)) },
-      },
-      resolve: (_, { input }) => input && JSON.stringify(input),
-    },
-    listNN: {
-      type: GraphQLString,
-      args: {
-        input: { type: GraphQLList(GraphQLNonNull(GraphQLString)) },
-      },
-      resolve: (_, { input }) => input && JSON.stringify(input),
-    },
-    nnListNN: {
-      type: GraphQLString,
-      args: {
-        input: {
-          type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))),
-        },
-      },
-      resolve: (_, { input }) => input && JSON.stringify(input),
-    },
+      defaultValue: 'Hello World',
+    }),
+    fieldWithNestedInputObject: fieldWithInputArg({
+      type: TestNestedInputObject,
+      defaultValue: 'Hello World',
+    }),
+    list: fieldWithInputArg({ type: GraphQLList(GraphQLString) }),
+    nnList: fieldWithInputArg({
+      type: GraphQLNonNull(GraphQLList(GraphQLString)),
+    }),
+    listNN: fieldWithInputArg({
+      type: GraphQLList(GraphQLNonNull(GraphQLString)),
+    }),
+    nnListNN: fieldWithInputArg({
+      type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))),
+    }),
   },
 });
 
@@ -138,7 +116,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
           },
         });
       });
@@ -153,7 +131,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
           },
         });
       });
@@ -168,7 +146,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":null,"b":null,"c":"C","d":null}',
+            fieldWithObjectInput: "{ a: null, b: null, c: 'C', d: null }",
           },
         });
       });
@@ -183,7 +161,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"b":["A",null,"C"],"c":"C"}',
+            fieldWithObjectInput: "{ b: [ 'A', null, 'C' ], c: 'C' }",
           },
         });
       });
@@ -223,7 +201,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(await execute(schema, ast)).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"c":"foo","d":"DeserializedValue"}',
+            fieldWithObjectInput: "{ c: 'foo', d: 'DeserializedValue' }",
           },
         });
       });
@@ -243,7 +221,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
           },
         });
       });
@@ -259,7 +237,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
           },
         });
       });
@@ -270,7 +248,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"a":"foo","b":["bar"],"c":"baz"}',
+            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
           },
         });
       });
@@ -281,7 +259,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{"c":"foo","d":"DeserializedValue"}',
+            fieldWithObjectInput: "{ c: 'foo', d: 'DeserializedValue' }",
           },
         });
       });
@@ -448,7 +426,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { value: null }),
       ).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: null,
+          fieldWithNullableStringInput: 'null',
         },
       });
     });
@@ -465,7 +443,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { value: 'a' }),
       ).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: '"a"',
+          fieldWithNullableStringInput: "'a'",
         },
       });
     });
@@ -480,7 +458,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: '"a"',
+          fieldWithNullableStringInput: "'a'",
         },
       });
     });
@@ -496,7 +474,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, parse(doc))).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: '"default"',
+          fieldWithNonNullableStringInput: "'default'",
         },
       });
     });
@@ -555,7 +533,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { value: 'a' }),
       ).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: '"a"',
+          fieldWithNonNullableStringInput: "'a'",
         },
       });
     });
@@ -570,7 +548,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: '"a"',
+          fieldWithNonNullableStringInput: "'a'",
         },
       });
     });
@@ -681,7 +659,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { input: null }),
       ).to.deep.equal({
         data: {
-          list: null,
+          list: 'null',
         },
       });
     });
@@ -698,7 +676,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { input: ['A'] }),
       ).to.deep.equal({
         data: {
-          list: '["A"]',
+          list: "[ 'A' ]",
         },
       });
     });
@@ -715,7 +693,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { input: ['A', null, 'B'] }),
       ).to.deep.equal({
         data: {
-          list: '["A",null,"B"]',
+          list: "[ 'A', null, 'B' ]",
         },
       });
     });
@@ -754,7 +732,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { input: ['A'] }),
       ).to.deep.equal({
         data: {
-          nnList: '["A"]',
+          nnList: "[ 'A' ]",
         },
       });
     });
@@ -771,7 +749,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { input: ['A', null, 'B'] }),
       ).to.deep.equal({
         data: {
-          nnList: '["A",null,"B"]',
+          nnList: "[ 'A', null, 'B' ]",
         },
       });
     });
@@ -788,7 +766,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { input: null }),
       ).to.deep.equal({
         data: {
-          listNN: null,
+          listNN: 'null',
         },
       });
     });
@@ -805,7 +783,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { input: ['A'] }),
       ).to.deep.equal({
         data: {
-          listNN: '["A"]',
+          listNN: "[ 'A' ]",
         },
       });
     });
@@ -867,7 +845,7 @@ describe('Execute: Handles inputs', () => {
         await execute(schema, ast, null, null, { input: ['A'] }),
       ).to.deep.equal({
         data: {
-          nnListNN: '["A"]',
+          nnListNN: "[ 'A' ]",
         },
       });
     });
@@ -950,7 +928,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithDefaultArgumentValue: '"Hello World"',
+          fieldWithDefaultArgumentValue: "'Hello World'",
         },
       });
     });
@@ -962,7 +940,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(await execute(schema, ast)).to.deep.equal({
         data: {
-          fieldWithDefaultArgumentValue: '"Hello World"',
+          fieldWithDefaultArgumentValue: "'Hello World'",
         },
       });
     });
