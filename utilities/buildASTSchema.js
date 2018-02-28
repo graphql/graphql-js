@@ -136,10 +136,7 @@ function buildASTSchema(ast, options) {
     throw new Error('Type "' + typeRef.name.value + '" not found in document.');
   });
 
-  var types = typeDefs.map(function (def) {
-    return definitionBuilder.buildType(def);
-  });
-
+  var types = definitionBuilder.buildTypes(typeDefs);
   var directives = directiveDefs.map(function (def) {
     return definitionBuilder.buildDirective(def);
   });
@@ -207,6 +204,14 @@ var ASTDefinitionBuilder = exports.ASTDefinitionBuilder = function () {
     });
   }
 
+  ASTDefinitionBuilder.prototype.buildTypes = function buildTypes(nodes) {
+    var _this = this;
+
+    return nodes.map(function (node) {
+      return _this.buildType(node);
+    });
+  };
+
   ASTDefinitionBuilder.prototype.buildType = function buildType(node) {
     var typeName = node.name.value;
     if (!this._cache[typeName]) {
@@ -270,42 +275,34 @@ var ASTDefinitionBuilder = exports.ASTDefinitionBuilder = function () {
   };
 
   ASTDefinitionBuilder.prototype._makeTypeDef = function _makeTypeDef(def) {
-    var _this = this;
+    var _this2 = this;
 
     var typeName = def.name.value;
+    var interfaces = def.interfaces;
     return new _definition.GraphQLObjectType({
       name: typeName,
       description: getDescription(def, this._options),
       fields: function fields() {
-        return _this._makeFieldDefMap(def);
+        return _this2._makeFieldDefMap(def);
       },
-      interfaces: function interfaces() {
-        return _this._makeImplementedInterfaces(def);
-      },
+      // Note: While this could make early assertions to get the correctly
+      // typed values, that would throw immediately while type system
+      // validation with validateSchema() will produce more actionable results.
+      interfaces: interfaces ? function () {
+        return _this2.buildTypes(interfaces);
+      } : [],
       astNode: def
     });
   };
 
   ASTDefinitionBuilder.prototype._makeFieldDefMap = function _makeFieldDefMap(def) {
-    var _this2 = this;
+    var _this3 = this;
 
     return def.fields ? (0, _keyValMap2.default)(def.fields, function (field) {
       return field.name.value;
     }, function (field) {
-      return _this2.buildField(field);
+      return _this3.buildField(field);
     }) : {};
-  };
-
-  ASTDefinitionBuilder.prototype._makeImplementedInterfaces = function _makeImplementedInterfaces(def) {
-    var _this3 = this;
-
-    return def.interfaces &&
-    // Note: While this could make early assertions to get the correctly
-    // typed values, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    def.interfaces.map(function (iface) {
-      return _this3.buildType(iface);
-    });
   };
 
   ASTDefinitionBuilder.prototype._makeInputValues = function _makeInputValues(values) {
@@ -359,17 +356,13 @@ var ASTDefinitionBuilder = exports.ASTDefinitionBuilder = function () {
   };
 
   ASTDefinitionBuilder.prototype._makeUnionDef = function _makeUnionDef(def) {
-    var _this7 = this;
-
     return new _definition.GraphQLUnionType({
       name: def.name.value,
       description: getDescription(def, this._options),
       // Note: While this could make assertions to get the correctly typed
       // values below, that would throw immediately while type system
       // validation with validateSchema() will produce more actionable results.
-      types: def.types ? def.types.map(function (t) {
-        return _this7.buildType(t);
-      }) : [],
+      types: def.types ? this.buildTypes(def.types) : [],
       astNode: def
     });
   };
@@ -386,13 +379,13 @@ var ASTDefinitionBuilder = exports.ASTDefinitionBuilder = function () {
   };
 
   ASTDefinitionBuilder.prototype._makeInputObjectDef = function _makeInputObjectDef(def) {
-    var _this8 = this;
+    var _this7 = this;
 
     return new _definition.GraphQLInputObjectType({
       name: def.name.value,
       description: getDescription(def, this._options),
       fields: function fields() {
-        return def.fields ? _this8._makeInputValues(def.fields) : {};
+        return def.fields ? _this7._makeInputValues(def.fields) : {};
       },
       astNode: def
     });

@@ -34,12 +34,7 @@ import { GraphQLDirective } from '../type/directives';
 import { Kind } from '../language/kinds';
 
 import type { GraphQLType, GraphQLNamedType } from '../type/definition';
-
-import type {
-  DocumentNode,
-  DirectiveDefinitionNode,
-  TypeExtensionNode,
-} from '../language/ast';
+import type { DocumentNode, DirectiveDefinitionNode } from '../language/ast';
 
 type Options = {|
   ...GraphQLSchemaValidationOptions,
@@ -114,6 +109,7 @@ export function extendSchema(
         typeDefinitionMap[typeName] = def;
         break;
       case Kind.OBJECT_TYPE_EXTENSION:
+      case Kind.INTERFACE_TYPE_EXTENSION:
         // Sanity check that this type extension exists within the
         // schema's existing types.
         const extendedTypeName = def.name.value;
@@ -125,39 +121,12 @@ export function extendSchema(
             [def],
           );
         }
-        if (!isObjectType(existingType)) {
-          throw new GraphQLError(
-            `Cannot extend non-object type "${extendedTypeName}".`,
-            [def],
-          );
-        }
-        typeExtensionsMap[extendedTypeName] = appendExtensionToTypeExtensions(
-          def,
-          typeExtensionsMap[extendedTypeName],
-        );
-        break;
-      case Kind.INTERFACE_TYPE_EXTENSION:
-        const extendedInterfaceTypeName = def.name.value;
-        const existingInterfaceType = schema.getType(extendedInterfaceTypeName);
-        if (!existingInterfaceType) {
-          throw new GraphQLError(
-            `Cannot extend interface "${extendedInterfaceTypeName}" because ` +
-              'it does not exist in the existing schema.',
-            [def],
-          );
-        }
-        if (!isInterfaceType(existingInterfaceType)) {
-          throw new GraphQLError(
-            `Cannot extend non-interface type "${extendedInterfaceTypeName}".`,
-            [def],
-          );
-        }
-        typeExtensionsMap[
-          extendedInterfaceTypeName
-        ] = appendExtensionToTypeExtensions(
-          def,
-          typeExtensionsMap[extendedInterfaceTypeName],
-        );
+        checkExtensionNode(existingType, def);
+
+        const existingTypeExtensions = typeExtensionsMap[extendedTypeName];
+        typeExtensionsMap[extendedTypeName] = existingTypeExtensions
+          ? existingTypeExtensions.concat([def])
+          : [def];
         break;
       case Kind.DIRECTIVE_DEFINITION:
         const directiveName = def.name.value;
@@ -212,9 +181,6 @@ export function extendSchema(
   const extendTypeCache = Object.create(null);
 
   // Get the root Query, Mutation, and Subscription object types.
-  // Note: While this could make early assertions to get the correctly
-  // typed values below, that would throw immediately while type system
-  // validation with validateSchema() will produce more actionable results.
   const existingQueryType = schema.getQueryType();
   const queryType = existingQueryType
     ? getExtendedType(existingQueryType)
@@ -235,7 +201,7 @@ export function extendSchema(
     // that any type not directly referenced by a field will get created.
     ...objectValues(schema.getTypeMap()).map(type => getExtendedType(type)),
     // Do the same with new types.
-    ...objectValues(typeDefinitionMap).map(type => astBuilder.buildType(type)),
+    ...astBuilder.buildTypes(objectValues(typeDefinitionMap)),
   ];
 
   // Support both original legacy names and extended legacy names.
@@ -256,17 +222,6 @@ export function extendSchema(
     astNode: schema.astNode,
     allowedLegacyNames,
   });
-
-  function appendExtensionToTypeExtensions(
-    extension: TypeExtensionNode,
-    existingTypeExtensions: ?Array<TypeExtensionNode>,
-  ): Array<TypeExtensionNode> {
-    if (!existingTypeExtensions) {
-      return [extension];
-    }
-    existingTypeExtensions.push(extension);
-    return existingTypeExtensions;
-  }
 
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
@@ -418,5 +373,26 @@ export function extendSchema(
       return (GraphQLNonNull(extendFieldType(typeDef.ofType)): any);
     }
     return getExtendedType(typeDef);
+  }
+}
+
+function checkExtensionNode(type, node) {
+  switch (node.kind) {
+    case Kind.OBJECT_TYPE_EXTENSION:
+      if (!isObjectType(type)) {
+        throw new GraphQLError(
+          `Cannot extend non-object type "${type.name}".`,
+          [node],
+        );
+      }
+      break;
+    case Kind.INTERFACE_TYPE_EXTENSION:
+      if (!isInterfaceType(type)) {
+        throw new GraphQLError(
+          `Cannot extend non-interface type "${type.name}".`,
+          [node],
+        );
+      }
+      break;
   }
 }
