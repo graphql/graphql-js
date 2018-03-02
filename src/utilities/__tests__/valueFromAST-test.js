@@ -66,6 +66,7 @@ describe('valueFromAST', () => {
       BLUE: { value: 3 },
       NULL: { value: null },
       UNDEFINED: { value: undefined },
+      NAN: { value: NaN },
     },
   });
 
@@ -77,6 +78,7 @@ describe('valueFromAST', () => {
     testCase(testEnum, 'null', null);
     testCase(testEnum, 'NULL', null);
     testCase(testEnum, 'UNDEFINED', undefined);
+    testCase(testEnum, 'NAN', NaN);
   });
 
   // Boolean!
