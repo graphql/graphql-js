@@ -332,7 +332,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.jsonEqual({
+    expect(result).to.deep.equal({
       data: {
         pets: [
           {
@@ -428,7 +428,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.jsonEqual({
+    expect(result).to.deep.equal({
       data: {
         pets: [
           {
@@ -513,7 +513,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.jsonEqual({
+    expect(result).to.deep.equal({
       data: {
         pets: [
           {
@@ -585,7 +585,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.jsonEqual({
+    expect(result).to.deep.equal({
       data: {
         pets: [null, null],
       },
