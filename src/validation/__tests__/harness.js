@@ -228,6 +228,14 @@ const ComplicatedArgs = new GraphQLObjectType({
       type: GraphQLString,
       args: { stringListArg: { type: GraphQLList(GraphQLString) } },
     },
+    stringListNonNullArgField: {
+      type: GraphQLString,
+      args: {
+        stringListNonNullArg: {
+          type: GraphQLList(GraphQLNonNull(GraphQLString)),
+        },
+      },
+    },
     complexArgField: {
       type: GraphQLString,
       args: { complexArg: { type: ComplexInput } },

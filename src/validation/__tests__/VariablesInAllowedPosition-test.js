@@ -360,4 +360,25 @@ describe('Validate: Variables are in allowed positions', () => {
       ],
     );
   });
+
+  it('[String] => [String!]', () => {
+    expectFailsRule(
+      VariablesInAllowedPosition,
+      `
+      query Query($stringListVar: [String])
+      {
+        complicatedArgs {
+          stringListNonNullArgField(stringListNonNullArg: $stringListVar)
+        }
+      }
+    `,
+      [
+        {
+          message: badVarPosMessage('stringListVar', '[String]', '[String!]'),
+          locations: [{ line: 2, column: 19 }, { line: 5, column: 59 }],
+          path: undefined,
+        },
+      ],
+    );
+  });
 });
