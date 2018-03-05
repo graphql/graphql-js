@@ -67,7 +67,7 @@ describe('Execute: Handles basic execution tasks', () => {
       rootValue: data,
     });
 
-    expect(result).to.jsonEqual({
+    expect(result).to.deep.equal({
       data: { a: 'rootValue' },
     });
   });
@@ -1110,6 +1110,6 @@ describe('Execute: Handles basic execution tasks', () => {
       customResolver,
     );
 
-    expect(result).to.jsonEqual({ data: { foo: 'foo' } });
+    expect(result).to.deep.equal({ data: { foo: 'foo' } });
   });
 });

@@ -104,7 +104,7 @@ const liz = new Person('Liz');
 const john = new Person('John', [garfield, odie], [liz, odie]);
 
 describe('Execute: Union and intersection types', () => {
-  it('can introspect on union and intersection types', async () => {
+  it('can introspect on union and intersection types', () => {
     const ast = parse(`
       {
         Named: __type(name: "Named") {
@@ -128,7 +128,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(await execute(schema, ast)).to.deep.equal({
+    return expect(execute(schema, ast)).to.deep.equal({
       data: {
         Named: {
           kind: 'INTERFACE',
@@ -152,7 +152,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('executes using union types', async () => {
+  it('executes using union types', () => {
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
     const ast = parse(`
       {
@@ -167,7 +167,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(await execute(schema, ast, john)).to.deep.equal({
+    return expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -179,7 +179,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('executes union types with inline fragments', async () => {
+  it('executes union types with inline fragments', () => {
     // This is the valid version of the query in the above test.
     const ast = parse(`
       {
@@ -199,7 +199,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(await execute(schema, ast, john)).to.deep.equal({
+    return expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -211,7 +211,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('executes using interface types', async () => {
+  it('executes using interface types', () => {
     // NOTE: This is an *invalid* query, but it should be an *executable* query.
     const ast = parse(`
       {
@@ -226,7 +226,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(await execute(schema, ast, john)).to.deep.equal({
+    return expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -238,7 +238,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('executes union types with inline fragments', async () => {
+  it('executes union types with inline fragments', () => {
     // This is the valid version of the query in the above test.
     const ast = parse(`
       {
@@ -257,7 +257,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(await execute(schema, ast, john)).to.deep.equal({
+    return expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -269,7 +269,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('allows fragment conditions to be abstract types', async () => {
+  it('allows fragment conditions to be abstract types', () => {
     const ast = parse(`
       {
         __typename
@@ -302,7 +302,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(await execute(schema, ast, john)).to.deep.equal({
+    return expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -318,7 +318,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('gets execution info in resolver', async () => {
+  it('gets execution info in resolver', () => {
     let encounteredContext;
     let encounteredSchema;
     let encounteredRootValue;
@@ -355,7 +355,7 @@ describe('Execute: Union and intersection types', () => {
 
     const ast = parse('{ name, friends { name } }');
 
-    expect(await execute(schema2, ast, john2, context)).to.deep.equal({
+    expect(execute(schema2, ast, john2, context)).to.deep.equal({
       data: { name: 'John', friends: [{ name: 'Liz' }] },
     });
 

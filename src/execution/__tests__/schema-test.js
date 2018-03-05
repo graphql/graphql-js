@@ -22,7 +22,7 @@ import {
 } from '../../type';
 
 describe('Execute: Handles execution with a complex schema', () => {
-  it('executes using a schema', async () => {
+  it('executes using a schema', () => {
     const BlogImage = new GraphQLObjectType({
       name: 'Image',
       fields: {
@@ -151,7 +151,7 @@ describe('Execute: Handles execution with a complex schema', () => {
 
     // Note: this is intentionally not validating to ensure appropriate
     // behavior occurs when executing an invalid query.
-    return expect(await execute(BlogSchema, parse(request))).to.deep.equal({
+    return expect(execute(BlogSchema, parse(request))).to.deep.equal({
       data: {
         feed: [
           {
