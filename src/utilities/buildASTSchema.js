@@ -505,7 +505,7 @@ function getLeadingCommentBlock(node): void | string {
  */
 export function buildSchema(
   source: string | Source,
-  options: BuildSchemaOptions & ParseOptions,
+  options?: BuildSchemaOptions & ParseOptions,
 ): GraphQLSchema {
   return buildASTSchema(parse(source, options), options);
 }
