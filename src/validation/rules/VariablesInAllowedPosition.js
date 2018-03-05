@@ -9,6 +9,7 @@
 
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
+import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 import { GraphQLNonNull, isNonNullType } from '../../type/definition';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
@@ -74,9 +75,17 @@ export function VariablesInAllowedPosition(
   };
 }
 
-// If a variable definition has a default value, it's effectively non-null.
+/**
+ * If varType is not non-null and defaultValue is provided and not null:
+ *   Let varType be the non-null of varType.
+ */
 function effectiveType(varType, varDef) {
-  return !varDef.defaultValue || isNonNullType(varType)
-    ? varType
-    : GraphQLNonNull(varType);
+  if (
+    !isNonNullType(varType) &&
+    varDef.defaultValue &&
+    varDef.defaultValue.kind !== Kind.NULL
+  ) {
+    return GraphQLNonNull(varType);
+  }
+  return varType;
 }

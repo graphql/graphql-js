@@ -486,4 +486,192 @@ describe('Execute: handles non-nullable types', () => {
       ],
     },
   );
+
+  describe('Handles non-null argument', () => {
+    const schemaWithNonNullArg = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          withNonNullArg: {
+            type: GraphQLString,
+            args: {
+              cannotBeNull: {
+                type: GraphQLNonNull(GraphQLString),
+                defaultValue: null,
+              },
+            },
+            resolve: async (_, args) => {
+              if (typeof args.cannotBeNull === 'string') {
+                return 'Passed: ' + args.cannotBeNull;
+              }
+            },
+          },
+        },
+      }),
+    });
+
+    it('succeeds when passed non-null literal value', async () => {
+      const result = await execute({
+        schema: schemaWithNonNullArg,
+        document: parse(`
+          query {
+            withNonNullArg (cannotBeNull: "literal value")
+          }
+        `),
+      });
+
+      expect(result).to.deep.equal({
+        data: {
+          withNonNullArg: 'Passed: literal value',
+        },
+      });
+    });
+
+    it('succeeds when passed non-null variable value', async () => {
+      const result = await execute({
+        schema: schemaWithNonNullArg,
+        document: parse(`
+          query ($testVar: String!) {
+            withNonNullArg (cannotBeNull: $testVar)
+          }
+        `),
+        variableValues: {
+          testVar: 'variable value',
+        },
+      });
+
+      expect(result).to.deep.equal({
+        data: {
+          withNonNullArg: 'Passed: variable value',
+        },
+      });
+    });
+
+    it('succeeds when missing variable has default value', async () => {
+      const result = await execute({
+        schema: schemaWithNonNullArg,
+        document: parse(`
+          query ($testVar: String = "default value") {
+            withNonNullArg (cannotBeNull: $testVar)
+          }
+        `),
+        variableValues: {
+          // Intentionally missing variable
+        },
+      });
+
+      expect(result).to.deep.equal({
+        data: {
+          withNonNullArg: 'Passed: default value',
+        },
+      });
+    });
+
+    it('succeeds when null variable has default value', async () => {
+      const result = await execute({
+        schema: schemaWithNonNullArg,
+        document: parse(`
+          query ($testVar: String = "default value") {
+            withNonNullArg (cannotBeNull: $testVar)
+          }
+        `),
+        variableValues: {
+          testVar: null,
+        },
+      });
+
+      expect(result).to.deep.equal({
+        data: {
+          withNonNullArg: 'Passed: default value',
+        },
+      });
+    });
+
+    it('field error when missing non-null arg', async () => {
+      // Note: validation should identify this issue first (missing args rule)
+      // however execution should still protect against this.
+      const result = await execute({
+        schema: schemaWithNonNullArg,
+        document: parse(`
+          query {
+            withNonNullArg
+          }
+        `),
+      });
+
+      expect(result).to.deep.equal({
+        data: {
+          withNonNullArg: null,
+        },
+        errors: [
+          {
+            message:
+              'Argument "cannotBeNull" of required type "String!" was not provided.',
+            locations: [{ line: 3, column: 13 }],
+            path: ['withNonNullArg'],
+          },
+        ],
+      });
+    });
+
+    it('field error when non-null arg provided null', async () => {
+      // Note: validation should identify this issue first (values of correct
+      // type rule) however execution should still protect against this.
+      const result = await execute({
+        schema: schemaWithNonNullArg,
+        document: parse(`
+          query {
+            withNonNullArg(cannotBeNull: null)
+          }
+        `),
+      });
+
+      expect(result).to.deep.equal({
+        data: {
+          withNonNullArg: null,
+        },
+        errors: [
+          {
+            message:
+              'Argument "cannotBeNull" of non-null type "String!" must ' +
+              'not be null.',
+            locations: [{ line: 3, column: 42 }],
+            path: ['withNonNullArg'],
+          },
+        ],
+      });
+    });
+
+    it('field error when non-null arg not provided variable value', async () => {
+      // Note: validation should identify this issue first (variables in allowed
+      // position rule) however execution should still protect against this.
+      const result = await execute({
+        schema: schemaWithNonNullArg,
+        document: parse(`
+          query ($testVar: String) {
+            withNonNullArg(cannotBeNull: $testVar)
+          }
+        `),
+        variableValues: {
+          // Intentionally missing variable
+        },
+      });
+
+      expect(result).to.deep.equal({
+        data: {
+          withNonNullArg: null,
+        },
+        errors: [
+          {
+            message:
+              'Argument "cannotBeNull" of required type "String!" was ' +
+              'provided the variable "$testVar" which was not provided a ' +
+              'runtime value.',
+            locations: [{ line: 3, column: 42 }],
+            path: ['withNonNullArg'],
+          },
+        ],
+      });
+    });
+  });
 });
