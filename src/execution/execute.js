@@ -33,7 +33,6 @@ import {
   isListType,
   isNonNullType,
 } from '../type/definition';
-import type { GraphQLList } from '../type/wrappers';
 import type {
   GraphQLObjectType,
   GraphQLOutputType,
@@ -43,6 +42,7 @@ import type {
   GraphQLFieldResolver,
   GraphQLResolveInfo,
   ResponsePath,
+  GraphQLList,
 } from '../type/definition';
 import { GraphQLSchema } from '../type/schema';
 import {
