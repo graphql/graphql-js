@@ -16,9 +16,7 @@ import { GraphQLSchema } from '../type/schema';
 
 import { DirectiveLocation } from '../language/directiveLocation';
 
-import { isInputType, isOutputType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, assertNullableType, assertObjectType, assertInterfaceType } from '../type/definition';
-
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
+import { isInputType, isOutputType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, assertNullableType, assertObjectType, assertInterfaceType } from '../type/definition';
 
 import { GraphQLDirective } from '../type/directives';
 

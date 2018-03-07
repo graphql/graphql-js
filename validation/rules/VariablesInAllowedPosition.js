@@ -10,12 +10,17 @@ var _error = require('../../error');
 
 var _definition = require('../../type/definition');
 
-var _wrappers = require('../../type/wrappers');
-
 var _typeComparators = require('../../utilities/typeComparators');
 
 var _typeFromAST = require('../../utilities/typeFromAST');
 
+function badVarPosMessage(varName, varType, expectedType) {
+  return 'Variable "$' + varName + '" of type "' + String(varType) + '" used in ' + ('position expecting type "' + String(expectedType) + '".');
+}
+
+/**
+ * Variables passed to field arguments conform to type
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -25,13 +30,6 @@ var _typeFromAST = require('../../utilities/typeFromAST');
  *  strict
  */
 
-function badVarPosMessage(varName, varType, expectedType) {
-  return 'Variable "$' + varName + '" of type "' + String(varType) + '" used in ' + ('position expecting type "' + String(expectedType) + '".');
-}
-
-/**
- * Variables passed to field arguments conform to type
- */
 function VariablesInAllowedPosition(context) {
   var varDefMap = Object.create(null);
 
@@ -72,5 +70,5 @@ function VariablesInAllowedPosition(context) {
 
 // If a variable definition has a default value, it's effectively non-null.
 function effectiveType(varType, varDef) {
-  return !varDef.defaultValue || (0, _definition.isNonNullType)(varType) ? varType : (0, _wrappers.GraphQLNonNull)(varType);
+  return !varDef.defaultValue || (0, _definition.isNonNullType)(varType) ? varType : (0, _definition.GraphQLNonNull)(varType);
 }

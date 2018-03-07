@@ -27,8 +27,6 @@ var _schema = require('../type/schema');
 
 var _directives = require('../type/directives');
 
-var _wrappers = require('../type/wrappers');
-
 var _definition = require('../type/definition');
 
 var _scalars = require('../type/scalars');
@@ -104,9 +102,9 @@ function lexicographicSortSchema(schema) {
 
   function sortType(type) {
     if ((0, _definition.isListType)(type)) {
-      return new _wrappers.GraphQLList(sortType(type.ofType));
+      return new _definition.GraphQLList(sortType(type.ofType));
     } else if ((0, _definition.isNonNullType)(type)) {
-      return new _wrappers.GraphQLNonNull(sortType(type.ofType));
+      return new _definition.GraphQLNonNull(sortType(type.ofType));
     }
     return sortNamedType(type);
   }

@@ -20,9 +20,7 @@ import { parse } from '../language/parser';
 import { getDirectiveValues } from '../execution/values';
 import { Kind } from '../language/kinds';
 
-import { assertNullableType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from '../type/definition';
-
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
+import { assertNullableType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull } from '../type/definition';
 
 import { GraphQLDirective, GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective } from '../type/directives';
 

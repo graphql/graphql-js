@@ -25,12 +25,12 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
   assertNullableType,
   assertObjectType,
   assertInterfaceType,
 } from '../type/definition';
-
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import type {
   GraphQLType,

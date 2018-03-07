@@ -7,7 +7,7 @@ exports.typeFromAST = typeFromAST;
 
 var _kinds = require('../language/kinds');
 
-var _wrappers = require('../type/wrappers');
+var _definition = require('../type/definition');
 
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType
@@ -31,11 +31,11 @@ function typeFromAST(schema, typeNode) {
   var innerType = void 0;
   if (typeNode.kind === _kinds.Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
-    return innerType && (0, _wrappers.GraphQLList)(innerType);
+    return innerType && (0, _definition.GraphQLList)(innerType);
   }
   if (typeNode.kind === _kinds.Kind.NON_NULL_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
-    return innerType && (0, _wrappers.GraphQLNonNull)(innerType);
+    return innerType && (0, _definition.GraphQLNonNull)(innerType);
   }
   if (typeNode.kind === _kinds.Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);

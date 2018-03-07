@@ -10,8 +10,7 @@
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { ASTVisitor } from '../../language/visitor';
-import { isNonNullType } from '../../type/definition';
-import { GraphQLNonNull } from '../../type/wrappers';
+import { GraphQLNonNull, isNonNullType } from '../../type/definition';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import type { GraphQLType } from '../../type/definition';

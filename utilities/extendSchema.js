@@ -27,8 +27,6 @@ var _introspection = require('../type/introspection');
 
 var _definition = require('../type/definition');
 
-var _wrappers = require('../type/wrappers');
-
 var _directives = require('../type/directives');
 
 var _kinds = require('../language/kinds');
@@ -53,6 +51,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *        Provide true to use preceding comments as the description.
  *
  */
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
+
 function extendSchema(schema, documentAST, options) {
   !(0, _schema.isSchema)(schema) ? (0, _invariant2.default)(0, 'Must provide valid GraphQLSchema') : void 0;
 
@@ -297,21 +304,14 @@ function extendSchema(schema, documentAST, options) {
 
   function extendFieldType(typeDef) {
     if ((0, _definition.isListType)(typeDef)) {
-      return (0, _wrappers.GraphQLList)(extendFieldType(typeDef.ofType));
+      return (0, _definition.GraphQLList)(extendFieldType(typeDef.ofType));
     }
     if ((0, _definition.isNonNullType)(typeDef)) {
-      return (0, _wrappers.GraphQLNonNull)(extendFieldType(typeDef.ofType));
+      return (0, _definition.GraphQLNonNull)(extendFieldType(typeDef.ofType));
     }
     return getExtendedType(typeDef);
   }
-} /**
-   * Copyright (c) 2015-present, Facebook, Inc.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   *  strict
-   */
+}
 
 function checkExtensionNode(type, node) {
   switch (node.kind) {

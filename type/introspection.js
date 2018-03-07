@@ -20,22 +20,11 @@ var _printer = require('../language/printer');
 
 var _definition = require('./definition');
 
-var _wrappers = require('../type/wrappers');
-
 var _scalars = require('./scalars');
 
 var _directiveLocation = require('../language/directiveLocation');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
 
 var __Schema = exports.__Schema = new _definition.GraphQLObjectType({
   name: '__Schema',
@@ -45,14 +34,14 @@ var __Schema = exports.__Schema = new _definition.GraphQLObjectType({
     return {
       types: {
         description: 'A list of all types supported by this server.',
-        type: (0, _wrappers.GraphQLNonNull)((0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__Type))),
+        type: (0, _definition.GraphQLNonNull)((0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__Type))),
         resolve: function resolve(schema) {
           return (0, _objectValues2.default)(schema.getTypeMap());
         }
       },
       queryType: {
         description: 'The type that query operations will be rooted at.',
-        type: (0, _wrappers.GraphQLNonNull)(__Type),
+        type: (0, _definition.GraphQLNonNull)(__Type),
         resolve: function resolve(schema) {
           return schema.getQueryType();
         }
@@ -73,14 +62,21 @@ var __Schema = exports.__Schema = new _definition.GraphQLObjectType({
       },
       directives: {
         description: 'A list of all directives supported by this server.',
-        type: (0, _wrappers.GraphQLNonNull)((0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__Directive))),
+        type: (0, _definition.GraphQLNonNull)((0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__Directive))),
         resolve: function resolve(schema) {
           return schema.getDirectives();
         }
       }
     };
   }
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     *
+     * This source code is licensed under the MIT license found in the
+     * LICENSE file in the root directory of this source tree.
+     *
+     *  strict
+     */
 
 var __Directive = exports.__Directive = new _definition.GraphQLObjectType({
   name: '__Directive',
@@ -88,13 +84,13 @@ var __Directive = exports.__Directive = new _definition.GraphQLObjectType({
   description: 'A Directive provides a way to describe alternate runtime execution and ' + 'type validation behavior in a GraphQL document.' + "\n\nIn some cases, you need to provide options to alter GraphQL's " + 'execution behavior in ways field arguments will not suffice, such as ' + 'conditionally including or skipping a field. Directives provide this by ' + 'describing additional information to the executor.',
   fields: function fields() {
     return {
-      name: { type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLString) },
+      name: { type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLString) },
       description: { type: _scalars.GraphQLString },
       locations: {
-        type: (0, _wrappers.GraphQLNonNull)((0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__DirectiveLocation)))
+        type: (0, _definition.GraphQLNonNull)((0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__DirectiveLocation)))
       },
       args: {
-        type: (0, _wrappers.GraphQLNonNull)((0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__InputValue))),
+        type: (0, _definition.GraphQLNonNull)((0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__InputValue))),
         resolve: function resolve(directive) {
           return directive.args || [];
         }
@@ -103,21 +99,21 @@ var __Directive = exports.__Directive = new _definition.GraphQLObjectType({
       // of the GraphQL specification.
       onOperation: {
         deprecationReason: 'Use `locations`.',
-        type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLBoolean),
+        type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
         resolve: function resolve(d) {
           return d.locations.indexOf(_directiveLocation.DirectiveLocation.QUERY) !== -1 || d.locations.indexOf(_directiveLocation.DirectiveLocation.MUTATION) !== -1 || d.locations.indexOf(_directiveLocation.DirectiveLocation.SUBSCRIPTION) !== -1;
         }
       },
       onFragment: {
         deprecationReason: 'Use `locations`.',
-        type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLBoolean),
+        type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
         resolve: function resolve(d) {
           return d.locations.indexOf(_directiveLocation.DirectiveLocation.FRAGMENT_SPREAD) !== -1 || d.locations.indexOf(_directiveLocation.DirectiveLocation.INLINE_FRAGMENT) !== -1 || d.locations.indexOf(_directiveLocation.DirectiveLocation.FRAGMENT_DEFINITION) !== -1;
         }
       },
       onField: {
         deprecationReason: 'Use `locations`.',
-        type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLBoolean),
+        type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
         resolve: function resolve(d) {
           return d.locations.indexOf(_directiveLocation.DirectiveLocation.FIELD) !== -1;
         }
@@ -213,7 +209,7 @@ var __Type = exports.__Type = new _definition.GraphQLObjectType({
   fields: function fields() {
     return {
       kind: {
-        type: (0, _wrappers.GraphQLNonNull)(__TypeKind),
+        type: (0, _definition.GraphQLNonNull)(__TypeKind),
         resolve: function resolve(type) {
           if ((0, _definition.isScalarType)(type)) {
             return TypeKind.SCALAR;
@@ -238,7 +234,7 @@ var __Type = exports.__Type = new _definition.GraphQLObjectType({
       name: { type: _scalars.GraphQLString },
       description: { type: _scalars.GraphQLString },
       fields: {
-        type: (0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__Field)),
+        type: (0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__Field)),
         args: {
           includeDeprecated: { type: _scalars.GraphQLBoolean, defaultValue: false }
         },
@@ -258,7 +254,7 @@ var __Type = exports.__Type = new _definition.GraphQLObjectType({
         }
       },
       interfaces: {
-        type: (0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__Type)),
+        type: (0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__Type)),
         resolve: function resolve(type) {
           if ((0, _definition.isObjectType)(type)) {
             return type.getInterfaces();
@@ -266,7 +262,7 @@ var __Type = exports.__Type = new _definition.GraphQLObjectType({
         }
       },
       possibleTypes: {
-        type: (0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__Type)),
+        type: (0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__Type)),
         resolve: function resolve(type, args, context, _ref2) {
           var schema = _ref2.schema;
 
@@ -276,7 +272,7 @@ var __Type = exports.__Type = new _definition.GraphQLObjectType({
         }
       },
       enumValues: {
-        type: (0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__EnumValue)),
+        type: (0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__EnumValue)),
         args: {
           includeDeprecated: { type: _scalars.GraphQLBoolean, defaultValue: false }
         },
@@ -295,7 +291,7 @@ var __Type = exports.__Type = new _definition.GraphQLObjectType({
         }
       },
       inputFields: {
-        type: (0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__InputValue)),
+        type: (0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__InputValue)),
         resolve: function resolve(type) {
           if ((0, _definition.isInputObjectType)(type)) {
             return (0, _objectValues2.default)(type.getFields());
@@ -313,16 +309,16 @@ var __Field = exports.__Field = new _definition.GraphQLObjectType({
   description: 'Object and Interface types are described by a list of Fields, each of ' + 'which has a name, potentially a list of arguments, and a return type.',
   fields: function fields() {
     return {
-      name: { type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLString) },
+      name: { type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLString) },
       description: { type: _scalars.GraphQLString },
       args: {
-        type: (0, _wrappers.GraphQLNonNull)((0, _wrappers.GraphQLList)((0, _wrappers.GraphQLNonNull)(__InputValue))),
+        type: (0, _definition.GraphQLNonNull)((0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__InputValue))),
         resolve: function resolve(field) {
           return field.args || [];
         }
       },
-      type: { type: (0, _wrappers.GraphQLNonNull)(__Type) },
-      isDeprecated: { type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLBoolean) },
+      type: { type: (0, _definition.GraphQLNonNull)(__Type) },
+      isDeprecated: { type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean) },
       deprecationReason: {
         type: _scalars.GraphQLString
       }
@@ -336,9 +332,9 @@ var __InputValue = exports.__InputValue = new _definition.GraphQLObjectType({
   description: 'Arguments provided to Fields or Directives and the input fields of an ' + 'InputObject are represented as Input Values which describe their type ' + 'and optionally a default value.',
   fields: function fields() {
     return {
-      name: { type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLString) },
+      name: { type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLString) },
       description: { type: _scalars.GraphQLString },
-      type: { type: (0, _wrappers.GraphQLNonNull)(__Type) },
+      type: { type: (0, _definition.GraphQLNonNull)(__Type) },
       defaultValue: {
         type: _scalars.GraphQLString,
         description: 'A GraphQL-formatted string representing the default value for this ' + 'input value.',
@@ -356,9 +352,9 @@ var __EnumValue = exports.__EnumValue = new _definition.GraphQLObjectType({
   description: 'One possible value for a given Enum. Enum values are unique values, not ' + 'a placeholder for a string or numeric value. However an Enum value is ' + 'returned in a JSON response as a string.',
   fields: function fields() {
     return {
-      name: { type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLString) },
+      name: { type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLString) },
       description: { type: _scalars.GraphQLString },
-      isDeprecated: { type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLBoolean) },
+      isDeprecated: { type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean) },
       deprecationReason: {
         type: _scalars.GraphQLString
       }
@@ -424,7 +420,7 @@ var __TypeKind = exports.__TypeKind = new _definition.GraphQLEnumType({
 
 var SchemaMetaFieldDef = exports.SchemaMetaFieldDef = {
   name: '__schema',
-  type: (0, _wrappers.GraphQLNonNull)(__Schema),
+  type: (0, _definition.GraphQLNonNull)(__Schema),
   description: 'Access the current type schema of this server.',
   args: [],
   resolve: function resolve(source, args, context, _ref4) {
@@ -437,7 +433,7 @@ var TypeMetaFieldDef = exports.TypeMetaFieldDef = {
   name: '__type',
   type: __Type,
   description: 'Request the type information of a single type.',
-  args: [{ name: 'name', type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLString) }],
+  args: [{ name: 'name', type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLString) }],
   resolve: function resolve(source, _ref5, context, _ref6) {
     var name = _ref5.name;
     var schema = _ref6.schema;
@@ -447,7 +443,7 @@ var TypeMetaFieldDef = exports.TypeMetaFieldDef = {
 
 var TypeNameMetaFieldDef = exports.TypeNameMetaFieldDef = {
   name: '__typename',
-  type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLString),
+  type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLString),
   description: 'The name of the current Object type at runtime.',
   args: [],
   resolve: function resolve(source, args, context, _ref7) {

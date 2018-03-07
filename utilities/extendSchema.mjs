@@ -15,8 +15,7 @@ import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
 
-import { isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
+import { isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType } from '../type/definition';
 
 import { GraphQLDirective } from '../type/directives';
 

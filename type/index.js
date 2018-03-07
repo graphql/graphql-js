@@ -273,19 +273,16 @@ Object.defineProperty(exports, 'GraphQLInputObjectType', {
     return _definition.GraphQLInputObjectType;
   }
 });
-
-var _wrappers = require('./wrappers');
-
 Object.defineProperty(exports, 'GraphQLList', {
   enumerable: true,
   get: function get() {
-    return _wrappers.GraphQLList;
+    return _definition.GraphQLList;
   }
 });
 Object.defineProperty(exports, 'GraphQLNonNull', {
   enumerable: true,
   get: function get() {
-    return _wrappers.GraphQLNonNull;
+    return _definition.GraphQLNonNull;
   }
 });
 

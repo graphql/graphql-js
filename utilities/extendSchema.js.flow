@@ -23,11 +23,12 @@ import {
   isUnionType,
   isListType,
   isNonNullType,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
 } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import { GraphQLDirective } from '../type/directives';
 

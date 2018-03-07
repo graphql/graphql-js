@@ -32,8 +32,6 @@ var _kinds = require('../language/kinds');
 
 var _definition = require('../type/definition');
 
-var _wrappers = require('../type/wrappers');
-
 var _directives = require('../type/directives');
 
 var _introspection = require('../type/introspection');
@@ -55,11 +53,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function buildWrappedType(innerType, inputTypeNode) {
   if (inputTypeNode.kind === _kinds.Kind.LIST_TYPE) {
-    return (0, _wrappers.GraphQLList)(buildWrappedType(innerType, inputTypeNode.type));
+    return (0, _definition.GraphQLList)(buildWrappedType(innerType, inputTypeNode.type));
   }
   if (inputTypeNode.kind === _kinds.Kind.NON_NULL_TYPE) {
     var wrappedType = buildWrappedType(innerType, inputTypeNode.type);
-    return (0, _wrappers.GraphQLNonNull)((0, _definition.assertNullableType)(wrappedType));
+    return (0, _definition.GraphQLNonNull)((0, _definition.assertNullableType)(wrappedType));
   }
   return innerType;
 }

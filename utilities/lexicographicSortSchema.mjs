@@ -12,9 +12,8 @@ import keyValMap from '../jsutils/keyValMap'; /**
 import objectValues from '../jsutils/objectValues';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
-import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
+import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
 import { isSpecifiedScalarType } from '../type/scalars';
 import { isIntrospectionType } from '../type/introspection';
 

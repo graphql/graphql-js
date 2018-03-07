@@ -9,7 +9,7 @@
 
 import { Kind } from '../language/kinds';
 
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
+import { GraphQLList, GraphQLNonNull } from '../type/definition';
 
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType

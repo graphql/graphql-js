@@ -7,7 +7,7 @@ exports.specifiedDirectives = exports.GraphQLDeprecatedDirective = exports.DEFAU
 exports.isDirective = isDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
 
-var _wrappers = require('./wrappers');
+var _definition = require('./definition');
 
 var _scalars = require('./scalars');
 
@@ -84,7 +84,7 @@ var GraphQLIncludeDirective = exports.GraphQLIncludeDirective = new GraphQLDirec
   locations: [_directiveLocation.DirectiveLocation.FIELD, _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD, _directiveLocation.DirectiveLocation.INLINE_FRAGMENT],
   args: {
     if: {
-      type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLBoolean),
+      type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
       description: 'Included when true.'
     }
   }
@@ -99,7 +99,7 @@ var GraphQLSkipDirective = exports.GraphQLSkipDirective = new GraphQLDirective({
   locations: [_directiveLocation.DirectiveLocation.FIELD, _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD, _directiveLocation.DirectiveLocation.INLINE_FRAGMENT],
   args: {
     if: {
-      type: (0, _wrappers.GraphQLNonNull)(_scalars.GraphQLBoolean),
+      type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
       description: 'Skipped when true.'
     }
   }

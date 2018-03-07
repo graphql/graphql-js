@@ -21,11 +21,9 @@ assertType, assertScalarType, assertObjectType, assertInterfaceType, assertUnion
 // Un-modifiers
 getNullableType, getNamedType,
 // Definitions
-GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from './definition';
-
-export {
+GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType,
 // Type Wrappers
-GraphQLList, GraphQLNonNull } from './wrappers';
+GraphQLList, GraphQLNonNull } from './definition';
 
 export {
 // Predicate

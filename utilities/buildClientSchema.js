@@ -27,8 +27,6 @@ var _directiveLocation = require('../language/directiveLocation');
 
 var _definition = require('../type/definition');
 
-var _wrappers = require('../type/wrappers');
-
 var _directives = require('../type/directives');
 
 var _introspection = require('../type/introspection');
@@ -49,15 +47,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This function expects a complete introspection result. Don't forget to check
  * the "errors" field of a server response before calling this function.
  */
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
-
 function buildClientSchema(introspection, options) {
   // Get the schema from the introspection result.
   var schemaIntrospection = introspection.__schema;
@@ -82,7 +71,7 @@ function buildClientSchema(introspection, options) {
       if (!itemRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
-      return (0, _wrappers.GraphQLList)(getType(itemRef));
+      return (0, _definition.GraphQLList)(getType(itemRef));
     }
     if (typeRef.kind === _introspection.TypeKind.NON_NULL) {
       var nullableRef = typeRef.ofType;
@@ -90,7 +79,7 @@ function buildClientSchema(introspection, options) {
         throw new Error('Decorated type deeper than introspection query.');
       }
       var nullableType = getType(nullableRef);
-      return (0, _wrappers.GraphQLNonNull)((0, _definition.assertNullableType)(nullableType));
+      return (0, _definition.GraphQLNonNull)((0, _definition.assertNullableType)(nullableType));
     }
     if (!typeRef.name) {
       throw new Error('Unknown type reference: ' + JSON.stringify(typeRef));
@@ -309,4 +298,11 @@ function buildClientSchema(introspection, options) {
     assumeValid: options && options.assumeValid,
     allowedLegacyNames: options && options.allowedLegacyNames
   });
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   *  strict
+   */
