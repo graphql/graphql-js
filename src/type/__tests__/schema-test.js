@@ -12,11 +12,11 @@ import {
   GraphQLString,
   GraphQLInputObjectType,
   GraphQLDirective,
+  GraphQLList,
 } from '../';
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { GraphQLList } from '../wrappers';
 
 const InterfaceType = new GraphQLInterfaceType({
   name: 'Interface',

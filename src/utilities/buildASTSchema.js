@@ -49,9 +49,9 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
 } from '../type/definition';
-
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import {
   GraphQLDirective,

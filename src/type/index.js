@@ -63,13 +63,10 @@ export {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-} from './definition';
-
-export {
   // Type Wrappers
   GraphQLList,
   GraphQLNonNull,
-} from './wrappers';
+} from './definition';
 
 export {
   // Predicate

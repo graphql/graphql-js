@@ -13,7 +13,7 @@ import type {
   ListTypeNode,
   NonNullTypeNode,
 } from '../language/ast';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
+import { GraphQLList, GraphQLNonNull } from '../type/definition';
 import type { GraphQLNamedType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 

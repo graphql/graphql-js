@@ -14,6 +14,8 @@ import { print } from '../language/printer';
 import {
   GraphQLObjectType,
   GraphQLEnumType,
+  GraphQLList,
+  GraphQLNonNull,
   isScalarType,
   isObjectType,
   isInterfaceType,
@@ -25,7 +27,6 @@ import {
   isAbstractType,
   isNamedType,
 } from './definition';
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from '../language/directiveLocation';
 import type { GraphQLField } from './definition';

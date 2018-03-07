@@ -11,7 +11,7 @@ import type {
   GraphQLFieldConfigArgumentMap,
   GraphQLArgument,
 } from './definition';
-import { GraphQLNonNull } from './wrappers';
+import { GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
