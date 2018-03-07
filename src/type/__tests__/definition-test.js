@@ -120,7 +120,7 @@ describe('Type System: Example', () => {
 
     expect(BlogSchema.getQueryType()).to.equal(BlogQuery);
 
-    const articleField = BlogQuery.getFields()[('article': string)];
+    const articleField = BlogQuery.getFields()['article'];
     expect(articleField && articleField.type).to.equal(BlogArticle);
     expect(articleField && articleField.type.name).to.equal('Article');
     expect(articleField && articleField.name).to.equal('article');
@@ -128,27 +128,23 @@ describe('Type System: Example', () => {
     const articleFieldType = articleField ? articleField.type : null;
 
     const titleField =
-      isObjectType(articleFieldType) &&
-      articleFieldType.getFields()[('title': string)];
+      isObjectType(articleFieldType) && articleFieldType.getFields()['title'];
     expect(titleField && titleField.name).to.equal('title');
     expect(titleField && titleField.type).to.equal(GraphQLString);
     expect(titleField && titleField.type.name).to.equal('String');
 
     const authorField =
-      isObjectType(articleFieldType) &&
-      articleFieldType.getFields()[('author': string)];
+      isObjectType(articleFieldType) && articleFieldType.getFields()['author'];
 
     const authorFieldType = authorField ? authorField.type : null;
     const recentArticleField =
       isObjectType(authorFieldType) &&
-      authorFieldType.getFields()[('recentArticle': string)];
+      authorFieldType.getFields()['recentArticle'];
 
     expect(recentArticleField && recentArticleField.type).to.equal(BlogArticle);
 
-    const feedField = BlogQuery.getFields()[('feed': string)];
-    expect(feedField && (feedField.type: GraphQLList).ofType).to.equal(
-      BlogArticle,
-    );
+    const feedField = BlogQuery.getFields()['feed'];
+    expect(feedField && feedField.type.ofType).to.equal(BlogArticle);
     expect(feedField && feedField.name).to.equal('feed');
   });
 
@@ -160,7 +156,7 @@ describe('Type System: Example', () => {
 
     expect(BlogSchema.getMutationType()).to.equal(BlogMutation);
 
-    const writeMutation = BlogMutation.getFields()[('writeArticle': string)];
+    const writeMutation = BlogMutation.getFields()['writeArticle'];
     expect(writeMutation && writeMutation.type).to.equal(BlogArticle);
     expect(writeMutation && writeMutation.type.name).to.equal('Article');
     expect(writeMutation && writeMutation.name).to.equal('writeArticle');
@@ -174,7 +170,7 @@ describe('Type System: Example', () => {
 
     expect(BlogSchema.getSubscriptionType()).to.equal(BlogSubscription);
 
-    const sub = BlogSubscription.getFields()[('articleSubscribe': string)];
+    const sub = BlogSubscription.getFields()['articleSubscribe'];
     expect(sub && sub.type).to.equal(BlogArticle);
     expect(sub && sub.type.name).to.equal('Article');
     expect(sub && sub.name).to.equal('articleSubscribe');
