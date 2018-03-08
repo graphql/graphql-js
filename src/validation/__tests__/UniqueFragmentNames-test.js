@@ -16,7 +16,6 @@ function duplicateFrag(fragName, l1, c1, l2, c2) {
   return {
     message: duplicateFragmentNameMessage(fragName),
     locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-    path: undefined,
   };
 }
 

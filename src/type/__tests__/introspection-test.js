@@ -1198,7 +1198,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.containSubset({
+    return expect(graphqlSync(schema, request)).to.deep.equal({
       errors: [
         {
           message: missingFieldArgMessage('__type', 'name', 'String!'),

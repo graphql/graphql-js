@@ -17,7 +17,6 @@ function missingFieldArg(fieldName, argName, typeName, line, column) {
   return {
     message: missingFieldArgMessage(fieldName, argName, typeName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -25,7 +24,6 @@ function missingDirectiveArg(directiveName, argName, typeName, line, column) {
   return {
     message: missingDirectiveArgMessage(directiveName, argName, typeName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 

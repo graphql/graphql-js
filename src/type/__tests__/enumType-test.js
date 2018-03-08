@@ -163,7 +163,6 @@ describe('Type System: Enum Values', () => {
           message:
             'Expected type Color, found "GREEN"; Did you mean the enum value GREEN?',
           locations: [{ line: 1, column: 23 }],
-          path: undefined,
         },
       ],
     });
@@ -178,7 +177,6 @@ describe('Type System: Enum Values', () => {
           message:
             'Expected type Color, found GREENISH; Did you mean the enum value GREEN?',
           locations: [{ line: 1, column: 23 }],
-          path: undefined,
         },
       ],
     });
@@ -193,7 +191,6 @@ describe('Type System: Enum Values', () => {
           message:
             'Expected type Color, found green; Did you mean the enum value GREEN?',
           locations: [{ line: 1, column: 23 }],
-          path: undefined,
         },
       ],
     });
@@ -222,7 +219,6 @@ describe('Type System: Enum Values', () => {
         {
           message: 'Expected type Color, found 1.',
           locations: [{ line: 1, column: 23 }],
-          path: undefined,
         },
       ],
     });
@@ -236,7 +232,6 @@ describe('Type System: Enum Values', () => {
         {
           message: 'Expected type Int, found GREEN.',
           locations: [{ line: 1, column: 22 }],
-          path: undefined,
         },
       ],
     });
@@ -280,7 +275,6 @@ describe('Type System: Enum Values', () => {
           message:
             'Variable "$color" got invalid value 2; Expected type Color.',
           locations: [{ line: 1, column: 8 }],
-          path: undefined,
         },
       ],
     });
@@ -297,7 +291,6 @@ describe('Type System: Enum Values', () => {
             'Variable "$color" of type "String!" used in position ' +
             'expecting type "Color".',
           locations: [{ line: 1, column: 8 }, { line: 1, column: 47 }],
-          path: undefined,
         },
       ],
     });
@@ -314,7 +307,6 @@ describe('Type System: Enum Values', () => {
             'Variable "$color" of type "Int!" used in position ' +
             'expecting type "Color".',
           locations: [{ line: 1, column: 8 }, { line: 1, column: 44 }],
-          path: undefined,
         },
       ],
     });

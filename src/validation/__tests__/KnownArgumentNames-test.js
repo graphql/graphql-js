@@ -17,7 +17,6 @@ function unknownArg(argName, fieldName, typeName, suggestedArgs, line, column) {
   return {
     message: unknownArgMessage(argName, fieldName, typeName, suggestedArgs),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -31,7 +30,6 @@ function unknownDirectiveArg(
   return {
     message: unknownDirectiveArgMessage(argName, directiveName, suggestedArgs),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 

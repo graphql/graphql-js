@@ -16,7 +16,6 @@ function anonNotAlone(line, column) {
   return {
     message: anonOperationNotAloneMessage(),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 

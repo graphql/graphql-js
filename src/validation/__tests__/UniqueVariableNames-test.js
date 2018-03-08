@@ -16,7 +16,6 @@ function duplicateVariable(name, l1, c1, l2, c2) {
   return {
     message: duplicateVariableMessage(name),
     locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-    path: undefined,
   };
 }
 

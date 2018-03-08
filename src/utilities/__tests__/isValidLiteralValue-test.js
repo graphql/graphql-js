@@ -23,7 +23,6 @@ describe('isValidLiteralValue', () => {
       {
         message: 'Expected type Int, found "abc".',
         locations: [{ line: 1, column: 1 }],
-        path: undefined,
       },
     ]);
   });

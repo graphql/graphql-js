@@ -19,7 +19,6 @@ function badValue(typeName, value, line, column, message) {
   return {
     message: badValueMessage(typeName, value, message),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -27,7 +26,6 @@ function requiredField(typeName, fieldName, fieldTypeName, line, column) {
   return {
     message: requiredFieldMessage(typeName, fieldName, fieldTypeName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -35,7 +33,6 @@ function unknownField(typeName, fieldName, line, column, message) {
   return {
     message: unknownFieldMessage(typeName, fieldName, message),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 

@@ -350,7 +350,6 @@ describe('Subscription Initialization Phase', () => {
         {
           message: 'The subscription field "unknownField" is not defined.',
           locations: [{ line: 3, column: 9 }],
-          path: undefined,
         },
       ],
     });
@@ -478,7 +477,6 @@ describe('Subscription Initialization Phase', () => {
             'type Int; Int cannot represent non 32-bit signed ' +
             'integer value: meow',
           locations: [{ line: 2, column: 21 }],
-          path: undefined,
         },
       ],
     });
