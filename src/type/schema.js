@@ -8,6 +8,7 @@
  */
 
 import {
+  isAbstractType,
   isObjectType,
   isInterfaceType,
   isUnionType,
@@ -159,6 +160,8 @@ export class GraphQLSchema {
             this._implementations[iface.name] = [type];
           }
         });
+      } else if (isAbstractType(type) && !this._implementations[type.name]) {
+        this._implementations[type.name] = [];
       }
     });
   }
