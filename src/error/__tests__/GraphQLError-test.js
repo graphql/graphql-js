@@ -136,6 +136,7 @@ describe('GraphQLError', () => {
       message: 'msg',
       locations: undefined,
       path: ['path', 3, 'to', 'field'],
+      extensions: undefined,
     });
   });
 
@@ -148,7 +149,7 @@ describe('GraphQLError', () => {
       message: 'msg',
       locations: undefined,
       path: undefined,
-      foo: 'bar',
+      extensions: { foo: 'bar' },
     });
   });
 });

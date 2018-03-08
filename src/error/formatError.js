@@ -18,17 +18,16 @@ import type { SourceLocation } from '../language/location';
 export function formatError(error: GraphQLError): GraphQLFormattedError {
   invariant(error, 'Received null or undefined error.');
   return {
-    ...error.extensions,
     message: error.message || 'An unknown error occurred.',
     locations: error.locations,
     path: error.path,
+    extensions: error.extensions,
   };
 }
 
-export type GraphQLFormattedError = {
+export type GraphQLFormattedError = {|
   +message: string,
   +locations: $ReadOnlyArray<SourceLocation> | void,
   +path: $ReadOnlyArray<string | number> | void,
-  // Extensions
-  +[key: string]: mixed,
-};
+  +extensions: { [key: string]: mixed } | void,
+|};
