@@ -31,19 +31,20 @@ const SomeScalarType = new GraphQLScalarType({
   parseLiteral() {},
 });
 
+const SomeInterfaceType = new GraphQLInterfaceType({
+  name: 'SomeInterface',
+  fields: { f: { type: GraphQLString } },
+});
+
 const SomeObjectType = new GraphQLObjectType({
   name: 'SomeObject',
   fields: { f: { type: GraphQLString } },
+  interfaces: [SomeInterfaceType],
 });
 
 const SomeUnionType = new GraphQLUnionType({
   name: 'SomeUnion',
   types: [SomeObjectType],
-});
-
-const SomeInterfaceType = new GraphQLInterfaceType({
-  name: 'SomeInterface',
-  fields: { f: { type: GraphQLString } },
 });
 
 const SomeEnumType = new GraphQLEnumType({
@@ -772,6 +773,7 @@ describe('Type System: Object fields must have output types', () => {
           f: { type: BadObjectType },
         },
       }),
+      types: [SomeObjectType],
     });
   }
 
@@ -1016,6 +1018,14 @@ describe('Type System: Interface fields must have output types', () => {
       },
     });
 
+    const BadImplementingType = new GraphQLObjectType({
+      name: 'BadImplementing',
+      interfaces: [BadInterfaceType],
+      fields: {
+        badField: { type: fieldType },
+      },
+    });
+
     return new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -1023,6 +1033,7 @@ describe('Type System: Interface fields must have output types', () => {
           f: { type: BadInterfaceType },
         },
       }),
+      types: [BadImplementingType, SomeObjectType],
     });
   }
 
