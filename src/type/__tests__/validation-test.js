@@ -824,6 +824,22 @@ describe('Type System: Object fields must have output types', () => {
 });
 
 describe('Type System: Objects can only implement unique interfaces', () => {
+  it('rejects an Object implementing a non-type values', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'BadObject',
+        interfaces: [undefined],
+      }),
+    });
+
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Type BadObject must only implement Interface types, it cannot implement undefined.',
+      },
+    ]);
+  });
+
   it('rejects an Object implementing a non-Interface type', () => {
     const schema = buildSchema(`
       type Query {
