@@ -792,59 +792,6 @@ function completeValueCatchingError(
   path: ResponsePath,
   result: mixed,
 ): MaybePromise<mixed> {
-  // If the field type is non-nullable, then it is resolved without any
-  // protection from errors, however it still properly locates the error.
-  if (isNonNullType(returnType)) {
-    return completeValueWithLocatedError(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-  }
-
-  // Otherwise, error protection is applied, logging the error and resolving
-  // a null value for this field if one is encountered.
-  try {
-    const completed = completeValueWithLocatedError(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-    if (isPromise(completed)) {
-      // If `completeValueWithLocatedError` returned a rejected promise, log
-      // the rejection error and resolve to null.
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      return completed.then(undefined, error => {
-        exeContext.errors.push(error);
-        return Promise.resolve(null);
-      });
-    }
-    return completed;
-  } catch (error) {
-    // If `completeValueWithLocatedError` returned abruptly (threw an error),
-    // log the error and return null.
-    exeContext.errors.push(error);
-    return null;
-  }
-}
-
-// This is a small wrapper around completeValue which annotates errors with
-// location information.
-function completeValueWithLocatedError(
-  exeContext: ExecutionContext,
-  returnType: GraphQLOutputType,
-  fieldNodes: $ReadOnlyArray<FieldNode>,
-  info: GraphQLResolveInfo,
-  path: ResponsePath,
-  result: mixed,
-): MaybePromise<mixed> {
   try {
     const completed = completeValue(
       exeContext,
@@ -855,23 +802,32 @@ function completeValueWithLocatedError(
       result,
     );
     if (isPromise(completed)) {
-      return completed.then(undefined, error =>
-        Promise.reject(
-          locatedError(
-            asErrorInstance(error),
-            fieldNodes,
-            responsePathAsArray(path),
-          ),
-        ),
-      );
+      // Note: we don't rely on a `catch` method, but we do expect "thenable"
+      // to take a second callback for the error case.
+      return completed.then(undefined, error => handleError(error));
     }
     return completed;
   } catch (error) {
-    throw locatedError(
-      asErrorInstance(error),
+    return handleError(error);
+  }
+
+  function handleError(rawError) {
+    const error = locatedError(
+      asErrorInstance(rawError),
       fieldNodes,
       responsePathAsArray(path),
     );
+
+    // If the field type is non-nullable, then it is resolved without any
+    // protection from errors, however it still properly locates the error.
+    if (isNonNullType(returnType)) {
+      throw error;
+    }
+
+    // Otherwise, error protection is applied, logging the error and resolving
+    // a null value for this field if one is encountered.
+    exeContext.errors.push(error);
+    return null;
   }
 }
 
