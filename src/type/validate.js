@@ -366,7 +366,8 @@ function validateInterfaces(
 
   if (possibleTypes.length === 0) {
     context.reportError(
-      `Interface ${iface.name} must be implemented by at least one object type.`,
+      `Interface ${iface.name} must be implemented` +
+        `by at least one Object type.`,
       iface.astNode,
     );
   }
