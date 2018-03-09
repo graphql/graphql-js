@@ -258,7 +258,7 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure fields are valid.
       validateFields(context, type);
 
-      // Ensure Interfaces include at least 1 concrete type.
+      // Ensure Interfaces include at least 1 Object type.
       validateInterfaces(context, type);
     } else if (isUnionType(type)) {
       // Ensure Unions include valid member types.
@@ -366,8 +366,7 @@ function validateInterfaces(
 
   if (possibleTypes.length === 0) {
     context.reportError(
-      `No concrete types found for Interface type ${iface.name}. ` +
-        `If only referenced via abstraction, add concrete types to schema.types array`,
+      `Interface ${iface.name} must be implemented by at least one object type.`,
       iface.astNode,
     );
   }
