@@ -24,7 +24,6 @@ import type { GraphQLSchema } from '../type/schema';
 import type {
   FieldNode,
   DirectiveNode,
-  VariableNode,
   VariableDefinitionNode,
 } from '../language/ast';
 
@@ -139,7 +138,7 @@ export function getArgumentValues(
         );
       }
     } else if (argumentNode.value.kind === Kind.VARIABLE) {
-      const variableName = (argumentNode.value: VariableNode).name.value;
+      const variableName = argumentNode.value.name.value;
       if (
         variableValues &&
         Object.prototype.hasOwnProperty.call(variableValues, variableName) &&

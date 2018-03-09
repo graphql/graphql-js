@@ -19,7 +19,6 @@ import type {
   GraphQLNamedType,
   GraphQLAbstractType,
   GraphQLObjectType,
-  GraphQLInterfaceType,
 } from './definition';
 import type { SchemaDefinitionNode } from '../language/ast';
 import {
@@ -191,7 +190,7 @@ export class GraphQLSchema {
     if (isUnionType(abstractType)) {
       return abstractType.getTypes();
     }
-    return this._implementations[(abstractType: GraphQLInterfaceType).name];
+    return this._implementations[abstractType.name];
   }
 
   isPossibleType(
