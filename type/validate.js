@@ -272,6 +272,11 @@ function validateFields(context, type) {
 function validateObjectInterfaces(context, object) {
   var implementedTypeNames = Object.create(null);
   object.getInterfaces().forEach(function (iface) {
+    if (!(0, _definition.isInterfaceType)(iface)) {
+      context.reportError('Type ' + String(object) + ' must only implement Interface types, ' + ('it cannot implement ' + String(iface) + '.'), getImplementsInterfaceNode(object, iface));
+      return;
+    }
+
     if (implementedTypeNames[iface.name]) {
       context.reportError('Type ' + object.name + ' can only implement ' + iface.name + ' once.', getAllImplementsInterfaceNodes(object, iface));
       return; // continue loop
@@ -282,11 +287,6 @@ function validateObjectInterfaces(context, object) {
 }
 
 function validateObjectImplementsInterface(context, object, iface) {
-  if (!(0, _definition.isInterfaceType)(iface)) {
-    context.reportError('Type ' + String(object) + ' must only implement Interface types, ' + ('it cannot implement ' + String(iface) + '.'), getImplementsInterfaceNode(object, iface));
-    return;
-  }
-
   var objectFieldMap = object.getFields();
   var ifaceFieldMap = iface.getFields();
 

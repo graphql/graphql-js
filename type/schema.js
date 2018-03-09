@@ -133,11 +133,13 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
       var type = _this._typeMap[typeName];
       if ((0, _definition.isObjectType)(type)) {
         type.getInterfaces().forEach(function (iface) {
-          var impls = _this._implementations[iface.name];
-          if (impls) {
-            impls.push(type);
-          } else {
-            _this._implementations[iface.name] = [type];
+          if ((0, _definition.isInterfaceType)(iface)) {
+            var impls = _this._implementations[iface.name];
+            if (impls) {
+              impls.push(type);
+            } else {
+              _this._implementations[iface.name] = [type];
+            }
           }
         });
       }

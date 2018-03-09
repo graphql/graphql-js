@@ -343,6 +343,15 @@ function validateObjectInterfaces(
 ): void {
   const implementedTypeNames = Object.create(null);
   object.getInterfaces().forEach(iface => {
+    if (!isInterfaceType(iface)) {
+      context.reportError(
+        `Type ${String(object)} must only implement Interface types, ` +
+          `it cannot implement ${String(iface)}.`,
+        getImplementsInterfaceNode(object, iface),
+      );
+      return;
+    }
+
     if (implementedTypeNames[iface.name]) {
       context.reportError(
         `Type ${object.name} can only implement ${iface.name} once.`,
@@ -360,15 +369,6 @@ function validateObjectImplementsInterface(
   object: GraphQLObjectType,
   iface: GraphQLInterfaceType,
 ): void {
-  if (!isInterfaceType(iface)) {
-    context.reportError(
-      `Type ${String(object)} must only implement Interface types, ` +
-        `it cannot implement ${String(iface)}.`,
-      getImplementsInterfaceNode(object, iface),
-    );
-    return;
-  }
-
   const objectFieldMap = object.getFields();
   const ifaceFieldMap = iface.getFields();
 
