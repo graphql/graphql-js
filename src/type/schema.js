@@ -152,11 +152,13 @@ export class GraphQLSchema {
       const type = this._typeMap[typeName];
       if (isObjectType(type)) {
         type.getInterfaces().forEach(iface => {
-          const impls = this._implementations[iface.name];
-          if (impls) {
-            impls.push(type);
-          } else {
-            this._implementations[iface.name] = [type];
+          if (isInterfaceType(iface)) {
+            const impls = this._implementations[iface.name];
+            if (impls) {
+              impls.push(type);
+            } else {
+              this._implementations[iface.name] = [type];
+            }
           }
         });
       }
