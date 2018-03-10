@@ -793,14 +793,22 @@ function completeValueCatchingError(
   result: mixed,
 ): MaybePromise<mixed> {
   try {
-    const completed = completeValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
+    let completed;
+    if (isPromise(result)) {
+      completed = result.then(resolved =>
+        completeValue(exeContext, returnType, fieldNodes, info, path, resolved),
+      );
+    } else {
+      completed = completeValue(
+        exeContext,
+        returnType,
+        fieldNodes,
+        info,
+        path,
+        result,
+      );
+    }
+
     if (isPromise(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
@@ -860,13 +868,6 @@ function completeValue(
   path: ResponsePath,
   result: mixed,
 ): MaybePromise<mixed> {
-  // If result is a Promise, apply-lift over completeValue.
-  if (isPromise(result)) {
-    return result.then(resolved =>
-      completeValue(exeContext, returnType, fieldNodes, info, path, resolved),
-    );
-  }
-
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
