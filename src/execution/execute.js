@@ -506,9 +506,11 @@ function executeFields(
   path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
 ): MaybePromise<ObjMap<mixed>> {
+  const results = Object.create(null);
   let containsPromise = false;
 
-  const finalResults = Object.keys(fields).reduce((results, responseName) => {
+  for (let i = 0, keys = Object.keys(fields); i < keys.length; ++i) {
+    const responseName = keys[i];
     const fieldNodes = fields[responseName];
     const fieldPath = addPath(path, responseName);
     const result = resolveField(
@@ -518,26 +520,24 @@ function executeFields(
       fieldNodes,
       fieldPath,
     );
-    if (result === undefined) {
-      return results;
+
+    if (result !== undefined) {
+      results[responseName] = result;
+      if (!containsPromise && isPromise(result)) {
+        containsPromise = true;
+      }
     }
-    results[responseName] = result;
-    if (!containsPromise && isPromise(result)) {
-      containsPromise = true;
-    }
-    return results;
-  }, Object.create(null));
+  }
 
   // If there are no promises, we can just return the object
   if (!containsPromise) {
-    return finalResults;
+    return results;
   }
 
-  // Otherwise, results is a map from field name to the result
-  // of resolving that field, which is possibly a promise. Return
-  // a promise that will return this same map, but with any
-  // promises replaced with the values they resolved to.
-  return promiseForObject(finalResults);
+  // Otherwise, results is a map from field name to the result of resolving that
+  // field, which is possibly a promise. Return a promise that will return this
+  // same map, but with any promises replaced with the values they resolved to.
+  return promiseForObject(results);
 }
 
 /**
