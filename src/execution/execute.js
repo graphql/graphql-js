@@ -813,11 +813,7 @@ function completeValueCatchingError(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, rawError => {
-        const error = locatedError(
-          asErrorInstance(rawError),
-          fieldNodes,
-          responsePathAsArray(path),
-        );
+        const error = locatedFieldError(rawError, fieldNodes, path);
 
         // If the field type is non-nullable, then it is resolved without any
         // protection from errors, however it still properly locates the error.
@@ -825,19 +821,15 @@ function completeValueCatchingError(
           throw error;
         }
 
-        // Otherwise, error protection is applied, logging the error and resolving
-        // a null value for this field if one is encountered.
+        // Otherwise, error protection is applied, logging the error and
+        // resolving a null value for this field if one is encountered.
         exeContext.errors.push(error);
         return null;
       });
     }
     return completed;
   } catch (rawError) {
-    const error = locatedError(
-      asErrorInstance(rawError),
-      fieldNodes,
-      responsePathAsArray(path),
-    );
+    const error = locatedFieldError(rawError, fieldNodes, path);
 
     // If the field type is non-nullable, then it is resolved without any
     // protection from errors, however it still properly locates the error.
@@ -850,6 +842,11 @@ function completeValueCatchingError(
     exeContext.errors.push(error);
     return null;
   }
+}
+
+function locatedFieldError(errorValue, fieldNodes, path) {
+  const error = asErrorInstance(errorValue);
+  return locatedError(error, fieldNodes, responsePathAsArray(path));
 }
 
 /**
