@@ -1048,47 +1048,47 @@ describe('Type System: Enum types must be well defined', () => {
   });
 
   it('rejects an Enum type with incorrectly typed values', () => {
-    const enumType = new GraphQLEnumType({
+    const config = {
       name: 'SomeEnum',
       values: [{ FOO: 10 }],
-    });
-    expect(() => enumType.getValue()).to.throw(
+    };
+    expect(() => new GraphQLEnumType(config)).to.throw(
       'SomeEnum values must be an object with value names as keys.',
     );
   });
 
   it('rejects an Enum type with missing value definition', () => {
-    const enumType = new GraphQLEnumType({
+    const config = {
       name: 'SomeEnum',
       values: { FOO: null },
-    });
-    expect(() => enumType.getValues()).to.throw(
+    };
+    expect(() => new GraphQLEnumType(config)).to.throw(
       'SomeEnum.FOO must refer to an object with a "value" key representing ' +
         'an internal value but got: null.',
     );
   });
 
   it('rejects an Enum type with incorrectly typed value definition', () => {
-    const enumType = new GraphQLEnumType({
+    const config = {
       name: 'SomeEnum',
       values: { FOO: 10 },
-    });
-    expect(() => enumType.getValues()).to.throw(
+    };
+    expect(() => new GraphQLEnumType(config)).to.throw(
       'SomeEnum.FOO must refer to an object with a "value" key representing ' +
         'an internal value but got: 10.',
     );
   });
 
   it('does not allow isDeprecated without deprecationReason on enum', () => {
-    const enumType = new GraphQLEnumType({
+    const config = {
       name: 'SomeEnum',
       values: {
         FOO: {
           isDeprecated: true,
         },
       },
-    });
-    expect(() => enumType.getValues()).to.throw(
+    };
+    expect(() => new GraphQLEnumType(config)).to.throw(
       'SomeEnum.FOO should provide "deprecationReason" instead ' +
         'of "isDeprecated".',
     );
