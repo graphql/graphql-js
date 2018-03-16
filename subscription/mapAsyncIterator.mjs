@@ -20,6 +20,7 @@ export default function mapAsyncIterator(iterable, callback, rejectCallback) {
   var iterator = getAsyncIterator(iterable);
   var $return = void 0;
   var abruptClose = void 0;
+  // $FlowFixMe(>=0.68.0)
   if (typeof iterator.return === 'function') {
     $return = iterator.return;
     abruptClose = function abruptClose(error) {
@@ -53,6 +54,7 @@ export default function mapAsyncIterator(iterable, callback, rejectCallback) {
       return $return ? $return.call(iterator).then(mapResult, mapReject) : Promise.resolve({ value: undefined, done: true });
     },
     throw: function _throw(error) {
+      // $FlowFixMe(>=0.68.0)
       if (typeof iterator.throw === 'function') {
         return iterator.throw(error).then(mapResult, mapReject);
       }
