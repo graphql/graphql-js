@@ -22,6 +22,7 @@ export function locatedError(
 ): GraphQLError {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
+  // $FlowFixMe(>=0.68.0)
   if (originalError && Array.isArray(originalError.path)) {
     return (originalError: any);
   }
