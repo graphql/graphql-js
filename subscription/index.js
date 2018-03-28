@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.subscribe = exports.createSourceEventStream = undefined;
 
 var _subscribe = require('./subscribe');
 

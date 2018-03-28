@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.GraphQLError = exports.formatError = exports.printError = undefined;
 
 var _GraphQLError = require('./GraphQLError');
 
