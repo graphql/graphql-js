@@ -170,10 +170,6 @@ function readToken(lexer, prev) {
   var code = charCodeAt.call(body, pos);
 
   // SourceCharacter
-  if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
-    throw (0, _error.syntaxError)(source, pos, 'Cannot contain the invalid character ' + printCharCode(code) + '.');
-  }
-
   switch (code) {
     // !
     case 33:
@@ -306,6 +302,10 @@ function readToken(lexer, prev) {
  * Report a message that an unexpected character was encountered.
  */
 function unexpectedCharacterMessage(code) {
+  if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
+    return 'Cannot contain the invalid character ' + printCharCode(code) + '.';
+  }
+
   if (code === 39) {
     // '
     return "Unexpected single quote character ('), did you mean to use " + 'a double quote (")?';
