@@ -60,6 +60,10 @@ var _isInvalid = require('../jsutils/isInvalid');
 
 var _isInvalid2 = _interopRequireDefault(_isInvalid);
 
+var _keyMap = require('../jsutils/keyMap');
+
+var _keyMap2 = _interopRequireDefault(_keyMap);
+
 var _kinds = require('../language/kinds');
 
 var _valueFromASTUntyped = require('../utilities/valueFromASTUntyped');
@@ -710,20 +714,27 @@ var GraphQLEnumType /* <T> */ = exports.GraphQLEnumType = function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this._enumConfig = config;
+    this._values = defineEnumValues(this, config.values);
+    this._valueLookup = new Map(this._values.map(function (enumValue) {
+      return [enumValue.value, enumValue];
+    }));
+    this._nameLookup = (0, _keyMap2.default)(this._values, function (value) {
+      return value.name;
+    });
+
     !(typeof config.name === 'string') ? (0, _invariant2.default)(0, 'Must provide name.') : void 0;
   }
 
   GraphQLEnumType.prototype.getValues = function getValues() {
-    return this._values || (this._values = defineEnumValues(this, this._enumConfig.values));
+    return this._values;
   };
 
   GraphQLEnumType.prototype.getValue = function getValue(name) {
-    return this._getNameLookup()[name];
+    return this._nameLookup[name];
   };
 
   GraphQLEnumType.prototype.serialize = function serialize(value /* T */) {
-    var enumValue = this._getValueLookup().get(value);
+    var enumValue = this._valueLookup.get(value);
     if (enumValue) {
       return enumValue.name;
     }
@@ -731,7 +742,7 @@ var GraphQLEnumType /* <T> */ = exports.GraphQLEnumType = function () {
 
   GraphQLEnumType.prototype.parseValue = function parseValue(value) /* T */{
     if (typeof value === 'string') {
-      var enumValue = this._getNameLookup()[value];
+      var enumValue = this.getValue(value);
       if (enumValue) {
         return enumValue.value;
       }
@@ -741,33 +752,11 @@ var GraphQLEnumType /* <T> */ = exports.GraphQLEnumType = function () {
   GraphQLEnumType.prototype.parseLiteral = function parseLiteral(valueNode, _variables) /* T */{
     // Note: variables will be resolved to a value before calling this function.
     if (valueNode.kind === _kinds.Kind.ENUM) {
-      var enumValue = this._getNameLookup()[valueNode.value];
+      var enumValue = this.getValue(valueNode.value);
       if (enumValue) {
         return enumValue.value;
       }
     }
-  };
-
-  GraphQLEnumType.prototype._getValueLookup = function _getValueLookup() {
-    if (!this._valueLookup) {
-      var lookup = new Map();
-      this.getValues().forEach(function (value) {
-        lookup.set(value.value, value);
-      });
-      this._valueLookup = lookup;
-    }
-    return this._valueLookup;
-  };
-
-  GraphQLEnumType.prototype._getNameLookup = function _getNameLookup() {
-    if (!this._nameLookup) {
-      var lookup = Object.create(null);
-      this.getValues().forEach(function (value) {
-        lookup[value.name] = value;
-      });
-      this._nameLookup = lookup;
-    }
-    return this._nameLookup;
   };
 
   GraphQLEnumType.prototype.toString = function toString() {

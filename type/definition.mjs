@@ -16,6 +16,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
+import keyMap from '../jsutils/keyMap';
 
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
@@ -664,20 +665,27 @@ export var GraphQLEnumType /* <T> */ = function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this._enumConfig = config;
+    this._values = defineEnumValues(this, config.values);
+    this._valueLookup = new Map(this._values.map(function (enumValue) {
+      return [enumValue.value, enumValue];
+    }));
+    this._nameLookup = keyMap(this._values, function (value) {
+      return value.name;
+    });
+
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
   }
 
   GraphQLEnumType.prototype.getValues = function getValues() {
-    return this._values || (this._values = defineEnumValues(this, this._enumConfig.values));
+    return this._values;
   };
 
   GraphQLEnumType.prototype.getValue = function getValue(name) {
-    return this._getNameLookup()[name];
+    return this._nameLookup[name];
   };
 
   GraphQLEnumType.prototype.serialize = function serialize(value /* T */) {
-    var enumValue = this._getValueLookup().get(value);
+    var enumValue = this._valueLookup.get(value);
     if (enumValue) {
       return enumValue.name;
     }
@@ -685,7 +693,7 @@ export var GraphQLEnumType /* <T> */ = function () {
 
   GraphQLEnumType.prototype.parseValue = function parseValue(value) /* T */{
     if (typeof value === 'string') {
-      var enumValue = this._getNameLookup()[value];
+      var enumValue = this.getValue(value);
       if (enumValue) {
         return enumValue.value;
       }
@@ -695,33 +703,11 @@ export var GraphQLEnumType /* <T> */ = function () {
   GraphQLEnumType.prototype.parseLiteral = function parseLiteral(valueNode, _variables) /* T */{
     // Note: variables will be resolved to a value before calling this function.
     if (valueNode.kind === Kind.ENUM) {
-      var enumValue = this._getNameLookup()[valueNode.value];
+      var enumValue = this.getValue(valueNode.value);
       if (enumValue) {
         return enumValue.value;
       }
     }
-  };
-
-  GraphQLEnumType.prototype._getValueLookup = function _getValueLookup() {
-    if (!this._valueLookup) {
-      var lookup = new Map();
-      this.getValues().forEach(function (value) {
-        lookup.set(value.value, value);
-      });
-      this._valueLookup = lookup;
-    }
-    return this._valueLookup;
-  };
-
-  GraphQLEnumType.prototype._getNameLookup = function _getNameLookup() {
-    if (!this._nameLookup) {
-      var lookup = Object.create(null);
-      this.getValues().forEach(function (value) {
-        lookup[value.name] = value;
-      });
-      this._nameLookup = lookup;
-    }
-    return this._nameLookup;
   };
 
   GraphQLEnumType.prototype.toString = function toString() {
