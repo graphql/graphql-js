@@ -192,7 +192,9 @@ var printDocASTReducer = {
         args = _ref24.arguments,
         type = _ref24.type,
         directives = _ref24.directives;
-    return name + wrap('(', join(args, ', '), ')') + ': ' + type + wrap(' ', join(directives, ' '));
+    return name + (args.every(function (arg) {
+      return arg.indexOf('\n') === -1;
+    }) ? wrap('(', join(args, ', '), ')') : wrap('(\n', indent(join(args, '\n')), '\n)')) + ': ' + type + wrap(' ', join(directives, ' '));
   }),
 
   InputValueDefinition: addDescription(function (_ref25) {
@@ -283,7 +285,9 @@ var printDocASTReducer = {
     var name = _ref37.name,
         args = _ref37.arguments,
         locations = _ref37.locations;
-    return 'directive @' + name + wrap('(', join(args, ', '), ')') + ' on ' + join(locations, ' | ');
+    return 'directive @' + name + (args.every(function (arg) {
+      return arg.indexOf('\n') === -1;
+    }) ? wrap('(', join(args, ', '), ')') : wrap('(\n', indent(join(args, '\n')), '\n)')) + ' on ' + join(locations, ' | ');
   })
 };
 
