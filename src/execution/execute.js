@@ -731,7 +731,7 @@ export function buildResolveInfo(
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
   return {
-    fieldName: fieldNodes[0].name.value,
+    fieldName: fieldDef.name,
     fieldNodes,
     returnType: fieldDef.type,
     parentType,
@@ -1171,7 +1171,6 @@ function completeObjectValue(
           exeContext,
           returnType,
           fieldNodes,
-          info,
           path,
           result,
         );
@@ -1187,7 +1186,6 @@ function completeObjectValue(
     exeContext,
     returnType,
     fieldNodes,
-    info,
     path,
     result,
   );
@@ -1208,7 +1206,6 @@ function collectAndExecuteSubfields(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
-  info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
 ): MaybePromise<ObjMap<mixed>> {
@@ -1260,7 +1257,7 @@ function defaultResolveTypeFn(
   context: mixed,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType,
-): ?GraphQLObjectType | string | Promise<?GraphQLObjectType | string> {
+): MaybePromise<?GraphQLObjectType | string> {
   // First, look for `__typename`.
   if (
     value !== null &&
