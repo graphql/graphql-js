@@ -457,7 +457,7 @@ export function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, p
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
   return {
-    fieldName: fieldNodes[0].name.value,
+    fieldName: fieldDef.name,
     fieldNodes: fieldNodes,
     returnType: fieldDef.type,
     parentType: parentType,
@@ -706,7 +706,7 @@ function completeObjectValue(exeContext, returnType, fieldNodes, info, path, res
         if (!resolvedIsTypeOf) {
           throw invalidReturnTypeError(returnType, result, fieldNodes);
         }
-        return collectAndExecuteSubfields(exeContext, returnType, fieldNodes, info, path, result);
+        return collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, result);
       });
     }
 
@@ -715,14 +715,14 @@ function completeObjectValue(exeContext, returnType, fieldNodes, info, path, res
     }
   }
 
-  return collectAndExecuteSubfields(exeContext, returnType, fieldNodes, info, path, result);
+  return collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, result);
 }
 
 function invalidReturnTypeError(returnType, result, fieldNodes) {
   return new GraphQLError('Expected value of type "' + returnType.name + '" but got: ' + String(result) + '.', fieldNodes);
 }
 
-function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, info, path, result) {
+function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, result) {
   // Collect sub-fields to execute to complete this value.
   var subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
   return executeFields(exeContext, returnType, result, path, subFieldNodes);
