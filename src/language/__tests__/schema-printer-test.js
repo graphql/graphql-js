@@ -58,7 +58,15 @@ describe('Printer: SDL document', () => {
       """
       type Foo implements Bar & Baz {
         one: Type
-        two(argument: InputType!): Type
+        """
+        This is a description of the \`two\` field.
+        """
+        two(
+          """
+          This is a description of the \`argument\` argument.
+          """
+          argument: InputType!
+        ): Type
         three(argument: InputType, other: String): Int
         four(argument: String = "string"): String
         five(argument: [String] = ["string", "string"]): String

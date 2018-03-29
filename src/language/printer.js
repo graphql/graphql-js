@@ -131,7 +131,9 @@ const printDocASTReducer = {
   FieldDefinition: addDescription(
     ({ name, arguments: args, type, directives }) =>
       name +
-      wrap('(', join(args, ', '), ')') +
+      (args.every(arg => arg.indexOf('\n') === -1)
+        ? wrap('(', join(args, ', '), ')')
+        : wrap('(\n', indent(join(args, '\n')), '\n)')) +
       ': ' +
       type +
       wrap(' ', join(directives, ' ')),
@@ -212,7 +214,9 @@ const printDocASTReducer = {
     ({ name, arguments: args, locations }) =>
       'directive @' +
       name +
-      wrap('(', join(args, ', '), ')') +
+      (args.every(arg => arg.indexOf('\n') === -1)
+        ? wrap('(', join(args, ', '), ')')
+        : wrap('(\n', indent(join(args, '\n')), '\n)')) +
       ' on ' +
       join(locations, ' | '),
   ),
