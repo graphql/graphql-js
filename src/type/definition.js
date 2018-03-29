@@ -10,6 +10,7 @@
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
+import keyMap from '../jsutils/keyMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
@@ -1071,7 +1072,6 @@ export class GraphQLEnumType /* <T> */ {
   description: ?string;
   astNode: ?EnumTypeDefinitionNode;
 
-  _enumConfig: GraphQLEnumTypeConfig /* <T> */;
   _values: Array<GraphQLEnumValue /* <T> */>;
   _valueLookup: Map<any /* T */, GraphQLEnumValue>;
   _nameLookup: ObjMap<GraphQLEnumValue>;
@@ -1080,23 +1080,25 @@ export class GraphQLEnumType /* <T> */ {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this._enumConfig = config;
+    this._values = defineEnumValues(this, config.values);
+    this._valueLookup = new Map(
+      this._values.map(enumValue => [enumValue.value, enumValue]),
+    );
+    this._nameLookup = keyMap(this._values, value => value.name);
+
     invariant(typeof config.name === 'string', 'Must provide name.');
   }
 
   getValues(): Array<GraphQLEnumValue /* <T> */> {
-    return (
-      this._values ||
-      (this._values = defineEnumValues(this, this._enumConfig.values))
-    );
+    return this._values;
   }
 
   getValue(name: string): ?GraphQLEnumValue {
-    return this._getNameLookup()[name];
+    return this._nameLookup[name];
   }
 
   serialize(value: any /* T */): ?string {
-    const enumValue = this._getValueLookup().get(value);
+    const enumValue = this._valueLookup.get(value);
     if (enumValue) {
       return enumValue.name;
     }
@@ -1104,7 +1106,7 @@ export class GraphQLEnumType /* <T> */ {
 
   parseValue(value: mixed): ?any /* T */ {
     if (typeof value === 'string') {
-      const enumValue = this._getNameLookup()[value];
+      const enumValue = this.getValue(value);
       if (enumValue) {
         return enumValue.value;
       }
@@ -1114,33 +1116,11 @@ export class GraphQLEnumType /* <T> */ {
   parseLiteral(valueNode: ValueNode, _variables: ?ObjMap<mixed>): ?any /* T */ {
     // Note: variables will be resolved to a value before calling this function.
     if (valueNode.kind === Kind.ENUM) {
-      const enumValue = this._getNameLookup()[valueNode.value];
+      const enumValue = this.getValue(valueNode.value);
       if (enumValue) {
         return enumValue.value;
       }
     }
-  }
-
-  _getValueLookup(): Map<any /* T */, GraphQLEnumValue> {
-    if (!this._valueLookup) {
-      const lookup = new Map();
-      this.getValues().forEach(value => {
-        lookup.set(value.value, value);
-      });
-      this._valueLookup = lookup;
-    }
-    return this._valueLookup;
-  }
-
-  _getNameLookup(): ObjMap<GraphQLEnumValue> {
-    if (!this._nameLookup) {
-      const lookup = Object.create(null);
-      this.getValues().forEach(value => {
-        lookup[value.name] = value;
-      });
-      this._nameLookup = lookup;
-    }
-    return this._nameLookup;
   }
 
   toString(): string {
