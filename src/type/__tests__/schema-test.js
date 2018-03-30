@@ -23,12 +23,6 @@ const InterfaceType = new GraphQLInterfaceType({
   fields: { fieldName: { type: GraphQLString } },
 });
 
-const ImplementingType = new GraphQLObjectType({
-  name: 'Object',
-  interfaces: [InterfaceType],
-  fields: { fieldName: { type: GraphQLString, resolve: () => '' } },
-});
-
 const DirectiveInputType = new GraphQLInputObjectType({
   name: 'DirInput',
   fields: {
