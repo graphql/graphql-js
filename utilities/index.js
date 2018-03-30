@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getIntrospectionQuery = exports.introspectionQuery = exports.getOperationAST = exports.introspectionFromSchema = exports.buildClientSchema = exports.buildASTSchema = exports.buildSchema = exports.getDescription = exports.extendSchema = exports.lexicographicSortSchema = exports.printSchema = exports.printIntrospectionSchema = exports.printType = exports.typeFromAST = exports.valueFromAST = exports.valueFromASTUntyped = exports.astFromValue = exports.TypeInfo = exports.coerceValue = exports.isValidJSValue = exports.isValidLiteralValue = exports.concatAST = exports.separateOperations = exports.isEqualType = exports.isTypeSubTypeOf = exports.doTypesOverlap = exports.assertValidName = exports.isValidNameError = exports.findBreakingChanges = exports.findDangerousChanges = exports.BreakingChangeType = exports.DangerousChangeType = exports.findDeprecatedUsages = undefined;
 
 var _introspectionQuery = require('./introspectionQuery');
 
