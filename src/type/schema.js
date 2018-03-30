@@ -206,12 +206,6 @@ export class GraphQLSchema {
 
     if (!possibleTypeMap[abstractType.name]) {
       const possibleTypes = this.getPossibleTypes(abstractType);
-      invariant(
-        Array.isArray(possibleTypes) && possibleTypes.length > 0,
-        `Could not find possible implementing types for ${abstractType.name} ` +
-          'in schema. Check that schema.types is defined and is an array of ' +
-          'all possible types in the schema.',
-      );
       possibleTypeMap[abstractType.name] = possibleTypes.reduce(
         (map, type) => ((map[type.name] = true), map),
         Object.create(null),

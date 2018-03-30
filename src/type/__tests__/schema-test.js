@@ -76,19 +76,6 @@ const Schema = new GraphQLSchema({
 });
 
 describe('Type System: Schema', () => {
-  describe('Getting possible types', () => {
-    it('throws human-reable error if schema.types is not defined', () => {
-      const checkPossible = () => {
-        return Schema.isPossibleType(InterfaceType, ImplementingType);
-      };
-      expect(checkPossible).to.throw(
-        'Could not find possible implementing types for Interface in schema. ' +
-          'Check that schema.types is defined and is an array of all possible ' +
-          'types in the schema.',
-      );
-    });
-  });
-
   describe('Type Map', () => {
     it('includes input types only used in directives', () => {
       expect(Schema.getTypeMap()).to.include.key('DirInput');
