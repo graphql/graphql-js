@@ -86,7 +86,7 @@ const TestType = new GraphQLObjectType({
     }),
     fieldWithNonNullableStringInputAndDefaultArgumentValue: fieldWithInputArg({
       type: GraphQLNonNull(GraphQLString),
-      defaultValue: 'Unreachable',
+      defaultValue: 'Hello World',
     }),
     fieldWithNestedInputObject: fieldWithInputArg({
       type: TestNestedInputObject,
@@ -226,6 +226,40 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
+      it('uses undefined when variable not provided', () => {
+        const result = executeQuery(
+          `
+          query q($input: String) {
+            fieldWithNullableStringInput(input: $input)
+          }`,
+          {
+            // Intentionally missing variable values.
+          },
+        );
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithNullableStringInput: null,
+          },
+        });
+      });
+
+      it('uses null when variable provided explicit null value', () => {
+        const result = executeQuery(
+          `
+          query q($input: String) {
+            fieldWithNullableStringInput(input: $input)
+          }`,
+          { input: null },
+        );
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithNullableStringInput: 'null',
+          },
+        });
+      });
+
       it('uses default value when not provided', () => {
         const result = executeQuery(`
           query ($input: TestInputObject = {a: "foo", b: ["bar"], c: "baz"}) {
@@ -255,7 +289,7 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
-      it('uses default value when explicit null value provided', () => {
+      it('uses explicit null value instead of default value', () => {
         const result = executeQuery(
           `
           query q($input: String = "Default value") {
@@ -266,7 +300,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithNullableStringInput: "'Default value'",
+            fieldWithNullableStringInput: 'null',
           },
         });
       });
@@ -904,24 +938,18 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('not when argument type is non-null', async () => {
-      const ast = parse(`query optionalVariable($optional: String) {
-        fieldWithNonNullableStringInputAndDefaultArgumentValue(input: $optional)
-      }`);
+    it('when no runtime value is provided to a non-null argument', () => {
+      const result = executeQuery(`
+        query optionalVariable($optional: String) {
+          fieldWithNonNullableStringInputAndDefaultArgumentValue(input: $optional)
+        }
+      `);
 
-      expect(await execute(schema, ast)).to.deep.equal({
+      expect(result).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInputAndDefaultArgumentValue: null,
+          fieldWithNonNullableStringInputAndDefaultArgumentValue:
+            "'Hello World'",
         },
-        errors: [
-          {
-            message:
-              'Argument "input" of required type "String!" was provided the ' +
-              'variable "$optional" which was not provided a runtime value.',
-            locations: [{ line: 2, column: 71 }],
-            path: ['fieldWithNonNullableStringInputAndDefaultArgumentValue'],
-          },
-        ],
       });
     });
   });

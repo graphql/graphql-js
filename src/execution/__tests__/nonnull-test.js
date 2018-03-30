@@ -497,7 +497,6 @@ describe('Execute: handles non-nullable types', () => {
             args: {
               cannotBeNull: {
                 type: GraphQLNonNull(GraphQLString),
-                defaultValue: null,
               },
             },
             resolve: async (_, args) => {
@@ -557,26 +556,6 @@ describe('Execute: handles non-nullable types', () => {
         `),
         variableValues: {
           // Intentionally missing variable
-        },
-      });
-
-      expect(result).to.deep.equal({
-        data: {
-          withNonNullArg: 'Passed: default value',
-        },
-      });
-    });
-
-    it('succeeds when null variable has default value', async () => {
-      const result = await execute({
-        schema: schemaWithNonNullArg,
-        document: parse(`
-          query ($testVar: String = "default value") {
-            withNonNullArg (cannotBeNull: $testVar)
-          }
-        `),
-        variableValues: {
-          testVar: null,
         },
       });
 
@@ -668,6 +647,34 @@ describe('Execute: handles non-nullable types', () => {
               'provided the variable "$testVar" which was not provided a ' +
               'runtime value.',
             locations: [{ line: 3, column: 42 }],
+            path: ['withNonNullArg'],
+          },
+        ],
+      });
+    });
+
+    it('field error when non-null arg provided variable with explicit null value', async () => {
+      const result = await execute({
+        schema: schemaWithNonNullArg,
+        document: parse(`
+          query ($testVar: String = "default value") {
+            withNonNullArg (cannotBeNull: $testVar)
+          }
+        `),
+        variableValues: {
+          testVar: null,
+        },
+      });
+
+      expect(result).to.deep.equal({
+        data: {
+          withNonNullArg: null,
+        },
+        errors: [
+          {
+            message:
+              'Argument "cannotBeNull" of non-null type "String!" must not be null.',
+            locations: [{ line: 3, column: 43 }],
             path: ['withNonNullArg'],
           },
         ],

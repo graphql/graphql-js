@@ -78,6 +78,11 @@ export function VariablesInAllowedPosition(
 /**
  * If varType is not non-null and defaultValue is provided and not null:
  *   Let varType be the non-null of varType.
+ *
+ * Note: the explicit value null may still be explicitly provided as a variable
+ * value at runtime. While this validation rule could be more strict, this
+ * pattern was very common before the changed behavior of null values so it is
+ * still allowed.
  */
 function effectiveType(varType, varDef) {
   if (

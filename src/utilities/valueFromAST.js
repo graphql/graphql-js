@@ -71,10 +71,14 @@ export function valueFromAST(
       // No valid return value.
       return;
     }
-    // Note: we're not doing any checking that this variable is correct. We're
-    // assuming that this query has been validated and the variable usage here
-    // is of the correct type.
-    return variables[variableName];
+    const variableValue = variables[variableName];
+    if (variableValue === null && isNonNullType(type)) {
+      return; // Invalid: intentionally return no value.
+    }
+    // Note: This does no further checking that this variable is correct.
+    // This assumes that this query has been validated and the variable
+    // usage here is of the correct type.
+    return variableValue;
   }
 
   if (isListType(type)) {
@@ -118,7 +122,7 @@ export function valueFromAST(
       const field = fields[i];
       const fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
-        if (!isInvalid(field.defaultValue)) {
+        if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
           return; // Invalid: intentionally return no value.

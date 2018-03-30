@@ -74,10 +74,7 @@ import { UniqueArgumentNames } from './rules/UniqueArgumentNames';
 import { ValuesOfCorrectType } from './rules/ValuesOfCorrectType';
 
 // Spec Section: "Argument Optionality"
-import { ProvidedNonNullArguments } from './rules/ProvidedNonNullArguments';
-
-// Spec Section: "Variables Default Value Is Allowed"
-import { VariablesDefaultValueAllowed } from './rules/VariablesDefaultValueAllowed';
+import { ProvidedRequiredArguments } from './rules/ProvidedRequiredArguments';
 
 // Spec Section: "All Variable Usages Are Allowed"
 import { VariablesInAllowedPosition } from './rules/VariablesInAllowedPosition';
@@ -119,8 +116,7 @@ export const specifiedRules: Array<(context: ValidationContext) => any> = [
   KnownArgumentNames,
   UniqueArgumentNames,
   ValuesOfCorrectType,
-  ProvidedNonNullArguments,
-  VariablesDefaultValueAllowed,
+  ProvidedRequiredArguments,
   VariablesInAllowedPosition,
   OverlappingFieldsCanBeMerged,
   UniqueInputFieldNames,

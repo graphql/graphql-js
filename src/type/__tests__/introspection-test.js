@@ -8,7 +8,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { missingFieldArgMessage } from '../../validation/rules/ProvidedNonNullArguments';
+import { missingFieldArgMessage } from '../../validation/rules/ProvidedRequiredArguments';
 import {
   graphqlSync,
   GraphQLSchema,
