@@ -50,6 +50,37 @@ describe('findDescriptionChanges', () => {
     expect(findDescriptionChanges(newSchema, newSchema)).to.eql([]);
   });
 
+  it('should detect if a description was changed on a type', () => {
+    const typeOld = new GraphQLObjectType({
+      name: 'Type',
+      description: 'Something rather',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+    });
+    const typeNew = new GraphQLObjectType({
+      name: 'Type',
+      description: 'Something else',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [typeOld],
+    });
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [typeNew],
+    });
+    expect(findDescriptionChanges(oldSchema, newSchema)[0].description).to.eql(
+      'Description changed on TYPE Type.',
+    );
+    expect(findDescriptionChanges(oldSchema, oldSchema)).to.eql([]);
+    expect(findDescriptionChanges(newSchema, newSchema)).to.eql([]);
+  });
+
   it('should detect if a type with a description was added', () => {
     const type = new GraphQLObjectType({
       name: 'Type',
@@ -69,6 +100,39 @@ describe('findDescriptionChanges', () => {
     });
     expect(findDescriptionChanges(oldSchema, newSchema)[0].description).to.eql(
       'New TYPE Type added with description.',
+    );
+    expect(findDescriptionChanges(oldSchema, oldSchema)).to.eql([]);
+    expect(findDescriptionChanges(newSchema, newSchema)).to.eql([]);
+  });
+
+  it('should detect if a field with a description was added', () => {
+    const typeOld = new GraphQLObjectType({
+      name: 'Type',
+      fields: {
+        field1: { type: GraphQLString },
+      },
+    });
+    const typeNew = new GraphQLObjectType({
+      name: 'Type',
+      fields: {
+        field1: { type: GraphQLString },
+        field2: {
+          type: GraphQLString,
+          description: 'Something rather',
+        },
+      },
+    });
+
+    const oldSchema = new GraphQLSchema({
+      query: queryType,
+      types: [typeOld],
+    });
+    const newSchema = new GraphQLSchema({
+      query: queryType,
+      types: [typeNew],
+    });
+    expect(findDescriptionChanges(oldSchema, newSchema)[0].description).to.eql(
+      'New FIELD field2 added with description.',
     );
     expect(findDescriptionChanges(oldSchema, oldSchema)).to.eql([]);
     expect(findDescriptionChanges(newSchema, newSchema)).to.eql([]);
