@@ -1087,6 +1087,25 @@ describe('Type System: Interface fields must have output types', () => {
       },
     ]);
   });
+
+  it('rejects an interface not implemented by at least one object', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: SomeInterface
+      }
+
+      interface SomeInterface {
+        foo: String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface SomeInterface must be implemented by at least one Object type.',
+        locations: [{ line: 6, column: 7 }],
+      },
+    ]);
+  });
 });
 
 describe('Type System: Field arguments must have input types', () => {
