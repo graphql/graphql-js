@@ -6,7 +6,12 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import {
+  expectPassesRule,
+  expectFailsRule,
+  expectPassesRuleWithOptions,
+  expectFailsRuleWithOptions,
+} from './harness';
 import {
   VariablesInAllowedPosition,
   badVarPosMessage,
@@ -85,20 +90,6 @@ describe('Validate: Variables are in allowed positions', () => {
       {
         complicatedArgs {
           ...booleanArgFrag
-        }
-      }
-    `,
-    );
-  });
-
-  it('Int => Int! with non-null default value', () => {
-    expectPassesRule(
-      VariablesInAllowedPosition,
-      `
-      query Query($intArg: Int = 1)
-      {
-        complicatedArgs {
-          nonNullIntArgField(nonNullIntArg: $intArg)
         }
       }
     `,
@@ -201,18 +192,6 @@ describe('Validate: Variables are in allowed positions', () => {
     );
   });
 
-  it('Boolean => Boolean! in directive with default', () => {
-    expectPassesRule(
-      VariablesInAllowedPosition,
-      `
-      query Query($boolVar: Boolean = false)
-      {
-        dog @include(if: $boolVar)
-      }
-    `,
-    );
-  });
-
   it('Int => Int!', () => {
     expectFailsRule(
       VariablesInAllowedPosition,
@@ -227,26 +206,6 @@ describe('Validate: Variables are in allowed positions', () => {
         {
           message: badVarPosMessage('intArg', 'Int', 'Int!'),
           locations: [{ line: 2, column: 19 }, { line: 4, column: 45 }],
-        },
-      ],
-    );
-  });
-
-  it('Int => Int! with null default value', () => {
-    expectFailsRule(
-      VariablesInAllowedPosition,
-      `
-      query Query($intArg: Int = null) {
-        complicatedArgs {
-          nonNullIntArgField(nonNullIntArg: $intArg)
-        }
-      }
-    `,
-      [
-        {
-          message: badVarPosMessage('intArg', 'Int', 'Int!'),
-          locations: [{ line: 2, column: 19 }, { line: 4, column: 45 }],
-          path: undefined,
         },
       ],
     );
@@ -392,5 +351,74 @@ describe('Validate: Variables are in allowed positions', () => {
         },
       ],
     );
+  });
+
+  describe('allowNullableVariablesInNonNullPositions', () => {
+    it('Int => Int! with non-null default value without option', () => {
+      expectFailsRule(
+        VariablesInAllowedPosition,
+        `
+        query Query($intVar: Int = 1) {
+          complicatedArgs {
+            nonNullIntArgField(nonNullIntArg: $intVar)
+          }
+        }
+      `,
+        [
+          {
+            message: badVarPosMessage('intVar', 'Int', 'Int!'),
+            locations: [{ line: 2, column: 21 }, { line: 4, column: 47 }],
+            path: undefined,
+          },
+        ],
+      );
+    });
+
+    it('Int => Int! with null default value fails with option', () => {
+      expectFailsRuleWithOptions(
+        { allowNullableVariablesInNonNullPositions: true },
+        VariablesInAllowedPosition,
+        `
+          query Query($intVar: Int = null) {
+            complicatedArgs {
+              nonNullIntArgField(nonNullIntArg: $intVar)
+            }
+          }
+        `,
+        [
+          {
+            message: badVarPosMessage('intVar', 'Int', 'Int!'),
+            locations: [{ line: 2, column: 23 }, { line: 4, column: 49 }],
+            path: undefined,
+          },
+        ],
+      );
+    });
+
+    it('Int => Int! with non-null default value with option', () => {
+      expectPassesRuleWithOptions(
+        { allowNullableVariablesInNonNullPositions: true },
+        VariablesInAllowedPosition,
+        `
+        query Query($intVar: Int = 1) {
+          complicatedArgs {
+            nonNullIntArgField(nonNullIntArg: $intVar)
+          }
+        }
+      `,
+      );
+    });
+
+    it('Boolean => Boolean! in directive with default value with option', () => {
+      expectPassesRuleWithOptions(
+        { allowNullableVariablesInNonNullPositions: true },
+        VariablesInAllowedPosition,
+        `
+      query Query($boolVar: Boolean = false) {
+        dog @include(if: $boolVar)
+      }
+    `,
+      );
+    });
   });
 });

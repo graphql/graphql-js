@@ -9,13 +9,14 @@
 
 import { validateSchema } from './type/validate';
 import { parse } from './language/parser';
-import { validate } from './validation/validate';
+import { validate, specifiedRules } from './validation';
 import { execute } from './execution/execute';
 import type { ObjMap } from './jsutils/ObjMap';
-import type { Source } from './language/source';
+import type { ParseOptions, Source } from './language';
 import type { GraphQLFieldResolver } from './type/definition';
 import type { GraphQLSchema } from './type/schema';
 import type { ExecutionResult } from './execution/execute';
+import type { ValidationOptions } from './validation';
 import type { MaybePromise } from './jsutils/MaybePromise';
 
 /**
@@ -47,6 +48,9 @@ import type { MaybePromise } from './jsutils/MaybePromise';
  *    A resolver function to use when one is not provided by the schema.
  *    If not provided, the default field resolver is used (which looks for a
  *    value or method on the source value with the field's name).
+ * options:
+ *    An additional set of flags which enable legacy, compataibility, or
+ *    experimental behavior.
  */
 export type GraphQLArgs = {|
   schema: GraphQLSchema,
@@ -56,6 +60,7 @@ export type GraphQLArgs = {|
   variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  options?: ParseOptions & ValidationOptions,
 |};
 declare function graphql(GraphQLArgs, ..._: []): Promise<ExecutionResult>;
 /* eslint-disable no-redeclare */
@@ -67,6 +72,7 @@ declare function graphql(
   variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  options?: ParseOptions & ValidationOptions,
 ): Promise<ExecutionResult>;
 export function graphql(
   argsOrSchema,
@@ -76,6 +82,7 @@ export function graphql(
   variableValues,
   operationName,
   fieldResolver,
+  options,
 ) {
   /* eslint-enable no-redeclare */
   // Always return a Promise for a consistent API.
@@ -91,6 +98,7 @@ export function graphql(
             argsOrSchema.variableValues,
             argsOrSchema.operationName,
             argsOrSchema.fieldResolver,
+            argsOrSchema.options,
           )
         : graphqlImpl(
             argsOrSchema,
@@ -100,6 +108,7 @@ export function graphql(
             variableValues,
             operationName,
             fieldResolver,
+            options,
           ),
     ),
   );
@@ -121,6 +130,7 @@ declare function graphqlSync(
   variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  options?: ParseOptions & ValidationOptions,
 ): ExecutionResult;
 export function graphqlSync(
   argsOrSchema,
@@ -130,6 +140,7 @@ export function graphqlSync(
   variableValues,
   operationName,
   fieldResolver,
+  options,
 ) {
   // Extract arguments from object args if provided.
   const result =
@@ -142,6 +153,7 @@ export function graphqlSync(
           argsOrSchema.variableValues,
           argsOrSchema.operationName,
           argsOrSchema.fieldResolver,
+          argsOrSchema.options,
         )
       : graphqlImpl(
           argsOrSchema,
@@ -151,6 +163,7 @@ export function graphqlSync(
           variableValues,
           operationName,
           fieldResolver,
+          options,
         );
 
   // Assert that the execution was synchronous.
@@ -169,6 +182,7 @@ function graphqlImpl(
   variableValues,
   operationName,
   fieldResolver,
+  options,
 ): MaybePromise<ExecutionResult> {
   // Validate Schema
   const schemaValidationErrors = validateSchema(schema);
@@ -179,13 +193,13 @@ function graphqlImpl(
   // Parse
   let document;
   try {
-    document = parse(source);
+    document = parse(source, options);
   } catch (syntaxError) {
     return { errors: [syntaxError] };
   }
 
   // Validate
-  const validationErrors = validate(schema, document);
+  const validationErrors = validate(schema, document, specifiedRules, options);
   if (validationErrors.length > 0) {
     return { errors: validationErrors };
   }

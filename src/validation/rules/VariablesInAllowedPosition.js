@@ -53,11 +53,8 @@ export function VariablesInAllowedPosition(
             // If both are list types, the variable item type can be more strict
             // than the expected item type (contravariant).
             const schema = context.getSchema();
-            const varType = typeFromAST(schema, varDef.type);
-            if (
-              varType &&
-              !isTypeSubTypeOf(schema, effectiveType(varType, varDef), type)
-            ) {
+            const varType = effectiveVariableType(context, schema, varDef);
+            if (varType && !isTypeSubTypeOf(schema, varType, type)) {
               context.reportError(
                 new GraphQLError(badVarPosMessage(varName, varType, type), [
                   varDef,
@@ -76,16 +73,23 @@ export function VariablesInAllowedPosition(
 }
 
 /**
- * If varType is not non-null and defaultValue is provided and not null:
- *   Let varType be the non-null of varType.
+ * See "supporting legacy operations" sub-section of this validation
+ * rule specification.
  *
- * Note: the explicit value null may still be explicitly provided as a variable
- * value at runtime. While this validation rule could be more strict, this
- * pattern was very common before the changed behavior of null values so it is
- * still allowed.
+ * EffectiveVariableType(variableDefinition):
+ *   * Let {variableType} be the expected type of {variableDefinition}.
+ *   * If service supports operations written before this specification edition:
+ *     * If {variableType} is not a non-null type:
+ *       * Let {defaultValue} be the default value of {variableDefinition}.
+ *       * If {defaultValue} is provided and not the value {null}:
+ *         * Return the non-null of {variableType}.
+ *   * Otherwise, return {variableType}.
  */
-function effectiveType(varType, varDef) {
+function effectiveVariableType(context, schema, varDef) {
+  const varType = typeFromAST(schema, varDef.type);
   if (
+    context.options.allowNullableVariablesInNonNullPositions &&
+    varType &&
     !isNonNullType(varType) &&
     varDef.defaultValue &&
     varDef.defaultValue.kind !== Kind.NULL
