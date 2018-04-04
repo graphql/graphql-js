@@ -11,7 +11,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  *  strict
  */
 
-import { isObjectType, isInterfaceType, isUnionType, isInputObjectType, isWrappingType } from './definition';
+import { isAbstractType, isObjectType, isInterfaceType, isUnionType, isInputObjectType, isWrappingType } from './definition';
 
 import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
 
@@ -119,6 +119,8 @@ export var GraphQLSchema = function () {
             }
           }
         });
+      } else if (isAbstractType(type) && !_this._implementations[type.name]) {
+        _this._implementations[type.name] = [];
       }
     });
   }
@@ -160,7 +162,6 @@ export var GraphQLSchema = function () {
 
     if (!possibleTypeMap[abstractType.name]) {
       var possibleTypes = this.getPossibleTypes(abstractType);
-      !Array.isArray(possibleTypes) ? invariant(0, 'Could not find possible implementing types for ' + abstractType.name + ' ' + 'in schema. Check that schema.types is defined and is an array of ' + 'all possible types in the schema.') : void 0;
       possibleTypeMap[abstractType.name] = possibleTypes.reduce(function (map, type) {
         return map[type.name] = true, map;
       }, Object.create(null));

@@ -142,6 +142,8 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
             }
           }
         });
+      } else if ((0, _definition.isAbstractType)(type) && !_this._implementations[type.name]) {
+        _this._implementations[type.name] = [];
       }
     });
   }
@@ -183,7 +185,6 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
 
     if (!possibleTypeMap[abstractType.name]) {
       var possibleTypes = this.getPossibleTypes(abstractType);
-      !Array.isArray(possibleTypes) ? (0, _invariant2.default)(0, 'Could not find possible implementing types for ' + abstractType.name + ' ' + 'in schema. Check that schema.types is defined and is an array of ' + 'all possible types in the schema.') : void 0;
       possibleTypeMap[abstractType.name] = possibleTypes.reduce(function (map, type) {
         return map[type.name] = true, map;
       }, Object.create(null));
