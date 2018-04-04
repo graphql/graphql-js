@@ -31,19 +31,20 @@ const SomeScalarType = new GraphQLScalarType({
   parseLiteral() {},
 });
 
+const SomeInterfaceType = new GraphQLInterfaceType({
+  name: 'SomeInterface',
+  fields: { f: { type: GraphQLString } },
+});
+
 const SomeObjectType = new GraphQLObjectType({
   name: 'SomeObject',
   fields: { f: { type: GraphQLString } },
+  interfaces: [SomeInterfaceType],
 });
 
 const SomeUnionType = new GraphQLUnionType({
   name: 'SomeUnion',
   types: [SomeObjectType],
-});
-
-const SomeInterfaceType = new GraphQLInterfaceType({
-  name: 'SomeInterface',
-  fields: { f: { type: GraphQLString } },
 });
 
 const SomeEnumType = new GraphQLEnumType({
@@ -772,6 +773,7 @@ describe('Type System: Object fields must have output types', () => {
           f: { type: BadObjectType },
         },
       }),
+      types: [SomeObjectType],
     });
   }
 
@@ -1032,6 +1034,14 @@ describe('Type System: Interface fields must have output types', () => {
       },
     });
 
+    const BadImplementingType = new GraphQLObjectType({
+      name: 'BadImplementing',
+      interfaces: [BadInterfaceType],
+      fields: {
+        badField: { type: fieldType },
+      },
+    });
+
     return new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -1039,6 +1049,7 @@ describe('Type System: Interface fields must have output types', () => {
           f: { type: BadInterfaceType },
         },
       }),
+      types: [BadImplementingType, SomeObjectType],
     });
   }
 
@@ -1089,6 +1100,25 @@ describe('Type System: Interface fields must have output types', () => {
         message:
           'The type of SomeInterface.field must be Output Type but got: SomeInputObject.',
         locations: [{ line: 7, column: 16 }],
+      },
+    ]);
+  });
+
+  it('rejects an interface not implemented by at least one object', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: SomeInterface
+      }
+
+      interface SomeInterface {
+        foo: String
+      }
+    `);
+    expect(validateSchema(schema)).to.containSubset([
+      {
+        message:
+          'Interface SomeInterface must be implemented by at least one Object type.',
+        locations: [{ line: 6, column: 7 }],
       },
     ]);
   });
