@@ -618,46 +618,45 @@ describe('Type System: build schema from introspection', () => {
       },
     };
 
-    // New introspection produces correct new format.
-    const newIntrospection = {
-      __schema: {
-        directives: [
-          {
-            name: 'Old1',
-            args: [],
-            locations: ['FIELD'],
-          },
-          {
-            name: 'Old2',
-            args: [],
-            locations: [
-              'FRAGMENT_DEFINITION',
-              'FRAGMENT_SPREAD',
-              'INLINE_FRAGMENT',
-            ],
-          },
-          {
-            name: 'Old3',
-            args: [],
-            locations: ['QUERY', 'MUTATION', 'SUBSCRIPTION'],
-          },
-          {
-            name: 'Old4',
-            args: [],
-            locations: [
-              'FIELD',
-              'FRAGMENT_DEFINITION',
-              'FRAGMENT_SPREAD',
-              'INLINE_FRAGMENT',
-            ],
-          },
-        ],
-      },
-    };
-
     const clientSchema = buildClientSchema(oldIntrospection);
     const secondIntrospection = introspectionFromSchema(clientSchema);
-    expect(secondIntrospection).to.containSubset(newIntrospection);
+
+    // New introspection produces correct new format.
+    expect(secondIntrospection).to.deep.nested.property('__schema.directives', [
+      {
+        name: 'Old1',
+        description: null,
+        args: [],
+        locations: ['FIELD'],
+      },
+      {
+        name: 'Old2',
+        description: null,
+        args: [],
+        locations: [
+          'FRAGMENT_DEFINITION',
+          'FRAGMENT_SPREAD',
+          'INLINE_FRAGMENT',
+        ],
+      },
+      {
+        name: 'Old3',
+        description: null,
+        args: [],
+        locations: ['QUERY', 'MUTATION', 'SUBSCRIPTION'],
+      },
+      {
+        name: 'Old4',
+        description: null,
+        args: [],
+        locations: [
+          'FIELD',
+          'FRAGMENT_DEFINITION',
+          'FRAGMENT_SPREAD',
+          'INLINE_FRAGMENT',
+        ],
+      },
+    ]);
   });
 
   it('builds a schema with legacy names', () => {
