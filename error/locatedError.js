@@ -15,7 +15,6 @@ var _GraphQLError = require('./GraphQLError');
 function locatedError(originalError, nodes, path) {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
-  // $FlowFixMe(>=0.68.0)
   if (originalError && Array.isArray(originalError.path)) {
     return originalError;
   }
