@@ -812,19 +812,23 @@ function completeValueCatchingError(
     if (isPromise(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return completed.then(undefined, rawError => {
-        const error = locatedFieldError(rawError, fieldNodes, path);
-        return handleFieldError(error, returnType, exeContext);
-      });
+      return completed.then(undefined, error =>
+        handleFieldError(error, fieldNodes, path, returnType, exeContext),
+      );
     }
     return completed;
-  } catch (rawError) {
-    const error = locatedFieldError(rawError, fieldNodes, path);
-    return handleFieldError(error, returnType, exeContext);
+  } catch (error) {
+    return handleFieldError(error, fieldNodes, path, returnType, exeContext);
   }
 }
 
-function handleFieldError(error, returnType, exeContext) {
+function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
+  const error = locatedError(
+    asErrorInstance(rawError),
+    fieldNodes,
+    responsePathAsArray(path),
+  );
+
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
   if (isNonNullType(returnType)) {
@@ -835,11 +839,6 @@ function handleFieldError(error, returnType, exeContext) {
   // a null value for this field if one is encountered.
   exeContext.errors.push(error);
   return null;
-}
-
-function locatedFieldError(errorValue, fieldNodes, path) {
-  const error = asErrorInstance(errorValue);
-  return locatedError(error, fieldNodes, responsePathAsArray(path));
 }
 
 /**
