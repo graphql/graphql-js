@@ -16,13 +16,12 @@ import type { ASTNode } from '../language/ast';
  * document responsible for the original Error.
  */
 export function locatedError(
-  originalError: Error,
+  originalError: Error | GraphQLError,
   nodes: $ReadOnlyArray<ASTNode>,
   path: $ReadOnlyArray<string | number>,
 ): GraphQLError {
   // Note: this uses a brand-check to support GraphQL errors originating from
   // other contexts.
-  // $FlowFixMe(>=0.68.0)
   if (originalError && Array.isArray(originalError.path)) {
     return (originalError: any);
   }
