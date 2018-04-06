@@ -122,23 +122,13 @@ describe('Execute: Handles mutation execution ordering', () => {
 
     const mutationResult = await execute(schema, parse(doc), new Root(6));
 
-    return expect(mutationResult).to.deep.equal({
+    expect(mutationResult).to.deep.equal({
       data: {
-        first: {
-          theNumber: 1,
-        },
-        second: {
-          theNumber: 2,
-        },
-        third: {
-          theNumber: 3,
-        },
-        fourth: {
-          theNumber: 4,
-        },
-        fifth: {
-          theNumber: 5,
-        },
+        first: { theNumber: 1 },
+        second: { theNumber: 2 },
+        third: { theNumber: 3 },
+        fourth: { theNumber: 4 },
+        fifth: { theNumber: 5 },
       },
     });
   });
