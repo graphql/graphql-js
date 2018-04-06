@@ -58,7 +58,7 @@ export function VariablesInAllowedPosition(
             const varType = typeFromAST(schema, varDef.type);
             if (
               varType &&
-              !allowedInPosition(
+              !allowedVariableUsage(
                 schema,
                 varType,
                 varDef.defaultValue,
@@ -84,11 +84,11 @@ export function VariablesInAllowedPosition(
 }
 
 /**
- * Returns true if the variable is allowed in the position it was found,
+ * Returns true if the variable is allowed in the location it was found,
  * which includes considering if default values exist for either the variable
  * or the location at which it is located.
  */
-function allowedInPosition(
+function allowedVariableUsage(
   schema: GraphQLSchema,
   varType: GraphQLType,
   varDefaultValue: ?ValueNode,
@@ -96,14 +96,14 @@ function allowedInPosition(
   locationDefaultValue: ?mixed,
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
-    const hasLocationDefaultValue = locationDefaultValue !== undefined;
     const hasNonNullVariableDefaultValue =
       varDefaultValue && varDefaultValue.kind !== Kind.NULL;
-    if (!hasLocationDefaultValue && !hasNonNullVariableDefaultValue) {
+    const hasLocationDefaultValue = locationDefaultValue !== undefined;
+    if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {
       return false;
     }
-    const locationNullableType = locationType.ofType;
-    return isTypeSubTypeOf(schema, varType, locationNullableType);
+    const nullableLocationType = locationType.ofType;
+    return isTypeSubTypeOf(schema, varType, nullableLocationType);
   }
   return isTypeSubTypeOf(schema, varType, locationType);
 }
