@@ -151,7 +151,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       // By being enumerable, JSON.stringify will include `locations` in the
       // resulting output. This ensures that the simplest possible GraphQL
       // service adheres to the spec.
-      enumerable: true,
+      enumerable: Boolean(_locations),
     },
     path: {
       // Coercing falsey values to undefined ensures they will not be included
@@ -160,7 +160,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       // By being enumerable, JSON.stringify will include `path` in the
       // resulting output. This ensures that the simplest possible GraphQL
       // service adheres to the spec.
-      enumerable: true,
+      enumerable: Boolean(path),
     },
     nodes: {
       value: _nodes || undefined,

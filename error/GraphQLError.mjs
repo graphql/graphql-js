@@ -73,7 +73,7 @@ message, nodes, source, positions, path, originalError, extensions) {
       // By being enumerable, JSON.stringify will include `locations` in the
       // resulting output. This ensures that the simplest possible GraphQL
       // service adheres to the spec.
-      enumerable: true
+      enumerable: Boolean(_locations)
     },
     path: {
       // Coercing falsey values to undefined ensures they will not be included
@@ -82,7 +82,7 @@ message, nodes, source, positions, path, originalError, extensions) {
       // By being enumerable, JSON.stringify will include `path` in the
       // resulting output. This ensures that the simplest possible GraphQL
       // service adheres to the spec.
-      enumerable: true
+      enumerable: Boolean(path)
     },
     nodes: {
       value: _nodes || undefined
