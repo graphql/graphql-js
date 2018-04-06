@@ -382,6 +382,7 @@ describe('Execute: Handles basic execution tasks', () => {
       asyncError
       asyncRawError
       asyncReturnError
+      asyncReturnErrorWithExtensions
     }`;
 
     const data = {
@@ -435,6 +436,12 @@ describe('Execute: Handles basic execution tasks', () => {
       asyncReturnError() {
         return Promise.resolve(new Error('Error getting asyncReturnError'));
       },
+      asyncReturnErrorWithExtensions() {
+        const error = new Error('Error getting asyncReturnErrorWithExtensions');
+        error.extensions = { foo: 'bar' };
+
+        return Promise.resolve(error);
+      },
     };
 
     const ast = parse(doc);
@@ -449,11 +456,13 @@ describe('Execute: Handles basic execution tasks', () => {
           syncReturnErrorList: { type: GraphQLList(GraphQLString) },
           async: { type: GraphQLString },
           asyncReject: { type: GraphQLString },
+          asyncRejectWithExtensions: { type: GraphQLString },
           asyncRawReject: { type: GraphQLString },
           asyncEmptyReject: { type: GraphQLString },
           asyncError: { type: GraphQLString },
           asyncRawError: { type: GraphQLString },
           asyncReturnError: { type: GraphQLString },
+          asyncReturnErrorWithExtensions: { type: GraphQLString },
         },
       }),
     });
@@ -474,6 +483,7 @@ describe('Execute: Handles basic execution tasks', () => {
         asyncError: null,
         asyncRawError: null,
         asyncReturnError: null,
+        asyncReturnErrorWithExtensions: null,
       },
       errors: [
         {
@@ -530,6 +540,12 @@ describe('Execute: Handles basic execution tasks', () => {
           message: 'Error getting asyncReturnError',
           locations: [{ line: 13, column: 7 }],
           path: ['asyncReturnError'],
+        },
+        {
+          message: 'Error getting asyncReturnErrorWithExtensions',
+          locations: [{ line: 14, column: 7 }],
+          path: ['asyncReturnErrorWithExtensions'],
+          extensions: { foo: 'bar' },
         },
       ],
     });
