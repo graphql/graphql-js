@@ -16,7 +16,6 @@ function defaultForRequiredVar(varName, typeName, guessTypeName, line, column) {
   return {
     message: defaultForRequiredVarMessage(varName, typeName, guessTypeName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 

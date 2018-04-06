@@ -8,7 +8,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../execute';
-import { formatError } from '../../error';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -461,78 +460,79 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const result = await execute(schema, ast, data);
 
-    expect(result.data).to.deep.equal({
-      sync: 'sync',
-      syncError: null,
-      syncRawError: null,
-      syncReturnError: null,
-      syncReturnErrorList: ['sync0', null, 'sync2', null],
-      async: 'async',
-      asyncReject: null,
-      asyncRawReject: null,
-      asyncEmptyReject: null,
-      asyncError: null,
-      asyncRawError: null,
-      asyncReturnError: null,
+    expect(result).to.deep.equal({
+      data: {
+        sync: 'sync',
+        syncError: null,
+        syncRawError: null,
+        syncReturnError: null,
+        syncReturnErrorList: ['sync0', null, 'sync2', null],
+        async: 'async',
+        asyncReject: null,
+        asyncRawReject: null,
+        asyncEmptyReject: null,
+        asyncError: null,
+        asyncRawError: null,
+        asyncReturnError: null,
+      },
+      errors: [
+        {
+          message: 'Error getting syncError',
+          locations: [{ line: 3, column: 7 }],
+          path: ['syncError'],
+        },
+        {
+          message: 'Error getting syncRawError',
+          locations: [{ line: 4, column: 7 }],
+          path: ['syncRawError'],
+        },
+        {
+          message: 'Error getting syncReturnError',
+          locations: [{ line: 5, column: 7 }],
+          path: ['syncReturnError'],
+        },
+        {
+          message: 'Error getting syncReturnErrorList1',
+          locations: [{ line: 6, column: 7 }],
+          path: ['syncReturnErrorList', 1],
+        },
+        {
+          message: 'Error getting syncReturnErrorList3',
+          locations: [{ line: 6, column: 7 }],
+          path: ['syncReturnErrorList', 3],
+        },
+        {
+          message: 'Error getting asyncReject',
+          locations: [{ line: 8, column: 7 }],
+          path: ['asyncReject'],
+        },
+        {
+          message: 'Error getting asyncRawReject',
+          locations: [{ line: 9, column: 7 }],
+          path: ['asyncRawReject'],
+        },
+        {
+          message: '',
+          locations: [{ line: 10, column: 7 }],
+          path: ['asyncEmptyReject'],
+        },
+        {
+          message: 'Error getting asyncError',
+          locations: [{ line: 11, column: 7 }],
+          path: ['asyncError'],
+        },
+        {
+          message: 'Error getting asyncRawError',
+          locations: [{ line: 12, column: 7 }],
+          path: ['asyncRawError'],
+        },
+        {
+          message: 'Error getting asyncReturnError',
+          locations: [{ line: 13, column: 7 }],
+          path: ['asyncReturnError'],
+        },
+      ],
     });
-
-    expect(result.errors && result.errors.map(formatError)).to.deep.equal([
-      {
-        message: 'Error getting syncError',
-        locations: [{ line: 3, column: 7 }],
-        path: ['syncError'],
-      },
-      {
-        message: 'Error getting syncRawError',
-        locations: [{ line: 4, column: 7 }],
-        path: ['syncRawError'],
-      },
-      {
-        message: 'Error getting syncReturnError',
-        locations: [{ line: 5, column: 7 }],
-        path: ['syncReturnError'],
-      },
-      {
-        message: 'Error getting syncReturnErrorList1',
-        locations: [{ line: 6, column: 7 }],
-        path: ['syncReturnErrorList', 1],
-      },
-      {
-        message: 'Error getting syncReturnErrorList3',
-        locations: [{ line: 6, column: 7 }],
-        path: ['syncReturnErrorList', 3],
-      },
-      {
-        message: 'Error getting asyncReject',
-        locations: [{ line: 8, column: 7 }],
-        path: ['asyncReject'],
-      },
-      {
-        message: 'Error getting asyncRawReject',
-        locations: [{ line: 9, column: 7 }],
-        path: ['asyncRawReject'],
-      },
-      {
-        message: 'An unknown error occurred.',
-        locations: [{ line: 10, column: 7 }],
-        path: ['asyncEmptyReject'],
-      },
-      {
-        message: 'Error getting asyncError',
-        locations: [{ line: 11, column: 7 }],
-        path: ['asyncError'],
-      },
-      {
-        message: 'Error getting asyncRawError',
-        locations: [{ line: 12, column: 7 }],
-        path: ['asyncRawError'],
-      },
-      {
-        message: 'Error getting asyncReturnError',
-        locations: [{ line: 13, column: 7 }],
-        path: ['asyncReturnError'],
-      },
-    ]);
   });
 
   it('nulls error subtree for promise rejection #1071', async () => {
@@ -720,13 +720,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const result = await execute(schema, ast, data);
     expect(result).to.deep.equal({
-      errors: [
-        {
-          message: 'Must provide an operation.',
-          locations: undefined,
-          path: undefined,
-        },
-      ],
+      errors: [{ message: 'Must provide an operation.' }],
     });
   });
 
@@ -748,10 +742,7 @@ describe('Execute: Handles basic execution tasks', () => {
       errors: [
         {
           message:
-            'Must provide operation name if query contains ' +
-            'multiple operations.',
-          locations: undefined,
-          path: undefined,
+            'Must provide operation name if query contains multiple operations.',
         },
       ],
     });
@@ -775,13 +766,7 @@ describe('Execute: Handles basic execution tasks', () => {
       operationName: 'UnknownExample',
     });
     expect(result).to.deep.equal({
-      errors: [
-        {
-          message: 'Unknown operation named "UnknownExample".',
-          locations: undefined,
-          path: undefined,
-        },
-      ],
+      errors: [{ message: 'Unknown operation named "UnknownExample".' }],
     });
   });
 
@@ -1046,17 +1031,19 @@ describe('Execute: Handles basic execution tasks', () => {
     };
     const result = await execute(schema, query, value);
 
-    expect(result.data).to.deep.equal({
-      specials: [{ value: 'foo' }, null],
-    });
-    expect(result.errors).to.have.lengthOf(1);
-    expect(result.errors).to.containSubset([
-      {
-        message:
-          'Expected value of type "SpecialType" but got: [object Object].',
-        locations: [{ line: 1, column: 3 }],
+    expect(result).to.deep.equal({
+      data: {
+        specials: [{ value: 'foo' }, null],
       },
-    ]);
+      errors: [
+        {
+          message:
+            'Expected value of type "SpecialType" but got: [object Object].',
+          locations: [{ line: 1, column: 3 }],
+          path: ['specials', 1],
+        },
+      ],
+    });
   });
 
   it('executes ignoring invalid non-executable definitions', async () => {

@@ -7,7 +7,6 @@
 
 import { expect } from 'chai';
 import { parse } from '../../language';
-import { formatError } from '../../error';
 import { validate } from '../validate';
 import {
   GraphQLSchema,
@@ -423,7 +422,7 @@ function expectValid(schema, rules, queryString) {
 function expectInvalid(schema, rules, queryString, expectedErrors) {
   const errors = validate(schema, parse(queryString), rules);
   expect(errors).to.have.length.of.at.least(1, 'Should not validate');
-  expect(errors.map(formatError)).to.deep.equal(expectedErrors);
+  expect(errors).to.deep.equal(expectedErrors);
   return errors;
 }
 

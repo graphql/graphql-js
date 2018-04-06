@@ -37,7 +37,6 @@ describe('Validate: Subscriptions with single field', () => {
         {
           message: singleFieldOnlyMessage('ImportantEmails'),
           locations: [{ line: 4, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -56,7 +55,6 @@ describe('Validate: Subscriptions with single field', () => {
         {
           message: singleFieldOnlyMessage('ImportantEmails'),
           locations: [{ line: 4, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -76,7 +74,6 @@ describe('Validate: Subscriptions with single field', () => {
         {
           message: singleFieldOnlyMessage('ImportantEmails'),
           locations: [{ line: 4, column: 9 }, { line: 5, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -95,7 +92,6 @@ describe('Validate: Subscriptions with single field', () => {
         {
           message: singleFieldOnlyMessage(null),
           locations: [{ line: 4, column: 9 }],
-          path: undefined,
         },
       ],
     );

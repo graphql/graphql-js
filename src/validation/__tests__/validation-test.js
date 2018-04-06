@@ -50,7 +50,6 @@ describe('Validate: Supports full validation', () => {
         message:
           'Expected type Invalid, found "bad value"; ' +
           'Invalid scalar is always invalid: bad value',
-        path: undefined,
       },
     ]);
   });

@@ -16,7 +16,6 @@ function nonExecutableDefinition(defName, line, column) {
   return {
     message: nonExecutableDefinitionMessage(defName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 

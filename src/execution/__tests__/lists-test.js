@@ -7,7 +7,6 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { formatError } from '../../error';
 import { execute } from '../execute';
 import { parse } from '../../language';
 import {
@@ -48,18 +47,7 @@ function check(testType, testData, expected) {
     const ast = parse('{ nest { test } }');
 
     const response = await execute(schema, ast, data);
-
-    // Formatting errors for ease of test writing.
-    let result;
-    if (response.errors) {
-      result = {
-        data: response.data,
-        errors: response.errors.map(formatError),
-      };
-    } else {
-      result = response;
-    }
-    expect(result).to.deep.equal(expected);
+    expect(response).to.deep.equal(expected);
   };
 }
 
