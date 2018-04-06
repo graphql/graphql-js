@@ -268,7 +268,6 @@ export { subscribe, createSourceEventStream } from './subscription';
 // Validate GraphQL queries.
 export {
   validate,
-  ValidationOptions,
   ValidationContext,
   // All validation rules in the GraphQL Specification.
   specifiedRules,

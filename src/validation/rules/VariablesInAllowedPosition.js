@@ -10,11 +10,13 @@
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import { Kind } from '../../language/kinds';
+import type { ValueNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
-import { GraphQLNonNull, isNonNullType } from '../../type/definition';
+import { isNonNullType } from '../../type/definition';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import type { GraphQLType } from '../../type/definition';
+import type { GraphQLSchema } from '../../type/schema';
 
 export function badVarPosMessage(
   varName: string,
@@ -43,7 +45,7 @@ export function VariablesInAllowedPosition(
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        usages.forEach(({ node, type }) => {
+        usages.forEach(({ node, type, defaultValue }) => {
           const varName = node.name.value;
           const varDef = varDefMap[varName];
           if (varDef && type) {
@@ -53,8 +55,17 @@ export function VariablesInAllowedPosition(
             // If both are list types, the variable item type can be more strict
             // than the expected item type (contravariant).
             const schema = context.getSchema();
-            const varType = effectiveVariableType(context, schema, varDef);
-            if (varType && !isTypeSubTypeOf(schema, varType, type)) {
+            const varType = typeFromAST(schema, varDef.type);
+            if (
+              varType &&
+              !allowedInPosition(
+                schema,
+                varType,
+                varDef.defaultValue,
+                type,
+                defaultValue,
+              )
+            ) {
               context.reportError(
                 new GraphQLError(badVarPosMessage(varName, varType, type), [
                   varDef,
@@ -73,28 +84,26 @@ export function VariablesInAllowedPosition(
 }
 
 /**
- * See "supporting legacy operations" sub-section of this validation
- * rule specification.
- *
- * EffectiveVariableType(variableDefinition):
- *   * Let {variableType} be the expected type of {variableDefinition}.
- *   * If service supports operations written before this specification edition:
- *     * If {variableType} is not a non-null type:
- *       * Let {defaultValue} be the default value of {variableDefinition}.
- *       * If {defaultValue} is provided and not the value {null}:
- *         * Return the non-null of {variableType}.
- *   * Otherwise, return {variableType}.
+ * Returns true if the variable is allowed in the position it was found,
+ * which includes considering if default values exist for either the variable
+ * or the location at which it is located.
  */
-function effectiveVariableType(context, schema, varDef) {
-  const varType = typeFromAST(schema, varDef.type);
-  if (
-    context.options.allowNullableVariablesInNonNullPositions &&
-    varType &&
-    !isNonNullType(varType) &&
-    varDef.defaultValue &&
-    varDef.defaultValue.kind !== Kind.NULL
-  ) {
-    return GraphQLNonNull(varType);
+function allowedInPosition(
+  schema: GraphQLSchema,
+  varType: GraphQLType,
+  varDefaultValue: ?ValueNode,
+  locationType: GraphQLType,
+  locationDefaultValue: ?mixed,
+): boolean {
+  if (isNonNullType(locationType) && !isNonNullType(varType)) {
+    const hasLocationDefaultValue = locationDefaultValue !== undefined;
+    const hasNonNullVariableDefaultValue =
+      varDefaultValue && varDefaultValue.kind !== Kind.NULL;
+    if (!hasLocationDefaultValue && !hasNonNullVariableDefaultValue) {
+      return false;
+    }
+    const locationNullableType = locationType.ofType;
+    return isTypeSubTypeOf(schema, varType, locationNullableType);
   }
-  return varType;
+  return isTypeSubTypeOf(schema, varType, locationType);
 }

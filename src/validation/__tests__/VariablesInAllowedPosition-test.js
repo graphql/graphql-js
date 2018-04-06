@@ -6,12 +6,7 @@
  */
 
 import { describe, it } from 'mocha';
-import {
-  expectPassesRule,
-  expectFailsRule,
-  expectPassesRuleWithOptions,
-  expectFailsRuleWithOptions,
-} from './harness';
+import { expectPassesRule, expectFailsRule } from './harness';
 import {
   VariablesInAllowedPosition,
   badVarPosMessage,
@@ -353,71 +348,56 @@ describe('Validate: Variables are in allowed positions', () => {
     );
   });
 
-  describe('allowNullableVariablesInNonNullPositions', () => {
-    it('Int => Int! with non-null default value without option', () => {
+  describe('Allows optional (nullable) variables with default values', () => {
+    it('Int => Int! fails when variable provides null default value', () => {
       expectFailsRule(
         VariablesInAllowedPosition,
         `
-        query Query($intVar: Int = 1) {
+        query Query($intVar: Int = null) {
           complicatedArgs {
             nonNullIntArgField(nonNullIntArg: $intVar)
           }
-        }
-      `,
+        }`,
         [
           {
             message: badVarPosMessage('intVar', 'Int', 'Int!'),
             locations: [{ line: 2, column: 21 }, { line: 4, column: 47 }],
-            path: undefined,
           },
         ],
       );
     });
 
-    it('Int => Int! with null default value fails with option', () => {
-      expectFailsRuleWithOptions(
-        { allowNullableVariablesInNonNullPositions: true },
-        VariablesInAllowedPosition,
-        `
-          query Query($intVar: Int = null) {
-            complicatedArgs {
-              nonNullIntArgField(nonNullIntArg: $intVar)
-            }
-          }
-        `,
-        [
-          {
-            message: badVarPosMessage('intVar', 'Int', 'Int!'),
-            locations: [{ line: 2, column: 23 }, { line: 4, column: 49 }],
-            path: undefined,
-          },
-        ],
-      );
-    });
-
-    it('Int => Int! with non-null default value with option', () => {
-      expectPassesRuleWithOptions(
-        { allowNullableVariablesInNonNullPositions: true },
+    it('Int => Int! when variable provides non-null default value', () => {
+      expectPassesRule(
         VariablesInAllowedPosition,
         `
         query Query($intVar: Int = 1) {
           complicatedArgs {
             nonNullIntArgField(nonNullIntArg: $intVar)
           }
-        }
-      `,
+        }`,
+      );
+    });
+
+    it('Int => Int! when optional argument provides default value', () => {
+      expectPassesRule(
+        VariablesInAllowedPosition,
+        `
+        query Query($intVar: Int) {
+          complicatedArgs {
+            nonNullFieldWithDefault(nonNullIntArg: $intVar)
+          }
+        }`,
       );
     });
 
     it('Boolean => Boolean! in directive with default value with option', () => {
-      expectPassesRuleWithOptions(
-        { allowNullableVariablesInNonNullPositions: true },
+      expectPassesRule(
         VariablesInAllowedPosition,
         `
-      query Query($boolVar: Boolean = false) {
-        dog @include(if: $boolVar)
-      }
-    `,
+        query Query($boolVar: Boolean = false) {
+          dog @include(if: $boolVar)
+        }`,
       );
     });
   });

@@ -72,7 +72,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    const errors = validate(testSchema, ast, specifiedRules, {}, typeInfo);
+    const errors = validate(testSchema, ast, specifiedRules, typeInfo);
 
     const errorMessages = errors.map(err => err.message);
 

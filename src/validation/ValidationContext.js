@@ -31,22 +31,11 @@ import type { GraphQLDirective } from '../type/directives';
 import { TypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
-type VariableUsage = { node: VariableNode, type: ?GraphQLInputType };
-
-/**
- * Configuration options to control validation behavior.
- */
-export type ValidationOptions = {
-  /**
-   * If enabled, validation will allow nullable variables with default values
-   * to be used in non-null positions. Earlier versions explicitly allowed such
-   * operations due to a slightly different interpretation of default values and
-   * null values. GraphQL services accepting operations written before this
-   * version may continue to allow such operations by enabling this option,
-   * however GraphQL services established after this version should not.
-   */
-  allowNullableVariablesInNonNullPositions?: boolean,
-};
+type VariableUsage = {|
+  +node: VariableNode,
+  +type: ?GraphQLInputType,
+  +defaultValue: ?mixed,
+|};
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -57,7 +46,6 @@ export default class ValidationContext {
   _schema: GraphQLSchema;
   _ast: DocumentNode;
   _typeInfo: TypeInfo;
-  options: ValidationOptions;
   _errors: Array<GraphQLError>;
   _fragments: ObjMap<FragmentDefinitionNode>;
   _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
@@ -75,12 +63,10 @@ export default class ValidationContext {
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
-    options?: ValidationOptions,
   ): void {
     this._schema = schema;
     this._ast = ast;
     this._typeInfo = typeInfo;
-    this.options = options || {};
     this._errors = [];
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
@@ -181,7 +167,11 @@ export default class ValidationContext {
         visitWithTypeInfo(typeInfo, {
           VariableDefinition: () => false,
           Variable(variable) {
-            newUsages.push({ node: variable, type: typeInfo.getInputType() });
+            newUsages.push({
+              node: variable,
+              type: typeInfo.getInputType(),
+              defaultValue: typeInfo.getDefaultValue(),
+            });
           },
         }),
       );
