@@ -86,7 +86,7 @@ declare class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  +extensions: ?{ [key: string]: mixed };
+  +extensions: { [key: string]: mixed } | void;
 }
 
 export function GraphQLError( // eslint-disable-line no-redeclare
@@ -135,6 +135,9 @@ export function GraphQLError( // eslint-disable-line no-redeclare
     }, []);
   }
 
+  const _extensions =
+    extensions || (originalError && (originalError: any).extensions);
+
   Object.defineProperties(this, {
     message: {
       value: message,
@@ -175,7 +178,13 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       value: originalError,
     },
     extensions: {
-      value: extensions || (originalError && (originalError: any).extensions),
+      // Coercing falsey values to undefined ensures they will not be included
+      // in JSON.stringify() when not provided.
+      value: _extensions || undefined,
+      // By being enumerable, JSON.stringify will include `path` in the
+      // resulting output. This ensures that the simplest possible GraphQL
+      // service adheres to the spec.
+      enumerable: Boolean(_extensions),
     },
   });
 
