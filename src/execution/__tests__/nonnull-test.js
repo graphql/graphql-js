@@ -108,6 +108,10 @@ const schema = new GraphQLSchema({
   query: dataType,
 });
 
+function executeQuery(doc, rootValue) {
+  return execute(schema, parse(doc), rootValue);
+}
+
 // avoids also doing any nests
 function patch(data) {
   return JSON.parse(
@@ -118,43 +122,35 @@ function patch(data) {
 }
 
 function check(description, syncOnly, doc, expectedReturn, expectedThrow) {
-  const descs = [
-    [
-      {
-        doc,
-        words: 'returns null',
-        data: nullingData,
-        expected: expectedReturn,
-        sync: 'synchronously',
-      },
-      {
-        doc,
-        words: 'throws',
-        data: throwingData,
-        expected: { data: expectedReturn.data, ...expectedThrow },
-        sync: 'synchronously',
-      },
-    ],
-  ];
+  it(description + ' that returns null synchronously', async () => {
+    const result = await executeQuery(doc, nullingData);
+    expect(result).to.containSubset(expectedReturn);
+  });
+
+  it(description + ' that throws synchronously', async () => {
+    const result = await executeQuery(doc, throwingData);
+    expect(result).to.containSubset({
+      data: expectedReturn.data,
+      ...expectedThrow,
+    });
+  });
+
   if (!syncOnly) {
-    descs.push(
-      descs[0].map(d => ({
-        ...d,
-        doc: patch(d.doc),
-        expected: patch(d.expected),
-        sync: 'in a promise',
-      })),
-    );
+    it(description + ' that returns null in a promise', async () => {
+      const result = await executeQuery(patch(doc), nullingData);
+      expect(result).to.containSubset(patch(expectedReturn));
+    });
+
+    it(description + ' that throws in a promise', async () => {
+      const result = await executeQuery(patch(doc), throwingData);
+      expect(result).to.containSubset(
+        patch({
+          data: expectedReturn.data,
+          ...expectedThrow,
+        }),
+      );
+    });
   }
-  descs.forEach(desc =>
-    desc.forEach(desc2 =>
-      it(description + ' that ' + desc2.words + ' ' + desc2.sync, async () =>
-        expect(
-          await execute(schema, parse(desc2.doc), desc2.data),
-        ).to.containSubset(desc2.expected),
-      ),
-    ),
-  );
 }
 
 describe('Execute: handles non-nullable types', () => {
