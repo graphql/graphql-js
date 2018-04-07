@@ -125,7 +125,7 @@ describe('Parser', () => {
     });
   });
 
-  it('parses multi-byte characters', async () => {
+  it('parses multi-byte characters', () => {
     // Note: \u0A0A could be naively interpretted as two line-feed chars.
     expect(
       parse(`
