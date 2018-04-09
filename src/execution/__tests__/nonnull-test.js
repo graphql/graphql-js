@@ -139,18 +139,19 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeSyncAndAsync(query, nullingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data: { sync: null },
       });
     });
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data: { sync: null },
         errors: [
           {
             message: syncError.message,
+            path: ['sync'],
             locations: [{ line: 3, column: 9 }],
           },
         ],
@@ -169,12 +170,13 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeSyncAndAsync(query, nullingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data: { syncNest: null },
         errors: [
           {
             message:
               'Cannot return null for non-nullable field DataType.syncNonNull.',
+            path: ['syncNest', 'syncNonNull'],
             locations: [{ line: 4, column: 11 }],
           },
         ],
@@ -183,11 +185,12 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data: { syncNest: null },
         errors: [
           {
             message: syncNonNullError.message,
+            path: ['syncNest', 'syncNonNull'],
             locations: [{ line: 4, column: 11 }],
           },
         ],
@@ -206,12 +209,13 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeSyncAndAsync(query, nullingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data: { promiseNest: null },
         errors: [
           {
             message:
               'Cannot return null for non-nullable field DataType.syncNonNull.',
+            path: ['promiseNest', 'syncNonNull'],
             locations: [{ line: 4, column: 11 }],
           },
         ],
@@ -220,11 +224,12 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data: { promiseNest: null },
         errors: [
           {
             message: syncNonNullError.message,
+            path: ['promiseNest', 'syncNonNull'],
             locations: [{ line: 4, column: 11 }],
           },
         ],
@@ -266,60 +271,72 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeQuery(query, nullingData);
-      expect(result).to.containSubset({ data });
+      expect(result).to.deep.equal({ data });
     });
 
     it('that throws', async () => {
       const result = await executeQuery(query, throwingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data,
         errors: [
           {
             message: syncError.message,
+            path: ['syncNest', 'sync'],
             locations: [{ line: 4, column: 11 }],
           },
           {
             message: syncError.message,
+            path: ['syncNest', 'syncNest', 'sync'],
             locations: [{ line: 6, column: 22 }],
           },
           {
             message: syncError.message,
+            path: ['syncNest', 'promiseNest', 'sync'],
             locations: [{ line: 7, column: 25 }],
           },
           {
             message: syncError.message,
+            path: ['promiseNest', 'sync'],
             locations: [{ line: 10, column: 11 }],
           },
           {
             message: syncError.message,
+            path: ['promiseNest', 'syncNest', 'sync'],
             locations: [{ line: 12, column: 22 }],
           },
           {
             message: syncError.message,
+            path: ['promiseNest', 'promiseNest', 'sync'],
             locations: [{ line: 13, column: 25 }],
           },
           {
             message: promiseError.message,
+            path: ['syncNest', 'promise'],
             locations: [{ line: 5, column: 11 }],
           },
           {
             message: promiseError.message,
+            path: ['syncNest', 'syncNest', 'promise'],
             locations: [{ line: 6, column: 27 }],
           },
           {
             message: promiseError.message,
+            path: ['syncNest', 'promiseNest', 'promise'],
             locations: [{ line: 7, column: 30 }],
           },
           {
             message: promiseError.message,
+            path: ['promiseNest', 'promise'],
             locations: [{ line: 11, column: 11 }],
           },
           {
             message: promiseError.message,
+            path: ['promiseNest', 'syncNest', 'promise'],
             locations: [{ line: 12, column: 27 }],
           },
           {
             message: promiseError.message,
+            path: ['promiseNest', 'promiseNest', 'promise'],
             locations: [{ line: 13, column: 30 }],
           },
         ],
@@ -385,27 +402,59 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeQuery(query, nullingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data,
         errors: [
           {
             message:
               'Cannot return null for non-nullable field DataType.syncNonNull.',
+            path: [
+              'syncNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNull',
+            ],
             locations: [{ line: 8, column: 19 }],
           },
           {
             message:
               'Cannot return null for non-nullable field DataType.syncNonNull.',
+            path: [
+              'promiseNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNull',
+            ],
             locations: [{ line: 19, column: 19 }],
           },
           {
             message:
               'Cannot return null for non-nullable field DataType.promiseNonNull.',
+            path: [
+              'anotherNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'promiseNonNull',
+            ],
             locations: [{ line: 30, column: 19 }],
           },
           {
             message:
               'Cannot return null for non-nullable field DataType.promiseNonNull.',
+            path: [
+              'anotherPromiseNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'promiseNonNull',
+            ],
             locations: [{ line: 41, column: 19 }],
           },
         ],
@@ -414,23 +463,55 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeQuery(query, throwingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data,
         errors: [
           {
             message: syncNonNullError.message,
+            path: [
+              'syncNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNull',
+            ],
             locations: [{ line: 8, column: 19 }],
           },
           {
             message: syncNonNullError.message,
+            path: [
+              'promiseNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNull',
+            ],
             locations: [{ line: 19, column: 19 }],
           },
           {
             message: promiseNonNullError.message,
+            path: [
+              'anotherNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'promiseNonNull',
+            ],
             locations: [{ line: 30, column: 19 }],
           },
           {
             message: promiseNonNullError.message,
+            path: [
+              'anotherPromiseNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'syncNonNullNest',
+              'promiseNonNullNest',
+              'promiseNonNull',
+            ],
             locations: [{ line: 41, column: 19 }],
           },
         ],
@@ -447,12 +528,13 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeSyncAndAsync(query, nullingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data: null,
         errors: [
           {
             message:
               'Cannot return null for non-nullable field DataType.syncNonNull.',
+            path: ['syncNonNull'],
             locations: [{ line: 3, column: 9 }],
           },
         ],
@@ -461,11 +543,12 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         data: null,
         errors: [
           {
             message: syncNonNullError.message,
+            path: ['syncNonNull'],
             locations: [{ line: 3, column: 9 }],
           },
         ],
