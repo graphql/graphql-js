@@ -108,8 +108,8 @@ const schema = new GraphQLSchema({
   query: dataType,
 });
 
-function executeQuery(doc, rootValue) {
-  return execute(schema, parse(doc), rootValue);
+function executeQuery(query, rootValue) {
+  return execute(schema, parse(query), rootValue);
 }
 
 // avoids also doing any nests
@@ -121,244 +121,215 @@ function patch(data) {
   );
 }
 
-function check(description, syncOnly, doc, expectedReturn, expectedThrow) {
-  it(description + ' that returns null synchronously', async () => {
-    const result = await executeQuery(doc, nullingData);
-    expect(result).to.containSubset(expectedReturn);
-  });
+async function executeSyncAndAsync(query, rootValue) {
+  const syncResult = await executeQuery(query, rootValue);
+  const asyncResult = await executeQuery(patch(query), rootValue);
 
-  it(description + ' that throws synchronously', async () => {
-    const result = await executeQuery(doc, throwingData);
-    expect(result).to.containSubset({
-      data: expectedReturn.data,
-      ...expectedThrow,
-    });
-  });
-
-  if (!syncOnly) {
-    it(description + ' that returns null in a promise', async () => {
-      const result = await executeQuery(patch(doc), nullingData);
-      expect(result).to.containSubset(patch(expectedReturn));
-    });
-
-    it(description + ' that throws in a promise', async () => {
-      const result = await executeQuery(patch(doc), throwingData);
-      expect(result).to.containSubset(
-        patch({
-          data: expectedReturn.data,
-          ...expectedThrow,
-        }),
-      );
-    });
-  }
+  expect(asyncResult).to.deep.equal(patch(syncResult));
+  return syncResult;
 }
 
 describe('Execute: handles non-nullable types', () => {
-  check(
-    'nulls a nullable field',
-    false,
-    `
-      query Q {
+  describe('nulls a nullable field', () => {
+    const query = `
+      {
         sync
       }
-    `,
-    {
-      data: {
+    `;
+
+    it('that returns null', async () => {
+      const result = await executeSyncAndAsync(query, nullingData);
+      expect(result).to.containSubset({
+        data: { sync: null },
+      });
+    });
+
+    it('that throws', async () => {
+      const result = await executeSyncAndAsync(query, throwingData);
+      expect(result).to.containSubset({
+        data: { sync: null },
+        errors: [
+          {
+            message: syncError.message,
+            locations: [{ line: 3, column: 9 }],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('nulls a synchronously returned object that contains a non-nullable field', () => {
+    const query = `
+      {
+        syncNest {
+          syncNonNull,
+        }
+      }
+    `;
+
+    it('that returns null', async () => {
+      const result = await executeSyncAndAsync(query, nullingData);
+      expect(result).to.containSubset({
+        data: { syncNest: null },
+        errors: [
+          {
+            message:
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
+            locations: [{ line: 4, column: 11 }],
+          },
+        ],
+      });
+    });
+
+    it('that throws', async () => {
+      const result = await executeSyncAndAsync(query, throwingData);
+      expect(result).to.containSubset({
+        data: { syncNest: null },
+        errors: [
+          {
+            message: syncNonNullError.message,
+            locations: [{ line: 4, column: 11 }],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('nulls an object returned in a promise that contains a non-nullable field', () => {
+    const query = `
+      {
+        promiseNest {
+          syncNonNull,
+        }
+      }
+    `;
+
+    it('that returns null', async () => {
+      const result = await executeSyncAndAsync(query, nullingData);
+      expect(result).to.containSubset({
+        data: { promiseNest: null },
+        errors: [
+          {
+            message:
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
+            locations: [{ line: 4, column: 11 }],
+          },
+        ],
+      });
+    });
+
+    it('that throws', async () => {
+      const result = await executeSyncAndAsync(query, throwingData);
+      expect(result).to.containSubset({
+        data: { promiseNest: null },
+        errors: [
+          {
+            message: syncNonNullError.message,
+            locations: [{ line: 4, column: 11 }],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('nulls a complex tree of nullable fields, each', () => {
+    const query = `
+      {
+        syncNest {
+          sync
+          promise
+          syncNest { sync promise }
+          promiseNest { sync promise }
+        }
+        promiseNest {
+          sync
+          promise
+          syncNest { sync promise }
+          promiseNest { sync promise }
+        }
+      }
+    `;
+    const data = {
+      syncNest: {
         sync: null,
+        promise: null,
+        syncNest: { sync: null, promise: null },
+        promiseNest: { sync: null, promise: null },
       },
-    },
-    {
-      errors: [
-        {
-          message: syncError.message,
-          locations: [{ line: 3, column: 9 }],
-        },
-      ],
-    },
-  );
-
-  check(
-    'nulls a synchronously returned object that contains a non-nullable field',
-    false,
-    `
-      query Q {
-        syncNest {
-          syncNonNull,
-        }
-      }
-    `,
-    {
-      data: {
-        syncNest: null,
+      promiseNest: {
+        sync: null,
+        promise: null,
+        syncNest: { sync: null, promise: null },
+        promiseNest: { sync: null, promise: null },
       },
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    },
-    {
-      errors: [
-        {
-          message: syncNonNullError.message,
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    },
-  );
+    };
 
-  check(
-    'nulls an object returned in a promise that contains a non-nullable field',
-    false,
-    `
-      query Q {
-        promiseNest {
-          syncNonNull,
-        }
-      }
-    `,
-    {
-      data: {
-        promiseNest: null,
-      },
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    },
-    {
-      errors: [
-        {
-          message: syncNonNullError.message,
-          locations: [{ line: 4, column: 11 }],
-        },
-      ],
-    },
-  );
+    it('that returns null', async () => {
+      const result = await executeQuery(query, nullingData);
+      expect(result).to.containSubset({ data });
+    });
 
-  check(
-    'nulls a complex tree of nullable fields, each',
-    true,
-    `
-      query Q {
-        syncNest {
-          sync
-          promise
-          syncNest {
-            sync
-            promise
-          }
-          promiseNest {
-            sync
-            promise
-          }
-        }
-        promiseNest {
-          sync
-          promise
-          syncNest {
-            sync
-            promise
-          }
-          promiseNest {
-            sync
-            promise
-          }
-        }
-      }
-    `,
-    {
-      data: {
-        syncNest: {
-          sync: null,
-          promise: null,
-          syncNest: {
-            sync: null,
-            promise: null,
+    it('that throws', async () => {
+      const result = await executeQuery(query, throwingData);
+      expect(result).to.containSubset({
+        data,
+        errors: [
+          {
+            message: syncError.message,
+            locations: [{ line: 4, column: 11 }],
           },
-          promiseNest: {
-            sync: null,
-            promise: null,
+          {
+            message: syncError.message,
+            locations: [{ line: 6, column: 22 }],
           },
-        },
-        promiseNest: {
-          sync: null,
-          promise: null,
-          syncNest: {
-            sync: null,
-            promise: null,
+          {
+            message: syncError.message,
+            locations: [{ line: 7, column: 25 }],
           },
-          promiseNest: {
-            sync: null,
-            promise: null,
+          {
+            message: syncError.message,
+            locations: [{ line: 10, column: 11 }],
           },
-        },
-      },
-    },
-    {
-      errors: [
-        {
-          message: syncError.message,
-          locations: [{ line: 4, column: 11 }],
-        },
-        {
-          message: syncError.message,
-          locations: [{ line: 7, column: 13 }],
-        },
-        {
-          message: syncError.message,
-          locations: [{ line: 11, column: 13 }],
-        },
-        {
-          message: syncError.message,
-          locations: [{ line: 16, column: 11 }],
-        },
-        {
-          message: syncError.message,
-          locations: [{ line: 19, column: 13 }],
-        },
-        {
-          message: syncError.message,
-          locations: [{ line: 23, column: 13 }],
-        },
-        {
-          message: promiseError.message,
-          locations: [{ line: 5, column: 11 }],
-        },
-        {
-          message: promiseError.message,
-          locations: [{ line: 8, column: 13 }],
-        },
-        {
-          message: promiseError.message,
-          locations: [{ line: 12, column: 13 }],
-        },
-        {
-          message: promiseError.message,
-          locations: [{ line: 17, column: 11 }],
-        },
-        {
-          message: promiseError.message,
-          locations: [{ line: 20, column: 13 }],
-        },
-        {
-          message: promiseError.message,
-          locations: [{ line: 24, column: 13 }],
-        },
-      ],
-    },
-  );
+          {
+            message: syncError.message,
+            locations: [{ line: 12, column: 22 }],
+          },
+          {
+            message: syncError.message,
+            locations: [{ line: 13, column: 25 }],
+          },
+          {
+            message: promiseError.message,
+            locations: [{ line: 5, column: 11 }],
+          },
+          {
+            message: promiseError.message,
+            locations: [{ line: 6, column: 27 }],
+          },
+          {
+            message: promiseError.message,
+            locations: [{ line: 7, column: 30 }],
+          },
+          {
+            message: promiseError.message,
+            locations: [{ line: 11, column: 11 }],
+          },
+          {
+            message: promiseError.message,
+            locations: [{ line: 12, column: 27 }],
+          },
+          {
+            message: promiseError.message,
+            locations: [{ line: 13, column: 30 }],
+          },
+        ],
+      });
+    });
+  });
 
-  check(
-    'nulls the first nullable object after a field in a long chain of non-null fields',
-    true,
-    `
-      query Q {
+  describe('nulls the first nullable object after a field in a long chain of non-null fields', () => {
+    const query = `
+      {
         syncNest {
           syncNonNullNest {
             promiseNonNullNest {
@@ -404,84 +375,103 @@ describe('Execute: handles non-nullable types', () => {
           }
         }
       }
-    `,
-    {
-      data: {
-        syncNest: null,
-        promiseNest: null,
-        anotherNest: null,
-        anotherPromiseNest: null,
-      },
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
-          locations: [{ line: 8, column: 19 }],
-        },
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
-          locations: [{ line: 19, column: 19 }],
-        },
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.promiseNonNull.',
-          locations: [{ line: 30, column: 19 }],
-        },
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.promiseNonNull.',
-          locations: [{ line: 41, column: 19 }],
-        },
-      ],
-    },
-    {
-      errors: [
-        {
-          message: syncNonNullError.message,
-          locations: [{ line: 8, column: 19 }],
-        },
-        {
-          message: syncNonNullError.message,
-          locations: [{ line: 19, column: 19 }],
-        },
-        {
-          message: promiseNonNullError.message,
-          locations: [{ line: 30, column: 19 }],
-        },
-        {
-          message: promiseNonNullError.message,
-          locations: [{ line: 41, column: 19 }],
-        },
-      ],
-    },
-  );
+    `;
+    const data = {
+      syncNest: null,
+      promiseNest: null,
+      anotherNest: null,
+      anotherPromiseNest: null,
+    };
 
-  check(
-    'nulls the top level if non-nullable field',
-    false,
-    `
-      query Q { syncNonNull }
-    `,
-    {
-      data: null,
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field DataType.syncNonNull.',
-          locations: [{ line: 2, column: 17 }],
-        },
-      ],
-    },
-    {
-      errors: [
-        {
-          message: syncNonNullError.message,
-          locations: [{ line: 2, column: 17 }],
-        },
-      ],
-    },
-  );
+    it('that returns null', async () => {
+      const result = await executeQuery(query, nullingData);
+      expect(result).to.containSubset({
+        data,
+        errors: [
+          {
+            message:
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
+            locations: [{ line: 8, column: 19 }],
+          },
+          {
+            message:
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
+            locations: [{ line: 19, column: 19 }],
+          },
+          {
+            message:
+              'Cannot return null for non-nullable field DataType.promiseNonNull.',
+            locations: [{ line: 30, column: 19 }],
+          },
+          {
+            message:
+              'Cannot return null for non-nullable field DataType.promiseNonNull.',
+            locations: [{ line: 41, column: 19 }],
+          },
+        ],
+      });
+    });
+
+    it('that throws', async () => {
+      const result = await executeQuery(query, throwingData);
+      expect(result).to.containSubset({
+        data,
+        errors: [
+          {
+            message: syncNonNullError.message,
+            locations: [{ line: 8, column: 19 }],
+          },
+          {
+            message: syncNonNullError.message,
+            locations: [{ line: 19, column: 19 }],
+          },
+          {
+            message: promiseNonNullError.message,
+            locations: [{ line: 30, column: 19 }],
+          },
+          {
+            message: promiseNonNullError.message,
+            locations: [{ line: 41, column: 19 }],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('nulls the top level if non-nullable field', () => {
+    const query = `
+      {
+        syncNonNull
+      }
+    `;
+
+    it('that returns null', async () => {
+      const result = await executeSyncAndAsync(query, nullingData);
+      expect(result).to.containSubset({
+        data: null,
+        errors: [
+          {
+            message:
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
+            locations: [{ line: 3, column: 9 }],
+          },
+        ],
+      });
+    });
+
+    it('that throws', async () => {
+      const result = await executeSyncAndAsync(query, throwingData);
+      expect(result).to.containSubset({
+        data: null,
+        errors: [
+          {
+            message: syncNonNullError.message,
+            locations: [{ line: 3, column: 9 }],
+          },
+        ],
+      });
+    });
+  });
 
   describe('Handles non-null argument', () => {
     const schemaWithNonNullArg = new GraphQLSchema({
