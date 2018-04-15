@@ -5,6 +5,7 @@
   "license": "MIT",
   "main": "index",
   "module": "index.mjs",
+  "sideEffects": false,
   "homepage": "https://github.com/graphql/graphql-js",
   "bugs": {
     "url": "https://github.com/graphql/graphql-js/issues"
