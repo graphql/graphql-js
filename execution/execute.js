@@ -356,32 +356,32 @@ function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields
  * for "read" mode.
  */
 function executeFields(exeContext, parentType, sourceValue, path, fields) {
+  var results = Object.create(null);
   var containsPromise = false;
 
-  var finalResults = Object.keys(fields).reduce(function (results, responseName) {
+  for (var i = 0, keys = Object.keys(fields); i < keys.length; ++i) {
+    var responseName = keys[i];
     var fieldNodes = fields[responseName];
     var fieldPath = addPath(path, responseName);
     var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
-    if (result === undefined) {
-      return results;
+
+    if (result !== undefined) {
+      results[responseName] = result;
+      if (!containsPromise && (0, _isPromise2.default)(result)) {
+        containsPromise = true;
+      }
     }
-    results[responseName] = result;
-    if (!containsPromise && (0, _isPromise2.default)(result)) {
-      containsPromise = true;
-    }
-    return results;
-  }, Object.create(null));
+  }
 
   // If there are no promises, we can just return the object
   if (!containsPromise) {
-    return finalResults;
+    return results;
   }
 
-  // Otherwise, results is a map from field name to the result
-  // of resolving that field, which is possibly a promise. Return
-  // a promise that will return this same map, but with any
-  // promises replaced with the values they resolved to.
-  return (0, _promiseForObject2.default)(finalResults);
+  // Otherwise, results is a map from field name to the result of resolving that
+  // field, which is possibly a promise. Return a promise that will return this
+  // same map, but with any promises replaced with the values they resolved to.
+  return (0, _promiseForObject2.default)(results);
 }
 
 /**
@@ -544,49 +544,42 @@ function asErrorInstance(error) {
 // This is a small wrapper around completeValue which detects and logs errors
 // in the execution context.
 function completeValueCatchingError(exeContext, returnType, fieldNodes, info, path, result) {
+  try {
+    var completed = void 0;
+    if ((0, _isPromise2.default)(result)) {
+      completed = result.then(function (resolved) {
+        return completeValue(exeContext, returnType, fieldNodes, info, path, resolved);
+      });
+    } else {
+      completed = completeValue(exeContext, returnType, fieldNodes, info, path, result);
+    }
+
+    if ((0, _isPromise2.default)(completed)) {
+      // Note: we don't rely on a `catch` method, but we do expect "thenable"
+      // to take a second callback for the error case.
+      return completed.then(undefined, function (error) {
+        return handleFieldError(error, fieldNodes, path, returnType, exeContext);
+      });
+    }
+    return completed;
+  } catch (error) {
+    return handleFieldError(error, fieldNodes, path, returnType, exeContext);
+  }
+}
+
+function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
+  var error = (0, _error.locatedError)(asErrorInstance(rawError), fieldNodes, responsePathAsArray(path));
+
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
   if ((0, _definition.isNonNullType)(returnType)) {
-    return completeValueWithLocatedError(exeContext, returnType, fieldNodes, info, path, result);
+    throw error;
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
-  try {
-    var completed = completeValueWithLocatedError(exeContext, returnType, fieldNodes, info, path, result);
-    if ((0, _isPromise2.default)(completed)) {
-      // If `completeValueWithLocatedError` returned a rejected promise, log
-      // the rejection error and resolve to null.
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      return completed.then(undefined, function (error) {
-        exeContext.errors.push(error);
-        return Promise.resolve(null);
-      });
-    }
-    return completed;
-  } catch (error) {
-    // If `completeValueWithLocatedError` returned abruptly (threw an error),
-    // log the error and return null.
-    exeContext.errors.push(error);
-    return null;
-  }
-}
-
-// This is a small wrapper around completeValue which annotates errors with
-// location information.
-function completeValueWithLocatedError(exeContext, returnType, fieldNodes, info, path, result) {
-  try {
-    var completed = completeValue(exeContext, returnType, fieldNodes, info, path, result);
-    if ((0, _isPromise2.default)(completed)) {
-      return completed.then(undefined, function (error) {
-        return Promise.reject((0, _error.locatedError)(asErrorInstance(error), fieldNodes, responsePathAsArray(path)));
-      });
-    }
-    return completed;
-  } catch (error) {
-    throw (0, _error.locatedError)(asErrorInstance(error), fieldNodes, responsePathAsArray(path));
-  }
+  exeContext.errors.push(error);
+  return null;
 }
 
 /**
@@ -611,13 +604,6 @@ function completeValueWithLocatedError(exeContext, returnType, fieldNodes, info,
  * value by evaluating all sub-selections.
  */
 function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
-  // If result is a Promise, apply-lift over completeValue.
-  if ((0, _isPromise2.default)(result)) {
-    return result.then(function (resolved) {
-      return completeValue(exeContext, returnType, fieldNodes, info, path, resolved);
-    });
-  }
-
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
