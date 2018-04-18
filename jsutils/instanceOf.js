@@ -3,7 +3,14 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = process && process.env.NODE_ENV !== 'production' ? // eslint-disable-next-line no-shadow
+
+
+// See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
+// See: https://webpack.js.org/guides/production/
+exports.default = process.env.NODE_ENV === 'production' ? // eslint-disable-next-line no-shadow
+function instanceOf(value, constructor) {
+  return value instanceof constructor;
+} : // eslint-disable-next-line no-shadow
 function instanceOf(value, constructor) {
   if (value instanceof constructor) {
     return true;
@@ -16,9 +23,6 @@ function instanceOf(value, constructor) {
     }
   }
   return false;
-} : // eslint-disable-next-line no-shadow
-function instanceOf(value, constructor) {
-  return value instanceof constructor;
 }; /**
     * Copyright (c) 2015-present, Facebook, Inc.
     *
