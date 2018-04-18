@@ -568,7 +568,7 @@ describe('Execute: handles non-nullable types', () => {
                 type: GraphQLNonNull(GraphQLString),
               },
             },
-            resolve: async (_, args) => {
+            resolve: (_, args) => {
               if (typeof args.cannotBeNull === 'string') {
                 return 'Passed: ' + args.cannotBeNull;
               }
@@ -578,8 +578,8 @@ describe('Execute: handles non-nullable types', () => {
       }),
     });
 
-    it('succeeds when passed non-null literal value', async () => {
-      const result = await execute({
+    it('succeeds when passed non-null literal value', () => {
+      const result = execute({
         schema: schemaWithNonNullArg,
         document: parse(`
           query {
@@ -595,8 +595,8 @@ describe('Execute: handles non-nullable types', () => {
       });
     });
 
-    it('succeeds when passed non-null variable value', async () => {
-      const result = await execute({
+    it('succeeds when passed non-null variable value', () => {
+      const result = execute({
         schema: schemaWithNonNullArg,
         document: parse(`
           query ($testVar: String!) {
@@ -615,8 +615,8 @@ describe('Execute: handles non-nullable types', () => {
       });
     });
 
-    it('succeeds when missing variable has default value', async () => {
-      const result = await execute({
+    it('succeeds when missing variable has default value', () => {
+      const result = execute({
         schema: schemaWithNonNullArg,
         document: parse(`
           query ($testVar: String = "default value") {
@@ -635,10 +635,10 @@ describe('Execute: handles non-nullable types', () => {
       });
     });
 
-    it('field error when missing non-null arg', async () => {
+    it('field error when missing non-null arg', () => {
       // Note: validation should identify this issue first (missing args rule)
       // however execution should still protect against this.
-      const result = await execute({
+      const result = execute({
         schema: schemaWithNonNullArg,
         document: parse(`
           query {
@@ -662,10 +662,10 @@ describe('Execute: handles non-nullable types', () => {
       });
     });
 
-    it('field error when non-null arg provided null', async () => {
+    it('field error when non-null arg provided null', () => {
       // Note: validation should identify this issue first (values of correct
       // type rule) however execution should still protect against this.
-      const result = await execute({
+      const result = execute({
         schema: schemaWithNonNullArg,
         document: parse(`
           query {
@@ -690,10 +690,10 @@ describe('Execute: handles non-nullable types', () => {
       });
     });
 
-    it('field error when non-null arg not provided variable value', async () => {
+    it('field error when non-null arg not provided variable value', () => {
       // Note: validation should identify this issue first (variables in allowed
       // position rule) however execution should still protect against this.
-      const result = await execute({
+      const result = execute({
         schema: schemaWithNonNullArg,
         document: parse(`
           query ($testVar: String) {
@@ -722,8 +722,8 @@ describe('Execute: handles non-nullable types', () => {
       });
     });
 
-    it('field error when non-null arg provided variable with explicit null value', async () => {
-      const result = await execute({
+    it('field error when non-null arg provided variable with explicit null value', () => {
+      const result = execute({
         schema: schemaWithNonNullArg,
         document: parse(`
           query ($testVar: String = "default value") {
