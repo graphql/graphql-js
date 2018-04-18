@@ -31,10 +31,9 @@ describe('Introspection', () => {
         },
       }),
     });
+    const result = graphqlSync(EmptySchema, getIntrospectionQuery());
 
-    return expect(
-      graphqlSync(EmptySchema, getIntrospectionQuery()),
-    ).to.containSubset({
+    expect(result).to.containSubset({
       data: {
         __schema: {
           mutationType: null,
@@ -868,7 +867,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync(schema, request)).to.deep.equal({
       data: {
         __type: {
           kind: 'INPUT_OBJECT',
@@ -930,7 +929,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync(schema, request)).to.deep.equal({
       data: {
         __type: {
           name: 'TestType',
@@ -967,7 +966,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync(schema, request)).to.deep.equal({
       data: {
         __type: {
           name: 'TestType',
@@ -1020,7 +1019,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync(schema, request)).to.deep.equal({
       data: {
         __type: {
           name: 'TestType',
@@ -1080,7 +1079,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync(schema, request)).to.deep.equal({
       data: {
         __type: {
           name: 'TestEnum',
@@ -1143,7 +1142,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync(schema, request)).to.deep.equal({
       data: {
         __type: {
           name: 'TestEnum',
@@ -1198,7 +1197,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync(schema, request)).to.deep.equal({
       errors: [
         {
           message: missingFieldArgMessage('__type', 'name', 'String!'),
@@ -1230,7 +1229,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync(schema, request)).to.deep.equal({
       data: {
         schemaType: {
           name: '__Schema',
@@ -1293,7 +1292,7 @@ describe('Introspection', () => {
       }
     `;
 
-    return expect(graphqlSync(schema, request)).to.deep.equal({
+    expect(graphqlSync(schema, request)).to.deep.equal({
       data: {
         typeKindType: {
           name: '__TypeKind',

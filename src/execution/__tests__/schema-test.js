@@ -151,49 +151,19 @@ describe('Execute: Handles execution with a complex schema', () => {
 
     // Note: this is intentionally not validating to ensure appropriate
     // behavior occurs when executing an invalid query.
-    return expect(execute(BlogSchema, parse(request))).to.deep.equal({
+    expect(execute(BlogSchema, parse(request))).to.deep.equal({
       data: {
         feed: [
-          {
-            id: '1',
-            title: 'My Article 1',
-          },
-          {
-            id: '2',
-            title: 'My Article 2',
-          },
-          {
-            id: '3',
-            title: 'My Article 3',
-          },
-          {
-            id: '4',
-            title: 'My Article 4',
-          },
-          {
-            id: '5',
-            title: 'My Article 5',
-          },
-          {
-            id: '6',
-            title: 'My Article 6',
-          },
-          {
-            id: '7',
-            title: 'My Article 7',
-          },
-          {
-            id: '8',
-            title: 'My Article 8',
-          },
-          {
-            id: '9',
-            title: 'My Article 9',
-          },
-          {
-            id: '10',
-            title: 'My Article 10',
-          },
+          { id: '1', title: 'My Article 1' },
+          { id: '2', title: 'My Article 2' },
+          { id: '3', title: 'My Article 3' },
+          { id: '4', title: 'My Article 4' },
+          { id: '5', title: 'My Article 5' },
+          { id: '6', title: 'My Article 6' },
+          { id: '7', title: 'My Article 7' },
+          { id: '8', title: 'My Article 8' },
+          { id: '9', title: 'My Article 9' },
+          { id: '10', title: 'My Article 10' },
         ],
         article: {
           id: '1',

@@ -128,7 +128,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(execute(schema, ast)).to.deep.equal({
+    expect(execute(schema, ast)).to.deep.equal({
       data: {
         Named: {
           kind: 'INTERFACE',
@@ -167,7 +167,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -199,7 +199,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -226,7 +226,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -257,7 +257,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
@@ -302,7 +302,7 @@ describe('Execute: Union and intersection types', () => {
       }
     `);
 
-    return expect(execute(schema, ast, john)).to.deep.equal({
+    expect(execute(schema, ast, john)).to.deep.equal({
       data: {
         __typename: 'Person',
         name: 'John',
