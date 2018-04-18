@@ -76,6 +76,9 @@ export type {
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
+  DirectiveDefinitionNode,
+  TypeSystemExtensionNode,
+  SchemaExtensionNode,
   TypeExtensionNode,
   ScalarTypeExtensionNode,
   ObjectTypeExtensionNode,
@@ -83,7 +86,6 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
-  DirectiveDefinitionNode,
 } from './ast';
 
 export { DirectiveLocation } from './directiveLocation';

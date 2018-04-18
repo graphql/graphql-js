@@ -175,6 +175,9 @@ const printDocASTReducer = {
     join(['input', name, join(directives, ' '), block(fields)], ' '),
   ),
 
+  SchemaExtension: ({ directives, operationTypes }) =>
+    join(['extend schema', join(directives, ' '), block(operationTypes)], ' '),
+
   ScalarTypeExtension: ({ name, directives }) =>
     join(['extend scalar', name, join(directives, ' ')], ' '),
 

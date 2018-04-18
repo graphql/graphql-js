@@ -52,7 +52,8 @@ import type {
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
-  TypeExtensionNode,
+  TypeSystemExtensionNode,
+  SchemaExtensionNode,
   ScalarTypeExtensionNode,
   ObjectTypeExtensionNode,
   InterfaceTypeExtensionNode,
@@ -751,9 +752,9 @@ export function parseNamedType(lexer: Lexer<*>): NamedTypeNode {
 
 /**
  * TypeSystemDefinition :
+ *   - TypeSystemExtension
  *   - SchemaDefinition
  *   - TypeDefinition
- *   - TypeExtension
  *   - DirectiveDefinition
  *
  * TypeDefinition :
@@ -785,7 +786,7 @@ function parseTypeSystemDefinition(lexer: Lexer<*>): TypeSystemDefinitionNode {
       case 'input':
         return parseInputObjectTypeDefinition(lexer);
       case 'extend':
-        return parseTypeExtension(lexer);
+        return parseTypeSystemExtension(lexer);
       case 'directive':
         return parseDirectiveDefinition(lexer);
     }
@@ -1141,6 +1142,10 @@ function parseInputFieldsDefinition(
 }
 
 /**
+ * TypeSystemExtension :
+ *   - SchemaExtension
+ *   - TypeExtension
+ *
  * TypeExtension :
  *   - ScalarTypeExtension
  *   - ObjectTypeExtension
@@ -1149,11 +1154,13 @@ function parseInputFieldsDefinition(
  *   - EnumTypeExtension
  *   - InputObjectTypeDefinition
  */
-function parseTypeExtension(lexer: Lexer<*>): TypeExtensionNode {
+function parseTypeSystemExtension(lexer: Lexer<*>): TypeSystemExtensionNode {
   const keywordToken = lexer.lookahead();
 
   if (keywordToken.kind === TokenKind.NAME) {
     switch (keywordToken.value) {
+      case 'schema':
+        return parseSchemaExtension(lexer);
       case 'scalar':
         return parseScalarTypeExtension(lexer);
       case 'type':
@@ -1170,6 +1177,35 @@ function parseTypeExtension(lexer: Lexer<*>): TypeExtensionNode {
   }
 
   throw unexpected(lexer, keywordToken);
+}
+
+/**
+ * SchemaExtension :
+ *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
+ *  - extend schema Directives[Const]
+ */
+function parseSchemaExtension(lexer: Lexer<*>): SchemaExtensionNode {
+  const start = lexer.token;
+  expectKeyword(lexer, 'extend');
+  expectKeyword(lexer, 'schema');
+  const directives = parseDirectives(lexer, true);
+  const operationTypes = peek(lexer, TokenKind.BRACE_L)
+    ? many(
+        lexer,
+        TokenKind.BRACE_L,
+        parseOperationTypeDefinition,
+        TokenKind.BRACE_R,
+      )
+    : [];
+  if (directives.length === 0 && operationTypes.length === 0) {
+    throw unexpected(lexer);
+  }
+  return {
+    kind: Kind.SCHEMA_EXTENSION,
+    directives,
+    operationTypes,
+    loc: loc(lexer, start),
+  };
 }
 
 /**

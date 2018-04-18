@@ -62,6 +62,9 @@ export const Kind = Object.freeze({
   ENUM_VALUE_DEFINITION: 'EnumValueDefinition',
   INPUT_OBJECT_TYPE_DEFINITION: 'InputObjectTypeDefinition',
 
+  // Type System Extensions
+  SCHEMA_EXTENSION: 'SchemaExtension',
+
   // Type Extensions
   SCALAR_TYPE_EXTENSION: 'ScalarTypeExtension',
   OBJECT_TYPE_EXTENSION: 'ObjectTypeExtension',
