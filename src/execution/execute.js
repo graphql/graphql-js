@@ -506,9 +506,11 @@ function executeFields(
   path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
 ): MaybePromise<ObjMap<mixed>> {
+  const results = Object.create(null);
   let containsPromise = false;
 
-  const finalResults = Object.keys(fields).reduce((results, responseName) => {
+  for (let i = 0, keys = Object.keys(fields); i < keys.length; ++i) {
+    const responseName = keys[i];
     const fieldNodes = fields[responseName];
     const fieldPath = addPath(path, responseName);
     const result = resolveField(
@@ -518,26 +520,24 @@ function executeFields(
       fieldNodes,
       fieldPath,
     );
-    if (result === undefined) {
-      return results;
+
+    if (result !== undefined) {
+      results[responseName] = result;
+      if (!containsPromise && isPromise(result)) {
+        containsPromise = true;
+      }
     }
-    results[responseName] = result;
-    if (!containsPromise && isPromise(result)) {
-      containsPromise = true;
-    }
-    return results;
-  }, Object.create(null));
+  }
 
   // If there are no promises, we can just return the object
   if (!containsPromise) {
-    return finalResults;
+    return results;
   }
 
-  // Otherwise, results is a map from field name to the result
-  // of resolving that field, which is possibly a promise. Return
-  // a promise that will return this same map, but with any
-  // promises replaced with the values they resolved to.
-  return promiseForObject(finalResults);
+  // Otherwise, results is a map from field name to the result of resolving that
+  // field, which is possibly a promise. Return a promise that will return this
+  // same map, but with any promises replaced with the values they resolved to.
+  return promiseForObject(results);
 }
 
 /**
@@ -792,87 +792,53 @@ function completeValueCatchingError(
   path: ResponsePath,
   result: mixed,
 ): MaybePromise<mixed> {
-  // If the field type is non-nullable, then it is resolved without any
-  // protection from errors, however it still properly locates the error.
-  if (isNonNullType(returnType)) {
-    return completeValueWithLocatedError(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-  }
-
-  // Otherwise, error protection is applied, logging the error and resolving
-  // a null value for this field if one is encountered.
   try {
-    const completed = completeValueWithLocatedError(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
+    let completed;
+    if (isPromise(result)) {
+      completed = result.then(resolved =>
+        completeValue(exeContext, returnType, fieldNodes, info, path, resolved),
+      );
+    } else {
+      completed = completeValue(
+        exeContext,
+        returnType,
+        fieldNodes,
+        info,
+        path,
+        result,
+      );
+    }
+
     if (isPromise(completed)) {
-      // If `completeValueWithLocatedError` returned a rejected promise, log
-      // the rejection error and resolve to null.
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return completed.then(undefined, error => {
-        exeContext.errors.push(error);
-        return Promise.resolve(null);
-      });
-    }
-    return completed;
-  } catch (error) {
-    // If `completeValueWithLocatedError` returned abruptly (threw an error),
-    // log the error and return null.
-    exeContext.errors.push(error);
-    return null;
-  }
-}
-
-// This is a small wrapper around completeValue which annotates errors with
-// location information.
-function completeValueWithLocatedError(
-  exeContext: ExecutionContext,
-  returnType: GraphQLOutputType,
-  fieldNodes: $ReadOnlyArray<FieldNode>,
-  info: GraphQLResolveInfo,
-  path: ResponsePath,
-  result: mixed,
-): MaybePromise<mixed> {
-  try {
-    const completed = completeValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-    if (isPromise(completed)) {
       return completed.then(undefined, error =>
-        Promise.reject(
-          locatedError(
-            asErrorInstance(error),
-            fieldNodes,
-            responsePathAsArray(path),
-          ),
-        ),
+        handleFieldError(error, fieldNodes, path, returnType, exeContext),
       );
     }
     return completed;
   } catch (error) {
-    throw locatedError(
-      asErrorInstance(error),
-      fieldNodes,
-      responsePathAsArray(path),
-    );
+    return handleFieldError(error, fieldNodes, path, returnType, exeContext);
   }
+}
+
+function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
+  const error = locatedError(
+    asErrorInstance(rawError),
+    fieldNodes,
+    responsePathAsArray(path),
+  );
+
+  // If the field type is non-nullable, then it is resolved without any
+  // protection from errors, however it still properly locates the error.
+  if (isNonNullType(returnType)) {
+    throw error;
+  }
+
+  // Otherwise, error protection is applied, logging the error and resolving
+  // a null value for this field if one is encountered.
+  exeContext.errors.push(error);
+  return null;
 }
 
 /**
@@ -904,13 +870,6 @@ function completeValue(
   path: ResponsePath,
   result: mixed,
 ): MaybePromise<mixed> {
-  // If result is a Promise, apply-lift over completeValue.
-  if (isPromise(result)) {
-    return result.then(resolved =>
-      completeValue(exeContext, returnType, fieldNodes, info, path, resolved),
-    );
-  }
-
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
