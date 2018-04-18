@@ -8,7 +8,9 @@ import { GraphQLError } from '../../error'; /**
                                              *  strict
                                              */
 
-import { GraphQLNonNull, isNonNullType } from '../../type/definition';
+import { Kind } from '../../language/kinds';
+
+import { isNonNullType } from '../../type/definition';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
@@ -33,7 +35,8 @@ export function VariablesInAllowedPosition(context) {
 
         usages.forEach(function (_ref) {
           var node = _ref.node,
-              type = _ref.type;
+              type = _ref.type,
+              defaultValue = _ref.defaultValue;
 
           var varName = node.name.value;
           var varDef = varDefMap[varName];
@@ -45,7 +48,7 @@ export function VariablesInAllowedPosition(context) {
             // than the expected item type (contravariant).
             var schema = context.getSchema();
             var varType = typeFromAST(schema, varDef.type);
-            if (varType && !isTypeSubTypeOf(schema, effectiveType(varType, varDef), type)) {
+            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
               context.reportError(new GraphQLError(badVarPosMessage(varName, varType, type), [varDef, node]));
             }
           }
@@ -58,7 +61,20 @@ export function VariablesInAllowedPosition(context) {
   };
 }
 
-// If a variable definition has a default value, it's effectively non-null.
-function effectiveType(varType, varDef) {
-  return !varDef.defaultValue || isNonNullType(varType) ? varType : GraphQLNonNull(varType);
+/**
+ * Returns true if the variable is allowed in the location it was found,
+ * which includes considering if default values exist for either the variable
+ * or the location at which it is located.
+ */
+function allowedVariableUsage(schema, varType, varDefaultValue, locationType, locationDefaultValue) {
+  if (isNonNullType(locationType) && !isNonNullType(varType)) {
+    var hasNonNullVariableDefaultValue = varDefaultValue && varDefaultValue.kind !== Kind.NULL;
+    var hasLocationDefaultValue = locationDefaultValue !== undefined;
+    if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {
+      return false;
+    }
+    var nullableLocationType = locationType.ofType;
+    return isTypeSubTypeOf(schema, varType, nullableLocationType);
+  }
+  return isTypeSubTypeOf(schema, varType, locationType);
 }

@@ -64,9 +64,10 @@ export function ValuesOfCorrectType(context) {
         return field.name.value;
       });
       Object.keys(inputFields).forEach(function (fieldName) {
-        var fieldType = inputFields[fieldName].type;
+        var fieldDef = inputFields[fieldName];
+        var fieldType = fieldDef.type;
         var fieldNode = fieldNodeMap[fieldName];
-        if (!fieldNode && isNonNullType(fieldType)) {
+        if (!fieldNode && isNonNullType(fieldType) && fieldDef.defaultValue === undefined) {
           context.reportError(new GraphQLError(requiredFieldMessage(type.name, fieldName, String(fieldType)), node));
         }
       });

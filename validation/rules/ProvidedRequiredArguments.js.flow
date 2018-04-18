@@ -39,10 +39,10 @@ export function missingDirectiveArgMessage(
 /**
  * Provided required arguments
  *
- * A field or directive is only valid if all required (non-null) field arguments
- * have been provided.
+ * A field or directive is only valid if all required (non-null without a
+ * default value) field arguments have been provided.
  */
-export function ProvidedNonNullArguments(
+export function ProvidedRequiredArguments(
   context: ValidationContext,
 ): ASTVisitor {
   return {
@@ -58,7 +58,11 @@ export function ProvidedNonNullArguments(
         const argNodeMap = keyMap(argNodes, arg => arg.name.value);
         fieldDef.args.forEach(argDef => {
           const argNode = argNodeMap[argDef.name];
-          if (!argNode && isNonNullType(argDef.type)) {
+          if (
+            !argNode &&
+            isNonNullType(argDef.type) &&
+            argDef.defaultValue === undefined
+          ) {
             context.reportError(
               new GraphQLError(
                 missingFieldArgMessage(
@@ -86,7 +90,11 @@ export function ProvidedNonNullArguments(
         const argNodeMap = keyMap(argNodes, arg => arg.name.value);
         directiveDef.args.forEach(argDef => {
           const argNode = argNodeMap[argDef.name];
-          if (!argNode && isNonNullType(argDef.type)) {
+          if (
+            !argNode &&
+            isNonNullType(argDef.type) &&
+            argDef.defaultValue === undefined
+          ) {
             context.reportError(
               new GraphQLError(
                 missingDirectiveArgMessage(

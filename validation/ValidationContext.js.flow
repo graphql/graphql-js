@@ -31,7 +31,11 @@ import type { GraphQLDirective } from '../type/directives';
 import { TypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
-type VariableUsage = { node: VariableNode, type: ?GraphQLInputType };
+type VariableUsage = {|
+  +node: VariableNode,
+  +type: ?GraphQLInputType,
+  +defaultValue: ?mixed,
+|};
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -163,7 +167,11 @@ export default class ValidationContext {
         visitWithTypeInfo(typeInfo, {
           VariableDefinition: () => false,
           Variable(variable) {
-            newUsages.push({ node: variable, type: typeInfo.getInputType() });
+            newUsages.push({
+              node: variable,
+              type: typeInfo.getInputType(),
+              defaultValue: typeInfo.getDefaultValue(),
+            });
           },
         }),
       );

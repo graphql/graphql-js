@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.VariablesInAllowedPositionRule = exports.VariablesDefaultValueAllowedRule = exports.VariablesAreInputTypesRule = exports.ValuesOfCorrectTypeRule = exports.UniqueVariableNamesRule = exports.UniqueOperationNamesRule = exports.UniqueInputFieldNamesRule = exports.UniqueFragmentNamesRule = exports.UniqueDirectivesPerLocationRule = exports.UniqueArgumentNamesRule = exports.SingleFieldSubscriptionsRule = exports.ScalarLeafsRule = exports.ProvidedNonNullArgumentsRule = exports.PossibleFragmentSpreadsRule = exports.OverlappingFieldsCanBeMergedRule = exports.NoUnusedVariablesRule = exports.NoUnusedFragmentsRule = exports.NoUndefinedVariablesRule = exports.NoFragmentCyclesRule = exports.LoneAnonymousOperationRule = exports.KnownTypeNamesRule = exports.KnownFragmentNamesRule = exports.KnownDirectivesRule = exports.KnownArgumentNamesRule = exports.FragmentsOnCompositeTypesRule = exports.FieldsOnCorrectTypeRule = exports.specifiedRules = exports.ValidationContext = exports.validate = undefined;
+exports.VariablesInAllowedPositionRule = exports.VariablesAreInputTypesRule = exports.ValuesOfCorrectTypeRule = exports.UniqueVariableNamesRule = exports.UniqueOperationNamesRule = exports.UniqueInputFieldNamesRule = exports.UniqueFragmentNamesRule = exports.UniqueDirectivesPerLocationRule = exports.UniqueArgumentNamesRule = exports.SingleFieldSubscriptionsRule = exports.ScalarLeafsRule = exports.ProvidedRequiredArgumentsRule = exports.PossibleFragmentSpreadsRule = exports.OverlappingFieldsCanBeMergedRule = exports.NoUnusedVariablesRule = exports.NoUnusedFragmentsRule = exports.NoUndefinedVariablesRule = exports.NoFragmentCyclesRule = exports.LoneAnonymousOperationRule = exports.KnownTypeNamesRule = exports.KnownFragmentNamesRule = exports.KnownDirectivesRule = exports.KnownArgumentNamesRule = exports.FragmentsOnCompositeTypesRule = exports.FieldsOnCorrectTypeRule = exports.specifiedRules = exports.ValidationContext = exports.validate = undefined;
 
 var _validate = require('./validate');
 
@@ -140,12 +140,12 @@ Object.defineProperty(exports, 'PossibleFragmentSpreadsRule', {
   }
 });
 
-var _ProvidedNonNullArguments = require('./rules/ProvidedNonNullArguments');
+var _ProvidedRequiredArguments = require('./rules/ProvidedRequiredArguments');
 
-Object.defineProperty(exports, 'ProvidedNonNullArgumentsRule', {
+Object.defineProperty(exports, 'ProvidedRequiredArgumentsRule', {
   enumerable: true,
   get: function get() {
-    return _ProvidedNonNullArguments.ProvidedNonNullArguments;
+    return _ProvidedRequiredArguments.ProvidedRequiredArguments;
   }
 });
 
@@ -236,15 +236,6 @@ Object.defineProperty(exports, 'VariablesAreInputTypesRule', {
   enumerable: true,
   get: function get() {
     return _VariablesAreInputTypes.VariablesAreInputTypes;
-  }
-});
-
-var _VariablesDefaultValueAllowed = require('./rules/VariablesDefaultValueAllowed');
-
-Object.defineProperty(exports, 'VariablesDefaultValueAllowedRule', {
-  enumerable: true,
-  get: function get() {
-    return _VariablesDefaultValueAllowed.VariablesDefaultValueAllowed;
   }
 });
 

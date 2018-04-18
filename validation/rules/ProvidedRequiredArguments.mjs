@@ -23,10 +23,10 @@ export function missingDirectiveArgMessage(directiveName, argName, type) {
 /**
  * Provided required arguments
  *
- * A field or directive is only valid if all required (non-null) field arguments
- * have been provided.
+ * A field or directive is only valid if all required (non-null without a
+ * default value) field arguments have been provided.
  */
-export function ProvidedNonNullArguments(context) {
+export function ProvidedRequiredArguments(context) {
   return {
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
@@ -42,7 +42,7 @@ export function ProvidedNonNullArguments(context) {
         });
         fieldDef.args.forEach(function (argDef) {
           var argNode = argNodeMap[argDef.name];
-          if (!argNode && isNonNullType(argDef.type)) {
+          if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
             context.reportError(new GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, argDef.type), [node]));
           }
         });
@@ -63,7 +63,7 @@ export function ProvidedNonNullArguments(context) {
         });
         directiveDef.args.forEach(function (argDef) {
           var argNode = argNodeMap[argDef.name];
-          if (!argNode && isNonNullType(argDef.type)) {
+          if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
             context.reportError(new GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, argDef.type), [node]));
           }
         });

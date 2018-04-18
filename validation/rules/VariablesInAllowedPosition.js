@@ -8,19 +8,14 @@ exports.VariablesInAllowedPosition = VariablesInAllowedPosition;
 
 var _error = require('../../error');
 
+var _kinds = require('../../language/kinds');
+
 var _definition = require('../../type/definition');
 
 var _typeComparators = require('../../utilities/typeComparators');
 
 var _typeFromAST = require('../../utilities/typeFromAST');
 
-function badVarPosMessage(varName, varType, expectedType) {
-  return 'Variable "$' + varName + '" of type "' + String(varType) + '" used in ' + ('position expecting type "' + String(expectedType) + '".');
-}
-
-/**
- * Variables passed to field arguments conform to type
- */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -30,6 +25,13 @@ function badVarPosMessage(varName, varType, expectedType) {
  *  strict
  */
 
+function badVarPosMessage(varName, varType, expectedType) {
+  return 'Variable "$' + varName + '" of type "' + String(varType) + '" used in ' + ('position expecting type "' + String(expectedType) + '".');
+}
+
+/**
+ * Variables passed to field arguments conform to type
+ */
 function VariablesInAllowedPosition(context) {
   var varDefMap = Object.create(null);
 
@@ -43,7 +45,8 @@ function VariablesInAllowedPosition(context) {
 
         usages.forEach(function (_ref) {
           var node = _ref.node,
-              type = _ref.type;
+              type = _ref.type,
+              defaultValue = _ref.defaultValue;
 
           var varName = node.name.value;
           var varDef = varDefMap[varName];
@@ -55,7 +58,7 @@ function VariablesInAllowedPosition(context) {
             // than the expected item type (contravariant).
             var schema = context.getSchema();
             var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
-            if (varType && !(0, _typeComparators.isTypeSubTypeOf)(schema, effectiveType(varType, varDef), type)) {
+            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
               context.reportError(new _error.GraphQLError(badVarPosMessage(varName, varType, type), [varDef, node]));
             }
           }
@@ -68,7 +71,20 @@ function VariablesInAllowedPosition(context) {
   };
 }
 
-// If a variable definition has a default value, it's effectively non-null.
-function effectiveType(varType, varDef) {
-  return !varDef.defaultValue || (0, _definition.isNonNullType)(varType) ? varType : (0, _definition.GraphQLNonNull)(varType);
+/**
+ * Returns true if the variable is allowed in the location it was found,
+ * which includes considering if default values exist for either the variable
+ * or the location at which it is located.
+ */
+function allowedVariableUsage(schema, varType, varDefaultValue, locationType, locationDefaultValue) {
+  if ((0, _definition.isNonNullType)(locationType) && !(0, _definition.isNonNullType)(varType)) {
+    var hasNonNullVariableDefaultValue = varDefaultValue && varDefaultValue.kind !== _kinds.Kind.NULL;
+    var hasLocationDefaultValue = locationDefaultValue !== undefined;
+    if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {
+      return false;
+    }
+    var nullableLocationType = locationType.ofType;
+    return (0, _typeComparators.isTypeSubTypeOf)(schema, varType, nullableLocationType);
+  }
+  return (0, _typeComparators.isTypeSubTypeOf)(schema, varType, locationType);
 }

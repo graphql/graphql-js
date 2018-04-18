@@ -49,9 +49,7 @@ var _UniqueArgumentNames = require('./rules/UniqueArgumentNames');
 
 var _ValuesOfCorrectType = require('./rules/ValuesOfCorrectType');
 
-var _ProvidedNonNullArguments = require('./rules/ProvidedNonNullArguments');
-
-var _VariablesDefaultValueAllowed = require('./rules/VariablesDefaultValueAllowed');
+var _ProvidedRequiredArguments = require('./rules/ProvidedRequiredArguments');
 
 var _VariablesInAllowedPosition = require('./rules/VariablesInAllowedPosition');
 
@@ -68,48 +66,6 @@ var _UniqueInputFieldNames = require('./rules/UniqueInputFieldNames');
 
 
 // Spec Section: "Field Selection Merging"
-
-
-// Spec Section: "Variables Default Value Is Allowed"
-
-
-// Spec Section: "Value Type Correctness"
-
-
-// Spec Section: "Argument Names"
-
-
-// Spec Section: "Directives Are Defined"
-
-
-// Spec Section: "All Variable Used Defined"
-
-
-// Spec Section: "Fragments must not form cycles"
-
-
-// Spec Section: "Fragments must be used"
-
-
-// Spec Section: "Fragment Name Uniqueness"
-
-
-// Spec Section: "Leaf Field Selections"
-
-
-// Spec Section: "Fragments on Composite Types"
-
-
-// Spec Section: "Subscriptions with Single Root Field"
-
-
-// Spec Section: "Operation Name Uniqueness"
-var specifiedRules = exports.specifiedRules = [_ExecutableDefinitions.ExecutableDefinitions, _UniqueOperationNames.UniqueOperationNames, _LoneAnonymousOperation.LoneAnonymousOperation, _SingleFieldSubscriptions.SingleFieldSubscriptions, _KnownTypeNames.KnownTypeNames, _FragmentsOnCompositeTypes.FragmentsOnCompositeTypes, _VariablesAreInputTypes.VariablesAreInputTypes, _ScalarLeafs.ScalarLeafs, _FieldsOnCorrectType.FieldsOnCorrectType, _UniqueFragmentNames.UniqueFragmentNames, _KnownFragmentNames.KnownFragmentNames, _NoUnusedFragments.NoUnusedFragments, _PossibleFragmentSpreads.PossibleFragmentSpreads, _NoFragmentCycles.NoFragmentCycles, _UniqueVariableNames.UniqueVariableNames, _NoUndefinedVariables.NoUndefinedVariables, _NoUnusedVariables.NoUnusedVariables, _KnownDirectives.KnownDirectives, _UniqueDirectivesPerLocation.UniqueDirectivesPerLocation, _KnownArgumentNames.KnownArgumentNames, _UniqueArgumentNames.UniqueArgumentNames, _ValuesOfCorrectType.ValuesOfCorrectType, _ProvidedNonNullArguments.ProvidedNonNullArguments, _VariablesDefaultValueAllowed.VariablesDefaultValueAllowed, _VariablesInAllowedPosition.VariablesInAllowedPosition, _OverlappingFieldsCanBeMerged.OverlappingFieldsCanBeMerged, _UniqueInputFieldNames.UniqueInputFieldNames];
-
-// Spec Section: "Input Object Field Uniqueness"
-
-
-// Spec Section: "All Variable Usages Are Allowed"
 
 
 // Spec Section: "Argument Optionality"
@@ -153,3 +109,42 @@ var specifiedRules = exports.specifiedRules = [_ExecutableDefinitions.Executable
  */
 
 // Spec Section: "Executable Definitions"
+var specifiedRules = exports.specifiedRules = [_ExecutableDefinitions.ExecutableDefinitions, _UniqueOperationNames.UniqueOperationNames, _LoneAnonymousOperation.LoneAnonymousOperation, _SingleFieldSubscriptions.SingleFieldSubscriptions, _KnownTypeNames.KnownTypeNames, _FragmentsOnCompositeTypes.FragmentsOnCompositeTypes, _VariablesAreInputTypes.VariablesAreInputTypes, _ScalarLeafs.ScalarLeafs, _FieldsOnCorrectType.FieldsOnCorrectType, _UniqueFragmentNames.UniqueFragmentNames, _KnownFragmentNames.KnownFragmentNames, _NoUnusedFragments.NoUnusedFragments, _PossibleFragmentSpreads.PossibleFragmentSpreads, _NoFragmentCycles.NoFragmentCycles, _UniqueVariableNames.UniqueVariableNames, _NoUndefinedVariables.NoUndefinedVariables, _NoUnusedVariables.NoUnusedVariables, _KnownDirectives.KnownDirectives, _UniqueDirectivesPerLocation.UniqueDirectivesPerLocation, _KnownArgumentNames.KnownArgumentNames, _UniqueArgumentNames.UniqueArgumentNames, _ValuesOfCorrectType.ValuesOfCorrectType, _ProvidedRequiredArguments.ProvidedRequiredArguments, _VariablesInAllowedPosition.VariablesInAllowedPosition, _OverlappingFieldsCanBeMerged.OverlappingFieldsCanBeMerged, _UniqueInputFieldNames.UniqueInputFieldNames];
+
+// Spec Section: "Input Object Field Uniqueness"
+
+
+// Spec Section: "All Variable Usages Are Allowed"
+
+
+// Spec Section: "Value Type Correctness"
+
+
+// Spec Section: "Argument Names"
+
+
+// Spec Section: "Directives Are Defined"
+
+
+// Spec Section: "All Variable Used Defined"
+
+
+// Spec Section: "Fragments must not form cycles"
+
+
+// Spec Section: "Fragments must be used"
+
+
+// Spec Section: "Fragment Name Uniqueness"
+
+
+// Spec Section: "Leaf Field Selections"
+
+
+// Spec Section: "Fragments on Composite Types"
+
+
+// Spec Section: "Subscriptions with Single Root Field"
+
+
+// Spec Section: "Operation Name Uniqueness"

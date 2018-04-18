@@ -68,10 +68,14 @@ function valueFromAST(valueNode, type, variables) {
       // No valid return value.
       return;
     }
-    // Note: we're not doing any checking that this variable is correct. We're
-    // assuming that this query has been validated and the variable usage here
-    // is of the correct type.
-    return variables[variableName];
+    var variableValue = variables[variableName];
+    if (variableValue === null && (0, _definition.isNonNullType)(type)) {
+      return; // Invalid: intentionally return no value.
+    }
+    // Note: This does no further checking that this variable is correct.
+    // This assumes that this query has been validated and the variable
+    // usage here is of the correct type.
+    return variableValue;
   }
 
   if ((0, _definition.isListType)(type)) {
@@ -117,7 +121,7 @@ function valueFromAST(valueNode, type, variables) {
       var field = fields[_i];
       var fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
-        if (!(0, _isInvalid2.default)(field.defaultValue)) {
+        if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
         } else if ((0, _definition.isNonNullType)(field.type)) {
           return; // Invalid: intentionally return no value.

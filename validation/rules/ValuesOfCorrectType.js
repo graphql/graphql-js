@@ -88,9 +88,10 @@ function ValuesOfCorrectType(context) {
         return field.name.value;
       });
       Object.keys(inputFields).forEach(function (fieldName) {
-        var fieldType = inputFields[fieldName].type;
+        var fieldDef = inputFields[fieldName];
+        var fieldType = fieldDef.type;
         var fieldNode = fieldNodeMap[fieldName];
-        if (!fieldNode && (0, _definition.isNonNullType)(fieldType)) {
+        if (!fieldNode && (0, _definition.isNonNullType)(fieldType) && fieldDef.defaultValue === undefined) {
           context.reportError(new _error.GraphQLError(requiredFieldMessage(type.name, fieldName, String(fieldType)), node));
         }
       });

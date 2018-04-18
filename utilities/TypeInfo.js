@@ -47,6 +47,7 @@ var TypeInfo = exports.TypeInfo = function () {
     this._parentTypeStack = [];
     this._inputTypeStack = [];
     this._fieldDefStack = [];
+    this._defaultValueStack = [];
     this._directive = null;
     this._argument = null;
     this._enumValue = null;
@@ -91,6 +92,12 @@ var TypeInfo = exports.TypeInfo = function () {
   TypeInfo.prototype.getFieldDef = function getFieldDef() {
     if (this._fieldDefStack.length > 0) {
       return this._fieldDefStack[this._fieldDefStack.length - 1];
+    }
+  };
+
+  TypeInfo.prototype.getDefaultValue = function getDefaultValue() {
+    if (this._defaultValueStack.length > 0) {
+      return this._defaultValueStack[this._defaultValueStack.length - 1];
     }
   };
 
@@ -170,22 +177,27 @@ var TypeInfo = exports.TypeInfo = function () {
           }
         }
         this._argument = argDef;
+        this._defaultValueStack.push(argDef ? argDef.defaultValue : undefined);
         this._inputTypeStack.push((0, _definition.isInputType)(argType) ? argType : undefined);
         break;
       case _kinds.Kind.LIST:
         var listType = (0, _definition.getNullableType)(this.getInputType());
         var itemType = (0, _definition.isListType)(listType) ? listType.ofType : listType;
+        // List positions never have a default value.
+        this._defaultValueStack.push(undefined);
         this._inputTypeStack.push((0, _definition.isInputType)(itemType) ? itemType : undefined);
         break;
       case _kinds.Kind.OBJECT_FIELD:
         var objectType = (0, _definition.getNamedType)(this.getInputType());
         var inputFieldType = void 0;
+        var inputField = void 0;
         if ((0, _definition.isInputObjectType)(objectType)) {
-          var inputField = objectType.getFields()[node.name.value];
+          inputField = objectType.getFields()[node.name.value];
           if (inputField) {
             inputFieldType = inputField.type;
           }
         }
+        this._defaultValueStack.push(inputField ? inputField.defaultValue : undefined);
         this._inputTypeStack.push((0, _definition.isInputType)(inputFieldType) ? inputFieldType : undefined);
         break;
       case _kinds.Kind.ENUM:
@@ -221,10 +233,12 @@ var TypeInfo = exports.TypeInfo = function () {
         break;
       case _kinds.Kind.ARGUMENT:
         this._argument = null;
+        this._defaultValueStack.pop();
         this._inputTypeStack.pop();
         break;
       case _kinds.Kind.LIST:
       case _kinds.Kind.OBJECT_FIELD:
+        this._defaultValueStack.pop();
         this._inputTypeStack.pop();
         break;
       case _kinds.Kind.ENUM:

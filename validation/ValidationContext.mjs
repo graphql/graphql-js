@@ -121,7 +121,11 @@ var ValidationContext = function () {
           return false;
         },
         Variable: function Variable(variable) {
-          newUsages.push({ node: variable, type: typeInfo.getInputType() });
+          newUsages.push({
+            node: variable,
+            type: typeInfo.getInputType(),
+            defaultValue: typeInfo.getDefaultValue()
+          });
         }
       }));
       usages = newUsages;

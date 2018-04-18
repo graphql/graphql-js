@@ -95,9 +95,14 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
       const inputFields = type.getFields();
       const fieldNodeMap = keyMap(node.fields, field => field.name.value);
       Object.keys(inputFields).forEach(fieldName => {
-        const fieldType = inputFields[fieldName].type;
+        const fieldDef = inputFields[fieldName];
+        const fieldType = fieldDef.type;
         const fieldNode = fieldNodeMap[fieldName];
-        if (!fieldNode && isNonNullType(fieldType)) {
+        if (
+          !fieldNode &&
+          isNonNullType(fieldType) &&
+          fieldDef.defaultValue === undefined
+        ) {
           context.reportError(
             new GraphQLError(
               requiredFieldMessage(type.name, fieldName, String(fieldType)),

@@ -711,10 +711,10 @@ Object.defineProperty(exports, 'PossibleFragmentSpreadsRule', {
     return _validation.PossibleFragmentSpreadsRule;
   }
 });
-Object.defineProperty(exports, 'ProvidedNonNullArgumentsRule', {
+Object.defineProperty(exports, 'ProvidedRequiredArgumentsRule', {
   enumerable: true,
   get: function get() {
-    return _validation.ProvidedNonNullArgumentsRule;
+    return _validation.ProvidedRequiredArgumentsRule;
   }
 });
 Object.defineProperty(exports, 'ScalarLeafsRule', {
@@ -775,12 +775,6 @@ Object.defineProperty(exports, 'VariablesAreInputTypesRule', {
   enumerable: true,
   get: function get() {
     return _validation.VariablesAreInputTypesRule;
-  }
-});
-Object.defineProperty(exports, 'VariablesDefaultValueAllowedRule', {
-  enumerable: true,
-  get: function get() {
-    return _validation.VariablesDefaultValueAllowedRule;
   }
 });
 Object.defineProperty(exports, 'VariablesInAllowedPositionRule', {
