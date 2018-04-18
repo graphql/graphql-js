@@ -9,11 +9,14 @@
 
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
+import { Kind } from '../../language/kinds';
+import type { ValueNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
-import { GraphQLNonNull, isNonNullType } from '../../type/definition';
+import { isNonNullType } from '../../type/definition';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import type { GraphQLType } from '../../type/definition';
+import type { GraphQLSchema } from '../../type/schema';
 
 export function badVarPosMessage(
   varName: string,
@@ -42,7 +45,7 @@ export function VariablesInAllowedPosition(
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        usages.forEach(({ node, type }) => {
+        usages.forEach(({ node, type, defaultValue }) => {
           const varName = node.name.value;
           const varDef = varDefMap[varName];
           if (varDef && type) {
@@ -55,7 +58,13 @@ export function VariablesInAllowedPosition(
             const varType = typeFromAST(schema, varDef.type);
             if (
               varType &&
-              !isTypeSubTypeOf(schema, effectiveType(varType, varDef), type)
+              !allowedVariableUsage(
+                schema,
+                varType,
+                varDef.defaultValue,
+                type,
+                defaultValue,
+              )
             ) {
               context.reportError(
                 new GraphQLError(badVarPosMessage(varName, varType, type), [
@@ -74,9 +83,27 @@ export function VariablesInAllowedPosition(
   };
 }
 
-// If a variable definition has a default value, it's effectively non-null.
-function effectiveType(varType, varDef) {
-  return !varDef.defaultValue || isNonNullType(varType)
-    ? varType
-    : GraphQLNonNull(varType);
+/**
+ * Returns true if the variable is allowed in the location it was found,
+ * which includes considering if default values exist for either the variable
+ * or the location at which it is located.
+ */
+function allowedVariableUsage(
+  schema: GraphQLSchema,
+  varType: GraphQLType,
+  varDefaultValue: ?ValueNode,
+  locationType: GraphQLType,
+  locationDefaultValue: ?mixed,
+): boolean {
+  if (isNonNullType(locationType) && !isNonNullType(varType)) {
+    const hasNonNullVariableDefaultValue =
+      varDefaultValue && varDefaultValue.kind !== Kind.NULL;
+    const hasLocationDefaultValue = locationDefaultValue !== undefined;
+    if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {
+      return false;
+    }
+    const nullableLocationType = locationType.ofType;
+    return isTypeSubTypeOf(schema, varType, nullableLocationType);
+  }
+  return isTypeSubTypeOf(schema, varType, locationType);
 }

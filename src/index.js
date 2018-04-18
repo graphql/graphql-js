@@ -285,7 +285,7 @@ export {
   NoUnusedVariablesRule,
   OverlappingFieldsCanBeMergedRule,
   PossibleFragmentSpreadsRule,
-  ProvidedNonNullArgumentsRule,
+  ProvidedRequiredArgumentsRule,
   ScalarLeafsRule,
   SingleFieldSubscriptionsRule,
   UniqueArgumentNamesRule,
@@ -296,7 +296,6 @@ export {
   UniqueVariableNamesRule,
   ValuesOfCorrectTypeRule,
   VariablesAreInputTypesRule,
-  VariablesDefaultValueAllowedRule,
   VariablesInAllowedPositionRule,
 } from './validation';
 

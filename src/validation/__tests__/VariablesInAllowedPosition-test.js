@@ -91,20 +91,6 @@ describe('Validate: Variables are in allowed positions', () => {
     );
   });
 
-  it('Int => Int! with default', () => {
-    expectPassesRule(
-      VariablesInAllowedPosition,
-      `
-      query Query($intArg: Int = 1)
-      {
-        complicatedArgs {
-          nonNullIntArgField(nonNullIntArg: $intArg)
-        }
-      }
-    `,
-    );
-  });
-
   it('[String] => [String]', () => {
     expectPassesRule(
       VariablesInAllowedPosition,
@@ -194,18 +180,6 @@ describe('Validate: Variables are in allowed positions', () => {
       VariablesInAllowedPosition,
       `
       query Query($boolVar: Boolean!)
-      {
-        dog @include(if: $boolVar)
-      }
-    `,
-    );
-  });
-
-  it('Boolean => Boolean! in directive with default', () => {
-    expectPassesRule(
-      VariablesInAllowedPosition,
-      `
-      query Query($boolVar: Boolean = false)
       {
         dog @include(if: $boolVar)
       }
@@ -372,5 +346,59 @@ describe('Validate: Variables are in allowed positions', () => {
         },
       ],
     );
+  });
+
+  describe('Allows optional (nullable) variables with default values', () => {
+    it('Int => Int! fails when variable provides null default value', () => {
+      expectFailsRule(
+        VariablesInAllowedPosition,
+        `
+        query Query($intVar: Int = null) {
+          complicatedArgs {
+            nonNullIntArgField(nonNullIntArg: $intVar)
+          }
+        }`,
+        [
+          {
+            message: badVarPosMessage('intVar', 'Int', 'Int!'),
+            locations: [{ line: 2, column: 21 }, { line: 4, column: 47 }],
+          },
+        ],
+      );
+    });
+
+    it('Int => Int! when variable provides non-null default value', () => {
+      expectPassesRule(
+        VariablesInAllowedPosition,
+        `
+        query Query($intVar: Int = 1) {
+          complicatedArgs {
+            nonNullIntArgField(nonNullIntArg: $intVar)
+          }
+        }`,
+      );
+    });
+
+    it('Int => Int! when optional argument provides default value', () => {
+      expectPassesRule(
+        VariablesInAllowedPosition,
+        `
+        query Query($intVar: Int) {
+          complicatedArgs {
+            nonNullFieldWithDefault(nonNullIntArg: $intVar)
+          }
+        }`,
+      );
+    });
+
+    it('Boolean => Boolean! in directive with default value with option', () => {
+      expectPassesRule(
+        VariablesInAllowedPosition,
+        `
+        query Query($boolVar: Boolean = false) {
+          dog @include(if: $boolVar)
+        }`,
+      );
+    });
   });
 });

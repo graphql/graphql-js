@@ -182,6 +182,7 @@ const ComplexInput = new GraphQLInputObjectType({
   name: 'ComplexInput',
   fields: {
     requiredField: { type: GraphQLNonNull(GraphQLBoolean) },
+    nonNullField: { type: GraphQLNonNull(GraphQLBoolean), defaultValue: false },
     intField: { type: GraphQLInt },
     stringField: { type: GraphQLString },
     booleanField: { type: GraphQLBoolean },
@@ -244,6 +245,12 @@ const ComplicatedArgs = new GraphQLObjectType({
       args: {
         req1: { type: GraphQLNonNull(GraphQLInt) },
         req2: { type: GraphQLNonNull(GraphQLInt) },
+      },
+    },
+    nonNullFieldWithDefault: {
+      type: GraphQLString,
+      args: {
+        arg: { type: GraphQLNonNull(GraphQLInt), defaultValue: 0 },
       },
     },
     multipleOpts: {

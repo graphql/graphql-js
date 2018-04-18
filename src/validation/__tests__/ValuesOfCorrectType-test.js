@@ -828,7 +828,7 @@ describe('Validate: Values of correct type', () => {
       );
     });
 
-    it('Incorrect value and missing argument (ProvidedNonNullArguments)', () => {
+    it('Incorrect value and missing argument (ProvidedRequiredArguments)', () => {
       expectFailsRule(
         ValuesOfCorrectType,
         `
@@ -981,6 +981,23 @@ describe('Validate: Values of correct type', () => {
       );
     });
 
+    it('Partial object, null to non-null field', () => {
+      expectFailsRule(
+        ValuesOfCorrectType,
+        `
+        {
+          complicatedArgs {
+            complexArgField(complexArg: {
+              requiredField: true,
+              nonNullField: null,
+            })
+          }
+        }
+      `,
+        [badValue('Boolean!', 'null', 6, 29)],
+      );
+    });
+
     it('Partial object, unknown field arg', () => {
       expectFailsRule(
         ValuesOfCorrectType,
@@ -1000,7 +1017,7 @@ describe('Validate: Values of correct type', () => {
             'unknownField',
             6,
             15,
-            'Did you mean intField or booleanField?',
+            'Did you mean nonNullField, intField, or booleanField?',
           ),
         ],
       );
@@ -1088,6 +1105,7 @@ describe('Validate: Values of correct type', () => {
           $a: Int = 1,
           $b: String = "ok",
           $c: ComplexInput = { requiredField: true, intField: 3 }
+          $d: Int! = 123
         ) {
           dog { name }
         }
