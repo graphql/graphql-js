@@ -77,7 +77,12 @@ export type {
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
   TypeExtensionNode,
+  ScalarTypeExtensionNode,
   ObjectTypeExtensionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
   DirectiveDefinitionNode,
 } from './ast';
 
