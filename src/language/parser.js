@@ -752,10 +752,10 @@ export function parseNamedType(lexer: Lexer<*>): NamedTypeNode {
 
 /**
  * TypeSystemDefinition :
- *   - TypeSystemExtension
  *   - SchemaDefinition
  *   - TypeDefinition
  *   - DirectiveDefinition
+ *   - TypeSystemExtension
  *
  * TypeDefinition :
  *   - ScalarTypeDefinition
@@ -785,10 +785,10 @@ function parseTypeSystemDefinition(lexer: Lexer<*>): TypeSystemDefinitionNode {
         return parseEnumTypeDefinition(lexer);
       case 'input':
         return parseInputObjectTypeDefinition(lexer);
-      case 'extend':
-        return parseTypeSystemExtension(lexer);
       case 'directive':
         return parseDirectiveDefinition(lexer);
+      case 'extend':
+        return parseTypeSystemExtension(lexer);
     }
   }
 

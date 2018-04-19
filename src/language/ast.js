@@ -124,14 +124,14 @@ export type ASTNode =
   | EnumTypeDefinitionNode
   | EnumValueDefinitionNode
   | InputObjectTypeDefinitionNode
+  | DirectiveDefinitionNode
   | SchemaExtensionNode
   | ScalarTypeExtensionNode
   | ObjectTypeExtensionNode
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
-  | InputObjectTypeExtensionNode
-  | DirectiveDefinitionNode;
+  | InputObjectTypeExtensionNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -172,6 +172,7 @@ export type ASTKindToNode = {
   EnumTypeDefinition: EnumTypeDefinitionNode,
   EnumValueDefinition: EnumValueDefinitionNode,
   InputObjectTypeDefinition: InputObjectTypeDefinitionNode,
+  DirectiveDefinition: DirectiveDefinitionNode,
   SchemaExtension: SchemaExtensionNode,
   ScalarTypeExtension: ScalarTypeExtensionNode,
   ObjectTypeExtension: ObjectTypeExtensionNode,
@@ -179,7 +180,6 @@ export type ASTKindToNode = {
   UnionTypeExtension: UnionTypeExtensionNode,
   EnumTypeExtension: EnumTypeExtensionNode,
   InputObjectTypeExtension: InputObjectTypeExtensionNode,
-  DirectiveDefinition: DirectiveDefinitionNode,
 };
 
 // Name
@@ -390,8 +390,8 @@ export type NonNullTypeNode = {
 export type TypeSystemDefinitionNode =
   | SchemaDefinitionNode
   | TypeDefinitionNode
-  | TypeSystemExtensionNode
-  | DirectiveDefinitionNode;
+  | DirectiveDefinitionNode
+  | TypeSystemExtensionNode;
 
 export type SchemaDefinitionNode = {
   +kind: 'SchemaDefinition',
