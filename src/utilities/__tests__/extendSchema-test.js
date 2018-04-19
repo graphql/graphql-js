@@ -876,4 +876,182 @@ describe('extendSchema', () => {
       );
     });
   });
+
+  describe('can add additional root operation types', () => {
+    it('does not automatically include common root type names', () => {
+      const ast = parse(`
+        type Mutation {
+          doSomething: String
+        }
+      `);
+      const schema = extendSchema(testSchema, ast);
+      expect(schema.getMutationType()).to.equal(null);
+    });
+
+    it('does not allow new schema within an extension', () => {
+      const ast = parse(`
+        schema {
+          mutation: Mutation
+        }
+
+        type Mutation {
+          doSomething: String
+        }
+      `);
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Cannot define a new schema within a schema extension.',
+      );
+    });
+
+    it('adds new root types via schema extension', () => {
+      const ast = parse(`
+        extend schema {
+          mutation: Mutation
+        }
+
+        type Mutation {
+          doSomething: String
+        }
+      `);
+      const schema = extendSchema(testSchema, ast);
+      const mutationType = schema.getMutationType();
+      expect(mutationType && mutationType.name).to.equal('Mutation');
+    });
+
+    it('adds multiple new root types via schema extension', () => {
+      const ast = parse(`
+        extend schema {
+          mutation: Mutation
+          subscription: Subscription
+        }
+
+        type Mutation {
+          doSomething: String
+        }
+
+        type Subscription {
+          hearSomething: String
+        }
+      `);
+      const schema = extendSchema(testSchema, ast);
+      const mutationType = schema.getMutationType();
+      const subscriptionType = schema.getSubscriptionType();
+      expect(mutationType && mutationType.name).to.equal('Mutation');
+      expect(subscriptionType && subscriptionType.name).to.equal(
+        'Subscription',
+      );
+    });
+
+    it('applies multiple schema extensions', () => {
+      const ast = parse(`
+        extend schema {
+          mutation: Mutation
+        }
+
+        extend schema {
+          subscription: Subscription
+        }
+
+        type Mutation {
+          doSomething: String
+        }
+
+        type Subscription {
+          hearSomething: String
+        }
+      `);
+      const schema = extendSchema(testSchema, ast);
+      const mutationType = schema.getMutationType();
+      const subscriptionType = schema.getSubscriptionType();
+      expect(mutationType && mutationType.name).to.equal('Mutation');
+      expect(subscriptionType && subscriptionType.name).to.equal(
+        'Subscription',
+      );
+    });
+
+    it('schema extension AST are available from schema object', () => {
+      const ast = parse(`
+        extend schema {
+          mutation: Mutation
+        }
+
+        extend schema {
+          subscription: Subscription
+        }
+
+        type Mutation {
+          doSomething: String
+        }
+
+        type Subscription {
+          hearSomething: String
+        }
+      `);
+      const schema = extendSchema(testSchema, ast);
+      expect(schema.extensionASTNodes.map(print).join('\n')).to.equal(dedent`
+        extend schema {
+          mutation: Mutation
+        }
+        extend schema {
+          subscription: Subscription
+        }`);
+    });
+
+    it('does not allow redefining an existing root type', () => {
+      const ast = parse(`
+        extend schema {
+          query: SomeType
+        }
+
+        type SomeType {
+          seeSomething: String
+        }
+      `);
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Must provide only one query type in schema.',
+      );
+    });
+
+    it('does not allow defining a root operation type twice', () => {
+      const ast = parse(`
+        extend schema {
+          mutation: Mutation
+        }
+
+        extend schema {
+          mutation: Mutation
+        }
+
+        type Mutation {
+          doSomething: String
+        }
+      `);
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Must provide only one mutation type in schema.',
+      );
+    });
+
+    it('does not allow defining a root operation type with different types', () => {
+      const ast = parse(`
+        extend schema {
+          mutation: Mutation
+        }
+
+        extend schema {
+          mutation: SomethingElse
+        }
+
+        type Mutation {
+          doSomething: String
+        }
+
+        type SomethingElse {
+          doSomethingElse: String
+        }
+      `);
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Must provide only one mutation type in schema.',
+      );
+    });
+  });
 });

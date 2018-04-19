@@ -396,7 +396,7 @@ export type TypeSystemDefinitionNode =
 export type SchemaDefinitionNode = {
   +kind: 'SchemaDefinition',
   +loc?: Location,
-  +directives: $ReadOnlyArray<DirectiveNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
   +operationTypes: $ReadOnlyArray<OperationTypeDefinitionNode>,
 };
 
@@ -517,8 +517,8 @@ export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 export type SchemaExtensionNode = {
   +kind: 'SchemaExtension',
   +loc?: Location,
-  +directives: $ReadOnlyArray<DirectiveNode>,
-  +operationTypes: $ReadOnlyArray<OperationTypeDefinitionNode>,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
+  +operationTypes?: $ReadOnlyArray<OperationTypeDefinitionNode>,
 };
 
 // Type Extensions
