@@ -52,6 +52,7 @@ import type {
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
+  DirectiveDefinitionNode,
   TypeSystemExtensionNode,
   SchemaExtensionNode,
   ScalarTypeExtensionNode,
@@ -60,7 +61,6 @@ import type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
-  DirectiveDefinitionNode,
 } from './ast';
 
 import { Kind } from './kinds';

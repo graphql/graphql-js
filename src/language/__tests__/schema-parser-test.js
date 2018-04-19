@@ -263,6 +263,66 @@ extend type Hello {
     );
   });
 
+  it('Schema extension', () => {
+    const body = `
+      extend schema {
+        mutation: Mutation
+      }`;
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'SchemaExtension',
+          directives: [],
+          operationTypes: [
+            {
+              kind: 'OperationTypeDefinition',
+              operation: 'mutation',
+              type: typeNode('Mutation', { start: 41, end: 49 }),
+              loc: { start: 31, end: 49 },
+            },
+          ],
+          loc: { start: 7, end: 57 },
+        },
+      ],
+      loc: { start: 0, end: 57 },
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Schema extension with only directives', () => {
+    const body = 'extend schema @directive';
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'SchemaExtension',
+          directives: [
+            {
+              kind: 'Directive',
+              name: nameNode('directive', { start: 15, end: 24 }),
+              arguments: [],
+              loc: { start: 14, end: 24 },
+            },
+          ],
+          operationTypes: [],
+          loc: { start: 0, end: 24 },
+        },
+      ],
+      loc: { start: 0, end: 24 },
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Schema extension without anything throws', () => {
+    expectSyntaxError('extend schema', 'Unexpected <EOF>', {
+      line: 1,
+      column: 14,
+    });
+  });
+
   it('Simple non-null type', () => {
     const body = `
 type Hello {

@@ -99,7 +99,6 @@ export const QueryDocumentKeys = {
   NonNullType: ['type'],
 
   SchemaDefinition: ['directives', 'operationTypes'],
-  SchemaExtension: ['directives', 'operationTypes'],
   OperationTypeDefinition: ['type'],
 
   ScalarTypeDefinition: ['description', 'name', 'directives'],
@@ -124,14 +123,16 @@ export const QueryDocumentKeys = {
   EnumValueDefinition: ['description', 'name', 'directives'],
   InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
 
+  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
+
+  SchemaExtension: ['directives', 'operationTypes'],
+
   ScalarTypeExtension: ['name', 'directives'],
   ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
   InterfaceTypeExtension: ['name', 'directives', 'fields'],
   UnionTypeExtension: ['name', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
-
-  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
 };
 
 export const BREAK = {};

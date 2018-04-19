@@ -503,11 +503,11 @@ export type InputObjectTypeDefinitionNode = {
 
 export type DirectiveDefinitionNode = {
   +kind: 'DirectiveDefinition',
-  +loc ?: Location,
-  +description ?: StringValueNode,
+  +loc?: Location,
+  +description?: StringValueNode,
   +name: NameNode,
-    +arguments ?: $ReadOnlyArray < InputValueDefinitionNode >,
-    +locations: $ReadOnlyArray < NameNode >,
+  +arguments?: $ReadOnlyArray<InputValueDefinitionNode>,
+  +locations: $ReadOnlyArray<NameNode>,
 };
 
 // Type System Extensions
