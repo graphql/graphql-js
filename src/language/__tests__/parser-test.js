@@ -15,6 +15,7 @@ import { describe, it } from 'mocha';
 import { parse, parseValue, parseType } from '../parser';
 import { Source } from '../source';
 import dedent from '../../jsutils/dedent';
+import locationsToJSON from './locationsToJSON';
 
 function expectSyntaxError(text, message, location) {
   expect(() => parse(text))
@@ -211,15 +212,16 @@ describe('Parser', () => {
   });
 
   it('creates ast', () => {
-    const result = parse(`{
-  node(id: 4) {
-    id,
-    name
-  }
-}
-`);
+    const result = parse(dedent`
+      {
+        node(id: 4) {
+          id,
+          name
+        }
+      }
+    `);
 
-    expect(result).to.containSubset({
+    expect(locationsToJSON(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 41 },
       definitions: [
@@ -301,14 +303,15 @@ describe('Parser', () => {
   });
 
   it('creates ast from nameless query without variables', () => {
-    const result = parse(`query {
-  node {
-    id
-  }
-}
-`);
+    const result = parse(dedent`
+      query {
+        node {
+          id
+        }
+      }
+    `);
 
-    expect(result).to.containSubset({
+    expect(locationsToJSON(result)).to.deep.equal({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 30 },
       definitions: [
@@ -398,14 +401,16 @@ describe('Parser', () => {
 
   describe('parseValue', () => {
     it('parses null value', () => {
-      expect(parseValue('null')).to.containSubset({
+      const result = parseValue('null');
+      expect(locationsToJSON(result)).to.deep.equal({
         kind: Kind.NULL,
         loc: { start: 0, end: 4 },
       });
     });
 
     it('parses list values', () => {
-      expect(parseValue('[123 "abc"]')).to.containSubset({
+      const result = parseValue('[123 "abc"]');
+      expect(locationsToJSON(result)).to.deep.equal({
         kind: Kind.LIST,
         loc: { start: 0, end: 11 },
         values: [
@@ -418,13 +423,15 @@ describe('Parser', () => {
             kind: Kind.STRING,
             loc: { start: 5, end: 10 },
             value: 'abc',
+            block: false,
           },
         ],
       });
     });
 
     it('parses block strings', () => {
-      expect(parseValue('["""long""" "short"]')).to.containSubset({
+      const result = parseValue('["""long""" "short"]');
+      expect(locationsToJSON(result)).to.deep.equal({
         kind: Kind.LIST,
         loc: { start: 0, end: 20 },
         values: [
@@ -447,7 +454,8 @@ describe('Parser', () => {
 
   describe('parseType', () => {
     it('parses well known types', () => {
-      expect(parseType('String')).to.containSubset({
+      const result = parseType('String');
+      expect(locationsToJSON(result)).to.deep.equal({
         kind: Kind.NAMED_TYPE,
         loc: { start: 0, end: 6 },
         name: {
@@ -459,7 +467,8 @@ describe('Parser', () => {
     });
 
     it('parses custom types', () => {
-      expect(parseType('MyType')).to.containSubset({
+      const result = parseType('MyType');
+      expect(locationsToJSON(result)).to.deep.equal({
         kind: Kind.NAMED_TYPE,
         loc: { start: 0, end: 6 },
         name: {
@@ -471,7 +480,8 @@ describe('Parser', () => {
     });
 
     it('parses list types', () => {
-      expect(parseType('[MyType]')).to.containSubset({
+      const result = parseType('[MyType]');
+      expect(locationsToJSON(result)).to.deep.equal({
         kind: Kind.LIST_TYPE,
         loc: { start: 0, end: 8 },
         type: {
@@ -487,7 +497,8 @@ describe('Parser', () => {
     });
 
     it('parses non-null types', () => {
-      expect(parseType('MyType!')).to.containSubset({
+      const result = parseType('MyType!');
+      expect(locationsToJSON(result)).to.deep.equal({
         kind: Kind.NON_NULL_TYPE,
         loc: { start: 0, end: 7 },
         type: {
@@ -503,7 +514,8 @@ describe('Parser', () => {
     });
 
     it('parses nested types', () => {
-      expect(parseType('[MyType!]')).to.containSubset({
+      const result = parseType('[MyType!]');
+      expect(locationsToJSON(result)).to.deep.equal({
         kind: Kind.LIST_TYPE,
         loc: { start: 0, end: 9 },
         type: {

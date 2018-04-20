@@ -7,20 +7,13 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import locationsToJSON from './locationsToJSON';
 import { parse } from '../parser';
 
-function printJson(obj) {
-  return JSON.stringify(obj, null, 2);
-}
-
 function expectSyntaxError(text, message, location) {
-  try {
-    parse(text);
-    expect.fail('Expected to throw syntax error');
-  } catch (error) {
-    expect(error.message).to.contain(message);
-    expect(error.locations).to.deep.equal([location]);
-  }
+  expect(() => parse(text))
+    .to.throw(message)
+    .with.deep.property('locations', [location]);
 }
 
 function typeNode(name, loc) {
@@ -46,6 +39,7 @@ function fieldNode(name, type, loc) {
 function fieldNodeWithArgs(name, type, args, loc) {
   return {
     kind: 'FieldDefinition',
+    description: undefined,
     name,
     arguments: args,
     type,
@@ -58,6 +52,7 @@ function enumValueNode(name, loc) {
   return {
     kind: 'EnumValueDefinition',
     name: nameNode(name, loc),
+    description: undefined,
     directives: [],
     loc,
   };
@@ -67,6 +62,7 @@ function inputValueNode(name, type, defaultValue, loc) {
   return {
     kind: 'InputValueDefinition',
     name,
+    description: undefined,
     type,
     defaultValue,
     directives: [],
@@ -76,17 +72,18 @@ function inputValueNode(name, type, defaultValue, loc) {
 
 describe('Schema Parser', () => {
   it('Simple type', () => {
-    const body = `
+    const doc = parse(`
 type Hello {
   world: String
-}`;
-    const doc = parse(body);
-    const expected = {
+}`);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
           interfaces: [],
           directives: [],
           fields: [
@@ -100,8 +97,7 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 31 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('parses type with description string', () => {
@@ -110,21 +106,16 @@ type Hello {
 type Hello {
   world: String
 }`);
-    expect(doc).to.containSubset({
-      kind: 'Document',
-      definitions: [
-        {
-          kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', { start: 20, end: 25 }),
-          description: {
-            kind: 'StringValue',
-            value: 'Description',
-            loc: { start: 1, end: 14 },
-          },
-        },
-      ],
-      loc: { start: 0, end: 45 },
-    });
+
+    expect(locationsToJSON(doc)).to.nested.deep.property(
+      'definitions[0].description',
+      {
+        kind: 'StringValue',
+        value: 'Description',
+        block: false,
+        loc: { start: 1, end: 14 },
+      },
+    );
   });
 
   it('parses type with description multi-line string', () => {
@@ -136,31 +127,26 @@ Description
 type Hello {
   world: String
 }`);
-    expect(doc).to.containSubset({
-      kind: 'Document',
-      definitions: [
-        {
-          kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', { start: 60, end: 65 }),
-          description: {
-            kind: 'StringValue',
-            value: 'Description',
-            loc: { start: 1, end: 20 },
-          },
-        },
-      ],
-      loc: { start: 0, end: 85 },
-    });
+
+    expect(locationsToJSON(doc)).to.nested.deep.property(
+      'definitions[0].description',
+      {
+        kind: 'StringValue',
+        value: 'Description',
+        block: true,
+        loc: { start: 1, end: 20 },
+      },
+    );
   });
 
   it('Simple extension', () => {
-    const body = `
+    const doc = parse(`
 extend type Hello {
   world: String
 }
-`;
-    const doc = parse(body);
-    const expected = {
+`);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
@@ -179,14 +165,13 @@ extend type Hello {
         },
       ],
       loc: { start: 0, end: 39 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Extension without fields', () => {
-    const body = 'extend type Hello implements Greeting';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('extend type Hello implements Greeting');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
@@ -199,18 +184,17 @@ extend type Hello {
         },
       ],
       loc: { start: 0, end: 37 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Extension without fields followed by extension', () => {
-    const body = `
+    const doc = parse(`
       extend type Hello implements Greeting
 
       extend type Hello implements SecondGreeting
-    `;
-    const doc = parse(body);
-    const expected = {
+    `);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
@@ -231,8 +215,7 @@ extend type Hello {
         },
       ],
       loc: { start: 0, end: 100 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Extension without anything throws', () => {
@@ -264,17 +247,18 @@ extend type Hello {
   });
 
   it('Simple non-null type', () => {
-    const body = `
+    const doc = parse(`
 type Hello {
   world: String!
-}`;
-    const doc = parse(body);
-    const expected = {
+}`);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
           interfaces: [],
           directives: [],
           fields: [
@@ -292,19 +276,19 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 32 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple type inheriting interface', () => {
-    const body = 'type Hello implements World { field: String }';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('type Hello implements World { field: String }');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
+          description: undefined,
           interfaces: [typeNode('World', { start: 22, end: 27 })],
           directives: [],
           fields: [
@@ -318,19 +302,19 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 45 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple type inheriting multiple interfaces', () => {
-    const body = 'type Hello implements Wo & rld { field: String }';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('type Hello implements Wo & rld { field: String }');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
+          description: undefined,
           interfaces: [
             typeNode('Wo', { start: 22, end: 24 }),
             typeNode('rld', { start: 27, end: 30 }),
@@ -347,19 +331,19 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 48 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple type inheriting multiple interfaces with leading ampersand', () => {
-    const body = 'type Hello implements & Wo & rld { field: String }';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('type Hello implements & Wo & rld { field: String }');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
+          description: undefined,
           interfaces: [
             typeNode('Wo', { start: 24, end: 26 }),
             typeNode('rld', { start: 29, end: 32 }),
@@ -376,38 +360,38 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 50 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Single value enum', () => {
-    const body = 'enum Hello { WORLD }';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('enum Hello { WORLD }');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'EnumTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
+          description: undefined,
           directives: [],
           values: [enumValueNode('WORLD', { start: 13, end: 18 })],
           loc: { start: 0, end: 20 },
         },
       ],
       loc: { start: 0, end: 20 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Double value enum', () => {
-    const body = 'enum Hello { WO, RLD }';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('enum Hello { WO, RLD }');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'EnumTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
+          description: undefined,
           directives: [],
           values: [
             enumValueNode('WO', { start: 13, end: 15 }),
@@ -417,22 +401,22 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 22 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple interface', () => {
-    const body = `
+    const doc = parse(`
 interface Hello {
   world: String
-}`;
-    const doc = parse(body);
-    const expected = {
+}`);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'InterfaceTypeDefinition',
           name: nameNode('Hello', { start: 11, end: 16 }),
+          description: undefined,
           directives: [],
           fields: [
             fieldNode(
@@ -445,22 +429,22 @@ interface Hello {
         },
       ],
       loc: { start: 0, end: 36 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple field with arg', () => {
-    const body = `
+    const doc = parse(`
 type Hello {
   world(flag: Boolean): String
-}`;
-    const doc = parse(body);
-    const expected = {
+}`);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
           interfaces: [],
           directives: [],
           fields: [
@@ -482,22 +466,22 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 46 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple field with arg with default value', () => {
-    const body = `
+    const doc = parse(`
 type Hello {
   world(flag: Boolean = true): String
-}`;
-    const doc = parse(body);
-    const expected = {
+}`);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
           interfaces: [],
           directives: [],
           fields: [
@@ -523,22 +507,22 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 53 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple field with list arg', () => {
-    const body = `
+    const doc = parse(`
 type Hello {
   world(things: [String]): String
-}`;
-    const doc = parse(body);
-    const expected = {
+}`);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
           interfaces: [],
           directives: [],
           fields: [
@@ -564,22 +548,22 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 49 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple field with two args', () => {
-    const body = `
+    const doc = parse(`
 type Hello {
   world(argOne: Boolean, argTwo: Int): String
-}`;
-    const doc = parse(body);
-    const expected = {
+}`);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
           interfaces: [],
           directives: [],
           fields: [
@@ -607,38 +591,38 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 61 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple union', () => {
-    const body = 'union Hello = World';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('union Hello = World');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
           directives: [],
           types: [typeNode('World', { start: 14, end: 19 })],
           loc: { start: 0, end: 19 },
         },
       ],
       loc: { start: 0, end: 19 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Union with two types', () => {
-    const body = 'union Hello = Wo | Rld';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('union Hello = Wo | Rld');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
           directives: [],
           types: [
             typeNode('Wo', { start: 14, end: 16 }),
@@ -648,19 +632,19 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 22 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Union with two types and leading pipe', () => {
-    const body = 'union Hello = | Wo | Rld';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('union Hello = | Wo | Rld');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
           directives: [],
           types: [
             typeNode('Wo', { start: 16, end: 18 }),
@@ -670,8 +654,7 @@ type Hello {
         },
       ],
       loc: { start: 0, end: 24 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Union fails with no types', () => {
@@ -704,35 +687,36 @@ type Hello {
   });
 
   it('Scalar', () => {
-    const body = 'scalar Hello';
-    const doc = parse(body);
-    const expected = {
+    const doc = parse('scalar Hello');
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ScalarTypeDefinition',
           name: nameNode('Hello', { start: 7, end: 12 }),
+          description: undefined,
           directives: [],
           loc: { start: 0, end: 12 },
         },
       ],
       loc: { start: 0, end: 12 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple input object', () => {
-    const body = `
+    const doc = parse(`
 input Hello {
   world: String
-}`;
-    const doc = parse(body);
-    const expected = {
+}`);
+
+    expect(locationsToJSON(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'InputObjectTypeDefinition',
           name: nameNode('Hello', { start: 7, end: 12 }),
+          description: undefined,
           directives: [],
           fields: [
             inputValueNode(
@@ -746,8 +730,7 @@ input Hello {
         },
       ],
       loc: { start: 0, end: 32 },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Simple input object with args should fail', () => {
@@ -774,28 +757,19 @@ input Hello {
     const body = 'type Hello { }';
     expect(() => parse(body)).to.throw('Syntax Error: Expected Name, found }');
     const doc = parse(body, { allowLegacySDLEmptyFields: true });
-    expect(doc).to.containSubset({
-      definitions: [
-        {
-          fields: [],
-        },
-      ],
-    });
+    expect(doc).to.have.deep.nested.property('definitions[0].fields', []);
   });
 
   it('Option: allowLegacySDLImplementsInterfaces', () => {
     const body = 'type Hello implements Wo rld { field: String }';
     expect(() => parse(body)).to.throw('Syntax Error: Unexpected Name "rld"');
     const doc = parse(body, { allowLegacySDLImplementsInterfaces: true });
-    expect(doc).to.containSubset({
-      definitions: [
-        {
-          interfaces: [
-            typeNode('Wo', { start: 22, end: 24 }),
-            typeNode('rld', { start: 25, end: 28 }),
-          ],
-        },
+    expect(locationsToJSON(doc)).to.have.deep.nested.property(
+      'definitions[0].interfaces',
+      [
+        typeNode('Wo', { start: 22, end: 24 }),
+        typeNode('rld', { start: 25, end: 28 }),
       ],
-    });
+    );
   });
 });
