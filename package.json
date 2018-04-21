@@ -42,11 +42,11 @@
     "gitpublish": ". ./resources/gitpublish.sh"
   },
   "dependencies": {
-    "iterall": "^1.2.1"
+    "iterall": "^1.2.2"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
-    "babel-eslint": "8.2.2",
+    "babel-eslint": "8.2.3",
     "babel-plugin-syntax-async-functions": "6.13.0",
     "babel-plugin-syntax-async-generators": "6.13.0",
     "babel-plugin-transform-class-properties": "6.24.1",
@@ -60,13 +60,13 @@
     "chai-subset": "1.6.0",
     "coveralls": "3.0.0",
     "eslint": "4.19.1",
-    "eslint-plugin-babel": "4.1.2",
-    "eslint-plugin-flowtype": "2.46.1",
+    "eslint-plugin-babel": "5.1.0",
+    "eslint-plugin-flowtype": "2.46.3",
     "eslint-plugin-prettier": "2.6.0",
-    "flow-bin": "0.69.0",
+    "flow-bin": "0.70.0",
     "isparta": "4.0.0",
-    "mocha": "5.0.0",
-    "prettier": "1.11.1",
-    "sane": "2.4.1"
+    "mocha": "5.1.1",
+    "prettier": "1.12.1",
+    "sane": "2.5.0"
   }
 }

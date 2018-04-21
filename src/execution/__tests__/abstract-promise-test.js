@@ -266,7 +266,9 @@ describe('Execute: Handles execution of abstract types with promises', () => {
             ? DogType
             : obj instanceof Cat
               ? CatType
-              : obj instanceof Human ? HumanType : null,
+              : obj instanceof Human
+                ? HumanType
+                : null,
         );
       },
       fields: {
@@ -389,7 +391,9 @@ describe('Execute: Handles execution of abstract types with promises', () => {
             ? DogType
             : obj instanceof Cat
               ? CatType
-              : obj instanceof Human ? HumanType : null,
+              : obj instanceof Human
+                ? HumanType
+                : null,
         );
       },
       types: [DogType, CatType],
