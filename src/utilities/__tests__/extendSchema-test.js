@@ -842,6 +842,57 @@ describe('extendSchema', () => {
     ]);
   });
 
+  it('extend enum', () => {
+    const extendedSchema = extendTestSchema(`
+      extend enum SomeEnum {
+        NEW_ENUM
+      }
+    `);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printSchema(extendedSchema)).to.contain('NEW_ENUM');
+    expect(printSchema(testSchema)).to.not.contain('NEW_ENUM');
+  });
+
+  it('extend input', () => {
+    const extendedSchema = extendTestSchema(`
+      extend type Query {
+        newField(testArg: TestInput): String
+      }
+
+      input TestInput {
+        testInputField: String
+      }
+    `);
+    const secondExtensionAST = parse(`
+      extend input TestInput {
+        newInputField: String
+      }
+    `);
+    const extendedTwiceSchema = extendSchema(
+      extendedSchema,
+      secondExtensionAST,
+    );
+
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printSchema(extendedTwiceSchema)).to.contain('newInputField');
+    expect(printSchema(extendedSchema)).to.not.contain('newInputField');
+    expect(printSchema(testSchema)).to.not.contain('newInputField');
+  });
+
+  it('extend union', () => {
+    const extendedSchema = extendTestSchema(`
+      extend union SomeUnion = TestNewType
+
+      type TestNewType {
+        foo: String
+      }
+    `);
+
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printSchema(extendedSchema)).to.contain('Foo | Biz | TestNewType');
+    expect(printSchema(testSchema)).to.not.contain('Foo | Biz | TestNewType');
+  });
+
   describe('does not allow extending a non-object type', () => {
     it('not an object', () => {
       const ast = parse(`

@@ -17,6 +17,8 @@ import { isIntrospectionType } from '../type/introspection';
 
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
 
+import type { GraphQLArgumentConfig, GraphQLArgument } from '../type/definition';
+
 import {
   isObjectType,
   isInterfaceType,
@@ -28,6 +30,10 @@ import {
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
+  isEnumType,
+  GraphQLEnumType,
+  isInputObjectType,
+  GraphQLInputObjectType,
 } from '../type/definition';
 
 import { GraphQLDirective } from '../type/directives';
@@ -127,6 +133,9 @@ export function extendSchema(
         break;
       case Kind.OBJECT_TYPE_EXTENSION:
       case Kind.INTERFACE_TYPE_EXTENSION:
+      case Kind.ENUM_TYPE_EXTENSION:
+      case Kind.INPUT_OBJECT_TYPE_EXTENSION:
+      case Kind.UNION_TYPE_EXTENSION:
         // Sanity check that this type extension exists within the
         // schema's existing types.
         const extendedTypeName = def.name.value;
@@ -158,9 +167,6 @@ export function extendSchema(
         directiveDefinitions.push(def);
         break;
       case Kind.SCALAR_TYPE_EXTENSION:
-      case Kind.UNION_TYPE_EXTENSION:
-      case Kind.ENUM_TYPE_EXTENSION:
-      case Kind.INPUT_OBJECT_TYPE_EXTENSION:
         throw new Error(
           `The ${def.kind} kind is not yet supported by extendSchema().`,
         );
@@ -287,8 +293,101 @@ export function extendSchema(
     if (isUnionType(type)) {
       return extendUnionType(type);
     }
+    if (isEnumType(type)) {
+      return extendEnumType(type);
+    }
+    if (isInputObjectType(type)) {
+      return extendInputObjectType(type);
+    }
     // This type is not yet extendable.
     return type;
+  }
+
+  function extendInputObjectType(
+    type: GraphQLInputObjectType,
+  ): GraphQLInputObjectType {
+    return new GraphQLInputObjectType({
+      name: type.name,
+      description: type.description,
+      fields: () => extendInputFieldMap(type),
+      astNode: type.astNode,
+    });
+  }
+
+  function extendInputFieldMap(type: GraphQLInputObjectType) {
+    const newFieldMap = Object.create(null);
+    const oldFieldMap = type.getFields();
+    Object.keys(oldFieldMap).forEach(fieldName => {
+      const field = oldFieldMap[fieldName];
+      newFieldMap[fieldName] = {
+        description: field.description,
+        type: extendFieldType(field.type),
+        defaultValue: field.defaultValue,
+        astNode: field.astNode,
+      };
+    });
+
+    // If there are any extensions to the fields, apply those here.
+    const extensions = typeExtensionsMap[type.name];
+    if (extensions) {
+      extensions.forEach(extension => {
+        extension.fields.forEach(field => {
+          const fieldName = field.name.value;
+          if (oldFieldMap[fieldName]) {
+            throw new GraphQLError(
+              `Field "${type.name}.${fieldName}" already exists in the ` +
+                'schema. It cannot also be defined in this type extension.',
+              [field],
+            );
+          }
+          newFieldMap[fieldName] = astBuilder.buildField(field);
+        });
+      });
+    }
+
+    return newFieldMap;
+  }
+
+  function extendEnumType(type: GraphQLEnumType): GraphQLEnumType {
+    return new GraphQLEnumType({
+      name: type.name,
+      values: extendValueMap(type),
+      astNode: type.astNode,
+    });
+  }
+
+  function extendValueMap(type: GraphQLEnumType) {
+    const oldValueMap = Object.create(null);
+    const newValueMap = Object.create(null);
+    type.getValues().forEach(value => {
+      newValueMap[value.name] = oldValueMap[value.name] = {
+        name: value.name,
+        description: value.description,
+        value: value.value,
+        deprecationReason: value.deprecationReason,
+        astNode: value.astNode,
+      };
+    });
+
+    // If there are any extensions to the values, apply those here.
+    const extensions = typeExtensionsMap[type.name];
+    if (extensions) {
+      extensions.forEach(extension => {
+        extension.values.forEach(value => {
+          const valueName = value.name.value;
+          if (oldValueMap[valueName]) {
+            throw new GraphQLError(
+              `Enum "${type.name}.${valueName}" already exists in the ` +
+                'schema. It cannot also be defined in this enum extension.',
+              [value],
+            );
+          }
+          newValueMap[valueName] = astBuilder.buildEnumValue(value);
+        });
+      });
+    }
+
+    return newValueMap;
   }
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
@@ -307,6 +406,18 @@ export function extendSchema(
       extensionASTNodes,
       isTypeOf: type.isTypeOf,
     });
+  }
+
+  function extendArgsMap(
+    args: GraphQLArgument[],
+  ): GraphQLArgument[] {
+    return args.map(arg => ({
+      name: arg.name,
+      type: extendFieldType(arg.type),
+      defaultValue: arg.defaultValue,
+      description: arg.description,
+      astNode: arg.astNode,
+    }));
   }
 
   function extendInterfaceType(
@@ -329,10 +440,25 @@ export function extendSchema(
   }
 
   function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
+    const types = type.getTypes().map(getExtendedType);
+
+    // If there are any extensions to the union, apply those here.
+    const extensions = typeExtensionsMap[type.name];
+    if (extensions) {
+      extensions.forEach(extension => {
+        extension.types.forEach(namedType => {
+          // Note: While this could make early assertions to get the correctly
+          // typed values, that would throw immediately while type system
+          // validation with validateSchema() will produce more actionable results.
+          types.push((astBuilder.buildType(namedType): any));
+        });
+      });
+    }
+
     return new GraphQLUnionType({
       name: type.name,
       description: type.description,
-      types: type.getTypes().map(getExtendedType),
+      types: types,
       astNode: type.astNode,
       resolveType: type.resolveType,
     });
@@ -368,7 +494,7 @@ export function extendSchema(
         description: field.description,
         deprecationReason: field.deprecationReason,
         type: extendFieldType(field.type),
-        args: keyMap(field.args, arg => arg.name),
+        args: keyMap(extendArgsMap(field.args), arg => arg.name),
         astNode: field.astNode,
         resolve: field.resolve,
       };
