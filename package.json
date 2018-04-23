@@ -15,6 +15,6 @@
     "url": "http://github.com/graphql/graphql-js.git"
   },
   "dependencies": {
-    "iterall": "^1.2.1"
+    "iterall": "^1.2.2"
   }
 }
