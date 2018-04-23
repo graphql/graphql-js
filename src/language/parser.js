@@ -212,6 +212,7 @@ function parseDocument(lexer: Lexer<*>): DocumentNode {
  * Definition :
  *   - ExecutableDefinition
  *   - TypeSystemDefinition
+ *   - TypeSystemExtension
  */
 function parseDefinition(lexer: Lexer<*>): DefinitionNode {
   if (peek(lexer, TokenKind.NAME)) {
@@ -228,15 +229,14 @@ function parseDefinition(lexer: Lexer<*>): DefinitionNode {
       case 'union':
       case 'enum':
       case 'input':
-      case 'extend':
       case 'directive':
-        // Note: The schema definition language is an experimental addition.
         return parseTypeSystemDefinition(lexer);
+      case 'extend':
+        return parseTypeSystemExtension(lexer);
     }
   } else if (peek(lexer, TokenKind.BRACE_L)) {
     return parseExecutableDefinition(lexer);
   } else if (peekDescription(lexer)) {
-    // Note: The schema definition language is an experimental addition.
     return parseTypeSystemDefinition(lexer);
   }
 
@@ -755,7 +755,6 @@ export function parseNamedType(lexer: Lexer<*>): NamedTypeNode {
  *   - SchemaDefinition
  *   - TypeDefinition
  *   - DirectiveDefinition
- *   - TypeSystemExtension
  *
  * TypeDefinition :
  *   - ScalarTypeDefinition
@@ -787,8 +786,6 @@ function parseTypeSystemDefinition(lexer: Lexer<*>): TypeSystemDefinitionNode {
         return parseInputObjectTypeDefinition(lexer);
       case 'directive':
         return parseDirectiveDefinition(lexer);
-      case 'extend':
-        return parseTypeSystemExtension(lexer);
     }
   }
 

@@ -200,7 +200,8 @@ export type DocumentNode = {
 
 export type DefinitionNode =
   | ExecutableDefinitionNode
-  | TypeSystemDefinitionNode; // experimental non-spec addition.
+  | TypeSystemDefinitionNode
+  | TypeSystemExtensionNode;
 
 export type ExecutableDefinitionNode =
   | OperationDefinitionNode
@@ -390,8 +391,7 @@ export type NonNullTypeNode = {
 export type TypeSystemDefinitionNode =
   | SchemaDefinitionNode
   | TypeDefinitionNode
-  | DirectiveDefinitionNode
-  | TypeSystemExtensionNode;
+  | DirectiveDefinitionNode;
 
 export type SchemaDefinitionNode = {
   +kind: 'SchemaDefinition',
