@@ -81,6 +81,7 @@ function getDirectiveLocationForASTPath(ancestors) {
       case _kinds.Kind.FRAGMENT_DEFINITION:
         return _directiveLocation.DirectiveLocation.FRAGMENT_DEFINITION;
       case _kinds.Kind.SCHEMA_DEFINITION:
+      case _kinds.Kind.SCHEMA_EXTENSION:
         return _directiveLocation.DirectiveLocation.SCHEMA;
       case _kinds.Kind.SCALAR_TYPE_DEFINITION:
       case _kinds.Kind.SCALAR_TYPE_EXTENSION:

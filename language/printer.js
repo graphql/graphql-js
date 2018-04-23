@@ -244,56 +244,62 @@ var printDocASTReducer = {
     return join(['input', name, join(directives, ' '), block(fields)], ' ');
   }),
 
-  ScalarTypeExtension: function ScalarTypeExtension(_ref31) {
+  DirectiveDefinition: addDescription(function (_ref31) {
     var name = _ref31.name,
-        directives = _ref31.directives;
-    return join(['extend scalar', name, join(directives, ' ')], ' ');
-  },
-
-  ObjectTypeExtension: function ObjectTypeExtension(_ref32) {
-    var name = _ref32.name,
-        interfaces = _ref32.interfaces,
-        directives = _ref32.directives,
-        fields = _ref32.fields;
-    return join(['extend type', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ');
-  },
-
-  InterfaceTypeExtension: function InterfaceTypeExtension(_ref33) {
-    var name = _ref33.name,
-        directives = _ref33.directives,
-        fields = _ref33.fields;
-    return join(['extend interface', name, join(directives, ' '), block(fields)], ' ');
-  },
-
-  UnionTypeExtension: function UnionTypeExtension(_ref34) {
-    var name = _ref34.name,
-        directives = _ref34.directives,
-        types = _ref34.types;
-    return join(['extend union', name, join(directives, ' '), types && types.length !== 0 ? '= ' + join(types, ' | ') : ''], ' ');
-  },
-
-  EnumTypeExtension: function EnumTypeExtension(_ref35) {
-    var name = _ref35.name,
-        directives = _ref35.directives,
-        values = _ref35.values;
-    return join(['extend enum', name, join(directives, ' '), block(values)], ' ');
-  },
-
-  InputObjectTypeExtension: function InputObjectTypeExtension(_ref36) {
-    var name = _ref36.name,
-        directives = _ref36.directives,
-        fields = _ref36.fields;
-    return join(['extend input', name, join(directives, ' '), block(fields)], ' ');
-  },
-
-  DirectiveDefinition: addDescription(function (_ref37) {
-    var name = _ref37.name,
-        args = _ref37.arguments,
-        locations = _ref37.locations;
+        args = _ref31.arguments,
+        locations = _ref31.locations;
     return 'directive @' + name + (args.every(function (arg) {
       return arg.indexOf('\n') === -1;
     }) ? wrap('(', join(args, ', '), ')') : wrap('(\n', indent(join(args, '\n')), '\n)')) + ' on ' + join(locations, ' | ');
-  })
+  }),
+
+  SchemaExtension: function SchemaExtension(_ref32) {
+    var directives = _ref32.directives,
+        operationTypes = _ref32.operationTypes;
+    return join(['extend schema', join(directives, ' '), block(operationTypes)], ' ');
+  },
+
+  ScalarTypeExtension: function ScalarTypeExtension(_ref33) {
+    var name = _ref33.name,
+        directives = _ref33.directives;
+    return join(['extend scalar', name, join(directives, ' ')], ' ');
+  },
+
+  ObjectTypeExtension: function ObjectTypeExtension(_ref34) {
+    var name = _ref34.name,
+        interfaces = _ref34.interfaces,
+        directives = _ref34.directives,
+        fields = _ref34.fields;
+    return join(['extend type', name, wrap('implements ', join(interfaces, ' & ')), join(directives, ' '), block(fields)], ' ');
+  },
+
+  InterfaceTypeExtension: function InterfaceTypeExtension(_ref35) {
+    var name = _ref35.name,
+        directives = _ref35.directives,
+        fields = _ref35.fields;
+    return join(['extend interface', name, join(directives, ' '), block(fields)], ' ');
+  },
+
+  UnionTypeExtension: function UnionTypeExtension(_ref36) {
+    var name = _ref36.name,
+        directives = _ref36.directives,
+        types = _ref36.types;
+    return join(['extend union', name, join(directives, ' '), types && types.length !== 0 ? '= ' + join(types, ' | ') : ''], ' ');
+  },
+
+  EnumTypeExtension: function EnumTypeExtension(_ref37) {
+    var name = _ref37.name,
+        directives = _ref37.directives,
+        values = _ref37.values;
+    return join(['extend enum', name, join(directives, ' '), block(values)], ' ');
+  },
+
+  InputObjectTypeExtension: function InputObjectTypeExtension(_ref38) {
+    var name = _ref38.name,
+        directives = _ref38.directives,
+        fields = _ref38.fields;
+    return join(['extend input', name, join(directives, ' '), block(fields)], ' ');
+  }
 };
 
 function addDescription(cb) {

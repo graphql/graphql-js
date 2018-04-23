@@ -75,14 +75,16 @@ var QueryDocumentKeys = exports.QueryDocumentKeys = {
   EnumValueDefinition: ['description', 'name', 'directives'],
   InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
 
+  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
+
+  SchemaExtension: ['directives', 'operationTypes'],
+
   ScalarTypeExtension: ['name', 'directives'],
   ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
   InterfaceTypeExtension: ['name', 'directives', 'fields'],
   UnionTypeExtension: ['name', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
-  InputObjectTypeExtension: ['name', 'directives', 'fields'],
-
-  DirectiveDefinition: ['description', 'name', 'arguments', 'locations']
+  InputObjectTypeExtension: ['name', 'directives', 'fields']
 };
 
 /**

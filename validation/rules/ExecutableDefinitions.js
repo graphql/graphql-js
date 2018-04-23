@@ -34,7 +34,7 @@ function ExecutableDefinitions(context) {
     Document: function Document(node) {
       node.definitions.forEach(function (definition) {
         if (definition.kind !== _kinds.Kind.OPERATION_DEFINITION && definition.kind !== _kinds.Kind.FRAGMENT_DEFINITION) {
-          context.reportError(new _error.GraphQLError(nonExecutableDefinitionMessage(definition.kind === _kinds.Kind.SCHEMA_DEFINITION ? 'schema' : definition.name.value), [definition]));
+          context.reportError(new _error.GraphQLError(nonExecutableDefinitionMessage(definition.kind === _kinds.Kind.SCHEMA_DEFINITION || definition.kind === _kinds.Kind.SCHEMA_EXTENSION ? 'schema' : definition.name.value), [definition]));
         }
       });
       return false;

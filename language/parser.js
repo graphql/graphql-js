@@ -121,6 +121,7 @@ function parseDocument(lexer) {
  * Definition :
  *   - ExecutableDefinition
  *   - TypeSystemDefinition
+ *   - TypeSystemExtension
  */
 function parseDefinition(lexer) {
   if (peek(lexer, _lexer.TokenKind.NAME)) {
@@ -137,15 +138,14 @@ function parseDefinition(lexer) {
       case 'union':
       case 'enum':
       case 'input':
-      case 'extend':
       case 'directive':
-        // Note: The schema definition language is an experimental addition.
         return parseTypeSystemDefinition(lexer);
+      case 'extend':
+        return parseTypeSystemExtension(lexer);
     }
   } else if (peek(lexer, _lexer.TokenKind.BRACE_L)) {
     return parseExecutableDefinition(lexer);
   } else if (peekDescription(lexer)) {
-    // Note: The schema definition language is an experimental addition.
     return parseTypeSystemDefinition(lexer);
   }
 
@@ -638,7 +638,6 @@ function parseNamedType(lexer) {
  * TypeSystemDefinition :
  *   - SchemaDefinition
  *   - TypeDefinition
- *   - TypeExtension
  *   - DirectiveDefinition
  *
  * TypeDefinition :
@@ -669,8 +668,6 @@ function parseTypeSystemDefinition(lexer) {
         return parseEnumTypeDefinition(lexer);
       case 'input':
         return parseInputObjectTypeDefinition(lexer);
-      case 'extend':
-        return parseTypeExtension(lexer);
       case 'directive':
         return parseDirectiveDefinition(lexer);
     }
@@ -993,6 +990,10 @@ function parseInputFieldsDefinition(lexer) {
 }
 
 /**
+ * TypeSystemExtension :
+ *   - SchemaExtension
+ *   - TypeExtension
+ *
  * TypeExtension :
  *   - ScalarTypeExtension
  *   - ObjectTypeExtension
@@ -1001,11 +1002,13 @@ function parseInputFieldsDefinition(lexer) {
  *   - EnumTypeExtension
  *   - InputObjectTypeDefinition
  */
-function parseTypeExtension(lexer) {
+function parseTypeSystemExtension(lexer) {
   var keywordToken = lexer.lookahead();
 
   if (keywordToken.kind === _lexer.TokenKind.NAME) {
     switch (keywordToken.value) {
+      case 'schema':
+        return parseSchemaExtension(lexer);
       case 'scalar':
         return parseScalarTypeExtension(lexer);
       case 'type':
@@ -1022,6 +1025,28 @@ function parseTypeExtension(lexer) {
   }
 
   throw unexpected(lexer, keywordToken);
+}
+
+/**
+ * SchemaExtension :
+ *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
+ *  - extend schema Directives[Const]
+ */
+function parseSchemaExtension(lexer) {
+  var start = lexer.token;
+  expectKeyword(lexer, 'extend');
+  expectKeyword(lexer, 'schema');
+  var directives = parseDirectives(lexer, true);
+  var operationTypes = peek(lexer, _lexer.TokenKind.BRACE_L) ? many(lexer, _lexer.TokenKind.BRACE_L, parseOperationTypeDefinition, _lexer.TokenKind.BRACE_R) : [];
+  if (directives.length === 0 && operationTypes.length === 0) {
+    throw unexpected(lexer);
+  }
+  return {
+    kind: _kinds.Kind.SCHEMA_EXTENSION,
+    directives: directives,
+    operationTypes: operationTypes,
+    loc: loc(lexer, start)
+  };
 }
 
 /**

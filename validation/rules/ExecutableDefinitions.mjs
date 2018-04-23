@@ -26,7 +26,7 @@ export function ExecutableDefinitions(context) {
     Document: function Document(node) {
       node.definitions.forEach(function (definition) {
         if (definition.kind !== Kind.OPERATION_DEFINITION && definition.kind !== Kind.FRAGMENT_DEFINITION) {
-          context.reportError(new GraphQLError(nonExecutableDefinitionMessage(definition.kind === Kind.SCHEMA_DEFINITION ? 'schema' : definition.name.value), [definition]));
+          context.reportError(new GraphQLError(nonExecutableDefinitionMessage(definition.kind === Kind.SCHEMA_DEFINITION || definition.kind === Kind.SCHEMA_EXTENSION ? 'schema' : definition.name.value), [definition]));
         }
       });
       return false;

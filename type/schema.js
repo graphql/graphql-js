@@ -106,6 +106,7 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives || _directives.specifiedDirectives;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
 
     // Build type map now to detect any errors within this schema.
     var initialTypes = [this.getQueryType(), this.getMutationType(), this.getSubscriptionType(), _introspection.__Schema];
