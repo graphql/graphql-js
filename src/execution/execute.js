@@ -217,7 +217,7 @@ function executeImpl(
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  const data = executeOperation(exeContext, rootValue);
+  const data = executeOperation(exeContext, context.operation, rootValue);
   return buildResponse(exeContext, data);
 }
 
@@ -378,6 +378,7 @@ export function buildExecutionContext(
  */
 function executeOperation(
   exeContext: ExecutionContext,
+  operation: OperationDefinitionNode,
   rootValue: mixed,
 ): MaybePromise<ObjMap<mixed> | null> {
   const operation = exeContext.operation;
