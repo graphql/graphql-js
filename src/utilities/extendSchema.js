@@ -10,7 +10,6 @@
 import objectValues from '../polyfills/objectValues';
 import invariant from '../jsutils/invariant';
 import mapValue from '../jsutils/mapValue';
-import keyValMap from '../jsutils/keyValMap';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { assertValidSDLExtension } from '../validation/validate';
 import { assertSchema, GraphQLSchema } from '../type/schema';
@@ -18,13 +17,7 @@ import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
-
-import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLArgument,
-  GraphQLFieldConfigArgumentMap,
-} from '../type/definition';
+import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 
 import {
   isScalarType,
@@ -170,12 +163,13 @@ export function extendSchema(
   );
 
   const extendTypeCache = Object.create(null);
+  const schemaConfig = schema.toConfig();
 
   // Get the extended root operation types.
   const operationTypes = {
-    query: extendMaybeNamedType(schema.getQueryType()),
-    mutation: extendMaybeNamedType(schema.getMutationType()),
-    subscription: extendMaybeNamedType(schema.getSubscriptionType()),
+    query: extendMaybeNamedType(schemaConfig.query),
+    mutation: extendMaybeNamedType(schemaConfig.mutation),
+    subscription: extendMaybeNamedType(schemaConfig.subscription),
   };
 
   if (schemaDef) {
@@ -198,32 +192,26 @@ export function extendSchema(
     }
   }
 
-  const schemaExtensionASTNodes = schemaExtensions
-    ? schema.extensionASTNodes
-      ? schema.extensionASTNodes.concat(schemaExtensions)
-      : schemaExtensions
-    : schema.extensionASTNodes;
-
-  const types = [
+  const schemaTypes = [
     // Iterate through all types, getting the type definition for each, ensuring
     // that any type not directly referenced by a field will get created.
-    ...objectValues(schema.getTypeMap()).map(type => extendNamedType(type)),
+    ...schemaConfig.types.map(type => extendNamedType(type)),
     // Do the same with new types.
     ...objectValues(typeDefinitionMap).map(type => astBuilder.buildType(type)),
   ];
 
   // Support both original legacy names and extended legacy names.
-  const allowedLegacyNames = schema.__allowedLegacyNames.concat(
+  const allowedLegacyNames = schemaConfig.allowedLegacyNames.concat(
     (options && options.allowedLegacyNames) || [],
   );
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
     ...operationTypes,
-    types,
+    types: schemaTypes,
     directives: getMergedDirectives(),
-    astNode: schema.astNode,
-    extensionASTNodes: schemaExtensionASTNodes,
+    astNode: schemaConfig.astNode,
+    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
     allowedLegacyNames,
   });
 
@@ -269,210 +257,87 @@ export function extendSchema(
   }
 
   function extendDirective(directive: GraphQLDirective): GraphQLDirective {
+    const config = directive.toConfig();
+
     return new GraphQLDirective({
-      name: directive.name,
-      description: directive.description,
-      locations: directive.locations,
-      args: extendArgs(directive.args),
-      astNode: directive.astNode,
+      ...config,
+      args: extendArgs(config.args),
     });
   }
 
   function extendInputObjectType(
     type: GraphQLInputObjectType,
   ): GraphQLInputObjectType {
-    const name = type.name;
-    const extensionASTNodes = typeExtensionsMap[name]
-      ? type.extensionASTNodes
-        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
-        : typeExtensionsMap[name]
-      : type.extensionASTNodes;
+    const config = type.toConfig();
+    const extensionNodes = typeExtensionsMap[config.name] || [];
+
     return new GraphQLInputObjectType({
-      name,
-      description: type.description,
-      fields: () => extendInputFieldMap(type),
-      astNode: type.astNode,
-      extensionASTNodes,
+      ...config,
+      fields: fieldsThunk,
+      extensionASTNodes: config.extensionASTNodes.concat(extensionNodes),
     });
-  }
 
-  function extendInputFieldMap(type: GraphQLInputObjectType) {
-    const newFieldMap = mapValue(type.getFields(), field => ({
-      description: field.description,
-      type: extendType(field.type),
-      defaultValue: field.defaultValue,
-      astNode: field.astNode,
-    }));
+    function fieldsThunk() {
+      const fields = mapValue(config.fields, field => ({
+        ...field,
+        type: extendType(field.type),
+      }));
 
-    // If there are any extensions to the fields, apply those here.
-    const extensions = typeExtensionsMap[type.name];
-    if (extensions) {
-      for (const extension of extensions) {
+      // If there are any extensions to the fields, apply those here.
+      for (const extension of extensionNodes) {
         for (const field of extension.fields) {
-          newFieldMap[field.name.value] = astBuilder.buildInputField(field);
+          fields[field.name.value] = astBuilder.buildInputField(field);
         }
       }
+      return fields;
     }
-
-    return newFieldMap;
   }
 
   function extendEnumType(type: GraphQLEnumType): GraphQLEnumType {
-    const name = type.name;
-    const extensionASTNodes = typeExtensionsMap[name]
-      ? type.extensionASTNodes
-        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
-        : typeExtensionsMap[name]
-      : type.extensionASTNodes;
-    return new GraphQLEnumType({
-      name,
-      description: type.description,
-      values: extendValueMap(type),
-      astNode: type.astNode,
-      extensionASTNodes,
-    });
-  }
-
-  function extendValueMap(type: GraphQLEnumType) {
-    const newValueMap = Object.create(null);
-    for (const value of type.getValues()) {
-      newValueMap[value.name] = {
-        description: value.description,
-        value: value.value,
-        deprecationReason: value.deprecationReason,
-        astNode: value.astNode,
-      };
-    }
+    const config = type.toConfig();
+    const extensionNodes = typeExtensionsMap[type.name] || [];
+    const values = config.values;
 
     // If there are any extensions to the values, apply those here.
-    const extensions = typeExtensionsMap[type.name];
-    if (extensions) {
-      for (const extension of extensions) {
-        for (const value of extension.values) {
-          newValueMap[value.name.value] = astBuilder.buildEnumValue(value);
-        }
+    for (const extension of extensionNodes) {
+      for (const value of extension.values) {
+        values[value.name.value] = astBuilder.buildEnumValue(value);
       }
     }
 
-    return newValueMap;
+    return new GraphQLEnumType({
+      ...config,
+      values,
+      extensionASTNodes: config.extensionASTNodes.concat(extensionNodes),
+    });
   }
 
   function extendScalarType(type: GraphQLScalarType): GraphQLScalarType {
-    const name = type.name;
-    const extensionASTNodes = typeExtensionsMap[name]
-      ? type.extensionASTNodes
-        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
-        : typeExtensionsMap[name]
-      : type.extensionASTNodes;
+    const config = type.toConfig();
+    const extensionNodes = typeExtensionsMap[config.name] || [];
+
     return new GraphQLScalarType({
-      name,
-      description: type.description,
-      astNode: type.astNode,
-      extensionASTNodes,
-      serialize: type.serialize,
-      parseValue: type.parseValue,
-      parseLiteral: type.parseLiteral,
+      ...config,
+      extensionASTNodes: config.extensionASTNodes.concat(extensionNodes),
     });
   }
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
-    const name = type.name;
-    const extensionASTNodes = typeExtensionsMap[name]
-      ? type.extensionASTNodes
-        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
-        : typeExtensionsMap[name]
-      : type.extensionASTNodes;
+    const config = type.toConfig();
+    const extensionNodes = typeExtensionsMap[config.name] || [];
+
     return new GraphQLObjectType({
-      name,
-      description: type.description,
-      interfaces: () => extendImplementedInterfaces(type),
-      fields: () => extendFieldMap(type),
-      astNode: type.astNode,
-      extensionASTNodes,
-      isTypeOf: type.isTypeOf,
+      ...config,
+      interfaces: interfacesThunk,
+      fields: () => extendFieldMap(config),
+      extensionASTNodes: config.extensionASTNodes.concat(extensionNodes),
     });
-  }
 
-  function extendArgs(
-    args: Array<GraphQLArgument>,
-  ): GraphQLFieldConfigArgumentMap {
-    return keyValMap(
-      args,
-      arg => arg.name,
-      arg => ({
-        type: extendType(arg.type),
-        defaultValue: arg.defaultValue,
-        description: arg.description,
-        astNode: arg.astNode,
-      }),
-    );
-  }
+    function interfacesThunk() {
+      const interfaces = config.interfaces.map(extendNamedType);
 
-  function extendInterfaceType(
-    type: GraphQLInterfaceType,
-  ): GraphQLInterfaceType {
-    const name = type.name;
-    const extensionASTNodes = typeExtensionsMap[name]
-      ? type.extensionASTNodes
-        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
-        : typeExtensionsMap[name]
-      : type.extensionASTNodes;
-    return new GraphQLInterfaceType({
-      name: type.name,
-      description: type.description,
-      fields: () => extendFieldMap(type),
-      astNode: type.astNode,
-      extensionASTNodes,
-      resolveType: type.resolveType,
-    });
-  }
-
-  function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
-    const name = type.name;
-    const extensionASTNodes = typeExtensionsMap[name]
-      ? type.extensionASTNodes
-        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
-        : typeExtensionsMap[name]
-      : type.extensionASTNodes;
-    return new GraphQLUnionType({
-      name,
-      description: type.description,
-      types: () => extendPossibleTypes(type),
-      astNode: type.astNode,
-      resolveType: type.resolveType,
-      extensionASTNodes,
-    });
-  }
-
-  function extendPossibleTypes(
-    type: GraphQLUnionType,
-  ): Array<GraphQLObjectType> {
-    const possibleTypes = type.getTypes().map(extendNamedType);
-
-    // If there are any extensions to the union, apply those here.
-    const extensions = typeExtensionsMap[type.name];
-    if (extensions) {
-      for (const extension of extensions) {
-        for (const namedType of extension.types) {
-          // Note: While this could make early assertions to get the correctly
-          // typed values, that would throw immediately while type system
-          // validation with validateSchema() will produce more actionable results.
-          possibleTypes.push((astBuilder.buildType(namedType): any));
-        }
-      }
-    }
-    return possibleTypes;
-  }
-
-  function extendImplementedInterfaces(
-    type: GraphQLObjectType,
-  ): Array<GraphQLInterfaceType> {
-    const interfaces = type.getInterfaces().map(extendNamedType);
-
-    // If there are any extensions to the interfaces, apply those here.
-    const extensions = typeExtensionsMap[type.name];
-    if (extensions) {
-      for (const extension of extensions) {
+      // If there are any extensions to the interfaces, apply those here.
+      for (const extension of extensionNodes) {
         for (const namedType of extension.interfaces) {
           // Note: While this could make early assertions to get the correctly
           // typed values, that would throw immediately while type system
@@ -480,32 +345,72 @@ export function extendSchema(
           interfaces.push((astBuilder.buildType(namedType): any));
         }
       }
+      return interfaces;
     }
-
-    return interfaces;
   }
 
-  function extendFieldMap(type: GraphQLObjectType | GraphQLInterfaceType) {
-    const newFieldMap = mapValue(type.getFields(), field => ({
-      description: field.description,
-      deprecationReason: field.deprecationReason,
+  function extendInterfaceType(
+    type: GraphQLInterfaceType,
+  ): GraphQLInterfaceType {
+    const config = type.toConfig();
+    const extensionNodes = typeExtensionsMap[config.name] || [];
+
+    return new GraphQLInterfaceType({
+      ...config,
+      fields: () => extendFieldMap(config),
+      extensionASTNodes: config.extensionASTNodes.concat(extensionNodes),
+    });
+  }
+
+  function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
+    const config = type.toConfig();
+    const extensionNodes = typeExtensionsMap[config.name] || [];
+
+    return new GraphQLUnionType({
+      ...config,
+      types: typesThunk,
+      extensionASTNodes: config.extensionASTNodes.concat(extensionNodes),
+    });
+
+    function typesThunk() {
+      const types = config.types.map(extendNamedType);
+
+      // If there are any extensions to the union, apply those here.
+      for (const extension of extensionNodes) {
+        for (const namedType of extension.types) {
+          // Note: While this could make early assertions to get the correctly
+          // typed values, that would throw immediately while type system
+          // validation with validateSchema() will produce more actionable results.
+          types.push((astBuilder.buildType(namedType): any));
+        }
+      }
+      return types;
+    }
+  }
+
+  function extendArgs(oldArgs) {
+    return mapValue(oldArgs, arg => ({
+      ...arg,
+      type: extendType(arg.type),
+    }));
+  }
+
+  function extendFieldMap(config) {
+    const fields = mapValue(config.fields, field => ({
+      ...field,
       type: extendType(field.type),
       args: extendArgs(field.args),
-      astNode: field.astNode,
-      resolve: field.resolve,
     }));
 
     // If there are any extensions to the fields, apply those here.
-    const extensions = typeExtensionsMap[type.name];
-    if (extensions) {
-      for (const extension of extensions) {
-        for (const field of extension.fields) {
-          newFieldMap[field.name.value] = astBuilder.buildField(field);
-        }
+    const extensionNodes = typeExtensionsMap[config.name] || [];
+    for (const extension of extensionNodes) {
+      for (const field of extension.fields) {
+        fields[field.name.value] = astBuilder.buildField(field);
       }
     }
 
-    return newFieldMap;
+    return fields;
   }
 
   function extendType<T: GraphQLType>(typeDef: T): T {

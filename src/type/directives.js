@@ -8,6 +8,7 @@
  */
 
 import objectEntries from '../polyfills/objectEntries';
+import { argsToArgsConfig } from './definition';
 import type {
   GraphQLFieldConfigArgumentMap,
   GraphQLArgument,
@@ -83,6 +84,19 @@ export class GraphQLDirective {
 
   toString(): string {
     return '@' + this.name;
+  }
+
+  toConfig(): {|
+    ...GraphQLDirectiveConfig,
+    args: GraphQLFieldConfigArgumentMap,
+  |} {
+    return {
+      name: this.name,
+      description: this.description,
+      locations: this.locations,
+      args: argsToArgsConfig(this.args),
+      astNode: this.astNode,
+    };
   }
 }
 

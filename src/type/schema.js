@@ -238,6 +238,27 @@ export class GraphQLSchema {
   getDirective(name: string): ?GraphQLDirective {
     return find(this.getDirectives(), directive => directive.name === name);
   }
+
+  toConfig(): {|
+    ...GraphQLSchemaConfig,
+    types: Array<GraphQLNamedType>,
+    directives: Array<GraphQLDirective>,
+    extensionASTNodes: $ReadOnlyArray<SchemaExtensionNode>,
+    assumeValid: boolean,
+    allowedLegacyNames: $ReadOnlyArray<string>,
+  |} {
+    return {
+      types: objectValues(this.getTypeMap()),
+      directives: this.getDirectives().slice(),
+      query: this.getQueryType(),
+      mutation: this.getMutationType(),
+      subscription: this.getSubscriptionType(),
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || [],
+      assumeValid: this.__validationErrors !== undefined,
+      allowedLegacyNames: this.__allowedLegacyNames,
+    };
+  }
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
