@@ -195,7 +195,7 @@ function executeImpl(
 
   // If a valid context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const context = buildExecutionContext(
+  const exeContext = buildExecutionContext(
     schema,
     document,
     rootValue,
@@ -206,8 +206,8 @@ function executeImpl(
   );
 
   // Return early errors if execution context failed.
-  if (Array.isArray(context)) {
-    return { errors: context };
+  if (Array.isArray(exeContext)) {
+    return { errors: exeContext };
   }
 
   // Return a Promise that will eventually resolve to the data described by
@@ -217,8 +217,8 @@ function executeImpl(
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  const data = executeOperation(context, context.operation, rootValue);
-  return buildResponse(context, data);
+  const data = executeOperation(exeContext, context.operation, rootValue);
+  return buildResponse(exeContext, data);
 }
 
 /**
@@ -226,15 +226,15 @@ function executeImpl(
  * response defined by the "Response" section of the GraphQL specification.
  */
 function buildResponse(
-  context: ExecutionContext,
+  exeContext: ExecutionContext,
   data: MaybePromise<ObjMap<mixed> | null>,
 ) {
   if (isPromise(data)) {
-    return data.then(resolved => buildResponse(context, resolved));
+    return data.then(resolved => buildResponse(exeContext, resolved));
   }
-  return context.errors.length === 0
+  return exeContext.errors.length === 0
     ? { data }
-    : { errors: context.errors, data };
+    : { errors: exeContext.errors, data };
 }
 
 /**
