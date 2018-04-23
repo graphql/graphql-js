@@ -222,6 +222,12 @@ export function extendSchema(
     }
   });
 
+  const schemaExtensionASTNodes = schemaExtensions
+    ? schema.extensionASTNodes
+      ? schema.extensionASTNodes.concat(schemaExtensions)
+      : schemaExtensions
+    : schema.extensionASTNodes;
+
   const types = [
     // Iterate through all types, getting the type definition for each, ensuring
     // that any type not directly referenced by a field will get created.
@@ -246,7 +252,7 @@ export function extendSchema(
     types,
     directives: getMergedDirectives(),
     astNode: schema.astNode,
-    extensionASTNodes: schemaExtensions,
+    extensionASTNodes: schemaExtensionASTNodes,
     allowedLegacyNames,
   });
 

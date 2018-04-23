@@ -987,14 +987,25 @@ describe('extendSchema', () => {
           hearSomething: String
         }
       `);
-      const schema = extendSchema(testSchema, ast);
-      expect(schema.extensionASTNodes.map(print).join('\n')).to.equal(dedent`
+      let schema = extendSchema(testSchema, ast);
+
+      const secondAST = parse(`
+        extend schema @foo
+
+        directive @foo on SCHEMA
+      `);
+      schema = extendSchema(schema, secondAST);
+
+      const nodes = schema.extensionASTNodes;
+      expect(nodes.map(n => print(n) + '\n').join('')).to.equal(dedent`
         extend schema {
           mutation: Mutation
         }
         extend schema {
           subscription: Subscription
-        }`);
+        }
+        extend schema @foo
+      `);
     });
 
     it('does not allow redefining an existing root type', () => {
