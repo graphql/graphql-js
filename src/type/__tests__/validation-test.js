@@ -1162,7 +1162,7 @@ describe('Type System: Interface fields must have output types', () => {
         foo: String
       }
     `);
-    expect(validateSchema(schema)).to.containSubset([
+    expect(validateSchema(schema)).to.deep.equal([
       {
         message:
           'Interface SomeInterface must be implemented by at least one Object type.',
