@@ -135,13 +135,13 @@ function executeImpl(schema, document, rootValue, contextValue, variableValues, 
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(schema, document, variableValues);
 
-  // If a valid context cannot be created due to incorrect arguments,
+  // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  var context = buildExecutionContext(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver);
+  var exeContext = buildExecutionContext(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver);
 
   // Return early errors if execution context failed.
-  if (Array.isArray(context)) {
-    return { errors: context };
+  if (Array.isArray(exeContext)) {
+    return { errors: exeContext };
   }
 
   // Return a Promise that will eventually resolve to the data described by
@@ -151,21 +151,21 @@ function executeImpl(schema, document, rootValue, contextValue, variableValues, 
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  var data = executeOperation(context, context.operation, rootValue);
-  return buildResponse(context, data);
+  var data = executeOperation(exeContext, exeContext.operation, rootValue);
+  return buildResponse(exeContext, data);
 }
 
 /**
  * Given a completed execution context and data, build the { errors, data }
  * response defined by the "Response" section of the GraphQL specification.
  */
-function buildResponse(context, data) {
+function buildResponse(exeContext, data) {
   if ((0, _isPromise2.default)(data)) {
     return data.then(function (resolved) {
-      return buildResponse(context, resolved);
+      return buildResponse(exeContext, resolved);
     });
   }
-  return context.errors.length === 0 ? { data: data } : { errors: context.errors, data: data };
+  return exeContext.errors.length === 0 ? { data: data } : { errors: exeContext.errors, data: data };
 }
 
 /**
@@ -526,9 +526,9 @@ function resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, s
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
     // used to represent an authenticated user, or request-specific caches.
-    var context = exeContext.contextValue;
+    var _contextValue = exeContext.contextValue;
 
-    var result = resolveFn(source, args, context, info);
+    var result = resolveFn(source, args, _contextValue, info);
     return (0, _isPromise2.default)(result) ? result.then(undefined, asErrorInstance) : result;
   } catch (error) {
     return asErrorInstance(error);
@@ -759,7 +759,7 @@ function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, re
 }
 
 /**
- * A memoized collection of relevant subfields in the context of the return
+ * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which
  * saves overhead when resolving lists of values.
  */
@@ -786,7 +786,7 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
  * Otherwise, test each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
-function defaultResolveTypeFn(value, context, info, abstractType) {
+function defaultResolveTypeFn(value, contextValue, info, abstractType) {
   // First, look for `__typename`.
   if (value !== null && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && typeof value.__typename === 'string') {
     return value.__typename;
@@ -800,7 +800,7 @@ function defaultResolveTypeFn(value, context, info, abstractType) {
     var type = possibleTypes[i];
 
     if (type.isTypeOf) {
-      var isTypeOfResult = type.isTypeOf(value, context, info);
+      var isTypeOfResult = type.isTypeOf(value, contextValue, info);
 
       if ((0, _isPromise2.default)(isTypeOfResult)) {
         promisedIsTypeOfResults[i] = isTypeOfResult;
@@ -825,14 +825,14 @@ function defaultResolveTypeFn(value, context, info, abstractType) {
  * If a resolve function is not given, then a default resolve behavior is used
  * which takes the property of the source object of the same name as the field
  * and returns it as the result, or if it's a function, returns the result
- * of calling that function while passing along args and context.
+ * of calling that function while passing along args and context value.
  */
-var defaultFieldResolver = exports.defaultFieldResolver = function defaultFieldResolver(source, args, context, info) {
+var defaultFieldResolver = exports.defaultFieldResolver = function defaultFieldResolver(source, args, contextValue, info) {
   // ensure source is a value for which property access is acceptable.
   if ((typeof source === 'undefined' ? 'undefined' : _typeof(source)) === 'object' || typeof source === 'function') {
     var property = source[info.fieldName];
     if (typeof property === 'function') {
-      return source[info.fieldName](args, context, info);
+      return source[info.fieldName](args, contextValue, info);
     }
     return property;
   }
