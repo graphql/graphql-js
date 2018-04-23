@@ -381,7 +381,6 @@ function executeOperation(
   operation: OperationDefinitionNode,
   rootValue: mixed,
 ): MaybePromise<ObjMap<mixed> | null> {
-  const operation = exeContext.operation;
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
