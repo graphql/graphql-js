@@ -199,17 +199,10 @@ export function extendSchema(
   const extendTypeCache = Object.create(null);
 
   // Get the extended root operation types.
-  const existingQueryType = schema.getQueryType();
-  const existingMutationType = schema.getMutationType();
-  const existingSubscriptionType = schema.getSubscriptionType();
   const operationTypes = {
-    query: existingQueryType ? getExtendedType(existingQueryType) : null,
-    mutation: existingMutationType
-      ? getExtendedType(existingMutationType)
-      : null,
-    subscription: existingSubscriptionType
-      ? getExtendedType(existingSubscriptionType)
-      : null,
+    query: getExtendedMaybeType(schema.getQueryType()),
+    mutation: getExtendedMaybeType(schema.getMutationType()),
+    subscription: getExtendedMaybeType(schema.getSubscriptionType()),
   };
 
   // Then, incorporate all schema extensions.
@@ -220,7 +213,11 @@ export function extendSchema(
         if (operationTypes[operation]) {
           throw new Error(`Must provide only one ${operation} type in schema.`);
         }
-        operationTypes[operation] = astBuilder.buildType(operationType.type);
+        const typeRef = operationType.type;
+        // Note: While this could make early assertions to get the correctly
+        // typed values, that would throw immediately while type system
+        // validation with validateSchema() will produce more actionable results.
+        operationTypes[operation] = (astBuilder.buildType(typeRef): any);
       });
     }
   });
@@ -263,6 +260,10 @@ export function extendSchema(
     return existingDirectives.concat(
       directiveDefinitions.map(node => astBuilder.buildDirective(node)),
     );
+  }
+
+  function getExtendedMaybeType<T: GraphQLNamedType>(type: ?T): ?T {
+    return type ? getExtendedType(type) : null;
   }
 
   function getExtendedType<T: GraphQLNamedType>(type: T): T {
