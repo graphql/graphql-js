@@ -189,7 +189,9 @@ describe('Execute: Handles execution of abstract types', () => {
           ? DogType
           : obj instanceof Cat
             ? CatType
-            : obj instanceof Human ? HumanType : null;
+            : obj instanceof Human
+              ? HumanType
+              : null;
       },
       fields: {
         name: { type: GraphQLString },
@@ -310,7 +312,9 @@ describe('Execute: Handles execution of abstract types', () => {
           ? DogType
           : obj instanceof Cat
             ? CatType
-            : obj instanceof Human ? HumanType : null;
+            : obj instanceof Human
+              ? HumanType
+              : null;
       },
       types: [DogType, CatType],
     });

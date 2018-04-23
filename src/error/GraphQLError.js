@@ -100,8 +100,12 @@ export function GraphQLError( // eslint-disable-line no-redeclare
 ) {
   // Compute list of blame nodes.
   const _nodes = Array.isArray(nodes)
-    ? nodes.length !== 0 ? nodes : undefined
-    : nodes ? [nodes] : undefined;
+    ? nodes.length !== 0
+      ? nodes
+      : undefined
+    : nodes
+      ? [nodes]
+      : undefined;
 
   // Compute locations in the source for the given nodes/positions.
   let _source = source;
