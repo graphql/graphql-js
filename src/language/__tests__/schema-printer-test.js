@@ -161,6 +161,12 @@ describe('Printer: SDL document', () => {
       directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
       directive @include2(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+      extend schema @onSchema
+
+      extend schema @onSchema {
+        subscription: SubscriptionType
+      }
     `);
   });
 });

@@ -35,7 +35,11 @@ import { GraphQLDirective } from '../type/directives';
 import { Kind } from '../language/kinds';
 
 import type { GraphQLType, GraphQLNamedType } from '../type/definition';
-import type { DocumentNode, DirectiveDefinitionNode } from '../language/ast';
+import type {
+  DocumentNode,
+  DirectiveDefinitionNode,
+  SchemaExtensionNode,
+} from '../language/ast';
 
 type Options = {|
   ...GraphQLSchemaValidationOptions,
@@ -88,9 +92,21 @@ export function extendSchema(
   // have the same name. For example, a type named "skip".
   const directiveDefinitions: Array<DirectiveDefinitionNode> = [];
 
+  // Schema extensions are collected which may add additional operation types.
+  const schemaExtensions: Array<SchemaExtensionNode> = [];
+
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const def = documentAST.definitions[i];
     switch (def.kind) {
+      case Kind.SCHEMA_DEFINITION:
+        // Sanity check that a schema extension is not defining a new schema
+        throw new GraphQLError(
+          'Cannot define a new schema within a schema extension.',
+          [def],
+        );
+      case Kind.SCHEMA_EXTENSION:
+        schemaExtensions.push(def);
+        break;
       case Kind.OBJECT_TYPE_DEFINITION:
       case Kind.INTERFACE_TYPE_DEFINITION:
       case Kind.ENUM_TYPE_DEFINITION:
@@ -156,7 +172,8 @@ export function extendSchema(
   if (
     Object.keys(typeExtensionsMap).length === 0 &&
     Object.keys(typeDefinitionMap).length === 0 &&
-    directiveDefinitions.length === 0
+    directiveDefinitions.length === 0 &&
+    schemaExtensions.length === 0
   ) {
     return schema;
   }
@@ -181,21 +198,32 @@ export function extendSchema(
 
   const extendTypeCache = Object.create(null);
 
-  // Get the root Query, Mutation, and Subscription object types.
+  // Get the extended root operation types.
   const existingQueryType = schema.getQueryType();
-  const queryType = existingQueryType
-    ? getExtendedType(existingQueryType)
-    : null;
-
   const existingMutationType = schema.getMutationType();
-  const mutationType = existingMutationType
-    ? getExtendedType(existingMutationType)
-    : null;
-
   const existingSubscriptionType = schema.getSubscriptionType();
-  const subscriptionType = existingSubscriptionType
-    ? getExtendedType(existingSubscriptionType)
-    : null;
+  const operationTypes = {
+    query: existingQueryType ? getExtendedType(existingQueryType) : null,
+    mutation: existingMutationType
+      ? getExtendedType(existingMutationType)
+      : null,
+    subscription: existingSubscriptionType
+      ? getExtendedType(existingSubscriptionType)
+      : null,
+  };
+
+  // Then, incorporate all schema extensions.
+  schemaExtensions.forEach(schemaExtension => {
+    if (schemaExtension.operationTypes) {
+      schemaExtension.operationTypes.forEach(operationType => {
+        const operation = operationType.operation;
+        if (operationTypes[operation]) {
+          throw new Error(`Must provide only one ${operation} type in schema.`);
+        }
+        operationTypes[operation] = astBuilder.buildType(operationType.type);
+      });
+    }
+  });
 
   const types = [
     // Iterate through all types, getting the type definition for each, ensuring
@@ -215,12 +243,13 @@ export function extendSchema(
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
-    query: queryType,
-    mutation: mutationType,
-    subscription: subscriptionType,
+    query: operationTypes.query,
+    mutation: operationTypes.mutation,
+    subscription: operationTypes.subscription,
     types,
     directives: getMergedDirectives(),
     astNode: schema.astNode,
+    extensionASTNodes: schemaExtensions,
     allowedLegacyNames,
   });
 

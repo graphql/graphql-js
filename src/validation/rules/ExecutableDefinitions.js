@@ -33,7 +33,8 @@ export function ExecutableDefinitions(context: ValidationContext): ASTVisitor {
           context.reportError(
             new GraphQLError(
               nonExecutableDefinitionMessage(
-                definition.kind === Kind.SCHEMA_DEFINITION
+                definition.kind === Kind.SCHEMA_DEFINITION ||
+                definition.kind === Kind.SCHEMA_EXTENSION
                   ? 'schema'
                   : definition.name.value,
               ),

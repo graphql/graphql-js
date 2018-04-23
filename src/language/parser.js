@@ -52,14 +52,15 @@ import type {
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
-  TypeExtensionNode,
+  DirectiveDefinitionNode,
+  TypeSystemExtensionNode,
+  SchemaExtensionNode,
   ScalarTypeExtensionNode,
   ObjectTypeExtensionNode,
   InterfaceTypeExtensionNode,
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
-  DirectiveDefinitionNode,
 } from './ast';
 
 import { Kind } from './kinds';
@@ -211,6 +212,7 @@ function parseDocument(lexer: Lexer<*>): DocumentNode {
  * Definition :
  *   - ExecutableDefinition
  *   - TypeSystemDefinition
+ *   - TypeSystemExtension
  */
 function parseDefinition(lexer: Lexer<*>): DefinitionNode {
   if (peek(lexer, TokenKind.NAME)) {
@@ -227,15 +229,14 @@ function parseDefinition(lexer: Lexer<*>): DefinitionNode {
       case 'union':
       case 'enum':
       case 'input':
-      case 'extend':
       case 'directive':
-        // Note: The schema definition language is an experimental addition.
         return parseTypeSystemDefinition(lexer);
+      case 'extend':
+        return parseTypeSystemExtension(lexer);
     }
   } else if (peek(lexer, TokenKind.BRACE_L)) {
     return parseExecutableDefinition(lexer);
   } else if (peekDescription(lexer)) {
-    // Note: The schema definition language is an experimental addition.
     return parseTypeSystemDefinition(lexer);
   }
 
@@ -753,7 +754,6 @@ export function parseNamedType(lexer: Lexer<*>): NamedTypeNode {
  * TypeSystemDefinition :
  *   - SchemaDefinition
  *   - TypeDefinition
- *   - TypeExtension
  *   - DirectiveDefinition
  *
  * TypeDefinition :
@@ -784,8 +784,6 @@ function parseTypeSystemDefinition(lexer: Lexer<*>): TypeSystemDefinitionNode {
         return parseEnumTypeDefinition(lexer);
       case 'input':
         return parseInputObjectTypeDefinition(lexer);
-      case 'extend':
-        return parseTypeExtension(lexer);
       case 'directive':
         return parseDirectiveDefinition(lexer);
     }
@@ -1141,6 +1139,10 @@ function parseInputFieldsDefinition(
 }
 
 /**
+ * TypeSystemExtension :
+ *   - SchemaExtension
+ *   - TypeExtension
+ *
  * TypeExtension :
  *   - ScalarTypeExtension
  *   - ObjectTypeExtension
@@ -1149,11 +1151,13 @@ function parseInputFieldsDefinition(
  *   - EnumTypeExtension
  *   - InputObjectTypeDefinition
  */
-function parseTypeExtension(lexer: Lexer<*>): TypeExtensionNode {
+function parseTypeSystemExtension(lexer: Lexer<*>): TypeSystemExtensionNode {
   const keywordToken = lexer.lookahead();
 
   if (keywordToken.kind === TokenKind.NAME) {
     switch (keywordToken.value) {
+      case 'schema':
+        return parseSchemaExtension(lexer);
       case 'scalar':
         return parseScalarTypeExtension(lexer);
       case 'type':
@@ -1170,6 +1174,35 @@ function parseTypeExtension(lexer: Lexer<*>): TypeExtensionNode {
   }
 
   throw unexpected(lexer, keywordToken);
+}
+
+/**
+ * SchemaExtension :
+ *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
+ *  - extend schema Directives[Const]
+ */
+function parseSchemaExtension(lexer: Lexer<*>): SchemaExtensionNode {
+  const start = lexer.token;
+  expectKeyword(lexer, 'extend');
+  expectKeyword(lexer, 'schema');
+  const directives = parseDirectives(lexer, true);
+  const operationTypes = peek(lexer, TokenKind.BRACE_L)
+    ? many(
+        lexer,
+        TokenKind.BRACE_L,
+        parseOperationTypeDefinition,
+        TokenKind.BRACE_R,
+      )
+    : [];
+  if (directives.length === 0 && operationTypes.length === 0) {
+    throw unexpected(lexer);
+  }
+  return {
+    kind: Kind.SCHEMA_EXTENSION,
+    directives,
+    operationTypes,
+    loc: loc(lexer, start),
+  };
 }
 
 /**

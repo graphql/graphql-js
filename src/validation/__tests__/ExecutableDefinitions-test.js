@@ -87,10 +87,13 @@ describe('Validate: Executable definitions', () => {
       type Query {
         test: String
       }
+
+      extend schema @directive
     `,
       [
         nonExecutableDefinition('schema', 2, 7),
         nonExecutableDefinition('Query', 6, 7),
+        nonExecutableDefinition('schema', 10, 7),
       ],
     );
   });

@@ -175,6 +175,20 @@ const printDocASTReducer = {
     join(['input', name, join(directives, ' '), block(fields)], ' '),
   ),
 
+  DirectiveDefinition: addDescription(
+    ({ name, arguments: args, locations }) =>
+      'directive @' +
+      name +
+      (args.every(arg => arg.indexOf('\n') === -1)
+        ? wrap('(', join(args, ', '), ')')
+        : wrap('(\n', indent(join(args, '\n')), '\n)')) +
+      ' on ' +
+      join(locations, ' | '),
+  ),
+
+  SchemaExtension: ({ directives, operationTypes }) =>
+    join(['extend schema', join(directives, ' '), block(operationTypes)], ' '),
+
   ScalarTypeExtension: ({ name, directives }) =>
     join(['extend scalar', name, join(directives, ' ')], ' '),
 
@@ -209,17 +223,6 @@ const printDocASTReducer = {
 
   InputObjectTypeExtension: ({ name, directives, fields }) =>
     join(['extend input', name, join(directives, ' '), block(fields)], ' '),
-
-  DirectiveDefinition: addDescription(
-    ({ name, arguments: args, locations }) =>
-      'directive @' +
-      name +
-      (args.every(arg => arg.indexOf('\n') === -1)
-        ? wrap('(', join(args, ', '), ')')
-        : wrap('(\n', indent(join(args, '\n')), '\n)')) +
-      ' on ' +
-      join(locations, ' | '),
-  ),
 };
 
 function addDescription(cb) {

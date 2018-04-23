@@ -21,7 +21,10 @@ import type {
   GraphQLAbstractType,
   GraphQLObjectType,
 } from './definition';
-import type { SchemaDefinitionNode } from '../language/ast';
+import type {
+  SchemaDefinitionNode,
+  SchemaExtensionNode,
+} from '../language/ast';
 import {
   GraphQLDirective,
   isDirective,
@@ -73,6 +76,7 @@ export function isSchema(schema) {
  */
 export class GraphQLSchema {
   astNode: ?SchemaDefinitionNode;
+  extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>;
   _queryType: ?GraphQLObjectType;
   _mutationType: ?GraphQLObjectType;
   _subscriptionType: ?GraphQLObjectType;
@@ -120,6 +124,7 @@ export class GraphQLSchema {
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives || specifiedDirectives;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
 
     // Build type map now to detect any errors within this schema.
     let initialTypes: Array<?GraphQLNamedType> = [
@@ -255,6 +260,7 @@ export type GraphQLSchemaConfig = {
   types?: ?Array<GraphQLNamedType>,
   directives?: ?Array<GraphQLDirective>,
   astNode?: ?SchemaDefinitionNode,
+  extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
   ...GraphQLSchemaValidationOptions,
 };
 
