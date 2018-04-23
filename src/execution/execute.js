@@ -193,9 +193,9 @@ function executeImpl(
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(schema, document, variableValues);
 
-  // If a valid context cannot be created due to incorrect arguments,
+  // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const context = buildExecutionContext(
+  const exeContext = buildExecutionContext(
     schema,
     document,
     rootValue,
@@ -206,8 +206,8 @@ function executeImpl(
   );
 
   // Return early errors if execution context failed.
-  if (Array.isArray(context)) {
-    return { errors: context };
+  if (Array.isArray(exeContext)) {
+    return { errors: exeContext };
   }
 
   // Return a Promise that will eventually resolve to the data described by
@@ -217,8 +217,8 @@ function executeImpl(
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-  const data = executeOperation(context, context.operation, rootValue);
-  return buildResponse(context, data);
+  const data = executeOperation(exeContext, exeContext.operation, rootValue);
+  return buildResponse(exeContext, data);
 }
 
 /**
@@ -226,15 +226,15 @@ function executeImpl(
  * response defined by the "Response" section of the GraphQL specification.
  */
 function buildResponse(
-  context: ExecutionContext,
+  exeContext: ExecutionContext,
   data: MaybePromise<ObjMap<mixed> | null>,
 ) {
   if (isPromise(data)) {
-    return data.then(resolved => buildResponse(context, resolved));
+    return data.then(resolved => buildResponse(exeContext, resolved));
   }
-  return context.errors.length === 0
+  return exeContext.errors.length === 0
     ? { data }
-    : { errors: context.errors, data };
+    : { errors: exeContext.errors, data };
 }
 
 /**
@@ -767,9 +767,9 @@ export function resolveFieldValueOrError<TSource>(
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
     // used to represent an authenticated user, or request-specific caches.
-    const context = exeContext.contextValue;
+    const contextValue = exeContext.contextValue;
 
-    const result = resolveFn(source, args, context, info);
+    const result = resolveFn(source, args, contextValue, info);
     return isPromise(result) ? result.then(undefined, asErrorInstance) : result;
   } catch (error) {
     return asErrorInstance(error);
@@ -1174,7 +1174,7 @@ function collectAndExecuteSubfields(
 }
 
 /**
- * A memoized collection of relevant subfields in the context of the return
+ * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which
  * saves overhead when resolving lists of values.
  */
@@ -1213,7 +1213,7 @@ function _collectSubfields(
  */
 function defaultResolveTypeFn(
   value: mixed,
-  context: mixed,
+  contextValue: mixed,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType,
 ): MaybePromise<?GraphQLObjectType | string> {
@@ -1234,7 +1234,7 @@ function defaultResolveTypeFn(
     const type = possibleTypes[i];
 
     if (type.isTypeOf) {
-      const isTypeOfResult = type.isTypeOf(value, context, info);
+      const isTypeOfResult = type.isTypeOf(value, contextValue, info);
 
       if (isPromise(isTypeOfResult)) {
         promisedIsTypeOfResults[i] = isTypeOfResult;
@@ -1259,19 +1259,19 @@ function defaultResolveTypeFn(
  * If a resolve function is not given, then a default resolve behavior is used
  * which takes the property of the source object of the same name as the field
  * and returns it as the result, or if it's a function, returns the result
- * of calling that function while passing along args and context.
+ * of calling that function while passing along args and context value.
  */
 export const defaultFieldResolver: GraphQLFieldResolver<any, *> = function(
   source,
   args,
-  context,
+  contextValue,
   info,
 ) {
   // ensure source is a value for which property access is acceptable.
   if (typeof source === 'object' || typeof source === 'function') {
     const property = source[info.fieldName];
     if (typeof property === 'function') {
-      return source[info.fieldName](args, context, info);
+      return source[info.fieldName](args, contextValue, info);
     }
     return property;
   }
