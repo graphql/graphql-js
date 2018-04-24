@@ -36,10 +36,6 @@ import objectValues from '../jsutils/objectValues';
 import { GraphQLError } from '../error/GraphQLError';
 import type {
   ASTNode,
-  ObjectTypeDefinitionNode,
-  ObjectTypeExtensionNode,
-  InterfaceTypeDefinitionNode,
-  InterfaceTypeExtensionNode,
   FieldDefinitionNode,
   EnumValueDefinitionNode,
   InputValueDefinitionNode,
@@ -283,7 +279,7 @@ function validateFields(
   if (fields.length === 0) {
     context.reportError(
       `Type ${type.name} must define one or more fields.`,
-      getAllObjectOrInterfaceNodes(type),
+      getAllNodes(type),
     );
   }
 
@@ -578,29 +574,16 @@ function validateInputFields(
   });
 }
 
-function getAllObjectNodes(
-  type: GraphQLObjectType,
-): $ReadOnlyArray<ObjectTypeDefinitionNode | ObjectTypeExtensionNode> {
-  return type.astNode
-    ? type.extensionASTNodes
-      ? [type.astNode].concat(type.extensionASTNodes)
-      : [type.astNode]
-    : type.extensionASTNodes || [];
-}
-
-function getAllObjectOrInterfaceNodes(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-): $ReadOnlyArray<
-  | ObjectTypeDefinitionNode
-  | ObjectTypeExtensionNode
-  | InterfaceTypeDefinitionNode
-  | InterfaceTypeExtensionNode,
-> {
-  return type.astNode
-    ? type.extensionASTNodes
-      ? [type.astNode].concat(type.extensionASTNodes)
-      : [type.astNode]
-    : type.extensionASTNodes || [];
+function getAllNodes<T: ASTNode, K: ASTNode>(object: {
+  +astNode: ?T,
+  +extensionASTNodes?: ?$ReadOnlyArray<K>,
+}): $ReadOnlyArray<T | K> {
+  const { astNode, extensionASTNodes } = object;
+  return astNode
+    ? extensionASTNodes
+      ? [astNode].concat(extensionASTNodes)
+      : [astNode]
+    : extensionASTNodes || [];
 }
 
 function getImplementsInterfaceNode(
@@ -615,7 +598,7 @@ function getAllImplementsInterfaceNodes(
   iface: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
   const implementsNodes = [];
-  const astNodes = getAllObjectNodes(type);
+  const astNodes = getAllNodes(type);
   for (let i = 0; i < astNodes.length; i++) {
     const astNode = astNodes[i];
     if (astNode && astNode.interfaces) {
@@ -641,7 +624,7 @@ function getAllFieldNodes(
   fieldName: string,
 ): $ReadOnlyArray<FieldDefinitionNode> {
   const fieldNodes = [];
-  const astNodes = getAllObjectOrInterfaceNodes(type);
+  const astNodes = getAllNodes(type);
   for (let i = 0; i < astNodes.length; i++) {
     const astNode = astNodes[i];
     if (astNode && astNode.fields) {
