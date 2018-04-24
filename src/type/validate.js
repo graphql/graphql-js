@@ -152,13 +152,17 @@ function getOperationTypeNode(
   type: GraphQLObjectType,
   operation: string,
 ): ?ASTNode {
-  const astNode = schema.astNode;
-  const operationTypeNode =
-    astNode &&
-    astNode.operationTypes.find(
-      operationType => operationType.operation === operation,
-    );
-  return operationTypeNode ? operationTypeNode.type : type && type.astNode;
+  for (const node of getAllNodes(schema)) {
+    if (node.operationTypes) {
+      for (const operationType of node.operationTypes) {
+        if (operationType.operation === operation) {
+          return operationType.type;
+        }
+      }
+    }
+  }
+
+  return type.astNode;
 }
 
 function validateDirectives(context: SchemaValidationContext): void {
