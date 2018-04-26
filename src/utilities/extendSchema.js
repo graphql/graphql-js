@@ -382,7 +382,7 @@ export function extendSchema(
       newValueMap[valueName] = {
         name: value.name,
         description: value.description,
-        value: value.hasOwnProperty('value') ? value.value : valueName,
+        value: value.value,
         deprecationReason: value.deprecationReason,
         astNode: value.astNode,
       };
