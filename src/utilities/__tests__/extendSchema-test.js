@@ -856,10 +856,10 @@ describe('extendSchema', () => {
     const newEnum = extendedSchema.getType('SomeEnum');
     const testDirective = extendedSchema.getDirective('test');
 
-    expect(oldEnum._values.length).to.equal(2);
-    expect(newEnum._values.length).to.equal(3);
+    expect(oldEnum._values).to.have.lengthOf(2);
+    expect(newEnum._values).to.have.lengthOf(3);
     expect(newEnum._values[2].name).to.equal('NEW_ENUM');
-    expect(newEnum).to.equal(testDirective.args[0].type);
+    expect(testDirective).to.have.nested.property('args[0].type', newEnum);
   });
 
   it('extend input', () => {
