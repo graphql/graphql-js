@@ -331,7 +331,6 @@ export function extendSchema(
     Object.keys(oldFieldMap).forEach(fieldName => {
       const field = oldFieldMap[fieldName];
       newFieldMap[fieldName] = {
-        // name: fieldName,
         description: field.description,
         type: extendFieldType(field.type),
         defaultValue: field.defaultValue,
@@ -433,7 +432,6 @@ export function extendSchema(
       args,
       arg => arg.name,
       arg => ({
-        name: arg.name,
         type: extendFieldType(arg.type),
         defaultValue: arg.defaultValue,
         description: arg.description,
