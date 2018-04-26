@@ -9,6 +9,7 @@
 
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
+import keyValMap from '../jsutils/keyValMap';
 import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { GraphQLError } from '../error/GraphQLError';
@@ -17,7 +18,10 @@ import { isIntrospectionType } from '../type/introspection';
 
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
 
-import type { GraphQLArgumentConfig, GraphQLArgument } from '../type/definition';
+import type {
+  GraphQLArgument,
+  GraphQLFieldConfigArgumentMap,
+} from '../type/definition';
 
 import {
   isObjectType,
@@ -25,14 +29,14 @@ import {
   isUnionType,
   isListType,
   isNonNullType,
+  isEnumType,
+  isInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
-  isEnumType,
   GraphQLEnumType,
-  isInputObjectType,
   GraphQLInputObjectType,
 } from '../type/definition';
 
@@ -306,11 +310,18 @@ export function extendSchema(
   function extendInputObjectType(
     type: GraphQLInputObjectType,
   ): GraphQLInputObjectType {
+    const name = type.name;
+    const extensionASTNodes = typeExtensionsMap[name]
+      ? type.extensionASTNodes
+        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
+        : typeExtensionsMap[name]
+      : type.extensionASTNodes;
     return new GraphQLInputObjectType({
-      name: type.name,
+      name,
       description: type.description,
       fields: () => extendInputFieldMap(type),
       astNode: type.astNode,
+      extensionASTNodes,
     });
   }
 
@@ -320,6 +331,7 @@ export function extendSchema(
     Object.keys(oldFieldMap).forEach(fieldName => {
       const field = oldFieldMap[fieldName];
       newFieldMap[fieldName] = {
+        // name: fieldName,
         description: field.description,
         type: extendFieldType(field.type),
         defaultValue: field.defaultValue,
@@ -340,7 +352,7 @@ export function extendSchema(
               [field],
             );
           }
-          newFieldMap[fieldName] = astBuilder.buildField(field);
+          newFieldMap[fieldName] = astBuilder.buildInputField(field);
         });
       });
     }
@@ -349,21 +361,29 @@ export function extendSchema(
   }
 
   function extendEnumType(type: GraphQLEnumType): GraphQLEnumType {
+    const name = type.name;
+    const extensionASTNodes = typeExtensionsMap[name]
+      ? type.extensionASTNodes
+        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
+        : typeExtensionsMap[name]
+      : type.extensionASTNodes;
     return new GraphQLEnumType({
-      name: type.name,
+      name,
       values: extendValueMap(type),
       astNode: type.astNode,
+      extensionASTNodes,
     });
   }
 
   function extendValueMap(type: GraphQLEnumType) {
-    const oldValueMap = Object.create(null);
     const newValueMap = Object.create(null);
-    type.getValues().forEach(value => {
-      newValueMap[value.name] = oldValueMap[value.name] = {
+    const oldValueMap = keyMap(type.getValues(), value => value.name);
+    Object.keys(oldValueMap).forEach(valueName => {
+      const value = oldValueMap[valueName];
+      newValueMap[valueName] = {
         name: value.name,
         description: value.description,
-        value: value.value,
+        value: value.hasOwnProperty('value') ? value.value : valueName,
         deprecationReason: value.deprecationReason,
         astNode: value.astNode,
       };
@@ -408,16 +428,18 @@ export function extendSchema(
     });
   }
 
-  function extendArgsMap(
-    args: GraphQLArgument[],
-  ): GraphQLArgument[] {
-    return args.map(arg => ({
-      name: arg.name,
-      type: extendFieldType(arg.type),
-      defaultValue: arg.defaultValue,
-      description: arg.description,
-      astNode: arg.astNode,
-    }));
+  function extendArgs(args: GraphQLArgument[]): GraphQLFieldConfigArgumentMap {
+    return keyValMap(
+      args,
+      arg => arg.name,
+      arg => ({
+        name: arg.name,
+        type: extendFieldType(arg.type),
+        defaultValue: arg.defaultValue,
+        description: arg.description,
+        astNode: arg.astNode,
+      }),
+    );
   }
 
   function extendInterfaceType(
@@ -440,7 +462,13 @@ export function extendSchema(
   }
 
   function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
-    const types = type.getTypes().map(getExtendedType);
+    const name = type.name;
+    const extensionASTNodes = typeExtensionsMap[name]
+      ? type.extensionASTNodes
+        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
+        : typeExtensionsMap[name]
+      : type.extensionASTNodes;
+    const unionTypes = type.getTypes().map(getExtendedType);
 
     // If there are any extensions to the union, apply those here.
     const extensions = typeExtensionsMap[type.name];
@@ -450,17 +478,18 @@ export function extendSchema(
           // Note: While this could make early assertions to get the correctly
           // typed values, that would throw immediately while type system
           // validation with validateSchema() will produce more actionable results.
-          types.push((astBuilder.buildType(namedType): any));
+          unionTypes.push((astBuilder.buildType(namedType): any));
         });
       });
     }
 
     return new GraphQLUnionType({
-      name: type.name,
+      name,
       description: type.description,
-      types: types,
+      types: unionTypes,
       astNode: type.astNode,
       resolveType: type.resolveType,
+      extensionASTNodes,
     });
   }
 
@@ -494,7 +523,7 @@ export function extendSchema(
         description: field.description,
         deprecationReason: field.deprecationReason,
         type: extendFieldType(field.type),
-        args: keyMap(extendArgsMap(field.args), arg => arg.name),
+        args: extendArgs(field.args),
         astNode: field.astNode,
         resolve: field.resolve,
       };

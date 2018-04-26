@@ -847,10 +847,19 @@ describe('extendSchema', () => {
       extend enum SomeEnum {
         NEW_ENUM
       }
+
+      directive @test(arg: SomeEnum) on FIELD
     `);
     expect(extendedSchema).to.not.equal(testSchema);
-    expect(printSchema(extendedSchema)).to.contain('NEW_ENUM');
-    expect(printSchema(testSchema)).to.not.contain('NEW_ENUM');
+
+    const oldEnum = testSchema.getType('SomeEnum');
+    const newEnum = extendedSchema.getType('SomeEnum');
+    const testDirective = extendedSchema.getDirective('test');
+
+    expect(oldEnum._values.length).to.equal(2);
+    expect(newEnum._values.length).to.equal(3);
+    expect(newEnum._values[2].name).to.equal('NEW_ENUM');
+    expect(newEnum).to.equal(testDirective.args[0].type);
   });
 
   it('extend input', () => {
