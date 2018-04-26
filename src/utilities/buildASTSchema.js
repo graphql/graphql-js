@@ -41,7 +41,10 @@ import type {
 
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
-import type { GraphQLEnumValueConfig } from '../type/definition';
+import type {
+  GraphQLEnumValueConfig,
+  GraphQLInputField,
+} from '../type/definition';
 
 import {
   assertNullableType,
@@ -320,6 +323,20 @@ export class ASTDefinitionBuilder {
     };
   }
 
+  buildInputField(value: InputValueDefinitionNode): GraphQLInputField {
+    // Note: While this could make assertions to get the correctly typed
+    // value, that would throw immediately while type system validation
+    // with validateSchema() will produce more actionable results.
+    const type: any = this._buildWrappedType(value.type);
+    return {
+      name: value.name.value,
+      type,
+      description: getDescription(value, this._options),
+      defaultValue: valueFromAST(value.defaultValue, type),
+      astNode: value,
+    };
+  }
+
   buildEnumValue(value: EnumValueDefinitionNode): GraphQLEnumValueConfig {
     return {
       description: getDescription(value, this._options),
@@ -378,18 +395,7 @@ export class ASTDefinitionBuilder {
     return keyValMap(
       values,
       value => value.name.value,
-      value => {
-        // Note: While this could make assertions to get the correctly typed
-        // value, that would throw immediately while type system validation
-        // with validateSchema() will produce more actionable results.
-        const type: any = this._buildWrappedType(value.type);
-        return {
-          type,
-          description: getDescription(value, this._options),
-          defaultValue: valueFromAST(value.defaultValue, type),
-          astNode: value,
-        };
-      },
+      value => this.buildInputField(value),
     );
   }
 
