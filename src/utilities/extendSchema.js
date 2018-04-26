@@ -427,7 +427,9 @@ export function extendSchema(
     });
   }
 
-  function extendArgs(args: GraphQLArgument[]): GraphQLFieldConfigArgumentMap {
+  function extendArgs(
+    args: Array<GraphQLArgument>,
+  ): GraphQLFieldConfigArgumentMap {
     return keyValMap(
       args,
       arg => arg.name,
