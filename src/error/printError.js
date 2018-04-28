@@ -48,29 +48,40 @@ function highlightSourceAtLocation(
   source: Source,
   location: SourceLocation,
 ): string {
-  const line = location.line;
+  const firstLineColumnOffset = source.locationOffset.column - 1;
+  const body = whitespace(firstLineColumnOffset) + source.body;
+
+  const lineIndex = location.line - 1;
   const lineOffset = source.locationOffset.line - 1;
-  const columnOffset = getColumnOffset(source, location);
-  const contextLine = line + lineOffset;
-  const contextColumn = location.column + columnOffset;
-  const prevLineNum = (contextLine - 1).toString();
-  const lineNum = contextLine.toString();
-  const nextLineNum = (contextLine + 1).toString();
-  const padLen = nextLineNum.length;
-  const lines = source.body.split(/\r\n|[\n\r]/g);
-  lines[0] = whitespace(source.locationOffset.column - 1) + lines[0];
-  const outputLines = [
-    `${source.name} (${contextLine}:${contextColumn})`,
-    line >= 2 && lpad(padLen, prevLineNum) + ': ' + lines[line - 2],
-    lpad(padLen, lineNum) + ': ' + lines[line - 1],
-    whitespace(2 + padLen + contextColumn - 1) + '^',
-    line < lines.length && lpad(padLen, nextLineNum) + ': ' + lines[line],
-  ];
-  return outputLines.filter(Boolean).join('\n');
+  const lineNum = location.line + lineOffset;
+
+  const columnOffset = location.line === 1 ? firstLineColumnOffset : 0;
+  const columnNum = location.column + columnOffset;
+
+  const lines = body.split(/\r\n|[\n\r]/g);
+  return (
+    `${source.name} (${lineNum}:${columnNum})\n` +
+    printPrefixedLines([
+      // Lines specified like this: ["prefix", "string"],
+      [`${lineNum - 1}: `, lines[lineIndex - 1]],
+      [`${lineNum}: `, lines[lineIndex]],
+      ['', whitespace(columnNum - 1) + '^'],
+      [`${lineNum + 1}: `, lines[lineIndex + 1]],
+    ])
+  );
 }
 
-function getColumnOffset(source: Source, location: SourceLocation): number {
-  return location.line === 1 ? source.locationOffset.column - 1 : 0;
+function printPrefixedLines(lines: Array<[string, string]>): string {
+  const existingLines = lines.filter(([_, line]) => line !== undefined);
+
+  let padLen = 0;
+  for (const [prefix] of existingLines) {
+    padLen = Math.max(padLen, prefix.length);
+  }
+
+  return existingLines
+    .map(([prefix, line]) => lpad(padLen, prefix) + line)
+    .join('\n');
 }
 
 function whitespace(len: number): string {

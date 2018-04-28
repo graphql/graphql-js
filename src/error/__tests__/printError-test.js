@@ -25,8 +25,8 @@ describe('printError', () => {
       Single digit line number with no padding
 
       Test (9:1)
-       9: *
-          ^
+      9: *
+         ^
     `);
 
     const doubleDigit = new GraphQLError(
