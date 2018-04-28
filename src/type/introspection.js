@@ -84,10 +84,17 @@ export const __Directive = new GraphQLObjectType({
     'conditionally including or skipping a field. Directives provide this by ' +
     'describing additional information to the executor.',
   fields: () => ({
-    name: { type: GraphQLNonNull(GraphQLString) },
-    description: { type: GraphQLString },
+    name: {
+      type: GraphQLNonNull(GraphQLString),
+      resolve: obj => obj.name,
+    },
+    description: {
+      type: GraphQLString,
+      resolve: obj => obj.description,
+    },
     locations: {
       type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation))),
+      resolve: obj => obj.locations,
     },
     args: {
       type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
@@ -237,8 +244,14 @@ export const __Type = new GraphQLObjectType({
         throw new Error('Unknown kind of type: ' + type);
       },
     },
-    name: { type: GraphQLString },
-    description: { type: GraphQLString },
+    name: {
+      type: GraphQLString,
+      resolve: obj => obj.name,
+    },
+    description: {
+      type: GraphQLString,
+      resolve: obj => obj.description,
+    },
     fields: {
       type: GraphQLList(GraphQLNonNull(__Field)),
       args: {
@@ -294,7 +307,10 @@ export const __Type = new GraphQLObjectType({
         }
       },
     },
-    ofType: { type: __Type },
+    ofType: {
+      type: __Type,
+      resolve: obj => obj.ofType,
+    },
   }),
 });
 
@@ -305,16 +321,29 @@ export const __Field = new GraphQLObjectType({
     'Object and Interface types are described by a list of Fields, each of ' +
     'which has a name, potentially a list of arguments, and a return type.',
   fields: () => ({
-    name: { type: GraphQLNonNull(GraphQLString) },
-    description: { type: GraphQLString },
+    name: {
+      type: GraphQLNonNull(GraphQLString),
+      resolve: obj => obj.name,
+    },
+    description: {
+      type: GraphQLString,
+      resolve: obj => obj.description,
+    },
     args: {
       type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
       resolve: field => field.args || [],
     },
-    type: { type: GraphQLNonNull(__Type) },
-    isDeprecated: { type: GraphQLNonNull(GraphQLBoolean) },
+    type: {
+      type: GraphQLNonNull(__Type),
+      resolve: obj => obj.type,
+    },
+    isDeprecated: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: obj => obj.isDeprecated,
+    },
     deprecationReason: {
       type: GraphQLString,
+      resolve: obj => obj.deprecationReason,
     },
   }),
 });
@@ -327,9 +356,18 @@ export const __InputValue = new GraphQLObjectType({
     'InputObject are represented as Input Values which describe their type ' +
     'and optionally a default value.',
   fields: () => ({
-    name: { type: GraphQLNonNull(GraphQLString) },
-    description: { type: GraphQLString },
-    type: { type: GraphQLNonNull(__Type) },
+    name: {
+      type: GraphQLNonNull(GraphQLString),
+      resolve: obj => obj.name,
+    },
+    description: {
+      type: GraphQLString,
+      resolve: obj => obj.description,
+    },
+    type: {
+      type: GraphQLNonNull(__Type),
+      resolve: obj => obj.type,
+    },
     defaultValue: {
       type: GraphQLString,
       description:
@@ -351,11 +389,21 @@ export const __EnumValue = new GraphQLObjectType({
     'a placeholder for a string or numeric value. However an Enum value is ' +
     'returned in a JSON response as a string.',
   fields: () => ({
-    name: { type: GraphQLNonNull(GraphQLString) },
-    description: { type: GraphQLString },
-    isDeprecated: { type: GraphQLNonNull(GraphQLBoolean) },
+    name: {
+      type: GraphQLNonNull(GraphQLString),
+      resolve: obj => obj.name,
+    },
+    description: {
+      type: GraphQLString,
+      resolve: obj => obj.description,
+    },
+    isDeprecated: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      resolve: obj => obj.isDeprecated,
+    },
     deprecationReason: {
       type: GraphQLString,
+      resolve: obj => obj.deprecationReason,
     },
   }),
 });
