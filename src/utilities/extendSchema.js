@@ -267,12 +267,22 @@ export function extendSchema(
   // this scope and have access to the schema, cache, and newly defined types.
 
   function getMergedDirectives(): Array<GraphQLDirective> {
-    const existingDirectives = schema.getDirectives();
+    const existingDirectives = schema.getDirectives().map(extendDirectiveType);
     invariant(existingDirectives, 'schema must have default directives');
 
     return existingDirectives.concat(
       directiveDefinitions.map(node => astBuilder.buildDirective(node)),
     );
+  }
+
+  function extendDirectiveType(type: GraphQLDirective): GraphQLDirective {
+    return new GraphQLDirective({
+      name: type.name,
+      description: type.description,
+      locations: type.locations,
+      args: extendArgs(type.args),
+      astNode: type.astNode,
+    });
   }
 
   function getExtendedType<T: GraphQLNamedType>(type: T): T {
@@ -397,7 +407,7 @@ export function extendSchema(
           if (oldValueMap[valueName]) {
             throw new GraphQLError(
               `Enum "${type.name}.${valueName}" already exists in the ` +
-                'schema. It cannot also be defined in this enum extension.',
+                'schema. It cannot also be defined in this type extension.',
               [value],
             );
           }
@@ -575,6 +585,30 @@ function checkExtensionNode(type, node) {
       if (!isInterfaceType(type)) {
         throw new GraphQLError(
           `Cannot extend non-interface type "${type.name}".`,
+          [node],
+        );
+      }
+      break;
+    case Kind.ENUM_TYPE_EXTENSION:
+      if (!isEnumType(type)) {
+        throw new GraphQLError(
+          `Cannot extend non-enum type "${type.name}".`,
+          [node],
+        );
+      }
+      break;
+    case Kind.UNION_TYPE_EXTENSION:
+      if (!isUnionType(type)) {
+        throw new GraphQLError(
+          `Cannot extend non-union type "${type.name}".`,
+          [node],
+        );
+      }
+      break;
+    case Kind.INPUT_OBJECT_TYPE_EXTENSION:
+      if (!isInputObjectType(type)) {
+        throw new GraphQLError(
+          `Cannot extend non-input object type "${type.name}".`,
           [node],
         );
       }
