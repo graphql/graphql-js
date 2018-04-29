@@ -378,6 +378,7 @@ export function extendSchema(
       : type.extensionASTNodes;
     return new GraphQLEnumType({
       name,
+      description: type.description,
       values: extendValueMap(type),
       astNode: type.astNode,
       extensionASTNodes,
