@@ -44,6 +44,7 @@ import type {
   GraphQLField,
   GraphQLFieldResolver,
   GraphQLResolveInfo,
+  GraphQLTypeResolver,
   ResponsePath,
   GraphQLList,
 } from '../type/definition';
@@ -991,9 +992,9 @@ function completeAbstractValue(
   path: ResponsePath,
   result: mixed,
 ): MaybePromise<ObjMap<mixed>> {
-  const runtimeType = returnType.resolveType
-    ? returnType.resolveType(result, exeContext.contextValue, info)
-    : defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
+  const resolveTypeFn = returnType.resolveType || defaultResolveType;
+  const contextValue = exeContext.contextValue;
+  const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
   if (isPromise(runtimeType)) {
     return runtimeType.then(resolvedRuntimeType =>
@@ -1174,12 +1175,12 @@ function _collectSubfields(
  * Otherwise, test each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
-function defaultResolveTypeFn(
-  value: mixed,
-  contextValue: mixed,
-  info: GraphQLResolveInfo,
-  abstractType: GraphQLAbstractType,
-): MaybePromise<?GraphQLObjectType | string> {
+const defaultResolveType: GraphQLTypeResolver<any, *> = function(
+  value,
+  contextValue,
+  info,
+  abstractType,
+) {
   // First, look for `__typename`.
   if (
     value !== null &&
@@ -1216,7 +1217,7 @@ function defaultResolveTypeFn(
       }
     });
   }
-}
+};
 
 /**
  * If a resolve function is not given, then a default resolve behavior is used
