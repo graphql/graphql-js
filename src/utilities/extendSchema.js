@@ -591,18 +591,16 @@ function checkExtensionNode(type, node) {
       break;
     case Kind.ENUM_TYPE_EXTENSION:
       if (!isEnumType(type)) {
-        throw new GraphQLError(
-          `Cannot extend non-enum type "${type.name}".`,
-          [node],
-        );
+        throw new GraphQLError(`Cannot extend non-enum type "${type.name}".`, [
+          node,
+        ]);
       }
       break;
     case Kind.UNION_TYPE_EXTENSION:
       if (!isUnionType(type)) {
-        throw new GraphQLError(
-          `Cannot extend non-union type "${type.name}".`,
-          [node],
-        );
+        throw new GraphQLError(`Cannot extend non-union type "${type.name}".`, [
+          node,
+        ]);
       }
       break;
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
