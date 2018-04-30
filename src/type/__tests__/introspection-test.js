@@ -1446,4 +1446,26 @@ describe('Introspection', () => {
       },
     });
   });
+
+  it('executes an introspection query without calling global fieldResolver', () => {
+    const QueryRoot = new GraphQLObjectType({
+      name: 'QueryRoot',
+      fields: {
+        onlyField: { type: GraphQLString },
+      },
+    });
+
+    const schema = new GraphQLSchema({ query: QueryRoot });
+    const source = getIntrospectionQuery();
+
+    const calledForFields = {};
+    /* istanbul ignore next */
+    function fieldResolver(value, _1, _2, info) {
+      calledForFields[`${info.parentType.name}::${info.fieldName}`] = true;
+      return value;
+    }
+
+    graphqlSync({ schema, source, fieldResolver });
+    expect(calledForFields).to.deep.equal({});
+  });
 });
