@@ -148,13 +148,10 @@ function extendSchema(schema, documentAST, options) {
   var extendTypeCache = Object.create(null);
 
   // Get the extended root operation types.
-  var existingQueryType = schema.getQueryType();
-  var existingMutationType = schema.getMutationType();
-  var existingSubscriptionType = schema.getSubscriptionType();
   var operationTypes = {
-    query: existingQueryType ? getExtendedType(existingQueryType) : null,
-    mutation: existingMutationType ? getExtendedType(existingMutationType) : null,
-    subscription: existingSubscriptionType ? getExtendedType(existingSubscriptionType) : null
+    query: getExtendedMaybeType(schema.getQueryType()),
+    mutation: getExtendedMaybeType(schema.getMutationType()),
+    subscription: getExtendedMaybeType(schema.getSubscriptionType())
   };
 
   // Then, incorporate all schema extensions.
@@ -165,10 +162,16 @@ function extendSchema(schema, documentAST, options) {
         if (operationTypes[operation]) {
           throw new Error('Must provide only one ' + operation + ' type in schema.');
         }
-        operationTypes[operation] = astBuilder.buildType(operationType.type);
+        var typeRef = operationType.type;
+        // Note: While this could make early assertions to get the correctly
+        // typed values, that would throw immediately while type system
+        // validation with validateSchema() will produce more actionable results.
+        operationTypes[operation] = astBuilder.buildType(typeRef);
       });
     }
   });
+
+  var schemaExtensionASTNodes = schemaExtensions ? schema.extensionASTNodes ? schema.extensionASTNodes.concat(schemaExtensions) : schemaExtensions : schema.extensionASTNodes;
 
   var types = [].concat((0, _objectValues2.default)(schema.getTypeMap()).map(function (type) {
     return getExtendedType(type);
@@ -187,7 +190,7 @@ function extendSchema(schema, documentAST, options) {
     types: types,
     directives: getMergedDirectives(),
     astNode: schema.astNode,
-    extensionASTNodes: schemaExtensions,
+    extensionASTNodes: schemaExtensionASTNodes,
     allowedLegacyNames: allowedLegacyNames
   });
 
@@ -201,6 +204,10 @@ function extendSchema(schema, documentAST, options) {
     return existingDirectives.concat(directiveDefinitions.map(function (node) {
       return astBuilder.buildDirective(node);
     }));
+  }
+
+  function getExtendedMaybeType(type) {
+    return type ? getExtendedType(type) : null;
   }
 
   function getExtendedType(type) {

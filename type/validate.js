@@ -130,11 +130,59 @@ function validateRootTypes(context) {
 }
 
 function getOperationTypeNode(schema, type, operation) {
-  var astNode = schema.astNode;
-  var operationTypeNode = astNode && astNode.operationTypes.find(function (operationType) {
-    return operationType.operation === operation;
-  });
-  return operationTypeNode ? operationTypeNode.type : type && type.astNode;
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = getAllNodes(schema)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var node = _step.value;
+
+      if (node.operationTypes) {
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = node.operationTypes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var operationType = _step2.value;
+
+            if (operationType.operation === operation) {
+              return operationType.type;
+            }
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  return type.astNode;
 }
 
 function validateDirectives(context) {
@@ -231,7 +279,7 @@ function validateFields(context, type) {
 
   // Objects and Interfaces both must define one or more fields.
   if (fields.length === 0) {
-    context.reportError('Type ' + type.name + ' must define one or more fields.', getAllObjectOrInterfaceNodes(type));
+    context.reportError('Type ' + type.name + ' must define one or more fields.', getAllNodes(type));
   }
 
   fields.forEach(function (field) {
@@ -421,12 +469,11 @@ function validateInputFields(context, inputObj) {
   });
 }
 
-function getAllObjectNodes(type) {
-  return type.astNode ? type.extensionASTNodes ? [type.astNode].concat(type.extensionASTNodes) : [type.astNode] : type.extensionASTNodes || [];
-}
+function getAllNodes(object) {
+  var astNode = object.astNode,
+      extensionASTNodes = object.extensionASTNodes;
 
-function getAllObjectOrInterfaceNodes(type) {
-  return type.astNode ? type.extensionASTNodes ? [type.astNode].concat(type.extensionASTNodes) : [type.astNode] : type.extensionASTNodes || [];
+  return astNode ? extensionASTNodes ? [astNode].concat(extensionASTNodes) : [astNode] : extensionASTNodes || [];
 }
 
 function getImplementsInterfaceNode(type, iface) {
@@ -435,7 +482,7 @@ function getImplementsInterfaceNode(type, iface) {
 
 function getAllImplementsInterfaceNodes(type, iface) {
   var implementsNodes = [];
-  var astNodes = getAllObjectNodes(type);
+  var astNodes = getAllNodes(type);
   for (var i = 0; i < astNodes.length; i++) {
     var _astNode = astNodes[i];
     if (_astNode && _astNode.interfaces) {
@@ -455,7 +502,7 @@ function getFieldNode(type, fieldName) {
 
 function getAllFieldNodes(type, fieldName) {
   var fieldNodes = [];
-  var astNodes = getAllObjectOrInterfaceNodes(type);
+  var astNodes = getAllNodes(type);
   for (var i = 0; i < astNodes.length; i++) {
     var _astNode2 = astNodes[i];
     if (_astNode2 && _astNode2.fields) {
