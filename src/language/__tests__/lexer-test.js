@@ -7,6 +7,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import dedent from '../../jsutils/dedent';
 import { Source } from '../source';
 import { createLexer, TokenKind } from '../lexer';
 
@@ -105,24 +106,25 @@ describe('Lexer', () => {
   it('errors respect whitespace', () => {
     let caughtError;
     try {
-      lexOne(`
-
-    ?
-
-
-`);
+      lexOne(dedent`
+      
+      
+          ?
+      
+      
+      `);
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError)).to.equal(
-      'Syntax Error: Cannot parse the unexpected character "?".\n' +
-        '\n' +
-        'GraphQL request (3:5)\n' +
-        '2: \n' +
-        '3:     ?\n' +
-        '       ^\n' +
-        '4: \n',
-    );
+    expect(String(caughtError)).to.equal(dedent`
+      Syntax Error: Cannot parse the unexpected character "?".
+
+      GraphQL request (3:5)
+      2: 
+      3:     ?
+             ^
+      4: 
+    `);
   });
 
   it('updates line numbers in error for file context', () => {
@@ -134,15 +136,15 @@ describe('Lexer', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError)).to.equal(
-      'Syntax Error: Cannot parse the unexpected character "?".\n' +
-        '\n' +
-        'foo.js (13:6)\n' +
-        '12: \n' +
-        '13:      ?\n' +
-        '         ^\n' +
-        '14: \n',
-    );
+    expect(String(caughtError)).to.equal(dedent`
+      Syntax Error: Cannot parse the unexpected character "?".
+
+      foo.js (13:6)
+      12: 
+      13:      ?
+               ^
+      14: 
+    `);
   });
 
   it('updates column numbers in error for file context', () => {
@@ -153,13 +155,13 @@ describe('Lexer', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError)).to.equal(
-      'Syntax Error: Cannot parse the unexpected character "?".\n' +
-        '\n' +
-        'foo.js (1:5)\n' +
-        '1:     ?\n' +
-        '       ^\n',
-    );
+    expect(String(caughtError)).to.equal(dedent`
+      Syntax Error: Cannot parse the unexpected character "?".
+
+      foo.js (1:5)
+      1:     ?
+             ^
+    `);
   });
 
   it('lexes strings', () => {
