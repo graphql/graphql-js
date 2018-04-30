@@ -323,6 +323,59 @@ describe('Type System: A Schema must have Object root types', () => {
     ]);
   });
 
+  it('rejects a schema extended with invalid root types', () => {
+    let schema = buildSchema(`
+      input SomeInputObject {
+        test: String
+      }
+    `);
+
+    schema = extendSchema(
+      schema,
+      parse(`
+        extend schema {
+          query: SomeInputObject
+        }
+      `),
+    );
+
+    schema = extendSchema(
+      schema,
+      parse(`
+        extend schema {
+          mutation: SomeInputObject
+        }
+      `),
+    );
+
+    schema = extendSchema(
+      schema,
+      parse(`
+        extend schema {
+          subscription: SomeInputObject
+        }
+      `),
+    );
+
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message:
+          'Query root type must be Object type, it cannot be SomeInputObject.',
+        locations: [{ line: 3, column: 18 }],
+      },
+      {
+        message:
+          'Mutation root type must be Object type if provided, it cannot be SomeInputObject.',
+        locations: [{ line: 3, column: 21 }],
+      },
+      {
+        message:
+          'Subscription root type must be Object type if provided, it cannot be SomeInputObject.',
+        locations: [{ line: 3, column: 25 }],
+      },
+    ]);
+  });
+
   it('rejects a Schema whose directives are incorrectly typed', () => {
     const schema = new GraphQLSchema({
       query: SomeObjectType,
