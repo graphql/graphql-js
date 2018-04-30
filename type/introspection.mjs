@@ -67,10 +67,23 @@ export var __Directive = new GraphQLObjectType({
   description: 'A Directive provides a way to describe alternate runtime execution and ' + 'type validation behavior in a GraphQL document.' + "\n\nIn some cases, you need to provide options to alter GraphQL's " + 'execution behavior in ways field arguments will not suffice, such as ' + 'conditionally including or skipping a field. Directives provide this by ' + 'describing additional information to the executor.',
   fields: function fields() {
     return {
-      name: { type: GraphQLNonNull(GraphQLString) },
-      description: { type: GraphQLString },
+      name: {
+        type: GraphQLNonNull(GraphQLString),
+        resolve: function resolve(obj) {
+          return obj.name;
+        }
+      },
+      description: {
+        type: GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.description;
+        }
+      },
       locations: {
-        type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation)))
+        type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation))),
+        resolve: function resolve(obj) {
+          return obj.locations;
+        }
       },
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
@@ -214,8 +227,18 @@ export var __Type = new GraphQLObjectType({
           throw new Error('Unknown kind of type: ' + type);
         }
       },
-      name: { type: GraphQLString },
-      description: { type: GraphQLString },
+      name: {
+        type: GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.name;
+        }
+      },
+      description: {
+        type: GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.description;
+        }
+      },
       fields: {
         type: GraphQLList(GraphQLNonNull(__Field)),
         args: {
@@ -281,7 +304,12 @@ export var __Type = new GraphQLObjectType({
           }
         }
       },
-      ofType: { type: __Type }
+      ofType: {
+        type: __Type,
+        resolve: function resolve(obj) {
+          return obj.ofType;
+        }
+      }
     };
   }
 });
@@ -292,18 +320,41 @@ export var __Field = new GraphQLObjectType({
   description: 'Object and Interface types are described by a list of Fields, each of ' + 'which has a name, potentially a list of arguments, and a return type.',
   fields: function fields() {
     return {
-      name: { type: GraphQLNonNull(GraphQLString) },
-      description: { type: GraphQLString },
+      name: {
+        type: GraphQLNonNull(GraphQLString),
+        resolve: function resolve(obj) {
+          return obj.name;
+        }
+      },
+      description: {
+        type: GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.description;
+        }
+      },
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
         resolve: function resolve(field) {
           return field.args || [];
         }
       },
-      type: { type: GraphQLNonNull(__Type) },
-      isDeprecated: { type: GraphQLNonNull(GraphQLBoolean) },
+      type: {
+        type: GraphQLNonNull(__Type),
+        resolve: function resolve(obj) {
+          return obj.type;
+        }
+      },
+      isDeprecated: {
+        type: GraphQLNonNull(GraphQLBoolean),
+        resolve: function resolve(obj) {
+          return obj.isDeprecated;
+        }
+      },
       deprecationReason: {
-        type: GraphQLString
+        type: GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.deprecationReason;
+        }
       }
     };
   }
@@ -315,9 +366,24 @@ export var __InputValue = new GraphQLObjectType({
   description: 'Arguments provided to Fields or Directives and the input fields of an ' + 'InputObject are represented as Input Values which describe their type ' + 'and optionally a default value.',
   fields: function fields() {
     return {
-      name: { type: GraphQLNonNull(GraphQLString) },
-      description: { type: GraphQLString },
-      type: { type: GraphQLNonNull(__Type) },
+      name: {
+        type: GraphQLNonNull(GraphQLString),
+        resolve: function resolve(obj) {
+          return obj.name;
+        }
+      },
+      description: {
+        type: GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.description;
+        }
+      },
+      type: {
+        type: GraphQLNonNull(__Type),
+        resolve: function resolve(obj) {
+          return obj.type;
+        }
+      },
       defaultValue: {
         type: GraphQLString,
         description: 'A GraphQL-formatted string representing the default value for this ' + 'input value.',
@@ -335,11 +401,29 @@ export var __EnumValue = new GraphQLObjectType({
   description: 'One possible value for a given Enum. Enum values are unique values, not ' + 'a placeholder for a string or numeric value. However an Enum value is ' + 'returned in a JSON response as a string.',
   fields: function fields() {
     return {
-      name: { type: GraphQLNonNull(GraphQLString) },
-      description: { type: GraphQLString },
-      isDeprecated: { type: GraphQLNonNull(GraphQLBoolean) },
+      name: {
+        type: GraphQLNonNull(GraphQLString),
+        resolve: function resolve(obj) {
+          return obj.name;
+        }
+      },
+      description: {
+        type: GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.description;
+        }
+      },
+      isDeprecated: {
+        type: GraphQLNonNull(GraphQLBoolean),
+        resolve: function resolve(obj) {
+          return obj.isDeprecated;
+        }
+      },
       deprecationReason: {
-        type: GraphQLString
+        type: GraphQLString,
+        resolve: function resolve(obj) {
+          return obj.deprecationReason;
+        }
       }
     };
   }
