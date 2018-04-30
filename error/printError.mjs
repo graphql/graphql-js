@@ -36,23 +36,61 @@ export function printError(error) {
  * Source document.
  */
 function highlightSourceAtLocation(source, location) {
-  var line = location.line;
+  var firstLineColumnOffset = source.locationOffset.column - 1;
+  var body = whitespace(firstLineColumnOffset) + source.body;
+
+  var lineIndex = location.line - 1;
   var lineOffset = source.locationOffset.line - 1;
-  var columnOffset = getColumnOffset(source, location);
-  var contextLine = line + lineOffset;
-  var contextColumn = location.column + columnOffset;
-  var prevLineNum = (contextLine - 1).toString();
-  var lineNum = contextLine.toString();
-  var nextLineNum = (contextLine + 1).toString();
-  var padLen = nextLineNum.length;
-  var lines = source.body.split(/\r\n|[\n\r]/g);
-  lines[0] = whitespace(source.locationOffset.column - 1) + lines[0];
-  var outputLines = [source.name + ' (' + contextLine + ':' + contextColumn + ')', line >= 2 && lpad(padLen, prevLineNum) + ': ' + lines[line - 2], lpad(padLen, lineNum) + ': ' + lines[line - 1], whitespace(2 + padLen + contextColumn - 1) + '^', line < lines.length && lpad(padLen, nextLineNum) + ': ' + lines[line]];
-  return outputLines.filter(Boolean).join('\n');
+  var lineNum = location.line + lineOffset;
+
+  var columnOffset = location.line === 1 ? firstLineColumnOffset : 0;
+  var columnNum = location.column + columnOffset;
+
+  var lines = body.split(/\r\n|[\n\r]/g);
+  return source.name + ' (' + lineNum + ':' + columnNum + ')\n' + printPrefixedLines([
+  // Lines specified like this: ["prefix", "string"],
+  [lineNum - 1 + ': ', lines[lineIndex - 1]], [lineNum + ': ', lines[lineIndex]], ['', whitespace(columnNum - 1) + '^'], [lineNum + 1 + ': ', lines[lineIndex + 1]]]);
 }
 
-function getColumnOffset(source, location) {
-  return location.line === 1 ? source.locationOffset.column - 1 : 0;
+function printPrefixedLines(lines) {
+  var existingLines = lines.filter(function (_ref) {
+    var _ = _ref[0],
+        line = _ref[1];
+    return line !== undefined;
+  });
+
+  var padLen = 0;
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = existingLines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _ref2 = _step.value;
+      var prefix = _ref2[0];
+
+      padLen = Math.max(padLen, prefix.length);
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  return existingLines.map(function (_ref3) {
+    var prefix = _ref3[0],
+        line = _ref3[1];
+    return lpad(padLen, prefix) + line;
+  }).join('\n');
 }
 
 function whitespace(len) {
