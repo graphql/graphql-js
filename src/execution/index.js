@@ -7,7 +7,12 @@
  * @flow strict
  */
 
-export { execute, defaultFieldResolver, responsePathAsArray } from './execute';
+export {
+  execute,
+  defaultFieldResolver,
+  defaultTypeResolver,
+  responsePathAsArray,
+} from './execute';
 export { getDirectiveValues } from './values';
 
 export type { ExecutionArgs, ExecutionResult } from './execute';
