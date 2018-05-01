@@ -281,6 +281,7 @@ export type {
 export {
   execute,
   defaultFieldResolver,
+  defaultTypeResolver,
   responsePathAsArray,
   getDirectiveValues,
 } from './execution';

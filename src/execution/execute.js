@@ -103,6 +103,7 @@ export type ExecutionContext = {|
   operation: OperationDefinitionNode,
   variableValues: { [variable: string]: mixed },
   fieldResolver: GraphQLFieldResolver<any, any>,
+  typeResolver: GraphQLTypeResolver<any, any>,
   errors: Array<GraphQLError>,
 |};
 
@@ -125,6 +126,7 @@ export type ExecutionArgs = {|
   variableValues?: ?{ [variable: string]: mixed },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  typeResolver?: ?GraphQLTypeResolver<any, any>,
 |};
 
 /**
@@ -152,6 +154,7 @@ declare function execute(
   variableValues?: ?{ [variable: string]: mixed },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  typeResolver?: ?GraphQLTypeResolver<any, any>,
 ): MaybePromise<ExecutionResult>;
 export function execute(
   argsOrSchema,
@@ -161,6 +164,7 @@ export function execute(
   variableValues,
   operationName,
   fieldResolver,
+  typeResolver,
 ) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
@@ -173,6 +177,7 @@ export function execute(
         argsOrSchema.variableValues,
         argsOrSchema.operationName,
         argsOrSchema.fieldResolver,
+        argsOrSchema.typeResolver,
       )
     : executeImpl(
         argsOrSchema,
@@ -182,6 +187,7 @@ export function execute(
         variableValues,
         operationName,
         fieldResolver,
+        typeResolver,
       );
 }
 
@@ -193,6 +199,7 @@ function executeImpl(
   variableValues,
   operationName,
   fieldResolver,
+  typeResolver,
 ) {
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(schema, document, variableValues);
@@ -207,6 +214,7 @@ function executeImpl(
     variableValues,
     operationName,
     fieldResolver,
+    typeResolver,
   );
 
   // Return early errors if execution context failed.
@@ -302,6 +310,7 @@ export function buildExecutionContext(
   rawVariableValues: ?ObjMap<mixed>,
   operationName: ?string,
   fieldResolver: ?GraphQLFieldResolver<any, any>,
+  typeResolver?: ?GraphQLTypeResolver<any, any>,
 ): $ReadOnlyArray<GraphQLError> | ExecutionContext {
   const errors: Array<GraphQLError> = [];
   let operation: OperationDefinitionNode | void;
@@ -372,6 +381,7 @@ export function buildExecutionContext(
     operation,
     variableValues,
     fieldResolver: fieldResolver || defaultFieldResolver,
+    typeResolver: typeResolver || defaultTypeResolver,
     errors,
   };
 }
@@ -992,7 +1002,7 @@ function completeAbstractValue(
   path: ResponsePath,
   result: mixed,
 ): MaybePromise<ObjMap<mixed>> {
-  const resolveTypeFn = returnType.resolveType || defaultResolveType;
+  const resolveTypeFn = returnType.resolveType || exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
@@ -1175,7 +1185,7 @@ function _collectSubfields(
  * Otherwise, test each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
-const defaultResolveType: GraphQLTypeResolver<any, *> = function(
+export const defaultTypeResolver: GraphQLTypeResolver<any, *> = function(
   value,
   contextValue,
   info,
