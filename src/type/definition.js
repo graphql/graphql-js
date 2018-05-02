@@ -8,6 +8,7 @@
  */
 
 import instanceOf from '../jsutils/instanceOf';
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import keyMap from '../jsutils/keyMap';
@@ -63,7 +64,7 @@ export function isType(type: mixed): boolean %checks {
 }
 
 export function assertType(type: mixed): GraphQLType {
-  invariant(isType(type), `Expected ${String(type)} to be a GraphQL type.`);
+  invariant(isType(type), `Expected ${inspect(type)} to be a GraphQL type.`);
   return (type: any);
 }
 
@@ -81,7 +82,7 @@ export function isScalarType(type) {
 export function assertScalarType(type: mixed): GraphQLScalarType {
   invariant(
     isScalarType(type),
-    `Expected ${String(type)} to be a GraphQL Scalar type.`,
+    `Expected ${inspect(type)} to be a GraphQL Scalar type.`,
   );
   return type;
 }
@@ -96,7 +97,7 @@ export function isObjectType(type) {
 export function assertObjectType(type: mixed): GraphQLObjectType {
   invariant(
     isObjectType(type),
-    `Expected ${String(type)} to be a GraphQL Object type.`,
+    `Expected ${inspect(type)} to be a GraphQL Object type.`,
   );
   return type;
 }
@@ -111,7 +112,7 @@ export function isInterfaceType(type) {
 export function assertInterfaceType(type: mixed): GraphQLInterfaceType {
   invariant(
     isInterfaceType(type),
-    `Expected ${String(type)} to be a GraphQL Interface type.`,
+    `Expected ${inspect(type)} to be a GraphQL Interface type.`,
   );
   return type;
 }
@@ -126,7 +127,7 @@ export function isUnionType(type) {
 export function assertUnionType(type: mixed): GraphQLUnionType {
   invariant(
     isUnionType(type),
-    `Expected ${String(type)} to be a GraphQL Union type.`,
+    `Expected ${inspect(type)} to be a GraphQL Union type.`,
   );
   return type;
 }
@@ -141,7 +142,7 @@ export function isEnumType(type) {
 export function assertEnumType(type: mixed): GraphQLEnumType {
   invariant(
     isEnumType(type),
-    `Expected ${String(type)} to be a GraphQL Enum type.`,
+    `Expected ${inspect(type)} to be a GraphQL Enum type.`,
   );
   return type;
 }
@@ -156,7 +157,7 @@ export function isInputObjectType(type) {
 export function assertInputObjectType(type: mixed): GraphQLInputObjectType {
   invariant(
     isInputObjectType(type),
-    `Expected ${String(type)} to be a GraphQL Input Object type.`,
+    `Expected ${inspect(type)} to be a GraphQL Input Object type.`,
   );
   return type;
 }
@@ -171,7 +172,7 @@ export function isListType(type) {
 export function assertListType(type: mixed): GraphQLList<any> {
   invariant(
     isListType(type),
-    `Expected ${String(type)} to be a GraphQL List type.`,
+    `Expected ${inspect(type)} to be a GraphQL List type.`,
   );
   return type;
 }
@@ -186,7 +187,7 @@ export function isNonNullType(type) {
 export function assertNonNullType(type: mixed): GraphQLNonNull<any> {
   invariant(
     isNonNullType(type),
-    `Expected ${String(type)} to be a GraphQL Non-Null type.`,
+    `Expected ${inspect(type)} to be a GraphQL Non-Null type.`,
   );
   return type;
 }
@@ -218,7 +219,7 @@ export function isInputType(type: mixed): boolean %checks {
 export function assertInputType(type: mixed): GraphQLInputType {
   invariant(
     isInputType(type),
-    `Expected ${String(type)} to be a GraphQL input type.`,
+    `Expected ${inspect(type)} to be a GraphQL input type.`,
   );
   return type;
 }
@@ -256,7 +257,7 @@ export function isOutputType(type: mixed): boolean %checks {
 export function assertOutputType(type: mixed): GraphQLOutputType {
   invariant(
     isOutputType(type),
-    `Expected ${String(type)} to be a GraphQL output type.`,
+    `Expected ${inspect(type)} to be a GraphQL output type.`,
   );
   return type;
 }
@@ -273,7 +274,7 @@ export function isLeafType(type: mixed): boolean %checks {
 export function assertLeafType(type: mixed): GraphQLLeafType {
   invariant(
     isLeafType(type),
-    `Expected ${String(type)} to be a GraphQL leaf type.`,
+    `Expected ${inspect(type)} to be a GraphQL leaf type.`,
   );
   return type;
 }
@@ -293,7 +294,7 @@ export function isCompositeType(type: mixed): boolean %checks {
 export function assertCompositeType(type: mixed): GraphQLCompositeType {
   invariant(
     isCompositeType(type),
-    `Expected ${String(type)} to be a GraphQL composite type.`,
+    `Expected ${inspect(type)} to be a GraphQL composite type.`,
   );
   return type;
 }
@@ -310,7 +311,7 @@ export function isAbstractType(type: mixed): boolean %checks {
 export function assertAbstractType(type: mixed): GraphQLAbstractType {
   invariant(
     isAbstractType(type),
-    `Expected ${String(type)} to be a GraphQL abstract type.`,
+    `Expected ${inspect(type)} to be a GraphQL abstract type.`,
   );
   return type;
 }
@@ -408,7 +409,7 @@ export function isWrappingType(type: mixed): boolean %checks {
 export function assertWrappingType(type: mixed): GraphQLWrappingType {
   invariant(
     isWrappingType(type),
-    `Expected ${String(type)} to be a GraphQL wrapping type.`,
+    `Expected ${inspect(type)} to be a GraphQL wrapping type.`,
   );
   return type;
 }
@@ -432,7 +433,7 @@ export function isNullableType(type: mixed): boolean %checks {
 export function assertNullableType(type: mixed): GraphQLNullableType {
   invariant(
     isNullableType(type),
-    `Expected ${String(type)} to be a GraphQL nullable type.`,
+    `Expected ${inspect(type)} to be a GraphQL nullable type.`,
   );
   return type;
 }
@@ -473,7 +474,7 @@ export function isNamedType(type: mixed): boolean %checks {
 export function assertNamedType(type: mixed): GraphQLNamedType {
   invariant(
     isNamedType(type),
-    `Expected ${String(type)} to be a GraphQL named type.`,
+    `Expected ${inspect(type)} to be a GraphQL named type.`,
   );
   return type;
 }
@@ -736,7 +737,7 @@ function defineFieldMap<TSource, TContext>(
     invariant(
       isValidResolver(field.resolve),
       `${type.name}.${fieldName} field resolver must be a function if ` +
-        `provided, but got: ${String(field.resolve)}.`,
+        `provided, but got: ${inspect(field.resolve)}.`,
     );
     const argsConfig = fieldConfig.args;
     if (!argsConfig) {
@@ -1148,7 +1149,7 @@ function defineEnumValues(
     invariant(
       isPlainObj(value),
       `${type.name}.${valueName} must refer to an object with a "value" key ` +
-        `representing an internal value but got: ${String(value)}.`,
+        `representing an internal value but got: ${inspect(value)}.`,
     );
     invariant(
       !value.hasOwnProperty('isDeprecated'),

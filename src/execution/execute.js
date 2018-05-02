@@ -9,6 +9,7 @@
 
 import { forEach, isCollection } from 'iterall';
 import { GraphQLError, locatedError } from '../error';
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
@@ -947,7 +948,7 @@ function completeValue(
   // Not reachable. All possible output types have been considered.
   /* istanbul ignore next */
   throw new Error(
-    `Cannot complete value of unexpected type "${String(
+    `Cannot complete value of unexpected type "${inspect(
       (returnType: empty),
     )}".`,
   );
@@ -1008,8 +1009,8 @@ function completeLeafValue(returnType: GraphQLLeafType, result: mixed): mixed {
   const serializedResult = returnType.serialize(result);
   if (isInvalid(serializedResult)) {
     throw new Error(
-      `Expected a value of type "${String(returnType)}" but ` +
-        `received: ${String(result)}`,
+      `Expected a value of type "${inspect(returnType)}" but ` +
+        `received: ${inspect(result)}`,
     );
   }
   return serializedResult;
@@ -1085,7 +1086,7 @@ function ensureValidRuntimeType(
     throw new GraphQLError(
       `Abstract type ${returnType.name} must resolve to an Object type at ` +
         `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
-        `value "${String(result)}", received "${String(runtimeType)}". ` +
+        `value "${inspect(result)}", received "${inspect(runtimeType)}". ` +
         `Either the ${returnType.name} type should provide a "resolveType" ` +
         'function or each possible types should provide an ' +
         '"isTypeOf" function.',
@@ -1156,7 +1157,7 @@ function invalidReturnTypeError(
   fieldNodes: $ReadOnlyArray<FieldNode>,
 ): GraphQLError {
   return new GraphQLError(
-    `Expected value of type "${returnType.name}" but got: ${String(result)}.`,
+    `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
     fieldNodes,
   );
 }

@@ -8,6 +8,7 @@
  */
 
 import { forEach, isCollection } from 'iterall';
+import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import orList from '../jsutils/orList';
@@ -48,7 +49,7 @@ export function coerceValue(
     if (isNullish(value)) {
       return ofErrors([
         coercionError(
-          `Expected non-nullable type ${String(type)} not to be null`,
+          `Expected non-nullable type ${inspect(type)} not to be null`,
           blameNode,
           path,
         ),
@@ -159,7 +160,7 @@ export function coerceValue(
               errors,
               coercionError(
                 `Field ${printPath(atPath(path, fieldName))} of required ` +
-                  `type ${String(field.type)} was not provided`,
+                  `type ${inspect(field.type)} was not provided`,
                 blameNode,
               ),
             );
