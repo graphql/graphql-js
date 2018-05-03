@@ -127,8 +127,8 @@ export const GraphQLID = new GraphQLScalarType({
     'response as a String; however, it is not intended to be human-readable. ' +
     'When expected as an input type, any string (such as `"4"`) or integer ' +
     '(such as `4`) input value will be accepted as an ID.',
-  serialize: String,
-  parseValue: String,
+  serialize: coerceString,
+  parseValue: coerceString,
   parseLiteral(ast) {
     return ast.kind === Kind.STRING || ast.kind === Kind.INT
       ? ast.value
