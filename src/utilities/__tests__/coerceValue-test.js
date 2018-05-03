@@ -9,6 +9,7 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { coerceValue } from '../coerceValue';
 import {
+  GraphQLID,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
@@ -29,12 +30,16 @@ function expectErrors(result) {
 }
 
 describe('coerceValue', () => {
-  it('coercing an array to GraphQLString produces an error', () => {
-    const result = coerceValue([1, 2, 3], GraphQLString);
-    expectErrors(result).to.deep.equal([
-      'Expected type String; String cannot represent an array value: [1,2,3]',
-    ]);
-  });
+  for (const scalar of [GraphQLString, GraphQLID]) {
+    describe(`for GraphQL${scalar}`, () => {
+      it('returns error for array input as string', () => {
+        const result = coerceValue([1, 2, 3], scalar);
+        expectErrors(result).to.deep.equal([
+          `Expected type ${scalar}; String cannot represent an array value: [1,2,3]`,
+        ]);
+      });
+    });
+  }
 
   describe('for GraphQLInt', () => {
     it('returns no error for int input', () => {

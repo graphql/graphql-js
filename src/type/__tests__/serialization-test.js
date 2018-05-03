@@ -5,13 +5,19 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { GraphQLInt, GraphQLFloat, GraphQLString, GraphQLBoolean } from '../';
+import {
+  GraphQLInt,
+  GraphQLID,
+  GraphQLFloat,
+  GraphQLString,
+  GraphQLBoolean,
+} from '../';
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 describe('Type System: Scalar coercion', () => {
-  it('serializes output int', () => {
+  it('serializes output as Int', () => {
     expect(GraphQLInt.serialize(1)).to.equal(1);
     expect(GraphQLInt.serialize('123')).to.equal(123);
     expect(GraphQLInt.serialize(0)).to.equal(0);
@@ -51,6 +57,9 @@ describe('Type System: Scalar coercion', () => {
     );
     expect(GraphQLInt.serialize(false)).to.equal(0);
     expect(GraphQLInt.serialize(true)).to.equal(1);
+    expect(GraphQLInt.serialize([])).to.equal(0);
+    expect(GraphQLInt.serialize([5])).to.equal(5);
+
     expect(() => GraphQLInt.serialize('')).to.throw(
       'Int cannot represent non 32-bit signed integer value: (empty string)',
     );
@@ -59,7 +68,7 @@ describe('Type System: Scalar coercion', () => {
     );
   });
 
-  it('serializes output float', () => {
+  it('serializes output as Float', () => {
     expect(GraphQLFloat.serialize(1)).to.equal(1.0);
     expect(GraphQLFloat.serialize(0)).to.equal(0.0);
     expect(GraphQLFloat.serialize('123.5')).to.equal(123.5);
@@ -71,6 +80,8 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLFloat.serialize(false)).to.equal(0.0);
     expect(GraphQLFloat.serialize(true)).to.equal(1.0);
 
+    expect(GraphQLFloat.serialize([])).to.equal(0);
+    expect(GraphQLFloat.serialize([5])).to.equal(5);
     expect(() => GraphQLFloat.serialize(NaN)).to.throw(
       'Float cannot represent non numeric value: NaN',
     );
@@ -84,20 +95,28 @@ describe('Type System: Scalar coercion', () => {
     );
   });
 
-  it('serializes output strings', () => {
-    expect(GraphQLString.serialize('string')).to.equal('string');
-    expect(GraphQLString.serialize(1)).to.equal('1');
-    expect(GraphQLString.serialize(-1.1)).to.equal('-1.1');
-    expect(GraphQLString.serialize(true)).to.equal('true');
-    expect(GraphQLString.serialize(false)).to.equal('false');
-  });
+  for (const scalar of [GraphQLString, GraphQLID]) {
+    it(`serializes output as ${scalar}`, () => {
+      expect(scalar.serialize('string')).to.equal('string');
+      expect(scalar.serialize(1)).to.equal('1');
+      expect(scalar.serialize(-1.1)).to.equal('-1.1');
+      expect(scalar.serialize(true)).to.equal('true');
+      expect(scalar.serialize(false)).to.equal('false');
 
-  it('serializes output boolean', () => {
+      expect(() => scalar.serialize([1])).to.throw(
+        'String cannot represent an array value: [1]',
+      );
+    });
+  }
+
+  it('serializes output as Boolean', () => {
     expect(GraphQLBoolean.serialize('string')).to.equal(true);
+    expect(GraphQLBoolean.serialize('false')).to.equal(true);
     expect(GraphQLBoolean.serialize('')).to.equal(false);
     expect(GraphQLBoolean.serialize(1)).to.equal(true);
     expect(GraphQLBoolean.serialize(0)).to.equal(false);
     expect(GraphQLBoolean.serialize(true)).to.equal(true);
     expect(GraphQLBoolean.serialize(false)).to.equal(false);
+    expect(GraphQLBoolean.serialize([false])).to.equal(true);
   });
 });

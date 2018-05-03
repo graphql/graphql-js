@@ -648,13 +648,6 @@ describe('Execute: Handles inputs', () => {
       expect(result.errors[0].originalError).not.to.equal(undefined);
     });
 
-    it('serializing an array via GraphQLString throws TypeError', () => {
-      expect(() => GraphQLString.serialize([1, 2, 3])).to.throw(
-        TypeError,
-        'String cannot represent an array value: [1,2,3]',
-      );
-    });
-
     it('reports error for non-provided variables for non-nullable inputs', () => {
       // Note: this test would typically fail validation before encountering
       // this execution error, however for queries which previously validated
