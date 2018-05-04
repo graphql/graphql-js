@@ -19,6 +19,11 @@ const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
 
 function coerceInt(value: mixed): number {
+  if (Array.isArray(value)) {
+    throw new TypeError(
+      `Int cannot represent an array value: [${String(value)}]`,
+    );
+  }
   if (value === '') {
     throw new TypeError(
       'Int cannot represent non 32-bit signed integer value: (empty string)',
@@ -58,6 +63,11 @@ export const GraphQLInt = new GraphQLScalarType({
 });
 
 function coerceFloat(value: mixed): number {
+  if (Array.isArray(value)) {
+    throw new TypeError(
+      `Float cannot represent an array value: [${String(value)}]`,
+    );
+  }
   if (value === '') {
     throw new TypeError(
       'Float cannot represent non numeric value: (empty string)',
@@ -109,11 +119,20 @@ export const GraphQLString = new GraphQLScalarType({
   },
 });
 
+function coerceBoolean(value: mixed): boolean {
+  if (Array.isArray(value)) {
+    throw new TypeError(
+      `Boolean cannot represent an array value: [${String(value)}]`,
+    );
+  }
+  return Boolean(value);
+}
+
 export const GraphQLBoolean = new GraphQLScalarType({
   name: 'Boolean',
   description: 'The `Boolean` scalar type represents `true` or `false`.',
-  serialize: Boolean,
-  parseValue: Boolean,
+  serialize: coerceBoolean,
+  parseValue: coerceBoolean,
   parseLiteral(ast) {
     return ast.kind === Kind.BOOLEAN ? ast.value : undefined;
   },

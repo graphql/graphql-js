@@ -23,6 +23,9 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLInt.serialize(0)).to.equal(0);
     expect(GraphQLInt.serialize(-1)).to.equal(-1);
     expect(GraphQLInt.serialize(1e5)).to.equal(100000);
+    expect(GraphQLInt.serialize(false)).to.equal(0);
+    expect(GraphQLInt.serialize(true)).to.equal(1);
+
     // The GraphQL specification does not allow serializing non-integer values
     // as Int to avoid accidental data loss.
     expect(() => GraphQLInt.serialize(0.1)).to.throw(
@@ -55,16 +58,15 @@ describe('Type System: Scalar coercion', () => {
     expect(() => GraphQLInt.serialize('one')).to.throw(
       'Int cannot represent non 32-bit signed integer value: one',
     );
-    expect(GraphQLInt.serialize(false)).to.equal(0);
-    expect(GraphQLInt.serialize(true)).to.equal(1);
-    expect(GraphQLInt.serialize([])).to.equal(0);
-    expect(GraphQLInt.serialize([5])).to.equal(5);
-
+    // Doesn't represent number
     expect(() => GraphQLInt.serialize('')).to.throw(
       'Int cannot represent non 32-bit signed integer value: (empty string)',
     );
     expect(() => GraphQLInt.serialize(NaN)).to.throw(
       'Int cannot represent non 32-bit signed integer value: NaN',
+    );
+    expect(() => GraphQLInt.serialize([5])).to.throw(
+      'Int cannot represent an array value: [5]',
     );
   });
 
@@ -80,18 +82,17 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLFloat.serialize(false)).to.equal(0.0);
     expect(GraphQLFloat.serialize(true)).to.equal(1.0);
 
-    expect(GraphQLFloat.serialize([])).to.equal(0);
-    expect(GraphQLFloat.serialize([5])).to.equal(5);
     expect(() => GraphQLFloat.serialize(NaN)).to.throw(
       'Float cannot represent non numeric value: NaN',
     );
-
     expect(() => GraphQLFloat.serialize('one')).to.throw(
       'Float cannot represent non numeric value: one',
     );
-
     expect(() => GraphQLFloat.serialize('')).to.throw(
       'Float cannot represent non numeric value: (empty string)',
+    );
+    expect(() => GraphQLFloat.serialize([5])).to.throw(
+      'Float cannot represent an array value: [5]',
     );
   });
 
@@ -117,6 +118,9 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLBoolean.serialize(0)).to.equal(false);
     expect(GraphQLBoolean.serialize(true)).to.equal(true);
     expect(GraphQLBoolean.serialize(false)).to.equal(false);
-    expect(GraphQLBoolean.serialize([false])).to.equal(true);
+
+    expect(() => GraphQLBoolean.serialize([false])).to.throw(
+      'Boolean cannot represent an array value: [false]',
+    );
   });
 });
