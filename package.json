@@ -14,17 +14,14 @@
     "type": "git",
     "url": "http://github.com/graphql/graphql-js.git"
   },
-  "options": {
-    "mocha": "--check-leaks --full-trace --timeout 15000 src/**/__tests__/**/*-test.js"
-  },
   "scripts": {
     "watch": "babel-node ./resources/watch.js",
     "test": "npm run lint && npm run check && npm run testonly",
     "test:ci": "npm run lint && npm run check && npm run testonly:coveralls",
-    "t": "babel-node ./node_modules/.bin/_mocha --require ./resources/mocha-bootload",
-    "testonly": "babel-node ./node_modules/.bin/_mocha $npm_package_options_mocha",
-    "testonly:cover": "babel-node ./node_modules/.bin/isparta cover --root src --report html _mocha -- $npm_package_options_mocha",
-    "testonly:coveralls": "babel-node ./node_modules/.bin/isparta cover --root src --report lcovonly _mocha -- $npm_package_options_mocha && cat ./coverage/lcov.info | coveralls",
+    "t": "mocha --require babel-register --require babel-polyfill",
+    "testonly": "mocha --require babel-register --require babel-polyfill --check-leaks --full-trace --timeout 15000 src/**/__tests__/**/*-test.js",
+    "testonly:cover": "nyc --reporter html --reporter text-summary -- npm run testonly",
+    "testonly:coveralls": "nyc --reporter text-lcov npm run testonly | coveralls",
     "lint": "eslint --rulesdir ./resources/lint src || (printf '\\033[33mTry: \\033[7m npm run lint -- --fix \\033[0m\\n' && exit 1)",
     "benchmark": "node ./resources/benchmark.js",
     "prettier": "prettier --write 'src/**/*.js'",
@@ -53,7 +50,9 @@
     "babel-plugin-transform-es2015-modules-commonjs": "6.26.0",
     "babel-plugin-transform-flow-strip-types": "6.22.0",
     "babel-plugin-transform-object-rest-spread": "6.26.0",
+    "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.5.2",
+    "babel-register": "^6.26.0",
     "beautify-benchmark": "0.2.4",
     "benchmark": "2.1.4",
     "chai": "4.1.2",
@@ -63,8 +62,8 @@
     "eslint-plugin-flowtype": "2.46.3",
     "eslint-plugin-prettier": "2.6.0",
     "flow-bin": "0.71.0",
-    "isparta": "4.0.0",
     "mocha": "5.1.1",
+    "nyc": "^11.7.1",
     "prettier": "1.12.1",
     "sane": "2.5.0"
   }

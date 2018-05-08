@@ -10,6 +10,7 @@ yarn.lock
 package-lock.json
 
 .babelrc
+.nycrc
 CONTRIBUTING.md
 node_modules
 coverage
