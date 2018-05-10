@@ -19,6 +19,7 @@ import promiseReduce from '../jsutils/promiseReduce';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { MaybePromise } from '../jsutils/MaybePromise';
 
+import { getOperationRootType } from '../utilities/getOperationRootType';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { Kind } from '../language/kinds';
 import {
@@ -412,47 +413,6 @@ function executeOperation(
   } catch (error) {
     exeContext.errors.push(error);
     return null;
-  }
-}
-
-/**
- * Extracts the root type of the operation from the schema.
- */
-export function getOperationRootType(
-  schema: GraphQLSchema,
-  operation: OperationDefinitionNode,
-): GraphQLObjectType {
-  switch (operation.operation) {
-    case 'query':
-      const queryType = schema.getQueryType();
-      if (!queryType) {
-        throw new GraphQLError(
-          'Schema does not define the required query root type.',
-          [operation],
-        );
-      }
-      return queryType;
-    case 'mutation':
-      const mutationType = schema.getMutationType();
-      if (!mutationType) {
-        throw new GraphQLError('Schema is not configured for mutations.', [
-          operation,
-        ]);
-      }
-      return mutationType;
-    case 'subscription':
-      const subscriptionType = schema.getSubscriptionType();
-      if (!subscriptionType) {
-        throw new GraphQLError('Schema is not configured for subscriptions.', [
-          operation,
-        ]);
-      }
-      return subscriptionType;
-    default:
-      throw new GraphQLError(
-        'Can only execute queries, mutations and subscriptions.',
-        [operation],
-      );
   }
 }
 

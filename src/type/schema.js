@@ -22,7 +22,6 @@ import type {
   GraphQLObjectType,
 } from './definition';
 import type {
-  OperationTypeNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../language/ast';
@@ -171,17 +170,6 @@ export class GraphQLSchema {
         this._implementations[type.name] = [];
       }
     });
-  }
-
-  getOperationType(operation: OperationTypeNode): ?GraphQLObjectType {
-    switch (operation) {
-      case 'query':
-        return this.getQueryType();
-      case 'mutation':
-        return this.getMutationType();
-      case 'subscription':
-        return this.getSubscriptionType();
-    }
   }
 
   getQueryType(): ?GraphQLObjectType {
