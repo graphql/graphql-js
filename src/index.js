@@ -320,6 +320,8 @@ export {
   introspectionQuery,
   // Gets the target Operation from a Document
   getOperationAST,
+  // Gets the Type for the target Operation AST.
+  getOperationRootType,
   // Convert a GraphQLSchema to an IntrospectionQuery
   introspectionFromSchema,
   // Build a GraphQLSchema from an introspection result.
