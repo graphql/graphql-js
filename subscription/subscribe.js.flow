@@ -18,7 +18,6 @@ import {
   collectFields,
   execute,
   getFieldDef,
-  getOperationRootType,
   resolveFieldValueOrError,
   responsePathAsArray,
 } from '../execution/execute';
@@ -29,6 +28,7 @@ import type { ObjMap } from '../jsutils/ObjMap';
 import type { ExecutionResult } from '../execution/execute';
 import type { DocumentNode } from '../language/ast';
 import type { GraphQLFieldResolver } from '../type/definition';
+import { getOperationRootType } from '../utilities/getOperationRootType';
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.

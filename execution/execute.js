@@ -19,7 +19,6 @@ exports.responsePathAsArray = responsePathAsArray;
 exports.addPath = addPath;
 exports.assertValidExecutionArguments = assertValidExecutionArguments;
 exports.buildExecutionContext = buildExecutionContext;
-exports.getOperationRootType = getOperationRootType;
 exports.collectFields = collectFields;
 exports.buildResolveInfo = buildResolveInfo;
 exports.resolveFieldValueOrError = resolveFieldValueOrError;
@@ -56,6 +55,8 @@ var _promiseForObject2 = _interopRequireDefault(_promiseForObject);
 var _promiseReduce = require('../jsutils/promiseReduce');
 
 var _promiseReduce2 = _interopRequireDefault(_promiseReduce);
+
+var _getOperationRootType = require('../utilities/getOperationRootType');
 
 var _typeFromAST = require('../utilities/typeFromAST');
 
@@ -275,7 +276,7 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
  * Implements the "Evaluating operations" section of the spec.
  */
 function executeOperation(exeContext, operation, rootValue) {
-  var type = getOperationRootType(exeContext.schema, operation);
+  var type = (0, _getOperationRootType.getOperationRootType)(exeContext.schema, operation);
   var fields = collectFields(exeContext, type, operation.selectionSet, Object.create(null), Object.create(null));
 
   var path = undefined;
@@ -297,34 +298,6 @@ function executeOperation(exeContext, operation, rootValue) {
   } catch (error) {
     exeContext.errors.push(error);
     return null;
-  }
-}
-
-/**
- * Extracts the root type of the operation from the schema.
- */
-function getOperationRootType(schema, operation) {
-  switch (operation.operation) {
-    case 'query':
-      var queryType = schema.getQueryType();
-      if (!queryType) {
-        throw new _error.GraphQLError('Schema does not define the required query root type.', [operation]);
-      }
-      return queryType;
-    case 'mutation':
-      var mutationType = schema.getMutationType();
-      if (!mutationType) {
-        throw new _error.GraphQLError('Schema is not configured for mutations.', [operation]);
-      }
-      return mutationType;
-    case 'subscription':
-      var subscriptionType = schema.getSubscriptionType();
-      if (!subscriptionType) {
-        throw new _error.GraphQLError('Schema is not configured for subscriptions.', [operation]);
-      }
-      return subscriptionType;
-    default:
-      throw new _error.GraphQLError('Can only execute queries, mutations and subscriptions.', [operation]);
   }
 }
 

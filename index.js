@@ -825,6 +825,12 @@ Object.defineProperty(exports, 'getOperationAST', {
     return _utilities.getOperationAST;
   }
 });
+Object.defineProperty(exports, 'getOperationRootType', {
+  enumerable: true,
+  get: function get() {
+    return _utilities.getOperationRootType;
+  }
+});
 Object.defineProperty(exports, 'introspectionFromSchema', {
   enumerable: true,
   get: function get() {

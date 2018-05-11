@@ -28,6 +28,15 @@ Object.defineProperty(exports, 'getOperationAST', {
   }
 });
 
+var _getOperationRootType = require('./getOperationRootType');
+
+Object.defineProperty(exports, 'getOperationRootType', {
+  enumerable: true,
+  get: function get() {
+    return _getOperationRootType.getOperationRootType;
+  }
+});
+
 var _introspectionFromSchema = require('./introspectionFromSchema');
 
 Object.defineProperty(exports, 'introspectionFromSchema', {

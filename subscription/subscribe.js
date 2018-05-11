@@ -20,6 +20,8 @@ var _mapAsyncIterator = require('./mapAsyncIterator');
 
 var _mapAsyncIterator2 = _interopRequireDefault(_mapAsyncIterator);
 
+var _getOperationRootType = require('../utilities/getOperationRootType');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
@@ -44,15 +46,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 
 /* eslint-disable no-redeclare */
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
-
 function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
@@ -64,6 +57,15 @@ function subscribe(argsOrSchema, document, rootValue, contextValue, variableValu
  * an ExecutionResult, containing only errors and no data. Otherwise treat the
  * error as a system-class error and re-throw it.
  */
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
+
 function reportGraphQLError(error) {
   if (error instanceof _GraphQLError.GraphQLError) {
     return { errors: [error] };
@@ -127,7 +129,7 @@ function createSourceEventStream(schema, document, rootValue, contextValue, vari
       return Promise.resolve({ errors: exeContext });
     }
 
-    var type = (0, _execute.getOperationRootType)(schema, exeContext.operation);
+    var type = (0, _getOperationRootType.getOperationRootType)(schema, exeContext.operation);
     var fields = (0, _execute.collectFields)(exeContext, type, exeContext.operation.selectionSet, Object.create(null), Object.create(null));
     var responseNames = Object.keys(fields);
     var responseName = responseNames[0];
