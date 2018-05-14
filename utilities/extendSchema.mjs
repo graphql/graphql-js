@@ -118,7 +118,7 @@ export function extendSchema(schema, documentAST, options) {
     var typeName = typeRef.name.value;
     var existingType = schema.getType(typeName);
     if (existingType) {
-      return getExtendedType(existingType);
+      return extendNamedType(existingType);
     }
 
     throw new GraphQLError('Unknown type: "' + typeName + '". Ensure that this type exists ' + 'either in the original schema, or is added in a type definition.', [typeRef]);
@@ -128,9 +128,9 @@ export function extendSchema(schema, documentAST, options) {
 
   // Get the extended root operation types.
   var operationTypes = {
-    query: getExtendedMaybeType(schema.getQueryType()),
-    mutation: getExtendedMaybeType(schema.getMutationType()),
-    subscription: getExtendedMaybeType(schema.getSubscriptionType())
+    query: extendMaybeNamedType(schema.getQueryType()),
+    mutation: extendMaybeNamedType(schema.getMutationType()),
+    subscription: extendMaybeNamedType(schema.getSubscriptionType())
   };
 
   // Then, incorporate all schema extensions.
@@ -153,7 +153,7 @@ export function extendSchema(schema, documentAST, options) {
   var schemaExtensionASTNodes = schemaExtensions ? schema.extensionASTNodes ? schema.extensionASTNodes.concat(schemaExtensions) : schemaExtensions : schema.extensionASTNodes;
 
   var types = [].concat(objectValues(schema.getTypeMap()).map(function (type) {
-    return getExtendedType(type);
+    return extendNamedType(type);
   }), astBuilder.buildTypes(objectValues(typeDefinitionMap)));
 
   // Support both original legacy names and extended legacy names.
@@ -185,34 +185,29 @@ export function extendSchema(schema, documentAST, options) {
     }));
   }
 
-  function getExtendedMaybeType(type) {
-    return type ? getExtendedType(type) : null;
+  function extendMaybeNamedType(type) {
+    return type ? extendNamedType(type) : null;
   }
 
-  function getExtendedType(type) {
-    if (!extendTypeCache[type.name]) {
-      extendTypeCache[type.name] = extendType(type);
-    }
-    return extendTypeCache[type.name];
-  }
-
-  // To be called at most once per type. Only getExtendedType should call this.
-  function extendType(type) {
+  function extendNamedType(type) {
     if (isIntrospectionType(type)) {
       // Introspection types are not extended.
       return type;
     }
-    if (isObjectType(type)) {
-      return extendObjectType(type);
+
+    if (!extendTypeCache[type.name]) {
+      if (isObjectType(type)) {
+        extendTypeCache[type.name] = extendObjectType(type);
+      } else if (isInterfaceType(type)) {
+        extendTypeCache[type.name] = extendInterfaceType(type);
+      } else if (isUnionType(type)) {
+        extendTypeCache[type.name] = extendUnionType(type);
+      } else {
+        // This type is not yet extendable.
+        extendTypeCache[type.name] = type;
+      }
     }
-    if (isInterfaceType(type)) {
-      return extendInterfaceType(type);
-    }
-    if (isUnionType(type)) {
-      return extendUnionType(type);
-    }
-    // This type is not yet extendable.
-    return type;
+    return extendTypeCache[type.name];
   }
 
   function extendObjectType(type) {
@@ -252,14 +247,14 @@ export function extendSchema(schema, documentAST, options) {
     return new GraphQLUnionType({
       name: type.name,
       description: type.description,
-      types: type.getTypes().map(getExtendedType),
+      types: type.getTypes().map(extendNamedType),
       astNode: type.astNode,
       resolveType: type.resolveType
     });
   }
 
   function extendImplementedInterfaces(type) {
-    var interfaces = type.getInterfaces().map(getExtendedType);
+    var interfaces = type.getInterfaces().map(extendNamedType);
 
     // If there are any extensions to the interfaces, apply those here.
     var extensions = typeExtensionsMap[type.name];
@@ -285,7 +280,7 @@ export function extendSchema(schema, documentAST, options) {
       newFieldMap[fieldName] = {
         description: field.description,
         deprecationReason: field.deprecationReason,
-        type: extendFieldType(field.type),
+        type: extendType(field.type),
         args: keyMap(field.args, function (arg) {
           return arg.name;
         }),
@@ -311,14 +306,14 @@ export function extendSchema(schema, documentAST, options) {
     return newFieldMap;
   }
 
-  function extendFieldType(typeDef) {
+  function extendType(typeDef) {
     if (isListType(typeDef)) {
-      return GraphQLList(extendFieldType(typeDef.ofType));
+      return GraphQLList(extendType(typeDef.ofType));
     }
     if (isNonNullType(typeDef)) {
-      return GraphQLNonNull(extendFieldType(typeDef.ofType));
+      return GraphQLNonNull(extendType(typeDef.ofType));
     }
-    return getExtendedType(typeDef);
+    return extendNamedType(typeDef);
   }
 }
 
