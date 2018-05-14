@@ -96,28 +96,28 @@ describe('Visitor', () => {
 
   it('validates ancestors argument', () => {
     const ast = parse('{ a }', { noLocation: true });
-    const nodesInPath = [];
+    const visitedNodes = [];
 
     visit(ast, {
       enter(node, key, parent, path, ancestors) {
         const inArray = typeof key === 'number';
-        const expectedAncestors = nodesInPath.slice(0, path.length - 1);
-        expect(ancestors).to.deep.equal(expectedAncestors);
-
         if (inArray) {
-          nodesInPath.push(parent);
+          visitedNodes.push(parent);
         }
-        nodesInPath.push(node);
+        visitedNodes.push(node);
+
+        const expectedAncestors = visitedNodes.slice(0, -2);
+        expect(ancestors).to.deep.equal(expectedAncestors);
       },
       leave(node, key, parent, path, ancestors) {
-        const inArray = typeof key === 'number';
-        const expectedAncestors = nodesInPath.slice(0, path.length - 1);
+        const expectedAncestors = visitedNodes.slice(0, -2);
         expect(ancestors).to.deep.equal(expectedAncestors);
 
+        const inArray = typeof key === 'number';
         if (inArray) {
-          nodesInPath.pop();
+          visitedNodes.pop();
         }
-        nodesInPath.pop();
+        visitedNodes.pop();
       },
     });
   });
