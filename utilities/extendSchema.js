@@ -216,19 +216,20 @@ function extendSchema(schema, documentAST, options) {
       return type;
     }
 
-    if (!extendTypeCache[type.name]) {
+    var name = type.name;
+    if (!extendTypeCache[name]) {
       if ((0, _definition.isObjectType)(type)) {
-        extendTypeCache[type.name] = extendObjectType(type);
+        extendTypeCache[name] = extendObjectType(type);
       } else if ((0, _definition.isInterfaceType)(type)) {
-        extendTypeCache[type.name] = extendInterfaceType(type);
+        extendTypeCache[name] = extendInterfaceType(type);
       } else if ((0, _definition.isUnionType)(type)) {
-        extendTypeCache[type.name] = extendUnionType(type);
+        extendTypeCache[name] = extendUnionType(type);
       } else {
         // This type is not yet extendable.
-        extendTypeCache[type.name] = type;
+        extendTypeCache[name] = type;
       }
     }
-    return extendTypeCache[type.name];
+    return extendTypeCache[name];
   }
 
   function extendObjectType(type) {

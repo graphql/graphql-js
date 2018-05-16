@@ -278,19 +278,20 @@ export function extendSchema(
       return type;
     }
 
-    if (!extendTypeCache[type.name]) {
+    const name = type.name;
+    if (!extendTypeCache[name]) {
       if (isObjectType(type)) {
-        extendTypeCache[type.name] = extendObjectType(type);
+        extendTypeCache[name] = extendObjectType(type);
       } else if (isInterfaceType(type)) {
-        extendTypeCache[type.name] = extendInterfaceType(type);
+        extendTypeCache[name] = extendInterfaceType(type);
       } else if (isUnionType(type)) {
-        extendTypeCache[type.name] = extendUnionType(type);
+        extendTypeCache[name] = extendUnionType(type);
       } else {
         // This type is not yet extendable.
-        extendTypeCache[type.name] = type;
+        extendTypeCache[name] = type;
       }
     }
-    return (extendTypeCache[type.name]: any);
+    return (extendTypeCache[name]: any);
   }
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
