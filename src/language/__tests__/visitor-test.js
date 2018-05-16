@@ -74,7 +74,6 @@ describe('Visitor', () => {
         checkVisitorFnArgs(ast, arguments);
         visited.push(['enter', path.slice()]);
       },
-
       leave(node, key, parent, path) {
         checkVisitorFnArgs(ast, arguments);
         visited.push(['leave', path.slice()]);
@@ -93,6 +92,34 @@ describe('Visitor', () => {
       ['leave', ['definitions', 0]],
       ['leave', []],
     ]);
+  });
+
+  it('validates ancestors argument', () => {
+    const ast = parse('{ a }', { noLocation: true });
+    const visitedNodes = [];
+
+    visit(ast, {
+      enter(node, key, parent, path, ancestors) {
+        const inArray = typeof key === 'number';
+        if (inArray) {
+          visitedNodes.push(parent);
+        }
+        visitedNodes.push(node);
+
+        const expectedAncestors = visitedNodes.slice(0, -2);
+        expect(ancestors).to.deep.equal(expectedAncestors);
+      },
+      leave(node, key, parent, path, ancestors) {
+        const expectedAncestors = visitedNodes.slice(0, -2);
+        expect(ancestors).to.deep.equal(expectedAncestors);
+
+        const inArray = typeof key === 'number';
+        if (inArray) {
+          visitedNodes.pop();
+        }
+        visitedNodes.pop();
+      },
+    });
   });
 
   it('allows editing a node both on enter and on leave', () => {
