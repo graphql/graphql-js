@@ -802,54 +802,6 @@ input Hello {
     );
   });
 
-  it('Allow simple input object with nullable circular reference', () => {
-    expect(() =>
-      parse(`
-        input Hello {
-          world: String
-          self: Hello
-        }`),
-    ).to.not.throw();
-  });
-
-  it('Allow input object with circular reference broken up by a list', () => {
-    expect(() =>
-      parse(`
-        input Hello {
-          world: String
-          self: [Hello!]!
-        }`),
-    ).to.not.throw();
-  });
-
-  it('Reject simple input object with non-nullable circular reference', () => {
-    expectSyntaxError(
-      `
-      input Hello {
-        self: Hello!
-        string: String
-      }`,
-      'input: Hello contains non-nullable circular reference through field: self',
-      { line: 3, column: 8 },
-    );
-  });
-
-  it('Reject input object with non-nullable circular reference spread across multiple inputs', () => {
-    expectSyntaxError(
-      `
-      input Hello {
-        world: World!
-        string: String
-      }
-      input World {
-        hello: Hello!
-        string: String
-      }`,
-      'input: Hello contains non-nullable circular reference through field: world',
-      { line: 3, column: 8 },
-    );
-  });
-
   it('Directive with incorrect locations', () => {
     expectSyntaxError(
       `
