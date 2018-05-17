@@ -21,7 +21,7 @@
     "t": "mocha --require babel-register --require babel-polyfill",
     "testonly": "mocha --require babel-register --require babel-polyfill --check-leaks --full-trace --timeout 15000 src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc --reporter html --reporter text-summary -- npm run testonly",
-    "testonly:coveralls": "nyc --reporter text-lcov npm run testonly | coveralls",
+    "testonly:coveralls": "nyc --silent -- npm run testonly && nyc report --reporter text-lcov | coveralls",
     "lint": "eslint --rulesdir ./resources/lint src || (printf '\\033[33mTry: \\033[7m npm run lint -- --fix \\033[0m\\n' && exit 1)",
     "benchmark": "node ./resources/benchmark.js",
     "prettier": "prettier --write 'src/**/*.js'",
