@@ -2,7 +2,7 @@
   "presets": [["env", {
     "modules": false,
     "targets": {
-      "node": 4,
+      "node": 6,
       "browsers": [
         "ie 9",
         "ios 9",
