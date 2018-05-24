@@ -9,12 +9,14 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import dedent from '../../jsutils/dedent';
 import { extendSchema } from '../extendSchema';
+import { buildASTSchema } from '../buildASTSchema';
 import { parse, print } from '../../language';
 import { printSchema } from '../schemaPrinter';
 import { Kind } from '../../language/kinds';
 import { graphqlSync } from '../../';
 import {
   GraphQLSchema,
+  GraphQLInputObjectType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -35,6 +37,13 @@ const SomeInterfaceType = new GraphQLInterfaceType({
     name: { type: GraphQLString },
     some: { type: SomeInterfaceType },
   }),
+});
+
+const FooInput = new GraphQLInputObjectType({
+  name: 'FooInput',
+  fields: {
+    name: { type: new GraphQLNonNull(GraphQLString) },
+  },
 });
 
 const FooType = new GraphQLObjectType({
@@ -81,7 +90,10 @@ const testSchema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
-      foo: { type: FooType },
+      foo: {
+        type: FooType,
+        args: { where: { type: FooInput } },
+      },
       someUnion: { type: SomeUnionType },
       someEnum: { type: SomeEnumType },
       someInterface: {
@@ -195,6 +207,33 @@ describe('extendSchema', () => {
         name: String
         some: SomeInterface
         tree: [Foo]!
+        newField: String
+      }
+    `);
+  });
+
+  it('extends schemas generated from SDL by adding new fields', () => {
+    const originalSDL = `
+      type Foo {
+        name: String
+      }
+      type FooInput {
+        name: String!
+      }
+      type Query {
+        foo(where: FooInput): Foo
+      }
+    `;
+    const schemaFromSDL = buildASTSchema(parse(originalSDL));
+    const extendedAst = parse(`
+      extend type Foo {
+        newField: String
+      }
+    `);
+    const extendedSchema = extendSchema(schemaFromSDL, extendedAst);
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
+      type Foo {
+        name: String
         newField: String
       }
     `);
