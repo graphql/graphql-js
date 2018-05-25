@@ -23,6 +23,7 @@ import {
   isEnumType,
   isInputObjectType,
   isNamedType,
+  isNonNullType,
   isInputType,
   isOutputType,
   isRequiredArgument,
@@ -221,6 +222,9 @@ function validateName(
 }
 
 function validateTypes(context: SchemaValidationContext): void {
+  const validateInputObjectCircularRefs = createInputObjectCircularRefsValidator(
+    context,
+  );
   const typeMap = context.schema.getTypeMap();
   for (const type of objectValues(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.
@@ -255,6 +259,9 @@ function validateTypes(context: SchemaValidationContext): void {
     } else if (isInputObjectType(type)) {
       // Ensure Input Object fields are valid.
       validateInputFields(context, type);
+
+      // Ensure Input Objects do not contain non-nullable circular references
+      validateInputObjectCircularRefs(type);
     }
   }
 }
@@ -522,6 +529,59 @@ function validateInputFields(
         field.astNode && field.astNode.type,
       );
     }
+  }
+}
+
+function createInputObjectCircularRefsValidator(
+  context: SchemaValidationContext,
+) {
+  // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
+  // Tracks already visited types to maintain O(N) and to ensure that cycles
+  // are not redundantly reported.
+  const visitedTypes = Object.create(null);
+
+  // Array of types nodes used to produce meaningful errors
+  const fieldPath = [];
+
+  // Position in the type path
+  const fieldPathIndexByTypeName = Object.create(null);
+
+  return detectCycleRecursive;
+
+  // This does a straight-forward DFS to find cycles.
+  // It does not terminate when a cycle was found but continues to explore
+  // the graph to find all possible cycles.
+  function detectCycleRecursive(inputObj: GraphQLInputObjectType) {
+    if (visitedTypes[inputObj.name]) {
+      return;
+    }
+
+    visitedTypes[inputObj.name] = true;
+    fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
+
+    const fields = objectValues(inputObj.getFields());
+    for (const field of fields) {
+      if (isNonNullType(field.type) && isInputObjectType(field.type.ofType)) {
+        const fieldType = field.type.ofType;
+        const cycleIndex = fieldPathIndexByTypeName[fieldType.name];
+
+        fieldPath.push(field);
+        if (cycleIndex === undefined) {
+          detectCycleRecursive(fieldType);
+        } else {
+          const cyclePath = fieldPath.slice(cycleIndex);
+          const fieldNames = cyclePath.map(fieldObj => fieldObj.name);
+          context.reportError(
+            `Cannot reference Input Object "${fieldType.name}" within itself ` +
+              `through a series of non-null fields: "${fieldNames.join('.')}".`,
+            cyclePath.map(fieldObj => fieldObj.astNode),
+          );
+        }
+        fieldPath.pop();
+      }
+    }
+
+    fieldPathIndexByTypeName[inputObj.name] = undefined;
   }
 }
 
