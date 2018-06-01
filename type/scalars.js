@@ -33,6 +33,9 @@ var MAX_INT = 2147483647; /**
 var MIN_INT = -2147483648;
 
 function coerceInt(value) {
+  if (Array.isArray(value)) {
+    throw new TypeError('Int cannot represent an array value: [' + String(value) + ']');
+  }
   if (value === '') {
     throw new TypeError('Int cannot represent non 32-bit signed integer value: (empty string)');
   }
@@ -64,6 +67,9 @@ var GraphQLInt = exports.GraphQLInt = new _definition.GraphQLScalarType({
 });
 
 function coerceFloat(value) {
+  if (Array.isArray(value)) {
+    throw new TypeError('Float cannot represent an array value: [' + String(value) + ']');
+  }
   if (value === '') {
     throw new TypeError('Float cannot represent non numeric value: (empty string)');
   }
@@ -101,11 +107,18 @@ var GraphQLString = exports.GraphQLString = new _definition.GraphQLScalarType({
   }
 });
 
+function coerceBoolean(value) {
+  if (Array.isArray(value)) {
+    throw new TypeError('Boolean cannot represent an array value: [' + String(value) + ']');
+  }
+  return Boolean(value);
+}
+
 var GraphQLBoolean = exports.GraphQLBoolean = new _definition.GraphQLScalarType({
   name: 'Boolean',
   description: 'The `Boolean` scalar type represents `true` or `false`.',
-  serialize: Boolean,
-  parseValue: Boolean,
+  serialize: coerceBoolean,
+  parseValue: coerceBoolean,
   parseLiteral: function parseLiteral(ast) {
     return ast.kind === _kinds.Kind.BOOLEAN ? ast.value : undefined;
   }
@@ -114,8 +127,8 @@ var GraphQLBoolean = exports.GraphQLBoolean = new _definition.GraphQLScalarType(
 var GraphQLID = exports.GraphQLID = new _definition.GraphQLScalarType({
   name: 'ID',
   description: 'The `ID` scalar type represents a unique identifier, often used to ' + 'refetch an object or as key for a cache. The ID type appears in a JSON ' + 'response as a String; however, it is not intended to be human-readable. ' + 'When expected as an input type, any string (such as `"4"`) or integer ' + '(such as `4`) input value will be accepted as an ID.',
-  serialize: String,
-  parseValue: String,
+  serialize: coerceString,
+  parseValue: coerceString,
   parseLiteral: function parseLiteral(ast) {
     return ast.kind === _kinds.Kind.STRING || ast.kind === _kinds.Kind.INT ? ast.value : undefined;
   }
