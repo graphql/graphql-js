@@ -9,6 +9,7 @@ import { GraphQLError } from '../../error'; /**
                                              *  strict
                                              */
 
+import inspect from '../../jsutils/inspect';
 import find from '../../jsutils/find';
 
 import { Kind } from '../../language/kinds';
@@ -386,7 +387,7 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
   }
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [[responseName, 'they return conflicting types ' + String(type1) + ' and ' + String(type2)], [node1], [node2]];
+    return [[responseName, 'they return conflicting types ' + inspect(type1) + ' and ' + inspect(type2)], [node1], [node2]];
   }
 
   // Collect and compare sub-fields. Use the same "visited fragment names" list

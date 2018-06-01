@@ -7,6 +7,7 @@
  *  strict
  */
 
+import inspect from '../jsutils/inspect';
 import { GraphQLScalarType, isNamedType } from './definition';
 import { Kind } from '../language/kinds';
 
@@ -24,11 +25,11 @@ function coerceInt(value) {
   }
   var num = Number(value);
   if (num !== num || num > MAX_INT || num < MIN_INT) {
-    throw new TypeError('Int cannot represent non 32-bit signed integer value: ' + String(value));
+    throw new TypeError('Int cannot represent non 32-bit signed integer value: ' + inspect(value));
   }
   var int = Math.floor(num);
   if (int !== num) {
-    throw new TypeError('Int cannot represent non-integer value: ' + String(value));
+    throw new TypeError('Int cannot represent non-integer value: ' + inspect(value));
   }
   return int;
 }
@@ -57,7 +58,7 @@ function coerceFloat(value) {
   if (num === num) {
     return num;
   }
-  throw new TypeError('Float cannot represent non numeric value: ' + String(value));
+  throw new TypeError('Float cannot represent non numeric value: ' + inspect(value));
 }
 
 export var GraphQLFloat = new GraphQLScalarType({
@@ -72,7 +73,7 @@ export var GraphQLFloat = new GraphQLScalarType({
 
 function coerceString(value) {
   if (Array.isArray(value)) {
-    throw new TypeError('String cannot represent an array value: [' + String(value) + ']');
+    throw new TypeError('String cannot represent an array value: ' + inspect(value));
   }
   return String(value);
 }

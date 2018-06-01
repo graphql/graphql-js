@@ -1,13 +1,15 @@
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
-import { GraphQLError } from '../../error'; /**
-                                             * Copyright (c) 2015-present, Facebook, Inc.
-                                             *
-                                             * This source code is licensed under the MIT license found in the
-                                             * LICENSE file in the root directory of this source tree.
-                                             *
-                                             *  strict
-                                             */
+import inspect from '../../jsutils/inspect';
 
+import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
 
 import { isCompositeType } from '../../type/definition';
@@ -15,11 +17,11 @@ import { isCompositeType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 export function inlineFragmentOnNonCompositeErrorMessage(type) {
-  return 'Fragment cannot condition on non composite type "' + String(type) + '".';
+  return 'Fragment cannot condition on non composite type "' + inspect(type) + '".';
 }
 
 export function fragmentOnNonCompositeErrorMessage(fragName, type) {
-  return 'Fragment "' + fragName + '" cannot condition on non composite ' + ('type "' + String(type) + '".');
+  return 'Fragment "' + fragName + '" cannot condition on non composite ' + ('type "' + inspect(type) + '".');
 }
 
 /**

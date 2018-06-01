@@ -9,6 +9,7 @@
 
 import { GraphQLError } from '../error';
 import find from '../jsutils/find';
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import { coerceValue } from '../utilities/coerceValue';
@@ -78,9 +79,9 @@ export function getVariableValues(
           new GraphQLError(
             hasValue
               ? `Variable "$${varName}" of non-null type ` +
-                `"${String(varType)}" must not be null.`
+                `"${inspect(varType)}" must not be null.`
               : `Variable "$${varName}" of required type ` +
-                `"${String(varType)}" was not provided.`,
+                `"${inspect(varType)}" was not provided.`,
             [varDefNode],
           ),
         );
@@ -158,21 +159,21 @@ export function getArgumentValues(
       // non-null type (required), produce a field error.
       if (isNull) {
         throw new GraphQLError(
-          `Argument "${name}" of non-null type "${String(argType)}" ` +
+          `Argument "${name}" of non-null type "${inspect(argType)}" ` +
             'must not be null.',
           [argumentNode.value],
         );
       } else if (argumentNode && argumentNode.value.kind === Kind.VARIABLE) {
         const variableName = argumentNode.value.name.value;
         throw new GraphQLError(
-          `Argument "${name}" of required type "${String(argType)}" ` +
+          `Argument "${name}" of required type "${inspect(argType)}" ` +
             `was provided the variable "$${variableName}" ` +
             'which was not provided a runtime value.',
           [argumentNode.value],
         );
       } else {
         throw new GraphQLError(
-          `Argument "${name}" of required type "${String(argType)}" ` +
+          `Argument "${name}" of required type "${inspect(argType)}" ` +
             'was not provided.',
           [node],
         );

@@ -1,12 +1,15 @@
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
-import { GraphQLError } from '../../error'; /**
-                                             * Copyright (c) 2015-present, Facebook, Inc.
-                                             *
-                                             * This source code is licensed under the MIT license found in the
-                                             * LICENSE file in the root directory of this source tree.
-                                             *
-                                             *  strict
-                                             */
+import inspect from '../../jsutils/inspect';
+
+import { GraphQLError } from '../../error';
 
 import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
@@ -14,11 +17,11 @@ import { isCompositeType } from '../../type/definition';
 
 
 export function typeIncompatibleSpreadMessage(fragName, parentType, fragType) {
-  return 'Fragment "' + fragName + '" cannot be spread here as objects of ' + ('type "' + String(parentType) + '" can never be of type "' + String(fragType) + '".');
+  return 'Fragment "' + fragName + '" cannot be spread here as objects of ' + ('type "' + inspect(parentType) + '" can never be of type "' + inspect(fragType) + '".');
 }
 
 export function typeIncompatibleAnonSpreadMessage(parentType, fragType) {
-  return 'Fragment cannot be spread here as objects of ' + ('type "' + String(parentType) + '" can never be of type "' + String(fragType) + '".');
+  return 'Fragment cannot be spread here as objects of ' + ('type "' + inspect(parentType) + '" can never be of type "' + inspect(fragType) + '".');
 }
 
 /**

@@ -8,6 +8,7 @@
  */
 
 import { isAsyncIterable } from 'iterall';
+import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 import { addPath, assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError, responsePathAsArray } from '../execution/execute';
@@ -151,7 +152,7 @@ export function createSourceEventStream(schema, document, rootValue, contextValu
         // Note: isAsyncIterable above ensures this will be correct.
         return eventStream;
       }
-      throw new Error('Subscription field must return Async Iterable. Received: ' + String(eventStream));
+      throw new Error('Subscription field must return Async Iterable. Received: ' + inspect(eventStream));
     });
   } catch (error) {
     return Promise.reject(error);

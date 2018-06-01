@@ -17,6 +17,10 @@ exports.coerceValue = coerceValue;
 
 var _iterall = require('iterall');
 
+var _inspect = require('../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _isInvalid = require('../jsutils/isInvalid');
 
 var _isInvalid2 = _interopRequireDefault(_isInvalid);
@@ -50,7 +54,7 @@ function coerceValue(value, type, blameNode, path) {
   // A value must be provided if the type is non-null.
   if ((0, _definition.isNonNullType)(type)) {
     if ((0, _isNullish2.default)(value)) {
-      return ofErrors([coercionError('Expected non-nullable type ' + String(type) + ' not to be null', blameNode, path)]);
+      return ofErrors([coercionError('Expected non-nullable type ' + (0, _inspect2.default)(type) + ' not to be null', blameNode, path)]);
     }
     return coerceValue(value, type.ofType, blameNode, path);
   }
@@ -126,7 +130,7 @@ function coerceValue(value, type, blameNode, path) {
           if (!(0, _isInvalid2.default)(field.defaultValue)) {
             _coercedValue[fieldName] = field.defaultValue;
           } else if ((0, _definition.isNonNullType)(field.type)) {
-            _errors2 = add(_errors2, coercionError('Field ' + printPath(atPath(path, fieldName)) + ' of required ' + ('type ' + String(field.type) + ' was not provided'), blameNode));
+            _errors2 = add(_errors2, coercionError('Field ' + printPath(atPath(path, fieldName)) + ' of required ' + ('type ' + (0, _inspect2.default)(field.type) + ' was not provided'), blameNode));
           }
         } else {
           var coercedField = coerceValue(fieldValue, field.type, blameNode, atPath(path, fieldName));

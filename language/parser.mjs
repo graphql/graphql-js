@@ -7,6 +7,7 @@
  *  strict
  */
 
+import inspect from '../jsutils/inspect';
 import { Source } from './source';
 import { syntaxError } from '../error';
 
@@ -28,7 +29,7 @@ import { DirectiveLocation } from './directiveLocation';
 export function parse(source, options) {
   var sourceObj = typeof source === 'string' ? new Source(source) : source;
   if (!(sourceObj instanceof Source)) {
-    throw new TypeError('Must provide Source. Received: ' + String(sourceObj));
+    throw new TypeError('Must provide Source. Received: ' + inspect(sourceObj));
   }
   var lexer = createLexer(sourceObj, options || {});
   return parseDocument(lexer);

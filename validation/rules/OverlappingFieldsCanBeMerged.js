@@ -8,6 +8,10 @@ exports.OverlappingFieldsCanBeMerged = OverlappingFieldsCanBeMerged;
 
 var _error = require('../../error');
 
+var _inspect = require('../../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _find = require('../../jsutils/find');
 
 var _find2 = _interopRequireDefault(_find);
@@ -399,7 +403,7 @@ function findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPai
   }
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [[responseName, 'they return conflicting types ' + String(type1) + ' and ' + String(type2)], [node1], [node2]];
+    return [[responseName, 'they return conflicting types ' + (0, _inspect2.default)(type1) + ' and ' + (0, _inspect2.default)(type2)], [node1], [node2]];
   }
 
   // Collect and compare sub-fields. Use the same "visited fragment names" list

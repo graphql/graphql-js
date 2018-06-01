@@ -9,6 +9,7 @@
 
 import { GraphQLError } from '../error';
 import find from '../jsutils/find';
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import { coerceValue } from '../utilities/coerceValue';
@@ -50,7 +51,7 @@ export function getVariableValues(schema, varDefNodes, inputs) {
       } else if ((!hasValue || value === null) && isNonNullType(varType)) {
         // If no value or a nullish value was provided to a variable with a
         // non-null type (required), produce an error.
-        errors.push(new GraphQLError(hasValue ? 'Variable "$' + varName + '" of non-null type ' + ('"' + String(varType) + '" must not be null.') : 'Variable "$' + varName + '" of required type ' + ('"' + String(varType) + '" was not provided.'), [varDefNode]));
+        errors.push(new GraphQLError(hasValue ? 'Variable "$' + varName + '" of non-null type ' + ('"' + inspect(varType) + '" must not be null.') : 'Variable "$' + varName + '" of required type ' + ('"' + inspect(varType) + '" was not provided.'), [varDefNode]));
       } else if (hasValue) {
         if (value === null) {
           // If the explicit value `null` was provided, an entry in the coerced
@@ -122,12 +123,12 @@ export function getArgumentValues(def, node, variableValues) {
       // If no argument or a null value was provided to an argument with a
       // non-null type (required), produce a field error.
       if (isNull) {
-        throw new GraphQLError('Argument "' + name + '" of non-null type "' + String(argType) + '" ' + 'must not be null.', [argumentNode.value]);
+        throw new GraphQLError('Argument "' + name + '" of non-null type "' + inspect(argType) + '" ' + 'must not be null.', [argumentNode.value]);
       } else if (argumentNode && argumentNode.value.kind === Kind.VARIABLE) {
         var _variableName = argumentNode.value.name.value;
-        throw new GraphQLError('Argument "' + name + '" of required type "' + String(argType) + '" ' + ('was provided the variable "$' + _variableName + '" ') + 'which was not provided a runtime value.', [argumentNode.value]);
+        throw new GraphQLError('Argument "' + name + '" of required type "' + inspect(argType) + '" ' + ('was provided the variable "$' + _variableName + '" ') + 'which was not provided a runtime value.', [argumentNode.value]);
       } else {
-        throw new GraphQLError('Argument "' + name + '" of required type "' + String(argType) + '" ' + 'was not provided.', [node]);
+        throw new GraphQLError('Argument "' + name + '" of required type "' + inspect(argType) + '" ' + 'was not provided.', [node]);
       }
     } else if (hasValue) {
       if (argumentNode.value.kind === Kind.NULL) {

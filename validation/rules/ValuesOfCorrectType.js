@@ -14,6 +14,10 @@ var _printer = require('../../language/printer');
 
 var _definition = require('../../type/definition');
 
+var _inspect = require('../../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _isInvalid = require('../../jsutils/isInvalid');
 
 var _isInvalid2 = _interopRequireDefault(_isInvalid);
@@ -32,18 +36,16 @@ var _suggestionList2 = _interopRequireDefault(_suggestionList);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
-
 function badValueMessage(typeName, valueName, message) {
   return 'Expected type ' + typeName + ', found ' + valueName + (message ? '; ' + message : '.');
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   *  strict
+   */
 
 function requiredFieldMessage(typeName, fieldName, fieldTypeName) {
   return 'Field ' + typeName + '.' + fieldName + ' of required type ' + (fieldTypeName + ' was not provided.');
@@ -64,7 +66,7 @@ function ValuesOfCorrectType(context) {
     NullValue: function NullValue(node) {
       var type = context.getInputType();
       if ((0, _definition.isNonNullType)(type)) {
-        context.reportError(new _error.GraphQLError(badValueMessage(String(type), (0, _printer.print)(node)), node));
+        context.reportError(new _error.GraphQLError(badValueMessage((0, _inspect2.default)(type), (0, _printer.print)(node)), node));
       }
     },
     ListValue: function ListValue(node) {
@@ -92,7 +94,7 @@ function ValuesOfCorrectType(context) {
         var fieldType = fieldDef.type;
         var fieldNode = fieldNodeMap[fieldName];
         if (!fieldNode && (0, _definition.isNonNullType)(fieldType) && fieldDef.defaultValue === undefined) {
-          context.reportError(new _error.GraphQLError(requiredFieldMessage(type.name, fieldName, String(fieldType)), node));
+          context.reportError(new _error.GraphQLError(requiredFieldMessage(type.name, fieldName, (0, _inspect2.default)(fieldType)), node));
         }
       });
     },
@@ -143,7 +145,7 @@ function isValidScalar(context, node) {
   var type = (0, _definition.getNamedType)(locationType);
 
   if (!(0, _definition.isScalarType)(type)) {
-    context.reportError(new _error.GraphQLError(badValueMessage(String(locationType), (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));
+    context.reportError(new _error.GraphQLError(badValueMessage((0, _inspect2.default)(locationType), (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));
     return;
   }
 
@@ -152,11 +154,11 @@ function isValidScalar(context, node) {
   try {
     var parseResult = type.parseLiteral(node, undefined /* variables */);
     if ((0, _isInvalid2.default)(parseResult)) {
-      context.reportError(new _error.GraphQLError(badValueMessage(String(locationType), (0, _printer.print)(node)), node));
+      context.reportError(new _error.GraphQLError(badValueMessage((0, _inspect2.default)(locationType), (0, _printer.print)(node)), node));
     }
   } catch (error) {
     // Ensure a reference to the original error is maintained.
-    context.reportError(new _error.GraphQLError(badValueMessage(String(locationType), (0, _printer.print)(node), error.message), node, undefined, undefined, undefined, error));
+    context.reportError(new _error.GraphQLError(badValueMessage((0, _inspect2.default)(locationType), (0, _printer.print)(node), error.message), node, undefined, undefined, undefined, error));
   }
 }
 

@@ -6,6 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 exports.badVarPosMessage = badVarPosMessage;
 exports.VariablesInAllowedPosition = VariablesInAllowedPosition;
 
+var _inspect = require('../../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _error = require('../../error');
 
 var _kinds = require('../../language/kinds');
@@ -15,6 +19,8 @@ var _definition = require('../../type/definition');
 var _typeComparators = require('../../utilities/typeComparators');
 
 var _typeFromAST = require('../../utilities/typeFromAST');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -26,7 +32,7 @@ var _typeFromAST = require('../../utilities/typeFromAST');
  */
 
 function badVarPosMessage(varName, varType, expectedType) {
-  return 'Variable "$' + varName + '" of type "' + String(varType) + '" used in ' + ('position expecting type "' + String(expectedType) + '".');
+  return 'Variable "$' + varName + '" of type "' + (0, _inspect2.default)(varType) + '" used in ' + ('position expecting type "' + (0, _inspect2.default)(expectedType) + '".');
 }
 
 /**

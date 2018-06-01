@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import inspect from '../../jsutils/inspect';
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import { Kind } from '../../language/kinds';
@@ -24,8 +25,8 @@ export function badVarPosMessage(
   expectedType: GraphQLType,
 ): string {
   return (
-    `Variable "$${varName}" of type "${String(varType)}" used in ` +
-    `position expecting type "${String(expectedType)}".`
+    `Variable "$${varName}" of type "${inspect(varType)}" used in ` +
+    `position expecting type "${inspect(expectedType)}".`
   );
 }
 

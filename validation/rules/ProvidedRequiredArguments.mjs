@@ -8,16 +8,17 @@ import { GraphQLError } from '../../error'; /**
                                              *  strict
                                              */
 
+import inspect from '../../jsutils/inspect';
 import keyMap from '../../jsutils/keyMap';
 import { isNonNullType } from '../../type/definition';
 
 
 export function missingFieldArgMessage(fieldName, argName, type) {
-  return 'Field "' + fieldName + '" argument "' + argName + '" of type ' + ('"' + String(type) + '" is required but not provided.');
+  return 'Field "' + fieldName + '" argument "' + argName + '" of type ' + ('"' + inspect(type) + '" is required but not provided.');
 }
 
 export function missingDirectiveArgMessage(directiveName, argName, type) {
-  return 'Directive "@' + directiveName + '" argument "' + argName + '" of type ' + ('"' + String(type) + '" is required but not provided.');
+  return 'Directive "@' + directiveName + '" argument "' + argName + '" of type ' + ('"' + inspect(type) + '" is required but not provided.');
 }
 
 /**

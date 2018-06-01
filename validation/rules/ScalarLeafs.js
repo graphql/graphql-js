@@ -7,12 +7,18 @@ exports.noSubselectionAllowedMessage = noSubselectionAllowedMessage;
 exports.requiredSubselectionMessage = requiredSubselectionMessage;
 exports.ScalarLeafs = ScalarLeafs;
 
+var _inspect = require('../../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _error = require('../../error');
 
 var _definition = require('../../type/definition');
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function noSubselectionAllowedMessage(fieldName, type) {
-  return 'Field "' + fieldName + '" must not have a selection since ' + ('type "' + String(type) + '" has no subfields.');
+  return 'Field "' + fieldName + '" must not have a selection since ' + ('type "' + (0, _inspect2.default)(type) + '" has no subfields.');
 } /**
    * Copyright (c) 2015-present, Facebook, Inc.
    *
@@ -23,7 +29,7 @@ function noSubselectionAllowedMessage(fieldName, type) {
    */
 
 function requiredSubselectionMessage(fieldName, type) {
-  return 'Field "' + fieldName + '" of type "' + String(type) + '" must have a ' + ('selection of subfields. Did you mean "' + fieldName + ' { ... }"?');
+  return 'Field "' + fieldName + '" of type "' + (0, _inspect2.default)(type) + '" must have a ' + ('selection of subfields. Did you mean "' + fieldName + ' { ... }"?');
 }
 
 /**

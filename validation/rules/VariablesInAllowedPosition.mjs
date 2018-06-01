@@ -1,13 +1,15 @@
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
-import { GraphQLError } from '../../error'; /**
-                                             * Copyright (c) 2015-present, Facebook, Inc.
-                                             *
-                                             * This source code is licensed under the MIT license found in the
-                                             * LICENSE file in the root directory of this source tree.
-                                             *
-                                             *  strict
-                                             */
+import inspect from '../../jsutils/inspect';
 
+import { GraphQLError } from '../../error';
 import { Kind } from '../../language/kinds';
 
 import { isNonNullType } from '../../type/definition';
@@ -16,7 +18,7 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 
 
 export function badVarPosMessage(varName, varType, expectedType) {
-  return 'Variable "$' + varName + '" of type "' + String(varType) + '" used in ' + ('position expecting type "' + String(expectedType) + '".');
+  return 'Variable "$' + varName + '" of type "' + inspect(varType) + '" used in ' + ('position expecting type "' + inspect(expectedType) + '".');
 }
 
 /**

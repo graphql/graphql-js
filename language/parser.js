@@ -10,6 +10,10 @@ exports.parseConstValue = parseConstValue;
 exports.parseTypeReference = parseTypeReference;
 exports.parseNamedType = parseNamedType;
 
+var _inspect = require('../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _source = require('./source');
 
 var _error = require('../error');
@@ -20,6 +24,8 @@ var _kinds = require('./kinds');
 
 var _directiveLocation = require('./directiveLocation');
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Given a GraphQL source, parses it into a Document.
  * Throws GraphQLError if a syntax error is encountered.
@@ -29,10 +35,19 @@ var _directiveLocation = require('./directiveLocation');
 /**
  * Configuration options to control parser behavior
  */
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
+
 function parse(source, options) {
   var sourceObj = typeof source === 'string' ? new _source.Source(source) : source;
   if (!(sourceObj instanceof _source.Source)) {
-    throw new TypeError('Must provide Source. Received: ' + String(sourceObj));
+    throw new TypeError('Must provide Source. Received: ' + (0, _inspect2.default)(sourceObj));
   }
   var lexer = (0, _lexer.createLexer)(sourceObj, options || {});
   return parseDocument(lexer);
@@ -48,15 +63,6 @@ function parse(source, options) {
  *
  * Consider providing the results to the utility function: valueFromAST().
  */
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
-
 function parseValue(source, options) {
   var sourceObj = typeof source === 'string' ? new _source.Source(source) : source;
   var lexer = (0, _lexer.createLexer)(sourceObj, options || {});

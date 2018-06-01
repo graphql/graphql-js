@@ -7,6 +7,10 @@ exports.typeIncompatibleSpreadMessage = typeIncompatibleSpreadMessage;
 exports.typeIncompatibleAnonSpreadMessage = typeIncompatibleAnonSpreadMessage;
 exports.PossibleFragmentSpreads = PossibleFragmentSpreads;
 
+var _inspect = require('../../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _error = require('../../error');
 
 var _typeComparators = require('../../utilities/typeComparators');
@@ -15,8 +19,10 @@ var _typeFromAST = require('../../utilities/typeFromAST');
 
 var _definition = require('../../type/definition');
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function typeIncompatibleSpreadMessage(fragName, parentType, fragType) {
-  return 'Fragment "' + fragName + '" cannot be spread here as objects of ' + ('type "' + String(parentType) + '" can never be of type "' + String(fragType) + '".');
+  return 'Fragment "' + fragName + '" cannot be spread here as objects of ' + ('type "' + (0, _inspect2.default)(parentType) + '" can never be of type "' + (0, _inspect2.default)(fragType) + '".');
 } /**
    * Copyright (c) 2015-present, Facebook, Inc.
    *
@@ -27,7 +33,7 @@ function typeIncompatibleSpreadMessage(fragName, parentType, fragType) {
    */
 
 function typeIncompatibleAnonSpreadMessage(parentType, fragType) {
-  return 'Fragment cannot be spread here as objects of ' + ('type "' + String(parentType) + '" can never be of type "' + String(fragType) + '".');
+  return 'Fragment cannot be spread here as objects of ' + ('type "' + (0, _inspect2.default)(parentType) + '" can never be of type "' + (0, _inspect2.default)(fragType) + '".');
 }
 
 /**

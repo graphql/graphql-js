@@ -52,6 +52,10 @@ var _instanceOf = require('../jsutils/instanceOf');
 
 var _instanceOf2 = _interopRequireDefault(_instanceOf);
 
+var _inspect = require('../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _invariant = require('../jsutils/invariant');
 
 var _invariant2 = _interopRequireDefault(_invariant);
@@ -89,7 +93,7 @@ function isType(type) {
 }
 
 function assertType(type) {
-  !isType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL type.') : void 0;
+  !isType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL type.') : void 0;
   return type;
 }
 
@@ -103,7 +107,7 @@ function isScalarType(type) {
 }
 
 function assertScalarType(type) {
-  !isScalarType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL Scalar type.') : void 0;
+  !isScalarType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL Scalar type.') : void 0;
   return type;
 }
 
@@ -113,7 +117,7 @@ function isObjectType(type) {
 }
 
 function assertObjectType(type) {
-  !isObjectType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL Object type.') : void 0;
+  !isObjectType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL Object type.') : void 0;
   return type;
 }
 
@@ -123,7 +127,7 @@ function isInterfaceType(type) {
 }
 
 function assertInterfaceType(type) {
-  !isInterfaceType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL Interface type.') : void 0;
+  !isInterfaceType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL Interface type.') : void 0;
   return type;
 }
 
@@ -133,7 +137,7 @@ function isUnionType(type) {
 }
 
 function assertUnionType(type) {
-  !isUnionType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL Union type.') : void 0;
+  !isUnionType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL Union type.') : void 0;
   return type;
 }
 
@@ -143,7 +147,7 @@ function isEnumType(type) {
 }
 
 function assertEnumType(type) {
-  !isEnumType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL Enum type.') : void 0;
+  !isEnumType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL Enum type.') : void 0;
   return type;
 }
 
@@ -153,7 +157,7 @@ function isInputObjectType(type) {
 }
 
 function assertInputObjectType(type) {
-  !isInputObjectType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL Input Object type.') : void 0;
+  !isInputObjectType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL Input Object type.') : void 0;
   return type;
 }
 
@@ -163,7 +167,7 @@ function isListType(type) {
 }
 
 function assertListType(type) {
-  !isListType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL List type.') : void 0;
+  !isListType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL List type.') : void 0;
   return type;
 }
 
@@ -173,7 +177,7 @@ function isNonNullType(type) {
 }
 
 function assertNonNullType(type) {
-  !isNonNullType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL Non-Null type.') : void 0;
+  !isNonNullType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL Non-Null type.') : void 0;
   return type;
 }
 
@@ -185,7 +189,7 @@ function isInputType(type) {
 }
 
 function assertInputType(type) {
-  !isInputType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL input type.') : void 0;
+  !isInputType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL input type.') : void 0;
   return type;
 }
 
@@ -197,7 +201,7 @@ function isOutputType(type) {
 }
 
 function assertOutputType(type) {
-  !isOutputType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL output type.') : void 0;
+  !isOutputType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL output type.') : void 0;
   return type;
 }
 
@@ -209,7 +213,7 @@ function isLeafType(type) {
 }
 
 function assertLeafType(type) {
-  !isLeafType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL leaf type.') : void 0;
+  !isLeafType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL leaf type.') : void 0;
   return type;
 }
 
@@ -221,7 +225,7 @@ function isCompositeType(type) {
 }
 
 function assertCompositeType(type) {
-  !isCompositeType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL composite type.') : void 0;
+  !isCompositeType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL composite type.') : void 0;
   return type;
 }
 
@@ -233,7 +237,7 @@ function isAbstractType(type) {
 }
 
 function assertAbstractType(type) {
-  !isAbstractType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL abstract type.') : void 0;
+  !isAbstractType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL abstract type.') : void 0;
   return type;
 }
 
@@ -316,7 +320,7 @@ function isWrappingType(type) {
 }
 
 function assertWrappingType(type) {
-  !isWrappingType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL wrapping type.') : void 0;
+  !isWrappingType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL wrapping type.') : void 0;
   return type;
 }
 
@@ -328,7 +332,7 @@ function isNullableType(type) {
 }
 
 function assertNullableType(type) {
-  !isNullableType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL nullable type.') : void 0;
+  !isNullableType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL nullable type.') : void 0;
   return type;
 }
 
@@ -348,7 +352,7 @@ function isNamedType(type) {
 }
 
 function assertNamedType(type) {
-  !isNamedType(type) ? (0, _invariant2.default)(0, 'Expected ' + String(type) + ' to be a GraphQL named type.') : void 0;
+  !isNamedType(type) ? (0, _invariant2.default)(0, 'Expected ' + (0, _inspect2.default)(type) + ' to be a GraphQL named type.') : void 0;
   return type;
 }
 
@@ -545,7 +549,7 @@ function defineFieldMap(type, fieldsThunk) {
       isDeprecated: Boolean(fieldConfig.deprecationReason),
       name: fieldName
     });
-    !isValidResolver(field.resolve) ? (0, _invariant2.default)(0, type.name + '.' + fieldName + ' field resolver must be a function if ' + ('provided, but got: ' + String(field.resolve) + '.')) : void 0;
+    !isValidResolver(field.resolve) ? (0, _invariant2.default)(0, type.name + '.' + fieldName + ' field resolver must be a function if ' + ('provided, but got: ' + (0, _inspect2.default)(field.resolve) + '.')) : void 0;
     var argsConfig = fieldConfig.args;
     if (!argsConfig) {
       field.args = [];
@@ -776,7 +780,7 @@ function defineEnumValues(type, valueMap /* <T> */
   !isPlainObj(valueMap) ? (0, _invariant2.default)(0, type.name + ' values must be an object with value names as keys.') : void 0;
   return Object.keys(valueMap).map(function (valueName) {
     var value = valueMap[valueName];
-    !isPlainObj(value) ? (0, _invariant2.default)(0, type.name + '.' + valueName + ' must refer to an object with a "value" key ' + ('representing an internal value but got: ' + String(value) + '.')) : void 0;
+    !isPlainObj(value) ? (0, _invariant2.default)(0, type.name + '.' + valueName + ' must refer to an object with a "value" key ' + ('representing an internal value but got: ' + (0, _inspect2.default)(value) + '.')) : void 0;
     !!value.hasOwnProperty('isDeprecated') ? (0, _invariant2.default)(0, type.name + '.' + valueName + ' should provide "deprecationReason" instead ' + 'of "isDeprecated".') : void 0;
     return {
       name: valueName,

@@ -9,6 +9,10 @@ exports.ProvidedRequiredArguments = ProvidedRequiredArguments;
 
 var _error = require('../../error');
 
+var _inspect = require('../../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _keyMap = require('../../jsutils/keyMap');
 
 var _keyMap2 = _interopRequireDefault(_keyMap);
@@ -17,21 +21,19 @@ var _definition = require('../../type/definition');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
-
 function missingFieldArgMessage(fieldName, argName, type) {
-  return 'Field "' + fieldName + '" argument "' + argName + '" of type ' + ('"' + String(type) + '" is required but not provided.');
-}
+  return 'Field "' + fieldName + '" argument "' + argName + '" of type ' + ('"' + (0, _inspect2.default)(type) + '" is required but not provided.');
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   *  strict
+   */
 
 function missingDirectiveArgMessage(directiveName, argName, type) {
-  return 'Directive "@' + directiveName + '" argument "' + argName + '" of type ' + ('"' + String(type) + '" is required but not provided.');
+  return 'Directive "@' + directiveName + '" argument "' + argName + '" of type ' + ('"' + (0, _inspect2.default)(type) + '" is required but not provided.');
 }
 
 /**

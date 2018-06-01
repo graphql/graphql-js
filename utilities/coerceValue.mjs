@@ -10,6 +10,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  */
 
 import { forEach, isCollection } from 'iterall';
+import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import orList from '../jsutils/orList';
@@ -30,7 +31,7 @@ export function coerceValue(value, type, blameNode, path) {
   // A value must be provided if the type is non-null.
   if (isNonNullType(type)) {
     if (isNullish(value)) {
-      return ofErrors([coercionError('Expected non-nullable type ' + String(type) + ' not to be null', blameNode, path)]);
+      return ofErrors([coercionError('Expected non-nullable type ' + inspect(type) + ' not to be null', blameNode, path)]);
     }
     return coerceValue(value, type.ofType, blameNode, path);
   }
@@ -106,7 +107,7 @@ export function coerceValue(value, type, blameNode, path) {
           if (!isInvalid(field.defaultValue)) {
             _coercedValue[fieldName] = field.defaultValue;
           } else if (isNonNullType(field.type)) {
-            _errors2 = add(_errors2, coercionError('Field ' + printPath(atPath(path, fieldName)) + ' of required ' + ('type ' + String(field.type) + ' was not provided'), blameNode));
+            _errors2 = add(_errors2, coercionError('Field ' + printPath(atPath(path, fieldName)) + ' of required ' + ('type ' + inspect(field.type) + ' was not provided'), blameNode));
           }
         } else {
           var coercedField = coerceValue(fieldValue, field.type, blameNode, atPath(path, fieldName));

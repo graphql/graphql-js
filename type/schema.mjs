@@ -15,6 +15,7 @@ import { isAbstractType, isObjectType, isInterfaceType, isUnionType, isInputObje
 
 import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
 
+import inspect from '../jsutils/inspect';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import instanceOf from '../jsutils/instanceOf';
@@ -71,9 +72,9 @@ export var GraphQLSchema = function () {
       // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
       !((typeof config === 'undefined' ? 'undefined' : _typeof(config)) === 'object') ? invariant(0, 'Must provide configuration object.') : void 0;
-      !(!config.types || Array.isArray(config.types)) ? invariant(0, '"types" must be Array if provided but got: ' + String(config.types) + '.') : void 0;
-      !(!config.directives || Array.isArray(config.directives)) ? invariant(0, '"directives" must be Array if provided but got: ' + (String(config.directives) + '.')) : void 0;
-      !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? invariant(0, '"allowedLegacyNames" must be Array if provided but got: ' + (String(config.allowedLegacyNames) + '.')) : void 0;
+      !(!config.types || Array.isArray(config.types)) ? invariant(0, '"types" must be Array if provided but got: ' + inspect(config.types) + '.') : void 0;
+      !(!config.directives || Array.isArray(config.directives)) ? invariant(0, '"directives" must be Array if provided but got: ' + (inspect(config.directives) + '.')) : void 0;
+      !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? invariant(0, '"allowedLegacyNames" must be Array if provided but got: ' + (inspect(config.allowedLegacyNames) + '.')) : void 0;
     }
 
     this.__allowedLegacyNames = config.allowedLegacyNames;

@@ -8,6 +8,7 @@
  */
 
 import { isAsyncIterable } from 'iterall';
+import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 import {
@@ -279,7 +280,7 @@ export function createSourceEventStream(
       }
       throw new Error(
         'Subscription field must return Async Iterable. Received: ' +
-          String(eventStream),
+          inspect(eventStream),
       );
     });
   } catch (error) {

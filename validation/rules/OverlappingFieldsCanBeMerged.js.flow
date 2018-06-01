@@ -9,6 +9,7 @@
 
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
+import inspect from '../../jsutils/inspect';
 import find from '../../jsutils/find';
 import type { ObjMap } from '../../jsutils/ObjMap';
 import type {
@@ -612,7 +613,7 @@ function findConflict(
     return [
       [
         responseName,
-        `they return conflicting types ${String(type1)} and ${String(type2)}`,
+        `they return conflicting types ${inspect(type1)} and ${inspect(type2)}`,
       ],
       [node1],
       [node2],

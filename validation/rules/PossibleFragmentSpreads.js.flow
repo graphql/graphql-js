@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import inspect from '../../jsutils/inspect';
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { ASTVisitor } from '../../language/visitor';
@@ -22,7 +23,7 @@ export function typeIncompatibleSpreadMessage(
 ): string {
   return (
     `Fragment "${fragName}" cannot be spread here as objects of ` +
-    `type "${String(parentType)}" can never be of type "${String(fragType)}".`
+    `type "${inspect(parentType)}" can never be of type "${inspect(fragType)}".`
   );
 }
 
@@ -32,7 +33,7 @@ export function typeIncompatibleAnonSpreadMessage(
 ): string {
   return (
     'Fragment cannot be spread here as objects of ' +
-    `type "${String(parentType)}" can never be of type "${String(fragType)}".`
+    `type "${inspect(parentType)}" can never be of type "${inspect(fragType)}".`
   );
 }
 

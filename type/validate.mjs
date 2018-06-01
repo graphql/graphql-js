@@ -16,6 +16,7 @@ import { isDirective } from './directives';
 import { isIntrospectionType } from './introspection';
 import { isSchema } from './schema';
 
+import inspect from '../jsutils/inspect';
 import find from '../jsutils/find';
 import invariant from '../jsutils/invariant';
 import objectValues from '../jsutils/objectValues';
@@ -33,7 +34,7 @@ import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
  */
 export function validateSchema(schema) {
   // First check to ensure the provided value is in fact a GraphQLSchema.
-  !isSchema(schema) ? invariant(0, 'Expected ' + String(schema) + ' to be a GraphQL schema.') : void 0;
+  !isSchema(schema) ? invariant(0, 'Expected ' + inspect(schema) + ' to be a GraphQL schema.') : void 0;
 
   // If this Schema has already been validated, return the previous results.
   if (schema.__validationErrors) {
@@ -96,17 +97,17 @@ function validateRootTypes(context) {
   if (!queryType) {
     context.reportError('Query root type must be provided.', schema.astNode);
   } else if (!isObjectType(queryType)) {
-    context.reportError('Query root type must be Object type, it cannot be ' + String(queryType) + '.', getOperationTypeNode(schema, queryType, 'query'));
+    context.reportError('Query root type must be Object type, it cannot be ' + inspect(queryType) + '.', getOperationTypeNode(schema, queryType, 'query'));
   }
 
   var mutationType = schema.getMutationType();
   if (mutationType && !isObjectType(mutationType)) {
-    context.reportError('Mutation root type must be Object type if provided, it cannot be ' + (String(mutationType) + '.'), getOperationTypeNode(schema, mutationType, 'mutation'));
+    context.reportError('Mutation root type must be Object type if provided, it cannot be ' + (inspect(mutationType) + '.'), getOperationTypeNode(schema, mutationType, 'mutation'));
   }
 
   var subscriptionType = schema.getSubscriptionType();
   if (subscriptionType && !isObjectType(subscriptionType)) {
-    context.reportError('Subscription root type must be Object type if provided, it cannot be ' + (String(subscriptionType) + '.'), getOperationTypeNode(schema, subscriptionType, 'subscription'));
+    context.reportError('Subscription root type must be Object type if provided, it cannot be ' + (inspect(subscriptionType) + '.'), getOperationTypeNode(schema, subscriptionType, 'subscription'));
   }
 }
 
@@ -171,7 +172,7 @@ function validateDirectives(context) {
   directives.forEach(function (directive) {
     // Ensure all directives are in fact GraphQL directives.
     if (!isDirective(directive)) {
-      context.reportError('Expected directive but got: ' + String(directive) + '.', directive && directive.astNode);
+      context.reportError('Expected directive but got: ' + inspect(directive) + '.', directive && directive.astNode);
       return;
     }
 
@@ -197,7 +198,7 @@ function validateDirectives(context) {
 
       // Ensure the type is an input type.
       if (!isInputType(arg.type)) {
-        context.reportError('The type of @' + directive.name + '(' + argName + ':) must be Input Type ' + ('but got: ' + String(arg.type) + '.'), getDirectiveArgTypeNode(directive, argName));
+        context.reportError('The type of @' + directive.name + '(' + argName + ':) must be Input Type ' + ('but got: ' + inspect(arg.type) + '.'), getDirectiveArgTypeNode(directive, argName));
       }
     });
   });
@@ -221,7 +222,7 @@ function validateTypes(context) {
   objectValues(typeMap).forEach(function (type) {
     // Ensure all provided types are in fact GraphQL type.
     if (!isNamedType(type)) {
-      context.reportError('Expected GraphQL named type but got: ' + String(type) + '.', type && type.astNode);
+      context.reportError('Expected GraphQL named type but got: ' + inspect(type) + '.', type && type.astNode);
       return;
     }
 
@@ -276,7 +277,7 @@ function validateFields(context, type) {
 
     // Ensure the type is an output type
     if (!isOutputType(field.type)) {
-      context.reportError('The type of ' + type.name + '.' + field.name + ' must be Output Type ' + ('but got: ' + String(field.type) + '.'), getFieldTypeNode(type, field.name));
+      context.reportError('The type of ' + type.name + '.' + field.name + ' must be Output Type ' + ('but got: ' + inspect(field.type) + '.'), getFieldTypeNode(type, field.name));
     }
 
     // Ensure the arguments are valid
@@ -295,7 +296,7 @@ function validateFields(context, type) {
 
       // Ensure the type is an input type
       if (!isInputType(arg.type)) {
-        context.reportError('The type of ' + type.name + '.' + field.name + '(' + argName + ':) must be Input ' + ('Type but got: ' + String(arg.type) + '.'), getFieldArgTypeNode(type, field.name, argName));
+        context.reportError('The type of ' + type.name + '.' + field.name + '(' + argName + ':) must be Input ' + ('Type but got: ' + inspect(arg.type) + '.'), getFieldArgTypeNode(type, field.name, argName));
       }
     });
   });
@@ -305,7 +306,7 @@ function validateObjectInterfaces(context, object) {
   var implementedTypeNames = Object.create(null);
   object.getInterfaces().forEach(function (iface) {
     if (!isInterfaceType(iface)) {
-      context.reportError('Type ' + String(object) + ' must only implement Interface types, ' + ('it cannot implement ' + String(iface) + '.'), getImplementsInterfaceNode(object, iface));
+      context.reportError('Type ' + inspect(object) + ' must only implement Interface types, ' + ('it cannot implement ' + inspect(iface) + '.'), getImplementsInterfaceNode(object, iface));
       return;
     }
 
@@ -345,7 +346,7 @@ function validateObjectImplementsInterface(context, object, iface) {
     // Assert interface field type is satisfied by object field type, by being
     // a valid subtype. (covariant)
     if (!isTypeSubTypeOf(context.schema, objectField.type, ifaceField.type)) {
-      context.reportError('Interface field ' + iface.name + '.' + fieldName + ' expects type ' + (String(ifaceField.type) + ' but ' + object.name + '.' + fieldName + ' ') + ('is type ' + String(objectField.type) + '.'), [getFieldTypeNode(iface, fieldName), getFieldTypeNode(object, fieldName)]);
+      context.reportError('Interface field ' + iface.name + '.' + fieldName + ' expects type ' + (inspect(ifaceField.type) + ' but ' + object.name + '.' + fieldName + ' ') + ('is type ' + inspect(objectField.type) + '.'), [getFieldTypeNode(iface, fieldName), getFieldTypeNode(object, fieldName)]);
     }
 
     // Assert each interface field arg is implemented.
@@ -366,7 +367,7 @@ function validateObjectImplementsInterface(context, object, iface) {
       // (invariant)
       // TODO: change to contravariant?
       if (!isEqualType(ifaceArg.type, objectArg.type)) {
-        context.reportError('Interface field argument ' + iface.name + '.' + fieldName + '(' + argName + ':) ' + ('expects type ' + String(ifaceArg.type) + ' but ') + (object.name + '.' + fieldName + '(' + argName + ':) is type ') + (String(objectArg.type) + '.'), [getFieldArgTypeNode(iface, fieldName, argName), getFieldArgTypeNode(object, fieldName, argName)]);
+        context.reportError('Interface field argument ' + iface.name + '.' + fieldName + '(' + argName + ':) ' + ('expects type ' + inspect(ifaceArg.type) + ' but ') + (object.name + '.' + fieldName + '(' + argName + ':) is type ') + (inspect(objectArg.type) + '.'), [getFieldArgTypeNode(iface, fieldName, argName), getFieldArgTypeNode(object, fieldName, argName)]);
       }
 
       // TODO: validate default values?
@@ -379,7 +380,7 @@ function validateObjectImplementsInterface(context, object, iface) {
         return arg.name === argName;
       });
       if (!ifaceArg && isNonNullType(objectArg.type)) {
-        context.reportError('Object field argument ' + object.name + '.' + fieldName + '(' + argName + ':) ' + ('is of required type ' + String(objectArg.type) + ' but is not also ') + ('provided by the Interface field ' + iface.name + '.' + fieldName + '.'), [getFieldArgTypeNode(object, fieldName, argName), getFieldNode(iface, fieldName)]);
+        context.reportError('Object field argument ' + object.name + '.' + fieldName + '(' + argName + ':) ' + ('is of required type ' + inspect(objectArg.type) + ' but is not also ') + ('provided by the Interface field ' + iface.name + '.' + fieldName + '.'), [getFieldArgTypeNode(object, fieldName, argName), getFieldNode(iface, fieldName)]);
       }
     });
   });
@@ -400,7 +401,7 @@ function validateUnionMembers(context, union) {
     }
     includedTypeNames[memberType.name] = true;
     if (!isObjectType(memberType)) {
-      context.reportError('Union type ' + union.name + ' can only include Object types, ' + ('it cannot include ' + String(memberType) + '.'), getUnionMemberTypeNodes(union, String(memberType)));
+      context.reportError('Union type ' + union.name + ' can only include Object types, ' + ('it cannot include ' + inspect(memberType) + '.'), getUnionMemberTypeNodes(union, String(memberType)));
     }
   });
 }
@@ -445,7 +446,7 @@ function validateInputFields(context, inputObj) {
 
     // Ensure the type is an input type
     if (!isInputType(field.type)) {
-      context.reportError('The type of ' + inputObj.name + '.' + field.name + ' must be Input Type ' + ('but got: ' + String(field.type) + '.'), field.astNode && field.astNode.type);
+      context.reportError('The type of ' + inputObj.name + '.' + field.name + ' must be Input Type ' + ('but got: ' + inspect(field.type) + '.'), field.astNode && field.astNode.type);
     }
   });
 }

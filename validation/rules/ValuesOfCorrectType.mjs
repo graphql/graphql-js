@@ -12,6 +12,7 @@ import { print } from '../../language/printer';
 
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType, getNullableType, getNamedType } from '../../type/definition';
 
+import inspect from '../../jsutils/inspect';
 import isInvalid from '../../jsutils/isInvalid';
 import keyMap from '../../jsutils/keyMap';
 import orList from '../../jsutils/orList';
@@ -40,7 +41,7 @@ export function ValuesOfCorrectType(context) {
     NullValue: function NullValue(node) {
       var type = context.getInputType();
       if (isNonNullType(type)) {
-        context.reportError(new GraphQLError(badValueMessage(String(type), print(node)), node));
+        context.reportError(new GraphQLError(badValueMessage(inspect(type), print(node)), node));
       }
     },
     ListValue: function ListValue(node) {
@@ -68,7 +69,7 @@ export function ValuesOfCorrectType(context) {
         var fieldType = fieldDef.type;
         var fieldNode = fieldNodeMap[fieldName];
         if (!fieldNode && isNonNullType(fieldType) && fieldDef.defaultValue === undefined) {
-          context.reportError(new GraphQLError(requiredFieldMessage(type.name, fieldName, String(fieldType)), node));
+          context.reportError(new GraphQLError(requiredFieldMessage(type.name, fieldName, inspect(fieldType)), node));
         }
       });
     },
@@ -119,7 +120,7 @@ function isValidScalar(context, node) {
   var type = getNamedType(locationType);
 
   if (!isScalarType(type)) {
-    context.reportError(new GraphQLError(badValueMessage(String(locationType), print(node), enumTypeSuggestion(type, node)), node));
+    context.reportError(new GraphQLError(badValueMessage(inspect(locationType), print(node), enumTypeSuggestion(type, node)), node));
     return;
   }
 
@@ -128,11 +129,11 @@ function isValidScalar(context, node) {
   try {
     var parseResult = type.parseLiteral(node, undefined /* variables */);
     if (isInvalid(parseResult)) {
-      context.reportError(new GraphQLError(badValueMessage(String(locationType), print(node)), node));
+      context.reportError(new GraphQLError(badValueMessage(inspect(locationType), print(node)), node));
     }
   } catch (error) {
     // Ensure a reference to the original error is maintained.
-    context.reportError(new GraphQLError(badValueMessage(String(locationType), print(node), error.message), node, undefined, undefined, undefined, error));
+    context.reportError(new GraphQLError(badValueMessage(inspect(locationType), print(node), error.message), node, undefined, undefined, undefined, error));
   }
 }
 

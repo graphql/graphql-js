@@ -17,6 +17,10 @@ exports.astFromValue = astFromValue;
 
 var _iterall = require('iterall');
 
+var _inspect = require('../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _isNullish = require('../jsutils/isNullish');
 
 var _isNullish2 = _interopRequireDefault(_isNullish);
@@ -147,7 +151,7 @@ function astFromValue(value, type) {
       };
     }
 
-    throw new TypeError('Cannot convert value to AST: ' + String(serialized));
+    throw new TypeError('Cannot convert value to AST: ' + (0, _inspect2.default)(serialized));
   }
 
   /* istanbul ignore next */

@@ -13,6 +13,10 @@ var _find = require('../jsutils/find');
 
 var _find2 = _interopRequireDefault(_find);
 
+var _inspect = require('../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _invariant = require('../jsutils/invariant');
 
 var _invariant2 = _interopRequireDefault(_invariant);
@@ -44,15 +48,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
-
 function getVariableValues(schema, varDefNodes, inputs) {
   var errors = [];
   var coercedValues = {};
@@ -75,7 +70,7 @@ function getVariableValues(schema, varDefNodes, inputs) {
       } else if ((!hasValue || value === null) && (0, _definition.isNonNullType)(varType)) {
         // If no value or a nullish value was provided to a variable with a
         // non-null type (required), produce an error.
-        errors.push(new _error.GraphQLError(hasValue ? 'Variable "$' + varName + '" of non-null type ' + ('"' + String(varType) + '" must not be null.') : 'Variable "$' + varName + '" of required type ' + ('"' + String(varType) + '" was not provided.'), [varDefNode]));
+        errors.push(new _error.GraphQLError(hasValue ? 'Variable "$' + varName + '" of non-null type ' + ('"' + (0, _inspect2.default)(varType) + '" must not be null.') : 'Variable "$' + varName + '" of required type ' + ('"' + (0, _inspect2.default)(varType) + '" was not provided.'), [varDefNode]));
       } else if (hasValue) {
         if (value === null) {
           // If the explicit value `null` was provided, an entry in the coerced
@@ -113,6 +108,15 @@ function getVariableValues(schema, varDefNodes, inputs) {
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
+
 function getArgumentValues(def, node, variableValues) {
   var coercedValues = {};
   var argDefs = def.args;
@@ -147,12 +151,12 @@ function getArgumentValues(def, node, variableValues) {
       // If no argument or a null value was provided to an argument with a
       // non-null type (required), produce a field error.
       if (isNull) {
-        throw new _error.GraphQLError('Argument "' + name + '" of non-null type "' + String(argType) + '" ' + 'must not be null.', [argumentNode.value]);
+        throw new _error.GraphQLError('Argument "' + name + '" of non-null type "' + (0, _inspect2.default)(argType) + '" ' + 'must not be null.', [argumentNode.value]);
       } else if (argumentNode && argumentNode.value.kind === _kinds.Kind.VARIABLE) {
         var _variableName = argumentNode.value.name.value;
-        throw new _error.GraphQLError('Argument "' + name + '" of required type "' + String(argType) + '" ' + ('was provided the variable "$' + _variableName + '" ') + 'which was not provided a runtime value.', [argumentNode.value]);
+        throw new _error.GraphQLError('Argument "' + name + '" of required type "' + (0, _inspect2.default)(argType) + '" ' + ('was provided the variable "$' + _variableName + '" ') + 'which was not provided a runtime value.', [argumentNode.value]);
       } else {
-        throw new _error.GraphQLError('Argument "' + name + '" of required type "' + String(argType) + '" ' + 'was not provided.', [node]);
+        throw new _error.GraphQLError('Argument "' + name + '" of required type "' + (0, _inspect2.default)(argType) + '" ' + 'was not provided.', [node]);
       }
     } else if (hasValue) {
       if (argumentNode.value.kind === _kinds.Kind.NULL) {

@@ -11,6 +11,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 import { forEach, isCollection } from 'iterall';
 import { GraphQLError, locatedError } from '../error';
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
@@ -577,7 +578,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
   // Not reachable. All possible output types have been considered.
   /* istanbul ignore next */
-  throw new Error('Cannot complete value of unexpected type "' + String(returnType) + '".');
+  throw new Error('Cannot complete value of unexpected type "' + inspect(returnType) + '".');
 }
 
 /**
@@ -615,7 +616,7 @@ function completeLeafValue(returnType, result) {
   !returnType.serialize ? invariant(0, 'Missing serialize method on type') : void 0;
   var serializedResult = returnType.serialize(result);
   if (isInvalid(serializedResult)) {
-    throw new Error('Expected a value of type "' + String(returnType) + '" but ' + ('received: ' + String(result)));
+    throw new Error('Expected a value of type "' + inspect(returnType) + '" but ' + ('received: ' + inspect(result)));
   }
   return serializedResult;
 }
@@ -640,7 +641,7 @@ function ensureValidRuntimeType(runtimeTypeOrName, exeContext, returnType, field
   var runtimeType = typeof runtimeTypeOrName === 'string' ? exeContext.schema.getType(runtimeTypeOrName) : runtimeTypeOrName;
 
   if (!isObjectType(runtimeType)) {
-    throw new GraphQLError('Abstract type ' + returnType.name + ' must resolve to an Object type at ' + ('runtime for field ' + info.parentType.name + '.' + info.fieldName + ' with ') + ('value "' + String(result) + '", received "' + String(runtimeType) + '". ') + ('Either the ' + returnType.name + ' type should provide a "resolveType" ') + 'function or each possible types should provide an ' + '"isTypeOf" function.', fieldNodes);
+    throw new GraphQLError('Abstract type ' + returnType.name + ' must resolve to an Object type at ' + ('runtime for field ' + info.parentType.name + '.' + info.fieldName + ' with ') + ('value "' + inspect(result) + '", received "' + inspect(runtimeType) + '". ') + ('Either the ' + returnType.name + ' type should provide a "resolveType" ') + 'function or each possible types should provide an ' + '"isTypeOf" function.', fieldNodes);
   }
 
   if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
@@ -678,7 +679,7 @@ function completeObjectValue(exeContext, returnType, fieldNodes, info, path, res
 }
 
 function invalidReturnTypeError(returnType, result, fieldNodes) {
-  return new GraphQLError('Expected value of type "' + returnType.name + '" but got: ' + String(result) + '.', fieldNodes);
+  return new GraphQLError('Expected value of type "' + returnType.name + '" but got: ' + inspect(result) + '.', fieldNodes);
 }
 
 function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, result) {

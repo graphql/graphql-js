@@ -9,6 +9,7 @@
 
 import { forEach, isCollection } from 'iterall';
 
+import inspect from '../jsutils/inspect';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import objectValues from '../jsutils/objectValues';
@@ -136,7 +137,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
       };
     }
 
-    throw new TypeError('Cannot convert value to AST: ' + String(serialized));
+    throw new TypeError(`Cannot convert value to AST: ${inspect(serialized)}`);
   }
 
   /* istanbul ignore next */

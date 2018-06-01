@@ -13,6 +13,10 @@ var _definition = require('./definition');
 
 var _directives = require('./directives');
 
+var _inspect = require('../jsutils/inspect');
+
+var _inspect2 = _interopRequireDefault(_inspect);
+
 var _introspection = require('./introspection');
 
 var _find = require('../jsutils/find');
@@ -94,9 +98,9 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
       // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
       !((typeof config === 'undefined' ? 'undefined' : _typeof(config)) === 'object') ? (0, _invariant2.default)(0, 'Must provide configuration object.') : void 0;
-      !(!config.types || Array.isArray(config.types)) ? (0, _invariant2.default)(0, '"types" must be Array if provided but got: ' + String(config.types) + '.') : void 0;
-      !(!config.directives || Array.isArray(config.directives)) ? (0, _invariant2.default)(0, '"directives" must be Array if provided but got: ' + (String(config.directives) + '.')) : void 0;
-      !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? (0, _invariant2.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + (String(config.allowedLegacyNames) + '.')) : void 0;
+      !(!config.types || Array.isArray(config.types)) ? (0, _invariant2.default)(0, '"types" must be Array if provided but got: ' + (0, _inspect2.default)(config.types) + '.') : void 0;
+      !(!config.directives || Array.isArray(config.directives)) ? (0, _invariant2.default)(0, '"directives" must be Array if provided but got: ' + ((0, _inspect2.default)(config.directives) + '.')) : void 0;
+      !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? (0, _invariant2.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + ((0, _inspect2.default)(config.allowedLegacyNames) + '.')) : void 0;
     }
 
     this.__allowedLegacyNames = config.allowedLegacyNames;
