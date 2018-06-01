@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import inspect from '../../jsutils/inspect';
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { FieldNode } from '../../language/ast';
@@ -20,7 +21,7 @@ export function noSubselectionAllowedMessage(
 ): string {
   return (
     `Field "${fieldName}" must not have a selection since ` +
-    `type "${String(type)}" has no subfields.`
+    `type "${inspect(type)}" has no subfields.`
   );
 }
 
@@ -29,7 +30,7 @@ export function requiredSubselectionMessage(
   type: GraphQLType,
 ): string {
   return (
-    `Field "${fieldName}" of type "${String(type)}" must have a ` +
+    `Field "${fieldName}" of type "${inspect(type)}" must have a ` +
     `selection of subfields. Did you mean "${fieldName} { ... }"?`
   );
 }

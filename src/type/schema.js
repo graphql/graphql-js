@@ -31,6 +31,7 @@ import {
   specifiedDirectives,
 } from './directives';
 import type { GraphQLError } from '../error/GraphQLError';
+import inspect from '../jsutils/inspect';
 import { __Schema } from './introspection';
 import find from '../jsutils/find';
 import instanceOf from '../jsutils/instanceOf';
@@ -103,17 +104,17 @@ export class GraphQLSchema {
       );
       invariant(
         !config.types || Array.isArray(config.types),
-        `"types" must be Array if provided but got: ${String(config.types)}.`,
+        `"types" must be Array if provided but got: ${inspect(config.types)}.`,
       );
       invariant(
         !config.directives || Array.isArray(config.directives),
         '"directives" must be Array if provided but got: ' +
-          `${String(config.directives)}.`,
+          `${inspect(config.directives)}.`,
       );
       invariant(
         !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames),
         '"allowedLegacyNames" must be Array if provided but got: ' +
-          `${String(config.allowedLegacyNames)}.`,
+          `${inspect(config.allowedLegacyNames)}.`,
       );
     }
 

@@ -9,6 +9,7 @@
 
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
+import inspect from '../../jsutils/inspect';
 import keyMap from '../../jsutils/keyMap';
 import { isNonNullType } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
@@ -21,7 +22,7 @@ export function missingFieldArgMessage(
 ): string {
   return (
     `Field "${fieldName}" argument "${argName}" of type ` +
-    `"${String(type)}" is required but not provided.`
+    `"${inspect(type)}" is required but not provided.`
   );
 }
 
@@ -32,7 +33,7 @@ export function missingDirectiveArgMessage(
 ): string {
   return (
     `Directive "@${directiveName}" argument "${argName}" of type ` +
-    `"${String(type)}" is required but not provided.`
+    `"${inspect(type)}" is required but not provided.`
   );
 }
 

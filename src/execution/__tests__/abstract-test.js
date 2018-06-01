@@ -377,6 +377,50 @@ describe('Execute: Handles execution of abstract types', () => {
     });
   });
 
+  it('returning invalid value from resolveType yields useful error', () => {
+    const fooInterface = new GraphQLInterfaceType({
+      name: 'FooInterface',
+      fields: { bar: { type: GraphQLString } },
+      resolveType: () => [],
+    });
+
+    const fooObject = new GraphQLObjectType({
+      name: 'FooObject',
+      fields: { bar: { type: GraphQLString } },
+      interfaces: [fooInterface],
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          foo: {
+            type: fooInterface,
+            resolve: () => 'dummy',
+          },
+        },
+      }),
+      types: [fooObject],
+    });
+
+    const result = graphqlSync(schema, '{ foo { bar } }');
+
+    expect(result).to.deep.equal({
+      data: { foo: null },
+      errors: [
+        {
+          message:
+            'Abstract type FooInterface must resolve to an Object type at ' +
+            'runtime for field Query.foo with value "dummy", received "[]". ' +
+            'Either the FooInterface type should provide a "resolveType" ' +
+            'function or each possible types should provide an "isTypeOf" function.',
+          locations: [{ line: 1, column: 3 }],
+          path: ['foo'],
+        },
+      ],
+    });
+  });
+
   it('resolveType allows resolving with type name', () => {
     const PetType = new GraphQLInterfaceType({
       name: 'Pet',
