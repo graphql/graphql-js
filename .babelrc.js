@@ -1,5 +1,5 @@
 module.exports = {
-  "presets": [["env", {
+  "presets": [["@babel/preset-env", {
     "modules": process.env.BABEL_MODULES ? false : 'commonjs',
     "targets": {
       "node": 6,
@@ -15,12 +15,12 @@ module.exports = {
   "plugins": [
     "./resources/inline-invariant",
     "syntax-async-functions",
-    "syntax-async-generators",
-    "transform-class-properties",
-    "transform-flow-strip-types",
-    "transform-object-rest-spread",
-    ["transform-es2015-classes", {"loose": true}],
-    ["transform-es2015-destructuring", {"loose": true}],
-    ["transform-es2015-spread", {"loose": true}]
+    "@babel/plugin-syntax-async-generators",
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-transform-flow-strip-types",
+    "@babel/plugin-proposal-object-rest-spread",
+    ["@babel/plugin-transform-classes", {"loose": true}],
+    ["@babel/plugin-transform-destructuring", {"loose": true}],
+    ["@babel/plugin-transform-spread", {"loose": true}]
   ]
 };
