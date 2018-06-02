@@ -6,12 +6,11 @@
  *
  *  strict
  */
-
 var MAX_LENGTH = 5;
-
 /**
  * Given [ A, B, C ] return 'A, B, or C'.
  */
+
 export default function orList(items) {
   var selected = items.slice(0, MAX_LENGTH);
   return selected.reduce(function (list, quoted, index) {

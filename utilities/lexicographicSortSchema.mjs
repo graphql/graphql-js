@@ -1,31 +1,33 @@
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
-import keyValMap from '../jsutils/keyValMap'; /**
-                                               * Copyright (c) 2015-present, Facebook, Inc.
-                                               *
-                                               * This source code is licensed under the MIT license found in the
-                                               * LICENSE file in the root directory of this source tree.
-                                               *
-                                               *  strict
-                                               */
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
+import keyValMap from '../jsutils/keyValMap';
 import objectValues from '../jsutils/objectValues';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
-
 import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
 import { isSpecifiedScalarType } from '../type/scalars';
 import { isIntrospectionType } from '../type/introspection';
-
 /**
  * Sort GraphQLSchema.
  */
+
 export function lexicographicSortSchema(schema) {
   var cache = Object.create(null);
 
   var sortMaybeType = function sortMaybeType(maybeType) {
     return maybeType && sortNamedType(maybeType);
   };
+
   return new GraphQLSchema({
     types: sortTypes(objectValues(schema.getTypeMap())),
     directives: sortByName(schema.getDirectives()).map(sortDirective),
@@ -51,7 +53,7 @@ export function lexicographicSortSchema(schema) {
     return keyValMap(sortByName(args), function (arg) {
       return arg.name;
     }, function (arg) {
-      return _extends({}, arg, {
+      return _objectSpread({}, arg, {
         type: sortType(arg.type)
       });
     });
@@ -88,6 +90,7 @@ export function lexicographicSortSchema(schema) {
     } else if (isNonNullType(type)) {
       return new GraphQLNonNull(sortType(type.ofType));
     }
+
     return sortNamedType(type);
   }
 
@@ -101,10 +104,12 @@ export function lexicographicSortSchema(schema) {
     }
 
     var sortedType = cache[type.name];
+
     if (!sortedType) {
       sortedType = sortNamedTypeImpl(type);
       cache[type.name] = sortedType;
     }
+
     return sortedType;
   }
 
@@ -172,7 +177,8 @@ export function lexicographicSortSchema(schema) {
         astNode: type.astNode
       });
     }
-    throw new Error('Unknown type: "' + type + '"');
+
+    throw new Error("Unknown type: \"".concat(type, "\""));
   }
 }
 
@@ -181,30 +187,11 @@ function sortObjMap(map, sortValueFn) {
   var sortedKeys = sortBy(Object.keys(map), function (x) {
     return x;
   });
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = sortedKeys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var key = _step.value;
-
-      var value = map[key];
-      sortedMap[key] = sortValueFn ? sortValueFn(value) : value;
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+  for (var _i = 0; _i < sortedKeys.length; _i++) {
+    var key = sortedKeys[_i];
+    var value = map[key];
+    sortedMap[key] = sortValueFn ? sortValueFn(value) : value;
   }
 
   return sortedMap;

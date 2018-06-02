@@ -6,9 +6,7 @@
  *
  *  strict
  */
-
 import { coerceValue } from './coerceValue';
-
 
 /**
  * Deprecated. Use coerceValue() directly for richer information.

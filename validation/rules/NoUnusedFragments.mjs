@@ -1,27 +1,25 @@
-
-import { GraphQLError } from '../../error'; /**
-                                             * Copyright (c) 2015-present, Facebook, Inc.
-                                             *
-                                             * This source code is licensed under the MIT license found in the
-                                             * LICENSE file in the root directory of this source tree.
-                                             *
-                                             *  strict
-                                             */
-
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
+import { GraphQLError } from '../../error';
 export function unusedFragMessage(fragName) {
-  return 'Fragment "' + fragName + '" is never used.';
+  return "Fragment \"".concat(fragName, "\" is never used.");
 }
-
 /**
  * No unused fragments
  *
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
  */
+
 export function NoUnusedFragments(context) {
   var operationDefs = [];
   var fragmentDefs = [];
-
   return {
     OperationDefinition: function OperationDefinition(node) {
       operationDefs.push(node);
@@ -31,7 +29,6 @@ export function NoUnusedFragments(context) {
       fragmentDefs.push(node);
       return false;
     },
-
     Document: {
       leave: function leave() {
         var fragmentNameUsed = Object.create(null);
@@ -40,9 +37,9 @@ export function NoUnusedFragments(context) {
             fragmentNameUsed[fragment.name.value] = true;
           });
         });
-
         fragmentDefs.forEach(function (fragmentDef) {
           var fragName = fragmentDef.name.value;
+
           if (fragmentNameUsed[fragName] !== true) {
             context.reportError(new GraphQLError(unusedFragMessage(fragName), [fragmentDef]));
           }

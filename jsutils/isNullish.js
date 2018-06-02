@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = isNullish;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *

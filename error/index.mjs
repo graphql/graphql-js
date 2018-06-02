@@ -6,7 +6,6 @@
  *
  *  strict
  */
-
 export { GraphQLError } from './GraphQLError';
 export { syntaxError } from './syntaxError';
 export { locatedError } from './locatedError';

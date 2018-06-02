@@ -8,9 +8,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  *  strict
  */
-
 import { $$asyncIterator, getAsyncIterator } from 'iterall';
-
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
@@ -18,15 +16,17 @@ import { $$asyncIterator, getAsyncIterator } from 'iterall';
  */
 export default function mapAsyncIterator(iterable, callback, rejectCallback) {
   var iterator = getAsyncIterator(iterable);
-  var $return = void 0;
-  var abruptClose = void 0;
-  // $FlowFixMe(>=0.68.0)
+  var $return;
+  var abruptClose; // $FlowFixMe(>=0.68.0)
+
   if (typeof iterator.return === 'function') {
     $return = iterator.return;
+
     abruptClose = function abruptClose(error) {
       var rethrow = function rethrow() {
         return Promise.reject(error);
       };
+
       return $return.call(iterator).then(rethrow, rethrow);
     };
   }
@@ -35,29 +35,36 @@ export default function mapAsyncIterator(iterable, callback, rejectCallback) {
     return result.done ? result : asyncMapValue(result.value, callback).then(iteratorResult, abruptClose);
   }
 
-  var mapReject = void 0;
+  var mapReject;
+
   if (rejectCallback) {
     // Capture rejectCallback to ensure it cannot be null.
     var reject = rejectCallback;
+
     mapReject = function mapReject(error) {
       return asyncMapValue(error, reject).then(iteratorResult, abruptClose);
     };
   }
-
   /* TODO: Flow doesn't support symbols as keys:
      https://github.com/facebook/flow/issues/3258 */
+
+
   return _defineProperty({
     next: function next() {
       return iterator.next().then(mapResult, mapReject);
     },
     return: function _return() {
-      return $return ? $return.call(iterator).then(mapResult, mapReject) : Promise.resolve({ value: undefined, done: true });
+      return $return ? $return.call(iterator).then(mapResult, mapReject) : Promise.resolve({
+        value: undefined,
+        done: true
+      });
     },
     throw: function _throw(error) {
       // $FlowFixMe(>=0.68.0)
       if (typeof iterator.throw === 'function') {
         return iterator.throw(error).then(mapResult, mapReject);
       }
+
       return Promise.reject(error).catch(abruptClose);
     }
   }, $$asyncIterator, function () {
@@ -72,5 +79,8 @@ function asyncMapValue(value, callback) {
 }
 
 function iteratorResult(value) {
-  return { value: value, done: false };
+  return {
+    value: value,
+    done: false
+  };
 }

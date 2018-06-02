@@ -6,16 +6,11 @@
  *
  *  strict
  */
-
 export { getLocation } from './location';
-
 export { Kind } from './kinds';
-
 export { createLexer, TokenKind } from './lexer';
 export { parse, parseValue, parseType } from './parser';
 export { print } from './printer';
 export { Source } from './source';
 export { visit, visitInParallel, visitWithTypeInfo, getVisitFn, BREAK } from './visitor';
-
-
 export { DirectiveLocation } from './directiveLocation';

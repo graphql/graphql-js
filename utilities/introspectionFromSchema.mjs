@@ -6,13 +6,11 @@
  *
  *  strict
  */
-
 import invariant from '../jsutils/invariant';
 import { getIntrospectionQuery } from './introspectionQuery';
 import { GraphQLSchema } from '../type/schema';
 import { execute } from '../execution/execute';
 import { parse } from '../language/parser';
-
 
 /**
  * Build an IntrospectionQuery from a GraphQLSchema

@@ -6,6 +6,5 @@
  *
  *  strict
  */
-
 export { execute, defaultFieldResolver, responsePathAsArray } from './execute';
 export { getDirectiveValues } from './values';

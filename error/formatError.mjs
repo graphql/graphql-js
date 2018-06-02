@@ -6,9 +6,7 @@
  *
  *  strict
  */
-
 import invariant from '../jsutils/invariant';
-
 
 /**
  * Given a GraphQLError, format it according to the rules described by the
@@ -20,6 +18,14 @@ export function formatError(error) {
   var locations = error.locations;
   var path = error.path;
   var extensions = error.extensions;
-
-  return extensions ? { message: message, locations: locations, path: path, extensions: extensions } : { message: message, locations: locations, path: path };
+  return extensions ? {
+    message: message,
+    locations: locations,
+    path: path,
+    extensions: extensions
+  } : {
+    message: message,
+    locations: locations,
+    path: path
+  };
 }

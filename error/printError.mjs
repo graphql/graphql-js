@@ -6,9 +6,7 @@
  *
  *  strict
  */
-
 import { getLocation } from '../language/location';
-
 
 /**
  * Prints a GraphQLError to a string, representing useful location information
@@ -16,6 +14,7 @@ import { getLocation } from '../language/location';
  */
 export function printError(error) {
   var printedLocations = [];
+
   if (error.nodes) {
     error.nodes.forEach(function (node) {
       if (node.loc) {
@@ -28,28 +27,25 @@ export function printError(error) {
       printedLocations.push(highlightSourceAtLocation(source, location));
     });
   }
+
   return printedLocations.length === 0 ? error.message : [error.message].concat(printedLocations).join('\n\n') + '\n';
 }
-
 /**
  * Render a helpful description of the location of the error in the GraphQL
  * Source document.
  */
+
 function highlightSourceAtLocation(source, location) {
   var firstLineColumnOffset = source.locationOffset.column - 1;
   var body = whitespace(firstLineColumnOffset) + source.body;
-
   var lineIndex = location.line - 1;
   var lineOffset = source.locationOffset.line - 1;
   var lineNum = location.line + lineOffset;
-
   var columnOffset = location.line === 1 ? firstLineColumnOffset : 0;
   var columnNum = location.column + columnOffset;
-
   var lines = body.split(/\r\n|[\n\r]/g);
-  return source.name + ' (' + lineNum + ':' + columnNum + ')\n' + printPrefixedLines([
-  // Lines specified like this: ["prefix", "string"],
-  [lineNum - 1 + ': ', lines[lineIndex - 1]], [lineNum + ': ', lines[lineIndex]], ['', whitespace(columnNum - 1) + '^'], [lineNum + 1 + ': ', lines[lineIndex + 1]]]);
+  return "".concat(source.name, " (").concat(lineNum, ":").concat(columnNum, ")\n") + printPrefixedLines([// Lines specified like this: ["prefix", "string"],
+  ["".concat(lineNum - 1, ": "), lines[lineIndex - 1]], ["".concat(lineNum, ": "), lines[lineIndex]], ['', whitespace(columnNum - 1) + '^'], ["".concat(lineNum + 1, ": "), lines[lineIndex + 1]]]);
 }
 
 function printPrefixedLines(lines) {
@@ -58,7 +54,6 @@ function printPrefixedLines(lines) {
         line = _ref[1];
     return line !== undefined;
   });
-
   var padLen = 0;
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
@@ -66,9 +61,8 @@ function printPrefixedLines(lines) {
 
   try {
     for (var _iterator = existingLines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var _ref2 = _step.value;
-      var prefix = _ref2[0];
-
+      var _ref4 = _step.value;
+      var prefix = _ref4[0];
       padLen = Math.max(padLen, prefix.length);
     }
   } catch (err) {
@@ -76,7 +70,7 @@ function printPrefixedLines(lines) {
     _iteratorError = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
+      if (!_iteratorNormalCompletion && _iterator.return != null) {
         _iterator.return();
       }
     } finally {

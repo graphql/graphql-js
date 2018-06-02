@@ -1,61 +1,37 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.GraphQLSchema = undefined;
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 exports.isSchema = isSchema;
+exports.GraphQLSchema = void 0;
 
-var _definition = require('./definition');
+var _definition = require("./definition");
 
-var _directives = require('./directives');
+var _directives = require("./directives");
 
-var _inspect = require('../jsutils/inspect');
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _inspect2 = _interopRequireDefault(_inspect);
+var _introspection = require("./introspection");
 
-var _introspection = require('./introspection');
+var _find = _interopRequireDefault(require("../jsutils/find"));
 
-var _find = require('../jsutils/find');
+var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
-var _find2 = _interopRequireDefault(_find);
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _instanceOf = require('../jsutils/instanceOf');
-
-var _instanceOf2 = _interopRequireDefault(_instanceOf);
-
-var _invariant = require('../jsutils/invariant');
-
-var _invariant2 = _interopRequireDefault(_invariant);
-
-var _objectValues = require('../jsutils/objectValues');
-
-var _objectValues2 = _interopRequireDefault(_objectValues);
+var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } } /**
-                                                                                                                                                           * Copyright (c) 2015-present, Facebook, Inc.
-                                                                                                                                                           *
-                                                                                                                                                           * This source code is licensed under the MIT license found in the
-                                                                                                                                                           * LICENSE file in the root directory of this source tree.
-                                                                                                                                                           *
-                                                                                                                                                           *  strict
-                                                                                                                                                           */
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 // eslint-disable-next-line no-redeclare
-
-
-/**
- * Test if the given value is a GraphQL schema.
- */
 function isSchema(schema) {
-  return (0, _instanceOf2.default)(schema, GraphQLSchema);
+  return (0, _instanceOf.default)(schema, GraphQLSchema);
 }
-
 /**
  * Schema Definition
  *
@@ -83,12 +59,36 @@ function isSchema(schema) {
  *
  */
 
-var GraphQLSchema = exports.GraphQLSchema = function () {
+
+var GraphQLSchema =
+/*#__PURE__*/
+function () {
   // Used as a cache for validateSchema().
+  // Referenced by validateSchema().
   function GraphQLSchema(config) {
     var _this = this;
 
-    _classCallCheck(this, GraphQLSchema);
+    _defineProperty(this, "astNode", void 0);
+
+    _defineProperty(this, "extensionASTNodes", void 0);
+
+    _defineProperty(this, "_queryType", void 0);
+
+    _defineProperty(this, "_mutationType", void 0);
+
+    _defineProperty(this, "_subscriptionType", void 0);
+
+    _defineProperty(this, "_directives", void 0);
+
+    _defineProperty(this, "_typeMap", void 0);
+
+    _defineProperty(this, "_implementations", void 0);
+
+    _defineProperty(this, "_possibleTypeMap", void 0);
+
+    _defineProperty(this, "__validationErrors", void 0);
+
+    _defineProperty(this, "__allowedLegacyNames", void 0);
 
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
@@ -97,49 +97,46 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
     } else {
       // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
-      !((typeof config === 'undefined' ? 'undefined' : _typeof(config)) === 'object') ? (0, _invariant2.default)(0, 'Must provide configuration object.') : void 0;
-      !(!config.types || Array.isArray(config.types)) ? (0, _invariant2.default)(0, '"types" must be Array if provided but got: ' + (0, _inspect2.default)(config.types) + '.') : void 0;
-      !(!config.directives || Array.isArray(config.directives)) ? (0, _invariant2.default)(0, '"directives" must be Array if provided but got: ' + ((0, _inspect2.default)(config.directives) + '.')) : void 0;
-      !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? (0, _invariant2.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + ((0, _inspect2.default)(config.allowedLegacyNames) + '.')) : void 0;
+      !(_typeof(config) === 'object') ? (0, _invariant.default)(0, 'Must provide configuration object.') : void 0;
+      !(!config.types || Array.isArray(config.types)) ? (0, _invariant.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), ".")) : void 0;
+      !(!config.directives || Array.isArray(config.directives)) ? (0, _invariant.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), ".")) : void 0;
+      !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? (0, _invariant.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.allowedLegacyNames), ".")) : void 0;
     }
 
     this.__allowedLegacyNames = config.allowedLegacyNames;
     this._queryType = config.query;
     this._mutationType = config.mutation;
-    this._subscriptionType = config.subscription;
-    // Provide specified directives (e.g. @include and @skip) by default.
+    this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
+
     this._directives = config.directives || _directives.specifiedDirectives;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = config.extensionASTNodes; // Build type map now to detect any errors within this schema.
 
-    // Build type map now to detect any errors within this schema.
     var initialTypes = [this.getQueryType(), this.getMutationType(), this.getSubscriptionType(), _introspection.__Schema];
-
     var types = config.types;
+
     if (types) {
       initialTypes = initialTypes.concat(types);
-    }
+    } // Keep track of all types referenced within the schema.
 
-    // Keep track of all types referenced within the schema.
-    var typeMap = Object.create(null);
 
-    // First by deeply visiting all initial types.
-    typeMap = initialTypes.reduce(typeMapReducer, typeMap);
+    var typeMap = Object.create(null); // First by deeply visiting all initial types.
 
-    // Then by deeply visiting all directive types.
-    typeMap = this._directives.reduce(typeMapDirectiveReducer, typeMap);
+    typeMap = initialTypes.reduce(typeMapReducer, typeMap); // Then by deeply visiting all directive types.
 
-    // Storing the resulting map for reference by the schema.
-    this._typeMap = typeMap;
+    typeMap = this._directives.reduce(typeMapDirectiveReducer, typeMap); // Storing the resulting map for reference by the schema.
 
-    // Keep track of all implementations by interface name.
+    this._typeMap = typeMap; // Keep track of all implementations by interface name.
+
     this._implementations = Object.create(null);
     Object.keys(this._typeMap).forEach(function (typeName) {
       var type = _this._typeMap[typeName];
+
       if ((0, _definition.isObjectType)(type)) {
         type.getInterfaces().forEach(function (iface) {
           if ((0, _definition.isInterfaceType)(iface)) {
             var impls = _this._implementations[iface.name];
+
             if (impls) {
               impls.push(type);
             } else {
@@ -152,38 +149,40 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
       }
     });
   }
-  // Referenced by validateSchema().
 
+  var _proto = GraphQLSchema.prototype;
 
-  GraphQLSchema.prototype.getQueryType = function getQueryType() {
+  _proto.getQueryType = function getQueryType() {
     return this._queryType;
   };
 
-  GraphQLSchema.prototype.getMutationType = function getMutationType() {
+  _proto.getMutationType = function getMutationType() {
     return this._mutationType;
   };
 
-  GraphQLSchema.prototype.getSubscriptionType = function getSubscriptionType() {
+  _proto.getSubscriptionType = function getSubscriptionType() {
     return this._subscriptionType;
   };
 
-  GraphQLSchema.prototype.getTypeMap = function getTypeMap() {
+  _proto.getTypeMap = function getTypeMap() {
     return this._typeMap;
   };
 
-  GraphQLSchema.prototype.getType = function getType(name) {
+  _proto.getType = function getType(name) {
     return this.getTypeMap()[name];
   };
 
-  GraphQLSchema.prototype.getPossibleTypes = function getPossibleTypes(abstractType) {
+  _proto.getPossibleTypes = function getPossibleTypes(abstractType) {
     if ((0, _definition.isUnionType)(abstractType)) {
       return abstractType.getTypes();
     }
+
     return this._implementations[abstractType.name];
   };
 
-  GraphQLSchema.prototype.isPossibleType = function isPossibleType(abstractType, possibleType) {
+  _proto.isPossibleType = function isPossibleType(abstractType, possibleType) {
     var possibleTypeMap = this._possibleTypeMap;
+
     if (!possibleTypeMap) {
       this._possibleTypeMap = possibleTypeMap = Object.create(null);
     }
@@ -198,12 +197,12 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
     return Boolean(possibleTypeMap[abstractType.name][possibleType.name]);
   };
 
-  GraphQLSchema.prototype.getDirectives = function getDirectives() {
+  _proto.getDirectives = function getDirectives() {
     return this._directives;
   };
 
-  GraphQLSchema.prototype.getDirective = function getDirective(name) {
-    return (0, _find2.default)(this.getDirectives(), function (directive) {
+  _proto.getDirective = function getDirective(name) {
+    return (0, _find.default)(this.getDirectives(), function (directive) {
       return directive.name === name;
     });
   };
@@ -211,19 +210,23 @@ var GraphQLSchema = exports.GraphQLSchema = function () {
   return GraphQLSchema;
 }();
 
+exports.GraphQLSchema = GraphQLSchema;
+
 function typeMapReducer(map, type) {
   if (!type) {
     return map;
   }
+
   if ((0, _definition.isWrappingType)(type)) {
     return typeMapReducer(map, type.ofType);
   }
+
   if (map[type.name]) {
-    !(map[type.name] === type) ? (0, _invariant2.default)(0, 'Schema must contain unique named types but contains multiple ' + ('types named "' + type.name + '".')) : void 0;
+    !(map[type.name] === type) ? (0, _invariant.default)(0, 'Schema must contain unique named types but contains multiple ' + "types named \"".concat(type.name, "\".")) : void 0;
     return map;
   }
-  map[type.name] = type;
 
+  map[type.name] = type;
   var reducedMap = map;
 
   if ((0, _definition.isUnionType)(type)) {
@@ -235,19 +238,20 @@ function typeMapReducer(map, type) {
   }
 
   if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
-    (0, _objectValues2.default)(type.getFields()).forEach(function (field) {
+    (0, _objectValues.default)(type.getFields()).forEach(function (field) {
       if (field.args) {
         var fieldArgTypes = field.args.map(function (arg) {
           return arg.type;
         });
         reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       }
+
       reducedMap = typeMapReducer(reducedMap, field.type);
     });
   }
 
   if ((0, _definition.isInputObjectType)(type)) {
-    (0, _objectValues2.default)(type.getFields()).forEach(function (field) {
+    (0, _objectValues.default)(type.getFields()).forEach(function (field) {
       reducedMap = typeMapReducer(reducedMap, field.type);
     });
   }
@@ -260,6 +264,7 @@ function typeMapDirectiveReducer(map, directive) {
   if (!(0, _directives.isDirective)(directive)) {
     return map;
   }
+
   return directive.args.reduce(function (_map, arg) {
     return typeMapReducer(_map, arg.type);
   }, map);

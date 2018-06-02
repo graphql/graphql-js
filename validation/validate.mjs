@@ -6,17 +6,14 @@
  *
  *  strict
  */
-
 import invariant from '../jsutils/invariant';
 import { GraphQLError } from '../error';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
-
 import { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules } from './specifiedRules';
 import ValidationContext from './ValidationContext';
-
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -33,25 +30,26 @@ import ValidationContext from './ValidationContext';
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
+
 export function validate(schema, ast, rules, typeInfo) {
-  !ast ? invariant(0, 'Must provide document') : void 0;
-  // If the schema used for validation is invalid, throw an error.
+  !ast ? invariant(0, 'Must provide document') : void 0; // If the schema used for validation is invalid, throw an error.
+
   assertValidSchema(schema);
   return visitUsingRules(schema, typeInfo || new TypeInfo(schema), ast, rules || specifiedRules);
 }
-
 /**
  * This uses a specialized visitor which runs multiple visitors in parallel,
  * while maintaining the visitor skip and break API.
  *
  * @internal
  */
+
 function visitUsingRules(schema, typeInfo, documentAST, rules) {
   var context = new ValidationContext(schema, documentAST, typeInfo);
   var visitors = rules.map(function (rule) {
     return rule(context);
-  });
-  // Visit the whole document with each instance of all provided rules.
+  }); // Visit the whole document with each instance of all provided rules.
+
   visit(documentAST, visitWithTypeInfo(typeInfo, visitInParallel(visitors)));
   return context.getErrors();
 }

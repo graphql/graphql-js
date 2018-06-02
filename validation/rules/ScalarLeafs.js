@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7,42 +7,43 @@ exports.noSubselectionAllowedMessage = noSubselectionAllowedMessage;
 exports.requiredSubselectionMessage = requiredSubselectionMessage;
 exports.ScalarLeafs = ScalarLeafs;
 
-var _inspect = require('../../jsutils/inspect');
+var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
-var _inspect2 = _interopRequireDefault(_inspect);
+var _error = require("../../error");
 
-var _error = require('../../error');
-
-var _definition = require('../../type/definition');
+var _definition = require("../../type/definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 function noSubselectionAllowedMessage(fieldName, type) {
-  return 'Field "' + fieldName + '" must not have a selection since ' + ('type "' + (0, _inspect2.default)(type) + '" has no subfields.');
-} /**
-   * Copyright (c) 2015-present, Facebook, Inc.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   *  strict
-   */
-
-function requiredSubselectionMessage(fieldName, type) {
-  return 'Field "' + fieldName + '" of type "' + (0, _inspect2.default)(type) + '" must have a ' + ('selection of subfields. Did you mean "' + fieldName + ' { ... }"?');
+  return "Field \"".concat(fieldName, "\" must not have a selection since ") + "type \"".concat((0, _inspect.default)(type), "\" has no subfields.");
 }
 
+function requiredSubselectionMessage(fieldName, type) {
+  return "Field \"".concat(fieldName, "\" of type \"").concat((0, _inspect.default)(type), "\" must have a ") + "selection of subfields. Did you mean \"".concat(fieldName, " { ... }\"?");
+}
 /**
  * Scalar leafs
  *
  * A GraphQL document is valid only if all leaf fields (fields without
  * sub selections) are of scalar or enum types.
  */
+
+
 function ScalarLeafs(context) {
   return {
     Field: function Field(node) {
       var type = context.getType();
       var selectionSet = node.selectionSet;
+
       if (type) {
         if ((0, _definition.isLeafType)((0, _definition.getNamedType)(type))) {
           if (selectionSet) {

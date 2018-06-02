@@ -1,9 +1,10 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = orList;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -12,12 +13,11 @@ exports.default = orList;
  *
  *  strict
  */
-
 var MAX_LENGTH = 5;
-
 /**
  * Given [ A, B, C ] return 'A, B, or C'.
  */
+
 function orList(items) {
   var selected = items.slice(0, MAX_LENGTH);
   return selected.reduce(function (list, quoted, index) {

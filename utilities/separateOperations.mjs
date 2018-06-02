@@ -6,9 +6,7 @@
  *
  *  strict
  */
-
 import { visit } from '../language/visitor';
-
 
 /**
  * separateOperations accepts a single AST document which may contain many
@@ -21,10 +19,9 @@ export function separateOperations(documentAST) {
   var fragments = Object.create(null);
   var positions = new Map();
   var depGraph = Object.create(null);
-  var fromName = void 0;
-  var idx = 0;
+  var fromName;
+  var idx = 0; // Populate metadata and build a dependency graph.
 
-  // Populate metadata and build a dependency graph.
   visit(documentAST, {
     OperationDefinition: function OperationDefinition(node) {
       fromName = opName(node);
@@ -40,18 +37,16 @@ export function separateOperations(documentAST) {
       var toName = node.name.value;
       (depGraph[fromName] || (depGraph[fromName] = Object.create(null)))[toName] = true;
     }
-  });
-
-  // For each operation, produce a new synthesized AST which includes only what
+  }); // For each operation, produce a new synthesized AST which includes only what
   // is necessary for completing that operation.
+
   var separatedDocumentASTs = Object.create(null);
   operations.forEach(function (operation) {
     var operationName = opName(operation);
     var dependencies = Object.create(null);
-    collectTransitiveDependencies(dependencies, depGraph, operationName);
-
-    // The list of definition nodes to be included for this operation, sorted
+    collectTransitiveDependencies(dependencies, depGraph, operationName); // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
+
     var definitions = [operation];
     Object.keys(dependencies).forEach(function (name) {
       definitions.push(fragments[name]);
@@ -59,25 +54,24 @@ export function separateOperations(documentAST) {
     definitions.sort(function (n1, n2) {
       return (positions.get(n1) || 0) - (positions.get(n2) || 0);
     });
-
     separatedDocumentASTs[operationName] = {
       kind: 'Document',
       definitions: definitions
     };
   });
-
   return separatedDocumentASTs;
 }
 
 // Provides the empty string for anonymous operations.
 function opName(operation) {
   return operation.name ? operation.name.value : '';
-}
-
-// From a dependency graph, collects a list of transitive dependencies by
+} // From a dependency graph, collects a list of transitive dependencies by
 // recursing through a dependency graph.
+
+
 function collectTransitiveDependencies(collected, depGraph, fromName) {
   var immediateDeps = depGraph[fromName];
+
   if (immediateDeps) {
     Object.keys(immediateDeps).forEach(function (toName) {
       if (!collected[toName]) {

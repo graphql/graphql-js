@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.duplicateOperationNameMessage = duplicateOperationNameMessage;
 exports.UniqueOperationNames = UniqueOperationNames;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,21 +16,22 @@ var _error = require('../../error');
  *
  *  strict
  */
-
 function duplicateOperationNameMessage(operationName) {
-  return 'There can be only one operation named "' + operationName + '".';
+  return "There can be only one operation named \"".concat(operationName, "\".");
 }
-
 /**
  * Unique operation names
  *
  * A GraphQL document is only valid if all defined operations have unique names.
  */
+
+
 function UniqueOperationNames(context) {
   var knownOperationNames = Object.create(null);
   return {
     OperationDefinition: function OperationDefinition(node) {
       var operationName = node.name;
+
       if (operationName) {
         if (knownOperationNames[operationName.value]) {
           context.reportError(new _error.GraphQLError(duplicateOperationNameMessage(operationName.value), [knownOperationNames[operationName.value], operationName]));
@@ -38,9 +39,9 @@ function UniqueOperationNames(context) {
           knownOperationNames[operationName.value] = operationName;
         }
       }
+
       return false;
     },
-
     FragmentDefinition: function FragmentDefinition() {
       return false;
     }

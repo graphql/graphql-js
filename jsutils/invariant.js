@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = invariant;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -12,7 +13,6 @@ exports.default = invariant;
  *
  *  strict
  */
-
 function invariant(condition, message) {
   /* istanbul ignore else */
   if (!condition) {

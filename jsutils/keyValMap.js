@@ -1,10 +1,18 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = keyValMap;
 
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
@@ -27,11 +35,4 @@ function keyValMap(list, keyFn, valFn) {
   return list.reduce(function (map, item) {
     return map[keyFn(item)] = valFn(item), map;
   }, Object.create(null));
-} /**
-   * Copyright (c) 2015-present, Facebook, Inc.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   *  strict
-   */
+}

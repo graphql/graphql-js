@@ -1,22 +1,14 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.typeFromAST = typeFromAST;
 
-var _kinds = require('../language/kinds');
+var _kinds = require("../language/kinds");
 
-var _definition = require('../type/definition');
+var _definition = require("../type/definition");
 
-/**
- * Given a Schema and an AST node describing a type, return a GraphQLType
- * definition which applies to that type. For example, if provided the parsed
- * AST node for `[User]`, a GraphQLList instance will be returned, containing
- * the type called "User" found in the schema. If a type called "User" is not
- * found in the schema, then undefined will be returned.
- */
-/* eslint-disable no-redeclare */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -25,21 +17,25 @@ var _definition = require('../type/definition');
  *
  *  strict
  */
-
 function typeFromAST(schema, typeNode) {
   /* eslint-enable no-redeclare */
-  var innerType = void 0;
+  var innerType;
+
   if (typeNode.kind === _kinds.Kind.LIST_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
     return innerType && (0, _definition.GraphQLList)(innerType);
   }
+
   if (typeNode.kind === _kinds.Kind.NON_NULL_TYPE) {
     innerType = typeFromAST(schema, typeNode.type);
     return innerType && (0, _definition.GraphQLNonNull)(innerType);
   }
+
   if (typeNode.kind === _kinds.Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);
   }
   /* istanbul ignore next */
-  throw new Error('Unexpected type kind: ' + typeNode.kind + '.');
+
+
+  throw new Error("Unexpected type kind: ".concat(typeNode.kind, "."));
 }

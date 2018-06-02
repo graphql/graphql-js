@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.singleFieldOnlyMessage = singleFieldOnlyMessage;
 exports.SingleFieldSubscriptions = SingleFieldSubscriptions;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,16 +16,16 @@ var _error = require('../../error');
  *
  *  strict
  */
-
 function singleFieldOnlyMessage(name) {
-  return (name ? 'Subscription "' + name + '" ' : 'Anonymous Subscription ') + 'must select only one top level field.';
+  return (name ? "Subscription \"".concat(name, "\" ") : 'Anonymous Subscription ') + 'must select only one top level field.';
 }
-
 /**
  * Subscriptions must only include one field.
  *
  * A GraphQL subscription is valid only if it contains a single root field.
  */
+
+
 function SingleFieldSubscriptions(context) {
   return {
     OperationDefinition: function OperationDefinition(node) {

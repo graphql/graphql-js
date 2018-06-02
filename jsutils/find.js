@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = find;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -12,7 +13,6 @@ exports.default = find;
  *
  *  strict
  */
-
 function find(list, predicate) {
   for (var i = 0; i < list.length; i++) {
     if (predicate(list[i])) {

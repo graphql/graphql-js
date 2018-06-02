@@ -6,34 +6,38 @@
  *
  *  strict
  */
-
 import inspect from '../jsutils/inspect';
 import { GraphQLScalarType, isNamedType } from './definition';
-import { Kind } from '../language/kinds';
-
-// As per the GraphQL Spec, Integers are only treated as valid when a valid
+import { Kind } from '../language/kinds'; // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
 //
 // n.b. JavaScript's integers are safe between -(2^53 - 1) and 2^53 - 1 because
 // they are internally represented as IEEE 754 doubles.
+
 var MAX_INT = 2147483647;
 var MIN_INT = -2147483648;
 
 function coerceInt(value) {
   if (Array.isArray(value)) {
-    throw new TypeError('Int cannot represent an array value: [' + String(value) + ']');
+    throw new TypeError("Int cannot represent an array value: [".concat(String(value), "]"));
   }
+
   if (value === '') {
     throw new TypeError('Int cannot represent non 32-bit signed integer value: (empty string)');
   }
+
   var num = Number(value);
+
   if (num !== num || num > MAX_INT || num < MIN_INT) {
     throw new TypeError('Int cannot represent non 32-bit signed integer value: ' + inspect(value));
   }
+
   var int = Math.floor(num);
+
   if (int !== num) {
     throw new TypeError('Int cannot represent non-integer value: ' + inspect(value));
   }
+
   return int;
 }
 
@@ -45,25 +49,31 @@ export var GraphQLInt = new GraphQLScalarType({
   parseLiteral: function parseLiteral(ast) {
     if (ast.kind === Kind.INT) {
       var num = parseInt(ast.value, 10);
+
       if (num <= MAX_INT && num >= MIN_INT) {
         return num;
       }
     }
+
     return undefined;
   }
 });
 
 function coerceFloat(value) {
   if (Array.isArray(value)) {
-    throw new TypeError('Float cannot represent an array value: [' + String(value) + ']');
+    throw new TypeError("Float cannot represent an array value: [".concat(String(value), "]"));
   }
+
   if (value === '') {
     throw new TypeError('Float cannot represent non numeric value: (empty string)');
   }
+
   var num = Number(value);
+
   if (num === num) {
     return num;
   }
+
   throw new TypeError('Float cannot represent non numeric value: ' + inspect(value));
 }
 
@@ -79,8 +89,9 @@ export var GraphQLFloat = new GraphQLScalarType({
 
 function coerceString(value) {
   if (Array.isArray(value)) {
-    throw new TypeError('String cannot represent an array value: ' + inspect(value));
+    throw new TypeError("String cannot represent an array value: ".concat(inspect(value)));
   }
+
   return String(value);
 }
 
@@ -96,8 +107,9 @@ export var GraphQLString = new GraphQLScalarType({
 
 function coerceBoolean(value) {
   if (Array.isArray(value)) {
-    throw new TypeError('Boolean cannot represent an array value: [' + String(value) + ']');
+    throw new TypeError("Boolean cannot represent an array value: [".concat(String(value), "]"));
   }
+
   return Boolean(value);
 }
 
@@ -110,7 +122,6 @@ export var GraphQLBoolean = new GraphQLScalarType({
     return ast.kind === Kind.BOOLEAN ? ast.value : undefined;
   }
 });
-
 export var GraphQLID = new GraphQLScalarType({
   name: 'ID',
   description: 'The `ID` scalar type represents a unique identifier, often used to ' + 'refetch an object or as key for a cache. The ID type appears in a JSON ' + 'response as a String; however, it is not intended to be human-readable. ' + 'When expected as an input type, any string (such as `"4"`) or integer ' + '(such as `4`) input value will be accepted as an ID.',
@@ -120,12 +131,9 @@ export var GraphQLID = new GraphQLScalarType({
     return ast.kind === Kind.STRING || ast.kind === Kind.INT ? ast.value : undefined;
   }
 });
-
 export var specifiedScalarTypes = [GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID];
-
 export function isSpecifiedScalarType(type) {
-  return isNamedType(type) && (
-  // Would prefer to use specifiedScalarTypes.some(), however %checks needs
+  return isNamedType(type) && ( // Would prefer to use specifiedScalarTypes.some(), however %checks needs
   // a simple expression.
   type.name === GraphQLString.name || type.name === GraphQLInt.name || type.name === GraphQLFloat.name || type.name === GraphQLBoolean.name || type.name === GraphQLID.name);
 }

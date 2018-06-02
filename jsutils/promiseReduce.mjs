@@ -6,9 +6,7 @@
  *
  *  strict
  */
-
 import isPromise from './isPromise';
-
 
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return

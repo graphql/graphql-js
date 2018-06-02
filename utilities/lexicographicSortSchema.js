@@ -1,39 +1,29 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /**
-                                                                                                                                                                                                                                                                   * Copyright (c) 2015-present, Facebook, Inc.
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   * This source code is licensed under the MIT license found in the
-                                                                                                                                                                                                                                                                   * LICENSE file in the root directory of this source tree.
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   *  strict
-                                                                                                                                                                                                                                                                   */
-
 exports.lexicographicSortSchema = lexicographicSortSchema;
 
-var _keyValMap = require('../jsutils/keyValMap');
+var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
-var _keyValMap2 = _interopRequireDefault(_keyValMap);
+var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
-var _objectValues = require('../jsutils/objectValues');
+var _schema = require("../type/schema");
 
-var _objectValues2 = _interopRequireDefault(_objectValues);
+var _directives = require("../type/directives");
 
-var _schema = require('../type/schema');
+var _definition = require("../type/definition");
 
-var _directives = require('../type/directives');
+var _scalars = require("../type/scalars");
 
-var _definition = require('../type/definition');
-
-var _scalars = require('../type/scalars');
-
-var _introspection = require('../type/introspection');
+var _introspection = require("../type/introspection");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /**
  * Sort GraphQLSchema.
@@ -44,8 +34,9 @@ function lexicographicSortSchema(schema) {
   var sortMaybeType = function sortMaybeType(maybeType) {
     return maybeType && sortNamedType(maybeType);
   };
+
   return new _schema.GraphQLSchema({
-    types: sortTypes((0, _objectValues2.default)(schema.getTypeMap())),
+    types: sortTypes((0, _objectValues.default)(schema.getTypeMap())),
     directives: sortByName(schema.getDirectives()).map(sortDirective),
     query: sortMaybeType(schema.getQueryType()),
     mutation: sortMaybeType(schema.getMutationType()),
@@ -66,10 +57,10 @@ function lexicographicSortSchema(schema) {
   }
 
   function sortArgs(args) {
-    return (0, _keyValMap2.default)(sortByName(args), function (arg) {
+    return (0, _keyValMap.default)(sortByName(args), function (arg) {
       return arg.name;
     }, function (arg) {
-      return _extends({}, arg, {
+      return _objectSpread({}, arg, {
         type: sortType(arg.type)
       });
     });
@@ -106,6 +97,7 @@ function lexicographicSortSchema(schema) {
     } else if ((0, _definition.isNonNullType)(type)) {
       return new _definition.GraphQLNonNull(sortType(type.ofType));
     }
+
     return sortNamedType(type);
   }
 
@@ -119,10 +111,12 @@ function lexicographicSortSchema(schema) {
     }
 
     var sortedType = cache[type.name];
+
     if (!sortedType) {
       sortedType = sortNamedTypeImpl(type);
       cache[type.name] = sortedType;
     }
+
     return sortedType;
   }
 
@@ -167,7 +161,7 @@ function lexicographicSortSchema(schema) {
     } else if ((0, _definition.isEnumType)(type)) {
       return new _definition.GraphQLEnumType({
         name: type.name,
-        values: (0, _keyValMap2.default)(sortByName(type.getValues()), function (val) {
+        values: (0, _keyValMap.default)(sortByName(type.getValues()), function (val) {
           return val.name;
         }, function (val) {
           return {
@@ -190,7 +184,8 @@ function lexicographicSortSchema(schema) {
         astNode: type.astNode
       });
     }
-    throw new Error('Unknown type: "' + type + '"');
+
+    throw new Error("Unknown type: \"".concat(type, "\""));
   }
 }
 
@@ -199,30 +194,11 @@ function sortObjMap(map, sortValueFn) {
   var sortedKeys = sortBy(Object.keys(map), function (x) {
     return x;
   });
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
 
-  try {
-    for (var _iterator = sortedKeys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var key = _step.value;
-
-      var value = map[key];
-      sortedMap[key] = sortValueFn ? sortValueFn(value) : value;
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+  for (var _i = 0; _i < sortedKeys.length; _i++) {
+    var key = sortedKeys[_i];
+    var value = map[key];
+    sortedMap[key] = sortValueFn ? sortValueFn(value) : value;
   }
 
   return sortedMap;

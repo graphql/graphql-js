@@ -1,11 +1,20 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getOperationAST = getOperationAST;
 
-var _kinds = require('../language/kinds');
+var _kinds = require("../language/kinds");
+
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
 /**
  * Returns an operation AST given a document AST and optionally an operation
@@ -14,8 +23,10 @@ var _kinds = require('../language/kinds');
  */
 function getOperationAST(documentAST, operationName) {
   var operation = null;
+
   for (var i = 0; i < documentAST.definitions.length; i++) {
     var definition = documentAST.definitions[i];
+
     if (definition.kind === _kinds.Kind.OPERATION_DEFINITION) {
       if (!operationName) {
         // If no operation name was provided, only return an Operation if there
@@ -24,18 +35,13 @@ function getOperationAST(documentAST, operationName) {
         if (operation) {
           return null;
         }
+
         operation = definition;
       } else if (definition.name && definition.name.value === operationName) {
         return definition;
       }
     }
   }
+
   return operation;
-} /**
-   * Copyright (c) 2015-present, Facebook, Inc.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   *  strict
-   */
+}

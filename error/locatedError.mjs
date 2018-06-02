@@ -6,9 +6,7 @@
  *
  *  strict
  */
-
 import { GraphQLError } from './GraphQLError';
-
 
 /**
  * Given an arbitrary Error, presumably thrown while attempting to execute a

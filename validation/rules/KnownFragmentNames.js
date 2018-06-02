@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.unknownFragmentMessage = unknownFragmentMessage;
 exports.KnownFragmentNames = KnownFragmentNames;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,22 +16,23 @@ var _error = require('../../error');
  *
  *  strict
  */
-
 function unknownFragmentMessage(fragName) {
-  return 'Unknown fragment "' + fragName + '".';
+  return "Unknown fragment \"".concat(fragName, "\".");
 }
-
 /**
  * Known fragment names
  *
  * A GraphQL document is only valid if all `...Fragment` fragment spreads refer
  * to fragments defined in the same document.
  */
+
+
 function KnownFragmentNames(context) {
   return {
     FragmentSpread: function FragmentSpread(node) {
       var fragmentName = node.name.value;
       var fragment = context.getFragment(fragmentName);
+
       if (!fragment) {
         context.reportError(new _error.GraphQLError(unknownFragmentMessage(fragmentName), [node.name]));
       }

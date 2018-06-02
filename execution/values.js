@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7,37 +7,38 @@ exports.getVariableValues = getVariableValues;
 exports.getArgumentValues = getArgumentValues;
 exports.getDirectiveValues = getDirectiveValues;
 
-var _error = require('../error');
+var _error = require("../error");
 
-var _find = require('../jsutils/find');
+var _find = _interopRequireDefault(require("../jsutils/find"));
 
-var _find2 = _interopRequireDefault(_find);
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _inspect = require('../jsutils/inspect');
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _inspect2 = _interopRequireDefault(_inspect);
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
-var _invariant = require('../jsutils/invariant');
+var _coerceValue = require("../utilities/coerceValue");
 
-var _invariant2 = _interopRequireDefault(_invariant);
+var _typeFromAST = require("../utilities/typeFromAST");
 
-var _keyMap = require('../jsutils/keyMap');
+var _valueFromAST = require("../utilities/valueFromAST");
 
-var _keyMap2 = _interopRequireDefault(_keyMap);
+var _kinds = require("../language/kinds");
 
-var _coerceValue = require('../utilities/coerceValue');
+var _printer = require("../language/printer");
 
-var _typeFromAST = require('../utilities/typeFromAST');
-
-var _valueFromAST = require('../utilities/valueFromAST');
-
-var _kinds = require('../language/kinds');
-
-var _printer = require('../language/printer');
-
-var _definition = require('../type/definition');
+var _definition = require("../type/definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -56,13 +57,15 @@ function getVariableValues(schema, varDefNodes, inputs) {
     var varDefNode = varDefNodes[i];
     var varName = varDefNode.variable.name.value;
     var varType = (0, _typeFromAST.typeFromAST)(schema, varDefNode.type);
+
     if (!(0, _definition.isInputType)(varType)) {
       // Must use input types for variables. This should be caught during
       // validation, however is checked again here for safety.
-      errors.push(new _error.GraphQLError('Variable "$' + varName + '" expected value of type ' + ('"' + (0, _printer.print)(varDefNode.type) + '" which cannot be used as an input type.'), [varDefNode.type]));
+      errors.push(new _error.GraphQLError("Variable \"$".concat(varName, "\" expected value of type ") + "\"".concat((0, _printer.print)(varDefNode.type), "\" which cannot be used as an input type."), [varDefNode.type]));
     } else {
       var hasValue = hasOwnProperty(inputs, varName);
       var value = hasValue ? inputs[varName] : undefined;
+
       if (!hasValue && varDefNode.defaultValue) {
         // If no value was provided to a variable with a default value,
         // use the default value.
@@ -70,7 +73,7 @@ function getVariableValues(schema, varDefNodes, inputs) {
       } else if ((!hasValue || value === null) && (0, _definition.isNonNullType)(varType)) {
         // If no value or a nullish value was provided to a variable with a
         // non-null type (required), produce an error.
-        errors.push(new _error.GraphQLError(hasValue ? 'Variable "$' + varName + '" of non-null type ' + ('"' + (0, _inspect2.default)(varType) + '" must not be null.') : 'Variable "$' + varName + '" of required type ' + ('"' + (0, _inspect2.default)(varType) + '" was not provided.'), [varDefNode]));
+        errors.push(new _error.GraphQLError(hasValue ? "Variable \"$".concat(varName, "\" of non-null type ") + "\"".concat((0, _inspect.default)(varType), "\" must not be null.") : "Variable \"$".concat(varName, "\" of required type ") + "\"".concat((0, _inspect.default)(varType), "\" was not provided."), [varDefNode]));
       } else if (hasValue) {
         if (value === null) {
           // If the explicit value `null` was provided, an entry in the coerced
@@ -80,10 +83,12 @@ function getVariableValues(schema, varDefNodes, inputs) {
           // Otherwise, a non-null value was provided, coerce it to the expected
           // type or report an error if coercion fails.
           var _coerced = (0, _coerceValue.coerceValue)(value, varType, varDefNode);
+
           var coercionErrors = _coerced.errors;
+
           if (coercionErrors) {
             coercionErrors.forEach(function (error) {
-              error.message = 'Variable "$' + varName + '" got invalid ' + ('value ' + JSON.stringify(value) + '; ' + error.message);
+              error.message = "Variable \"$".concat(varName, "\" got invalid ") + "value ".concat(JSON.stringify(value), "; ").concat(error.message);
             });
             errors.push.apply(errors, coercionErrors);
           } else {
@@ -97,9 +102,15 @@ function getVariableValues(schema, varDefNodes, inputs) {
   for (var i = 0; i < varDefNodes.length; i++) {
     _loop(i);
   }
-  return errors.length === 0 ? { errors: undefined, coerced: coercedValues } : { errors: errors, coerced: undefined };
-}
 
+  return errors.length === 0 ? {
+    errors: undefined,
+    coerced: coercedValues
+  } : {
+    errors: errors,
+    coerced: undefined
+  };
+}
 /**
  * Prepares an object map of argument values given a list of argument
  * definitions and list of argument AST nodes.
@@ -108,25 +119,21 @@ function getVariableValues(schema, varDefNodes, inputs) {
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
+
 
 function getArgumentValues(def, node, variableValues) {
   var coercedValues = {};
   var argDefs = def.args;
   var argNodes = node.arguments;
+
   if (!argDefs || !argNodes) {
     return coercedValues;
   }
-  var argNodeMap = (0, _keyMap2.default)(argNodes, function (arg) {
+
+  var argNodeMap = (0, _keyMap.default)(argNodes, function (arg) {
     return arg.name.value;
   });
+
   for (var i = 0; i < argDefs.length; i++) {
     var argDef = argDefs[i];
     var name = argDef.name;
@@ -134,6 +141,7 @@ function getArgumentValues(def, node, variableValues) {
     var argumentNode = argNodeMap[name];
     var hasValue = void 0;
     var isNull = void 0;
+
     if (argumentNode && argumentNode.value.kind === _kinds.Kind.VARIABLE) {
       var variableName = argumentNode.value.name.value;
       hasValue = variableValues && hasOwnProperty(variableValues, variableName);
@@ -151,12 +159,12 @@ function getArgumentValues(def, node, variableValues) {
       // If no argument or a null value was provided to an argument with a
       // non-null type (required), produce a field error.
       if (isNull) {
-        throw new _error.GraphQLError('Argument "' + name + '" of non-null type "' + (0, _inspect2.default)(argType) + '" ' + 'must not be null.', [argumentNode.value]);
+        throw new _error.GraphQLError("Argument \"".concat(name, "\" of non-null type \"").concat((0, _inspect.default)(argType), "\" ") + 'must not be null.', [argumentNode.value]);
       } else if (argumentNode && argumentNode.value.kind === _kinds.Kind.VARIABLE) {
         var _variableName = argumentNode.value.name.value;
-        throw new _error.GraphQLError('Argument "' + name + '" of required type "' + (0, _inspect2.default)(argType) + '" ' + ('was provided the variable "$' + _variableName + '" ') + 'which was not provided a runtime value.', [argumentNode.value]);
+        throw new _error.GraphQLError("Argument \"".concat(name, "\" of required type \"").concat((0, _inspect.default)(argType), "\" ") + "was provided the variable \"$".concat(_variableName, "\" ") + 'which was not provided a runtime value.', [argumentNode.value]);
       } else {
-        throw new _error.GraphQLError('Argument "' + name + '" of required type "' + (0, _inspect2.default)(argType) + '" ' + 'was not provided.', [node]);
+        throw new _error.GraphQLError("Argument \"".concat(name, "\" of required type \"").concat((0, _inspect.default)(argType), "\" ") + 'was not provided.', [node]);
       }
     } else if (hasValue) {
       if (argumentNode.value.kind === _kinds.Kind.NULL) {
@@ -165,27 +173,29 @@ function getArgumentValues(def, node, variableValues) {
         coercedValues[name] = null;
       } else if (argumentNode.value.kind === _kinds.Kind.VARIABLE) {
         var _variableName2 = argumentNode.value.name.value;
-        !variableValues ? (0, _invariant2.default)(0, 'Must exist for hasValue to be true.') : void 0;
-        // Note: This does no further checking that this variable is correct.
+        !variableValues ? (0, _invariant.default)(0, 'Must exist for hasValue to be true.') : void 0; // Note: This does no further checking that this variable is correct.
         // This assumes that this query has been validated and the variable
         // usage here is of the correct type.
+
         coercedValues[name] = variableValues[_variableName2];
       } else {
         var valueNode = argumentNode.value;
         var coercedValue = (0, _valueFromAST.valueFromAST)(valueNode, argType, variableValues);
+
         if (coercedValue === undefined) {
           // Note: ValuesOfCorrectType validation should catch this before
           // execution. This is a runtime check to ensure execution does not
           // continue with an invalid argument value.
-          throw new _error.GraphQLError('Argument "' + name + '" has invalid value ' + (0, _printer.print)(valueNode) + '.', [argumentNode.value]);
+          throw new _error.GraphQLError("Argument \"".concat(name, "\" has invalid value ").concat((0, _printer.print)(valueNode), "."), [argumentNode.value]);
         }
+
         coercedValues[name] = coercedValue;
       }
     }
   }
+
   return coercedValues;
 }
-
 /**
  * Prepares an object map of argument values given a directive definition
  * and a AST node which may contain directives. Optionally also accepts a map
@@ -197,8 +207,10 @@ function getArgumentValues(def, node, variableValues) {
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
+
+
 function getDirectiveValues(directiveDef, node, variableValues) {
-  var directiveNode = node.directives && (0, _find2.default)(node.directives, function (directive) {
+  var directiveNode = node.directives && (0, _find.default)(node.directives, function (directive) {
     return directive.name.value === directiveDef.name;
   });
 

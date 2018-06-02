@@ -6,10 +6,10 @@
  *
  *  strict
  */
-
 export default function inspect(value) {
   if (Array.isArray(value)) {
     return '[' + String(value) + ']';
   }
+
   return String(value);
 }

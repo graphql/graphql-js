@@ -1,24 +1,15 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Source = undefined;
+exports.Source = void 0;
 
-var _invariant = require('../jsutils/invariant');
-
-var _invariant2 = _interopRequireDefault(_invariant);
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } } /**
-                                                                                                                                                           * Copyright (c) 2015-present, Facebook, Inc.
-                                                                                                                                                           *
-                                                                                                                                                           * This source code is licensed under the MIT license found in the
-                                                                                                                                                           * LICENSE file in the root directory of this source tree.
-                                                                                                                                                           *
-                                                                                                                                                           *  strict
-                                                                                                                                                           */
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /**
  * A representation of source input to GraphQL.
@@ -28,12 +19,21 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * be "Foo.graphql" and location to be `{ line: 40, column: 0 }`.
  * line and column in locationOffset are 1-indexed
  */
-var Source = exports.Source = function Source(body, name, locationOffset) {
-  _classCallCheck(this, Source);
+var Source = function Source(body, name, locationOffset) {
+  _defineProperty(this, "body", void 0);
+
+  _defineProperty(this, "name", void 0);
+
+  _defineProperty(this, "locationOffset", void 0);
 
   this.body = body;
   this.name = name || 'GraphQL request';
-  this.locationOffset = locationOffset || { line: 1, column: 1 };
-  !(this.locationOffset.line > 0) ? (0, _invariant2.default)(0, 'line in locationOffset is 1-indexed and must be positive') : void 0;
-  !(this.locationOffset.column > 0) ? (0, _invariant2.default)(0, 'column in locationOffset is 1-indexed and must be positive') : void 0;
+  this.locationOffset = locationOffset || {
+    line: 1,
+    column: 1
+  };
+  !(this.locationOffset.line > 0) ? (0, _invariant.default)(0, 'line in locationOffset is 1-indexed and must be positive') : void 0;
+  !(this.locationOffset.column > 0) ? (0, _invariant.default)(0, 'column in locationOffset is 1-indexed and must be positive') : void 0;
 };
+
+exports.Source = Source;

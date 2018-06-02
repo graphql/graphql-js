@@ -6,7 +6,6 @@
  *
  *  strict
  */
-
 import isInvalid from '../jsutils/isInvalid';
 import objectValues from '../jsutils/objectValues';
 import { astFromValue } from '../utilities/astFromValue';
@@ -14,8 +13,6 @@ import { print } from '../language/printer';
 import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType, isNamedType } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from '../language/directiveLocation';
-
-
 export var __Schema = new GraphQLObjectType({
   name: '__Schema',
   isIntrospection: true,
@@ -60,7 +57,6 @@ export var __Schema = new GraphQLObjectType({
     };
   }
 });
-
 export var __Directive = new GraphQLObjectType({
   name: '__Directive',
   isIntrospection: true,
@@ -117,7 +113,6 @@ export var __Directive = new GraphQLObjectType({
     };
   }
 });
-
 export var __DirectiveLocation = new GraphQLEnumType({
   name: '__DirectiveLocation',
   isIntrospection: true,
@@ -197,7 +192,6 @@ export var __DirectiveLocation = new GraphQLEnumType({
     }
   }
 });
-
 export var __Type = new GraphQLObjectType({
   name: '__Type',
   isIntrospection: true,
@@ -224,6 +218,7 @@ export var __Type = new GraphQLObjectType({
           } else if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
           }
+
           throw new Error('Unknown kind of type: ' + type);
         }
       },
@@ -242,20 +237,26 @@ export var __Type = new GraphQLObjectType({
       fields: {
         type: GraphQLList(GraphQLNonNull(__Field)),
         args: {
-          includeDeprecated: { type: GraphQLBoolean, defaultValue: false }
+          includeDeprecated: {
+            type: GraphQLBoolean,
+            defaultValue: false
+          }
         },
         resolve: function resolve(type, _ref) {
           var includeDeprecated = _ref.includeDeprecated;
 
           if (isObjectType(type) || isInterfaceType(type)) {
             var fields = objectValues(type.getFields());
+
             if (!includeDeprecated) {
               fields = fields.filter(function (field) {
                 return !field.deprecationReason;
               });
             }
+
             return fields;
           }
+
           return null;
         }
       },
@@ -280,18 +281,23 @@ export var __Type = new GraphQLObjectType({
       enumValues: {
         type: GraphQLList(GraphQLNonNull(__EnumValue)),
         args: {
-          includeDeprecated: { type: GraphQLBoolean, defaultValue: false }
+          includeDeprecated: {
+            type: GraphQLBoolean,
+            defaultValue: false
+          }
         },
         resolve: function resolve(type, _ref3) {
           var includeDeprecated = _ref3.includeDeprecated;
 
           if (isEnumType(type)) {
             var values = type.getValues();
+
             if (!includeDeprecated) {
               values = values.filter(function (value) {
                 return !value.deprecationReason;
               });
             }
+
             return values;
           }
         }
@@ -313,7 +319,6 @@ export var __Type = new GraphQLObjectType({
     };
   }
 });
-
 export var __Field = new GraphQLObjectType({
   name: '__Field',
   isIntrospection: true,
@@ -359,7 +364,6 @@ export var __Field = new GraphQLObjectType({
     };
   }
 });
-
 export var __InputValue = new GraphQLObjectType({
   name: '__InputValue',
   isIntrospection: true,
@@ -394,7 +398,6 @@ export var __InputValue = new GraphQLObjectType({
     };
   }
 });
-
 export var __EnumValue = new GraphQLObjectType({
   name: '__EnumValue',
   isIntrospection: true,
@@ -428,7 +431,6 @@ export var __EnumValue = new GraphQLObjectType({
     };
   }
 });
-
 export var TypeKind = {
   SCALAR: 'SCALAR',
   OBJECT: 'OBJECT',
@@ -439,7 +441,6 @@ export var TypeKind = {
   LIST: 'LIST',
   NON_NULL: 'NON_NULL'
 };
-
 export var __TypeKind = new GraphQLEnumType({
   name: '__TypeKind',
   isIntrospection: true,
@@ -479,7 +480,6 @@ export var __TypeKind = new GraphQLEnumType({
     }
   }
 });
-
 /**
  * Note that these are GraphQLField and not GraphQLFieldConfig,
  * so the format for args is different.
@@ -495,19 +495,20 @@ export var SchemaMetaFieldDef = {
     return schema;
   }
 };
-
 export var TypeMetaFieldDef = {
   name: '__type',
   type: __Type,
   description: 'Request the type information of a single type.',
-  args: [{ name: 'name', type: GraphQLNonNull(GraphQLString) }],
+  args: [{
+    name: 'name',
+    type: GraphQLNonNull(GraphQLString)
+  }],
   resolve: function resolve(source, _ref5, context, _ref6) {
     var name = _ref5.name;
     var schema = _ref6.schema;
     return schema.getType(name);
   }
 };
-
 export var TypeNameMetaFieldDef = {
   name: '__typename',
   type: GraphQLNonNull(GraphQLString),
@@ -518,12 +519,9 @@ export var TypeNameMetaFieldDef = {
     return parentType.name;
   }
 };
-
 export var introspectionTypes = [__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind];
-
 export function isIntrospectionType(type) {
-  return isNamedType(type) && (
-  // Would prefer to use introspectionTypes.some(), however %checks needs
+  return isNamedType(type) && ( // Would prefer to use introspectionTypes.some(), however %checks needs
   // a simple expression.
   type.name === __Schema.name || type.name === __Directive.name || type.name === __DirectiveLocation.name || type.name === __Type.name || type.name === __Field.name || type.name === __InputValue.name || type.name === __EnumValue.name || type.name === __TypeKind.name);
 }

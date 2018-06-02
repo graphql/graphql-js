@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.cycleErrorMessage = cycleErrorMessage;
 exports.NoFragmentCycles = NoFragmentCycles;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,23 +16,19 @@ var _error = require('../../error');
  *
  *  strict
  */
-
 function cycleErrorMessage(fragName, spreadNames) {
   var via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
-  return 'Cannot spread fragment "' + fragName + '" within itself' + via + '.';
+  return "Cannot spread fragment \"".concat(fragName, "\" within itself").concat(via, ".");
 }
 
 function NoFragmentCycles(context) {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
-  var visitedFrags = Object.create(null);
+  var visitedFrags = Object.create(null); // Array of AST nodes used to produce meaningful errors
 
-  // Array of AST nodes used to produce meaningful errors
-  var spreadPath = [];
+  var spreadPath = []; // Position in the spread path
 
-  // Position in the spread path
   var spreadPathIndexByName = Object.create(null);
-
   return {
     OperationDefinition: function OperationDefinition() {
       return false;
@@ -41,18 +37,18 @@ function NoFragmentCycles(context) {
       if (!visitedFrags[node.name.value]) {
         detectCycleRecursive(node);
       }
+
       return false;
     }
-  };
-
-  // This does a straight-forward DFS to find cycles.
+  }; // This does a straight-forward DFS to find cycles.
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
+
   function detectCycleRecursive(fragment) {
     var fragmentName = fragment.name.value;
     visitedFrags[fragmentName] = true;
-
     var spreadNodes = context.getFragmentSpreads(fragment.selectionSet);
+
     if (spreadNodes.length === 0) {
       return;
     }
@@ -66,12 +62,15 @@ function NoFragmentCycles(context) {
 
       if (cycleIndex === undefined) {
         spreadPath.push(spreadNode);
+
         if (!visitedFrags[spreadName]) {
           var spreadFragment = context.getFragment(spreadName);
+
           if (spreadFragment) {
             detectCycleRecursive(spreadFragment);
           }
         }
+
         spreadPath.pop();
       } else {
         var cyclePath = spreadPath.slice(cycleIndex);

@@ -1,10 +1,3 @@
-
-import { GraphQLError } from './GraphQLError';
-
-/**
- * Produces a GraphQLError representing a syntax error, containing useful
- * descriptive information about the syntax error's position in the source.
- */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -13,7 +6,12 @@ import { GraphQLError } from './GraphQLError';
  *
  *  strict
  */
+import { GraphQLError } from './GraphQLError';
+/**
+ * Produces a GraphQLError representing a syntax error, containing useful
+ * descriptive information about the syntax error's position in the source.
+ */
 
 export function syntaxError(source, position, description) {
-  return new GraphQLError('Syntax Error: ' + description, undefined, source, [position]);
+  return new GraphQLError("Syntax Error: ".concat(description), undefined, source, [position]);
 }

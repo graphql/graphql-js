@@ -1,45 +1,29 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
-                                                                                                                                                                                                                                                                               * Copyright (c) 2015-present, Facebook, Inc.
-                                                                                                                                                                                                                                                                               *
-                                                                                                                                                                                                                                                                               * This source code is licensed under the MIT license found in the
-                                                                                                                                                                                                                                                                               * LICENSE file in the root directory of this source tree.
-                                                                                                                                                                                                                                                                               *
-                                                                                                                                                                                                                                                                               *  strict
-                                                                                                                                                                                                                                                                               */
-
 exports.astFromValue = astFromValue;
 
-var _iterall = require('iterall');
+var _iterall = require("iterall");
 
-var _inspect = require('../jsutils/inspect');
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _inspect2 = _interopRequireDefault(_inspect);
+var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
 
-var _isNullish = require('../jsutils/isNullish');
+var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
-var _isNullish2 = _interopRequireDefault(_isNullish);
+var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
-var _isInvalid = require('../jsutils/isInvalid');
+var _kinds = require("../language/kinds");
 
-var _isInvalid2 = _interopRequireDefault(_isInvalid);
+var _definition = require("../type/definition");
 
-var _objectValues = require('../jsutils/objectValues');
-
-var _objectValues2 = _interopRequireDefault(_objectValues);
-
-var _kinds = require('../language/kinds');
-
-var _definition = require('../type/definition');
-
-var _scalars = require('../type/scalars');
+var _scalars = require("../type/scalars");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /**
  * Produces a GraphQL Value AST given a JavaScript value.
@@ -61,88 +45,122 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function astFromValue(value, type) {
   if ((0, _definition.isNonNullType)(type)) {
     var astValue = astFromValue(value, type.ofType);
+
     if (astValue && astValue.kind === _kinds.Kind.NULL) {
       return null;
     }
+
     return astValue;
-  }
+  } // only explicit null, not undefined, NaN
 
-  // only explicit null, not undefined, NaN
+
   if (value === null) {
-    return { kind: _kinds.Kind.NULL };
-  }
+    return {
+      kind: _kinds.Kind.NULL
+    };
+  } // undefined, NaN
 
-  // undefined, NaN
-  if ((0, _isInvalid2.default)(value)) {
+
+  if ((0, _isInvalid.default)(value)) {
     return null;
-  }
-
-  // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
+  } // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
   // the value is not an array, convert the value using the list's item type.
+
+
   if ((0, _definition.isListType)(type)) {
     var itemType = type.ofType;
+
     if ((0, _iterall.isCollection)(value)) {
       var valuesNodes = [];
       (0, _iterall.forEach)(value, function (item) {
         var itemNode = astFromValue(item, itemType);
+
         if (itemNode) {
           valuesNodes.push(itemNode);
         }
       });
-      return { kind: _kinds.Kind.LIST, values: valuesNodes };
+      return {
+        kind: _kinds.Kind.LIST,
+        values: valuesNodes
+      };
     }
-    return astFromValue(value, itemType);
-  }
 
-  // Populate the fields of the input object by creating ASTs from each value
+    return astFromValue(value, itemType);
+  } // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object according to the fields in the input type.
+
+
   if ((0, _definition.isInputObjectType)(type)) {
-    if (value === null || (typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== 'object') {
+    if (value === null || _typeof(value) !== 'object') {
       return null;
     }
-    var fields = (0, _objectValues2.default)(type.getFields());
+
+    var fields = (0, _objectValues.default)(type.getFields());
     var fieldNodes = [];
     fields.forEach(function (field) {
       var fieldValue = astFromValue(value[field.name], field.type);
+
       if (fieldValue) {
         fieldNodes.push({
           kind: _kinds.Kind.OBJECT_FIELD,
-          name: { kind: _kinds.Kind.NAME, value: field.name },
+          name: {
+            kind: _kinds.Kind.NAME,
+            value: field.name
+          },
           value: fieldValue
         });
       }
     });
-    return { kind: _kinds.Kind.OBJECT, fields: fieldNodes };
+    return {
+      kind: _kinds.Kind.OBJECT,
+      fields: fieldNodes
+    };
   }
 
   if ((0, _definition.isScalarType)(type) || (0, _definition.isEnumType)(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
     var serialized = type.serialize(value);
-    if ((0, _isNullish2.default)(serialized)) {
+
+    if ((0, _isNullish.default)(serialized)) {
       return null;
-    }
+    } // Others serialize based on their corresponding JavaScript scalar types.
 
-    // Others serialize based on their corresponding JavaScript scalar types.
+
     if (typeof serialized === 'boolean') {
-      return { kind: _kinds.Kind.BOOLEAN, value: serialized };
-    }
+      return {
+        kind: _kinds.Kind.BOOLEAN,
+        value: serialized
+      };
+    } // JavaScript numbers can be Int or Float values.
 
-    // JavaScript numbers can be Int or Float values.
+
     if (typeof serialized === 'number') {
       var stringNum = String(serialized);
-      return integerStringRegExp.test(stringNum) ? { kind: _kinds.Kind.INT, value: stringNum } : { kind: _kinds.Kind.FLOAT, value: stringNum };
+      return integerStringRegExp.test(stringNum) ? {
+        kind: _kinds.Kind.INT,
+        value: stringNum
+      } : {
+        kind: _kinds.Kind.FLOAT,
+        value: stringNum
+      };
     }
 
     if (typeof serialized === 'string') {
       // Enum types use Enum literals.
       if ((0, _definition.isEnumType)(type)) {
-        return { kind: _kinds.Kind.ENUM, value: serialized };
-      }
+        return {
+          kind: _kinds.Kind.ENUM,
+          value: serialized
+        };
+      } // ID types can use Int literals.
 
-      // ID types can use Int literals.
+
       if (type === _scalars.GraphQLID && integerStringRegExp.test(serialized)) {
-        return { kind: _kinds.Kind.INT, value: serialized };
+        return {
+          kind: _kinds.Kind.INT,
+          value: serialized
+        };
       }
 
       return {
@@ -151,16 +169,18 @@ function astFromValue(value, type) {
       };
     }
 
-    throw new TypeError('Cannot convert value to AST: ' + (0, _inspect2.default)(serialized));
+    throw new TypeError("Cannot convert value to AST: ".concat((0, _inspect.default)(serialized)));
   }
-
   /* istanbul ignore next */
-  throw new Error('Unknown type: ' + type + '.');
-}
 
+
+  throw new Error("Unknown type: ".concat(type, "."));
+}
 /**
  * IntValue:
  *   - NegativeSign? 0
  *   - NegativeSign? NonZeroDigit ( Digit+ )?
  */
+
+
 var integerStringRegExp = /^-?(0|[1-9][0-9]*)$/;

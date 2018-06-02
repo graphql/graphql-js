@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.unusedFragMessage = unusedFragMessage;
 exports.NoUnusedFragments = NoUnusedFragments;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,21 +16,20 @@ var _error = require('../../error');
  *
  *  strict
  */
-
 function unusedFragMessage(fragName) {
-  return 'Fragment "' + fragName + '" is never used.';
+  return "Fragment \"".concat(fragName, "\" is never used.");
 }
-
 /**
  * No unused fragments
  *
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
  */
+
+
 function NoUnusedFragments(context) {
   var operationDefs = [];
   var fragmentDefs = [];
-
   return {
     OperationDefinition: function OperationDefinition(node) {
       operationDefs.push(node);
@@ -40,7 +39,6 @@ function NoUnusedFragments(context) {
       fragmentDefs.push(node);
       return false;
     },
-
     Document: {
       leave: function leave() {
         var fragmentNameUsed = Object.create(null);
@@ -49,9 +47,9 @@ function NoUnusedFragments(context) {
             fragmentNameUsed[fragment.name.value] = true;
           });
         });
-
         fragmentDefs.forEach(function (fragmentDef) {
           var fragName = fragmentDef.name.value;
+
           if (fragmentNameUsed[fragName] !== true) {
             context.reportError(new _error.GraphQLError(unusedFragMessage(fragName), [fragmentDef]));
           }

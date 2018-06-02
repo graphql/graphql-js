@@ -32,7 +32,6 @@ export var DirectiveLocation = Object.freeze({
   INPUT_OBJECT: 'INPUT_OBJECT',
   INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION'
 });
-
 /**
  * The enum type representing the directive location values.
  */

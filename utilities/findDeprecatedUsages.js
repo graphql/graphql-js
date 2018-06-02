@@ -1,19 +1,28 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.findDeprecatedUsages = findDeprecatedUsages;
 
-var _GraphQLError = require('../error/GraphQLError');
+var _GraphQLError = require("../error/GraphQLError");
 
-var _visitor = require('../language/visitor');
+var _visitor = require("../language/visitor");
 
-var _definition = require('../type/definition');
+var _definition = require("../type/definition");
 
-var _schema = require('../type/schema');
+var _schema = require("../type/schema");
 
-var _TypeInfo = require('./TypeInfo');
+var _TypeInfo = require("./TypeInfo");
+
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
 /**
  * A validation rule which reports deprecated usages.
@@ -23,36 +32,31 @@ var _TypeInfo = require('./TypeInfo');
 function findDeprecatedUsages(schema, ast) {
   var errors = [];
   var typeInfo = new _TypeInfo.TypeInfo(schema);
-
   (0, _visitor.visit)(ast, (0, _visitor.visitWithTypeInfo)(typeInfo, {
     Field: function Field(node) {
       var fieldDef = typeInfo.getFieldDef();
+
       if (fieldDef && fieldDef.isDeprecated) {
         var parentType = typeInfo.getParentType();
+
         if (parentType) {
           var reason = fieldDef.deprecationReason;
-          errors.push(new _GraphQLError.GraphQLError('The field ' + parentType.name + '.' + fieldDef.name + ' is deprecated.' + (reason ? ' ' + reason : ''), [node]));
+          errors.push(new _GraphQLError.GraphQLError("The field ".concat(parentType.name, ".").concat(fieldDef.name, " is deprecated.") + (reason ? ' ' + reason : ''), [node]));
         }
       }
     },
     EnumValue: function EnumValue(node) {
       var enumVal = typeInfo.getEnumValue();
+
       if (enumVal && enumVal.isDeprecated) {
         var type = (0, _definition.getNamedType)(typeInfo.getInputType());
+
         if (type) {
           var reason = enumVal.deprecationReason;
-          errors.push(new _GraphQLError.GraphQLError('The enum value ' + type.name + '.' + enumVal.name + ' is deprecated.' + (reason ? ' ' + reason : ''), [node]));
+          errors.push(new _GraphQLError.GraphQLError("The enum value ".concat(type.name, ".").concat(enumVal.name, " is deprecated.") + (reason ? ' ' + reason : ''), [node]));
         }
       }
     }
   }));
-
   return errors;
-} /**
-   * Copyright (c) 2015-present, Facebook, Inc.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   *  strict
-   */
+}

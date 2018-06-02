@@ -6,14 +6,11 @@
  *
  *  strict
  */
-
 import keyMap from '../jsutils/keyMap';
 import isInvalid from '../jsutils/isInvalid';
 import objectValues from '../jsutils/objectValues';
-
 import { Kind } from '../language/kinds';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
-
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -46,6 +43,7 @@ export function valueFromAST(valueNode, type, variables) {
     if (valueNode.kind === Kind.NULL) {
       return; // Invalid: intentionally return no value.
     }
+
     return valueFromAST(valueNode, type.ofType, variables);
   }
 
@@ -56,25 +54,31 @@ export function valueFromAST(valueNode, type, variables) {
 
   if (valueNode.kind === Kind.VARIABLE) {
     var variableName = valueNode.name.value;
+
     if (!variables || isInvalid(variables[variableName])) {
       // No valid return value.
       return;
     }
+
     var variableValue = variables[variableName];
+
     if (variableValue === null && isNonNullType(type)) {
       return; // Invalid: intentionally return no value.
-    }
-    // Note: This does no further checking that this variable is correct.
+    } // Note: This does no further checking that this variable is correct.
     // This assumes that this query has been validated and the variable
     // usage here is of the correct type.
+
+
     return variableValue;
   }
 
   if (isListType(type)) {
     var itemType = type.ofType;
+
     if (valueNode.kind === Kind.LIST) {
       var coercedValues = [];
       var itemNodes = valueNode.values;
+
       for (var i = 0; i < itemNodes.length; i++) {
         if (isMissingVariable(itemNodes[i], variables)) {
           // If an array contains a missing variable, it is either coerced to
@@ -82,21 +86,28 @@ export function valueFromAST(valueNode, type, variables) {
           if (isNonNullType(itemType)) {
             return; // Invalid: intentionally return no value.
           }
+
           coercedValues.push(null);
         } else {
           var itemValue = valueFromAST(itemNodes[i], itemType, variables);
+
           if (isInvalid(itemValue)) {
             return; // Invalid: intentionally return no value.
           }
+
           coercedValues.push(itemValue);
         }
       }
+
       return coercedValues;
     }
+
     var coercedValue = valueFromAST(valueNode, itemType, variables);
+
     if (isInvalid(coercedValue)) {
       return; // Invalid: intentionally return no value.
     }
+
     return [coercedValue];
   }
 
@@ -104,28 +115,36 @@ export function valueFromAST(valueNode, type, variables) {
     if (valueNode.kind !== Kind.OBJECT) {
       return; // Invalid: intentionally return no value.
     }
+
     var coercedObj = Object.create(null);
     var fieldNodes = keyMap(valueNode.fields, function (field) {
       return field.name.value;
     });
     var fields = objectValues(type.getFields());
+
     for (var _i = 0; _i < fields.length; _i++) {
       var field = fields[_i];
       var fieldNode = fieldNodes[field.name];
+
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
           return; // Invalid: intentionally return no value.
         }
+
         continue;
       }
+
       var fieldValue = valueFromAST(fieldNode.value, field.type, variables);
+
       if (isInvalid(fieldValue)) {
         return; // Invalid: intentionally return no value.
       }
+
       coercedObj[field.name] = fieldValue;
     }
+
     return coercedObj;
   }
 
@@ -133,10 +152,13 @@ export function valueFromAST(valueNode, type, variables) {
     if (valueNode.kind !== Kind.ENUM) {
       return; // Invalid: intentionally return no value.
     }
+
     var enumValue = type.getValue(valueNode.value);
+
     if (!enumValue) {
       return; // Invalid: intentionally return no value.
     }
+
     return enumValue.value;
   }
 
@@ -144,24 +166,27 @@ export function valueFromAST(valueNode, type, variables) {
     // Scalars fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
     // no value is returned.
-    var result = void 0;
+    var result;
+
     try {
       result = type.parseLiteral(valueNode, variables);
     } catch (_error) {
       return; // Invalid: intentionally return no value.
     }
+
     if (isInvalid(result)) {
       return; // Invalid: intentionally return no value.
     }
+
     return result;
   }
-
   /* istanbul ignore next */
-  throw new Error('Unknown type: ' + type + '.');
-}
 
-// Returns true if the provided valueNode is a variable which is not defined
+
+  throw new Error("Unknown type: ".concat(type, "."));
+} // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
+
 function isMissingVariable(valueNode, variables) {
   return valueNode.kind === Kind.VARIABLE && (!variables || isInvalid(variables[valueNode.name.value]));
 }

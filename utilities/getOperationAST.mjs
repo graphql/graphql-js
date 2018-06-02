@@ -6,9 +6,7 @@
  *
  *  strict
  */
-
 import { Kind } from '../language/kinds';
-
 
 /**
  * Returns an operation AST given a document AST and optionally an operation
@@ -17,8 +15,10 @@ import { Kind } from '../language/kinds';
  */
 export function getOperationAST(documentAST, operationName) {
   var operation = null;
+
   for (var i = 0; i < documentAST.definitions.length; i++) {
     var definition = documentAST.definitions[i];
+
     if (definition.kind === Kind.OPERATION_DEFINITION) {
       if (!operationName) {
         // If no operation name was provided, only return an Operation if there
@@ -27,11 +27,13 @@ export function getOperationAST(documentAST, operationName) {
         if (operation) {
           return null;
         }
+
         operation = definition;
       } else if (definition.name && definition.name.value === operationName) {
         return definition;
       }
     }
   }
+
   return operation;
 }

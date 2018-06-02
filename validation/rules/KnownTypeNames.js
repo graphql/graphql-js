@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,15 +6,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.unknownTypeMessage = unknownTypeMessage;
 exports.KnownTypeNames = KnownTypeNames;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
-var _suggestionList = require('../../jsutils/suggestionList');
+var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
-var _suggestionList2 = _interopRequireDefault(_suggestionList);
-
-var _quotedOrList = require('../../jsutils/quotedOrList');
-
-var _quotedOrList2 = _interopRequireDefault(_quotedOrList);
+var _quotedOrList = _interopRequireDefault(require("../../jsutils/quotedOrList"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -26,21 +22,23 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  *  strict
  */
-
 function unknownTypeMessage(typeName, suggestedTypes) {
-  var message = 'Unknown type "' + typeName + '".';
+  var message = "Unknown type \"".concat(typeName, "\".");
+
   if (suggestedTypes.length) {
-    message += ' Did you mean ' + (0, _quotedOrList2.default)(suggestedTypes) + '?';
+    message += " Did you mean ".concat((0, _quotedOrList.default)(suggestedTypes), "?");
   }
+
   return message;
 }
-
 /**
  * Known type names
  *
  * A GraphQL document is only valid if referenced types (specifically
  * variable definitions and fragment conditions) are defined by the type schema.
  */
+
+
 function KnownTypeNames(context) {
   return {
     // TODO: when validating IDL, re-enable these. Experimental version does not
@@ -62,8 +60,9 @@ function KnownTypeNames(context) {
       var schema = context.getSchema();
       var typeName = node.name.value;
       var type = schema.getType(typeName);
+
       if (!type) {
-        context.reportError(new _error.GraphQLError(unknownTypeMessage(typeName, (0, _suggestionList2.default)(typeName, Object.keys(schema.getTypeMap()))), [node]));
+        context.reportError(new _error.GraphQLError(unknownTypeMessage(typeName, (0, _suggestionList.default)(typeName, Object.keys(schema.getTypeMap()))), [node]));
       }
     }
   };

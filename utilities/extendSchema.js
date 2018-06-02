@@ -1,37 +1,40 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.extendSchema = extendSchema;
 
-var _invariant = require('../jsutils/invariant');
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _invariant2 = _interopRequireDefault(_invariant);
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
-var _keyMap = require('../jsutils/keyMap');
+var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
-var _keyMap2 = _interopRequireDefault(_keyMap);
+var _buildASTSchema = require("./buildASTSchema");
 
-var _objectValues = require('../jsutils/objectValues');
+var _GraphQLError = require("../error/GraphQLError");
 
-var _objectValues2 = _interopRequireDefault(_objectValues);
+var _schema = require("../type/schema");
 
-var _buildASTSchema = require('./buildASTSchema');
+var _introspection = require("../type/introspection");
 
-var _GraphQLError = require('../error/GraphQLError');
+var _definition = require("../type/definition");
 
-var _schema = require('../type/schema');
+var _directives = require("../type/directives");
 
-var _introspection = require('../type/introspection');
-
-var _definition = require('../type/definition');
-
-var _directives = require('../type/directives');
-
-var _kinds = require('../language/kinds');
+var _kinds = require("../language/kinds");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
 /**
  * Produces a new schema given an existing schema and a document which may
@@ -51,40 +54,30 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *        Provide true to use preceding comments as the description.
  *
  */
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
-
 function extendSchema(schema, documentAST, options) {
-  !(0, _schema.isSchema)(schema) ? (0, _invariant2.default)(0, 'Must provide valid GraphQLSchema') : void 0;
+  !(0, _schema.isSchema)(schema) ? (0, _invariant.default)(0, 'Must provide valid GraphQLSchema') : void 0;
+  !(documentAST && documentAST.kind === _kinds.Kind.DOCUMENT) ? (0, _invariant.default)(0, 'Must provide valid Document AST') : void 0; // Collect the type definitions and extensions found in the document.
 
-  !(documentAST && documentAST.kind === _kinds.Kind.DOCUMENT) ? (0, _invariant2.default)(0, 'Must provide valid Document AST') : void 0;
-
-  // Collect the type definitions and extensions found in the document.
   var typeDefinitionMap = Object.create(null);
-  var typeExtensionsMap = Object.create(null);
-
-  // New directives and types are separate because a directives and types can
+  var typeExtensionsMap = Object.create(null); // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
-  var directiveDefinitions = [];
 
-  // Schema extensions are collected which may add additional operation types.
+  var directiveDefinitions = []; // Schema extensions are collected which may add additional operation types.
+
   var schemaExtensions = [];
 
   for (var i = 0; i < documentAST.definitions.length; i++) {
     var def = documentAST.definitions[i];
+
     switch (def.kind) {
       case _kinds.Kind.SCHEMA_DEFINITION:
         // Sanity check that a schema extension is not defining a new schema
         throw new _GraphQLError.GraphQLError('Cannot define a new schema within a schema extension.', [def]);
+
       case _kinds.Kind.SCHEMA_EXTENSION:
         schemaExtensions.push(def);
         break;
+
       case _kinds.Kind.OBJECT_TYPE_DEFINITION:
       case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
       case _kinds.Kind.ENUM_TYPE_DEFINITION:
@@ -94,43 +87,51 @@ function extendSchema(schema, documentAST, options) {
         // Sanity check that none of the defined types conflict with the
         // schema's existing types.
         var typeName = def.name.value;
+
         if (schema.getType(typeName)) {
-          throw new _GraphQLError.GraphQLError('Type "' + typeName + '" already exists in the schema. It cannot also ' + 'be defined in this type definition.', [def]);
+          throw new _GraphQLError.GraphQLError("Type \"".concat(typeName, "\" already exists in the schema. It cannot also ") + 'be defined in this type definition.', [def]);
         }
+
         typeDefinitionMap[typeName] = def;
         break;
+
       case _kinds.Kind.OBJECT_TYPE_EXTENSION:
       case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
         // Sanity check that this type extension exists within the
         // schema's existing types.
         var extendedTypeName = def.name.value;
         var existingType = schema.getType(extendedTypeName);
-        if (!existingType) {
-          throw new _GraphQLError.GraphQLError('Cannot extend type "' + extendedTypeName + '" because it does not ' + 'exist in the existing schema.', [def]);
-        }
-        checkExtensionNode(existingType, def);
 
+        if (!existingType) {
+          throw new _GraphQLError.GraphQLError("Cannot extend type \"".concat(extendedTypeName, "\" because it does not ") + 'exist in the existing schema.', [def]);
+        }
+
+        checkExtensionNode(existingType, def);
         var existingTypeExtensions = typeExtensionsMap[extendedTypeName];
         typeExtensionsMap[extendedTypeName] = existingTypeExtensions ? existingTypeExtensions.concat([def]) : [def];
         break;
+
       case _kinds.Kind.DIRECTIVE_DEFINITION:
         var directiveName = def.name.value;
         var existingDirective = schema.getDirective(directiveName);
+
         if (existingDirective) {
-          throw new _GraphQLError.GraphQLError('Directive "' + directiveName + '" already exists in the schema. It ' + 'cannot be redefined.', [def]);
+          throw new _GraphQLError.GraphQLError("Directive \"".concat(directiveName, "\" already exists in the schema. It ") + 'cannot be redefined.', [def]);
         }
+
         directiveDefinitions.push(def);
         break;
+
       case _kinds.Kind.SCALAR_TYPE_EXTENSION:
       case _kinds.Kind.UNION_TYPE_EXTENSION:
       case _kinds.Kind.ENUM_TYPE_EXTENSION:
       case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
-        throw new Error('The ' + def.kind + ' kind is not yet supported by extendSchema().');
+        throw new Error("The ".concat(def.kind, " kind is not yet supported by extendSchema()."));
     }
-  }
-
-  // If this document contains no new types, extensions, or directives then
+  } // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
+
+
   if (Object.keys(typeExtensionsMap).length === 0 && Object.keys(typeDefinitionMap).length === 0 && directiveDefinitions.length === 0 && schemaExtensions.length === 0) {
     return schema;
   }
@@ -138,51 +139,47 @@ function extendSchema(schema, documentAST, options) {
   var astBuilder = new _buildASTSchema.ASTDefinitionBuilder(typeDefinitionMap, options, function (typeRef) {
     var typeName = typeRef.name.value;
     var existingType = schema.getType(typeName);
+
     if (existingType) {
       return extendNamedType(existingType);
     }
 
-    throw new _GraphQLError.GraphQLError('Unknown type: "' + typeName + '". Ensure that this type exists ' + 'either in the original schema, or is added in a type definition.', [typeRef]);
+    throw new _GraphQLError.GraphQLError("Unknown type: \"".concat(typeName, "\". Ensure that this type exists ") + 'either in the original schema, or is added in a type definition.', [typeRef]);
   });
+  var extendTypeCache = Object.create(null); // Get the extended root operation types.
 
-  var extendTypeCache = Object.create(null);
-
-  // Get the extended root operation types.
   var operationTypes = {
     query: extendMaybeNamedType(schema.getQueryType()),
     mutation: extendMaybeNamedType(schema.getMutationType()),
     subscription: extendMaybeNamedType(schema.getSubscriptionType())
-  };
+  }; // Then, incorporate all schema extensions.
 
-  // Then, incorporate all schema extensions.
   schemaExtensions.forEach(function (schemaExtension) {
     if (schemaExtension.operationTypes) {
       schemaExtension.operationTypes.forEach(function (operationType) {
         var operation = operationType.operation;
+
         if (operationTypes[operation]) {
-          throw new Error('Must provide only one ' + operation + ' type in schema.');
+          throw new Error("Must provide only one ".concat(operation, " type in schema."));
         }
-        var typeRef = operationType.type;
-        // Note: While this could make early assertions to get the correctly
+
+        var typeRef = operationType.type; // Note: While this could make early assertions to get the correctly
         // typed values, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
+
         operationTypes[operation] = astBuilder.buildType(typeRef);
       });
     }
   });
-
   var schemaExtensionASTNodes = schemaExtensions ? schema.extensionASTNodes ? schema.extensionASTNodes.concat(schemaExtensions) : schemaExtensions : schema.extensionASTNodes;
-
-  var types = [].concat((0, _objectValues2.default)(schema.getTypeMap()).map(function (type) {
+  var types = (0, _objectValues.default)(schema.getTypeMap()).map(function (type) {
     return extendNamedType(type);
-  }), astBuilder.buildTypes((0, _objectValues2.default)(typeDefinitionMap)));
+  }).concat(astBuilder.buildTypes((0, _objectValues.default)(typeDefinitionMap))); // Support both original legacy names and extended legacy names.
 
-  // Support both original legacy names and extended legacy names.
   var schemaAllowedLegacyNames = schema.__allowedLegacyNames;
   var extendAllowedLegacyNames = options && options.allowedLegacyNames;
-  var allowedLegacyNames = schemaAllowedLegacyNames && extendAllowedLegacyNames ? schemaAllowedLegacyNames.concat(extendAllowedLegacyNames) : schemaAllowedLegacyNames || extendAllowedLegacyNames;
+  var allowedLegacyNames = schemaAllowedLegacyNames && extendAllowedLegacyNames ? schemaAllowedLegacyNames.concat(extendAllowedLegacyNames) : schemaAllowedLegacyNames || extendAllowedLegacyNames; // Then produce and return a Schema with these types.
 
-  // Then produce and return a Schema with these types.
   return new _schema.GraphQLSchema({
     query: operationTypes.query,
     mutation: operationTypes.mutation,
@@ -192,15 +189,12 @@ function extendSchema(schema, documentAST, options) {
     astNode: schema.astNode,
     extensionASTNodes: schemaExtensionASTNodes,
     allowedLegacyNames: allowedLegacyNames
-  });
-
-  // Below are functions used for producing this schema that have closed over
+  }); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
 
   function getMergedDirectives() {
     var existingDirectives = schema.getDirectives();
-    !existingDirectives ? (0, _invariant2.default)(0, 'schema must have default directives') : void 0;
-
+    !existingDirectives ? (0, _invariant.default)(0, 'schema must have default directives') : void 0;
     return existingDirectives.concat(directiveDefinitions.map(function (node) {
       return astBuilder.buildDirective(node);
     }));
@@ -217,6 +211,7 @@ function extendSchema(schema, documentAST, options) {
     }
 
     var name = type.name;
+
     if (!extendTypeCache[name]) {
       if ((0, _definition.isObjectType)(type)) {
         extendTypeCache[name] = extendObjectType(type);
@@ -229,6 +224,7 @@ function extendSchema(schema, documentAST, options) {
         extendTypeCache[name] = type;
       }
     }
+
     return extendTypeCache[name];
   }
 
@@ -276,10 +272,10 @@ function extendSchema(schema, documentAST, options) {
   }
 
   function extendImplementedInterfaces(type) {
-    var interfaces = type.getInterfaces().map(extendNamedType);
+    var interfaces = type.getInterfaces().map(extendNamedType); // If there are any extensions to the interfaces, apply those here.
 
-    // If there are any extensions to the interfaces, apply those here.
     var extensions = typeExtensionsMap[type.name];
+
     if (extensions) {
       extensions.forEach(function (extension) {
         extension.interfaces.forEach(function (namedType) {
@@ -303,23 +299,25 @@ function extendSchema(schema, documentAST, options) {
         description: field.description,
         deprecationReason: field.deprecationReason,
         type: extendType(field.type),
-        args: (0, _keyMap2.default)(field.args, function (arg) {
+        args: (0, _keyMap.default)(field.args, function (arg) {
           return arg.name;
         }),
         astNode: field.astNode,
         resolve: field.resolve
       };
-    });
+    }); // If there are any extensions to the fields, apply those here.
 
-    // If there are any extensions to the fields, apply those here.
     var extensions = typeExtensionsMap[type.name];
+
     if (extensions) {
       extensions.forEach(function (extension) {
         extension.fields.forEach(function (field) {
           var fieldName = field.name.value;
+
           if (oldFieldMap[fieldName]) {
-            throw new _GraphQLError.GraphQLError('Field "' + type.name + '.' + fieldName + '" already exists in the ' + 'schema. It cannot also be defined in this type extension.', [field]);
+            throw new _GraphQLError.GraphQLError("Field \"".concat(type.name, ".").concat(fieldName, "\" already exists in the ") + 'schema. It cannot also be defined in this type extension.', [field]);
           }
+
           newFieldMap[fieldName] = astBuilder.buildField(field);
         });
       });
@@ -332,9 +330,11 @@ function extendSchema(schema, documentAST, options) {
     if ((0, _definition.isListType)(typeDef)) {
       return (0, _definition.GraphQLList)(extendType(typeDef.ofType));
     }
+
     if ((0, _definition.isNonNullType)(typeDef)) {
       return (0, _definition.GraphQLNonNull)(extendType(typeDef.ofType));
     }
+
     return extendNamedType(typeDef);
   }
 }
@@ -343,13 +343,16 @@ function checkExtensionNode(type, node) {
   switch (node.kind) {
     case _kinds.Kind.OBJECT_TYPE_EXTENSION:
       if (!(0, _definition.isObjectType)(type)) {
-        throw new _GraphQLError.GraphQLError('Cannot extend non-object type "' + type.name + '".', [node]);
+        throw new _GraphQLError.GraphQLError("Cannot extend non-object type \"".concat(type.name, "\"."), [node]);
       }
+
       break;
+
     case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
       if (!(0, _definition.isInterfaceType)(type)) {
-        throw new _GraphQLError.GraphQLError('Cannot extend non-interface type "' + type.name + '".', [node]);
+        throw new _GraphQLError.GraphQLError("Cannot extend non-interface type \"".concat(type.name, "\"."), [node]);
       }
+
       break;
   }
 }

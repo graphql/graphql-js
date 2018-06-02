@@ -1,4 +1,11 @@
-
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
@@ -27,11 +34,4 @@ export default function keyMap(list, keyFn) {
   return list.reduce(function (map, item) {
     return map[keyFn(item)] = item, map;
   }, Object.create(null));
-} /**
-   * Copyright (c) 2015-present, Facebook, Inc.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   *  strict
-   */
+}

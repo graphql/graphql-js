@@ -6,14 +6,13 @@
  *
  *  strict
  */
-
 import orList from './orList';
-
 /**
  * Given [ A, B, C ] return '"A", "B", or "C"'.
  */
+
 export default function quotedOrList(items) {
   return orList(items.map(function (item) {
-    return '"' + item + '"';
+    return "\"".concat(item, "\"");
   }));
 }

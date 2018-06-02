@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.undefinedVarMessage = undefinedVarMessage;
 exports.NoUndefinedVariables = NoUndefinedVariables;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,20 +16,19 @@ var _error = require('../../error');
  *
  *  strict
  */
-
 function undefinedVarMessage(varName, opName) {
-  return opName ? 'Variable "$' + varName + '" is not defined by operation "' + opName + '".' : 'Variable "$' + varName + '" is not defined.';
+  return opName ? "Variable \"$".concat(varName, "\" is not defined by operation \"").concat(opName, "\".") : "Variable \"$".concat(varName, "\" is not defined.");
 }
-
 /**
  * No undefined variables
  *
  * A GraphQL operation is only valid if all variables encountered, both directly
  * and via fragment spreads, are defined by that operation.
  */
+
+
 function NoUndefinedVariables(context) {
   var variableNameDefined = Object.create(null);
-
   return {
     OperationDefinition: {
       enter: function enter() {
@@ -37,11 +36,10 @@ function NoUndefinedVariables(context) {
       },
       leave: function leave(operation) {
         var usages = context.getRecursiveVariableUsages(operation);
-
         usages.forEach(function (_ref) {
           var node = _ref.node;
-
           var varName = node.name.value;
+
           if (variableNameDefined[varName] !== true) {
             context.reportError(new _error.GraphQLError(undefinedVarMessage(varName, operation.name && operation.name.value), [node, operation]));
           }

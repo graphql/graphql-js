@@ -6,24 +6,17 @@
  *
  *  strict
  */
-
 import inspect from '../../jsutils/inspect';
-
 import { GraphQLError } from '../../error';
-
 import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import { isCompositeType } from '../../type/definition';
-
-
 export function typeIncompatibleSpreadMessage(fragName, parentType, fragType) {
-  return 'Fragment "' + fragName + '" cannot be spread here as objects of ' + ('type "' + inspect(parentType) + '" can never be of type "' + inspect(fragType) + '".');
+  return "Fragment \"".concat(fragName, "\" cannot be spread here as objects of ") + "type \"".concat(inspect(parentType), "\" can never be of type \"").concat(inspect(fragType), "\".");
 }
-
 export function typeIncompatibleAnonSpreadMessage(parentType, fragType) {
-  return 'Fragment cannot be spread here as objects of ' + ('type "' + inspect(parentType) + '" can never be of type "' + inspect(fragType) + '".');
+  return 'Fragment cannot be spread here as objects of ' + "type \"".concat(inspect(parentType), "\" can never be of type \"").concat(inspect(fragType), "\".");
 }
-
 /**
  * Possible fragment spread
  *
@@ -31,11 +24,13 @@ export function typeIncompatibleAnonSpreadMessage(parentType, fragType) {
  * be true: if there is a non-empty intersection of the possible parent types,
  * and possible types which pass the type condition.
  */
+
 export function PossibleFragmentSpreads(context) {
   return {
     InlineFragment: function InlineFragment(node) {
       var fragType = context.getType();
       var parentType = context.getParentType();
+
       if (isCompositeType(fragType) && isCompositeType(parentType) && !doTypesOverlap(context.getSchema(), fragType, parentType)) {
         context.reportError(new GraphQLError(typeIncompatibleAnonSpreadMessage(parentType, fragType), [node]));
       }
@@ -44,6 +39,7 @@ export function PossibleFragmentSpreads(context) {
       var fragName = node.name.value;
       var fragType = getFragmentType(context, fragName);
       var parentType = context.getParentType();
+
       if (fragType && parentType && !doTypesOverlap(context.getSchema(), fragType, parentType)) {
         context.reportError(new GraphQLError(typeIncompatibleSpreadMessage(fragName, parentType, fragType), [node]));
       }
@@ -53,8 +49,10 @@ export function PossibleFragmentSpreads(context) {
 
 function getFragmentType(context, name) {
   var frag = context.getFragment(name);
+
   if (frag) {
     var type = typeFromAST(context.getSchema(), frag.typeCondition);
+
     if (isCompositeType(type)) {
       return type;
     }

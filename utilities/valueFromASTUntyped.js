@@ -1,21 +1,26 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.valueFromASTUntyped = valueFromASTUntyped;
 
-var _keyValMap = require('../jsutils/keyValMap');
+var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
-var _keyValMap2 = _interopRequireDefault(_keyValMap);
+var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
-var _isInvalid = require('../jsutils/isInvalid');
-
-var _isInvalid2 = _interopRequireDefault(_isInvalid);
-
-var _kinds = require('../language/kinds');
+var _kinds = require("../language/kinds");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -37,35 +42,36 @@ function valueFromASTUntyped(valueNode, variables) {
   switch (valueNode.kind) {
     case _kinds.Kind.NULL:
       return null;
+
     case _kinds.Kind.INT:
       return parseInt(valueNode.value, 10);
+
     case _kinds.Kind.FLOAT:
       return parseFloat(valueNode.value);
+
     case _kinds.Kind.STRING:
     case _kinds.Kind.ENUM:
     case _kinds.Kind.BOOLEAN:
       return valueNode.value;
+
     case _kinds.Kind.LIST:
       return valueNode.values.map(function (node) {
         return valueFromASTUntyped(node, variables);
       });
+
     case _kinds.Kind.OBJECT:
-      return (0, _keyValMap2.default)(valueNode.fields, function (field) {
+      return (0, _keyValMap.default)(valueNode.fields, function (field) {
         return field.name.value;
       }, function (field) {
         return valueFromASTUntyped(field.value, variables);
       });
+
     case _kinds.Kind.VARIABLE:
       var variableName = valueNode.name.value;
-      return variables && !(0, _isInvalid2.default)(variables[variableName]) ? variables[variableName] : undefined;
+      return variables && !(0, _isInvalid.default)(variables[variableName]) ? variables[variableName] : undefined;
   }
   /* istanbul ignore next */
+
+
   throw new Error('Unexpected value kind: ' + valueNode.kind);
-} /**
-   * Copyright (c) 2015-present, Facebook, Inc.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   *  strict
-   */
+}

@@ -1,4 +1,4 @@
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,7 +8,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  *
  *  strict
  */
-
 import invariant from '../jsutils/invariant';
 
 /**
@@ -20,11 +19,18 @@ import invariant from '../jsutils/invariant';
  * line and column in locationOffset are 1-indexed
  */
 export var Source = function Source(body, name, locationOffset) {
-  _classCallCheck(this, Source);
+  _defineProperty(this, "body", void 0);
+
+  _defineProperty(this, "name", void 0);
+
+  _defineProperty(this, "locationOffset", void 0);
 
   this.body = body;
   this.name = name || 'GraphQL request';
-  this.locationOffset = locationOffset || { line: 1, column: 1 };
+  this.locationOffset = locationOffset || {
+    line: 1,
+    column: 1
+  };
   !(this.locationOffset.line > 0) ? invariant(0, 'line in locationOffset is 1-indexed and must be positive') : void 0;
   !(this.locationOffset.column > 0) ? invariant(0, 'column in locationOffset is 1-indexed and must be positive') : void 0;
 };

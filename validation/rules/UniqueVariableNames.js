@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,17 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.duplicateVariableMessage = duplicateVariableMessage;
 exports.UniqueVariableNames = UniqueVariableNames;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
-function duplicateVariableMessage(variableName) {
-  return 'There can be only one variable named "' + variableName + '".';
-}
-
-/**
- * Unique variable names
- *
- * A GraphQL operation is only valid if all its variables are uniquely named.
- */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -25,6 +16,15 @@ function duplicateVariableMessage(variableName) {
  *
  *  strict
  */
+function duplicateVariableMessage(variableName) {
+  return "There can be only one variable named \"".concat(variableName, "\".");
+}
+/**
+ * Unique variable names
+ *
+ * A GraphQL operation is only valid if all its variables are uniquely named.
+ */
+
 
 function UniqueVariableNames(context) {
   var knownVariableNames = Object.create(null);
@@ -34,6 +34,7 @@ function UniqueVariableNames(context) {
     },
     VariableDefinition: function VariableDefinition(node) {
       var variableName = node.variable.name.value;
+
       if (knownVariableNames[variableName]) {
         context.reportError(new _error.GraphQLError(duplicateVariableMessage(variableName), [knownVariableNames[variableName], node.variable.name]));
       } else {

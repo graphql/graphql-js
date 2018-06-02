@@ -6,19 +6,16 @@
  *
  *  strict
  */
-
 import { GraphQLError } from '../../error';
-
-
 export function duplicateVariableMessage(variableName) {
-  return 'There can be only one variable named "' + variableName + '".';
+  return "There can be only one variable named \"".concat(variableName, "\".");
 }
-
 /**
  * Unique variable names
  *
  * A GraphQL operation is only valid if all its variables are uniquely named.
  */
+
 export function UniqueVariableNames(context) {
   var knownVariableNames = Object.create(null);
   return {
@@ -27,6 +24,7 @@ export function UniqueVariableNames(context) {
     },
     VariableDefinition: function VariableDefinition(node) {
       var variableName = node.variable.name.value;
+
       if (knownVariableNames[variableName]) {
         context.reportError(new GraphQLError(duplicateVariableMessage(variableName), [knownVariableNames[variableName], node.variable.name]));
       } else {

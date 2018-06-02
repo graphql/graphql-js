@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = isInvalid;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *

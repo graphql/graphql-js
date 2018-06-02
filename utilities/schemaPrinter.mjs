@@ -6,15 +6,12 @@
  *
  *  strict
  */
-
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import objectValues from '../jsutils/objectValues';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
-
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
-
 import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
 import { GraphQLDirective, DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from '../type/directives';
 import { isIntrospectionType } from '../type/introspection';
@@ -31,7 +28,6 @@ export function printSchema(schema, options) {
     return !isSpecifiedDirective(n);
   }, isDefinedType, options);
 }
-
 export function printIntrospectionSchema(schema, options) {
   return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType, options);
 }
@@ -46,7 +42,6 @@ function printFilteredSchema(schema, directiveFilter, typeFilter, options) {
   var types = objectValues(typeMap).sort(function (type1, type2) {
     return type1.name.localeCompare(type2.name);
   }).filter(typeFilter);
-
   return [printSchemaDefinition(schema)].concat(directives.map(function (directive) {
     return printDirective(directive, options);
   }), types.map(function (type) {
@@ -60,25 +55,26 @@ function printSchemaDefinition(schema) {
   }
 
   var operationTypes = [];
-
   var queryType = schema.getQueryType();
+
   if (queryType) {
-    operationTypes.push('  query: ' + queryType.name);
+    operationTypes.push("  query: ".concat(queryType.name));
   }
 
   var mutationType = schema.getMutationType();
+
   if (mutationType) {
-    operationTypes.push('  mutation: ' + mutationType.name);
+    operationTypes.push("  mutation: ".concat(mutationType.name));
   }
 
   var subscriptionType = schema.getSubscriptionType();
+
   if (subscriptionType) {
-    operationTypes.push('  subscription: ' + subscriptionType.name);
+    operationTypes.push("  subscription: ".concat(subscriptionType.name));
   }
 
-  return 'schema {\n' + operationTypes.join('\n') + '\n}';
+  return "schema {\n".concat(operationTypes.join('\n'), "\n}");
 }
-
 /**
  * GraphQL schema define root types for each type of operation. These types are
  * the same as any other type and can be named in any manner, however there is
@@ -91,18 +87,23 @@ function printSchemaDefinition(schema) {
  *
  * When using this naming convention, the schema description can be omitted.
  */
+
+
 function isSchemaOfCommonNames(schema) {
   var queryType = schema.getQueryType();
+
   if (queryType && queryType.name !== 'Query') {
     return false;
   }
 
   var mutationType = schema.getMutationType();
+
   if (mutationType && mutationType.name !== 'Mutation') {
     return false;
   }
 
   var subscriptionType = schema.getSubscriptionType();
+
   if (subscriptionType && subscriptionType.name !== 'Subscription') {
     return false;
   }
@@ -125,11 +126,13 @@ export function printType(type, options) {
     return printInputObject(type, options);
   }
   /* istanbul ignore next */
-  throw new Error('Unknown type: ' + type + '.');
+
+
+  throw new Error("Unknown type: ".concat(type, "."));
 }
 
 function printScalar(type, options) {
-  return printDescription(options, type) + ('scalar ' + type.name);
+  return printDescription(options, type) + "scalar ".concat(type.name);
 }
 
 function printObject(type, options) {
@@ -137,19 +140,19 @@ function printObject(type, options) {
   var implementedInterfaces = interfaces.length ? ' implements ' + interfaces.map(function (i) {
     return i.name;
   }).join(' & ') : '';
-  return printDescription(options, type) + ('type ' + type.name + implementedInterfaces + ' {\n') + printFields(options, type) + '\n' + '}';
+  return printDescription(options, type) + "type ".concat(type.name).concat(implementedInterfaces, " {\n") + printFields(options, type) + '\n' + '}';
 }
 
 function printInterface(type, options) {
-  return printDescription(options, type) + ('interface ' + type.name + ' {\n') + printFields(options, type) + '\n' + '}';
+  return printDescription(options, type) + "interface ".concat(type.name, " {\n") + printFields(options, type) + '\n' + '}';
 }
 
 function printUnion(type, options) {
-  return printDescription(options, type) + ('union ' + type.name + ' = ' + type.getTypes().join(' | '));
+  return printDescription(options, type) + "union ".concat(type.name, " = ").concat(type.getTypes().join(' | '));
 }
 
 function printEnum(type, options) {
-  return printDescription(options, type) + ('enum ' + type.name + ' {\n') + printEnumValues(type.getValues(), options) + '\n' + '}';
+  return printDescription(options, type) + "enum ".concat(type.name, " {\n") + printEnumValues(type.getValues(), options) + '\n' + '}';
 }
 
 function printEnumValues(values, options) {
@@ -160,7 +163,7 @@ function printEnumValues(values, options) {
 
 function printInputObject(type, options) {
   var fields = objectValues(type.getFields());
-  return printDescription(options, type) + ('input ' + type.name + ' {\n') + fields.map(function (f, i) {
+  return printDescription(options, type) + "input ".concat(type.name, " {\n") + fields.map(function (f, i) {
     return printDescription(options, f, '  ', !i) + '  ' + printInputValue(f);
   }).join('\n') + '\n' + '}';
 }
@@ -177,9 +180,9 @@ function printArgs(options, args) {
 
   if (args.length === 0) {
     return '';
-  }
+  } // If every arg does not have a description, print them on one line.
 
-  // If every arg does not have a description, print them on one line.
+
   if (args.every(function (arg) {
     return !arg.description;
   })) {
@@ -193,9 +196,11 @@ function printArgs(options, args) {
 
 function printInputValue(arg) {
   var argDecl = arg.name + ': ' + String(arg.type);
+
   if (!isInvalid(arg.defaultValue)) {
-    argDecl += ' = ' + print(astFromValue(arg.defaultValue, arg.type));
+    argDecl += " = ".concat(print(astFromValue(arg.defaultValue, arg.type)));
   }
+
   return argDecl;
 }
 
@@ -207,10 +212,13 @@ function printDeprecated(fieldOrEnumVal) {
   if (!fieldOrEnumVal.isDeprecated) {
     return '';
   }
+
   var reason = fieldOrEnumVal.deprecationReason;
+
   if (isNullish(reason) || reason === '' || reason === DEFAULT_DEPRECATION_REASON) {
     return ' @deprecated';
   }
+
   return ' @deprecated(reason: ' + print(astFromValue(reason, GraphQLString)) + ')';
 }
 
@@ -223,28 +231,32 @@ function printDescription(options, def) {
   }
 
   var lines = descriptionLines(def.description, 120 - indentation.length);
+
   if (options && options.commentDescriptions) {
     return printDescriptionWithComments(lines, indentation, firstInBlock);
   }
 
-  var description = indentation && !firstInBlock ? '\n' + indentation + '"""' : indentation + '"""';
+  var description = indentation && !firstInBlock ? '\n' + indentation + '"""' : indentation + '"""'; // In some circumstances, a single line can be used for the description.
 
-  // In some circumstances, a single line can be used for the description.
   if (lines.length === 1 && lines[0].length < 70 && lines[0][lines[0].length - 1] !== '"') {
     return description + escapeQuote(lines[0]) + '"""\n';
-  }
+  } // Format a multi-line block quote to account for leading space.
 
-  // Format a multi-line block quote to account for leading space.
+
   var hasLeadingSpace = lines[0][0] === ' ' || lines[0][0] === '\t';
+
   if (!hasLeadingSpace) {
     description += '\n';
   }
+
   for (var i = 0; i < lines.length; i++) {
     if (i !== 0 || !hasLeadingSpace) {
       description += indentation;
     }
+
     description += escapeQuote(lines[i]) + '\n';
   }
+
   description += indentation + '"""\n';
   return description;
 }
@@ -255,6 +267,7 @@ function escapeQuote(line) {
 
 function printDescriptionWithComments(lines, indentation, firstInBlock) {
   var description = indentation && !firstInBlock ? '\n' : '';
+
   for (var i = 0; i < lines.length; i++) {
     if (lines[i] === '') {
       description += indentation + '#\n';
@@ -262,12 +275,14 @@ function printDescriptionWithComments(lines, indentation, firstInBlock) {
       description += indentation + '# ' + lines[i] + '\n';
     }
   }
+
   return description;
 }
 
 function descriptionLines(description, maxLen) {
   var lines = [];
   var rawLines = description.split('\n');
+
   for (var i = 0; i < rawLines.length; i++) {
     if (rawLines[i] === '') {
       lines.push(rawLines[i]);
@@ -275,11 +290,13 @@ function descriptionLines(description, maxLen) {
       // For > 120 character long lines, cut at space boundaries into sublines
       // of ~80 chars.
       var sublines = breakLine(rawLines[i], maxLen);
+
       for (var j = 0; j < sublines.length; j++) {
         lines.push(sublines[j]);
       }
     }
   }
+
   return lines;
 }
 
@@ -287,13 +304,18 @@ function breakLine(line, maxLen) {
   if (line.length < maxLen + 5) {
     return [line];
   }
-  var parts = line.split(new RegExp('((?: |^).{15,' + (maxLen - 40) + '}(?= |$))'));
+
+  var parts = line.split(new RegExp("((?: |^).{15,".concat(maxLen - 40, "}(?= |$))")));
+
   if (parts.length < 4) {
     return [line];
   }
+
   var sublines = [parts[0] + parts[1] + parts[2]];
+
   for (var i = 3; i < parts.length; i += 2) {
     sublines.push(parts[i].slice(1) + parts[i + 1]);
   }
+
   return sublines;
 }

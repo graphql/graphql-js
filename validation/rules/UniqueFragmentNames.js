@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.duplicateFragmentNameMessage = duplicateFragmentNameMessage;
 exports.UniqueFragmentNames = UniqueFragmentNames;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,16 +16,16 @@ var _error = require('../../error');
  *
  *  strict
  */
-
 function duplicateFragmentNameMessage(fragName) {
-  return 'There can be only one fragment named "' + fragName + '".';
+  return "There can be only one fragment named \"".concat(fragName, "\".");
 }
-
 /**
  * Unique fragment names
  *
  * A GraphQL document is only valid if all defined fragments have unique names.
  */
+
+
 function UniqueFragmentNames(context) {
   var knownFragmentNames = Object.create(null);
   return {
@@ -34,11 +34,13 @@ function UniqueFragmentNames(context) {
     },
     FragmentDefinition: function FragmentDefinition(node) {
       var fragmentName = node.name.value;
+
       if (knownFragmentNames[fragmentName]) {
         context.reportError(new _error.GraphQLError(duplicateFragmentNameMessage(fragmentName), [knownFragmentNames[fragmentName], node.name]));
       } else {
         knownFragmentNames[fragmentName] = node.name;
       }
+
       return false;
     }
   };

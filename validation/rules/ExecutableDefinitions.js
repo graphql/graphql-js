@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,20 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 exports.nonExecutableDefinitionMessage = nonExecutableDefinitionMessage;
 exports.ExecutableDefinitions = ExecutableDefinitions;
 
-var _error = require('../../error');
+var _error = require("../../error");
 
-var _kinds = require('../../language/kinds');
+var _kinds = require("../../language/kinds");
 
-function nonExecutableDefinitionMessage(defName) {
-  return 'The ' + defName + ' definition is not executable.';
-}
-
-/**
- * Executable definitions
- *
- * A GraphQL document is only valid for execution if all definitions are either
- * operation or fragment definitions.
- */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -28,6 +18,16 @@ function nonExecutableDefinitionMessage(defName) {
  *
  *  strict
  */
+function nonExecutableDefinitionMessage(defName) {
+  return "The ".concat(defName, " definition is not executable.");
+}
+/**
+ * Executable definitions
+ *
+ * A GraphQL document is only valid for execution if all definitions are either
+ * operation or fragment definitions.
+ */
+
 
 function ExecutableDefinitions(context) {
   return {

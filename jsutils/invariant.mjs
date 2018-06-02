@@ -6,7 +6,6 @@
  *
  *  strict
  */
-
 export default function invariant(condition, message) {
   /* istanbul ignore else */
   if (!condition) {

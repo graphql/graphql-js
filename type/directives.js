@@ -1,67 +1,59 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.specifiedDirectives = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = undefined;
 exports.isDirective = isDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
+exports.specifiedDirectives = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
 
-var _definition = require('./definition');
+var _definition = require("./definition");
 
-var _scalars = require('./scalars');
+var _scalars = require("./scalars");
 
-var _instanceOf = require('../jsutils/instanceOf');
+var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
-var _instanceOf2 = _interopRequireDefault(_instanceOf);
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _invariant = require('../jsutils/invariant');
-
-var _invariant2 = _interopRequireDefault(_invariant);
-
-var _directiveLocation = require('../language/directiveLocation');
+var _directiveLocation = require("../language/directiveLocation");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } } /**
-                                                                                                                                                           * Copyright (c) 2015-present, Facebook, Inc.
-                                                                                                                                                           *
-                                                                                                                                                           * This source code is licensed under the MIT license found in the
-                                                                                                                                                           * LICENSE file in the root directory of this source tree.
-                                                                                                                                                           *
-                                                                                                                                                           *  strict
-                                                                                                                                                           */
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 // eslint-disable-next-line no-redeclare
-
-
-/**
- * Test if the given value is a GraphQL directive.
- */
 function isDirective(directive) {
-  return (0, _instanceOf2.default)(directive, GraphQLDirective);
+  return (0, _instanceOf.default)(directive, GraphQLDirective);
 }
-
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
 
-var GraphQLDirective = exports.GraphQLDirective = function GraphQLDirective(config) {
-  _classCallCheck(this, GraphQLDirective);
+
+var GraphQLDirective = function GraphQLDirective(config) {
+  _defineProperty(this, "name", void 0);
+
+  _defineProperty(this, "description", void 0);
+
+  _defineProperty(this, "locations", void 0);
+
+  _defineProperty(this, "args", void 0);
+
+  _defineProperty(this, "astNode", void 0);
 
   this.name = config.name;
   this.description = config.description;
   this.locations = config.locations;
   this.astNode = config.astNode;
-  !config.name ? (0, _invariant2.default)(0, 'Directive must be named.') : void 0;
-  !Array.isArray(config.locations) ? (0, _invariant2.default)(0, 'Must provide locations for directive.') : void 0;
-
+  !config.name ? (0, _invariant.default)(0, 'Directive must be named.') : void 0;
+  !Array.isArray(config.locations) ? (0, _invariant.default)(0, 'Must provide locations for directive.') : void 0;
   var args = config.args;
+
   if (!args) {
     this.args = [];
   } else {
-    !!Array.isArray(args) ? (0, _invariant2.default)(0, '@' + config.name + ' args must be an object with argument names as keys.') : void 0;
+    !!Array.isArray(args) ? (0, _invariant.default)(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
     this.args = Object.keys(args).map(function (argName) {
       var arg = args[argName];
       return {
@@ -75,10 +67,12 @@ var GraphQLDirective = exports.GraphQLDirective = function GraphQLDirective(conf
   }
 };
 
+exports.GraphQLDirective = GraphQLDirective;
+
 /**
  * Used to conditionally include fields or fragments.
  */
-var GraphQLIncludeDirective = exports.GraphQLIncludeDirective = new GraphQLDirective({
+var GraphQLIncludeDirective = new GraphQLDirective({
   name: 'include',
   description: 'Directs the executor to include this field or fragment only when ' + 'the `if` argument is true.',
   locations: [_directiveLocation.DirectiveLocation.FIELD, _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD, _directiveLocation.DirectiveLocation.INLINE_FRAGMENT],
@@ -89,11 +83,12 @@ var GraphQLIncludeDirective = exports.GraphQLIncludeDirective = new GraphQLDirec
     }
   }
 });
-
 /**
  * Used to conditionally skip (exclude) fields or fragments.
  */
-var GraphQLSkipDirective = exports.GraphQLSkipDirective = new GraphQLDirective({
+
+exports.GraphQLIncludeDirective = GraphQLIncludeDirective;
+var GraphQLSkipDirective = new GraphQLDirective({
   name: 'skip',
   description: 'Directs the executor to skip this field or fragment when the `if` ' + 'argument is true.',
   locations: [_directiveLocation.DirectiveLocation.FIELD, _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD, _directiveLocation.DirectiveLocation.INLINE_FRAGMENT],
@@ -104,16 +99,18 @@ var GraphQLSkipDirective = exports.GraphQLSkipDirective = new GraphQLDirective({
     }
   }
 });
-
 /**
  * Constant string used for default reason for a deprecation.
  */
-var DEFAULT_DEPRECATION_REASON = exports.DEFAULT_DEPRECATION_REASON = 'No longer supported';
 
+exports.GraphQLSkipDirective = GraphQLSkipDirective;
+var DEFAULT_DEPRECATION_REASON = 'No longer supported';
 /**
  * Used to declare element of a GraphQL schema as deprecated.
  */
-var GraphQLDeprecatedDirective = exports.GraphQLDeprecatedDirective = new GraphQLDirective({
+
+exports.DEFAULT_DEPRECATION_REASON = DEFAULT_DEPRECATION_REASON;
+var GraphQLDeprecatedDirective = new GraphQLDirective({
   name: 'deprecated',
   description: 'Marks an element of a GraphQL schema as no longer supported.',
   locations: [_directiveLocation.DirectiveLocation.FIELD_DEFINITION, _directiveLocation.DirectiveLocation.ENUM_VALUE],
@@ -125,11 +122,13 @@ var GraphQLDeprecatedDirective = exports.GraphQLDeprecatedDirective = new GraphQ
     }
   }
 });
-
 /**
  * The full list of specified directives.
  */
-var specifiedDirectives = exports.specifiedDirectives = [GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective];
+
+exports.GraphQLDeprecatedDirective = GraphQLDeprecatedDirective;
+var specifiedDirectives = [GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective];
+exports.specifiedDirectives = specifiedDirectives;
 
 function isSpecifiedDirective(directive) {
   return specifiedDirectives.some(function (specifiedDirective) {
