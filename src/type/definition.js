@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import applyToStringTag from '../jsutils/applyToStringTag';
 import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
@@ -587,6 +588,9 @@ export class GraphQLScalarType {
   inspect: () => string;
 }
 
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+applyToStringTag(GraphQLScalarType);
+
 // Also provide toJSON and inspect aliases for toString.
 GraphQLScalarType.prototype.toJSON = GraphQLScalarType.prototype.inspect =
   GraphQLScalarType.prototype.toString;
@@ -688,6 +692,9 @@ export class GraphQLObjectType {
   toJSON: () => string;
   inspect: () => string;
 }
+
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+applyToStringTag(GraphQLObjectType);
 
 // Also provide toJSON and inspect aliases for toString.
 GraphQLObjectType.prototype.toJSON = GraphQLObjectType.prototype.inspect =
@@ -938,6 +945,9 @@ export class GraphQLInterfaceType {
   inspect: () => string;
 }
 
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+applyToStringTag(GraphQLInterfaceType);
+
 // Also provide toJSON and inspect aliases for toString.
 GraphQLInterfaceType.prototype.toJSON = GraphQLInterfaceType.prototype.inspect =
   GraphQLInterfaceType.prototype.toString;
@@ -1016,6 +1026,9 @@ export class GraphQLUnionType {
   toJSON: () => string;
   inspect: () => string;
 }
+
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+applyToStringTag(GraphQLUnionType);
 
 // Also provide toJSON and inspect aliases for toString.
 GraphQLUnionType.prototype.toJSON = GraphQLUnionType.prototype.inspect =
@@ -1131,6 +1144,9 @@ export class GraphQLEnumType /* <T> */ {
   toJSON: () => string;
   inspect: () => string;
 }
+
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+applyToStringTag(GraphQLEnumType);
 
 // Also provide toJSON and inspect aliases for toString.
 GraphQLEnumType.prototype.toJSON = GraphQLEnumType.prototype.inspect =
@@ -1264,6 +1280,9 @@ export class GraphQLInputObjectType {
   toJSON: () => string;
   inspect: () => string;
 }
+
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+applyToStringTag(GraphQLInputObjectType);
 
 // Also provide toJSON and inspect aliases for toString.
 GraphQLInputObjectType.prototype.toJSON =

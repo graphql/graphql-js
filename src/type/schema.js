@@ -33,6 +33,7 @@ import {
 import type { GraphQLError } from '../error/GraphQLError';
 import inspect from '../jsutils/inspect';
 import { __Schema } from './introspection';
+import applyToStringTag from '../jsutils/applyToStringTag';
 import find from '../jsutils/find';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
@@ -230,6 +231,9 @@ export class GraphQLSchema {
     return find(this.getDirectives(), directive => directive.name === name);
   }
 }
+
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+applyToStringTag(GraphQLSchema);
 
 type TypeMap = ObjMap<GraphQLNamedType>;
 
