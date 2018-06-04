@@ -11,6 +11,8 @@ var _definition = require("./definition");
 
 var _scalars = require("./scalars");
 
+var _applyToStringTag = _interopRequireDefault(require("../jsutils/applyToStringTag"));
+
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
@@ -65,9 +67,11 @@ var GraphQLDirective = function GraphQLDirective(config) {
       };
     });
   }
-};
+}; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+
 
 exports.GraphQLDirective = GraphQLDirective;
+(0, _applyToStringTag.default)(GraphQLDirective);
 
 /**
  * Used to conditionally include fields or fragments.

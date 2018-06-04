@@ -14,6 +14,8 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _introspection = require("./introspection");
 
+var _applyToStringTag = _interopRequireDefault(require("../jsutils/applyToStringTag"));
+
 var _find = _interopRequireDefault(require("../jsutils/find"));
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
@@ -208,9 +210,11 @@ function () {
   };
 
   return GraphQLSchema;
-}();
+}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+
 
 exports.GraphQLSchema = GraphQLSchema;
+(0, _applyToStringTag.default)(GraphQLSchema);
 
 function typeMapReducer(map, type) {
   if (!type) {

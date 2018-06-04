@@ -10,6 +10,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 import { GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
+import applyToStringTag from '../jsutils/applyToStringTag';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import { DirectiveLocation } from '../language/directiveLocation';
@@ -60,7 +61,9 @@ export var GraphQLDirective = function GraphQLDirective(config) {
       };
     });
   }
-};
+}; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+
+applyToStringTag(GraphQLDirective);
 
 /**
  * Used to conditionally include fields or fragments.

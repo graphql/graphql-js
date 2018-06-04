@@ -14,6 +14,7 @@ import { isAbstractType, isObjectType, isInterfaceType, isUnionType, isInputObje
 import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
 import inspect from '../jsutils/inspect';
 import { __Schema } from './introspection';
+import applyToStringTag from '../jsutils/applyToStringTag';
 import find from '../jsutils/find';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
@@ -197,7 +198,9 @@ function () {
   };
 
   return GraphQLSchema;
-}();
+}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+
+applyToStringTag(GraphQLSchema);
 
 function typeMapReducer(map, type) {
   if (!type) {

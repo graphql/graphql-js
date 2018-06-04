@@ -7,6 +7,8 @@ exports.Source = void 0;
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
+var _applyToStringTag = _interopRequireDefault(require("../jsutils/applyToStringTag"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -34,6 +36,8 @@ var Source = function Source(body, name, locationOffset) {
   };
   !(this.locationOffset.line > 0) ? (0, _invariant.default)(0, 'line in locationOffset is 1-indexed and must be positive') : void 0;
   !(this.locationOffset.column > 0) ? (0, _invariant.default)(0, 'column in locationOffset is 1-indexed and must be positive') : void 0;
-};
+}; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+
 
 exports.Source = Source;
+(0, _applyToStringTag.default)(Source);

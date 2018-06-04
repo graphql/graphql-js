@@ -43,6 +43,8 @@ exports.assertNamedType = assertNamedType;
 exports.getNamedType = getNamedType;
 exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.GraphQLObjectType = exports.GraphQLScalarType = void 0;
 
+var _applyToStringTag = _interopRequireDefault(require("../jsutils/applyToStringTag"));
+
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
@@ -450,10 +452,12 @@ function () {
   };
 
   return GraphQLScalarType;
-}(); // Also provide toJSON and inspect aliases for toString.
+}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
 
 exports.GraphQLScalarType = GraphQLScalarType;
+(0, _applyToStringTag.default)(GraphQLScalarType); // Also provide toJSON and inspect aliases for toString.
+
 GraphQLScalarType.prototype.toJSON = GraphQLScalarType.prototype.inspect = GraphQLScalarType.prototype.toString;
 
 /**
@@ -545,10 +549,12 @@ function () {
   };
 
   return GraphQLObjectType;
-}(); // Also provide toJSON and inspect aliases for toString.
+}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
 
 exports.GraphQLObjectType = GraphQLObjectType;
+(0, _applyToStringTag.default)(GraphQLObjectType); // Also provide toJSON and inspect aliases for toString.
+
 GraphQLObjectType.prototype.toJSON = GraphQLObjectType.prototype.inspect = GraphQLObjectType.prototype.toString;
 
 function defineInterfaces(type, interfacesThunk) {
@@ -668,10 +674,12 @@ function () {
   };
 
   return GraphQLInterfaceType;
-}(); // Also provide toJSON and inspect aliases for toString.
+}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
 
 exports.GraphQLInterfaceType = GraphQLInterfaceType;
+(0, _applyToStringTag.default)(GraphQLInterfaceType); // Also provide toJSON and inspect aliases for toString.
+
 GraphQLInterfaceType.prototype.toJSON = GraphQLInterfaceType.prototype.inspect = GraphQLInterfaceType.prototype.toString;
 
 /**
@@ -740,10 +748,12 @@ function () {
   };
 
   return GraphQLUnionType;
-}(); // Also provide toJSON and inspect aliases for toString.
+}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
 
 exports.GraphQLUnionType = GraphQLUnionType;
+(0, _applyToStringTag.default)(GraphQLUnionType); // Also provide toJSON and inspect aliases for toString.
+
 GraphQLUnionType.prototype.toJSON = GraphQLUnionType.prototype.inspect = GraphQLUnionType.prototype.toString;
 
 function defineTypes(unionType, typesThunk) {
@@ -860,10 +870,12 @@ function () {
   };
 
   return GraphQLEnumType;
-}(); // Also provide toJSON and inspect aliases for toString.
+}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
 
 exports.GraphQLEnumType = GraphQLEnumType;
+(0, _applyToStringTag.default)(GraphQLEnumType); // Also provide toJSON and inspect aliases for toString.
+
 GraphQLEnumType.prototype.toJSON = GraphQLEnumType.prototype.inspect = GraphQLEnumType.prototype.toString;
 
 function defineEnumValues(type, valueMap
@@ -958,9 +970,11 @@ function () {
   };
 
   return GraphQLInputObjectType;
-}(); // Also provide toJSON and inspect aliases for toString.
+}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
 
 exports.GraphQLInputObjectType = GraphQLInputObjectType;
+(0, _applyToStringTag.default)(GraphQLInputObjectType); // Also provide toJSON and inspect aliases for toString.
+
 GraphQLInputObjectType.prototype.toJSON = GraphQLInputObjectType.prototype.toString;
 GraphQLInputObjectType.prototype.inspect = GraphQLInputObjectType.prototype.toString;

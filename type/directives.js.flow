@@ -13,6 +13,7 @@ import type {
 } from './definition';
 import { GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
+import applyToStringTag from '../jsutils/applyToStringTag';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import type { DirectiveDefinitionNode } from '../language/ast';
@@ -75,6 +76,9 @@ export class GraphQLDirective {
     }
   }
 }
+
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+applyToStringTag(GraphQLDirective);
 
 export type GraphQLDirectiveConfig = {
   name: string,
