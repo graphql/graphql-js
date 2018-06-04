@@ -207,7 +207,7 @@ function validateDirectives(context) {
 function validateName(context, node) {
   // If a schema explicitly allows some legacy name which is no longer valid,
   // allow it to be assumed valid.
-  if (context.schema.__allowedLegacyNames && context.schema.__allowedLegacyNames.indexOf(node.name) !== -1) {
+  if (context.schema.__allowedLegacyNames.indexOf(node.name) !== -1) {
     return;
   } // Ensure names are valid, however introspection types opt out.
 

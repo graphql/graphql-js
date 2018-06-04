@@ -105,7 +105,7 @@ function () {
       !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? (0, _invariant.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.allowedLegacyNames), ".")) : void 0;
     }
 
-    this.__allowedLegacyNames = config.allowedLegacyNames;
+    this.__allowedLegacyNames = config.allowedLegacyNames || [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.

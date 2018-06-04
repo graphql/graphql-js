@@ -176,9 +176,8 @@ function extendSchema(schema, documentAST, options) {
     return extendNamedType(type);
   }).concat(astBuilder.buildTypes((0, _objectValues.default)(typeDefinitionMap))); // Support both original legacy names and extended legacy names.
 
-  var schemaAllowedLegacyNames = schema.__allowedLegacyNames;
-  var extendAllowedLegacyNames = options && options.allowedLegacyNames;
-  var allowedLegacyNames = schemaAllowedLegacyNames && extendAllowedLegacyNames ? schemaAllowedLegacyNames.concat(extendAllowedLegacyNames) : schemaAllowedLegacyNames || extendAllowedLegacyNames; // Then produce and return a Schema with these types.
+  var allowedLegacyNames = schema.__allowedLegacyNames.concat(options && options.allowedLegacyNames || []); // Then produce and return a Schema with these types.
+
 
   return new _schema.GraphQLSchema({
     query: operationTypes.query,
