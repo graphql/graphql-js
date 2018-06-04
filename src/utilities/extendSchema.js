@@ -237,12 +237,9 @@ export function extendSchema(
   ];
 
   // Support both original legacy names and extended legacy names.
-  const schemaAllowedLegacyNames = schema.__allowedLegacyNames;
-  const extendAllowedLegacyNames = options && options.allowedLegacyNames;
-  const allowedLegacyNames =
-    schemaAllowedLegacyNames && extendAllowedLegacyNames
-      ? schemaAllowedLegacyNames.concat(extendAllowedLegacyNames)
-      : schemaAllowedLegacyNames || extendAllowedLegacyNames;
+  const allowedLegacyNames = schema.__allowedLegacyNames.concat(
+    (options && options.allowedLegacyNames) || [],
+  );
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({

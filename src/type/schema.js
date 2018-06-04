@@ -89,7 +89,7 @@ export class GraphQLSchema {
   // Used as a cache for validateSchema().
   __validationErrors: ?$ReadOnlyArray<GraphQLError>;
   // Referenced by validateSchema().
-  __allowedLegacyNames: ?$ReadOnlyArray<string>;
+  __allowedLegacyNames: $ReadOnlyArray<string>;
 
   constructor(config: GraphQLSchemaConfig): void {
     // If this schema was built from a source known to be valid, then it may be
@@ -119,7 +119,7 @@ export class GraphQLSchema {
       );
     }
 
-    this.__allowedLegacyNames = config.allowedLegacyNames;
+    this.__allowedLegacyNames = config.allowedLegacyNames || [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription;
