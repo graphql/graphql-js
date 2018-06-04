@@ -26,7 +26,7 @@ function instanceOf(value, constructor) {
     var valueClass = value.constructor;
     var className = constructor.name;
 
-    if (valueClass && valueClass.name === className) {
+    if (className && valueClass && valueClass.name === className) {
       throw new Error("Cannot use ".concat(className, " \"").concat(value, "\" from another module or realm.\n\nEnsure that there is only one instance of \"graphql\" in the node_modules\ndirectory. If different versions of \"graphql\" are the dependencies of other\nrelied on modules, use \"resolutions\" to ensure only one version is installed.\n\nhttps://yarnpkg.com/en/docs/selective-version-resolutions\n\nDuplicate \"graphql\" modules cannot be used at the same time since different\nversions may have different capabilities and behavior. The data from one\nversion used in the function from another could produce confusing and\nspurious results."));
     }
   }
