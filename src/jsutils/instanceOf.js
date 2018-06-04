@@ -31,7 +31,7 @@ export default (process.env.NODE_ENV === 'production'
       if (value) {
         const valueClass = value.constructor;
         const className = constructor.name;
-        if (valueClass && valueClass.name === className) {
+        if (className && valueClass && valueClass.name === className) {
           throw new Error(
             `Cannot use ${className} "${value}" from another module or realm.
 
