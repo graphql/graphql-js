@@ -8,6 +8,8 @@ exports.specifiedScalarTypes = exports.GraphQLID = exports.GraphQLBoolean = expo
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _isInteger = _interopRequireDefault(require("../jsutils/isInteger"));
+
 var _definition = require("./definition");
 
 var _kinds = require("../language/kinds");
@@ -36,22 +38,20 @@ function coerceInt(value) {
   }
 
   if (value === '') {
-    throw new TypeError('Int cannot represent non 32-bit signed integer value: (empty string)');
+    throw new TypeError('Int cannot represent non-integer value: (empty string)');
   }
 
   var num = Number(value);
 
-  if (num !== num || num > MAX_INT || num < MIN_INT) {
-    throw new TypeError('Int cannot represent non 32-bit signed integer value: ' + (0, _inspect.default)(value));
-  }
-
-  var int = Math.floor(num);
-
-  if (int !== num) {
+  if (!(0, _isInteger.default)(num)) {
     throw new TypeError('Int cannot represent non-integer value: ' + (0, _inspect.default)(value));
   }
 
-  return int;
+  if (num > MAX_INT || num < MIN_INT) {
+    throw new TypeError('Int cannot represent non 32-bit signed integer value: ' + (0, _inspect.default)(value));
+  }
+
+  return num;
 }
 
 var GraphQLInt = new _definition.GraphQLScalarType({
@@ -84,7 +84,7 @@ function coerceFloat(value) {
 
   var num = Number(value);
 
-  if (num === num) {
+  if (isFinite(num)) {
     return num;
   }
 

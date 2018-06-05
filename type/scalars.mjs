@@ -7,6 +7,7 @@
  *  strict
  */
 import inspect from '../jsutils/inspect';
+import isInteger from '../jsutils/isInteger';
 import { GraphQLScalarType, isNamedType } from './definition';
 import { Kind } from '../language/kinds'; // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
@@ -23,22 +24,20 @@ function coerceInt(value) {
   }
 
   if (value === '') {
-    throw new TypeError('Int cannot represent non 32-bit signed integer value: (empty string)');
+    throw new TypeError('Int cannot represent non-integer value: (empty string)');
   }
 
   var num = Number(value);
 
-  if (num !== num || num > MAX_INT || num < MIN_INT) {
-    throw new TypeError('Int cannot represent non 32-bit signed integer value: ' + inspect(value));
-  }
-
-  var int = Math.floor(num);
-
-  if (int !== num) {
+  if (!isInteger(num)) {
     throw new TypeError('Int cannot represent non-integer value: ' + inspect(value));
   }
 
-  return int;
+  if (num > MAX_INT || num < MIN_INT) {
+    throw new TypeError('Int cannot represent non 32-bit signed integer value: ' + inspect(value));
+  }
+
+  return num;
 }
 
 export var GraphQLInt = new GraphQLScalarType({
@@ -70,7 +69,7 @@ function coerceFloat(value) {
 
   var num = Number(value);
 
-  if (num === num) {
+  if (isFinite(num)) {
     return num;
   }
 
