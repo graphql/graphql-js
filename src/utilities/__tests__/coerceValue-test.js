@@ -83,6 +83,13 @@ describe('coerceValue', () => {
       ]);
     });
 
+    it('returns a single error for NaN input as int', () => {
+      const result = coerceValue(NaN, GraphQLInt);
+      expectErrors(result).to.deep.equal([
+        'Expected type Int; Int cannot represent non-integer value: NaN',
+      ]);
+    });
+
     it('returns a single error for Infinity input as int', () => {
       const result = coerceValue(Infinity, GraphQLInt);
       expectErrors(result).to.deep.equal([
@@ -130,6 +137,13 @@ describe('coerceValue', () => {
       const result = coerceValue('', GraphQLFloat);
       expectErrors(result).to.deep.equal([
         'Expected type Float; Float cannot represent non numeric value: (empty string)',
+      ]);
+    });
+
+    it('returns a single error for NaN input', () => {
+      const result = coerceValue(NaN, GraphQLFloat);
+      expectErrors(result).to.deep.equal([
+        'Expected type Float; Float cannot represent non numeric value: NaN',
       ]);
     });
 
