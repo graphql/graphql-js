@@ -460,6 +460,7 @@ describe('Execute: Handles inputs', () => {
     it('allows custom enum values as inputs', () => {
       const result = executeQuery(`
         {
+          undefined: fieldWithEnumInput(input: UNDEFINED)
           null: fieldWithEnumInput(input: NULL)
           NaN: fieldWithEnumInput(input: NAN)
           false: fieldWithEnumInput(input: FALSE)
@@ -470,6 +471,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.deep.equal({
         data: {
+          undefined: 'undefined',
           null: 'null',
           NaN: 'NaN',
           false: 'false',
