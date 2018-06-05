@@ -62,31 +62,45 @@ describe('coerceValue', () => {
       expectValue(result).to.equal(null);
     });
 
-    it('returns a single error for empty value', () => {
+    it('returns a single error for empty string as value', () => {
       const result = coerceValue('', GraphQLInt);
       expectErrors(result).to.deep.equal([
-        'Expected type Int; Int cannot represent non 32-bit signed integer value: (empty string)',
+        'Expected type Int; Int cannot represent non-integer value: (empty string)',
       ]);
     });
 
-    it('returns error for float input as int', () => {
+    it('returns a single error for 2^32 input as int', () => {
+      const result = coerceValue(Math.pow(2, 32), GraphQLInt);
+      expectErrors(result).to.deep.equal([
+        'Expected type Int; Int cannot represent non 32-bit signed integer value: 4294967296',
+      ]);
+    });
+
+    it('returns a single error for float input as int', () => {
       const result = coerceValue('1.5', GraphQLInt);
       expectErrors(result).to.deep.equal([
         'Expected type Int; Int cannot represent non-integer value: 1.5',
       ]);
     });
 
+    it('returns a single error for Infinity input as int', () => {
+      const result = coerceValue(Infinity, GraphQLInt);
+      expectErrors(result).to.deep.equal([
+        'Expected type Int; Int cannot represent non-integer value: Infinity',
+      ]);
+    });
+
     it('returns a single error for char input', () => {
       const result = coerceValue('a', GraphQLInt);
       expectErrors(result).to.deep.equal([
-        'Expected type Int; Int cannot represent non 32-bit signed integer value: a',
+        'Expected type Int; Int cannot represent non-integer value: a',
       ]);
     });
 
     it('returns a single error for char input', () => {
       const result = coerceValue('meow', GraphQLInt);
       expectErrors(result).to.deep.equal([
-        'Expected type Int; Int cannot represent non 32-bit signed integer value: meow',
+        'Expected type Int; Int cannot represent non-integer value: meow',
       ]);
     });
   });
@@ -112,10 +126,17 @@ describe('coerceValue', () => {
       expectValue(result).to.equal(null);
     });
 
-    it('returns a single error for empty value', () => {
+    it('returns a single error for empty string input', () => {
       const result = coerceValue('', GraphQLFloat);
       expectErrors(result).to.deep.equal([
         'Expected type Float; Float cannot represent non numeric value: (empty string)',
+      ]);
+    });
+
+    it('returns a single error for Infinity input', () => {
+      const result = coerceValue(Infinity, GraphQLFloat);
+      expectErrors(result).to.deep.equal([
+        'Expected type Float; Float cannot represent non numeric value: Infinity',
       ]);
     });
 
@@ -191,15 +212,15 @@ describe('coerceValue', () => {
     it('returns no error for an invalid field', () => {
       const result = coerceValue({ foo: 'abc' }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Expected type Int at value.foo; Int cannot represent non 32-bit signed integer value: abc',
+        'Expected type Int at value.foo; Int cannot represent non-integer value: abc',
       ]);
     });
 
     it('returns multiple errors for multiple invalid fields', () => {
       const result = coerceValue({ foo: 'abc', bar: 'def' }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Expected type Int at value.foo; Int cannot represent non 32-bit signed integer value: abc',
-        'Expected type Int at value.bar; Int cannot represent non 32-bit signed integer value: def',
+        'Expected type Int at value.foo; Int cannot represent non-integer value: abc',
+        'Expected type Int at value.bar; Int cannot represent non-integer value: def',
       ]);
     });
 

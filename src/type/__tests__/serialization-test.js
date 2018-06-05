@@ -56,14 +56,17 @@ describe('Type System: Scalar coercion', () => {
       'Int cannot represent non 32-bit signed integer value: -1e+100',
     );
     expect(() => GraphQLInt.serialize('one')).to.throw(
-      'Int cannot represent non 32-bit signed integer value: one',
+      'Int cannot represent non-integer value: one',
     );
     // Doesn't represent number
     expect(() => GraphQLInt.serialize('')).to.throw(
-      'Int cannot represent non 32-bit signed integer value: (empty string)',
+      'Int cannot represent non-integer value: (empty string)',
     );
     expect(() => GraphQLInt.serialize(NaN)).to.throw(
-      'Int cannot represent non 32-bit signed integer value: NaN',
+      'Int cannot represent non-integer value: NaN',
+    );
+    expect(() => GraphQLInt.serialize(Infinity)).to.throw(
+      'Int cannot represent non-integer value: Infinity',
     );
     expect(() => GraphQLInt.serialize([5])).to.throw(
       'Int cannot represent an array value: [5]',
@@ -84,6 +87,9 @@ describe('Type System: Scalar coercion', () => {
 
     expect(() => GraphQLFloat.serialize(NaN)).to.throw(
       'Float cannot represent non numeric value: NaN',
+    );
+    expect(() => GraphQLFloat.serialize(Infinity)).to.throw(
+      'Float cannot represent non numeric value: Infinity',
     );
     expect(() => GraphQLFloat.serialize('one')).to.throw(
       'Float cannot represent non numeric value: one',

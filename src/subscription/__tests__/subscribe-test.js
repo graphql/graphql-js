@@ -474,8 +474,7 @@ describe('Subscription Initialization Phase', () => {
         {
           message:
             'Variable "$priority" got invalid value "meow"; Expected ' +
-            'type Int; Int cannot represent non 32-bit signed ' +
-            'integer value: meow',
+            'type Int; Int cannot represent non-integer value: meow',
           locations: [{ line: 2, column: 21 }],
         },
       ],

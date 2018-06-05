@@ -8,6 +8,7 @@
  */
 
 import inspect from '../jsutils/inspect';
+import isInteger from '../jsutils/isInteger';
 import { GraphQLScalarType, isNamedType } from './definition';
 import { Kind } from '../language/kinds';
 
@@ -27,22 +28,22 @@ function coerceInt(value: mixed): number {
   }
   if (value === '') {
     throw new TypeError(
-      'Int cannot represent non 32-bit signed integer value: (empty string)',
+      'Int cannot represent non-integer value: (empty string)',
     );
   }
   const num = Number(value);
-  if (num !== num || num > MAX_INT || num < MIN_INT) {
-    throw new TypeError(
-      'Int cannot represent non 32-bit signed integer value: ' + inspect(value),
-    );
-  }
-  const int = Math.floor(num);
-  if (int !== num) {
+  if (!isInteger(num)) {
     throw new TypeError(
       'Int cannot represent non-integer value: ' + inspect(value),
     );
   }
-  return int;
+
+  if (num > MAX_INT || num < MIN_INT) {
+    throw new TypeError(
+      'Int cannot represent non 32-bit signed integer value: ' + inspect(value),
+    );
+  }
+  return num;
 }
 
 export const GraphQLInt = new GraphQLScalarType({
@@ -75,7 +76,7 @@ function coerceFloat(value: mixed): number {
     );
   }
   const num = Number(value);
-  if (num === num) {
+  if (isFinite(num)) {
     return num;
   }
   throw new TypeError(
