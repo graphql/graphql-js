@@ -18,6 +18,7 @@ import {
   GraphQLString,
   GraphQLNonNull,
   GraphQLScalarType,
+  GraphQLEnumType,
 } from '../../type';
 
 const TestComplexScalar = new GraphQLScalarType({
@@ -60,6 +61,18 @@ const TestNestedInputObject = new GraphQLInputObjectType({
   },
 });
 
+const TestEnum = new GraphQLEnumType({
+  name: 'TestEnum',
+  values: {
+    NULL: { value: null },
+    UNDEFINED: { value: undefined },
+    NAN: { value: NaN },
+    FALSE: { value: false },
+    CUSTOM: { value: 'custom value' },
+    DEFAULT_VALUE: {},
+  },
+});
+
 function fieldWithInputArg(inputArg) {
   return {
     type: GraphQLString,
@@ -75,6 +88,10 @@ function fieldWithInputArg(inputArg) {
 const TestType = new GraphQLObjectType({
   name: 'TestType',
   fields: {
+    fieldWithEnumInput: fieldWithInputArg({ type: TestEnum }),
+    fieldWithNonNullableEnumInput: fieldWithInputArg({
+      type: GraphQLNonNull(TestEnum),
+    }),
     fieldWithObjectInput: fieldWithInputArg({ type: TestInputObject }),
     fieldWithNullableStringInput: fieldWithInputArg({ type: GraphQLString }),
     fieldWithNonNullableStringInput: fieldWithInputArg({
@@ -435,6 +452,44 @@ describe('Execute: Handles inputs', () => {
             },
           ],
         });
+      });
+    });
+  });
+
+  describe('Handles custom enum values', () => {
+    it('allows custom enum values as inputs', () => {
+      const result = executeQuery(`
+        {
+          null: fieldWithEnumInput(input: NULL)
+          NaN: fieldWithEnumInput(input: NAN)
+          false: fieldWithEnumInput(input: FALSE)
+          customValue: fieldWithEnumInput(input: CUSTOM)
+          defaultValue: fieldWithEnumInput(input: DEFAULT_VALUE)
+        }
+      `);
+
+      expect(result).to.deep.equal({
+        data: {
+          null: 'null',
+          NaN: 'NaN',
+          false: 'false',
+          customValue: "'custom value'",
+          defaultValue: "'DEFAULT_VALUE'",
+        },
+      });
+    });
+
+    it('allows non-nullable inputs to have null as enum custom value', () => {
+      const result = executeQuery(`
+        {
+          fieldWithNonNullableEnumInput(input: NULL)
+        }
+      `);
+
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNonNullableEnumInput: 'null',
+        },
       });
     });
   });
