@@ -10,7 +10,6 @@
 import { forEach, isCollection } from 'iterall';
 import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
-import isNullish from '../jsutils/isNullish';
 import orList from '../jsutils/orList';
 import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error';
@@ -46,7 +45,7 @@ export function coerceValue(
 ): CoercedValue {
   // A value must be provided if the type is non-null.
   if (isNonNullType(type)) {
-    if (isNullish(value)) {
+    if (value == null) {
       return ofErrors([
         coercionError(
           `Expected non-nullable type ${inspect(type)} not to be null`,
@@ -58,7 +57,7 @@ export function coerceValue(
     return coerceValue(value, type.ofType, blameNode, path);
   }
 
-  if (isNullish(value)) {
+  if (value == null) {
     // Explicitly return the value null.
     return ofValue(null);
   }
