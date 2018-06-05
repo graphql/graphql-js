@@ -11,7 +11,6 @@ import applyToStringTag from '../jsutils/applyToStringTag';
 import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
-import isInvalid from '../jsutils/isInvalid';
 import keyMap from '../jsutils/keyMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { Kind } from '../language/kinds';
@@ -566,9 +565,6 @@ export class GraphQLScalarType {
   // Parses an externally provided value to use as an input.
   parseValue(value: mixed): mixed {
     const parser = this._scalarConfig.parseValue;
-    if (isInvalid(value)) {
-      return undefined;
-    }
     return parser ? parser(value) : value;
   }
 

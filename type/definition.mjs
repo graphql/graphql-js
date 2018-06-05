@@ -16,7 +16,6 @@ import applyToStringTag from '../jsutils/applyToStringTag';
 import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
-import isInvalid from '../jsutils/isInvalid';
 import keyMap from '../jsutils/keyMap';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
@@ -348,11 +347,6 @@ function () {
 
   _proto.parseValue = function parseValue(value) {
     var parser = this._scalarConfig.parseValue;
-
-    if (isInvalid(value)) {
-      return undefined;
-    }
-
     return parser ? parser(value) : value;
   }; // Parses an externally provided literal value to use as an input.
 

@@ -11,7 +11,6 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 import { forEach, isCollection } from 'iterall';
 import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
-import isNullish from '../jsutils/isNullish';
 import orList from '../jsutils/orList';
 import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error';
@@ -27,14 +26,14 @@ import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType 
 export function coerceValue(value, type, blameNode, path) {
   // A value must be provided if the type is non-null.
   if (isNonNullType(type)) {
-    if (isNullish(value)) {
+    if (value == null) {
       return ofErrors([coercionError("Expected non-nullable type ".concat(inspect(type), " not to be null"), blameNode, path)]);
     }
 
     return coerceValue(value, type.ofType, blameNode, path);
   }
 
-  if (isNullish(value)) {
+  if (value == null) {
     // Explicitly return the value null.
     return ofValue(null);
   }

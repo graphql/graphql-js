@@ -51,8 +51,6 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _kinds = require("../language/kinds");
@@ -433,11 +431,6 @@ function () {
 
   _proto.parseValue = function parseValue(value) {
     var parser = this._scalarConfig.parseValue;
-
-    if ((0, _isInvalid.default)(value)) {
-      return undefined;
-    }
-
     return parser ? parser(value) : value;
   }; // Parses an externally provided literal value to use as an input.
 

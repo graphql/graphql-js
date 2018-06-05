@@ -11,8 +11,6 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
-var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
-
 var _orList = _interopRequireDefault(require("../jsutils/orList"));
 
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
@@ -35,14 +33,14 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 function coerceValue(value, type, blameNode, path) {
   // A value must be provided if the type is non-null.
   if ((0, _definition.isNonNullType)(type)) {
-    if ((0, _isNullish.default)(value)) {
+    if (value == null) {
       return ofErrors([coercionError("Expected non-nullable type ".concat((0, _inspect.default)(type), " not to be null"), blameNode, path)]);
     }
 
     return coerceValue(value, type.ofType, blameNode, path);
   }
 
-  if ((0, _isNullish.default)(value)) {
+  if (value == null) {
     // Explicitly return the value null.
     return ofValue(null);
   }
