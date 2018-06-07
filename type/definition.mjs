@@ -618,6 +618,8 @@ function () {
 
     _defineProperty(this, "astNode", void 0);
 
+    _defineProperty(this, "extensionASTNodes", void 0);
+
     _defineProperty(this, "resolveType", void 0);
 
     _defineProperty(this, "_typeConfig", void 0);
@@ -697,6 +699,8 @@ function () {
     _defineProperty(this, "description", void 0);
 
     _defineProperty(this, "astNode", void 0);
+
+    _defineProperty(this, "extensionASTNodes", void 0);
 
     _defineProperty(this, "_values", void 0);
 
@@ -825,6 +829,8 @@ function () {
     _defineProperty(this, "description", void 0);
 
     _defineProperty(this, "astNode", void 0);
+
+    _defineProperty(this, "extensionASTNodes", void 0);
 
     _defineProperty(this, "_typeConfig", void 0);
 

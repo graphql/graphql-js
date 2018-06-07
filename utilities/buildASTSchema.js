@@ -263,6 +263,28 @@ function () {
     };
   };
 
+  _proto.buildInputField = function buildInputField(value) {
+    // Note: While this could make assertions to get the correctly typed
+    // value, that would throw immediately while type system validation
+    var type = this._buildWrappedType(value.type);
+
+    return {
+      name: value.name.value,
+      type: type,
+      description: getDescription(value, this._options),
+      defaultValue: (0, _valueFromAST.valueFromAST)(value.defaultValue, type),
+      astNode: value
+    };
+  };
+
+  _proto.buildEnumValue = function buildEnumValue(value) {
+    return {
+      description: getDescription(value, this._options),
+      deprecationReason: getDeprecationReason(value),
+      astNode: value
+    };
+  };
+
   _proto._makeSchemaDef = function _makeSchemaDef(def) {
     switch (def.kind) {
       case _kinds.Kind.OBJECT_TYPE_DEFINITION:
@@ -325,16 +347,7 @@ function () {
     return (0, _keyValMap.default)(values, function (value) {
       return value.name.value;
     }, function (value) {
-      // Note: While this could make assertions to get the correctly typed
-      // value, that would throw immediately while type system validation
-      var type = _this4._buildWrappedType(value.type);
-
-      return {
-        type: type,
-        description: getDescription(value, _this4._options),
-        defaultValue: (0, _valueFromAST.valueFromAST)(value.defaultValue, type),
-        astNode: value
-      };
+      return _this4.buildInputField(value);
     });
   };
 
@@ -352,22 +365,22 @@ function () {
   };
 
   _proto._makeEnumDef = function _makeEnumDef(def) {
-    var _this6 = this;
-
     return new _definition.GraphQLEnumType({
       name: def.name.value,
       description: getDescription(def, this._options),
-      values: def.values ? (0, _keyValMap.default)(def.values, function (enumValue) {
-        return enumValue.name.value;
-      }, function (enumValue) {
-        return {
-          description: getDescription(enumValue, _this6._options),
-          deprecationReason: getDeprecationReason(enumValue),
-          astNode: enumValue
-        };
-      }) : {},
+      values: this._makeValueDefMap(def),
       astNode: def
     });
+  };
+
+  _proto._makeValueDefMap = function _makeValueDefMap(def) {
+    var _this6 = this;
+
+    return def.values ? (0, _keyValMap.default)(def.values, function (enumValue) {
+      return enumValue.name.value;
+    }, function (enumValue) {
+      return _this6.buildEnumValue(enumValue);
+    }) : {};
   };
 
   _proto._makeUnionDef = function _makeUnionDef(def) {

@@ -41,6 +41,11 @@ import type {
 
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
+import type {
+  GraphQLEnumValueConfig,
+  GraphQLInputField,
+} from '../type/definition';
+
 import {
   assertNullableType,
   GraphQLScalarType,
@@ -318,6 +323,28 @@ export class ASTDefinitionBuilder {
     };
   }
 
+  buildInputField(value: InputValueDefinitionNode): GraphQLInputField {
+    // Note: While this could make assertions to get the correctly typed
+    // value, that would throw immediately while type system validation
+    // with validateSchema() will produce more actionable results.
+    const type: any = this._buildWrappedType(value.type);
+    return {
+      name: value.name.value,
+      type,
+      description: getDescription(value, this._options),
+      defaultValue: valueFromAST(value.defaultValue, type),
+      astNode: value,
+    };
+  }
+
+  buildEnumValue(value: EnumValueDefinitionNode): GraphQLEnumValueConfig {
+    return {
+      description: getDescription(value, this._options),
+      deprecationReason: getDeprecationReason(value),
+      astNode: value,
+    };
+  }
+
   _makeSchemaDef(def: TypeDefinitionNode): GraphQLNamedType {
     switch (def.kind) {
       case Kind.OBJECT_TYPE_DEFINITION:
@@ -368,18 +395,7 @@ export class ASTDefinitionBuilder {
     return keyValMap(
       values,
       value => value.name.value,
-      value => {
-        // Note: While this could make assertions to get the correctly typed
-        // value, that would throw immediately while type system validation
-        // with validateSchema() will produce more actionable results.
-        const type: any = this._buildWrappedType(value.type);
-        return {
-          type,
-          description: getDescription(value, this._options),
-          defaultValue: valueFromAST(value.defaultValue, type),
-          astNode: value,
-        };
-      },
+      value => this.buildInputField(value),
     );
   }
 
@@ -396,19 +412,19 @@ export class ASTDefinitionBuilder {
     return new GraphQLEnumType({
       name: def.name.value,
       description: getDescription(def, this._options),
-      values: def.values
-        ? keyValMap(
-            def.values,
-            enumValue => enumValue.name.value,
-            enumValue => ({
-              description: getDescription(enumValue, this._options),
-              deprecationReason: getDeprecationReason(enumValue),
-              astNode: enumValue,
-            }),
-          )
-        : {},
+      values: this._makeValueDefMap(def),
       astNode: def,
     });
+  }
+
+  _makeValueDefMap(def: EnumTypeDefinitionNode) {
+    return def.values
+      ? keyValMap(
+          def.values,
+          enumValue => enumValue.name.value,
+          enumValue => this.buildEnumValue(enumValue),
+        )
+      : {};
   }
 
   _makeUnionDef(def: UnionTypeDefinitionNode) {
