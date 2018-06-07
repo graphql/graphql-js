@@ -989,6 +989,7 @@ export class GraphQLUnionType {
   name: string;
   description: ?string;
   astNode: ?UnionTypeDefinitionNode;
+  extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
   resolveType: ?GraphQLTypeResolver<*, *>;
 
   _typeConfig: GraphQLUnionTypeConfig<*, *>;
@@ -1081,6 +1082,7 @@ export class GraphQLEnumType /* <T> */ {
   name: string;
   description: ?string;
   astNode: ?EnumTypeDefinitionNode;
+  extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
 
   _values: Array<GraphQLEnumValue /* <T> */>;
   _valueLookup: Map<any /* T */, GraphQLEnumValue>;
@@ -1230,6 +1232,7 @@ export class GraphQLInputObjectType {
   name: string;
   description: ?string;
   astNode: ?InputObjectTypeDefinitionNode;
+  extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
 
   _typeConfig: GraphQLInputObjectTypeConfig;
   _fields: GraphQLInputFieldMap;
