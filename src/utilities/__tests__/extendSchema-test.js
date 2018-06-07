@@ -21,6 +21,7 @@ import {
   GraphQLID,
   GraphQLString,
   GraphQLEnumType,
+  GraphQLInputObjectType,
   GraphQLNonNull,
   GraphQLList,
   isScalarType,
@@ -77,6 +78,13 @@ const SomeEnumType = new GraphQLEnumType({
   },
 });
 
+const SomeInputType = new GraphQLInputObjectType({
+  name: 'SomeInput',
+  fields: () => ({
+    fooArg: { type: GraphQLString },
+  }),
+});
+
 const testSchema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
@@ -87,6 +95,10 @@ const testSchema = new GraphQLSchema({
       someInterface: {
         args: { id: { type: GraphQLNonNull(GraphQLID) } },
         type: SomeInterfaceType,
+      },
+      someInput: {
+        args: { input: { type: SomeInputType } },
+        type: GraphQLString,
       },
     }),
   }),
@@ -195,6 +207,52 @@ describe('extendSchema', () => {
         name: String
         some: SomeInterface
         tree: [Foo]!
+        newField: String
+      }
+    `);
+  });
+
+  it('extends enums by adding new values', () => {
+    const extendedSchema = extendTestSchema(`
+      extend enum SomeEnum {
+        NEW_ENUM
+      }
+    `);
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
+      enum SomeEnum {
+        ONE
+        TWO
+        NEW_ENUM
+      }
+    `);
+  });
+
+  it('extends unions by adding new types', () => {
+    const extendedSchema = extendTestSchema(`
+      extend union SomeUnion = TestNewType
+
+      type TestNewType {
+        foo: String
+      }
+    `);
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
+      union SomeUnion = Foo | Biz | TestNewType
+
+      type TestNewType {
+        foo: String
+      }
+    `);
+  });
+
+  it('extends inputs by adding new fields', () => {
+    const extendedSchema = extendTestSchema(`
+      extend input SomeInput {
+        newField: String
+      }
+    `);
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
+      input SomeInput {
+        fooArg: String
         newField: String
       }
     `);
@@ -321,7 +379,21 @@ describe('extendSchema', () => {
     expect(deprecatedFieldDef.deprecationReason).to.equal('not used anymore');
   });
 
-  it('extends objects by adding new unused types', () => {
+  it('extends enums with deprecated values', () => {
+    const extendedSchema = extendTestSchema(`
+      extend enum SomeEnum {
+        DEPRECATED @deprecated(reason: "do not use")
+      }
+    `);
+
+    const deprecatedEnumDef = extendedSchema
+      .getType('SomeEnum')
+      .getValue('DEPRECATED');
+    expect(deprecatedEnumDef.isDeprecated).to.equal(true);
+    expect(deprecatedEnumDef.deprecationReason).to.equal('do not use');
+  });
+
+  it('adds new unused object type', () => {
     const extendedSchema = extendTestSchema(`
       type Unused {
         someField: String
@@ -332,6 +404,52 @@ describe('extendSchema', () => {
       type Unused {
         someField: String
       }
+    `);
+  });
+
+  it('adds new unused enum type', () => {
+    const extendedSchema = extendTestSchema(`
+      enum UnusedEnum {
+        SOME
+      }
+    `);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
+      enum UnusedEnum {
+        SOME
+      }
+    `);
+  });
+
+  it('adds new unused input object type', () => {
+    const extendedSchema = extendTestSchema(`
+      input UnusedInput {
+        someInput: String
+      }
+    `);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
+      input UnusedInput {
+        someInput: String
+      }
+    `);
+  });
+
+  it('adds new union using new object type', () => {
+    const extendedSchema = extendTestSchema(`
+      type DummyUnionMember {
+        someField: String
+      }
+
+      union UnusedUnion = DummyUnionMember
+    `);
+    expect(extendedSchema).to.not.equal(testSchema);
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
+      type DummyUnionMember {
+        someField: String
+      }
+
+      union UnusedUnion = DummyUnionMember
     `);
   });
 
@@ -487,7 +605,7 @@ describe('extendSchema', () => {
     `);
   });
 
-  it('extends objects multiple times', () => {
+  it('extends different types multiple times', () => {
     const extendedSchema = extendTestSchema(`
       extend type Biz implements NewInterface {
         buzz: String
@@ -507,6 +625,34 @@ describe('extendSchema', () => {
       interface NewInterface {
         buzz: String
       }
+
+      extend enum SomeEnum {
+        THREE
+      }
+
+      extend enum SomeEnum {
+        FOUR
+      }
+
+      extend union SomeUnion = Boo
+
+      extend union SomeUnion = Joo
+
+      type Boo {
+        fieldA: String
+      }
+
+      type Joo {
+        fieldB: String
+      }
+
+      extend input SomeInput {
+        fieldA: String
+      }
+
+      extend input SomeInput {
+        fieldB: String
+      }
     `);
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       type Biz implements NewInterface & SomeInterface {
@@ -518,9 +664,32 @@ describe('extendSchema', () => {
         newFieldB: Float
       }
 
+      type Boo {
+        fieldA: String
+      }
+
+      type Joo {
+        fieldB: String
+      }
+
       interface NewInterface {
         buzz: String
       }
+
+      enum SomeEnum {
+        ONE
+        TWO
+        THREE
+        FOUR
+      }
+
+      input SomeInput {
+        fooArg: String
+        fieldA: String
+        fieldB: String
+      }
+
+      union SomeUnion = Foo | Biz | Boo | Joo
     `);
   });
 
@@ -740,36 +909,102 @@ describe('extendSchema', () => {
   });
 
   it('does not allow replacing an existing type', () => {
-    const ast = parse(`
+    const typeAst = parse(`
       type Bar {
         baz: String
       }
     `);
-    expect(() => extendSchema(testSchema, ast)).to.throw(
+    expect(() => extendSchema(testSchema, typeAst)).to.throw(
       'Type "Bar" already exists in the schema. It cannot also be defined ' +
+        'in this type definition.',
+    );
+
+    const enumAst = parse(`
+      enum SomeEnum {
+        FOO
+      }
+    `);
+    expect(() => extendSchema(testSchema, enumAst)).to.throw(
+      'Type "SomeEnum" already exists in the schema. It cannot also be defined ' +
+        'in this type definition.',
+    );
+
+    const unionAst = parse(`
+      union SomeUnion = Foo
+    `);
+    expect(() => extendSchema(testSchema, unionAst)).to.throw(
+      'Type "SomeUnion" already exists in the schema. It cannot also be defined ' +
+        'in this type definition.',
+    );
+
+    const inputAst = parse(`
+      input SomeInput {
+        some: String
+      }
+    `);
+    expect(() => extendSchema(testSchema, inputAst)).to.throw(
+      'Type "SomeInput" already exists in the schema. It cannot also be defined ' +
         'in this type definition.',
     );
   });
 
   it('does not allow replacing an existing field', () => {
-    const ast = parse(`
+    const typeAst = parse(`
       extend type Bar {
         foo: Foo
       }
     `);
-    expect(() => extendSchema(testSchema, ast)).to.throw(
+    expect(() => extendSchema(testSchema, typeAst)).to.throw(
       'Field "Bar.foo" already exists in the schema. It cannot also be ' +
+        'defined in this type extension.',
+    );
+
+    const enumAst = parse(`
+      extend enum SomeEnum {
+        ONE
+      }
+    `);
+    expect(() => extendSchema(testSchema, enumAst)).to.throw(
+      'Enum "SomeEnum.ONE" already exists in the schema. It cannot also be ' +
+        'defined in this type extension.',
+    );
+
+    const inputAst = parse(`
+      extend input SomeInput {
+        fooArg: String
+      }
+    `);
+    expect(() => extendSchema(testSchema, inputAst)).to.throw(
+      'Field "SomeInput.fooArg" already exists in the schema. It cannot also be ' +
         'defined in this type extension.',
     );
   });
 
   it('does not allow referencing an unknown type', () => {
-    const ast = parse(`
+    const typeAst = parse(`
       extend type Bar {
         quix: Quix
       }
     `);
-    expect(() => extendSchema(testSchema, ast)).to.throw(
+    expect(() => extendSchema(testSchema, typeAst)).to.throw(
+      'Unknown type: "Quix". Ensure that this type exists either in the ' +
+        'original schema, or is added in a type definition.',
+    );
+
+    const unionAst = parse(`
+      extend union SomeUnion = Quix
+    `);
+    expect(() => extendSchema(testSchema, unionAst)).to.throw(
+      'Unknown type: "Quix". Ensure that this type exists either in the ' +
+        'original schema, or is added in a type definition.',
+    );
+
+    const inputAst = parse(`
+      extend input SomeInput {
+        quix: Quix
+      }
+    `);
+    expect(() => extendSchema(testSchema, inputAst)).to.throw(
       'Unknown type: "Quix". Ensure that this type exists either in the ' +
         'original schema, or is added in a type definition.',
     );
@@ -795,6 +1030,44 @@ describe('extendSchema', () => {
     `);
     expect(() => extendSchema(testSchema, ast)).to.throw(
       'Cannot extend type "UnknownInterfaceType" because it does not ' +
+        'exist in the existing schema.',
+    );
+  });
+
+  it('does not allow extending an unknown enum type', () => {
+    const ast = parse(`
+      extend enum UnknownEnumType {
+        BAZ
+      }
+    `);
+    expect(() => extendSchema(testSchema, ast)).to.throw(
+      'Cannot extend type "UnknownEnumType" because it does not ' +
+        'exist in the existing schema.',
+    );
+  });
+
+  it('does not allow extending an unknown union type', () => {
+    const ast = parse(`
+      extend union UnknownUnionType = Baz
+
+      type Baz {
+        foo: String
+      }
+    `);
+    expect(() => extendSchema(testSchema, ast)).to.throw(
+      'Cannot extend type "UnknownUnionType" because it does not ' +
+        'exist in the existing schema.',
+    );
+  });
+
+  it('does not allow extending an unknown input object type', () => {
+    const ast = parse(`
+      extend input UnknownInputObjectType {
+        foo: String
+      }
+    `);
+    expect(() => extendSchema(testSchema, ast)).to.throw(
+      'Cannot extend type "UnknownInputObjectType" because it does not ' +
         'exist in the existing schema.',
     );
   });
@@ -873,6 +1146,41 @@ describe('extendSchema', () => {
       `);
       expect(() => extendSchema(testSchema, ast)).to.throw(
         'Cannot extend non-object type "String".',
+      );
+    });
+
+    it('not an enum', () => {
+      const ast = parse(`
+        extend enum Foo {
+          BAZ
+        }
+      `);
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Cannot extend non-enum type "Foo".',
+      );
+    });
+
+    it('not an union', () => {
+      const ast = parse(`
+        extend union Foo = Baz
+
+        type Baz {
+          foo: String
+        }
+      `);
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Cannot extend non-union type "Foo".',
+      );
+    });
+
+    it('not an input object', () => {
+      const ast = parse(`
+        extend input Foo {
+          Baz: String
+        }
+      `);
+      expect(() => extendSchema(testSchema, ast)).to.throw(
+        'Cannot extend non-input object type "Foo".',
       );
     });
   });
