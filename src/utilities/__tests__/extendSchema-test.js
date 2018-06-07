@@ -965,8 +965,8 @@ describe('extendSchema', () => {
       }
     `);
     expect(() => extendSchema(testSchema, enumAst)).to.throw(
-      'Enum "SomeEnum.ONE" already exists in the schema. It cannot also be ' +
-        'defined in this type extension.',
+      'Enum value "SomeEnum.ONE" already exists in the schema. It cannot ' +
+        'also be defined in this type extension.',
     );
 
     const inputAst = parse(`
