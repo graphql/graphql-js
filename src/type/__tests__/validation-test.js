@@ -1205,7 +1205,7 @@ describe('Type System: Interface fields must have output types', () => {
     ]);
   });
 
-  it('rejects an interface not implemented by at least one object', () => {
+  it('accepts an interface not implemented by at least one object', () => {
     const schema = buildSchema(`
       type Query {
         test: SomeInterface
@@ -1215,13 +1215,7 @@ describe('Type System: Interface fields must have output types', () => {
         foo: String
       }
     `);
-    expect(validateSchema(schema)).to.deep.equal([
-      {
-        message:
-          'Interface SomeInterface must be implemented by at least one Object type.',
-        locations: [{ line: 6, column: 7 }],
-      },
-    ]);
+    expect(validateSchema(schema)).to.deep.equal([]);
   });
 });
 
