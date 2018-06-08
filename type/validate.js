@@ -253,9 +253,7 @@ function validateTypes(context) {
       validateObjectInterfaces(context, type);
     } else if ((0, _definition.isInterfaceType)(type)) {
       // Ensure fields are valid.
-      validateFields(context, type); // Ensure Interfaces include at least 1 Object type.
-
-      validateInterfaces(context, type);
+      validateFields(context, type);
     } else if ((0, _definition.isUnionType)(type)) {
       // Ensure Unions include valid member types.
       validateUnionMembers(context, type);
@@ -328,14 +326,6 @@ function validateObjectInterfaces(context, object) {
     implementedTypeNames[iface.name] = true;
     validateObjectImplementsInterface(context, object, iface);
   });
-}
-
-function validateInterfaces(context, iface) {
-  var possibleTypes = context.schema.getPossibleTypes(iface);
-
-  if (possibleTypes.length === 0) {
-    context.reportError("Interface ".concat(iface.name, " must be implemented ") + "by at least one Object type.", iface.astNode);
-  }
 }
 
 function validateObjectImplementsInterface(context, object, iface) {

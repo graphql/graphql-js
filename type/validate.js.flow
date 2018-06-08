@@ -257,9 +257,6 @@ function validateTypes(context: SchemaValidationContext): void {
     } else if (isInterfaceType(type)) {
       // Ensure fields are valid.
       validateFields(context, type);
-
-      // Ensure Interfaces include at least 1 Object type.
-      validateInterfaces(context, type);
     } else if (isUnionType(type)) {
       // Ensure Unions include valid member types.
       validateUnionMembers(context, type);
@@ -365,21 +362,6 @@ function validateObjectInterfaces(
     implementedTypeNames[iface.name] = true;
     validateObjectImplementsInterface(context, object, iface);
   });
-}
-
-function validateInterfaces(
-  context: SchemaValidationContext,
-  iface: GraphQLInterfaceType,
-): void {
-  const possibleTypes = context.schema.getPossibleTypes(iface);
-
-  if (possibleTypes.length === 0) {
-    context.reportError(
-      `Interface ${iface.name} must be implemented ` +
-        `by at least one Object type.`,
-      iface.astNode,
-    );
-  }
 }
 
 function validateObjectImplementsInterface(
