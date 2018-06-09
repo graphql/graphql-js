@@ -580,16 +580,17 @@ export class GraphQLScalarType {
     return this.name;
   }
 
-  toJSON: () => string;
-  inspect: () => string;
+  // Also provide toJSON and inspect aliases for toString.
+  toJSON = this.toString;
+  inspect = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 applyToStringTag(GraphQLScalarType);
 
 // Also provide toJSON and inspect aliases for toString.
-GraphQLScalarType.prototype.toJSON = GraphQLScalarType.prototype.inspect =
-  GraphQLScalarType.prototype.toString;
+// GraphQLScalarType.prototype.toJSON = GraphQLScalarType.prototype.inspect =
+//   GraphQLScalarType.prototype.toString;
 
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   name: string,
@@ -685,16 +686,13 @@ export class GraphQLObjectType {
     return this.name;
   }
 
-  toJSON: () => string;
-  inspect: () => string;
+  // Also provide toJSON and inspect aliases for toString.
+  toJSON = this.toString;
+  inspect = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 applyToStringTag(GraphQLObjectType);
-
-// Also provide toJSON and inspect aliases for toString.
-GraphQLObjectType.prototype.toJSON = GraphQLObjectType.prototype.inspect =
-  GraphQLObjectType.prototype.toString;
 
 function defineInterfaces(
   type: GraphQLObjectType,
@@ -937,16 +935,13 @@ export class GraphQLInterfaceType {
     return this.name;
   }
 
-  toJSON: () => string;
-  inspect: () => string;
+  // Also provide toJSON and inspect aliases for toString.
+  toJSON = this.toString;
+  inspect = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 applyToStringTag(GraphQLInterfaceType);
-
-// Also provide toJSON and inspect aliases for toString.
-GraphQLInterfaceType.prototype.toJSON = GraphQLInterfaceType.prototype.inspect =
-  GraphQLInterfaceType.prototype.toString;
 
 export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
   name: string,
@@ -1020,16 +1015,13 @@ export class GraphQLUnionType {
     return this.name;
   }
 
-  toJSON: () => string;
-  inspect: () => string;
+  // Also provide toJSON and inspect aliases for toString.
+  toJSON = this.toString;
+  inspect = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 applyToStringTag(GraphQLUnionType);
-
-// Also provide toJSON and inspect aliases for toString.
-GraphQLUnionType.prototype.toJSON = GraphQLUnionType.prototype.inspect =
-  GraphQLUnionType.prototype.toString;
 
 function defineTypes(
   unionType: GraphQLUnionType,
@@ -1139,16 +1131,13 @@ export class GraphQLEnumType /* <T> */ {
     return this.name;
   }
 
-  toJSON: () => string;
-  inspect: () => string;
+  // Also provide toJSON and inspect aliases for toString.
+  toJSON = this.toString;
+  inspect = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 applyToStringTag(GraphQLEnumType);
-
-// Also provide toJSON and inspect aliases for toString.
-GraphQLEnumType.prototype.toJSON = GraphQLEnumType.prototype.inspect =
-  GraphQLEnumType.prototype.toString;
 
 function defineEnumValues(
   type: GraphQLEnumType,
@@ -1276,18 +1265,13 @@ export class GraphQLInputObjectType {
     return this.name;
   }
 
-  toJSON: () => string;
-  inspect: () => string;
+  // Also provide toJSON and inspect aliases for toString.
+  toJSON = this.toString;
+  inspect = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 applyToStringTag(GraphQLInputObjectType);
-
-// Also provide toJSON and inspect aliases for toString.
-GraphQLInputObjectType.prototype.toJSON =
-  GraphQLInputObjectType.prototype.toString;
-GraphQLInputObjectType.prototype.inspect =
-  GraphQLInputObjectType.prototype.toString;
 
 export type GraphQLInputObjectTypeConfig = {
   name: string,
