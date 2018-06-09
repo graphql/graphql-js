@@ -588,10 +588,6 @@ export class GraphQLScalarType {
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 applyToStringTag(GraphQLScalarType);
 
-// Also provide toJSON and inspect aliases for toString.
-// GraphQLScalarType.prototype.toJSON = GraphQLScalarType.prototype.inspect =
-//   GraphQLScalarType.prototype.toString;
-
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   name: string,
   description?: ?string,
