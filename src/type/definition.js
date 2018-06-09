@@ -581,8 +581,8 @@ export class GraphQLScalarType {
   }
 
   // Also provide toJSON and inspect aliases for toString.
-  toJSON = this.toString;
-  inspect = this.toString;
+  toJSON: () => string = this.toString;
+  inspect: () => string = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
@@ -683,8 +683,8 @@ export class GraphQLObjectType {
   }
 
   // Also provide toJSON and inspect aliases for toString.
-  toJSON = this.toString;
-  inspect = this.toString;
+  toJSON: () => string = this.toString;
+  inspect: () => string = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
@@ -932,8 +932,8 @@ export class GraphQLInterfaceType {
   }
 
   // Also provide toJSON and inspect aliases for toString.
-  toJSON = this.toString;
-  inspect = this.toString;
+  toJSON: () => string = this.toString;
+  inspect: () => string = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
@@ -1012,8 +1012,8 @@ export class GraphQLUnionType {
   }
 
   // Also provide toJSON and inspect aliases for toString.
-  toJSON = this.toString;
-  inspect = this.toString;
+  toJSON: () => string = this.toString;
+  inspect: () => string = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
@@ -1128,8 +1128,8 @@ export class GraphQLEnumType /* <T> */ {
   }
 
   // Also provide toJSON and inspect aliases for toString.
-  toJSON = this.toString;
-  inspect = this.toString;
+  toJSON: () => string = this.toString;
+  inspect: () => string = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
@@ -1262,8 +1262,8 @@ export class GraphQLInputObjectType {
   }
 
   // Also provide toJSON and inspect aliases for toString.
-  toJSON = this.toString;
-  inspect = this.toString;
+  toJSON: () => string = this.toString;
+  inspect: () => string = this.toString;
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
