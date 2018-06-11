@@ -1,5 +1,3 @@
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -18,16 +16,12 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  *
  * @method applyToStringTag
  *
- * @param {Class<*>} classObject a class such as Object, String, Number but
+ * @param {Class<any>} classObject a class such as Object, String, Number but
  * typically one of your own creation through the class keyword; `class A {}`,
  * for example.
  */
-export function applyToStringTag(classObject) {
-  var symbolType = typeof Symbol === "undefined" ? "undefined" : _typeof(Symbol);
-
-  var toStringTagType = _typeof(Symbol.toStringTag);
-
-  if (symbolType === 'function' && toStringTagType === 'symbol') {
+export default function applyToStringTag(classObject) {
+  if (typeof Symbol === 'function' && Symbol.toStringTag) {
     Object.defineProperty(classObject.prototype, Symbol.toStringTag, {
       get: function get() {
         return this.constructor.name;
@@ -35,6 +29,3 @@ export function applyToStringTag(classObject) {
     });
   }
 }
-/** Support both default export and named `applyToStringTag` export */
-
-export default applyToStringTag;
