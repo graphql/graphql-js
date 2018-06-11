@@ -279,7 +279,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const rootValue = { root: 'val' };
 
-    execute(schema, ast, rootValue, null, { var: 123 });
+    execute(schema, ast, rootValue, null, { var: 'abc' });
 
     expect(Object.keys(info)).to.deep.equal([
       'fieldName',
@@ -304,7 +304,7 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(info.schema).to.equal(schema);
     expect(info.rootValue).to.equal(rootValue);
     expect(info.operation).to.equal(ast.definitions[0]);
-    expect(info.variableValues).to.deep.equal({ var: '123' });
+    expect(info.variableValues).to.deep.equal({ var: 'abc' });
   });
 
   it('threads root value context correctly', () => {
