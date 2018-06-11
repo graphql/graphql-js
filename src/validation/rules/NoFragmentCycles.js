@@ -34,9 +34,7 @@ export function NoFragmentCycles(context: ValidationContext): ASTVisitor {
   return {
     OperationDefinition: () => false,
     FragmentDefinition(node) {
-      if (!visitedFrags[node.name.value]) {
-        detectCycleRecursive(node);
-      }
+      detectCycleRecursive(node);
       return false;
     },
   };
@@ -45,6 +43,10 @@ export function NoFragmentCycles(context: ValidationContext): ASTVisitor {
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
   function detectCycleRecursive(fragment: FragmentDefinitionNode) {
+    if (visitedFrags[fragment.name.value]) {
+      return;
+    }
+
     const fragmentName = fragment.name.value;
     visitedFrags[fragmentName] = true;
 
@@ -60,24 +62,23 @@ export function NoFragmentCycles(context: ValidationContext): ASTVisitor {
       const spreadName = spreadNode.name.value;
       const cycleIndex = spreadPathIndexByName[spreadName];
 
+      spreadPath.push(spreadNode);
       if (cycleIndex === undefined) {
-        spreadPath.push(spreadNode);
-        if (!visitedFrags[spreadName]) {
-          const spreadFragment = context.getFragment(spreadName);
-          if (spreadFragment) {
-            detectCycleRecursive(spreadFragment);
-          }
+        const spreadFragment = context.getFragment(spreadName);
+        if (spreadFragment) {
+          detectCycleRecursive(spreadFragment);
         }
-        spreadPath.pop();
       } else {
         const cyclePath = spreadPath.slice(cycleIndex);
+        const fragmentNames = cyclePath.slice(0, -1).map(s => s.name.value);
         context.reportError(
           new GraphQLError(
-            cycleErrorMessage(spreadName, cyclePath.map(s => s.name.value)),
-            cyclePath.concat(spreadNode),
+            cycleErrorMessage(spreadName, fragmentNames),
+            cyclePath,
           ),
         );
       }
+      spreadPath.pop();
     }
 
     spreadPathIndexByName[fragmentName] = undefined;
