@@ -96,11 +96,14 @@ export const StarWarsSchema = buildSchema(`
   }
 `);
 
-// FIXME:
+// FIXME: Patch enum defined in SDL, should be possible to do without hacks :(
 const episodeEnum = (StarWarsSchema.getType('Episode'): any);
-(episodeEnum.getValue('NEWHOPE'): any).value = 4;
-(episodeEnum.getValue('EMPIRE'): any).value = 5;
-(episodeEnum.getValue('JEDI'): any).value = 6;
+episodeEnum.getValue('NEWHOPE').value = 4;
+episodeEnum.getValue('EMPIRE').value = 5;
+episodeEnum.getValue('JEDI').value = 6;
+for (const enumValue of episodeEnum.getValues()) {
+  episodeEnum._valueLookup.set(enumValue.value, enumValue);
+}
 
 class Character {
   id: string;
