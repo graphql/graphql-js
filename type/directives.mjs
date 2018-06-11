@@ -10,7 +10,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 import { GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
-import applyToStringTag from '../jsutils/applyToStringTag';
+import defineToStringTag from '../jsutils/defineToStringTag';
+import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import { DirectiveLocation } from '../language/directiveLocation';
@@ -27,43 +28,56 @@ export function isDirective(directive) {
  * behavior. Type system creators will usually not create these directly.
  */
 
-export var GraphQLDirective = function GraphQLDirective(config) {
-  _defineProperty(this, "name", void 0);
+export var GraphQLDirective =
+/*#__PURE__*/
+function () {
+  function GraphQLDirective(config) {
+    _defineProperty(this, "name", void 0);
 
-  _defineProperty(this, "description", void 0);
+    _defineProperty(this, "description", void 0);
 
-  _defineProperty(this, "locations", void 0);
+    _defineProperty(this, "locations", void 0);
 
-  _defineProperty(this, "args", void 0);
+    _defineProperty(this, "args", void 0);
 
-  _defineProperty(this, "astNode", void 0);
+    _defineProperty(this, "astNode", void 0);
 
-  this.name = config.name;
-  this.description = config.description;
-  this.locations = config.locations;
-  this.astNode = config.astNode;
-  !config.name ? invariant(0, 'Directive must be named.') : void 0;
-  !Array.isArray(config.locations) ? invariant(0, 'Must provide locations for directive.') : void 0;
-  var args = config.args;
+    this.name = config.name;
+    this.description = config.description;
+    this.locations = config.locations;
+    this.astNode = config.astNode;
+    !config.name ? invariant(0, 'Directive must be named.') : void 0;
+    !Array.isArray(config.locations) ? invariant(0, 'Must provide locations for directive.') : void 0;
+    var args = config.args;
 
-  if (!args) {
-    this.args = [];
-  } else {
-    !!Array.isArray(args) ? invariant(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
-    this.args = Object.keys(args).map(function (argName) {
-      var arg = args[argName];
-      return {
-        name: argName,
-        description: arg.description === undefined ? null : arg.description,
-        type: arg.type,
-        defaultValue: arg.defaultValue,
-        astNode: arg.astNode
-      };
-    });
+    if (!args) {
+      this.args = [];
+    } else {
+      !!Array.isArray(args) ? invariant(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
+      this.args = Object.keys(args).map(function (argName) {
+        var arg = args[argName];
+        return {
+          name: argName,
+          description: arg.description === undefined ? null : arg.description,
+          type: arg.type,
+          defaultValue: arg.defaultValue,
+          astNode: arg.astNode
+        };
+      });
+    }
   }
-}; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
-applyToStringTag(GraphQLDirective);
+  var _proto = GraphQLDirective.prototype;
+
+  _proto.toString = function toString() {
+    return '@' + this.name;
+  };
+
+  return GraphQLDirective;
+}(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+
+defineToStringTag(GraphQLDirective);
+defineToJSON(GraphQLDirective);
 
 /**
  * Used to conditionally include fields or fragments.

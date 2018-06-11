@@ -7,7 +7,7 @@ exports.Source = void 0;
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _applyToStringTag = _interopRequireDefault(require("../jsutils/applyToStringTag"));
+var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -40,4 +40,4 @@ var Source = function Source(body, name, locationOffset) {
 
 
 exports.Source = Source;
-(0, _applyToStringTag.default)(Source);
+(0, _defineToStringTag.default)(Source);

@@ -12,7 +12,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  *  strict
  */
-import applyToStringTag from '../jsutils/applyToStringTag';
+import defineToJSON from '../jsutils/defineToJSON';
+import defineToStringTag from '../jsutils/defineToStringTag';
 import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
@@ -175,13 +176,13 @@ export function GraphQLList(ofType) {
   } else {
     return new GraphQLList(ofType);
   }
-} // Also provide toJSON and inspect aliases for toString.
+} // Need to cast through any to alter the prototype.
 
-var listProto = GraphQLList.prototype;
-
-listProto.toString = listProto.toJSON = listProto.inspect = function toString() {
+GraphQLList.prototype.toString = function toString() {
   return '[' + String(this.ofType) + ']';
 };
+
+defineToJSON(GraphQLList);
 /**
  * Non-Null Type Wrapper
  *
@@ -203,7 +204,6 @@ listProto.toString = listProto.toJSON = listProto.inspect = function toString() 
  * Note: the enforcement of non-nullability occurs within the executor.
  */
 
-
 // eslint-disable-next-line no-redeclare
 export function GraphQLNonNull(ofType) {
   if (this instanceof GraphQLNonNull) {
@@ -211,17 +211,16 @@ export function GraphQLNonNull(ofType) {
   } else {
     return new GraphQLNonNull(ofType);
   }
-} // Also provide toJSON and inspect aliases for toString.
+} // Need to cast through any to alter the prototype.
 
-var nonNullProto = GraphQLNonNull.prototype;
-
-nonNullProto.toString = nonNullProto.toJSON = nonNullProto.inspect = function toString() {
+GraphQLNonNull.prototype.toString = function toString() {
   return String(this.ofType) + '!';
 };
+
+defineToJSON(GraphQLNonNull);
 /**
  * These types wrap and modify other types
  */
-
 
 export function isWrappingType(type) {
   return isListType(type) || isNonNullType(type);
@@ -320,10 +319,6 @@ function () {
 
     _defineProperty(this, "_scalarConfig", void 0);
 
-    _defineProperty(this, "toJSON", void 0);
-
-    _defineProperty(this, "inspect", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -363,9 +358,8 @@ function () {
   return GraphQLScalarType;
 }(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
-applyToStringTag(GraphQLScalarType); // Also provide toJSON and inspect aliases for toString.
-
-GraphQLScalarType.prototype.toJSON = GraphQLScalarType.prototype.inspect = GraphQLScalarType.prototype.toString;
+defineToStringTag(GraphQLScalarType);
+defineToJSON(GraphQLScalarType);
 
 /**
  * Object Type Definition
@@ -424,10 +418,6 @@ function () {
 
     _defineProperty(this, "_interfaces", void 0);
 
-    _defineProperty(this, "toJSON", void 0);
-
-    _defineProperty(this, "inspect", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -458,9 +448,8 @@ function () {
   return GraphQLObjectType;
 }(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
-applyToStringTag(GraphQLObjectType); // Also provide toJSON and inspect aliases for toString.
-
-GraphQLObjectType.prototype.toJSON = GraphQLObjectType.prototype.inspect = GraphQLObjectType.prototype.toString;
+defineToStringTag(GraphQLObjectType);
+defineToJSON(GraphQLObjectType);
 
 function defineInterfaces(type, interfacesThunk) {
   var interfaces = resolveThunk(interfacesThunk) || [];
@@ -551,10 +540,6 @@ function () {
 
     _defineProperty(this, "_fields", void 0);
 
-    _defineProperty(this, "toJSON", void 0);
-
-    _defineProperty(this, "inspect", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -581,9 +566,8 @@ function () {
   return GraphQLInterfaceType;
 }(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
-applyToStringTag(GraphQLInterfaceType); // Also provide toJSON and inspect aliases for toString.
-
-GraphQLInterfaceType.prototype.toJSON = GraphQLInterfaceType.prototype.inspect = GraphQLInterfaceType.prototype.toString;
+defineToStringTag(GraphQLInterfaceType);
+defineToJSON(GraphQLInterfaceType);
 
 /**
  * Union Type Definition
@@ -626,10 +610,6 @@ function () {
 
     _defineProperty(this, "_types", void 0);
 
-    _defineProperty(this, "toJSON", void 0);
-
-    _defineProperty(this, "inspect", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -655,9 +635,8 @@ function () {
   return GraphQLUnionType;
 }(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
-applyToStringTag(GraphQLUnionType); // Also provide toJSON and inspect aliases for toString.
-
-GraphQLUnionType.prototype.toJSON = GraphQLUnionType.prototype.inspect = GraphQLUnionType.prototype.toString;
+defineToStringTag(GraphQLUnionType);
+defineToJSON(GraphQLUnionType);
 
 function defineTypes(unionType, typesThunk) {
   var types = resolveThunk(typesThunk) || [];
@@ -707,10 +686,6 @@ function () {
     _defineProperty(this, "_valueLookup", void 0);
 
     _defineProperty(this, "_nameLookup", void 0);
-
-    _defineProperty(this, "toJSON", void 0);
-
-    _defineProperty(this, "inspect", void 0);
 
     this.name = config.name;
     this.description = config.description;
@@ -777,9 +752,8 @@ function () {
   return GraphQLEnumType;
 }(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
-applyToStringTag(GraphQLEnumType); // Also provide toJSON and inspect aliases for toString.
-
-GraphQLEnumType.prototype.toJSON = GraphQLEnumType.prototype.inspect = GraphQLEnumType.prototype.toString;
+defineToStringTag(GraphQLEnumType);
+defineToJSON(GraphQLEnumType);
 
 function defineEnumValues(type, valueMap
 /* <T> */
@@ -836,10 +810,6 @@ function () {
 
     _defineProperty(this, "_fields", void 0);
 
-    _defineProperty(this, "toJSON", void 0);
-
-    _defineProperty(this, "inspect", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -877,7 +847,5 @@ function () {
   return GraphQLInputObjectType;
 }(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
-applyToStringTag(GraphQLInputObjectType); // Also provide toJSON and inspect aliases for toString.
-
-GraphQLInputObjectType.prototype.toJSON = GraphQLInputObjectType.prototype.toString;
-GraphQLInputObjectType.prototype.inspect = GraphQLInputObjectType.prototype.toString;
+defineToStringTag(GraphQLInputObjectType);
+defineToJSON(GraphQLInputObjectType);

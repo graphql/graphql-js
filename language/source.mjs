@@ -9,7 +9,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *  strict
  */
 import invariant from '../jsutils/invariant';
-import applyToStringTag from '../jsutils/applyToStringTag';
+import defineToStringTag from '../jsutils/defineToStringTag';
 
 /**
  * A representation of source input to GraphQL.
@@ -36,4 +36,4 @@ export var Source = function Source(body, name, locationOffset) {
   !(this.locationOffset.column > 0) ? invariant(0, 'column in locationOffset is 1-indexed and must be positive') : void 0;
 }; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
-applyToStringTag(Source);
+defineToStringTag(Source);

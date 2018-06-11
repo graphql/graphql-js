@@ -14,7 +14,7 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _introspection = require("./introspection");
 
-var _applyToStringTag = _interopRequireDefault(require("../jsutils/applyToStringTag"));
+var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
 
 var _find = _interopRequireDefault(require("../jsutils/find"));
 
@@ -214,7 +214,7 @@ function () {
 
 
 exports.GraphQLSchema = GraphQLSchema;
-(0, _applyToStringTag.default)(GraphQLSchema);
+(0, _defineToStringTag.default)(GraphQLSchema);
 
 function typeMapReducer(map, type) {
   if (!type) {
