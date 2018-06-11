@@ -28,11 +28,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *  strict
  */
 function typeIncompatibleSpreadMessage(fragName, parentType, fragType) {
-  return "Fragment \"".concat(fragName, "\" cannot be spread here as objects of ") + "type \"".concat((0, _inspect.default)(parentType), "\" can never be of type \"").concat((0, _inspect.default)(fragType), "\".");
+  return "Fragment \"".concat(fragName, "\" cannot be spread here as objects of ") + "type \"".concat(parentType, "\" can never be of type \"").concat(fragType, "\".");
 }
 
 function typeIncompatibleAnonSpreadMessage(parentType, fragType) {
-  return 'Fragment cannot be spread here as objects of ' + "type \"".concat((0, _inspect.default)(parentType), "\" can never be of type \"").concat((0, _inspect.default)(fragType), "\".");
+  return 'Fragment cannot be spread here as objects of ' + "type \"".concat(parentType, "\" can never be of type \"").concat(fragType, "\".");
 }
 /**
  * Possible fragment spread
@@ -50,7 +50,7 @@ function PossibleFragmentSpreads(context) {
       var parentType = context.getParentType();
 
       if ((0, _definition.isCompositeType)(fragType) && (0, _definition.isCompositeType)(parentType) && !(0, _typeComparators.doTypesOverlap)(context.getSchema(), fragType, parentType)) {
-        context.reportError(new _error.GraphQLError(typeIncompatibleAnonSpreadMessage(parentType, fragType), [node]));
+        context.reportError(new _error.GraphQLError(typeIncompatibleAnonSpreadMessage((0, _inspect.default)(parentType), (0, _inspect.default)(fragType)), [node]));
       }
     },
     FragmentSpread: function FragmentSpread(node) {
@@ -59,7 +59,7 @@ function PossibleFragmentSpreads(context) {
       var parentType = context.getParentType();
 
       if (fragType && parentType && !(0, _typeComparators.doTypesOverlap)(context.getSchema(), fragType, parentType)) {
-        context.reportError(new _error.GraphQLError(typeIncompatibleSpreadMessage(fragName, parentType, fragType), [node]));
+        context.reportError(new _error.GraphQLError(typeIncompatibleSpreadMessage(fragName, (0, _inspect.default)(parentType), (0, _inspect.default)(fragType)), [node]));
       }
     }
   };

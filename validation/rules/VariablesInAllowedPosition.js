@@ -29,7 +29,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *  strict
  */
 function badVarPosMessage(varName, varType, expectedType) {
-  return "Variable \"$".concat(varName, "\" of type \"").concat((0, _inspect.default)(varType), "\" used in ") + "position expecting type \"".concat((0, _inspect.default)(expectedType), "\".");
+  return "Variable \"$".concat(varName, "\" of type \"").concat(varType, "\" used in ") + "position expecting type \"".concat(expectedType, "\".");
 }
 /**
  * Variables passed to field arguments conform to type
@@ -62,7 +62,7 @@ function VariablesInAllowedPosition(context) {
             var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
 
             if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
-              context.reportError(new _error.GraphQLError(badVarPosMessage(varName, varType, type), [varDef, node]));
+              context.reportError(new _error.GraphQLError(badVarPosMessage(varName, (0, _inspect.default)(varType), (0, _inspect.default)(type)), [varDef, node]));
             }
           }
         });

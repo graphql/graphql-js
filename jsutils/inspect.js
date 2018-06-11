@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = inspect;
 
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -13,10 +15,12 @@ exports.default = inspect;
  *
  *  strict
  */
-function inspect(value) {
-  if (Array.isArray(value)) {
-    return '[' + String(value) + ']';
-  }
 
-  return String(value);
+/**
+ * Used to print values in error messages.
+ */
+function inspect(value) {
+  return Array.isArray(value) ? '[' + value.map(inspect).join(', ') + ']' : value && _typeof(value) === 'object' ? typeof value.inspect === 'function' ? value.inspect() : '{' + Object.keys(value).map(function (k) {
+    return "".concat(k, ": ").concat(inspect(value[k]));
+  }).join(', ') + '}' : typeof value === 'string' ? '"' + value + '"' : String(value);
 }

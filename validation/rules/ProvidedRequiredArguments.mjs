@@ -11,10 +11,10 @@ import inspect from '../../jsutils/inspect';
 import keyMap from '../../jsutils/keyMap';
 import { isNonNullType } from '../../type/definition';
 export function missingFieldArgMessage(fieldName, argName, type) {
-  return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(inspect(type), "\" is required but not provided.");
+  return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(type, "\" is required but not provided.");
 }
 export function missingDirectiveArgMessage(directiveName, argName, type) {
-  return "Directive \"@".concat(directiveName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(inspect(type), "\" is required but not provided.");
+  return "Directive \"@".concat(directiveName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(type, "\" is required but not provided.");
 }
 /**
  * Provided required arguments
@@ -42,7 +42,7 @@ export function ProvidedRequiredArguments(context) {
           var argNode = argNodeMap[argDef.name];
 
           if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
-            context.reportError(new GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, argDef.type), [node]));
+            context.reportError(new GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, inspect(argDef.type)), [node]));
           }
         });
       }
@@ -64,7 +64,7 @@ export function ProvidedRequiredArguments(context) {
           var argNode = argNodeMap[argDef.name];
 
           if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
-            context.reportError(new GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, argDef.type), [node]));
+            context.reportError(new GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, inspect(argDef.type)), [node]));
           }
         });
       }

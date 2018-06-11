@@ -88,7 +88,7 @@ function getVariableValues(schema, varDefNodes, inputs) {
 
           if (coercionErrors) {
             coercionErrors.forEach(function (error) {
-              error.message = "Variable \"$".concat(varName, "\" got invalid ") + "value ".concat(JSON.stringify(value), "; ").concat(error.message);
+              error.message = "Variable \"$".concat(varName, "\" got invalid ") + "value ".concat((0, _inspect.default)(value), "; ").concat(error.message);
             });
             errors.push.apply(errors, coercionErrors);
           } else {

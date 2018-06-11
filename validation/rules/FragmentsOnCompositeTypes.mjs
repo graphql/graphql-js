@@ -6,16 +6,15 @@
  *
  *  strict
  */
-import inspect from '../../jsutils/inspect';
 import { GraphQLError } from '../../error';
 import { print } from '../../language/printer';
 import { isCompositeType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 export function inlineFragmentOnNonCompositeErrorMessage(type) {
-  return "Fragment cannot condition on non composite type \"".concat(inspect(type), "\".");
+  return "Fragment cannot condition on non composite type \"".concat(type, "\".");
 }
 export function fragmentOnNonCompositeErrorMessage(fragName, type) {
-  return "Fragment \"".concat(fragName, "\" cannot condition on non composite ") + "type \"".concat(inspect(type), "\".");
+  return "Fragment \"".concat(fragName, "\" cannot condition on non composite ") + "type \"".concat(type, "\".");
 }
 /**
  * Fragments on composite type

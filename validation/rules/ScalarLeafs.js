@@ -24,11 +24,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *  strict
  */
 function noSubselectionAllowedMessage(fieldName, type) {
-  return "Field \"".concat(fieldName, "\" must not have a selection since ") + "type \"".concat((0, _inspect.default)(type), "\" has no subfields.");
+  return "Field \"".concat(fieldName, "\" must not have a selection since ") + "type \"".concat(type, "\" has no subfields.");
 }
 
 function requiredSubselectionMessage(fieldName, type) {
-  return "Field \"".concat(fieldName, "\" of type \"").concat((0, _inspect.default)(type), "\" must have a ") + "selection of subfields. Did you mean \"".concat(fieldName, " { ... }\"?");
+  return "Field \"".concat(fieldName, "\" of type \"").concat(type, "\" must have a ") + "selection of subfields. Did you mean \"".concat(fieldName, " { ... }\"?");
 }
 /**
  * Scalar leafs
@@ -47,10 +47,10 @@ function ScalarLeafs(context) {
       if (type) {
         if ((0, _definition.isLeafType)((0, _definition.getNamedType)(type))) {
           if (selectionSet) {
-            context.reportError(new _error.GraphQLError(noSubselectionAllowedMessage(node.name.value, type), [selectionSet]));
+            context.reportError(new _error.GraphQLError(noSubselectionAllowedMessage(node.name.value, (0, _inspect.default)(type)), [selectionSet]));
           }
         } else if (!selectionSet) {
-          context.reportError(new _error.GraphQLError(requiredSubselectionMessage(node.name.value, type), [node]));
+          context.reportError(new _error.GraphQLError(requiredSubselectionMessage(node.name.value, (0, _inspect.default)(type)), [node]));
         }
       }
     }

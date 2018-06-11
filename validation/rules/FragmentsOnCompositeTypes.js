@@ -7,8 +7,6 @@ exports.inlineFragmentOnNonCompositeErrorMessage = inlineFragmentOnNonCompositeE
 exports.fragmentOnNonCompositeErrorMessage = fragmentOnNonCompositeErrorMessage;
 exports.FragmentsOnCompositeTypes = FragmentsOnCompositeTypes;
 
-var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
-
 var _error = require("../../error");
 
 var _printer = require("../../language/printer");
@@ -16,8 +14,6 @@ var _printer = require("../../language/printer");
 var _definition = require("../../type/definition");
 
 var _typeFromAST = require("../../utilities/typeFromAST");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -28,11 +24,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *  strict
  */
 function inlineFragmentOnNonCompositeErrorMessage(type) {
-  return "Fragment cannot condition on non composite type \"".concat((0, _inspect.default)(type), "\".");
+  return "Fragment cannot condition on non composite type \"".concat(type, "\".");
 }
 
 function fragmentOnNonCompositeErrorMessage(fragName, type) {
-  return "Fragment \"".concat(fragName, "\" cannot condition on non composite ") + "type \"".concat((0, _inspect.default)(type), "\".");
+  return "Fragment \"".concat(fragName, "\" cannot condition on non composite ") + "type \"".concat(type, "\".");
 }
 /**
  * Fragments on composite type

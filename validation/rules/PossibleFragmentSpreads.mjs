@@ -12,10 +12,10 @@ import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import { isCompositeType } from '../../type/definition';
 export function typeIncompatibleSpreadMessage(fragName, parentType, fragType) {
-  return "Fragment \"".concat(fragName, "\" cannot be spread here as objects of ") + "type \"".concat(inspect(parentType), "\" can never be of type \"").concat(inspect(fragType), "\".");
+  return "Fragment \"".concat(fragName, "\" cannot be spread here as objects of ") + "type \"".concat(parentType, "\" can never be of type \"").concat(fragType, "\".");
 }
 export function typeIncompatibleAnonSpreadMessage(parentType, fragType) {
-  return 'Fragment cannot be spread here as objects of ' + "type \"".concat(inspect(parentType), "\" can never be of type \"").concat(inspect(fragType), "\".");
+  return 'Fragment cannot be spread here as objects of ' + "type \"".concat(parentType, "\" can never be of type \"").concat(fragType, "\".");
 }
 /**
  * Possible fragment spread
@@ -32,7 +32,7 @@ export function PossibleFragmentSpreads(context) {
       var parentType = context.getParentType();
 
       if (isCompositeType(fragType) && isCompositeType(parentType) && !doTypesOverlap(context.getSchema(), fragType, parentType)) {
-        context.reportError(new GraphQLError(typeIncompatibleAnonSpreadMessage(parentType, fragType), [node]));
+        context.reportError(new GraphQLError(typeIncompatibleAnonSpreadMessage(inspect(parentType), inspect(fragType)), [node]));
       }
     },
     FragmentSpread: function FragmentSpread(node) {
@@ -41,7 +41,7 @@ export function PossibleFragmentSpreads(context) {
       var parentType = context.getParentType();
 
       if (fragType && parentType && !doTypesOverlap(context.getSchema(), fragType, parentType)) {
-        context.reportError(new GraphQLError(typeIncompatibleSpreadMessage(fragName, parentType, fragType), [node]));
+        context.reportError(new GraphQLError(typeIncompatibleSpreadMessage(fragName, inspect(parentType), inspect(fragType)), [node]));
       }
     }
   };

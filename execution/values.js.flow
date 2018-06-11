@@ -99,7 +99,7 @@ export function getVariableValues(
             coercionErrors.forEach(error => {
               error.message =
                 `Variable "$${varName}" got invalid ` +
-                `value ${JSON.stringify(value)}; ${error.message}`;
+                `value ${inspect(value)}; ${error.message}`;
             });
             errors.push(...coercionErrors);
           } else {

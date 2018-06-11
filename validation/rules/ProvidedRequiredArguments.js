@@ -26,11 +26,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *  strict
  */
 function missingFieldArgMessage(fieldName, argName, type) {
-  return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat((0, _inspect.default)(type), "\" is required but not provided.");
+  return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(type, "\" is required but not provided.");
 }
 
 function missingDirectiveArgMessage(directiveName, argName, type) {
-  return "Directive \"@".concat(directiveName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat((0, _inspect.default)(type), "\" is required but not provided.");
+  return "Directive \"@".concat(directiveName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(type, "\" is required but not provided.");
 }
 /**
  * Provided required arguments
@@ -59,7 +59,7 @@ function ProvidedRequiredArguments(context) {
           var argNode = argNodeMap[argDef.name];
 
           if (!argNode && (0, _definition.isNonNullType)(argDef.type) && argDef.defaultValue === undefined) {
-            context.reportError(new _error.GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, argDef.type), [node]));
+            context.reportError(new _error.GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
           }
         });
       }
@@ -81,7 +81,7 @@ function ProvidedRequiredArguments(context) {
           var argNode = argNodeMap[argDef.name];
 
           if (!argNode && (0, _definition.isNonNullType)(argDef.type) && argDef.defaultValue === undefined) {
-            context.reportError(new _error.GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, argDef.type), [node]));
+            context.reportError(new _error.GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
           }
         });
       }
