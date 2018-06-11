@@ -13,7 +13,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * Used to print values in error messages.
  */
 export default function inspect(value) {
-  return Array.isArray(value) ? '[' + value.map(inspect).join(', ') + ']' : value && _typeof(value) === 'object' ? typeof value.inspect === 'function' ? value.inspect() : '{' + Object.keys(value).map(function (k) {
+  return value && _typeof(value) === 'object' ? typeof value.inspect === 'function' ? value.inspect() : Array.isArray(value) ? '[' + value.map(inspect).join(', ') + ']' : '{' + Object.keys(value).map(function (k) {
     return "".concat(k, ": ").concat(inspect(value[k]));
-  }).join(', ') + '}' : typeof value === 'string' ? '"' + value + '"' : String(value);
+  }).join(', ') + '}' : typeof value === 'string' ? '"' + value + '"' : typeof value === 'function' ? "[function ".concat(value.name, "]") : String(value);
 }
