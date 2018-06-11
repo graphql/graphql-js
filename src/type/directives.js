@@ -13,7 +13,8 @@ import type {
 } from './definition';
 import { GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
-import applyToStringTag from '../jsutils/applyToStringTag';
+import defineToStringTag from '../jsutils/defineToStringTag';
+import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import type { DirectiveDefinitionNode } from '../language/ast';
@@ -75,10 +76,15 @@ export class GraphQLDirective {
       });
     }
   }
+
+  toString(): string {
+    return '@' + this.name;
+  }
 }
 
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
-applyToStringTag(GraphQLDirective);
+defineToStringTag(GraphQLDirective);
+defineToJSON(GraphQLDirective);
 
 export type GraphQLDirectiveConfig = {
   name: string,
