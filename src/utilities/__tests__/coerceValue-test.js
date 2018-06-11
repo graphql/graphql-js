@@ -35,7 +35,7 @@ describe('coerceValue', () => {
       it('returns error for array input as string', () => {
         const result = coerceValue([1, 2, 3], scalar);
         expectErrors(result).to.deep.equal([
-          `Expected type ${scalar}; String cannot represent an array value: [1,2,3]`,
+          `Expected type ${scalar}; String cannot represent an array value: [1, 2, 3]`,
         ]);
       });
     });
@@ -79,7 +79,7 @@ describe('coerceValue', () => {
     it('returns a single error for float input as int', () => {
       const result = coerceValue('1.5', GraphQLInt);
       expectErrors(result).to.deep.equal([
-        'Expected type Int; Int cannot represent non-integer value: 1.5',
+        'Expected type Int; Int cannot represent non-integer value: "1.5"',
       ]);
     });
 
@@ -100,14 +100,14 @@ describe('coerceValue', () => {
     it('returns a single error for char input', () => {
       const result = coerceValue('a', GraphQLInt);
       expectErrors(result).to.deep.equal([
-        'Expected type Int; Int cannot represent non-integer value: a',
+        'Expected type Int; Int cannot represent non-integer value: "a"',
       ]);
     });
 
     it('returns a single error for char input', () => {
       const result = coerceValue('meow', GraphQLInt);
       expectErrors(result).to.deep.equal([
-        'Expected type Int; Int cannot represent non-integer value: meow',
+        'Expected type Int; Int cannot represent non-integer value: "meow"',
       ]);
     });
   });
@@ -157,14 +157,14 @@ describe('coerceValue', () => {
     it('returns a single error for char input', () => {
       const result = coerceValue('a', GraphQLFloat);
       expectErrors(result).to.deep.equal([
-        'Expected type Float; Float cannot represent non numeric value: a',
+        'Expected type Float; Float cannot represent non numeric value: "a"',
       ]);
     });
 
     it('returns a single error for char input', () => {
       const result = coerceValue('meow', GraphQLFloat);
       expectErrors(result).to.deep.equal([
-        'Expected type Float; Float cannot represent non numeric value: meow',
+        'Expected type Float; Float cannot represent non numeric value: "meow"',
       ]);
     });
   });
@@ -226,15 +226,15 @@ describe('coerceValue', () => {
     it('returns no error for an invalid field', () => {
       const result = coerceValue({ foo: 'abc' }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Expected type Int at value.foo; Int cannot represent non-integer value: abc',
+        'Expected type Int at value.foo; Int cannot represent non-integer value: "abc"',
       ]);
     });
 
     it('returns multiple errors for multiple invalid fields', () => {
       const result = coerceValue({ foo: 'abc', bar: 'def' }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Expected type Int at value.foo; Int cannot represent non-integer value: abc',
-        'Expected type Int at value.bar; Int cannot represent non-integer value: def',
+        'Expected type Int at value.foo; Int cannot represent non-integer value: "abc"',
+        'Expected type Int at value.bar; Int cannot represent non-integer value: "def"',
       ]);
     });
 

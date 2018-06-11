@@ -29,9 +29,7 @@ describe('Parser', () => {
   });
 
   it('asserts that a source to parse was provided', () => {
-    expect(() => parse({})).to.throw(
-      'Must provide Source. Received: [object Object]',
-    );
+    expect(() => parse({})).to.throw('Must provide Source. Received: {}');
   });
 
   it('parse provides useful errors', () => {

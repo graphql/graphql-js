@@ -38,7 +38,7 @@ describe('Type System: Scalar coercion', () => {
       'Int cannot represent non-integer value: -1.1',
     );
     expect(() => GraphQLInt.serialize('-1.1')).to.throw(
-      'Int cannot represent non-integer value: -1.1',
+      'Int cannot represent non-integer value: "-1.1"',
     );
     // Maybe a safe JavaScript int, but bigger than 2^32, so not
     // representable as a GraphQL Int
@@ -56,7 +56,7 @@ describe('Type System: Scalar coercion', () => {
       'Int cannot represent non 32-bit signed integer value: -1e+100',
     );
     expect(() => GraphQLInt.serialize('one')).to.throw(
-      'Int cannot represent non-integer value: one',
+      'Int cannot represent non-integer value: "one"',
     );
     // Doesn't represent number
     expect(() => GraphQLInt.serialize('')).to.throw(
@@ -92,7 +92,7 @@ describe('Type System: Scalar coercion', () => {
       'Float cannot represent non numeric value: Infinity',
     );
     expect(() => GraphQLFloat.serialize('one')).to.throw(
-      'Float cannot represent non numeric value: one',
+      'Float cannot represent non numeric value: "one"',
     );
     expect(() => GraphQLFloat.serialize('')).to.throw(
       'Float cannot represent non numeric value: (empty string)',

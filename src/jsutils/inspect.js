@@ -7,9 +7,23 @@
  * @flow strict
  */
 
+/**
+ * Used to print values in error messages.
+ */
 export default function inspect(value: mixed): string {
-  if (Array.isArray(value)) {
-    return '[' + String(value) + ']';
-  }
-  return String(value);
+  return value && typeof value === 'object'
+    ? typeof value.inspect === 'function'
+      ? value.inspect()
+      : Array.isArray(value)
+        ? '[' + value.map(inspect).join(', ') + ']'
+        : '{' +
+          Object.keys(value)
+            .map(k => `${k}: ${inspect(value[k])}`)
+            .join(', ') +
+          '}'
+    : typeof value === 'string'
+      ? '"' + value + '"'
+      : typeof value === 'function'
+        ? `[function ${value.name}]`
+        : String(value);
 }

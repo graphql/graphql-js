@@ -205,7 +205,7 @@ describe('Type System: Enum Values', () => {
       data: { colorEnum: null },
       errors: [
         {
-          message: 'Expected a value of type "Color" but received: GREEN',
+          message: 'Expected a value of type "Color" but received: "GREEN"',
           locations: [{ line: 1, column: 3 }],
           path: ['colorEnum'],
         },
@@ -384,7 +384,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected a value of type "Complex" but received: [object Object]',
+            'Expected a value of type "Complex" but received: {someRandomValue: 123}',
           locations: [{ line: 6, column: 9 }],
           path: ['bad'],
         },

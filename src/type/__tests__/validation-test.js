@@ -383,7 +383,7 @@ describe('Type System: A Schema must have Object root types', () => {
     });
     expect(validateSchema(schema)).to.deep.equal([
       {
-        message: 'Expected directive but got: somedirective.',
+        message: 'Expected directive but got: "somedirective".',
       },
     ]);
   });
@@ -861,10 +861,10 @@ describe('Type System: Object fields must have output types', () => {
     const schema = schemaWithObjectFieldOfType(Number);
     expect(validateSchema(schema)).to.deep.equal([
       {
-        message: `The type of BadObject.badField must be Output Type but got: ${Number}.`,
+        message: `The type of BadObject.badField must be Output Type but got: [function Number].`,
       },
       {
-        message: `Expected GraphQL named type but got: ${Number}.`,
+        message: `Expected GraphQL named type but got: [function Number].`,
       },
     ]);
   });
@@ -1162,13 +1162,13 @@ describe('Type System: Interface fields must have output types', () => {
     const schema = schemaWithInterfaceFieldOfType(Number);
     expect(validateSchema(schema)).to.deep.equal([
       {
-        message: `The type of BadInterface.badField must be Output Type but got: ${Number}.`,
+        message: `The type of BadInterface.badField must be Output Type but got: [function Number].`,
       },
       {
-        message: `Expected GraphQL named type but got: ${Number}.`,
+        message: `Expected GraphQL named type but got: [function Number].`,
       },
       {
-        message: `The type of BadImplementing.badField must be Output Type but got: ${Number}.`,
+        message: `The type of BadImplementing.badField must be Output Type but got: [function Number].`,
       },
     ]);
   });
@@ -1275,10 +1275,10 @@ describe('Type System: Field arguments must have input types', () => {
     const schema = schemaWithArgOfType(Number);
     expect(validateSchema(schema)).to.deep.equal([
       {
-        message: `The type of BadObject.badField(badArg:) must be Input Type but got: ${Number}.`,
+        message: `The type of BadObject.badField(badArg:) must be Input Type but got: [function Number].`,
       },
       {
-        message: `Expected GraphQL named type but got: ${Number}.`,
+        message: `Expected GraphQL named type but got: [function Number].`,
       },
     ]);
   });
@@ -1359,10 +1359,10 @@ describe('Type System: Input Object fields must have input types', () => {
     const schema = schemaWithInputFieldOfType(Number);
     expect(validateSchema(schema)).to.deep.equal([
       {
-        message: `The type of BadInputObject.badField must be Input Type but got: ${Number}.`,
+        message: `The type of BadInputObject.badField must be Input Type but got: [function Number].`,
       },
       {
-        message: `Expected GraphQL named type but got: ${Number}.`,
+        message: `Expected GraphQL named type but got: [function Number].`,
       },
     ]);
   });

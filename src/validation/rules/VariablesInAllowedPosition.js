@@ -21,12 +21,12 @@ import type { GraphQLSchema } from '../../type/schema';
 
 export function badVarPosMessage(
   varName: string,
-  varType: GraphQLType,
-  expectedType: GraphQLType,
+  varType: string,
+  expectedType: string,
 ): string {
   return (
-    `Variable "$${varName}" of type "${inspect(varType)}" used in ` +
-    `position expecting type "${inspect(expectedType)}".`
+    `Variable "$${varName}" of type "${varType}" used in ` +
+    `position expecting type "${expectedType}".`
   );
 }
 
@@ -68,10 +68,10 @@ export function VariablesInAllowedPosition(
               )
             ) {
               context.reportError(
-                new GraphQLError(badVarPosMessage(varName, varType, type), [
-                  varDef,
-                  node,
-                ]),
+                new GraphQLError(
+                  badVarPosMessage(varName, inspect(varType), inspect(type)),
+                  [varDef, node],
+                ),
               );
             }
           }
