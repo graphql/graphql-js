@@ -383,7 +383,7 @@ describe('Type System: A Schema must have Object root types', () => {
     });
     expect(validateSchema(schema)).to.deep.equal([
       {
-        message: 'Expected directive but got: somedirective.',
+        message: 'Expected directive but got: "somedirective".',
       },
     ]);
   });

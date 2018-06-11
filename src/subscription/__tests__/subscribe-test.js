@@ -373,7 +373,7 @@ describe('Subscription Initialization Phase', () => {
 
     await expectPromiseToThrow(
       () => createSubscription(pubsub, invalidEmailSchema),
-      'Subscription field must return Async Iterable. Received: test',
+      'Subscription field must return Async Iterable. Received: "test"',
     );
   });
 
@@ -474,7 +474,7 @@ describe('Subscription Initialization Phase', () => {
         {
           message:
             'Variable "$priority" got invalid value "meow"; Expected ' +
-            'type Int; Int cannot represent non-integer value: meow',
+            'type Int; Int cannot represent non-integer value: "meow"',
           locations: [{ line: 2, column: 21 }],
         },
       ],
