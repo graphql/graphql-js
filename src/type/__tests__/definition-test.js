@@ -348,6 +348,26 @@ describe('Type System: Example', () => {
     expect(String(GraphQLList(GraphQLList(GraphQLInt)))).to.equal('[[Int]]');
   });
 
+  it('JSON stringifies simple types', () => {
+    expect(JSON.stringify(GraphQLInt)).to.equal('"Int"');
+    expect(JSON.stringify(BlogArticle)).to.equal('"Article"');
+    expect(JSON.stringify(InterfaceType)).to.equal('"Interface"');
+    expect(JSON.stringify(UnionType)).to.equal('"Union"');
+    expect(JSON.stringify(EnumType)).to.equal('"Enum"');
+    expect(JSON.stringify(InputObjectType)).to.equal('"InputObject"');
+    expect(JSON.stringify(GraphQLNonNull(GraphQLInt))).to.equal('"Int!"');
+    expect(JSON.stringify(GraphQLList(GraphQLInt))).to.equal('"[Int]"');
+    expect(JSON.stringify(GraphQLNonNull(GraphQLList(GraphQLInt)))).to.equal(
+      '"[Int]!"',
+    );
+    expect(JSON.stringify(GraphQLList(GraphQLNonNull(GraphQLInt)))).to.equal(
+      '"[Int!]"',
+    );
+    expect(JSON.stringify(GraphQLList(GraphQLList(GraphQLInt)))).to.equal(
+      '"[[Int]]"',
+    );
+  });
+
   it('identifies input types', () => {
     const expected = [
       [GraphQLInt, true],
