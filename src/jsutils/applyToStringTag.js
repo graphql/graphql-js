@@ -16,15 +16,12 @@
  *
  * @method applyToStringTag
  *
- * @param {Class<*>} classObject a class such as Object, String, Number but
+ * @param {Class<any>} classObject a class such as Object, String, Number but
  * typically one of your own creation through the class keyword; `class A {}`,
  * for example.
  */
-export function applyToStringTag(classObject: Class<*>): void {
-  const symbolType: string = typeof Symbol;
-  const toStringTagType: string = typeof Symbol.toStringTag;
-
-  if (symbolType === 'function' && toStringTagType === 'symbol') {
+export default function applyToStringTag(classObject: Class<any>): void {
+  if (typeof Symbol === 'function' && Symbol.toStringTag) {
     Object.defineProperty(classObject.prototype, Symbol.toStringTag, {
       get() {
         return this.constructor.name;
@@ -32,6 +29,3 @@ export function applyToStringTag(classObject: Class<*>): void {
     });
   }
 }
-
-/** Support both default export and named `applyToStringTag` export */
-export default applyToStringTag;
