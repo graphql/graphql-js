@@ -129,24 +129,28 @@ class Character {
 }
 
 class Human extends Character {
-  __typename: string;
   homePlanet: string;
 
   constructor(data: HumanData) {
     super(data);
-    this.__typename = 'Human';
     this.homePlanet = data.homePlanet;
+  }
+
+  get __typename(): string {
+    return 'Human';
   }
 }
 
 class Droid extends Character {
-  __typename: string;
   primaryFunction: string;
 
   constructor(data: DroidData) {
     super(data);
-    this.__typename = 'Droid';
     this.primaryFunction = data.primaryFunction;
+  }
+
+  get __typename(): string {
+    return 'Droid';
   }
 }
 
