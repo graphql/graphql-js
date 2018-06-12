@@ -694,7 +694,7 @@ describe('Execute: Handles inputs', () => {
           {
             message:
               'Variable "$value" got invalid value [1, 2, 3]; Expected type ' +
-              'String; String cannot represent an array value: [1, 2, 3]',
+              'String; String cannot represent a non string value: [1, 2, 3]',
             locations: [{ line: 2, column: 16 }],
           },
         ],

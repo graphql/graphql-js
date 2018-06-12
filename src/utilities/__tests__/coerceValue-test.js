@@ -30,34 +30,48 @@ function expectErrors(result) {
 }
 
 describe('coerceValue', () => {
-  for (const scalar of [GraphQLString, GraphQLID]) {
-    describe(`for GraphQL${scalar}`, () => {
-      it('returns error for array input as string', () => {
-        const result = coerceValue([1, 2, 3], scalar);
-        expectErrors(result).to.deep.equal([
-          `Expected type ${scalar}; String cannot represent an array value: [1, 2, 3]`,
-        ]);
-      });
+  describe(`for GraphQLString`, () => {
+    it('returns error for array input as string', () => {
+      const result = coerceValue([1, 2, 3], GraphQLString);
+      expectErrors(result).to.deep.equal([
+        `Expected type String; String cannot represent a non string value: [1, 2, 3]`,
+      ]);
     });
-  }
+  });
+
+  describe(`for GraphQLID`, () => {
+    it('returns error for array input as string', () => {
+      const result = coerceValue([1, 2, 3], GraphQLID);
+      expectErrors(result).to.deep.equal([
+        `Expected type ID; ID cannot represent value: [1, 2, 3]`,
+      ]);
+    });
+  });
 
   describe('for GraphQLInt', () => {
-    it('returns no error for int input', () => {
-      const result = coerceValue('1', GraphQLInt);
+    it('returns value for integer', () => {
+      const result = coerceValue(1, GraphQLInt);
       expectValue(result).to.equal(1);
     });
 
-    it('returns no error for negative int input', () => {
-      const result = coerceValue('-1', GraphQLInt);
+    it('returns error for numeric looking string', () => {
+      const result = coerceValue('1', GraphQLInt);
+      expectErrors(result).to.deep.equal([
+        `Expected type Int; Int cannot represent non-integer value: "1"`,
+      ]);
+    });
+
+    it('returns value for negative int input', () => {
+      const result = coerceValue(-1, GraphQLInt);
       expectValue(result).to.equal(-1);
     });
 
-    it('returns no error for exponent input', () => {
-      const result = coerceValue('1e3', GraphQLInt);
+    it('returns value for exponent input', () => {
+      const result = coerceValue(1e3, GraphQLInt);
       expectValue(result).to.equal(1000);
     });
 
-    it('returns a single error for empty value', () => {
+    it('returns null for null value', () => {
       const result = coerceValue(null, GraphQLInt);
       expectValue(result).to.equal(null);
     });
@@ -65,7 +79,7 @@ describe('coerceValue', () => {
     it('returns a single error for empty string as value', () => {
       const result = coerceValue('', GraphQLInt);
       expectErrors(result).to.deep.equal([
-        'Expected type Int; Int cannot represent non-integer value: (empty string)',
+        'Expected type Int; Int cannot represent non-integer value: ""',
       ]);
     });
 
@@ -77,9 +91,9 @@ describe('coerceValue', () => {
     });
 
     it('returns a single error for float input as int', () => {
-      const result = coerceValue('1.5', GraphQLInt);
+      const result = coerceValue(1.5, GraphQLInt);
       expectErrors(result).to.deep.equal([
-        'Expected type Int; Int cannot represent non-integer value: "1.5"',
+        'Expected type Int; Int cannot represent non-integer value: 1.5',
       ]);
     });
 
@@ -104,7 +118,7 @@ describe('coerceValue', () => {
       ]);
     });
 
-    it('returns a single error for char input', () => {
+    it('returns a single error for string input', () => {
       const result = coerceValue('meow', GraphQLInt);
       expectErrors(result).to.deep.equal([
         'Expected type Int; Int cannot represent non-integer value: "meow"',
@@ -113,22 +127,29 @@ describe('coerceValue', () => {
   });
 
   describe('for GraphQLFloat', () => {
-    it('returns no error for int input', () => {
-      const result = coerceValue('1', GraphQLFloat);
+    it('returns value for integer', () => {
+      const result = coerceValue(1, GraphQLFloat);
       expectValue(result).to.equal(1);
     });
 
-    it('returns no error for exponent input', () => {
-      const result = coerceValue('1e3', GraphQLFloat);
+    it('returns value for decimal', () => {
+      const result = coerceValue(1.1, GraphQLFloat);
+      expectValue(result).to.equal(1.1);
+    });
+
+    it('returns value for exponent input', () => {
+      const result = coerceValue(1e3, GraphQLFloat);
       expectValue(result).to.equal(1000);
     });
 
-    it('returns no error for float input', () => {
-      const result = coerceValue('1.5', GraphQLFloat);
-      expectValue(result).to.equal(1.5);
+    it('returns error for numeric looking string', () => {
+      const result = coerceValue('1', GraphQLFloat);
+      expectErrors(result).to.deep.equal([
+        'Expected type Float; Float cannot represent non numeric value: "1"',
+      ]);
     });
 
-    it('returns a single error for empty value', () => {
+    it('returns null for null value', () => {
       const result = coerceValue(null, GraphQLFloat);
       expectValue(result).to.equal(null);
     });
@@ -136,7 +157,7 @@ describe('coerceValue', () => {
     it('returns a single error for empty string input', () => {
       const result = coerceValue('', GraphQLFloat);
       expectErrors(result).to.deep.equal([
-        'Expected type Float; Float cannot represent non numeric value: (empty string)',
+        'Expected type Float; Float cannot represent non numeric value: ""',
       ]);
     });
 
