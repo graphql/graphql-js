@@ -589,7 +589,7 @@ export class GraphQLScalarType {
 defineToStringTag(GraphQLScalarType);
 defineToJSON(GraphQLScalarType);
 
-export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
+export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   name: string,
   description?: ?string,
   astNode?: ?ScalarTypeDefinitionNode,
@@ -599,7 +599,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
     valueNode: ValueNode,
     variables: ?ObjMap<mixed>,
   ) => ?TInternal,
-};
+|};
 
 /**
  * Object Type Definition
@@ -768,7 +768,7 @@ function isValidResolver(resolver: mixed): boolean {
   return resolver == null || typeof resolver === 'function';
 }
 
-export type GraphQLObjectTypeConfig<TSource, TContext> = {
+export type GraphQLObjectTypeConfig<TSource, TContext> = {|
   name: string,
   interfaces?: Thunk<?Array<GraphQLInterfaceType>>,
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
@@ -776,7 +776,7 @@ export type GraphQLObjectTypeConfig<TSource, TContext> = {
   description?: ?string,
   astNode?: ?ObjectTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<ObjectTypeExtensionNode>,
-};
+|};
 
 export type GraphQLTypeResolver<TSource, TContext> = (
   value: TSource,
@@ -823,7 +823,7 @@ export type GraphQLFieldConfig<
   TSource,
   TContext,
   TArgs = { [argument: string]: any },
-> = {
+> = {|
   type: GraphQLOutputType,
   args?: GraphQLFieldConfigArgumentMap,
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
@@ -831,16 +831,16 @@ export type GraphQLFieldConfig<
   deprecationReason?: ?string,
   description?: ?string,
   astNode?: ?FieldDefinitionNode,
-};
+|};
 
 export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
 
-export type GraphQLArgumentConfig = {
+export type GraphQLArgumentConfig = {|
   type: GraphQLInputType,
   defaultValue?: mixed,
   description?: ?string,
   astNode?: ?InputValueDefinitionNode,
-};
+|};
 
 export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldConfig<TSource, TContext>,
@@ -934,7 +934,7 @@ export class GraphQLInterfaceType {
 defineToStringTag(GraphQLInterfaceType);
 defineToJSON(GraphQLInterfaceType);
 
-export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
+export type GraphQLInterfaceTypeConfig<TSource, TContext> = {|
   name: string,
   fields: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
   /**
@@ -946,7 +946,7 @@ export type GraphQLInterfaceTypeConfig<TSource, TContext> = {
   description?: ?string,
   astNode?: ?InterfaceTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<InterfaceTypeExtensionNode>,
-};
+|};
 
 /**
  * Union Type Definition
@@ -1025,7 +1025,7 @@ function defineTypes(
   return types;
 }
 
-export type GraphQLUnionTypeConfig<TSource, TContext> = {
+export type GraphQLUnionTypeConfig<TSource, TContext> = {|
   name: string,
   types: Thunk<Array<GraphQLObjectType>>,
   /**
@@ -1037,7 +1037,7 @@ export type GraphQLUnionTypeConfig<TSource, TContext> = {
   description?: ?string,
   astNode?: ?UnionTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<UnionTypeExtensionNode>,
-};
+|};
 
 /**
  * Enum Type Definition
@@ -1158,24 +1158,24 @@ function defineEnumValues(
   });
 }
 
-export type GraphQLEnumTypeConfig /* <T> */ = {
+export type GraphQLEnumTypeConfig /* <T> */ = {|
   name: string,
   values: GraphQLEnumValueConfigMap /* <T> */,
   description?: ?string,
   astNode?: ?EnumTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<EnumTypeExtensionNode>,
-};
+|};
 
 export type GraphQLEnumValueConfigMap /* <T> */ = ObjMap<
   GraphQLEnumValueConfig /* <T> */,
 >;
 
-export type GraphQLEnumValueConfig /* <T> */ = {
+export type GraphQLEnumValueConfig /* <T> */ = {|
   value?: any /* T */,
   deprecationReason?: ?string,
   description?: ?string,
   astNode?: ?EnumValueDefinitionNode,
-};
+|};
 
 export type GraphQLEnumValue /* <T> */ = {
   name: string,
@@ -1260,20 +1260,20 @@ export class GraphQLInputObjectType {
 defineToStringTag(GraphQLInputObjectType);
 defineToJSON(GraphQLInputObjectType);
 
-export type GraphQLInputObjectTypeConfig = {
+export type GraphQLInputObjectTypeConfig = {|
   name: string,
   fields: Thunk<GraphQLInputFieldConfigMap>,
   description?: ?string,
   astNode?: ?InputObjectTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<InputObjectTypeExtensionNode>,
-};
+|};
 
-export type GraphQLInputFieldConfig = {
+export type GraphQLInputFieldConfig = {|
   type: GraphQLInputType,
   defaultValue?: mixed,
   description?: ?string,
   astNode?: ?InputValueDefinitionNode,
-};
+|};
 
 export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
