@@ -34,10 +34,7 @@ function NoFragmentCycles(context) {
       return false;
     },
     FragmentDefinition: function FragmentDefinition(node) {
-      if (!visitedFrags[node.name.value]) {
-        detectCycleRecursive(node);
-      }
-
+      detectCycleRecursive(node);
       return false;
     }
   }; // This does a straight-forward DFS to find cycles.
@@ -45,6 +42,10 @@ function NoFragmentCycles(context) {
   // the graph to find all possible cycles.
 
   function detectCycleRecursive(fragment) {
+    if (visitedFrags[fragment.name.value]) {
+      return;
+    }
+
     var fragmentName = fragment.name.value;
     visitedFrags[fragmentName] = true;
     var spreadNodes = context.getFragmentSpreads(fragment.selectionSet);
@@ -59,25 +60,23 @@ function NoFragmentCycles(context) {
       var spreadNode = spreadNodes[i];
       var spreadName = spreadNode.name.value;
       var cycleIndex = spreadPathIndexByName[spreadName];
+      spreadPath.push(spreadNode);
 
       if (cycleIndex === undefined) {
-        spreadPath.push(spreadNode);
+        var spreadFragment = context.getFragment(spreadName);
 
-        if (!visitedFrags[spreadName]) {
-          var spreadFragment = context.getFragment(spreadName);
-
-          if (spreadFragment) {
-            detectCycleRecursive(spreadFragment);
-          }
+        if (spreadFragment) {
+          detectCycleRecursive(spreadFragment);
         }
-
-        spreadPath.pop();
       } else {
         var cyclePath = spreadPath.slice(cycleIndex);
-        context.reportError(new _error.GraphQLError(cycleErrorMessage(spreadName, cyclePath.map(function (s) {
+        var fragmentNames = cyclePath.slice(0, -1).map(function (s) {
           return s.name.value;
-        })), cyclePath.concat(spreadNode)));
+        });
+        context.reportError(new _error.GraphQLError(cycleErrorMessage(spreadName, fragmentNames), cyclePath));
       }
+
+      spreadPath.pop();
     }
 
     spreadPathIndexByName[fragmentName] = undefined;
