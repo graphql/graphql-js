@@ -113,12 +113,21 @@ export const GraphQLFloat = new GraphQLScalarType({
 });
 
 function serializeString(value: mixed): string {
-  if (Array.isArray(value)) {
-    throw new TypeError(
-      `String cannot represent an array value: ${inspect(value)}`,
-    );
+  // Support serializing objects with custom valueOf() functions - a common way
+  // to represent an complex value which can be represented as a string
+  // (ex: MongoDB id objects).
+  const result =
+    value && typeof value.valueOf === 'function' ? value.valueOf() : value;
+  // Serialize string, number, and boolean values to a string, but do not
+  // attempt to coerce object, function, symbol, or other types as strings.
+  if (
+    typeof result !== 'string' &&
+    typeof result !== 'number' &&
+    typeof result !== 'boolean'
+  ) {
+    throw new TypeError(`String cannot represent value: ${inspect(result)}`);
   }
-  return String(value);
+  return String(result);
 }
 
 function coerceString(value: mixed): string {
@@ -175,11 +184,7 @@ function serializeID(value: mixed): string {
   // Support serializing objects with custom valueOf() functions - a common way
   // to represent an object identifier (ex. MongoDB).
   const result =
-    value &&
-    typeof value.valueOf === 'function' &&
-    value.valueOf !== Object.prototype.valueOf
-      ? value.valueOf()
-      : value;
+    value && typeof value.valueOf === 'function' ? value.valueOf() : value;
   if (
     typeof result !== 'string' &&
     (typeof result !== 'number' || !isInteger(result))
