@@ -106,29 +106,6 @@ var __Directive = new _definition.GraphQLObjectType({
         resolve: function resolve(directive) {
           return directive.args || [];
         }
-      },
-      // NOTE: the following three fields are deprecated and are no longer part
-      // of the GraphQL specification.
-      onOperation: {
-        deprecationReason: 'Use `locations`.',
-        type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
-        resolve: function resolve(d) {
-          return d.locations.indexOf(_directiveLocation.DirectiveLocation.QUERY) !== -1 || d.locations.indexOf(_directiveLocation.DirectiveLocation.MUTATION) !== -1 || d.locations.indexOf(_directiveLocation.DirectiveLocation.SUBSCRIPTION) !== -1;
-        }
-      },
-      onFragment: {
-        deprecationReason: 'Use `locations`.',
-        type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
-        resolve: function resolve(d) {
-          return d.locations.indexOf(_directiveLocation.DirectiveLocation.FRAGMENT_SPREAD) !== -1 || d.locations.indexOf(_directiveLocation.DirectiveLocation.INLINE_FRAGMENT) !== -1 || d.locations.indexOf(_directiveLocation.DirectiveLocation.FRAGMENT_DEFINITION) !== -1;
-        }
-      },
-      onField: {
-        deprecationReason: 'Use `locations`.',
-        type: (0, _definition.GraphQLNonNull)(_scalars.GraphQLBoolean),
-        resolve: function resolve(d) {
-          return d.locations.indexOf(_directiveLocation.DirectiveLocation.FIELD) !== -1;
-        }
       }
     };
   }
