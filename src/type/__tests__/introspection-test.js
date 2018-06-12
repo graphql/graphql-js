@@ -698,51 +698,6 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
-                {
-                  name: 'onOperation',
-                  args: [],
-                  type: {
-                    kind: 'NON_NULL',
-                    name: null,
-                    ofType: {
-                      kind: 'SCALAR',
-                      name: 'Boolean',
-                      ofType: null,
-                    },
-                  },
-                  isDeprecated: true,
-                  deprecationReason: 'Use `locations`.',
-                },
-                {
-                  name: 'onFragment',
-                  args: [],
-                  type: {
-                    kind: 'NON_NULL',
-                    name: null,
-                    ofType: {
-                      kind: 'SCALAR',
-                      name: 'Boolean',
-                      ofType: null,
-                    },
-                  },
-                  isDeprecated: true,
-                  deprecationReason: 'Use `locations`.',
-                },
-                {
-                  name: 'onField',
-                  args: [],
-                  type: {
-                    kind: 'NON_NULL',
-                    name: null,
-                    ofType: {
-                      kind: 'SCALAR',
-                      name: 'Boolean',
-                      ofType: null,
-                    },
-                  },
-                  isDeprecated: true,
-                  deprecationReason: 'Use `locations`.',
-                },
               ],
               inputFields: null,
               interfaces: [],
