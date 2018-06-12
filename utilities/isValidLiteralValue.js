@@ -32,6 +32,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Utility which determines if a value literal node is valid for an input type.
  *
  * Deprecated. Rely on validation for documents containing literal values.
+ *
+ * This function will be removed in v15
  */
 function isValidLiteralValue(type, valueNode) {
   var emptySchema = new _schema.GraphQLSchema({});

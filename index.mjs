@@ -62,7 +62,7 @@ export { GraphQLError, formatError, printError } from './error';
 // Utilities for operating on GraphQL type schema and parsed sources.
 export { // Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.
-getIntrospectionQuery, // Deprecated: use getIntrospectionQuery
+getIntrospectionQuery, // @deprecated: use getIntrospectionQuery - will be removed in v15
 introspectionQuery, // Gets the target Operation from a Document
 getOperationAST, // Gets the Type for the target Operation AST.
 getOperationRootType, // Convert a GraphQLSchema to an IntrospectionQuery
@@ -84,8 +84,8 @@ valueFromASTUntyped, // Create a GraphQL language AST from a JavaScript value.
 astFromValue, // A helper to use within recursive-descent visitors which need to be aware of
 // the GraphQL type system.
 TypeInfo, // Coerces a JavaScript value to a GraphQL type, or produces errors.
-coerceValue, // @deprecated use coerceValue
-isValidJSValue, // Determine if AST values adhere to a GraphQL type.
+coerceValue, // @deprecated use coerceValue - will be removed in v15
+isValidJSValue, // @deprecated use validation - will be removed in v15
 isValidLiteralValue, // Concatenates multiple AST together.
 concatAST, // Separates an AST into an AST per Operation.
 separateOperations, // Comparators for types

@@ -18,6 +18,8 @@ var _coerceValue = require("./coerceValue");
 
 /**
  * Deprecated. Use coerceValue() directly for richer information.
+ *
+ * This function will be removed in v15
  */
 function isValidJSValue(value, type) {
   var errors = (0, _coerceValue.coerceValue)(value, type).errors;

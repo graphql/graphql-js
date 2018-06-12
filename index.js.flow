@@ -316,7 +316,7 @@ export {
   // Produce the GraphQL query recommended for a full schema introspection.
   // Accepts optional IntrospectionOptions.
   getIntrospectionQuery,
-  // Deprecated: use getIntrospectionQuery
+  // @deprecated: use getIntrospectionQuery - will be removed in v15
   introspectionQuery,
   // Gets the target Operation from a Document
   getOperationAST,
@@ -357,9 +357,9 @@ export {
   TypeInfo,
   // Coerces a JavaScript value to a GraphQL type, or produces errors.
   coerceValue,
-  // @deprecated use coerceValue
+  // @deprecated use coerceValue - will be removed in v15
   isValidJSValue,
-  // Determine if AST values adhere to a GraphQL type.
+  // @deprecated use validation - will be removed in v15
   isValidLiteralValue,
   // Concatenates multiple AST together.
   concatAST,
