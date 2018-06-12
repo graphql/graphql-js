@@ -28,6 +28,9 @@ import type {
   InputObjectTypeDefinitionNode,
   ObjectTypeExtensionNode,
   InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
   OperationDefinitionNode,
   FieldNode,
   FragmentDefinitionNode,
@@ -972,7 +975,7 @@ export class GraphQLUnionType {
   name: string;
   description: ?string;
   astNode: ?UnionTypeDefinitionNode;
-  extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
+  extensionASTNodes: ?$ReadOnlyArray<UnionTypeExtensionNode>;
   resolveType: ?GraphQLTypeResolver<*, *>;
 
   _typeConfig: GraphQLUnionTypeConfig<*, *>;
@@ -982,6 +985,7 @@ export class GraphQLUnionType {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
     this.resolveType = config.resolveType;
     this._typeConfig = config;
     invariant(typeof config.name === 'string', 'Must provide name.');
@@ -1032,6 +1036,7 @@ export type GraphQLUnionTypeConfig<TSource, TContext> = {
   resolveType?: ?GraphQLTypeResolver<TSource, TContext>,
   description?: ?string,
   astNode?: ?UnionTypeDefinitionNode,
+  extensionASTNodes?: ?$ReadOnlyArray<UnionTypeExtensionNode>,
 };
 
 /**
@@ -1059,7 +1064,7 @@ export class GraphQLEnumType /* <T> */ {
   name: string;
   description: ?string;
   astNode: ?EnumTypeDefinitionNode;
-  extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
+  extensionASTNodes: ?$ReadOnlyArray<EnumTypeExtensionNode>;
 
   _values: Array<GraphQLEnumValue /* <T> */>;
   _valueLookup: Map<any /* T */, GraphQLEnumValue>;
@@ -1069,6 +1074,7 @@ export class GraphQLEnumType /* <T> */ {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
     this._values = defineEnumValues(this, config.values);
     this._valueLookup = new Map(
       this._values.map(enumValue => [enumValue.value, enumValue]),
@@ -1157,6 +1163,7 @@ export type GraphQLEnumTypeConfig /* <T> */ = {
   values: GraphQLEnumValueConfigMap /* <T> */,
   description?: ?string,
   astNode?: ?EnumTypeDefinitionNode,
+  extensionASTNodes?: ?$ReadOnlyArray<EnumTypeExtensionNode>,
 };
 
 export type GraphQLEnumValueConfigMap /* <T> */ = ObjMap<
@@ -1203,7 +1210,7 @@ export class GraphQLInputObjectType {
   name: string;
   description: ?string;
   astNode: ?InputObjectTypeDefinitionNode;
-  extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
+  extensionASTNodes: ?$ReadOnlyArray<InputObjectTypeExtensionNode>;
 
   _typeConfig: GraphQLInputObjectTypeConfig;
   _fields: GraphQLInputFieldMap;
@@ -1212,6 +1219,7 @@ export class GraphQLInputObjectType {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
     this._typeConfig = config;
     invariant(typeof config.name === 'string', 'Must provide name.');
   }
@@ -1257,6 +1265,7 @@ export type GraphQLInputObjectTypeConfig = {
   fields: Thunk<GraphQLInputFieldConfigMap>,
   description?: ?string,
   astNode?: ?InputObjectTypeDefinitionNode,
+  extensionASTNodes?: ?$ReadOnlyArray<InputObjectTypeExtensionNode>,
 };
 
 export type GraphQLInputFieldConfig = {
