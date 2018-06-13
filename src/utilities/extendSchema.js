@@ -15,6 +15,7 @@ import { ASTDefinitionBuilder } from './buildASTSchema';
 import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
+import { isSpecifiedScalarType } from '../type/scalars';
 
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
 
@@ -24,6 +25,7 @@ import type {
 } from '../type/definition';
 
 import {
+  isScalarType,
   isObjectType,
   isInterfaceType,
   isUnionType,
@@ -33,6 +35,7 @@ import {
   isInputObjectType,
   GraphQLList,
   GraphQLNonNull,
+  GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -135,6 +138,7 @@ export function extendSchema(
         }
         typeDefinitionMap[typeName] = def;
         break;
+      case Kind.SCALAR_TYPE_EXTENSION:
       case Kind.OBJECT_TYPE_EXTENSION:
       case Kind.INTERFACE_TYPE_EXTENSION:
       case Kind.ENUM_TYPE_EXTENSION:
@@ -170,10 +174,6 @@ export function extendSchema(
         }
         directiveDefinitions.push(def);
         break;
-      case Kind.SCALAR_TYPE_EXTENSION:
-        throw new Error(
-          `The ${def.kind} kind is not yet supported by extendSchema().`,
-        );
     }
   }
 
@@ -280,14 +280,16 @@ export function extendSchema(
   }
 
   function extendNamedType<T: GraphQLNamedType>(type: T): T {
-    if (isIntrospectionType(type)) {
-      // Introspection types are not extended.
+    if (isIntrospectionType(type) || isSpecifiedScalarType(type)) {
+      // Builtin types are not extended.
       return type;
     }
 
     const name = type.name;
     if (!extendTypeCache[name]) {
-      if (isObjectType(type)) {
+      if (isScalarType(type)) {
+        extendTypeCache[name] = extendScalarType(type);
+      } else if (isObjectType(type)) {
         extendTypeCache[name] = extendObjectType(type);
       } else if (isInterfaceType(type)) {
         extendTypeCache[name] = extendInterfaceType(type);
@@ -423,6 +425,24 @@ export function extendSchema(
     }
 
     return newValueMap;
+  }
+
+  function extendScalarType(type: GraphQLScalarType): GraphQLScalarType {
+    const name = type.name;
+    const extensionASTNodes = typeExtensionsMap[name]
+      ? type.extensionASTNodes
+        ? type.extensionASTNodes.concat(typeExtensionsMap[name])
+        : typeExtensionsMap[name]
+      : type.extensionASTNodes;
+    return new GraphQLScalarType({
+      name,
+      description: type.description,
+      astNode: type.astNode,
+      extensionASTNodes,
+      serialize: type._scalarConfig.serialize,
+      parseValue: type._scalarConfig.parseValue,
+      parseLiteral: type._scalarConfig.parseLiteral,
+    });
   }
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
