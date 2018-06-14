@@ -26,6 +26,7 @@ import type {
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
+  ScalarTypeExtensionNode,
   ObjectTypeExtensionNode,
   InterfaceTypeExtensionNode,
   UnionTypeExtensionNode,
@@ -535,6 +536,7 @@ export class GraphQLScalarType {
   name: string;
   description: ?string;
   astNode: ?ScalarTypeDefinitionNode;
+  extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
   _scalarConfig: GraphQLScalarTypeConfig<*, *>;
 
@@ -542,6 +544,7 @@ export class GraphQLScalarType {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
     this._scalarConfig = config;
     invariant(typeof config.name === 'string', 'Must provide name.');
     invariant(
@@ -593,6 +596,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {
   name: string,
   description?: ?string,
   astNode?: ?ScalarTypeDefinitionNode,
+  extensionASTNodes?: ?$ReadOnlyArray<ScalarTypeExtensionNode>,
   serialize: (value: mixed) => ?TExternal,
   parseValue?: (value: mixed) => ?TInternal,
   parseLiteral?: (

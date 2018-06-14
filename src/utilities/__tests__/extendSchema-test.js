@@ -15,6 +15,7 @@ import { Kind } from '../../language/kinds';
 import { graphqlSync } from '../../';
 import {
   GraphQLSchema,
+  GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -32,6 +33,11 @@ import {
 } from '../../type';
 
 // Test schema.
+const SomeScalarType = new GraphQLScalarType({
+  name: 'SomeScalar',
+  serialize: x => x,
+});
+
 const SomeInterfaceType = new GraphQLInterfaceType({
   name: 'SomeInterface',
   fields: () => ({
@@ -92,6 +98,7 @@ const testSchema = new GraphQLSchema({
     name: 'Query',
     fields: () => ({
       foo: { type: FooType },
+      someScalar: { type: SomeScalarType },
       someUnion: { type: SomeUnionType },
       someEnum: { type: SomeEnumType },
       someInterface: {
@@ -294,11 +301,25 @@ describe('extendSchema', () => {
     expect(fooDirective.args[0].type).to.equal(someInputType);
   });
 
+  it('extends scalars by adding new directives', () => {
+    const extendedSchema = extendTestSchema(`
+      extend scalar SomeScalar @foo
+    `);
+
+    const someScalar = extendedSchema.getType('SomeScalar');
+    expect(someScalar.extensionASTNodes).to.have.lengthOf(1);
+    expect(print(someScalar.extensionASTNodes[0])).to.equal(
+      'extend scalar SomeScalar @foo',
+    );
+  });
+
   it('correctly assign AST nodes to new and extended types', () => {
     const extendedSchema = extendTestSchema(`
       extend type Query {
         newField(testArg: TestInput): TestEnum
       }
+
+      extend scalar SomeScalar @foo
 
       extend enum SomeEnum {
         NEW_VALUE
@@ -327,6 +348,8 @@ describe('extendSchema', () => {
         oneMoreNewField: TestUnion
       }
 
+      extend scalar SomeScalar @test
+
       extend enum SomeEnum {
         ONE_MORE_NEW_VALUE
       }
@@ -351,11 +374,12 @@ describe('extendSchema', () => {
         interfaceField: String
       }
 
-      directive @test(arg: Int) on FIELD
+      directive @test(arg: Int) on FIELD | SCALAR
     `);
     const extendedTwiceSchema = extendSchema(extendedSchema, ast);
 
     const query = extendedTwiceSchema.getType('Query');
+    const someScalar = extendedTwiceSchema.getType('SomeScalar');
     const someEnum = extendedTwiceSchema.getType('SomeEnum');
     const someUnion = extendedTwiceSchema.getType('SomeUnion');
     const someInput = extendedTwiceSchema.getType('SomeInput');
@@ -369,6 +393,7 @@ describe('extendSchema', () => {
     const testDirective = extendedTwiceSchema.getDirective('test');
 
     expect(query.extensionASTNodes).to.have.lengthOf(2);
+    expect(someScalar.extensionASTNodes).to.have.lengthOf(2);
     expect(someEnum.extensionASTNodes).to.have.lengthOf(2);
     expect(someUnion.extensionASTNodes).to.have.lengthOf(2);
     expect(someInput.extensionASTNodes).to.have.lengthOf(2);
@@ -384,6 +409,7 @@ describe('extendSchema', () => {
       kind: Kind.DOCUMENT,
       definitions: [
         ...query.extensionASTNodes,
+        ...someScalar.extensionASTNodes,
         ...someEnum.extensionASTNodes,
         ...someUnion.extensionASTNodes,
         ...someInput.extensionASTNodes,
