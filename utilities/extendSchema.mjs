@@ -14,7 +14,8 @@ import { ASTDefinitionBuilder } from './buildASTSchema';
 import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
-import { isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from '../type/definition';
+import { isSpecifiedScalarType } from '../type/scalars';
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from '../type/definition';
 import { GraphQLDirective } from '../type/directives';
 import { Kind } from '../language/kinds';
 
@@ -77,6 +78,7 @@ export function extendSchema(schema, documentAST, options) {
         typeDefinitionMap[typeName] = def;
         break;
 
+      case Kind.SCALAR_TYPE_EXTENSION:
       case Kind.OBJECT_TYPE_EXTENSION:
       case Kind.INTERFACE_TYPE_EXTENSION:
       case Kind.ENUM_TYPE_EXTENSION:
@@ -106,9 +108,6 @@ export function extendSchema(schema, documentAST, options) {
 
         directiveDefinitions.push(def);
         break;
-
-      case Kind.SCALAR_TYPE_EXTENSION:
-        throw new Error("The ".concat(def.kind, " kind is not yet supported by extendSchema()."));
     }
   } // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
@@ -186,15 +185,17 @@ export function extendSchema(schema, documentAST, options) {
   }
 
   function extendNamedType(type) {
-    if (isIntrospectionType(type)) {
-      // Introspection types are not extended.
+    if (isIntrospectionType(type) || isSpecifiedScalarType(type)) {
+      // Builtin types are not extended.
       return type;
     }
 
     var name = type.name;
 
     if (!extendTypeCache[name]) {
-      if (isObjectType(type)) {
+      if (isScalarType(type)) {
+        extendTypeCache[name] = extendScalarType(type);
+      } else if (isObjectType(type)) {
         extendTypeCache[name] = extendObjectType(type);
       } else if (isInterfaceType(type)) {
         extendTypeCache[name] = extendInterfaceType(type);
@@ -322,6 +323,20 @@ export function extendSchema(schema, documentAST, options) {
     }
 
     return newValueMap;
+  }
+
+  function extendScalarType(type) {
+    var name = type.name;
+    var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
+    return new GraphQLScalarType({
+      name: name,
+      description: type.description,
+      astNode: type.astNode,
+      extensionASTNodes: extensionASTNodes,
+      serialize: type._scalarConfig.serialize,
+      parseValue: type._scalarConfig.parseValue,
+      parseLiteral: type._scalarConfig.parseLiteral
+    });
   }
 
   function extendObjectType(type) {

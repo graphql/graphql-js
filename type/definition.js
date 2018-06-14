@@ -402,11 +402,14 @@ function () {
 
     _defineProperty(this, "astNode", void 0);
 
+    _defineProperty(this, "extensionASTNodes", void 0);
+
     _defineProperty(this, "_scalarConfig", void 0);
 
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
     this._scalarConfig = config;
     !(typeof config.name === 'string') ? (0, _invariant.default)(0, 'Must provide name.') : void 0;
     !(typeof config.serialize === 'function') ? (0, _invariant.default)(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar ") + 'is also used as an input type, ensure "parseValue" and "parseLiteral" ' + 'functions are also provided.') : void 0;

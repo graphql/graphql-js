@@ -21,6 +21,8 @@ var _schema = require("../type/schema");
 
 var _introspection = require("../type/introspection");
 
+var _scalars = require("../type/scalars");
+
 var _definition = require("../type/definition");
 
 var _directives = require("../type/directives");
@@ -97,6 +99,7 @@ function extendSchema(schema, documentAST, options) {
         typeDefinitionMap[typeName] = def;
         break;
 
+      case _kinds.Kind.SCALAR_TYPE_EXTENSION:
       case _kinds.Kind.OBJECT_TYPE_EXTENSION:
       case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
       case _kinds.Kind.ENUM_TYPE_EXTENSION:
@@ -126,9 +129,6 @@ function extendSchema(schema, documentAST, options) {
 
         directiveDefinitions.push(def);
         break;
-
-      case _kinds.Kind.SCALAR_TYPE_EXTENSION:
-        throw new Error("The ".concat(def.kind, " kind is not yet supported by extendSchema()."));
     }
   } // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
@@ -206,15 +206,17 @@ function extendSchema(schema, documentAST, options) {
   }
 
   function extendNamedType(type) {
-    if ((0, _introspection.isIntrospectionType)(type)) {
-      // Introspection types are not extended.
+    if ((0, _introspection.isIntrospectionType)(type) || (0, _scalars.isSpecifiedScalarType)(type)) {
+      // Builtin types are not extended.
       return type;
     }
 
     var name = type.name;
 
     if (!extendTypeCache[name]) {
-      if ((0, _definition.isObjectType)(type)) {
+      if ((0, _definition.isScalarType)(type)) {
+        extendTypeCache[name] = extendScalarType(type);
+      } else if ((0, _definition.isObjectType)(type)) {
         extendTypeCache[name] = extendObjectType(type);
       } else if ((0, _definition.isInterfaceType)(type)) {
         extendTypeCache[name] = extendInterfaceType(type);
@@ -342,6 +344,20 @@ function extendSchema(schema, documentAST, options) {
     }
 
     return newValueMap;
+  }
+
+  function extendScalarType(type) {
+    var name = type.name;
+    var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
+    return new _definition.GraphQLScalarType({
+      name: name,
+      description: type.description,
+      astNode: type.astNode,
+      extensionASTNodes: extensionASTNodes,
+      serialize: type._scalarConfig.serialize,
+      parseValue: type._scalarConfig.parseValue,
+      parseLiteral: type._scalarConfig.parseLiteral
+    });
   }
 
   function extendObjectType(type) {
