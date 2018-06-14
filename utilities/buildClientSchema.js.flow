@@ -333,7 +333,6 @@ export function buildClientSchema(
       ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type)
       : undefined;
     return {
-      name: inputValueIntrospection.name,
       description: inputValueIntrospection.description,
       type,
       defaultValue,

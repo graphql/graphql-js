@@ -15,7 +15,6 @@ import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from '../language/directiveLocation';
 export var __Schema = new GraphQLObjectType({
   name: '__Schema',
-  isIntrospection: true,
   description: 'A GraphQL Schema defines the capabilities of a GraphQL server. It ' + 'exposes all available types and directives on the server, as well as ' + 'the entry points for query, mutation, and subscription operations.',
   fields: function fields() {
     return {
@@ -59,7 +58,6 @@ export var __Schema = new GraphQLObjectType({
 });
 export var __Directive = new GraphQLObjectType({
   name: '__Directive',
-  isIntrospection: true,
   description: 'A Directive provides a way to describe alternate runtime execution and ' + 'type validation behavior in a GraphQL document.' + "\n\nIn some cases, you need to provide options to alter GraphQL's " + 'execution behavior in ways field arguments will not suffice, such as ' + 'conditionally including or skipping a field. Directives provide this by ' + 'describing additional information to the executor.',
   fields: function fields() {
     return {
@@ -92,7 +90,6 @@ export var __Directive = new GraphQLObjectType({
 });
 export var __DirectiveLocation = new GraphQLEnumType({
   name: '__DirectiveLocation',
-  isIntrospection: true,
   description: 'A Directive can be adjacent to many parts of the GraphQL language, a ' + '__DirectiveLocation describes one such possible adjacencies.',
   values: {
     QUERY: {
@@ -171,7 +168,6 @@ export var __DirectiveLocation = new GraphQLEnumType({
 });
 export var __Type = new GraphQLObjectType({
   name: '__Type',
-  isIntrospection: true,
   description: 'The fundamental unit of any GraphQL Schema is the type. There are ' + 'many kinds of types in GraphQL as represented by the `__TypeKind` enum.' + '\n\nDepending on the kind of a type, certain fields describe ' + 'information about that type. Scalar types provide no information ' + 'beyond a name and description, while Enum types provide their values. ' + 'Object and Interface types provide the fields they describe. Abstract ' + 'types, Union and Interface, provide the Object types possible ' + 'at runtime. List and NonNull types compose other types.',
   fields: function fields() {
     return {
@@ -298,7 +294,6 @@ export var __Type = new GraphQLObjectType({
 });
 export var __Field = new GraphQLObjectType({
   name: '__Field',
-  isIntrospection: true,
   description: 'Object and Interface types are described by a list of Fields, each of ' + 'which has a name, potentially a list of arguments, and a return type.',
   fields: function fields() {
     return {
@@ -343,7 +338,6 @@ export var __Field = new GraphQLObjectType({
 });
 export var __InputValue = new GraphQLObjectType({
   name: '__InputValue',
-  isIntrospection: true,
   description: 'Arguments provided to Fields or Directives and the input fields of an ' + 'InputObject are represented as Input Values which describe their type ' + 'and optionally a default value.',
   fields: function fields() {
     return {
@@ -377,7 +371,6 @@ export var __InputValue = new GraphQLObjectType({
 });
 export var __EnumValue = new GraphQLObjectType({
   name: '__EnumValue',
-  isIntrospection: true,
   description: 'One possible value for a given Enum. Enum values are unique values, not ' + 'a placeholder for a string or numeric value. However an Enum value is ' + 'returned in a JSON response as a string.',
   fields: function fields() {
     return {
@@ -420,7 +413,6 @@ export var TypeKind = {
 };
 export var __TypeKind = new GraphQLEnumType({
   name: '__TypeKind',
-  isIntrospection: true,
   description: 'An enum describing what kind of type a given `__Type` is.',
   values: {
     SCALAR: {

@@ -271,7 +271,6 @@ function buildClientSchema(introspection, options) {
     var type = getInputType(inputValueIntrospection.type);
     var defaultValue = inputValueIntrospection.defaultValue ? (0, _valueFromAST.valueFromAST)((0, _parser.parseValue)(inputValueIntrospection.defaultValue), type) : undefined;
     return {
-      name: inputValueIntrospection.name,
       description: inputValueIntrospection.description,
       type: type,
       defaultValue: defaultValue
