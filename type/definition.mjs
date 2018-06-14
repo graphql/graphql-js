@@ -613,6 +613,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
     this.resolveType = config.resolveType;
     this._typeConfig = config;
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
@@ -690,6 +691,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
     this._values = defineEnumValues(this, config.values);
     this._valueLookup = new Map(this._values.map(function (enumValue) {
       return [enumValue.value, enumValue];
@@ -813,6 +815,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
     this._typeConfig = config;
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
   }
