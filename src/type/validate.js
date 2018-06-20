@@ -169,15 +169,14 @@ function getOperationTypeNode(
 }
 
 function validateDirectives(context: SchemaValidationContext): void {
-  const directives = context.schema.getDirectives();
-  directives.forEach(directive => {
+  for (const directive of context.schema.getDirectives()) {
     // Ensure all directives are in fact GraphQL directives.
     if (!isDirective(directive)) {
       context.reportError(
         `Expected directive but got: ${inspect(directive)}.`,
         directive && directive.astNode,
       );
-      return;
+      continue;
     }
 
     // Ensure they are named correctly.
@@ -187,7 +186,7 @@ function validateDirectives(context: SchemaValidationContext): void {
 
     // Ensure the arguments are valid.
     const argNames = Object.create(null);
-    directive.args.forEach(arg => {
+    for (const arg of directive.args) {
       const argName = arg.name;
 
       // Ensure they are named correctly.
@@ -199,7 +198,7 @@ function validateDirectives(context: SchemaValidationContext): void {
           `Argument @${directive.name}(${argName}:) can only be defined once.`,
           getAllDirectiveArgNodes(directive, argName),
         );
-        return; // continue loop
+        continue;
       }
       argNames[argName] = true;
 
@@ -211,8 +210,8 @@ function validateDirectives(context: SchemaValidationContext): void {
           getDirectiveArgTypeNode(directive, argName),
         );
       }
-    });
-  });
+    }
+  }
 }
 
 function validateName(
@@ -233,14 +232,14 @@ function validateName(
 
 function validateTypes(context: SchemaValidationContext): void {
   const typeMap = context.schema.getTypeMap();
-  objectValues(typeMap).forEach(type => {
+  for (const type of objectValues(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.
     if (!isNamedType(type)) {
       context.reportError(
         `Expected GraphQL named type but got: ${inspect(type)}.`,
         type && type.astNode,
       );
-      return;
+      continue;
     }
 
     // Ensure it is named correctly (excluding introspection types).
@@ -267,7 +266,7 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure Input Object fields are valid.
       validateInputFields(context, type);
     }
-  });
+  }
 }
 
 function validateFields(
@@ -284,7 +283,7 @@ function validateFields(
     );
   }
 
-  fields.forEach(field => {
+  for (const field of fields) {
     // Ensure they are named correctly.
     validateName(context, field);
 
@@ -295,7 +294,7 @@ function validateFields(
         `Field ${type.name}.${field.name} can only be defined once.`,
         fieldNodes,
       );
-      return; // continue loop
+      continue;
     }
 
     // Ensure the type is an output type
@@ -309,7 +308,7 @@ function validateFields(
 
     // Ensure the arguments are valid
     const argNames = Object.create(null);
-    field.args.forEach(arg => {
+    for (const arg of field.args) {
       const argName = arg.name;
 
       // Ensure they are named correctly.
@@ -333,8 +332,8 @@ function validateFields(
           getFieldArgTypeNode(type, field.name, argName),
         );
       }
-    });
-  });
+    }
+  }
 }
 
 function validateObjectInterfaces(
@@ -342,14 +341,14 @@ function validateObjectInterfaces(
   object: GraphQLObjectType,
 ): void {
   const implementedTypeNames = Object.create(null);
-  object.getInterfaces().forEach(iface => {
+  for (const iface of object.getInterfaces()) {
     if (!isInterfaceType(iface)) {
       context.reportError(
         `Type ${inspect(object)} must only implement Interface types, ` +
           `it cannot implement ${inspect(iface)}.`,
         getImplementsInterfaceNode(object, iface),
       );
-      return;
+      continue;
     }
 
     if (implementedTypeNames[iface.name]) {
@@ -357,11 +356,11 @@ function validateObjectInterfaces(
         `Type ${object.name} can only implement ${iface.name} once.`,
         getAllImplementsInterfaceNodes(object, iface),
       );
-      return; // continue loop
+      continue;
     }
     implementedTypeNames[iface.name] = true;
     validateObjectImplementsInterface(context, object, iface);
-  });
+  }
 }
 
 function validateObjectImplementsInterface(
@@ -373,7 +372,7 @@ function validateObjectImplementsInterface(
   const ifaceFieldMap = iface.getFields();
 
   // Assert each interface field is implemented.
-  Object.keys(ifaceFieldMap).forEach(fieldName => {
+  for (const fieldName of Object.keys(ifaceFieldMap)) {
     const objectField = objectFieldMap[fieldName];
     const ifaceField = ifaceFieldMap[fieldName];
 
@@ -384,8 +383,7 @@ function validateObjectImplementsInterface(
           `${object.name} does not provide it.`,
         [getFieldNode(iface, fieldName), object.astNode],
       );
-      // Continue loop over fields.
-      return;
+      continue;
     }
 
     // Assert interface field type is satisfied by object field type, by being
@@ -403,7 +401,7 @@ function validateObjectImplementsInterface(
     }
 
     // Assert each interface field arg is implemented.
-    ifaceField.args.forEach(ifaceArg => {
+    for (const ifaceArg of ifaceField.args) {
       const argName = ifaceArg.name;
       const objectArg = find(objectField.args, arg => arg.name === argName);
 
@@ -417,8 +415,7 @@ function validateObjectImplementsInterface(
             getFieldNode(object, fieldName),
           ],
         );
-        // Continue loop over arguments.
-        return;
+        continue;
       }
 
       // Assert interface field arg type matches object field arg type.
@@ -438,10 +435,10 @@ function validateObjectImplementsInterface(
       }
 
       // TODO: validate default values?
-    });
+    }
 
     // Assert additional arguments must not be required.
-    objectField.args.forEach(objectArg => {
+    for (const objectArg of objectField.args) {
       const argName = objectArg.name;
       const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
       if (!ifaceArg && isNonNullType(objectArg.type)) {
@@ -455,8 +452,8 @@ function validateObjectImplementsInterface(
           ],
         );
       }
-    });
-  });
+    }
+  }
 }
 
 function validateUnionMembers(
@@ -473,14 +470,14 @@ function validateUnionMembers(
   }
 
   const includedTypeNames = Object.create(null);
-  memberTypes.forEach(memberType => {
+  for (const memberType of memberTypes) {
     if (includedTypeNames[memberType.name]) {
       context.reportError(
         `Union type ${union.name} can only include type ` +
           `${memberType.name} once.`,
         getUnionMemberTypeNodes(union, memberType.name),
       );
-      return; // continue loop
+      continue;
     }
     includedTypeNames[memberType.name] = true;
     if (!isObjectType(memberType)) {
@@ -490,7 +487,7 @@ function validateUnionMembers(
         getUnionMemberTypeNodes(union, String(memberType)),
       );
     }
-  });
+  }
 }
 
 function validateEnumValues(
@@ -506,7 +503,7 @@ function validateEnumValues(
     );
   }
 
-  enumValues.forEach(enumValue => {
+  for (const enumValue of enumValues) {
     const valueName = enumValue.name;
 
     // Ensure no duplicates.
@@ -526,7 +523,7 @@ function validateEnumValues(
         enumValue.astNode,
       );
     }
-  });
+  }
 }
 
 function validateInputFields(
@@ -543,7 +540,7 @@ function validateInputFields(
   }
 
   // Ensure the arguments are valid
-  fields.forEach(field => {
+  for (const field of fields) {
     // Ensure they are named correctly.
     validateName(context, field);
 
@@ -557,7 +554,7 @@ function validateInputFields(
         field.astNode && field.astNode.type,
       );
     }
-  });
+  }
 }
 
 function getAllNodes<T: ASTNode, K: ASTNode>(object: {
@@ -584,15 +581,13 @@ function getAllImplementsInterfaceNodes(
   iface: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
   const implementsNodes = [];
-  const astNodes = getAllNodes(type);
-  for (let i = 0; i < astNodes.length; i++) {
-    const astNode = astNodes[i];
+  for (const astNode of getAllNodes(type)) {
     if (astNode && astNode.interfaces) {
-      astNode.interfaces.forEach(node => {
+      for (const node of astNode.interfaces) {
         if (node.name.value === iface.name) {
           implementsNodes.push(node);
         }
-      });
+      }
     }
   }
   return implementsNodes;
@@ -610,15 +605,13 @@ function getAllFieldNodes(
   fieldName: string,
 ): $ReadOnlyArray<FieldDefinitionNode> {
   const fieldNodes = [];
-  const astNodes = getAllNodes(type);
-  for (let i = 0; i < astNodes.length; i++) {
-    const astNode = astNodes[i];
+  for (const astNode of getAllNodes(type)) {
     if (astNode && astNode.fields) {
-      astNode.fields.forEach(node => {
+      for (const node of astNode.fields) {
         if (node.name.value === fieldName) {
           fieldNodes.push(node);
         }
-      });
+      }
     }
   }
   return fieldNodes;
@@ -648,11 +641,11 @@ function getAllFieldArgNodes(
   const argNodes = [];
   const fieldNode = getFieldNode(type, fieldName);
   if (fieldNode && fieldNode.arguments) {
-    fieldNode.arguments.forEach(node => {
+    for (const node of fieldNode.arguments) {
       if (node.name.value === argName) {
         argNodes.push(node);
       }
-    });
+    }
   }
   return argNodes;
 }
@@ -673,11 +666,11 @@ function getAllDirectiveArgNodes(
   const argNodes = [];
   const directiveNode = directive.astNode;
   if (directiveNode && directiveNode.arguments) {
-    directiveNode.arguments.forEach(node => {
+    for (const node of directiveNode.arguments) {
       if (node.name.value === argName) {
         argNodes.push(node);
       }
-    });
+    }
   }
   return argNodes;
 }
