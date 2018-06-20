@@ -40,7 +40,7 @@ describe('coerceValue', () => {
   });
 
   describe(`for GraphQLID`, () => {
-    it('returns error for array input as string', () => {
+    it('returns error for array input as ID', () => {
       const result = coerceValue([1, 2, 3], GraphQLID);
       expectErrors(result).to.deep.equal([
         `Expected type ID; ID cannot represent value: [1, 2, 3]`,
