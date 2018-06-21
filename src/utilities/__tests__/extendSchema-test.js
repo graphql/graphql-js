@@ -1220,7 +1220,7 @@ describe('extendSchema', () => {
     ]);
   });
 
-  describe('does not allow extending a mismatch type', () => {
+  it('does not allow extending a mismatch type', () => {
     const typeSDL = `
       extend type SomeInterface @foo
     `;
@@ -1228,10 +1228,10 @@ describe('extendSchema', () => {
       'Cannot extend non-object type "SomeInterface".',
     );
 
-    const intefaceSDL = `
+    const interfaceSDL = `
       extend interface Foo @foo
     `;
-    expect(() => extendTestSchema(intefaceSDL)).to.throw(
+    expect(() => extendTestSchema(interfaceSDL)).to.throw(
       'Cannot extend non-interface type "Foo".',
     );
 
