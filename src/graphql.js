@@ -36,6 +36,10 @@ import type { MaybePromise } from './jsutils/MaybePromise';
  * rootValue:
  *    The value provided as the first argument to resolver functions on the top
  *    level type (e.g. the query object type).
+ * contextValue:
+ *    The context value is provided as the second argument to resolver
+ *    functions. It is used to pass shared information useful at any point
+ *    during query execution, for example the currently logged in user.
  * variableValues:
  *    A mapping of variable name to runtime value to use for all variables
  *    defined in the requestString.
