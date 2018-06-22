@@ -155,13 +155,10 @@ function getOperationTypeNode(
   type: GraphQLObjectType,
   operation: string,
 ): ?ASTNode {
-  for (const node of getAllNodes(schema)) {
-    if (node.operationTypes) {
-      for (const operationType of node.operationTypes) {
-        if (operationType.operation === operation) {
-          return operationType.type;
-        }
-      }
+  const operationNodes = getAllSubNodes(schema, node => node.operationTypes);
+  for (const node of operationNodes) {
+    if (node.operation === operation) {
+      return node.type;
     }
   }
 
@@ -557,16 +554,36 @@ function validateInputFields(
   }
 }
 
-function getAllNodes<T: ASTNode, K: ASTNode>(object: {
+type SDLDefinedObject<T, K> = {
   +astNode: ?T,
   +extensionASTNodes?: ?$ReadOnlyArray<K>,
-}): $ReadOnlyArray<T | K> {
+};
+
+function getAllNodes<T: ASTNode, K: ASTNode>(
+  object: SDLDefinedObject<T, K>,
+): $ReadOnlyArray<T | K> {
   const { astNode, extensionASTNodes } = object;
   return astNode
     ? extensionASTNodes
       ? [astNode].concat(extensionASTNodes)
       : [astNode]
     : extensionASTNodes || [];
+}
+
+function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
+  object: SDLDefinedObject<T, K>,
+  getter: (T | K) => ?(L | $ReadOnlyArray<L>),
+): $ReadOnlyArray<L> {
+  let result = [];
+  for (const astNode of getAllNodes(object)) {
+    if (astNode) {
+      const subNodes = getter(astNode);
+      if (subNodes) {
+        result = result.concat(subNodes);
+      }
+    }
+  }
+  return result;
 }
 
 function getImplementsInterfaceNode(
@@ -580,17 +597,9 @@ function getAllImplementsInterfaceNodes(
   type: GraphQLObjectType,
   iface: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
-  const implementsNodes = [];
-  for (const astNode of getAllNodes(type)) {
-    if (astNode && astNode.interfaces) {
-      for (const node of astNode.interfaces) {
-        if (node.name.value === iface.name) {
-          implementsNodes.push(node);
-        }
-      }
-    }
-  }
-  return implementsNodes;
+  return getAllSubNodes(type, typeNode => typeNode.interfaces).filter(
+    ifaceNode => ifaceNode.name.value === iface.name,
+  );
 }
 
 function getFieldNode(
@@ -604,17 +613,9 @@ function getAllFieldNodes(
   type: GraphQLObjectType | GraphQLInterfaceType,
   fieldName: string,
 ): $ReadOnlyArray<FieldDefinitionNode> {
-  const fieldNodes = [];
-  for (const astNode of getAllNodes(type)) {
-    if (astNode && astNode.fields) {
-      for (const node of astNode.fields) {
-        if (node.name.value === fieldName) {
-          fieldNodes.push(node);
-        }
-      }
-    }
-  }
-  return fieldNodes;
+  return getAllSubNodes(type, typeNode => typeNode.fields).filter(
+    fieldNode => fieldNode.name.value === fieldName,
+  );
 }
 
 function getFieldTypeNode(
@@ -663,16 +664,10 @@ function getAllDirectiveArgNodes(
   directive: GraphQLDirective,
   argName: string,
 ): $ReadOnlyArray<InputValueDefinitionNode> {
-  const argNodes = [];
-  const directiveNode = directive.astNode;
-  if (directiveNode && directiveNode.arguments) {
-    for (const node of directiveNode.arguments) {
-      if (node.name.value === argName) {
-        argNodes.push(node);
-      }
-    }
-  }
-  return argNodes;
+  return getAllSubNodes(
+    directive,
+    directiveNode => directiveNode.arguments,
+  ).filter(argNode => argNode.name.value === argName);
 }
 
 function getDirectiveArgTypeNode(
