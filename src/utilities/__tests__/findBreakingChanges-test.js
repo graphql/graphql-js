@@ -8,9 +8,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import {
-  GraphQLSchema,
-} from '../../type';
+import { GraphQLSchema } from '../../type';
 
 import { buildSchema } from '../buildASTSchema';
 
@@ -814,8 +812,8 @@ describe('findBreakingChanges', () => {
 
     const expectedBreakingChanges = [
       {
-        description: 'Int was removed.',
         type: BreakingChangeType.TYPE_REMOVED,
+        description: 'Int was removed.',
       },
       {
         type: BreakingChangeType.TYPE_REMOVED,
