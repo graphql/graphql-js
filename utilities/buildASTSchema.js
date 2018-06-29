@@ -435,6 +435,7 @@ function getDeprecationReason(node) {
 }
 /**
  * Given an ast node, returns its string description.
+ * @deprecated: provided to ease adoption and will be removed in v16.
  *
  * Accepts options as a second argument:
  *

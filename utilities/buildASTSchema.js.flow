@@ -85,6 +85,7 @@ export type BuildSchemaOptions = {
    * Descriptions are defined as preceding string literals, however an older
    * experimental version of the SDL supported preceding comments as
    * descriptions. Set to true to enable this deprecated behavior.
+   * This option is provided to ease adoption and will be removed in v16.
    *
    * Default: false
    */
@@ -471,6 +472,7 @@ function getDeprecationReason(
 
 /**
  * Given an ast node, returns its string description.
+ * @deprecated: provided to ease adoption and will be removed in v16.
  *
  * Accepts options as a second argument:
  *

@@ -69,7 +69,8 @@ getOperationRootType, // Convert a GraphQLSchema to an IntrospectionQuery
 introspectionFromSchema, // Build a GraphQLSchema from an introspection result.
 buildClientSchema, // Build a GraphQLSchema from a parsed GraphQL Schema language AST.
 buildASTSchema, // Build a GraphQLSchema from a GraphQL schema language document.
-buildSchema, // Get the description from a schema AST node.
+buildSchema, // @deprecated: Get the description from a schema AST node and supports legacy
+// syntax for specifying descriptions - will be removed in v16
 getDescription, // Extends an existing GraphQLSchema from a parsed GraphQL Schema
 // language AST.
 extendSchema, // Sort a GraphQLSchema.
