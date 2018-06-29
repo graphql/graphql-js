@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = dedent;
 
+var _invariant = _interopRequireDefault(require("./invariant"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  *
@@ -21,7 +25,9 @@ function fixIndent(str) {
   var trimmedStr = str.replace(/^\n*/m, '') //  remove leading newline
   .replace(/[ \t]*$/, ''); // remove trailing spaces and tabs
 
-  var indent = /^[ \t]*/.exec(trimmedStr)[0]; // figure out indent
+  var indentMatch = /^[ \t]*/.exec(trimmedStr);
+  !Array.isArray(indentMatch) ? (0, _invariant.default)(0) : void 0;
+  var indent = indentMatch[0]; // figure out indent
 
   return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
 }

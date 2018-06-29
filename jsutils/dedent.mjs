@@ -6,15 +6,18 @@
  *
  *  strict
  */
-
+import invariant from './invariant';
 /**
  * fixes indentation by removing leading spaces and tabs from each line
  */
+
 function fixIndent(str) {
   var trimmedStr = str.replace(/^\n*/m, '') //  remove leading newline
   .replace(/[ \t]*$/, ''); // remove trailing spaces and tabs
 
-  var indent = /^[ \t]*/.exec(trimmedStr)[0]; // figure out indent
+  var indentMatch = /^[ \t]*/.exec(trimmedStr);
+  !Array.isArray(indentMatch) ? invariant(0) : void 0;
+  var indent = indentMatch[0]; // figure out indent
 
   return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
 }

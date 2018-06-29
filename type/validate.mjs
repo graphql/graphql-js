@@ -451,10 +451,10 @@ function getAllImplementsInterfaceNodes(type, iface) {
   var astNodes = getAllNodes(type);
 
   for (var i = 0; i < astNodes.length; i++) {
-    var _astNode = astNodes[i];
+    var astNode = astNodes[i];
 
-    if (_astNode && _astNode.interfaces) {
-      _astNode.interfaces.forEach(function (node) {
+    if (astNode && astNode.interfaces) {
+      astNode.interfaces.forEach(function (node) {
         if (node.name.value === iface.name) {
           implementsNodes.push(node);
         }
@@ -474,10 +474,10 @@ function getAllFieldNodes(type, fieldName) {
   var astNodes = getAllNodes(type);
 
   for (var i = 0; i < astNodes.length; i++) {
-    var _astNode2 = astNodes[i];
+    var astNode = astNodes[i];
 
-    if (_astNode2 && _astNode2.fields) {
-      _astNode2.fields.forEach(function (node) {
+    if (astNode && astNode.fields) {
+      astNode.fields.forEach(function (node) {
         if (node.name.value === fieldName) {
           fieldNodes.push(node);
         }

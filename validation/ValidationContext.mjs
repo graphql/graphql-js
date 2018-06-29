@@ -121,9 +121,8 @@ function () {
       var nodesToVisit = [operation.selectionSet];
 
       while (nodesToVisit.length !== 0) {
-        var _node = nodesToVisit.pop();
-
-        var spreads = this.getFragmentSpreads(_node);
+        var node = nodesToVisit.pop();
+        var spreads = this.getFragmentSpreads(node);
 
         for (var i = 0; i < spreads.length; i++) {
           var fragName = spreads[i].name.value;

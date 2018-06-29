@@ -82,19 +82,18 @@ function coerceValue(value, type, blameNode, path) {
     var itemType = type.ofType;
 
     if ((0, _iterall.isCollection)(value)) {
-      var _errors;
-
+      var errors;
       var coercedValue = [];
       (0, _iterall.forEach)(value, function (itemValue, index) {
         var coercedItem = coerceValue(itemValue, itemType, blameNode, atPath(path, index));
 
         if (coercedItem.errors) {
-          _errors = add(_errors, coercedItem.errors);
-        } else if (!_errors) {
+          errors = add(errors, coercedItem.errors);
+        } else if (!errors) {
           coercedValue.push(coercedItem.value);
         }
       });
-      return _errors ? ofErrors(_errors) : ofValue(coercedValue);
+      return errors ? ofErrors(errors) : ofValue(coercedValue);
     } // Lists accept a non-list value as a list of one.
 
 
@@ -107,7 +106,7 @@ function coerceValue(value, type, blameNode, path) {
       return ofErrors([coercionError("Expected type ".concat(type.name, " to be an object"), blameNode, path)]);
     }
 
-    var _errors2;
+    var _errors;
 
     var _coercedValue = {};
     var fields = type.getFields(); // Ensure every defined field is valid.
@@ -121,14 +120,14 @@ function coerceValue(value, type, blameNode, path) {
           if (!(0, _isInvalid.default)(field.defaultValue)) {
             _coercedValue[fieldName] = field.defaultValue;
           } else if ((0, _definition.isNonNullType)(field.type)) {
-            _errors2 = add(_errors2, coercionError("Field ".concat(printPath(atPath(path, fieldName)), " of required ") + "type ".concat((0, _inspect.default)(field.type), " was not provided"), blameNode));
+            _errors = add(_errors, coercionError("Field ".concat(printPath(atPath(path, fieldName)), " of required ") + "type ".concat((0, _inspect.default)(field.type), " was not provided"), blameNode));
           }
         } else {
           var coercedField = coerceValue(fieldValue, field.type, blameNode, atPath(path, fieldName));
 
           if (coercedField.errors) {
-            _errors2 = add(_errors2, coercedField.errors);
-          } else if (!_errors2) {
+            _errors = add(_errors, coercedField.errors);
+          } else if (!_errors) {
             _coercedValue[fieldName] = coercedField.value;
           }
         }
@@ -143,12 +142,12 @@ function coerceValue(value, type, blameNode, path) {
 
           var _didYouMean = _suggestions.length !== 0 ? "did you mean ".concat((0, _orList.default)(_suggestions), "?") : undefined;
 
-          _errors2 = add(_errors2, coercionError("Field \"".concat(_fieldName, "\" is not defined by type ").concat(type.name), blameNode, path, _didYouMean));
+          _errors = add(_errors, coercionError("Field \"".concat(_fieldName, "\" is not defined by type ").concat(type.name), blameNode, path, _didYouMean));
         }
       }
     }
 
-    return _errors2 ? ofErrors(_errors2) : ofValue(_coercedValue);
+    return _errors ? ofErrors(_errors) : ofValue(_coercedValue);
   }
   /* istanbul ignore next */
 

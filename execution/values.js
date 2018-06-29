@@ -82,9 +82,8 @@ function getVariableValues(schema, varDefNodes, inputs) {
         } else {
           // Otherwise, a non-null value was provided, coerce it to the expected
           // type or report an error if coercion fails.
-          var _coerced = (0, _coerceValue.coerceValue)(value, varType, varDefNode);
-
-          var coercionErrors = _coerced.errors;
+          var coerced = (0, _coerceValue.coerceValue)(value, varType, varDefNode);
+          var coercionErrors = coerced.errors;
 
           if (coercionErrors) {
             coercionErrors.forEach(function (error) {
@@ -92,7 +91,7 @@ function getVariableValues(schema, varDefNodes, inputs) {
             });
             errors.push.apply(errors, coercionErrors);
           } else {
-            coercedValues[varName] = _coerced.value;
+            coercedValues[varName] = coerced.value;
           }
         }
       }
