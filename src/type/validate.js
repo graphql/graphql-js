@@ -378,7 +378,7 @@ function validateObjectImplementsInterface(
       context.reportError(
         `Interface field ${iface.name}.${fieldName} expected but ` +
           `${object.name} does not provide it.`,
-        [getFieldNode(iface, fieldName), object.astNode],
+        [getFieldNode(iface, fieldName), ...getAllNodes(object)],
       );
       continue;
     }
@@ -462,7 +462,7 @@ function validateUnionMembers(
   if (memberTypes.length === 0) {
     context.reportError(
       `Union type ${union.name} must define one or more member types.`,
-      union.astNode,
+      getAllNodes(union),
     );
   }
 
@@ -496,7 +496,7 @@ function validateEnumValues(
   if (enumValues.length === 0) {
     context.reportError(
       `Enum type ${enumType.name} must define one or more values.`,
-      enumType.astNode,
+      getAllNodes(enumType),
     );
   }
 
@@ -532,7 +532,7 @@ function validateInputFields(
   if (fields.length === 0) {
     context.reportError(
       `Input Object type ${inputObj.name} must define one or more fields.`,
-      inputObj.astNode,
+      getAllNodes(inputObj),
     );
   }
 
@@ -682,10 +682,8 @@ function getUnionMemberTypeNodes(
   union: GraphQLUnionType,
   typeName: string,
 ): ?$ReadOnlyArray<NamedTypeNode> {
-  return (
-    union.astNode &&
-    union.astNode.types &&
-    union.astNode.types.filter(type => type.name.value === typeName)
+  return getAllSubNodes(union, unionNode => unionNode.types).filter(
+    typeNode => typeNode.name.value === typeName,
   );
 }
 
@@ -693,9 +691,7 @@ function getEnumValueNodes(
   enumType: GraphQLEnumType,
   valueName: string,
 ): ?$ReadOnlyArray<EnumValueDefinitionNode> {
-  return (
-    enumType.astNode &&
-    enumType.astNode.values &&
-    enumType.astNode.values.filter(value => value.name.value === valueName)
+  return getAllSubNodes(enumType, enumNode => enumNode.values).filter(
+    valueNode => valueNode.name.value === valueName,
   );
 }

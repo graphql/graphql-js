@@ -562,23 +562,33 @@ describe('Type System: Union types must be valid', () => {
   });
 
   it('rejects a Union type with empty types', () => {
-    const schema = buildSchema(`
+    let schema = buildSchema(`
       type Query {
         test: BadUnion
       }
 
       union BadUnion
     `);
+
+    schema = extendSchema(
+      schema,
+      parse(`
+        directive @test on UNION
+
+        extend union BadUnion @test
+      `),
+    );
+
     expect(validateSchema(schema)).to.deep.equal([
       {
         message: 'Union type BadUnion must define one or more member types.',
-        locations: [{ line: 6, column: 7 }],
+        locations: [{ line: 6, column: 7 }, { line: 4, column: 9 }],
       },
     ]);
   });
 
   it('rejects a Union type with duplicated member type', () => {
-    const schema = buildSchema(`
+    let schema = buildSchema(`
       type Query {
         test: BadUnion
       }
@@ -596,16 +606,30 @@ describe('Type System: Union types must be valid', () => {
         | TypeB
         | TypeA
     `);
+
     expect(validateSchema(schema)).to.deep.equal([
       {
         message: 'Union type BadUnion can only include type TypeA once.',
         locations: [{ line: 15, column: 11 }, { line: 17, column: 11 }],
       },
     ]);
+
+    schema = extendSchema(schema, parse('extend union BadUnion = TypeB'));
+
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message: 'Union type BadUnion can only include type TypeA once.',
+        locations: [{ line: 15, column: 11 }, { line: 17, column: 11 }],
+      },
+      {
+        message: 'Union type BadUnion can only include type TypeB once.',
+        locations: [{ line: 16, column: 11 }, { line: 1, column: 25 }],
+      },
+    ]);
   });
 
   it('rejects a Union type with non-Object members types', () => {
-    const schema = buildSchema(`
+    let schema = buildSchema(`
       type Query {
         test: BadUnion
       }
@@ -623,12 +647,19 @@ describe('Type System: Union types must be valid', () => {
         | String
         | TypeB
     `);
+
+    schema = extendSchema(schema, parse('extend union BadUnion = Int'));
+
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Union type BadUnion can only include Object types, ' +
-          'it cannot include String.',
+          'Union type BadUnion can only include Object types, it cannot include String.',
         locations: [{ line: 16, column: 11 }],
+      },
+      {
+        message:
+          'Union type BadUnion can only include Object types, it cannot include Int.',
+        locations: [{ line: 1, column: 25 }],
       },
     ]);
 
@@ -671,18 +702,28 @@ describe('Type System: Input Objects must have fields', () => {
   });
 
   it('rejects an Input Object type with missing fields', () => {
-    const schema = buildSchema(`
+    let schema = buildSchema(`
       type Query {
         field(arg: SomeInputObject): String
       }
 
       input SomeInputObject
     `);
+
+    schema = extendSchema(
+      schema,
+      parse(`
+        directive @test on ENUM
+
+        extend input SomeInputObject @test
+      `),
+    );
+
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
           'Input Object type SomeInputObject must define one or more fields.',
-        locations: [{ line: 6, column: 7 }],
+        locations: [{ line: 6, column: 7 }, { line: 4, column: 9 }],
       },
     ]);
   });
@@ -722,17 +763,27 @@ describe('Type System: Input Objects must have fields', () => {
 
 describe('Type System: Enum types must be well defined', () => {
   it('rejects an Enum type without values', () => {
-    const schema = buildSchema(`
+    let schema = buildSchema(`
       type Query {
         field: SomeEnum
       }
 
       enum SomeEnum
     `);
+
+    schema = extendSchema(
+      schema,
+      parse(`
+        directive @test on ENUM
+
+        extend enum SomeEnum @test
+      `),
+    );
+
     expect(validateSchema(schema)).to.deep.equal([
       {
         message: 'Enum type SomeEnum must define one or more values.',
-        locations: [{ line: 6, column: 7 }],
+        locations: [{ line: 6, column: 7 }, { line: 4, column: 9 }],
       },
     ]);
   });
@@ -1000,13 +1051,21 @@ describe('Type System: Interface extensions should be valid', () => {
         extend interface AnotherInterface {
           newField: String
         }
+
+        extend type AnotherObject {
+          differentNewField: String
+        }
       `),
     );
     expect(validateSchema(extendedSchema)).to.deep.equal([
       {
         message:
           'Interface field AnotherInterface.newField expected but AnotherObject does not provide it.',
-        locations: [{ line: 3, column: 11 }, { line: 10, column: 7 }],
+        locations: [
+          { line: 3, column: 11 },
+          { line: 10, column: 7 },
+          { line: 6, column: 9 },
+        ],
       },
     ]);
   });
