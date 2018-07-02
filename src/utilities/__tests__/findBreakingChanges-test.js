@@ -47,10 +47,6 @@ import { DirectiveLocation } from '../../language/directiveLocation';
 describe('findBreakingChanges', () => {
   it('should detect if a type was removed or not', () => {
     const oldSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1: String
       }
@@ -58,14 +54,18 @@ describe('findBreakingChanges', () => {
       type Type2 {
         field1: String
       }
-    `);
 
-    const newSchema = buildSchema(`
       type Query {
         field1: String
       }
-      
+    `);
+
+    const newSchema = buildSchema(`
       type Type2 {
+        field1: String
+      }
+
+      type Query {
         field1: String
       }
     `);
@@ -80,25 +80,25 @@ describe('findBreakingChanges', () => {
 
   it('should detect if a type changed its type', () => {
     const oldSchema = buildSchema(`
-      type Query {
+      interface Type1 {
         field1: String
       }
-      
-      interface Type1 {
+
+      type Query {
         field1: String
       }
     `);
 
     const newSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type ObjectType {
         field1: String
       }
       
       union Type1 = ObjectType
+
+      type Query {
+        field1: String
+      }
     `);
     expect(findTypesThatChangedKind(oldSchema, newSchema)).to.eql([
       {
@@ -110,10 +110,10 @@ describe('findBreakingChanges', () => {
 
   it('should detect if a field on a type was deleted or changed type', () => {
     const oldSchema = buildSchema(`
-      type Query {
+      type TypeA {
         field1: String
       }
-      
+
       interface Type1 {
         field1: TypeA
         field2: String
@@ -133,17 +133,21 @@ describe('findBreakingChanges', () => {
         field17: [Int]
         field18: [[Int!]!]
       }
-      
-      type TypeA {
+
+      type Query {
         field1: String
       }
     `);
 
     const newSchema = buildSchema(`
-      type Query {
+      type TypeA {
         field1: String
       }
       
+      type TypeB {
+        field1: String
+      }
+
       interface Type1 {
         field1: TypeA
         field3: Boolean
@@ -163,12 +167,8 @@ describe('findBreakingChanges', () => {
         field17: [Int]!
         field18: [[Int!]]
       }
-      
-      type TypeA {
-        field1: String
-      }
-      
-      type TypeB {
+
+      type Query {
         field1: String
       }
     `);
@@ -379,10 +379,6 @@ describe('findBreakingChanges', () => {
 
   it('should detect if a type was removed from a union type', () => {
     const oldSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1: String
       }
@@ -392,12 +388,12 @@ describe('findBreakingChanges', () => {
       }
       
       union UnionType1 = Type1 | Type2
-    `);
-    const newSchema = buildSchema(`
+
       type Query {
         field1: String
       }
-      
+    `);
+    const newSchema = buildSchema(`
       type Type1 {
         field1: String
       }
@@ -407,6 +403,10 @@ describe('findBreakingChanges', () => {
       }
       
       union UnionType1 = Type1 | Type3
+
+      type Query {
+        field1: String
+      }
     `);
 
     expect(findTypesRemovedFromUnions(oldSchema, newSchema)).to.eql([
@@ -460,12 +460,12 @@ describe('findBreakingChanges', () => {
         field1(arg1: Boolean, objectArg: InputType1): String
       }
       
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(name: String): String
+      }
+      
+      type Query {
+        field1: String
       }
     `);
 
@@ -474,11 +474,11 @@ describe('findBreakingChanges', () => {
         field1: String
       }
       
-      type Query {
+      type Type1 {
         field1: String
       }
       
-      type Type1 {
+      type Query {
         field1: String
       }
     `);
@@ -501,10 +501,6 @@ describe('findBreakingChanges', () => {
 
   it('should detect if a field argument has changed type', () => {
     const oldSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(
           arg1: String, arg2: String, arg3: [String], arg4: String, arg5: String!, arg6: String!, arg7: [Int]!,
@@ -512,18 +508,22 @@ describe('findBreakingChanges', () => {
           arg15: [[Int]!]
         ): String
       }
-    `);
 
-    const newSchema = buildSchema(`
       type Query {
         field1: String
       }
-      
+    `);
+
+    const newSchema = buildSchema(`
       type Type1 {
         field1(
           arg1: Int, arg2: [String], arg3: String, arg4: String!, arg5: Int, arg6: Int!, arg7: [Int], arg8: [Int]!,
           arg9: [Int!], arg10: [Int], arg11: [[Int]], arg12: [Int], arg13: [Int]!, arg14: [[Int]], arg15: [[Int!]!]
          ): String
+      }
+
+      type Query {
+        field1: String
       }
     `);
 
@@ -594,22 +594,22 @@ describe('findBreakingChanges', () => {
 
   it('should detect if a non-null field argument was added', () => {
     const oldSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(arg1: String): String
+      }
+
+      type Query {
+        field1: String
       }
     `);
 
     const newSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(arg1: String, newRequiredArg: String!, newOptionalArg: Int): String
+      }
+
+      type Query {
+        field1: String
       }
     `);
 
@@ -628,12 +628,12 @@ describe('findBreakingChanges', () => {
         field1: String
       }
       
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(arg1: Int!, arg2: InputType1): Int
+      }
+      
+      type Query {
+        field1: String
       }
     `);
 
@@ -642,12 +642,12 @@ describe('findBreakingChanges', () => {
         field1: String
       }
       
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(arg1: Int!, arg2: InputType1): Int
+      }
+      
+      type Query {
+        field1: String
       }
     `);
 
@@ -656,22 +656,22 @@ describe('findBreakingChanges', () => {
 
   it('should consider args that move away from NonNull as non-breaking', () => {
     const oldSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(name: String!): String
+      }
+
+      type Query {
+        field1: String
       }
     `);
 
     const newSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(name: String): String
+      }
+
+      type Query {
+        field1: String
       }
     `);
 
@@ -684,21 +684,21 @@ describe('findBreakingChanges', () => {
         field1: String
       }
       
-      type Query {
+      type Type1 implements Interface1 {
         field1: String
       }
       
-      type Type1 implements Interface1 {
+      type Query {
         field1: String
       }
     `);
 
     const newSchema = buildSchema(`
-      type Query {
+      type Type1 {
         field1: String
       }
-      
-      type Type1 {
+
+      type Query {
         field1: String
       }
     `);
@@ -735,7 +735,7 @@ describe('findBreakingChanges', () => {
         field1: String
       }
       
-      type Query {
+      type TypeThatGainsInterface1 implements Interface1 {
         field1: String
       }
       
@@ -747,11 +747,9 @@ describe('findBreakingChanges', () => {
         field1: String
       }
       
-      type TypeThatChangesType {
-        field1: String
-      }
+      union UnionTypeThatLosesAType = TypeInUnion1 | TypeInUnion2
       
-      type TypeThatGainsInterface1 implements Interface1 {
+      type TypeThatChangesType {
         field1: String
       }
       
@@ -764,7 +762,9 @@ describe('findBreakingChanges', () => {
         field2: String
       }
       
-      union UnionTypeThatLosesAType = TypeInUnion1 | TypeInUnion2
+      type Query {
+        field1: String
+      }
     `);
 
     const newSchema = buildSchema(`
@@ -787,13 +787,11 @@ describe('findBreakingChanges', () => {
         field1: String
       }
       
-      type Query {
-        field1: String
-      }
-      
       type TypeInUnion1 {
         field1: String
       }
+      
+      union UnionTypeThatLosesAType = TypeInUnion1
       
       interface TypeThatChangesType {
         field1: String
@@ -807,7 +805,9 @@ describe('findBreakingChanges', () => {
         field2: Boolean
       }
       
-      union UnionTypeThatLosesAType = TypeInUnion1
+      type Query {
+        field1: String
+      }
     `);
 
     const expectedBreakingChanges = [
@@ -991,22 +991,22 @@ describe('findDangerousChanges', () => {
   describe('findArgChanges', () => {
     it("should detect if an argument's defaultValue has changed", () => {
       const oldSchema = buildSchema(`
-        type Query {
-          field1: String
-        }
-        
         type Type1 {
           field1(name: String = "test"): String
+        }
+
+        type Query {
+          field1: String
         }
       `);
 
       const newSchema = buildSchema(`
-        type Query {
-          field1: String
-        }
-        
         type Type1 {
           field1(name: String = "Test"): String
+        }
+
+        type Query {
+          field1: String
         }
       `);
 
@@ -1053,11 +1053,11 @@ describe('findDangerousChanges', () => {
 
   it('should detect interfaces added to types', () => {
     const oldSchema = buildSchema(`
-      type Query {
+      type Type1 {
         field1: String
       }
-      
-      type Type1 {
+
+      type Query {
         field1: String
       }
     `);
@@ -1067,11 +1067,11 @@ describe('findDangerousChanges', () => {
         field1: String
       }
       
-      type Query {
+      type Type1 implements Interface1 {
         field1: String
       }
       
-      type Type1 implements Interface1 {
+      type Query {
         field1: String
       }
     `);
@@ -1086,22 +1086,18 @@ describe('findDangerousChanges', () => {
 
   it('should detect if a type was added to a union type', () => {
     const oldSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1: String
       }
       
       union UnionType1 = Type1
-    `);
 
-    const newSchema = buildSchema(`
       type Query {
         field1: String
       }
-      
+    `);
+
+    const newSchema = buildSchema(`
       type Type1 {
         field1: String
       }
@@ -1111,6 +1107,10 @@ describe('findDangerousChanges', () => {
       }
       
       union UnionType1 = Type1 | Type2
+
+      type Query {
+        field1: String
+      }
     `);
 
     expect(findTypesAddedToUnions(oldSchema, newSchema)).to.eql([
@@ -1164,23 +1164,23 @@ describe('findDangerousChanges', () => {
         VALUE1
       }
       
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(name: String = "test"): String
-      }
-      
-      type TypeInUnion1 {
-        field1: String
       }
       
       type TypeThatGainsInterface1 {
         field1: String
       }
       
+      type TypeInUnion1 {
+        field1: String
+      }
+      
       union UnionTypeThatGainsAType = TypeInUnion1
+      
+      type Query {
+        field1: String
+      }
     `);
 
     const newSchema = buildSchema(`
@@ -1194,7 +1194,7 @@ describe('findDangerousChanges', () => {
         field1: String
       }
       
-      type Query {
+      type TypeThatGainsInterface1 implements Interface1 {
         field1: String
       }
       
@@ -1210,11 +1210,11 @@ describe('findDangerousChanges', () => {
         field1: String
       }
       
-      type TypeThatGainsInterface1 implements Interface1 {
+      union UnionTypeThatGainsAType = TypeInUnion1 | TypeInUnion2
+      
+      type Query {
         field1: String
       }
-      
-      union UnionTypeThatGainsAType = TypeInUnion1 | TypeInUnion2
     `);
 
     const expectedDangerousChanges = [
@@ -1246,22 +1246,22 @@ describe('findDangerousChanges', () => {
 
   it('should detect if a nullable field argument was added', () => {
     const oldSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(arg1: String): String
+      }
+
+      type Query {
+        field1: String
       }
     `);
 
     const newSchema = buildSchema(`
-      type Query {
-        field1: String
-      }
-      
       type Type1 {
         field1(arg1: String, arg2: String): String
+      }
+
+      type Query {
+        field1: String
       }
     `);
 
