@@ -165,6 +165,9 @@ export type {
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
   GraphQLDirectiveConfig,
+  GraphQLScalarSerializer,
+  GraphQLScalarValueParser,
+  GraphQLScalarLiteralParser,
 } from './type';
 
 // Parse and operate on GraphQL language source files.
