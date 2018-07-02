@@ -730,7 +730,9 @@ describe('Type System: Interface types must be resolvable', () => {
           resolveType: {},
           fields: { f: { type: GraphQLString } },
         }),
-    ).to.throw('AnotherInterface must provide "resolveType" as a function.');
+    ).to.throw(
+      'AnotherInterface must provide "resolveType" as a function, but got: {}.',
+    );
   });
 });
 
@@ -782,7 +784,9 @@ describe('Type System: Union types must be resolvable', () => {
           types: [ObjectWithIsTypeOf],
         }),
       ),
-    ).to.throw('SomeUnion must provide "resolveType" as a function.');
+    ).to.throw(
+      'SomeUnion must provide "resolveType" as a function, but got: {}.',
+    );
   });
 });
 
@@ -905,7 +909,9 @@ describe('Type System: Object types must be assertable', () => {
           fields: { f: { type: GraphQLString } },
         }),
       );
-    }).to.throw('AnotherObject must provide "isTypeOf" as a function.');
+    }).to.throw(
+      'AnotherObject must provide "isTypeOf" as a function, but got: {}.',
+    );
   });
 });
 
