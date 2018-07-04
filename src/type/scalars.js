@@ -118,12 +118,12 @@ function serializeString(value: mixed): string {
   // (ex: MongoDB id objects).
   const result =
     value && typeof value.valueOf === 'function' ? value.valueOf() : value;
-  // Serialize string, number, and boolean values to a string, but do not
+  // Serialize string, boolean and number values to a string, but do not
   // attempt to coerce object, function, symbol, or other types as strings.
   if (
     typeof result !== 'string' &&
-    typeof result !== 'number' &&
-    typeof result !== 'boolean'
+    typeof result !== 'boolean' &&
+    !isFinite(result)
   ) {
     throw new TypeError(`String cannot represent value: ${inspect(result)}`);
   }
@@ -153,9 +153,9 @@ export const GraphQLString = new GraphQLScalarType({
 });
 
 function serializeBoolean(value: mixed): boolean {
-  if (Array.isArray(value)) {
+  if (typeof value !== 'boolean' && !isFinite(value)) {
     throw new TypeError(
-      `Boolean cannot represent an array value: ${inspect(value)}`,
+      `Boolean cannot represent a non boolean value: ${inspect(value)}`,
     );
   }
   return Boolean(value);
@@ -185,20 +185,14 @@ function serializeID(value: mixed): string {
   // to represent an object identifier (ex. MongoDB).
   const result =
     value && typeof value.valueOf === 'function' ? value.valueOf() : value;
-  if (
-    typeof result !== 'string' &&
-    (typeof result !== 'number' || !isInteger(result))
-  ) {
+  if (typeof result !== 'string' && !isInteger(result)) {
     throw new TypeError(`ID cannot represent value: ${inspect(value)}`);
   }
   return String(result);
 }
 
 function coerceID(value: mixed): string {
-  if (
-    typeof value !== 'string' &&
-    (typeof value !== 'number' || !isInteger(value))
-  ) {
+  if (typeof value !== 'string' && !isInteger(value)) {
     throw new TypeError(`ID cannot represent value: ${inspect(value)}`);
   }
   return String(value);
