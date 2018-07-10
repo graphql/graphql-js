@@ -69,7 +69,7 @@ describe('Type System: Scalar coercion', () => {
       'Int cannot represent non-integer value: Infinity',
     );
     expect(() => GraphQLInt.serialize([5])).to.throw(
-      'Int cannot represent an array value: [5]',
+      'Int cannot represent non-integer value: [5]',
     );
   });
 
@@ -98,7 +98,7 @@ describe('Type System: Scalar coercion', () => {
       'Float cannot represent non numeric value: ""',
     );
     expect(() => GraphQLFloat.serialize([5])).to.throw(
-      'Float cannot represent an array value: [5]',
+      'Float cannot represent non numeric value: [5]',
     );
   });
 
