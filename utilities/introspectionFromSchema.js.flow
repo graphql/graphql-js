@@ -28,7 +28,7 @@ import type {
  */
 export function introspectionFromSchema(
   schema: GraphQLSchema,
-  options: IntrospectionOptions,
+  options?: IntrospectionOptions,
 ): IntrospectionQuery {
   const queryAST = parse(getIntrospectionQuery(options));
   const result = execute(schema, queryAST);
