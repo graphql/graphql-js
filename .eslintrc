@@ -42,7 +42,7 @@
   "rules": {
     "prettier/prettier": 2,
 
-    "flowtype/space-after-type-colon": [2, "always"],
+    "flowtype/space-after-type-colon": 0,
     "flowtype/space-before-type-colon": [2, "never"],
     "flowtype/space-before-generic-bracket": [2, "never"],
     "flowtype/union-intersection-spacing": [2, "always"],
