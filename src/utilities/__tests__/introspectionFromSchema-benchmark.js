@@ -14,6 +14,7 @@ import { getIntrospectionQuery } from '../introspectionQuery';
 const queryAST = parse(getIntrospectionQuery());
 const schema = buildASTSchema(
   parse(readFileSync(join(__dirname, 'github-schema.graphql'), 'utf8')),
+  { assumeValid: true },
 );
 
 export const name = 'Execute Introspection Query';
