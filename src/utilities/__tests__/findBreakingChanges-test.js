@@ -503,8 +503,20 @@ describe('findBreakingChanges', () => {
     const oldSchema = buildSchema(`
       type Type1 {
         field1(
-          arg1: String, arg2: String, arg3: [String], arg4: String, arg5: String!, arg6: String!, arg7: [Int]!,
-          arg8: Int, arg9: [Int], arg10: [Int!], arg11: [Int], arg12: [[Int]], arg13: Int!, arg14: [[Int]!],
+          arg1: String
+          arg2: String
+          arg3: [String]
+          arg4: String
+          arg5: String!
+          arg6: String!
+          arg7: [Int]!
+          arg8: Int
+          arg9: [Int]
+          arg10: [Int!]
+          arg11: [Int]
+          arg12: [[Int]]
+          arg13: Int!
+          arg14: [[Int]!]
           arg15: [[Int]!]
         ): String
       }
@@ -517,8 +529,21 @@ describe('findBreakingChanges', () => {
     const newSchema = buildSchema(`
       type Type1 {
         field1(
-          arg1: Int, arg2: [String], arg3: String, arg4: String!, arg5: Int, arg6: Int!, arg7: [Int], arg8: [Int]!,
-          arg9: [Int!], arg10: [Int], arg11: [[Int]], arg12: [Int], arg13: [Int]!, arg14: [[Int]], arg15: [[Int!]!]
+          arg1: Int
+          arg2: [String]
+          arg3: String
+          arg4: String!
+          arg5: Int
+          arg6: Int!
+          arg7: [Int]
+          arg8: [Int]!
+          arg9: [Int!]
+          arg10: [Int]
+          arg11: [[Int]]
+          arg12: [Int]
+          arg13: [Int]!
+          arg14: [[Int]]
+          arg15: [[Int!]!]
          ): String
       }
 
