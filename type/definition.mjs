@@ -407,8 +407,6 @@ function () {
 
     _defineProperty(this, "isTypeOf", void 0);
 
-    _defineProperty(this, "_typeConfig", void 0);
-
     _defineProperty(this, "_fields", void 0);
 
     _defineProperty(this, "_interfaces", void 0);
@@ -418,7 +416,8 @@ function () {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     this.isTypeOf = config.isTypeOf;
-    this._typeConfig = config;
+    this._fields = defineFieldMap.bind(undefined, config);
+    this._interfaces = defineInterfaces.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
 
     if (config.isTypeOf) {
@@ -429,11 +428,19 @@ function () {
   var _proto2 = GraphQLObjectType.prototype;
 
   _proto2.getFields = function getFields() {
-    return this._fields || (this._fields = defineFieldMap(this, this._typeConfig.fields));
+    if (typeof this._fields === 'function') {
+      this._fields = this._fields();
+    }
+
+    return this._fields;
   };
 
   _proto2.getInterfaces = function getInterfaces() {
-    return this._interfaces || (this._interfaces = defineInterfaces(this, this._typeConfig.interfaces));
+    if (typeof this._interfaces === 'function') {
+      this._interfaces = this._interfaces();
+    }
+
+    return this._interfaces;
   };
 
   _proto2.toString = function toString() {
@@ -446,33 +453,33 @@ function () {
 defineToStringTag(GraphQLObjectType);
 defineToJSON(GraphQLObjectType);
 
-function defineInterfaces(type, interfacesThunk) {
-  var interfaces = resolveThunk(interfacesThunk) || [];
-  !Array.isArray(interfaces) ? invariant(0, "".concat(type.name, " interfaces must be an Array or a function which returns ") + 'an Array.') : void 0;
+function defineInterfaces(config) {
+  var interfaces = resolveThunk(config.interfaces) || [];
+  !Array.isArray(interfaces) ? invariant(0, "".concat(config.name, " interfaces must be an Array or a function which returns ") + 'an Array.') : void 0;
   return interfaces;
 }
 
-function defineFieldMap(type, fieldsThunk) {
-  var fieldMap = resolveThunk(fieldsThunk) || {};
-  !isPlainObj(fieldMap) ? invariant(0, "".concat(type.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
+function defineFieldMap(config) {
+  var fieldMap = resolveThunk(config.fields) || {};
+  !isPlainObj(fieldMap) ? invariant(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
   var resultFieldMap = Object.create(null);
   Object.keys(fieldMap).forEach(function (fieldName) {
     var fieldConfig = fieldMap[fieldName];
-    !isPlainObj(fieldConfig) ? invariant(0, "".concat(type.name, ".").concat(fieldName, " field config must be an object")) : void 0;
-    !!fieldConfig.hasOwnProperty('isDeprecated') ? invariant(0, "".concat(type.name, ".").concat(fieldName, " should provide \"deprecationReason\" instead ") + 'of "isDeprecated".') : void 0;
+    !isPlainObj(fieldConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object")) : void 0;
+    !!fieldConfig.hasOwnProperty('isDeprecated') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" ") + 'instead of "isDeprecated".') : void 0;
 
     var field = _objectSpread({}, fieldConfig, {
       isDeprecated: Boolean(fieldConfig.deprecationReason),
       name: fieldName
     });
 
-    !isValidResolver(field.resolve) ? invariant(0, "".concat(type.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat(inspect(field.resolve), ".")) : void 0;
+    !isValidResolver(field.resolve) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat(inspect(field.resolve), ".")) : void 0;
     var argsConfig = fieldConfig.args;
 
     if (!argsConfig) {
       field.args = [];
     } else {
-      !isPlainObj(argsConfig) ? invariant(0, "".concat(type.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
+      !isPlainObj(argsConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
       field.args = Object.keys(argsConfig).map(function (argName) {
         var arg = argsConfig[argName];
         return {
@@ -531,8 +538,6 @@ function () {
 
     _defineProperty(this, "resolveType", void 0);
 
-    _defineProperty(this, "_typeConfig", void 0);
-
     _defineProperty(this, "_fields", void 0);
 
     this.name = config.name;
@@ -540,7 +545,7 @@ function () {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     this.resolveType = config.resolveType;
-    this._typeConfig = config;
+    this._fields = defineFieldMap.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
 
     if (config.resolveType) {
@@ -551,7 +556,11 @@ function () {
   var _proto3 = GraphQLInterfaceType.prototype;
 
   _proto3.getFields = function getFields() {
-    return this._fields || (this._fields = defineFieldMap(this, this._typeConfig.fields));
+    if (typeof this._fields === 'function') {
+      this._fields = this._fields();
+    }
+
+    return this._fields;
   };
 
   _proto3.toString = function toString() {
@@ -601,8 +610,6 @@ function () {
 
     _defineProperty(this, "resolveType", void 0);
 
-    _defineProperty(this, "_typeConfig", void 0);
-
     _defineProperty(this, "_types", void 0);
 
     this.name = config.name;
@@ -610,7 +617,7 @@ function () {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     this.resolveType = config.resolveType;
-    this._typeConfig = config;
+    this._types = defineTypes.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
 
     if (config.resolveType) {
@@ -621,7 +628,11 @@ function () {
   var _proto4 = GraphQLUnionType.prototype;
 
   _proto4.getTypes = function getTypes() {
-    return this._types || (this._types = defineTypes(this, this._typeConfig.types));
+    if (typeof this._types === 'function') {
+      this._types = this._types();
+    }
+
+    return this._types;
   };
 
   _proto4.toString = function toString() {
@@ -634,9 +645,9 @@ function () {
 defineToStringTag(GraphQLUnionType);
 defineToJSON(GraphQLUnionType);
 
-function defineTypes(unionType, typesThunk) {
-  var types = resolveThunk(typesThunk) || [];
-  !Array.isArray(types) ? invariant(0, 'Must provide Array of types or a function which returns ' + "such an array for Union ".concat(unionType.name, ".")) : void 0;
+function defineTypes(config) {
+  var types = resolveThunk(config.types) || [];
+  !Array.isArray(types) ? invariant(0, 'Must provide Array of types or a function which returns ' + "such an array for Union ".concat(config.name, ".")) : void 0;
   return types;
 }
 
@@ -803,39 +814,24 @@ function () {
 
     _defineProperty(this, "extensionASTNodes", void 0);
 
-    _defineProperty(this, "_typeConfig", void 0);
-
     _defineProperty(this, "_fields", void 0);
 
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
-    this._typeConfig = config;
+    this._fields = defineInputFieldMap.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
   }
 
   var _proto6 = GraphQLInputObjectType.prototype;
 
   _proto6.getFields = function getFields() {
-    return this._fields || (this._fields = this._defineFieldMap());
-  };
+    if (typeof this._fields === 'function') {
+      this._fields = this._fields();
+    }
 
-  _proto6._defineFieldMap = function _defineFieldMap() {
-    var _this = this;
-
-    var fieldMap = resolveThunk(this._typeConfig.fields) || {};
-    !isPlainObj(fieldMap) ? invariant(0, "".concat(this.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
-    var resultFieldMap = Object.create(null);
-    Object.keys(fieldMap).forEach(function (fieldName) {
-      var field = _objectSpread({}, fieldMap[fieldName], {
-        name: fieldName
-      });
-
-      !!field.hasOwnProperty('resolve') ? invariant(0, "".concat(_this.name, ".").concat(fieldName, " field type has a resolve property, but ") + 'Input Types cannot define resolvers.') : void 0;
-      resultFieldMap[fieldName] = field;
-    });
-    return resultFieldMap;
+    return this._fields;
   };
 
   _proto6.toString = function toString() {
@@ -847,3 +843,18 @@ function () {
 
 defineToStringTag(GraphQLInputObjectType);
 defineToJSON(GraphQLInputObjectType);
+
+function defineInputFieldMap(config) {
+  var fieldMap = resolveThunk(config.fields) || {};
+  !isPlainObj(fieldMap) ? invariant(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
+  var resultFieldMap = Object.create(null);
+  Object.keys(fieldMap).forEach(function (fieldName) {
+    var field = _objectSpread({}, fieldMap[fieldName], {
+      name: fieldName
+    });
+
+    !!field.hasOwnProperty('resolve') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field type has a resolve property, but ") + 'Input Types cannot define resolvers.') : void 0;
+    resultFieldMap[fieldName] = field;
+  });
+  return resultFieldMap;
+}
