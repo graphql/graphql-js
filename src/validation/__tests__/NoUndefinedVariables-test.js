@@ -329,4 +329,42 @@ describe('Validate: No undefined variables', () => {
       ],
     );
   });
+
+  // Experimental Fragment Variables
+  it('uses all variables in fragments with variable definitions', () => {
+    expectPassesRule(
+      NoUndefinedVariables,
+      `
+      fragment Foo($a: String, $b: String, $c: String) on Type {
+        ...FragA
+      }
+      fragment FragA on Type {
+        field(a: $a) {
+          ...FragB
+        }
+      }
+      fragment FragB on Type {
+        field(b: $b) {
+          ...FragC
+        }
+      }
+      fragment FragC on Type {
+        field(c: $c)
+      }
+    `,
+    );
+  });
+
+  it('variable used in fragment not defined', () => {
+    expectFailsRule(
+      NoUndefinedVariables,
+      `
+      fragment FragA($a: String) on Type {
+        field(a: $a)
+        field(b: $b)
+      }
+    `,
+      [undefVar('b', 4, 18, 'FragA', 2, 7)],
+    );
+  });
 });

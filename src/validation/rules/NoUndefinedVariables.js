@@ -10,6 +10,7 @@
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { ASTVisitor } from '../../language/visitor';
+import type { ExecutableDefinitionNode } from '../../language';
 
 export function undefinedVarMessage(varName: string, opName: ?string): string {
   return opName
@@ -26,30 +27,39 @@ export function undefinedVarMessage(varName: string, opName: ?string): string {
 export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
   let variableNameDefined = Object.create(null);
 
-  return {
-    OperationDefinition: {
-      enter() {
-        variableNameDefined = Object.create(null);
-      },
-      leave(operation) {
-        const usages = context.getRecursiveVariableUsages(operation);
-
-        usages.forEach(({ node }) => {
-          const varName = node.name.value;
-          if (variableNameDefined[varName] !== true) {
-            context.reportError(
-              new GraphQLError(
-                undefinedVarMessage(
-                  varName,
-                  operation.name && operation.name.value,
-                ),
-                [node, operation],
-              ),
-            );
-          }
-        });
-      },
+  const executableDefinitionVisitor = {
+    enter(definition: ExecutableDefinitionNode) {
+      if (!context.isExecutableDefinitionWithVariables(definition)) {
+        return;
+      }
+      variableNameDefined = Object.create(null);
     },
+    leave(definition: ExecutableDefinitionNode) {
+      if (!context.isExecutableDefinitionWithVariables(definition)) {
+        return;
+      }
+      const usages = context.getRecursiveVariableUsages(definition);
+
+      usages.forEach(({ node }) => {
+        const varName = node.name.value;
+        if (variableNameDefined[varName] !== true) {
+          context.reportError(
+            new GraphQLError(
+              undefinedVarMessage(
+                varName,
+                definition.name && definition.name.value,
+              ),
+              [node, definition],
+            ),
+          );
+        }
+      });
+    },
+  };
+
+  return {
+    OperationDefinition: executableDefinitionVisitor,
+    FragmentDefinition: executableDefinitionVisitor,
     VariableDefinition(node) {
       variableNameDefined[node.variable.name.value] = true;
     },
