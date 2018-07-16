@@ -535,17 +535,20 @@ function resolveThunk<+T>(thunk: Thunk<T>): T {
 export class GraphQLScalarType {
   name: string;
   description: ?string;
+  serialize: GraphQLScalarSerializer<*>;
+  parseValue: GraphQLScalarValueParser<*>;
+  parseLiteral: GraphQLScalarLiteralParser<*>;
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
-
-  _scalarConfig: GraphQLScalarTypeConfig<*, *>;
 
   constructor(config: GraphQLScalarTypeConfig<*, *>): void {
     this.name = config.name;
     this.description = config.description;
+    this.serialize = config.serialize;
+    this.parseValue = config.parseValue || (value => value);
+    this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
-    this._scalarConfig = config;
     invariant(typeof config.name === 'string', 'Must provide name.');
     invariant(
       typeof config.serialize === 'function',
@@ -563,26 +566,6 @@ export class GraphQLScalarType {
     }
   }
 
-  // Serializes an internal value to include in a response.
-  serialize(value: mixed): mixed {
-    const serializer = this._scalarConfig.serialize;
-    return serializer(value);
-  }
-
-  // Parses an externally provided value to use as an input.
-  parseValue(value: mixed): mixed {
-    const parser = this._scalarConfig.parseValue;
-    return parser ? parser(value) : value;
-  }
-
-  // Parses an externally provided literal value to use as an input.
-  parseLiteral(valueNode: ValueNode, variables: ?ObjMap<mixed>): mixed {
-    const parser = this._scalarConfig.parseLiteral;
-    return parser
-      ? parser(valueNode, variables)
-      : valueFromASTUntyped(valueNode, variables);
-  }
-
   toString(): string {
     return this.name;
   }
@@ -592,17 +575,24 @@ export class GraphQLScalarType {
 defineToStringTag(GraphQLScalarType);
 defineToJSON(GraphQLScalarType);
 
+export type GraphQLScalarSerializer<TExternal> = (value: mixed) => ?TExternal;
+export type GraphQLScalarValueParser<TInternal> = (value: mixed) => ?TInternal;
+export type GraphQLScalarLiteralParser<TInternal> = (
+  valueNode: ValueNode,
+  variables: ?ObjMap<mixed>,
+) => ?TInternal;
+
 export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   name: string,
   description?: ?string,
+  // Serializes an internal value to include in a response.
+  serialize: GraphQLScalarSerializer<TExternal>,
+  // Parses an externally provided value to use as an input.
+  parseValue?: GraphQLScalarValueParser<TInternal>,
+  // Parses an externally provided literal value to use as an input.
+  parseLiteral?: GraphQLScalarLiteralParser<TInternal>,
   astNode?: ?ScalarTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<ScalarTypeExtensionNode>,
-  serialize: (value: mixed) => ?TExternal,
-  parseValue?: (value: mixed) => ?TInternal,
-  parseLiteral?: (
-    valueNode: ValueNode,
-    variables: ?ObjMap<mixed>,
-  ) => ?TInternal,
 |};
 
 /**
