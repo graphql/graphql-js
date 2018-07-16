@@ -1040,6 +1040,13 @@ describe('extendSchema', () => {
     `;
     expect(() => extendTestSchema(typeSDL)).to.throw(existingTypeError('Bar'));
 
+    const scalarSDL = `
+      scalar SomeScalar
+    `;
+    expect(() => extendTestSchema(scalarSDL)).to.throw(
+      existingTypeError('SomeScalar'),
+    );
+
     const interfaceSDL = `
       interface SomeInterface
     `;
@@ -1147,34 +1154,18 @@ describe('extendSchema', () => {
   });
 
   it('does not allow extending an unknown type', () => {
-    const unknownTypeError =
-      'Cannot extend type "UnknownType" because it does not exist in the ' +
-      'existing schema.';
-
-    const typeSDL = `
-      extend type UnknownType @foo
-    `;
-    expect(() => extendTestSchema(typeSDL)).to.throw(unknownTypeError);
-
-    const intefaceSDL = `
-      extend interface UnknownType @foo
-    `;
-    expect(() => extendTestSchema(intefaceSDL)).to.throw(unknownTypeError);
-
-    const enumSDL = `
-      extend enum UnknownType @foo
-    `;
-    expect(() => extendTestSchema(enumSDL)).to.throw(unknownTypeError);
-
-    const unionSDL = `
-      extend union UnknownType @foo
-    `;
-    expect(() => extendTestSchema(unionSDL)).to.throw(unknownTypeError);
-
-    const inputSDL = `
-      extend input UnknownType @foo
-    `;
-    expect(() => extendTestSchema(inputSDL)).to.throw(unknownTypeError);
+    [
+      'extend scalar UnknownType @foo',
+      'extend type UnknownType @foo',
+      'extend interface UnknownType @foo',
+      'extend enum UnknownType @foo',
+      'extend union UnknownType @foo',
+      'extend input UnknownType @foo',
+    ].forEach(sdl => {
+      expect(() => extendTestSchema(sdl)).to.throw(
+        'Cannot extend type "UnknownType" because it does not exist in the existing schema.',
+      );
+    });
   });
 
   it('maintains configuration of the original schema object', () => {
