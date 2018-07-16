@@ -639,9 +639,8 @@ export class GraphQLObjectType {
   extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
   isTypeOf: ?GraphQLIsTypeOfFn<*, *>;
 
-  _typeConfig: GraphQLObjectTypeConfig<*, *>;
-  _fields: GraphQLFieldMap<*, *>;
-  _interfaces: Array<GraphQLInterfaceType>;
+  _fields: Thunk<GraphQLFieldMap<*, *>>;
+  _interfaces: Thunk<Array<GraphQLInterfaceType>>;
 
   constructor(config: GraphQLObjectTypeConfig<*, *>): void {
     this.name = config.name;
@@ -649,7 +648,8 @@ export class GraphQLObjectType {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     this.isTypeOf = config.isTypeOf;
-    this._typeConfig = config;
+    this._fields = defineFieldMap.bind(undefined, config);
+    this._interfaces = defineInterfaces.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
     if (config.isTypeOf) {
       invariant(
@@ -660,17 +660,17 @@ export class GraphQLObjectType {
   }
 
   getFields(): GraphQLFieldMap<*, *> {
-    return (
-      this._fields ||
-      (this._fields = defineFieldMap(this, this._typeConfig.fields))
-    );
+    if (typeof this._fields === 'function') {
+      this._fields = this._fields();
+    }
+    return this._fields;
   }
 
   getInterfaces(): Array<GraphQLInterfaceType> {
-    return (
-      this._interfaces ||
-      (this._interfaces = defineInterfaces(this, this._typeConfig.interfaces))
-    );
+    if (typeof this._interfaces === 'function') {
+      this._interfaces = this._interfaces();
+    }
+    return this._interfaces;
   }
 
   toString(): string {
@@ -683,26 +683,26 @@ defineToStringTag(GraphQLObjectType);
 defineToJSON(GraphQLObjectType);
 
 function defineInterfaces(
-  type: GraphQLObjectType,
-  interfacesThunk: Thunk<?Array<GraphQLInterfaceType>>,
+  config: GraphQLObjectTypeConfig<*, *>,
 ): Array<GraphQLInterfaceType> {
-  const interfaces = resolveThunk(interfacesThunk) || [];
+  const interfaces = resolveThunk(config.interfaces) || [];
   invariant(
     Array.isArray(interfaces),
-    `${type.name} interfaces must be an Array or a function which returns ` +
+    `${config.name} interfaces must be an Array or a function which returns ` +
       'an Array.',
   );
   return interfaces;
 }
 
 function defineFieldMap<TSource, TContext>(
-  type: GraphQLNamedType,
-  fieldsThunk: Thunk<GraphQLFieldConfigMap<TSource, TContext>>,
+  config:
+    | GraphQLObjectTypeConfig<TSource, TContext>
+    | GraphQLInterfaceTypeConfig<TSource, TContext>,
 ): GraphQLFieldMap<TSource, TContext> {
-  const fieldMap = resolveThunk(fieldsThunk) || {};
+  const fieldMap = resolveThunk(config.fields) || {};
   invariant(
     isPlainObj(fieldMap),
-    `${type.name} fields must be an object with field names as keys or a ` +
+    `${config.name} fields must be an object with field names as keys or a ` +
       'function which returns such an object.',
   );
 
@@ -711,12 +711,12 @@ function defineFieldMap<TSource, TContext>(
     const fieldConfig = fieldMap[fieldName];
     invariant(
       isPlainObj(fieldConfig),
-      `${type.name}.${fieldName} field config must be an object`,
+      `${config.name}.${fieldName} field config must be an object`,
     );
     invariant(
       !fieldConfig.hasOwnProperty('isDeprecated'),
-      `${type.name}.${fieldName} should provide "deprecationReason" instead ` +
-        'of "isDeprecated".',
+      `${config.name}.${fieldName} should provide "deprecationReason" ` +
+        'instead of "isDeprecated".',
     );
     const field = {
       ...fieldConfig,
@@ -725,7 +725,7 @@ function defineFieldMap<TSource, TContext>(
     };
     invariant(
       isValidResolver(field.resolve),
-      `${type.name}.${fieldName} field resolver must be a function if ` +
+      `${config.name}.${fieldName} field resolver must be a function if ` +
         `provided, but got: ${inspect(field.resolve)}.`,
     );
     const argsConfig = fieldConfig.args;
@@ -734,7 +734,7 @@ function defineFieldMap<TSource, TContext>(
     } else {
       invariant(
         isPlainObj(argsConfig),
-        `${type.name}.${fieldName} args must be an object with argument ` +
+        `${config.name}.${fieldName} args must be an object with argument ` +
           'names as keys.',
       );
       field.args = Object.keys(argsConfig).map(argName => {
@@ -893,8 +893,7 @@ export class GraphQLInterfaceType {
   extensionASTNodes: ?$ReadOnlyArray<InterfaceTypeExtensionNode>;
   resolveType: ?GraphQLTypeResolver<*, *>;
 
-  _typeConfig: GraphQLInterfaceTypeConfig<*, *>;
-  _fields: GraphQLFieldMap<*, *>;
+  _fields: Thunk<GraphQLFieldMap<*, *>>;
 
   constructor(config: GraphQLInterfaceTypeConfig<*, *>): void {
     this.name = config.name;
@@ -902,7 +901,7 @@ export class GraphQLInterfaceType {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     this.resolveType = config.resolveType;
-    this._typeConfig = config;
+    this._fields = defineFieldMap.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
     if (config.resolveType) {
       invariant(
@@ -913,10 +912,10 @@ export class GraphQLInterfaceType {
   }
 
   getFields(): GraphQLFieldMap<*, *> {
-    return (
-      this._fields ||
-      (this._fields = defineFieldMap(this, this._typeConfig.fields))
-    );
+    if (typeof this._fields === 'function') {
+      this._fields = this._fields();
+    }
+    return this._fields;
   }
 
   toString(): string {
@@ -972,8 +971,7 @@ export class GraphQLUnionType {
   extensionASTNodes: ?$ReadOnlyArray<UnionTypeExtensionNode>;
   resolveType: ?GraphQLTypeResolver<*, *>;
 
-  _typeConfig: GraphQLUnionTypeConfig<*, *>;
-  _types: Array<GraphQLObjectType>;
+  _types: Thunk<Array<GraphQLObjectType>>;
 
   constructor(config: GraphQLUnionTypeConfig<*, *>): void {
     this.name = config.name;
@@ -981,7 +979,7 @@ export class GraphQLUnionType {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     this.resolveType = config.resolveType;
-    this._typeConfig = config;
+    this._types = defineTypes.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
     if (config.resolveType) {
       invariant(
@@ -992,9 +990,10 @@ export class GraphQLUnionType {
   }
 
   getTypes(): Array<GraphQLObjectType> {
-    return (
-      this._types || (this._types = defineTypes(this, this._typeConfig.types))
-    );
+    if (typeof this._types === 'function') {
+      this._types = this._types();
+    }
+    return this._types;
   }
 
   toString(): string {
@@ -1007,14 +1006,13 @@ defineToStringTag(GraphQLUnionType);
 defineToJSON(GraphQLUnionType);
 
 function defineTypes(
-  unionType: GraphQLUnionType,
-  typesThunk: Thunk<Array<GraphQLObjectType>>,
+  config: GraphQLUnionTypeConfig<*, *>,
 ): Array<GraphQLObjectType> {
-  const types = resolveThunk(typesThunk) || [];
+  const types = resolveThunk(config.types) || [];
   invariant(
     Array.isArray(types),
     'Must provide Array of types or a function which returns ' +
-      `such an array for Union ${unionType.name}.`,
+      `such an array for Union ${config.name}.`,
   );
   return types;
 }
@@ -1206,43 +1204,22 @@ export class GraphQLInputObjectType {
   astNode: ?InputObjectTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<InputObjectTypeExtensionNode>;
 
-  _typeConfig: GraphQLInputObjectTypeConfig;
-  _fields: GraphQLInputFieldMap;
+  _fields: Thunk<GraphQLInputFieldMap>;
 
   constructor(config: GraphQLInputObjectTypeConfig): void {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
-    this._typeConfig = config;
+    this._fields = defineInputFieldMap.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
   }
 
   getFields(): GraphQLInputFieldMap {
-    return this._fields || (this._fields = this._defineFieldMap());
-  }
-
-  _defineFieldMap(): GraphQLInputFieldMap {
-    const fieldMap: any = resolveThunk(this._typeConfig.fields) || {};
-    invariant(
-      isPlainObj(fieldMap),
-      `${this.name} fields must be an object with field names as keys or a ` +
-        'function which returns such an object.',
-    );
-    const resultFieldMap = Object.create(null);
-    Object.keys(fieldMap).forEach(fieldName => {
-      const field = {
-        ...fieldMap[fieldName],
-        name: fieldName,
-      };
-      invariant(
-        !field.hasOwnProperty('resolve'),
-        `${this.name}.${fieldName} field type has a resolve property, but ` +
-          'Input Types cannot define resolvers.',
-      );
-      resultFieldMap[fieldName] = field;
-    });
-    return resultFieldMap;
+    if (typeof this._fields === 'function') {
+      this._fields = this._fields();
+    }
+    return this._fields;
   }
 
   toString(): string {
@@ -1253,6 +1230,31 @@ export class GraphQLInputObjectType {
 // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 defineToStringTag(GraphQLInputObjectType);
 defineToJSON(GraphQLInputObjectType);
+
+function defineInputFieldMap(
+  config: GraphQLInputObjectTypeConfig,
+): GraphQLInputFieldMap {
+  const fieldMap: any = resolveThunk(config.fields) || {};
+  invariant(
+    isPlainObj(fieldMap),
+    `${config.name} fields must be an object with field names as keys or a ` +
+      'function which returns such an object.',
+  );
+  const resultFieldMap = Object.create(null);
+  Object.keys(fieldMap).forEach(fieldName => {
+    const field = {
+      ...fieldMap[fieldName],
+      name: fieldName,
+    };
+    invariant(
+      !field.hasOwnProperty('resolve'),
+      `${config.name}.${fieldName} field type has a resolve property, but ` +
+        'Input Types cannot define resolvers.',
+    );
+    resultFieldMap[fieldName] = field;
+  });
+  return resultFieldMap;
+}
 
 export type GraphQLInputObjectTypeConfig = {|
   name: string,
