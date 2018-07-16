@@ -24,12 +24,12 @@ export function unusedVariableMessage(
 /**
  * No unused variables
  *
- * A GraphQL executable tree is only valid if all variables defined by that tree
- * are used, either directly or within a spread fragment.
+ * A GraphQL definition is only valid if all variables defined by that
+ * definition are used, either directly or within a spread fragment.
  *
  * NOTE: if experimentalFragmentVariables are used, then fragments with
- * variables defined are considered an independent "executable tree":
- * fragments defined under them do not count as "within a fragment spread".
+ * variables defined are considered an independent "executable definitions":
+ * variables defined under them do not count as "within a fragment spread".
  */
 export function NoUnusedVariables(context: ValidationContext): ASTVisitor {
   let variableDefs = [];

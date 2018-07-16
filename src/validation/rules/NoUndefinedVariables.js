@@ -21,8 +21,12 @@ export function undefinedVarMessage(varName: string, opName: ?string): string {
 /**
  * No undefined variables
  *
- * A GraphQL operation is only valid if all variables encountered, both directly
- * and via fragment spreads, are defined by that operation.
+ * A GraphQL definition is only valid if all variables encountered, both
+ * directly and via fragment spreads, are defined by that definition.
+ *
+ * NOTE: if experimentalFragmentVariables are used, then fragments with
+ * variables defined are considered an independent "executable definitions":
+ * variables defined under them do not count as "within a fragment spread".
  */
 export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
   let variableNameDefined = Object.create(null);

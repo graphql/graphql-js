@@ -197,7 +197,7 @@ export default class ValidationContext {
    *
    * NOTE: if experimentalFragmentVariables are being used, it excludes all
    * fragments with their own variable definitions: these are considered their
-   * own "root" executable definition.
+   * own independent executable definition for the purposes of variable usage.
    */
   getRecursiveVariableUsages(
     definition: ExecutableDefinitionNode,
