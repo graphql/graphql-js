@@ -333,9 +333,9 @@ export function extendSchema(schema, documentAST, options) {
       description: type.description,
       astNode: type.astNode,
       extensionASTNodes: extensionASTNodes,
-      serialize: type._scalarConfig.serialize,
-      parseValue: type._scalarConfig.parseValue,
-      parseLiteral: type._scalarConfig.parseLiteral
+      serialize: type.serialize,
+      parseValue: type.parseValue,
+      parseLiteral: type.parseLiteral
     });
   }
 

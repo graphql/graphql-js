@@ -315,44 +315,36 @@ function () {
 
     _defineProperty(this, "description", void 0);
 
+    _defineProperty(this, "serialize", void 0);
+
+    _defineProperty(this, "parseValue", void 0);
+
+    _defineProperty(this, "parseLiteral", void 0);
+
     _defineProperty(this, "astNode", void 0);
 
     _defineProperty(this, "extensionASTNodes", void 0);
 
-    _defineProperty(this, "_scalarConfig", void 0);
-
     this.name = config.name;
     this.description = config.description;
+    this.serialize = config.serialize;
+
+    this.parseValue = config.parseValue || function (value) {
+      return value;
+    };
+
+    this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
-    this._scalarConfig = config;
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
     !(typeof config.serialize === 'function') ? invariant(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar ") + 'is also used as an input type, ensure "parseValue" and "parseLiteral" ' + 'functions are also provided.') : void 0;
 
     if (config.parseValue || config.parseLiteral) {
       !(typeof config.parseValue === 'function' && typeof config.parseLiteral === 'function') ? invariant(0, "".concat(this.name, " must provide both \"parseValue\" and \"parseLiteral\" ") + 'functions.') : void 0;
     }
-  } // Serializes an internal value to include in a response.
-
+  }
 
   var _proto = GraphQLScalarType.prototype;
-
-  _proto.serialize = function serialize(value) {
-    var serializer = this._scalarConfig.serialize;
-    return serializer(value);
-  }; // Parses an externally provided value to use as an input.
-
-
-  _proto.parseValue = function parseValue(value) {
-    var parser = this._scalarConfig.parseValue;
-    return parser ? parser(value) : value;
-  }; // Parses an externally provided literal value to use as an input.
-
-
-  _proto.parseLiteral = function parseLiteral(valueNode, variables) {
-    var parser = this._scalarConfig.parseLiteral;
-    return parser ? parser(valueNode, variables) : valueFromASTUntyped(valueNode, variables);
-  };
 
   _proto.toString = function toString() {
     return this.name;

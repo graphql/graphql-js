@@ -152,6 +152,9 @@ export type {
   GraphQLScalarTypeConfig,
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
+  GraphQLScalarSerializer,
+  GraphQLScalarValueParser,
+  GraphQLScalarLiteralParser,
 } from './definition';
 
 export { validateSchema, assertValidSchema } from './validate';
