@@ -378,11 +378,11 @@ describe('Type System: Example', () => {
       [EnumType, true],
       [InputObjectType, true],
     ];
-    expected.forEach(([type, answer]) => {
+    for (const [type, answer] of expected) {
       expect(isInputType(type)).to.equal(answer);
       expect(isInputType(GraphQLList(type))).to.equal(answer);
       expect(isInputType(GraphQLNonNull(type))).to.equal(answer);
-    });
+    }
   });
 
   it('identifies output types', () => {
@@ -394,11 +394,11 @@ describe('Type System: Example', () => {
       [EnumType, true],
       [InputObjectType, false],
     ];
-    expected.forEach(([type, answer]) => {
+    for (const [type, answer] of expected) {
       expect(isOutputType(type)).to.equal(answer);
       expect(isOutputType(GraphQLList(type))).to.equal(answer);
       expect(isOutputType(GraphQLNonNull(type))).to.equal(answer);
-    });
+    }
   });
 
   it('prohibits nesting NonNull inside NonNull', () => {
@@ -1131,19 +1131,19 @@ describe('Type System: List must accept only types', () => {
 
   const notTypes = [{}, String, undefined, null];
 
-  types.forEach(type => {
+  for (const type of types) {
     it(`accepts an type as item type of list: ${type}`, () => {
       expect(() => GraphQLList(type)).not.to.throw();
     });
-  });
+  }
 
-  notTypes.forEach(type => {
+  for (const type of notTypes) {
     it(`rejects a non-type as item type of list: ${type}`, () => {
       expect(() => GraphQLList(type)).to.throw(
         `Expected ${inspect(type)} to be a GraphQL type.`,
       );
     });
-  });
+  }
 });
 
 describe('Type System: NonNull must only accept non-nullable types', () => {
@@ -1167,19 +1167,19 @@ describe('Type System: NonNull must only accept non-nullable types', () => {
     null,
   ];
 
-  nullableTypes.forEach(type => {
+  for (const type of nullableTypes) {
     it(`accepts an type as nullable type of non-null: ${type}`, () => {
       expect(() => GraphQLNonNull(type)).not.to.throw();
     });
-  });
+  }
 
-  notNullableTypes.forEach(type => {
+  for (const type of notNullableTypes) {
     it(`rejects a non-type as nullable type of non-null: ${type}`, () => {
       expect(() => GraphQLNonNull(type)).to.throw(
         `Expected ${inspect(type)} to be a GraphQL nullable type.`,
       );
     });
-  });
+  }
 });
 
 describe('Type System: A Schema must contain uniquely named types', () => {

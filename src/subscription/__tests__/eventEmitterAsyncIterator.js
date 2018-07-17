@@ -45,7 +45,9 @@ export default function eventEmitterAsyncIterator(
     if (listening) {
       listening = false;
       eventEmitter.removeListener(eventName, pushValue);
-      pullQueue.forEach(resolve => resolve({ value: undefined, done: true }));
+      for (const resolve of pullQueue) {
+        resolve({ value: undefined, done: true });
+      }
       pullQueue.length = 0;
       pushQueue.length = 0;
     }

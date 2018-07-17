@@ -97,21 +97,21 @@ function getSuggestedTypeNames(
   if (isAbstractType(type)) {
     const suggestedObjectTypes = [];
     const interfaceUsageCount = Object.create(null);
-    schema.getPossibleTypes(type).forEach(possibleType => {
+    for (const possibleType of schema.getPossibleTypes(type)) {
       if (!possibleType.getFields()[fieldName]) {
-        return;
+        continue;
       }
       // This object type defines this field.
       suggestedObjectTypes.push(possibleType.name);
-      possibleType.getInterfaces().forEach(possibleInterface => {
+      for (const possibleInterface of possibleType.getInterfaces()) {
         if (!possibleInterface.getFields()[fieldName]) {
-          return;
+          continue;
         }
         // This interface type defines this field.
         interfaceUsageCount[possibleInterface.name] =
           (interfaceUsageCount[possibleInterface.name] || 0) + 1;
-      });
-    });
+      }
+    }
 
     // Suggest interface types based on how common they are.
     const suggestedInterfaceTypes = Object.keys(interfaceUsageCount).sort(

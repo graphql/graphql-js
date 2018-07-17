@@ -39,11 +39,11 @@ export function NoUnusedVariables(context: ValidationContext): ASTVisitor {
         const usages = context.getRecursiveVariableUsages(operation);
         const opName = operation.name ? operation.name.value : null;
 
-        usages.forEach(({ node }) => {
+        for (const { node } of usages) {
           variableNameUsed[node.name.value] = true;
-        });
+        }
 
-        variableDefs.forEach(variableDef => {
+        for (const variableDef of variableDefs) {
           const variableName = variableDef.variable.name.value;
           if (variableNameUsed[variableName] !== true) {
             context.reportError(
@@ -52,7 +52,7 @@ export function NoUnusedVariables(context: ValidationContext): ASTVisitor {
               ]),
             );
           }
-        });
+        }
       },
     },
     VariableDefinition(def) {

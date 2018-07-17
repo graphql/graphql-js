@@ -19,7 +19,7 @@ import type { GraphQLError } from './GraphQLError';
 export function printError(error: GraphQLError): string {
   const printedLocations = [];
   if (error.nodes) {
-    error.nodes.forEach(node => {
+    for (const node of error.nodes) {
       if (node.loc) {
         printedLocations.push(
           highlightSourceAtLocation(
@@ -28,12 +28,12 @@ export function printError(error: GraphQLError): string {
           ),
         );
       }
-    });
+    }
   } else if (error.source && error.locations) {
     const source = error.source;
-    error.locations.forEach(location => {
+    for (const location of error.locations) {
       printedLocations.push(highlightSourceAtLocation(source, location));
-    });
+    }
   }
   return printedLocations.length === 0
     ? error.message

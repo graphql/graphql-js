@@ -707,7 +707,7 @@ function defineFieldMap<TSource, TContext>(
   );
 
   const resultFieldMap = Object.create(null);
-  Object.keys(fieldMap).forEach(fieldName => {
+  for (const fieldName of Object.keys(fieldMap)) {
     const fieldConfig = fieldMap[fieldName];
     invariant(
       isPlainObj(fieldConfig),
@@ -749,7 +749,7 @@ function defineFieldMap<TSource, TContext>(
       });
     }
     resultFieldMap[fieldName] = field;
-  });
+  }
   return resultFieldMap;
 }
 
@@ -1241,7 +1241,7 @@ function defineInputFieldMap(
       'function which returns such an object.',
   );
   const resultFieldMap = Object.create(null);
-  Object.keys(fieldMap).forEach(fieldName => {
+  for (const fieldName of Object.keys(fieldMap)) {
     const field = {
       ...fieldMap[fieldName],
       name: fieldName,
@@ -1252,7 +1252,7 @@ function defineInputFieldMap(
         'Input Types cannot define resolvers.',
     );
     resultFieldMap[fieldName] = field;
-  });
+  }
   return resultFieldMap;
 }
 

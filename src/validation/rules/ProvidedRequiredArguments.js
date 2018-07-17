@@ -56,7 +56,7 @@ export function ProvidedRequiredArguments(
         const argNodes = node.arguments || [];
 
         const argNodeMap = keyMap(argNodes, arg => arg.name.value);
-        fieldDef.args.forEach(argDef => {
+        for (const argDef of fieldDef.args) {
           const argNode = argNodeMap[argDef.name];
           if (
             !argNode &&
@@ -74,7 +74,7 @@ export function ProvidedRequiredArguments(
               ),
             );
           }
-        });
+        }
       },
     },
 
@@ -88,7 +88,7 @@ export function ProvidedRequiredArguments(
         const argNodes = node.arguments || [];
 
         const argNodeMap = keyMap(argNodes, arg => arg.name.value);
-        directiveDef.args.forEach(argDef => {
+        for (const argDef of directiveDef.args) {
           const argNode = argNodeMap[argDef.name];
           if (
             !argNode &&
@@ -106,7 +106,7 @@ export function ProvidedRequiredArguments(
               ),
             );
           }
-        });
+        }
       },
     },
   };

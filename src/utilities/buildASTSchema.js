@@ -230,7 +230,7 @@ export function buildASTSchema(
 
   function getOperationTypes(schema: SchemaDefinitionNode) {
     const opTypes = {};
-    schema.operationTypes.forEach(operationType => {
+    for (const operationType of schema.operationTypes) {
       const typeName = operationType.type.name.value;
       const operation = operationType.operation;
       if (opTypes[operation]) {
@@ -242,7 +242,7 @@ export function buildASTSchema(
         );
       }
       opTypes[operation] = operationType.type;
-    });
+    }
     return opTypes;
   }
 }
