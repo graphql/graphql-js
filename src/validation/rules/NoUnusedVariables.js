@@ -9,6 +9,7 @@
 
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
+import { Kind } from '../../language';
 import type { ExecutableDefinitionNode } from '../../language';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -36,14 +37,14 @@ export function NoUnusedVariables(context: ValidationContext): ASTVisitor {
   let variableDefs = [];
 
   const executableDefinitionVisitor = {
-    enter(definition: ExecutableDefinitionNode) {
-      if (!context.isExecutableDefinitionWithVariables(definition)) {
-        return;
-      }
+    enter() {
       variableDefs = [];
     },
     leave(definition: ExecutableDefinitionNode) {
-      if (!context.isExecutableDefinitionWithVariables(definition)) {
+      if (
+        definition.kind === Kind.FRAGMENT_DEFINITION &&
+        variableDefs.length === 0
+      ) {
         return;
       }
 

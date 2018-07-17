@@ -155,7 +155,7 @@ export default class ValidationContext {
             const fragment = this.getFragment(fragName);
             if (
               fragment &&
-              !this.isExecutableDefinitionWithVariables(fragment)
+              !isExperimentalFragmentWithVariableDefinitions(fragment)
             ) {
               fragments.push(fragment);
               nodesToVisit.push(fragment.selectionSet);
@@ -244,15 +244,10 @@ export default class ValidationContext {
   getArgument(): ?GraphQLArgument {
     return this._typeInfo.getArgument();
   }
+}
 
-  // All OperationDefinitions, or FragmentDefinitions with variable definitions
-  isExecutableDefinitionWithVariables(
-    definition: ExecutableDefinitionNode,
-  ): boolean {
-    return (
-      definition.kind === Kind.OPERATION_DEFINITION ||
-      (definition.variableDefinitions != null &&
-        definition.variableDefinitions.length > 0)
-    );
-  }
+function isExperimentalFragmentWithVariableDefinitions(
+  ast: FragmentDefinitionNode,
+): boolean %checks {
+  return ast.variableDefinitions != null && ast.variableDefinitions.length > 0;
 }

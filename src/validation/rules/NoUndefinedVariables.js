@@ -10,6 +10,7 @@
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { ASTVisitor } from '../../language/visitor';
+import { Kind } from '../../language';
 import type { ExecutableDefinitionNode } from '../../language';
 
 export function undefinedVarMessage(varName: string, opName: ?string): string {
@@ -33,14 +34,14 @@ export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
   let variableNameDefined = Object.create(null);
 
   const executableDefinitionVisitor = {
-    enter(definition: ExecutableDefinitionNode) {
-      if (!context.isExecutableDefinitionWithVariables(definition)) {
-        return;
-      }
+    enter() {
       variableNameDefined = Object.create(null);
     },
     leave(definition: ExecutableDefinitionNode) {
-      if (!context.isExecutableDefinitionWithVariables(definition)) {
+      if (
+        definition.kind === Kind.FRAGMENT_DEFINITION &&
+        Object.keys(variableNameDefined).length === 0
+      ) {
         return;
       }
       const usages = context.getRecursiveVariableUsages(definition);
