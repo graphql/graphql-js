@@ -68,8 +68,6 @@ function () {
   // Used as a cache for validateSchema().
   // Referenced by validateSchema().
   function GraphQLSchema(config) {
-    var _this = this;
-
     _defineProperty(this, "astNode", void 0);
 
     _defineProperty(this, "extensionASTNodes", void 0);
@@ -131,25 +129,50 @@ function () {
     this._typeMap = typeMap; // Keep track of all implementations by interface name.
 
     this._implementations = Object.create(null);
-    Object.keys(this._typeMap).forEach(function (typeName) {
-      var type = _this._typeMap[typeName];
+
+    var _arr = Object.keys(this._typeMap);
+
+    for (var _i = 0; _i < _arr.length; _i++) {
+      var typeName = _arr[_i];
+      var type = this._typeMap[typeName];
 
       if ((0, _definition.isObjectType)(type)) {
-        type.getInterfaces().forEach(function (iface) {
-          if ((0, _definition.isInterfaceType)(iface)) {
-            var impls = _this._implementations[iface.name];
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-            if (impls) {
-              impls.push(type);
-            } else {
-              _this._implementations[iface.name] = [type];
+        try {
+          for (var _iterator = type.getInterfaces()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var iface = _step.value;
+
+            if ((0, _definition.isInterfaceType)(iface)) {
+              var impls = this._implementations[iface.name];
+
+              if (impls) {
+                impls.push(type);
+              } else {
+                this._implementations[iface.name] = [type];
+              }
             }
           }
-        });
-      } else if ((0, _definition.isAbstractType)(type) && !_this._implementations[type.name]) {
-        _this._implementations[type.name] = [];
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return != null) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+      } else if ((0, _definition.isAbstractType)(type) && !this._implementations[type.name]) {
+        this._implementations[type.name] = [];
       }
-    });
+    }
   }
 
   var _proto = GraphQLSchema.prototype;
@@ -242,22 +265,63 @@ function typeMapReducer(map, type) {
   }
 
   if ((0, _definition.isObjectType)(type) || (0, _definition.isInterfaceType)(type)) {
-    (0, _objectValues.default)(type.getFields()).forEach(function (field) {
-      if (field.args) {
-        var fieldArgTypes = field.args.map(function (arg) {
-          return arg.type;
-        });
-        reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
-      }
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
 
-      reducedMap = typeMapReducer(reducedMap, field.type);
-    });
+    try {
+      for (var _iterator2 = (0, _objectValues.default)(type.getFields())[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var field = _step2.value;
+
+        if (field.args) {
+          var fieldArgTypes = field.args.map(function (arg) {
+            return arg.type;
+          });
+          reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
+        }
+
+        reducedMap = typeMapReducer(reducedMap, field.type);
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
   }
 
   if ((0, _definition.isInputObjectType)(type)) {
-    (0, _objectValues.default)(type.getFields()).forEach(function (field) {
-      reducedMap = typeMapReducer(reducedMap, field.type);
-    });
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
+
+    try {
+      for (var _iterator3 = (0, _objectValues.default)(type.getFields())[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        var _field = _step3.value;
+        reducedMap = typeMapReducer(reducedMap, _field.type);
+      }
+    } catch (err) {
+      _didIteratorError3 = true;
+      _iteratorError3 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+          _iterator3.return();
+        }
+      } finally {
+        if (_didIteratorError3) {
+          throw _iteratorError3;
+        }
+      }
+    }
   }
 
   return reducedMap;

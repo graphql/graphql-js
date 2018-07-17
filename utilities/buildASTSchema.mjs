@@ -153,20 +153,41 @@ export function buildASTSchema(ast, options) {
 
   function getOperationTypes(schema) {
     var opTypes = {};
-    schema.operationTypes.forEach(function (operationType) {
-      var typeName = operationType.type.name.value;
-      var operation = operationType.operation;
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-      if (opTypes[operation]) {
-        throw new Error("Must provide only one ".concat(operation, " type in schema."));
+    try {
+      for (var _iterator = schema.operationTypes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var operationType = _step.value;
+        var _typeName = operationType.type.name.value;
+        var operation = operationType.operation;
+
+        if (opTypes[operation]) {
+          throw new Error("Must provide only one ".concat(operation, " type in schema."));
+        }
+
+        if (!nodeMap[_typeName]) {
+          throw new Error("Specified ".concat(operation, " type \"").concat(_typeName, "\" not found in document."));
+        }
+
+        opTypes[operation] = operationType.type;
       }
-
-      if (!nodeMap[typeName]) {
-        throw new Error("Specified ".concat(operation, " type \"").concat(typeName, "\" not found in document."));
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return != null) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
       }
+    }
 
-      opTypes[operation] = operationType.type;
-    });
     return opTypes;
   }
 }

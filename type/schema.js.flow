@@ -155,10 +155,10 @@ export class GraphQLSchema {
 
     // Keep track of all implementations by interface name.
     this._implementations = Object.create(null);
-    Object.keys(this._typeMap).forEach(typeName => {
+    for (const typeName of Object.keys(this._typeMap)) {
       const type = this._typeMap[typeName];
       if (isObjectType(type)) {
-        type.getInterfaces().forEach(iface => {
+        for (const iface of type.getInterfaces()) {
           if (isInterfaceType(iface)) {
             const impls = this._implementations[iface.name];
             if (impls) {
@@ -167,11 +167,11 @@ export class GraphQLSchema {
               this._implementations[iface.name] = [type];
             }
           }
-        });
+        }
       } else if (isAbstractType(type) && !this._implementations[type.name]) {
         this._implementations[type.name] = [];
       }
-    });
+    }
   }
 
   getQueryType(): ?GraphQLObjectType {
@@ -296,19 +296,19 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   }
 
   if (isObjectType(type) || isInterfaceType(type)) {
-    objectValues(type.getFields()).forEach(field => {
+    for (const field of objectValues(type.getFields())) {
       if (field.args) {
         const fieldArgTypes = field.args.map(arg => arg.type);
         reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       }
       reducedMap = typeMapReducer(reducedMap, field.type);
-    });
+    }
   }
 
   if (isInputObjectType(type)) {
-    objectValues(type.getFields()).forEach(field => {
+    for (const field of objectValues(type.getFields())) {
       reducedMap = typeMapReducer(reducedMap, field.type);
-    });
+    }
   }
 
   return reducedMap;

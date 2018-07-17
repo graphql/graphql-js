@@ -38,13 +38,33 @@ export function ProvidedRequiredArguments(context) {
         var argNodeMap = keyMap(argNodes, function (arg) {
           return arg.name.value;
         });
-        fieldDef.args.forEach(function (argDef) {
-          var argNode = argNodeMap[argDef.name];
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-          if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
-            context.reportError(new GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, inspect(argDef.type)), [node]));
+        try {
+          for (var _iterator = fieldDef.args[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var argDef = _step.value;
+            var argNode = argNodeMap[argDef.name];
+
+            if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
+              context.reportError(new GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, inspect(argDef.type)), [node]));
+            }
           }
-        });
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return != null) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
       }
     },
     Directive: {
@@ -60,13 +80,33 @@ export function ProvidedRequiredArguments(context) {
         var argNodeMap = keyMap(argNodes, function (arg) {
           return arg.name.value;
         });
-        directiveDef.args.forEach(function (argDef) {
-          var argNode = argNodeMap[argDef.name];
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
 
-          if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
-            context.reportError(new GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, inspect(argDef.type)), [node]));
+        try {
+          for (var _iterator2 = directiveDef.args[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var argDef = _step2.value;
+            var argNode = argNodeMap[argDef.name];
+
+            if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
+              context.reportError(new GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, inspect(argDef.type)), [node]));
+            }
           }
-        });
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
       }
     }
   };

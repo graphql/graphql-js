@@ -25,7 +25,7 @@ export function nonExecutableDefinitionMessage(defName: string): string {
 export function ExecutableDefinitions(context: ValidationContext): ASTVisitor {
   return {
     Document(node) {
-      node.definitions.forEach(definition => {
+      for (const definition of node.definitions) {
         if (
           definition.kind !== Kind.OPERATION_DEFINITION &&
           definition.kind !== Kind.FRAGMENT_DEFINITION
@@ -42,7 +42,7 @@ export function ExecutableDefinitions(context: ValidationContext): ASTVisitor {
             ),
           );
         }
-      });
+      }
       return false;
     },
   };

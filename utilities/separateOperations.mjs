@@ -41,16 +41,23 @@ export function separateOperations(documentAST) {
   // is necessary for completing that operation.
 
   var separatedDocumentASTs = Object.create(null);
-  operations.forEach(function (operation) {
+
+  for (var _i = 0; _i < operations.length; _i++) {
+    var operation = operations[_i];
     var operationName = opName(operation);
     var dependencies = Object.create(null);
     collectTransitiveDependencies(dependencies, depGraph, operationName); // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
 
     var definitions = [operation];
-    Object.keys(dependencies).forEach(function (name) {
+
+    var _arr = Object.keys(dependencies);
+
+    for (var _i2 = 0; _i2 < _arr.length; _i2++) {
+      var name = _arr[_i2];
       definitions.push(fragments[name]);
-    });
+    }
+
     definitions.sort(function (n1, n2) {
       return (positions.get(n1) || 0) - (positions.get(n2) || 0);
     });
@@ -58,7 +65,8 @@ export function separateOperations(documentAST) {
       kind: 'Document',
       definitions: definitions
     };
-  });
+  }
+
   return separatedDocumentASTs;
 }
 
@@ -73,11 +81,15 @@ function collectTransitiveDependencies(collected, depGraph, fromName) {
   var immediateDeps = depGraph[fromName];
 
   if (immediateDeps) {
-    Object.keys(immediateDeps).forEach(function (toName) {
+    var _arr2 = Object.keys(immediateDeps);
+
+    for (var _i3 = 0; _i3 < _arr2.length; _i3++) {
+      var toName = _arr2[_i3];
+
       if (!collected[toName]) {
         collected[toName] = true;
         collectTransitiveDependencies(collected, depGraph, toName);
       }
-    });
+    }
   }
 }

@@ -51,14 +51,16 @@ export function OverlappingFieldsCanBeMerged(context) {
   return {
     SelectionSet: function SelectionSet(selectionSet) {
       var conflicts = findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, context.getParentType(), selectionSet);
-      conflicts.forEach(function (_ref2) {
-        var _ref2$ = _ref2[0],
-            responseName = _ref2$[0],
-            reason = _ref2$[1],
-            fields1 = _ref2[1],
-            fields2 = _ref2[2];
-        return context.reportError(new GraphQLError(fieldsConflictMessage(responseName, reason), fields1.concat(fields2)));
-      });
+
+      for (var _i = 0; _i < conflicts.length; _i++) {
+        var _ref3 = conflicts[_i];
+        var _ref2$ = _ref3[0];
+        var responseName = _ref2$[0];
+        var reason = _ref2$[1];
+        var fields1 = _ref3[1];
+        var fields2 = _ref3[2];
+        context.reportError(new GraphQLError(fieldsConflictMessage(responseName, reason), fields1.concat(fields2)));
+      }
     }
   };
 }
@@ -269,9 +271,9 @@ function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNa
   // names to each item in the second set of names.
 
 
-  for (var _i = 0; _i < fragmentNames1.length; _i++) {
+  for (var _i2 = 0; _i2 < fragmentNames1.length; _i2++) {
     for (var _j = 0; _j < fragmentNames2.length; _j++) {
-      collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentNames1[_i], fragmentNames2[_j]);
+      collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentNames1[_i2], fragmentNames2[_j]);
     }
   }
 
@@ -284,7 +286,10 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  Object.keys(fieldMap).forEach(function (responseName) {
+  var _arr = Object.keys(fieldMap);
+
+  for (var _i3 = 0; _i3 < _arr.length; _i3++) {
+    var responseName = _arr[_i3];
     var fields = fieldMap[responseName]; // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.
@@ -301,7 +306,7 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames
         }
       }
     }
-  });
+  }
 } // Collect all Conflicts between two collections of fields. This is similar to,
 // but different from the `collectConflictsWithin` function above. This check
 // assumes that `collectConflictsWithin` has already been called on each
@@ -315,7 +320,10 @@ function collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentName
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  Object.keys(fieldMap1).forEach(function (responseName) {
+  var _arr2 = Object.keys(fieldMap1);
+
+  for (var _i4 = 0; _i4 < _arr2.length; _i4++) {
+    var responseName = _arr2[_i4];
     var fields2 = fieldMap2[responseName];
 
     if (fields2) {
@@ -331,7 +339,7 @@ function collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentName
         }
       }
     }
-  });
+  }
 } // Determines if there is a conflict between two particular fields, including
 // comparing their sub-fields.
 
@@ -510,14 +518,14 @@ function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeA
 
 function subfieldConflicts(conflicts, responseName, node1, node2) {
   if (conflicts.length > 0) {
-    return [[responseName, conflicts.map(function (_ref3) {
-      var reason = _ref3[0];
+    return [[responseName, conflicts.map(function (_ref4) {
+      var reason = _ref4[0];
       return reason;
-    })], conflicts.reduce(function (allFields, _ref4) {
-      var fields1 = _ref4[1];
+    })], conflicts.reduce(function (allFields, _ref5) {
+      var fields1 = _ref5[1];
       return allFields.concat(fields1);
-    }, [node1]), conflicts.reduce(function (allFields, _ref5) {
-      var fields2 = _ref5[2];
+    }, [node1]), conflicts.reduce(function (allFields, _ref6) {
+      var fields2 = _ref6[2];
       return allFields.concat(fields2);
     }, [node2])];
   }

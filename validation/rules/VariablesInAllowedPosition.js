@@ -45,27 +45,47 @@ function VariablesInAllowedPosition(context) {
       },
       leave: function leave(operation) {
         var usages = context.getRecursiveVariableUsages(operation);
-        usages.forEach(function (_ref) {
-          var node = _ref.node,
-              type = _ref.type,
-              defaultValue = _ref.defaultValue;
-          var varName = node.name.value;
-          var varDef = varDefMap[varName];
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-          if (varDef && type) {
-            // A var type is allowed if it is the same or more strict (e.g. is
-            // a subtype of) than the expected type. It can be more strict if
-            // the variable type is non-null when the expected type is nullable.
-            // If both are list types, the variable item type can be more strict
-            // than the expected item type (contravariant).
-            var schema = context.getSchema();
-            var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
+        try {
+          for (var _iterator = usages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var _ref2 = _step.value;
+            var node = _ref2.node,
+                type = _ref2.type,
+                defaultValue = _ref2.defaultValue;
+            var varName = node.name.value;
+            var varDef = varDefMap[varName];
 
-            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
-              context.reportError(new _error.GraphQLError(badVarPosMessage(varName, (0, _inspect.default)(varType), (0, _inspect.default)(type)), [varDef, node]));
+            if (varDef && type) {
+              // A var type is allowed if it is the same or more strict (e.g. is
+              // a subtype of) than the expected type. It can be more strict if
+              // the variable type is non-null when the expected type is nullable.
+              // If both are list types, the variable item type can be more strict
+              // than the expected item type (contravariant).
+              var schema = context.getSchema();
+              var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
+
+              if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
+                context.reportError(new _error.GraphQLError(badVarPosMessage(varName, (0, _inspect.default)(varType), (0, _inspect.default)(type)), [varDef, node]));
+              }
             }
           }
-        });
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return != null) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
       }
     },
     VariableDefinition: function VariableDefinition(node) {

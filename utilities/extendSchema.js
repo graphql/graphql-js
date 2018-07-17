@@ -156,23 +156,46 @@ function extendSchema(schema, documentAST, options) {
     subscription: extendMaybeNamedType(schema.getSubscriptionType())
   }; // Then, incorporate all schema extensions.
 
-  schemaExtensions.forEach(function (schemaExtension) {
+  for (var _i = 0; _i < schemaExtensions.length; _i++) {
+    var schemaExtension = schemaExtensions[_i];
+
     if (schemaExtension.operationTypes) {
-      schemaExtension.operationTypes.forEach(function (operationType) {
-        var operation = operationType.operation;
+      var _iteratorNormalCompletion11 = true;
+      var _didIteratorError11 = false;
+      var _iteratorError11 = undefined;
 
-        if (operationTypes[operation]) {
-          throw new Error("Must provide only one ".concat(operation, " type in schema."));
+      try {
+        for (var _iterator11 = schemaExtension.operationTypes[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+          var operationType = _step11.value;
+          var operation = operationType.operation;
+
+          if (operationTypes[operation]) {
+            throw new Error("Must provide only one ".concat(operation, " type in schema."));
+          }
+
+          var typeRef = operationType.type; // Note: While this could make early assertions to get the correctly
+          // typed values, that would throw immediately while type system
+          // validation with validateSchema() will produce more actionable results.
+
+          operationTypes[operation] = astBuilder.buildType(typeRef);
         }
-
-        var typeRef = operationType.type; // Note: While this could make early assertions to get the correctly
-        // typed values, that would throw immediately while type system
-        // validation with validateSchema() will produce more actionable results.
-
-        operationTypes[operation] = astBuilder.buildType(typeRef);
-      });
+      } catch (err) {
+        _didIteratorError11 = true;
+        _iteratorError11 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion11 && _iterator11.return != null) {
+            _iterator11.return();
+          }
+        } finally {
+          if (_didIteratorError11) {
+            throw _iteratorError11;
+          }
+        }
+      }
     }
-  });
+  }
+
   var schemaExtensionASTNodes = schemaExtensions ? schema.extensionASTNodes ? schema.extensionASTNodes.concat(schemaExtensions) : schemaExtensions : schema.extensionASTNodes;
   var types = (0, _objectValues.default)(schema.getTypeMap()).map(function (type) {
     return extendNamedType(type);
@@ -270,30 +293,75 @@ function extendSchema(schema, documentAST, options) {
   function extendInputFieldMap(type) {
     var newFieldMap = Object.create(null);
     var oldFieldMap = type.getFields();
-    Object.keys(oldFieldMap).forEach(function (fieldName) {
-      var field = oldFieldMap[fieldName];
-      newFieldMap[fieldName] = {
-        description: field.description,
-        type: extendType(field.type),
-        defaultValue: field.defaultValue,
-        astNode: field.astNode
+
+    var _arr = Object.keys(oldFieldMap);
+
+    for (var _i2 = 0; _i2 < _arr.length; _i2++) {
+      var _fieldName = _arr[_i2];
+      var _field = oldFieldMap[_fieldName];
+      newFieldMap[_fieldName] = {
+        description: _field.description,
+        type: extendType(_field.type),
+        defaultValue: _field.defaultValue,
+        astNode: _field.astNode
       };
-    }); // If there are any extensions to the fields, apply those here.
+    } // If there are any extensions to the fields, apply those here.
+
 
     var extensions = typeExtensionsMap[type.name];
 
     if (extensions) {
-      extensions.forEach(function (extension) {
-        extension.fields.forEach(function (field) {
-          var fieldName = field.name.value;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-          if (oldFieldMap[fieldName]) {
-            throw new _GraphQLError.GraphQLError("Field \"".concat(type.name, ".").concat(fieldName, "\" already exists in the ") + 'schema. It cannot also be defined in this type extension.', [field]);
+      try {
+        for (var _iterator = extensions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var extension = _step.value;
+          var _iteratorNormalCompletion2 = true;
+          var _didIteratorError2 = false;
+          var _iteratorError2 = undefined;
+
+          try {
+            for (var _iterator2 = extension.fields[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+              var field = _step2.value;
+              var fieldName = field.name.value;
+
+              if (oldFieldMap[fieldName]) {
+                throw new _GraphQLError.GraphQLError("Field \"".concat(type.name, ".").concat(fieldName, "\" already exists in the ") + 'schema. It cannot also be defined in this type extension.', [field]);
+              }
+
+              newFieldMap[fieldName] = astBuilder.buildInputField(field);
+            }
+          } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                _iterator2.return();
+              }
+            } finally {
+              if (_didIteratorError2) {
+                throw _iteratorError2;
+              }
+            }
           }
-
-          newFieldMap[fieldName] = astBuilder.buildInputField(field);
-        });
-      });
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
     }
 
     return newFieldMap;
@@ -316,31 +384,76 @@ function extendSchema(schema, documentAST, options) {
     var oldValueMap = (0, _keyMap.default)(type.getValues(), function (value) {
       return value.name;
     });
-    Object.keys(oldValueMap).forEach(function (valueName) {
-      var value = oldValueMap[valueName];
-      newValueMap[valueName] = {
-        name: value.name,
-        description: value.description,
-        value: value.value,
-        deprecationReason: value.deprecationReason,
-        astNode: value.astNode
+
+    var _arr2 = Object.keys(oldValueMap);
+
+    for (var _i3 = 0; _i3 < _arr2.length; _i3++) {
+      var _valueName = _arr2[_i3];
+      var _value = oldValueMap[_valueName];
+      newValueMap[_valueName] = {
+        name: _value.name,
+        description: _value.description,
+        value: _value.value,
+        deprecationReason: _value.deprecationReason,
+        astNode: _value.astNode
       };
-    }); // If there are any extensions to the values, apply those here.
+    } // If there are any extensions to the values, apply those here.
+
 
     var extensions = typeExtensionsMap[type.name];
 
     if (extensions) {
-      extensions.forEach(function (extension) {
-        extension.values.forEach(function (value) {
-          var valueName = value.name.value;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
-          if (oldValueMap[valueName]) {
-            throw new _GraphQLError.GraphQLError("Enum value \"".concat(type.name, ".").concat(valueName, "\" already exists in the ") + 'schema. It cannot also be defined in this type extension.', [value]);
+      try {
+        for (var _iterator3 = extensions[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var extension = _step3.value;
+          var _iteratorNormalCompletion4 = true;
+          var _didIteratorError4 = false;
+          var _iteratorError4 = undefined;
+
+          try {
+            for (var _iterator4 = extension.values[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+              var value = _step4.value;
+              var valueName = value.name.value;
+
+              if (oldValueMap[valueName]) {
+                throw new _GraphQLError.GraphQLError("Enum value \"".concat(type.name, ".").concat(valueName, "\" already exists in the ") + 'schema. It cannot also be defined in this type extension.', [value]);
+              }
+
+              newValueMap[valueName] = astBuilder.buildEnumValue(value);
+            }
+          } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+                _iterator4.return();
+              }
+            } finally {
+              if (_didIteratorError4) {
+                throw _iteratorError4;
+              }
+            }
           }
-
-          newValueMap[valueName] = astBuilder.buildEnumValue(value);
-        });
-      });
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
     }
 
     return newValueMap;
@@ -414,14 +527,54 @@ function extendSchema(schema, documentAST, options) {
     var extensions = typeExtensionsMap[type.name];
 
     if (extensions) {
-      extensions.forEach(function (extension) {
-        extension.types.forEach(function (namedType) {
-          // Note: While this could make early assertions to get the correctly
-          // typed values, that would throw immediately while type system
-          // validation with validateSchema() will produce more actionable results.
-          unionTypes.push(astBuilder.buildType(namedType));
-        });
-      });
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = extensions[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var extension = _step5.value;
+          var _iteratorNormalCompletion6 = true;
+          var _didIteratorError6 = false;
+          var _iteratorError6 = undefined;
+
+          try {
+            for (var _iterator6 = extension.types[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+              var namedType = _step6.value;
+              // Note: While this could make early assertions to get the correctly
+              // typed values, that would throw immediately while type system
+              // validation with validateSchema() will produce more actionable results.
+              unionTypes.push(astBuilder.buildType(namedType));
+            }
+          } catch (err) {
+            _didIteratorError6 = true;
+            _iteratorError6 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion6 && _iterator6.return != null) {
+                _iterator6.return();
+              }
+            } finally {
+              if (_didIteratorError6) {
+                throw _iteratorError6;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
+            _iterator5.return();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
     }
 
     return new _definition.GraphQLUnionType({
@@ -440,14 +593,54 @@ function extendSchema(schema, documentAST, options) {
     var extensions = typeExtensionsMap[type.name];
 
     if (extensions) {
-      extensions.forEach(function (extension) {
-        extension.interfaces.forEach(function (namedType) {
-          // Note: While this could make early assertions to get the correctly
-          // typed values, that would throw immediately while type system
-          // validation with validateSchema() will produce more actionable results.
-          interfaces.push(astBuilder.buildType(namedType));
-        });
-      });
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
+
+      try {
+        for (var _iterator7 = extensions[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          var extension = _step7.value;
+          var _iteratorNormalCompletion8 = true;
+          var _didIteratorError8 = false;
+          var _iteratorError8 = undefined;
+
+          try {
+            for (var _iterator8 = extension.interfaces[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+              var namedType = _step8.value;
+              // Note: While this could make early assertions to get the correctly
+              // typed values, that would throw immediately while type system
+              // validation with validateSchema() will produce more actionable results.
+              interfaces.push(astBuilder.buildType(namedType));
+            }
+          } catch (err) {
+            _didIteratorError8 = true;
+            _iteratorError8 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion8 && _iterator8.return != null) {
+                _iterator8.return();
+              }
+            } finally {
+              if (_didIteratorError8) {
+                throw _iteratorError8;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion7 && _iterator7.return != null) {
+            _iterator7.return();
+          }
+        } finally {
+          if (_didIteratorError7) {
+            throw _iteratorError7;
+          }
+        }
+      }
     }
 
     return interfaces;
@@ -456,32 +649,77 @@ function extendSchema(schema, documentAST, options) {
   function extendFieldMap(type) {
     var newFieldMap = Object.create(null);
     var oldFieldMap = type.getFields();
-    Object.keys(oldFieldMap).forEach(function (fieldName) {
-      var field = oldFieldMap[fieldName];
-      newFieldMap[fieldName] = {
-        description: field.description,
-        deprecationReason: field.deprecationReason,
-        type: extendType(field.type),
-        args: extendArgs(field.args),
-        astNode: field.astNode,
-        resolve: field.resolve
+
+    var _arr3 = Object.keys(oldFieldMap);
+
+    for (var _i4 = 0; _i4 < _arr3.length; _i4++) {
+      var _fieldName2 = _arr3[_i4];
+      var _field2 = oldFieldMap[_fieldName2];
+      newFieldMap[_fieldName2] = {
+        description: _field2.description,
+        deprecationReason: _field2.deprecationReason,
+        type: extendType(_field2.type),
+        args: extendArgs(_field2.args),
+        astNode: _field2.astNode,
+        resolve: _field2.resolve
       };
-    }); // If there are any extensions to the fields, apply those here.
+    } // If there are any extensions to the fields, apply those here.
+
 
     var extensions = typeExtensionsMap[type.name];
 
     if (extensions) {
-      extensions.forEach(function (extension) {
-        extension.fields.forEach(function (field) {
-          var fieldName = field.name.value;
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
 
-          if (oldFieldMap[fieldName]) {
-            throw new _GraphQLError.GraphQLError("Field \"".concat(type.name, ".").concat(fieldName, "\" already exists in the ") + 'schema. It cannot also be defined in this type extension.', [field]);
+      try {
+        for (var _iterator9 = extensions[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var extension = _step9.value;
+          var _iteratorNormalCompletion10 = true;
+          var _didIteratorError10 = false;
+          var _iteratorError10 = undefined;
+
+          try {
+            for (var _iterator10 = extension.fields[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+              var field = _step10.value;
+              var fieldName = field.name.value;
+
+              if (oldFieldMap[fieldName]) {
+                throw new _GraphQLError.GraphQLError("Field \"".concat(type.name, ".").concat(fieldName, "\" already exists in the ") + 'schema. It cannot also be defined in this type extension.', [field]);
+              }
+
+              newFieldMap[fieldName] = astBuilder.buildField(field);
+            }
+          } catch (err) {
+            _didIteratorError10 = true;
+            _iteratorError10 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion10 && _iterator10.return != null) {
+                _iterator10.return();
+              }
+            } finally {
+              if (_didIteratorError10) {
+                throw _iteratorError10;
+              }
+            }
           }
-
-          newFieldMap[fieldName] = astBuilder.buildField(field);
-        });
-      });
+        }
+      } catch (err) {
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
+            _iterator9.return();
+          }
+        } finally {
+          if (_didIteratorError9) {
+            throw _iteratorError9;
+          }
+        }
+      }
     }
 
     return newFieldMap;

@@ -31,7 +31,7 @@ export function getVariableValues(schema, varDefNodes, inputs) {
   var errors = [];
   var coercedValues = {};
 
-  var _loop = function _loop(i) {
+  for (var i = 0; i < varDefNodes.length; i++) {
     var varDefNode = varDefNodes[i];
     var varName = varDefNode.variable.name.value;
     var varType = typeFromAST(schema, varDefNode.type);
@@ -64,9 +64,30 @@ export function getVariableValues(schema, varDefNodes, inputs) {
           var coercionErrors = coerced.errors;
 
           if (coercionErrors) {
-            coercionErrors.forEach(function (error) {
-              error.message = "Variable \"$".concat(varName, "\" got invalid ") + "value ".concat(inspect(value), "; ").concat(error.message);
-            });
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+              for (var _iterator = coercionErrors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var error = _step.value;
+                error.message = "Variable \"$".concat(varName, "\" got invalid ") + "value ".concat(inspect(value), "; ").concat(error.message);
+              }
+            } catch (err) {
+              _didIteratorError = true;
+              _iteratorError = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion && _iterator.return != null) {
+                  _iterator.return();
+                }
+              } finally {
+                if (_didIteratorError) {
+                  throw _iteratorError;
+                }
+              }
+            }
+
             errors.push.apply(errors, coercionErrors);
           } else {
             coercedValues[varName] = coerced.value;
@@ -74,10 +95,6 @@ export function getVariableValues(schema, varDefNodes, inputs) {
         }
       }
     }
-  };
-
-  for (var i = 0; i < varDefNodes.length; i++) {
-    _loop(i);
   }
 
   return errors.length === 0 ? {

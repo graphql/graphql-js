@@ -85,7 +85,11 @@ function ValuesOfCorrectType(context) {
       var fieldNodeMap = (0, _keyMap.default)(node.fields, function (field) {
         return field.name.value;
       });
-      Object.keys(inputFields).forEach(function (fieldName) {
+
+      var _arr = Object.keys(inputFields);
+
+      for (var _i = 0; _i < _arr.length; _i++) {
+        var fieldName = _arr[_i];
         var fieldDef = inputFields[fieldName];
         var fieldType = fieldDef.type;
         var fieldNode = fieldNodeMap[fieldName];
@@ -93,7 +97,7 @@ function ValuesOfCorrectType(context) {
         if (!fieldNode && (0, _definition.isNonNullType)(fieldType) && fieldDef.defaultValue === undefined) {
           context.reportError(new _error.GraphQLError(requiredFieldMessage(type.name, fieldName, (0, _inspect.default)(fieldType)), node));
         }
-      });
+      }
     },
     ObjectField: function ObjectField(node) {
       var parentType = (0, _definition.getNamedType)(context.getParentInputType());

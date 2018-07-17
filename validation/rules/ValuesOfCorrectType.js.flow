@@ -95,7 +95,7 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
       // Ensure every required field exists.
       const inputFields = type.getFields();
       const fieldNodeMap = keyMap(node.fields, field => field.name.value);
-      Object.keys(inputFields).forEach(fieldName => {
+      for (const fieldName of Object.keys(inputFields)) {
         const fieldDef = inputFields[fieldName];
         const fieldType = fieldDef.type;
         const fieldNode = fieldNodeMap[fieldName];
@@ -111,7 +111,7 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
             ),
           );
         }
-      });
+      }
     },
     ObjectField(node) {
       const parentType = getNamedType(context.getParentInputType());

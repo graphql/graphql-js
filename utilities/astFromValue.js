@@ -97,20 +97,41 @@ function astFromValue(value, type) {
 
     var fields = (0, _objectValues.default)(type.getFields());
     var fieldNodes = [];
-    fields.forEach(function (field) {
-      var fieldValue = astFromValue(value[field.name], field.type);
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-      if (fieldValue) {
-        fieldNodes.push({
-          kind: _kinds.Kind.OBJECT_FIELD,
-          name: {
-            kind: _kinds.Kind.NAME,
-            value: field.name
-          },
-          value: fieldValue
-        });
+    try {
+      for (var _iterator = fields[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var field = _step.value;
+        var fieldValue = astFromValue(value[field.name], field.type);
+
+        if (fieldValue) {
+          fieldNodes.push({
+            kind: _kinds.Kind.OBJECT_FIELD,
+            name: {
+              kind: _kinds.Kind.NAME,
+              value: field.name
+            },
+            value: fieldValue
+          });
+        }
       }
-    });
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return != null) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
     return {
       kind: _kinds.Kind.OBJECT,
       fields: fieldNodes

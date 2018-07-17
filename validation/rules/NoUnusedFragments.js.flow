@@ -37,22 +37,22 @@ export function NoUnusedFragments(context: ValidationContext): ASTVisitor {
     Document: {
       leave() {
         const fragmentNameUsed = Object.create(null);
-        operationDefs.forEach(operation => {
-          context
-            .getRecursivelyReferencedFragments(operation)
-            .forEach(fragment => {
-              fragmentNameUsed[fragment.name.value] = true;
-            });
-        });
+        for (const operation of operationDefs) {
+          for (const fragment of context.getRecursivelyReferencedFragments(
+            operation,
+          )) {
+            fragmentNameUsed[fragment.name.value] = true;
+          }
+        }
 
-        fragmentDefs.forEach(fragmentDef => {
+        for (const fragmentDef of fragmentDefs) {
           const fragName = fragmentDef.name.value;
           if (fragmentNameUsed[fragName] !== true) {
             context.reportError(
               new GraphQLError(unusedFragMessage(fragName), [fragmentDef]),
             );
           }
-        });
+        }
       },
     },
   };

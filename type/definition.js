@@ -552,7 +552,11 @@ function defineFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
   !isPlainObj(fieldMap) ? (0, _invariant.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
   var resultFieldMap = Object.create(null);
-  Object.keys(fieldMap).forEach(function (fieldName) {
+
+  var _arr = Object.keys(fieldMap);
+
+  var _loop = function _loop() {
+    var fieldName = _arr[_i];
     var fieldConfig = fieldMap[fieldName];
     !isPlainObj(fieldConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object")) : void 0;
     !!fieldConfig.hasOwnProperty('isDeprecated') ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" ") + 'instead of "isDeprecated".') : void 0;
@@ -582,7 +586,12 @@ function defineFieldMap(config) {
     }
 
     resultFieldMap[fieldName] = field;
-  });
+  };
+
+  for (var _i = 0; _i < _arr.length; _i++) {
+    _loop();
+  }
+
   return resultFieldMap;
 }
 
@@ -945,13 +954,19 @@ function defineInputFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
   !isPlainObj(fieldMap) ? (0, _invariant.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
   var resultFieldMap = Object.create(null);
-  Object.keys(fieldMap).forEach(function (fieldName) {
+
+  var _arr2 = Object.keys(fieldMap);
+
+  for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+    var fieldName = _arr2[_i2];
+
     var field = _objectSpread({}, fieldMap[fieldName], {
       name: fieldName
     });
 
     !!field.hasOwnProperty('resolve') ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field type has a resolve property, but ") + 'Input Types cannot define resolvers.') : void 0;
     resultFieldMap[fieldName] = field;
-  });
+  }
+
   return resultFieldMap;
 }
