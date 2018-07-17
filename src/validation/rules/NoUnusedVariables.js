@@ -28,8 +28,9 @@ export function unusedVariableMessage(
  * definition are used, either directly or within a spread fragment.
  *
  * NOTE: if experimentalFragmentVariables are used, then fragments with
- * variables defined are considered an independent "executable definitions":
- * variables defined under them do not count as "within a fragment spread".
+ * variables defined are considered independent "executable definitions".
+ * So `query Foo` must not define `$a` when `$a` is only used inside
+ * `fragment FragA($a: Type)`
  */
 export function NoUnusedVariables(context: ValidationContext): ASTVisitor {
   let variableDefs = [];
