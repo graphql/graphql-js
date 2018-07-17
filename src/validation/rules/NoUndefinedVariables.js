@@ -26,9 +26,8 @@ export function undefinedVarMessage(varName: string, opName: ?string): string {
  * directly and via fragment spreads, are defined by that definition.
  *
  * NOTE: if experimentalFragmentVariables are used, then fragments with
- * variables defined are considered independent "executable definitions".
- * If a fragment defines at least 1 variable, it must define all recursively
- * used variables, excluding other fragments with variables defined.
+ * variable definitions will validate independently, and a variable is not
+ * "encountered" if it's only used in a child with variable definitions.
  */
 export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
   let variableNameDefined = Object.create(null);

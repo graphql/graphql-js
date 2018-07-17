@@ -6,7 +6,12 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import {
+  expectPassesRule,
+  expectFailsRule,
+  expectPassesRuleWithFragmentVariables,
+  expectFailsRuleWithFragmentVariables,
+} from './harness';
 import {
   NoUnusedVariables,
   unusedVariableMessage,
@@ -240,7 +245,7 @@ describe('Validate: No unused variables', () => {
 
   // Experimental Fragment Variables
   it('uses all variables in fragments with variable definitions', () => {
-    expectPassesRule(
+    expectPassesRuleWithFragmentVariables(
       NoUnusedVariables,
       `
       fragment Foo($a: String, $b: String, $c: String) on Type {
@@ -264,7 +269,7 @@ describe('Validate: No unused variables', () => {
   });
 
   it('variable not used by fragment', () => {
-    expectFailsRule(
+    expectFailsRuleWithFragmentVariables(
       NoUnusedVariables,
       `
       fragment FragA($a: String) on Type {
@@ -276,7 +281,7 @@ describe('Validate: No unused variables', () => {
   });
 
   it('variable used in query defined by fragment', () => {
-    expectFailsRule(
+    expectFailsRuleWithFragmentVariables(
       NoUnusedVariables,
       `
       query Foo($a: String) {
@@ -291,7 +296,7 @@ describe('Validate: No unused variables', () => {
     );
 
     it('variable defined in fragment used by query', () => {
-      expectFailsRule(
+      expectFailsRuleWithFragmentVariables(
         NoUnusedVariables,
         `
         query Foo($a: String) {

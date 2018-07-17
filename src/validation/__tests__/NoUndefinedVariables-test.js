@@ -6,7 +6,12 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import {
+  expectPassesRule,
+  expectFailsRule,
+  expectPassesRuleWithFragmentVariables,
+  expectFailsRuleWithFragmentVariables,
+} from './harness';
 import {
   NoUndefinedVariables,
   undefinedVarMessage,
@@ -332,7 +337,7 @@ describe('Validate: No undefined variables', () => {
 
   // Experimental Fragment Variables
   it('uses all variables in fragments with variable definitions', () => {
-    expectPassesRule(
+    expectPassesRuleWithFragmentVariables(
       NoUndefinedVariables,
       `
       fragment Foo($a: String, $b: String, $c: String) on Type {
@@ -356,7 +361,7 @@ describe('Validate: No undefined variables', () => {
   });
 
   it('variable used in fragment not defined', () => {
-    expectFailsRule(
+    expectFailsRuleWithFragmentVariables(
       NoUndefinedVariables,
       `
       fragment FragA($a: String) on Type {

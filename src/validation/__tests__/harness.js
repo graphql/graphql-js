@@ -421,20 +421,30 @@ export const testSchema = new GraphQLSchema({
   ],
 });
 
-function expectValid(schema, rules, queryString) {
+function expectValid(schema, rules, queryString, options = {}) {
   const errors = validate(
     schema,
-    parse(queryString, { experimentalFragmentVariables: true }),
+    parse(queryString, options),
     rules,
+    null, // default TypeInfo
+    options,
   );
   expect(errors).to.deep.equal([], 'Should validate');
 }
 
-function expectInvalid(schema, rules, queryString, expectedErrors) {
+function expectInvalid(
+  schema,
+  rules,
+  queryString,
+  expectedErrors,
+  options = {},
+) {
   const errors = validate(
     schema,
-    parse(queryString, { experimentalFragmentVariables: true }),
+    parse(queryString, options),
     rules,
+    null, // default TypeInfo
+    options,
   );
   expect(errors).to.have.length.of.at.least(1, 'Should not validate');
   expect(errors).to.deep.equal(expectedErrors);
@@ -455,4 +465,20 @@ export function expectPassesRuleWithSchema(schema, rule, queryString, errors) {
 
 export function expectFailsRuleWithSchema(schema, rule, queryString, errors) {
   return expectInvalid(schema, [rule], queryString, errors);
+}
+
+export function expectPassesRuleWithFragmentVariables(rule, queryString) {
+  return expectValid(testSchema, [rule], queryString, {
+    experimentalFragmentVariables: true,
+  });
+}
+
+export function expectFailsRuleWithFragmentVariables(
+  rule,
+  queryString,
+  errors,
+) {
+  return expectInvalid(testSchema, [rule], queryString, errors, {
+    experimentalFragmentVariables: true,
+  });
 }

@@ -29,7 +29,7 @@ export function unusedVariableMessage(
  * definition are used, either directly or within a spread fragment.
  *
  * NOTE: if experimentalFragmentVariables are used, then fragments with
- * variables defined are considered independent "executable definitions".
+ * variable definitions will validate independently.
  * So `query Foo` must not define `$a` when `$a` is only used inside
  * `fragment FragA($a: Type)`
  */
