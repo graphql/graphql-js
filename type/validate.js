@@ -129,41 +129,19 @@ function validateRootTypes(context) {
 }
 
 function getOperationTypeNode(schema, type, operation) {
+  var operationNodes = getAllSubNodes(schema, function (node) {
+    return node.operationTypes;
+  });
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;
 
   try {
-    for (var _iterator = getAllNodes(schema)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+    for (var _iterator = operationNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
       var node = _step.value;
 
-      if (node.operationTypes) {
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-          for (var _iterator2 = node.operationTypes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var operationType = _step2.value;
-
-            if (operationType.operation === operation) {
-              return operationType.type;
-            }
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
-            }
-          }
-        }
+      if (node.operation === operation) {
+        return node.type;
       }
     }
   } catch (err) {
@@ -185,36 +163,76 @@ function getOperationTypeNode(schema, type, operation) {
 }
 
 function validateDirectives(context) {
-  var directives = context.schema.getDirectives();
-  directives.forEach(function (directive) {
-    // Ensure all directives are in fact GraphQL directives.
-    if (!(0, _directives.isDirective)(directive)) {
-      context.reportError("Expected directive but got: ".concat((0, _inspect.default)(directive), "."), directive && directive.astNode);
-      return;
-    } // Ensure they are named correctly.
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = context.schema.getDirectives()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var directive = _step2.value;
+
+      // Ensure all directives are in fact GraphQL directives.
+      if (!(0, _directives.isDirective)(directive)) {
+        context.reportError("Expected directive but got: ".concat((0, _inspect.default)(directive), "."), directive && directive.astNode);
+        continue;
+      } // Ensure they are named correctly.
 
 
-    validateName(context, directive); // TODO: Ensure proper locations.
-    // Ensure the arguments are valid.
+      validateName(context, directive); // TODO: Ensure proper locations.
+      // Ensure the arguments are valid.
 
-    var argNames = Object.create(null);
-    directive.args.forEach(function (arg) {
-      var argName = arg.name; // Ensure they are named correctly.
+      var argNames = Object.create(null);
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
-      validateName(context, arg); // Ensure they are unique per directive.
+      try {
+        for (var _iterator3 = directive.args[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var arg = _step3.value;
+          var argName = arg.name; // Ensure they are named correctly.
 
-      if (argNames[argName]) {
-        context.reportError("Argument @".concat(directive.name, "(").concat(argName, ":) can only be defined once."), getAllDirectiveArgNodes(directive, argName));
-        return; // continue loop
+          validateName(context, arg); // Ensure they are unique per directive.
+
+          if (argNames[argName]) {
+            context.reportError("Argument @".concat(directive.name, "(").concat(argName, ":) can only be defined once."), getAllDirectiveArgNodes(directive, argName));
+            continue;
+          }
+
+          argNames[argName] = true; // Ensure the type is an input type.
+
+          if (!(0, _definition.isInputType)(arg.type)) {
+            context.reportError("The type of @".concat(directive.name, "(").concat(argName, ":) must be Input Type ") + "but got: ".concat((0, _inspect.default)(arg.type), "."), getDirectiveArgTypeNode(directive, argName));
+          }
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
       }
-
-      argNames[argName] = true; // Ensure the type is an input type.
-
-      if (!(0, _definition.isInputType)(arg.type)) {
-        context.reportError("The type of @".concat(directive.name, "(").concat(argName, ":) must be Input Type ") + "but got: ".concat((0, _inspect.default)(arg.type), "."), getDirectiveArgTypeNode(directive, argName));
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+        _iterator2.return();
       }
-    });
-  });
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
 }
 
 function validateName(context, node) {
@@ -234,37 +252,58 @@ function validateName(context, node) {
 
 function validateTypes(context) {
   var typeMap = context.schema.getTypeMap();
-  (0, _objectValues.default)(typeMap).forEach(function (type) {
-    // Ensure all provided types are in fact GraphQL type.
-    if (!(0, _definition.isNamedType)(type)) {
-      context.reportError("Expected GraphQL named type but got: ".concat((0, _inspect.default)(type), "."), type && type.astNode);
-      return;
-    } // Ensure it is named correctly (excluding introspection types).
+  var _iteratorNormalCompletion4 = true;
+  var _didIteratorError4 = false;
+  var _iteratorError4 = undefined;
+
+  try {
+    for (var _iterator4 = (0, _objectValues.default)(typeMap)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+      var type = _step4.value;
+
+      // Ensure all provided types are in fact GraphQL type.
+      if (!(0, _definition.isNamedType)(type)) {
+        context.reportError("Expected GraphQL named type but got: ".concat((0, _inspect.default)(type), "."), type && type.astNode);
+        continue;
+      } // Ensure it is named correctly (excluding introspection types).
 
 
-    if (!(0, _introspection.isIntrospectionType)(type)) {
-      validateName(context, type);
+      if (!(0, _introspection.isIntrospectionType)(type)) {
+        validateName(context, type);
+      }
+
+      if ((0, _definition.isObjectType)(type)) {
+        // Ensure fields are valid
+        validateFields(context, type); // Ensure objects implement the interfaces they claim to.
+
+        validateObjectInterfaces(context, type);
+      } else if ((0, _definition.isInterfaceType)(type)) {
+        // Ensure fields are valid.
+        validateFields(context, type);
+      } else if ((0, _definition.isUnionType)(type)) {
+        // Ensure Unions include valid member types.
+        validateUnionMembers(context, type);
+      } else if ((0, _definition.isEnumType)(type)) {
+        // Ensure Enums have valid values.
+        validateEnumValues(context, type);
+      } else if ((0, _definition.isInputObjectType)(type)) {
+        // Ensure Input Object fields are valid.
+        validateInputFields(context, type);
+      }
     }
-
-    if ((0, _definition.isObjectType)(type)) {
-      // Ensure fields are valid
-      validateFields(context, type); // Ensure objects implement the interfaces they claim to.
-
-      validateObjectInterfaces(context, type);
-    } else if ((0, _definition.isInterfaceType)(type)) {
-      // Ensure fields are valid.
-      validateFields(context, type);
-    } else if ((0, _definition.isUnionType)(type)) {
-      // Ensure Unions include valid member types.
-      validateUnionMembers(context, type);
-    } else if ((0, _definition.isEnumType)(type)) {
-      // Ensure Enums have valid values.
-      validateEnumValues(context, type);
-    } else if ((0, _definition.isInputObjectType)(type)) {
-      // Ensure Input Object fields are valid.
-      validateInputFields(context, type);
+  } catch (err) {
+    _didIteratorError4 = true;
+    _iteratorError4 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+        _iterator4.return();
+      }
+    } finally {
+      if (_didIteratorError4) {
+        throw _iteratorError4;
+      }
     }
-  });
+  }
 }
 
 function validateFields(context, type) {
@@ -274,72 +313,135 @@ function validateFields(context, type) {
     context.reportError("Type ".concat(type.name, " must define one or more fields."), getAllNodes(type));
   }
 
-  fields.forEach(function (field) {
-    // Ensure they are named correctly.
-    validateName(context, field); // Ensure they were defined at most once.
+  var _iteratorNormalCompletion5 = true;
+  var _didIteratorError5 = false;
+  var _iteratorError5 = undefined;
 
-    var fieldNodes = getAllFieldNodes(type, field.name);
+  try {
+    for (var _iterator5 = fields[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+      var field = _step5.value;
+      // Ensure they are named correctly.
+      validateName(context, field); // Ensure they were defined at most once.
 
-    if (fieldNodes.length > 1) {
-      context.reportError("Field ".concat(type.name, ".").concat(field.name, " can only be defined once."), fieldNodes);
-      return; // continue loop
-    } // Ensure the type is an output type
+      var fieldNodes = getAllFieldNodes(type, field.name);
+
+      if (fieldNodes.length > 1) {
+        context.reportError("Field ".concat(type.name, ".").concat(field.name, " can only be defined once."), fieldNodes);
+        continue;
+      } // Ensure the type is an output type
 
 
-    if (!(0, _definition.isOutputType)(field.type)) {
-      context.reportError("The type of ".concat(type.name, ".").concat(field.name, " must be Output Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), getFieldTypeNode(type, field.name));
-    } // Ensure the arguments are valid
+      if (!(0, _definition.isOutputType)(field.type)) {
+        context.reportError("The type of ".concat(type.name, ".").concat(field.name, " must be Output Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), getFieldTypeNode(type, field.name));
+      } // Ensure the arguments are valid
 
 
-    var argNames = Object.create(null);
-    field.args.forEach(function (arg) {
-      var argName = arg.name; // Ensure they are named correctly.
+      var argNames = Object.create(null);
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
 
-      validateName(context, arg); // Ensure they are unique per field.
+      try {
+        for (var _iterator6 = field.args[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var arg = _step6.value;
+          var argName = arg.name; // Ensure they are named correctly.
 
-      if (argNames[argName]) {
-        context.reportError("Field argument ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) can only ") + 'be defined once.', getAllFieldArgNodes(type, field.name, argName));
+          validateName(context, arg); // Ensure they are unique per field.
+
+          if (argNames[argName]) {
+            context.reportError("Field argument ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) can only ") + 'be defined once.', getAllFieldArgNodes(type, field.name, argName));
+          }
+
+          argNames[argName] = true; // Ensure the type is an input type
+
+          if (!(0, _definition.isInputType)(arg.type)) {
+            context.reportError("The type of ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) must be Input ") + "Type but got: ".concat((0, _inspect.default)(arg.type), "."), getFieldArgTypeNode(type, field.name, argName));
+          }
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6.return != null) {
+            _iterator6.return();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
+          }
+        }
       }
-
-      argNames[argName] = true; // Ensure the type is an input type
-
-      if (!(0, _definition.isInputType)(arg.type)) {
-        context.reportError("The type of ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) must be Input ") + "Type but got: ".concat((0, _inspect.default)(arg.type), "."), getFieldArgTypeNode(type, field.name, argName));
+    }
+  } catch (err) {
+    _didIteratorError5 = true;
+    _iteratorError5 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
+        _iterator5.return();
       }
-    });
-  });
+    } finally {
+      if (_didIteratorError5) {
+        throw _iteratorError5;
+      }
+    }
+  }
 }
 
 function validateObjectInterfaces(context, object) {
   var implementedTypeNames = Object.create(null);
-  object.getInterfaces().forEach(function (iface) {
-    if (!(0, _definition.isInterfaceType)(iface)) {
-      context.reportError("Type ".concat((0, _inspect.default)(object), " must only implement Interface types, ") + "it cannot implement ".concat((0, _inspect.default)(iface), "."), getImplementsInterfaceNode(object, iface));
-      return;
-    }
+  var _iteratorNormalCompletion7 = true;
+  var _didIteratorError7 = false;
+  var _iteratorError7 = undefined;
 
-    if (implementedTypeNames[iface.name]) {
-      context.reportError("Type ".concat(object.name, " can only implement ").concat(iface.name, " once."), getAllImplementsInterfaceNodes(object, iface));
-      return; // continue loop
-    }
+  try {
+    for (var _iterator7 = object.getInterfaces()[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+      var iface = _step7.value;
 
-    implementedTypeNames[iface.name] = true;
-    validateObjectImplementsInterface(context, object, iface);
-  });
+      if (!(0, _definition.isInterfaceType)(iface)) {
+        context.reportError("Type ".concat((0, _inspect.default)(object), " must only implement Interface types, ") + "it cannot implement ".concat((0, _inspect.default)(iface), "."), getImplementsInterfaceNode(object, iface));
+        continue;
+      }
+
+      if (implementedTypeNames[iface.name]) {
+        context.reportError("Type ".concat(object.name, " can only implement ").concat(iface.name, " once."), getAllImplementsInterfaceNodes(object, iface));
+        continue;
+      }
+
+      implementedTypeNames[iface.name] = true;
+      validateObjectImplementsInterface(context, object, iface);
+    }
+  } catch (err) {
+    _didIteratorError7 = true;
+    _iteratorError7 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion7 && _iterator7.return != null) {
+        _iterator7.return();
+      }
+    } finally {
+      if (_didIteratorError7) {
+        throw _iteratorError7;
+      }
+    }
+  }
 }
 
 function validateObjectImplementsInterface(context, object, iface) {
   var objectFieldMap = object.getFields();
   var ifaceFieldMap = iface.getFields(); // Assert each interface field is implemented.
 
-  Object.keys(ifaceFieldMap).forEach(function (fieldName) {
+  var _arr = Object.keys(ifaceFieldMap);
+
+  for (var _i = 0; _i < _arr.length; _i++) {
+    var fieldName = _arr[_i];
     var objectField = objectFieldMap[fieldName];
     var ifaceField = ifaceFieldMap[fieldName]; // Assert interface field exists on object.
 
     if (!objectField) {
-      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expected but ") + "".concat(object.name, " does not provide it."), [getFieldNode(iface, fieldName), object.astNode]); // Continue loop over fields.
-
-      return;
+      context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expected but ") + "".concat(object.name, " does not provide it."), [getFieldNode(iface, fieldName)].concat(getAllNodes(object)));
+      continue;
     } // Assert interface field type is satisfied by object field type, by being
     // a valid subtype. (covariant)
 
@@ -349,104 +451,215 @@ function validateObjectImplementsInterface(context, object, iface) {
     } // Assert each interface field arg is implemented.
 
 
-    ifaceField.args.forEach(function (ifaceArg) {
-      var argName = ifaceArg.name;
-      var objectArg = (0, _find.default)(objectField.args, function (arg) {
-        return arg.name === argName;
-      }); // Assert interface field arg exists on object field.
+    var _iteratorNormalCompletion8 = true;
+    var _didIteratorError8 = false;
+    var _iteratorError8 = undefined;
 
-      if (!objectArg) {
-        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expected but ".concat(object.name, ".").concat(fieldName, " does not provide it."), [getFieldArgNode(iface, fieldName, argName), getFieldNode(object, fieldName)]); // Continue loop over arguments.
+    try {
+      var _loop = function _loop() {
+        var ifaceArg = _step8.value;
+        var argName = ifaceArg.name;
+        var objectArg = (0, _find.default)(objectField.args, function (arg) {
+          return arg.name === argName;
+        }); // Assert interface field arg exists on object field.
 
-        return;
-      } // Assert interface field arg type matches object field arg type.
-      // (invariant)
-      // TODO: change to contravariant?
+        if (!objectArg) {
+          context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expected but ".concat(object.name, ".").concat(fieldName, " does not provide it."), [getFieldArgNode(iface, fieldName, argName), getFieldNode(object, fieldName)]);
+          return "continue";
+        } // Assert interface field arg type matches object field arg type.
+        // (invariant)
+        // TODO: change to contravariant?
 
 
-      if (!(0, _typeComparators.isEqualType)(ifaceArg.type, objectArg.type)) {
-        context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat((0, _inspect.default)(ifaceArg.type), " but ") + "".concat(object.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat((0, _inspect.default)(objectArg.type), "."), [getFieldArgTypeNode(iface, fieldName, argName), getFieldArgTypeNode(object, fieldName, argName)]);
-      } // TODO: validate default values?
+        if (!(0, _typeComparators.isEqualType)(ifaceArg.type, objectArg.type)) {
+          context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expects type ".concat((0, _inspect.default)(ifaceArg.type), " but ") + "".concat(object.name, ".").concat(fieldName, "(").concat(argName, ":) is type ") + "".concat((0, _inspect.default)(objectArg.type), "."), [getFieldArgTypeNode(iface, fieldName, argName), getFieldArgTypeNode(object, fieldName, argName)]);
+        } // TODO: validate default values?
 
-    }); // Assert additional arguments must not be required.
+      };
 
-    objectField.args.forEach(function (objectArg) {
-      var argName = objectArg.name;
-      var ifaceArg = (0, _find.default)(ifaceField.args, function (arg) {
-        return arg.name === argName;
-      });
+      for (var _iterator8 = ifaceField.args[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+        var _ret = _loop();
 
-      if (!ifaceArg && (0, _definition.isNonNullType)(objectArg.type)) {
-        context.reportError("Object field argument ".concat(object.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "is of required type ".concat((0, _inspect.default)(objectArg.type), " but is not also ") + "provided by the Interface field ".concat(iface.name, ".").concat(fieldName, "."), [getFieldArgTypeNode(object, fieldName, argName), getFieldNode(iface, fieldName)]);
+        if (_ret === "continue") continue;
+      } // Assert additional arguments must not be required.
+
+    } catch (err) {
+      _didIteratorError8 = true;
+      _iteratorError8 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion8 && _iterator8.return != null) {
+          _iterator8.return();
+        }
+      } finally {
+        if (_didIteratorError8) {
+          throw _iteratorError8;
+        }
       }
-    });
-  });
+    }
+
+    var _iteratorNormalCompletion9 = true;
+    var _didIteratorError9 = false;
+    var _iteratorError9 = undefined;
+
+    try {
+      var _loop2 = function _loop2() {
+        var objectArg = _step9.value;
+        var argName = objectArg.name;
+        var ifaceArg = (0, _find.default)(ifaceField.args, function (arg) {
+          return arg.name === argName;
+        });
+
+        if (!ifaceArg && (0, _definition.isNonNullType)(objectArg.type)) {
+          context.reportError("Object field argument ".concat(object.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "is of required type ".concat((0, _inspect.default)(objectArg.type), " but is not also ") + "provided by the Interface field ".concat(iface.name, ".").concat(fieldName, "."), [getFieldArgTypeNode(object, fieldName, argName), getFieldNode(iface, fieldName)]);
+        }
+      };
+
+      for (var _iterator9 = objectField.args[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+        _loop2();
+      }
+    } catch (err) {
+      _didIteratorError9 = true;
+      _iteratorError9 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
+          _iterator9.return();
+        }
+      } finally {
+        if (_didIteratorError9) {
+          throw _iteratorError9;
+        }
+      }
+    }
+  }
 }
 
 function validateUnionMembers(context, union) {
   var memberTypes = union.getTypes();
 
   if (memberTypes.length === 0) {
-    context.reportError("Union type ".concat(union.name, " must define one or more member types."), union.astNode);
+    context.reportError("Union type ".concat(union.name, " must define one or more member types."), getAllNodes(union));
   }
 
   var includedTypeNames = Object.create(null);
-  memberTypes.forEach(function (memberType) {
-    if (includedTypeNames[memberType.name]) {
-      context.reportError("Union type ".concat(union.name, " can only include type ") + "".concat(memberType.name, " once."), getUnionMemberTypeNodes(union, memberType.name));
-      return; // continue loop
-    }
+  var _iteratorNormalCompletion10 = true;
+  var _didIteratorError10 = false;
+  var _iteratorError10 = undefined;
 
-    includedTypeNames[memberType.name] = true;
+  try {
+    for (var _iterator10 = memberTypes[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+      var memberType = _step10.value;
 
-    if (!(0, _definition.isObjectType)(memberType)) {
-      context.reportError("Union type ".concat(union.name, " can only include Object types, ") + "it cannot include ".concat((0, _inspect.default)(memberType), "."), getUnionMemberTypeNodes(union, String(memberType)));
+      if (includedTypeNames[memberType.name]) {
+        context.reportError("Union type ".concat(union.name, " can only include type ") + "".concat(memberType.name, " once."), getUnionMemberTypeNodes(union, memberType.name));
+        continue;
+      }
+
+      includedTypeNames[memberType.name] = true;
+
+      if (!(0, _definition.isObjectType)(memberType)) {
+        context.reportError("Union type ".concat(union.name, " can only include Object types, ") + "it cannot include ".concat((0, _inspect.default)(memberType), "."), getUnionMemberTypeNodes(union, String(memberType)));
+      }
     }
-  });
+  } catch (err) {
+    _didIteratorError10 = true;
+    _iteratorError10 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion10 && _iterator10.return != null) {
+        _iterator10.return();
+      }
+    } finally {
+      if (_didIteratorError10) {
+        throw _iteratorError10;
+      }
+    }
+  }
 }
 
 function validateEnumValues(context, enumType) {
   var enumValues = enumType.getValues();
 
   if (enumValues.length === 0) {
-    context.reportError("Enum type ".concat(enumType.name, " must define one or more values."), enumType.astNode);
+    context.reportError("Enum type ".concat(enumType.name, " must define one or more values."), getAllNodes(enumType));
   }
 
-  enumValues.forEach(function (enumValue) {
-    var valueName = enumValue.name; // Ensure no duplicates.
+  var _iteratorNormalCompletion11 = true;
+  var _didIteratorError11 = false;
+  var _iteratorError11 = undefined;
 
-    var allNodes = getEnumValueNodes(enumType, valueName);
+  try {
+    for (var _iterator11 = enumValues[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+      var enumValue = _step11.value;
+      var valueName = enumValue.name; // Ensure no duplicates.
 
-    if (allNodes && allNodes.length > 1) {
-      context.reportError("Enum type ".concat(enumType.name, " can include value ").concat(valueName, " only once."), allNodes);
-    } // Ensure valid name.
+      var allNodes = getEnumValueNodes(enumType, valueName);
+
+      if (allNodes && allNodes.length > 1) {
+        context.reportError("Enum type ".concat(enumType.name, " can include value ").concat(valueName, " only once."), allNodes);
+      } // Ensure valid name.
 
 
-    validateName(context, enumValue);
+      validateName(context, enumValue);
 
-    if (valueName === 'true' || valueName === 'false' || valueName === 'null') {
-      context.reportError("Enum type ".concat(enumType.name, " cannot include value: ").concat(valueName, "."), enumValue.astNode);
+      if (valueName === 'true' || valueName === 'false' || valueName === 'null') {
+        context.reportError("Enum type ".concat(enumType.name, " cannot include value: ").concat(valueName, "."), enumValue.astNode);
+      }
     }
-  });
+  } catch (err) {
+    _didIteratorError11 = true;
+    _iteratorError11 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion11 && _iterator11.return != null) {
+        _iterator11.return();
+      }
+    } finally {
+      if (_didIteratorError11) {
+        throw _iteratorError11;
+      }
+    }
+  }
 }
 
 function validateInputFields(context, inputObj) {
   var fields = (0, _objectValues.default)(inputObj.getFields());
 
   if (fields.length === 0) {
-    context.reportError("Input Object type ".concat(inputObj.name, " must define one or more fields."), inputObj.astNode);
+    context.reportError("Input Object type ".concat(inputObj.name, " must define one or more fields."), getAllNodes(inputObj));
   } // Ensure the arguments are valid
 
 
-  fields.forEach(function (field) {
-    // Ensure they are named correctly.
-    validateName(context, field); // TODO: Ensure they are unique per field.
-    // Ensure the type is an input type
+  var _iteratorNormalCompletion12 = true;
+  var _didIteratorError12 = false;
+  var _iteratorError12 = undefined;
 
-    if (!(0, _definition.isInputType)(field.type)) {
-      context.reportError("The type of ".concat(inputObj.name, ".").concat(field.name, " must be Input Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), field.astNode && field.astNode.type);
+  try {
+    for (var _iterator12 = fields[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+      var field = _step12.value;
+      // Ensure they are named correctly.
+      validateName(context, field); // TODO: Ensure they are unique per field.
+      // Ensure the type is an input type
+
+      if (!(0, _definition.isInputType)(field.type)) {
+        context.reportError("The type of ".concat(inputObj.name, ".").concat(field.name, " must be Input Type ") + "but got: ".concat((0, _inspect.default)(field.type), "."), field.astNode && field.astNode.type);
+      }
     }
-  });
+  } catch (err) {
+    _didIteratorError12 = true;
+    _iteratorError12 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion12 && _iterator12.return != null) {
+        _iterator12.return();
+      }
+    } finally {
+      if (_didIteratorError12) {
+        throw _iteratorError12;
+      }
+    }
+  }
 }
 
 function getAllNodes(object) {
@@ -455,27 +668,52 @@ function getAllNodes(object) {
   return astNode ? extensionASTNodes ? [astNode].concat(extensionASTNodes) : [astNode] : extensionASTNodes || [];
 }
 
+function getAllSubNodes(object, getter) {
+  var result = [];
+  var _iteratorNormalCompletion13 = true;
+  var _didIteratorError13 = false;
+  var _iteratorError13 = undefined;
+
+  try {
+    for (var _iterator13 = getAllNodes(object)[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+      var astNode = _step13.value;
+
+      if (astNode) {
+        var subNodes = getter(astNode);
+
+        if (subNodes) {
+          result = result.concat(subNodes);
+        }
+      }
+    }
+  } catch (err) {
+    _didIteratorError13 = true;
+    _iteratorError13 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion13 && _iterator13.return != null) {
+        _iterator13.return();
+      }
+    } finally {
+      if (_didIteratorError13) {
+        throw _iteratorError13;
+      }
+    }
+  }
+
+  return result;
+}
+
 function getImplementsInterfaceNode(type, iface) {
   return getAllImplementsInterfaceNodes(type, iface)[0];
 }
 
 function getAllImplementsInterfaceNodes(type, iface) {
-  var implementsNodes = [];
-  var astNodes = getAllNodes(type);
-
-  for (var i = 0; i < astNodes.length; i++) {
-    var astNode = astNodes[i];
-
-    if (astNode && astNode.interfaces) {
-      astNode.interfaces.forEach(function (node) {
-        if (node.name.value === iface.name) {
-          implementsNodes.push(node);
-        }
-      });
-    }
-  }
-
-  return implementsNodes;
+  return getAllSubNodes(type, function (typeNode) {
+    return typeNode.interfaces;
+  }).filter(function (ifaceNode) {
+    return ifaceNode.name.value === iface.name;
+  });
 }
 
 function getFieldNode(type, fieldName) {
@@ -483,22 +721,11 @@ function getFieldNode(type, fieldName) {
 }
 
 function getAllFieldNodes(type, fieldName) {
-  var fieldNodes = [];
-  var astNodes = getAllNodes(type);
-
-  for (var i = 0; i < astNodes.length; i++) {
-    var astNode = astNodes[i];
-
-    if (astNode && astNode.fields) {
-      astNode.fields.forEach(function (node) {
-        if (node.name.value === fieldName) {
-          fieldNodes.push(node);
-        }
-      });
-    }
-  }
-
-  return fieldNodes;
+  return getAllSubNodes(type, function (typeNode) {
+    return typeNode.fields;
+  }).filter(function (fieldNode) {
+    return fieldNode.name.value === fieldName;
+  });
 }
 
 function getFieldTypeNode(type, fieldName) {
@@ -515,11 +742,32 @@ function getAllFieldArgNodes(type, fieldName, argName) {
   var fieldNode = getFieldNode(type, fieldName);
 
   if (fieldNode && fieldNode.arguments) {
-    fieldNode.arguments.forEach(function (node) {
-      if (node.name.value === argName) {
-        argNodes.push(node);
+    var _iteratorNormalCompletion14 = true;
+    var _didIteratorError14 = false;
+    var _iteratorError14 = undefined;
+
+    try {
+      for (var _iterator14 = fieldNode.arguments[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+        var node = _step14.value;
+
+        if (node.name.value === argName) {
+          argNodes.push(node);
+        }
       }
-    });
+    } catch (err) {
+      _didIteratorError14 = true;
+      _iteratorError14 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion14 && _iterator14.return != null) {
+          _iterator14.return();
+        }
+      } finally {
+        if (_didIteratorError14) {
+          throw _iteratorError14;
+        }
+      }
+    }
   }
 
   return argNodes;
@@ -531,18 +779,11 @@ function getFieldArgTypeNode(type, fieldName, argName) {
 }
 
 function getAllDirectiveArgNodes(directive, argName) {
-  var argNodes = [];
-  var directiveNode = directive.astNode;
-
-  if (directiveNode && directiveNode.arguments) {
-    directiveNode.arguments.forEach(function (node) {
-      if (node.name.value === argName) {
-        argNodes.push(node);
-      }
-    });
-  }
-
-  return argNodes;
+  return getAllSubNodes(directive, function (directiveNode) {
+    return directiveNode.arguments;
+  }).filter(function (argNode) {
+    return argNode.name.value === argName;
+  });
 }
 
 function getDirectiveArgTypeNode(directive, argName) {
@@ -551,13 +792,17 @@ function getDirectiveArgTypeNode(directive, argName) {
 }
 
 function getUnionMemberTypeNodes(union, typeName) {
-  return union.astNode && union.astNode.types && union.astNode.types.filter(function (type) {
-    return type.name.value === typeName;
+  return getAllSubNodes(union, function (unionNode) {
+    return unionNode.types;
+  }).filter(function (typeNode) {
+    return typeNode.name.value === typeName;
   });
 }
 
 function getEnumValueNodes(enumType, valueName) {
-  return enumType.astNode && enumType.astNode.values && enumType.astNode.values.filter(function (value) {
-    return value.name.value === valueName;
+  return getAllSubNodes(enumType, function (enumNode) {
+    return enumNode.values;
+  }).filter(function (valueNode) {
+    return valueNode.name.value === valueName;
   });
 }
