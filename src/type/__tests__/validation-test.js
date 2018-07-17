@@ -641,7 +641,7 @@ describe('Type System: Union types must be valid', () => {
       SomeEnumType,
       SomeInputObjectType,
     ];
-    badUnionMemberTypes.forEach(memberType => {
+    for (const memberType of badUnionMemberTypes) {
       const badSchema = schemaWithFieldType(
         new GraphQLUnionType({ name: 'BadUnion', types: [memberType] }),
       );
@@ -652,7 +652,7 @@ describe('Type System: Union types must be valid', () => {
             `it cannot include ${memberType}.`,
         },
       ]);
-    });
+    }
   });
 });
 
@@ -829,12 +829,12 @@ describe('Type System: Object fields must have output types', () => {
     });
   }
 
-  outputTypes.forEach(type => {
+  for (const type of outputTypes) {
     it(`accepts an output type as an Object field type: ${type}`, () => {
       const schema = schemaWithObjectFieldOfType(type);
       expect(validateSchema(schema)).to.deep.equal([]);
     });
-  });
+  }
 
   it('rejects an empty Object field type', () => {
     const schema = schemaWithObjectFieldOfType(undefined);
@@ -846,7 +846,7 @@ describe('Type System: Object fields must have output types', () => {
     ]);
   });
 
-  notOutputTypes.forEach(type => {
+  for (const type of notOutputTypes) {
     it(`rejects a non-output type as an Object field type: ${type}`, () => {
       const schema = schemaWithObjectFieldOfType(type);
       expect(validateSchema(schema)).to.deep.equal([
@@ -855,7 +855,7 @@ describe('Type System: Object fields must have output types', () => {
         },
       ]);
     });
-  });
+  }
 
   it('rejects a non-type value as an Object field type', () => {
     const schema = schemaWithObjectFieldOfType(Number);
@@ -1123,12 +1123,12 @@ describe('Type System: Interface fields must have output types', () => {
     });
   }
 
-  outputTypes.forEach(type => {
+  for (const type of outputTypes) {
     it(`accepts an output type as an Interface field type: ${type}`, () => {
       const schema = schemaWithInterfaceFieldOfType(type);
       expect(validateSchema(schema)).to.deep.equal([]);
     });
-  });
+  }
 
   it('rejects an empty Interface field type', () => {
     const schema = schemaWithInterfaceFieldOfType(undefined);
@@ -1144,7 +1144,7 @@ describe('Type System: Interface fields must have output types', () => {
     ]);
   });
 
-  notOutputTypes.forEach(type => {
+  for (const type of notOutputTypes) {
     it(`rejects a non-output type as an Interface field type: ${type}`, () => {
       const schema = schemaWithInterfaceFieldOfType(type);
       expect(validateSchema(schema)).to.deep.equal([
@@ -1156,7 +1156,7 @@ describe('Type System: Interface fields must have output types', () => {
         },
       ]);
     });
-  });
+  }
 
   it('rejects a non-type value as an Interface field type', () => {
     const schema = schemaWithInterfaceFieldOfType(Number);
@@ -1243,12 +1243,12 @@ describe('Type System: Field arguments must have input types', () => {
     });
   }
 
-  inputTypes.forEach(type => {
+  for (const type of inputTypes) {
     it(`accepts an input type as a field arg type: ${type}`, () => {
       const schema = schemaWithArgOfType(type);
       expect(validateSchema(schema)).to.deep.equal([]);
     });
-  });
+  }
 
   it('rejects an empty field arg type', () => {
     const schema = schemaWithArgOfType(undefined);
@@ -1260,7 +1260,7 @@ describe('Type System: Field arguments must have input types', () => {
     ]);
   });
 
-  notInputTypes.forEach(type => {
+  for (const type of notInputTypes) {
     it(`rejects a non-input type as a field arg type: ${type}`, () => {
       const schema = schemaWithArgOfType(type);
       expect(validateSchema(schema)).to.deep.equal([
@@ -1269,7 +1269,7 @@ describe('Type System: Field arguments must have input types', () => {
         },
       ]);
     });
-  });
+  }
 
   it('rejects a non-type value as a field arg type', () => {
     const schema = schemaWithArgOfType(Number);
@@ -1327,12 +1327,12 @@ describe('Type System: Input Object fields must have input types', () => {
     });
   }
 
-  inputTypes.forEach(type => {
+  for (const type of inputTypes) {
     it(`accepts an input type as an input field type: ${type}`, () => {
       const schema = schemaWithInputFieldOfType(type);
       expect(validateSchema(schema)).to.deep.equal([]);
     });
-  });
+  }
 
   it('rejects an empty input field type', () => {
     const schema = schemaWithInputFieldOfType(undefined);
@@ -1344,7 +1344,7 @@ describe('Type System: Input Object fields must have input types', () => {
     ]);
   });
 
-  notInputTypes.forEach(type => {
+  for (const type of notInputTypes) {
     it(`rejects a non-input type as an input field type: ${type}`, () => {
       const schema = schemaWithInputFieldOfType(type);
       expect(validateSchema(schema)).to.deep.equal([
@@ -1353,7 +1353,7 @@ describe('Type System: Input Object fields must have input types', () => {
         },
       ]);
     });
-  });
+  }
 
   it('rejects a non-type value as an input field type', () => {
     const schema = schemaWithInputFieldOfType(Number);

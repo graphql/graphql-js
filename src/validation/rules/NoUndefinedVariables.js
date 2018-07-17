@@ -34,7 +34,7 @@ export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        usages.forEach(({ node }) => {
+        for (const { node } of usages) {
           const varName = node.name.value;
           if (variableNameDefined[varName] !== true) {
             context.reportError(
@@ -47,7 +47,7 @@ export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
               ),
             );
           }
-        });
+        }
       },
     },
     VariableDefinition(node) {

@@ -50,7 +50,7 @@ export function separateOperations(
   // For each operation, produce a new synthesized AST which includes only what
   // is necessary for completing that operation.
   const separatedDocumentASTs = Object.create(null);
-  operations.forEach(operation => {
+  for (const operation of operations) {
     const operationName = opName(operation);
     const dependencies = Object.create(null);
     collectTransitiveDependencies(dependencies, depGraph, operationName);
@@ -58,9 +58,9 @@ export function separateOperations(
     // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
     const definitions = [operation];
-    Object.keys(dependencies).forEach(name => {
+    for (const name of Object.keys(dependencies)) {
       definitions.push(fragments[name]);
-    });
+    }
     definitions.sort(
       (n1, n2) => (positions.get(n1) || 0) - (positions.get(n2) || 0),
     );
@@ -69,7 +69,7 @@ export function separateOperations(
       kind: 'Document',
       definitions,
     };
-  });
+  }
 
   return separatedDocumentASTs;
 }
@@ -90,11 +90,11 @@ function collectTransitiveDependencies(
 ): void {
   const immediateDeps = depGraph[fromName];
   if (immediateDeps) {
-    Object.keys(immediateDeps).forEach(toName => {
+    for (const toName of Object.keys(immediateDeps)) {
       if (!collected[toName]) {
         collected[toName] = true;
         collectTransitiveDependencies(collected, depGraph, toName);
       }
-    });
+    }
   }
 }

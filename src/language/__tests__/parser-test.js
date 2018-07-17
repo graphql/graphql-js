@@ -151,7 +151,7 @@ describe('Parser', () => {
       'true',
       'false',
     ];
-    nonKeywords.forEach(keyword => {
+    for (const keyword of nonKeywords) {
       // You can't define or reference a fragment named `on`.
       const fragmentName = keyword !== 'on' ? keyword : 'a';
       const document = `
@@ -166,7 +166,7 @@ describe('Parser', () => {
       `;
 
       expect(() => parse(document)).to.not.throw();
-    });
+    }
   });
 
   it('parses anonymous mutation operations', () => {

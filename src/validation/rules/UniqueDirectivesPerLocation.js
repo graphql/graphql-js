@@ -38,7 +38,7 @@ export function UniqueDirectivesPerLocation(
       const directives: ?$ReadOnlyArray<DirectiveNode> = (node: any).directives;
       if (directives) {
         const knownDirectives = Object.create(null);
-        directives.forEach(directive => {
+        for (const directive of directives) {
           const directiveName = directive.name.value;
           if (knownDirectives[directiveName]) {
             context.reportError(
@@ -50,7 +50,7 @@ export function UniqueDirectivesPerLocation(
           } else {
             knownDirectives[directiveName] = directive;
           }
-        });
+        }
       }
     },
   };
