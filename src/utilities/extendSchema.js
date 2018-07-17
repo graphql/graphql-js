@@ -216,9 +216,9 @@ export function extendSchema(
   };
 
   // Then, incorporate all schema extensions.
-  schemaExtensions.forEach(schemaExtension => {
+  for (const schemaExtension of schemaExtensions) {
     if (schemaExtension.operationTypes) {
-      schemaExtension.operationTypes.forEach(operationType => {
+      for (const operationType of schemaExtension.operationTypes) {
         const operation = operationType.operation;
         if (operationTypes[operation]) {
           throw new Error(`Must provide only one ${operation} type in schema.`);
@@ -228,9 +228,9 @@ export function extendSchema(
         // typed values, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
         operationTypes[operation] = (astBuilder.buildType(typeRef): any);
-      });
+      }
     }
-  });
+  }
 
   const schemaExtensionASTNodes = schemaExtensions
     ? schema.extensionASTNodes
@@ -345,7 +345,7 @@ export function extendSchema(
   function extendInputFieldMap(type: GraphQLInputObjectType) {
     const newFieldMap = Object.create(null);
     const oldFieldMap = type.getFields();
-    Object.keys(oldFieldMap).forEach(fieldName => {
+    for (const fieldName of Object.keys(oldFieldMap)) {
       const field = oldFieldMap[fieldName];
       newFieldMap[fieldName] = {
         description: field.description,
@@ -353,13 +353,13 @@ export function extendSchema(
         defaultValue: field.defaultValue,
         astNode: field.astNode,
       };
-    });
+    }
 
     // If there are any extensions to the fields, apply those here.
     const extensions = typeExtensionsMap[type.name];
     if (extensions) {
-      extensions.forEach(extension => {
-        extension.fields.forEach(field => {
+      for (const extension of extensions) {
+        for (const field of extension.fields) {
           const fieldName = field.name.value;
           if (oldFieldMap[fieldName]) {
             throw new GraphQLError(
@@ -369,8 +369,8 @@ export function extendSchema(
             );
           }
           newFieldMap[fieldName] = astBuilder.buildInputField(field);
-        });
-      });
+        }
+      }
     }
 
     return newFieldMap;
@@ -395,7 +395,7 @@ export function extendSchema(
   function extendValueMap(type: GraphQLEnumType) {
     const newValueMap = Object.create(null);
     const oldValueMap = keyMap(type.getValues(), value => value.name);
-    Object.keys(oldValueMap).forEach(valueName => {
+    for (const valueName of Object.keys(oldValueMap)) {
       const value = oldValueMap[valueName];
       newValueMap[valueName] = {
         name: value.name,
@@ -404,13 +404,13 @@ export function extendSchema(
         deprecationReason: value.deprecationReason,
         astNode: value.astNode,
       };
-    });
+    }
 
     // If there are any extensions to the values, apply those here.
     const extensions = typeExtensionsMap[type.name];
     if (extensions) {
-      extensions.forEach(extension => {
-        extension.values.forEach(value => {
+      for (const extension of extensions) {
+        for (const value of extension.values) {
           const valueName = value.name.value;
           if (oldValueMap[valueName]) {
             throw new GraphQLError(
@@ -420,8 +420,8 @@ export function extendSchema(
             );
           }
           newValueMap[valueName] = astBuilder.buildEnumValue(value);
-        });
-      });
+        }
+      }
     }
 
     return newValueMap;
@@ -509,14 +509,14 @@ export function extendSchema(
     // If there are any extensions to the union, apply those here.
     const extensions = typeExtensionsMap[type.name];
     if (extensions) {
-      extensions.forEach(extension => {
-        extension.types.forEach(namedType => {
+      for (const extension of extensions) {
+        for (const namedType of extension.types) {
           // Note: While this could make early assertions to get the correctly
           // typed values, that would throw immediately while type system
           // validation with validateSchema() will produce more actionable results.
           unionTypes.push((astBuilder.buildType(namedType): any));
-        });
-      });
+        }
+      }
     }
 
     return new GraphQLUnionType({
@@ -537,14 +537,14 @@ export function extendSchema(
     // If there are any extensions to the interfaces, apply those here.
     const extensions = typeExtensionsMap[type.name];
     if (extensions) {
-      extensions.forEach(extension => {
-        extension.interfaces.forEach(namedType => {
+      for (const extension of extensions) {
+        for (const namedType of extension.interfaces) {
           // Note: While this could make early assertions to get the correctly
           // typed values, that would throw immediately while type system
           // validation with validateSchema() will produce more actionable results.
           interfaces.push((astBuilder.buildType(namedType): any));
-        });
-      });
+        }
+      }
     }
 
     return interfaces;
@@ -553,7 +553,7 @@ export function extendSchema(
   function extendFieldMap(type: GraphQLObjectType | GraphQLInterfaceType) {
     const newFieldMap = Object.create(null);
     const oldFieldMap = type.getFields();
-    Object.keys(oldFieldMap).forEach(fieldName => {
+    for (const fieldName of Object.keys(oldFieldMap)) {
       const field = oldFieldMap[fieldName];
       newFieldMap[fieldName] = {
         description: field.description,
@@ -563,13 +563,13 @@ export function extendSchema(
         astNode: field.astNode,
         resolve: field.resolve,
       };
-    });
+    }
 
     // If there are any extensions to the fields, apply those here.
     const extensions = typeExtensionsMap[type.name];
     if (extensions) {
-      extensions.forEach(extension => {
-        extension.fields.forEach(field => {
+      for (const extension of extensions) {
+        for (const field of extension.fields) {
           const fieldName = field.name.value;
           if (oldFieldMap[fieldName]) {
             throw new GraphQLError(
@@ -579,8 +579,8 @@ export function extendSchema(
             );
           }
           newFieldMap[fieldName] = astBuilder.buildField(field);
-        });
-      });
+        }
+      }
     }
 
     return newFieldMap;

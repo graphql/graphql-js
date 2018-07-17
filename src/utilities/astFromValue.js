@@ -86,7 +86,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     }
     const fields = objectValues(type.getFields());
     const fieldNodes = [];
-    fields.forEach(field => {
+    for (const field of fields) {
       const fieldValue = astFromValue(value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({
@@ -95,7 +95,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
           value: fieldValue,
         });
       }
-    });
+    }
     return { kind: Kind.OBJECT, fields: fieldNodes };
   }
 

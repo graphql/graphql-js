@@ -46,7 +46,7 @@ export function VariablesInAllowedPosition(
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        usages.forEach(({ node, type, defaultValue }) => {
+        for (const { node, type, defaultValue } of usages) {
           const varName = node.name.value;
           const varDef = varDefMap[varName];
           if (varDef && type) {
@@ -75,7 +75,7 @@ export function VariablesInAllowedPosition(
               );
             }
           }
-        });
+        }
       },
     },
     VariableDefinition(node) {
