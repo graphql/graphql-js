@@ -6,7 +6,12 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import {
+  expectPassesRule,
+  expectFailsRule,
+  expectPassesRuleWithFragmentVariables,
+  expectFailsRuleWithFragmentVariables,
+} from './harness';
 import {
   NoUnusedVariables,
   unusedVariableMessage,
@@ -236,5 +241,73 @@ describe('Validate: No unused variables', () => {
     `,
       [unusedVar('b', 'Foo', 2, 17), unusedVar('a', 'Bar', 5, 17)],
     );
+  });
+
+  // Experimental Fragment Variables
+  it('uses all variables in fragments with variable definitions', () => {
+    expectPassesRuleWithFragmentVariables(
+      NoUnusedVariables,
+      `
+      fragment Foo($a: String, $b: String, $c: String) on Type {
+        ...FragA
+      }
+      fragment FragA on Type {
+        field(a: $a) {
+          ...FragB
+        }
+      }
+      fragment FragB on Type {
+        field(b: $b) {
+          ...FragC
+        }
+      }
+      fragment FragC on Type {
+        field(c: $c)
+      }
+    `,
+    );
+  });
+
+  it('variable not used by fragment', () => {
+    expectFailsRuleWithFragmentVariables(
+      NoUnusedVariables,
+      `
+      fragment FragA($a: String) on Type {
+        field
+      }
+    `,
+      [unusedVar('a', 'FragA', 2, 22)],
+    );
+  });
+
+  it('variable used in query defined by fragment', () => {
+    expectFailsRuleWithFragmentVariables(
+      NoUnusedVariables,
+      `
+      query Foo($a: String) {
+        field(a: $a)
+        ...FragA
+      }
+      fragment FragA($a: String) on Type {
+        field
+      }
+    `,
+      [unusedVar('a', 'FragA', 6, 22)],
+    );
+
+    it('variable defined in fragment used by query', () => {
+      expectFailsRuleWithFragmentVariables(
+        NoUnusedVariables,
+        `
+        query Foo($a: String) {
+          ...FragA
+        }
+        fragment FragA($a: String) on Type {
+          field(a: $a)
+        }
+      `,
+        [unusedVar('a', 'Foo', 1, 19)],
+      );
+    });
   });
 });

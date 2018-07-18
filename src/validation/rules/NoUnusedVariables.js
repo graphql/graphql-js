@@ -9,6 +9,8 @@
 
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
+import { Kind } from '../../language';
+import type { ExecutableDefinitionNode } from '../../language';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function unusedVariableMessage(
@@ -23,38 +25,53 @@ export function unusedVariableMessage(
 /**
  * No unused variables
  *
- * A GraphQL operation is only valid if all variables defined by an operation
- * are used, either directly or within a spread fragment.
+ * A GraphQL definition is only valid if all variables defined by that
+ * definition are used, either directly or within a spread fragment.
+ *
+ * NOTE: if experimentalFragmentVariables are used, then fragments with
+ * variable definitions will validate independently.
+ * So `query Foo` must not define `$a` when `$a` is only used inside
+ * `fragment FragA($a: Type)`
  */
 export function NoUnusedVariables(context: ValidationContext): ASTVisitor {
   let variableDefs = [];
 
-  return {
-    OperationDefinition: {
-      enter() {
-        variableDefs = [];
-      },
-      leave(operation) {
-        const variableNameUsed = Object.create(null);
-        const usages = context.getRecursiveVariableUsages(operation);
-        const opName = operation.name ? operation.name.value : null;
-
-        for (const { node } of usages) {
-          variableNameUsed[node.name.value] = true;
-        }
-
-        for (const variableDef of variableDefs) {
-          const variableName = variableDef.variable.name.value;
-          if (variableNameUsed[variableName] !== true) {
-            context.reportError(
-              new GraphQLError(unusedVariableMessage(variableName, opName), [
-                variableDef,
-              ]),
-            );
-          }
-        }
-      },
+  const executableDefinitionVisitor = {
+    enter() {
+      variableDefs = [];
     },
+    leave(definition: ExecutableDefinitionNode) {
+      if (
+        definition.kind === Kind.FRAGMENT_DEFINITION &&
+        variableDefs.length === 0
+      ) {
+        return;
+      }
+
+      const variableNameUsed = Object.create(null);
+      const usages = context.getRecursiveVariableUsages(definition);
+      const opName = definition.name ? definition.name.value : null;
+
+      for (const { node } of usages) {
+        variableNameUsed[node.name.value] = true;
+      }
+
+      for (const variableDef of variableDefs) {
+        const variableName = variableDef.variable.name.value;
+        if (variableNameUsed[variableName] !== true) {
+          context.reportError(
+            new GraphQLError(unusedVariableMessage(variableName, opName), [
+              variableDef,
+            ]),
+          );
+        }
+      }
+    },
+  };
+
+  return {
+    OperationDefinition: executableDefinitionVisitor,
+    FragmentDefinition: executableDefinitionVisitor,
     VariableDefinition(def) {
       variableDefs.push(def);
     },

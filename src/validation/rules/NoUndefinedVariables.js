@@ -10,6 +10,8 @@
 import type ValidationContext from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { ASTVisitor } from '../../language/visitor';
+import { Kind } from '../../language';
+import type { ExecutableDefinitionNode } from '../../language';
 
 export function undefinedVarMessage(varName: string, opName: ?string): string {
   return opName
@@ -20,36 +22,49 @@ export function undefinedVarMessage(varName: string, opName: ?string): string {
 /**
  * No undefined variables
  *
- * A GraphQL operation is only valid if all variables encountered, both directly
- * and via fragment spreads, are defined by that operation.
+ * A GraphQL definition is only valid if all variables encountered, both
+ * directly and via fragment spreads, are defined by that definition.
+ *
+ * NOTE: if experimentalFragmentVariables are used, then fragments with
+ * variable definitions will validate independently, and a variable is not
+ * "encountered" if it's only used in a child with variable definitions.
  */
 export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
   let variableNameDefined = Object.create(null);
 
-  return {
-    OperationDefinition: {
-      enter() {
-        variableNameDefined = Object.create(null);
-      },
-      leave(operation) {
-        const usages = context.getRecursiveVariableUsages(operation);
-
-        for (const { node } of usages) {
-          const varName = node.name.value;
-          if (variableNameDefined[varName] !== true) {
-            context.reportError(
-              new GraphQLError(
-                undefinedVarMessage(
-                  varName,
-                  operation.name && operation.name.value,
-                ),
-                [node, operation],
-              ),
-            );
-          }
-        }
-      },
+  const executableDefinitionVisitor = {
+    enter() {
+      variableNameDefined = Object.create(null);
     },
+    leave(definition: ExecutableDefinitionNode) {
+      if (
+        definition.kind === Kind.FRAGMENT_DEFINITION &&
+        Object.keys(variableNameDefined).length === 0
+      ) {
+        return;
+      }
+      const usages = context.getRecursiveVariableUsages(definition);
+
+      for (const { node } of usages) {
+        const varName = node.name.value;
+        if (variableNameDefined[varName] !== true) {
+          context.reportError(
+            new GraphQLError(
+              undefinedVarMessage(
+                varName,
+                definition.name && definition.name.value,
+              ),
+              [node, definition],
+            ),
+          );
+        }
+      }
+    },
+  };
+
+  return {
+    OperationDefinition: executableDefinitionVisitor,
+    FragmentDefinition: executableDefinitionVisitor,
     VariableDefinition(node) {
       variableNameDefined[node.variable.name.value] = true;
     },

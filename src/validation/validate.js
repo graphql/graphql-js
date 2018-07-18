@@ -17,6 +17,7 @@ import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules } from './specifiedRules';
 import ValidationContext from './ValidationContext';
+import type { ValidationOptions } from './ValidationContext';
 
 /**
  * Implements the "Validation" section of the spec.
@@ -39,6 +40,7 @@ export function validate(
   ast: DocumentNode,
   rules?: $ReadOnlyArray<any>,
   typeInfo?: TypeInfo,
+  options?: ValidationOptions,
 ): $ReadOnlyArray<GraphQLError> {
   invariant(ast, 'Must provide document');
   // If the schema used for validation is invalid, throw an error.
@@ -48,6 +50,7 @@ export function validate(
     typeInfo || new TypeInfo(schema),
     ast,
     rules || specifiedRules,
+    options || {},
   );
 }
 
@@ -62,8 +65,9 @@ function visitUsingRules(
   typeInfo: TypeInfo,
   documentAST: DocumentNode,
   rules: $ReadOnlyArray<(ValidationContext) => ASTVisitor>,
+  options: ValidationOptions,
 ): $ReadOnlyArray<GraphQLError> {
-  const context = new ValidationContext(schema, documentAST, typeInfo);
+  const context = new ValidationContext(schema, documentAST, typeInfo, options);
   const visitors = rules.map(rule => rule(context));
   // Visit the whole document with each instance of all provided rules.
   visit(documentAST, visitWithTypeInfo(typeInfo, visitInParallel(visitors)));

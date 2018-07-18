@@ -13,6 +13,7 @@ import { visit, visitWithTypeInfo } from '../language/visitor';
 import { Kind } from '../language/kinds';
 import type {
   DocumentNode,
+  ExecutableDefinitionNode,
   OperationDefinitionNode,
   VariableNode,
   SelectionSetNode,
@@ -37,6 +38,22 @@ type VariableUsage = {|
   +defaultValue: ?mixed,
 |};
 
+export type ValidationOptions = {
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the validator will treat fragments with variable definitions
+   * as "independent" definitions, in the same way operations are "independent".
+   *
+   * This changes the behavior of "getRecursivelyReferencedFragments":
+   * it will not include fragments that have variable definitions in the result.
+   *
+   * Likewise, "getRecursiveVariableUsages" will not include variables used
+   * only by recursively referenced fragments with variable definitions.
+   */
+  experimentalFragmentVariables?: boolean,
+};
+
 /**
  * An instance of this class is passed as the "this" context to all validators,
  * allowing access to commonly useful contextual information from within a
@@ -50,19 +67,21 @@ export default class ValidationContext {
   _fragments: ObjMap<FragmentDefinitionNode>;
   _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
-    OperationDefinitionNode,
+    ExecutableDefinitionNode,
     $ReadOnlyArray<FragmentDefinitionNode>,
   >;
   _variableUsages: Map<NodeWithSelectionSet, $ReadOnlyArray<VariableUsage>>;
   _recursiveVariableUsages: Map<
-    OperationDefinitionNode,
+    ExecutableDefinitionNode,
     $ReadOnlyArray<VariableUsage>,
   >;
+  _options: ValidationOptions;
 
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
+    options: ValidationOptions = {},
   ): void {
     this._schema = schema;
     this._ast = ast;
@@ -72,6 +91,7 @@ export default class ValidationContext {
     this._recursivelyReferencedFragments = new Map();
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+    this._options = options;
   }
 
   reportError(error: GraphQLError): void {
@@ -129,14 +149,21 @@ export default class ValidationContext {
     return spreads;
   }
 
+  /*
+   * Finds all fragments referenced via the definition, recursively.
+   *
+   * If the experimentalFragmentVariables option is used, this will not visit
+   * fragment definitions that include variable definitions.
+   */
   getRecursivelyReferencedFragments(
-    operation: OperationDefinitionNode,
+    definition: ExecutableDefinitionNode,
   ): $ReadOnlyArray<FragmentDefinitionNode> {
-    let fragments = this._recursivelyReferencedFragments.get(operation);
+    let fragments = this._recursivelyReferencedFragments.get(definition);
+
     if (!fragments) {
       fragments = [];
       const collectedNames = Object.create(null);
-      const nodesToVisit: Array<SelectionSetNode> = [operation.selectionSet];
+      const nodesToVisit: Array<SelectionSetNode> = [definition.selectionSet];
       while (nodesToVisit.length !== 0) {
         const node = nodesToVisit.pop();
         const spreads = this.getFragmentSpreads(node);
@@ -145,14 +172,26 @@ export default class ValidationContext {
           if (collectedNames[fragName] !== true) {
             collectedNames[fragName] = true;
             const fragment = this.getFragment(fragName);
-            if (fragment) {
-              fragments.push(fragment);
-              nodesToVisit.push(fragment.selectionSet);
+
+            if (!fragment) {
+              continue;
             }
+
+            if (
+              this._options.experimentalFragmentVariables &&
+              fragment.variableDefinitions &&
+              fragment.variableDefinitions.length > 0
+            ) {
+              continue;
+            }
+
+            fragments.push(fragment);
+            nodesToVisit.push(fragment.selectionSet);
           }
         }
       }
-      this._recursivelyReferencedFragments.set(operation, fragments);
+
+      this._recursivelyReferencedFragments.set(definition, fragments);
     }
     return fragments;
   }
@@ -181,20 +220,27 @@ export default class ValidationContext {
     return usages;
   }
 
+  /*
+   * Finds all variables used by the definition, recursively.
+   *
+   * NOTE: if experimentalFragmentVariables are being used, it excludes all
+   * fragments with their own variable definitions: these are considered their
+   * own independent executable definition for the purposes of variable usage.
+   */
   getRecursiveVariableUsages(
-    operation: OperationDefinitionNode,
+    definition: ExecutableDefinitionNode,
   ): $ReadOnlyArray<VariableUsage> {
-    let usages = this._recursiveVariableUsages.get(operation);
+    let usages = this._recursiveVariableUsages.get(definition);
     if (!usages) {
-      usages = this.getVariableUsages(operation);
-      const fragments = this.getRecursivelyReferencedFragments(operation);
+      usages = this.getVariableUsages(definition);
+      const fragments = this.getRecursivelyReferencedFragments(definition);
       for (let i = 0; i < fragments.length; i++) {
         Array.prototype.push.apply(
           usages,
           this.getVariableUsages(fragments[i]),
         );
       }
-      this._recursiveVariableUsages.set(operation, usages);
+      this._recursiveVariableUsages.set(definition, usages);
     }
     return usages;
   }
