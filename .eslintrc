@@ -215,8 +215,16 @@
     "vars-on-top": "off",
     "wrap-iife": "off",
     "wrap-regex": "off",
-    "yoda": ["error", "never", {"exceptRange": true}],
+    "yoda": ["error", "never", {"exceptRange": true}]
+  },
 
-    "no-async": 2
-  }
+  "overrides": [
+    {
+      "files": "*",
+      "excludedFiles": "**/__tests__/**",
+      "rules": {
+        "no-async": "error"
+      }
+    }
+  ]
 }
