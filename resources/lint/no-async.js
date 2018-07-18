@@ -6,21 +6,17 @@
  */
 
 module.exports = function(context) {
-  if (context.getFilename().match(/\b__tests__\b/)) {
-    return {};
-  } else {
-    return {
-      FunctionDeclaration: function(node) {
-        if (node.async) {
-          context.report(
-            node,
-            'async functions are not allowed outside of the test suite ' +
-            'because older versions of NodeJS do not support them ' +
-            'without additional runtime dependencies. Instead, use explicit ' +
-            'Promises.'
-          );
-        }
-      },
-    };
-  }
+  return {
+    FunctionDeclaration: function(node) {
+      if (node.async) {
+        context.report(
+          node,
+          'async functions are not allowed outside of the test suite ' +
+          'because older versions of NodeJS do not support them ' +
+          'without additional runtime dependencies. Instead, use explicit ' +
+          'Promises.'
+        );
+      }
+    },
+  };
 };
