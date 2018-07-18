@@ -41,6 +41,7 @@ function graphql(argsOrSchema, source, rootValue, contextValue, variableValues, 
 
 
 function graphqlSync(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver) {
+  /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
   var result = arguments.length === 1 ? graphqlImpl(argsOrSchema.schema, argsOrSchema.source, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver) : graphqlImpl(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver); // Assert that the execution was synchronous.
 
