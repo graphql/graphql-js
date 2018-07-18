@@ -317,13 +317,6 @@ export function extendSchema(
     });
   }
 
-  function getExtendedType<T: GraphQLNamedType>(type: T): T {
-    if (!extendTypeCache[type.name]) {
-      extendTypeCache[type.name] = extendType(type);
-    }
-    return (extendTypeCache[type.name]: any);
-  }
-
   function extendInputObjectType(
     type: GraphQLInputObjectType,
   ): GraphQLInputObjectType {
@@ -504,7 +497,7 @@ export function extendSchema(
         ? type.extensionASTNodes.concat(typeExtensionsMap[name])
         : typeExtensionsMap[name]
       : type.extensionASTNodes;
-    const unionTypes = type.getTypes().map(getExtendedType);
+    const unionTypes = type.getTypes().map(extendNamedType);
 
     // If there are any extensions to the union, apply those here.
     const extensions = typeExtensionsMap[type.name];

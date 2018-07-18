@@ -268,14 +268,6 @@ function extendSchema(schema, documentAST, options) {
     });
   }
 
-  function getExtendedType(type) {
-    if (!extendTypeCache[type.name]) {
-      extendTypeCache[type.name] = extendType(type);
-    }
-
-    return extendTypeCache[type.name];
-  }
-
   function extendInputObjectType(type) {
     var name = type.name;
     var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
@@ -522,7 +514,7 @@ function extendSchema(schema, documentAST, options) {
   function extendUnionType(type) {
     var name = type.name;
     var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
-    var unionTypes = type.getTypes().map(getExtendedType); // If there are any extensions to the union, apply those here.
+    var unionTypes = type.getTypes().map(extendNamedType); // If there are any extensions to the union, apply those here.
 
     var extensions = typeExtensionsMap[type.name];
 
