@@ -428,9 +428,8 @@ describe('Execute: Handles basic execution tasks', () => {
       },
       asyncRawError() {
         return new Promise(() => {
-          /* eslint-disable */
+          // eslint-disable-next-line no-throw-literal
           throw 'Error getting asyncRawError';
-          /* eslint-enable */
         });
       },
       asyncReturnError() {

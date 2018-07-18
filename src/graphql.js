@@ -136,6 +136,7 @@ export function graphqlSync(
   operationName,
   fieldResolver,
 ) {
+  /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
   const result =
     arguments.length === 1
