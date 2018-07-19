@@ -22,11 +22,13 @@ const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
 
 function serializeInt(value: mixed): number {
-  let num = value;
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
+  }
+
+  const num = value;
   if (typeof value === 'string' && value !== '') {
     num = Number(value);
-  } else if (typeof value === 'boolean') {
-    return value ? 1 : 0;
   }
 
   if (!isInteger(num)) {
@@ -75,13 +77,14 @@ export const GraphQLInt = new GraphQLScalarType({
 });
 
 function serializeFloat(value: mixed): number {
-  let num = value;
-  if (typeof value === 'string' && value !== '') {
-    num = Number(value);
-  } else if (typeof value === 'boolean') {
+  if (typeof value === 'boolean') {
     return value ? 1 : 0;
   }
 
+  let num = value;
+  if (typeof value === 'string' && value !== '') {
+    num = Number(value);
+  }
   if (!isFinite(num)) {
     throw new TypeError(
       `Float cannot represent non numeric value: ${inspect(value)}`,
