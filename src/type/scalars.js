@@ -26,7 +26,7 @@ function serializeInt(value: mixed): number {
     return value ? 1 : 0;
   }
 
-  const num = value;
+  let num = value;
   if (typeof value === 'string' && value !== '') {
     num = Number(value);
   }
