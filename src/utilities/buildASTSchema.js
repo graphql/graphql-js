@@ -244,10 +244,6 @@ export class ASTDefinitionBuilder {
     );
   }
 
-  buildTypes(nodes: $ReadOnlyArray<NamedTypeNode>): Array<GraphQLNamedType> {
-    return nodes.map(node => this.buildType(node));
-  }
-
   buildType(node: NamedTypeNode | TypeDefinitionNode): GraphQLNamedType {
     const typeName = node.name.value;
     if (!this._cache[typeName]) {
@@ -345,7 +341,7 @@ export class ASTDefinitionBuilder {
   }
 
   _makeTypeDef(def: ObjectTypeDefinitionNode) {
-    const interfaces = def.interfaces;
+    const interfaces: ?$ReadOnlyArray<NamedTypeNode> = def.interfaces;
     return new GraphQLObjectType({
       name: def.name.value,
       description: getDescription(def, this._options),
@@ -353,7 +349,9 @@ export class ASTDefinitionBuilder {
       // Note: While this could make early assertions to get the correctly
       // typed values, that would throw immediately while type system
       // validation with validateSchema() will produce more actionable results.
-      interfaces: interfaces ? () => (this.buildTypes(interfaces): any) : [],
+      interfaces: interfaces
+        ? () => interfaces.map(ref => (this.buildType(ref): any))
+        : [],
       astNode: def,
     });
   }
@@ -407,13 +405,14 @@ export class ASTDefinitionBuilder {
   }
 
   _makeUnionDef(def: UnionTypeDefinitionNode) {
+    const types: ?$ReadOnlyArray<NamedTypeNode> = def.types;
     return new GraphQLUnionType({
       name: def.name.value,
       description: getDescription(def, this._options),
       // Note: While this could make assertions to get the correctly typed
       // values below, that would throw immediately while type system
       // validation with validateSchema() will produce more actionable results.
-      types: def.types ? (this.buildTypes(def.types): any) : [],
+      types: types ? () => types.map(ref => (this.buildType(ref): any)) : [],
       astNode: def,
     });
   }

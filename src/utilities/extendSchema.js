@@ -243,7 +243,7 @@ export function extendSchema(
     // that any type not directly referenced by a field will get created.
     ...objectValues(schema.getTypeMap()).map(type => extendNamedType(type)),
     // Do the same with new types.
-    ...astBuilder.buildTypes(objectValues(typeDefinitionMap)),
+    ...objectValues(typeDefinitionMap).map(type => astBuilder.buildType(type)),
   ];
 
   // Support both original legacy names and extended legacy names.
