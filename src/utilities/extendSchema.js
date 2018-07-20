@@ -299,9 +299,6 @@ export function extendSchema(
         extendTypeCache[name] = extendEnumType(type);
       } else if (isInputObjectType(type)) {
         extendTypeCache[name] = extendInputObjectType(type);
-      } else {
-        // This type is not yet extendable.
-        extendTypeCache[name] = type;
       }
     }
     return (extendTypeCache[name]: any);
