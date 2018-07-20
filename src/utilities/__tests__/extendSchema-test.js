@@ -280,6 +280,19 @@ describe('extendSchema', () => {
     expect(unionField.type).to.equal(someUnionType);
   });
 
+  it('allows extension of union by adding itself', () => {
+    const extendedSchema = extendTestSchema(`
+      extend union SomeUnion = SomeUnion
+    `);
+
+    const errors = validateSchema(extendedSchema);
+    expect(errors.length).to.be.above(0);
+
+    expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
+      union SomeUnion = Foo | Biz | SomeUnion
+    `);
+  });
+
   it('extends inputs by adding new fields', () => {
     const extendedSchema = extendTestSchema(`
       extend input SomeInput {
