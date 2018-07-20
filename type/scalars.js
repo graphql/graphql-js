@@ -35,13 +35,17 @@ var MAX_INT = 2147483647;
 var MIN_INT = -2147483648;
 
 function serializeInt(value) {
-  if (Array.isArray(value)) {
-    throw new TypeError("Int cannot represent an array value: ".concat((0, _inspect.default)(value)));
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
   }
 
-  var num = Number(value);
+  var num = value;
 
-  if (value === '' || !(0, _isInteger.default)(num)) {
+  if (typeof value === 'string' && value !== '') {
+    num = Number(value);
+  }
+
+  if (!(0, _isInteger.default)(num)) {
     throw new TypeError("Int cannot represent non-integer value: ".concat((0, _inspect.default)(value)));
   }
 
@@ -84,13 +88,17 @@ var GraphQLInt = new _definition.GraphQLScalarType({
 exports.GraphQLInt = GraphQLInt;
 
 function serializeFloat(value) {
-  if (Array.isArray(value)) {
-    throw new TypeError("Float cannot represent an array value: ".concat((0, _inspect.default)(value)));
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
   }
 
-  var num = Number(value);
+  var num = value;
 
-  if (value === '' || !(0, _isFinite.default)(num)) {
+  if (typeof value === 'string' && value !== '') {
+    num = Number(value);
+  }
+
+  if (!(0, _isFinite.default)(num)) {
     throw new TypeError("Float cannot represent non numeric value: ".concat((0, _inspect.default)(value)));
   }
 
@@ -120,14 +128,22 @@ function serializeString(value) {
   // Support serializing objects with custom valueOf() functions - a common way
   // to represent an complex value which can be represented as a string
   // (ex: MongoDB id objects).
-  var result = value && typeof value.valueOf === 'function' ? value.valueOf() : value; // Serialize string, number, and boolean values to a string, but do not
+  var result = value && typeof value.valueOf === 'function' ? value.valueOf() : value; // Serialize string, boolean and number values to a string, but do not
   // attempt to coerce object, function, symbol, or other types as strings.
 
-  if (typeof result !== 'string' && typeof result !== 'number' && typeof result !== 'boolean') {
-    throw new TypeError("String cannot represent value: ".concat((0, _inspect.default)(result)));
+  if (typeof result === 'string') {
+    return result;
   }
 
-  return String(result);
+  if (typeof result === 'boolean') {
+    return result ? 'true' : 'false';
+  }
+
+  if ((0, _isFinite.default)(result)) {
+    return result.toString();
+  }
+
+  throw new TypeError("String cannot represent value: ".concat((0, _inspect.default)(value)));
 }
 
 function coerceString(value) {
@@ -150,11 +166,15 @@ var GraphQLString = new _definition.GraphQLScalarType({
 exports.GraphQLString = GraphQLString;
 
 function serializeBoolean(value) {
-  if (Array.isArray(value)) {
-    throw new TypeError("Boolean cannot represent an array value: ".concat((0, _inspect.default)(value)));
+  if (typeof value === 'boolean') {
+    return value;
   }
 
-  return Boolean(value);
+  if ((0, _isFinite.default)(value)) {
+    return value !== 0;
+  }
+
+  throw new TypeError("Boolean cannot represent a non boolean value: ".concat((0, _inspect.default)(value)));
 }
 
 function coerceBoolean(value) {
@@ -181,19 +201,27 @@ function serializeID(value) {
   // to represent an object identifier (ex. MongoDB).
   var result = value && typeof value.valueOf === 'function' ? value.valueOf() : value;
 
-  if (typeof result !== 'string' && (typeof result !== 'number' || !(0, _isInteger.default)(result))) {
-    throw new TypeError("ID cannot represent value: ".concat((0, _inspect.default)(value)));
+  if (typeof result === 'string') {
+    return result;
   }
 
-  return String(result);
+  if ((0, _isInteger.default)(result)) {
+    return String(result);
+  }
+
+  throw new TypeError("ID cannot represent value: ".concat((0, _inspect.default)(value)));
 }
 
 function coerceID(value) {
-  if (typeof value !== 'string' && (typeof value !== 'number' || !(0, _isInteger.default)(value))) {
-    throw new TypeError("ID cannot represent value: ".concat((0, _inspect.default)(value)));
+  if (typeof value === 'string') {
+    return value;
   }
 
-  return String(value);
+  if ((0, _isInteger.default)(value)) {
+    return value.toString();
+  }
+
+  throw new TypeError("ID cannot represent value: ".concat((0, _inspect.default)(value)));
 }
 
 var GraphQLID = new _definition.GraphQLScalarType({
