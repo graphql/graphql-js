@@ -22,13 +22,16 @@ const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
 
 function serializeInt(value: mixed): number {
-  if (Array.isArray(value)) {
-    throw new TypeError(
-      `Int cannot represent an array value: ${inspect(value)}`,
-    );
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
   }
-  const num = Number(value);
-  if (value === '' || !isInteger(num)) {
+
+  let num = value;
+  if (typeof value === 'string' && value !== '') {
+    num = Number(value);
+  }
+
+  if (!isInteger(num)) {
     throw new TypeError(
       `Int cannot represent non-integer value: ${inspect(value)}`,
     );
@@ -74,13 +77,15 @@ export const GraphQLInt = new GraphQLScalarType({
 });
 
 function serializeFloat(value: mixed): number {
-  if (Array.isArray(value)) {
-    throw new TypeError(
-      `Float cannot represent an array value: ${inspect(value)}`,
-    );
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
   }
-  const num = Number(value);
-  if (value === '' || !isFinite(num)) {
+
+  let num = value;
+  if (typeof value === 'string' && value !== '') {
+    num = Number(value);
+  }
+  if (!isFinite(num)) {
     throw new TypeError(
       `Float cannot represent non numeric value: ${inspect(value)}`,
     );
@@ -118,16 +123,18 @@ function serializeString(value: mixed): string {
   // (ex: MongoDB id objects).
   const result =
     value && typeof value.valueOf === 'function' ? value.valueOf() : value;
-  // Serialize string, number, and boolean values to a string, but do not
+  // Serialize string, boolean and number values to a string, but do not
   // attempt to coerce object, function, symbol, or other types as strings.
-  if (
-    typeof result !== 'string' &&
-    typeof result !== 'number' &&
-    typeof result !== 'boolean'
-  ) {
-    throw new TypeError(`String cannot represent value: ${inspect(result)}`);
+  if (typeof result === 'string') {
+    return result;
   }
-  return String(result);
+  if (typeof result === 'boolean') {
+    return result ? 'true' : 'false';
+  }
+  if (isFinite(result)) {
+    return result.toString();
+  }
+  throw new TypeError(`String cannot represent value: ${inspect(value)}`);
 }
 
 function coerceString(value: mixed): string {
@@ -153,12 +160,15 @@ export const GraphQLString = new GraphQLScalarType({
 });
 
 function serializeBoolean(value: mixed): boolean {
-  if (Array.isArray(value)) {
-    throw new TypeError(
-      `Boolean cannot represent an array value: ${inspect(value)}`,
-    );
+  if (typeof value === 'boolean') {
+    return value;
   }
-  return Boolean(value);
+  if (isFinite(value)) {
+    return value !== 0;
+  }
+  throw new TypeError(
+    `Boolean cannot represent a non boolean value: ${inspect(value)}`,
+  );
 }
 
 function coerceBoolean(value: mixed): boolean {
@@ -185,23 +195,23 @@ function serializeID(value: mixed): string {
   // to represent an object identifier (ex. MongoDB).
   const result =
     value && typeof value.valueOf === 'function' ? value.valueOf() : value;
-  if (
-    typeof result !== 'string' &&
-    (typeof result !== 'number' || !isInteger(result))
-  ) {
-    throw new TypeError(`ID cannot represent value: ${inspect(value)}`);
+  if (typeof result === 'string') {
+    return result;
   }
-  return String(result);
+  if (isInteger(result)) {
+    return String(result);
+  }
+  throw new TypeError(`ID cannot represent value: ${inspect(value)}`);
 }
 
 function coerceID(value: mixed): string {
-  if (
-    typeof value !== 'string' &&
-    (typeof value !== 'number' || !isInteger(value))
-  ) {
-    throw new TypeError(`ID cannot represent value: ${inspect(value)}`);
+  if (typeof value === 'string') {
+    return value;
   }
-  return String(value);
+  if (isInteger(value)) {
+    return value.toString();
+  }
+  throw new TypeError(`ID cannot represent value: ${inspect(value)}`);
 }
 
 export const GraphQLID = new GraphQLScalarType({

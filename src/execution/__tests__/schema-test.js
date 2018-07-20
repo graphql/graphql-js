@@ -91,7 +91,7 @@ describe('Execute: Handles execution with a complex schema', () => {
     function article(id) {
       return {
         id,
-        isPublished: 'true',
+        isPublished: true,
         author: johnSmith,
         title: 'My Article ' + id,
         body: 'This is a post',

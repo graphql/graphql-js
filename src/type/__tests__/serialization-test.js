@@ -69,7 +69,7 @@ describe('Type System: Scalar coercion', () => {
       'Int cannot represent non-integer value: Infinity',
     );
     expect(() => GraphQLInt.serialize([5])).to.throw(
-      'Int cannot represent an array value: [5]',
+      'Int cannot represent non-integer value: [5]',
     );
   });
 
@@ -98,7 +98,7 @@ describe('Type System: Scalar coercion', () => {
       'Float cannot represent non numeric value: ""',
     );
     expect(() => GraphQLFloat.serialize([5])).to.throw(
-      'Float cannot represent an array value: [5]',
+      'Float cannot represent non numeric value: [5]',
     );
   });
 
@@ -109,15 +109,6 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLString.serialize(true)).to.equal('true');
     expect(GraphQLString.serialize(false)).to.equal('false');
 
-    expect(() => GraphQLString.serialize([1])).to.throw(
-      'String cannot represent value: [1]',
-    );
-
-    const badObjValue = {};
-    expect(() => GraphQLString.serialize(badObjValue)).to.throw(
-      'String cannot represent value: {}',
-    );
-
     const stringableObjValue = {
       valueOf() {
         return 'something useful';
@@ -126,19 +117,41 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLString.serialize(stringableObjValue)).to.equal(
       'something useful',
     );
+
+    expect(() => GraphQLString.serialize(NaN)).to.throw(
+      'String cannot represent value: NaN',
+    );
+
+    expect(() => GraphQLString.serialize([1])).to.throw(
+      'String cannot represent value: [1]',
+    );
+
+    const badObjValue = {};
+    expect(() => GraphQLString.serialize(badObjValue)).to.throw(
+      'String cannot represent value: {}',
+    );
   });
 
   it('serializes output as Boolean', () => {
-    expect(GraphQLBoolean.serialize('string')).to.equal(true);
-    expect(GraphQLBoolean.serialize('false')).to.equal(true);
-    expect(GraphQLBoolean.serialize('')).to.equal(false);
     expect(GraphQLBoolean.serialize(1)).to.equal(true);
     expect(GraphQLBoolean.serialize(0)).to.equal(false);
     expect(GraphQLBoolean.serialize(true)).to.equal(true);
     expect(GraphQLBoolean.serialize(false)).to.equal(false);
 
+    expect(() => GraphQLBoolean.serialize(NaN)).to.throw(
+      'Boolean cannot represent a non boolean value: NaN',
+    );
+    expect(() => GraphQLBoolean.serialize('')).to.throw(
+      'Boolean cannot represent a non boolean value: ""',
+    );
+    expect(() => GraphQLBoolean.serialize('true')).to.throw(
+      'Boolean cannot represent a non boolean value: "true"',
+    );
     expect(() => GraphQLBoolean.serialize([false])).to.throw(
-      'Boolean cannot represent an array value: [false]',
+      'Boolean cannot represent a non boolean value: [false]',
+    );
+    expect(() => GraphQLBoolean.serialize({})).to.throw(
+      'Boolean cannot represent a non boolean value: {}',
     );
   });
 
@@ -148,6 +161,7 @@ describe('Type System: Scalar coercion', () => {
     expect(GraphQLID.serialize('')).to.equal('');
     expect(GraphQLID.serialize(123)).to.equal('123');
     expect(GraphQLID.serialize(0)).to.equal('0');
+    expect(GraphQLID.serialize(-1)).to.equal('-1');
 
     const objValue = {
       _id: 123,
@@ -171,8 +185,8 @@ describe('Type System: Scalar coercion', () => {
       'ID cannot represent value: true',
     );
 
-    expect(() => GraphQLID.serialize(-1.1)).to.throw(
-      'ID cannot represent value: -1.1',
+    expect(() => GraphQLID.serialize(3.14)).to.throw(
+      'ID cannot represent value: 3.14',
     );
 
     expect(() => GraphQLID.serialize({})).to.throw(
