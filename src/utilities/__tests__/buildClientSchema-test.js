@@ -25,8 +25,8 @@ import {
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  GraphQLDirective,
 } from '../../';
-import { GraphQLDirective } from '../../type/directives';
 
 // Test property:
 // Given a server's schema, a client may query that server with introspection,
@@ -585,78 +585,6 @@ describe('Type System: build schema from introspection', () => {
     });
 
     testSchema(schema);
-  });
-
-  it('builds a schema with legacy directives', () => {
-    const oldIntrospection = {
-      __schema: {
-        // Minimum required schema.
-        queryType: {
-          name: 'Simple',
-        },
-        types: [
-          {
-            name: 'Simple',
-            kind: 'OBJECT',
-            fields: [
-              {
-                name: 'simple',
-                args: [],
-                type: { name: 'Simple' },
-              },
-            ],
-            interfaces: [],
-          },
-        ],
-        // Test old directive introspection results.
-        directives: [
-          { name: 'Old1', args: [], onField: true },
-          { name: 'Old2', args: [], onFragment: true },
-          { name: 'Old3', args: [], onOperation: true },
-          { name: 'Old4', args: [], onField: true, onFragment: true },
-        ],
-      },
-    };
-
-    const clientSchema = buildClientSchema(oldIntrospection);
-    const secondIntrospection = introspectionFromSchema(clientSchema);
-
-    // New introspection produces correct new format.
-    expect(secondIntrospection).to.deep.nested.property('__schema.directives', [
-      {
-        name: 'Old1',
-        description: null,
-        args: [],
-        locations: ['FIELD'],
-      },
-      {
-        name: 'Old2',
-        description: null,
-        args: [],
-        locations: [
-          'FRAGMENT_DEFINITION',
-          'FRAGMENT_SPREAD',
-          'INLINE_FRAGMENT',
-        ],
-      },
-      {
-        name: 'Old3',
-        description: null,
-        args: [],
-        locations: ['QUERY', 'MUTATION', 'SUBSCRIPTION'],
-      },
-      {
-        name: 'Old4',
-        description: null,
-        args: [],
-        locations: [
-          'FIELD',
-          'FRAGMENT_DEFINITION',
-          'FRAGMENT_SPREAD',
-          'INLINE_FRAGMENT',
-        ],
-      },
-    ]);
   });
 
   it('builds a schema with legacy names', () => {
