@@ -11,7 +11,6 @@ import invariant from '../jsutils/invariant';
 import type { GraphQLError } from '../error';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import type { DocumentNode } from '../language/ast';
-import type { ASTVisitor } from '../language/visitor';
 import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
@@ -36,36 +35,19 @@ import ValidationContext from './ValidationContext';
  */
 export function validate(
   schema: GraphQLSchema,
-  ast: DocumentNode,
-  rules?: $ReadOnlyArray<any>,
-  typeInfo?: TypeInfo,
+  documentAST: DocumentNode,
+  rules?: $ReadOnlyArray<any> = specifiedRules,
+  typeInfo?: TypeInfo = new TypeInfo(schema),
 ): $ReadOnlyArray<GraphQLError> {
-  invariant(ast, 'Must provide document');
+  invariant(documentAST, 'Must provide document');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
-  return visitUsingRules(
-    schema,
-    typeInfo || new TypeInfo(schema),
-    ast,
-    rules || specifiedRules,
-  );
-}
 
-/**
- * This uses a specialized visitor which runs multiple visitors in parallel,
- * while maintaining the visitor skip and break API.
- *
- * @internal
- */
-function visitUsingRules(
-  schema: GraphQLSchema,
-  typeInfo: TypeInfo,
-  documentAST: DocumentNode,
-  rules: $ReadOnlyArray<(ValidationContext) => ASTVisitor>,
-): $ReadOnlyArray<GraphQLError> {
   const context = new ValidationContext(schema, documentAST, typeInfo);
-  const visitors = rules.map(rule => rule(context));
+  // This uses a specialized visitor which runs multiple visitors in parallel,
+  // while maintaining the visitor skip and break API.
+  const visitor = visitInParallel(rules.map(rule => rule(context)));
   // Visit the whole document with each instance of all provided rules.
-  visit(documentAST, visitWithTypeInfo(typeInfo, visitInParallel(visitors)));
+  visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
   return context.getErrors();
 }
