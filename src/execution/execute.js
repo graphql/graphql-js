@@ -46,7 +46,7 @@ import type {
   ResponsePath,
   GraphQLList,
 } from '../type/definition';
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,

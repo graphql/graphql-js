@@ -8,7 +8,7 @@
  */
 
 import type { ObjMap } from '../jsutils/ObjMap';
-import { GraphQLError } from '../error';
+import type { GraphQLError } from '../error';
 import { visit, visitWithTypeInfo } from '../language/visitor';
 import { Kind } from '../language/kinds';
 import type {
@@ -19,7 +19,7 @@ import type {
   FragmentSpreadNode,
   FragmentDefinitionNode,
 } from '../language/ast';
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 import type {
   GraphQLInputType,
   GraphQLOutputType,

@@ -26,8 +26,8 @@ import type {
   GraphQLArgument,
 } from '../type/definition';
 
-import { GraphQLDirective } from '../type/directives';
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLDirective } from '../type/directives';
+import type { GraphQLSchema } from '../type/schema';
 import keyMap from '../jsutils/keyMap';
 
 import type { ObjMap } from '../jsutils/ObjMap';

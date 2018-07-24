@@ -22,7 +22,7 @@ import {
   resolveFieldValueOrError,
   responsePathAsArray,
 } from '../execution/execute';
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 import mapAsyncIterator from './mapAsyncIterator';
 
 import type { ObjMap } from '../jsutils/ObjMap';
