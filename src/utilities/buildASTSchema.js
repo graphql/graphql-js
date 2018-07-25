@@ -42,6 +42,9 @@ import type {
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
 import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLFieldConfig,
   GraphQLEnumValueConfig,
   GraphQLInputField,
 } from '../type/definition';
@@ -71,12 +74,6 @@ import { specifiedScalarTypes } from '../type/scalars';
 
 import { GraphQLSchema } from '../type/schema';
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
-
-import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLFieldConfig,
-} from '../type/definition';
 
 export type BuildSchemaOptions = {
   ...GraphQLSchemaValidationOptions,

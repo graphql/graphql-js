@@ -20,6 +20,8 @@ import { isSpecifiedScalarType } from '../type/scalars';
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
 
 import type {
+  GraphQLType,
+  GraphQLNamedType,
   GraphQLArgument,
   GraphQLFieldConfigArgumentMap,
 } from '../type/definition';
@@ -47,7 +49,6 @@ import { GraphQLDirective } from '../type/directives';
 
 import { Kind } from '../language/kinds';
 
-import type { GraphQLType, GraphQLNamedType } from '../type/definition';
 import type {
   DocumentNode,
   DirectiveDefinitionNode,
