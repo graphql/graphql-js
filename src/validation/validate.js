@@ -8,11 +8,11 @@
  */
 
 import invariant from '../jsutils/invariant';
-import { GraphQLError } from '../error';
+import type { GraphQLError } from '../error';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import type { DocumentNode } from '../language/ast';
 import type { ASTVisitor } from '../language/visitor';
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules } from './specifiedRules';

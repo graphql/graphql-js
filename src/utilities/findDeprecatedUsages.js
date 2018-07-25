@@ -11,7 +11,7 @@ import { GraphQLError } from '../error/GraphQLError';
 import { visit, visitWithTypeInfo } from '../language/visitor';
 import type { DocumentNode } from '../language/ast';
 import { getNamedType } from '../type/definition';
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 import { TypeInfo } from './TypeInfo';
 
 /**
