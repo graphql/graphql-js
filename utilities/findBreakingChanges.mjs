@@ -7,8 +7,6 @@
  *  strict
  */
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType } from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
-import { GraphQLSchema } from '../type/schema';
 import keyMap from '../jsutils/keyMap';
 export var BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',

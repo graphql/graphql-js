@@ -11,8 +11,6 @@ var _visitor = require("../language/visitor");
 
 var _definition = require("../type/definition");
 
-var _schema = require("../type/schema");
-
 var _TypeInfo = require("./TypeInfo");
 
 /**

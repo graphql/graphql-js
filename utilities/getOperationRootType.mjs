@@ -7,7 +7,6 @@
  *  strict
  */
 import { GraphQLError } from '../error/GraphQLError';
-import { GraphQLSchema } from '../type/schema';
 
 /**
  * Extracts the root type of the operation from the schema.

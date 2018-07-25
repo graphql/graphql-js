@@ -7,8 +7,6 @@ exports.getOperationRootType = getOperationRootType;
 
 var _GraphQLError = require("../error/GraphQLError");
 
-var _schema = require("../type/schema");
-
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *

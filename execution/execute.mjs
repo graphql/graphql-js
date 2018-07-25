@@ -23,7 +23,6 @@ import { typeFromAST } from '../utilities/typeFromAST';
 import { Kind } from '../language/kinds';
 import { getVariableValues, getArgumentValues, getDirectiveValues } from './values';
 import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from '../type/definition';
-import { GraphQLSchema } from '../type/schema';
 import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from '../type/introspection';
 import { GraphQLIncludeDirective, GraphQLSkipDirective } from '../type/directives';
 import { assertValidSchema } from '../type/validate';

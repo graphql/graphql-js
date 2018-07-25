@@ -16,8 +16,6 @@ var _locatedError = require("../error/locatedError");
 
 var _execute = require("../execution/execute");
 
-var _schema = require("../type/schema");
-
 var _mapAsyncIterator = _interopRequireDefault(require("./mapAsyncIterator"));
 
 var _getOperationRootType = require("../utilities/getOperationRootType");

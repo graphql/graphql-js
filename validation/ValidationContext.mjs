@@ -8,10 +8,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  *  strict
  */
-import { GraphQLError } from '../error';
 import { visit, visitWithTypeInfo } from '../language/visitor';
 import { Kind } from '../language/kinds';
-import { GraphQLSchema } from '../type/schema';
 import { TypeInfo } from '../utilities/TypeInfo';
 
 /**

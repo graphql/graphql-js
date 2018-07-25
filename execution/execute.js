@@ -44,8 +44,6 @@ var _values = require("./values");
 
 var _definition = require("../type/definition");
 
-var _schema = require("../type/schema");
-
 var _introspection = require("../type/introspection");
 
 var _directives = require("../type/directives");

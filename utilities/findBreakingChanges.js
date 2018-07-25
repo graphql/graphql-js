@@ -25,10 +25,6 @@ exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 
 var _definition = require("../type/definition");
 
-var _directives = require("../type/directives");
-
-var _schema = require("../type/schema");
-
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

@@ -5,13 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _error = require("../error");
-
 var _visitor = require("../language/visitor");
 
 var _kinds = require("../language/kinds");
-
-var _schema = require("../type/schema");
 
 var _TypeInfo = require("../utilities/TypeInfo");
 

@@ -7,11 +7,7 @@ exports.validate = validate;
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _error = require("../error");
-
 var _visitor = require("../language/visitor");
-
-var _schema = require("../type/schema");
 
 var _validate = require("../type/validate");
 

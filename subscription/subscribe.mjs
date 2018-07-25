@@ -11,7 +11,6 @@ import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 import { addPath, assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError, responsePathAsArray } from '../execution/execute';
-import { GraphQLSchema } from '../type/schema';
 import mapAsyncIterator from './mapAsyncIterator';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 /**

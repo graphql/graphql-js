@@ -9,7 +9,6 @@
 import { GraphQLError } from '../error/GraphQLError';
 import { visit, visitWithTypeInfo } from '../language/visitor';
 import { getNamedType } from '../type/definition';
-import { GraphQLSchema } from '../type/schema';
 import { TypeInfo } from './TypeInfo';
 /**
  * A validation rule which reports deprecated usages.
