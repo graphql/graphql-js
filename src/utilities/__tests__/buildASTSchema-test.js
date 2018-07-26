@@ -356,6 +356,18 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
   });
 
+  it('Can build recursive Union', () => {
+    const schema = buildSchema(dedent`
+      union Hello = Hello
+
+      type Query {
+        hello: Hello
+      }
+    `);
+    const errors = validateSchema(schema);
+    expect(errors.length).to.be.above(0);
+  });
+
   it('Specifying Union type using __typename', () => {
     const schema = buildSchema(dedent`
       type Query {
