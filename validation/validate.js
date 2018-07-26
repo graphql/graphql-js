@@ -44,26 +44,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-function validate(schema, ast, rules, typeInfo) {
-  !ast ? (0, _invariant.default)(0, 'Must provide document') : void 0; // If the schema used for validation is invalid, throw an error.
+function validate(schema, documentAST) {
+  var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _specifiedRules.specifiedRules;
+  var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new _TypeInfo.TypeInfo(schema);
+  !documentAST ? (0, _invariant.default)(0, 'Must provide document') : void 0; // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);
-  return visitUsingRules(schema, typeInfo || new _TypeInfo.TypeInfo(schema), ast, rules || _specifiedRules.specifiedRules);
-}
-/**
- * This uses a specialized visitor which runs multiple visitors in parallel,
- * while maintaining the visitor skip and break API.
- *
- * @internal
- */
+  var context = new _ValidationContext.default(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,
+  // while maintaining the visitor skip and break API.
 
-
-function visitUsingRules(schema, typeInfo, documentAST, rules) {
-  var context = new _ValidationContext.default(schema, documentAST, typeInfo);
-  var visitors = rules.map(function (rule) {
+  var visitor = (0, _visitor.visitInParallel)(rules.map(function (rule) {
     return rule(context);
-  }); // Visit the whole document with each instance of all provided rules.
+  })); // Visit the whole document with each instance of all provided rules.
 
-  (0, _visitor.visit)(documentAST, (0, _visitor.visitWithTypeInfo)(typeInfo, (0, _visitor.visitInParallel)(visitors)));
+  (0, _visitor.visit)(documentAST, (0, _visitor.visitWithTypeInfo)(typeInfo, visitor));
   return context.getErrors();
 }

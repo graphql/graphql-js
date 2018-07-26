@@ -29,25 +29,19 @@ import ValidationContext from './ValidationContext';
  * will be created from the provided schema.
  */
 
-export function validate(schema, ast, rules, typeInfo) {
-  !ast ? invariant(0, 'Must provide document') : void 0; // If the schema used for validation is invalid, throw an error.
+export function validate(schema, documentAST) {
+  var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedRules;
+  var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new TypeInfo(schema);
+  !documentAST ? invariant(0, 'Must provide document') : void 0; // If the schema used for validation is invalid, throw an error.
 
   assertValidSchema(schema);
-  return visitUsingRules(schema, typeInfo || new TypeInfo(schema), ast, rules || specifiedRules);
-}
-/**
- * This uses a specialized visitor which runs multiple visitors in parallel,
- * while maintaining the visitor skip and break API.
- *
- * @internal
- */
+  var context = new ValidationContext(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,
+  // while maintaining the visitor skip and break API.
 
-function visitUsingRules(schema, typeInfo, documentAST, rules) {
-  var context = new ValidationContext(schema, documentAST, typeInfo);
-  var visitors = rules.map(function (rule) {
+  var visitor = visitInParallel(rules.map(function (rule) {
     return rule(context);
-  }); // Visit the whole document with each instance of all provided rules.
+  })); // Visit the whole document with each instance of all provided rules.
 
-  visit(documentAST, visitWithTypeInfo(typeInfo, visitInParallel(visitors)));
+  visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
   return context.getErrors();
 }
