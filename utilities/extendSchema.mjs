@@ -178,7 +178,9 @@ export function extendSchema(schema, documentAST, options) {
   var schemaExtensionASTNodes = schemaExtensions ? schema.extensionASTNodes ? schema.extensionASTNodes.concat(schemaExtensions) : schemaExtensions : schema.extensionASTNodes;
   var types = objectValues(schema.getTypeMap()).map(function (type) {
     return extendNamedType(type);
-  }).concat(astBuilder.buildTypes(objectValues(typeDefinitionMap))); // Support both original legacy names and extended legacy names.
+  }).concat(objectValues(typeDefinitionMap).map(function (type) {
+    return astBuilder.buildType(type);
+  })); // Support both original legacy names and extended legacy names.
 
   var allowedLegacyNames = schema.__allowedLegacyNames.concat(options && options.allowedLegacyNames || []); // Then produce and return a Schema with these types.
 
@@ -228,9 +230,6 @@ export function extendSchema(schema, documentAST, options) {
         extendTypeCache[name] = extendEnumType(type);
       } else if (isInputObjectType(type)) {
         extendTypeCache[name] = extendInputObjectType(type);
-      } else {
-        // This type is not yet extendable.
-        extendTypeCache[name] = type;
       }
     }
 
@@ -493,7 +492,20 @@ export function extendSchema(schema, documentAST, options) {
   function extendUnionType(type) {
     var name = type.name;
     var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
-    var unionTypes = type.getTypes().map(extendNamedType); // If there are any extensions to the union, apply those here.
+    return new GraphQLUnionType({
+      name: name,
+      description: type.description,
+      types: function types() {
+        return extendPossibleTypes(type);
+      },
+      astNode: type.astNode,
+      resolveType: type.resolveType,
+      extensionASTNodes: extensionASTNodes
+    });
+  }
+
+  function extendPossibleTypes(type) {
+    var possibleTypes = type.getTypes().map(extendNamedType); // If there are any extensions to the union, apply those here.
 
     var extensions = typeExtensionsMap[type.name];
 
@@ -515,7 +527,7 @@ export function extendSchema(schema, documentAST, options) {
               // Note: While this could make early assertions to get the correctly
               // typed values, that would throw immediately while type system
               // validation with validateSchema() will produce more actionable results.
-              unionTypes.push(astBuilder.buildType(namedType));
+              possibleTypes.push(astBuilder.buildType(namedType));
             }
           } catch (err) {
             _didIteratorError6 = true;
@@ -548,14 +560,7 @@ export function extendSchema(schema, documentAST, options) {
       }
     }
 
-    return new GraphQLUnionType({
-      name: name,
-      description: type.description,
-      types: unionTypes,
-      astNode: type.astNode,
-      resolveType: type.resolveType,
-      extensionASTNodes: extensionASTNodes
-    });
+    return possibleTypes;
   }
 
   function extendImplementedInterfaces(type) {
