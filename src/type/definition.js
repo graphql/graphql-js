@@ -35,6 +35,7 @@ import type {
   OperationDefinitionNode,
   FieldNode,
   FragmentDefinitionNode,
+  DirectiveNode,
   ValueNode,
 } from '../language/ast';
 import type { GraphQLSchema } from './schema';
@@ -541,6 +542,8 @@ export class GraphQLScalarType {
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
+  _directives: ?$ReadOnlyArray<DirectiveNode>;
+
   constructor(config: GraphQLScalarTypeConfig<*, *>): void {
     this.name = config.name;
     this.description = config.description;
@@ -564,6 +567,28 @@ export class GraphQLScalarType {
           'functions.',
       );
     }
+  }
+
+  getDirectives(): $ReadOnlyArray<DirectiveNode> {
+    if (this._directives) {
+      return this._directives;
+    }
+
+    const directives = [];
+    if (this.astNode && this.astNode.directives) {
+      directives.push(...this.astNode.directives);
+    }
+    const extensionASTNodes = this.extensionASTNodes;
+    if (extensionASTNodes) {
+      for (let i = 0; i < extensionASTNodes.length; i++) {
+        const extensionNode = extensionASTNodes[i];
+        if (extensionNode.directives) {
+          directives.push(...extensionNode.directives);
+        }
+      }
+    }
+    this._directives = directives;
+    return directives;
   }
 
   toString(): string {
@@ -641,6 +666,7 @@ export class GraphQLObjectType {
 
   _fields: Thunk<GraphQLFieldMap<*, *>>;
   _interfaces: Thunk<Array<GraphQLInterfaceType>>;
+  _directives: ?$ReadOnlyArray<DirectiveNode>;
 
   constructor(config: GraphQLObjectTypeConfig<*, *>): void {
     this.name = config.name;
@@ -657,6 +683,28 @@ export class GraphQLObjectType {
         `${this.name} must provide "isTypeOf" as a function.`,
       );
     }
+  }
+
+  getDirectives(): $ReadOnlyArray<DirectiveNode> {
+    if (this._directives) {
+      return this._directives;
+    }
+
+    const directives = [];
+    if (this.astNode && this.astNode.directives) {
+      directives.push(...this.astNode.directives);
+    }
+    const extensionASTNodes = this.extensionASTNodes;
+    if (extensionASTNodes) {
+      for (let i = 0; i < extensionASTNodes.length; i++) {
+        const extensionNode = extensionASTNodes[i];
+        if (extensionNode.directives) {
+          directives.push(...extensionNode.directives);
+        }
+      }
+    }
+    this._directives = directives;
+    return directives;
   }
 
   getFields(): GraphQLFieldMap<*, *> {
@@ -894,6 +942,7 @@ export class GraphQLInterfaceType {
   resolveType: ?GraphQLTypeResolver<*, *>;
 
   _fields: Thunk<GraphQLFieldMap<*, *>>;
+  _directives: ?$ReadOnlyArray<DirectiveNode>;
 
   constructor(config: GraphQLInterfaceTypeConfig<*, *>): void {
     this.name = config.name;
@@ -909,6 +958,28 @@ export class GraphQLInterfaceType {
         `${this.name} must provide "resolveType" as a function.`,
       );
     }
+  }
+
+  getDirectives(): $ReadOnlyArray<DirectiveNode> {
+    if (this._directives) {
+      return this._directives;
+    }
+
+    const directives = [];
+    if (this.astNode && this.astNode.directives) {
+      directives.push(...this.astNode.directives);
+    }
+    const extensionASTNodes = this.extensionASTNodes;
+    if (extensionASTNodes) {
+      for (let i = 0; i < extensionASTNodes.length; i++) {
+        const extensionNode = extensionASTNodes[i];
+        if (extensionNode.directives) {
+          directives.push(...extensionNode.directives);
+        }
+      }
+    }
+    this._directives = directives;
+    return directives;
   }
 
   getFields(): GraphQLFieldMap<*, *> {
@@ -972,6 +1043,7 @@ export class GraphQLUnionType {
   resolveType: ?GraphQLTypeResolver<*, *>;
 
   _types: Thunk<Array<GraphQLObjectType>>;
+  _directives: ?$ReadOnlyArray<DirectiveNode>;
 
   constructor(config: GraphQLUnionTypeConfig<*, *>): void {
     this.name = config.name;
@@ -987,6 +1059,28 @@ export class GraphQLUnionType {
         `${this.name} must provide "resolveType" as a function.`,
       );
     }
+  }
+
+  getDirectives(): $ReadOnlyArray<DirectiveNode> {
+    if (this._directives) {
+      return this._directives;
+    }
+
+    const directives = [];
+    if (this.astNode && this.astNode.directives) {
+      directives.push(...this.astNode.directives);
+    }
+    const extensionASTNodes = this.extensionASTNodes;
+    if (extensionASTNodes) {
+      for (let i = 0; i < extensionASTNodes.length; i++) {
+        const extensionNode = extensionASTNodes[i];
+        if (extensionNode.directives) {
+          directives.push(...extensionNode.directives);
+        }
+      }
+    }
+    this._directives = directives;
+    return directives;
   }
 
   getTypes(): Array<GraphQLObjectType> {
@@ -1058,6 +1152,7 @@ export class GraphQLEnumType /* <T> */ {
   astNode: ?EnumTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<EnumTypeExtensionNode>;
 
+  _directives: ?$ReadOnlyArray<DirectiveNode>;
   _values: Array<GraphQLEnumValue /* <T> */>;
   _valueLookup: Map<any /* T */, GraphQLEnumValue>;
   _nameLookup: ObjMap<GraphQLEnumValue>;
@@ -1074,6 +1169,28 @@ export class GraphQLEnumType /* <T> */ {
     this._nameLookup = keyMap(this._values, value => value.name);
 
     invariant(typeof config.name === 'string', 'Must provide name.');
+  }
+
+  getDirectives(): $ReadOnlyArray<DirectiveNode> {
+    if (this._directives) {
+      return this._directives;
+    }
+
+    const directives = [];
+    if (this.astNode && this.astNode.directives) {
+      directives.push(...this.astNode.directives);
+    }
+    const extensionASTNodes = this.extensionASTNodes;
+    if (extensionASTNodes) {
+      for (let i = 0; i < extensionASTNodes.length; i++) {
+        const extensionNode = extensionASTNodes[i];
+        if (extensionNode.directives) {
+          directives.push(...extensionNode.directives);
+        }
+      }
+    }
+    this._directives = directives;
+    return directives;
   }
 
   getValues(): Array<GraphQLEnumValue /* <T> */> {
@@ -1204,6 +1321,7 @@ export class GraphQLInputObjectType {
   astNode: ?InputObjectTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<InputObjectTypeExtensionNode>;
 
+  _directives: ?$ReadOnlyArray<DirectiveNode>;
   _fields: Thunk<GraphQLInputFieldMap>;
 
   constructor(config: GraphQLInputObjectTypeConfig): void {
@@ -1213,6 +1331,28 @@ export class GraphQLInputObjectType {
     this.extensionASTNodes = config.extensionASTNodes;
     this._fields = defineInputFieldMap.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
+  }
+
+  getDirectives(): $ReadOnlyArray<DirectiveNode> {
+    if (this._directives) {
+      return this._directives;
+    }
+
+    const directives = [];
+    if (this.astNode && this.astNode.directives) {
+      directives.push(...this.astNode.directives);
+    }
+    const extensionASTNodes = this.extensionASTNodes;
+    if (extensionASTNodes) {
+      for (let i = 0; i < extensionASTNodes.length; i++) {
+        const extensionNode = extensionASTNodes[i];
+        if (extensionNode.directives) {
+          directives.push(...extensionNode.directives);
+        }
+      }
+    }
+    this._directives = directives;
+    return directives;
   }
 
   getFields(): GraphQLInputFieldMap {
