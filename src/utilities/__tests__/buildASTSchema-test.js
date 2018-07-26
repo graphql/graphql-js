@@ -259,7 +259,7 @@ describe('Schema Builder', () => {
         str(int: Int, bool: Boolean): String
       }
     `;
-    const output = cycleOutput(body, 'Hello');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
@@ -273,7 +273,7 @@ describe('Schema Builder', () => {
         str: String
       }
     `;
-    const output = cycleOutput(body, 'Hello');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
