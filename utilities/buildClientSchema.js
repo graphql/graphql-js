@@ -17,8 +17,6 @@ var _parser = require("../language/parser");
 
 var _schema = require("../type/schema");
 
-var _directiveLocation = require("../language/directiveLocation");
-
 var _definition = require("../type/definition");
 
 var _directives = require("../type/directives");
@@ -278,10 +276,6 @@ function buildClientSchema(introspection, options) {
   }
 
   function buildDirective(directiveIntrospection) {
-    // Support deprecated `on****` fields for building `locations`, as this
-    // is used by GraphiQL which may need to support outdated servers.
-    var locations = directiveIntrospection.locations ? directiveIntrospection.locations.slice() : [].concat(!directiveIntrospection.onField ? [] : [_directiveLocation.DirectiveLocation.FIELD], !directiveIntrospection.onOperation ? [] : [_directiveLocation.DirectiveLocation.QUERY, _directiveLocation.DirectiveLocation.MUTATION, _directiveLocation.DirectiveLocation.SUBSCRIPTION], !directiveIntrospection.onFragment ? [] : [_directiveLocation.DirectiveLocation.FRAGMENT_DEFINITION, _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD, _directiveLocation.DirectiveLocation.INLINE_FRAGMENT]);
-
     if (!directiveIntrospection.args) {
       throw new Error('Introspection result missing directive args: ' + JSON.stringify(directiveIntrospection));
     }
@@ -289,7 +283,7 @@ function buildClientSchema(introspection, options) {
     return new _directives.GraphQLDirective({
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,
-      locations: locations,
+      locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args)
     });
   } // Iterate through all types, getting the type definition for each, ensuring

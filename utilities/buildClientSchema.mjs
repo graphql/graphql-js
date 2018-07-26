@@ -12,7 +12,6 @@ import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
 import { GraphQLSchema } from '../type/schema';
-import { DirectiveLocation } from '../language/directiveLocation';
 import { isInputType, isOutputType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, assertNullableType, assertObjectType, assertInterfaceType } from '../type/definition';
 import { GraphQLDirective } from '../type/directives';
 import { introspectionTypes, TypeKind } from '../type/introspection';
@@ -258,10 +257,6 @@ export function buildClientSchema(introspection, options) {
   }
 
   function buildDirective(directiveIntrospection) {
-    // Support deprecated `on****` fields for building `locations`, as this
-    // is used by GraphiQL which may need to support outdated servers.
-    var locations = directiveIntrospection.locations ? directiveIntrospection.locations.slice() : [].concat(!directiveIntrospection.onField ? [] : [DirectiveLocation.FIELD], !directiveIntrospection.onOperation ? [] : [DirectiveLocation.QUERY, DirectiveLocation.MUTATION, DirectiveLocation.SUBSCRIPTION], !directiveIntrospection.onFragment ? [] : [DirectiveLocation.FRAGMENT_DEFINITION, DirectiveLocation.FRAGMENT_SPREAD, DirectiveLocation.INLINE_FRAGMENT]);
-
     if (!directiveIntrospection.args) {
       throw new Error('Introspection result missing directive args: ' + JSON.stringify(directiveIntrospection));
     }
@@ -269,7 +264,7 @@ export function buildClientSchema(introspection, options) {
     return new GraphQLDirective({
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,
-      locations: locations,
+      locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args)
     });
   } // Iterate through all types, getting the type definition for each, ensuring

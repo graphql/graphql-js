@@ -14,8 +14,6 @@ import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
 import { GraphQLSchema } from '../type/schema';
 
-import { DirectiveLocation } from '../language/directiveLocation';
-
 import {
   isInputType,
   isOutputType,
@@ -340,27 +338,6 @@ export function buildClientSchema(
   }
 
   function buildDirective(directiveIntrospection) {
-    // Support deprecated `on****` fields for building `locations`, as this
-    // is used by GraphiQL which may need to support outdated servers.
-    const locations = directiveIntrospection.locations
-      ? directiveIntrospection.locations.slice()
-      : [].concat(
-          !directiveIntrospection.onField ? [] : [DirectiveLocation.FIELD],
-          !directiveIntrospection.onOperation
-            ? []
-            : [
-                DirectiveLocation.QUERY,
-                DirectiveLocation.MUTATION,
-                DirectiveLocation.SUBSCRIPTION,
-              ],
-          !directiveIntrospection.onFragment
-            ? []
-            : [
-                DirectiveLocation.FRAGMENT_DEFINITION,
-                DirectiveLocation.FRAGMENT_SPREAD,
-                DirectiveLocation.INLINE_FRAGMENT,
-              ],
-        );
     if (!directiveIntrospection.args) {
       throw new Error(
         'Introspection result missing directive args: ' +
@@ -370,7 +347,7 @@ export function buildClientSchema(
     return new GraphQLDirective({
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,
-      locations,
+      locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args),
     });
   }
