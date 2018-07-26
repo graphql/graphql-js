@@ -1827,3 +1827,172 @@ describe('Objects must adhere to Interface they implement', () => {
     ]);
   });
 });
+
+describe('Type System: Schema directives must validate', () => {
+  it('accepts a Schema with valid directives', () => {
+    const schema = buildSchema(`
+      schema @testA @testB {
+        query: Query
+      }
+
+      type Query @testA @testB {
+        test: AnInterface @testB
+      }
+
+      directive @testA on SCHEMA | OBJECT | INTERFACE | UNION | SCALAR | INPUT_OBJECT
+      directive @testB on SCHEMA | OBJECT | INTERFACE | UNION | SCALAR | INPUT_OBJECT
+      directive @testC on FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
+      directive @testD on FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
+
+      interface AnInterface @testA {
+        field: String! @testB
+      }
+
+      type TypeA implements AnInterface @testA {
+        field(arg: SomeInput @testC): String! @testC @testD
+      }
+
+      type TypeB @testB @testA {
+        scalar_field: SomeScalar @testC
+        enum_field: SomeEnum @testC @testD
+      }
+
+      union SomeUnion @testA = TypeA | TypeB
+
+      scalar SomeScalar @testA @testB
+
+      enum SomeEnum @testA @testB {
+        SOME_VALUE @testC
+      }
+
+      input SomeInput @testA @testB {
+        some_input_field: String @testC
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([]);
+  });
+
+  it('rejects a Schema with directive defined multiple times', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: String
+      }
+
+      directive @testA on SCHEMA
+      directive @testA on SCHEMA
+    `);
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message: 'Directive @testA defined multiple times.',
+        locations: [{ line: 6, column: 7 }, { line: 7, column: 7 }],
+      },
+    ]);
+  });
+
+  it('rejects a Schema with same schema directive used twice', () => {
+    const schema = buildSchema(`
+      schema @testA @testA {
+        query: Query
+      }
+      type Query {
+        test: String
+      }
+
+      directive @testA on SCHEMA
+    `);
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 2, column: 14 }, { line: 2, column: 21 }],
+      },
+    ]);
+  });
+
+  it('rejects a Schema with same definition directive used twice', () => {
+    const schema = buildSchema(`
+      directive @testA on OBJECT | INTERFACE | UNION | SCALAR | INPUT_OBJECT
+
+      type Query implements SomeInterface @testA @testA {
+        test: String
+      }
+
+      interface SomeInterface @testA @testA {
+        test: String
+      }
+
+      union SomeUnion @testA @testA = Query
+
+      scalar SomeScalar @testA @testA
+
+      enum SomeEnum @testA @testA {
+        SOME_VALUE
+      }
+
+      input SomeInput @testA @testA {
+        some_input_field: String
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 4, column: 43 }, { line: 4, column: 50 }],
+      },
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 8, column: 31 }, { line: 8, column: 38 }],
+      },
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 12, column: 23 }, { line: 12, column: 30 }],
+      },
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 14, column: 25 }, { line: 14, column: 32 }],
+      },
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 16, column: 21 }, { line: 16, column: 28 }],
+      },
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 20, column: 23 }, { line: 20, column: 30 }],
+      },
+    ]);
+  });
+
+  it('rejects a Schema with same field and arg directive used twice', () => {
+    const schema = buildSchema(`
+      directive @testA on FIELD_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
+
+      type Query implements SomeInterface {
+        test(arg: String @testA @testA): String @testA @testA
+      }
+
+      interface SomeInterface {
+        test: String @testA @testA
+      }
+
+      input SomeInput {
+        some_input_field: String @testA @testA
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 5, column: 26 }, { line: 5, column: 33 }],
+      },
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 5, column: 49 }, { line: 5, column: 56 }],
+      },
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 9, column: 22 }, { line: 9, column: 29 }],
+      },
+      {
+        message: 'Directive @testA used twice at the same location.',
+        locations: [{ line: 13, column: 34 }, { line: 13, column: 41 }],
+      },
+    ]);
+  });
+});
