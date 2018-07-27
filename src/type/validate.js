@@ -19,6 +19,7 @@ import type {
 import { DirectiveLocation } from '../language/directiveLocation';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import type {
+  GraphQLNamedType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -78,13 +79,11 @@ export function validateSchema(
   validateDirectiveDefinitions(context);
 
   // Validate directives that are used on the schema
-  if (schema.astNode && schema.astNode.directives) {
-    validateDirectivesAtLocation(
-      context,
-      schema.astNode.directives,
-      DirectiveLocation.SCHEMA,
-    );
-  }
+  validateDirectivesAtLocation(
+    context,
+    getDirectives(schema),
+    DirectiveLocation.SCHEMA,
+  );
 
   validateTypes(context);
 
@@ -284,7 +283,7 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure directives are valid
       validateDirectivesAtLocation(
         context,
-        type.getDirectives(),
+        getDirectives(type),
         DirectiveLocation.OBJECT,
       );
     } else if (isInterfaceType(type)) {
@@ -294,7 +293,7 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure directives are valid
       validateDirectivesAtLocation(
         context,
-        type.getDirectives(),
+        getDirectives(type),
         DirectiveLocation.INTERFACE,
       );
     } else if (isUnionType(type)) {
@@ -304,7 +303,7 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure directives are valid
       validateDirectivesAtLocation(
         context,
-        type.getDirectives(),
+        getDirectives(type),
         DirectiveLocation.UNION,
       );
     } else if (isEnumType(type)) {
@@ -314,7 +313,7 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure directives are valid
       validateDirectivesAtLocation(
         context,
-        type.getDirectives(),
+        getDirectives(type),
         DirectiveLocation.ENUM,
       );
     } else if (isInputObjectType(type)) {
@@ -324,14 +323,14 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure directives are valid
       validateDirectivesAtLocation(
         context,
-        type.getDirectives(),
+        getDirectives(type),
         DirectiveLocation.INPUT_OBJECT,
       );
     } else if (isScalarType(type)) {
       // Ensure directives are valid
       validateDirectivesAtLocation(
         context,
-        type.getDirectives(),
+        getDirectives(type),
         DirectiveLocation.SCALAR,
       );
     }
@@ -733,6 +732,12 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
     }
   }
   return result;
+}
+
+function getDirectives(
+  object: GraphQLSchema | GraphQLNamedType,
+): $ReadOnlyArray<DirectiveNode> {
+  return getAllSubNodes(object, node => node.directives);
 }
 
 function getImplementsInterfaceNode(
