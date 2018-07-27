@@ -20,6 +20,7 @@ import {
   GraphQLString,
 } from '../../';
 import { parse } from '../../language/parser';
+import { Source } from '../../language/source';
 import { validateSchema } from '../validate';
 import { buildSchema } from '../../utilities/buildASTSchema';
 import { extendSchema } from '../../utilities/extendSchema';
@@ -724,6 +725,10 @@ describe('Type System: Input Objects must have fields', () => {
         message:
           'Input Object type SomeInputObject must define one or more fields.',
         locations: [{ line: 6, column: 7 }, { line: 4, column: 9 }],
+      },
+      {
+        message: 'Directive @test not allowed at INPUT_OBJECT location.',
+        locations: [{ line: 4, column: 38 }, { line: 2, column: 9 }],
       },
     ]);
   });
@@ -1836,16 +1841,16 @@ describe('Type System: Schema directives must validate', () => {
       }
 
       type Query @testA @testB {
-        test: AnInterface @testB
+        test: AnInterface @testC
       }
 
-      directive @testA on SCHEMA | OBJECT | INTERFACE | UNION | SCALAR | INPUT_OBJECT
-      directive @testB on SCHEMA | OBJECT | INTERFACE | UNION | SCALAR | INPUT_OBJECT
+      directive @testA on SCHEMA | OBJECT | INTERFACE | UNION | SCALAR | INPUT_OBJECT | ENUM
+      directive @testB on SCHEMA | OBJECT | INTERFACE | UNION | SCALAR | INPUT_OBJECT | ENUM
       directive @testC on FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
       directive @testD on FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
 
       interface AnInterface @testA {
-        field: String! @testB
+        field: String! @testC
       }
 
       type TypeA implements AnInterface @testA {
@@ -1889,109 +1894,225 @@ describe('Type System: Schema directives must validate', () => {
     ]);
   });
 
-  it('rejects a Schema with same schema directive used twice', () => {
+  it('rejects a Schema with same directive used twice per location', () => {
     const schema = buildSchema(`
-      schema @testA @testA {
+      directive @schema on SCHEMA
+      directive @object on OBJECT
+      directive @interface on INTERFACE
+      directive @union on UNION
+      directive @scalar on SCALAR
+      directive @input_object on INPUT_OBJECT
+      directive @enum on ENUM
+      directive @field_definition on FIELD_DEFINITION
+      directive @enum_value on ENUM_VALUE
+      directive @input_field_definition on INPUT_FIELD_DEFINITION
+      directive @argument_definition on ARGUMENT_DEFINITION
+
+      schema @schema @schema {
         query: Query
       }
-      type Query {
-        test: String
+
+      type Query implements SomeInterface @object @object {
+        test(arg: SomeInput @argument_definition @argument_definition): String
       }
 
-      directive @testA on SCHEMA
+      interface SomeInterface @interface @interface {
+        test: String @field_definition @field_definition
+      }
+
+      union SomeUnion @union @union = Query
+
+      scalar SomeScalar @scalar @scalar
+
+      enum SomeEnum @enum @enum {
+        SOME_VALUE @enum_value @enum_value
+      }
+
+      input SomeInput @input_object @input_object {
+        some_input_field: String @input_field_definition @input_field_definition
+      }
     `);
     expect(validateSchema(schema)).to.deep.equal([
       {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 2, column: 14 }, { line: 2, column: 21 }],
+        message: 'Directive @schema used twice at the same location.',
+        locations: [{ line: 14, column: 14 }, { line: 14, column: 22 }],
+      },
+      {
+        message:
+          'Directive @argument_definition used twice at the same location.',
+        locations: [{ line: 19, column: 29 }, { line: 19, column: 50 }],
+      },
+      {
+        message: 'Directive @object used twice at the same location.',
+        locations: [{ line: 18, column: 43 }, { line: 18, column: 51 }],
+      },
+      {
+        message: 'Directive @field_definition used twice at the same location.',
+        locations: [{ line: 23, column: 22 }, { line: 23, column: 40 }],
+      },
+      {
+        message: 'Directive @interface used twice at the same location.',
+        locations: [{ line: 22, column: 31 }, { line: 22, column: 42 }],
+      },
+      {
+        message:
+          'Directive @input_field_definition not allowed at FIELD_DEFINITION location.',
+        locations: [{ line: 35, column: 34 }, { line: 11, column: 7 }],
+      },
+      {
+        message:
+          'Directive @input_field_definition not allowed at FIELD_DEFINITION location.',
+        locations: [{ line: 35, column: 58 }, { line: 11, column: 7 }],
+      },
+      {
+        message:
+          'Directive @input_field_definition used twice at the same location.',
+        locations: [{ line: 35, column: 34 }, { line: 35, column: 58 }],
+      },
+      {
+        message: 'Directive @input_object used twice at the same location.',
+        locations: [{ line: 34, column: 23 }, { line: 34, column: 37 }],
+      },
+      {
+        message: 'Directive @union used twice at the same location.',
+        locations: [{ line: 26, column: 23 }, { line: 26, column: 30 }],
+      },
+      {
+        message: 'Directive @scalar used twice at the same location.',
+        locations: [{ line: 28, column: 25 }, { line: 28, column: 33 }],
+      },
+      {
+        message: 'Directive @enum_value used twice at the same location.',
+        locations: [{ line: 31, column: 20 }, { line: 31, column: 32 }],
+      },
+      {
+        message: 'Directive @enum used twice at the same location.',
+        locations: [{ line: 30, column: 21 }, { line: 30, column: 27 }],
       },
     ]);
   });
 
-  it('rejects a Schema with same definition directive used twice', () => {
-    const schema = buildSchema(`
-      directive @testA on OBJECT | INTERFACE | UNION | SCALAR | INPUT_OBJECT
+  it('rejects a Schema with directive used again in extension', () => {
+    const schema = buildSchema(
+      new Source(`
+        directive @testA on OBJECT
 
-      type Query implements SomeInterface @testA @testA {
-        test: String
-      }
-
-      interface SomeInterface @testA @testA {
-        test: String
-      }
-
-      union SomeUnion @testA @testA = Query
-
-      scalar SomeScalar @testA @testA
-
-      enum SomeEnum @testA @testA {
-        SOME_VALUE
-      }
-
-      input SomeInput @testA @testA {
-        some_input_field: String
-      }
-    `);
-    expect(validateSchema(schema)).to.deep.equal([
+        type Query @testA {
+          test: String
+        }
+      `),
+      'schema.graphql',
+    );
+    const extensions = parse(
+      new Source(
+        `
+          extend type Query @testA
+        `,
+        'extensions.graphql',
+      ),
+    );
+    const extendedSchema = extendSchema(schema, extensions);
+    expect(validateSchema(extendedSchema)).to.deep.equal([
       {
         message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 4, column: 43 }, { line: 4, column: 50 }],
-      },
-      {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 8, column: 31 }, { line: 8, column: 38 }],
-      },
-      {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 12, column: 23 }, { line: 12, column: 30 }],
-      },
-      {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 14, column: 25 }, { line: 14, column: 32 }],
-      },
-      {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 16, column: 21 }, { line: 16, column: 28 }],
-      },
-      {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 20, column: 23 }, { line: 20, column: 30 }],
+        locations: [{ line: 4, column: 20 }, { line: 2, column: 29 }],
       },
     ]);
   });
 
-  it('rejects a Schema with same field and arg directive used twice', () => {
+  it('rejects a Schema with directives used in wrong location', () => {
     const schema = buildSchema(`
-      directive @testA on FIELD_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
+      directive @schema on SCHEMA
+      directive @object on OBJECT
+      directive @interface on INTERFACE
+      directive @union on UNION
+      directive @scalar on SCALAR
+      directive @input_object on INPUT_OBJECT
+      directive @enum on ENUM
+      directive @field_definition on FIELD_DEFINITION
+      directive @enum_value on ENUM_VALUE
+      directive @input_field_definition on INPUT_FIELD_DEFINITION
+      directive @argument_definition on ARGUMENT_DEFINITION
 
-      type Query implements SomeInterface {
-        test(arg: String @testA @testA): String @testA @testA
+      schema @object {
+        query: Query
       }
 
-      interface SomeInterface {
-        test: String @testA @testA
+      type Query implements SomeInterface @schema {
+        test(arg: SomeInput @field_definition): String
       }
 
-      input SomeInput {
-        some_input_field: String @testA @testA
+      interface SomeInterface @interface {
+        test: String @argument_definition
+      }
+
+      union SomeUnion @interface = Query
+
+      scalar SomeScalar @enum_value
+
+      enum SomeEnum @input_object {
+        SOME_VALUE @enum
+      }
+
+      input SomeInput @object {
+        some_input_field: String @union
       }
     `);
-    expect(validateSchema(schema)).to.deep.equal([
+    const extensions = parse(
+      new Source(
+        `
+          extend type Query @testA
+        `,
+        'extensions.graphql',
+      ),
+    );
+    const extendedSchema = extendSchema(schema, extensions);
+    expect(validateSchema(extendedSchema)).to.deep.equal([
       {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 5, column: 26 }, { line: 5, column: 33 }],
+        message: 'Directive @object not allowed at SCHEMA location.',
+        locations: [{ line: 14, column: 14 }, { line: 3, column: 7 }],
       },
       {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 5, column: 49 }, { line: 5, column: 56 }],
+        message:
+          'Directive @field_definition not allowed at ARGUMENT_DEFINITION location.',
+        locations: [{ line: 19, column: 29 }, { line: 9, column: 7 }],
       },
       {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 9, column: 22 }, { line: 9, column: 29 }],
+        message: 'Directive @schema not allowed at OBJECT location.',
+        locations: [{ line: 18, column: 43 }, { line: 2, column: 7 }],
       },
       {
-        message: 'Directive @testA used twice at the same location.',
-        locations: [{ line: 13, column: 34 }, { line: 13, column: 41 }],
+        message: 'No directive @testA defined.',
+        locations: [{ line: 2, column: 29 }],
+      },
+      {
+        message:
+          'Directive @argument_definition not allowed at FIELD_DEFINITION location.',
+        locations: [{ line: 23, column: 22 }, { line: 12, column: 7 }],
+      },
+      {
+        message: 'Directive @union not allowed at FIELD_DEFINITION location.',
+        locations: [{ line: 35, column: 34 }, { line: 5, column: 7 }],
+      },
+      {
+        message: 'Directive @object not allowed at INPUT_OBJECT location.',
+        locations: [{ line: 34, column: 23 }, { line: 3, column: 7 }],
+      },
+      {
+        message: 'Directive @interface not allowed at UNION location.',
+        locations: [{ line: 26, column: 23 }, { line: 4, column: 7 }],
+      },
+      {
+        message: 'Directive @enum_value not allowed at SCALAR location.',
+        locations: [{ line: 28, column: 25 }, { line: 10, column: 7 }],
+      },
+      {
+        message: 'Directive @enum not allowed at ENUM_VALUE location.',
+        locations: [{ line: 31, column: 20 }, { line: 8, column: 7 }],
+      },
+      {
+        message: 'Directive @input_object not allowed at ENUM location.',
+        locations: [{ line: 30, column: 21 }, { line: 7, column: 7 }],
       },
     ]);
   });

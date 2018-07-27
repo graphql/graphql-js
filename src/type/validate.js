@@ -16,6 +16,8 @@ import type {
   NamedTypeNode,
   TypeNode,
 } from '../language/ast';
+import { DirectiveLocation } from '../language/directiveLocation';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
 import type {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -42,6 +44,7 @@ import {
   isNonNullType,
   isObjectType,
   isOutputType,
+  isScalarType,
   isUnionType,
 } from './definition';
 import { isDirective } from './directives';
@@ -76,7 +79,11 @@ export function validateSchema(
 
   // Validate directives that are used on the schema
   if (schema.astNode && schema.astNode.directives) {
-    validateNoDuplicateDirectives(context, schema.astNode.directives);
+    validateDirectivesAtLocation(
+      context,
+      schema.astNode.directives,
+      DirectiveLocation.SCHEMA,
+    );
   }
 
   validateTypes(context);
@@ -262,8 +269,6 @@ function validateTypes(context: SchemaValidationContext): void {
       continue;
     }
 
-    validateNoDuplicateDirectives(context, type.getDirectives());
-
     // Ensure it is named correctly (excluding introspection types).
     if (!isIntrospectionType(type)) {
       validateName(context, type);
@@ -275,29 +280,90 @@ function validateTypes(context: SchemaValidationContext): void {
 
       // Ensure objects implement the interfaces they claim to.
       validateObjectInterfaces(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        type.getDirectives(),
+        DirectiveLocation.OBJECT,
+      );
     } else if (isInterfaceType(type)) {
       // Ensure fields are valid.
       validateFields(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        type.getDirectives(),
+        DirectiveLocation.INTERFACE,
+      );
     } else if (isUnionType(type)) {
       // Ensure Unions include valid member types.
       validateUnionMembers(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        type.getDirectives(),
+        DirectiveLocation.UNION,
+      );
     } else if (isEnumType(type)) {
       // Ensure Enums have valid values.
       validateEnumValues(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        type.getDirectives(),
+        DirectiveLocation.ENUM,
+      );
     } else if (isInputObjectType(type)) {
       // Ensure Input Object fields are valid.
       validateInputFields(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        type.getDirectives(),
+        DirectiveLocation.INPUT_OBJECT,
+      );
+    } else if (isScalarType(type)) {
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        type.getDirectives(),
+        DirectiveLocation.SCALAR,
+      );
     }
   }
 }
 
-function validateNoDuplicateDirectives(
+function validateDirectivesAtLocation(
   context: SchemaValidationContext,
   directives: $ReadOnlyArray<DirectiveNode>,
+  location: DirectiveLocationEnum,
 ): void {
   const directivesNamed = new Map();
+  const schema = context.schema;
   for (const directive of directives) {
     const directiveName = directive.name.value;
+
+    // Ensure directive used is also defined
+    const schemaDirective = schema.getDirective(directiveName);
+    if (!schemaDirective) {
+      context.reportError(`No directive @${directiveName} defined.`, directive);
+      continue;
+    }
+    if (!schemaDirective.locations.includes(location)) {
+      const errorNodes = schemaDirective.astNode
+        ? [directive, schemaDirective.astNode]
+        : [directive];
+      context.reportError(
+        `Directive @${directiveName} not allowed at ${location} location.`,
+        errorNodes,
+      );
+    }
+
     const existingNodes = directivesNamed.get(directiveName) || [];
     existingNodes.push(directive);
     directivesNamed.set(directiveName, existingNodes);
@@ -379,13 +445,21 @@ function validateFields(
 
       // Ensure argument definition directives are valid
       if (arg.astNode && arg.astNode.directives) {
-        validateNoDuplicateDirectives(context, arg.astNode.directives);
+        validateDirectivesAtLocation(
+          context,
+          arg.astNode.directives,
+          DirectiveLocation.ARGUMENT_DEFINITION,
+        );
       }
     }
 
     // Ensure any directives are valid
     if (field.astNode && field.astNode.directives) {
-      validateNoDuplicateDirectives(context, field.astNode.directives);
+      validateDirectivesAtLocation(
+        context,
+        field.astNode.directives,
+        DirectiveLocation.FIELD_DEFINITION,
+      );
     }
   }
 }
@@ -580,7 +654,11 @@ function validateEnumValues(
 
     // Ensure valid directives
     if (enumValue.astNode && enumValue.astNode.directives) {
-      validateNoDuplicateDirectives(context, enumValue.astNode.directives);
+      validateDirectivesAtLocation(
+        context,
+        enumValue.astNode.directives,
+        DirectiveLocation.ENUM_VALUE,
+      );
     }
   }
 }
@@ -616,7 +694,11 @@ function validateInputFields(
 
     // Ensure valid directives
     if (field.astNode && field.astNode.directives) {
-      validateNoDuplicateDirectives(context, field.astNode.directives);
+      validateDirectivesAtLocation(
+        context,
+        field.astNode.directives,
+        DirectiveLocation.FIELD_DEFINITION,
+      );
     }
   }
 }
