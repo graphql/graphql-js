@@ -64,7 +64,7 @@ export const QueryDocumentKeys = {
     'directives',
     'selectionSet',
   ],
-  VariableDefinition: ['variable', 'type', 'defaultValue'],
+  VariableDefinition: ['variable', 'type', 'directives', 'defaultValue'],
   Variable: ['name'],
   SelectionSet: ['selections'],
   Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],

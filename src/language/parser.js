@@ -332,7 +332,7 @@ function parseVariableDefinitions(
 }
 
 /**
- * VariableDefinition : Variable : Type DefaultValue?
+ * VariableDefinition : Variable : Type Directives? DefaultValue?
  */
 function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
   const start = lexer.token;
@@ -340,6 +340,7 @@ function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
     kind: Kind.VARIABLE_DEFINITION,
     variable: parseVariable(lexer),
     type: (expect(lexer, TokenKind.COLON), parseTypeReference(lexer)),
+    directives: parseDirectives(lexer, false),
     defaultValue: skip(lexer, TokenKind.EQUALS)
       ? parseValueLiteral(lexer, true)
       : undefined,

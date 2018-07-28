@@ -64,6 +64,15 @@ describe('Printer: Query document', () => {
       }
     `);
 
+    const queryAstWithVariableDirective = parse(
+      'query ($foo: TestType @testDirective(if: true) @test = {a: 123}) { id }',
+    );
+    expect(print(queryAstWithVariableDirective)).to.equal(dedent`
+      query ($foo: TestType @testDirective(if: true) @test = {a: 123}) {
+        id
+      }
+    `);
+
     const mutationAstWithArtifacts = parse(
       'mutation ($foo: TestType) @testDirective { id, name }',
     );

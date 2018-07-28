@@ -106,6 +106,12 @@ describe('Parser', () => {
     );
   });
 
+  it('parses variable definition directives', () => {
+    expect(() =>
+      parse('query Foo($x: Boolean @bar = false) { field }'),
+    ).to.not.throw();
+  });
+
   it('does not accept fragments named "on"', () => {
     expectSyntaxError('fragment on on on { on }', 'Unexpected Name "on"', {
       line: 1,
