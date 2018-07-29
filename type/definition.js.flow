@@ -651,12 +651,11 @@ export class GraphQLObjectType {
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
-    if (config.isTypeOf) {
-      invariant(
-        typeof config.isTypeOf === 'function',
-        `${this.name} must provide "isTypeOf" as a function.`,
-      );
-    }
+    invariant(
+      config.isTypeOf == null || typeof config.isTypeOf === 'function',
+      `${this.name} must provide "isTypeOf" as a function, ` +
+        `but got: ${inspect(config.isTypeOf)}.`,
+    );
   }
 
   getFields(): GraphQLFieldMap<*, *> {
@@ -724,7 +723,7 @@ function defineFieldMap<TSource, TContext>(
       name: fieldName,
     };
     invariant(
-      isValidResolver(field.resolve),
+      field.resolve == null || typeof field.resolve === 'function',
       `${config.name}.${fieldName} field resolver must be a function if ` +
         `provided, but got: ${inspect(field.resolve)}.`,
     );
@@ -755,11 +754,6 @@ function defineFieldMap<TSource, TContext>(
 
 function isPlainObj(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
-}
-
-// If a resolver is defined, it must be a function.
-function isValidResolver(resolver: mixed): boolean {
-  return resolver == null || typeof resolver === 'function';
 }
 
 export type GraphQLObjectTypeConfig<TSource, TContext> = {|
@@ -903,12 +897,11 @@ export class GraphQLInterfaceType {
     this.resolveType = config.resolveType;
     this._fields = defineFieldMap.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
-    if (config.resolveType) {
-      invariant(
-        typeof config.resolveType === 'function',
-        `${this.name} must provide "resolveType" as a function.`,
-      );
-    }
+    invariant(
+      config.resolveType == null || typeof config.resolveType === 'function',
+      `${this.name} must provide "resolveType" as a function, ` +
+        `but got: ${inspect(config.resolveType)}.`,
+    );
   }
 
   getFields(): GraphQLFieldMap<*, *> {
@@ -981,12 +974,11 @@ export class GraphQLUnionType {
     this.resolveType = config.resolveType;
     this._types = defineTypes.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
-    if (config.resolveType) {
-      invariant(
-        typeof config.resolveType === 'function',
-        `${this.name} must provide "resolveType" as a function.`,
-      );
-    }
+    invariant(
+      config.resolveType == null || typeof config.resolveType === 'function',
+      `${this.name} must provide "resolveType" as a function, ` +
+        `but got: ${inspect(config.resolveType)}.`,
+    );
   }
 
   getTypes(): Array<GraphQLObjectType> {

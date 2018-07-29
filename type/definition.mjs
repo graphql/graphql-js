@@ -419,10 +419,7 @@ function () {
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
-
-    if (config.isTypeOf) {
-      !(typeof config.isTypeOf === 'function') ? invariant(0, "".concat(this.name, " must provide \"isTypeOf\" as a function.")) : void 0;
-    }
+    !(config.isTypeOf == null || typeof config.isTypeOf === 'function') ? invariant(0, "".concat(this.name, " must provide \"isTypeOf\" as a function, ") + "but got: ".concat(inspect(config.isTypeOf), ".")) : void 0;
   }
 
   var _proto2 = GraphQLObjectType.prototype;
@@ -477,7 +474,7 @@ function defineFieldMap(config) {
       name: fieldName
     });
 
-    !isValidResolver(field.resolve) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat(inspect(field.resolve), ".")) : void 0;
+    !(field.resolve == null || typeof field.resolve === 'function') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat(inspect(field.resolve), ".")) : void 0;
     var argsConfig = fieldConfig.args;
 
     if (!argsConfig) {
@@ -508,11 +505,6 @@ function defineFieldMap(config) {
 
 function isPlainObj(obj) {
   return obj && _typeof(obj) === 'object' && !Array.isArray(obj);
-} // If a resolver is defined, it must be a function.
-
-
-function isValidResolver(resolver) {
-  return resolver == null || typeof resolver === 'function';
 }
 
 /**
@@ -556,10 +548,7 @@ function () {
     this.resolveType = config.resolveType;
     this._fields = defineFieldMap.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
-
-    if (config.resolveType) {
-      !(typeof config.resolveType === 'function') ? invariant(0, "".concat(this.name, " must provide \"resolveType\" as a function.")) : void 0;
-    }
+    !(config.resolveType == null || typeof config.resolveType === 'function') ? invariant(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat(inspect(config.resolveType), ".")) : void 0;
   }
 
   var _proto3 = GraphQLInterfaceType.prototype;
@@ -628,10 +617,7 @@ function () {
     this.resolveType = config.resolveType;
     this._types = defineTypes.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
-
-    if (config.resolveType) {
-      !(typeof config.resolveType === 'function') ? invariant(0, "".concat(this.name, " must provide \"resolveType\" as a function.")) : void 0;
-    }
+    !(config.resolveType == null || typeof config.resolveType === 'function') ? invariant(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat(inspect(config.resolveType), ".")) : void 0;
   }
 
   var _proto4 = GraphQLUnionType.prototype;
