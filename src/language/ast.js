@@ -224,8 +224,8 @@ export type VariableDefinitionNode = {
   +loc?: Location,
   +variable: VariableNode,
   +type: TypeNode,
-  +directives?: $ReadOnlyArray<DirectiveNode>,
   +defaultValue?: ValueNode,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
 };
 
 export type VariableNode = {

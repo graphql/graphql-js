@@ -108,7 +108,7 @@ describe('Parser', () => {
 
   it('parses variable definition directives', () => {
     expect(() =>
-      parse('query Foo($x: Boolean @bar = false) { field }'),
+      parse('query Foo($x: Boolean = false @bar) { field }'),
     ).to.not.throw();
   });
 

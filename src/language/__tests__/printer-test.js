@@ -65,10 +65,10 @@ describe('Printer: Query document', () => {
     `);
 
     const queryAstWithVariableDirective = parse(
-      'query ($foo: TestType @testDirective(if: true) @test = {a: 123}) { id }',
+      'query ($foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
     );
     expect(print(queryAstWithVariableDirective)).to.equal(dedent`
-      query ($foo: TestType @testDirective(if: true) @test = {a: 123}) {
+      query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
         id
       }
     `);
