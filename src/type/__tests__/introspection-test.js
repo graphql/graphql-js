@@ -747,6 +747,11 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
+                  name: 'VARIABLE_DEFINITION',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
                   name: 'SCHEMA',
                   isDeprecated: false,
                   deprecationReason: null,

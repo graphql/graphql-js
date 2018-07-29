@@ -375,6 +375,10 @@ export const testSchema = new GraphQLSchema({
       locations: ['INLINE_FRAGMENT'],
     }),
     new GraphQLDirective({
+      name: 'onVariableDefinition',
+      locations: ['VARIABLE_DEFINITION'],
+    }),
+    new GraphQLDirective({
       name: 'onSchema',
       locations: ['SCHEMA'],
     }),
