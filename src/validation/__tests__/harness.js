@@ -7,7 +7,7 @@
 
 import { expect } from 'chai';
 import { parse } from '../../language';
-import { validate } from '../validate';
+import { validate, validateSDL } from '../validate';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -447,4 +447,9 @@ export function expectPassesRuleWithSchema(schema, rule, queryString) {
 
 export function expectFailsRuleWithSchema(schema, rule, queryString, errors) {
   return expectInvalid(schema, rule, queryString, errors);
+}
+
+export function expectSDLErrorsFromRule(rule, sdlString, schema) {
+  const errors = validateSDL(parse(sdlString), schema, [rule]);
+  return expect(errors);
 }

@@ -127,4 +127,5 @@ import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
 // @internal
 export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = [
   LoneSchemaDefinition,
+  UniqueDirectivesPerLocation,
 ];
