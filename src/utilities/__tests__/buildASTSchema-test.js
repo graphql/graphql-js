@@ -787,6 +787,25 @@ describe('Schema Builder', () => {
     const errors = validateSchema(schema);
     expect(errors.length).to.equal(0);
   });
+
+  it('Rejects invalid SDL', () => {
+    const doc = parse(`
+      type Query {
+        foo: String @unknown
+      }
+    `);
+    expect(() => buildASTSchema(doc)).to.throw('Unknown directive "unknown".');
+  });
+
+  it('Allows to disable SDL validation', () => {
+    const body = `
+      type Query {
+        foo: String @unknown
+      }
+    `;
+    buildSchema(body, { assumeValid: true });
+    buildSchema(body, { assumeValidSDL: true });
+  });
 });
 
 describe('Failures', () => {

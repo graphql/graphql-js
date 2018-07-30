@@ -107,7 +107,7 @@ export function extendSchema(
     'Must provide valid Document AST',
   );
 
-  if (!options || !options.assumeValidSDL) {
+  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     assertValidSDLExtension(documentAST, schema);
   }
 

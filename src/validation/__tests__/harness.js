@@ -374,50 +374,6 @@ export const testSchema = new GraphQLSchema({
       name: 'onInlineFragment',
       locations: ['INLINE_FRAGMENT'],
     }),
-    new GraphQLDirective({
-      name: 'onSchema',
-      locations: ['SCHEMA'],
-    }),
-    new GraphQLDirective({
-      name: 'onScalar',
-      locations: ['SCALAR'],
-    }),
-    new GraphQLDirective({
-      name: 'onObject',
-      locations: ['OBJECT'],
-    }),
-    new GraphQLDirective({
-      name: 'onFieldDefinition',
-      locations: ['FIELD_DEFINITION'],
-    }),
-    new GraphQLDirective({
-      name: 'onArgumentDefinition',
-      locations: ['ARGUMENT_DEFINITION'],
-    }),
-    new GraphQLDirective({
-      name: 'onInterface',
-      locations: ['INTERFACE'],
-    }),
-    new GraphQLDirective({
-      name: 'onUnion',
-      locations: ['UNION'],
-    }),
-    new GraphQLDirective({
-      name: 'onEnum',
-      locations: ['ENUM'],
-    }),
-    new GraphQLDirective({
-      name: 'onEnumValue',
-      locations: ['ENUM_VALUE'],
-    }),
-    new GraphQLDirective({
-      name: 'onInputObject',
-      locations: ['INPUT_OBJECT'],
-    }),
-    new GraphQLDirective({
-      name: 'onInputFieldDefinition',
-      locations: ['INPUT_FIELD_DEFINITION'],
-    }),
   ],
 });
 

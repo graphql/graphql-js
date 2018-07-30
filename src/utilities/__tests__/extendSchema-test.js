@@ -1018,6 +1018,23 @@ describe('extendSchema', () => {
     expect(isScalarType(arg1.type)).to.equal(true);
   });
 
+  it('Rejects invalid SDL', () => {
+    const sdl = `
+      extend schema @unknown
+    `;
+    expect(() => extendTestSchema(sdl)).to.throw(
+      'Unknown directive "unknown".',
+    );
+  });
+
+  it('Allows to disable SDL validation', () => {
+    const sdl = `
+      extend schema @unknown
+    `;
+    extendTestSchema(sdl, { assumeValid: true });
+    extendTestSchema(sdl, { assumeValidSDL: true });
+  });
+
   it('does not allow replacing a default directive', () => {
     const sdl = `
       directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD

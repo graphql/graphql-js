@@ -120,7 +120,7 @@ export function buildASTSchema(
     throw new Error('Must provide a document ast.');
   }
 
-  if (!options || !options.assumeValidSDL) {
+  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     assertValidSDL(ast);
   }
 
