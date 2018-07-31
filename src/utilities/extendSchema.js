@@ -53,6 +53,7 @@ import type {
   DocumentNode,
   DirectiveDefinitionNode,
   SchemaExtensionNode,
+  SchemaDefinitionNode,
 } from '../language/ast';
 
 type Options = {|
@@ -106,6 +107,7 @@ export function extendSchema(
   // have the same name. For example, a type named "skip".
   const directiveDefinitions: Array<DirectiveDefinitionNode> = [];
 
+  let schemaDef: ?SchemaDefinitionNode;
   // Schema extensions are collected which may add additional operation types.
   const schemaExtensions: Array<SchemaExtensionNode> = [];
 
@@ -113,11 +115,20 @@ export function extendSchema(
     const def = documentAST.definitions[i];
     switch (def.kind) {
       case Kind.SCHEMA_DEFINITION:
-        // Sanity check that a schema extension is not defining a new schema
-        throw new GraphQLError(
-          'Cannot define a new schema within a schema extension.',
-          [def],
-        );
+        // Sanity check that a schema extension is not overriding the schema
+        if (
+          schema.astNode ||
+          schema.getQueryType() ||
+          schema.getMutationType() ||
+          schema.getSubscriptionType()
+        ) {
+          throw new GraphQLError(
+            'Cannot define a new schema within a schema extension.',
+            [def],
+          );
+        }
+        schemaDef = def;
+        break;
       case Kind.SCHEMA_EXTENSION:
         schemaExtensions.push(def);
         break;
@@ -216,9 +227,9 @@ export function extendSchema(
     subscription: extendMaybeNamedType(schema.getSubscriptionType()),
   };
 
-  // Then, incorporate all schema extensions.
-  for (const schemaExtension of schemaExtensions) {
-    if (schemaExtension.operationTypes) {
+  // Then, incorporate schema definition and all schema extensions.
+  for (const schemaExtension of [schemaDef, ...schemaExtensions]) {
+    if (schemaExtension && schemaExtension.operationTypes) {
       for (const operationType of schemaExtension.operationTypes) {
         const operation = operationType.operation;
         if (operationTypes[operation]) {

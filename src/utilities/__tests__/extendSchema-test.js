@@ -1271,7 +1271,7 @@ describe('extendSchema', () => {
       expect(schema.getMutationType()).to.equal(null);
     });
 
-    it('does not allow new schema within an extension', () => {
+    it('does not allow overriding schema within an extension', () => {
       const sdl = `
         schema {
           mutation: Mutation
@@ -1284,6 +1284,31 @@ describe('extendSchema', () => {
       expect(() => extendTestSchema(sdl)).to.throw(
         'Cannot define a new schema within a schema extension.',
       );
+    });
+
+    it('adds schema definition missing in the original schema', () => {
+      let schema = new GraphQLSchema({
+        directives: [
+          new GraphQLDirective({
+            name: 'onSchema',
+            locations: ['SCHEMA'],
+          }),
+        ],
+      });
+      expect(schema.getQueryType()).to.equal(undefined);
+
+      const ast = parse(`
+        schema @onSchema {
+          query: Foo
+        }
+
+        type Foo {
+          bar: String
+        }
+      `);
+      schema = extendSchema(schema, ast);
+      const queryType = schema.getQueryType();
+      expect(queryType).to.have.property('name', 'Foo');
     });
 
     it('adds new root types via schema extension', () => {
