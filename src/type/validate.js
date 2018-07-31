@@ -7,44 +7,50 @@
  * @flow strict
  */
 
-import {
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
-  isEnumType,
-  isInputObjectType,
-  isNonNullType,
-  isNamedType,
-  isInputType,
-  isOutputType,
-} from './definition';
-import type {
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-} from './definition';
-import { isDirective } from './directives';
-import type { GraphQLDirective } from './directives';
-import { isIntrospectionType } from './introspection';
-import { isSchema } from './schema';
-import type { GraphQLSchema } from './schema';
-import inspect from '../jsutils/inspect';
-import find from '../jsutils/find';
-import invariant from '../jsutils/invariant';
-import objectValues from '../jsutils/objectValues';
-import { GraphQLError } from '../error/GraphQLError';
 import type {
   ASTNode,
-  FieldDefinitionNode,
+  DirectiveNode,
   EnumValueDefinitionNode,
+  FieldDefinitionNode,
   InputValueDefinitionNode,
   NamedTypeNode,
   TypeNode,
 } from '../language/ast';
+import { DirectiveLocation } from '../language/directiveLocation';
+import type { DirectiveLocationEnum } from '../language/directiveLocation';
+import type {
+  GraphQLNamedType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLUnionType,
+} from './definition';
+import type { GraphQLDirective } from './directives';
+import type { GraphQLSchema } from './schema';
+
+import { GraphQLError } from '../error/GraphQLError';
+import find from '../jsutils/find';
+import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
+import objectValues from '../jsutils/objectValues';
 import { isValidNameError } from '../utilities/assertValidName';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
+import {
+  isEnumType,
+  isInputObjectType,
+  isInputType,
+  isInterfaceType,
+  isNamedType,
+  isNonNullType,
+  isObjectType,
+  isOutputType,
+  isScalarType,
+  isUnionType,
+} from './definition';
+import { isDirective } from './directives';
+import { isIntrospectionType } from './introspection';
+import { isSchema } from './schema';
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's
@@ -70,7 +76,15 @@ export function validateSchema(
   // Validate the schema, producing a list of errors.
   const context = new SchemaValidationContext(schema);
   validateRootTypes(context);
-  validateDirectives(context);
+  validateDirectiveDefinitions(context);
+
+  // Validate directives that are used on the schema
+  validateDirectivesAtLocation(
+    context,
+    getDirectives(schema),
+    DirectiveLocation.SCHEMA,
+  );
+
   validateTypes(context);
 
   // Persist the results of validation before returning to ensure validation
@@ -165,7 +179,10 @@ function getOperationTypeNode(
   return type.astNode;
 }
 
-function validateDirectives(context: SchemaValidationContext): void {
+function validateDirectiveDefinitions(context: SchemaValidationContext): void {
+  // Ensure no directive is defined multiple times
+  const directiveDefinitions = new Map();
+
   for (const directive of context.schema.getDirectives()) {
     // Ensure all directives are in fact GraphQL directives.
     if (!isDirective(directive)) {
@@ -175,6 +192,9 @@ function validateDirectives(context: SchemaValidationContext): void {
       );
       continue;
     }
+    const existingDefinitions = directiveDefinitions.get(directive.name) || [];
+    existingDefinitions.push(directive);
+    directiveDefinitions.set(directive.name, existingDefinitions);
 
     // Ensure they are named correctly.
     validateName(context, directive);
@@ -207,6 +227,15 @@ function validateDirectives(context: SchemaValidationContext): void {
           getDirectiveArgTypeNode(directive, argName),
         );
       }
+    }
+  }
+
+  for (const [directiveName, directiveList] of directiveDefinitions) {
+    if (directiveList.length > 1) {
+      context.reportError(
+        `Directive @${directiveName} defined multiple times.`,
+        directiveList.map(directive => directive.astNode).filter(Boolean),
+      );
     }
   }
 }
@@ -250,18 +279,101 @@ function validateTypes(context: SchemaValidationContext): void {
 
       // Ensure objects implement the interfaces they claim to.
       validateObjectInterfaces(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        getDirectives(type),
+        DirectiveLocation.OBJECT,
+      );
     } else if (isInterfaceType(type)) {
       // Ensure fields are valid.
       validateFields(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        getDirectives(type),
+        DirectiveLocation.INTERFACE,
+      );
     } else if (isUnionType(type)) {
       // Ensure Unions include valid member types.
       validateUnionMembers(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        getDirectives(type),
+        DirectiveLocation.UNION,
+      );
     } else if (isEnumType(type)) {
       // Ensure Enums have valid values.
       validateEnumValues(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        getDirectives(type),
+        DirectiveLocation.ENUM,
+      );
     } else if (isInputObjectType(type)) {
       // Ensure Input Object fields are valid.
       validateInputFields(context, type);
+
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        getDirectives(type),
+        DirectiveLocation.INPUT_OBJECT,
+      );
+    } else if (isScalarType(type)) {
+      // Ensure directives are valid
+      validateDirectivesAtLocation(
+        context,
+        getDirectives(type),
+        DirectiveLocation.SCALAR,
+      );
+    }
+  }
+}
+
+function validateDirectivesAtLocation(
+  context: SchemaValidationContext,
+  directives: $ReadOnlyArray<DirectiveNode>,
+  location: DirectiveLocationEnum,
+): void {
+  const directivesNamed = new Map();
+  const schema = context.schema;
+  for (const directive of directives) {
+    const directiveName = directive.name.value;
+
+    // Ensure directive used is also defined
+    const schemaDirective = schema.getDirective(directiveName);
+    if (!schemaDirective) {
+      context.reportError(`No directive @${directiveName} defined.`, directive);
+      continue;
+    }
+    if (!schemaDirective.locations.includes(location)) {
+      const errorNodes = schemaDirective.astNode
+        ? [directive, schemaDirective.astNode]
+        : [directive];
+      context.reportError(
+        `Directive @${directiveName} not allowed at ${location} location.`,
+        errorNodes,
+      );
+    }
+
+    const existingNodes = directivesNamed.get(directiveName) || [];
+    existingNodes.push(directive);
+    directivesNamed.set(directiveName, existingNodes);
+  }
+
+  for (const [directiveName, directiveList] of directivesNamed) {
+    if (directiveList.length > 1) {
+      context.reportError(
+        `Directive @${directiveName} used twice at the same location.`,
+        directiveList,
+      );
     }
   }
 }
@@ -329,6 +441,24 @@ function validateFields(
           getFieldArgTypeNode(type, field.name, argName),
         );
       }
+
+      // Ensure argument definition directives are valid
+      if (arg.astNode && arg.astNode.directives) {
+        validateDirectivesAtLocation(
+          context,
+          arg.astNode.directives,
+          DirectiveLocation.ARGUMENT_DEFINITION,
+        );
+      }
+    }
+
+    // Ensure any directives are valid
+    if (field.astNode && field.astNode.directives) {
+      validateDirectivesAtLocation(
+        context,
+        field.astNode.directives,
+        DirectiveLocation.FIELD_DEFINITION,
+      );
     }
   }
 }
@@ -520,6 +650,15 @@ function validateEnumValues(
         enumValue.astNode,
       );
     }
+
+    // Ensure valid directives
+    if (enumValue.astNode && enumValue.astNode.directives) {
+      validateDirectivesAtLocation(
+        context,
+        enumValue.astNode.directives,
+        DirectiveLocation.ENUM_VALUE,
+      );
+    }
   }
 }
 
@@ -549,6 +688,15 @@ function validateInputFields(
         `The type of ${inputObj.name}.${field.name} must be Input Type ` +
           `but got: ${inspect(field.type)}.`,
         field.astNode && field.astNode.type,
+      );
+    }
+
+    // Ensure valid directives
+    if (field.astNode && field.astNode.directives) {
+      validateDirectivesAtLocation(
+        context,
+        field.astNode.directives,
+        DirectiveLocation.FIELD_DEFINITION,
       );
     }
   }
@@ -584,6 +732,12 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
     }
   }
   return result;
+}
+
+function getDirectives(
+  object: GraphQLSchema | GraphQLNamedType,
+): $ReadOnlyArray<DirectiveNode> {
+  return getAllSubNodes(object, node => node.directives);
 }
 
 function getImplementsInterfaceNode(
