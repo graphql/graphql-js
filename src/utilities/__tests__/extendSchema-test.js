@@ -93,6 +93,26 @@ const SomeInputType = new GraphQLInputObjectType({
   }),
 });
 
+const FooDirective = new GraphQLDirective({
+  name: 'foo',
+  args: {
+    input: { type: SomeInputType },
+  },
+  locations: [
+    DirectiveLocation.SCHEMA,
+    DirectiveLocation.SCALAR,
+    DirectiveLocation.OBJECT,
+    DirectiveLocation.FIELD_DEFINITION,
+    DirectiveLocation.ARGUMENT_DEFINITION,
+    DirectiveLocation.INTERFACE,
+    DirectiveLocation.UNION,
+    DirectiveLocation.ENUM,
+    DirectiveLocation.ENUM_VALUE,
+    DirectiveLocation.INPUT_OBJECT,
+    DirectiveLocation.INPUT_FIELD_DEFINITION,
+  ],
+});
+
 const testSchema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
@@ -112,27 +132,7 @@ const testSchema = new GraphQLSchema({
     }),
   }),
   types: [FooType, BarType],
-  directives: specifiedDirectives.concat([
-    new GraphQLDirective({
-      name: 'foo',
-      args: {
-        input: { type: SomeInputType },
-      },
-      locations: [
-        DirectiveLocation.SCHEMA,
-        DirectiveLocation.SCALAR,
-        DirectiveLocation.OBJECT,
-        DirectiveLocation.FIELD_DEFINITION,
-        DirectiveLocation.ARGUMENT_DEFINITION,
-        DirectiveLocation.INTERFACE,
-        DirectiveLocation.UNION,
-        DirectiveLocation.ENUM,
-        DirectiveLocation.ENUM_VALUE,
-        DirectiveLocation.INPUT_OBJECT,
-        DirectiveLocation.INPUT_FIELD_DEFINITION,
-      ],
-    }),
-  ]),
+  directives: specifiedDirectives.concat([FooDirective]),
 });
 
 function extendTestSchema(sdl, options) {
@@ -1288,22 +1288,14 @@ describe('extendSchema', () => {
 
     it('adds schema definition missing in the original schema', () => {
       let schema = new GraphQLSchema({
-        directives: [
-          new GraphQLDirective({
-            name: 'onSchema',
-            locations: ['SCHEMA'],
-          }),
-        ],
+        directives: [FooDirective],
+        types: [FooType],
       });
       expect(schema.getQueryType()).to.equal(undefined);
 
       const ast = parse(`
-        schema @onSchema {
+        schema @foo {
           query: Foo
-        }
-
-        type Foo {
-          bar: String
         }
       `);
       schema = extendSchema(schema, ast);
