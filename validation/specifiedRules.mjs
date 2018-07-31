@@ -58,11 +58,11 @@ import { VariablesInAllowedPosition } from './rules/VariablesInAllowedPosition';
 import { OverlappingFieldsCanBeMerged } from './rules/OverlappingFieldsCanBeMerged'; // Spec Section: "Input Object Field Uniqueness"
 
 import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
-
 /**
  * This set includes all validation rules defined by the GraphQL spec.
  *
  * The order of the rules in this list has been adjusted to lead to the
  * most clear output when encountering multiple validation errors.
  */
+
 export var specifiedRules = [ExecutableDefinitions, UniqueOperationNames, LoneAnonymousOperation, SingleFieldSubscriptions, KnownTypeNames, FragmentsOnCompositeTypes, VariablesAreInputTypes, ScalarLeafs, FieldsOnCorrectType, UniqueFragmentNames, KnownFragmentNames, NoUnusedFragments, PossibleFragmentSpreads, NoFragmentCycles, UniqueVariableNames, NoUndefinedVariables, NoUnusedVariables, KnownDirectives, UniqueDirectivesPerLocation, KnownArgumentNames, UniqueArgumentNames, ValuesOfCorrectType, ProvidedRequiredArguments, VariablesInAllowedPosition, OverlappingFieldsCanBeMerged, UniqueInputFieldNames];
