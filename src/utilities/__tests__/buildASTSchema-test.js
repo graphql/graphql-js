@@ -969,6 +969,20 @@ describe('Failures', () => {
     );
   });
 
+  it('Does not consider directive names', () => {
+    const body = dedent`
+      schema {
+        query: Foo
+      }
+
+      directive @Foo on QUERY
+    `;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Specified query type "Foo" not found in document.',
+    );
+  });
+
   it('Does not consider operation names', () => {
     const body = dedent`
       schema {
