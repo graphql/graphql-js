@@ -9,6 +9,7 @@
 
 import invariant from '../jsutils/invariant';
 import type { GraphQLError } from '../error';
+import type { ASTVisitor } from '../language/visitor';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import type { DocumentNode } from '../language/ast';
 import type { GraphQLSchema } from '../type/schema';
@@ -36,7 +37,7 @@ import ValidationContext from './ValidationContext';
 export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
-  rules?: $ReadOnlyArray<any> = specifiedRules,
+  rules?: $ReadOnlyArray<(ValidationContext) => ASTVisitor> = specifiedRules,
   typeInfo?: TypeInfo = new TypeInfo(schema),
 ): $ReadOnlyArray<GraphQLError> {
   invariant(documentAST, 'Must provide document');
