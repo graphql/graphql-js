@@ -257,7 +257,7 @@ export type GraphQLSchemaValidationOptions = {|
   allowedLegacyNames?: ?$ReadOnlyArray<string>,
 |};
 
-export type GraphQLSchemaConfig = {
+export type GraphQLSchemaConfig = {|
   query?: ?GraphQLObjectType,
   mutation?: ?GraphQLObjectType,
   subscription?: ?GraphQLObjectType,
@@ -266,7 +266,7 @@ export type GraphQLSchemaConfig = {
   astNode?: ?SchemaDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<SchemaExtensionNode>,
   ...GraphQLSchemaValidationOptions,
-};
+|};
 
 function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (!type) {

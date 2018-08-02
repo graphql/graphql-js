@@ -86,13 +86,13 @@ export class GraphQLDirective {
 defineToStringTag(GraphQLDirective);
 defineToJSON(GraphQLDirective);
 
-export type GraphQLDirectiveConfig = {
+export type GraphQLDirectiveConfig = {|
   name: string,
   description?: ?string,
   locations: Array<DirectiveLocationEnum>,
   args?: ?GraphQLFieldConfigArgumentMap,
   astNode?: ?DirectiveDefinitionNode,
-};
+|};
 
 /**
  * Used to conditionally include fields or fragments.
