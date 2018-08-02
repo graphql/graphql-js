@@ -11,6 +11,7 @@ import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
+import { assertValidSDL } from '../validation/validate';
 import blockStringValue from '../language/blockStringValue';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
@@ -86,6 +87,13 @@ export type BuildSchemaOptions = {
    * Default: false
    */
   commentDescriptions?: boolean,
+
+  /**
+   * Set to true to assume the SDL is valid.
+   *
+   * Default: false
+   */
+  assumeValidSDL?: boolean,
 };
 
 /**
@@ -112,6 +120,10 @@ export function buildASTSchema(
     throw new Error('Must provide a document ast.');
   }
 
+  if (!options || !options.assumeValidSDL) {
+    assertValidSDL(ast);
+  }
+
   let schemaDef: ?SchemaDefinitionNode;
 
   const typeDefs: Array<TypeDefinitionNode> = [];
@@ -121,9 +133,6 @@ export function buildASTSchema(
     const d = ast.definitions[i];
     switch (d.kind) {
       case Kind.SCHEMA_DEFINITION:
-        if (schemaDef) {
-          throw new Error('Must provide only one schema definition.');
-        }
         schemaDef = d;
         break;
       case Kind.SCALAR_TYPE_DEFINITION:

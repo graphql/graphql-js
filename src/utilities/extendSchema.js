@@ -12,6 +12,7 @@ import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
+import { assertValidSDLExtension } from '../validation/validate';
 import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
@@ -67,6 +68,13 @@ type Options = {|
    * Default: false
    */
   commentDescriptions?: boolean,
+
+  /**
+   * Set to true to assume the SDL is valid.
+   *
+   * Default: false
+   */
+  assumeValidSDL?: boolean,
 |};
 
 /**
@@ -99,6 +107,10 @@ export function extendSchema(
     'Must provide valid Document AST',
   );
 
+  if (!options || !options.assumeValidSDL) {
+    assertValidSDLExtension(documentAST, schema);
+  }
+
   // Collect the type definitions and extensions found in the document.
   const typeDefinitionMap = Object.create(null);
   const typeExtensionsMap = Object.create(null);
@@ -115,18 +127,6 @@ export function extendSchema(
     const def = documentAST.definitions[i];
     switch (def.kind) {
       case Kind.SCHEMA_DEFINITION:
-        // Sanity check that a schema extension is not overriding the schema
-        if (
-          schema.astNode ||
-          schema.getQueryType() ||
-          schema.getMutationType() ||
-          schema.getSubscriptionType()
-        ) {
-          throw new GraphQLError(
-            'Cannot define a new schema within a schema extension.',
-            [def],
-          );
-        }
         schemaDef = def;
         break;
       case Kind.SCHEMA_EXTENSION:
