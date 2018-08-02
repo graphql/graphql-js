@@ -18,7 +18,7 @@
     "mocha": "--check-leaks --full-trace --timeout 15000 src/**/__tests__/**/*-test.js"
   },
   "engines": {
-    "node": "6.x || 8.x || 9.x || >= 10.x"
+    "node": "6.x || 8.x || >= 10.x"
   },
   "scripts": {
     "watch": "babel-node ./resources/watch.js",
