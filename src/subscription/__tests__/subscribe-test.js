@@ -882,10 +882,13 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should pass through error thrown in source event stream', async () => {
-    const erroringEmailSchema = emailSchemaWithResolvers(async function*() {
-      yield { email: { subject: 'Hello' } };
-      throw new Error('test error');
-    }, email => email);
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      async function*() {
+        yield { email: { subject: 'Hello' } };
+        throw new Error('test error');
+      },
+      email => email,
+    );
 
     const subscription = await subscribe(
       erroringEmailSchema,
