@@ -12,7 +12,7 @@ Object.defineProperty(exports, "validate", {
 Object.defineProperty(exports, "ValidationContext", {
   enumerable: true,
   get: function get() {
-    return _ValidationContext.default;
+    return _ValidationContext.ValidationContext;
   }
 });
 Object.defineProperty(exports, "specifiedRules", {
@@ -174,7 +174,7 @@ Object.defineProperty(exports, "VariablesInAllowedPositionRule", {
 
 var _validate = require("./validate");
 
-var _ValidationContext = _interopRequireDefault(require("./ValidationContext"));
+var _ValidationContext = require("./ValidationContext");
 
 var _specifiedRules = require("./specifiedRules");
 
@@ -227,5 +227,3 @@ var _ValuesOfCorrectType = require("./rules/ValuesOfCorrectType");
 var _VariablesAreInputTypes = require("./rules/VariablesAreInputTypes");
 
 var _VariablesInAllowedPosition = require("./rules/VariablesInAllowedPosition");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

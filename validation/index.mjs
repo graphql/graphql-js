@@ -6,10 +6,8 @@
  *
  *  strict
  */
-export { validate } from './validate'; // https://github.com/tc39/proposal-export-default-from
-
-import ValidationContext from './ValidationContext';
-export { ValidationContext };
+export { validate } from './validate';
+export { ValidationContext } from './ValidationContext';
 export { specifiedRules } from './specifiedRules'; // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 
 export { FieldsOnCorrectType as FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectType'; // Spec Section: "Fragments on Composite Types"

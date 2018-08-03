@@ -15,7 +15,7 @@ var _TypeInfo = require("../utilities/TypeInfo");
 
 var _specifiedRules = require("./specifiedRules");
 
-var _ValidationContext = _interopRequireDefault(require("./ValidationContext"));
+var _ValidationContext = require("./ValidationContext");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -50,7 +50,7 @@ function validate(schema, documentAST) {
   !documentAST ? (0, _invariant.default)(0, 'Must provide document') : void 0; // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);
-  var context = new _ValidationContext.default(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,
+  var context = new _ValidationContext.ValidationContext(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
 
   var visitor = (0, _visitor.visitInParallel)(rules.map(function (rule) {

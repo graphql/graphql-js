@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type ValidationContext from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import inspect from '../../jsutils/inspect';
 import keyMap from '../../jsutils/keyMap';

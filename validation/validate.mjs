@@ -11,7 +11,7 @@ import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules } from './specifiedRules';
-import ValidationContext from './ValidationContext';
+import { ValidationContext } from './ValidationContext';
 /**
  * Implements the "Validation" section of the spec.
  *

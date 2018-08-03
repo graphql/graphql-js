@@ -8,7 +8,7 @@
  */
 
 import type { ASTVisitor } from '../language/visitor';
-import type ValidationContext from './ValidationContext';
+import type { ValidationContext } from './ValidationContext';
 
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitions } from './rules/ExecutableDefinitions';

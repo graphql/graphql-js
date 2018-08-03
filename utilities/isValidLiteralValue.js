@@ -15,9 +15,7 @@ var _schema = require("../type/schema");
 
 var _ValuesOfCorrectType = require("../validation/rules/ValuesOfCorrectType");
 
-var _ValidationContext = _interopRequireDefault(require("../validation/ValidationContext"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ValidationContext = require("../validation/ValidationContext");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -42,7 +40,7 @@ function isValidLiteralValue(type, valueNode) {
     definitions: []
   };
   var typeInfo = new _TypeInfo.TypeInfo(emptySchema, undefined, type);
-  var context = new _ValidationContext.default(emptySchema, emptyDoc, typeInfo);
+  var context = new _ValidationContext.ValidationContext(emptySchema, emptyDoc, typeInfo);
   var visitor = (0, _ValuesOfCorrectType.ValuesOfCorrectType)(context);
   (0, _visitor.visit)(valueNode, (0, _visitor.visitWithTypeInfo)(typeInfo, visitor));
   return context.getErrors();

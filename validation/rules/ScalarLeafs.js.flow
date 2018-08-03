@@ -8,7 +8,7 @@
  */
 
 import inspect from '../../jsutils/inspect';
-import type ValidationContext from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { FieldNode } from '../../language/ast';
 import { getNamedType, isLeafType } from '../../type/definition';
