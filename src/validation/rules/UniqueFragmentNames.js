@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type ValidationContext from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -20,7 +20,7 @@ export function duplicateFragmentNameMessage(fragName: string): string {
  *
  * A GraphQL document is only valid if all defined fragments have unique names.
  */
-export function UniqueFragmentNames(context: ValidationContext): ASTVisitor {
+export function UniqueFragmentNames(context: ASTValidationContext): ASTVisitor {
   const knownFragmentNames = Object.create(null);
   return {
     OperationDefinition: () => false,

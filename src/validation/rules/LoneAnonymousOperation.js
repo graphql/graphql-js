@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type ValidationContext from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
@@ -22,7 +22,9 @@ export function anonOperationNotAloneMessage(): string {
  * A GraphQL document is only valid if when it contains an anonymous operation
  * (the query short-hand) that it contains only that one operation definition.
  */
-export function LoneAnonymousOperation(context: ValidationContext): ASTVisitor {
+export function LoneAnonymousOperation(
+  context: ASTValidationContext,
+): ASTVisitor {
   let operationCount = 0;
   return {
     Document(node) {
