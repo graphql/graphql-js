@@ -129,4 +129,6 @@ export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = [
   LoneSchemaDefinition,
   KnownDirectives,
   UniqueDirectivesPerLocation,
+  UniqueArgumentNames,
+  UniqueInputFieldNames,
 ];
