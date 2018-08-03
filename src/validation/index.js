@@ -9,9 +9,7 @@
 
 export { validate } from './validate';
 
-// https://github.com/tc39/proposal-export-default-from
-import ValidationContext from './ValidationContext';
-export { ValidationContext };
+export { ValidationContext } from './ValidationContext';
 
 export { specifiedRules } from './specifiedRules';
 

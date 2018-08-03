@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type ValidationContext from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { VariableDefinitionNode } from '../../language/ast';
 import { print } from '../../language/printer';
