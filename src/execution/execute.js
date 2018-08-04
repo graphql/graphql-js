@@ -1048,7 +1048,7 @@ function ensureValidRuntimeType(
         `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
         `value ${inspect(result)}, received "${inspect(runtimeType)}". ` +
         `Either the ${returnType.name} type should provide a "resolveType" ` +
-        'function or each possible types should provide an ' +
+        'function or each possible type should provide an ' +
         '"isTypeOf" function.',
       fieldNodes,
     );
