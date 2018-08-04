@@ -666,7 +666,7 @@ function ensureValidRuntimeType(runtimeTypeOrName, exeContext, returnType, field
   var runtimeType = typeof runtimeTypeOrName === 'string' ? exeContext.schema.getType(runtimeTypeOrName) : runtimeTypeOrName;
 
   if (!(0, _definition.isObjectType)(runtimeType)) {
-    throw new _error.GraphQLError("Abstract type ".concat(returnType.name, " must resolve to an Object type at ") + "runtime for field ".concat(info.parentType.name, ".").concat(info.fieldName, " with ") + "value ".concat((0, _inspect.default)(result), ", received \"").concat((0, _inspect.default)(runtimeType), "\". ") + "Either the ".concat(returnType.name, " type should provide a \"resolveType\" ") + 'function or each possible types should provide an ' + '"isTypeOf" function.', fieldNodes);
+    throw new _error.GraphQLError("Abstract type ".concat(returnType.name, " must resolve to an Object type at ") + "runtime for field ".concat(info.parentType.name, ".").concat(info.fieldName, " with ") + "value ".concat((0, _inspect.default)(result), ", received \"").concat((0, _inspect.default)(runtimeType), "\". ") + "Either the ".concat(returnType.name, " type should provide a \"resolveType\" ") + 'function or each possible type should provide an ' + '"isTypeOf" function.', fieldNodes);
   }
 
   if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
