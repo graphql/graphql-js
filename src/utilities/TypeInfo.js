@@ -139,8 +139,7 @@ export class TypeInfo {
     return this._enumValue;
   }
 
-  // Flow does not yet handle this case.
-  enter(node: any /* ASTNode */) {
+  enter(node: ASTNode) {
     const schema = this._schema;
     // Note: many of the types below are explicitly typed as "mixed" to drop
     // any assumptions of a valid schema to ensure runtime types are properly
