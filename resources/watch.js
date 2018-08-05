@@ -128,10 +128,10 @@ function parseFiles(filepaths) {
 function runTests(filepaths) {
   console.log('\nRunning Tests');
 
-  return exec('babel-node', [
-    './node_modules/.bin/_mocha',
+  return exec('mocha', [
     '--reporter', 'progress',
-    '--require', './resources/mocha-bootload',
+    '--require', '@babel/register',
+    '--require', '@babel/polyfill',
   ].concat(
     allTests(filepaths) ?
       filepaths.map(srcPath) :
