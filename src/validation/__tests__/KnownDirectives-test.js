@@ -6,12 +6,23 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { buildSchema } from '../../utilities';
+import {
+  expectPassesRule,
+  expectFailsRule,
+  expectSDLErrorsFromRule,
+} from './harness';
+
 import {
   KnownDirectives,
   unknownDirectiveMessage,
   misplacedDirectiveMessage,
 } from '../rules/KnownDirectives';
+
+const expectSDLErrors = expectSDLErrorsFromRule.bind(
+  undefined,
+  KnownDirectives,
+);
 
 function unknownDirective(directiveName, line, column) {
   return {
@@ -26,6 +37,20 @@ function misplacedDirective(directiveName, placement, line, column) {
     locations: [{ line, column }],
   };
 }
+
+const schemaWithSDLDirectives = buildSchema(`
+  directive @onSchema on SCHEMA
+  directive @onScalar on SCALAR
+  directive @onObject on OBJECT
+  directive @onFieldDefinition on FIELD_DEFINITION
+  directive @onArgumentDefinition on ARGUMENT_DEFINITION
+  directive @onInterface on INTERFACE
+  directive @onUnion on UNION
+  directive @onEnum on ENUM
+  directive @onEnumValue on ENUM_VALUE
+  directive @onInputObject on INPUT_OBJECT
+  directive @onInputFieldDefinition on INPUT_FIELD_DEFINITION
+`);
 
 describe('Validate: Known directives', () => {
   it('with no directives', () => {
@@ -138,10 +163,36 @@ describe('Validate: Known directives', () => {
     );
   });
 
-  describe('within schema language', () => {
+  describe('within SDL', () => {
+    it('with directive defined inside SDL', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @test
+        }
+
+        directive @test on FIELD_DEFINITION
+      `).to.deep.equal([]);
+    });
+
+    it('with standard directive', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @deprecated
+        }
+      `).to.deep.equal([]);
+    });
+
+    it('with overrided standard directive', () => {
+      expectSDLErrors(`
+        schema @deprecated {
+          query: Query
+        }
+        directive @deprecated on SCHEMA
+      `).to.deep.equal([]);
+    });
+
     it('with well placed directives', () => {
-      expectPassesRule(
-        KnownDirectives,
+      expectSDLErrors(
         `
         type MyObj implements MyInterface @onObject {
           myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
@@ -180,13 +231,13 @@ describe('Validate: Known directives', () => {
         }
 
         extend schema @onSchema
-      `,
-      );
+        `,
+        schemaWithSDLDirectives,
+      ).to.deep.equal([]);
     });
 
     it('with misplaced directives', () => {
-      expectFailsRule(
-        KnownDirectives,
+      expectSDLErrors(
         `
         type MyObj implements MyInterface @onInterface {
           myField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
@@ -213,49 +264,39 @@ describe('Validate: Known directives', () => {
         }
 
         extend schema @onObject
-      `,
-        [
-          misplacedDirective('onInterface', 'OBJECT', 2, 43),
-          misplacedDirective(
-            'onInputFieldDefinition',
-            'ARGUMENT_DEFINITION',
-            3,
-            30,
-          ),
-          misplacedDirective(
-            'onInputFieldDefinition',
-            'FIELD_DEFINITION',
-            3,
-            63,
-          ),
-          misplacedDirective('onEnum', 'SCALAR', 6, 25),
-          misplacedDirective('onObject', 'INTERFACE', 8, 31),
-          misplacedDirective(
-            'onInputFieldDefinition',
-            'ARGUMENT_DEFINITION',
-            9,
-            30,
-          ),
-          misplacedDirective(
-            'onInputFieldDefinition',
-            'FIELD_DEFINITION',
-            9,
-            63,
-          ),
-          misplacedDirective('onEnumValue', 'UNION', 12, 23),
-          misplacedDirective('onScalar', 'ENUM', 14, 21),
-          misplacedDirective('onUnion', 'ENUM_VALUE', 15, 20),
-          misplacedDirective('onEnum', 'INPUT_OBJECT', 18, 23),
-          misplacedDirective(
-            'onArgumentDefinition',
-            'INPUT_FIELD_DEFINITION',
-            19,
-            24,
-          ),
-          misplacedDirective('onObject', 'SCHEMA', 22, 16),
-          misplacedDirective('onObject', 'SCHEMA', 26, 23),
-        ],
-      );
+        `,
+        schemaWithSDLDirectives,
+      ).to.deep.equal([
+        misplacedDirective('onInterface', 'OBJECT', 2, 43),
+        misplacedDirective(
+          'onInputFieldDefinition',
+          'ARGUMENT_DEFINITION',
+          3,
+          30,
+        ),
+        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 3, 63),
+        misplacedDirective('onEnum', 'SCALAR', 6, 25),
+        misplacedDirective('onObject', 'INTERFACE', 8, 31),
+        misplacedDirective(
+          'onInputFieldDefinition',
+          'ARGUMENT_DEFINITION',
+          9,
+          30,
+        ),
+        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 9, 63),
+        misplacedDirective('onEnumValue', 'UNION', 12, 23),
+        misplacedDirective('onScalar', 'ENUM', 14, 21),
+        misplacedDirective('onUnion', 'ENUM_VALUE', 15, 20),
+        misplacedDirective('onEnum', 'INPUT_OBJECT', 18, 23),
+        misplacedDirective(
+          'onArgumentDefinition',
+          'INPUT_FIELD_DEFINITION',
+          19,
+          24,
+        ),
+        misplacedDirective('onObject', 'SCHEMA', 22, 16),
+        misplacedDirective('onObject', 'SCHEMA', 26, 23),
+      ]);
     });
   });
 });

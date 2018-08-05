@@ -6,11 +6,21 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import {
+  expectPassesRule,
+  expectFailsRule,
+  expectSDLErrorsFromRule,
+} from './harness';
+
 import {
   UniqueDirectivesPerLocation,
   duplicateDirectiveMessage,
 } from '../rules/UniqueDirectivesPerLocation';
+
+const expectSDLErrors = expectSDLErrorsFromRule.bind(
+  undefined,
+  UniqueDirectivesPerLocation,
+);
 
 function duplicateDirective(directiveName, l1, c1, l2, c2) {
   return {
@@ -131,5 +141,40 @@ describe('Validate: Directives Are Unique Per Location', () => {
         duplicateDirective('directive', 3, 15, 3, 26),
       ],
     );
+  });
+
+  it('duplicate directives on SDL definitions', () => {
+    expectSDLErrors(`
+      schema @directive @directive { query: Dummy }
+      extend schema @directive @directive
+
+      scalar TestScalar @directive @directive
+      extend scalar TestScalar @directive @directive
+
+      type TestObject @directive @directive
+      extend type TestObject @directive @directive
+
+      interface TestInterface @directive @directive
+      extend interface TestInterface @directive @directive
+
+      union TestUnion @directive @directive
+      extend union TestUnion @directive @directive
+
+      input TestInput @directive @directive
+      extend input TestInput @directive @directive
+    `).to.deep.equal([
+      duplicateDirective('directive', 2, 14, 2, 25),
+      duplicateDirective('directive', 3, 21, 3, 32),
+      duplicateDirective('directive', 5, 25, 5, 36),
+      duplicateDirective('directive', 6, 32, 6, 43),
+      duplicateDirective('directive', 8, 23, 8, 34),
+      duplicateDirective('directive', 9, 30, 9, 41),
+      duplicateDirective('directive', 11, 31, 11, 42),
+      duplicateDirective('directive', 12, 38, 12, 49),
+      duplicateDirective('directive', 14, 23, 14, 34),
+      duplicateDirective('directive', 15, 30, 15, 41),
+      duplicateDirective('directive', 17, 23, 17, 34),
+      duplicateDirective('directive', 18, 30, 18, 41),
+    ]);
   });
 });

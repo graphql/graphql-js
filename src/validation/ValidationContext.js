@@ -19,6 +19,7 @@ import type {
   FragmentSpreadNode,
   FragmentDefinitionNode,
 } from '../language/ast';
+import type { ASTVisitor } from '../language/visitor';
 import type { GraphQLSchema } from '../type/schema';
 import type {
   GraphQLInputType,
@@ -63,6 +64,21 @@ export class ASTValidationContext {
     return this._ast;
   }
 }
+
+export class SDLValidationContext extends ASTValidationContext {
+  _schema: ?GraphQLSchema;
+
+  constructor(ast: DocumentNode, schema?: ?GraphQLSchema): void {
+    super(ast);
+    this._schema = schema;
+  }
+
+  getSchema(): ?GraphQLSchema {
+    return this._schema;
+  }
+}
+
+export type SDLValidationRule = SDLValidationContext => ASTVisitor;
 
 export class ValidationContext extends ASTValidationContext {
   _schema: GraphQLSchema;
@@ -234,3 +250,5 @@ export class ValidationContext extends ASTValidationContext {
     return this._typeInfo.getArgument();
   }
 }
+
+export type ValidationRule = ValidationContext => ASTVisitor;

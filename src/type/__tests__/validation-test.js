@@ -713,7 +713,7 @@ describe('Type System: Input Objects must have fields', () => {
     schema = extendSchema(
       schema,
       parse(`
-        directive @test on ENUM
+        directive @test on INPUT_OBJECT
 
         extend input SomeInputObject @test
       `),

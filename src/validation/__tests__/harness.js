@@ -7,7 +7,7 @@
 
 import { expect } from 'chai';
 import { parse } from '../../language';
-import { validate } from '../validate';
+import { validate, validateSDL } from '../validate';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -374,50 +374,6 @@ export const testSchema = new GraphQLSchema({
       name: 'onInlineFragment',
       locations: ['INLINE_FRAGMENT'],
     }),
-    new GraphQLDirective({
-      name: 'onSchema',
-      locations: ['SCHEMA'],
-    }),
-    new GraphQLDirective({
-      name: 'onScalar',
-      locations: ['SCALAR'],
-    }),
-    new GraphQLDirective({
-      name: 'onObject',
-      locations: ['OBJECT'],
-    }),
-    new GraphQLDirective({
-      name: 'onFieldDefinition',
-      locations: ['FIELD_DEFINITION'],
-    }),
-    new GraphQLDirective({
-      name: 'onArgumentDefinition',
-      locations: ['ARGUMENT_DEFINITION'],
-    }),
-    new GraphQLDirective({
-      name: 'onInterface',
-      locations: ['INTERFACE'],
-    }),
-    new GraphQLDirective({
-      name: 'onUnion',
-      locations: ['UNION'],
-    }),
-    new GraphQLDirective({
-      name: 'onEnum',
-      locations: ['ENUM'],
-    }),
-    new GraphQLDirective({
-      name: 'onEnumValue',
-      locations: ['ENUM_VALUE'],
-    }),
-    new GraphQLDirective({
-      name: 'onInputObject',
-      locations: ['INPUT_OBJECT'],
-    }),
-    new GraphQLDirective({
-      name: 'onInputFieldDefinition',
-      locations: ['INPUT_FIELD_DEFINITION'],
-    }),
   ],
 });
 
@@ -447,4 +403,9 @@ export function expectPassesRuleWithSchema(schema, rule, queryString) {
 
 export function expectFailsRuleWithSchema(schema, rule, queryString, errors) {
   return expectInvalid(schema, rule, queryString, errors);
+}
+
+export function expectSDLErrorsFromRule(rule, sdlString, schema) {
+  const errors = validateSDL(parse(sdlString), schema, [rule]);
+  return expect(errors);
 }
