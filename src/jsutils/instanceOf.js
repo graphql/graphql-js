@@ -20,7 +20,7 @@ declare function instanceOf(
 // See: https://webpack.js.org/guides/production/
 export default (process.env.NODE_ENV === 'production'
   ? // eslint-disable-next-line no-shadow
-    function instanceOf(value: any, constructor: any) {
+    function instanceOf(value: mixed, constructor: mixed) {
       return value instanceof constructor;
     }
   : // eslint-disable-next-line no-shadow

@@ -70,7 +70,7 @@ export function isType(type: mixed): boolean %checks {
 
 export function assertType(type: mixed): GraphQLType {
   invariant(isType(type), `Expected ${inspect(type)} to be a GraphQL type.`);
-  return (type: any);
+  return type;
 }
 
 /**
@@ -343,7 +343,7 @@ declare class GraphQLList<+T: GraphQLType> {
   +ofType: T;
   static <T>(ofType: T): GraphQLList<T>;
   // Note: constructors cannot be used for covariant types. Drop the "new".
-  constructor(ofType: any): void;
+  constructor(ofType: GraphQLType): void;
 }
 // eslint-disable-next-line no-redeclare
 export function GraphQLList(ofType) {
@@ -384,7 +384,7 @@ declare class GraphQLNonNull<+T: GraphQLNullableType> {
   +ofType: T;
   static <T>(ofType: T): GraphQLNonNull<T>;
   // Note: constructors cannot be used for covariant types. Drop the "new".
-  constructor(ofType: any): void;
+  constructor(ofType: GraphQLType): void;
 }
 // eslint-disable-next-line no-redeclare
 export function GraphQLNonNull(ofType) {
@@ -1076,7 +1076,7 @@ export class GraphQLEnumType /* <T> */ {
     return this._nameLookup[name];
   }
 
-  serialize(value: any /* T */): ?string {
+  serialize(value: mixed /* T */): ?string {
     const enumValue = this._valueLookup.get(value);
     if (enumValue) {
       return enumValue.name;
@@ -1226,7 +1226,7 @@ defineToJSON(GraphQLInputObjectType);
 function defineInputFieldMap(
   config: GraphQLInputObjectTypeConfig,
 ): GraphQLInputFieldMap {
-  const fieldMap: any = resolveThunk(config.fields) || {};
+  const fieldMap = resolveThunk(config.fields) || {};
   invariant(
     isPlainObj(fieldMap),
     `${config.name} fields must be an object with field names as keys or a ` +
