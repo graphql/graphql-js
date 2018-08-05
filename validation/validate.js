@@ -4,6 +4,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.validate = validate;
+exports.validateSDL = validateSDL;
+exports.assertValidSDL = assertValidSDL;
+exports.assertValidSDLExtension = assertValidSDLExtension;
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
@@ -59,4 +62,49 @@ function validate(schema, documentAST) {
 
   (0, _visitor.visit)(documentAST, (0, _visitor.visitWithTypeInfo)(typeInfo, visitor));
   return context.getErrors();
+} // @internal
+
+
+function validateSDL(documentAST, schemaToExtend) {
+  var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _specifiedRules.specifiedSDLRules;
+  var context = new _ValidationContext.SDLValidationContext(documentAST, schemaToExtend);
+  var visitors = rules.map(function (rule) {
+    return rule(context);
+  });
+  (0, _visitor.visit)(documentAST, (0, _visitor.visitInParallel)(visitors));
+  return context.getErrors();
+}
+/**
+ * Utility function which asserts a SDL document is valid by throwing an error
+ * if it is invalid.
+ *
+ * @internal
+ */
+
+
+function assertValidSDL(documentAST) {
+  var errors = validateSDL(documentAST);
+
+  if (errors.length !== 0) {
+    throw new Error(errors.map(function (error) {
+      return error.message;
+    }).join('\n\n'));
+  }
+}
+/**
+ * Utility function which asserts a SDL document is valid by throwing an error
+ * if it is invalid.
+ *
+ * @internal
+ */
+
+
+function assertValidSDLExtension(documentAST, schema) {
+  var errors = validateSDL(documentAST, schema);
+
+  if (errors.length !== 0) {
+    throw new Error(errors.map(function (error) {
+      return error.message;
+    }).join('\n\n'));
+  }
 }

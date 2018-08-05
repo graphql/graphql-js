@@ -15,6 +15,7 @@ import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
+import { assertValidSDLExtension } from '../validation/validate';
 import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
@@ -43,7 +44,12 @@ import { Kind } from '../language/kinds';
  */
 export function extendSchema(schema, documentAST, options) {
   !isSchema(schema) ? invariant(0, 'Must provide valid GraphQLSchema') : void 0;
-  !(documentAST && documentAST.kind === Kind.DOCUMENT) ? invariant(0, 'Must provide valid Document AST') : void 0; // Collect the type definitions and extensions found in the document.
+  !(documentAST && documentAST.kind === Kind.DOCUMENT) ? invariant(0, 'Must provide valid Document AST') : void 0;
+
+  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+    assertValidSDLExtension(documentAST, schema);
+  } // Collect the type definitions and extensions found in the document.
+
 
   var typeDefinitionMap = Object.create(null);
   var typeExtensionsMap = Object.create(null); // New directives and types are separate because a directives and types can
@@ -59,11 +65,6 @@ export function extendSchema(schema, documentAST, options) {
 
     switch (def.kind) {
       case Kind.SCHEMA_DEFINITION:
-        // Sanity check that a schema extension is not overriding the schema
-        if (schema.astNode || schema.getQueryType() || schema.getMutationType() || schema.getSubscriptionType()) {
-          throw new GraphQLError('Cannot define a new schema within a schema extension.', [def]);
-        }
-
         schemaDef = def;
         break;
 

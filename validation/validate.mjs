@@ -10,8 +10,8 @@ import invariant from '../jsutils/invariant';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
-import { specifiedRules } from './specifiedRules';
-import { ValidationContext } from './ValidationContext';
+import { specifiedRules, specifiedSDLRules } from './specifiedRules';
+import { SDLValidationContext, ValidationContext } from './ValidationContext';
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -44,4 +44,46 @@ export function validate(schema, documentAST) {
 
   visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
   return context.getErrors();
+} // @internal
+
+export function validateSDL(documentAST, schemaToExtend) {
+  var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedSDLRules;
+  var context = new SDLValidationContext(documentAST, schemaToExtend);
+  var visitors = rules.map(function (rule) {
+    return rule(context);
+  });
+  visit(documentAST, visitInParallel(visitors));
+  return context.getErrors();
+}
+/**
+ * Utility function which asserts a SDL document is valid by throwing an error
+ * if it is invalid.
+ *
+ * @internal
+ */
+
+export function assertValidSDL(documentAST) {
+  var errors = validateSDL(documentAST);
+
+  if (errors.length !== 0) {
+    throw new Error(errors.map(function (error) {
+      return error.message;
+    }).join('\n\n'));
+  }
+}
+/**
+ * Utility function which asserts a SDL document is valid by throwing an error
+ * if it is invalid.
+ *
+ * @internal
+ */
+
+export function assertValidSDLExtension(documentAST, schema) {
+  var errors = validateSDL(documentAST, schema);
+
+  if (errors.length !== 0) {
+    throw new Error(errors.map(function (error) {
+      return error.message;
+    }).join('\n\n'));
+  }
 }

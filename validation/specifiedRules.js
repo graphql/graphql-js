@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.specifiedRules = void 0;
+exports.specifiedSDLRules = exports.specifiedRules = void 0;
 
 var _ExecutableDefinitions = require("./rules/ExecutableDefinitions");
 
@@ -57,6 +57,8 @@ var _OverlappingFieldsCanBeMerged = require("./rules/OverlappingFieldsCanBeMerge
 
 var _UniqueInputFieldNames = require("./rules/UniqueInputFieldNames");
 
+var _LoneSchemaDefinition = require("./rules/LoneSchemaDefinition");
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -100,3 +102,6 @@ var _UniqueInputFieldNames = require("./rules/UniqueInputFieldNames");
  */
 var specifiedRules = [_ExecutableDefinitions.ExecutableDefinitions, _UniqueOperationNames.UniqueOperationNames, _LoneAnonymousOperation.LoneAnonymousOperation, _SingleFieldSubscriptions.SingleFieldSubscriptions, _KnownTypeNames.KnownTypeNames, _FragmentsOnCompositeTypes.FragmentsOnCompositeTypes, _VariablesAreInputTypes.VariablesAreInputTypes, _ScalarLeafs.ScalarLeafs, _FieldsOnCorrectType.FieldsOnCorrectType, _UniqueFragmentNames.UniqueFragmentNames, _KnownFragmentNames.KnownFragmentNames, _NoUnusedFragments.NoUnusedFragments, _PossibleFragmentSpreads.PossibleFragmentSpreads, _NoFragmentCycles.NoFragmentCycles, _UniqueVariableNames.UniqueVariableNames, _NoUndefinedVariables.NoUndefinedVariables, _NoUnusedVariables.NoUnusedVariables, _KnownDirectives.KnownDirectives, _UniqueDirectivesPerLocation.UniqueDirectivesPerLocation, _KnownArgumentNames.KnownArgumentNames, _UniqueArgumentNames.UniqueArgumentNames, _ValuesOfCorrectType.ValuesOfCorrectType, _ProvidedRequiredArguments.ProvidedRequiredArguments, _VariablesInAllowedPosition.VariablesInAllowedPosition, _OverlappingFieldsCanBeMerged.OverlappingFieldsCanBeMerged, _UniqueInputFieldNames.UniqueInputFieldNames];
 exports.specifiedRules = specifiedRules;
+// @internal
+var specifiedSDLRules = [_LoneSchemaDefinition.LoneSchemaDefinition, _KnownDirectives.KnownDirectives, _UniqueDirectivesPerLocation.UniqueDirectivesPerLocation, _UniqueArgumentNames.UniqueArgumentNames, _UniqueInputFieldNames.UniqueInputFieldNames];
+exports.specifiedSDLRules = specifiedSDLRules;

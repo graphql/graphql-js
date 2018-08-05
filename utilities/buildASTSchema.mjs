@@ -11,6 +11,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
+import { assertValidSDL } from '../validation/validate';
 import blockStringValue from '../language/blockStringValue';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
@@ -43,6 +44,10 @@ export function buildASTSchema(ast, options) {
     throw new Error('Must provide a document ast.');
   }
 
+  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+    assertValidSDL(ast);
+  }
+
   var schemaDef;
   var typeDefs = [];
   var nodeMap = Object.create(null);
@@ -53,10 +58,6 @@ export function buildASTSchema(ast, options) {
 
     switch (d.kind) {
       case Kind.SCHEMA_DEFINITION:
-        if (schemaDef) {
-          throw new Error('Must provide only one schema definition.');
-        }
-
         schemaDef = d;
         break;
 

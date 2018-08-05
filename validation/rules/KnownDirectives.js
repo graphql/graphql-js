@@ -9,13 +9,11 @@ exports.KnownDirectives = KnownDirectives;
 
 var _error = require("../../error");
 
-var _find = _interopRequireDefault(require("../../jsutils/find"));
-
 var _kinds = require("../../language/kinds");
 
 var _directiveLocation = require("../../language/directiveLocation");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _directives = require("../../type/directives");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -41,21 +39,77 @@ function misplacedDirectiveMessage(directiveName, location) {
 
 
 function KnownDirectives(context) {
+  var locationsMap = Object.create(null);
+  var schema = context.getSchema();
+  var definedDirectives = schema ? schema.getDirectives() : _directives.specifiedDirectives;
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = definedDirectives[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var directive = _step.value;
+      locationsMap[directive.name] = directive.locations;
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return != null) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  var astDefinitions = context.getDocument().definitions;
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = astDefinitions[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var def = _step2.value;
+
+      if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
+        locationsMap[def.name.value] = def.locations.map(function (name) {
+          return name.value;
+        });
+      }
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
+
   return {
     Directive: function Directive(node, key, parent, path, ancestors) {
-      var directiveDef = (0, _find.default)(context.getSchema().getDirectives(), function (def) {
-        return def.name === node.name.value;
-      });
+      var name = node.name.value;
+      var locations = locationsMap[name];
 
-      if (!directiveDef) {
-        context.reportError(new _error.GraphQLError(unknownDirectiveMessage(node.name.value), [node]));
+      if (!locations) {
+        context.reportError(new _error.GraphQLError(unknownDirectiveMessage(name), [node]));
         return;
       }
 
       var candidateLocation = getDirectiveLocationForASTPath(ancestors);
 
-      if (candidateLocation && directiveDef.locations.indexOf(candidateLocation) === -1) {
-        context.reportError(new _error.GraphQLError(misplacedDirectiveMessage(node.name.value, candidateLocation), [node]));
+      if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
+        context.reportError(new _error.GraphQLError(misplacedDirectiveMessage(name, candidateLocation), [node]));
       }
     }
   };

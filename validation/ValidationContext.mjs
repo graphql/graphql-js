@@ -49,46 +49,70 @@ function () {
 
   return ASTValidationContext;
 }();
-export var ValidationContext =
+export var SDLValidationContext =
 /*#__PURE__*/
 function (_ASTValidationContext) {
-  _inheritsLoose(ValidationContext, _ASTValidationContext);
+  _inheritsLoose(SDLValidationContext, _ASTValidationContext);
 
-  function ValidationContext(schema, ast, typeInfo) {
+  function SDLValidationContext(ast, schema) {
     var _this;
 
     _this = _ASTValidationContext.call(this, ast) || this;
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_schema", void 0);
 
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_typeInfo", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_fragments", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_fragmentSpreads", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_recursivelyReferencedFragments", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_variableUsages", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_recursiveVariableUsages", void 0);
-
     _this._schema = schema;
-    _this._typeInfo = typeInfo;
-    _this._fragmentSpreads = new Map();
-    _this._recursivelyReferencedFragments = new Map();
-    _this._variableUsages = new Map();
-    _this._recursiveVariableUsages = new Map();
     return _this;
   }
 
-  var _proto2 = ValidationContext.prototype;
+  var _proto2 = SDLValidationContext.prototype;
 
   _proto2.getSchema = function getSchema() {
     return this._schema;
   };
 
-  _proto2.getFragment = function getFragment(name) {
+  return SDLValidationContext;
+}(ASTValidationContext);
+export var ValidationContext =
+/*#__PURE__*/
+function (_ASTValidationContext2) {
+  _inheritsLoose(ValidationContext, _ASTValidationContext2);
+
+  function ValidationContext(schema, ast, typeInfo) {
+    var _this2;
+
+    _this2 = _ASTValidationContext2.call(this, ast) || this;
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_schema", void 0);
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_typeInfo", void 0);
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_fragments", void 0);
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_fragmentSpreads", void 0);
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_recursivelyReferencedFragments", void 0);
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_variableUsages", void 0);
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_recursiveVariableUsages", void 0);
+
+    _this2._schema = schema;
+    _this2._typeInfo = typeInfo;
+    _this2._fragmentSpreads = new Map();
+    _this2._recursivelyReferencedFragments = new Map();
+    _this2._variableUsages = new Map();
+    _this2._recursiveVariableUsages = new Map();
+    return _this2;
+  }
+
+  var _proto3 = ValidationContext.prototype;
+
+  _proto3.getSchema = function getSchema() {
+    return this._schema;
+  };
+
+  _proto3.getFragment = function getFragment(name) {
     var fragments = this._fragments;
 
     if (!fragments) {
@@ -104,7 +128,7 @@ function (_ASTValidationContext) {
     return fragments[name];
   };
 
-  _proto2.getFragmentSpreads = function getFragmentSpreads(node) {
+  _proto3.getFragmentSpreads = function getFragmentSpreads(node) {
     var spreads = this._fragmentSpreads.get(node);
 
     if (!spreads) {
@@ -131,7 +155,7 @@ function (_ASTValidationContext) {
     return spreads;
   };
 
-  _proto2.getRecursivelyReferencedFragments = function getRecursivelyReferencedFragments(operation) {
+  _proto3.getRecursivelyReferencedFragments = function getRecursivelyReferencedFragments(operation) {
     var fragments = this._recursivelyReferencedFragments.get(operation);
 
     if (!fragments) {
@@ -164,7 +188,7 @@ function (_ASTValidationContext) {
     return fragments;
   };
 
-  _proto2.getVariableUsages = function getVariableUsages(node) {
+  _proto3.getVariableUsages = function getVariableUsages(node) {
     var usages = this._variableUsages.get(node);
 
     if (!usages) {
@@ -190,7 +214,7 @@ function (_ASTValidationContext) {
     return usages;
   };
 
-  _proto2.getRecursiveVariableUsages = function getRecursiveVariableUsages(operation) {
+  _proto3.getRecursiveVariableUsages = function getRecursiveVariableUsages(operation) {
     var usages = this._recursiveVariableUsages.get(operation);
 
     if (!usages) {
@@ -207,31 +231,31 @@ function (_ASTValidationContext) {
     return usages;
   };
 
-  _proto2.getType = function getType() {
+  _proto3.getType = function getType() {
     return this._typeInfo.getType();
   };
 
-  _proto2.getParentType = function getParentType() {
+  _proto3.getParentType = function getParentType() {
     return this._typeInfo.getParentType();
   };
 
-  _proto2.getInputType = function getInputType() {
+  _proto3.getInputType = function getInputType() {
     return this._typeInfo.getInputType();
   };
 
-  _proto2.getParentInputType = function getParentInputType() {
+  _proto3.getParentInputType = function getParentInputType() {
     return this._typeInfo.getParentInputType();
   };
 
-  _proto2.getFieldDef = function getFieldDef() {
+  _proto3.getFieldDef = function getFieldDef() {
     return this._typeInfo.getFieldDef();
   };
 
-  _proto2.getDirective = function getDirective() {
+  _proto3.getDirective = function getDirective() {
     return this._typeInfo.getDirective();
   };
 
-  _proto2.getArgument = function getArgument() {
+  _proto3.getArgument = function getArgument() {
     return this._typeInfo.getArgument();
   };
 

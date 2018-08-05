@@ -66,3 +66,6 @@ import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
  */
 
 export var specifiedRules = [ExecutableDefinitions, UniqueOperationNames, LoneAnonymousOperation, SingleFieldSubscriptions, KnownTypeNames, FragmentsOnCompositeTypes, VariablesAreInputTypes, ScalarLeafs, FieldsOnCorrectType, UniqueFragmentNames, KnownFragmentNames, NoUnusedFragments, PossibleFragmentSpreads, NoFragmentCycles, UniqueVariableNames, NoUndefinedVariables, NoUnusedVariables, KnownDirectives, UniqueDirectivesPerLocation, KnownArgumentNames, UniqueArgumentNames, ValuesOfCorrectType, ProvidedRequiredArguments, VariablesInAllowedPosition, OverlappingFieldsCanBeMerged, UniqueInputFieldNames];
+import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition'; // @internal
+
+export var specifiedSDLRules = [LoneSchemaDefinition, KnownDirectives, UniqueDirectivesPerLocation, UniqueArgumentNames, UniqueInputFieldNames];

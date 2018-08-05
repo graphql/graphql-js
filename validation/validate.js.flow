@@ -9,14 +9,14 @@
 
 import invariant from '../jsutils/invariant';
 import type { GraphQLError } from '../error';
-import type { ASTVisitor } from '../language/visitor';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import type { DocumentNode } from '../language/ast';
 import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
-import { specifiedRules } from './specifiedRules';
-import { ValidationContext } from './ValidationContext';
+import { specifiedRules, specifiedSDLRules } from './specifiedRules';
+import type { SDLValidationRule, ValidationRule } from './ValidationContext';
+import { SDLValidationContext, ValidationContext } from './ValidationContext';
 
 /**
  * Implements the "Validation" section of the spec.
@@ -37,7 +37,7 @@ import { ValidationContext } from './ValidationContext';
 export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
-  rules?: $ReadOnlyArray<(ValidationContext) => ASTVisitor> = specifiedRules,
+  rules?: $ReadOnlyArray<ValidationRule> = specifiedRules,
   typeInfo?: TypeInfo = new TypeInfo(schema),
 ): $ReadOnlyArray<GraphQLError> {
   invariant(documentAST, 'Must provide document');
@@ -51,4 +51,45 @@ export function validate(
   // Visit the whole document with each instance of all provided rules.
   visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
   return context.getErrors();
+}
+
+// @internal
+export function validateSDL(
+  documentAST: DocumentNode,
+  schemaToExtend?: ?GraphQLSchema,
+  rules?: $ReadOnlyArray<SDLValidationRule> = specifiedSDLRules,
+): $ReadOnlyArray<GraphQLError> {
+  const context = new SDLValidationContext(documentAST, schemaToExtend);
+  const visitors = rules.map(rule => rule(context));
+  visit(documentAST, visitInParallel(visitors));
+  return context.getErrors();
+}
+
+/**
+ * Utility function which asserts a SDL document is valid by throwing an error
+ * if it is invalid.
+ *
+ * @internal
+ */
+export function assertValidSDL(documentAST: DocumentNode): void {
+  const errors = validateSDL(documentAST);
+  if (errors.length !== 0) {
+    throw new Error(errors.map(error => error.message).join('\n\n'));
+  }
+}
+
+/**
+ * Utility function which asserts a SDL document is valid by throwing an error
+ * if it is invalid.
+ *
+ * @internal
+ */
+export function assertValidSDLExtension(
+  documentAST: DocumentNode,
+  schema: GraphQLSchema,
+): void {
+  const errors = validateSDL(documentAST, schema);
+  if (errors.length !== 0) {
+    throw new Error(errors.map(error => error.message).join('\n\n'));
+  }
 }

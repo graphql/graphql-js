@@ -14,6 +14,8 @@ var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _valueFromAST = require("./valueFromAST");
 
+var _validate = require("../validation/validate");
+
 var _blockStringValue = _interopRequireDefault(require("../language/blockStringValue"));
 
 var _lexer = require("../language/lexer");
@@ -59,6 +61,10 @@ function buildASTSchema(ast, options) {
     throw new Error('Must provide a document ast.');
   }
 
+  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+    (0, _validate.assertValidSDL)(ast);
+  }
+
   var schemaDef;
   var typeDefs = [];
   var nodeMap = Object.create(null);
@@ -69,10 +75,6 @@ function buildASTSchema(ast, options) {
 
     switch (d.kind) {
       case _kinds.Kind.SCHEMA_DEFINITION:
-        if (schemaDef) {
-          throw new Error('Must provide only one schema definition.');
-        }
-
         schemaDef = d;
         break;
 
