@@ -95,7 +95,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   source?: ?Source,
   positions?: ?$ReadOnlyArray<number>,
   path?: ?$ReadOnlyArray<string | number>,
-  originalError?: ?Error,
+  originalError?: ?Error & { +extensions: mixed },
   extensions?: ?{ [key: string]: mixed },
 ) {
   // Compute list of blame nodes.
@@ -139,8 +139,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
     }, []);
   }
 
-  const _extensions =
-    extensions || (originalError && (originalError: any).extensions);
+  const _extensions = extensions || (originalError && originalError.extensions);
 
   Object.defineProperties(this, {
     message: {

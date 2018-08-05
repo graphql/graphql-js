@@ -125,12 +125,9 @@ function () {
 
   _proto.getEnumValue = function getEnumValue() {
     return this._enumValue;
-  }; // Flow does not yet handle this case.
+  };
 
-
-  _proto.enter = function enter(node
-  /* ASTNode */
-  ) {
+  _proto.enter = function enter(node) {
     var schema = this._schema; // Note: many of the types below are explicitly typed as "mixed" to drop
     // any assumptions of a valid schema to ensure runtime types are properly
     // checked before continuing since TypeInfo is used as part of validation
