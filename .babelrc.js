@@ -14,7 +14,6 @@ module.exports = {
   }]],
   "plugins": [
     "./resources/inline-invariant",
-    "syntax-async-functions",
     "@babel/plugin-syntax-async-generators",
     "@babel/plugin-proposal-class-properties",
     "@babel/plugin-transform-flow-strip-types",
