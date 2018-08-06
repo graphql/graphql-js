@@ -809,26 +809,6 @@ describe('Schema Builder', () => {
 });
 
 describe('Failures', () => {
-  it('Allows only a single schema definition', () => {
-    const body = dedent`
-      schema {
-        query: Hello
-      }
-
-      schema {
-        query: Hello
-      }
-
-      type Hello {
-        bar: Bar
-      }
-    `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
-      'Must provide only one schema definition.',
-    );
-  });
-
   it('Allows only a single query type', () => {
     const body = dedent`
       schema {
@@ -837,7 +817,7 @@ describe('Failures', () => {
       }
 
       type Hello {
-        bar: Bar
+        bar: String
       }
 
       type Yellow {
@@ -859,7 +839,7 @@ describe('Failures', () => {
       }
 
       type Hello {
-        bar: Bar
+        bar: String
       }
 
       type Yellow {
@@ -881,7 +861,7 @@ describe('Failures', () => {
       }
 
       type Hello {
-        bar: Bar
+        bar: String
       }
 
       type Yellow {

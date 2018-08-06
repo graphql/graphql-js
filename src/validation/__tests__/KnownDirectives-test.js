@@ -191,46 +191,92 @@ describe('Validate: Known directives', () => {
       `).to.deep.equal([]);
     });
 
+    it('with directive defined in schema extension', () => {
+      const schema = buildSchema(`
+        type Query {
+          foo: String
+        }
+      `);
+      expectSDLErrors(
+        `
+          directive @test on OBJECT
+
+          extend type Query  @test
+        `,
+        schema,
+      ).to.deep.equal([]);
+    });
+
+    it('with directive used in schema extension', () => {
+      const schema = buildSchema(`
+        directive @test on OBJECT
+
+        type Query {
+          foo: String
+        }
+      `);
+      expectSDLErrors(
+        `
+          extend type Query @test
+        `,
+        schema,
+      ).to.deep.equal([]);
+    });
+
+    it('with unknown directive in schema extension', () => {
+      const schema = buildSchema(`
+        type Query {
+          foo: String
+        }
+      `);
+      expectSDLErrors(
+        `
+          extend type Query @unknown
+        `,
+        schema,
+      ).to.deep.equal([unknownDirective('unknown', 2, 29)]);
+    });
+
     it('with well placed directives', () => {
       expectSDLErrors(
         `
-        type MyObj implements MyInterface @onObject {
-          myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
-        }
+          type MyObj implements MyInterface @onObject {
+            myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
+          }
 
-        extend type MyObj @onObject
+          extend type MyObj @onObject
 
-        scalar MyScalar @onScalar
+          scalar MyScalar @onScalar
 
-        extend scalar MyScalar @onScalar
+          extend scalar MyScalar @onScalar
 
-        interface MyInterface @onInterface {
-          myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
-        }
+          interface MyInterface @onInterface {
+            myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
+          }
 
-        extend interface MyInterface @onInterface
+          extend interface MyInterface @onInterface
 
-        union MyUnion @onUnion = MyObj | Other
+          union MyUnion @onUnion = MyObj | Other
 
-        extend union MyUnion @onUnion
+          extend union MyUnion @onUnion
 
-        enum MyEnum @onEnum {
-          MY_VALUE @onEnumValue
-        }
+          enum MyEnum @onEnum {
+            MY_VALUE @onEnumValue
+          }
 
-        extend enum MyEnum @onEnum
+          extend enum MyEnum @onEnum
 
-        input MyInput @onInputObject {
-          myField: Int @onInputFieldDefinition
-        }
+          input MyInput @onInputObject {
+            myField: Int @onInputFieldDefinition
+          }
 
-        extend input MyInput @onInputObject
+          extend input MyInput @onInputObject
 
-        schema @onSchema {
-          query: MyQuery
-        }
+          schema @onSchema {
+            query: MyQuery
+          }
 
-        extend schema @onSchema
+          extend schema @onSchema
         `,
         schemaWithSDLDirectives,
       ).to.deep.equal([]);
@@ -239,63 +285,63 @@ describe('Validate: Known directives', () => {
     it('with misplaced directives', () => {
       expectSDLErrors(
         `
-        type MyObj implements MyInterface @onInterface {
-          myField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
-        }
+          type MyObj implements MyInterface @onInterface {
+            myField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
+          }
 
-        scalar MyScalar @onEnum
+          scalar MyScalar @onEnum
 
-        interface MyInterface @onObject {
-          myField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
-        }
+          interface MyInterface @onObject {
+            myField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
+          }
 
-        union MyUnion @onEnumValue = MyObj | Other
+          union MyUnion @onEnumValue = MyObj | Other
 
-        enum MyEnum @onScalar {
-          MY_VALUE @onUnion
-        }
+          enum MyEnum @onScalar {
+            MY_VALUE @onUnion
+          }
 
-        input MyInput @onEnum {
-          myField: Int @onArgumentDefinition
-        }
+          input MyInput @onEnum {
+            myField: Int @onArgumentDefinition
+          }
 
-        schema @onObject {
-          query: MyQuery
-        }
+          schema @onObject {
+            query: MyQuery
+          }
 
-        extend schema @onObject
+          extend schema @onObject
         `,
         schemaWithSDLDirectives,
       ).to.deep.equal([
-        misplacedDirective('onInterface', 'OBJECT', 2, 43),
+        misplacedDirective('onInterface', 'OBJECT', 2, 45),
         misplacedDirective(
           'onInputFieldDefinition',
           'ARGUMENT_DEFINITION',
           3,
-          30,
+          32,
         ),
-        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 3, 63),
-        misplacedDirective('onEnum', 'SCALAR', 6, 25),
-        misplacedDirective('onObject', 'INTERFACE', 8, 31),
+        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 3, 65),
+        misplacedDirective('onEnum', 'SCALAR', 6, 27),
+        misplacedDirective('onObject', 'INTERFACE', 8, 33),
         misplacedDirective(
           'onInputFieldDefinition',
           'ARGUMENT_DEFINITION',
           9,
-          30,
+          32,
         ),
-        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 9, 63),
-        misplacedDirective('onEnumValue', 'UNION', 12, 23),
-        misplacedDirective('onScalar', 'ENUM', 14, 21),
-        misplacedDirective('onUnion', 'ENUM_VALUE', 15, 20),
-        misplacedDirective('onEnum', 'INPUT_OBJECT', 18, 23),
+        misplacedDirective('onInputFieldDefinition', 'FIELD_DEFINITION', 9, 65),
+        misplacedDirective('onEnumValue', 'UNION', 12, 25),
+        misplacedDirective('onScalar', 'ENUM', 14, 23),
+        misplacedDirective('onUnion', 'ENUM_VALUE', 15, 22),
+        misplacedDirective('onEnum', 'INPUT_OBJECT', 18, 25),
         misplacedDirective(
           'onArgumentDefinition',
           'INPUT_FIELD_DEFINITION',
           19,
-          24,
+          26,
         ),
-        misplacedDirective('onObject', 'SCHEMA', 22, 16),
-        misplacedDirective('onObject', 'SCHEMA', 26, 23),
+        misplacedDirective('onObject', 'SCHEMA', 22, 18),
+        misplacedDirective('onObject', 'SCHEMA', 26, 25),
       ]);
     });
   });
