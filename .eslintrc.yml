@@ -1,6 +1,5 @@
 parser: babel-eslint
 plugins:
-  - babel
   - flowtype
   - prettier
 env:
