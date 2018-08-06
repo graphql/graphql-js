@@ -5,10 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import sane from 'sane';
-import { resolve as resolvePath } from 'path';
-import { spawn } from 'child_process';
-import flowBinPath from 'flow-bin';
+const sane = require('sane');
+const { resolve: resolvePath } = require('path');
+const { spawn } = require('child_process');
+const flowBinPath = require('flow-bin');
 
 
 process.env.PATH += ':./node_modules/.bin';
