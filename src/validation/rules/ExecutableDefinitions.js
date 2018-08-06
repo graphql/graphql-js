@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type ValidationContext from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
@@ -22,7 +22,9 @@ export function nonExecutableDefinitionMessage(defName: string): string {
  * A GraphQL document is only valid for execution if all definitions are either
  * operation or fragment definitions.
  */
-export function ExecutableDefinitions(context: ValidationContext): ASTVisitor {
+export function ExecutableDefinitions(
+  context: ASTValidationContext,
+): ASTVisitor {
   return {
     Document(node) {
       for (const definition of node.definitions) {

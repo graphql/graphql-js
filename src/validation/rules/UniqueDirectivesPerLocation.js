@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type ValidationContext from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import type { DirectiveNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
@@ -26,7 +26,7 @@ export function duplicateDirectiveMessage(directiveName: string): string {
  * are uniquely named.
  */
 export function UniqueDirectivesPerLocation(
-  context: ValidationContext,
+  context: ASTValidationContext,
 ): ASTVisitor {
   return {
     // Many different AST nodes may contain directives. Rather than listing

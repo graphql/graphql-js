@@ -787,6 +787,25 @@ describe('Schema Builder', () => {
     const errors = validateSchema(schema);
     expect(errors.length).to.equal(0);
   });
+
+  it('Rejects invalid SDL', () => {
+    const doc = parse(`
+      type Query {
+        foo: String @unknown
+      }
+    `);
+    expect(() => buildASTSchema(doc)).to.throw('Unknown directive "unknown".');
+  });
+
+  it('Allows to disable SDL validation', () => {
+    const body = `
+      type Query {
+        foo: String @unknown
+      }
+    `;
+    buildSchema(body, { assumeValid: true });
+    buildSchema(body, { assumeValidSDL: true });
+  });
 });
 
 describe('Failures', () => {
@@ -966,6 +985,20 @@ describe('Failures', () => {
     const doc = parse(body);
     expect(() => buildASTSchema(doc)).to.throw(
       'Specified subscription type "Awesome" not found in document.',
+    );
+  });
+
+  it('Does not consider directive names', () => {
+    const body = dedent`
+      schema {
+        query: Foo
+      }
+
+      directive @Foo on QUERY
+    `;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Specified query type "Foo" not found in document.',
     );
   });
 

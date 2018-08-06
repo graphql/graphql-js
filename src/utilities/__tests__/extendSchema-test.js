@@ -93,6 +93,26 @@ const SomeInputType = new GraphQLInputObjectType({
   }),
 });
 
+const FooDirective = new GraphQLDirective({
+  name: 'foo',
+  args: {
+    input: { type: SomeInputType },
+  },
+  locations: [
+    DirectiveLocation.SCHEMA,
+    DirectiveLocation.SCALAR,
+    DirectiveLocation.OBJECT,
+    DirectiveLocation.FIELD_DEFINITION,
+    DirectiveLocation.ARGUMENT_DEFINITION,
+    DirectiveLocation.INTERFACE,
+    DirectiveLocation.UNION,
+    DirectiveLocation.ENUM,
+    DirectiveLocation.ENUM_VALUE,
+    DirectiveLocation.INPUT_OBJECT,
+    DirectiveLocation.INPUT_FIELD_DEFINITION,
+  ],
+});
+
 const testSchema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
@@ -112,27 +132,7 @@ const testSchema = new GraphQLSchema({
     }),
   }),
   types: [FooType, BarType],
-  directives: specifiedDirectives.concat([
-    new GraphQLDirective({
-      name: 'foo',
-      args: {
-        input: { type: SomeInputType },
-      },
-      locations: [
-        DirectiveLocation.SCHEMA,
-        DirectiveLocation.SCALAR,
-        DirectiveLocation.OBJECT,
-        DirectiveLocation.FIELD_DEFINITION,
-        DirectiveLocation.ARGUMENT_DEFINITION,
-        DirectiveLocation.INTERFACE,
-        DirectiveLocation.UNION,
-        DirectiveLocation.ENUM,
-        DirectiveLocation.ENUM_VALUE,
-        DirectiveLocation.INPUT_OBJECT,
-        DirectiveLocation.INPUT_FIELD_DEFINITION,
-      ],
-    }),
-  ]),
+  directives: specifiedDirectives.concat([FooDirective]),
 });
 
 function extendTestSchema(sdl, options) {
@@ -1018,6 +1018,23 @@ describe('extendSchema', () => {
     expect(isScalarType(arg1.type)).to.equal(true);
   });
 
+  it('Rejects invalid SDL', () => {
+    const sdl = `
+      extend schema @unknown
+    `;
+    expect(() => extendTestSchema(sdl)).to.throw(
+      'Unknown directive "unknown".',
+    );
+  });
+
+  it('Allows to disable SDL validation', () => {
+    const sdl = `
+      extend schema @unknown
+    `;
+    extendTestSchema(sdl, { assumeValid: true });
+    extendTestSchema(sdl, { assumeValidSDL: true });
+  });
+
   it('does not allow replacing a default directive', () => {
     const sdl = `
       directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD
@@ -1271,7 +1288,7 @@ describe('extendSchema', () => {
       expect(schema.getMutationType()).to.equal(null);
     });
 
-    it('does not allow new schema within an extension', () => {
+    it('does not allow overriding schema within an extension', () => {
       const sdl = `
         schema {
           mutation: Mutation
@@ -1284,6 +1301,23 @@ describe('extendSchema', () => {
       expect(() => extendTestSchema(sdl)).to.throw(
         'Cannot define a new schema within a schema extension.',
       );
+    });
+
+    it('adds schema definition missing in the original schema', () => {
+      let schema = new GraphQLSchema({
+        directives: [FooDirective],
+        types: [FooType],
+      });
+      expect(schema.getQueryType()).to.equal(undefined);
+
+      const ast = parse(`
+        schema @foo {
+          query: Foo
+        }
+      `);
+      schema = extendSchema(schema, ast);
+      const queryType = schema.getQueryType();
+      expect(queryType).to.have.property('name', 'Foo');
     });
 
     it('adds new root types via schema extension', () => {

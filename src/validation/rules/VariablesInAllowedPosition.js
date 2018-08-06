@@ -8,7 +8,7 @@
  */
 
 import inspect from '../../jsutils/inspect';
-import type ValidationContext from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import { Kind } from '../../language/kinds';
 import type { ValueNode } from '../../language/ast';

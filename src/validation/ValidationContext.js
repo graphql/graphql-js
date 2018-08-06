@@ -19,6 +19,7 @@ import type {
   FragmentSpreadNode,
   FragmentDefinitionNode,
 } from '../language/ast';
+import type { ASTVisitor } from '../language/visitor';
 import type { GraphQLSchema } from '../type/schema';
 import type {
   GraphQLInputType,
@@ -42,11 +43,46 @@ type VariableUsage = {|
  * allowing access to commonly useful contextual information from within a
  * validation rule.
  */
-export default class ValidationContext {
-  _schema: GraphQLSchema;
+export class ASTValidationContext {
   _ast: DocumentNode;
-  _typeInfo: TypeInfo;
   _errors: Array<GraphQLError>;
+
+  constructor(ast: DocumentNode): void {
+    this._ast = ast;
+    this._errors = [];
+  }
+
+  reportError(error: GraphQLError): void {
+    this._errors.push(error);
+  }
+
+  getErrors(): $ReadOnlyArray<GraphQLError> {
+    return this._errors;
+  }
+
+  getDocument(): DocumentNode {
+    return this._ast;
+  }
+}
+
+export class SDLValidationContext extends ASTValidationContext {
+  _schema: ?GraphQLSchema;
+
+  constructor(ast: DocumentNode, schema?: ?GraphQLSchema): void {
+    super(ast);
+    this._schema = schema;
+  }
+
+  getSchema(): ?GraphQLSchema {
+    return this._schema;
+  }
+}
+
+export type SDLValidationRule = SDLValidationContext => ASTVisitor;
+
+export class ValidationContext extends ASTValidationContext {
+  _schema: GraphQLSchema;
+  _typeInfo: TypeInfo;
   _fragments: ObjMap<FragmentDefinitionNode>;
   _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
@@ -64,30 +100,17 @@ export default class ValidationContext {
     ast: DocumentNode,
     typeInfo: TypeInfo,
   ): void {
+    super(ast);
     this._schema = schema;
-    this._ast = ast;
     this._typeInfo = typeInfo;
-    this._errors = [];
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
   }
 
-  reportError(error: GraphQLError): void {
-    this._errors.push(error);
-  }
-
-  getErrors(): $ReadOnlyArray<GraphQLError> {
-    return this._errors;
-  }
-
   getSchema(): GraphQLSchema {
     return this._schema;
-  }
-
-  getDocument(): DocumentNode {
-    return this._ast;
   }
 
   getFragment(name: string): ?FragmentDefinitionNode {
@@ -227,3 +250,5 @@ export default class ValidationContext {
     return this._typeInfo.getArgument();
   }
 }
+
+export type ValidationRule = ValidationContext => ASTVisitor;

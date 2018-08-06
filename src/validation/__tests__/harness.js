@@ -7,7 +7,7 @@
 
 import { expect } from 'chai';
 import { parse } from '../../language';
-import { validate } from '../validate';
+import { validate, validateSDL } from '../validate';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -378,77 +378,38 @@ export const testSchema = new GraphQLSchema({
       name: 'onVariableDefinition',
       locations: ['VARIABLE_DEFINITION'],
     }),
-    new GraphQLDirective({
-      name: 'onSchema',
-      locations: ['SCHEMA'],
-    }),
-    new GraphQLDirective({
-      name: 'onScalar',
-      locations: ['SCALAR'],
-    }),
-    new GraphQLDirective({
-      name: 'onObject',
-      locations: ['OBJECT'],
-    }),
-    new GraphQLDirective({
-      name: 'onFieldDefinition',
-      locations: ['FIELD_DEFINITION'],
-    }),
-    new GraphQLDirective({
-      name: 'onArgumentDefinition',
-      locations: ['ARGUMENT_DEFINITION'],
-    }),
-    new GraphQLDirective({
-      name: 'onInterface',
-      locations: ['INTERFACE'],
-    }),
-    new GraphQLDirective({
-      name: 'onUnion',
-      locations: ['UNION'],
-    }),
-    new GraphQLDirective({
-      name: 'onEnum',
-      locations: ['ENUM'],
-    }),
-    new GraphQLDirective({
-      name: 'onEnumValue',
-      locations: ['ENUM_VALUE'],
-    }),
-    new GraphQLDirective({
-      name: 'onInputObject',
-      locations: ['INPUT_OBJECT'],
-    }),
-    new GraphQLDirective({
-      name: 'onInputFieldDefinition',
-      locations: ['INPUT_FIELD_DEFINITION'],
-    }),
   ],
 });
 
-function expectValid(schema, rules, queryString) {
-  const errors = validate(schema, parse(queryString), rules);
+function expectValid(schema, rule, queryString) {
+  const errors = validate(schema, parse(queryString), [rule]);
   expect(errors).to.deep.equal([], 'Should validate');
 }
 
-function expectInvalid(schema, rules, queryString, expectedErrors) {
-  const errors = validate(schema, parse(queryString), rules);
+function expectInvalid(schema, rule, queryString, expectedErrors) {
+  const errors = validate(schema, parse(queryString), [rule]);
   expect(errors).to.have.length.of.at.least(1, 'Should not validate');
   expect(errors).to.deep.equal(expectedErrors);
   return errors;
 }
 
 export function expectPassesRule(rule, queryString) {
-  return expectValid(testSchema, [rule], queryString);
+  return expectValid(testSchema, rule, queryString);
 }
 
 export function expectFailsRule(rule, queryString, errors) {
-  return expectInvalid(testSchema, [rule], queryString, errors);
+  return expectInvalid(testSchema, rule, queryString, errors);
 }
 
-export function expectPassesRuleWithSchema(schema, rule, queryString, errors) {
-  return expectValid(schema, [rule], queryString, errors);
+export function expectPassesRuleWithSchema(schema, rule, queryString) {
+  return expectValid(schema, rule, queryString);
 }
 
 export function expectFailsRuleWithSchema(schema, rule, queryString, errors) {
-  return expectInvalid(schema, [rule], queryString, errors);
+  return expectInvalid(schema, rule, queryString, errors);
+}
+
+export function expectSDLErrorsFromRule(rule, sdlString, schema) {
+  const errors = validateSDL(parse(sdlString), schema, [rule]);
+  return expect(errors);
 }

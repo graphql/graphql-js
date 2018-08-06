@@ -12,6 +12,7 @@ import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
+import { assertValidSDLExtension } from '../validation/validate';
 import { GraphQLError } from '../error/GraphQLError';
 import { isSchema, GraphQLSchema } from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
@@ -53,6 +54,7 @@ import type {
   DocumentNode,
   DirectiveDefinitionNode,
   SchemaExtensionNode,
+  SchemaDefinitionNode,
 } from '../language/ast';
 
 type Options = {|
@@ -66,6 +68,13 @@ type Options = {|
    * Default: false
    */
   commentDescriptions?: boolean,
+
+  /**
+   * Set to true to assume the SDL is valid.
+   *
+   * Default: false
+   */
+  assumeValidSDL?: boolean,
 |};
 
 /**
@@ -98,6 +107,10 @@ export function extendSchema(
     'Must provide valid Document AST',
   );
 
+  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+    assertValidSDLExtension(documentAST, schema);
+  }
+
   // Collect the type definitions and extensions found in the document.
   const typeDefinitionMap = Object.create(null);
   const typeExtensionsMap = Object.create(null);
@@ -106,6 +119,7 @@ export function extendSchema(
   // have the same name. For example, a type named "skip".
   const directiveDefinitions: Array<DirectiveDefinitionNode> = [];
 
+  let schemaDef: ?SchemaDefinitionNode;
   // Schema extensions are collected which may add additional operation types.
   const schemaExtensions: Array<SchemaExtensionNode> = [];
 
@@ -113,11 +127,8 @@ export function extendSchema(
     const def = documentAST.definitions[i];
     switch (def.kind) {
       case Kind.SCHEMA_DEFINITION:
-        // Sanity check that a schema extension is not defining a new schema
-        throw new GraphQLError(
-          'Cannot define a new schema within a schema extension.',
-          [def],
-        );
+        schemaDef = def;
+        break;
       case Kind.SCHEMA_EXTENSION:
         schemaExtensions.push(def);
         break;
@@ -184,7 +195,8 @@ export function extendSchema(
     Object.keys(typeExtensionsMap).length === 0 &&
     Object.keys(typeDefinitionMap).length === 0 &&
     directiveDefinitions.length === 0 &&
-    schemaExtensions.length === 0
+    schemaExtensions.length === 0 &&
+    !schemaDef
   ) {
     return schema;
   }
@@ -216,19 +228,28 @@ export function extendSchema(
     subscription: extendMaybeNamedType(schema.getSubscriptionType()),
   };
 
-  // Then, incorporate all schema extensions.
+  if (schemaDef) {
+    for (const { operation, type } of schemaDef.operationTypes) {
+      if (operationTypes[operation]) {
+        throw new Error(`Must provide only one ${operation} type in schema.`);
+      }
+      // Note: While this could make early assertions to get the correctly
+      // typed values, that would throw immediately while type system
+      // validation with validateSchema() will produce more actionable results.
+      operationTypes[operation] = (astBuilder.buildType(type): any);
+    }
+  }
+  // Then, incorporate schema definition and all schema extensions.
   for (const schemaExtension of schemaExtensions) {
     if (schemaExtension.operationTypes) {
-      for (const operationType of schemaExtension.operationTypes) {
-        const operation = operationType.operation;
+      for (const { operation, type } of schemaExtension.operationTypes) {
         if (operationTypes[operation]) {
           throw new Error(`Must provide only one ${operation} type in schema.`);
         }
-        const typeRef = operationType.type;
         // Note: While this could make early assertions to get the correctly
         // typed values, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
-        operationTypes[operation] = (astBuilder.buildType(typeRef): any);
+        operationTypes[operation] = (astBuilder.buildType(type): any);
       }
     }
   }
@@ -254,9 +275,7 @@ export function extendSchema(
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
-    query: operationTypes.query,
-    mutation: operationTypes.mutation,
-    subscription: operationTypes.subscription,
+    ...operationTypes,
     types,
     directives: getMergedDirectives(),
     astNode: schema.astNode,
