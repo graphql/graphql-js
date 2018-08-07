@@ -461,11 +461,10 @@ describe('Visitor', () => {
     ]);
   });
 
-  const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
-    encoding: 'utf8',
-  });
-
   it('visits kitchen sink', () => {
+    const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
+      encoding: 'utf8',
+    });
     const ast = parse(kitchenSink);
 
     const visited = [];
@@ -509,6 +508,10 @@ describe('Visitor', () => {
       ['enter', 'EnumValue', 'defaultValue', 'VariableDefinition'],
       ['leave', 'EnumValue', 'defaultValue', 'VariableDefinition'],
       ['leave', 'VariableDefinition', 1, undefined],
+      ['enter', 'Directive', 0, undefined],
+      ['enter', 'Name', 'name', 'Directive'],
+      ['leave', 'Name', 'name', 'Directive'],
+      ['leave', 'Directive', 0, undefined],
       ['enter', 'SelectionSet', 'selectionSet', 'OperationDefinition'],
       ['enter', 'Field', 0, undefined],
       ['enter', 'Name', 'alias', 'Field'],
@@ -587,6 +590,10 @@ describe('Visitor', () => {
       ['enter', 'FragmentSpread', 1, undefined],
       ['enter', 'Name', 'name', 'FragmentSpread'],
       ['leave', 'Name', 'name', 'FragmentSpread'],
+      ['enter', 'Directive', 0, undefined],
+      ['enter', 'Name', 'name', 'Directive'],
+      ['leave', 'Name', 'name', 'Directive'],
+      ['leave', 'Directive', 0, undefined],
       ['leave', 'FragmentSpread', 1, undefined],
       ['leave', 'SelectionSet', 'selectionSet', 'Field'],
       ['leave', 'Field', 1, undefined],
@@ -629,6 +636,10 @@ describe('Visitor', () => {
       ['enter', 'OperationDefinition', 1, undefined],
       ['enter', 'Name', 'name', 'OperationDefinition'],
       ['leave', 'Name', 'name', 'OperationDefinition'],
+      ['enter', 'Directive', 0, undefined],
+      ['enter', 'Name', 'name', 'Directive'],
+      ['leave', 'Name', 'name', 'Directive'],
+      ['leave', 'Directive', 0, undefined],
       ['enter', 'SelectionSet', 'selectionSet', 'OperationDefinition'],
       ['enter', 'Field', 0, undefined],
       ['enter', 'Name', 'name', 'Field'],
@@ -651,6 +662,10 @@ describe('Visitor', () => {
       ['enter', 'Field', 0, undefined],
       ['enter', 'Name', 'name', 'Field'],
       ['leave', 'Name', 'name', 'Field'],
+      ['enter', 'Directive', 0, undefined],
+      ['enter', 'Name', 'name', 'Directive'],
+      ['leave', 'Name', 'name', 'Directive'],
+      ['leave', 'Directive', 0, undefined],
       ['leave', 'Field', 0, undefined],
       ['leave', 'SelectionSet', 'selectionSet', 'Field'],
       ['leave', 'Field', 0, undefined],
@@ -671,6 +686,10 @@ describe('Visitor', () => {
       ['leave', 'Name', 'name', 'NamedType'],
       ['leave', 'NamedType', 'type', 'VariableDefinition'],
       ['leave', 'VariableDefinition', 0, undefined],
+      ['enter', 'Directive', 0, undefined],
+      ['enter', 'Name', 'name', 'Directive'],
+      ['leave', 'Name', 'name', 'Directive'],
+      ['leave', 'Directive', 0, undefined],
       ['enter', 'SelectionSet', 'selectionSet', 'OperationDefinition'],
       ['enter', 'Field', 0, undefined],
       ['enter', 'Name', 'name', 'Field'],
@@ -721,6 +740,10 @@ describe('Visitor', () => {
       ['enter', 'Name', 'name', 'NamedType'],
       ['leave', 'Name', 'name', 'NamedType'],
       ['leave', 'NamedType', 'typeCondition', 'FragmentDefinition'],
+      ['enter', 'Directive', 0, undefined],
+      ['enter', 'Name', 'name', 'Directive'],
+      ['leave', 'Name', 'name', 'Directive'],
+      ['leave', 'Directive', 0, undefined],
       ['enter', 'SelectionSet', 'selectionSet', 'FragmentDefinition'],
       ['enter', 'Field', 0, undefined],
       ['enter', 'Name', 'name', 'Field'],
@@ -792,6 +815,14 @@ describe('Visitor', () => {
       ['leave', 'Field', 1, undefined],
       ['leave', 'SelectionSet', 'selectionSet', 'OperationDefinition'],
       ['leave', 'OperationDefinition', 4, undefined],
+      ['enter', 'OperationDefinition', 5, undefined],
+      ['enter', 'SelectionSet', 'selectionSet', 'OperationDefinition'],
+      ['enter', 'Field', 0, undefined],
+      ['enter', 'Name', 'name', 'Field'],
+      ['leave', 'Name', 'name', 'Field'],
+      ['leave', 'Field', 0, undefined],
+      ['leave', 'SelectionSet', 'selectionSet', 'OperationDefinition'],
+      ['leave', 'OperationDefinition', 5, undefined],
       ['leave', 'Document', undefined, undefined],
     ]);
   });
