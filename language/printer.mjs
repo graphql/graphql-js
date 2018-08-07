@@ -39,8 +39,9 @@ var printDocASTReducer = {
   VariableDefinition: function VariableDefinition(_ref) {
     var variable = _ref.variable,
         type = _ref.type,
-        defaultValue = _ref.defaultValue;
-    return variable + ': ' + type + wrap(' = ', defaultValue);
+        defaultValue = _ref.defaultValue,
+        directives = _ref.directives;
+    return variable + ': ' + type + wrap(' = ', defaultValue) + wrap(' ', join(directives, ' '));
   },
   SelectionSet: function SelectionSet(_ref2) {
     var selections = _ref2.selections;

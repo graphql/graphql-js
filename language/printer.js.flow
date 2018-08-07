@@ -36,9 +36,12 @@ const printDocASTReducer = {
       : join([op, join([name, varDefs]), directives, selectionSet], ' ');
   },
 
-  VariableDefinition: ({ variable, type, defaultValue }) =>
-    variable + ': ' + type + wrap(' = ', defaultValue),
-
+  VariableDefinition: ({ variable, type, defaultValue, directives }) =>
+    variable +
+    ': ' +
+    type +
+    wrap(' = ', defaultValue) +
+    wrap(' ', join(directives, ' ')),
   SelectionSet: ({ selections }) => block(selections),
 
   Field: ({ alias, name, arguments: args, directives, selectionSet }) =>

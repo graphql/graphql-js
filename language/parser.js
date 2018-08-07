@@ -253,7 +253,7 @@ function parseVariableDefinitions(lexer) {
   return peek(lexer, _lexer.TokenKind.PAREN_L) ? many(lexer, _lexer.TokenKind.PAREN_L, parseVariableDefinition, _lexer.TokenKind.PAREN_R) : [];
 }
 /**
- * VariableDefinition : Variable : Type DefaultValue?
+ * VariableDefinition : Variable : Type DefaultValue? Directives[Const]?
  */
 
 
@@ -264,6 +264,7 @@ function parseVariableDefinition(lexer) {
     variable: parseVariable(lexer),
     type: (expect(lexer, _lexer.TokenKind.COLON), parseTypeReference(lexer)),
     defaultValue: skip(lexer, _lexer.TokenKind.EQUALS) ? parseValueLiteral(lexer, true) : undefined,
+    directives: parseDirectives(lexer, true),
     loc: loc(lexer, start)
   };
 }

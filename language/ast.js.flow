@@ -225,6 +225,7 @@ export type VariableDefinitionNode = {
   +variable: VariableNode,
   +type: TypeNode,
   +defaultValue?: ValueNode,
+  +directives?: $ReadOnlyArray<DirectiveNode>,
 };
 
 export type VariableNode = {

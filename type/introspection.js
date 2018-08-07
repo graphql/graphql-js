@@ -143,6 +143,10 @@ var __DirectiveLocation = new _definition.GraphQLEnumType({
       value: _directiveLocation.DirectiveLocation.INLINE_FRAGMENT,
       description: 'Location adjacent to an inline fragment.'
     },
+    VARIABLE_DEFINITION: {
+      value: _directiveLocation.DirectiveLocation.VARIABLE_DEFINITION,
+      description: 'Location adjacent to a variable definition.'
+    },
     SCHEMA: {
       value: _directiveLocation.DirectiveLocation.SCHEMA,
       description: 'Location adjacent to a schema definition.'
