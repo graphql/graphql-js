@@ -5,12 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import { parse } from '../../language';
 import { buildSchema } from '../../utilities';
+import { validate } from '../validate';
 import {
   expectPassesRule,
   expectFailsRule,
   expectSDLErrorsFromRule,
+  testSchema,
 } from './harness';
 
 import {
@@ -127,7 +131,7 @@ describe('Validate: Known directives', () => {
     expectPassesRule(
       KnownDirectives,
       `
-      query Foo($var: Boolean @onVariableDefinition) @onQuery {
+      query Foo($var: Boolean) @onQuery {
         name @include(if: $var)
         ...Frag @include(if: true)
         skippedField @skip(if: true)
@@ -141,11 +145,26 @@ describe('Validate: Known directives', () => {
     );
   });
 
+  it('with well placed variable definition directive', () => {
+    // Need to parse with experimental flag
+    const queryString = `
+      query Foo($var: Boolean @onVariableDefinition) {
+        name
+      }
+    `;
+    const errors = validate(
+      testSchema,
+      parse(queryString, { experimentalVariableDefinitionDirectives: true }),
+      [KnownDirectives],
+    );
+    expect(errors).to.deep.equal([], 'Should validate');
+  });
+
   it('with misplaced directives', () => {
     expectFailsRule(
       KnownDirectives,
       `
-      query Foo($var: Boolean @onField) @include(if: true) {
+      query Foo($var: Boolean) @include(if: true) {
         name @onQuery @include(if: $var)
         ...Frag @onQuery
       }
@@ -155,13 +174,31 @@ describe('Validate: Known directives', () => {
       }
     `,
       [
-        misplacedDirective('onField', 'VARIABLE_DEFINITION', 2, 31),
-        misplacedDirective('include', 'QUERY', 2, 41),
+        misplacedDirective('include', 'QUERY', 2, 32),
         misplacedDirective('onQuery', 'FIELD', 3, 14),
         misplacedDirective('onQuery', 'FRAGMENT_SPREAD', 4, 17),
         misplacedDirective('onQuery', 'MUTATION', 7, 20),
       ],
     );
+  });
+
+  it('with misplaced variable definition directive', () => {
+    // Need to parse with experimental flag
+    const queryString = `
+      query Foo($var: Boolean @onField) {
+        name
+      }
+    `;
+    const errors = validate(
+      testSchema,
+      parse(queryString, { experimentalVariableDefinitionDirectives: true }),
+      [KnownDirectives],
+    );
+    const expectedErrors = [
+      misplacedDirective('onField', 'VARIABLE_DEFINITION', 2, 31),
+    ];
+    expect(errors).to.have.length.of.at.least(1, 'Should not validate');
+    expect(errors).to.deep.equal(expectedErrors);
   });
 
   describe('within SDL', () => {
