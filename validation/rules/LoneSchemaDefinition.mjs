@@ -10,7 +10,7 @@ import { GraphQLError } from '../../error';
 export function schemaDefinitionNotAloneMessage() {
   return 'Must provide only one schema definition.';
 }
-export function canNotDefineSchemaWithinExtension() {
+export function canNotDefineSchemaWithinExtensionMessage() {
   return 'Cannot define a new schema within a schema extension.';
 }
 /**
@@ -22,22 +22,19 @@ export function canNotDefineSchemaWithinExtension() {
 export function LoneSchemaDefinition(context) {
   var oldSchema = context.getSchema();
   var alreadyDefined = oldSchema && (oldSchema.astNode || oldSchema.getQueryType() || oldSchema.getMutationType() || oldSchema.getSubscriptionType());
-  var schemaNodes = [];
+  var schemaDefinitionsCount = 0;
   return {
     SchemaDefinition: function SchemaDefinition(node) {
       if (alreadyDefined) {
-        context.reportError(new GraphQLError(canNotDefineSchemaWithinExtension(), [node]));
+        context.reportError(new GraphQLError(canNotDefineSchemaWithinExtensionMessage(), node));
         return;
       }
 
-      schemaNodes.push(node);
-    },
-    Document: {
-      leave: function leave() {
-        if (schemaNodes.length > 1) {
-          context.reportError(new GraphQLError(schemaDefinitionNotAloneMessage(), schemaNodes));
-        }
+      if (schemaDefinitionsCount > 0) {
+        context.reportError(new GraphQLError(schemaDefinitionNotAloneMessage(), node));
       }
+
+      ++schemaDefinitionsCount;
     }
   };
 }
