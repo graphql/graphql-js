@@ -56,22 +56,11 @@ describe('Printer: Query document', () => {
 
     const queryAstWithArtifacts = parse(
       'query ($foo: TestType) @testDirective { id, name }',
-      { experimentalVariableDefinitionDirectives: true },
     );
     expect(print(queryAstWithArtifacts)).to.equal(dedent`
       query ($foo: TestType) @testDirective {
         id
         name
-      }
-    `);
-
-    const queryAstWithVariableDirective = parse(
-      'query ($foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
-      { experimentalVariableDefinitionDirectives: true },
-    );
-    expect(print(queryAstWithVariableDirective)).to.equal(dedent`
-      query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
-        id
       }
     `);
 
@@ -82,6 +71,33 @@ describe('Printer: Query document', () => {
       mutation ($foo: TestType) @testDirective {
         id
         name
+      }
+    `);
+  });
+
+  it('Experimental: prints query with variable directives', () => {
+    const queryAstWithVariableDirective = parse(
+      'query ($foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
+      { experimentalVariableDefinitionDirectives: true },
+    );
+    expect(print(queryAstWithVariableDirective)).to.equal(dedent`
+      query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
+        id
+      }
+    `);
+  });
+
+  it('Experimental: prints fragment with variable directives', () => {
+    const queryAstWithVariableDirective = parse(
+      'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
+      {
+        experimentalFragmentVariables: true,
+        experimentalVariableDefinitionDirectives: true,
+      },
+    );
+    expect(print(queryAstWithVariableDirective)).to.equal(dedent`
+      fragment Foo($foo: TestType @test) on TestType @testDirective {
+        id
       }
     `);
   });

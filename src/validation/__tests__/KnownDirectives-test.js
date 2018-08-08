@@ -5,16 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { parse } from '../../language';
 import { buildSchema } from '../../utilities';
-import { validate } from '../validate';
 import {
   expectPassesRule,
   expectFailsRule,
   expectSDLErrorsFromRule,
-  testSchema,
 } from './harness';
 
 import {
@@ -145,19 +141,16 @@ describe('Validate: Known directives', () => {
     );
   });
 
-  it('with well placed variable definition directive', () => {
-    // Need to parse with experimental flag
-    const queryString = `
+  it('Experimental: with well placed variable definition directive', () => {
+    expectPassesRule(
+      KnownDirectives,
+      `
       query Foo($var: Boolean @onVariableDefinition) {
         name
       }
-    `;
-    const errors = validate(
-      testSchema,
-      parse(queryString, { experimentalVariableDefinitionDirectives: true }),
-      [KnownDirectives],
+      `,
+      { experimentalVariableDefinitionDirectives: true },
     );
-    expect(errors).to.deep.equal([], 'Should validate');
   });
 
   it('with misplaced directives', () => {
@@ -182,23 +175,17 @@ describe('Validate: Known directives', () => {
     );
   });
 
-  it('with misplaced variable definition directive', () => {
-    // Need to parse with experimental flag
-    const queryString = `
+  it('Experimental: with misplaced variable definition directive', () => {
+    expectFailsRule(
+      KnownDirectives,
+      `
       query Foo($var: Boolean @onField) {
         name
       }
-    `;
-    const errors = validate(
-      testSchema,
-      parse(queryString, { experimentalVariableDefinitionDirectives: true }),
-      [KnownDirectives],
+      `,
+      [misplacedDirective('onField', 'VARIABLE_DEFINITION', 2, 31)],
+      { experimentalVariableDefinitionDirectives: true },
     );
-    const expectedErrors = [
-      misplacedDirective('onField', 'VARIABLE_DEFINITION', 2, 31),
-    ];
-    expect(errors).to.have.length.of.at.least(1, 'Should not validate');
-    expect(errors).to.deep.equal(expectedErrors);
   });
 
   describe('within SDL', () => {
