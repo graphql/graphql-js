@@ -108,16 +108,9 @@ function parseName(lexer) {
 
 function parseDocument(lexer) {
   var start = lexer.token;
-  expect(lexer, _lexer.TokenKind.SOF);
-  var definitions = [];
-
-  do {
-    definitions.push(parseDefinition(lexer));
-  } while (!skip(lexer, _lexer.TokenKind.EOF));
-
   return {
     kind: _kinds.Kind.DOCUMENT,
-    definitions: definitions,
+    definitions: many(lexer, _lexer.TokenKind.SOF, parseDefinition, _lexer.TokenKind.EOF),
     loc: loc(lexer, start)
   };
 }
