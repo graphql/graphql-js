@@ -8,6 +8,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  *  strict
  */
+import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
@@ -39,13 +40,11 @@ import { GraphQLSchema } from '../type/schema';
  *        Provide true to use preceding comments as the description.
  *
  */
-export function buildASTSchema(ast, options) {
-  if (!ast || ast.kind !== Kind.DOCUMENT) {
-    throw new Error('Must provide a document ast.');
-  }
+export function buildASTSchema(documentAST, options) {
+  !(documentAST && documentAST.kind === Kind.DOCUMENT) ? invariant(0, 'Must provide valid Document AST') : void 0;
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
-    assertValidSDL(ast);
+    assertValidSDL(documentAST);
   }
 
   var schemaDef;
@@ -53,8 +52,8 @@ export function buildASTSchema(ast, options) {
   var nodeMap = Object.create(null);
   var directiveDefs = [];
 
-  for (var i = 0; i < ast.definitions.length; i++) {
-    var d = ast.definitions[i];
+  for (var i = 0; i < documentAST.definitions.length; i++) {
+    var d = documentAST.definitions[i];
 
     switch (d.kind) {
       case Kind.SCHEMA_DEFINITION:

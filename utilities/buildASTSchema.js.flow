@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import type { ObjMap } from '../jsutils/ObjMap';
@@ -113,15 +114,16 @@ export type BuildSchemaOptions = {
  *
  */
 export function buildASTSchema(
-  ast: DocumentNode,
+  documentAST: DocumentNode,
   options?: BuildSchemaOptions,
 ): GraphQLSchema {
-  if (!ast || ast.kind !== Kind.DOCUMENT) {
-    throw new Error('Must provide a document ast.');
-  }
+  invariant(
+    documentAST && documentAST.kind === Kind.DOCUMENT,
+    'Must provide valid Document AST',
+  );
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
-    assertValidSDL(ast);
+    assertValidSDL(documentAST);
   }
 
   let schemaDef: ?SchemaDefinitionNode;
@@ -129,8 +131,8 @@ export function buildASTSchema(
   const typeDefs: Array<TypeDefinitionNode> = [];
   const nodeMap: ObjMap<TypeDefinitionNode> = Object.create(null);
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
-  for (let i = 0; i < ast.definitions.length; i++) {
-    const d = ast.definitions[i];
+  for (let i = 0; i < documentAST.definitions.length; i++) {
+    const d = documentAST.definitions[i];
     switch (d.kind) {
       case Kind.SCHEMA_DEFINITION:
         schemaDef = d;

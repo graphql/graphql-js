@@ -8,6 +8,8 @@ exports.getDescription = getDescription;
 exports.buildSchema = buildSchema;
 exports.ASTDefinitionBuilder = void 0;
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
@@ -56,13 +58,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *        Provide true to use preceding comments as the description.
  *
  */
-function buildASTSchema(ast, options) {
-  if (!ast || ast.kind !== _kinds.Kind.DOCUMENT) {
-    throw new Error('Must provide a document ast.');
-  }
+function buildASTSchema(documentAST, options) {
+  !(documentAST && documentAST.kind === _kinds.Kind.DOCUMENT) ? (0, _invariant.default)(0, 'Must provide valid Document AST') : void 0;
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
-    (0, _validate.assertValidSDL)(ast);
+    (0, _validate.assertValidSDL)(documentAST);
   }
 
   var schemaDef;
@@ -70,8 +70,8 @@ function buildASTSchema(ast, options) {
   var nodeMap = Object.create(null);
   var directiveDefs = [];
 
-  for (var i = 0; i < ast.definitions.length; i++) {
-    var d = ast.definitions[i];
+  for (var i = 0; i < documentAST.definitions.length; i++) {
+    var d = documentAST.definitions[i];
 
     switch (d.kind) {
       case _kinds.Kind.SCHEMA_DEFINITION:
