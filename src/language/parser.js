@@ -196,15 +196,9 @@ function parseName(lexer: Lexer<*>): NameNode {
  */
 function parseDocument(lexer: Lexer<*>): DocumentNode {
   const start = lexer.token;
-  expect(lexer, TokenKind.SOF);
-  const definitions = [];
-  do {
-    definitions.push(parseDefinition(lexer));
-  } while (!skip(lexer, TokenKind.EOF));
-
   return {
     kind: Kind.DOCUMENT,
-    definitions,
+    definitions: many(lexer, TokenKind.SOF, parseDefinition, TokenKind.EOF),
     loc: loc(lexer, start),
   };
 }
