@@ -40,6 +40,7 @@ import type {
   StringValueNode,
   Location,
 } from '../language/ast';
+import { isTypeDefinitionNode } from '../language/predicates';
 
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
@@ -132,27 +133,18 @@ export function buildASTSchema(
   const nodeMap: ObjMap<TypeDefinitionNode> = Object.create(null);
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
   for (let i = 0; i < documentAST.definitions.length; i++) {
-    const d = documentAST.definitions[i];
-    switch (d.kind) {
-      case Kind.SCHEMA_DEFINITION:
-        schemaDef = d;
-        break;
-      case Kind.SCALAR_TYPE_DEFINITION:
-      case Kind.OBJECT_TYPE_DEFINITION:
-      case Kind.INTERFACE_TYPE_DEFINITION:
-      case Kind.ENUM_TYPE_DEFINITION:
-      case Kind.UNION_TYPE_DEFINITION:
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
-        const typeName = d.name.value;
-        if (nodeMap[typeName]) {
-          throw new Error(`Type "${typeName}" was defined more than once.`);
-        }
-        typeDefs.push(d);
-        nodeMap[typeName] = d;
-        break;
-      case Kind.DIRECTIVE_DEFINITION:
-        directiveDefs.push(d);
-        break;
+    const def = documentAST.definitions[i];
+    if (def.kind === Kind.SCHEMA_DEFINITION) {
+      schemaDef = def;
+    } else if (isTypeDefinitionNode(def)) {
+      const typeName = def.name.value;
+      if (nodeMap[typeName]) {
+        throw new Error(`Type "${typeName}" was defined more than once.`);
+      }
+      typeDefs.push(def);
+      nodeMap[typeName] = def;
+    } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+      directiveDefs.push(def);
     }
   }
 

@@ -56,6 +56,10 @@ import type {
   SchemaExtensionNode,
   SchemaDefinitionNode,
 } from '../language/ast';
+import {
+  isTypeDefinitionNode,
+  isTypeExtensionNode,
+} from '../language/predicates';
 
 type Options = {|
   ...GraphQLSchemaValidationOptions,
@@ -125,67 +129,51 @@ export function extendSchema(
 
   for (let i = 0; i < documentAST.definitions.length; i++) {
     const def = documentAST.definitions[i];
-    switch (def.kind) {
-      case Kind.SCHEMA_DEFINITION:
-        schemaDef = def;
-        break;
-      case Kind.SCHEMA_EXTENSION:
-        schemaExtensions.push(def);
-        break;
-      case Kind.OBJECT_TYPE_DEFINITION:
-      case Kind.INTERFACE_TYPE_DEFINITION:
-      case Kind.ENUM_TYPE_DEFINITION:
-      case Kind.UNION_TYPE_DEFINITION:
-      case Kind.SCALAR_TYPE_DEFINITION:
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
-        // Sanity check that none of the defined types conflict with the
-        // schema's existing types.
-        const typeName = def.name.value;
-        if (schema.getType(typeName)) {
-          throw new GraphQLError(
-            `Type "${typeName}" already exists in the schema. It cannot also ` +
-              'be defined in this type definition.',
-            [def],
-          );
-        }
-        typeDefinitionMap[typeName] = def;
-        break;
-      case Kind.SCALAR_TYPE_EXTENSION:
-      case Kind.OBJECT_TYPE_EXTENSION:
-      case Kind.INTERFACE_TYPE_EXTENSION:
-      case Kind.ENUM_TYPE_EXTENSION:
-      case Kind.INPUT_OBJECT_TYPE_EXTENSION:
-      case Kind.UNION_TYPE_EXTENSION:
-        // Sanity check that this type extension exists within the
-        // schema's existing types.
-        const extendedTypeName = def.name.value;
-        const existingType = schema.getType(extendedTypeName);
-        if (!existingType) {
-          throw new GraphQLError(
-            `Cannot extend type "${extendedTypeName}" because it does not ` +
-              'exist in the existing schema.',
-            [def],
-          );
-        }
-        checkExtensionNode(existingType, def);
+    if (def.kind === Kind.SCHEMA_DEFINITION) {
+      schemaDef = def;
+    } else if (def.kind === Kind.SCHEMA_EXTENSION) {
+      schemaExtensions.push(def);
+    } else if (isTypeDefinitionNode(def)) {
+      // Sanity check that none of the defined types conflict with the
+      // schema's existing types.
+      const typeName = def.name.value;
+      if (schema.getType(typeName)) {
+        throw new GraphQLError(
+          `Type "${typeName}" already exists in the schema. It cannot also ` +
+            'be defined in this type definition.',
+          [def],
+        );
+      }
+      typeDefinitionMap[typeName] = def;
+    } else if (isTypeExtensionNode(def)) {
+      // Sanity check that this type extension exists within the
+      // schema's existing types.
+      const extendedTypeName = def.name.value;
+      const existingType = schema.getType(extendedTypeName);
+      if (!existingType) {
+        throw new GraphQLError(
+          `Cannot extend type "${extendedTypeName}" because it does not ` +
+            'exist in the existing schema.',
+          [def],
+        );
+      }
+      checkExtensionNode(existingType, def);
 
-        const existingTypeExtensions = typeExtensionsMap[extendedTypeName];
-        typeExtensionsMap[extendedTypeName] = existingTypeExtensions
-          ? existingTypeExtensions.concat([def])
-          : [def];
-        break;
-      case Kind.DIRECTIVE_DEFINITION:
-        const directiveName = def.name.value;
-        const existingDirective = schema.getDirective(directiveName);
-        if (existingDirective) {
-          throw new GraphQLError(
-            `Directive "${directiveName}" already exists in the schema. It ` +
-              'cannot be redefined.',
-            [def],
-          );
-        }
-        directiveDefinitions.push(def);
-        break;
+      const existingTypeExtensions = typeExtensionsMap[extendedTypeName];
+      typeExtensionsMap[extendedTypeName] = existingTypeExtensions
+        ? existingTypeExtensions.concat([def])
+        : [def];
+    } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+      const directiveName = def.name.value;
+      const existingDirective = schema.getDirective(directiveName);
+      if (existingDirective) {
+        throw new GraphQLError(
+          `Directive "${directiveName}" already exists in the schema. It ` +
+            'cannot be redefined.',
+          [def],
+        );
+      }
+      directiveDefinitions.push(def);
     }
   }
 

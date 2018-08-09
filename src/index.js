@@ -189,6 +189,16 @@ export {
   TokenKind,
   DirectiveLocation,
   BREAK,
+  // Predicates
+  isDefinitionNode,
+  isExecutableDefinitionNode,
+  isSelectionNode,
+  isValueNode,
+  isTypeNode,
+  isTypeSystemDefinitionNode,
+  isTypeDefinitionNode,
+  isTypeSystemExtensionNode,
+  isTypeExtensionNode,
 } from './language';
 
 export type {
