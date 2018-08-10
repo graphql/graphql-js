@@ -10,6 +10,8 @@ var _error = require("../../error");
 
 var _kinds = require("../../language/kinds");
 
+var _predicates = require("../../language/predicates");
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -40,7 +42,7 @@ function ExecutableDefinitions(context) {
         for (var _iterator = node.definitions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var definition = _step.value;
 
-          if (definition.kind !== _kinds.Kind.OPERATION_DEFINITION && definition.kind !== _kinds.Kind.FRAGMENT_DEFINITION) {
+          if (!(0, _predicates.isExecutableDefinitionNode)(definition)) {
             context.reportError(new _error.GraphQLError(nonExecutableDefinitionMessage(definition.kind === _kinds.Kind.SCHEMA_DEFINITION || definition.kind === _kinds.Kind.SCHEMA_EXTENSION ? 'schema' : definition.name.value), [definition]));
           }
         }

@@ -8,6 +8,7 @@
  */
 import { GraphQLError } from '../../error';
 import { Kind } from '../../language/kinds';
+import { isExecutableDefinitionNode } from '../../language/predicates';
 export function nonExecutableDefinitionMessage(defName) {
   return "The ".concat(defName, " definition is not executable.");
 }
@@ -29,7 +30,7 @@ export function ExecutableDefinitions(context) {
         for (var _iterator = node.definitions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var definition = _step.value;
 
-          if (definition.kind !== Kind.OPERATION_DEFINITION && definition.kind !== Kind.FRAGMENT_DEFINITION) {
+          if (!isExecutableDefinitionNode(definition)) {
             context.reportError(new GraphQLError(nonExecutableDefinitionMessage(definition.kind === Kind.SCHEMA_DEFINITION || definition.kind === Kind.SCHEMA_EXTENSION ? 'schema' : definition.name.value), [definition]));
           }
         }

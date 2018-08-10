@@ -18,6 +18,7 @@ import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
 import { getDirectiveValues } from '../execution/values';
 import { Kind } from '../language/kinds';
+import { isTypeDefinitionNode } from '../language/predicates';
 import { GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull } from '../type/definition';
 import { GraphQLDirective, GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective } from '../type/directives';
 import { introspectionTypes } from '../type/introspection';
@@ -53,32 +54,21 @@ export function buildASTSchema(documentAST, options) {
   var directiveDefs = [];
 
   for (var i = 0; i < documentAST.definitions.length; i++) {
-    var d = documentAST.definitions[i];
+    var def = documentAST.definitions[i];
 
-    switch (d.kind) {
-      case Kind.SCHEMA_DEFINITION:
-        schemaDef = d;
-        break;
+    if (def.kind === Kind.SCHEMA_DEFINITION) {
+      schemaDef = def;
+    } else if (isTypeDefinitionNode(def)) {
+      var typeName = def.name.value;
 
-      case Kind.SCALAR_TYPE_DEFINITION:
-      case Kind.OBJECT_TYPE_DEFINITION:
-      case Kind.INTERFACE_TYPE_DEFINITION:
-      case Kind.ENUM_TYPE_DEFINITION:
-      case Kind.UNION_TYPE_DEFINITION:
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
-        var typeName = d.name.value;
+      if (nodeMap[typeName]) {
+        throw new Error("Type \"".concat(typeName, "\" was defined more than once."));
+      }
 
-        if (nodeMap[typeName]) {
-          throw new Error("Type \"".concat(typeName, "\" was defined more than once."));
-        }
-
-        typeDefs.push(d);
-        nodeMap[typeName] = d;
-        break;
-
-      case Kind.DIRECTIVE_DEFINITION:
-        directiveDefs.push(d);
-        break;
+      typeDefs.push(def);
+      nodeMap[typeName] = def;
+    } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+      directiveDefs.push(def);
     }
   }
 

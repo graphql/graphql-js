@@ -87,6 +87,60 @@ Object.defineProperty(exports, "BREAK", {
     return _visitor.BREAK;
   }
 });
+Object.defineProperty(exports, "isDefinitionNode", {
+  enumerable: true,
+  get: function get() {
+    return _predicates.isDefinitionNode;
+  }
+});
+Object.defineProperty(exports, "isExecutableDefinitionNode", {
+  enumerable: true,
+  get: function get() {
+    return _predicates.isExecutableDefinitionNode;
+  }
+});
+Object.defineProperty(exports, "isSelectionNode", {
+  enumerable: true,
+  get: function get() {
+    return _predicates.isSelectionNode;
+  }
+});
+Object.defineProperty(exports, "isValueNode", {
+  enumerable: true,
+  get: function get() {
+    return _predicates.isValueNode;
+  }
+});
+Object.defineProperty(exports, "isTypeNode", {
+  enumerable: true,
+  get: function get() {
+    return _predicates.isTypeNode;
+  }
+});
+Object.defineProperty(exports, "isTypeSystemDefinitionNode", {
+  enumerable: true,
+  get: function get() {
+    return _predicates.isTypeSystemDefinitionNode;
+  }
+});
+Object.defineProperty(exports, "isTypeDefinitionNode", {
+  enumerable: true,
+  get: function get() {
+    return _predicates.isTypeDefinitionNode;
+  }
+});
+Object.defineProperty(exports, "isTypeSystemExtensionNode", {
+  enumerable: true,
+  get: function get() {
+    return _predicates.isTypeSystemExtensionNode;
+  }
+});
+Object.defineProperty(exports, "isTypeExtensionNode", {
+  enumerable: true,
+  get: function get() {
+    return _predicates.isTypeExtensionNode;
+  }
+});
 Object.defineProperty(exports, "DirectiveLocation", {
   enumerable: true,
   get: function get() {
@@ -107,5 +161,7 @@ var _printer = require("./printer");
 var _source = require("./source");
 
 var _visitor = require("./visitor");
+
+var _predicates = require("./predicates");
 
 var _directiveLocation = require("./directiveLocation");

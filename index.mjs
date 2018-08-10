@@ -49,7 +49,8 @@ validateSchema, assertValidSchema } from './type';
 export { Source, getLocation, // Parse
 parse, parseValue, parseType, // Print
 print, // Visit
-visit, visitInParallel, visitWithTypeInfo, getVisitFn, Kind, TokenKind, DirectiveLocation, BREAK } from './language';
+visit, visitInParallel, visitWithTypeInfo, getVisitFn, Kind, TokenKind, DirectiveLocation, BREAK, // Predicates
+isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from './language';
 // Execute GraphQL queries.
 export { execute, defaultFieldResolver, responsePathAsArray, getDirectiveValues } from './execution';
 export { subscribe, createSourceEventStream } from './subscription'; // Validate GraphQL queries.

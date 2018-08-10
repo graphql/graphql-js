@@ -561,6 +561,60 @@ Object.defineProperty(exports, "BREAK", {
     return _language.BREAK;
   }
 });
+Object.defineProperty(exports, "isDefinitionNode", {
+  enumerable: true,
+  get: function get() {
+    return _language.isDefinitionNode;
+  }
+});
+Object.defineProperty(exports, "isExecutableDefinitionNode", {
+  enumerable: true,
+  get: function get() {
+    return _language.isExecutableDefinitionNode;
+  }
+});
+Object.defineProperty(exports, "isSelectionNode", {
+  enumerable: true,
+  get: function get() {
+    return _language.isSelectionNode;
+  }
+});
+Object.defineProperty(exports, "isValueNode", {
+  enumerable: true,
+  get: function get() {
+    return _language.isValueNode;
+  }
+});
+Object.defineProperty(exports, "isTypeNode", {
+  enumerable: true,
+  get: function get() {
+    return _language.isTypeNode;
+  }
+});
+Object.defineProperty(exports, "isTypeSystemDefinitionNode", {
+  enumerable: true,
+  get: function get() {
+    return _language.isTypeSystemDefinitionNode;
+  }
+});
+Object.defineProperty(exports, "isTypeDefinitionNode", {
+  enumerable: true,
+  get: function get() {
+    return _language.isTypeDefinitionNode;
+  }
+});
+Object.defineProperty(exports, "isTypeSystemExtensionNode", {
+  enumerable: true,
+  get: function get() {
+    return _language.isTypeSystemExtensionNode;
+  }
+});
+Object.defineProperty(exports, "isTypeExtensionNode", {
+  enumerable: true,
+  get: function get() {
+    return _language.isTypeExtensionNode;
+  }
+});
 Object.defineProperty(exports, "execute", {
   enumerable: true,
   get: function get() {

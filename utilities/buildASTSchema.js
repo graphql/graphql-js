@@ -28,6 +28,8 @@ var _values = require("../execution/values");
 
 var _kinds = require("../language/kinds");
 
+var _predicates = require("../language/predicates");
+
 var _definition = require("../type/definition");
 
 var _directives = require("../type/directives");
@@ -71,32 +73,21 @@ function buildASTSchema(documentAST, options) {
   var directiveDefs = [];
 
   for (var i = 0; i < documentAST.definitions.length; i++) {
-    var d = documentAST.definitions[i];
+    var def = documentAST.definitions[i];
 
-    switch (d.kind) {
-      case _kinds.Kind.SCHEMA_DEFINITION:
-        schemaDef = d;
-        break;
+    if (def.kind === _kinds.Kind.SCHEMA_DEFINITION) {
+      schemaDef = def;
+    } else if ((0, _predicates.isTypeDefinitionNode)(def)) {
+      var typeName = def.name.value;
 
-      case _kinds.Kind.SCALAR_TYPE_DEFINITION:
-      case _kinds.Kind.OBJECT_TYPE_DEFINITION:
-      case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
-      case _kinds.Kind.ENUM_TYPE_DEFINITION:
-      case _kinds.Kind.UNION_TYPE_DEFINITION:
-      case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
-        var typeName = d.name.value;
+      if (nodeMap[typeName]) {
+        throw new Error("Type \"".concat(typeName, "\" was defined more than once."));
+      }
 
-        if (nodeMap[typeName]) {
-          throw new Error("Type \"".concat(typeName, "\" was defined more than once."));
-        }
-
-        typeDefs.push(d);
-        nodeMap[typeName] = d;
-        break;
-
-      case _kinds.Kind.DIRECTIVE_DEFINITION:
-        directiveDefs.push(d);
-        break;
+      typeDefs.push(def);
+      nodeMap[typeName] = def;
+    } else if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
+      directiveDefs.push(def);
     }
   }
 

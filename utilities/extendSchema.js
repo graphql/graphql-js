@@ -31,6 +31,8 @@ var _directives = require("../type/directives");
 
 var _kinds = require("../language/kinds");
 
+var _predicates = require("../language/predicates");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
@@ -76,62 +78,42 @@ function extendSchema(schema, documentAST, options) {
   for (var i = 0; i < documentAST.definitions.length; i++) {
     var def = documentAST.definitions[i];
 
-    switch (def.kind) {
-      case _kinds.Kind.SCHEMA_DEFINITION:
-        schemaDef = def;
-        break;
+    if (def.kind === _kinds.Kind.SCHEMA_DEFINITION) {
+      schemaDef = def;
+    } else if (def.kind === _kinds.Kind.SCHEMA_EXTENSION) {
+      schemaExtensions.push(def);
+    } else if ((0, _predicates.isTypeDefinitionNode)(def)) {
+      // Sanity check that none of the defined types conflict with the
+      // schema's existing types.
+      var typeName = def.name.value;
 
-      case _kinds.Kind.SCHEMA_EXTENSION:
-        schemaExtensions.push(def);
-        break;
+      if (schema.getType(typeName)) {
+        throw new _GraphQLError.GraphQLError("Type \"".concat(typeName, "\" already exists in the schema. It cannot also ") + 'be defined in this type definition.', [def]);
+      }
 
-      case _kinds.Kind.OBJECT_TYPE_DEFINITION:
-      case _kinds.Kind.INTERFACE_TYPE_DEFINITION:
-      case _kinds.Kind.ENUM_TYPE_DEFINITION:
-      case _kinds.Kind.UNION_TYPE_DEFINITION:
-      case _kinds.Kind.SCALAR_TYPE_DEFINITION:
-      case _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION:
-        // Sanity check that none of the defined types conflict with the
-        // schema's existing types.
-        var typeName = def.name.value;
+      typeDefinitionMap[typeName] = def;
+    } else if ((0, _predicates.isTypeExtensionNode)(def)) {
+      // Sanity check that this type extension exists within the
+      // schema's existing types.
+      var extendedTypeName = def.name.value;
+      var existingType = schema.getType(extendedTypeName);
 
-        if (schema.getType(typeName)) {
-          throw new _GraphQLError.GraphQLError("Type \"".concat(typeName, "\" already exists in the schema. It cannot also ") + 'be defined in this type definition.', [def]);
-        }
+      if (!existingType) {
+        throw new _GraphQLError.GraphQLError("Cannot extend type \"".concat(extendedTypeName, "\" because it does not ") + 'exist in the existing schema.', [def]);
+      }
 
-        typeDefinitionMap[typeName] = def;
-        break;
+      checkExtensionNode(existingType, def);
+      var existingTypeExtensions = typeExtensionsMap[extendedTypeName];
+      typeExtensionsMap[extendedTypeName] = existingTypeExtensions ? existingTypeExtensions.concat([def]) : [def];
+    } else if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
+      var directiveName = def.name.value;
+      var existingDirective = schema.getDirective(directiveName);
 
-      case _kinds.Kind.SCALAR_TYPE_EXTENSION:
-      case _kinds.Kind.OBJECT_TYPE_EXTENSION:
-      case _kinds.Kind.INTERFACE_TYPE_EXTENSION:
-      case _kinds.Kind.ENUM_TYPE_EXTENSION:
-      case _kinds.Kind.INPUT_OBJECT_TYPE_EXTENSION:
-      case _kinds.Kind.UNION_TYPE_EXTENSION:
-        // Sanity check that this type extension exists within the
-        // schema's existing types.
-        var extendedTypeName = def.name.value;
-        var existingType = schema.getType(extendedTypeName);
+      if (existingDirective) {
+        throw new _GraphQLError.GraphQLError("Directive \"".concat(directiveName, "\" already exists in the schema. It ") + 'cannot be redefined.', [def]);
+      }
 
-        if (!existingType) {
-          throw new _GraphQLError.GraphQLError("Cannot extend type \"".concat(extendedTypeName, "\" because it does not ") + 'exist in the existing schema.', [def]);
-        }
-
-        checkExtensionNode(existingType, def);
-        var existingTypeExtensions = typeExtensionsMap[extendedTypeName];
-        typeExtensionsMap[extendedTypeName] = existingTypeExtensions ? existingTypeExtensions.concat([def]) : [def];
-        break;
-
-      case _kinds.Kind.DIRECTIVE_DEFINITION:
-        var directiveName = def.name.value;
-        var existingDirective = schema.getDirective(directiveName);
-
-        if (existingDirective) {
-          throw new _GraphQLError.GraphQLError("Directive \"".concat(directiveName, "\" already exists in the schema. It ") + 'cannot be redefined.', [def]);
-        }
-
-        directiveDefinitions.push(def);
-        break;
+      directiveDefinitions.push(def);
     }
   } // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.

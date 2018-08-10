@@ -13,4 +13,5 @@ export { parse, parseValue, parseType } from './parser';
 export { print } from './printer';
 export { Source } from './source';
 export { visit, visitInParallel, visitWithTypeInfo, getVisitFn, BREAK } from './visitor';
+export { isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from './predicates';
 export { DirectiveLocation } from './directiveLocation';

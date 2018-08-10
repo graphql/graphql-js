@@ -88,5 +88,17 @@ export type {
   InputObjectTypeExtensionNode,
 } from './ast';
 
+export {
+  isDefinitionNode,
+  isExecutableDefinitionNode,
+  isSelectionNode,
+  isValueNode,
+  isTypeNode,
+  isTypeSystemDefinitionNode,
+  isTypeDefinitionNode,
+  isTypeSystemExtensionNode,
+  isTypeExtensionNode,
+} from './predicates';
+
 export { DirectiveLocation } from './directiveLocation';
 export type { DirectiveLocationEnum } from './directiveLocation';
