@@ -10,6 +10,7 @@
 import type { ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error';
 import { Kind } from '../../language/kinds';
+import { isExecutableDefinitionNode } from '../../language/predicates';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function nonExecutableDefinitionMessage(defName: string): string {
@@ -28,10 +29,7 @@ export function ExecutableDefinitions(
   return {
     Document(node) {
       for (const definition of node.definitions) {
-        if (
-          definition.kind !== Kind.OPERATION_DEFINITION &&
-          definition.kind !== Kind.FRAGMENT_DEFINITION
-        ) {
+        if (!isExecutableDefinitionNode(definition)) {
           context.reportError(
             new GraphQLError(
               nonExecutableDefinitionMessage(
