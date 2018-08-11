@@ -8,7 +8,7 @@
  */
 
 import type { ValidationContext } from '../ValidationContext';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';

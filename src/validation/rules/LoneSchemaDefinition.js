@@ -8,7 +8,7 @@
  */
 
 import type { SDLValidationContext } from '../ValidationContext';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function schemaDefinitionNotAloneMessage(): string {

@@ -8,7 +8,7 @@
  */
 
 import type { ASTValidationContext } from '../ValidationContext';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
