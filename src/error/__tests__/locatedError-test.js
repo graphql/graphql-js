@@ -8,7 +8,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { GraphQLError } from '../../';
+import { GraphQLError } from '../GraphQLError';
 import { locatedError } from '../locatedError';
 
 describe('locatedError', () => {

@@ -9,7 +9,7 @@
 
 import inspect from '../../jsutils/inspect';
 import type { ValidationContext } from '../ValidationContext';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';

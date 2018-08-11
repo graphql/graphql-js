@@ -9,7 +9,7 @@
 
 import type { ASTValidationContext } from '../ValidationContext';
 import type { VariableDefinitionNode } from '../../language/ast';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function duplicateVariableMessage(variableName: string): string {
