@@ -8,7 +8,7 @@ exports.requiredFieldMessage = requiredFieldMessage;
 exports.unknownFieldMessage = unknownFieldMessage;
 exports.ValuesOfCorrectType = ValuesOfCorrectType;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _printer = require("../../language/printer");
 
@@ -59,7 +59,7 @@ function ValuesOfCorrectType(context) {
       var type = context.getInputType();
 
       if ((0, _definition.isNonNullType)(type)) {
-        context.reportError(new _error.GraphQLError(badValueMessage((0, _inspect.default)(type), (0, _printer.print)(node)), node));
+        context.reportError(new _GraphQLError.GraphQLError(badValueMessage((0, _inspect.default)(type), (0, _printer.print)(node)), node));
       }
     },
     ListValue: function ListValue(node) {
@@ -95,7 +95,7 @@ function ValuesOfCorrectType(context) {
         var fieldNode = fieldNodeMap[fieldName];
 
         if (!fieldNode && (0, _definition.isNonNullType)(fieldType) && fieldDef.defaultValue === undefined) {
-          context.reportError(new _error.GraphQLError(requiredFieldMessage(type.name, fieldName, (0, _inspect.default)(fieldType)), node));
+          context.reportError(new _GraphQLError.GraphQLError(requiredFieldMessage(type.name, fieldName, (0, _inspect.default)(fieldType)), node));
         }
       }
     },
@@ -106,7 +106,7 @@ function ValuesOfCorrectType(context) {
       if (!fieldType && (0, _definition.isInputObjectType)(parentType)) {
         var suggestions = (0, _suggestionList.default)(node.name.value, Object.keys(parentType.getFields()));
         var didYouMean = suggestions.length !== 0 ? "Did you mean ".concat((0, _orList.default)(suggestions), "?") : undefined;
-        context.reportError(new _error.GraphQLError(unknownFieldMessage(parentType.name, node.name.value, didYouMean), node));
+        context.reportError(new _GraphQLError.GraphQLError(unknownFieldMessage(parentType.name, node.name.value, didYouMean), node));
       }
     },
     EnumValue: function EnumValue(node) {
@@ -115,7 +115,7 @@ function ValuesOfCorrectType(context) {
       if (!(0, _definition.isEnumType)(type)) {
         isValidScalar(context, node);
       } else if (!type.getValue(node.value)) {
-        context.reportError(new _error.GraphQLError(badValueMessage(type.name, (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));
+        context.reportError(new _GraphQLError.GraphQLError(badValueMessage(type.name, (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));
       }
     },
     IntValue: function IntValue(node) {
@@ -149,7 +149,7 @@ function isValidScalar(context, node) {
   var type = (0, _definition.getNamedType)(locationType);
 
   if (!(0, _definition.isScalarType)(type)) {
-    context.reportError(new _error.GraphQLError(badValueMessage((0, _inspect.default)(locationType), (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));
+    context.reportError(new _GraphQLError.GraphQLError(badValueMessage((0, _inspect.default)(locationType), (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));
     return;
   } // Scalars determine if a literal value is valid via parseLiteral() which
   // may throw or return an invalid value to indicate failure.
@@ -161,11 +161,11 @@ function isValidScalar(context, node) {
     );
 
     if ((0, _isInvalid.default)(parseResult)) {
-      context.reportError(new _error.GraphQLError(badValueMessage((0, _inspect.default)(locationType), (0, _printer.print)(node)), node));
+      context.reportError(new _GraphQLError.GraphQLError(badValueMessage((0, _inspect.default)(locationType), (0, _printer.print)(node)), node));
     }
   } catch (error) {
     // Ensure a reference to the original error is maintained.
-    context.reportError(new _error.GraphQLError(badValueMessage((0, _inspect.default)(locationType), (0, _printer.print)(node), error.message), node, undefined, undefined, undefined, error));
+    context.reportError(new _GraphQLError.GraphQLError(badValueMessage((0, _inspect.default)(locationType), (0, _printer.print)(node), error.message), node, undefined, undefined, undefined, error));
   }
 }
 

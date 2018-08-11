@@ -7,7 +7,7 @@
  *  strict
  */
 import inspect from '../../jsutils/inspect';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { getNamedType, isLeafType } from '../../type/definition';
 export function noSubselectionAllowedMessage(fieldName, type) {
   return "Field \"".concat(fieldName, "\" must not have a selection since ") + "type \"".concat(type, "\" has no subfields.");

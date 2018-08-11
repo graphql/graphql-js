@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.duplicateFragmentNameMessage = duplicateFragmentNameMessage;
 exports.UniqueFragmentNames = UniqueFragmentNames;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -36,7 +36,7 @@ function UniqueFragmentNames(context) {
       var fragmentName = node.name.value;
 
       if (knownFragmentNames[fragmentName]) {
-        context.reportError(new _error.GraphQLError(duplicateFragmentNameMessage(fragmentName), [knownFragmentNames[fragmentName], node.name]));
+        context.reportError(new _GraphQLError.GraphQLError(duplicateFragmentNameMessage(fragmentName), [knownFragmentNames[fragmentName], node.name]));
       } else {
         knownFragmentNames[fragmentName] = node.name;
       }

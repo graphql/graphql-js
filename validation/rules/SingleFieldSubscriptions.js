@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.singleFieldOnlyMessage = singleFieldOnlyMessage;
 exports.SingleFieldSubscriptions = SingleFieldSubscriptions;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -31,7 +31,7 @@ function SingleFieldSubscriptions(context) {
     OperationDefinition: function OperationDefinition(node) {
       if (node.operation === 'subscription') {
         if (node.selectionSet.selections.length !== 1) {
-          context.reportError(new _error.GraphQLError(singleFieldOnlyMessage(node.name && node.name.value), node.selectionSet.selections.slice(1)));
+          context.reportError(new _GraphQLError.GraphQLError(singleFieldOnlyMessage(node.name && node.name.value), node.selectionSet.selections.slice(1)));
         }
       }
     }

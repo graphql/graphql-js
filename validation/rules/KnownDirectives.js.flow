@@ -11,7 +11,7 @@ import type {
   ValidationContext,
   SDLValidationContext,
 } from '../ValidationContext';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { DirectiveLocation } from '../../language/directiveLocation';
 import type { ASTVisitor } from '../../language/visitor';

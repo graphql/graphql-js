@@ -7,7 +7,7 @@ exports.missingFieldArgMessage = missingFieldArgMessage;
 exports.missingDirectiveArgMessage = missingDirectiveArgMessage;
 exports.ProvidedRequiredArguments = ProvidedRequiredArguments;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
@@ -65,7 +65,7 @@ function ProvidedRequiredArguments(context) {
             var argNode = argNodeMap[argDef.name];
 
             if (!argNode && (0, _definition.isNonNullType)(argDef.type) && argDef.defaultValue === undefined) {
-              context.reportError(new _error.GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
+              context.reportError(new _GraphQLError.GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
             }
           }
         } catch (err) {
@@ -107,7 +107,7 @@ function ProvidedRequiredArguments(context) {
             var argNode = argNodeMap[argDef.name];
 
             if (!argNode && (0, _definition.isNonNullType)(argDef.type) && argDef.defaultValue === undefined) {
-              context.reportError(new _error.GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
+              context.reportError(new _GraphQLError.GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
             }
           }
         } catch (err) {

@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../error';
+import { GraphQLError } from '../error/GraphQLError';
 import find from '../jsutils/find';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';

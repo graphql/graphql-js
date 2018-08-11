@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function undefinedVarMessage(varName, opName) {
   return opName ? "Variable \"$".concat(varName, "\" is not defined by operation \"").concat(opName, "\".") : "Variable \"$".concat(varName, "\" is not defined.");
 }

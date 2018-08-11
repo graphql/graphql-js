@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function duplicateArgMessage(argName) {
   return "There can be only one argument named \"".concat(argName, "\".");
 }

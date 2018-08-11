@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.duplicateDirectiveMessage = duplicateDirectiveMessage;
 exports.UniqueDirectivesPerLocation = UniqueDirectivesPerLocation;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -48,7 +48,7 @@ function UniqueDirectivesPerLocation(context) {
             var directiveName = directive.name.value;
 
             if (knownDirectives[directiveName]) {
-              context.reportError(new _error.GraphQLError(duplicateDirectiveMessage(directiveName), [knownDirectives[directiveName], directive]));
+              context.reportError(new _GraphQLError.GraphQLError(duplicateDirectiveMessage(directiveName), [knownDirectives[directiveName], directive]));
             } else {
               knownDirectives[directiveName] = directive;
             }

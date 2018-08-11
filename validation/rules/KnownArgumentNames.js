@@ -7,7 +7,7 @@ exports.unknownArgMessage = unknownArgMessage;
 exports.unknownDirectiveArgMessage = unknownDirectiveArgMessage;
 exports.KnownArgumentNames = KnownArgumentNames;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
@@ -65,7 +65,7 @@ function KnownArgumentNames(context) {
           var parentType = context.getParentType();
 
           if (fieldDef && parentType) {
-            context.reportError(new _error.GraphQLError(unknownArgMessage(node.name.value, fieldDef.name, parentType.name, (0, _suggestionList.default)(node.name.value, fieldDef.args.map(function (arg) {
+            context.reportError(new _GraphQLError.GraphQLError(unknownArgMessage(node.name.value, fieldDef.name, parentType.name, (0, _suggestionList.default)(node.name.value, fieldDef.args.map(function (arg) {
               return arg.name;
             }))), [node]));
           }
@@ -73,7 +73,7 @@ function KnownArgumentNames(context) {
           var directive = context.getDirective();
 
           if (directive) {
-            context.reportError(new _error.GraphQLError(unknownDirectiveArgMessage(node.name.value, directive.name, (0, _suggestionList.default)(node.name.value, directive.args.map(function (arg) {
+            context.reportError(new _GraphQLError.GraphQLError(unknownDirectiveArgMessage(node.name.value, directive.name, (0, _suggestionList.default)(node.name.value, directive.args.map(function (arg) {
               return arg.name;
             }))), [node]));
           }

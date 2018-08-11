@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.cycleErrorMessage = cycleErrorMessage;
 exports.NoFragmentCycles = NoFragmentCycles;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -73,7 +73,7 @@ function NoFragmentCycles(context) {
         var fragmentNames = cyclePath.slice(0, -1).map(function (s) {
           return s.name.value;
         });
-        context.reportError(new _error.GraphQLError(cycleErrorMessage(spreadName, fragmentNames), cyclePath));
+        context.reportError(new _GraphQLError.GraphQLError(cycleErrorMessage(spreadName, fragmentNames), cyclePath));
       }
 
       spreadPath.pop();

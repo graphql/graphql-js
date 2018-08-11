@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { print } from '../../language/printer';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType, getNullableType, getNamedType } from '../../type/definition';
 import inspect from '../../jsutils/inspect';

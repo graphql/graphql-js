@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function cycleErrorMessage(fragName, spreadNames) {
   var via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
   return "Cannot spread fragment \"".concat(fragName, "\" within itself").concat(via, ".");

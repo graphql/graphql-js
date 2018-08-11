@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function unusedVariableMessage(varName, opName) {
   return opName ? "Variable \"$".concat(varName, "\" is never used in operation \"").concat(opName, "\".") : "Variable \"$".concat(varName, "\" is never used.");
 }

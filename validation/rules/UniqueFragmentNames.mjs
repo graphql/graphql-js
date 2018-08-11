@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function duplicateFragmentNameMessage(fragName) {
   return "There can be only one fragment named \"".concat(fragName, "\".");
 }

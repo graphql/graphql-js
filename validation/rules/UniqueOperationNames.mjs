@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function duplicateOperationNameMessage(operationName) {
   return "There can be only one operation named \"".concat(operationName, "\".");
 }

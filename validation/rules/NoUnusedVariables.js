@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.unusedVariableMessage = unusedVariableMessage;
 exports.NoUnusedVariables = NoUnusedVariables;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -68,7 +68,7 @@ function NoUnusedVariables(context) {
           var variableName = variableDef.variable.name.value;
 
           if (variableNameUsed[variableName] !== true) {
-            context.reportError(new _error.GraphQLError(unusedVariableMessage(variableName, opName), [variableDef]));
+            context.reportError(new _GraphQLError.GraphQLError(unusedVariableMessage(variableName, opName), [variableDef]));
           }
         }
       }

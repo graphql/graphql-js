@@ -9,7 +9,7 @@ exports.ScalarLeafs = ScalarLeafs;
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _definition = require("../../type/definition");
 
@@ -47,10 +47,10 @@ function ScalarLeafs(context) {
       if (type) {
         if ((0, _definition.isLeafType)((0, _definition.getNamedType)(type))) {
           if (selectionSet) {
-            context.reportError(new _error.GraphQLError(noSubselectionAllowedMessage(node.name.value, (0, _inspect.default)(type)), [selectionSet]));
+            context.reportError(new _GraphQLError.GraphQLError(noSubselectionAllowedMessage(node.name.value, (0, _inspect.default)(type)), [selectionSet]));
           }
         } else if (!selectionSet) {
-          context.reportError(new _error.GraphQLError(requiredSubselectionMessage(node.name.value, (0, _inspect.default)(type)), [node]));
+          context.reportError(new _GraphQLError.GraphQLError(requiredSubselectionMessage(node.name.value, (0, _inspect.default)(type)), [node]));
         }
       }
     }

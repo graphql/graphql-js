@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.duplicateOperationNameMessage = duplicateOperationNameMessage;
 exports.UniqueOperationNames = UniqueOperationNames;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -34,7 +34,7 @@ function UniqueOperationNames(context) {
 
       if (operationName) {
         if (knownOperationNames[operationName.value]) {
-          context.reportError(new _error.GraphQLError(duplicateOperationNameMessage(operationName.value), [knownOperationNames[operationName.value], operationName]));
+          context.reportError(new _GraphQLError.GraphQLError(duplicateOperationNameMessage(operationName.value), [knownOperationNames[operationName.value], operationName]));
         } else {
           knownOperationNames[operationName.value] = operationName;
         }

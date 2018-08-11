@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function unknownFragmentMessage(fragName) {
   return "Unknown fragment \"".concat(fragName, "\".");
 }

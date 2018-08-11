@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.anonOperationNotAloneMessage = anonOperationNotAloneMessage;
 exports.LoneAnonymousOperation = LoneAnonymousOperation;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _kinds = require("../../language/kinds");
 
@@ -39,7 +39,7 @@ function LoneAnonymousOperation(context) {
     },
     OperationDefinition: function OperationDefinition(node) {
       if (!node.name && operationCount > 1) {
-        context.reportError(new _error.GraphQLError(anonOperationNotAloneMessage(), [node]));
+        context.reportError(new _GraphQLError.GraphQLError(anonOperationNotAloneMessage(), [node]));
       }
     }
   };

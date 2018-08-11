@@ -13,7 +13,7 @@ import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
 import orList from '../jsutils/orList';
 import suggestionList from '../jsutils/suggestionList';
-import { GraphQLError } from '../error';
+import { GraphQLError } from '../error/GraphQLError';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 
 /**

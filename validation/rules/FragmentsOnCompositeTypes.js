@@ -7,7 +7,7 @@ exports.inlineFragmentOnNonCompositeErrorMessage = inlineFragmentOnNonCompositeE
 exports.fragmentOnNonCompositeErrorMessage = fragmentOnNonCompositeErrorMessage;
 exports.FragmentsOnCompositeTypes = FragmentsOnCompositeTypes;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _printer = require("../../language/printer");
 
@@ -48,7 +48,7 @@ function FragmentsOnCompositeTypes(context) {
         var type = (0, _typeFromAST.typeFromAST)(context.getSchema(), typeCondition);
 
         if (type && !(0, _definition.isCompositeType)(type)) {
-          context.reportError(new _error.GraphQLError(inlineFragmentOnNonCompositeErrorMessage((0, _printer.print)(typeCondition)), [typeCondition]));
+          context.reportError(new _GraphQLError.GraphQLError(inlineFragmentOnNonCompositeErrorMessage((0, _printer.print)(typeCondition)), [typeCondition]));
         }
       }
     },
@@ -56,7 +56,7 @@ function FragmentsOnCompositeTypes(context) {
       var type = (0, _typeFromAST.typeFromAST)(context.getSchema(), node.typeCondition);
 
       if (type && !(0, _definition.isCompositeType)(type)) {
-        context.reportError(new _error.GraphQLError(fragmentOnNonCompositeErrorMessage(node.name.value, (0, _printer.print)(node.typeCondition)), [node.typeCondition]));
+        context.reportError(new _GraphQLError.GraphQLError(fragmentOnNonCompositeErrorMessage(node.name.value, (0, _printer.print)(node.typeCondition)), [node.typeCondition]));
       }
     }
   };

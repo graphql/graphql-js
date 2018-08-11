@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function schemaDefinitionNotAloneMessage() {
   return 'Must provide only one schema definition.';
 }

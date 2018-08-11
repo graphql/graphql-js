@@ -8,7 +8,7 @@
  */
 
 import type { ValidationContext } from '../ValidationContext';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ValueNode } from '../../language/ast';
 import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';

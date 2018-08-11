@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function unusedFragMessage(fragName) {
   return "Fragment \"".concat(fragName, "\" is never used.");
 }

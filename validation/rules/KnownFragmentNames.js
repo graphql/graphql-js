@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.unknownFragmentMessage = unknownFragmentMessage;
 exports.KnownFragmentNames = KnownFragmentNames;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -34,7 +34,7 @@ function KnownFragmentNames(context) {
       var fragment = context.getFragment(fragmentName);
 
       if (!fragment) {
-        context.reportError(new _error.GraphQLError(unknownFragmentMessage(fragmentName), [node.name]));
+        context.reportError(new _GraphQLError.GraphQLError(unknownFragmentMessage(fragmentName), [node.name]));
       }
     }
   };

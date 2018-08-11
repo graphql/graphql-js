@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.fieldsConflictMessage = fieldsConflictMessage;
 exports.OverlappingFieldsCanBeMerged = OverlappingFieldsCanBeMerged;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
@@ -68,7 +68,7 @@ function OverlappingFieldsCanBeMerged(context) {
         var reason = _ref2$[1];
         var fields1 = _ref3[1];
         var fields2 = _ref3[2];
-        context.reportError(new _error.GraphQLError(fieldsConflictMessage(responseName, reason), fields1.concat(fields2)));
+        context.reportError(new _GraphQLError.GraphQLError(fieldsConflictMessage(responseName, reason), fields1.concat(fields2)));
       }
     }
   };

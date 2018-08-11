@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function duplicateVariableMessage(variableName) {
   return "There can be only one variable named \"".concat(variableName, "\".");
 }

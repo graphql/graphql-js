@@ -8,7 +8,8 @@
  */
 
 import { forEach, isCollection } from 'iterall';
-import { GraphQLError, locatedError } from '../error';
+import { GraphQLError } from '../error/GraphQLError';
+import { locatedError } from '../error/locatedError';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';

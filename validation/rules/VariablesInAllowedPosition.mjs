@@ -7,7 +7,7 @@
  *  strict
  */
 import inspect from '../../jsutils/inspect';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { isNonNullType } from '../../type/definition';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';

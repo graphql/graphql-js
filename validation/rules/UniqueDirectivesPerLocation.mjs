@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function duplicateDirectiveMessage(directiveName) {
   return "The directive \"".concat(directiveName, "\" can only be used once at ") + 'this location.';
 }

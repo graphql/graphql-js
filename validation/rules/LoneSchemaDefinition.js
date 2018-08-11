@@ -7,7 +7,7 @@ exports.schemaDefinitionNotAloneMessage = schemaDefinitionNotAloneMessage;
 exports.canNotDefineSchemaWithinExtensionMessage = canNotDefineSchemaWithinExtensionMessage;
 exports.LoneSchemaDefinition = LoneSchemaDefinition;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2018-present, Facebook, Inc.
@@ -38,12 +38,12 @@ function LoneSchemaDefinition(context) {
   return {
     SchemaDefinition: function SchemaDefinition(node) {
       if (alreadyDefined) {
-        context.reportError(new _error.GraphQLError(canNotDefineSchemaWithinExtensionMessage(), node));
+        context.reportError(new _GraphQLError.GraphQLError(canNotDefineSchemaWithinExtensionMessage(), node));
         return;
       }
 
       if (schemaDefinitionsCount > 0) {
-        context.reportError(new _error.GraphQLError(schemaDefinitionNotAloneMessage(), node));
+        context.reportError(new _GraphQLError.GraphQLError(schemaDefinitionNotAloneMessage(), node));
       }
 
       ++schemaDefinitionsCount;

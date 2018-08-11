@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.duplicateArgMessage = duplicateArgMessage;
 exports.UniqueArgumentNames = UniqueArgumentNames;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -40,7 +40,7 @@ function UniqueArgumentNames(context) {
       var argName = node.name.value;
 
       if (knownArgNames[argName]) {
-        context.reportError(new _error.GraphQLError(duplicateArgMessage(argName), [knownArgNames[argName], node.name]));
+        context.reportError(new _GraphQLError.GraphQLError(duplicateArgMessage(argName), [knownArgNames[argName], node.name]));
       } else {
         knownArgNames[argName] = node.name;
       }

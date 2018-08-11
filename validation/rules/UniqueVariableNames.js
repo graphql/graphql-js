@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.duplicateVariableMessage = duplicateVariableMessage;
 exports.UniqueVariableNames = UniqueVariableNames;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -36,7 +36,7 @@ function UniqueVariableNames(context) {
       var variableName = node.variable.name.value;
 
       if (knownVariableNames[variableName]) {
-        context.reportError(new _error.GraphQLError(duplicateVariableMessage(variableName), [knownVariableNames[variableName], node.variable.name]));
+        context.reportError(new _GraphQLError.GraphQLError(duplicateVariableMessage(variableName), [knownVariableNames[variableName], node.variable.name]));
       } else {
         knownVariableNames[variableName] = node.variable.name;
       }

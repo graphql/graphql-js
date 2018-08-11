@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 export function anonOperationNotAloneMessage() {
   return 'This anonymous operation must be the only defined operation.';

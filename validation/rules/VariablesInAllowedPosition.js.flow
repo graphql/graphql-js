@@ -9,7 +9,7 @@
 
 import inspect from '../../jsutils/inspect';
 import type { ValidationContext } from '../ValidationContext';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import type { ValueNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.unusedFragMessage = unusedFragMessage;
 exports.NoUnusedFragments = NoUnusedFragments;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -75,7 +75,7 @@ function NoUnusedFragments(context) {
           var fragName = fragmentDef.name.value;
 
           if (fragmentNameUsed[fragName] !== true) {
-            context.reportError(new _error.GraphQLError(unusedFragMessage(fragName), [fragmentDef]));
+            context.reportError(new _GraphQLError.GraphQLError(unusedFragMessage(fragName), [fragmentDef]));
           }
         }
       }

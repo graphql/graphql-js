@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { print } from '../../language/printer';
 import { isInputType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';

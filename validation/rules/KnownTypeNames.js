@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.unknownTypeMessage = unknownTypeMessage;
 exports.KnownTypeNames = KnownTypeNames;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
@@ -62,7 +62,7 @@ function KnownTypeNames(context) {
       var type = schema.getType(typeName);
 
       if (!type) {
-        context.reportError(new _error.GraphQLError(unknownTypeMessage(typeName, (0, _suggestionList.default)(typeName, Object.keys(schema.getTypeMap()))), [node]));
+        context.reportError(new _GraphQLError.GraphQLError(unknownTypeMessage(typeName, (0, _suggestionList.default)(typeName, Object.keys(schema.getTypeMap()))), [node]));
       }
     }
   };

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.nonInputTypeOnVarMessage = nonInputTypeOnVarMessage;
 exports.VariablesAreInputTypes = VariablesAreInputTypes;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _printer = require("../../language/printer");
 
@@ -40,7 +40,7 @@ function VariablesAreInputTypes(context) {
 
       if (type && !(0, _definition.isInputType)(type)) {
         var variableName = node.variable.name.value;
-        context.reportError(new _error.GraphQLError(nonInputTypeOnVarMessage(variableName, (0, _printer.print)(node.type)), [node.type]));
+        context.reportError(new _GraphQLError.GraphQLError(nonInputTypeOnVarMessage(variableName, (0, _printer.print)(node.type)), [node.type]));
       }
     }
   };

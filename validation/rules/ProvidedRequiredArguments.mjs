@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
 import keyMap from '../../jsutils/keyMap';
 import { isNonNullType } from '../../type/definition';

@@ -8,7 +8,7 @@
  */
 
 import type { ValidationContext } from '../ValidationContext';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
 import find from '../../jsutils/find';
 import type { ObjMap } from '../../jsutils/ObjMap';

@@ -8,7 +8,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
 import find from '../../jsutils/find';
 import { Kind } from '../../language/kinds';

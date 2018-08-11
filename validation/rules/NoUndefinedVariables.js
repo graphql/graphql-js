@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.undefinedVarMessage = undefinedVarMessage;
 exports.NoUndefinedVariables = NoUndefinedVariables;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -47,7 +47,7 @@ function NoUndefinedVariables(context) {
             var varName = node.name.value;
 
             if (variableNameDefined[varName] !== true) {
-              context.reportError(new _error.GraphQLError(undefinedVarMessage(varName, operation.name && operation.name.value), [node, operation]));
+              context.reportError(new _GraphQLError.GraphQLError(undefinedVarMessage(varName, operation.name && operation.name.value), [node, operation]));
             }
           }
         } catch (err) {

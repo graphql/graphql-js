@@ -16,7 +16,9 @@ exports.defaultFieldResolver = void 0;
 
 var _iterall = require("iterall");
 
-var _error = require("../error");
+var _GraphQLError = require("../error/GraphQLError");
+
+var _locatedError = require("../error/locatedError");
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
@@ -180,12 +182,12 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
 
   if (!operation) {
     if (operationName) {
-      errors.push(new _error.GraphQLError("Unknown operation named \"".concat(operationName, "\".")));
+      errors.push(new _GraphQLError.GraphQLError("Unknown operation named \"".concat(operationName, "\".")));
     } else {
-      errors.push(new _error.GraphQLError('Must provide an operation.'));
+      errors.push(new _GraphQLError.GraphQLError('Must provide an operation.'));
     }
   } else if (hasMultipleAssumedOperations) {
-    errors.push(new _error.GraphQLError('Must provide operation name if query contains ' + 'multiple operations.'));
+    errors.push(new _GraphQLError.GraphQLError('Must provide operation name if query contains ' + 'multiple operations.'));
   }
 
   var variableValues;
@@ -516,7 +518,7 @@ function completeValueCatchingError(exeContext, returnType, fieldNodes, info, pa
 }
 
 function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
-  var error = (0, _error.locatedError)(asErrorInstance(rawError), fieldNodes, responsePathAsArray(path)); // If the field type is non-nullable, then it is resolved without any
+  var error = (0, _locatedError.locatedError)(asErrorInstance(rawError), fieldNodes, responsePathAsArray(path)); // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
 
   if ((0, _definition.isNonNullType)(returnType)) {
@@ -666,11 +668,11 @@ function ensureValidRuntimeType(runtimeTypeOrName, exeContext, returnType, field
   var runtimeType = typeof runtimeTypeOrName === 'string' ? exeContext.schema.getType(runtimeTypeOrName) : runtimeTypeOrName;
 
   if (!(0, _definition.isObjectType)(runtimeType)) {
-    throw new _error.GraphQLError("Abstract type ".concat(returnType.name, " must resolve to an Object type at ") + "runtime for field ".concat(info.parentType.name, ".").concat(info.fieldName, " with ") + "value ".concat((0, _inspect.default)(result), ", received \"").concat((0, _inspect.default)(runtimeType), "\". ") + "Either the ".concat(returnType.name, " type should provide a \"resolveType\" ") + 'function or each possible type should provide an ' + '"isTypeOf" function.', fieldNodes);
+    throw new _GraphQLError.GraphQLError("Abstract type ".concat(returnType.name, " must resolve to an Object type at ") + "runtime for field ".concat(info.parentType.name, ".").concat(info.fieldName, " with ") + "value ".concat((0, _inspect.default)(result), ", received \"").concat((0, _inspect.default)(runtimeType), "\". ") + "Either the ".concat(returnType.name, " type should provide a \"resolveType\" ") + 'function or each possible type should provide an ' + '"isTypeOf" function.', fieldNodes);
   }
 
   if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
-    throw new _error.GraphQLError("Runtime Object type \"".concat(runtimeType.name, "\" is not a possible type ") + "for \"".concat(returnType.name, "\"."), fieldNodes);
+    throw new _GraphQLError.GraphQLError("Runtime Object type \"".concat(runtimeType.name, "\" is not a possible type ") + "for \"".concat(returnType.name, "\"."), fieldNodes);
   }
 
   return runtimeType;
@@ -706,7 +708,7 @@ function completeObjectValue(exeContext, returnType, fieldNodes, info, path, res
 }
 
 function invalidReturnTypeError(returnType, result, fieldNodes) {
-  return new _error.GraphQLError("Expected value of type \"".concat(returnType.name, "\" but got: ").concat((0, _inspect.default)(result), "."), fieldNodes);
+  return new _GraphQLError.GraphQLError("Expected value of type \"".concat(returnType.name, "\" but got: ").concat((0, _inspect.default)(result), "."), fieldNodes);
 }
 
 function collectAndExecuteSubfields(exeContext, returnType, fieldNodes, path, result) {

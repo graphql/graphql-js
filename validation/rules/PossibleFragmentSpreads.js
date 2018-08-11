@@ -9,7 +9,7 @@ exports.PossibleFragmentSpreads = PossibleFragmentSpreads;
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _typeComparators = require("../../utilities/typeComparators");
 
@@ -50,7 +50,7 @@ function PossibleFragmentSpreads(context) {
       var parentType = context.getParentType();
 
       if ((0, _definition.isCompositeType)(fragType) && (0, _definition.isCompositeType)(parentType) && !(0, _typeComparators.doTypesOverlap)(context.getSchema(), fragType, parentType)) {
-        context.reportError(new _error.GraphQLError(typeIncompatibleAnonSpreadMessage((0, _inspect.default)(parentType), (0, _inspect.default)(fragType)), [node]));
+        context.reportError(new _GraphQLError.GraphQLError(typeIncompatibleAnonSpreadMessage((0, _inspect.default)(parentType), (0, _inspect.default)(fragType)), [node]));
       }
     },
     FragmentSpread: function FragmentSpread(node) {
@@ -59,7 +59,7 @@ function PossibleFragmentSpreads(context) {
       var parentType = context.getParentType();
 
       if (fragType && parentType && !(0, _typeComparators.doTypesOverlap)(context.getSchema(), fragType, parentType)) {
-        context.reportError(new _error.GraphQLError(typeIncompatibleSpreadMessage(fragName, (0, _inspect.default)(parentType), (0, _inspect.default)(fragType)), [node]));
+        context.reportError(new _GraphQLError.GraphQLError(typeIncompatibleSpreadMessage(fragName, (0, _inspect.default)(parentType), (0, _inspect.default)(fragType)), [node]));
       }
     }
   };

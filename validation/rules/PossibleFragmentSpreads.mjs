@@ -7,7 +7,7 @@
  *  strict
  */
 import inspect from '../../jsutils/inspect';
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import { isCompositeType } from '../../type/definition';

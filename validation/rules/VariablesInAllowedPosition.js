@@ -8,7 +8,7 @@ exports.VariablesInAllowedPosition = VariablesInAllowedPosition;
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _kinds = require("../../language/kinds");
 
@@ -68,7 +68,7 @@ function VariablesInAllowedPosition(context) {
               var varType = (0, _typeFromAST.typeFromAST)(schema, varDef.type);
 
               if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
-                context.reportError(new _error.GraphQLError(badVarPosMessage(varName, (0, _inspect.default)(varType), (0, _inspect.default)(type)), [varDef, node]));
+                context.reportError(new _GraphQLError.GraphQLError(badVarPosMessage(varName, (0, _inspect.default)(varType), (0, _inspect.default)(type)), [varDef, node]));
               }
             }
           }

@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 export function duplicateInputFieldMessage(fieldName) {
   return "There can be only one input field named \"".concat(fieldName, "\".");
 }

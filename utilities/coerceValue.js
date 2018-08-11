@@ -15,7 +15,7 @@ var _orList = _interopRequireDefault(require("../jsutils/orList"));
 
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
 
-var _error = require("../error");
+var _GraphQLError = require("../error/GraphQLError");
 
 var _definition = require("../type/definition");
 
@@ -183,7 +183,7 @@ function atPath(prev, key) {
 function coercionError(message, blameNode, path, subMessage, originalError) {
   var pathStr = printPath(path); // Return a GraphQLError instance
 
-  return new _error.GraphQLError(message + (pathStr ? ' at ' + pathStr : '') + (subMessage ? '; ' + subMessage : '.'), blameNode, undefined, undefined, undefined, originalError);
+  return new _GraphQLError.GraphQLError(message + (pathStr ? ' at ' + pathStr : '') + (subMessage ? '; ' + subMessage : '.'), blameNode, undefined, undefined, undefined, originalError);
 } // Build a string describing the path into the value where the error was found
 
 

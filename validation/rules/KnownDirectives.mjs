@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { DirectiveLocation } from '../../language/directiveLocation';
 import { specifiedDirectives } from '../../type/directives';

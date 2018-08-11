@@ -7,7 +7,7 @@ exports.unknownDirectiveMessage = unknownDirectiveMessage;
 exports.misplacedDirectiveMessage = misplacedDirectiveMessage;
 exports.KnownDirectives = KnownDirectives;
 
-var _error = require("../../error");
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _kinds = require("../../language/kinds");
 
@@ -102,14 +102,14 @@ function KnownDirectives(context) {
       var locations = locationsMap[name];
 
       if (!locations) {
-        context.reportError(new _error.GraphQLError(unknownDirectiveMessage(name), [node]));
+        context.reportError(new _GraphQLError.GraphQLError(unknownDirectiveMessage(name), [node]));
         return;
       }
 
       var candidateLocation = getDirectiveLocationForASTPath(ancestors);
 
       if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
-        context.reportError(new _error.GraphQLError(misplacedDirectiveMessage(name, candidateLocation), [node]));
+        context.reportError(new _GraphQLError.GraphQLError(misplacedDirectiveMessage(name, candidateLocation), [node]));
       }
     }
   };
