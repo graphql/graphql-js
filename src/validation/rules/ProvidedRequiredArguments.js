@@ -7,12 +7,18 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../ValidationContext';
+import type {
+  ValidationContext,
+  SDLValidationContext,
+} from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
+import { Kind } from '../../language/kinds';
 import inspect from '../../jsutils/inspect';
 import keyMap from '../../jsutils/keyMap';
-import { isRequiredArgument } from '../../type/definition';
+import { isType, isRequiredArgument } from '../../type/definition';
 import type { ASTVisitor } from '../../language/visitor';
+import { print } from '../../language/printer';
+import { specifiedDirectives } from '../../type/directives';
 
 export function missingFieldArgMessage(
   fieldName: string,
@@ -46,14 +52,15 @@ export function ProvidedRequiredArguments(
   context: ValidationContext,
 ): ASTVisitor {
   return {
+    ...ProvidedRequiredArgumentsOnDirectives(context),
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
-      leave(node) {
+      leave(fieldNode) {
         const fieldDef = context.getFieldDef();
         if (!fieldDef) {
           return false;
         }
-        const argNodes = node.arguments || [];
+        const argNodes = fieldNode.arguments || [];
 
         const argNodeMap = keyMap(argNodes, arg => arg.name.value);
         for (const argDef of fieldDef.args) {
@@ -62,39 +69,11 @@ export function ProvidedRequiredArguments(
             context.reportError(
               new GraphQLError(
                 missingFieldArgMessage(
-                  node.name.value,
+                  fieldDef.name,
                   argDef.name,
                   inspect(argDef.type),
                 ),
-                [node],
-              ),
-            );
-          }
-        }
-      },
-    },
-
-    Directive: {
-      // Validate on leave to allow for deeper errors to appear first.
-      leave(node) {
-        const directiveDef = context.getDirective();
-        if (!directiveDef) {
-          return false;
-        }
-        const argNodes = node.arguments || [];
-
-        const argNodeMap = keyMap(argNodes, arg => arg.name.value);
-        for (const argDef of directiveDef.args) {
-          const argNode = argNodeMap[argDef.name];
-          if (!argNode && isRequiredArgument(argDef)) {
-            context.reportError(
-              new GraphQLError(
-                missingDirectiveArgMessage(
-                  node.name.value,
-                  argDef.name,
-                  inspect(argDef.type),
-                ),
-                [node],
+                [fieldNode],
               ),
             );
           }
@@ -102,4 +81,65 @@ export function ProvidedRequiredArguments(
       },
     },
   };
+}
+
+// @internal
+export function ProvidedRequiredArgumentsOnDirectives(
+  context: ValidationContext | SDLValidationContext,
+): ASTVisitor {
+  const requiredArgsMap = Object.create(null);
+
+  const schema = context.getSchema();
+  const definedDirectives = schema
+    ? schema.getDirectives()
+    : specifiedDirectives;
+  for (const directive of definedDirectives) {
+    requiredArgsMap[directive.name] = keyMap(
+      directive.args.filter(isRequiredArgument),
+      arg => arg.name,
+    );
+  }
+
+  const astDefinitions = context.getDocument().definitions;
+  for (const def of astDefinitions) {
+    if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+      requiredArgsMap[def.name.value] = keyMap(
+        def.arguments ? def.arguments.filter(isRequiredArgumentNode) : [],
+        arg => arg.name.value,
+      );
+    }
+  }
+
+  return {
+    Directive: {
+      // Validate on leave to allow for deeper errors to appear first.
+      leave(directiveNode) {
+        const directiveName = directiveNode.name.value;
+        const requiredArgs = requiredArgsMap[directiveName];
+        if (requiredArgs) {
+          const argNodes = directiveNode.arguments || [];
+          const argNodeMap = keyMap(argNodes, arg => arg.name.value);
+          for (const argName of Object.keys(requiredArgs)) {
+            if (!argNodeMap[argName]) {
+              const argType = requiredArgs[argName].type;
+              context.reportError(
+                new GraphQLError(
+                  missingDirectiveArgMessage(
+                    directiveName,
+                    argName,
+                    isType(argType) ? inspect(argType) : print(argType),
+                  ),
+                  directiveNode,
+                ),
+              );
+            }
+          }
+        }
+      },
+    },
+  };
+}
+
+function isRequiredArgumentNode(arg) {
+  return arg.type.kind === Kind.NON_NULL_TYPE && arg.defaultValue == null;
 }

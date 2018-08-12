@@ -6,12 +6,23 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { buildSchema } from '../../utilities';
+import {
+  expectPassesRule,
+  expectFailsRule,
+  expectSDLErrorsFromRule,
+} from './harness';
 import {
   ProvidedRequiredArguments,
+  ProvidedRequiredArgumentsOnDirectives,
   missingFieldArgMessage,
   missingDirectiveArgMessage,
 } from '../rules/ProvidedRequiredArguments';
+
+const expectSDLErrors = expectSDLErrorsFromRule.bind(
+  undefined,
+  ProvidedRequiredArgumentsOnDirectives,
+);
 
 function missingFieldArg(fieldName, argName, typeName, line, column) {
   return {
@@ -276,6 +287,81 @@ describe('Validate: Provided required arguments', () => {
           missingDirectiveArg('skip', 'if', 'Boolean!', 4, 18),
         ],
       );
+    });
+  });
+
+  describe('within SDL', () => {
+    it('Missing optional args on directive defined inside SDL', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @test
+        }
+
+        directive @test(arg1: String, arg2: String! = "") on FIELD_DEFINITION
+      `).to.deep.equal([]);
+    });
+
+    it('Missing arg on directive defined inside SDL', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @test
+        }
+
+        directive @test(arg: String!) on FIELD_DEFINITION
+      `).to.deep.equal([missingDirectiveArg('test', 'arg', 'String!', 3, 23)]);
+    });
+
+    it('Missing arg on standard directive', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @include
+        }
+      `).to.deep.equal([
+        missingDirectiveArg('include', 'if', 'Boolean!', 3, 23),
+      ]);
+    });
+
+    it('Missing arg on overrided standard directive', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @deprecated
+        }
+        directive @deprecated(reason: String!) on FIELD
+      `).to.deep.equal([
+        missingDirectiveArg('deprecated', 'reason', 'String!', 3, 23),
+      ]);
+    });
+
+    it('Missing arg on directive defined in schema extension', () => {
+      const schema = buildSchema(`
+        type Query {
+          foo: String
+        }
+      `);
+      expectSDLErrors(
+        `
+          directive @test(arg: String!) on OBJECT
+
+          extend type Query  @test
+        `,
+        schema,
+      ).to.deep.equal([missingDirectiveArg('test', 'arg', 'String!', 4, 30)]);
+    });
+
+    it('Missing arg on directive used in schema extension', () => {
+      const schema = buildSchema(`
+        directive @test(arg: String!) on OBJECT
+
+        type Query {
+          foo: String
+        }
+      `);
+      expectSDLErrors(
+        `
+          extend type Query @test
+        `,
+        schema,
+      ).to.deep.equal([missingDirectiveArg('test', 'arg', 'String!', 2, 29)]);
     });
   });
 });
