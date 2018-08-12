@@ -17,7 +17,6 @@ export var Kind = Object.freeze({
   DOCUMENT: 'Document',
   OPERATION_DEFINITION: 'OperationDefinition',
   VARIABLE_DEFINITION: 'VariableDefinition',
-  VARIABLE: 'Variable',
   SELECTION_SET: 'SelectionSet',
   FIELD: 'Field',
   ARGUMENT: 'Argument',
@@ -26,6 +25,7 @@ export var Kind = Object.freeze({
   INLINE_FRAGMENT: 'InlineFragment',
   FRAGMENT_DEFINITION: 'FragmentDefinition',
   // Values
+  VARIABLE: 'Variable',
   INT: 'IntValue',
   FLOAT: 'FloatValue',
   STRING: 'StringValue',
