@@ -35,6 +35,7 @@ export function isSelectionNode(node: ASTNode): boolean %checks {
 
 export function isValueNode(node: ASTNode): boolean %checks {
   return (
+    node.kind === Kind.VARIABLE ||
     node.kind === Kind.INT ||
     node.kind === Kind.FLOAT ||
     node.kind === Kind.STRING ||
@@ -42,8 +43,7 @@ export function isValueNode(node: ASTNode): boolean %checks {
     node.kind === Kind.NULL ||
     node.kind === Kind.ENUM ||
     node.kind === Kind.LIST ||
-    node.kind === Kind.OBJECT ||
-    node.kind === Kind.OBJECT_FIELD
+    node.kind === Kind.OBJECT
   );
 }
 
