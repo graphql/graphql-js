@@ -18,6 +18,7 @@ import {
   isInputObjectType,
   isListType,
   isNonNullType,
+  isRequiredInputField,
   getNullableType,
   getNamedType,
 } from '../../type/definition';
@@ -97,16 +98,12 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
       const fieldNodeMap = keyMap(node.fields, field => field.name.value);
       for (const fieldName of Object.keys(inputFields)) {
         const fieldDef = inputFields[fieldName];
-        const fieldType = fieldDef.type;
         const fieldNode = fieldNodeMap[fieldName];
-        if (
-          !fieldNode &&
-          isNonNullType(fieldType) &&
-          fieldDef.defaultValue === undefined
-        ) {
+        if (!fieldNode && isRequiredInputField(fieldDef)) {
+          const typeStr = inspect(fieldDef.type);
           context.reportError(
             new GraphQLError(
-              requiredFieldMessage(type.name, fieldName, inspect(fieldType)),
+              requiredFieldMessage(type.name, fieldName, typeStr),
               node,
             ),
           );
