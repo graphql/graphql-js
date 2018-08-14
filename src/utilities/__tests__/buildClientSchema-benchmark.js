@@ -5,15 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { join } from 'path';
-import { readFileSync } from 'fs';
-import { buildClientSchema } from '../buildClientSchema';
+import { bigSchemaIntrospectionResult } from '../../__fixtures__';
 
-const schemaJSON = JSON.parse(
-  readFileSync(join(__dirname, 'github-schema.json'), 'utf8'),
-);
+import { buildClientSchema } from '../buildClientSchema';
 
 export const name = 'Build Schema from Introspection';
 export function measure() {
-  buildClientSchema(schemaJSON.data);
+  buildClientSchema(bigSchemaIntrospectionResult.data);
 }

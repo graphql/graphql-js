@@ -5,17 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { join } from 'path';
-import { readFileSync } from 'fs';
+import { bigSchemaSDL } from '../../__fixtures__';
+
 import { execute, parse } from '../../';
-import { buildASTSchema } from '../buildASTSchema';
+import { buildSchema } from '../buildASTSchema';
 import { getIntrospectionQuery } from '../introspectionQuery';
 
 const queryAST = parse(getIntrospectionQuery());
-const schema = buildASTSchema(
-  parse(readFileSync(join(__dirname, 'github-schema.graphql'), 'utf8')),
-  { assumeValid: true },
-);
+const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
 
 export const name = 'Execute Introspection Query';
 export function measure() {
