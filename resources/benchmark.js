@@ -9,19 +9,21 @@ const { Suite } = require('benchmark');
 const beautifyBenchmark = require('beautify-benchmark');
 const { execSync } = require('child_process');
 const os = require('os');
+const fs = require('fs');
 const path = require('path');
 
 // Like build:cjs, but includes __tests__ and copies other files.
 const BUILD_CMD = 'babel src --optional runtime --copy-files --out-dir dist/';
 const LOCAL = 'local';
-const LOCAL_DIR = path.join(__dirname, '../');
-const TEMP_DIR = os.tmpdir();
+function LOCAL_DIR(...paths) {
+  return path.join(__dirname, '..', ...paths);
+}
+function TEMP_DIR(...paths) {
+  return path.join(os.tmpdir(), 'graphql-js-benchmark', ...paths);
+}
 
 // Returns the complete git hash for a given git revision reference.
 function hashForRevision(revision) {
-  if (revision === LOCAL) {
-    return revision;
-  }
   const out = execSync(`git rev-parse "${revision}"`, { encoding: 'utf8' });
   const match = /[0-9a-f]{8,40}/.exec(out);
   if (!match) {
@@ -30,55 +32,48 @@ function hashForRevision(revision) {
   return match[0];
 }
 
-// Returns the temporary directory which hosts the files for this git hash.
-function dirForHash(hash) {
-  if (hash === LOCAL) {
-    return path.join(__dirname, '../');
-  }
-  return path.join(TEMP_DIR, 'graphql-js-benchmark', hash);
-}
-
-// Build a benchmarkable environment for the given revision.
+// Build a benchmarkable environment for the given revision
+// and returns path to its 'dist' directory.
 function prepareRevision(revision) {
   console.log(`🍳  Preparing ${revision}...`);
-  const hash = hashForRevision(revision);
-  const dir = dirForHash(hash);
-  if (hash === LOCAL) {
-    execSync(`(cd "${dir}" && yarn run ${BUILD_CMD})`);
+
+  if (revision === LOCAL) {
+    execSync(`yarn run ${BUILD_CMD}`);
+    return LOCAL_DIR('dist');
   } else {
-    execSync(`
-      if [ ! -d "${dir}" ]; then
-        mkdir -p "${dir}" &&
-        git archive "${hash}" | tar -xC "${dir}" &&
-        (cd "${dir}" && yarn install);
-      fi &&
-      # Copy in local tests so the same logic applies to each revision.
-      for file in $(cd "${LOCAL_DIR}src"; find . -path '*/__tests__/*');
-        do cp "${LOCAL_DIR}src/$file" "${dir}/src/$file";
-      done &&
-      cp -R "${LOCAL_DIR}/src/__fixtures__" "${dir}/src/__fixtures__" &&
-      (cd "${dir}" && yarn run ${BUILD_CMD})
-    `);
+    if (!fs.existsSync(TEMP_DIR())) {
+      fs.mkdirSync(TEMP_DIR());
+    }
+
+    const hash = hashForRevision(revision);
+    const dir = TEMP_DIR(hash);
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+      execSync(`git archive "${hash}" | tar -xC "${dir}"`);
+      execSync('yarn install', { cwd: dir });
+    }
+    for (const file of findFiles(LOCAL_DIR('src'), '*/__tests__/*')) {
+      const from = LOCAL_DIR('src', file);
+      const to = path.join(dir, 'src', file);
+      fs.copyFileSync(from, to);
+    }
+    execSync(`cp -R "${LOCAL_DIR()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`);
+    execSync(`yarn run ${BUILD_CMD}`, { cwd: dir });
+
+    return path.join(dir, 'dist');
   }
 }
 
-// Find all benchmark tests to be run.
-function findBenchmarks() {
-  const out = execSync(
-    `(cd ${LOCAL_DIR}src; find . -path '*/__tests__/*-benchmark.js')`,
-    { encoding: 'utf8' },
-  );
+function findFiles(cwd, pattern) {
+  const out = execSync(`find . -path '${pattern}'`, { cwd, encoding: 'utf8' });
   return out.split('\n').filter(Boolean);
 }
 
 // Run a given benchmark test with the provided revisions.
-function runBenchmark(benchmark, revisions) {
-  const modules = revisions.map(revision =>
-    require(path.join(
-      dirForHash(hashForRevision(revision)),
-      'dist',
-      benchmark,
-    )),
+function runBenchmark(benchmark, enviroments) {
+  const modules = enviroments.map(({distPath}) =>
+    require(path.join(distPath, benchmark)),
   );
   const suite = new Suite(modules[0].name, {
     onStart(event) {
@@ -95,19 +90,24 @@ function runBenchmark(benchmark, revisions) {
       beautifyBenchmark.log();
     },
   });
-  for (let i = 0; i < revisions.length; i++) {
-    suite.add(revisions[i], modules[i].measure);
+  for (let i = 0; i < enviroments.length; i++) {
+    suite.add(enviroments[i].revision, modules[i].measure);
   }
   suite.run({ async: false });
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
 function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
-  const benchmarks = findBenchmarks().filter(
-    benchmark =>
-      benchmarkPatterns.length === 0 ||
-      benchmarkPatterns.some(pattern => benchmark.indexOf(pattern) !== -1),
-  );
+  // Find all benchmark tests to be run.
+  let benchmarks = findFiles(LOCAL_DIR('src'), '*/__tests__/*-benchmark.js');
+  if (benchmarkPatterns.length !== 0) {
+    benchmarks = benchmarks.filter(
+      benchmark => benchmarkPatterns.some(
+        pattern => path.join('src', benchmark).includes(pattern)
+      ),
+    );
+  }
+
   if (benchmarks.length === 0) {
     console.warn(
       'No benchmarks matching: ' +
@@ -115,8 +115,11 @@ function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
     );
     return;
   }
-  revisions.forEach(revision => prepareRevision(revision));
-  benchmarks.forEach(benchmark => runBenchmark(benchmark, revisions));
+
+  const enviroments = revisions.map(
+    revision => ({ revision, distPath: prepareRevision(revision)})
+  );
+  benchmarks.forEach(benchmark => runBenchmark(benchmark, enviroments));
 }
 
 function getArguments(argv) {
