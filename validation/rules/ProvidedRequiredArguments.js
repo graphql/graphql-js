@@ -64,7 +64,7 @@ function ProvidedRequiredArguments(context) {
             var argDef = _step.value;
             var argNode = argNodeMap[argDef.name];
 
-            if (!argNode && (0, _definition.isNonNullType)(argDef.type) && argDef.defaultValue === undefined) {
+            if (!argNode && (0, _definition.isRequiredArgument)(argDef)) {
               context.reportError(new _GraphQLError.GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
             }
           }
@@ -106,7 +106,7 @@ function ProvidedRequiredArguments(context) {
             var argDef = _step2.value;
             var argNode = argNodeMap[argDef.name];
 
-            if (!argNode && (0, _definition.isNonNullType)(argDef.type) && argDef.defaultValue === undefined) {
+            if (!argNode && (0, _definition.isRequiredArgument)(argDef)) {
               context.reportError(new _GraphQLError.GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
             }
           }

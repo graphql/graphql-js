@@ -41,6 +41,8 @@ exports.getNullableType = getNullableType;
 exports.isNamedType = isNamedType;
 exports.assertNamedType = assertNamedType;
 exports.getNamedType = getNamedType;
+exports.isRequiredArgument = isRequiredArgument;
+exports.isRequiredInputField = isRequiredInputField;
 exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.GraphQLObjectType = exports.GraphQLScalarType = void 0;
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
@@ -596,6 +598,10 @@ function isPlainObj(obj) {
   return obj && _typeof(obj) === 'object' && !Array.isArray(obj);
 }
 
+function isRequiredArgument(arg) {
+  return isNonNullType(arg.type) && arg.defaultValue === undefined;
+}
+
 /**
  * Interface Type Definition
  *
@@ -955,4 +961,8 @@ function defineInputFieldMap(config) {
   }
 
   return resultFieldMap;
+}
+
+function isRequiredInputField(field) {
+  return isNonNullType(field.type) && field.defaultValue === undefined;
 }

@@ -8,7 +8,7 @@
  */
 import { GraphQLError } from '../../error/GraphQLError';
 import { print } from '../../language/printer';
-import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType, getNullableType, getNamedType } from '../../type/definition';
+import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType, isRequiredInputField, getNullableType, getNamedType } from '../../type/definition';
 import inspect from '../../jsutils/inspect';
 import isInvalid from '../../jsutils/isInvalid';
 import keyMap from '../../jsutils/keyMap';
@@ -68,11 +68,11 @@ export function ValuesOfCorrectType(context) {
       for (var _i = 0; _i < _arr.length; _i++) {
         var fieldName = _arr[_i];
         var fieldDef = inputFields[fieldName];
-        var fieldType = fieldDef.type;
         var fieldNode = fieldNodeMap[fieldName];
 
-        if (!fieldNode && isNonNullType(fieldType) && fieldDef.defaultValue === undefined) {
-          context.reportError(new GraphQLError(requiredFieldMessage(type.name, fieldName, inspect(fieldType)), node));
+        if (!fieldNode && isRequiredInputField(fieldDef)) {
+          var typeStr = inspect(fieldDef.type);
+          context.reportError(new GraphQLError(requiredFieldMessage(type.name, fieldName, typeStr), node));
         }
       }
     },

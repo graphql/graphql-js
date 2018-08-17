@@ -91,11 +91,11 @@ function ValuesOfCorrectType(context) {
       for (var _i = 0; _i < _arr.length; _i++) {
         var fieldName = _arr[_i];
         var fieldDef = inputFields[fieldName];
-        var fieldType = fieldDef.type;
         var fieldNode = fieldNodeMap[fieldName];
 
-        if (!fieldNode && (0, _definition.isNonNullType)(fieldType) && fieldDef.defaultValue === undefined) {
-          context.reportError(new _GraphQLError.GraphQLError(requiredFieldMessage(type.name, fieldName, (0, _inspect.default)(fieldType)), node));
+        if (!fieldNode && (0, _definition.isRequiredInputField)(fieldDef)) {
+          var typeStr = (0, _inspect.default)(fieldDef.type);
+          context.reportError(new _GraphQLError.GraphQLError(requiredFieldMessage(type.name, fieldName, typeStr), node));
         }
       }
     },

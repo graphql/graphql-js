@@ -41,7 +41,7 @@ specifiedDirectives, GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDepre
 DEFAULT_DEPRECATION_REASON, // Meta-field definitions.
 SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef, // GraphQL Types for introspection.
 introspectionTypes, __Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind, // Predicates
-isSchema, isDirective, isType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isInputType, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isSpecifiedScalarType, isIntrospectionType, isSpecifiedDirective, // Assertions
+isSchema, isDirective, isType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isInputType, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isRequiredArgument, isRequiredInputField, isSpecifiedScalarType, isIntrospectionType, isSpecifiedDirective, // Assertions
 assertType, assertScalarType, assertObjectType, assertInterfaceType, assertUnionType, assertEnumType, assertInputObjectType, assertListType, assertNonNullType, assertInputType, assertOutputType, assertLeafType, assertCompositeType, assertAbstractType, assertWrappingType, assertNullableType, assertNamedType, // Un-modifiers
 getNullableType, getNamedType, // Validate GraphQL schema.
 validateSchema, assertValidSchema } from './type';

@@ -507,6 +507,10 @@ function isPlainObj(obj) {
   return obj && _typeof(obj) === 'object' && !Array.isArray(obj);
 }
 
+export function isRequiredArgument(arg) {
+  return isNonNullType(arg.type) && arg.defaultValue === undefined;
+}
+
 /**
  * Interface Type Definition
  *
@@ -858,4 +862,8 @@ function defineInputFieldMap(config) {
   }
 
   return resultFieldMap;
+}
+
+export function isRequiredInputField(field) {
+  return isNonNullType(field.type) && field.defaultValue === undefined;
 }

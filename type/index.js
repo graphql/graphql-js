@@ -117,6 +117,18 @@ Object.defineProperty(exports, "isNamedType", {
     return _definition.isNamedType;
   }
 });
+Object.defineProperty(exports, "isRequiredArgument", {
+  enumerable: true,
+  get: function get() {
+    return _definition.isRequiredArgument;
+  }
+});
+Object.defineProperty(exports, "isRequiredInputField", {
+  enumerable: true,
+  get: function get() {
+    return _definition.isRequiredInputField;
+  }
+});
 Object.defineProperty(exports, "assertType", {
   enumerable: true,
   get: function get() {

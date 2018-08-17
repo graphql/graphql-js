@@ -9,7 +9,7 @@
 import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
 import keyMap from '../../jsutils/keyMap';
-import { isNonNullType } from '../../type/definition';
+import { isRequiredArgument } from '../../type/definition';
 export function missingFieldArgMessage(fieldName, argName, type) {
   return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(type, "\" is required but not provided.");
 }
@@ -47,7 +47,7 @@ export function ProvidedRequiredArguments(context) {
             var argDef = _step.value;
             var argNode = argNodeMap[argDef.name];
 
-            if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
+            if (!argNode && isRequiredArgument(argDef)) {
               context.reportError(new GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, inspect(argDef.type)), [node]));
             }
           }
@@ -89,7 +89,7 @@ export function ProvidedRequiredArguments(context) {
             var argDef = _step2.value;
             var argNode = argNodeMap[argDef.name];
 
-            if (!argNode && isNonNullType(argDef.type) && argDef.defaultValue === undefined) {
+            if (!argNode && isRequiredArgument(argDef)) {
               context.reportError(new GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, inspect(argDef.type)), [node]));
             }
           }
