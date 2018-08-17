@@ -35,6 +35,8 @@ export {
   isWrappingType,
   isNullableType,
   isNamedType,
+  isRequiredArgument,
+  isRequiredInputField,
   // Assertions
   assertType,
   assertScalarType,

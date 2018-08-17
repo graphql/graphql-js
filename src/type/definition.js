@@ -858,6 +858,10 @@ export type GraphQLArgument = {
   astNode?: ?InputValueDefinitionNode,
 };
 
+export function isRequiredArgument(arg: GraphQLArgument): boolean %checks {
+  return isNonNullType(arg.type) && arg.defaultValue === undefined;
+}
+
 export type GraphQLFieldMap<TSource, TContext> = ObjMap<
   GraphQLField<TSource, TContext>,
 >;
@@ -1272,5 +1276,11 @@ export type GraphQLInputField = {
   description?: ?string,
   astNode?: ?InputValueDefinitionNode,
 };
+
+export function isRequiredInputField(
+  field: GraphQLInputField,
+): boolean %checks {
+  return isNonNullType(field.type) && field.defaultValue === undefined;
+}
 
 export type GraphQLInputFieldMap = ObjMap<GraphQLInputField>;

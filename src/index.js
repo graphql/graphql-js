@@ -98,6 +98,8 @@ export {
   isWrappingType,
   isNullableType,
   isNamedType,
+  isRequiredArgument,
+  isRequiredInputField,
   isSpecifiedScalarType,
   isIntrospectionType,
   isSpecifiedDirective,
