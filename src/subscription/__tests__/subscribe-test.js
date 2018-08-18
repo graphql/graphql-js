@@ -10,6 +10,7 @@ import { describe, it } from 'mocha';
 import EventEmitter from 'events';
 import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
 import { createSourceEventStream, subscribe } from '../subscribe';
+import { GraphQLError } from '../../error';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -986,19 +987,13 @@ describe('Subscription Publish Phase', () => {
     });
   });
 
-  it('should pass through error resolved from source event stream', async () => {
+  it('should resolve GraphQL error from source event stream', async () => {
     const erroringEmailSchema = emailSchemaWithResolvers(
       async function*() {
         yield { email: { subject: 'Hello' } };
-        yield new Error('test error');
+        throw new GraphQLError('test error');
       },
-      email => {
-        if (email instanceof Error) {
-          throw email;
-        }
-
-        return email;
-      },
+      email => email,
     );
 
     const subscription = await subscribe(
@@ -1032,14 +1027,9 @@ describe('Subscription Publish Phase', () => {
     expect(payload2).to.deep.equal({
       done: false,
       value: {
-        data: {
-          importantEmail: null,
-        },
         errors: [
           {
             message: 'test error',
-            locations: [{ line: 3, column: 11 }],
-            path: ['importantEmail'],
           },
         ],
       },
