@@ -11,7 +11,7 @@ import type { ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
 import keyMap from '../../jsutils/keyMap';
-import { isNonNullType } from '../../type/definition';
+import { isRequiredArgument } from '../../type/definition';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function missingFieldArgMessage(
@@ -58,11 +58,7 @@ export function ProvidedRequiredArguments(
         const argNodeMap = keyMap(argNodes, arg => arg.name.value);
         for (const argDef of fieldDef.args) {
           const argNode = argNodeMap[argDef.name];
-          if (
-            !argNode &&
-            isNonNullType(argDef.type) &&
-            argDef.defaultValue === undefined
-          ) {
+          if (!argNode && isRequiredArgument(argDef)) {
             context.reportError(
               new GraphQLError(
                 missingFieldArgMessage(
@@ -90,11 +86,7 @@ export function ProvidedRequiredArguments(
         const argNodeMap = keyMap(argNodes, arg => arg.name.value);
         for (const argDef of directiveDef.args) {
           const argNode = argNodeMap[argDef.name];
-          if (
-            !argNode &&
-            isNonNullType(argDef.type) &&
-            argDef.defaultValue === undefined
-          ) {
+          if (!argNode && isRequiredArgument(argDef)) {
             context.reportError(
               new GraphQLError(
                 missingDirectiveArgMessage(
