@@ -298,6 +298,9 @@ export function createSourceEventStream(
       );
     });
   } catch (error) {
+    // As with reportGraphQLError above, if the error is a GraphQLError, report
+    // it as an ExecutionResult; otherwise treat it as a system-class error and
+    // re-throw it.
     return error instanceof GraphQLError
       ? Promise.resolve({ errors: [error] })
       : Promise.reject(error);

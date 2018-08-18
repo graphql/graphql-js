@@ -9,7 +9,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import EventEmitter from 'events';
 import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
-import { subscribe } from '../subscribe';
+import { createSourceEventStream, subscribe } from '../subscribe';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -409,6 +409,58 @@ describe('Subscription Initialization Phase', () => {
     async function testReportsError(schema) {
       // Promise<AsyncIterable<ExecutionResult> | ExecutionResult>
       const result = await subscribe(
+        schema,
+        parse(`
+          subscription {
+            importantEmail
+          }
+        `),
+      );
+
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message: 'test error',
+            locations: [{ line: 3, column: 13 }],
+            path: ['importantEmail'],
+          },
+        ],
+      });
+    }
+  });
+
+  it('resolves to an error for source event stream resolver errors', async () => {
+    // Returning an error
+    const subscriptionReturningErrorSchema = emailSchemaWithResolvers(() => {
+      return new Error('test error');
+    });
+    await testReportsError(subscriptionReturningErrorSchema);
+
+    // Throwing an error
+    const subscriptionThrowingErrorSchema = emailSchemaWithResolvers(() => {
+      throw new Error('test error');
+    });
+    await testReportsError(subscriptionThrowingErrorSchema);
+
+    // Resolving to an error
+    const subscriptionResolvingErrorSchema = emailSchemaWithResolvers(
+      async () => {
+        return new Error('test error');
+      },
+    );
+    await testReportsError(subscriptionResolvingErrorSchema);
+
+    // Rejecting with an error
+    const subscriptionRejectingErrorSchema = emailSchemaWithResolvers(
+      async () => {
+        throw new Error('test error');
+      },
+    );
+    await testReportsError(subscriptionRejectingErrorSchema);
+
+    async function testReportsError(schema) {
+      // Promise<AsyncIterable<ExecutionResult> | ExecutionResult>
+      const result = await createSourceEventStream(
         schema,
         parse(`
           subscription {
@@ -929,6 +981,72 @@ describe('Subscription Publish Phase', () => {
 
     const payload2 = await subscription.next();
     expect(payload2).to.deep.equal({
+      done: true,
+      value: undefined,
+    });
+  });
+
+  it('should pass through error resolved from source event stream', async () => {
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      async function*() {
+        yield { email: { subject: 'Hello' } };
+        yield new Error('test error');
+      },
+      email => {
+        if (email instanceof Error) {
+          throw email;
+        }
+
+        return email;
+      },
+    );
+
+    const subscription = await subscribe(
+      erroringEmailSchema,
+      parse(`
+        subscription {
+          importantEmail {
+            email {
+              subject
+            }
+          }
+        }
+      `),
+    );
+
+    const payload1 = await subscription.next();
+    expect(payload1).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: {
+              subject: 'Hello',
+            },
+          },
+        },
+      },
+    });
+
+    const payload2 = await subscription.next();
+    expect(payload2).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          importantEmail: null,
+        },
+        errors: [
+          {
+            message: 'test error',
+            locations: [{ line: 3, column: 11 }],
+            path: ['importantEmail'],
+          },
+        ],
+      },
+    });
+
+    const payload3 = await subscription.next();
+    expect(payload3).to.deep.equal({
       done: true,
       value: undefined,
     });
