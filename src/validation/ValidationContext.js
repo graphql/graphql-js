@@ -7,11 +7,13 @@
  * @flow strict
  */
 
+import keyMap from '../jsutils/keyMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { GraphQLError } from '../error';
 import { visit, visitWithTypeInfo } from '../language/visitor';
 import { Kind } from '../language/kinds';
 import type {
+  ASTKindToNode,
   DocumentNode,
   OperationDefinitionNode,
   VariableNode,
@@ -38,6 +40,10 @@ type VariableUsage = {|
   +defaultValue: ?mixed,
 |};
 
+type KindToNodesMap = $Shape<
+  $ObjMap<ASTKindToNode, <Node>(Node) => ?Array<Node>>,
+>;
+
 /**
  * An instance of this class is passed as the "this" context to all validators,
  * allowing access to commonly useful contextual information from within a
@@ -46,19 +52,29 @@ type VariableUsage = {|
 export class ASTValidationContext {
   _ast: DocumentNode;
   _errors: Array<GraphQLError>;
-  _fragments: ?ObjMap<FragmentDefinitionNode>;
+  _fragments: ObjMap<FragmentDefinitionNode>;
   _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
     OperationDefinitionNode,
     $ReadOnlyArray<FragmentDefinitionNode>,
   >;
+  _defsByKind: KindToNodesMap;
 
   constructor(ast: DocumentNode): void {
     this._ast = ast;
     this._errors = [];
-    this._fragments = undefined;
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
+
+    const defsByKind = Object.create(null);
+    for (const node of ast.definitions) {
+      if (defsByKind[node.kind]) {
+        defsByKind[node.kind].push(node);
+      } else {
+        defsByKind[node.kind] = [node];
+      }
+    }
+    this._defsByKind = defsByKind;
   }
 
   reportError(error: GraphQLError): void {
@@ -73,20 +89,18 @@ export class ASTValidationContext {
     return this._ast;
   }
 
+  getDefinitionsMap(): KindToNodesMap {
+    return this._defsByKind;
+  }
+
   getFragment(name: string): ?FragmentDefinitionNode {
-    let fragments = this._fragments;
-    if (!fragments) {
-      this._fragments = fragments = this.getDocument().definitions.reduce(
-        (frags, statement) => {
-          if (statement.kind === Kind.FRAGMENT_DEFINITION) {
-            frags[statement.name.value] = statement;
-          }
-          return frags;
-        },
-        Object.create(null),
+    if (!this._fragments) {
+      this._fragments = keyMap(
+        this.getDefinitionsMap().FragmentDefinition || [],
+        def => def.name.value,
       );
     }
-    return fragments[name];
+    return this._fragments[name];
   }
 
   getFragmentSpreads(

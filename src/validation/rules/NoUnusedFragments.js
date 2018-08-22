@@ -22,38 +22,25 @@ export function unusedFragMessage(fragName: string): string {
  * within operations, or spread within other fragments spread within operations.
  */
 export function NoUnusedFragments(context: ASTValidationContext): ASTVisitor {
-  const operationDefs = [];
-  const fragmentDefs = [];
+  const fragmentNameUsed = Object.create(null);
+  const operationDefs = context.getDefinitionsMap().OperationDefinition || [];
+  for (const operation of operationDefs) {
+    for (const fragment of context.getRecursivelyReferencedFragments(
+      operation,
+    )) {
+      fragmentNameUsed[fragment.name.value] = true;
+    }
+  }
 
   return {
-    OperationDefinition(node) {
-      operationDefs.push(node);
-      return false;
-    },
     FragmentDefinition(node) {
-      fragmentDefs.push(node);
+      const fragName = node.name.value;
+      if (fragmentNameUsed[fragName] !== true) {
+        context.reportError(
+          new GraphQLError(unusedFragMessage(fragName), [node]),
+        );
+      }
       return false;
-    },
-    Document: {
-      leave() {
-        const fragmentNameUsed = Object.create(null);
-        for (const operation of operationDefs) {
-          for (const fragment of context.getRecursivelyReferencedFragments(
-            operation,
-          )) {
-            fragmentNameUsed[fragment.name.value] = true;
-          }
-        }
-
-        for (const fragmentDef of fragmentDefs) {
-          const fragName = fragmentDef.name.value;
-          if (fragmentNameUsed[fragName] !== true) {
-            context.reportError(
-              new GraphQLError(unusedFragMessage(fragName), [fragmentDef]),
-            );
-          }
-        }
-      },
     },
   };
 }
