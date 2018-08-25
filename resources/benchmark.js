@@ -56,6 +56,7 @@ function prepareRevision(revision) {
       for file in $(cd "${LOCAL_DIR}src"; find . -path '*/__tests__/*');
         do cp "${LOCAL_DIR}src/$file" "${dir}/src/$file";
       done &&
+      cp -R "${LOCAL_DIR}/src/__fixtures__" "${dir}/src/__fixtures__" &&
       (cd "${dir}" && yarn run ${BUILD_CMD})
     `);
   }
