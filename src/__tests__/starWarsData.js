@@ -93,14 +93,9 @@ const droidData = {
  * These are Flow types which correspond to the schema.
  * They represent the shape of the data visited during field resolution.
  */
-export type Character = {
-  id: string,
-  name: string,
-  friends: Array<string>,
-  appearsIn: Array<number>,
-};
+export type CharacterData = HumanData | DroidData;
 
-export type Human = {
+export type HumanData = {
   type: 'Human',
   id: string,
   name: string,
@@ -109,7 +104,7 @@ export type Human = {
   homePlanet: string,
 };
 
-export type Droid = {
+export type DroidData = {
   type: 'Droid',
   id: string,
   name: string,
@@ -121,23 +116,15 @@ export type Droid = {
 /**
  * Helper function to get a character by ID.
  */
-function getCharacter(id) {
+export function getCharacter(id: string): Promise<CharacterData> {
   // Returning a promise just to illustrate GraphQL.js's support.
   return Promise.resolve(humanData[id] || droidData[id]);
 }
 
 /**
- * Allows us to query for a character's friends.
- */
-export function getFriends(character: Character): Array<Promise<Character>> {
-  // Notice that GraphQL accepts Arrays of Promises.
-  return character.friends.map(id => getCharacter(id));
-}
-
-/**
  * Allows us to fetch the undisputed hero of the Star Wars trilogy, R2-D2.
  */
-export function getHero(episode: number): Character {
+export function getHero(episode: number): CharacterData {
   if (episode === 5) {
     // Luke is the hero of Episode V.
     return luke;
@@ -149,13 +136,13 @@ export function getHero(episode: number): Character {
 /**
  * Allows us to query for the human with the given id.
  */
-export function getHuman(id: string): Human {
+export function getHuman(id: string): HumanData {
   return humanData[id];
 }
 
 /**
  * Allows us to query for the droid with the given id.
  */
-export function getDroid(id: string): Droid {
+export function getDroid(id: string): DroidData {
   return droidData[id];
 }
