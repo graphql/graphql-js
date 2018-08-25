@@ -100,23 +100,23 @@ export type Character = {
   appearsIn: Array<number>,
 };
 
-export type Human = {
+export type Human = {|
   type: 'Human',
   id: string,
   name: string,
   friends: Array<string>,
   appearsIn: Array<number>,
   homePlanet: string,
-};
+|};
 
-export type Droid = {
+export type Droid = {|
   type: 'Droid',
   id: string,
   name: string,
   friends: Array<string>,
   appearsIn: Array<number>,
   primaryFunction: string,
-};
+|};
 
 /**
  * Helper function to get a character by ID.

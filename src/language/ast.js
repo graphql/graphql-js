@@ -136,7 +136,7 @@ export type ASTNode =
 /**
  * Utility type listing all nodes indexed by their kind.
  */
-export type ASTKindToNode = {
+export type ASTKindToNode = {|
   Name: NameNode,
   Document: DocumentNode,
   OperationDefinition: OperationDefinitionNode,
@@ -180,7 +180,7 @@ export type ASTKindToNode = {
   UnionTypeExtension: UnionTypeExtensionNode,
   EnumTypeExtension: EnumTypeExtensionNode,
   InputObjectTypeExtension: InputObjectTypeExtensionNode,
-};
+|};
 
 // Name
 
