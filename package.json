@@ -14,9 +14,6 @@
     "type": "git",
     "url": "http://github.com/graphql/graphql-js.git"
   },
-  "options": {
-    "mocha": "--check-leaks --full-trace --timeout 15000 src/**/__tests__/**/*-test.js"
-  },
   "engines": {
     "node": "6.x || 8.x || >= 10.x"
   },
