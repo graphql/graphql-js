@@ -94,7 +94,7 @@ import type {
  * Namely, schema of the type system that is currently executing,
  * and the fragments defined in the query document
  */
-export type ExecutionContext = {
+export type ExecutionContext = {|
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
   rootValue: mixed,
@@ -103,7 +103,7 @@ export type ExecutionContext = {
   variableValues: { [variable: string]: mixed },
   fieldResolver: GraphQLFieldResolver<any, any>,
   errors: Array<GraphQLError>,
-};
+|};
 
 /**
  * The result of GraphQL execution.
