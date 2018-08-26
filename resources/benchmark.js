@@ -13,7 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Like build:cjs, but includes __tests__ and copies other files.
-const BUILD_CMD = 'babel src --optional runtime --copy-files --out-dir dist/';
+const BUILD_CMD = 'babel src --copy-files --out-dir dist/';
 const LOCAL = 'local';
 function LOCAL_DIR(...paths) {
   return path.join(__dirname, '..', ...paths);
