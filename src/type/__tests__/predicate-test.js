@@ -35,6 +35,8 @@ import {
   isWrappingType,
   isNullableType,
   isNamedType,
+  isRequiredArgument,
+  isRequiredInputField,
   assertType,
   assertScalarType,
   assertObjectType,
@@ -467,6 +469,72 @@ describe('Type predicates', () => {
       expect(
         getNamedType(GraphQLNonNull(GraphQLList(GraphQLNonNull(ObjectType)))),
       ).to.equal(ObjectType);
+    });
+  });
+
+  describe('isRequiredArgument', () => {
+    it('returns true for required arguments', () => {
+      const requiredArg = {
+        type: GraphQLNonNull(GraphQLString),
+      };
+      expect(isRequiredArgument(requiredArg)).to.equal(true);
+    });
+
+    it('returns false for optional arguments', () => {
+      const optArg1 = {
+        type: GraphQLString,
+      };
+      expect(isRequiredArgument(optArg1)).to.equal(false);
+
+      const optArg2 = {
+        type: GraphQLString,
+        defaultValue: null,
+      };
+      expect(isRequiredArgument(optArg2)).to.equal(false);
+
+      const optArg3 = {
+        type: GraphQLList(GraphQLNonNull(GraphQLString)),
+      };
+      expect(isRequiredArgument(optArg3)).to.equal(false);
+
+      const optArg4 = {
+        type: GraphQLNonNull(GraphQLString),
+        defaultValue: 'default',
+      };
+      expect(isRequiredArgument(optArg4)).to.equal(false);
+    });
+  });
+
+  describe('isRequiredInputField', () => {
+    it('returns true for required input field', () => {
+      const requiredField = {
+        type: GraphQLNonNull(GraphQLString),
+      };
+      expect(isRequiredInputField(requiredField)).to.equal(true);
+    });
+
+    it('returns false for optional input field', () => {
+      const optField1 = {
+        type: GraphQLString,
+      };
+      expect(isRequiredInputField(optField1)).to.equal(false);
+
+      const optField2 = {
+        type: GraphQLString,
+        defaultValue: null,
+      };
+      expect(isRequiredInputField(optField2)).to.equal(false);
+
+      const optField3 = {
+        type: GraphQLList(GraphQLNonNull(GraphQLString)),
+      };
+      expect(isRequiredInputField(optField3)).to.equal(false);
+
+      const optField4 = {
+        type: GraphQLNonNull(GraphQLString),
+        defaultValue: 'default',
+      };
+      expect(isRequiredInputField(optField4)).to.equal(false);
     });
   });
 });
