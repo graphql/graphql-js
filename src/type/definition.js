@@ -532,7 +532,7 @@ function resolveThunk<+T>(thunk: Thunk<T>): T {
  *     });
  *
  */
-export class GraphQLScalarType<TInternal, TExternal> {
+export class GraphQLScalarType<TInternal = any, TExternal = any> {
   name: string;
   description: ?string;
   serialize: GraphQLScalarSerializer<TExternal>;
