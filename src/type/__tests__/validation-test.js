@@ -1827,3 +1827,36 @@ describe('Objects must adhere to Interface they implement', () => {
     ]);
   });
 });
+
+describe('Type System: Union types can implement interfaces', () => {
+  it('accepts a union type as an implementation of an interface', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: MyConnection
+      }
+      
+      interface Node {
+        id: ID
+      }
+      
+      interface Connection {
+        nodes: [Node]
+      }
+      
+      type NodeA implements Node {
+        id: ID
+      }
+      type NodeB implements Node {
+        id: ID
+      }
+      union MyNode =
+        | NodeA
+        | NodeB
+      
+      type MyConnection implements Connection {
+        nodes: [MyNode]
+      }
+    `);
+    expect(validateSchema(schema)).to.deep.equal([]);
+  });
+});
