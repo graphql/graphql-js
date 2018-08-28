@@ -6,8 +6,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.missingFieldArgMessage = missingFieldArgMessage;
 exports.missingDirectiveArgMessage = missingDirectiveArgMessage;
 exports.ProvidedRequiredArguments = ProvidedRequiredArguments;
+exports.ProvidedRequiredArgumentsOnDirectives = ProvidedRequiredArgumentsOnDirectives;
 
 var _GraphQLError = require("../../error/GraphQLError");
+
+var _kinds = require("../../language/kinds");
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
@@ -15,16 +18,16 @@ var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
 
 var _definition = require("../../type/definition");
 
+var _printer = require("../../language/printer");
+
+var _directives = require("../../type/directives");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function missingFieldArgMessage(fieldName, argName, type) {
   return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(type, "\" is required but not provided.");
 }
@@ -41,17 +44,17 @@ function missingDirectiveArgMessage(directiveName, argName, type) {
 
 
 function ProvidedRequiredArguments(context) {
-  return {
+  return _objectSpread({}, ProvidedRequiredArgumentsOnDirectives(context), {
     Field: {
       // Validate on leave to allow for deeper errors to appear first.
-      leave: function leave(node) {
+      leave: function leave(fieldNode) {
         var fieldDef = context.getFieldDef();
 
         if (!fieldDef) {
           return false;
         }
 
-        var argNodes = node.arguments || [];
+        var argNodes = fieldNode.arguments || [];
         var argNodeMap = (0, _keyMap.default)(argNodes, function (arg) {
           return arg.name.value;
         });
@@ -65,7 +68,7 @@ function ProvidedRequiredArguments(context) {
             var argNode = argNodeMap[argDef.name];
 
             if (!argNode && (0, _definition.isRequiredArgument)(argDef)) {
-              context.reportError(new _GraphQLError.GraphQLError(missingFieldArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
+              context.reportError(new _GraphQLError.GraphQLError(missingFieldArgMessage(fieldDef.name, argDef.name, (0, _inspect.default)(argDef.type)), [fieldNode]));
             }
           }
         } catch (err) {
@@ -83,48 +86,100 @@ function ProvidedRequiredArguments(context) {
           }
         }
       }
-    },
-    Directive: {
-      // Validate on leave to allow for deeper errors to appear first.
-      leave: function leave(node) {
-        var directiveDef = context.getDirective();
+    }
+  });
+} // @internal
 
-        if (!directiveDef) {
-          return false;
-        }
 
-        var argNodes = node.arguments || [];
-        var argNodeMap = (0, _keyMap.default)(argNodes, function (arg) {
+function ProvidedRequiredArgumentsOnDirectives(context) {
+  var requiredArgsMap = Object.create(null);
+  var schema = context.getSchema();
+  var definedDirectives = schema ? schema.getDirectives() : _directives.specifiedDirectives;
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = definedDirectives[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var directive = _step2.value;
+      requiredArgsMap[directive.name] = (0, _keyMap.default)(directive.args.filter(_definition.isRequiredArgument), function (arg) {
+        return arg.name;
+      });
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
+
+  var astDefinitions = context.getDocument().definitions;
+  var _iteratorNormalCompletion3 = true;
+  var _didIteratorError3 = false;
+  var _iteratorError3 = undefined;
+
+  try {
+    for (var _iterator3 = astDefinitions[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+      var def = _step3.value;
+
+      if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
+        requiredArgsMap[def.name.value] = (0, _keyMap.default)(def.arguments ? def.arguments.filter(isRequiredArgumentNode) : [], function (arg) {
           return arg.name.value;
         });
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
+      }
+    }
+  } catch (err) {
+    _didIteratorError3 = true;
+    _iteratorError3 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+        _iterator3.return();
+      }
+    } finally {
+      if (_didIteratorError3) {
+        throw _iteratorError3;
+      }
+    }
+  }
 
-        try {
-          for (var _iterator2 = directiveDef.args[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var argDef = _step2.value;
-            var argNode = argNodeMap[argDef.name];
+  return {
+    Directive: {
+      // Validate on leave to allow for deeper errors to appear first.
+      leave: function leave(directiveNode) {
+        var directiveName = directiveNode.name.value;
+        var requiredArgs = requiredArgsMap[directiveName];
 
-            if (!argNode && (0, _definition.isRequiredArgument)(argDef)) {
-              context.reportError(new _GraphQLError.GraphQLError(missingDirectiveArgMessage(node.name.value, argDef.name, (0, _inspect.default)(argDef.type)), [node]));
-            }
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
+        if (requiredArgs) {
+          var argNodes = directiveNode.arguments || [];
+          var argNodeMap = (0, _keyMap.default)(argNodes, function (arg) {
+            return arg.name.value;
+          });
+
+          var _arr = Object.keys(requiredArgs);
+
+          for (var _i = 0; _i < _arr.length; _i++) {
+            var argName = _arr[_i];
+
+            if (!argNodeMap[argName]) {
+              var argType = requiredArgs[argName].type;
+              context.reportError(new _GraphQLError.GraphQLError(missingDirectiveArgMessage(directiveName, argName, (0, _definition.isType)(argType) ? (0, _inspect.default)(argType) : (0, _printer.print)(argType)), directiveNode));
             }
           }
         }
       }
     }
   };
+}
+
+function isRequiredArgumentNode(arg) {
+  return arg.type.kind === _kinds.Kind.NON_NULL_TYPE && arg.defaultValue == null;
 }
