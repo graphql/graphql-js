@@ -123,12 +123,16 @@ export const specifiedRules: $ReadOnlyArray<ValidationRule> = [
 ];
 
 import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
+import { KnownArgumentNamesOnDirectives } from './rules/KnownArgumentNames';
+import { ProvidedRequiredArgumentsOnDirectives } from './rules/ProvidedRequiredArguments';
 
 // @internal
 export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = [
   LoneSchemaDefinition,
   KnownDirectives,
   UniqueDirectivesPerLocation,
+  KnownArgumentNamesOnDirectives,
   UniqueArgumentNames,
   UniqueInputFieldNames,
+  ProvidedRequiredArgumentsOnDirectives,
 ];

@@ -38,6 +38,7 @@ export function KnownDirectives(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
   const locationsMap = Object.create(null);
+
   const schema = context.getSchema();
   const definedDirectives = schema
     ? schema.getDirectives()
