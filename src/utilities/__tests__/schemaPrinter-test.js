@@ -629,8 +629,8 @@ describe('Type System Printer', () => {
       directive @deprecated(
         """
         Explains why this element was deprecated, usually also including a suggestion
-        for how to access supported similar data. Formatted in
-        [Markdown](https://daringfireball.net/projects/markdown/).
+        for how to access supported similar data. Formatted using the Markdown syntax
+        (as specified by [CommonMark](https://commonmark.org/).
         """
         reason: String = "No longer supported"
       ) on FIELD_DEFINITION | ENUM_VALUE
@@ -865,8 +865,8 @@ describe('Type System Printer', () => {
       # Marks an element of a GraphQL schema as no longer supported.
       directive @deprecated(
         # Explains why this element was deprecated, usually also including a suggestion
-        # for how to access supported similar data. Formatted in
-        # [Markdown](https://daringfireball.net/projects/markdown/).
+        # for how to access supported similar data. Formatted using the Markdown syntax
+        # (as specified by [CommonMark](https://commonmark.org/).
         reason: String = "No longer supported"
       ) on FIELD_DEFINITION | ENUM_VALUE
 
