@@ -416,13 +416,12 @@ export const __TypeKind = new GraphQLEnumType({
     UNION: {
       value: TypeKind.UNION,
       description:
-        'Indicates this type is a union. ' +
-        '`possibleTypes` is a valid field.',
+        'Indicates this type is a union. `possibleTypes` is a valid field.',
     },
     ENUM: {
       value: TypeKind.ENUM,
       description:
-        'Indicates this type is an enum. ' + '`enumValues` is a valid field.',
+        'Indicates this type is an enum. `enumValues` is a valid field.',
     },
     INPUT_OBJECT: {
       value: TypeKind.INPUT_OBJECT,
@@ -432,13 +431,12 @@ export const __TypeKind = new GraphQLEnumType({
     },
     LIST: {
       value: TypeKind.LIST,
-      description:
-        'Indicates this type is a list. ' + '`ofType` is a valid field.',
+      description: 'Indicates this type is a list. `ofType` is a valid field.',
     },
     NON_NULL: {
       value: TypeKind.NON_NULL,
       description:
-        'Indicates this type is a non-null. ' + '`ofType` is a valid field.',
+        'Indicates this type is a non-null. `ofType` is a valid field.',
     },
   },
 });

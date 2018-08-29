@@ -226,7 +226,7 @@ describe('Validate: Known directives', () => {
         `
           directive @test on OBJECT
 
-          extend type Query  @test
+          extend type Query @test
         `,
         schema,
       ).to.deep.equal([]);

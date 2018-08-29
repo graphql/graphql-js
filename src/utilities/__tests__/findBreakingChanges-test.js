@@ -50,7 +50,7 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1: String
       }
-      
+
       type Type2 {
         field1: String
       }
@@ -93,7 +93,7 @@ describe('findBreakingChanges', () => {
       type ObjectType {
         field1: String
       }
-      
+
       union Type1 = ObjectType
 
       type Query {
@@ -143,7 +143,7 @@ describe('findBreakingChanges', () => {
       type TypeA {
         field1: String
       }
-      
+
       type TypeB {
         field1: String
       }
@@ -251,7 +251,7 @@ describe('findBreakingChanges', () => {
         field14: [[Int]!]
         field15: [[Int]!]
       }
-      
+
       type Query {
         field1: String
       }
@@ -274,7 +274,7 @@ describe('findBreakingChanges', () => {
         field14: [[Int]]
         field15: [[Int!]!]
       }
-      
+
       type Query {
         field1: String
       }
@@ -291,47 +291,40 @@ describe('findBreakingChanges', () => {
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description:
-          'InputType1.field3 changed type from [String] to ' + 'String.',
+        description: 'InputType1.field3 changed type from [String] to String.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'InputType1.field5 changed type from String to String!.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'InputType1.field6 changed type from [Int] to [Int]!.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'InputType1.field8 changed type from Int to [Int]!.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'InputType1.field9 changed type from [Int] to [Int!].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'InputType1.field11 changed type from [Int] to [[Int]].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'InputType1.field12 changed type from [[Int]] to [Int].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'InputType1.field13 changed type from Int! to [Int]!.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
-          'InputType1.field5 changed type from String to ' + 'String!.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description:
-          'InputType1.field6 changed type from [Int] to ' + '[Int]!.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field8 changed type from Int to ' + '[Int]!.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description:
-          'InputType1.field9 changed type from [Int] to ' + '[Int!].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description:
-          'InputType1.field11 changed type from [Int] to ' + '[[Int]].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description:
-          'InputType1.field12 changed type from [[Int]] to ' + '[Int].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description:
-          'InputType1.field13 changed type from Int! to ' + '[Int]!.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description:
-          'InputType1.field15 changed type from [[Int]!] to ' + '[[Int!]!].',
+          'InputType1.field15 changed type from [[Int]!] to [[Int!]!].',
       },
     ];
     expect(
@@ -345,7 +338,7 @@ describe('findBreakingChanges', () => {
       input InputType1 {
         field1: String
       }
-      
+
       type Query {
         field1: String
       }
@@ -357,7 +350,7 @@ describe('findBreakingChanges', () => {
         requiredField: Int!
         optionalField: Boolean
       }
-      
+
       type Query {
         field1: String
       }
@@ -382,11 +375,11 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1: String
       }
-      
+
       type Type2 {
         field1: String
       }
-      
+
       union UnionType1 = Type1 | Type2
 
       type Query {
@@ -397,11 +390,11 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1: String
       }
-      
+
       type Type3 {
         field1: String
       }
-      
+
       union UnionType1 = Type1 | Type3
 
       type Query {
@@ -424,7 +417,7 @@ describe('findBreakingChanges', () => {
         VALUE1
         VALUE2
       }
-      
+
       type Query {
         field1: String
       }
@@ -436,7 +429,7 @@ describe('findBreakingChanges', () => {
         VALUE2
         VALUE3
       }
-      
+
       type Query {
         field1: String
       }
@@ -455,15 +448,15 @@ describe('findBreakingChanges', () => {
       input InputType1 {
         field1: String
       }
-      
+
       interface Interface1 {
         field1(arg1: Boolean, objectArg: InputType1): String
       }
-      
+
       type Type1 {
         field1(name: String): String
       }
-      
+
       type Query {
         field1: String
       }
@@ -473,11 +466,11 @@ describe('findBreakingChanges', () => {
       interface Interface1 {
         field1: String
       }
-      
+
       type Type1 {
         field1: String
       }
-      
+
       type Query {
         field1: String
       }
@@ -556,63 +549,62 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg1 has changed type ' + 'from String to Int',
+          'Type1.field1 arg arg1 has changed type from String to Int',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg2 has changed type from String ' + 'to [String]',
+          'Type1.field1 arg arg2 has changed type from String to [String]',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg3 has changed type from ' + '[String] to String',
+          'Type1.field1 arg arg3 has changed type from [String] to String',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg4 has changed type from String ' + 'to String!',
+          'Type1.field1 arg arg4 has changed type from String to String!',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg5 has changed type from String! ' + 'to Int',
+          'Type1.field1 arg arg5 has changed type from String! to Int',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg6 has changed type from String! ' + 'to Int!',
+          'Type1.field1 arg arg6 has changed type from String! to Int!',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg8 has changed type from Int to ' + '[Int]!',
+          'Type1.field1 arg arg8 has changed type from Int to [Int]!',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg9 has changed type from [Int] to ' + '[Int!]',
+          'Type1.field1 arg arg9 has changed type from [Int] to [Int!]',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg11 has changed type from [Int] to ' + '[[Int]]',
+          'Type1.field1 arg arg11 has changed type from [Int] to [[Int]]',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg12 has changed type from [[Int]] ' + 'to [Int]',
+          'Type1.field1 arg arg12 has changed type from [[Int]] to [Int]',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg13 has changed type from Int! to ' + '[Int]!',
+          'Type1.field1 arg arg13 has changed type from Int! to [Int]!',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg15 has changed type from [[Int]!] ' +
-          'to [[Int!]!]',
+          'Type1.field1 arg arg15 has changed type from [[Int]!] to [[Int!]!]',
       },
     ]);
   });
@@ -641,8 +633,7 @@ describe('findBreakingChanges', () => {
     expect(findArgChanges(oldSchema, newSchema).breakingChanges).to.eql([
       {
         type: BreakingChangeType.NON_NULL_ARG_ADDED,
-        description:
-          'A non-null arg newRequiredArg on Type1.field1 was ' + 'added',
+        description: 'A non-null arg newRequiredArg on Type1.field1 was added',
       },
     ]);
   });
@@ -652,11 +643,11 @@ describe('findBreakingChanges', () => {
       input InputType1 {
         field1: String
       }
-      
+
       type Type1 {
         field1(arg1: Int!, arg2: InputType1): Int
       }
-      
+
       type Query {
         field1: String
       }
@@ -666,11 +657,11 @@ describe('findBreakingChanges', () => {
       input InputType1 {
         field1: String
       }
-      
+
       type Type1 {
         field1(arg1: Int!, arg2: InputType1): Int
       }
-      
+
       type Query {
         field1: String
       }
@@ -708,11 +699,11 @@ describe('findBreakingChanges', () => {
       interface Interface1 {
         field1: String
       }
-      
+
       type Type1 implements Interface1 {
         field1: String
       }
-      
+
       type Query {
         field1: String
       }
@@ -739,54 +730,54 @@ describe('findBreakingChanges', () => {
   it('should detect all breaking changes', () => {
     const oldSchema = buildSchema(`
       directive @DirectiveThatIsRemoved on FIELD_DEFINITION
-      
+
       directive @DirectiveThatRemovesArg(arg1: String) on FIELD_DEFINITION
-      
+
       directive @NonNullDirectiveAdded on FIELD_DEFINITION
-      
+
       directive @DirectiveName on FIELD_DEFINITION | QUERY
-      
+
       type ArgThatChanges {
         field1(id: Int): String
       }
-      
+
       enum EnumTypeThatLosesAValue {
         VALUE0
         VALUE1
         VALUE2
       }
-      
+
       interface Interface1 {
         field1: String
       }
-      
+
       type TypeThatGainsInterface1 implements Interface1 {
         field1: String
       }
-      
+
       type TypeInUnion1 {
         field1: String
       }
-      
+
       type TypeInUnion2 {
         field1: String
       }
-      
+
       union UnionTypeThatLosesAType = TypeInUnion1 | TypeInUnion2
-      
+
       type TypeThatChangesType {
         field1: String
       }
-      
+
       type TypeThatGetsRemoved {
         field1: String
       }
-      
+
       interface TypeThatHasBreakingFieldChanges {
         field1: String
         field2: String
       }
-      
+
       type Query {
         field1: String
       }
@@ -794,42 +785,42 @@ describe('findBreakingChanges', () => {
 
     const newSchema = buildSchema(`
       directive @DirectiveThatRemovesArg on FIELD_DEFINITION
-      
+
       directive @NonNullDirectiveAdded(arg1: Boolean!) on FIELD_DEFINITION
-      
+
       directive @DirectiveName on FIELD_DEFINITION
-      
+
       type ArgThatChanges {
         field1(id: String): String
       }
-      
+
       enum EnumTypeThatLosesAValue {
         VALUE1
         VALUE2
       }
-      
+
       interface Interface1 {
         field1: String
       }
-      
+
       type TypeInUnion1 {
         field1: String
       }
-      
+
       union UnionTypeThatLosesAType = TypeInUnion1
-      
+
       interface TypeThatChangesType {
         field1: String
       }
-      
+
       type TypeThatGainsInterface1 {
         field1: String
       }
-      
+
       interface TypeThatHasBreakingFieldChanges {
         field2: Boolean
       }
-      
+
       type Query {
         field1: String
       }
@@ -851,8 +842,7 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
-          'TypeThatChangesType changed from an Object type to an ' +
-          'Interface type.',
+          'TypeThatChangesType changed from an Object type to an Interface type.',
       },
       {
         type: BreakingChangeType.FIELD_REMOVED,
@@ -861,31 +851,27 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
-          'TypeThatHasBreakingFieldChanges.field2 changed type ' +
-          'from String to Boolean.',
+          'TypeThatHasBreakingFieldChanges.field2 changed type from String to Boolean.',
       },
       {
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
         description:
-          'TypeInUnion2 was removed from union type ' +
-          'UnionTypeThatLosesAType.',
+          'TypeInUnion2 was removed from union type UnionTypeThatLosesAType.',
       },
       {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
         description:
-          'VALUE0 was removed from enum type ' + 'EnumTypeThatLosesAValue.',
+          'VALUE0 was removed from enum type EnumTypeThatLosesAValue.',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'ArgThatChanges.field1 arg id has changed ' +
-          'type from Int to String',
+          'ArgThatChanges.field1 arg id has changed type from Int to String',
       },
       {
         type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
         description:
-          'TypeThatGainsInterface1 no longer implements ' +
-          'interface Interface1.',
+          'TypeThatGainsInterface1 no longer implements interface Interface1.',
       },
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
@@ -898,8 +884,7 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
         description:
-          'A non-null arg arg1 on directive ' +
-          'NonNullDirectiveAdded was added',
+          'A non-null arg arg1 on directive NonNullDirectiveAdded was added',
       },
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
@@ -1050,7 +1035,7 @@ describe('findDangerousChanges', () => {
         VALUE0
         VALUE1
       }
-      
+
       type Query {
         field1: String
       }
@@ -1062,7 +1047,7 @@ describe('findDangerousChanges', () => {
         VALUE1
         VALUE2
       }
-      
+
       type Query {
         field1: String
       }
@@ -1091,11 +1076,11 @@ describe('findDangerousChanges', () => {
       interface Interface1 {
         field1: String
       }
-      
+
       type Type1 implements Interface1 {
         field1: String
       }
-      
+
       type Query {
         field1: String
       }
@@ -1114,7 +1099,7 @@ describe('findDangerousChanges', () => {
       type Type1 {
         field1: String
       }
-      
+
       union UnionType1 = Type1
 
       type Query {
@@ -1126,11 +1111,11 @@ describe('findDangerousChanges', () => {
       type Type1 {
         field1: String
       }
-      
+
       type Type2 {
         field1: String
       }
-      
+
       union UnionType1 = Type1 | Type2
 
       type Query {
@@ -1151,7 +1136,7 @@ describe('findDangerousChanges', () => {
       input InputType1 {
         field1: String
       }
-      
+
       type Query {
         field1: String
       }
@@ -1162,7 +1147,7 @@ describe('findDangerousChanges', () => {
         field1: String
         field2: Int
       }
-      
+
       type Query {
         field1: String
       }
@@ -1172,7 +1157,7 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.NULLABLE_INPUT_FIELD_ADDED,
         description:
-          'A nullable field field2 on input type ' + 'InputType1 was added.',
+          'A nullable field field2 on input type InputType1 was added.',
       },
     ];
 
@@ -1188,21 +1173,21 @@ describe('findDangerousChanges', () => {
         VALUE0
         VALUE1
       }
-      
+
       type Type1 {
         field1(name: String = "test"): String
       }
-      
+
       type TypeThatGainsInterface1 {
         field1: String
       }
-      
+
       type TypeInUnion1 {
         field1: String
       }
-      
+
       union UnionTypeThatGainsAType = TypeInUnion1
-      
+
       type Query {
         field1: String
       }
@@ -1214,29 +1199,29 @@ describe('findDangerousChanges', () => {
         VALUE1
         VALUE2
       }
-      
+
       interface Interface1 {
         field1: String
       }
-      
+
       type TypeThatGainsInterface1 implements Interface1 {
         field1: String
       }
-      
+
       type Type1 {
         field1(name: String = "Test"): String
       }
-      
+
       type TypeInUnion1 {
         field1: String
       }
-      
+
       type TypeInUnion2 {
         field1: String
       }
-      
+
       union UnionTypeThatGainsAType = TypeInUnion1 | TypeInUnion2
-      
+
       type Query {
         field1: String
       }
@@ -1253,14 +1238,13 @@ describe('findDangerousChanges', () => {
       },
       {
         description:
-          'Interface1 added to interfaces implemented ' +
-          'by TypeThatGainsInterface1.',
+          'Interface1 added to interfaces implemented by TypeThatGainsInterface1.',
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
       },
       {
         type: DangerousChangeType.TYPE_ADDED_TO_UNION,
         description:
-          'TypeInUnion2 was added to union type ' + 'UnionTypeThatGainsAType.',
+          'TypeInUnion2 was added to union type UnionTypeThatGainsAType.',
       },
     ];
 

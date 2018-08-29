@@ -287,7 +287,7 @@ describe('Validate: Fields on correct type', () => {
 
     it('Works with no small numbers of field suggestions', () => {
       expect(undefinedFieldMessage('f', 'T', [], ['z', 'y'])).to.equal(
-        'Cannot query field "f" on type "T". ' + 'Did you mean "z" or "y"?',
+        'Cannot query field "f" on type "T". Did you mean "z" or "y"?',
       );
     });
 
