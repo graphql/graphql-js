@@ -333,7 +333,7 @@ describe('findBreakingChanges', () => {
     ).to.eql(expectedFieldChanges);
   });
 
-  it('should detect if a non-null field is added to an input type', () => {
+  it('should detect if a required field is added to an input type', () => {
     const oldSchema = buildSchema(`
       input InputType1 {
         field1: String
@@ -348,7 +348,8 @@ describe('findBreakingChanges', () => {
       input InputType1 {
         field1: String
         requiredField: Int!
-        optionalField: Boolean
+        optionalField1: Boolean
+        optionalField2: Boolean! = false
       }
 
       type Query {
@@ -358,10 +359,9 @@ describe('findBreakingChanges', () => {
 
     const expectedFieldChanges = [
       {
-        type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
+        type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
         description:
-          'A non-null field requiredField on input type ' +
-          'InputType1 was added.',
+          'A required field requiredField on input type InputType1 was added.',
       },
     ];
     expect(
@@ -609,7 +609,7 @@ describe('findBreakingChanges', () => {
     ]);
   });
 
-  it('should detect if a non-null field argument was added', () => {
+  it('should detect if a required field argument was added', () => {
     const oldSchema = buildSchema(`
       type Type1 {
         field1(arg1: String): String
@@ -622,7 +622,12 @@ describe('findBreakingChanges', () => {
 
     const newSchema = buildSchema(`
       type Type1 {
-        field1(arg1: String, newRequiredArg: String!, newOptionalArg: Int): String
+        field1(
+          arg1: String,
+          newRequiredArg: String!
+          newOptionalArg1: Int
+          newOptionalArg2: Int! = 0
+        ): String
       }
 
       type Query {
@@ -632,8 +637,8 @@ describe('findBreakingChanges', () => {
 
     expect(findArgChanges(oldSchema, newSchema).breakingChanges).to.eql([
       {
-        type: BreakingChangeType.NON_NULL_ARG_ADDED,
-        description: 'A non-null arg newRequiredArg on Type1.field1 was added',
+        type: BreakingChangeType.REQUIRED_ARG_ADDED,
+        description: 'A required arg newRequiredArg on Type1.field1 was added',
       },
     ]);
   });
@@ -882,9 +887,9 @@ describe('findBreakingChanges', () => {
         description: 'arg1 was removed from DirectiveThatRemovesArg',
       },
       {
-        type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
+        type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
         description:
-          'A non-null arg arg1 on directive NonNullDirectiveAdded was added',
+          'A required arg arg1 on directive NonNullDirectiveAdded was added',
       },
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
@@ -946,19 +951,24 @@ describe('findBreakingChanges', () => {
     ]);
   });
 
-  it('should detect if a non-nullable directive argument was added', () => {
+  it('should detect if an optional directive argument was added', () => {
     const oldSchema = buildSchema(`
       directive @DirectiveName on FIELD_DEFINITION
     `);
 
     const newSchema = buildSchema(`
-      directive @DirectiveName(arg1: Boolean!) on FIELD_DEFINITION
+      directive @DirectiveName(
+        newRequiredArg: String!
+        newOptionalArg1: Int
+        newOptionalArg2: Int! = 0
+      ) on FIELD_DEFINITION
     `);
 
     expect(findAddedNonNullDirectiveArgs(oldSchema, newSchema)).to.eql([
       {
-        type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
-        description: 'A non-null arg arg1 on directive DirectiveName was added',
+        type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
+        description:
+          'A required arg newRequiredArg on directive DirectiveName was added',
       },
     ]);
   });
@@ -1131,7 +1141,7 @@ describe('findDangerousChanges', () => {
     ]);
   });
 
-  it('should detect if a nullable field was added to an input', () => {
+  it('should detect if an optional field was added to an input', () => {
     const oldSchema = buildSchema(`
       input InputType1 {
         field1: String
@@ -1155,9 +1165,9 @@ describe('findDangerousChanges', () => {
 
     const expectedFieldChanges = [
       {
-        type: DangerousChangeType.NULLABLE_INPUT_FIELD_ADDED,
+        type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
         description:
-          'A nullable field field2 on input type InputType1 was added.',
+          'An optional field field2 on input type InputType1 was added.',
       },
     ];
 
@@ -1253,7 +1263,7 @@ describe('findDangerousChanges', () => {
     );
   });
 
-  it('should detect if a nullable field argument was added', () => {
+  it('should detect if an optional field argument was added', () => {
     const oldSchema = buildSchema(`
       type Type1 {
         field1(arg1: String): String
@@ -1276,8 +1286,8 @@ describe('findDangerousChanges', () => {
 
     expect(findArgChanges(oldSchema, newSchema).dangerousChanges).to.eql([
       {
-        type: DangerousChangeType.NULLABLE_ARG_ADDED,
-        description: 'A nullable arg arg2 on Type1.field1 was added',
+        type: DangerousChangeType.OPTIONAL_ARG_ADDED,
+        description: 'An optional arg arg2 on Type1.field1 was added',
       },
     ]);
   });
