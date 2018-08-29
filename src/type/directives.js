@@ -153,8 +153,8 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
       type: GraphQLString,
       description:
         'Explains why this element was deprecated, usually also including a ' +
-        'suggestion for how to access supported similar data. Formatted ' +
-        'in [Markdown](https://daringfireball.net/projects/markdown/).',
+        'suggestion for how to access supported similar data. Formatted using ' +
+        'the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).',
       defaultValue: DEFAULT_DEPRECATION_REASON,
     },
   },
