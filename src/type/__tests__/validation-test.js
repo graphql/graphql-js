@@ -1703,20 +1703,25 @@ describe('Objects must adhere to Interface they implement', () => {
       }
 
       interface AnotherInterface {
-        field(input: String): String
+        field(baseArg: String): String
       }
 
       type AnotherObject implements AnotherInterface {
-        field(input: String, anotherInput: String!): String
+        field(
+          baseArg: String,
+          requiredArg: String!
+          optionalArg1: String,
+          optionalArg2: String = "",
+        ): String
       }
     `);
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Object field argument AnotherObject.field(anotherInput:) is of ' +
-          'required type String! but is not also provided by the Interface ' +
-          'field AnotherInterface.field.',
-        locations: [{ line: 11, column: 44 }, { line: 7, column: 9 }],
+          'Object field AnotherObject.field includes required argument ' +
+          'requiredArg that is missing from the Interface field ' +
+          'AnotherInterface.field.',
+        locations: [{ line: 13, column: 11 }, { line: 7, column: 9 }],
       },
     ]);
   });
