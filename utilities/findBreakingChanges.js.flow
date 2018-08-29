@@ -17,6 +17,8 @@ import {
   isNonNullType,
   isListType,
   isNamedType,
+  isRequiredArgument,
+  isRequiredInputField,
 } from '../type/definition';
 
 import type {
@@ -42,13 +44,13 @@ export const BreakingChangeType = {
   VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
   ARG_REMOVED: 'ARG_REMOVED',
   ARG_CHANGED_KIND: 'ARG_CHANGED_KIND',
-  NON_NULL_ARG_ADDED: 'NON_NULL_ARG_ADDED',
-  NON_NULL_INPUT_FIELD_ADDED: 'NON_NULL_INPUT_FIELD_ADDED',
+  REQUIRED_ARG_ADDED: 'REQUIRED_ARG_ADDED',
+  REQUIRED_INPUT_FIELD_ADDED: 'REQUIRED_INPUT_FIELD_ADDED',
   INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
   DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
   DIRECTIVE_ARG_REMOVED: 'DIRECTIVE_ARG_REMOVED',
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED',
-  NON_NULL_DIRECTIVE_ARG_ADDED: 'NON_NULL_DIRECTIVE_ARG_ADDED',
+  REQUIRED_DIRECTIVE_ARG_ADDED: 'REQUIRED_DIRECTIVE_ARG_ADDED',
 };
 
 export const DangerousChangeType = {
@@ -56,8 +58,8 @@ export const DangerousChangeType = {
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
   INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT',
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
-  NULLABLE_INPUT_FIELD_ADDED: 'NULLABLE_INPUT_FIELD_ADDED',
-  NULLABLE_ARG_ADDED: 'NULLABLE_ARG_ADDED',
+  OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED',
+  OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED',
 };
 
 export type BreakingChange = {
@@ -242,24 +244,25 @@ export function findArgChanges(
           }
         }
       }
-      // Check if a non-null arg was added to the field
+      // Check if arg was added to the field
       for (const newArgDef of newTypeFields[fieldName].args) {
         const oldArgs = oldTypeFields[fieldName].args;
         const oldArgDef = oldArgs.find(arg => arg.name === newArgDef.name);
         if (!oldArgDef) {
-          if (isNonNullType(newArgDef.type)) {
+          const argName = newArgDef.name;
+          if (isRequiredArgument(newArgDef)) {
             breakingChanges.push({
-              type: BreakingChangeType.NON_NULL_ARG_ADDED,
+              type: BreakingChangeType.REQUIRED_ARG_ADDED,
               description:
-                `A non-null arg ${newArgDef.name} on ` +
-                `${newType.name}.${fieldName} was added`,
+                `A required arg ${argName} on ` +
+                `${typeName}.${fieldName} was added`,
             });
           } else {
             dangerousChanges.push({
-              type: DangerousChangeType.NULLABLE_ARG_ADDED,
+              type: DangerousChangeType.OPTIONAL_ARG_ADDED,
               description:
-                `A nullable arg ${newArgDef.name} on ` +
-                `${newType.name}.${fieldName} was added`,
+                `An optional arg ${argName} on ` +
+                `${typeName}.${fieldName} was added`,
             });
           }
         }
@@ -405,19 +408,19 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(
     // Check if a field was added to the input object type
     for (const fieldName of Object.keys(newTypeFieldsDef)) {
       if (!(fieldName in oldTypeFieldsDef)) {
-        if (isNonNullType(newTypeFieldsDef[fieldName].type)) {
+        if (isRequiredInputField(newTypeFieldsDef[fieldName])) {
           breakingChanges.push({
-            type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
+            type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
             description:
-              `A non-null field ${fieldName} on ` +
-              `input type ${newType.name} was added.`,
+              `A required field ${fieldName} on ` +
+              `input type ${typeName} was added.`,
           });
         } else {
           dangerousChanges.push({
-            type: DangerousChangeType.NULLABLE_INPUT_FIELD_ADDED,
+            type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
             description:
-              `A nullable field ${fieldName} on ` +
-              `input type ${newType.name} was added.`,
+              `An optional field ${fieldName} on ` +
+              `input type ${typeName} was added.`,
           });
         }
       }
@@ -780,16 +783,14 @@ export function findAddedNonNullDirectiveArgs(
     }
 
     for (const arg of findAddedArgsForDirective(oldDirective, newDirective)) {
-      if (!isNonNullType(arg.type)) {
-        continue;
+      if (isRequiredArgument(arg)) {
+        addedNonNullableArgs.push({
+          type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
+          description:
+            `A required arg ${arg.name} on directive ` +
+            `${newDirective.name} was added`,
+        });
       }
-
-      addedNonNullableArgs.push({
-        type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
-        description:
-          `A non-null arg ${arg.name} on directive ` +
-          `${newDirective.name} was added`,
-      });
     }
   }
 

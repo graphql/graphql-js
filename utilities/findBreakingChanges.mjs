@@ -6,7 +6,7 @@
  *
  *  strict
  */
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType } from '../type/definition';
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from '../type/definition';
 import keyMap from '../jsutils/keyMap';
 export var BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
@@ -17,21 +17,21 @@ export var BreakingChangeType = {
   VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
   ARG_REMOVED: 'ARG_REMOVED',
   ARG_CHANGED_KIND: 'ARG_CHANGED_KIND',
-  NON_NULL_ARG_ADDED: 'NON_NULL_ARG_ADDED',
-  NON_NULL_INPUT_FIELD_ADDED: 'NON_NULL_INPUT_FIELD_ADDED',
+  REQUIRED_ARG_ADDED: 'REQUIRED_ARG_ADDED',
+  REQUIRED_INPUT_FIELD_ADDED: 'REQUIRED_INPUT_FIELD_ADDED',
   INTERFACE_REMOVED_FROM_OBJECT: 'INTERFACE_REMOVED_FROM_OBJECT',
   DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
   DIRECTIVE_ARG_REMOVED: 'DIRECTIVE_ARG_REMOVED',
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED',
-  NON_NULL_DIRECTIVE_ARG_ADDED: 'NON_NULL_DIRECTIVE_ARG_ADDED'
+  REQUIRED_DIRECTIVE_ARG_ADDED: 'REQUIRED_DIRECTIVE_ARG_ADDED'
 };
 export var DangerousChangeType = {
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
   INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT',
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
-  NULLABLE_INPUT_FIELD_ADDED: 'NULLABLE_INPUT_FIELD_ADDED',
-  NULLABLE_ARG_ADDED: 'NULLABLE_ARG_ADDED'
+  OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED',
+  OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED'
 };
 
 /**
@@ -178,7 +178,7 @@ export function findArgChanges(oldSchema, newSchema) {
 
         for (var _iterator = oldTypeFields[fieldName].args[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           _loop();
-        } // Check if a non-null arg was added to the field
+        } // Check if arg was added to the field
 
       } catch (err) {
         _didIteratorError = true;
@@ -208,15 +208,17 @@ export function findArgChanges(oldSchema, newSchema) {
           });
 
           if (!oldArgDef) {
-            if (isNonNullType(newArgDef.type)) {
+            var argName = newArgDef.name;
+
+            if (isRequiredArgument(newArgDef)) {
               breakingChanges.push({
-                type: BreakingChangeType.NON_NULL_ARG_ADDED,
-                description: "A non-null arg ".concat(newArgDef.name, " on ") + "".concat(newType.name, ".").concat(fieldName, " was added")
+                type: BreakingChangeType.REQUIRED_ARG_ADDED,
+                description: "A required arg ".concat(argName, " on ") + "".concat(typeName, ".").concat(fieldName, " was added")
               });
             } else {
               dangerousChanges.push({
-                type: DangerousChangeType.NULLABLE_ARG_ADDED,
-                description: "A nullable arg ".concat(newArgDef.name, " on ") + "".concat(newType.name, ".").concat(fieldName, " was added")
+                type: DangerousChangeType.OPTIONAL_ARG_ADDED,
+                description: "An optional arg ".concat(argName, " on ") + "".concat(typeName, ".").concat(fieldName, " was added")
               });
             }
           }
@@ -379,15 +381,15 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema
       var _fieldName = _arr9[_i9];
 
       if (!(_fieldName in oldTypeFieldsDef)) {
-        if (isNonNullType(newTypeFieldsDef[_fieldName].type)) {
+        if (isRequiredInputField(newTypeFieldsDef[_fieldName])) {
           breakingChanges.push({
-            type: BreakingChangeType.NON_NULL_INPUT_FIELD_ADDED,
-            description: "A non-null field ".concat(_fieldName, " on ") + "input type ".concat(newType.name, " was added.")
+            type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
+            description: "A required field ".concat(_fieldName, " on ") + "input type ".concat(typeName, " was added.")
           });
         } else {
           dangerousChanges.push({
-            type: DangerousChangeType.NULLABLE_INPUT_FIELD_ADDED,
-            description: "A nullable field ".concat(_fieldName, " on ") + "input type ".concat(newType.name, " was added.")
+            type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
+            description: "An optional field ".concat(_fieldName, " on ") + "input type ".concat(typeName, " was added.")
           });
         }
       }
@@ -1054,14 +1056,12 @@ export function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
         for (var _iterator19 = findAddedArgsForDirective(oldDirective, newDirective)[Symbol.iterator](), _step19; !(_iteratorNormalCompletion19 = (_step19 = _iterator19.next()).done); _iteratorNormalCompletion19 = true) {
           var arg = _step19.value;
 
-          if (!isNonNullType(arg.type)) {
-            continue;
+          if (isRequiredArgument(arg)) {
+            addedNonNullableArgs.push({
+              type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
+              description: "A required arg ".concat(arg.name, " on directive ") + "".concat(newDirective.name, " was added")
+            });
           }
-
-          addedNonNullableArgs.push({
-            type: BreakingChangeType.NON_NULL_DIRECTIVE_ARG_ADDED,
-            description: "A non-null arg ".concat(arg.name, " on directive ") + "".concat(newDirective.name, " was added")
-          });
         }
       } catch (err) {
         _didIteratorError19 = true;

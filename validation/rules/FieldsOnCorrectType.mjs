@@ -53,10 +53,9 @@ export function FieldsOnCorrectType(context) {
   };
 }
 /**
- * Go through all of the implementations of type, as well as the interfaces
- * that they implement. If any of those types include the provided field,
- * suggest them, sorted by how often the type is referenced,  starting
- * with Interfaces.
+ * Go through all of the implementations of type, as well as the interfaces that
+ * they implement. If any of those types include the provided field, suggest
+ * them, sorted by how often the type is referenced, starting with Interfaces.
  */
 
 function getSuggestedTypeNames(schema, type, fieldName) {
