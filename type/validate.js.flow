@@ -13,10 +13,10 @@ import {
   isUnionType,
   isEnumType,
   isInputObjectType,
-  isNonNullType,
   isNamedType,
   isInputType,
   isOutputType,
+  isRequiredArgument,
 } from './definition';
 import type {
   GraphQLObjectType,
@@ -438,13 +438,13 @@ function validateObjectImplementsInterface(
     for (const objectArg of objectField.args) {
       const argName = objectArg.name;
       const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
-      if (!ifaceArg && isNonNullType(objectArg.type)) {
+      if (!ifaceArg && isRequiredArgument(objectArg)) {
         context.reportError(
-          `Object field argument ${object.name}.${fieldName}(${argName}:) ` +
-            `is of required type ${inspect(objectArg.type)} but is not also ` +
-            `provided by the Interface field ${iface.name}.${fieldName}.`,
+          `Object field ${object.name}.${fieldName} includes required ` +
+            `argument ${argName} that is missing from the Interface field ` +
+            `${iface.name}.${fieldName}.`,
           [
-            getFieldArgTypeNode(object, fieldName, argName),
+            getFieldArgNode(object, fieldName, argName),
             getFieldNode(iface, fieldName),
           ],
         );

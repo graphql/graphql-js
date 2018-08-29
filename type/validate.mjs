@@ -8,7 +8,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  *  strict
  */
-import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isNamedType, isInputType, isOutputType } from './definition';
+import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isInputType, isOutputType, isRequiredArgument } from './definition';
 import { isDirective } from './directives';
 import { isIntrospectionType } from './introspection';
 import { isSchema } from './schema';
@@ -497,8 +497,8 @@ function validateObjectImplementsInterface(context, object, iface) {
           return arg.name === argName;
         });
 
-        if (!ifaceArg && isNonNullType(objectArg.type)) {
-          context.reportError("Object field argument ".concat(object.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "is of required type ".concat(inspect(objectArg.type), " but is not also ") + "provided by the Interface field ".concat(iface.name, ".").concat(fieldName, "."), [getFieldArgTypeNode(object, fieldName, argName), getFieldNode(iface, fieldName)]);
+        if (!ifaceArg && isRequiredArgument(objectArg)) {
+          context.reportError("Object field ".concat(object.name, ".").concat(fieldName, " includes required ") + "argument ".concat(argName, " that is missing from the Interface field ") + "".concat(iface.name, ".").concat(fieldName, "."), [getFieldArgNode(object, fieldName, argName), getFieldNode(iface, fieldName)]);
         }
       };
 

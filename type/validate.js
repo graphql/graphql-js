@@ -510,8 +510,8 @@ function validateObjectImplementsInterface(context, object, iface) {
           return arg.name === argName;
         });
 
-        if (!ifaceArg && (0, _definition.isNonNullType)(objectArg.type)) {
-          context.reportError("Object field argument ".concat(object.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "is of required type ".concat((0, _inspect.default)(objectArg.type), " but is not also ") + "provided by the Interface field ".concat(iface.name, ".").concat(fieldName, "."), [getFieldArgTypeNode(object, fieldName, argName), getFieldNode(iface, fieldName)]);
+        if (!ifaceArg && (0, _definition.isRequiredArgument)(objectArg)) {
+          context.reportError("Object field ".concat(object.name, ".").concat(fieldName, " includes required ") + "argument ".concat(argName, " that is missing from the Interface field ") + "".concat(iface.name, ".").concat(fieldName, "."), [getFieldArgNode(object, fieldName, argName), getFieldNode(iface, fieldName)]);
         }
       };
 
