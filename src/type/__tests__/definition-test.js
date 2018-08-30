@@ -1027,7 +1027,7 @@ describe('Type System: Input Object fields must not have resolvers', () => {
       },
     });
     expect(() => inputObjType.getFields()).to.throw(
-      'SomeInputObject.f field type has a resolve property, ' +
+      'SomeInputObject.f field has a resolve property, ' +
         'but Input Types cannot define resolvers.',
     );
   });
@@ -1043,7 +1043,7 @@ describe('Type System: Input Object fields must not have resolvers', () => {
       },
     });
     expect(() => inputObjType.getFields()).to.throw(
-      'SomeInputObject.f field type has a resolve property, ' +
+      'SomeInputObject.f field has a resolve property, ' +
         'but Input Types cannot define resolvers.',
     );
   });
