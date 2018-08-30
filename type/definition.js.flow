@@ -1244,7 +1244,7 @@ function defineInputFieldMap(
     };
     invariant(
       !field.hasOwnProperty('resolve'),
-      `${config.name}.${fieldName} field type has a resolve property, but ` +
+      `${config.name}.${fieldName} field has a resolve property, but ` +
         'Input Types cannot define resolvers.',
     );
     resultFieldMap[fieldName] = field;
