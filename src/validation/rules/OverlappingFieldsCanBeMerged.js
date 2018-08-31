@@ -210,7 +210,6 @@ function findConflictsWithinSelectionSet(
         isObjectType(parentType) &&
         isObjectType(fragmentParentType);
 
-
       collectConflictsBetweenFieldsAndFragment(
         context,
         conflicts,
