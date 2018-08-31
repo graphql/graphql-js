@@ -197,6 +197,34 @@ describe('Validate: Overlapping fields can be merged', () => {
     );
   });
 
+  it('allows different args where no conflict is possible on fragments', () => {
+    // This is valid since no object can be both a "Dog" and a "Cat", thus
+    // these fields can never overlap.
+    expectPassesRule(
+      OverlappingFieldsCanBeMerged,
+      `
+        {
+        pet {
+          ... on Dog {
+            ...X
+          }
+          ... on Cat {
+            ...Y
+          }
+        }
+      }
+
+      fragment X on Pet {
+        name(surname: true)
+      }
+
+      fragment Y on Pet {
+        name
+      }
+    `,
+    );
+  });
+
   it('different args, second missing an argument', () => {
     expectFailsRule(
       OverlappingFieldsCanBeMerged,
