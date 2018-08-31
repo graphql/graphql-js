@@ -112,7 +112,7 @@ type ConflictReasonMessage = string | Array<ConflictReason>;
 type NodeAndDef = [GraphQLCompositeType, FieldNode, ?GraphQLField<*, *>];
 // Map of array of those.
 type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
-// Tuble defining a fragment spread (name, parentType)
+// Tuple defining a fragment spread (name, parentType)
 type FragmentSpread = [string, ?GraphQLNamedType];
 
 /**
