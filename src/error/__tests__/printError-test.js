@@ -49,9 +49,10 @@ describe('printError', () => {
     const sourceA = parse(
       new Source(
         dedent`
-        type Foo {
-          field: String
-        }`,
+          type Foo {
+            field: String
+          }
+        `,
         'SourceA',
       ),
     );
@@ -60,9 +61,10 @@ describe('printError', () => {
     const sourceB = parse(
       new Source(
         dedent`
-        type Foo {
-          field: Int
-        }`,
+          type Foo {
+            field: Int
+          }
+        `,
         'SourceB',
       ),
     );

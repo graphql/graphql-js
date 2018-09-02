@@ -42,9 +42,8 @@ export function fieldsConflictMessage(
   reason: ConflictReasonMessage,
 ): string {
   return (
-    `Fields "${responseName}" conflict because ${reasonMessage(reason)}` +
-    '. Use different aliases on the fields to fetch both if this was ' +
-    'intentional.'
+    `Fields "${responseName}" conflict because ${reasonMessage(reason)}. ` +
+    'Use different aliases on the fields to fetch both if this was intentional.'
   );
 }
 

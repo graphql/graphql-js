@@ -31,7 +31,7 @@ function fixIndent(str: string): string {
  *   {
  *     test
  *   }
- * `
+ * `;
  * str === "{\n  test\n}\n";
  */
 export default function dedent(

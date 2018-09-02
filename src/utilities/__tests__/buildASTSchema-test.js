@@ -144,7 +144,7 @@ describe('Schema Builder', () => {
   });
 
   it('Maintains @skip & @include', () => {
-    const body = dedent`
+    const body = `
       type Query {
         str: String
       }
@@ -159,7 +159,7 @@ describe('Schema Builder', () => {
   });
 
   it('Overriding directives excludes specified', () => {
-    const body = dedent`
+    const body = `
       directive @skip on FIELD
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
@@ -180,7 +180,7 @@ describe('Schema Builder', () => {
   });
 
   it('Adding directives maintains @skip & @include', () => {
-    const body = dedent`
+    const body = `
       directive @foo(arg: Int) on FIELD
 
       type Query {
@@ -357,7 +357,7 @@ describe('Schema Builder', () => {
   });
 
   it('Can build recursive Union', () => {
-    const schema = buildSchema(dedent`
+    const schema = buildSchema(`
       union Hello = Hello
 
       type Query {
@@ -369,7 +369,7 @@ describe('Schema Builder', () => {
   });
 
   it('Specifying Union type using __typename', () => {
-    const schema = buildSchema(dedent`
+    const schema = buildSchema(`
       type Query {
         fruits: [Fruit]
       }
@@ -426,7 +426,7 @@ describe('Schema Builder', () => {
   });
 
   it('Specifying Interface type using __typename', () => {
-    const schema = buildSchema(dedent`
+    const schema = buildSchema(`
       type Query {
         characters: [Character]
       }
