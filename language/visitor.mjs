@@ -6,20 +6,7 @@
  *
  *  strict
  */
-
-/**
- * A visitor is provided to visit, it contains the collection of
- * relevant functions to be called during the visitor's traversal.
- */
-
-/**
- * A visitor is comprised of visit functions, which are called on each node
- * during the visitor's traversal.
- */
-
-/**
- * A KeyMap describes each the traversable properties of each kind of node.
- */
+import inspect from '../jsutils/inspect';
 export var QueryDocumentKeys = {
   Name: [],
   Document: ['definitions'],
@@ -238,7 +225,7 @@ export function visit(root, visitor) {
 
     if (!Array.isArray(node)) {
       if (!isNode(node)) {
-        throw new Error('Invalid AST Node: ' + JSON.stringify(node));
+        throw new Error('Invalid AST Node: ' + inspect(node));
       }
 
       var visitFn = getVisitFn(visitor, node.kind, isLeaving);

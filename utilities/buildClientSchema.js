@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.buildClientSchema = buildClientSchema;
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
@@ -86,7 +88,7 @@ function buildClientSchema(introspection, options) {
     }
 
     if (!typeRef.name) {
-      throw new Error('Unknown type reference: ' + JSON.stringify(typeRef));
+      throw new Error('Unknown type reference: ' + (0, _inspect.default)(typeRef));
     }
 
     return getNamedType(typeRef.name);
@@ -155,7 +157,7 @@ function buildClientSchema(introspection, options) {
       }
     }
 
-    throw new Error('Invalid or incomplete introspection result. Ensure that a full ' + 'introspection query is used in order to build a client schema:' + JSON.stringify(type));
+    throw new Error('Invalid or incomplete introspection result. Ensure that a full ' + 'introspection query is used in order to build a client schema:' + (0, _inspect.default)(type));
   }
 
   function buildScalarDef(scalarIntrospection) {
@@ -170,7 +172,7 @@ function buildClientSchema(introspection, options) {
 
   function buildObjectDef(objectIntrospection) {
     if (!objectIntrospection.interfaces) {
-      throw new Error('Introspection result missing interfaces: ' + JSON.stringify(objectIntrospection));
+      throw new Error('Introspection result missing interfaces: ' + (0, _inspect.default)(objectIntrospection));
     }
 
     return new _definition.GraphQLObjectType({
@@ -195,7 +197,7 @@ function buildClientSchema(introspection, options) {
 
   function buildUnionDef(unionIntrospection) {
     if (!unionIntrospection.possibleTypes) {
-      throw new Error('Introspection result missing possibleTypes: ' + JSON.stringify(unionIntrospection));
+      throw new Error('Introspection result missing possibleTypes: ' + (0, _inspect.default)(unionIntrospection));
     }
 
     return new _definition.GraphQLUnionType({
@@ -207,7 +209,7 @@ function buildClientSchema(introspection, options) {
 
   function buildEnumDef(enumIntrospection) {
     if (!enumIntrospection.enumValues) {
-      throw new Error('Introspection result missing enumValues: ' + JSON.stringify(enumIntrospection));
+      throw new Error('Introspection result missing enumValues: ' + (0, _inspect.default)(enumIntrospection));
     }
 
     return new _definition.GraphQLEnumType({
@@ -226,7 +228,7 @@ function buildClientSchema(introspection, options) {
 
   function buildInputObjectDef(inputObjectIntrospection) {
     if (!inputObjectIntrospection.inputFields) {
-      throw new Error('Introspection result missing inputFields: ' + JSON.stringify(inputObjectIntrospection));
+      throw new Error('Introspection result missing inputFields: ' + (0, _inspect.default)(inputObjectIntrospection));
     }
 
     return new _definition.GraphQLInputObjectType({
@@ -240,14 +242,14 @@ function buildClientSchema(introspection, options) {
 
   function buildFieldDefMap(typeIntrospection) {
     if (!typeIntrospection.fields) {
-      throw new Error('Introspection result missing fields: ' + JSON.stringify(typeIntrospection));
+      throw new Error('Introspection result missing fields: ' + (0, _inspect.default)(typeIntrospection));
     }
 
     return (0, _keyValMap.default)(typeIntrospection.fields, function (fieldIntrospection) {
       return fieldIntrospection.name;
     }, function (fieldIntrospection) {
       if (!fieldIntrospection.args) {
-        throw new Error('Introspection result missing field args: ' + JSON.stringify(fieldIntrospection));
+        throw new Error('Introspection result missing field args: ' + (0, _inspect.default)(fieldIntrospection));
       }
 
       return {
@@ -277,7 +279,7 @@ function buildClientSchema(introspection, options) {
 
   function buildDirective(directiveIntrospection) {
     if (!directiveIntrospection.args) {
-      throw new Error('Introspection result missing directive args: ' + JSON.stringify(directiveIntrospection));
+      throw new Error('Introspection result missing directive args: ' + (0, _inspect.default)(directiveIntrospection));
     }
 
     return new _directives.GraphQLDirective({

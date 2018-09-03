@@ -9,6 +9,10 @@ exports.visitWithTypeInfo = visitWithTypeInfo;
 exports.getVisitFn = getVisitFn;
 exports.BREAK = exports.QueryDocumentKeys = void 0;
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -16,20 +20,6 @@ exports.BREAK = exports.QueryDocumentKeys = void 0;
  * LICENSE file in the root directory of this source tree.
  *
  *  strict
- */
-
-/**
- * A visitor is provided to visit, it contains the collection of
- * relevant functions to be called during the visitor's traversal.
- */
-
-/**
- * A visitor is comprised of visit functions, which are called on each node
- * during the visitor's traversal.
- */
-
-/**
- * A KeyMap describes each the traversable properties of each kind of node.
  */
 var QueryDocumentKeys = {
   Name: [],
@@ -252,7 +242,7 @@ function visit(root, visitor) {
 
     if (!Array.isArray(node)) {
       if (!isNode(node)) {
-        throw new Error('Invalid AST Node: ' + JSON.stringify(node));
+        throw new Error('Invalid AST Node: ' + (0, _inspect.default)(node));
       }
 
       var visitFn = getVisitFn(visitor, node.kind, isLeaving);
