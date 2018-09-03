@@ -11,19 +11,26 @@
  * Used to print values in error messages.
  */
 export default function inspect(value: mixed): string {
-  return value && typeof value === 'object'
-    ? typeof value.inspect === 'function'
-      ? value.inspect()
-      : Array.isArray(value)
-        ? '[' + value.map(inspect).join(', ') + ']'
-        : '{' +
-          Object.keys(value)
-            .map(k => `${k}: ${inspect(value[k])}`)
-            .join(', ') +
-          '}'
-    : typeof value === 'string'
-      ? '"' + value + '"'
-      : typeof value === 'function'
-        ? `[function ${value.name}]`
-        : String(value);
+  switch (typeof value) {
+    case 'string':
+      return JSON.stringify(value);
+    case 'function':
+      return value.name ? `[function ${value.name}]` : '[function]';
+    case 'object':
+      if (value) {
+        if (typeof value.inspect === 'function') {
+          return value.inspect();
+        } else if (Array.isArray(value)) {
+          return '[' + value.map(inspect).join(', ') + ']';
+        }
+
+        const properties = Object.keys(value)
+          .map(k => `${k}: ${inspect(value[k])}`)
+          .join(', ');
+        return properties ? '{ ' + properties + ' }' : '{}';
+      }
+      return String(value);
+    default:
+      return String(value);
+  }
 }

@@ -384,7 +384,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected a value of type "Complex" but received: {someRandomValue: 123}',
+            'Expected a value of type "Complex" but received: { someRandomValue: 123 }',
           locations: [{ line: 6, column: 9 }],
           path: ['bad'],
         },

@@ -738,10 +738,8 @@ describe('Type System: build schema from introspection', () => {
       };
 
       expect(() => buildClientSchema(nullInterfaceIntrospection)).to.throw(
-        'Introspection result missing interfaces: {"kind":"OBJECT",' +
-          '"name":"QueryType","fields":[{"name":"aString","args":[],' +
-          '"type":{"kind":"SCALAR","name":"String","ofType":null},' +
-          '"isDeprecated":false}]}',
+        'Introspection result missing interfaces: ' +
+          '{ kind: "OBJECT", name: "QueryType", fields: [{ name: "aString", args: [], type: { kind: "SCALAR", name: "String", ofType: null }, isDeprecated: false }] }',
       );
     });
   });
