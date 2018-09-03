@@ -15,12 +15,12 @@ describe('dedent', () => {
       type Query {
         me: User
       }
-      
+
       type User {
         id: ID
         name: String
       }
-      `;
+    `;
     expect(output).to.equal(
       [
         'type Query {',
@@ -42,7 +42,7 @@ describe('dedent', () => {
               quux
                 quuux
                   quuuux
-      `;
+    `;
     expect(output).to.equal(
       ['qux', '  quux', '    quuux', '      quuuux', ''].join('\n'),
     );
@@ -53,7 +53,7 @@ describe('dedent', () => {
       type Root {
         field(arg: String = "wi\th de\fault"): String
       }
-      `;
+    `;
     expect(output).to.equal(
       [
         'type Root {',
@@ -69,7 +69,7 @@ describe('dedent', () => {
       type Query {
         me: User
       }
-      `);
+    `);
     expect(output).to.equal(['type Query {', '  me: User', '}', ''].join('\n'));
   });
 
@@ -78,7 +78,7 @@ describe('dedent', () => {
         \t\t    type Query {
         \t\t      me: User
         \t\t    }
-      `;
+    `;
     expect(output).to.equal(['type Query {', '  me: User', '}', ''].join('\n'));
   });
 
@@ -98,7 +98,7 @@ describe('dedent', () => {
         me: User
       }
 
-      `;
+    `;
     expect(output).to.equal(
       ['type Query {', '  me: User', '}', '', ''].join('\n'),
     );
@@ -124,13 +124,13 @@ describe('dedent', () => {
     const name = 'Luke Skywalker';
     const age = 42;
     const output = dedent`
-        {
-          "me": {
-            "name": "${name}"
-            "age": ${age}
-          }
+      {
+        "me": {
+          "name": "${name}"
+          "age": ${age}
         }
-      `;
+      }
+    `;
     expect(output).to.equal(
       [
         '{',

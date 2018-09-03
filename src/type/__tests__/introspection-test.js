@@ -1293,8 +1293,7 @@ describe('Introspection', () => {
             'A GraphQL Schema defines the capabilities of a ' +
             'GraphQL server. It exposes all available types and ' +
             'directives on the server, as well as the entry ' +
-            'points for query, mutation, ' +
-            'and subscription operations.',
+            'points for query, mutation, and subscription operations.',
           fields: [
             {
               name: 'types',
@@ -1391,14 +1390,12 @@ describe('Introspection', () => {
             },
             {
               description:
-                'Indicates this type is a list. ' +
-                '`ofType` is a valid field.',
+                'Indicates this type is a list. `ofType` is a valid field.',
               name: 'LIST',
             },
             {
               description:
-                'Indicates this type is a non-null. ' +
-                '`ofType` is a valid field.',
+                'Indicates this type is a non-null. `ofType` is a valid field.',
               name: 'NON_NULL',
             },
           ],

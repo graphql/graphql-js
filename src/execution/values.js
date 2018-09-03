@@ -98,8 +98,8 @@ export function getVariableValues(
           if (coercionErrors) {
             for (const error of coercionErrors) {
               error.message =
-                `Variable "$${varName}" got invalid ` +
-                `value ${inspect(value)}; ${error.message}`;
+                `Variable "$${varName}" got invalid value ${inspect(value)}; ` +
+                error.message;
             }
             errors.push(...coercionErrors);
           } else {

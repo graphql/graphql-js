@@ -172,10 +172,10 @@ describe('Type System Printer', () => {
     });
     expect(output).to.equal(
       dedent(String.raw`
-      type Query {
-        singleField(argOne: String = "tes\t de\fault"): String
-      }
-    `),
+        type Query {
+          singleField(argOne: String = "tes\t de\fault"): String
+        }
+      `),
     );
   });
 

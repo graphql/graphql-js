@@ -19,7 +19,7 @@ function sortSDL(sdl) {
 
 describe('lexicographicSortSchema', () => {
   it('sort fields', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       input Bar {
         barB: String
         barA: String
@@ -69,7 +69,7 @@ describe('lexicographicSortSchema', () => {
   });
 
   it('sort implemented interfaces', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       interface FooA {
         dummy: String
       }
@@ -107,7 +107,7 @@ describe('lexicographicSortSchema', () => {
   });
 
   it('sort types in union', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       type FooA {
         dummy: String
       }
@@ -149,7 +149,7 @@ describe('lexicographicSortSchema', () => {
   });
 
   it('sort enum values', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       enum Foo {
         B
         C
@@ -175,7 +175,7 @@ describe('lexicographicSortSchema', () => {
   });
 
   it('sort field arguments', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       type Query {
         dummy(argB: Int, argA: String, argC: Float): ID
       }
@@ -189,7 +189,7 @@ describe('lexicographicSortSchema', () => {
   });
 
   it('sort types', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       type Query {
         dummy(arg1: FooF, arg2: FooA, arg3: FooG): FooD
       }
@@ -251,7 +251,7 @@ describe('lexicographicSortSchema', () => {
   });
 
   it('sort directive arguments', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       directive @test(argC: Float, argA: String, argB: Int) on FIELD
 
       type Query {
@@ -269,7 +269,7 @@ describe('lexicographicSortSchema', () => {
   });
 
   it('sort directive locations', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       directive @test(argC: Float, argA: String, argB: Int) on UNION | FIELD | ENUM
 
       type Query {
@@ -287,7 +287,7 @@ describe('lexicographicSortSchema', () => {
   });
 
   it('sort directives', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       directive @fooC on FIELD
 
       directive @fooB on UNION
@@ -313,7 +313,7 @@ describe('lexicographicSortSchema', () => {
   });
 
   it('sort recursive types', () => {
-    const sorted = sortSDL(dedent`
+    const sorted = sortSDL(`
       interface FooC {
         fooB: FooB
         fooA: FooA

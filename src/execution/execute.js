@@ -336,8 +336,7 @@ export function buildExecutionContext(
   } else if (hasMultipleAssumedOperations) {
     errors.push(
       new GraphQLError(
-        'Must provide operation name if query contains ' +
-          'multiple operations.',
+        'Must provide operation name if query contains multiple operations.',
       ),
     );
   }
@@ -1049,8 +1048,7 @@ function ensureValidRuntimeType(
         `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
         `value ${inspect(result)}, received "${inspect(runtimeType)}". ` +
         `Either the ${returnType.name} type should provide a "resolveType" ` +
-        'function or each possible type should provide an ' +
-        '"isTypeOf" function.',
+        'function or each possible type should provide an "isTypeOf" function.',
       fieldNodes,
     );
   }
