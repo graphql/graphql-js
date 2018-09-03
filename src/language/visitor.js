@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import inspect from '../jsutils/inspect';
 import type { ASTNode, ASTKindToNode } from './ast';
 import type { TypeInfo } from '../utilities/TypeInfo';
 
@@ -296,7 +297,7 @@ export function visit(
     let result;
     if (!Array.isArray(node)) {
       if (!isNode(node)) {
-        throw new Error('Invalid AST Node: ' + JSON.stringify(node));
+        throw new Error('Invalid AST Node: ' + inspect(node));
       }
       const visitFn = getVisitFn(visitor, node.kind, isLeaving);
       if (visitFn) {

@@ -178,7 +178,7 @@ describe('Type System: Scalar coercion', () => {
       },
     };
     expect(() => GraphQLID.serialize(badObjValue)).to.throw(
-      'ID cannot represent value: {_id: false, valueOf: [function valueOf]}',
+      'ID cannot represent value: { _id: false, valueOf: [function valueOf] }',
     );
 
     expect(() => GraphQLID.serialize(true)).to.throw(

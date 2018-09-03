@@ -371,7 +371,7 @@ describe('Execute: Handles inputs', () => {
             {
               message:
                 'Variable "$input" got invalid value ' +
-                '{a: "foo", b: "bar", c: null}; ' +
+                '{ a: "foo", b: "bar", c: null }; ' +
                 'Expected non-nullable type String! not to be null at value.c.',
               locations: [{ line: 2, column: 16 }],
             },
@@ -401,7 +401,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value {a: "foo", b: "bar"}; ' +
+                'Variable "$input" got invalid value { a: "foo", b: "bar" }; ' +
                 'Field value.c of required type String! was not provided.',
               locations: [{ line: 2, column: 16 }],
             },
@@ -421,13 +421,13 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value {na: {a: "foo"}}; ' +
+                'Variable "$input" got invalid value { na: { a: "foo" } }; ' +
                 'Field value.na.c of required type String! was not provided.',
               locations: [{ line: 2, column: 18 }],
             },
             {
               message:
-                'Variable "$input" got invalid value {na: {a: "foo"}}; ' +
+                'Variable "$input" got invalid value { na: { a: "foo" } }; ' +
                 'Field value.nb of required type String! was not provided.',
               locations: [{ line: 2, column: 18 }],
             },
@@ -446,7 +446,7 @@ describe('Execute: Handles inputs', () => {
             {
               message:
                 'Variable "$input" got invalid value ' +
-                '{a: "foo", b: "bar", c: "baz", extra: "dog"}; ' +
+                '{ a: "foo", b: "bar", c: "baz", extra: "dog" }; ' +
                 'Field "extra" is not defined by type TestInputObject.',
               locations: [{ line: 2, column: 16 }],
             },

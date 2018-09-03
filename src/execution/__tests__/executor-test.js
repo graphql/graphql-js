@@ -1053,7 +1053,7 @@ describe('Execute: Handles basic execution tasks', () => {
       errors: [
         {
           message:
-            'Expected value of type "SpecialType" but got: {value: "bar"}.',
+            'Expected value of type "SpecialType" but got: { value: "bar" }.',
           locations: [{ line: 1, column: 3 }],
           path: ['specials', 1],
         },

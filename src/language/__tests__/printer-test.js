@@ -33,7 +33,7 @@ describe('Printer: Query document', () => {
   it('produces helpful error messages', () => {
     const badAst1 = { random: 'Data' };
     expect(() => print(badAst1)).to.throw(
-      'Invalid AST Node: {"random":"Data"}',
+      'Invalid AST Node: { random: "Data" }',
     );
   });
 

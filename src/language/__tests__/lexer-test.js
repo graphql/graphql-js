@@ -60,12 +60,9 @@ describe('Lexer', () => {
     expect(JSON.stringify(token)).to.equal(
       '{"kind":"Name","value":"foo","line":1,"column":1}',
     );
-    // NB: util.inspect used to suck
-    if (parseFloat(process.version.slice(1)) > 0.1) {
-      expect(require('util').inspect(token)).to.equal(
-        "{ kind: 'Name', value: 'foo', line: 1, column: 1 }",
-      );
-    }
+    expect(require('util').inspect(token)).to.equal(
+      "{ kind: 'Name', value: 'foo', line: 1, column: 1 }",
+    );
   });
 
   it('skips whitespace and comments', () => {
