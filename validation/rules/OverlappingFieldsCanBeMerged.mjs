@@ -16,7 +16,7 @@ import { print } from '../../language/printer';
 import { getNamedType, isNonNullType, isLeafType, isObjectType, isListType, isInterfaceType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 export function fieldsConflictMessage(responseName, reason) {
-  return "Fields \"".concat(responseName, "\" conflict because ").concat(reasonMessage(reason)) + '. Use different aliases on the fields to fetch both if this was ' + 'intentional.';
+  return "Fields \"".concat(responseName, "\" conflict because ").concat(reasonMessage(reason), ". ") + 'Use different aliases on the fields to fetch both if this was intentional.';
 }
 
 function reasonMessage(reason) {

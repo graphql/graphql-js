@@ -93,7 +93,7 @@ function getVariableValues(schema, varDefNodes, inputs) {
             try {
               for (var _iterator = coercionErrors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                 var error = _step.value;
-                error.message = "Variable \"$".concat(varName, "\" got invalid ") + "value ".concat((0, _inspect.default)(value), "; ").concat(error.message);
+                error.message = "Variable \"$".concat(varName, "\" got invalid value ").concat((0, _inspect.default)(value), "; ") + error.message;
               }
             } catch (err) {
               _didIteratorError = true;

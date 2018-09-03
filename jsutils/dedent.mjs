@@ -30,7 +30,7 @@ function fixIndent(str) {
  *   {
  *     test
  *   }
- * `
+ * `;
  * str === "{\n  test\n}\n";
  */
 

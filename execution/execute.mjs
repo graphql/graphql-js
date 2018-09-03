@@ -155,7 +155,7 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
       errors.push(new GraphQLError('Must provide an operation.'));
     }
   } else if (hasMultipleAssumedOperations) {
-    errors.push(new GraphQLError('Must provide operation name if query contains ' + 'multiple operations.'));
+    errors.push(new GraphQLError('Must provide operation name if query contains multiple operations.'));
   }
 
   var variableValues;
@@ -632,7 +632,7 @@ function ensureValidRuntimeType(runtimeTypeOrName, exeContext, returnType, field
   var runtimeType = typeof runtimeTypeOrName === 'string' ? exeContext.schema.getType(runtimeTypeOrName) : runtimeTypeOrName;
 
   if (!isObjectType(runtimeType)) {
-    throw new GraphQLError("Abstract type ".concat(returnType.name, " must resolve to an Object type at ") + "runtime for field ".concat(info.parentType.name, ".").concat(info.fieldName, " with ") + "value ".concat(inspect(result), ", received \"").concat(inspect(runtimeType), "\". ") + "Either the ".concat(returnType.name, " type should provide a \"resolveType\" ") + 'function or each possible type should provide an ' + '"isTypeOf" function.', fieldNodes);
+    throw new GraphQLError("Abstract type ".concat(returnType.name, " must resolve to an Object type at ") + "runtime for field ".concat(info.parentType.name, ".").concat(info.fieldName, " with ") + "value ".concat(inspect(result), ", received \"").concat(inspect(runtimeType), "\". ") + "Either the ".concat(returnType.name, " type should provide a \"resolveType\" ") + 'function or each possible type should provide an "isTypeOf" function.', fieldNodes);
   }
 
   if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
