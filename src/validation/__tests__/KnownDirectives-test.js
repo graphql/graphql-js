@@ -207,7 +207,7 @@ describe('Validate: Known directives', () => {
       `).to.deep.equal([]);
     });
 
-    it('with overrided standard directive', () => {
+    it('with overridden standard directive', () => {
       expectSDLErrors(`
         schema @deprecated {
           query: Query
