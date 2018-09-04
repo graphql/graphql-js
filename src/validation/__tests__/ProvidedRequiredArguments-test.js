@@ -321,7 +321,7 @@ describe('Validate: Provided required arguments', () => {
       ]);
     });
 
-    it('Missing arg on overrided standard directive', () => {
+    it('Missing arg on overridden standard directive', () => {
       expectSDLErrors(`
         type Query {
           foo: String @deprecated

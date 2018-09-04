@@ -268,7 +268,7 @@ describe('Validate: Known argument names', () => {
       ]);
     });
 
-    it('unknown arg on overrided standard directive', () => {
+    it('unknown arg on overridden standard directive', () => {
       expectSDLErrors(`
         type Query {
           foo: String @deprecated(reason: "")
