@@ -14,6 +14,10 @@
     "type": "git",
     "url": "http://github.com/graphql/graphql-js.git"
   },
+  "keywords": [
+    "graphql",
+    "graphql-js"
+  ],
   "engines": {
     "node": "6.x || 8.x || >= 10.x"
   },
