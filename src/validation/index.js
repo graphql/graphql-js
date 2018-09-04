@@ -10,6 +10,7 @@
 export { validate } from './validate';
 
 export { ValidationContext } from './ValidationContext';
+export type { ValidationRule } from './ValidationContext';
 
 export { specifiedRules } from './specifiedRules';
 
