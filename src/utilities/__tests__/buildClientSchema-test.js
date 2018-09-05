@@ -742,6 +742,20 @@ describe('Type System: build schema from introspection', () => {
           '{ kind: "OBJECT", name: "QueryType", fields: [{ name: "aString", args: [], type: { kind: "SCALAR", name: "String", ofType: null }, isDeprecated: false }] }',
       );
     });
+
+    it('throws when missing directive locations', () => {
+      const introspection = {
+        __schema: {
+          types: [],
+          directives: [{ name: 'test', args: [] }],
+        },
+      };
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Introspection result missing directive locations: ' +
+          '{ name: "test", args: [] }',
+      );
+    });
   });
 
   describe('very deep decorators are not supported', () => {
