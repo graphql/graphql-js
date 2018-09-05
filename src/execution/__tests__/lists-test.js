@@ -87,7 +87,7 @@ describe('Execute: Accepts any iterable as list value', () => {
 
   it(
     'Does not accept (Iterable) String-literal as a List value',
-    check(GraphQLList(GraphQLString), 'Singluar', {
+    check(GraphQLList(GraphQLString), 'Singular', {
       data: { nest: { test: null } },
       errors: [
         {

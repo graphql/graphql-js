@@ -576,7 +576,7 @@ describe('Schema Builder', () => {
       }
 
       type Subscription {
-        sbscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
+        subscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
       }
     `;
     const output = cycleOutput(body);

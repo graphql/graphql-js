@@ -129,7 +129,7 @@ describe('Parser', () => {
   });
 
   it('parses multi-byte characters', () => {
-    // Note: \u0A0A could be naively interpretted as two line-feed chars.
+    // Note: \u0A0A could be naively interpreted as two line-feed chars.
     const ast = parse(`
       # This comment has a \u0A0A multi-byte character.
       { field(arg: "Has a \u0A0A multi-byte character.") }

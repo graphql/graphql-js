@@ -575,7 +575,7 @@ export function collectFields(
 
 /**
  * Determines if a field should be included based on the @include and @skip
- * directives, where @skip has higher precidence than @include.
+ * directives, where @skip has higher precedence than @include.
  */
 function shouldIncludeNode(
   exeContext: ExecutionContext,
@@ -1238,7 +1238,7 @@ export const defaultFieldResolver: GraphQLFieldResolver<any, *> = function(
 };
 
 /**
- * This method looks up the field on the given type defintion.
+ * This method looks up the field on the given type definition.
  * It has special casing for the two introspection fields, __schema
  * and __typename. __typename is special because it can always be
  * queried as a field, even in situations where no other fields

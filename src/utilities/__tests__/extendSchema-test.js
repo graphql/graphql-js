@@ -144,12 +144,12 @@ function extendTestSchema(sdl, options) {
 }
 
 const testSchemaAST = parse(printSchema(testSchema));
-const testSchemaDefinions = testSchemaAST.definitions.map(print);
+const testSchemaDefinitions = testSchemaAST.definitions.map(print);
 
 function printTestSchemaChanges(extendedSchema) {
   const ast = parse(printSchema(extendedSchema));
   ast.definitions = ast.definitions.filter(
-    node => !testSchemaDefinions.includes(print(node)),
+    node => !testSchemaDefinitions.includes(print(node)),
   );
   return print(ast);
 }
@@ -1163,12 +1163,12 @@ describe('extendSchema', () => {
     `;
     expect(() => extendTestSchema(typeSDL)).to.throw(unknownTypeError);
 
-    const intefaceSDL = `
+    const interfaceSDL = `
       extend interface SomeInterface {
         quix: Quix
       }
     `;
-    expect(() => extendTestSchema(intefaceSDL)).to.throw(unknownTypeError);
+    expect(() => extendTestSchema(interfaceSDL)).to.throw(unknownTypeError);
 
     const unionSDL = `
       extend union SomeUnion = Quix

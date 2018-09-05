@@ -950,7 +950,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
   it('does not include illegal fields in output', () => {
     const doc = `mutation M {
-      thisIsIllegalDontIncludeMe
+      thisIsIllegalDoNotIncludeMe
     }`;
     const ast = parse(doc);
     const schema = new GraphQLSchema({

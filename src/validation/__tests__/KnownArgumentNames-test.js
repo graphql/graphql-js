@@ -131,7 +131,7 @@ describe('Validate: Known argument names', () => {
     );
   });
 
-  it('undirective args are invalid', () => {
+  it('field args are invalid', () => {
     expectFailsRule(
       KnownArgumentNames,
       `
