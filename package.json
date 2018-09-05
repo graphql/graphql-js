@@ -19,7 +19,7 @@
     "graphql-js"
   ],
   "engines": {
-    "node": "6.x || 8.x || >= 10.x"
+    "node": ">= 6.x"
   },
   "scripts": {
     "watch": "node ./resources/watch.js",
