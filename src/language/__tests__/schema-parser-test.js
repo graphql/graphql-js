@@ -722,7 +722,7 @@ type Hello {
     });
   });
 
-  it('Union fails with leading douple pipe', () => {
+  it('Union fails with leading double pipe', () => {
     expectSyntaxError('union Hello = || Wo | Rld', 'Expected Name, found |', {
       line: 1,
       column: 16,

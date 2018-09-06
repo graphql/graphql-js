@@ -979,7 +979,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       );
     });
 
-    it('allows non-conflicting overlaping types', () => {
+    it('allows non-conflicting overlapping types', () => {
       expectPassesRuleWithSchema(
         schema,
         OverlappingFieldsCanBeMerged,

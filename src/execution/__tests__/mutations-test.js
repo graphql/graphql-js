@@ -133,7 +133,7 @@ describe('Execute: Handles mutation execution ordering', () => {
     });
   });
 
-  it('evaluates mutations correctly in the presense of a failed mutation', async () => {
+  it('evaluates mutations correctly in the presence of a failed mutation', async () => {
     const doc = `mutation M {
       first: immediatelyChangeTheNumber(newNumber: 1) {
         theNumber
