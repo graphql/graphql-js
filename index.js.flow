@@ -321,6 +321,8 @@ export {
   VariablesInAllowedPositionRule,
 } from './validation';
 
+export type { ValidationRule } from './validation';
+
 // Create, format, and print GraphQL errors.
 export { GraphQLError, formatError, printError } from './error';
 

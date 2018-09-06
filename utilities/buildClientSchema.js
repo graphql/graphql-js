@@ -282,6 +282,10 @@ function buildClientSchema(introspection, options) {
       throw new Error('Introspection result missing directive args: ' + (0, _inspect.default)(directiveIntrospection));
     }
 
+    if (!directiveIntrospection.locations) {
+      throw new Error('Introspection result missing directive locations: ' + (0, _inspect.default)(directiveIntrospection));
+    }
+
     return new _directives.GraphQLDirective({
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,

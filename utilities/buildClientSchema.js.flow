@@ -344,6 +344,12 @@ export function buildClientSchema(
           inspect(directiveIntrospection),
       );
     }
+    if (!directiveIntrospection.locations) {
+      throw new Error(
+        'Introspection result missing directive locations: ' +
+          inspect(directiveIntrospection),
+      );
+    }
     return new GraphQLDirective({
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,
