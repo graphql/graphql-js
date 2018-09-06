@@ -32,45 +32,158 @@ parserOptions:
   unicodeCodePointEscapes: true
 
 rules:
+  # https://github.com/prettier/eslint-plugin-prettier#installation
   prettier/prettier: error
 
-  flowtype/space-after-type-colon: off
-  flowtype/space-before-type-colon: off
-  flowtype/space-before-generic-bracket: off
-  flowtype/union-intersection-spacing: off
-  flowtype/no-weak-types: [error, {any: false}]
-  flowtype/define-flow-type: error
-  flowtype/use-flow-type: error
-  flowtype/semi: off
+  # `eslint-plugin-flowtype` rule list based on `v2.50.0`
+  # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
 
-  arrow-parens: off
-  arrow-spacing: off
+  flowtype/define-flow-type: error
+  flowtype/no-weak-types: [error, {any: false}]
+  flowtype/semi: off
+  flowtype/space-after-type-colon: off
+  flowtype/space-before-generic-bracket: off
+  flowtype/space-before-type-colon: off
+  flowtype/union-intersection-spacing: off
+  flowtype/use-flow-type: error
+
+  # Possible Errors
+  # https://eslint.org/docs/rules/#possible-errors
+
+  no-await-in-loop: error
+  no-cond-assign: error
+  no-console: warn
+  no-constant-condition: error
+  no-control-regex: off
+  no-debugger: warn
+  no-dupe-args: error
+  no-dupe-keys: error
+  no-duplicate-case: error
+  no-empty: error
+  no-empty-character-class: error
+  no-ex-assign: error
+  no-extra-boolean-cast: error
+  no-extra-parens: off
+  no-extra-semi: off
+  no-func-assign: error
+  no-inner-declarations: [error, functions]
+  no-invalid-regexp: error
+  no-irregular-whitespace: error
+  no-obj-calls: error
+  no-regex-spaces: error
+  no-sparse-arrays: error
+  no-unexpected-multiline: off
+  no-unreachable: error
+  no-unsafe-negation: error
+  use-isnan: error
+  valid-jsdoc: off
+  valid-typeof: error
+
+  # Best Practices
+  # https://eslint.org/docs/rules/#best-practices
+
   block-scoped-var: off
-  brace-style: off
-  callback-return: error
-  camelcase: [error, {properties: always}]
-  comma-dangle: off
-  comma-spacing: off
-  comma-style: off
   complexity: off
-  computed-property-spacing: off
   consistent-return: off
-  consistent-this: off
   curly: [error, all]
   default-case: off
   dot-location: off
   dot-notation: off
+  eqeqeq: [error, smart]
+  guard-for-in: error
+  no-alert: error
+  no-caller: error
+  no-div-regex: error
+  no-else-return: error
+  no-eq-null: off
+  no-eval: error
+  no-extend-native: error
+  no-extra-bind: error
+  no-fallthrough: error
+  no-floating-decimal: off
+  no-implicit-coercion: error
+  no-implied-eval: error
+  no-invalid-this: off
+  no-iterator: error
+  no-labels: [error, {allowLoop: true}]
+  no-lone-blocks: error
+  no-loop-func: off
+  no-multi-spaces: off
+  no-multi-str: error
+  no-new: error
+  no-new-func: off
+  no-new-wrappers: error
+  no-octal: error
+  no-octal-escape: error
+  no-param-reassign: error
+  no-proto: error
+  no-redeclare: error
+  no-return-assign: error
+  no-script-url: error
+  no-self-compare: off
+  no-sequences: off
+  no-throw-literal: error
+  no-unused-expressions: error
+  no-useless-call: error
+  no-useless-escape: error
+  no-useless-return: error
+  no-void: error
+  no-warning-comments: off
+  no-with: error
+  radix: error
+  vars-on-top: off
+  wrap-iife: off
+  yoda: [error, never, {exceptRange: true}]
+
+  # Strict Mode
+  # https://eslint.org/docs/rules/#strict-mode
+
+  strict: off
+
+  # Variables
+  # https://eslint.org/docs/rules/#variables
+
+  init-declarations: off
+  no-delete-var: error
+  no-label-var: error
+  no-shadow: error
+  no-shadow-restricted-names: error
+  no-undef: error
+  no-undef-init: error
+  no-undefined: off
+  no-unused-vars: [error, {vars: all, args: after-used, argsIgnorePattern: "^_"}]
+  no-use-before-define: off
+
+  # Node.js and CommonJS
+  # https://eslint.org/docs/rules/#nodejs-and-commonjs
+
+  callback-return: error
+  handle-callback-err: [error, error]
+  no-mixed-requires: [error, true]
+  no-new-require: error
+  no-path-concat: error
+  no-process-env: off
+  no-process-exit: off
+  no-restricted-modules: off
+  no-sync: error
+
+  # Stylistic Issues
+  # https://eslint.org/docs/rules/#stylistic-issues
+
+  brace-style: off
+  camelcase: [error, {properties: always}]
+  comma-dangle: off
+  comma-spacing: off
+  comma-style: off
+  computed-property-spacing: off
+  consistent-this: off
   eol-last: off
   func-call-spacing: off
-  eqeqeq: [error, smart]
   func-names: off
   func-style: off
-  guard-for-in: error
-  handle-callback-err: [error, error]
   id-length: off
   id-match: [error, "^(?:_?[a-zA-Z0-9]*)|[_A-Z0-9]+$"]
   indent: off
-  init-declarations: off
   key-spacing: off
   keyword-spacing: off
   linebreak-style: error
@@ -82,116 +195,27 @@ rules:
   max-statements: off
   new-cap: off
   new-parens: off
-  no-alert: error
   no-array-constructor: error
-  no-await-in-loop: error
   no-bitwise: off
-  no-caller: error
-  no-class-assign: error
-  no-cond-assign: error
-  no-console: warn
-  no-const-assign: error
-  no-constant-condition: error
   no-continue: off
-  no-control-regex: off
-  no-debugger: warn
-  no-delete-var: error
-  no-div-regex: error
-  no-dupe-args: error
-  no-dupe-keys: error
-  no-duplicate-case: error
-  no-else-return: error
-  no-empty: error
-  no-empty-character-class: error
-  no-eq-null: off
-  no-eval: error
-  no-ex-assign: error
-  no-extend-native: error
-  no-extra-bind: error
-  no-extra-boolean-cast: error
-  no-extra-parens: off
-  no-extra-semi: off
-  no-fallthrough: error
-  no-floating-decimal: off
-  no-func-assign: error
-  no-implicit-coercion: error
-  no-implied-eval: error
   no-inline-comments: off
-  no-inner-declarations: [error, functions]
-  no-invalid-regexp: error
-  no-invalid-this: off
-  no-irregular-whitespace: error
-  no-iterator: error
-  no-label-var: error
-  no-labels: [error, {allowLoop: true}]
-  no-lone-blocks: error
   no-lonely-if: error
-  no-loop-func: off
-  no-mixed-requires: [error, true]
   no-mixed-spaces-and-tabs: off
-  no-multi-spaces: off
-  no-multi-str: error
   no-multiple-empty-lines: off
   no-nested-ternary: off
-  no-new: error
-  no-new-func: off
   no-new-object: error
-  no-new-require: error
-  no-new-wrappers: error
-  no-obj-calls: error
-  no-octal: error
-  no-octal-escape: error
-  no-param-reassign: error
-  no-path-concat: error
   no-plusplus: off
-  no-process-env: off
-  no-process-exit: off
-  no-proto: error
-  no-redeclare: error
-  no-regex-spaces: error
-  no-restricted-modules: off
-  no-return-assign: error
-  no-script-url: error
-  no-self-compare: off
-  no-sequences: off
-  no-shadow: error
-  no-shadow-restricted-names: error
   no-spaced-func: off
-  no-sparse-arrays: error
-  no-sync: error
   no-ternary: off
-  no-this-before-super: error
-  no-throw-literal: error
   no-trailing-spaces: off
-  no-undef: error
-  no-undef-init: error
-  no-undefined: off
   no-underscore-dangle: off
-  no-unexpected-multiline: off
   no-unneeded-ternary: error
-  no-unreachable: error
-  no-unsafe-negation: error
-  no-unused-expressions: error
-  no-unused-vars: [error, {vars: all, args: after-used, argsIgnorePattern: "^_"}]
-  no-use-before-define: off
-  no-useless-call: error
-  no-useless-escape: error
-  no-useless-return: error
-  no-var: error
-  no-void: error
-  no-warning-comments: off
-  no-with: error
   object-curly-spacing: [off, always]
-  object-shorthand: [error, always]
   one-var: [error, never]
   operator-assignment: [error, always]
   padded-blocks: off
   padding-line-between-statements: off
-  prefer-const: error
-  prefer-spread: off
   quote-props: off
-  radix: error
-  require-yield: off
   semi: off
   semi-spacing: off
   sort-vars: off
@@ -200,14 +224,21 @@ rules:
   space-infix-ops: off
   space-unary-ops: off
   spaced-comment: [error, always]
-  strict: off
-  use-isnan: error
-  valid-jsdoc: off
-  valid-typeof: error
-  vars-on-top: off
-  wrap-iife: off
   wrap-regex: off
-  yoda: [error, never, {exceptRange: true}]
+
+  # ECMAScript 6
+  # https://eslint.org/docs/rules/#ecmascript-6
+
+  arrow-parens: off
+  arrow-spacing: off
+  no-class-assign: error
+  no-const-assign: error
+  no-this-before-super: error
+  no-var: error
+  object-shorthand: [error, always]
+  prefer-const: error
+  prefer-spread: off
+  require-yield: off
 
 overrides:
   - files: "*"
