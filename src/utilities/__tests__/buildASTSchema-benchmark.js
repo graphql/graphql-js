@@ -14,5 +14,5 @@ const schemaAST = parse(bigSchemaSDL);
 
 export const name = 'Build Schema from AST';
 export function measure() {
-  buildASTSchema(schemaAST);
+  buildASTSchema(schemaAST, { assumeValid: true });
 }

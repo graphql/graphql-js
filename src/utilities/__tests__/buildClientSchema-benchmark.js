@@ -11,5 +11,5 @@ import { buildClientSchema } from '../buildClientSchema';
 
 export const name = 'Build Schema from Introspection';
 export function measure() {
-  buildClientSchema(bigSchemaIntrospectionResult.data);
+  buildClientSchema(bigSchemaIntrospectionResult.data, { assumeValid: true });
 }
