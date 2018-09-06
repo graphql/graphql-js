@@ -158,7 +158,9 @@ export function buildClientSchema(introspection, options) {
     return new GraphQLObjectType({
       name: objectIntrospection.name,
       description: objectIntrospection.description,
-      interfaces: objectIntrospection.interfaces.map(getInterfaceType),
+      interfaces: function interfaces() {
+        return objectIntrospection.interfaces.map(getInterfaceType);
+      },
       fields: function fields() {
         return buildFieldDefMap(objectIntrospection);
       }
@@ -183,7 +185,9 @@ export function buildClientSchema(introspection, options) {
     return new GraphQLUnionType({
       name: unionIntrospection.name,
       description: unionIntrospection.description,
-      types: unionIntrospection.possibleTypes.map(getObjectType)
+      types: function types() {
+        return unionIntrospection.possibleTypes.map(getObjectType);
+      }
     });
   }
 
