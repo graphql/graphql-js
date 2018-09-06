@@ -577,7 +577,7 @@ function readBlockString(source, start, line, col, prev) {
   throw syntaxError(source, position, 'Unterminated string.');
 }
 /**
- * Converts four hexidecimal chars to the integer that the
+ * Converts four hexadecimal chars to the integer that the
  * string represents. For example, uniCharCode('0','0','0','f')
  * will return 15, and uniCharCode('0','0','f','f') returns 255.
  *
