@@ -844,4 +844,41 @@ describe('Type System: build schema from introspection', () => {
       buildClientSchema(introspection);
     });
   });
+
+  describe('prevents infinite recursion on invalid introspection', () => {
+    it('recursive interfaces', () => {
+      const introspection = {
+        __schema: {
+          types: [
+            {
+              name: 'Foo',
+              kind: 'OBJECT',
+              fields: [],
+              interfaces: [{ name: 'Foo' }],
+            },
+          ],
+        },
+      };
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Expected Foo to be a GraphQL Interface type.',
+      );
+    });
+
+    it('recursive union', () => {
+      const introspection = {
+        __schema: {
+          types: [
+            {
+              name: 'Foo',
+              kind: 'UNION',
+              possibleTypes: [{ name: 'Foo' }],
+            },
+          ],
+        },
+      };
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Expected Foo to be a GraphQL Object type.',
+      );
+    });
+  });
 });
