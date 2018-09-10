@@ -40,10 +40,10 @@ rules:
 
   #flowtype/array-style-complex-type: undecided
   #flowtype/array-style-simple-type: undecided
-  #flowtype/boolean-style: undecided
+  flowtype/boolean-style: off
   flowtype/define-flow-type: error
-  #flowtype/delimiter-dangle: undecided
-  #flowtype/generic-spacing: undecided
+  flowtype/delimiter-dangle: off
+  flowtype/generic-spacing: off
   #flowtype/newline-after-flow-annotation: undecided
   #flowtype/no-dupe-keys: undecided
   #flowtype/no-existential-type: undecided
@@ -53,7 +53,7 @@ rules:
   #flowtype/no-types-missing-file-annotation: undecided
   #flowtype/no-unused-expressions: undecided
   flowtype/no-weak-types: [error, {any: false}]
-  #flowtype/object-type-delimiter: undecided
+  flowtype/object-type-delimiter: off
   #flowtype/require-exact-type: undecided
   #flowtype/require-parameter-type: undecided
   #flowtype/require-return-type: undecided
@@ -226,10 +226,10 @@ rules:
   # Stylistic Issues
   # https://eslint.org/docs/rules/#stylistic-issues
 
-  #array-bracket-newline: undecided
-  #array-bracket-spacing: undecided
-  #array-element-newline: undecided
-  #block-spacing: undecided
+  array-bracket-newline: off
+  array-bracket-spacing: off
+  array-element-newline: off
+  block-spacing: off
   brace-style: off
   camelcase: [error, {properties: always}]
   #capitalized-comments: undecided
@@ -243,13 +243,13 @@ rules:
   #func-name-matching: undecided
   func-names: off
   func-style: off
-  #function-paren-newline: undecided
+  function-paren-newline: off
   #id-blacklist: undecided
   id-length: off
   id-match: [error, "^(?:_?[a-zA-Z0-9]*)|[_A-Z0-9]+$"]
-  #implicit-arrow-linebreak: undecided
+  implicit-arrow-linebreak: off
   indent: off
-  #jsx-quotes: undecided
+  jsx-quotes: off
   key-spacing: off
   keyword-spacing: off
   #line-comment-position: undecided
@@ -265,16 +265,16 @@ rules:
   max-statements: off
   #max-statements-per-line: undecided
   #multiline-comment-style: undecided
-  #multiline-ternary: undecided
+  multiline-ternary: off
   new-cap: off
   new-parens: off
-  #newline-per-chained-call: undecided
+  newline-per-chained-call: off
   no-array-constructor: error
   no-bitwise: off
   no-continue: off
   no-inline-comments: off
   no-lonely-if: error
-  #no-mixed-operators: undecided
+  no-mixed-operators: off
   no-mixed-spaces-and-tabs: off
   #no-multi-assign: undecided
   no-multiple-empty-lines: off
@@ -289,35 +289,35 @@ rules:
   no-trailing-spaces: off
   no-underscore-dangle: off
   no-unneeded-ternary: error
-  #no-whitespace-before-property: undecided
-  #nonblock-statement-body-position: undecided
-  #object-curly-newline: undecided
-  object-curly-spacing: [off, always]
-  #object-property-newline: undecided
+  no-whitespace-before-property: off
+  nonblock-statement-body-position: off
+  object-curly-newline: off
+  object-curly-spacing: off
+  object-property-newline: off
   one-var: [error, never]
-  #one-var-declaration-per-line: undecided
+  one-var-declaration-per-line: off
   operator-assignment: [error, always]
-  #operator-linebreak: undecided
+  operator-linebreak: off
   padded-blocks: off
   padding-line-between-statements: off
   #prefer-object-spread: undecided
   quote-props: off
-  #quotes: undecided
+  quotes: off
   #require-jsdoc: undecided
   semi: off
   semi-spacing: off
-  #semi-style: undecided
+  semi-style: off
   #sort-keys: undecided
   sort-vars: off
   space-before-blocks: off
-  #space-before-function-paren: undecided
+  space-before-function-paren: off
   space-in-parens: off
   space-infix-ops: off
   space-unary-ops: off
   spaced-comment: [error, always]
-  #switch-colon-spacing: undecided
-  #template-tag-spacing: undecided
-  #unicode-bom: undecided
+  switch-colon-spacing: off
+  template-tag-spacing: off
+  unicode-bom: off
   wrap-regex: off
 
   # ECMAScript 6
@@ -327,7 +327,7 @@ rules:
   arrow-parens: off
   arrow-spacing: off
   #constructor-super: undecided
-  #generator-star-spacing: undecided
+  generator-star-spacing: off
   no-class-assign: error
   #no-confusing-arrow: undecided
   no-const-assign: error
@@ -349,11 +349,11 @@ rules:
   prefer-spread: off
   #prefer-template: undecided
   require-yield: off
-  #rest-spread-spacing: undecided
+  rest-spread-spacing: off
   #sort-imports: undecided
   #symbol-description: undecided
-  #template-curly-spacing: undecided
-  #yield-star-spacing: undecided
+  template-curly-spacing: off
+  yield-star-spacing: off
 
 overrides:
   - files: "*"
