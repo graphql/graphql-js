@@ -23,5 +23,8 @@
   },
   "dependencies": {
     "iterall": "^1.2.2"
+  },
+  "publishConfig": {
+    "tag": "latest"
   }
 }
