@@ -532,16 +532,16 @@ function resolveThunk<+T>(thunk: Thunk<T>): T {
  *     });
  *
  */
-export class GraphQLScalarType {
+export class GraphQLScalarType<TInternal = any, TExternal = any> {
   name: string;
   description: ?string;
-  serialize: GraphQLScalarSerializer<*>;
-  parseValue: GraphQLScalarValueParser<*>;
-  parseLiteral: GraphQLScalarLiteralParser<*>;
+  serialize: GraphQLScalarSerializer<TExternal>;
+  parseValue: GraphQLScalarValueParser<TInternal>;
+  parseLiteral: GraphQLScalarLiteralParser<TInternal>;
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
-  constructor(config: GraphQLScalarTypeConfig<*, *>): void {
+  constructor(config: GraphQLScalarTypeConfig<TInternal, TExternal>): void {
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize;
