@@ -179,7 +179,7 @@ export function printType(type: GraphQLNamedType, options?: Options): string {
   throw new Error(`Unknown type: ${(type: empty)}.`);
 }
 
-function printScalar(type: GraphQLScalarType, options): string {
+function printScalar(type: GraphQLScalarType<>, options): string {
   return printDescription(options, type) + `scalar ${type.name}`;
 }
 

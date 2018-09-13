@@ -201,7 +201,7 @@ export function buildClientSchema(
 
   function buildScalarDef(
     scalarIntrospection: IntrospectionScalarType,
-  ): GraphQLScalarType {
+  ): GraphQLScalarType<> {
     return new GraphQLScalarType({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,

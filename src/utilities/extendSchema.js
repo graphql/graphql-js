@@ -426,7 +426,7 @@ export function extendSchema(
     return newValueMap;
   }
 
-  function extendScalarType(type: GraphQLScalarType): GraphQLScalarType {
+  function extendScalarType(type: GraphQLScalarType<>): GraphQLScalarType<> {
     const name = type.name;
     const extensionASTNodes = typeExtensionsMap[name]
       ? type.extensionASTNodes

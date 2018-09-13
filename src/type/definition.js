@@ -46,7 +46,7 @@ import type { MaybePromise } from '../jsutils/MaybePromise';
  * These are all of the possible kinds of types.
  */
 export type GraphQLType =
-  | GraphQLScalarType
+  | GraphQLScalarType<>
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
@@ -84,7 +84,7 @@ export function isScalarType(type) {
   return instanceOf(type, GraphQLScalarType);
 }
 
-export function assertScalarType(type: mixed): GraphQLScalarType {
+export function assertScalarType(type: mixed): GraphQLScalarType<> {
   invariant(
     isScalarType(type),
     `Expected ${inspect(type)} to be a GraphQL Scalar type.`,
@@ -201,12 +201,12 @@ export function assertNonNullType(type: mixed): GraphQLNonNull<any> {
  * These types may be used as input types for arguments and directives.
  */
 export type GraphQLInputType =
-  | GraphQLScalarType
+  | GraphQLScalarType<>
   | GraphQLEnumType
   | GraphQLInputObjectType
   | GraphQLList<GraphQLInputType>
   | GraphQLNonNull<
-      | GraphQLScalarType
+      | GraphQLScalarType<>
       | GraphQLEnumType
       | GraphQLInputObjectType
       | GraphQLList<GraphQLInputType>,
@@ -233,14 +233,14 @@ export function assertInputType(type: mixed): GraphQLInputType {
  * These types may be used as output types as the result of fields.
  */
 export type GraphQLOutputType =
-  | GraphQLScalarType
+  | GraphQLScalarType<>
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
   | GraphQLEnumType
   | GraphQLList<GraphQLOutputType>
   | GraphQLNonNull<
-      | GraphQLScalarType
+      | GraphQLScalarType<>
       | GraphQLObjectType
       | GraphQLInterfaceType
       | GraphQLUnionType
@@ -270,7 +270,7 @@ export function assertOutputType(type: mixed): GraphQLOutputType {
 /**
  * These types may describe types which may be leaf values.
  */
-export type GraphQLLeafType = GraphQLScalarType | GraphQLEnumType;
+export type GraphQLLeafType = GraphQLScalarType<> | GraphQLEnumType;
 
 export function isLeafType(type: mixed): boolean %checks {
   return isScalarType(type) || isEnumType(type);
@@ -423,7 +423,7 @@ export function assertWrappingType(type: mixed): GraphQLWrappingType {
  * These types can all accept null as a value.
  */
 export type GraphQLNullableType =
-  | GraphQLScalarType
+  | GraphQLScalarType<>
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
@@ -458,7 +458,7 @@ export function getNullableType(type) {
  * These named types do not include modifiers like List or NonNull.
  */
 export type GraphQLNamedType =
-  | GraphQLScalarType
+  | GraphQLScalarType<>
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
@@ -532,12 +532,12 @@ function resolveThunk<+T>(thunk: Thunk<T>): T {
  *     });
  *
  */
-export class GraphQLScalarType {
+export class GraphQLScalarType<TInternal = any, TExternal = TInternal> {
   name: string;
   description: ?string;
-  serialize: GraphQLScalarSerializer<*>;
-  parseValue: GraphQLScalarValueParser<*>;
-  parseLiteral: GraphQLScalarLiteralParser<*>;
+  serialize: GraphQLScalarSerializer<TExternal>;
+  parseValue: GraphQLScalarValueParser<TInternal>;
+  parseLiteral: GraphQLScalarLiteralParser<TInternal>;
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
