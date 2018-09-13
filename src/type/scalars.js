@@ -58,7 +58,7 @@ function coerceInt(value: mixed): number {
   return value;
 }
 
-export const GraphQLInt = new GraphQLScalarType({
+export const GraphQLInt = new GraphQLScalarType<number>({
   name: 'Int',
   description:
     'The `Int` scalar type represents non-fractional signed whole numeric ' +
@@ -102,7 +102,7 @@ function coerceFloat(value: mixed): number {
   return value;
 }
 
-export const GraphQLFloat = new GraphQLScalarType({
+export const GraphQLFloat = new GraphQLScalarType<number>({
   name: 'Float',
   description:
     'The `Float` scalar type represents signed double-precision fractional ' +
@@ -146,7 +146,7 @@ function coerceString(value: mixed): string {
   return value;
 }
 
-export const GraphQLString = new GraphQLScalarType({
+export const GraphQLString = new GraphQLScalarType<string>({
   name: 'String',
   description:
     'The `String` scalar type represents textual data, represented as UTF-8 ' +
@@ -180,7 +180,7 @@ function coerceBoolean(value: mixed): boolean {
   return value;
 }
 
-export const GraphQLBoolean = new GraphQLScalarType({
+export const GraphQLBoolean = new GraphQLScalarType<boolean>({
   name: 'Boolean',
   description: 'The `Boolean` scalar type represents `true` or `false`.',
   serialize: serializeBoolean,
@@ -214,7 +214,7 @@ function coerceID(value: mixed): string {
   throw new TypeError(`ID cannot represent value: ${inspect(value)}`);
 }
 
-export const GraphQLID = new GraphQLScalarType({
+export const GraphQLID = new GraphQLScalarType<string>({
   name: 'ID',
   description:
     'The `ID` scalar type represents a unique identifier, often used to ' +
