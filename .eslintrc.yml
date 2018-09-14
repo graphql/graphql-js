@@ -74,11 +74,11 @@ rules:
   # Possible Errors
   # https://eslint.org/docs/rules/#possible-errors
 
-  #for-direction: undecided
-  #getter-return: undecided
+  for-direction: error
+  getter-return: error
   #no-async-promise-executor: undecided
   no-await-in-loop: error
-  #no-compare-neg-zero: undecided
+  no-compare-neg-zero: error
   no-cond-assign: error
   no-console: warn
   no-constant-condition: error
@@ -105,7 +105,7 @@ rules:
   #no-template-curly-in-string: undecided
   no-unexpected-multiline: off
   no-unreachable: error
-  #no-unsafe-finally: undecided
+  no-unsafe-finally: error
   no-unsafe-negation: error
   #require-atomic-updates: undecided
   use-isnan: error
@@ -130,11 +130,12 @@ rules:
   #max-classes-per-file: undecided
   no-alert: error
   no-caller: error
-  #no-case-declarations: undecided
+  # TODO: recommended rule but disable due to errors in existing code
+  # no-case-declarations: error
   no-div-regex: error
   no-else-return: error
   #no-empty-function: undecided
-  #no-empty-pattern: undecided
+  no-empty-pattern: error
   no-eq-null: off
   no-eval: error
   no-extend-native: error
@@ -142,7 +143,7 @@ rules:
   #no-extra-label: undecided
   no-fallthrough: error
   no-floating-decimal: off
-  #no-global-assign: undecided
+  no-global-assign: error
   no-implicit-coercion: error
   #no-implicit-globals: undecided
   no-implied-eval: error
@@ -166,13 +167,13 @@ rules:
   no-return-assign: error
   #no-return-await: undecided
   no-script-url: error
-  #no-self-assign: undecided
+  no-self-assign: error
   no-self-compare: off
   no-sequences: off
   no-throw-literal: error
   #no-unmodified-loop-condition: undecided
   no-unused-expressions: error
-  #no-unused-labels: undecided
+  no-unused-labels: error
   no-useless-call: error
   #no-useless-concat: undecided
   no-useless-escape: error
@@ -326,14 +327,14 @@ rules:
   #arrow-body-style: undecided
   arrow-parens: off
   arrow-spacing: off
-  #constructor-super: undecided
+  constructor-super: error
   generator-star-spacing: off
   no-class-assign: error
   #no-confusing-arrow: undecided
   no-const-assign: error
-  #no-dupe-class-members: undecided
+  no-dupe-class-members: error
   #no-duplicate-imports: undecided
-  #no-new-symbol: undecided
+  no-new-symbol: error
   #no-restricted-imports: undecided
   no-this-before-super: error
   #no-useless-computed-key: undecided
