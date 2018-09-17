@@ -426,7 +426,7 @@ export function extendSchema(
     return newValueMap;
   }
 
-  function extendScalarType(type: GraphQLScalarType<>): GraphQLScalarType<> {
+  function extendScalarType(type: GraphQLScalarType<*, *>): GraphQLScalarType<*, *> {
     const name = type.name;
     const extensionASTNodes = typeExtensionsMap[name]
       ? type.extensionASTNodes
@@ -444,7 +444,7 @@ export function extendSchema(
     });
   }
 
-  function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
+  function extendObjectType(type: GraphQLObjectType<*, *>): GraphQLObjectType<*, *> {
     const name = type.name;
     const extensionASTNodes = typeExtensionsMap[name]
       ? type.extensionASTNodes
@@ -515,7 +515,7 @@ export function extendSchema(
 
   function extendPossibleTypes(
     type: GraphQLUnionType,
-  ): Array<GraphQLObjectType> {
+  ): Array<GraphQLObjectType<*, *>> {
     const possibleTypes = type.getTypes().map(extendNamedType);
 
     // If there are any extensions to the union, apply those here.
@@ -534,7 +534,7 @@ export function extendSchema(
   }
 
   function extendImplementedInterfaces(
-    type: GraphQLObjectType,
+    type: GraphQLObjectType<*, *>,
   ): Array<GraphQLInterfaceType> {
     const interfaces = type.getInterfaces().map(extendNamedType);
 
@@ -554,7 +554,7 @@ export function extendSchema(
     return interfaces;
   }
 
-  function extendFieldMap(type: GraphQLObjectType | GraphQLInterfaceType) {
+  function extendFieldMap(type: GraphQLObjectType<*, *> | GraphQLInterfaceType) {
     const newFieldMap = Object.create(null);
     const oldFieldMap = type.getFields();
     for (const fieldName of Object.keys(oldFieldMap)) {

@@ -79,12 +79,12 @@ export function isSchema(schema) {
 export class GraphQLSchema {
   astNode: ?SchemaDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>;
-  _queryType: ?GraphQLObjectType;
-  _mutationType: ?GraphQLObjectType;
-  _subscriptionType: ?GraphQLObjectType;
+  _queryType: ?GraphQLObjectType<*, *>;
+  _mutationType: ?GraphQLObjectType<*, *>;
+  _subscriptionType: ?GraphQLObjectType<*, *>;
   _directives: $ReadOnlyArray<GraphQLDirective>;
   _typeMap: TypeMap;
-  _implementations: ObjMap<Array<GraphQLObjectType>>;
+  _implementations: ObjMap<Array<GraphQLObjectType<*, *>>>;
   _possibleTypeMap: ?ObjMap<ObjMap<boolean>>;
   // Used as a cache for validateSchema().
   __validationErrors: ?$ReadOnlyArray<GraphQLError>;
@@ -174,15 +174,15 @@ export class GraphQLSchema {
     }
   }
 
-  getQueryType(): ?GraphQLObjectType {
+  getQueryType(): ?GraphQLObjectType<*, *> {
     return this._queryType;
   }
 
-  getMutationType(): ?GraphQLObjectType {
+  getMutationType(): ?GraphQLObjectType<*, *> {
     return this._mutationType;
   }
 
-  getSubscriptionType(): ?GraphQLObjectType {
+  getSubscriptionType(): ?GraphQLObjectType<*, *> {
     return this._subscriptionType;
   }
 
@@ -196,7 +196,7 @@ export class GraphQLSchema {
 
   getPossibleTypes(
     abstractType: GraphQLAbstractType,
-  ): $ReadOnlyArray<GraphQLObjectType> {
+  ): $ReadOnlyArray<GraphQLObjectType<*, *>> {
     if (isUnionType(abstractType)) {
       return abstractType.getTypes();
     }
@@ -205,7 +205,7 @@ export class GraphQLSchema {
 
   isPossibleType(
     abstractType: GraphQLAbstractType,
-    possibleType: GraphQLObjectType,
+    possibleType: GraphQLObjectType<*, *>,
   ): boolean {
     let possibleTypeMap = this._possibleTypeMap;
     if (!possibleTypeMap) {
@@ -258,9 +258,9 @@ export type GraphQLSchemaValidationOptions = {|
 |};
 
 export type GraphQLSchemaConfig = {|
-  query?: ?GraphQLObjectType,
-  mutation?: ?GraphQLObjectType,
-  subscription?: ?GraphQLObjectType,
+  query?: ?GraphQLObjectType<*, *>,
+  mutation?: ?GraphQLObjectType<*, *>,
+  subscription?: ?GraphQLObjectType<*, *>,
   types?: ?Array<GraphQLNamedType>,
   directives?: ?Array<GraphQLDirective>,
   astNode?: ?SchemaDefinitionNode,

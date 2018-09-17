@@ -152,7 +152,7 @@ function validateRootTypes(context) {
 
 function getOperationTypeNode(
   schema: GraphQLSchema,
-  type: GraphQLObjectType,
+  type: GraphQLObjectType<*, *>,
   operation: string,
 ): ?ASTNode {
   const operationNodes = getAllSubNodes(schema, node => node.operationTypes);
@@ -268,7 +268,7 @@ function validateTypes(context: SchemaValidationContext): void {
 
 function validateFields(
   context: SchemaValidationContext,
-  type: GraphQLObjectType | GraphQLInterfaceType,
+  type: GraphQLObjectType<*, *> | GraphQLInterfaceType,
 ): void {
   const fields = objectValues(type.getFields());
 
@@ -335,7 +335,7 @@ function validateFields(
 
 function validateObjectInterfaces(
   context: SchemaValidationContext,
-  object: GraphQLObjectType,
+  object: GraphQLObjectType<*, *>,
 ): void {
   const implementedTypeNames = Object.create(null);
   for (const iface of object.getInterfaces()) {
@@ -362,7 +362,7 @@ function validateObjectInterfaces(
 
 function validateObjectImplementsInterface(
   context: SchemaValidationContext,
-  object: GraphQLObjectType,
+  object: GraphQLObjectType<*, *>,
   iface: GraphQLInterfaceType,
 ): void {
   const objectFieldMap = object.getFields();
@@ -587,14 +587,14 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
 }
 
 function getImplementsInterfaceNode(
-  type: GraphQLObjectType,
+  type: GraphQLObjectType<*, *>,
   iface: GraphQLInterfaceType,
 ): ?NamedTypeNode {
   return getAllImplementsInterfaceNodes(type, iface)[0];
 }
 
 function getAllImplementsInterfaceNodes(
-  type: GraphQLObjectType,
+  type: GraphQLObjectType<*, *>,
   iface: GraphQLInterfaceType,
 ): $ReadOnlyArray<NamedTypeNode> {
   return getAllSubNodes(type, typeNode => typeNode.interfaces).filter(
@@ -603,14 +603,14 @@ function getAllImplementsInterfaceNodes(
 }
 
 function getFieldNode(
-  type: GraphQLObjectType | GraphQLInterfaceType,
+  type: GraphQLObjectType<*, *> | GraphQLInterfaceType,
   fieldName: string,
 ): ?FieldDefinitionNode {
   return getAllFieldNodes(type, fieldName)[0];
 }
 
 function getAllFieldNodes(
-  type: GraphQLObjectType | GraphQLInterfaceType,
+  type: GraphQLObjectType<*, *> | GraphQLInterfaceType,
   fieldName: string,
 ): $ReadOnlyArray<FieldDefinitionNode> {
   return getAllSubNodes(type, typeNode => typeNode.fields).filter(
@@ -619,7 +619,7 @@ function getAllFieldNodes(
 }
 
 function getFieldTypeNode(
-  type: GraphQLObjectType | GraphQLInterfaceType,
+  type: GraphQLObjectType<*, *> | GraphQLInterfaceType,
   fieldName: string,
 ): ?TypeNode {
   const fieldNode = getFieldNode(type, fieldName);
@@ -627,7 +627,7 @@ function getFieldTypeNode(
 }
 
 function getFieldArgNode(
-  type: GraphQLObjectType | GraphQLInterfaceType,
+  type: GraphQLObjectType<*, *> | GraphQLInterfaceType,
   fieldName: string,
   argName: string,
 ): ?InputValueDefinitionNode {
@@ -635,7 +635,7 @@ function getFieldArgNode(
 }
 
 function getAllFieldArgNodes(
-  type: GraphQLObjectType | GraphQLInterfaceType,
+  type: GraphQLObjectType<*, *> | GraphQLInterfaceType,
   fieldName: string,
   argName: string,
 ): $ReadOnlyArray<InputValueDefinitionNode> {
@@ -652,7 +652,7 @@ function getAllFieldArgNodes(
 }
 
 function getFieldArgTypeNode(
-  type: GraphQLObjectType | GraphQLInterfaceType,
+  type: GraphQLObjectType<*, *> | GraphQLInterfaceType,
   fieldName: string,
   argName: string,
 ): ?TypeNode {

@@ -46,8 +46,8 @@ import type { MaybePromise } from '../jsutils/MaybePromise';
  * These are all of the possible kinds of types.
  */
 export type GraphQLType =
-  | GraphQLScalarType<>
-  | GraphQLObjectType
+  | GraphQLScalarType<*, *>
+  | GraphQLObjectType<*, *>
   | GraphQLInterfaceType
   | GraphQLUnionType
   | GraphQLEnumType
@@ -84,7 +84,7 @@ export function isScalarType(type) {
   return instanceOf(type, GraphQLScalarType);
 }
 
-export function assertScalarType(type: mixed): GraphQLScalarType<> {
+export function assertScalarType(type: mixed): GraphQLScalarType<*, *> {
   invariant(
     isScalarType(type),
     `Expected ${inspect(type)} to be a GraphQL Scalar type.`,
@@ -99,7 +99,7 @@ export function isObjectType(type) {
   return instanceOf(type, GraphQLObjectType);
 }
 
-export function assertObjectType(type: mixed): GraphQLObjectType {
+export function assertObjectType(type: mixed): GraphQLObjectType<*, *> {
   invariant(
     isObjectType(type),
     `Expected ${inspect(type)} to be a GraphQL Object type.`,
@@ -201,12 +201,12 @@ export function assertNonNullType(type: mixed): GraphQLNonNull<any> {
  * These types may be used as input types for arguments and directives.
  */
 export type GraphQLInputType =
-  | GraphQLScalarType<>
+  | GraphQLScalarType<*, *>
   | GraphQLEnumType
   | GraphQLInputObjectType
   | GraphQLList<GraphQLInputType>
   | GraphQLNonNull<
-      | GraphQLScalarType<>
+      | GraphQLScalarType<*, *>
       | GraphQLEnumType
       | GraphQLInputObjectType
       | GraphQLList<GraphQLInputType>,
@@ -233,15 +233,15 @@ export function assertInputType(type: mixed): GraphQLInputType {
  * These types may be used as output types as the result of fields.
  */
 export type GraphQLOutputType =
-  | GraphQLScalarType<>
-  | GraphQLObjectType
+  | GraphQLScalarType<*, *>
+  | GraphQLObjectType<*, *>
   | GraphQLInterfaceType
   | GraphQLUnionType
   | GraphQLEnumType
   | GraphQLList<GraphQLOutputType>
   | GraphQLNonNull<
-      | GraphQLScalarType<>
-      | GraphQLObjectType
+      | GraphQLScalarType<*, *>
+      | GraphQLObjectType<*, *>
       | GraphQLInterfaceType
       | GraphQLUnionType
       | GraphQLEnumType
@@ -270,7 +270,7 @@ export function assertOutputType(type: mixed): GraphQLOutputType {
 /**
  * These types may describe types which may be leaf values.
  */
-export type GraphQLLeafType = GraphQLScalarType<> | GraphQLEnumType;
+export type GraphQLLeafType = GraphQLScalarType<*, *> | GraphQLEnumType;
 
 export function isLeafType(type: mixed): boolean %checks {
   return isScalarType(type) || isEnumType(type);
@@ -288,7 +288,7 @@ export function assertLeafType(type: mixed): GraphQLLeafType {
  * These types may describe the parent context of a selection set.
  */
 export type GraphQLCompositeType =
-  | GraphQLObjectType
+  | GraphQLObjectType<*, *>
   | GraphQLInterfaceType
   | GraphQLUnionType;
 
@@ -423,8 +423,8 @@ export function assertWrappingType(type: mixed): GraphQLWrappingType {
  * These types can all accept null as a value.
  */
 export type GraphQLNullableType =
-  | GraphQLScalarType<>
-  | GraphQLObjectType
+  | GraphQLScalarType<*, *>
+  | GraphQLObjectType<*, *>
   | GraphQLInterfaceType
   | GraphQLUnionType
   | GraphQLEnumType
@@ -458,8 +458,8 @@ export function getNullableType(type) {
  * These named types do not include modifiers like List or NonNull.
  */
 export type GraphQLNamedType =
-  | GraphQLScalarType<>
-  | GraphQLObjectType
+  | GraphQLScalarType<any, any>
+  | GraphQLObjectType<*, *>
   | GraphQLInterfaceType
   | GraphQLUnionType
   | GraphQLEnumType
@@ -541,12 +541,12 @@ export class GraphQLScalarType<TInternal = any, TExternal = TInternal> {
   astNode: ?ScalarTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
-  constructor(config: GraphQLScalarTypeConfig<*, *>): void {
+  constructor(config: GraphQLScalarTypeConfig<TInternal, TExternal>): void {
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize;
-    this.parseValue = config.parseValue || (value => value);
-    this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
+    this.parseValue = config.parseValue || ((value): TInternal => (value: any));
+    this.parseLiteral = config.parseLiteral || (valueFromASTUntyped: GraphQLScalarLiteralParser<TInternal);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes;
     invariant(typeof config.name === 'string', 'Must provide name.');
@@ -632,17 +632,17 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
  *     });
  *
  */
-export class GraphQLObjectType {
+export class GraphQLObjectType<TSource = any, TContext = any> {
   name: string;
   description: ?string;
   astNode: ?ObjectTypeDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<ObjectTypeExtensionNode>;
-  isTypeOf: ?GraphQLIsTypeOfFn<*, *>;
+  isTypeOf: ?GraphQLIsTypeOfFn<TSource, TContext>;
 
-  _fields: Thunk<GraphQLFieldMap<*, *>>;
+  _fields: Thunk<GraphQLFieldMap<TSource, TContext>>;
   _interfaces: Thunk<Array<GraphQLInterfaceType>>;
 
-  constructor(config: GraphQLObjectTypeConfig<*, *>): void {
+  constructor(config: GraphQLObjectTypeConfig<TSource, TContext>): void {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -681,8 +681,8 @@ export class GraphQLObjectType {
 defineToStringTag(GraphQLObjectType);
 defineToJSON(GraphQLObjectType);
 
-function defineInterfaces(
-  config: GraphQLObjectTypeConfig<*, *>,
+function defineInterfaces<TSource, TContext>(
+  config: GraphQLObjectTypeConfig<TSource, TContext>,
 ): Array<GraphQLInterfaceType> {
   const interfaces = resolveThunk(config.interfaces) || [];
   invariant(
@@ -770,7 +770,7 @@ export type GraphQLTypeResolver<TSource, TContext> = (
   value: TSource,
   context: TContext,
   info: GraphQLResolveInfo,
-) => MaybePromise<?GraphQLObjectType | string>;
+) => MaybePromise<?GraphQLObjectType<TSource, TContext> | string>;
 
 export type GraphQLIsTypeOfFn<TSource, TContext> = (
   source: TSource,
@@ -793,7 +793,7 @@ export type GraphQLResolveInfo = {|
   +fieldName: string,
   +fieldNodes: $ReadOnlyArray<FieldNode>,
   +returnType: GraphQLOutputType,
-  +parentType: GraphQLObjectType,
+  +parentType: GraphQLObjectType<*, *>,
   +path: ResponsePath,
   +schema: GraphQLSchema,
   +fragments: ObjMap<FragmentDefinitionNode>,
@@ -968,7 +968,7 @@ export class GraphQLUnionType {
   extensionASTNodes: ?$ReadOnlyArray<UnionTypeExtensionNode>;
   resolveType: ?GraphQLTypeResolver<*, *>;
 
-  _types: Thunk<Array<GraphQLObjectType>>;
+  _types: Thunk<Array<GraphQLObjectType<*, *>>>;
 
   constructor(config: GraphQLUnionTypeConfig<*, *>): void {
     this.name = config.name;
@@ -985,7 +985,7 @@ export class GraphQLUnionType {
     );
   }
 
-  getTypes(): Array<GraphQLObjectType> {
+  getTypes(): Array<GraphQLObjectType<*, *>> {
     if (typeof this._types === 'function') {
       this._types = this._types();
     }
@@ -1003,7 +1003,7 @@ defineToJSON(GraphQLUnionType);
 
 function defineTypes(
   config: GraphQLUnionTypeConfig<*, *>,
-): Array<GraphQLObjectType> {
+): Array<GraphQLObjectType<*, *>> {
   const types = resolveThunk(config.types) || [];
   invariant(
     Array.isArray(types),
@@ -1015,7 +1015,7 @@ function defineTypes(
 
 export type GraphQLUnionTypeConfig<TSource, TContext> = {|
   name: string,
-  types: Thunk<Array<GraphQLObjectType>>,
+  types: Thunk<Array<GraphQLObjectType<*, *>>>,
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing

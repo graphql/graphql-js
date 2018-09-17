@@ -161,7 +161,7 @@ export function buildClientSchema(
 
   function getObjectType(
     typeRef: IntrospectionNamedTypeRef<IntrospectionObjectType>,
-  ): GraphQLObjectType {
+  ): GraphQLObjectType<*, *> {
     const type = getType(typeRef);
     return assertObjectType(type);
   }
@@ -201,7 +201,7 @@ export function buildClientSchema(
 
   function buildScalarDef(
     scalarIntrospection: IntrospectionScalarType,
-  ): GraphQLScalarType<> {
+  ): GraphQLScalarType<*, *> {
     return new GraphQLScalarType({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
@@ -211,7 +211,7 @@ export function buildClientSchema(
 
   function buildObjectDef(
     objectIntrospection: IntrospectionObjectType,
-  ): GraphQLObjectType {
+  ): GraphQLObjectType<*, *> {
     if (!objectIntrospection.interfaces) {
       throw new Error(
         'Introspection result missing interfaces: ' +

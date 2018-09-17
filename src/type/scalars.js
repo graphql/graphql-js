@@ -146,7 +146,7 @@ function coerceString(value: mixed): string {
   return value;
 }
 
-export const GraphQLString = new GraphQLScalarType<string>({
+export const GraphQLString = new GraphQLScalarType({
   name: 'String',
   description:
     'The `String` scalar type represents textual data, represented as UTF-8 ' +
@@ -180,7 +180,7 @@ function coerceBoolean(value: mixed): boolean {
   return value;
 }
 
-export const GraphQLBoolean = new GraphQLScalarType<boolean>({
+export const GraphQLBoolean = new GraphQLScalarType({
   name: 'Boolean',
   description: 'The `Boolean` scalar type represents `true` or `false`.',
   serialize: serializeBoolean,
@@ -214,7 +214,7 @@ function coerceID(value: mixed): string {
   throw new TypeError(`ID cannot represent value: ${inspect(value)}`);
 }
 
-export const GraphQLID = new GraphQLScalarType<string>({
+export const GraphQLID = new GraphQLScalarType<string | number>({
   name: 'ID',
   description:
     'The `ID` scalar type represents a unique identifier, often used to ' +

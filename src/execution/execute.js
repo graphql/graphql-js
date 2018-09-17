@@ -423,7 +423,7 @@ function executeOperation(
  */
 function executeFieldsSerially(
   exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
+  parentType: GraphQLObjectType<*, *>,
   sourceValue: mixed,
   path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
@@ -462,7 +462,7 @@ function executeFieldsSerially(
  */
 function executeFields(
   exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
+  parentType: GraphQLObjectType<*, *>,
   sourceValue: mixed,
   path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
@@ -511,7 +511,7 @@ function executeFields(
  */
 export function collectFields(
   exeContext: ExecutionContext,
-  runtimeType: GraphQLObjectType,
+  runtimeType: GraphQLObjectType<*, *>,
   selectionSet: SelectionSetNode,
   fields: ObjMap<Array<FieldNode>>,
   visitedFragmentNames: ObjMap<boolean>,
@@ -607,7 +607,7 @@ function shouldIncludeNode(
 function doesFragmentConditionMatch(
   exeContext: ExecutionContext,
   fragment: FragmentDefinitionNode | InlineFragmentNode,
-  type: GraphQLObjectType,
+  type: GraphQLObjectType<*, *>,
 ): boolean {
   const typeConditionNode = fragment.typeCondition;
   if (!typeConditionNode) {
@@ -638,7 +638,7 @@ function getFieldEntryKey(node: FieldNode): string {
  */
 function resolveField(
   exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
+  parentType: GraphQLObjectType<*, *>,
   source: mixed,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   path: ResponsePath,
@@ -686,7 +686,7 @@ export function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<*, *>,
   fieldNodes: $ReadOnlyArray<FieldNode>,
-  parentType: GraphQLObjectType,
+  parentType: GraphQLObjectType<*, *>,
   path: ResponsePath,
 ): GraphQLResolveInfo {
   // The resolve function's optional fourth argument is a collection of
@@ -1030,13 +1030,13 @@ function completeAbstractValue(
 }
 
 function ensureValidRuntimeType(
-  runtimeTypeOrName: ?GraphQLObjectType | string,
+  runtimeTypeOrName: ?GraphQLObjectType<*, *> | string,
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   result: mixed,
-): GraphQLObjectType {
+): GraphQLObjectType<*, *> {
   const runtimeType =
     typeof runtimeTypeOrName === 'string'
       ? exeContext.schema.getType(runtimeTypeOrName)
@@ -1069,7 +1069,7 @@ function ensureValidRuntimeType(
  */
 function completeObjectValue(
   exeContext: ExecutionContext,
-  returnType: GraphQLObjectType,
+  returnType: GraphQLObjectType<*, *>,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: ResponsePath,
@@ -1111,7 +1111,7 @@ function completeObjectValue(
 }
 
 function invalidReturnTypeError(
-  returnType: GraphQLObjectType,
+  returnType: GraphQLObjectType<*, *>,
   result: mixed,
   fieldNodes: $ReadOnlyArray<FieldNode>,
 ): GraphQLError {
@@ -1123,7 +1123,7 @@ function invalidReturnTypeError(
 
 function collectAndExecuteSubfields(
   exeContext: ExecutionContext,
-  returnType: GraphQLObjectType,
+  returnType: GraphQLObjectType<*, *>,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   path: ResponsePath,
   result: mixed,
@@ -1141,7 +1141,7 @@ function collectAndExecuteSubfields(
 const collectSubfields = memoize3(_collectSubfields);
 function _collectSubfields(
   exeContext: ExecutionContext,
-  returnType: GraphQLObjectType,
+  returnType: GraphQLObjectType<*, *>,
   fieldNodes: $ReadOnlyArray<FieldNode>,
 ): ObjMap<Array<FieldNode>> {
   let subFieldNodes = Object.create(null);
@@ -1176,7 +1176,7 @@ function defaultResolveTypeFn(
   contextValue: mixed,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType,
-): MaybePromise<?GraphQLObjectType | string> {
+): MaybePromise<?GraphQLObjectType<*, *> | string> {
   // First, look for `__typename`.
   if (
     value !== null &&
@@ -1248,7 +1248,7 @@ export const defaultFieldResolver: GraphQLFieldResolver<any, *> = function(
  */
 export function getFieldDef(
   schema: GraphQLSchema,
-  parentType: GraphQLObjectType,
+  parentType: GraphQLObjectType<*, *>,
   fieldName: string,
 ): ?GraphQLField<*, *> {
   if (
