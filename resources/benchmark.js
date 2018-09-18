@@ -71,8 +71,8 @@ function findFiles(cwd, pattern) {
 }
 
 // Run a given benchmark test with the provided revisions.
-function runBenchmark(benchmark, enviroments) {
-  const modules = enviroments.map(({distPath}) =>
+function runBenchmark(benchmark, environments) {
+  const modules = environments.map(({distPath}) =>
     require(path.join(distPath, benchmark)),
   );
   const suite = new Suite(modules[0].name, {
@@ -90,8 +90,8 @@ function runBenchmark(benchmark, enviroments) {
       beautifyBenchmark.log();
     },
   });
-  for (let i = 0; i < enviroments.length; i++) {
-    suite.add(enviroments[i].revision, modules[i].measure);
+  for (let i = 0; i < environments.length; i++) {
+    suite.add(environments[i].revision, modules[i].measure);
   }
   suite.run({ async: false });
 }
@@ -116,10 +116,10 @@ function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
     return;
   }
 
-  const enviroments = revisions.map(
+  const environments = revisions.map(
     revision => ({ revision, distPath: prepareRevision(revision)})
   );
-  benchmarks.forEach(benchmark => runBenchmark(benchmark, enviroments));
+  benchmarks.forEach(benchmark => runBenchmark(benchmark, environments));
 }
 
 function getArguments(argv) {
