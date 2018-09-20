@@ -12,6 +12,7 @@ import {
   GraphQLID,
   GraphQLInt,
   GraphQLFloat,
+  GraphQLList,
   GraphQLString,
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -280,6 +281,41 @@ describe('coerceValue', () => {
       const result = coerceValue({ foo: 123, bart: 123 }, TestInputObject);
       expectErrors(result).to.deep.equal([
         'Field "bart" is not defined by type TestInputObject; did you mean bar?',
+      ]);
+    });
+  });
+
+  describe('for nested GraphQLList', () => {
+    const TestList = GraphQLList(GraphQLList(GraphQLInt));
+
+    it('correctly coerces a nested list value', () => {
+      expectValue(coerceValue([[1], [2, 3]], TestList)).to.deep.equal([
+        [1],
+        [2, 3],
+      ]);
+    });
+
+    it('correctly coerces a null value', () => {
+      expectValue(coerceValue(null, TestList)).to.deep.equal(null);
+    });
+
+    it('correctly coerces a non-list value', () => {
+      expectValue(coerceValue(42, TestList)).to.deep.equal([[42]]);
+    });
+
+    it('correctly coerces nested non-list values', () => {
+      expectValue(coerceValue([1, 2, 3], TestList)).to.deep.equal([
+        [1],
+        [2],
+        [3],
+      ]);
+    });
+
+    it('correctly coerces nested null values', () => {
+      expectValue(coerceValue([42, [null], null], TestList)).to.deep.equal([
+        [42],
+        [null],
+        null,
       ]);
     });
   });
