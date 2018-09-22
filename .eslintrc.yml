@@ -38,38 +38,38 @@ rules:
   # `eslint-plugin-flowtype` rule list based on `v2.50.0`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
 
-  #flowtype/array-style-complex-type: undecided
-  #flowtype/array-style-simple-type: undecided
+  flowtype/array-style-complex-type: [error, verbose]
+  flowtype/array-style-simple-type: [error, verbose]
   flowtype/boolean-style: off
   flowtype/define-flow-type: error
   flowtype/delimiter-dangle: off
   flowtype/generic-spacing: off
-  #flowtype/newline-after-flow-annotation: undecided
-  #flowtype/no-dupe-keys: undecided
-  #flowtype/no-existential-type: undecided
-  #flowtype/no-flow-fix-me-comments: undecided
-  #flowtype/no-mutable-array: undecided
-  #flowtype/no-primitive-constructor-types: undecided
+  flowtype/newline-after-flow-annotation: [error, always]
+  flowtype/no-dupe-keys: error
+  flowtype/no-existential-type: off
+  flowtype/no-flow-fix-me-comments: off
+  flowtype/no-mutable-array: off
+  flowtype/no-primitive-constructor-types: error
   flowtype/no-types-missing-file-annotation: error
   #flowtype/no-unused-expressions: undecided
   flowtype/no-weak-types: [error, {any: false}]
   flowtype/object-type-delimiter: off
-  #flowtype/require-exact-type: undecided
-  #flowtype/require-parameter-type: undecided
-  #flowtype/require-return-type: undecided
-  #flowtype/require-types-at-top: undecided
+  flowtype/require-exact-type: off
+  flowtype/require-parameter-type: off
+  flowtype/require-return-type: off
+  flowtype/require-types-at-top: off
   flowtype/require-valid-file-annotation: [error, always, { annotationStyle: block }]
-  #flowtype/require-variable-type: undecided
+  flowtype/require-variable-type: off
   flowtype/semi: off
-  #flowtype/sort-keys: undecided
+  flowtype/sort-keys: off
   flowtype/space-after-type-colon: off
   flowtype/space-before-generic-bracket: off
   flowtype/space-before-type-colon: off
-  #flowtype/type-id-match: undecided
+  flowtype/type-id-match: off
   #flowtype/type-import-style: undecided
   flowtype/union-intersection-spacing: off
   flowtype/use-flow-type: error
-  #flowtype/valid-syntax: undecided
+  flowtype/valid-syntax: off
 
   # Possible Errors
   # https://eslint.org/docs/rules/#possible-errors
