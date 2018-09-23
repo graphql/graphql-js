@@ -50,7 +50,7 @@ rules:
   #flowtype/no-flow-fix-me-comments: undecided
   #flowtype/no-mutable-array: undecided
   #flowtype/no-primitive-constructor-types: undecided
-  #flowtype/no-types-missing-file-annotation: undecided
+  flowtype/no-types-missing-file-annotation: error
   #flowtype/no-unused-expressions: undecided
   flowtype/no-weak-types: [error, {any: false}]
   flowtype/object-type-delimiter: off
@@ -58,7 +58,7 @@ rules:
   #flowtype/require-parameter-type: undecided
   #flowtype/require-return-type: undecided
   #flowtype/require-types-at-top: undecided
-  #flowtype/require-valid-file-annotation: undecided
+  flowtype/require-valid-file-annotation: [error, always, { annotationStyle: block }]
   #flowtype/require-variable-type: undecided
   flowtype/semi: off
   #flowtype/sort-keys: undecided
