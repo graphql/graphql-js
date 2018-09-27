@@ -14,6 +14,7 @@ import {
   GraphQLID,
   GraphQLInt,
   GraphQLFloat,
+  GraphQLList,
   GraphQLString,
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -239,14 +240,14 @@ describe('coerceValue', () => {
       expectValue(result).to.deep.equal({ foo: 123 });
     });
 
-    it('returns no error for a non-object type', () => {
+    it('returns an error for a non-object type', () => {
       const result = coerceValue(123, TestInputObject);
       expectErrors(result).to.deep.equal([
         'Expected type TestInputObject to be an object.',
       ]);
     });
 
-    it('returns no error for an invalid field', () => {
+    it('returns an error for an invalid field', () => {
       const result = coerceValue({ foo: 'abc' }, TestInputObject);
       expectErrors(result).to.deep.equal([
         'Expected type Int at value.foo; Int cannot represent non-integer value: "abc"',
@@ -283,6 +284,62 @@ describe('coerceValue', () => {
       expectErrors(result).to.deep.equal([
         'Field "bart" is not defined by type TestInputObject; did you mean bar?',
       ]);
+    });
+  });
+
+  describe('for GraphQLList', () => {
+    const TestList = GraphQLList(GraphQLInt);
+
+    it('returns no error for a valid input', () => {
+      const result = coerceValue([1, 2, 3], TestList);
+      expectValue(result).to.deep.equal([1, 2, 3]);
+    });
+
+    it('returns an error for an invalid input', () => {
+      const result = coerceValue([1, 'b', true], TestList);
+      expectErrors(result).to.deep.equal([
+        'Expected type Int at value[1]; Int cannot represent non-integer value: "b"',
+        'Expected type Int at value[2]; Int cannot represent non-integer value: true',
+      ]);
+    });
+
+    it('returns a list for a non-list value', () => {
+      const result = coerceValue(42, TestList);
+      expectValue(result).to.deep.equal([42]);
+    });
+
+    it('returns null for a null value', () => {
+      const result = coerceValue(null, TestList);
+      expectValue(result).to.deep.equal(null);
+    });
+  });
+
+  describe('for nested GraphQLList', () => {
+    const TestNestedList = GraphQLList(GraphQLList(GraphQLInt));
+
+    it('returns no error for a valid input', () => {
+      const result = coerceValue([[1], [2, 3]], TestNestedList);
+      expectValue(result).to.deep.equal([[1], [2, 3]]);
+    });
+
+    it('returns a list for a non-list value', () => {
+      const result = coerceValue(42, TestNestedList);
+      expectValue(result).to.deep.equal([[42]]);
+    });
+
+    it('returns null for a null value', () => {
+      const result = coerceValue(null, TestNestedList);
+      expectValue(result).to.deep.equal(null);
+    });
+
+    it('returns nested lists for nested non-list values', () => {
+      const result = coerceValue([1, 2, 3], TestNestedList);
+      expectValue(result).to.deep.equal([[1], [2], [3]]);
+    });
+
+    it('returns nested null for nested null values', () => {
+      const result = coerceValue([42, [null], null], TestNestedList);
+      expectValue(result).to.deep.equal([[42], [null], null]);
     });
   });
 });
