@@ -700,6 +700,21 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  "args": [],
+                  "deprecationReason": null,
+                  "isDeprecated": false,
+                  "name": "repeatable",
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Boolean",
+                      "ofType": null,
+                    },
+                  },
+                },
               ],
               inputFields: null,
               interfaces: [],
@@ -815,6 +830,7 @@ describe('Introspection', () => {
           directives: [
             {
               name: 'include',
+              repeatable: false,
               locations: ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
               args: [
                 {
@@ -834,6 +850,7 @@ describe('Introspection', () => {
             },
             {
               name: 'skip',
+              repeatable: false,
               locations: ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
               args: [
                 {
@@ -853,6 +870,7 @@ describe('Introspection', () => {
             },
             {
               name: 'deprecated',
+              repeatable: false,
               locations: ['FIELD_DEFINITION', 'ENUM_VALUE'],
               args: [
                 {

@@ -103,11 +103,11 @@ describe('Validate: Directives Are Unique Per Location', () => {
     expectPassesRule(
       UniqueDirectivesPerLocation,
       `
-      type Test @repeatableDirective(id: 1) @repeatableDirective(id: 2) {
+      type Test @repeatableDirective(id: 1) {
         field: String!
       }
       
-      extend type Test @repeatableDirective(id: 3) {
+      extend type Test @repeatableDirective(id: 2) {
         anotherField: String!
       }
     `,

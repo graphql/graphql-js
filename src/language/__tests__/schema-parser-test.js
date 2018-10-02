@@ -807,11 +807,13 @@ input Hello {
   it('Directive definition', () => {
     const body = 'directive @foo on OBJECT | INTERFACE';
     const doc = parse(body);
-    const expected = {
+
+    expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'DirectiveDefinition',
+          description: undefined,
           name: {
             kind: 'Name',
             value: 'foo',
@@ -850,18 +852,19 @@ input Hello {
         start: 0,
         end: 36,
       },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Repeatable directive definition', () => {
     const body = 'directive @foo repeatable on OBJECT | INTERFACE';
     const doc = parse(body);
-    const expected = {
+
+    expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'DirectiveDefinition',
+          description: undefined,
           name: {
             kind: 'Name',
             value: 'foo',
@@ -900,8 +903,7 @@ input Hello {
         start: 0,
         end: 47,
       },
-    };
-    expect(printJson(doc)).to.equal(printJson(expected));
+    });
   });
 
   it('Directive with incorrect locations', () => {

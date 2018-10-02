@@ -7,10 +7,15 @@
  * @flow strict
  */
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type {
+  SDLValidationContext,
+  ValidationContext,
+} from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import type { DirectiveNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
+import { Kind } from '../../language/kinds';
+import { specifiedDirectives } from '../../type/directives';
 
 export function duplicateDirectiveMessage(directiveName: string): string {
   return (
@@ -26,8 +31,25 @@ export function duplicateDirectiveMessage(directiveName: string): string {
  * are uniquely named.
  */
 export function UniqueDirectivesPerLocation(
-  context: ASTValidationContext,
+  context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
+  const repeatableMap = Object.create(null);
+
+  const schema = context.getSchema();
+  const definedDirectives = schema
+    ? schema.getDirectives()
+    : specifiedDirectives;
+  for (const directive of definedDirectives) {
+    repeatableMap[directive.name] = directive.repeatable;
+  }
+
+  const astDefinitions = context.getDocument().definitions;
+  for (const def of astDefinitions) {
+    if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+      repeatableMap[def.name.value] = def.repeatable;
+    }
+  }
+
   return {
     // Many different AST nodes may contain directives. Rather than listing
     // them all, just listen for entering any node, and check to see if it
@@ -48,9 +70,9 @@ export function UniqueDirectivesPerLocation(
               ]),
             );
           } else {
-            const directiveDef = context.getDirectiveByName(directiveName);
+            const repeatable = repeatableMap[directiveName];
 
-            if (!directiveDef || !directiveDef.repeatable) {
+            if (repeatable === undefined || !repeatable) {
               knownDirectives[directiveName] = directive;
             }
           }

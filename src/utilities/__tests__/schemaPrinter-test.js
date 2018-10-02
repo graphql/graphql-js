@@ -650,7 +650,7 @@ describe('Type System Printer', () => {
         description: String
         locations: [__DirectiveLocation!]!
         args: [__InputValue!]!
-                
+
         """Permits using the directive multiple times at the same location."""
         repeatable: Boolean!
       }
