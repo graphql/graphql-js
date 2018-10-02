@@ -701,17 +701,17 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
-                  "args": [],
-                  "deprecationReason": null,
-                  "isDeprecated": false,
-                  "name": "repeatable",
-                  "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "SCALAR",
-                      "name": "Boolean",
-                      "ofType": null,
+                  args: [],
+                  deprecationReason: null,
+                  isDeprecated: false,
+                  name: 'repeatable',
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'Boolean',
+                      ofType: null,
                     },
                   },
                 },
