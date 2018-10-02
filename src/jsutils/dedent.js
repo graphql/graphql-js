@@ -7,6 +7,8 @@
  * @flow strict
  */
 
+import invariant from './invariant';
+
 /**
  * fixes indentation by removing leading spaces and tabs from each line
  */
@@ -14,7 +16,9 @@ function fixIndent(str: string): string {
   const trimmedStr = str
     .replace(/^\n*/m, '') //  remove leading newline
     .replace(/[ \t]*$/, ''); // remove trailing spaces and tabs
-  const indent = /^[ \t]*/.exec(trimmedStr)[0]; // figure out indent
+  const indentMatch = /^[ \t]*/.exec(trimmedStr);
+  invariant(Array.isArray(indentMatch));
+  const indent = indentMatch[0]; // figure out indent
   return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
 }
 
@@ -27,7 +31,7 @@ function fixIndent(str: string): string {
  *   {
  *     test
  *   }
- * `
+ * `;
  * str === "{\n  test\n}\n";
  */
 export default function dedent(

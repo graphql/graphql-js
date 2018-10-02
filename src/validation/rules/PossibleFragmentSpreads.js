@@ -7,32 +7,32 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import inspect from '../../jsutils/inspect';
+import type { ValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 import { doTypesOverlap } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
 import { isCompositeType } from '../../type/definition';
-import type { GraphQLType } from '../../type/definition';
 
 export function typeIncompatibleSpreadMessage(
   fragName: string,
-  parentType: GraphQLType,
-  fragType: GraphQLType,
+  parentType: string,
+  fragType: string,
 ): string {
   return (
     `Fragment "${fragName}" cannot be spread here as objects of ` +
-    `type "${String(parentType)}" can never be of type "${String(fragType)}".`
+    `type "${parentType}" can never be of type "${fragType}".`
   );
 }
 
 export function typeIncompatibleAnonSpreadMessage(
-  parentType: GraphQLType,
-  fragType: GraphQLType,
+  parentType: string,
+  fragType: string,
 ): string {
   return (
     'Fragment cannot be spread here as objects of ' +
-    `type "${String(parentType)}" can never be of type "${String(fragType)}".`
+    `type "${parentType}" can never be of type "${fragType}".`
   );
 }
 
@@ -57,7 +57,10 @@ export function PossibleFragmentSpreads(
       ) {
         context.reportError(
           new GraphQLError(
-            typeIncompatibleAnonSpreadMessage(parentType, fragType),
+            typeIncompatibleAnonSpreadMessage(
+              inspect(parentType),
+              inspect(fragType),
+            ),
             [node],
           ),
         );
@@ -74,7 +77,11 @@ export function PossibleFragmentSpreads(
       ) {
         context.reportError(
           new GraphQLError(
-            typeIncompatibleSpreadMessage(fragName, parentType, fragType),
+            typeIncompatibleSpreadMessage(
+              fragName,
+              inspect(parentType),
+              inspect(fragType),
+            ),
             [node],
           ),
         );

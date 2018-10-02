@@ -1,7 +1,7 @@
 GraphQL Errors
 --------------
 
-The `graphql/error` module is responsible for creating and formating
+The `graphql/error` module is responsible for creating and formatting
 GraphQL errors.
 
 ```js

@@ -3,12 +3,13 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
 import { parse } from '../../language';
-import { formatError } from '../../error';
-import { validate } from '../validate';
+import { validate, validateSDL } from '../validate';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -183,6 +184,7 @@ const ComplexInput = new GraphQLInputObjectType({
   name: 'ComplexInput',
   fields: {
     requiredField: { type: GraphQLNonNull(GraphQLBoolean) },
+    nonNullField: { type: GraphQLNonNull(GraphQLBoolean), defaultValue: false },
     intField: { type: GraphQLInt },
     stringField: { type: GraphQLString },
     booleanField: { type: GraphQLBoolean },
@@ -228,6 +230,14 @@ const ComplicatedArgs = new GraphQLObjectType({
       type: GraphQLString,
       args: { stringListArg: { type: GraphQLList(GraphQLString) } },
     },
+    stringListNonNullArgField: {
+      type: GraphQLString,
+      args: {
+        stringListNonNullArg: {
+          type: GraphQLList(GraphQLNonNull(GraphQLString)),
+        },
+      },
+    },
     complexArgField: {
       type: GraphQLString,
       args: { complexArg: { type: ComplexInput } },
@@ -237,6 +247,12 @@ const ComplicatedArgs = new GraphQLObjectType({
       args: {
         req1: { type: GraphQLNonNull(GraphQLInt) },
         req2: { type: GraphQLNonNull(GraphQLInt) },
+      },
+    },
+    nonNullFieldWithDefault: {
+      type: GraphQLString,
+      args: {
+        arg: { type: GraphQLNonNull(GraphQLInt), defaultValue: 0 },
       },
     },
     multipleOpts: {
@@ -361,48 +377,8 @@ export const testSchema = new GraphQLSchema({
       locations: ['INLINE_FRAGMENT'],
     }),
     new GraphQLDirective({
-      name: 'onSchema',
-      locations: ['SCHEMA'],
-    }),
-    new GraphQLDirective({
-      name: 'onScalar',
-      locations: ['SCALAR'],
-    }),
-    new GraphQLDirective({
-      name: 'onObject',
-      locations: ['OBJECT'],
-    }),
-    new GraphQLDirective({
-      name: 'onFieldDefinition',
-      locations: ['FIELD_DEFINITION'],
-    }),
-    new GraphQLDirective({
-      name: 'onArgumentDefinition',
-      locations: ['ARGUMENT_DEFINITION'],
-    }),
-    new GraphQLDirective({
-      name: 'onInterface',
-      locations: ['INTERFACE'],
-    }),
-    new GraphQLDirective({
-      name: 'onUnion',
-      locations: ['UNION'],
-    }),
-    new GraphQLDirective({
-      name: 'onEnum',
-      locations: ['ENUM'],
-    }),
-    new GraphQLDirective({
-      name: 'onEnumValue',
-      locations: ['ENUM_VALUE'],
-    }),
-    new GraphQLDirective({
-      name: 'onInputObject',
-      locations: ['INPUT_OBJECT'],
-    }),
-    new GraphQLDirective({
-      name: 'onInputFieldDefinition',
-      locations: ['INPUT_FIELD_DEFINITION'],
+      name: 'onVariableDefinition',
+      locations: ['VARIABLE_DEFINITION'],
     }),
     new GraphQLDirective({
       name: 'repeatableDirective',
@@ -418,30 +394,41 @@ export const testSchema = new GraphQLSchema({
   ],
 });
 
-function expectValid(schema, rules, queryString) {
-  const errors = validate(schema, parse(queryString), rules);
+function expectValid(schema, rule, queryString, options = {}) {
+  const errors = validate(schema, parse(queryString, options), [rule]);
   expect(errors).to.deep.equal([], 'Should validate');
 }
 
-function expectInvalid(schema, rules, queryString, expectedErrors) {
-  const errors = validate(schema, parse(queryString), rules);
+function expectInvalid(
+  schema,
+  rule,
+  queryString,
+  expectedErrors,
+  options = {},
+) {
+  const errors = validate(schema, parse(queryString, options), [rule]);
   expect(errors).to.have.length.of.at.least(1, 'Should not validate');
-  expect(errors.map(formatError)).to.deep.equal(expectedErrors);
+  expect(errors).to.deep.equal(expectedErrors);
   return errors;
 }
 
-export function expectPassesRule(rule, queryString) {
-  return expectValid(testSchema, [rule], queryString);
+export function expectPassesRule(rule, queryString, options = {}) {
+  return expectValid(testSchema, rule, queryString, options);
 }
 
-export function expectFailsRule(rule, queryString, errors) {
-  return expectInvalid(testSchema, [rule], queryString, errors);
+export function expectFailsRule(rule, queryString, errors, options = {}) {
+  return expectInvalid(testSchema, rule, queryString, errors, options);
 }
 
-export function expectPassesRuleWithSchema(schema, rule, queryString, errors) {
-  return expectValid(schema, [rule], queryString, errors);
+export function expectPassesRuleWithSchema(schema, rule, queryString) {
+  return expectValid(schema, rule, queryString);
 }
 
 export function expectFailsRuleWithSchema(schema, rule, queryString, errors) {
-  return expectInvalid(schema, [rule], queryString, errors);
+  return expectInvalid(schema, rule, queryString, errors);
+}
+
+export function expectSDLErrorsFromRule(rule, sdlString, schema) {
+  const errors = validateSDL(parse(sdlString), schema, [rule]);
+  return expect(errors);
 }

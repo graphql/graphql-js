@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -16,7 +18,6 @@ function unusedVar(varName, opName, line, column) {
   return {
     message: unusedVariableMessage(varName, opName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 

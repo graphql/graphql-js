@@ -7,8 +7,8 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ValueNode } from '../../language/ast';
 import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
@@ -18,10 +18,12 @@ import {
   isInputObjectType,
   isListType,
   isNonNullType,
+  isRequiredInputField,
   getNullableType,
   getNamedType,
 } from '../../type/definition';
 import type { GraphQLType } from '../../type/definition';
+import inspect from '../../jsutils/inspect';
 import isInvalid from '../../jsutils/isInvalid';
 import keyMap from '../../jsutils/keyMap';
 import orList from '../../jsutils/orList';
@@ -72,7 +74,7 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
       const type = context.getInputType();
       if (isNonNullType(type)) {
         context.reportError(
-          new GraphQLError(badValueMessage(String(type), print(node)), node),
+          new GraphQLError(badValueMessage(inspect(type), print(node)), node),
         );
       }
     },
@@ -94,18 +96,19 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
       // Ensure every required field exists.
       const inputFields = type.getFields();
       const fieldNodeMap = keyMap(node.fields, field => field.name.value);
-      Object.keys(inputFields).forEach(fieldName => {
-        const fieldType = inputFields[fieldName].type;
+      for (const fieldName of Object.keys(inputFields)) {
+        const fieldDef = inputFields[fieldName];
         const fieldNode = fieldNodeMap[fieldName];
-        if (!fieldNode && isNonNullType(fieldType)) {
+        if (!fieldNode && isRequiredInputField(fieldDef)) {
+          const typeStr = inspect(fieldDef.type);
           context.reportError(
             new GraphQLError(
-              requiredFieldMessage(type.name, fieldName, String(fieldType)),
+              requiredFieldMessage(type.name, fieldName, typeStr),
               node,
             ),
           );
         }
-      });
+      }
     },
     ObjectField(node) {
       const parentType = getNamedType(context.getParentInputType());
@@ -168,7 +171,7 @@ function isValidScalar(context: ValidationContext, node: ValueNode): void {
     context.reportError(
       new GraphQLError(
         badValueMessage(
-          String(locationType),
+          inspect(locationType),
           print(node),
           enumTypeSuggestion(type, node),
         ),
@@ -185,7 +188,7 @@ function isValidScalar(context: ValidationContext, node: ValueNode): void {
     if (isInvalid(parseResult)) {
       context.reportError(
         new GraphQLError(
-          badValueMessage(String(locationType), print(node)),
+          badValueMessage(inspect(locationType), print(node)),
           node,
         ),
       );
@@ -194,7 +197,7 @@ function isValidScalar(context: ValidationContext, node: ValueNode): void {
     // Ensure a reference to the original error is maintained.
     context.reportError(
       new GraphQLError(
-        badValueMessage(String(locationType), print(node), error.message),
+        badValueMessage(inspect(locationType), print(node), error.message),
         node,
         undefined,
         undefined,

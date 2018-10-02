@@ -7,10 +7,12 @@
  * @flow strict
  */
 
+import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
+import { assertValidSDL } from '../validation/validate';
 import blockStringValue from '../language/blockStringValue';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
@@ -38,20 +40,28 @@ import type {
   StringValueNode,
   Location,
 } from '../language/ast';
+import { isTypeDefinitionNode } from '../language/predicates';
 
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
+import type {
+  GraphQLType,
+  GraphQLNamedType,
+  GraphQLFieldConfig,
+  GraphQLEnumValueConfig,
+  GraphQLInputField,
+} from '../type/definition';
+
 import {
-  assertNullableType,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
 } from '../type/definition';
-
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import {
   GraphQLDirective,
@@ -67,12 +77,6 @@ import { specifiedScalarTypes } from '../type/scalars';
 import { GraphQLSchema } from '../type/schema';
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
 
-import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLFieldConfig,
-} from '../type/definition';
-
 export type BuildSchemaOptions = {
   ...GraphQLSchemaValidationOptions,
 
@@ -80,36 +84,19 @@ export type BuildSchemaOptions = {
    * Descriptions are defined as preceding string literals, however an older
    * experimental version of the SDL supported preceding comments as
    * descriptions. Set to true to enable this deprecated behavior.
+   * This option is provided to ease adoption and will be removed in v16.
    *
    * Default: false
    */
   commentDescriptions?: boolean,
+
+  /**
+   * Set to true to assume the SDL is valid.
+   *
+   * Default: false
+   */
+  assumeValidSDL?: boolean,
 };
-
-function buildWrappedType(
-  innerType: GraphQLType,
-  inputTypeNode: TypeNode,
-): GraphQLType {
-  if (inputTypeNode.kind === Kind.LIST_TYPE) {
-    return GraphQLList(buildWrappedType(innerType, inputTypeNode.type));
-  }
-  if (inputTypeNode.kind === Kind.NON_NULL_TYPE) {
-    const wrappedType = buildWrappedType(innerType, inputTypeNode.type);
-    return GraphQLNonNull(assertNullableType(wrappedType));
-  }
-  return innerType;
-}
-
-function getNamedTypeNode(typeNode: TypeNode): NamedTypeNode {
-  let namedType = typeNode;
-  while (
-    namedType.kind === Kind.LIST_TYPE ||
-    namedType.kind === Kind.NON_NULL_TYPE
-  ) {
-    namedType = namedType.type;
-  }
-  return namedType;
-}
 
 /**
  * This takes the ast of a schema document produced by the parse function in
@@ -128,11 +115,16 @@ function getNamedTypeNode(typeNode: TypeNode): NamedTypeNode {
  *
  */
 export function buildASTSchema(
-  ast: DocumentNode,
+  documentAST: DocumentNode,
   options?: BuildSchemaOptions,
 ): GraphQLSchema {
-  if (!ast || ast.kind !== Kind.DOCUMENT) {
-    throw new Error('Must provide a document ast.');
+  invariant(
+    documentAST && documentAST.kind === Kind.DOCUMENT,
+    'Must provide valid Document AST',
+  );
+
+  if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+    assertValidSDL(documentAST);
   }
 
   let schemaDef: ?SchemaDefinitionNode;
@@ -140,31 +132,19 @@ export function buildASTSchema(
   const typeDefs: Array<TypeDefinitionNode> = [];
   const nodeMap: ObjMap<TypeDefinitionNode> = Object.create(null);
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
-  for (let i = 0; i < ast.definitions.length; i++) {
-    const d = ast.definitions[i];
-    switch (d.kind) {
-      case Kind.SCHEMA_DEFINITION:
-        if (schemaDef) {
-          throw new Error('Must provide only one schema definition.');
-        }
-        schemaDef = d;
-        break;
-      case Kind.SCALAR_TYPE_DEFINITION:
-      case Kind.OBJECT_TYPE_DEFINITION:
-      case Kind.INTERFACE_TYPE_DEFINITION:
-      case Kind.ENUM_TYPE_DEFINITION:
-      case Kind.UNION_TYPE_DEFINITION:
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
-        const typeName = d.name.value;
-        if (nodeMap[typeName]) {
-          throw new Error(`Type "${typeName}" was defined more than once.`);
-        }
-        typeDefs.push(d);
-        nodeMap[typeName] = d;
-        break;
-      case Kind.DIRECTIVE_DEFINITION:
-        directiveDefs.push(d);
-        break;
+  for (let i = 0; i < documentAST.definitions.length; i++) {
+    const def = documentAST.definitions[i];
+    if (def.kind === Kind.SCHEMA_DEFINITION) {
+      schemaDef = def;
+    } else if (isTypeDefinitionNode(def)) {
+      const typeName = def.name.value;
+      if (nodeMap[typeName]) {
+        throw new Error(`Type "${typeName}" was defined more than once.`);
+      }
+      typeDefs.push(def);
+      nodeMap[typeName] = def;
+    } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+      directiveDefs.push(def);
     }
   }
 
@@ -183,8 +163,6 @@ export function buildASTSchema(
       throw new Error(`Type "${typeRef.name.value}" not found in document.`);
     },
   );
-
-  const types = typeDefs.map(def => definitionBuilder.buildType(def));
 
   const directives = directiveDefs.map(def =>
     definitionBuilder.buildDirective(def),
@@ -216,7 +194,7 @@ export function buildASTSchema(
     subscription: operationTypes.subscription
       ? (definitionBuilder.buildType(operationTypes.subscription): any)
       : null,
-    types,
+    types: typeDefs.map(node => definitionBuilder.buildType(node)),
     directives,
     astNode: schemaDef,
     assumeValid: options && options.assumeValid,
@@ -225,7 +203,7 @@ export function buildASTSchema(
 
   function getOperationTypes(schema: SchemaDefinitionNode) {
     const opTypes = {};
-    schema.operationTypes.forEach(operationType => {
+    for (const operationType of schema.operationTypes) {
       const typeName = operationType.type.name.value;
       const operation = operationType.operation;
       if (opTypes[operation]) {
@@ -237,7 +215,7 @@ export function buildASTSchema(
         );
       }
       opTypes[operation] = operationType.type;
-    });
+    }
     return opTypes;
   }
 }
@@ -282,8 +260,16 @@ export class ASTDefinitionBuilder {
   }
 
   _buildWrappedType(typeNode: TypeNode): GraphQLType {
-    const typeDef = this.buildType(getNamedTypeNode(typeNode));
-    return buildWrappedType(typeDef, typeNode);
+    if (typeNode.kind === Kind.LIST_TYPE) {
+      return GraphQLList(this._buildWrappedType(typeNode.type));
+    }
+    if (typeNode.kind === Kind.NON_NULL_TYPE) {
+      return GraphQLNonNull(
+        // Note: GraphQLNonNull constructor validates this type
+        (this._buildWrappedType(typeNode.type): any),
+      );
+    }
+    return this.buildType(typeNode);
   }
 
   buildDirective(directiveNode: DirectiveDefinitionNode): GraphQLDirective {
@@ -314,6 +300,28 @@ export class ASTDefinitionBuilder {
     };
   }
 
+  buildInputField(value: InputValueDefinitionNode): GraphQLInputField {
+    // Note: While this could make assertions to get the correctly typed
+    // value, that would throw immediately while type system validation
+    // with validateSchema() will produce more actionable results.
+    const type: any = this._buildWrappedType(value.type);
+    return {
+      name: value.name.value,
+      type,
+      description: getDescription(value, this._options),
+      defaultValue: valueFromAST(value.defaultValue, type),
+      astNode: value,
+    };
+  }
+
+  buildEnumValue(value: EnumValueDefinitionNode): GraphQLEnumValueConfig {
+    return {
+      description: getDescription(value, this._options),
+      deprecationReason: getDeprecationReason(value),
+      astNode: value,
+    };
+  }
+
   _makeSchemaDef(def: TypeDefinitionNode): GraphQLNamedType {
     switch (def.kind) {
       case Kind.OBJECT_TYPE_DEFINITION:
@@ -334,12 +342,17 @@ export class ASTDefinitionBuilder {
   }
 
   _makeTypeDef(def: ObjectTypeDefinitionNode) {
-    const typeName = def.name.value;
+    const interfaces: ?$ReadOnlyArray<NamedTypeNode> = def.interfaces;
     return new GraphQLObjectType({
-      name: typeName,
+      name: def.name.value,
       description: getDescription(def, this._options),
       fields: () => this._makeFieldDefMap(def),
-      interfaces: () => this._makeImplementedInterfaces(def),
+      // Note: While this could make early assertions to get the correctly
+      // typed values, that would throw immediately while type system
+      // validation with validateSchema() will produce more actionable results.
+      interfaces: interfaces
+        ? () => interfaces.map(ref => (this.buildType(ref): any))
+        : [],
       astNode: def,
     });
   }
@@ -356,32 +369,11 @@ export class ASTDefinitionBuilder {
       : {};
   }
 
-  _makeImplementedInterfaces(def: ObjectTypeDefinitionNode) {
-    return (
-      def.interfaces &&
-      // Note: While this could make early assertions to get the correctly
-      // typed values, that would throw immediately while type system
-      // validation with validateSchema() will produce more actionable results.
-      def.interfaces.map(iface => (this.buildType(iface): any))
-    );
-  }
-
   _makeInputValues(values: $ReadOnlyArray<InputValueDefinitionNode>) {
     return keyValMap(
       values,
       value => value.name.value,
-      value => {
-        // Note: While this could make assertions to get the correctly typed
-        // value, that would throw immediately while type system validation
-        // with validateSchema() will produce more actionable results.
-        const type: any = this._buildWrappedType(value.type);
-        return {
-          type,
-          description: getDescription(value, this._options),
-          defaultValue: valueFromAST(value.defaultValue, type),
-          astNode: value,
-        };
-      },
+      value => this.buildInputField(value),
     );
   }
 
@@ -398,29 +390,30 @@ export class ASTDefinitionBuilder {
     return new GraphQLEnumType({
       name: def.name.value,
       description: getDescription(def, this._options),
-      values: def.values
-        ? keyValMap(
-            def.values,
-            enumValue => enumValue.name.value,
-            enumValue => ({
-              description: getDescription(enumValue, this._options),
-              deprecationReason: getDeprecationReason(enumValue),
-              astNode: enumValue,
-            }),
-          )
-        : {},
+      values: this._makeValueDefMap(def),
       astNode: def,
     });
   }
 
+  _makeValueDefMap(def: EnumTypeDefinitionNode) {
+    return def.values
+      ? keyValMap(
+          def.values,
+          enumValue => enumValue.name.value,
+          enumValue => this.buildEnumValue(enumValue),
+        )
+      : {};
+  }
+
   _makeUnionDef(def: UnionTypeDefinitionNode) {
+    const types: ?$ReadOnlyArray<NamedTypeNode> = def.types;
     return new GraphQLUnionType({
       name: def.name.value,
       description: getDescription(def, this._options),
       // Note: While this could make assertions to get the correctly typed
       // values below, that would throw immediately while type system
       // validation with validateSchema() will produce more actionable results.
-      types: def.types ? def.types.map(t => (this.buildType(t): any)) : [],
+      types: types ? () => types.map(ref => (this.buildType(ref): any)) : [],
       astNode: def,
     });
   }
@@ -457,6 +450,7 @@ function getDeprecationReason(
 
 /**
  * Given an ast node, returns its string description.
+ * @deprecated: provided to ease adoption and will be removed in v16.
  *
  * Accepts options as a second argument:
  *
@@ -507,7 +501,7 @@ function getLeadingCommentBlock(node): void | string {
  */
 export function buildSchema(
   source: string | Source,
-  options: BuildSchemaOptions & ParseOptions,
+  options?: BuildSchemaOptions & ParseOptions,
 ): GraphQLSchema {
   return buildASTSchema(parse(source, options), options);
 }

@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -66,6 +68,7 @@ describe('valueFromAST', () => {
       BLUE: { value: 3 },
       NULL: { value: null },
       UNDEFINED: { value: undefined },
+      NAN: { value: NaN },
     },
   });
 
@@ -77,6 +80,7 @@ describe('valueFromAST', () => {
     testCase(testEnum, 'null', null);
     testCase(testEnum, 'NULL', null);
     testCase(testEnum, 'UNDEFINED', undefined);
+    testCase(testEnum, 'NAN', NaN);
   });
 
   // Boolean!

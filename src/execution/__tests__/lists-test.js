@@ -3,11 +3,12 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { formatError } from '../../error';
 import { execute } from '../execute';
 import { parse } from '../../language';
 import {
@@ -48,18 +49,7 @@ function check(testType, testData, expected) {
     const ast = parse('{ nest { test } }');
 
     const response = await execute(schema, ast, data);
-
-    // Formatting errors for ease of test writing.
-    let result;
-    if (response.errors) {
-      result = {
-        data: response.data,
-        errors: response.errors.map(formatError),
-      };
-    } else {
-      result = response;
-    }
-    expect(result).to.deep.equal(expected);
+    expect(response).to.deep.equal(expected);
   };
 }
 
@@ -99,7 +89,7 @@ describe('Execute: Accepts any iterable as list value', () => {
 
   it(
     'Does not accept (Iterable) String-literal as a List value',
-    check(GraphQLList(GraphQLString), 'Singluar', {
+    check(GraphQLList(GraphQLString), 'Singular', {
       data: { nest: { test: null } },
       errors: [
         {

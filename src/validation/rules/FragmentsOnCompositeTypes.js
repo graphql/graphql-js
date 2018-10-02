@@ -7,27 +7,24 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
 import { isCompositeType } from '../../type/definition';
-import type { GraphQLType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
-export function inlineFragmentOnNonCompositeErrorMessage(
-  type: GraphQLType,
-): string {
-  return `Fragment cannot condition on non composite type "${String(type)}".`;
+export function inlineFragmentOnNonCompositeErrorMessage(type: string): string {
+  return `Fragment cannot condition on non composite type "${type}".`;
 }
 
 export function fragmentOnNonCompositeErrorMessage(
   fragName: string,
-  type: GraphQLType,
+  type: string,
 ): string {
   return (
     `Fragment "${fragName}" cannot condition on non composite ` +
-    `type "${String(type)}".`
+    `type "${type}".`
   );
 }
 

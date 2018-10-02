@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -10,6 +12,7 @@ import { describe, it } from 'mocha';
 import { graphqlSync } from '../../graphql';
 import { execute } from '../execute';
 import { parse } from '../../language';
+import { validate } from '../../validation/validate';
 import { GraphQLSchema, GraphQLObjectType, GraphQLString } from '../../type';
 
 describe('Execute: synchronously when possible', () => {
@@ -52,13 +55,7 @@ describe('Execute: synchronously when possible', () => {
       rootValue: 'rootValue',
     });
     expect(result).to.deep.equal({
-      errors: [
-        {
-          message: 'Must provide an operation.',
-          locations: undefined,
-          path: undefined,
-        },
-      ],
+      errors: [{ message: 'Must provide an operation.' }],
     });
   });
 
@@ -102,7 +99,7 @@ describe('Execute: synchronously when possible', () => {
         schema,
         source: doc,
       });
-      expect(result).to.containSubset({
+      expect(result).to.deep.equal({
         errors: [
           {
             message: 'Syntax Error: Expected Name, found {',
@@ -114,20 +111,12 @@ describe('Execute: synchronously when possible', () => {
 
     it('does not return a Promise for validation errors', () => {
       const doc = 'fragment Example on Query { unknownField }';
+      const validationErrors = validate(schema, parse(doc));
       const result = graphqlSync({
         schema,
         source: doc,
       });
-      expect(result).to.containSubset({
-        errors: [
-          {
-            message:
-              'Cannot query field "unknownField" on type "Query". Did you ' +
-              'mean "syncField" or "asyncField"?',
-            locations: [{ line: 1, column: 29 }],
-          },
-        ],
-      });
+      expect(result).to.deep.equal({ errors: validationErrors });
     });
 
     it('does not return a Promise for sync execution', () => {

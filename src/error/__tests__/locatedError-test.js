@@ -3,12 +3,14 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { GraphQLError } from '../../';
+import { GraphQLError } from '../GraphQLError';
 import { locatedError } from '../locatedError';
 
 describe('locatedError', () => {

@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
@@ -350,7 +352,6 @@ describe('Subscription Initialization Phase', () => {
         {
           message: 'The subscription field "unknownField" is not defined.',
           locations: [{ line: 3, column: 9 }],
-          path: undefined,
         },
       ],
     });
@@ -374,7 +375,7 @@ describe('Subscription Initialization Phase', () => {
 
     await expectPromiseToThrow(
       () => createSubscription(pubsub, invalidEmailSchema),
-      'Subscription field must return Async Iterable. Received: test',
+      'Subscription field must return Async Iterable. Received: "test"',
     );
   });
 
@@ -475,10 +476,8 @@ describe('Subscription Initialization Phase', () => {
         {
           message:
             'Variable "$priority" got invalid value "meow"; Expected ' +
-            'type Int; Int cannot represent non 32-bit signed ' +
-            'integer value: meow',
+            'type Int; Int cannot represent non-integer value: "meow"',
           locations: [{ line: 2, column: 21 }],
-          path: undefined,
         },
       ],
     });
@@ -885,10 +884,13 @@ describe('Subscription Publish Phase', () => {
   });
 
   it('should pass through error thrown in source event stream', async () => {
-    const erroringEmailSchema = emailSchemaWithResolvers(async function*() {
-      yield { email: { subject: 'Hello' } };
-      throw new Error('test error');
-    }, email => email);
+    const erroringEmailSchema = emailSchemaWithResolvers(
+      async function*() {
+        yield { email: { subject: 'Hello' } };
+        throw new Error('test error');
+      },
+      email => email,
+    );
 
     const subscription = await subscribe(
       erroringEmailSchema,

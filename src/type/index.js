@@ -35,6 +35,8 @@ export {
   isWrappingType,
   isNullableType,
   isNamedType,
+  isRequiredArgument,
+  isRequiredInputField,
   // Assertions
   assertType,
   assertScalarType,
@@ -63,13 +65,10 @@ export {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-} from './definition';
-
-export {
   // Type Wrappers
   GraphQLList,
   GraphQLNonNull,
-} from './wrappers';
+} from './definition';
 
 export {
   // Predicate
@@ -155,6 +154,9 @@ export type {
   GraphQLScalarTypeConfig,
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
+  GraphQLScalarSerializer,
+  GraphQLScalarValueParser,
+  GraphQLScalarLiteralParser,
 } from './definition';
 
 export { validateSchema, assertValidSchema } from './validate';

@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
@@ -14,13 +16,45 @@ import { parse, Source } from '../../language';
 import dedent from '../../jsutils/dedent';
 
 describe('printError', () => {
+  it('prints an line numbers with correct padding', () => {
+    const singleDigit = new GraphQLError(
+      'Single digit line number with no padding',
+      null,
+      new Source('*', 'Test', { line: 9, column: 1 }),
+      [0],
+    );
+    expect(printError(singleDigit)).to.equal(dedent`
+      Single digit line number with no padding
+
+      Test (9:1)
+      9: *
+         ^
+    `);
+
+    const doubleDigit = new GraphQLError(
+      'Left padded first line number',
+      null,
+      new Source('*\n', 'Test', { line: 9, column: 1 }),
+      [0],
+    );
+    expect(printError(doubleDigit)).to.equal(dedent`
+      Left padded first line number
+
+      Test (9:1)
+       9: *
+          ^
+      10: 
+    `);
+  });
+
   it('prints an error with nodes from different sources', () => {
     const sourceA = parse(
       new Source(
         dedent`
-        type Foo {
-          field: String
-        }`,
+          type Foo {
+            field: String
+          }
+        `,
         'SourceA',
       ),
     );
@@ -29,9 +63,10 @@ describe('printError', () => {
     const sourceB = parse(
       new Source(
         dedent`
-        type Foo {
-          field: Int
-        }`,
+          type Foo {
+            field: Int
+          }
+        `,
         'SourceB',
       ),
     );

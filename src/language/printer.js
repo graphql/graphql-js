@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { visit } from './visitor';
@@ -36,9 +38,12 @@ const printDocASTReducer = {
       : join([op, join([name, varDefs]), directives, selectionSet], ' ');
   },
 
-  VariableDefinition: ({ variable, type, defaultValue }) =>
-    variable + ': ' + type + wrap(' = ', defaultValue),
-
+  VariableDefinition: ({ variable, type, defaultValue, directives }) =>
+    variable +
+    ': ' +
+    type +
+    wrap(' = ', defaultValue) +
+    wrap(' ', join(directives, ' ')),
   SelectionSet: ({ selections }) => block(selections),
 
   Field: ({ alias, name, arguments: args, directives, selectionSet }) =>
@@ -131,7 +136,9 @@ const printDocASTReducer = {
   FieldDefinition: addDescription(
     ({ name, arguments: args, type, directives }) =>
       name +
-      wrap('(', join(args, ', '), ')') +
+      (args.every(arg => arg.indexOf('\n') === -1)
+        ? wrap('(', join(args, ', '), ')')
+        : wrap('(\n', indent(join(args, '\n')), '\n)')) +
       ': ' +
       type +
       wrap(' ', join(directives, ' ')),
@@ -173,6 +180,21 @@ const printDocASTReducer = {
     join(['input', name, join(directives, ' '), block(fields)], ' '),
   ),
 
+  DirectiveDefinition: addDescription(
+    ({ name, arguments: args, locations }) =>
+      'directive @' +
+      name +
+      (args.every(arg => arg.indexOf('\n') === -1)
+        ? wrap('(', join(args, ', '), ')')
+        : wrap('(\n', indent(join(args, '\n')), '\n)')) +
+      (repeatable ? ' repeatable' : '') +
+      ' on ' +
+      join(locations, ' | '),
+  ),
+
+  SchemaExtension: ({ directives, operationTypes }) =>
+    join(['extend schema', join(directives, ' '), block(operationTypes)], ' '),
+
   ScalarTypeExtension: ({ name, directives }) =>
     join(['extend scalar', name, join(directives, ' ')], ' '),
 
@@ -207,16 +229,6 @@ const printDocASTReducer = {
 
   InputObjectTypeExtension: ({ name, directives, fields }) =>
     join(['extend input', name, join(directives, ' '), block(fields)], ' '),
-
-  DirectiveDefinition: addDescription(
-    ({ name, arguments: args, locations, repeatable }) =>
-      'directive @' +
-      name +
-      wrap('(', join(args, ', '), ')') +
-      (repeatable ? ' repeatable' : '') +
-      ' on ' +
-      join(locations, ' | '),
-  ),
 };
 
 function addDescription(cb) {

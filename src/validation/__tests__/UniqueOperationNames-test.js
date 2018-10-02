@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -16,7 +18,6 @@ function duplicateOp(opName, l1, c1, l2, c2) {
   return {
     message: duplicateOperationNameMessage(opName),
     locations: [{ line: l1, column: c1 }, { line: l2, column: c2 }],
-    path: undefined,
   };
 }
 

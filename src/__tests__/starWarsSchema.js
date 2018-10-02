@@ -17,7 +17,7 @@ import {
   GraphQLString,
 } from '../type';
 
-import { getFriends, getHero, getHuman, getDroid } from './starWarsData.js';
+import { getFriends, getHero, getHuman, getDroid } from './starWarsData';
 
 /**
  * This is designed to be an end-to-end test, demonstrating
@@ -120,8 +120,7 @@ const characterInterface = new GraphQLInterfaceType({
     friends: {
       type: GraphQLList(characterInterface),
       description:
-        'The friends of the character, or an empty list if they ' +
-        'have none.',
+        'The friends of the character, or an empty list if they have none.',
     },
     appearsIn: {
       type: GraphQLList(episodeEnum),
@@ -263,8 +262,8 @@ const queryType = new GraphQLObjectType({
       args: {
         episode: {
           description:
-            'If omitted, returns the hero of the whole saga. If ' +
-            'provided, returns the hero of that particular episode.',
+            'If omitted, returns the hero of the whole saga. ' +
+            'If provided, returns the hero of that particular episode.',
           type: episodeEnum,
         },
       },

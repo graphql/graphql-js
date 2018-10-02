@@ -8,11 +8,11 @@
  */
 
 import { forEach, isCollection } from 'iterall';
+import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
-import isNullish from '../jsutils/isNullish';
 import orList from '../jsutils/orList';
 import suggestionList from '../jsutils/suggestionList';
-import { GraphQLError } from '../error';
+import { GraphQLError } from '../error/GraphQLError';
 import type { ASTNode } from '../language/ast';
 import {
   isScalarType,
@@ -45,10 +45,10 @@ export function coerceValue(
 ): CoercedValue {
   // A value must be provided if the type is non-null.
   if (isNonNullType(type)) {
-    if (isNullish(value)) {
+    if (value == null) {
       return ofErrors([
         coercionError(
-          `Expected non-nullable type ${String(type)} not to be null`,
+          `Expected non-nullable type ${inspect(type)} not to be null`,
           blameNode,
           path,
         ),
@@ -57,7 +57,7 @@ export function coerceValue(
     return coerceValue(value, type.ofType, blameNode, path);
   }
 
-  if (isNullish(value)) {
+  if (value == null) {
     // Explicitly return the value null.
     return ofValue(null);
   }
@@ -159,7 +159,7 @@ export function coerceValue(
               errors,
               coercionError(
                 `Field ${printPath(atPath(path, fieldName))} of required ` +
-                  `type ${String(field.type)} was not provided`,
+                  `type ${inspect(field.type)} was not provided`,
                 blameNode,
               ),
             );

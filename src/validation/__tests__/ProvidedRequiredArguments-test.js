@@ -3,21 +3,33 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { buildSchema } from '../../utilities';
 import {
-  ProvidedNonNullArguments,
+  expectPassesRule,
+  expectFailsRule,
+  expectSDLErrorsFromRule,
+} from './harness';
+import {
+  ProvidedRequiredArguments,
+  ProvidedRequiredArgumentsOnDirectives,
   missingFieldArgMessage,
   missingDirectiveArgMessage,
-} from '../rules/ProvidedNonNullArguments';
+} from '../rules/ProvidedRequiredArguments';
+
+const expectSDLErrors = expectSDLErrorsFromRule.bind(
+  undefined,
+  ProvidedRequiredArgumentsOnDirectives,
+);
 
 function missingFieldArg(fieldName, argName, typeName, line, column) {
   return {
     message: missingFieldArgMessage(fieldName, argName, typeName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -25,14 +37,13 @@ function missingDirectiveArg(directiveName, argName, typeName, line, column) {
   return {
     message: missingDirectiveArgMessage(directiveName, argName, typeName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
 describe('Validate: Provided required arguments', () => {
   it('ignores unknown arguments', () => {
     expectPassesRule(
-      ProvidedNonNullArguments,
+      ProvidedRequiredArguments,
       `
       {
         dog {
@@ -46,7 +57,7 @@ describe('Validate: Provided required arguments', () => {
   describe('Valid non-nullable value', () => {
     it('Arg on optional arg', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           dog {
@@ -59,7 +70,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('No Arg on optional arg', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           dog {
@@ -70,9 +81,22 @@ describe('Validate: Provided required arguments', () => {
       );
     });
 
+    it('No arg on non-null field with default', () => {
+      expectPassesRule(
+        ProvidedRequiredArguments,
+        `
+        {
+          complicatedArgs {
+            nonNullFieldWithDefault
+          }
+        }
+      `,
+      );
+    });
+
     it('Multiple args', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -85,7 +109,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('Multiple args reverse order', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -98,7 +122,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('No args on multiple optional', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -111,7 +135,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('One arg on multiple optional', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -124,7 +148,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('Second arg on multiple optional', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -137,7 +161,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('Multiple reqs on mixedList', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -150,7 +174,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('Multiple reqs and one opt on mixedList', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -163,7 +187,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('All reqs and opts on mixedList', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -178,7 +202,7 @@ describe('Validate: Provided required arguments', () => {
   describe('Invalid non-nullable value', () => {
     it('Missing one non-nullable argument', () => {
       expectFailsRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -192,7 +216,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('Missing multiple non-nullable arguments', () => {
       expectFailsRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -209,7 +233,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('Incorrect value and missing argument', () => {
       expectFailsRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           complicatedArgs {
@@ -225,7 +249,7 @@ describe('Validate: Provided required arguments', () => {
   describe('Directive arguments', () => {
     it('ignores unknown directives', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           dog @unknown
@@ -236,7 +260,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('with directives of valid types', () => {
       expectPassesRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           dog @include(if: true) {
@@ -252,7 +276,7 @@ describe('Validate: Provided required arguments', () => {
 
     it('with directive with missing types', () => {
       expectFailsRule(
-        ProvidedNonNullArguments,
+        ProvidedRequiredArguments,
         `
         {
           dog @include {
@@ -265,6 +289,81 @@ describe('Validate: Provided required arguments', () => {
           missingDirectiveArg('skip', 'if', 'Boolean!', 4, 18),
         ],
       );
+    });
+  });
+
+  describe('within SDL', () => {
+    it('Missing optional args on directive defined inside SDL', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @test
+        }
+
+        directive @test(arg1: String, arg2: String! = "") on FIELD_DEFINITION
+      `).to.deep.equal([]);
+    });
+
+    it('Missing arg on directive defined inside SDL', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @test
+        }
+
+        directive @test(arg: String!) on FIELD_DEFINITION
+      `).to.deep.equal([missingDirectiveArg('test', 'arg', 'String!', 3, 23)]);
+    });
+
+    it('Missing arg on standard directive', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @include
+        }
+      `).to.deep.equal([
+        missingDirectiveArg('include', 'if', 'Boolean!', 3, 23),
+      ]);
+    });
+
+    it('Missing arg on overridden standard directive', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @deprecated
+        }
+        directive @deprecated(reason: String!) on FIELD
+      `).to.deep.equal([
+        missingDirectiveArg('deprecated', 'reason', 'String!', 3, 23),
+      ]);
+    });
+
+    it('Missing arg on directive defined in schema extension', () => {
+      const schema = buildSchema(`
+        type Query {
+          foo: String
+        }
+      `);
+      expectSDLErrors(
+        `
+          directive @test(arg: String!) on OBJECT
+
+          extend type Query  @test
+        `,
+        schema,
+      ).to.deep.equal([missingDirectiveArg('test', 'arg', 'String!', 4, 30)]);
+    });
+
+    it('Missing arg on directive used in schema extension', () => {
+      const schema = buildSchema(`
+        directive @test(arg: String!) on OBJECT
+
+        type Query {
+          foo: String
+        }
+      `);
+      expectSDLErrors(
+        `
+          extend type Query @test
+        `,
+        schema,
+      ).to.deep.equal([missingDirectiveArg('test', 'arg', 'String!', 2, 29)]);
     });
   });
 });

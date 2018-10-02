@@ -16,8 +16,14 @@ declare function instanceOf(
   constructor: mixed,
 ): boolean %checks(value instanceof constructor);
 
-export default (process && process.env.NODE_ENV !== 'production'
+// See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
+// See: https://webpack.js.org/guides/production/
+export default (process.env.NODE_ENV === 'production'
   ? // eslint-disable-next-line no-shadow
+    function instanceOf(value: mixed, constructor: mixed) {
+      return value instanceof constructor;
+    }
+  : // eslint-disable-next-line no-shadow
     function instanceOf(value: any, constructor: any) {
       if (value instanceof constructor) {
         return true;
@@ -25,7 +31,7 @@ export default (process && process.env.NODE_ENV !== 'production'
       if (value) {
         const valueClass = value.constructor;
         const className = constructor.name;
-        if (valueClass && valueClass.name === className) {
+        if (className && valueClass && valueClass.name === className) {
           throw new Error(
             `Cannot use ${className} "${value}" from another module or realm.
 
@@ -43,8 +49,4 @@ spurious results.`,
         }
       }
       return false;
-    }
-  : // eslint-disable-next-line no-shadow
-    function instanceOf(value: any, constructor: any) {
-      return value instanceof constructor;
     });

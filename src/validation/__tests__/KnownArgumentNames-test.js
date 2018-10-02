@@ -3,21 +3,33 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { buildSchema } from '../../utilities';
+import {
+  expectPassesRule,
+  expectFailsRule,
+  expectSDLErrorsFromRule,
+} from './harness';
 import {
   KnownArgumentNames,
+  KnownArgumentNamesOnDirectives,
   unknownArgMessage,
   unknownDirectiveArgMessage,
 } from '../rules/KnownArgumentNames';
+
+const expectSDLErrors = expectSDLErrorsFromRule.bind(
+  undefined,
+  KnownArgumentNamesOnDirectives,
+);
 
 function unknownArg(argName, fieldName, typeName, suggestedArgs, line, column) {
   return {
     message: unknownArgMessage(argName, fieldName, typeName, suggestedArgs),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -31,7 +43,6 @@ function unknownDirectiveArg(
   return {
     message: unknownDirectiveArgMessage(argName, directiveName, suggestedArgs),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -122,7 +133,7 @@ describe('Validate: Known argument names', () => {
     );
   });
 
-  it('undirective args are invalid', () => {
+  it('field args are invalid', () => {
     expectFailsRule(
       KnownArgumentNames,
       `
@@ -216,5 +227,90 @@ describe('Validate: Known argument names', () => {
         unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 9, 31),
       ],
     );
+  });
+
+  describe('within SDL', () => {
+    it('known arg on directive defined inside SDL', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @test(arg: "")
+        }
+
+        directive @test(arg: String) on FIELD_DEFINITION
+      `).to.deep.equal([]);
+    });
+
+    it('unknown arg on directive defined inside SDL', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @test(unknown: "")
+        }
+
+        directive @test(arg: String) on FIELD_DEFINITION
+      `).to.deep.equal([unknownDirectiveArg('unknown', 'test', [], 3, 29)]);
+    });
+
+    it('misspelled arg name is reported on directive defined inside SDL', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @test(agr: "")
+        }
+
+        directive @test(arg: String) on FIELD_DEFINITION
+      `).to.deep.equal([unknownDirectiveArg('agr', 'test', ['arg'], 3, 29)]);
+    });
+
+    it('unknown arg on standard directive', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @deprecated(unknown: "")
+        }
+      `).to.deep.equal([
+        unknownDirectiveArg('unknown', 'deprecated', [], 3, 35),
+      ]);
+    });
+
+    it('unknown arg on overridden standard directive', () => {
+      expectSDLErrors(`
+        type Query {
+          foo: String @deprecated(reason: "")
+        }
+        directive @deprecated(arg: String) on FIELD
+      `).to.deep.equal([
+        unknownDirectiveArg('reason', 'deprecated', [], 3, 35),
+      ]);
+    });
+
+    it('unknown arg on directive defined in schema extension', () => {
+      const schema = buildSchema(`
+        type Query {
+          foo: String
+        }
+      `);
+      expectSDLErrors(
+        `
+          directive @test(arg: String) on OBJECT
+
+          extend type Query  @test(unknown: "")
+        `,
+        schema,
+      ).to.deep.equal([unknownDirectiveArg('unknown', 'test', [], 4, 36)]);
+    });
+
+    it('unknown arg on directive used in schema extension', () => {
+      const schema = buildSchema(`
+        directive @test(arg: String) on OBJECT
+
+        type Query {
+          foo: String
+        }
+      `);
+      expectSDLErrors(
+        `
+          extend type Query @test(unknown: "")
+        `,
+        schema,
+      ).to.deep.equal([unknownDirectiveArg('unknown', 'test', [], 2, 35)]);
+    });
   });
 });

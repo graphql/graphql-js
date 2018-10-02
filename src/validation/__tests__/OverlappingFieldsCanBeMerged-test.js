@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -132,7 +134,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             'name and nickname are different fields',
           ),
           locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -172,7 +173,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             'nickname and name are different fields',
           ),
           locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -194,7 +194,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             'they have differing arguments',
           ),
           locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -216,7 +215,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             'they have differing arguments',
           ),
           locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -238,7 +236,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             'they have differing arguments',
           ),
           locations: [{ line: 3, column: 9 }, { line: 4, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -281,7 +278,6 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           message: fieldsConflictMessage('x', 'a and b are different fields'),
           locations: [{ line: 7, column: 9 }, { line: 10, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -317,17 +313,14 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           message: fieldsConflictMessage('x', 'a and b are different fields'),
           locations: [{ line: 18, column: 9 }, { line: 21, column: 9 }],
-          path: undefined,
         },
         {
           message: fieldsConflictMessage('x', 'c and a are different fields'),
           locations: [{ line: 14, column: 11 }, { line: 18, column: 9 }],
-          path: undefined,
         },
         {
           message: fieldsConflictMessage('x', 'c and b are different fields'),
           locations: [{ line: 14, column: 11 }, { line: 21, column: 9 }],
-          path: undefined,
         },
       ],
     );
@@ -357,7 +350,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 6, column: 9 },
             { line: 7, column: 11 },
           ],
-          path: undefined,
         },
       ],
     );
@@ -392,7 +384,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 8, column: 11 },
             { line: 9, column: 11 },
           ],
-          path: undefined,
         },
       ],
     );
@@ -428,7 +419,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 9, column: 11 },
             { line: 10, column: 13 },
           ],
-          path: undefined,
         },
       ],
     );
@@ -465,7 +455,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 7, column: 11 },
             { line: 8, column: 13 },
           ],
-          path: undefined,
         },
       ],
     );
@@ -510,7 +499,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 15, column: 11 },
             { line: 16, column: 13 },
           ],
-          path: undefined,
         },
       ],
     );
@@ -557,7 +545,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             { line: 22, column: 9 },
             { line: 18, column: 9 },
           ],
-          path: undefined,
         },
       ],
     );
@@ -712,7 +699,6 @@ describe('Validate: Overlapping fields can be merged', () => {
               'they return conflicting types Int and String!',
             ),
             locations: [{ line: 5, column: 15 }, { line: 8, column: 15 }],
-            path: undefined,
           },
         ],
       );
@@ -767,7 +753,6 @@ describe('Validate: Overlapping fields can be merged', () => {
               'they return conflicting types Int and String',
             ),
             locations: [{ line: 5, column: 15 }, { line: 8, column: 15 }],
-            path: undefined,
           },
         ],
       );
@@ -832,7 +817,6 @@ describe('Validate: Overlapping fields can be merged', () => {
               { line: 34, column: 11 },
               { line: 42, column: 11 },
             ],
-            path: undefined,
           },
         ],
       );
@@ -861,7 +845,6 @@ describe('Validate: Overlapping fields can be merged', () => {
               'they return conflicting types String! and String',
             ),
             locations: [{ line: 5, column: 15 }, { line: 8, column: 15 }],
-            path: undefined,
           },
         ],
       );
@@ -894,7 +877,6 @@ describe('Validate: Overlapping fields can be merged', () => {
               'they return conflicting types [StringBox] and StringBox',
             ),
             locations: [{ line: 5, column: 15 }, { line: 10, column: 15 }],
-            path: undefined,
           },
         ],
       );
@@ -925,7 +907,6 @@ describe('Validate: Overlapping fields can be merged', () => {
               'they return conflicting types StringBox and [StringBox]',
             ),
             locations: [{ line: 5, column: 15 }, { line: 10, column: 15 }],
-            path: undefined,
           },
         ],
       );
@@ -959,7 +940,6 @@ describe('Validate: Overlapping fields can be merged', () => {
               'scalar and unrelatedField are different fields',
             ),
             locations: [{ line: 6, column: 17 }, { line: 7, column: 17 }],
-            path: undefined,
           },
         ],
       );
@@ -996,13 +976,12 @@ describe('Validate: Overlapping fields can be merged', () => {
               { line: 10, column: 15 },
               { line: 11, column: 17 },
             ],
-            path: undefined,
           },
         ],
       );
     });
 
-    it('allows non-conflicting overlaping types', () => {
+    it('allows non-conflicting overlapping types', () => {
       expectPassesRuleWithSchema(
         schema,
         OverlappingFieldsCanBeMerged,
@@ -1092,7 +1071,6 @@ describe('Validate: Overlapping fields can be merged', () => {
               { line: 15, column: 13 },
               { line: 16, column: 15 },
             ],
-            path: undefined,
           },
         ],
       );
@@ -1204,7 +1182,6 @@ describe('Validate: Overlapping fields can be merged', () => {
             'name and nickname are different fields',
           ),
           locations: [{ line: 4, column: 9 }, { line: 5, column: 9 }],
-          path: undefined,
         },
       ],
     );

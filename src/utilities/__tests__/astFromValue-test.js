@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -183,10 +185,9 @@ describe('astFromValue', () => {
       value: '01',
     });
 
-    expect(astFromValue(false, GraphQLID)).to.deep.equal({
-      kind: 'StringValue',
-      value: 'false',
-    });
+    expect(() => astFromValue(false, GraphQLID)).to.throw(
+      'ID cannot represent value: false',
+    );
 
     expect(astFromValue(null, GraphQLID)).to.deep.equal({ kind: 'NullValue' });
 

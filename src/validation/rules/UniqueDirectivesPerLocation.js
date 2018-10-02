@@ -7,8 +7,8 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ASTValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { DirectiveNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -26,7 +26,7 @@ export function duplicateDirectiveMessage(directiveName: string): string {
  * are uniquely named.
  */
 export function UniqueDirectivesPerLocation(
-  context: ValidationContext,
+  context: ASTValidationContext,
 ): ASTVisitor {
   return {
     // Many different AST nodes may contain directives. Rather than listing
@@ -38,7 +38,7 @@ export function UniqueDirectivesPerLocation(
       const directives: ?$ReadOnlyArray<DirectiveNode> = (node: any).directives;
       if (directives) {
         const knownDirectives = Object.create(null);
-        directives.forEach(directive => {
+        for (const directive of directives) {
           const directiveName = directive.name.value;
           if (knownDirectives[directiveName]) {
             context.reportError(
@@ -54,7 +54,7 @@ export function UniqueDirectivesPerLocation(
               knownDirectives[directiveName] = directive;
             }
           }
-        });
+        }
       }
     },
   };

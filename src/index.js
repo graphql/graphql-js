@@ -98,6 +98,8 @@ export {
   isWrappingType,
   isNullableType,
   isNamedType,
+  isRequiredArgument,
+  isRequiredInputField,
   isSpecifiedScalarType,
   isIntrospectionType,
   isSpecifiedDirective,
@@ -165,6 +167,9 @@ export type {
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,
   GraphQLDirectiveConfig,
+  GraphQLScalarSerializer,
+  GraphQLScalarValueParser,
+  GraphQLScalarLiteralParser,
 } from './type';
 
 // Parse and operate on GraphQL language source files.
@@ -186,6 +191,16 @@ export {
   TokenKind,
   DirectiveLocation,
   BREAK,
+  // Predicates
+  isDefinitionNode,
+  isExecutableDefinitionNode,
+  isSelectionNode,
+  isValueNode,
+  isTypeNode,
+  isTypeSystemDefinitionNode,
+  isTypeDefinitionNode,
+  isTypeSystemExtensionNode,
+  isTypeExtensionNode,
 } from './language';
 
 export type {
@@ -245,9 +260,16 @@ export type {
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
-  TypeExtensionNode,
-  ObjectTypeExtensionNode,
   DirectiveDefinitionNode,
+  TypeSystemExtensionNode,
+  SchemaExtensionNode,
+  TypeExtensionNode,
+  ScalarTypeExtensionNode,
+  ObjectTypeExtensionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
   KindEnum,
   TokenKindEnum,
   DirectiveLocationEnum,
@@ -285,7 +307,7 @@ export {
   NoUnusedVariablesRule,
   OverlappingFieldsCanBeMergedRule,
   PossibleFragmentSpreadsRule,
-  ProvidedNonNullArgumentsRule,
+  ProvidedRequiredArgumentsRule,
   ScalarLeafsRule,
   SingleFieldSubscriptionsRule,
   UniqueArgumentNamesRule,
@@ -296,9 +318,10 @@ export {
   UniqueVariableNamesRule,
   ValuesOfCorrectTypeRule,
   VariablesAreInputTypesRule,
-  VariablesDefaultValueAllowedRule,
   VariablesInAllowedPositionRule,
 } from './validation';
+
+export type { ValidationRule } from './validation';
 
 // Create, format, and print GraphQL errors.
 export { GraphQLError, formatError, printError } from './error';
@@ -310,10 +333,12 @@ export {
   // Produce the GraphQL query recommended for a full schema introspection.
   // Accepts optional IntrospectionOptions.
   getIntrospectionQuery,
-  // Deprecated: use getIntrospectionQuery
+  // @deprecated: use getIntrospectionQuery - will be removed in v15
   introspectionQuery,
   // Gets the target Operation from a Document
   getOperationAST,
+  // Gets the Type for the target Operation AST.
+  getOperationRootType,
   // Convert a GraphQLSchema to an IntrospectionQuery
   introspectionFromSchema,
   // Build a GraphQLSchema from an introspection result.
@@ -322,7 +347,8 @@ export {
   buildASTSchema,
   // Build a GraphQLSchema from a GraphQL schema language document.
   buildSchema,
-  // Get the description from a schema AST node.
+  // @deprecated: Get the description from a schema AST node and supports legacy
+  // syntax for specifying descriptions - will be removed in v16
   getDescription,
   // Extends an existing GraphQLSchema from a parsed GraphQL Schema
   // language AST.
@@ -349,9 +375,9 @@ export {
   TypeInfo,
   // Coerces a JavaScript value to a GraphQL type, or produces errors.
   coerceValue,
-  // @deprecated use coerceValue
+  // @deprecated use coerceValue - will be removed in v15
   isValidJSValue,
-  // Determine if AST values adhere to a GraphQL type.
+  // @deprecated use validation - will be removed in v15
   isValidLiteralValue,
   // Concatenates multiple AST together.
   concatAST,

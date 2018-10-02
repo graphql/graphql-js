@@ -7,8 +7,9 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
+import inspect from '../../jsutils/inspect';
 import find from '../../jsutils/find';
 import type { ObjMap } from '../../jsutils/ObjMap';
 import type {
@@ -41,9 +42,8 @@ export function fieldsConflictMessage(
   reason: ConflictReasonMessage,
 ): string {
   return (
-    `Fields "${responseName}" conflict because ${reasonMessage(reason)}` +
-    '. Use different aliases on the fields to fetch both if this was ' +
-    'intentional.'
+    `Fields "${responseName}" conflict because ${reasonMessage(reason)}. ` +
+    'Use different aliases on the fields to fetch both if this was intentional.'
   );
 }
 
@@ -90,14 +90,14 @@ export function OverlappingFieldsCanBeMerged(
         context.getParentType(),
         selectionSet,
       );
-      conflicts.forEach(([[responseName, reason], fields1, fields2]) =>
+      for (const [[responseName, reason], fields1, fields2] of conflicts) {
         context.reportError(
           new GraphQLError(
             fieldsConflictMessage(responseName, reason),
             fields1.concat(fields2),
           ),
-        ),
-      );
+        );
+      }
     },
   };
 }
@@ -485,7 +485,7 @@ function collectConflictsWithin(
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  Object.keys(fieldMap).forEach(responseName => {
+  for (const responseName of Object.keys(fieldMap)) {
     const fields = fieldMap[responseName];
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
@@ -508,7 +508,7 @@ function collectConflictsWithin(
         }
       }
     }
-  });
+  }
 }
 
 // Collect all Conflicts between two collections of fields. This is similar to,
@@ -530,7 +530,7 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  Object.keys(fieldMap1).forEach(responseName => {
+  for (const responseName of Object.keys(fieldMap1)) {
     const fields2 = fieldMap2[responseName];
     if (fields2) {
       const fields1 = fieldMap1[responseName];
@@ -551,7 +551,7 @@ function collectConflictsBetween(
         }
       }
     }
-  });
+  }
 }
 
 // Determines if there is a conflict between two particular fields, including
@@ -612,7 +612,7 @@ function findConflict(
     return [
       [
         responseName,
-        `they return conflicting types ${String(type1)} and ${String(type2)}`,
+        `they return conflicting types ${inspect(type1)} and ${inspect(type2)}`,
       ],
       [node1],
       [node2],

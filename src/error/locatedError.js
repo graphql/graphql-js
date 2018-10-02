@@ -16,7 +16,7 @@ import type { ASTNode } from '../language/ast';
  * document responsible for the original Error.
  */
 export function locatedError(
-  originalError: Error,
+  originalError: Error | GraphQLError,
   nodes: $ReadOnlyArray<ASTNode>,
   path: $ReadOnlyArray<string | number>,
 ): GraphQLError {

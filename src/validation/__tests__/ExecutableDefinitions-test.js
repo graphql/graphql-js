@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -16,7 +18,6 @@ function nonExecutableDefinition(defName, line, column) {
   return {
     message: nonExecutableDefinitionMessage(defName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -88,10 +89,13 @@ describe('Validate: Executable definitions', () => {
       type Query {
         test: String
       }
+
+      extend schema @directive
     `,
       [
         nonExecutableDefinition('schema', 2, 7),
         nonExecutableDefinition('Query', 6, 7),
+        nonExecutableDefinition('schema', 10, 7),
       ],
     );
   });

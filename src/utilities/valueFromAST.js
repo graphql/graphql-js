@@ -20,12 +20,7 @@ import {
   isNonNullType,
 } from '../type/definition';
 import type { GraphQLInputType } from '../type/definition';
-import type {
-  ValueNode,
-  VariableNode,
-  ListValueNode,
-  ObjectValueNode,
-} from '../language/ast';
+import type { ValueNode } from '../language/ast';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -71,22 +66,26 @@ export function valueFromAST(
   }
 
   if (valueNode.kind === Kind.VARIABLE) {
-    const variableName = (valueNode: VariableNode).name.value;
+    const variableName = valueNode.name.value;
     if (!variables || isInvalid(variables[variableName])) {
       // No valid return value.
       return;
     }
-    // Note: we're not doing any checking that this variable is correct. We're
-    // assuming that this query has been validated and the variable usage here
-    // is of the correct type.
-    return variables[variableName];
+    const variableValue = variables[variableName];
+    if (variableValue === null && isNonNullType(type)) {
+      return; // Invalid: intentionally return no value.
+    }
+    // Note: This does no further checking that this variable is correct.
+    // This assumes that this query has been validated and the variable
+    // usage here is of the correct type.
+    return variableValue;
   }
 
   if (isListType(type)) {
     const itemType = type.ofType;
     if (valueNode.kind === Kind.LIST) {
       const coercedValues = [];
-      const itemNodes = (valueNode: ListValueNode).values;
+      const itemNodes = valueNode.values;
       for (let i = 0; i < itemNodes.length; i++) {
         if (isMissingVariable(itemNodes[i], variables)) {
           // If an array contains a missing variable, it is either coerced to
@@ -117,16 +116,13 @@ export function valueFromAST(
       return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
-    const fieldNodes = keyMap(
-      (valueNode: ObjectValueNode).fields,
-      field => field.name.value,
-    );
+    const fieldNodes = keyMap(valueNode.fields, field => field.name.value);
     const fields = objectValues(type.getFields());
     for (let i = 0; i < fields.length; i++) {
       const field = fields[i];
       const fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
-        if (!isInvalid(field.defaultValue)) {
+        if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
           return; // Invalid: intentionally return no value.
@@ -178,6 +174,6 @@ export function valueFromAST(
 function isMissingVariable(valueNode, variables) {
   return (
     valueNode.kind === Kind.VARIABLE &&
-    (!variables || isInvalid(variables[(valueNode: VariableNode).name.value]))
+    (!variables || isInvalid(variables[valueNode.name.value]))
   );
 }

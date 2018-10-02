@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
@@ -33,7 +35,7 @@ describe('Printer: Query document', () => {
   it('produces helpful error messages', () => {
     const badAst1 = { random: 'Data' };
     expect(() => print(badAst1)).to.throw(
-      'Invalid AST Node: {"random":"Data"}',
+      'Invalid AST Node: { random: "Data" }',
     );
   });
 
@@ -71,6 +73,33 @@ describe('Printer: Query document', () => {
       mutation ($foo: TestType) @testDirective {
         id
         name
+      }
+    `);
+  });
+
+  it('Experimental: prints query with variable directives', () => {
+    const queryAstWithVariableDirective = parse(
+      'query ($foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
+      { experimentalVariableDefinitionDirectives: true },
+    );
+    expect(print(queryAstWithVariableDirective)).to.equal(dedent`
+      query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
+        id
+      }
+    `);
+  });
+
+  it('Experimental: prints fragment with variable directives', () => {
+    const queryAstWithVariableDirective = parse(
+      'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
+      {
+        experimentalFragmentVariables: true,
+        experimentalVariableDefinitionDirectives: true,
+      },
+    );
+    expect(print(queryAstWithVariableDirective)).to.equal(dedent`
+      fragment Foo($foo: TestType @test) on TestType @testDirective {
+        id
       }
     `);
   });

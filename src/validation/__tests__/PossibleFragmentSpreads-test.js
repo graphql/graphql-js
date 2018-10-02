@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -17,7 +19,6 @@ function error(fragName, parentType, fragType, line, column) {
   return {
     message: typeIncompatibleSpreadMessage(fragName, parentType, fragType),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -25,7 +26,6 @@ function errorAnon(parentType, fragType, line, column) {
   return {
     message: typeIncompatibleAnonSpreadMessage(parentType, fragType),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 

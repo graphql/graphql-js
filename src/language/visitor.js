@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import inspect from '../jsutils/inspect';
 import type { ASTNode, ASTKindToNode } from './ast';
 import type { TypeInfo } from '../utilities/TypeInfo';
 
@@ -40,9 +41,9 @@ export type VisitFn<TAnyNode, TVisitedNode: TAnyNode = TAnyNode> = (
   parent: TAnyNode | $ReadOnlyArray<TAnyNode> | void,
   // The key path to get to this node from the root node.
   path: $ReadOnlyArray<string | number>,
-  // All nodes and Arrays visited before reaching this node.
+  // All nodes and Arrays visited before reaching parent of this node.
   // These correspond to array indices in `path`.
-  // Note: ancestors includes arrays which contain the visited node.
+  // Note: ancestors includes arrays which contain the parent of visited node.
   ancestors: $ReadOnlyArray<TAnyNode | $ReadOnlyArray<TAnyNode>>,
 ) => any;
 
@@ -64,7 +65,7 @@ export const QueryDocumentKeys = {
     'directives',
     'selectionSet',
   ],
-  VariableDefinition: ['variable', 'type', 'defaultValue'],
+  VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],
   Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
@@ -123,14 +124,16 @@ export const QueryDocumentKeys = {
   EnumValueDefinition: ['description', 'name', 'directives'],
   InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
 
+  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
+
+  SchemaExtension: ['directives', 'operationTypes'],
+
   ScalarTypeExtension: ['name', 'directives'],
   ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
   InterfaceTypeExtension: ['name', 'directives', 'fields'],
   UnionTypeExtension: ['name', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
-
-  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
 };
 
 export const BREAK = {};
@@ -294,7 +297,7 @@ export function visit(
     let result;
     if (!Array.isArray(node)) {
       if (!isNode(node)) {
-        throw new Error('Invalid AST Node: ' + JSON.stringify(node));
+        throw new Error('Invalid AST Node: ' + inspect(node));
       }
       const visitFn = getVisitFn(visitor, node.kind, isLeaving);
       if (visitFn) {

@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import {
@@ -23,6 +25,7 @@ import {
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
+import inspect from '../../jsutils/inspect';
 import { isObjectType, isInputType, isOutputType } from '../definition';
 
 const BlogImage = new GraphQLObjectType({
@@ -120,7 +123,7 @@ describe('Type System: Example', () => {
 
     expect(BlogSchema.getQueryType()).to.equal(BlogQuery);
 
-    const articleField = BlogQuery.getFields()[('article': string)];
+    const articleField = BlogQuery.getFields()['article'];
     expect(articleField && articleField.type).to.equal(BlogArticle);
     expect(articleField && articleField.type.name).to.equal('Article');
     expect(articleField && articleField.name).to.equal('article');
@@ -128,27 +131,23 @@ describe('Type System: Example', () => {
     const articleFieldType = articleField ? articleField.type : null;
 
     const titleField =
-      isObjectType(articleFieldType) &&
-      articleFieldType.getFields()[('title': string)];
+      isObjectType(articleFieldType) && articleFieldType.getFields()['title'];
     expect(titleField && titleField.name).to.equal('title');
     expect(titleField && titleField.type).to.equal(GraphQLString);
     expect(titleField && titleField.type.name).to.equal('String');
 
     const authorField =
-      isObjectType(articleFieldType) &&
-      articleFieldType.getFields()[('author': string)];
+      isObjectType(articleFieldType) && articleFieldType.getFields()['author'];
 
     const authorFieldType = authorField ? authorField.type : null;
     const recentArticleField =
       isObjectType(authorFieldType) &&
-      authorFieldType.getFields()[('recentArticle': string)];
+      authorFieldType.getFields()['recentArticle'];
 
     expect(recentArticleField && recentArticleField.type).to.equal(BlogArticle);
 
-    const feedField = BlogQuery.getFields()[('feed': string)];
-    expect(feedField && (feedField.type: GraphQLList).ofType).to.equal(
-      BlogArticle,
-    );
+    const feedField = BlogQuery.getFields()['feed'];
+    expect(feedField && feedField.type.ofType).to.equal(BlogArticle);
     expect(feedField && feedField.name).to.equal('feed');
   });
 
@@ -160,7 +159,7 @@ describe('Type System: Example', () => {
 
     expect(BlogSchema.getMutationType()).to.equal(BlogMutation);
 
-    const writeMutation = BlogMutation.getFields()[('writeArticle': string)];
+    const writeMutation = BlogMutation.getFields()['writeArticle'];
     expect(writeMutation && writeMutation.type).to.equal(BlogArticle);
     expect(writeMutation && writeMutation.type.name).to.equal('Article');
     expect(writeMutation && writeMutation.name).to.equal('writeArticle');
@@ -174,7 +173,7 @@ describe('Type System: Example', () => {
 
     expect(BlogSchema.getSubscriptionType()).to.equal(BlogSubscription);
 
-    const sub = BlogSubscription.getFields()[('articleSubscribe': string)];
+    const sub = BlogSubscription.getFields()['articleSubscribe'];
     expect(sub && sub.type).to.equal(BlogArticle);
     expect(sub && sub.type.name).to.equal('Article');
     expect(sub && sub.name).to.equal('articleSubscribe');
@@ -352,6 +351,26 @@ describe('Type System: Example', () => {
     expect(String(GraphQLList(GraphQLList(GraphQLInt)))).to.equal('[[Int]]');
   });
 
+  it('JSON stringifies simple types', () => {
+    expect(JSON.stringify(GraphQLInt)).to.equal('"Int"');
+    expect(JSON.stringify(BlogArticle)).to.equal('"Article"');
+    expect(JSON.stringify(InterfaceType)).to.equal('"Interface"');
+    expect(JSON.stringify(UnionType)).to.equal('"Union"');
+    expect(JSON.stringify(EnumType)).to.equal('"Enum"');
+    expect(JSON.stringify(InputObjectType)).to.equal('"InputObject"');
+    expect(JSON.stringify(GraphQLNonNull(GraphQLInt))).to.equal('"Int!"');
+    expect(JSON.stringify(GraphQLList(GraphQLInt))).to.equal('"[Int]"');
+    expect(JSON.stringify(GraphQLNonNull(GraphQLList(GraphQLInt)))).to.equal(
+      '"[Int]!"',
+    );
+    expect(JSON.stringify(GraphQLList(GraphQLNonNull(GraphQLInt)))).to.equal(
+      '"[Int!]"',
+    );
+    expect(JSON.stringify(GraphQLList(GraphQLList(GraphQLInt)))).to.equal(
+      '"[[Int]]"',
+    );
+  });
+
   it('identifies input types', () => {
     const expected = [
       [GraphQLInt, true],
@@ -361,11 +380,11 @@ describe('Type System: Example', () => {
       [EnumType, true],
       [InputObjectType, true],
     ];
-    expected.forEach(([type, answer]) => {
+    for (const [type, answer] of expected) {
       expect(isInputType(type)).to.equal(answer);
       expect(isInputType(GraphQLList(type))).to.equal(answer);
       expect(isInputType(GraphQLNonNull(type))).to.equal(answer);
-    });
+    }
   });
 
   it('identifies output types', () => {
@@ -377,11 +396,11 @@ describe('Type System: Example', () => {
       [EnumType, true],
       [InputObjectType, false],
     ];
-    expected.forEach(([type, answer]) => {
+    for (const [type, answer] of expected) {
       expect(isOutputType(type)).to.equal(answer);
       expect(isOutputType(GraphQLList(type))).to.equal(answer);
       expect(isOutputType(GraphQLNonNull(type))).to.equal(answer);
-    });
+    }
   });
 
   it('prohibits nesting NonNull inside NonNull', () => {
@@ -641,7 +660,7 @@ describe('Type System: Object fields must have valid resolve values', () => {
   it('rejects an empty Object field resolver', () => {
     expect(() => schemaWithObjectWithFieldResolver({})).to.throw(
       'BadResolver.badField field resolver must be a function if provided, ' +
-        'but got: [object Object].',
+        'but got: {}.',
     );
   });
 
@@ -713,7 +732,9 @@ describe('Type System: Interface types must be resolvable', () => {
           resolveType: {},
           fields: { f: { type: GraphQLString } },
         }),
-    ).to.throw('AnotherInterface must provide "resolveType" as a function.');
+    ).to.throw(
+      'AnotherInterface must provide "resolveType" as a function, but got: {}.',
+    );
   });
 });
 
@@ -765,7 +786,9 @@ describe('Type System: Union types must be resolvable', () => {
           types: [ObjectWithIsTypeOf],
         }),
       ),
-    ).to.throw('SomeUnion must provide "resolveType" as a function.');
+    ).to.throw(
+      'SomeUnion must provide "resolveType" as a function, but got: {}.',
+    );
   });
 });
 
@@ -888,7 +911,9 @@ describe('Type System: Object types must be assertable', () => {
           fields: { f: { type: GraphQLString } },
         }),
       );
-    }).to.throw('AnotherObject must provide "isTypeOf" as a function.');
+    }).to.throw(
+      'AnotherObject must provide "isTypeOf" as a function, but got: {}.',
+    );
   });
 });
 
@@ -1004,7 +1029,7 @@ describe('Type System: Input Object fields must not have resolvers', () => {
       },
     });
     expect(() => inputObjType.getFields()).to.throw(
-      'SomeInputObject.f field type has a resolve property, ' +
+      'SomeInputObject.f field has a resolve property, ' +
         'but Input Types cannot define resolvers.',
     );
   });
@@ -1020,7 +1045,7 @@ describe('Type System: Input Object fields must not have resolvers', () => {
       },
     });
     expect(() => inputObjType.getFields()).to.throw(
-      'SomeInputObject.f field type has a resolve property, ' +
+      'SomeInputObject.f field has a resolve property, ' +
         'but Input Types cannot define resolvers.',
     );
   });
@@ -1052,47 +1077,47 @@ describe('Type System: Enum types must be well defined', () => {
   });
 
   it('rejects an Enum type with incorrectly typed values', () => {
-    const enumType = new GraphQLEnumType({
+    const config = {
       name: 'SomeEnum',
       values: [{ FOO: 10 }],
-    });
-    expect(() => enumType.getValue()).to.throw(
+    };
+    expect(() => new GraphQLEnumType(config)).to.throw(
       'SomeEnum values must be an object with value names as keys.',
     );
   });
 
   it('rejects an Enum type with missing value definition', () => {
-    const enumType = new GraphQLEnumType({
+    const config = {
       name: 'SomeEnum',
       values: { FOO: null },
-    });
-    expect(() => enumType.getValues()).to.throw(
+    };
+    expect(() => new GraphQLEnumType(config)).to.throw(
       'SomeEnum.FOO must refer to an object with a "value" key representing ' +
         'an internal value but got: null.',
     );
   });
 
   it('rejects an Enum type with incorrectly typed value definition', () => {
-    const enumType = new GraphQLEnumType({
+    const config = {
       name: 'SomeEnum',
       values: { FOO: 10 },
-    });
-    expect(() => enumType.getValues()).to.throw(
+    };
+    expect(() => new GraphQLEnumType(config)).to.throw(
       'SomeEnum.FOO must refer to an object with a "value" key representing ' +
         'an internal value but got: 10.',
     );
   });
 
   it('does not allow isDeprecated without deprecationReason on enum', () => {
-    const enumType = new GraphQLEnumType({
+    const config = {
       name: 'SomeEnum',
       values: {
         FOO: {
           isDeprecated: true,
         },
       },
-    });
-    expect(() => enumType.getValues()).to.throw(
+    };
+    expect(() => new GraphQLEnumType(config)).to.throw(
       'SomeEnum.FOO should provide "deprecationReason" instead ' +
         'of "isDeprecated".',
     );
@@ -1114,19 +1139,19 @@ describe('Type System: List must accept only types', () => {
 
   const notTypes = [{}, String, undefined, null];
 
-  types.forEach(type => {
+  for (const type of types) {
     it(`accepts an type as item type of list: ${type}`, () => {
       expect(() => GraphQLList(type)).not.to.throw();
     });
-  });
+  }
 
-  notTypes.forEach(type => {
+  for (const type of notTypes) {
     it(`rejects a non-type as item type of list: ${type}`, () => {
       expect(() => GraphQLList(type)).to.throw(
-        `Expected ${type} to be a GraphQL type.`,
+        `Expected ${inspect(type)} to be a GraphQL type.`,
       );
     });
-  });
+  }
 });
 
 describe('Type System: NonNull must only accept non-nullable types', () => {
@@ -1150,19 +1175,19 @@ describe('Type System: NonNull must only accept non-nullable types', () => {
     null,
   ];
 
-  nullableTypes.forEach(type => {
+  for (const type of nullableTypes) {
     it(`accepts an type as nullable type of non-null: ${type}`, () => {
       expect(() => GraphQLNonNull(type)).not.to.throw();
     });
-  });
+  }
 
-  notNullableTypes.forEach(type => {
+  for (const type of notNullableTypes) {
     it(`rejects a non-type as nullable type of non-null: ${type}`, () => {
       expect(() => GraphQLNonNull(type)).to.throw(
-        `Expected ${type} to be a GraphQL nullable type.`,
+        `Expected ${inspect(type)} to be a GraphQL nullable type.`,
       );
     });
-  });
+  }
 });
 
 describe('Type System: A Schema must contain uniquely named types', () => {

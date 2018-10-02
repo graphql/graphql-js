@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { describe, it } from 'mocha';
@@ -172,10 +174,10 @@ describe('Type System Printer', () => {
     });
     expect(output).to.equal(
       dedent(String.raw`
-      type Query {
-        singleField(argOne: String = "tes\t de\fault"): String
-      }
-    `),
+        type Query {
+          singleField(argOne: String = "tes\t de\fault"): String
+        }
+      `),
     );
   });
 
@@ -629,8 +631,8 @@ describe('Type System Printer', () => {
       directive @deprecated(
         """
         Explains why this element was deprecated, usually also including a suggestion
-        for how to access supported similar data. Formatted in
-        [Markdown](https://daringfireball.net/projects/markdown/).
+        for how to access supported similar data. Formatted using the Markdown syntax
+        (as specified by [CommonMark](https://commonmark.org/).
         """
         reason: String = "No longer supported"
       ) on FIELD_DEFINITION | ENUM_VALUE
@@ -648,12 +650,9 @@ describe('Type System Printer', () => {
         description: String
         locations: [__DirectiveLocation!]!
         args: [__InputValue!]!
-
+                
         """Permits using the directive multiple times at the same location."""
         repeatable: Boolean!
-        onOperation: Boolean! @deprecated(reason: "Use \`locations\`.")
-        onFragment: Boolean! @deprecated(reason: "Use \`locations\`.")
-        onField: Boolean! @deprecated(reason: "Use \`locations\`.")
       }
 
       """
@@ -681,6 +680,9 @@ describe('Type System Printer', () => {
 
         """Location adjacent to an inline fragment."""
         INLINE_FRAGMENT
+
+        """Location adjacent to a variable definition."""
+        VARIABLE_DEFINITION
 
         """Location adjacent to a schema definition."""
         SCHEMA
@@ -868,8 +870,8 @@ describe('Type System Printer', () => {
       # Marks an element of a GraphQL schema as no longer supported.
       directive @deprecated(
         # Explains why this element was deprecated, usually also including a suggestion
-        # for how to access supported similar data. Formatted in
-        # [Markdown](https://daringfireball.net/projects/markdown/).
+        # for how to access supported similar data. Formatted using the Markdown syntax
+        # (as specified by [CommonMark](https://commonmark.org/).
         reason: String = "No longer supported"
       ) on FIELD_DEFINITION | ENUM_VALUE
 
@@ -887,9 +889,6 @@ describe('Type System Printer', () => {
 
         # Permits using the directive multiple times at the same location.
         repeatable: Boolean!
-        onOperation: Boolean! @deprecated(reason: "Use \`locations\`.")
-        onFragment: Boolean! @deprecated(reason: "Use \`locations\`.")
-        onField: Boolean! @deprecated(reason: "Use \`locations\`.")
       }
 
       # A Directive can be adjacent to many parts of the GraphQL language, a
@@ -915,6 +914,9 @@ describe('Type System Printer', () => {
 
         # Location adjacent to an inline fragment.
         INLINE_FRAGMENT
+
+        # Location adjacent to a variable definition.
+        VARIABLE_DEFINITION
 
         # Location adjacent to a schema definition.
         SCHEMA

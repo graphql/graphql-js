@@ -7,9 +7,10 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ASTValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
+import { isExecutableDefinitionNode } from '../../language/predicates';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function nonExecutableDefinitionMessage(defName: string): string {
@@ -22,18 +23,18 @@ export function nonExecutableDefinitionMessage(defName: string): string {
  * A GraphQL document is only valid for execution if all definitions are either
  * operation or fragment definitions.
  */
-export function ExecutableDefinitions(context: ValidationContext): ASTVisitor {
+export function ExecutableDefinitions(
+  context: ASTValidationContext,
+): ASTVisitor {
   return {
     Document(node) {
-      node.definitions.forEach(definition => {
-        if (
-          definition.kind !== Kind.OPERATION_DEFINITION &&
-          definition.kind !== Kind.FRAGMENT_DEFINITION
-        ) {
+      for (const definition of node.definitions) {
+        if (!isExecutableDefinitionNode(definition)) {
           context.reportError(
             new GraphQLError(
               nonExecutableDefinitionMessage(
-                definition.kind === Kind.SCHEMA_DEFINITION
+                definition.kind === Kind.SCHEMA_DEFINITION ||
+                definition.kind === Kind.SCHEMA_EXTENSION
                   ? 'schema'
                   : definition.name.value,
               ),
@@ -41,7 +42,7 @@ export function ExecutableDefinitions(context: ValidationContext): ASTVisitor {
             ),
           );
         }
-      });
+      }
       return false;
     },
   };

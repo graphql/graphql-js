@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -29,7 +31,6 @@ function undefinedField(
       suggestedFields,
     ),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -288,7 +289,7 @@ describe('Validate: Fields on correct type', () => {
 
     it('Works with no small numbers of field suggestions', () => {
       expect(undefinedFieldMessage('f', 'T', [], ['z', 'y'])).to.equal(
-        'Cannot query field "f" on type "T". ' + 'Did you mean "z" or "y"?',
+        'Cannot query field "f" on type "T". Did you mean "z" or "y"?',
       );
     });
 

@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
@@ -25,7 +27,7 @@ describe('Printer: SDL document', () => {
   it('produces helpful error messages', () => {
     const badAst1 = { random: 'Data' };
     expect(() => print(badAst1)).to.throw(
-      'Invalid AST Node: {"random":"Data"}',
+      'Invalid AST Node: { random: "Data" }',
     );
   });
 
@@ -58,7 +60,15 @@ describe('Printer: SDL document', () => {
       """
       type Foo implements Bar & Baz {
         one: Type
-        two(argument: InputType!): Type
+        """
+        This is a description of the \`two\` field.
+        """
+        two(
+          """
+          This is a description of the \`argument\` argument.
+          """
+          argument: InputType!
+        ): Type
         three(argument: InputType, other: String): Int
         four(argument: String = "string"): String
         five(argument: [String] = ["string", "string"]): String
@@ -153,8 +163,14 @@ describe('Printer: SDL document', () => {
       directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
       directive @include2(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-      
+
       directive @myRepeatableDir(name: String!) repeatable on OBJECT | INTERFACE
+
+      extend schema @onSchema
+
+      extend schema @onSchema {
+        subscription: SubscriptionType
+      }
     `);
   });
 });

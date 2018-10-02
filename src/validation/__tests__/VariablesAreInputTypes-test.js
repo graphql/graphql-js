@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -36,17 +38,14 @@ describe('Validate: Variables are input types', () => {
         {
           locations: [{ line: 2, column: 21 }],
           message: nonInputTypeOnVarMessage('a', 'Dog'),
-          path: undefined,
         },
         {
           locations: [{ line: 2, column: 30 }],
           message: nonInputTypeOnVarMessage('b', '[[CatOrDog!]]!'),
-          path: undefined,
         },
         {
           locations: [{ line: 2, column: 50 }],
           message: nonInputTypeOnVarMessage('c', 'Pet'),
-          path: undefined,
         },
       ],
     );

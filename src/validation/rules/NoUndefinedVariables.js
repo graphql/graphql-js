@@ -7,8 +7,8 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function undefinedVarMessage(varName: string, opName: ?string): string {
@@ -34,7 +34,7 @@ export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        usages.forEach(({ node }) => {
+        for (const { node } of usages) {
           const varName = node.name.value;
           if (variableNameDefined[varName] !== true) {
             context.reportError(
@@ -47,7 +47,7 @@ export function NoUndefinedVariables(context: ValidationContext): ASTVisitor {
               ),
             );
           }
-        });
+        }
       },
     },
     VariableDefinition(node) {

@@ -3,10 +3,13 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import dedent from '../../jsutils/dedent';
 import { Source } from '../source';
 import { createLexer, TokenKind } from '../lexer';
 
@@ -35,7 +38,7 @@ describe('Lexer', () => {
   });
 
   it('accepts BOM header', () => {
-    expect(lexOne('\uFEFF foo')).to.containSubset({
+    expect(lexOne('\uFEFF foo')).to.contain({
       kind: TokenKind.NAME,
       start: 2,
       end: 5,
@@ -44,7 +47,7 @@ describe('Lexer', () => {
   });
 
   it('records line and column', () => {
-    expect(lexOne('\n \r\n \r  foo\n')).to.containSubset({
+    expect(lexOne('\n \r\n \r  foo\n')).to.contain({
       kind: TokenKind.NAME,
       start: 8,
       end: 11,
@@ -59,12 +62,9 @@ describe('Lexer', () => {
     expect(JSON.stringify(token)).to.equal(
       '{"kind":"Name","value":"foo","line":1,"column":1}',
     );
-    // NB: util.inspect used to suck
-    if (parseFloat(process.version.slice(1)) > 0.1) {
-      expect(require('util').inspect(token)).to.equal(
-        "{ kind: 'Name', value: 'foo', line: 1, column: 1 }",
-      );
-    }
+    expect(require('util').inspect(token)).to.equal(
+      "{ kind: 'Name', value: 'foo', line: 1, column: 1 }",
+    );
   });
 
   it('skips whitespace and comments', () => {
@@ -75,7 +75,7 @@ describe('Lexer', () => {
 
 
 `),
-    ).to.containSubset({
+    ).to.contain({
       kind: TokenKind.NAME,
       start: 6,
       end: 9,
@@ -87,14 +87,14 @@ describe('Lexer', () => {
     #comment
     foo#comment
 `),
-    ).to.containSubset({
+    ).to.contain({
       kind: TokenKind.NAME,
       start: 18,
       end: 21,
       value: 'foo',
     });
 
-    expect(lexOne(',,,foo,,,')).to.containSubset({
+    expect(lexOne(',,,foo,,,')).to.contain({
       kind: TokenKind.NAME,
       start: 3,
       end: 6,
@@ -105,24 +105,25 @@ describe('Lexer', () => {
   it('errors respect whitespace', () => {
     let caughtError;
     try {
-      lexOne(`
-
-    ?
-
-
-`);
+      lexOne(dedent`
+      
+      
+          ?
+      
+      
+      `);
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError)).to.equal(
-      'Syntax Error: Cannot parse the unexpected character "?".\n' +
-        '\n' +
-        'GraphQL request (3:5)\n' +
-        '2: \n' +
-        '3:     ?\n' +
-        '       ^\n' +
-        '4: \n',
-    );
+    expect(String(caughtError)).to.equal(dedent`
+      Syntax Error: Cannot parse the unexpected character "?".
+
+      GraphQL request (3:5)
+      2: 
+      3:     ?
+             ^
+      4: 
+    `);
   });
 
   it('updates line numbers in error for file context', () => {
@@ -134,15 +135,15 @@ describe('Lexer', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError)).to.equal(
-      'Syntax Error: Cannot parse the unexpected character "?".\n' +
-        '\n' +
-        'foo.js (13:6)\n' +
-        '12: \n' +
-        '13:      ?\n' +
-        '         ^\n' +
-        '14: \n',
-    );
+    expect(String(caughtError)).to.equal(dedent`
+      Syntax Error: Cannot parse the unexpected character "?".
+
+      foo.js (13:6)
+      12: 
+      13:      ?
+               ^
+      14: 
+    `);
   });
 
   it('updates column numbers in error for file context', () => {
@@ -153,52 +154,52 @@ describe('Lexer', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError)).to.equal(
-      'Syntax Error: Cannot parse the unexpected character "?".\n' +
-        '\n' +
-        'foo.js (1:5)\n' +
-        '1:     ?\n' +
-        '       ^\n',
-    );
+    expect(String(caughtError)).to.equal(dedent`
+      Syntax Error: Cannot parse the unexpected character "?".
+
+      foo.js (1:5)
+      1:     ?
+             ^
+    `);
   });
 
   it('lexes strings', () => {
-    expect(lexOne('"simple"')).to.containSubset({
+    expect(lexOne('"simple"')).to.contain({
       kind: TokenKind.STRING,
       start: 0,
       end: 8,
       value: 'simple',
     });
 
-    expect(lexOne('" white space "')).to.containSubset({
+    expect(lexOne('" white space "')).to.contain({
       kind: TokenKind.STRING,
       start: 0,
       end: 15,
       value: ' white space ',
     });
 
-    expect(lexOne('"quote \\""')).to.containSubset({
+    expect(lexOne('"quote \\""')).to.contain({
       kind: TokenKind.STRING,
       start: 0,
       end: 10,
       value: 'quote "',
     });
 
-    expect(lexOne('"escaped \\n\\r\\b\\t\\f"')).to.containSubset({
+    expect(lexOne('"escaped \\n\\r\\b\\t\\f"')).to.contain({
       kind: TokenKind.STRING,
       start: 0,
       end: 20,
       value: 'escaped \n\r\b\t\f',
     });
 
-    expect(lexOne('"slashes \\\\ \\/"')).to.containSubset({
+    expect(lexOne('"slashes \\\\ \\/"')).to.contain({
       kind: TokenKind.STRING,
       start: 0,
       end: 15,
       value: 'slashes \\ /',
     });
 
-    expect(lexOne('"unicode \\u1234\\u5678\\u90AB\\uCDEF"')).to.containSubset({
+    expect(lexOne('"unicode \\u1234\\u5678\\u90AB\\uCDEF"')).to.contain({
       kind: TokenKind.STRING,
       start: 0,
       end: 34,
@@ -287,56 +288,56 @@ describe('Lexer', () => {
   });
 
   it('lexes block strings', () => {
-    expect(lexOne('"""simple"""')).to.containSubset({
+    expect(lexOne('"""simple"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 12,
       value: 'simple',
     });
 
-    expect(lexOne('""" white space """')).to.containSubset({
+    expect(lexOne('""" white space """')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 19,
       value: ' white space ',
     });
 
-    expect(lexOne('"""contains " quote"""')).to.containSubset({
+    expect(lexOne('"""contains " quote"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 22,
       value: 'contains " quote',
     });
 
-    expect(lexOne('"""contains \\""" triplequote"""')).to.containSubset({
+    expect(lexOne('"""contains \\""" triplequote"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 31,
       value: 'contains """ triplequote',
     });
 
-    expect(lexOne('"""multi\nline"""')).to.containSubset({
+    expect(lexOne('"""multi\nline"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 16,
       value: 'multi\nline',
     });
 
-    expect(lexOne('"""multi\rline\r\nnormalized"""')).to.containSubset({
+    expect(lexOne('"""multi\rline\r\nnormalized"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 28,
       value: 'multi\nline\nnormalized',
     });
 
-    expect(lexOne('"""unescaped \\n\\r\\b\\t\\f\\u1234"""')).to.containSubset({
+    expect(lexOne('"""unescaped \\n\\r\\b\\t\\f\\u1234"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 32,
       value: 'unescaped \\n\\r\\b\\t\\f\\u1234',
     });
 
-    expect(lexOne('"""slashes \\\\ \\/"""')).to.containSubset({
+    expect(lexOne('"""slashes \\\\ \\/"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 19,
@@ -351,7 +352,7 @@ describe('Lexer', () => {
             lines
 
         """`),
-    ).to.containSubset({
+    ).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 68,
@@ -381,112 +382,112 @@ describe('Lexer', () => {
   });
 
   it('lexes numbers', () => {
-    expect(lexOne('4')).to.containSubset({
+    expect(lexOne('4')).to.contain({
       kind: TokenKind.INT,
       start: 0,
       end: 1,
       value: '4',
     });
 
-    expect(lexOne('4.123')).to.containSubset({
+    expect(lexOne('4.123')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 5,
       value: '4.123',
     });
 
-    expect(lexOne('-4')).to.containSubset({
+    expect(lexOne('-4')).to.contain({
       kind: TokenKind.INT,
       start: 0,
       end: 2,
       value: '-4',
     });
 
-    expect(lexOne('9')).to.containSubset({
+    expect(lexOne('9')).to.contain({
       kind: TokenKind.INT,
       start: 0,
       end: 1,
       value: '9',
     });
 
-    expect(lexOne('0')).to.containSubset({
+    expect(lexOne('0')).to.contain({
       kind: TokenKind.INT,
       start: 0,
       end: 1,
       value: '0',
     });
 
-    expect(lexOne('-4.123')).to.containSubset({
+    expect(lexOne('-4.123')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 6,
       value: '-4.123',
     });
 
-    expect(lexOne('0.123')).to.containSubset({
+    expect(lexOne('0.123')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 5,
       value: '0.123',
     });
 
-    expect(lexOne('123e4')).to.containSubset({
+    expect(lexOne('123e4')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 5,
       value: '123e4',
     });
 
-    expect(lexOne('123E4')).to.containSubset({
+    expect(lexOne('123E4')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 5,
       value: '123E4',
     });
 
-    expect(lexOne('123e-4')).to.containSubset({
+    expect(lexOne('123e-4')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 6,
       value: '123e-4',
     });
 
-    expect(lexOne('123e+4')).to.containSubset({
+    expect(lexOne('123e+4')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 6,
       value: '123e+4',
     });
 
-    expect(lexOne('-1.123e4')).to.containSubset({
+    expect(lexOne('-1.123e4')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 8,
       value: '-1.123e4',
     });
 
-    expect(lexOne('-1.123E4')).to.containSubset({
+    expect(lexOne('-1.123E4')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 8,
       value: '-1.123E4',
     });
 
-    expect(lexOne('-1.123e-4')).to.containSubset({
+    expect(lexOne('-1.123e-4')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 9,
       value: '-1.123e-4',
     });
 
-    expect(lexOne('-1.123e+4')).to.containSubset({
+    expect(lexOne('-1.123e+4')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 9,
       value: '-1.123e+4',
     });
 
-    expect(lexOne('-1.123e4567')).to.containSubset({
+    expect(lexOne('-1.123e4567')).to.contain({
       kind: TokenKind.FLOAT,
       start: 0,
       end: 11,
@@ -543,91 +544,91 @@ describe('Lexer', () => {
   });
 
   it('lexes punctuation', () => {
-    expect(lexOne('!')).to.containSubset({
+    expect(lexOne('!')).to.contain({
       kind: TokenKind.BANG,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne('$')).to.containSubset({
+    expect(lexOne('$')).to.contain({
       kind: TokenKind.DOLLAR,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne('(')).to.containSubset({
+    expect(lexOne('(')).to.contain({
       kind: TokenKind.PAREN_L,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne(')')).to.containSubset({
+    expect(lexOne(')')).to.contain({
       kind: TokenKind.PAREN_R,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne('...')).to.containSubset({
+    expect(lexOne('...')).to.contain({
       kind: TokenKind.SPREAD,
       start: 0,
       end: 3,
       value: undefined,
     });
 
-    expect(lexOne(':')).to.containSubset({
+    expect(lexOne(':')).to.contain({
       kind: TokenKind.COLON,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne('=')).to.containSubset({
+    expect(lexOne('=')).to.contain({
       kind: TokenKind.EQUALS,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne('@')).to.containSubset({
+    expect(lexOne('@')).to.contain({
       kind: TokenKind.AT,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne('[')).to.containSubset({
+    expect(lexOne('[')).to.contain({
       kind: TokenKind.BRACKET_L,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne(']')).to.containSubset({
+    expect(lexOne(']')).to.contain({
       kind: TokenKind.BRACKET_R,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne('{')).to.containSubset({
+    expect(lexOne('{')).to.contain({
       kind: TokenKind.BRACE_L,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne('|')).to.containSubset({
+    expect(lexOne('|')).to.contain({
       kind: TokenKind.PIPE,
       start: 0,
       end: 1,
       value: undefined,
     });
 
-    expect(lexOne('}')).to.containSubset({
+    expect(lexOne('}')).to.contain({
       kind: TokenKind.BRACE_R,
       start: 0,
       end: 1,
@@ -663,7 +664,7 @@ describe('Lexer', () => {
     const q = 'a-b';
     const lexer = createLexer(new Source(q));
     const firstToken = lexer.advance();
-    expect(firstToken).to.containSubset({
+    expect(firstToken).to.contain({
       kind: TokenKind.NAME,
       start: 0,
       end: 1,

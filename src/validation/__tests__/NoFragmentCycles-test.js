@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -79,7 +81,6 @@ describe('Validate: No circular fragment spreads', () => {
         {
           message: cycleErrorMessage('fragA', []),
           locations: [{ line: 2, column: 45 }],
-          path: undefined,
         },
       ],
     );
@@ -95,7 +96,6 @@ describe('Validate: No circular fragment spreads', () => {
         {
           message: cycleErrorMessage('fragA', []),
           locations: [{ line: 2, column: 31 }],
-          path: undefined,
         },
       ],
     );
@@ -115,7 +115,6 @@ describe('Validate: No circular fragment spreads', () => {
         {
           message: cycleErrorMessage('fragA', []),
           locations: [{ line: 4, column: 11 }],
-          path: undefined,
         },
       ],
     );
@@ -132,7 +131,6 @@ describe('Validate: No circular fragment spreads', () => {
         {
           message: cycleErrorMessage('fragA', ['fragB']),
           locations: [{ line: 2, column: 31 }, { line: 3, column: 31 }],
-          path: undefined,
         },
       ],
     );
@@ -149,7 +147,6 @@ describe('Validate: No circular fragment spreads', () => {
         {
           message: cycleErrorMessage('fragB', ['fragA']),
           locations: [{ line: 2, column: 31 }, { line: 3, column: 31 }],
-          path: undefined,
         },
       ],
     );
@@ -174,7 +171,6 @@ describe('Validate: No circular fragment spreads', () => {
         {
           message: cycleErrorMessage('fragA', ['fragB']),
           locations: [{ line: 4, column: 11 }, { line: 9, column: 11 }],
-          path: undefined,
         },
       ],
     );
@@ -208,7 +204,6 @@ describe('Validate: No circular fragment spreads', () => {
             { line: 8, column: 31 },
             { line: 9, column: 31 },
           ],
-          path: undefined,
         },
         {
           message: cycleErrorMessage('fragO', [
@@ -224,7 +219,6 @@ describe('Validate: No circular fragment spreads', () => {
             { line: 6, column: 31 },
             { line: 7, column: 31 },
           ],
-          path: undefined,
         },
       ],
     );
@@ -242,12 +236,10 @@ describe('Validate: No circular fragment spreads', () => {
         {
           message: cycleErrorMessage('fragA', ['fragB']),
           locations: [{ line: 2, column: 31 }, { line: 3, column: 31 }],
-          path: undefined,
         },
         {
           message: cycleErrorMessage('fragA', ['fragC']),
           locations: [{ line: 2, column: 41 }, { line: 4, column: 31 }],
-          path: undefined,
         },
       ],
     );
@@ -265,12 +257,10 @@ describe('Validate: No circular fragment spreads', () => {
         {
           message: cycleErrorMessage('fragA', ['fragC']),
           locations: [{ line: 2, column: 31 }, { line: 4, column: 31 }],
-          path: undefined,
         },
         {
           message: cycleErrorMessage('fragC', ['fragB']),
           locations: [{ line: 4, column: 41 }, { line: 3, column: 31 }],
-          path: undefined,
         },
       ],
     );
@@ -288,7 +278,6 @@ describe('Validate: No circular fragment spreads', () => {
         {
           message: cycleErrorMessage('fragB', []),
           locations: [{ line: 3, column: 31 }],
-          path: undefined,
         },
         {
           message: cycleErrorMessage('fragA', ['fragB', 'fragC']),
@@ -297,12 +286,10 @@ describe('Validate: No circular fragment spreads', () => {
             { line: 3, column: 41 },
             { line: 4, column: 31 },
           ],
-          path: undefined,
         },
         {
           message: cycleErrorMessage('fragB', ['fragC']),
           locations: [{ line: 3, column: 41 }, { line: 4, column: 41 }],
-          path: undefined,
         },
       ],
     );

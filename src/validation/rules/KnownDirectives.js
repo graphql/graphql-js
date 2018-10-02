@@ -7,11 +7,15 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type {
+  ValidationContext,
+  SDLValidationContext,
+} from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { DirectiveLocation } from '../../language/directiveLocation';
 import type { ASTVisitor } from '../../language/visitor';
+import { specifiedDirectives } from '../../type/directives';
 
 export function unknownDirectiveMessage(directiveName: string): string {
   return `Unknown directive "${directiveName}".`;
@@ -30,26 +34,43 @@ export function misplacedDirectiveMessage(
  * A GraphQL document is only valid if all `@directives` are known by the
  * schema and legally positioned.
  */
-export function KnownDirectives(context: ValidationContext): ASTVisitor {
+export function KnownDirectives(
+  context: ValidationContext | SDLValidationContext,
+): ASTVisitor {
+  const locationsMap = Object.create(null);
+
+  const schema = context.getSchema();
+  const definedDirectives = schema
+    ? schema.getDirectives()
+    : specifiedDirectives;
+  for (const directive of definedDirectives) {
+    locationsMap[directive.name] = directive.locations;
+  }
+
+  const astDefinitions = context.getDocument().definitions;
+  for (const def of astDefinitions) {
+    if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+      locationsMap[def.name.value] = def.locations.map(name => name.value);
+    }
+  }
+
   return {
     Directive(node, key, parent, path, ancestors) {
-      const directiveDef = context.getDirectiveByName(node.name.value);
-      if (!directiveDef) {
+      const name = node.name.value;
+      const locations = locationsMap[name];
+
+      if (!locations) {
         context.reportError(
-          new GraphQLError(unknownDirectiveMessage(node.name.value), [node]),
+          new GraphQLError(unknownDirectiveMessage(name), [node]),
         );
         return;
       }
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
-      if (
-        candidateLocation &&
-        directiveDef.locations.indexOf(candidateLocation) === -1
-      ) {
+      if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
         context.reportError(
-          new GraphQLError(
-            misplacedDirectiveMessage(node.name.value, candidateLocation),
-            [node],
-          ),
+          new GraphQLError(misplacedDirectiveMessage(name, candidateLocation), [
+            node,
+          ]),
         );
       }
     },
@@ -78,7 +99,10 @@ function getDirectiveLocationForASTPath(ancestors) {
         return DirectiveLocation.INLINE_FRAGMENT;
       case Kind.FRAGMENT_DEFINITION:
         return DirectiveLocation.FRAGMENT_DEFINITION;
+      case Kind.VARIABLE_DEFINITION:
+        return DirectiveLocation.VARIABLE_DEFINITION;
       case Kind.SCHEMA_DEFINITION:
+      case Kind.SCHEMA_EXTENSION:
         return DirectiveLocation.SCHEMA;
       case Kind.SCALAR_TYPE_DEFINITION:
       case Kind.SCALAR_TYPE_EXTENSION:

@@ -10,7 +10,7 @@
 // The GraphQL query recommended for a full schema introspection.
 export {
   getIntrospectionQuery,
-  // Deprecated, use getIntrospectionQuery()
+  // @deprecated, use getIntrospectionQuery() - will be removed in v15
   introspectionQuery,
 } from './introspectionQuery';
 export type {
@@ -41,6 +41,9 @@ export type {
 // Gets the target Operation from a Document
 export { getOperationAST } from './getOperationAST';
 
+// Gets the Type for the target Operation AST.
+export { getOperationRootType } from './getOperationRootType';
+
 // Convert a GraphQLSchema to an IntrospectionQuery
 export { introspectionFromSchema } from './introspectionFromSchema';
 
@@ -48,7 +51,13 @@ export { introspectionFromSchema } from './introspectionFromSchema';
 export { buildClientSchema } from './buildClientSchema';
 
 // Build a GraphQLSchema from GraphQL Schema language.
-export { buildASTSchema, buildSchema, getDescription } from './buildASTSchema';
+export {
+  buildASTSchema,
+  buildSchema,
+  // @deprecated: Get the description from a schema AST node and supports legacy
+  // syntax for specifying descriptions - will be removed in v16
+  getDescription,
+} from './buildASTSchema';
 export type { BuildSchemaOptions } from './buildASTSchema';
 
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
@@ -83,10 +92,10 @@ export { TypeInfo } from './TypeInfo';
 // Coerces a JavaScript value to a GraphQL type, or produces errors.
 export { coerceValue } from './coerceValue';
 
-// @deprecated use coerceValue
+// @deprecated use coerceValue - will be removed in v15
 export { isValidJSValue } from './isValidJSValue';
 
-// Determine if AST values adhere to a GraphQL type.
+// @deprecated use validation - will be removed in v15
 export { isValidLiteralValue } from './isValidLiteralValue';
 
 // Concatenates multiple AST together.

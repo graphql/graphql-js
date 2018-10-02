@@ -8,11 +8,12 @@
  */
 
 import invariant from '../jsutils/invariant';
+import defineToStringTag from '../jsutils/defineToStringTag';
 
-type Location = {
+type Location = {|
   line: number,
   column: number,
-};
+|};
 
 /**
  * A representation of source input to GraphQL.
@@ -41,3 +42,6 @@ export class Source {
     );
   }
 }
+
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+defineToStringTag(Source);

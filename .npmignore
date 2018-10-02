@@ -10,10 +10,12 @@ yarn.lock
 package-lock.json
 
 .babelrc
+.nycrc
 CONTRIBUTING.md
 node_modules
 coverage
 resources
 src
 dist
+__tests__
 npm

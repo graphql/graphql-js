@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
@@ -160,7 +162,7 @@ describe('Schema Builder', () => {
   });
 
   it('Maintains @skip & @include', () => {
-    const body = dedent`
+    const body = `
       type Query {
         str: String
       }
@@ -175,7 +177,7 @@ describe('Schema Builder', () => {
   });
 
   it('Overriding directives excludes specified', () => {
-    const body = dedent`
+    const body = `
       directive @skip on FIELD
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
@@ -196,7 +198,7 @@ describe('Schema Builder', () => {
   });
 
   it('Adding directives maintains @skip & @include', () => {
-    const body = dedent`
+    const body = `
       directive @foo(arg: Int) on FIELD
 
       type Query {
@@ -275,7 +277,7 @@ describe('Schema Builder', () => {
         str(int: Int, bool: Boolean): String
       }
     `;
-    const output = cycleOutput(body, 'Hello');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
@@ -289,7 +291,7 @@ describe('Schema Builder', () => {
         str: String
       }
     `;
-    const output = cycleOutput(body, 'Hello');
+    const output = cycleOutput(body);
     expect(output).to.equal(body);
   });
 
@@ -372,8 +374,20 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
   });
 
+  it('Can build recursive Union', () => {
+    const schema = buildSchema(`
+      union Hello = Hello
+
+      type Query {
+        hello: Hello
+      }
+    `);
+    const errors = validateSchema(schema);
+    expect(errors.length).to.be.above(0);
+  });
+
   it('Specifying Union type using __typename', () => {
-    const schema = buildSchema(dedent`
+    const schema = buildSchema(`
       type Query {
         fruits: [Fruit]
       }
@@ -430,7 +444,7 @@ describe('Schema Builder', () => {
   });
 
   it('Specifying Interface type using __typename', () => {
-    const schema = buildSchema(dedent`
+    const schema = buildSchema(`
       type Query {
         characters: [Character]
       }
@@ -580,7 +594,7 @@ describe('Schema Builder', () => {
       }
 
       type Subscription {
-        sbscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
+        subscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
       }
     `;
     const output = cycleOutput(body);
@@ -791,29 +805,28 @@ describe('Schema Builder', () => {
     const errors = validateSchema(schema);
     expect(errors.length).to.equal(0);
   });
+
+  it('Rejects invalid SDL', () => {
+    const doc = parse(`
+      type Query {
+        foo: String @unknown
+      }
+    `);
+    expect(() => buildASTSchema(doc)).to.throw('Unknown directive "unknown".');
+  });
+
+  it('Allows to disable SDL validation', () => {
+    const body = `
+      type Query {
+        foo: String @unknown
+      }
+    `;
+    buildSchema(body, { assumeValid: true });
+    buildSchema(body, { assumeValidSDL: true });
+  });
 });
 
 describe('Failures', () => {
-  it('Allows only a single schema definition', () => {
-    const body = dedent`
-      schema {
-        query: Hello
-      }
-
-      schema {
-        query: Hello
-      }
-
-      type Hello {
-        bar: Bar
-      }
-    `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
-      'Must provide only one schema definition.',
-    );
-  });
-
   it('Allows only a single query type', () => {
     const body = dedent`
       schema {
@@ -822,7 +835,7 @@ describe('Failures', () => {
       }
 
       type Hello {
-        bar: Bar
+        bar: String
       }
 
       type Yellow {
@@ -844,7 +857,7 @@ describe('Failures', () => {
       }
 
       type Hello {
-        bar: Bar
+        bar: String
       }
 
       type Yellow {
@@ -866,7 +879,7 @@ describe('Failures', () => {
       }
 
       type Hello {
-        bar: Bar
+        bar: String
       }
 
       type Yellow {
@@ -970,6 +983,20 @@ describe('Failures', () => {
     const doc = parse(body);
     expect(() => buildASTSchema(doc)).to.throw(
       'Specified subscription type "Awesome" not found in document.',
+    );
+  });
+
+  it('Does not consider directive names', () => {
+    const body = dedent`
+      schema {
+        query: Foo
+      }
+
+      directive @Foo on QUERY
+    `;
+    const doc = parse(body);
+    expect(() => buildASTSchema(doc)).to.throw(
+      'Specified query type "Foo" not found in document.',
     );
   });
 

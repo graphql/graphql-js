@@ -7,8 +7,8 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ASTValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function duplicateInputFieldMessage(fieldName: string): string {
@@ -21,7 +21,9 @@ export function duplicateInputFieldMessage(fieldName: string): string {
  * A GraphQL input object value is only valid if all supplied fields are
  * uniquely named.
  */
-export function UniqueInputFieldNames(context: ValidationContext): ASTVisitor {
+export function UniqueInputFieldNames(
+  context: ASTValidationContext,
+): ASTVisitor {
   const knownNameStack = [];
   let knownNames = Object.create(null);
 

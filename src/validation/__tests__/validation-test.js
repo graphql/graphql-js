@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -50,7 +52,6 @@ describe('Validate: Supports full validation', () => {
         message:
           'Expected type Invalid, found "bad value"; ' +
           'Invalid scalar is always invalid: bad value',
-        path: undefined,
       },
     ]);
   });

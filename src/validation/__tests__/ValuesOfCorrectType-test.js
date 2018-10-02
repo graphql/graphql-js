@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { describe, it } from 'mocha';
@@ -19,7 +21,6 @@ function badValue(typeName, value, line, column, message) {
   return {
     message: badValueMessage(typeName, value, message),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -27,7 +28,6 @@ function requiredField(typeName, fieldName, fieldTypeName, line, column) {
   return {
     message: requiredFieldMessage(typeName, fieldName, fieldTypeName),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -35,7 +35,6 @@ function unknownField(typeName, fieldName, line, column, message) {
   return {
     message: unknownFieldMessage(typeName, fieldName, message),
     locations: [{ line, column }],
-    path: undefined,
   };
 }
 
@@ -831,7 +830,7 @@ describe('Validate: Values of correct type', () => {
       );
     });
 
-    it('Incorrect value and missing argument (ProvidedNonNullArguments)', () => {
+    it('Incorrect value and missing argument (ProvidedRequiredArguments)', () => {
       expectFailsRule(
         ValuesOfCorrectType,
         `
@@ -984,6 +983,23 @@ describe('Validate: Values of correct type', () => {
       );
     });
 
+    it('Partial object, null to non-null field', () => {
+      expectFailsRule(
+        ValuesOfCorrectType,
+        `
+        {
+          complicatedArgs {
+            complexArgField(complexArg: {
+              requiredField: true,
+              nonNullField: null,
+            })
+          }
+        }
+      `,
+        [badValue('Boolean!', 'null', 6, 29)],
+      );
+    });
+
     it('Partial object, unknown field arg', () => {
       expectFailsRule(
         ValuesOfCorrectType,
@@ -1003,7 +1019,7 @@ describe('Validate: Values of correct type', () => {
             'unknownField',
             6,
             15,
-            'Did you mean intField or booleanField?',
+            'Did you mean nonNullField, intField, or booleanField?',
           ),
         ],
       );
@@ -1091,6 +1107,7 @@ describe('Validate: Values of correct type', () => {
           $a: Int = 1,
           $b: String = "ok",
           $c: ComplexInput = { requiredField: true, intField: 3 }
+          $d: Int! = 123
         ) {
           dog { name }
         }

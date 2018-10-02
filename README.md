@@ -119,6 +119,18 @@ directly on this branch:
 npm install graphql@git://github.com/graphql/graphql-js.git#npm
 ```
 
+### Using in a Browser
+
+GraphQL.js is a general purpose library and can be used both in a Node server
+and in the browser. As an example, the [GraphiQL](https://github.com/graphql/graphiql/)
+tool is built with GraphQL.js!
+
+Building a project using GraphQL.js with [webpack](https://webpack.js.org) or
+[rollup](https://github.com/rollup/rollup) should just work and only include
+the portions of the library you use. This works because GraphQL.js is distributed
+with both CommonJS (`require()`) and ESModule (`import`) files. Ensure that any
+custom build configurations look for `.mjs` files!
+
 ### Contributing
 
 We actively welcome pull requests, learn how to

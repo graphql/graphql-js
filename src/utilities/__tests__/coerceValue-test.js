@@ -3,140 +3,193 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { coerceValue } from '../coerceValue';
 import {
+  GraphQLID,
   GraphQLInt,
   GraphQLFloat,
+  GraphQLList,
   GraphQLString,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLNonNull,
 } from '../../type';
 
-function expectNoErrors(result) {
+function expectValue(result) {
   expect(result.errors).to.equal(undefined);
-  expect(result.value).not.to.equal(undefined);
+  return expect(result.value);
 }
 
-function expectError(result, expected) {
-  const messages = result.errors && result.errors.map(error => error.message);
-  expect(messages).to.deep.equal([expected]);
+function expectErrors(result) {
   expect(result.value).to.equal(undefined);
+  const messages = result.errors && result.errors.map(error => error.message);
+  return expect(messages);
 }
 
 describe('coerceValue', () => {
-  it('coercing an array to GraphQLString produces an error', () => {
-    const result = coerceValue([1, 2, 3], GraphQLString);
-    expectError(
-      result,
-      'Expected type String; String cannot represent an array value: [1,2,3]',
-    );
-    expect(result.errors[0].originalError.message).to.equal(
-      'String cannot represent an array value: [1,2,3]',
-    );
+  describe(`for GraphQLString`, () => {
+    it('returns error for array input as string', () => {
+      const result = coerceValue([1, 2, 3], GraphQLString);
+      expectErrors(result).to.deep.equal([
+        `Expected type String; String cannot represent a non string value: [1, 2, 3]`,
+      ]);
+    });
+  });
+
+  describe(`for GraphQLID`, () => {
+    it('returns error for array input as ID', () => {
+      const result = coerceValue([1, 2, 3], GraphQLID);
+      expectErrors(result).to.deep.equal([
+        `Expected type ID; ID cannot represent value: [1, 2, 3]`,
+      ]);
+    });
   });
 
   describe('for GraphQLInt', () => {
-    it('returns no error for int input', () => {
+    it('returns value for integer', () => {
+      const result = coerceValue(1, GraphQLInt);
+      expectValue(result).to.equal(1);
+    });
+
+    it('returns error for numeric looking string', () => {
       const result = coerceValue('1', GraphQLInt);
-      expectNoErrors(result);
+      expectErrors(result).to.deep.equal([
+        `Expected type Int; Int cannot represent non-integer value: "1"`,
+      ]);
     });
 
-    it('returns no error for negative int input', () => {
-      const result = coerceValue('-1', GraphQLInt);
-      expectNoErrors(result);
+    it('returns value for negative int input', () => {
+      const result = coerceValue(-1, GraphQLInt);
+      expectValue(result).to.equal(-1);
     });
 
-    it('returns no error for exponent input', () => {
-      const result = coerceValue('1e3', GraphQLInt);
-      expectNoErrors(result);
+    it('returns value for exponent input', () => {
+      const result = coerceValue(1e3, GraphQLInt);
+      expectValue(result).to.equal(1000);
     });
 
-    it('returns a single error for empty value', () => {
+    it('returns null for null value', () => {
       const result = coerceValue(null, GraphQLInt);
-      expectNoErrors(result);
+      expectValue(result).to.equal(null);
     });
 
-    it('returns a single error for empty value', () => {
+    it('returns a single error for empty string as value', () => {
       const result = coerceValue('', GraphQLInt);
-      expectError(
-        result,
-        'Expected type Int; Int cannot represent non 32-bit signed integer value: (empty string)',
-      );
+      expectErrors(result).to.deep.equal([
+        'Expected type Int; Int cannot represent non-integer value: ""',
+      ]);
     });
 
-    it('returns error for float input as int', () => {
-      const result = coerceValue('1.5', GraphQLInt);
-      expectError(
-        result,
+    it('returns a single error for 2^32 input as int', () => {
+      const result = coerceValue(Math.pow(2, 32), GraphQLInt);
+      expectErrors(result).to.deep.equal([
+        'Expected type Int; Int cannot represent non 32-bit signed integer value: 4294967296',
+      ]);
+    });
+
+    it('returns a single error for float input as int', () => {
+      const result = coerceValue(1.5, GraphQLInt);
+      expectErrors(result).to.deep.equal([
         'Expected type Int; Int cannot represent non-integer value: 1.5',
-      );
+      ]);
+    });
+
+    it('returns a single error for NaN input as int', () => {
+      const result = coerceValue(NaN, GraphQLInt);
+      expectErrors(result).to.deep.equal([
+        'Expected type Int; Int cannot represent non-integer value: NaN',
+      ]);
+    });
+
+    it('returns a single error for Infinity input as int', () => {
+      const result = coerceValue(Infinity, GraphQLInt);
+      expectErrors(result).to.deep.equal([
+        'Expected type Int; Int cannot represent non-integer value: Infinity',
+      ]);
     });
 
     it('returns a single error for char input', () => {
       const result = coerceValue('a', GraphQLInt);
-      expectError(
-        result,
-        'Expected type Int; Int cannot represent non 32-bit signed integer value: a',
-      );
+      expectErrors(result).to.deep.equal([
+        'Expected type Int; Int cannot represent non-integer value: "a"',
+      ]);
     });
 
-    it('returns a single error for char input', () => {
+    it('returns a single error for string input', () => {
       const result = coerceValue('meow', GraphQLInt);
-      expectError(
-        result,
-        'Expected type Int; Int cannot represent non 32-bit signed integer value: meow',
-      );
+      expectErrors(result).to.deep.equal([
+        'Expected type Int; Int cannot represent non-integer value: "meow"',
+      ]);
     });
   });
 
   describe('for GraphQLFloat', () => {
-    it('returns no error for int input', () => {
+    it('returns value for integer', () => {
+      const result = coerceValue(1, GraphQLFloat);
+      expectValue(result).to.equal(1);
+    });
+
+    it('returns value for decimal', () => {
+      const result = coerceValue(1.1, GraphQLFloat);
+      expectValue(result).to.equal(1.1);
+    });
+
+    it('returns value for exponent input', () => {
+      const result = coerceValue(1e3, GraphQLFloat);
+      expectValue(result).to.equal(1000);
+    });
+
+    it('returns error for numeric looking string', () => {
       const result = coerceValue('1', GraphQLFloat);
-      expectNoErrors(result);
+      expectErrors(result).to.deep.equal([
+        'Expected type Float; Float cannot represent non numeric value: "1"',
+      ]);
     });
 
-    it('returns no error for exponent input', () => {
-      const result = coerceValue('1e3', GraphQLFloat);
-      expectNoErrors(result);
-    });
-
-    it('returns no error for float input', () => {
-      const result = coerceValue('1.5', GraphQLFloat);
-      expectNoErrors(result);
-    });
-
-    it('returns a single error for empty value', () => {
+    it('returns null for null value', () => {
       const result = coerceValue(null, GraphQLFloat);
-      expectNoErrors(result);
+      expectValue(result).to.equal(null);
     });
 
-    it('returns a single error for empty value', () => {
+    it('returns a single error for empty string input', () => {
       const result = coerceValue('', GraphQLFloat);
-      expectError(
-        result,
-        'Expected type Float; Float cannot represent non numeric value: (empty string)',
-      );
+      expectErrors(result).to.deep.equal([
+        'Expected type Float; Float cannot represent non numeric value: ""',
+      ]);
+    });
+
+    it('returns a single error for NaN input', () => {
+      const result = coerceValue(NaN, GraphQLFloat);
+      expectErrors(result).to.deep.equal([
+        'Expected type Float; Float cannot represent non numeric value: NaN',
+      ]);
+    });
+
+    it('returns a single error for Infinity input', () => {
+      const result = coerceValue(Infinity, GraphQLFloat);
+      expectErrors(result).to.deep.equal([
+        'Expected type Float; Float cannot represent non numeric value: Infinity',
+      ]);
     });
 
     it('returns a single error for char input', () => {
       const result = coerceValue('a', GraphQLFloat);
-      expectError(
-        result,
-        'Expected type Float; Float cannot represent non numeric value: a',
-      );
+      expectErrors(result).to.deep.equal([
+        'Expected type Float; Float cannot represent non numeric value: "a"',
+      ]);
     });
 
     it('returns a single error for char input', () => {
       const result = coerceValue('meow', GraphQLFloat);
-      expectError(
-        result,
-        'Expected type Float; Float cannot represent non numeric value: meow',
-      );
+      expectErrors(result).to.deep.equal([
+        'Expected type Float; Float cannot represent non numeric value: "meow"',
+      ]);
     });
   });
 
@@ -151,25 +204,25 @@ describe('coerceValue', () => {
 
     it('returns no error for a known enum name', () => {
       const fooResult = coerceValue('FOO', TestEnum);
-      expectNoErrors(fooResult);
-      expect(fooResult.value).to.equal('InternalFoo');
+      expectValue(fooResult).to.equal('InternalFoo');
 
       const barResult = coerceValue('BAR', TestEnum);
-      expectNoErrors(barResult);
-      expect(barResult.value).to.equal(123456789);
+      expectValue(barResult).to.equal(123456789);
     });
 
     it('results error for misspelled enum value', () => {
       const result = coerceValue('foo', TestEnum);
-      expectError(result, 'Expected type TestEnum; did you mean FOO?');
+      expectErrors(result).to.deep.equal([
+        'Expected type TestEnum; did you mean FOO?',
+      ]);
     });
 
     it('results error for incorrect value type', () => {
       const result1 = coerceValue(123, TestEnum);
-      expectError(result1, 'Expected type TestEnum.');
+      expectErrors(result1).to.deep.equal(['Expected type TestEnum.']);
 
       const result2 = coerceValue({ field: 'value' }, TestEnum);
-      expectError(result2, 'Expected type TestEnum.');
+      expectErrors(result2).to.deep.equal(['Expected type TestEnum.']);
     });
   });
 
@@ -184,39 +237,36 @@ describe('coerceValue', () => {
 
     it('returns no error for a valid input', () => {
       const result = coerceValue({ foo: 123 }, TestInputObject);
-      expectNoErrors(result);
-      expect(result.value).to.deep.equal({ foo: 123 });
+      expectValue(result).to.deep.equal({ foo: 123 });
     });
 
-    it('returns no error for a non-object type', () => {
+    it('returns an error for a non-object type', () => {
       const result = coerceValue(123, TestInputObject);
-      expectError(result, 'Expected type TestInputObject to be an object.');
+      expectErrors(result).to.deep.equal([
+        'Expected type TestInputObject to be an object.',
+      ]);
     });
 
-    it('returns no error for an invalid field', () => {
+    it('returns an error for an invalid field', () => {
       const result = coerceValue({ foo: 'abc' }, TestInputObject);
-      expectError(
-        result,
-        'Expected type Int at value.foo; Int cannot represent non 32-bit signed integer value: abc',
-      );
+      expectErrors(result).to.deep.equal([
+        'Expected type Int at value.foo; Int cannot represent non-integer value: "abc"',
+      ]);
     });
 
     it('returns multiple errors for multiple invalid fields', () => {
       const result = coerceValue({ foo: 'abc', bar: 'def' }, TestInputObject);
-      expect(
-        result.errors && result.errors.map(error => error.message),
-      ).to.deep.equal([
-        'Expected type Int at value.foo; Int cannot represent non 32-bit signed integer value: abc',
-        'Expected type Int at value.bar; Int cannot represent non 32-bit signed integer value: def',
+      expectErrors(result).to.deep.equal([
+        'Expected type Int at value.foo; Int cannot represent non-integer value: "abc"',
+        'Expected type Int at value.bar; Int cannot represent non-integer value: "def"',
       ]);
     });
 
     it('returns error for a missing required field', () => {
       const result = coerceValue({ bar: 123 }, TestInputObject);
-      expectError(
-        result,
+      expectErrors(result).to.deep.equal([
         'Field value.foo of required type Int! was not provided.',
-      );
+      ]);
     });
 
     it('returns error for an unknown field', () => {
@@ -224,18 +274,72 @@ describe('coerceValue', () => {
         { foo: 123, unknownField: 123 },
         TestInputObject,
       );
-      expectError(
-        result,
+      expectErrors(result).to.deep.equal([
         'Field "unknownField" is not defined by type TestInputObject.',
-      );
+      ]);
     });
 
     it('returns error for a misspelled field', () => {
       const result = coerceValue({ foo: 123, bart: 123 }, TestInputObject);
-      expectError(
-        result,
+      expectErrors(result).to.deep.equal([
         'Field "bart" is not defined by type TestInputObject; did you mean bar?',
-      );
+      ]);
+    });
+  });
+
+  describe('for GraphQLList', () => {
+    const TestList = GraphQLList(GraphQLInt);
+
+    it('returns no error for a valid input', () => {
+      const result = coerceValue([1, 2, 3], TestList);
+      expectValue(result).to.deep.equal([1, 2, 3]);
+    });
+
+    it('returns an error for an invalid input', () => {
+      const result = coerceValue([1, 'b', true], TestList);
+      expectErrors(result).to.deep.equal([
+        'Expected type Int at value[1]; Int cannot represent non-integer value: "b"',
+        'Expected type Int at value[2]; Int cannot represent non-integer value: true',
+      ]);
+    });
+
+    it('returns a list for a non-list value', () => {
+      const result = coerceValue(42, TestList);
+      expectValue(result).to.deep.equal([42]);
+    });
+
+    it('returns null for a null value', () => {
+      const result = coerceValue(null, TestList);
+      expectValue(result).to.deep.equal(null);
+    });
+  });
+
+  describe('for nested GraphQLList', () => {
+    const TestNestedList = GraphQLList(GraphQLList(GraphQLInt));
+
+    it('returns no error for a valid input', () => {
+      const result = coerceValue([[1], [2, 3]], TestNestedList);
+      expectValue(result).to.deep.equal([[1], [2, 3]]);
+    });
+
+    it('returns a list for a non-list value', () => {
+      const result = coerceValue(42, TestNestedList);
+      expectValue(result).to.deep.equal([[42]]);
+    });
+
+    it('returns null for a null value', () => {
+      const result = coerceValue(null, TestNestedList);
+      expectValue(result).to.deep.equal(null);
+    });
+
+    it('returns nested lists for nested non-list values', () => {
+      const result = coerceValue([1, 2, 3], TestNestedList);
+      expectValue(result).to.deep.equal([[1], [2], [3]]);
+    });
+
+    it('returns nested null for nested null values', () => {
+      const result = coerceValue([42, [null], null], TestNestedList);
+      expectValue(result).to.deep.equal([[42], [null], null]);
     });
   });
 });

@@ -27,6 +27,7 @@ import type {
   GraphQLCompositeType,
   GraphQLField,
   GraphQLArgument,
+  GraphQLInputField,
   GraphQLEnumValue,
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
@@ -51,6 +52,7 @@ export class TypeInfo {
   _parentTypeStack: Array<?GraphQLCompositeType>;
   _inputTypeStack: Array<?GraphQLInputType>;
   _fieldDefStack: Array<?GraphQLField<*, *>>;
+  _defaultValueStack: Array<?mixed>;
   _directive: ?GraphQLDirective;
   _argument: ?GraphQLArgument;
   _enumValue: ?GraphQLEnumValue;
@@ -71,6 +73,7 @@ export class TypeInfo {
     this._parentTypeStack = [];
     this._inputTypeStack = [];
     this._fieldDefStack = [];
+    this._defaultValueStack = [];
     this._directive = null;
     this._argument = null;
     this._enumValue = null;
@@ -118,6 +121,12 @@ export class TypeInfo {
     }
   }
 
+  getDefaultValue(): ?mixed {
+    if (this._defaultValueStack.length > 0) {
+      return this._defaultValueStack[this._defaultValueStack.length - 1];
+    }
+  }
+
   getDirective(): ?GraphQLDirective {
     return this._directive;
   }
@@ -130,8 +139,7 @@ export class TypeInfo {
     return this._enumValue;
   }
 
-  // Flow does not yet handle this case.
-  enter(node: any /* ASTNode */) {
+  enter(node: ASTNode) {
     const schema = this._schema;
     // Note: many of the types below are explicitly typed as "mixed" to drop
     // any assumptions of a valid schema to ensure runtime types are properly
@@ -199,6 +207,7 @@ export class TypeInfo {
           }
         }
         this._argument = argDef;
+        this._defaultValueStack.push(argDef ? argDef.defaultValue : undefined);
         this._inputTypeStack.push(isInputType(argType) ? argType : undefined);
         break;
       case Kind.LIST:
@@ -206,17 +215,23 @@ export class TypeInfo {
         const itemType: mixed = isListType(listType)
           ? listType.ofType
           : listType;
+        // List positions never have a default value.
+        this._defaultValueStack.push(undefined);
         this._inputTypeStack.push(isInputType(itemType) ? itemType : undefined);
         break;
       case Kind.OBJECT_FIELD:
         const objectType: mixed = getNamedType(this.getInputType());
-        let inputFieldType: mixed;
+        let inputFieldType: GraphQLInputType | void;
+        let inputField: GraphQLInputField | void;
         if (isInputObjectType(objectType)) {
-          const inputField = objectType.getFields()[node.name.value];
+          inputField = objectType.getFields()[node.name.value];
           if (inputField) {
             inputFieldType = inputField.type;
           }
         }
+        this._defaultValueStack.push(
+          inputField ? inputField.defaultValue : undefined,
+        );
         this._inputTypeStack.push(
           isInputType(inputFieldType) ? inputFieldType : undefined,
         );
@@ -254,10 +269,12 @@ export class TypeInfo {
         break;
       case Kind.ARGUMENT:
         this._argument = null;
+        this._defaultValueStack.pop();
         this._inputTypeStack.pop();
         break;
       case Kind.LIST:
       case Kind.OBJECT_FIELD:
+        this._defaultValueStack.pop();
         this._inputTypeStack.pop();
         break;
       case Kind.ENUM:

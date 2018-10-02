@@ -11,8 +11,10 @@ import type {
   GraphQLFieldConfigArgumentMap,
   GraphQLArgument,
 } from './definition';
-import { GraphQLNonNull } from './wrappers';
+import { GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
+import defineToStringTag from '../jsutils/defineToStringTag';
+import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import type { DirectiveDefinitionNode } from '../language/ast';
@@ -79,16 +81,24 @@ export class GraphQLDirective {
       });
     }
   }
+
+  toString(): string {
+    return '@' + this.name;
+  }
 }
 
-export type GraphQLDirectiveConfig = {
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+defineToStringTag(GraphQLDirective);
+defineToJSON(GraphQLDirective);
+
+export type GraphQLDirectiveConfig = {|
   name: string,
   description?: ?string,
   locations: Array<DirectiveLocationEnum>,
   args?: ?GraphQLFieldConfigArgumentMap,
   astNode?: ?DirectiveDefinitionNode,
   repeatable?: ?boolean,
-};
+|};
 
 /**
  * Used to conditionally include fields or fragments.
@@ -149,8 +159,8 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
       type: GraphQLString,
       description:
         'Explains why this element was deprecated, usually also including a ' +
-        'suggestion for how to access supported similar data. Formatted ' +
-        'in [Markdown](https://daringfireball.net/projects/markdown/).',
+        'suggestion for how to access supported similar data. Formatted using ' +
+        'the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).',
       defaultValue: DEFAULT_DEPRECATION_REASON,
     },
   },

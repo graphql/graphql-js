@@ -7,8 +7,8 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ASTValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { OperationDefinitionNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -25,7 +25,7 @@ export function singleFieldOnlyMessage(name: ?string): string {
  * A GraphQL subscription is valid only if it contains a single root field.
  */
 export function SingleFieldSubscriptions(
-  context: ValidationContext,
+  context: ASTValidationContext,
 ): ASTVisitor {
   return {
     OperationDefinition(node: OperationDefinitionNode) {

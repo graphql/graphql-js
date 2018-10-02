@@ -7,8 +7,8 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ASTValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function duplicateArgMessage(argName: string): string {
@@ -21,7 +21,7 @@ export function duplicateArgMessage(argName: string): string {
  * A GraphQL field or directive is only valid if all supplied arguments are
  * uniquely named.
  */
-export function UniqueArgumentNames(context: ValidationContext): ASTVisitor {
+export function UniqueArgumentNames(context: ASTValidationContext): ASTVisitor {
   let knownArgNames = Object.create(null);
   return {
     Field() {

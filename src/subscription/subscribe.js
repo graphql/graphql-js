@@ -8,6 +8,7 @@
  */
 
 import { isAsyncIterable } from 'iterall';
+import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 import {
@@ -18,17 +19,17 @@ import {
   collectFields,
   execute,
   getFieldDef,
-  getOperationRootType,
   resolveFieldValueOrError,
   responsePathAsArray,
 } from '../execution/execute';
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
 import mapAsyncIterator from './mapAsyncIterator';
 
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { ExecutionResult } from '../execution/execute';
 import type { DocumentNode } from '../language/ast';
 import type { GraphQLFieldResolver } from '../type/definition';
+import { getOperationRootType } from '../utilities/getOperationRootType';
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -41,7 +42,7 @@ import type { GraphQLFieldResolver } from '../type/definition';
  * compliant subscription, a GraphQL Response (ExecutionResult) with
  * descriptive errors and no data will be returned.
  *
- * If the the source stream could not be created due to faulty subscription
+ * If the source stream could not be created due to faulty subscription
  * resolver logic or underlying systems, the promise will resolve to a single
  * ExecutionResult containing `errors` and no `data`.
  *
@@ -279,7 +280,7 @@ export function createSourceEventStream(
       }
       throw new Error(
         'Subscription field must return Async Iterable. Received: ' +
-          String(eventStream),
+          inspect(eventStream),
       );
     });
   } catch (error) {

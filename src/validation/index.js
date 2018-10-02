@@ -7,7 +7,10 @@
  * @flow strict
  */
 
-export { validate, ValidationContext } from './validate';
+export { validate } from './validate';
+
+export { ValidationContext } from './ValidationContext';
+export type { ValidationRule } from './ValidationContext';
 
 export { specifiedRules } from './specifiedRules';
 
@@ -76,8 +79,8 @@ export {
 
 // Spec Section: "Argument Optionality"
 export {
-  ProvidedNonNullArguments as ProvidedNonNullArgumentsRule,
-} from './rules/ProvidedNonNullArguments';
+  ProvidedRequiredArguments as ProvidedRequiredArgumentsRule,
+} from './rules/ProvidedRequiredArguments';
 
 // Spec Section: "Leaf Field Selections"
 export { ScalarLeafs as ScalarLeafsRule } from './rules/ScalarLeafs';
@@ -126,11 +129,6 @@ export {
 export {
   VariablesAreInputTypes as VariablesAreInputTypesRule,
 } from './rules/VariablesAreInputTypes';
-
-// Spec Section: "Variables Default Value Is Allowed"
-export {
-  VariablesDefaultValueAllowed as VariablesDefaultValueAllowedRule,
-} from './rules/VariablesDefaultValueAllowed';
 
 // Spec Section: "All Variable Usages Are Allowed"
 export {

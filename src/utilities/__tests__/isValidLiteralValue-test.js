@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -23,7 +25,6 @@ describe('isValidLiteralValue', () => {
       {
         message: 'Expected type Int, found "abc".',
         locations: [{ line: 1, column: 1 }],
-        path: undefined,
       },
     ]);
   });

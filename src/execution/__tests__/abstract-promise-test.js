@@ -3,6 +3,8 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
+ * @noflow
  */
 
 import { expect } from 'chai';
@@ -266,7 +268,9 @@ describe('Execute: Handles execution of abstract types with promises', () => {
             ? DogType
             : obj instanceof Cat
               ? CatType
-              : obj instanceof Human ? HumanType : null,
+              : obj instanceof Human
+                ? HumanType
+                : null,
         );
       },
       fields: {
@@ -332,7 +336,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.jsonEqual({
+    expect(result).to.deep.equal({
       data: {
         pets: [
           {
@@ -389,7 +393,9 @@ describe('Execute: Handles execution of abstract types with promises', () => {
             ? DogType
             : obj instanceof Cat
               ? CatType
-              : obj instanceof Human ? HumanType : null,
+              : obj instanceof Human
+                ? HumanType
+                : null,
         );
       },
       types: [DogType, CatType],
@@ -428,7 +434,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.jsonEqual({
+    expect(result).to.deep.equal({
       data: {
         pets: [
           {
@@ -513,7 +519,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.jsonEqual({
+    expect(result).to.deep.equal({
       data: {
         pets: [
           {
@@ -585,7 +591,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
 
     const result = await graphql(schema, query);
 
-    expect(result).to.jsonEqual({
+    expect(result).to.deep.equal({
       data: {
         pets: [null, null],
       },

@@ -1,11 +1,10 @@
 language: node_js
 
-# https://github.com/nodejs/LTS
+# https://github.com/nodejs/Release
 node_js:
-  - '9'
+  - '10'
   - '8'
   - '6'
-  - '4'
 
 git:
   depth: 5

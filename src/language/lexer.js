@@ -207,14 +207,6 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
   const code = charCodeAt.call(body, pos);
 
   // SourceCharacter
-  if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
-    throw syntaxError(
-      source,
-      pos,
-      `Cannot contain the invalid character ${printCharCode(code)}.`,
-    );
-  }
-
   switch (code) {
     // !
     case 33:
@@ -353,6 +345,10 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
  * Report a message that an unexpected character was encountered.
  */
 function unexpectedCharacterMessage(code) {
+  if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
+    return `Cannot contain the invalid character ${printCharCode(code)}.`;
+  }
+
   if (code === 39) {
     // '
     return (
@@ -361,7 +357,7 @@ function unexpectedCharacterMessage(code) {
     );
   }
 
-  return 'Cannot parse the unexpected character ' + printCharCode(code) + '.';
+  return `Cannot parse the unexpected character ${printCharCode(code)}.`;
 }
 
 /**
@@ -691,7 +687,7 @@ function readBlockString(source, start, line, col, prev): Token {
 }
 
 /**
- * Converts four hexidecimal chars to the integer that the
+ * Converts four hexadecimal chars to the integer that the
  * string represents. For example, uniCharCode('0','0','0','f')
  * will return 15, and uniCharCode('0','0','f','f') returns 255.
  *

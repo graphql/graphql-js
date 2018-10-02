@@ -7,8 +7,8 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../index';
-import { GraphQLError } from '../../error';
+import type { ValidationContext } from '../ValidationContext';
+import { GraphQLError } from '../../error/GraphQLError';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
 import type { FieldNode } from '../../language/ast';
@@ -84,10 +84,9 @@ export function FieldsOnCorrectType(context: ValidationContext): ASTVisitor {
 }
 
 /**
- * Go through all of the implementations of type, as well as the interfaces
- * that they implement. If any of those types include the provided field,
- * suggest them, sorted by how often the type is referenced,  starting
- * with Interfaces.
+ * Go through all of the implementations of type, as well as the interfaces that
+ * they implement. If any of those types include the provided field, suggest
+ * them, sorted by how often the type is referenced, starting with Interfaces.
  */
 function getSuggestedTypeNames(
   schema: GraphQLSchema,
@@ -97,21 +96,21 @@ function getSuggestedTypeNames(
   if (isAbstractType(type)) {
     const suggestedObjectTypes = [];
     const interfaceUsageCount = Object.create(null);
-    schema.getPossibleTypes(type).forEach(possibleType => {
+    for (const possibleType of schema.getPossibleTypes(type)) {
       if (!possibleType.getFields()[fieldName]) {
-        return;
+        continue;
       }
       // This object type defines this field.
       suggestedObjectTypes.push(possibleType.name);
-      possibleType.getInterfaces().forEach(possibleInterface => {
+      for (const possibleInterface of possibleType.getInterfaces()) {
         if (!possibleInterface.getFields()[fieldName]) {
-          return;
+          continue;
         }
         // This interface type defines this field.
         interfaceUsageCount[possibleInterface.name] =
           (interfaceUsageCount[possibleInterface.name] || 0) + 1;
-      });
-    });
+      }
+    }
 
     // Suggest interface types based on how common they are.
     const suggestedInterfaceTypes = Object.keys(interfaceUsageCount).sort(

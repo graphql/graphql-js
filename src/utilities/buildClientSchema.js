@@ -7,14 +7,13 @@
  * @flow strict
  */
 
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
 import { GraphQLSchema } from '../type/schema';
-
-import { DirectiveLocation } from '../language/directiveLocation';
 
 import {
   isInputType,
@@ -25,12 +24,12 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
   assertNullableType,
   assertObjectType,
   assertInterfaceType,
 } from '../type/definition';
-
-import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
 
 import type {
   GraphQLType,
@@ -118,7 +117,7 @@ export function buildClientSchema(
       return GraphQLNonNull(assertNullableType(nullableType));
     }
     if (!typeRef.name) {
-      throw new Error('Unknown type reference: ' + JSON.stringify(typeRef));
+      throw new Error('Unknown type reference: ' + inspect(typeRef));
     }
     return getNamedType(typeRef.name);
   }
@@ -196,7 +195,7 @@ export function buildClientSchema(
     throw new Error(
       'Invalid or incomplete introspection result. Ensure that a full ' +
         'introspection query is used in order to build a client schema:' +
-        JSON.stringify(type),
+        inspect(type),
     );
   }
 
@@ -216,13 +215,13 @@ export function buildClientSchema(
     if (!objectIntrospection.interfaces) {
       throw new Error(
         'Introspection result missing interfaces: ' +
-          JSON.stringify(objectIntrospection),
+          inspect(objectIntrospection),
       );
     }
     return new GraphQLObjectType({
       name: objectIntrospection.name,
       description: objectIntrospection.description,
-      interfaces: objectIntrospection.interfaces.map(getInterfaceType),
+      interfaces: () => objectIntrospection.interfaces.map(getInterfaceType),
       fields: () => buildFieldDefMap(objectIntrospection),
     });
   }
@@ -243,13 +242,13 @@ export function buildClientSchema(
     if (!unionIntrospection.possibleTypes) {
       throw new Error(
         'Introspection result missing possibleTypes: ' +
-          JSON.stringify(unionIntrospection),
+          inspect(unionIntrospection),
       );
     }
     return new GraphQLUnionType({
       name: unionIntrospection.name,
       description: unionIntrospection.description,
-      types: unionIntrospection.possibleTypes.map(getObjectType),
+      types: () => unionIntrospection.possibleTypes.map(getObjectType),
     });
   }
 
@@ -259,7 +258,7 @@ export function buildClientSchema(
     if (!enumIntrospection.enumValues) {
       throw new Error(
         'Introspection result missing enumValues: ' +
-          JSON.stringify(enumIntrospection),
+          inspect(enumIntrospection),
       );
     }
     return new GraphQLEnumType({
@@ -282,7 +281,7 @@ export function buildClientSchema(
     if (!inputObjectIntrospection.inputFields) {
       throw new Error(
         'Introspection result missing inputFields: ' +
-          JSON.stringify(inputObjectIntrospection),
+          inspect(inputObjectIntrospection),
       );
     }
     return new GraphQLInputObjectType({
@@ -295,8 +294,7 @@ export function buildClientSchema(
   function buildFieldDefMap(typeIntrospection) {
     if (!typeIntrospection.fields) {
       throw new Error(
-        'Introspection result missing fields: ' +
-          JSON.stringify(typeIntrospection),
+        'Introspection result missing fields: ' + inspect(typeIntrospection),
       );
     }
     return keyValMap(
@@ -306,7 +304,7 @@ export function buildClientSchema(
         if (!fieldIntrospection.args) {
           throw new Error(
             'Introspection result missing field args: ' +
-              JSON.stringify(fieldIntrospection),
+              inspect(fieldIntrospection),
           );
         }
         return {
@@ -333,7 +331,6 @@ export function buildClientSchema(
       ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type)
       : undefined;
     return {
-      name: inputValueIntrospection.name,
       description: inputValueIntrospection.description,
       type,
       defaultValue,
@@ -341,37 +338,22 @@ export function buildClientSchema(
   }
 
   function buildDirective(directiveIntrospection) {
-    // Support deprecated `on****` fields for building `locations`, as this
-    // is used by GraphiQL which may need to support outdated servers.
-    const locations = directiveIntrospection.locations
-      ? directiveIntrospection.locations.slice()
-      : [].concat(
-          !directiveIntrospection.onField ? [] : [DirectiveLocation.FIELD],
-          !directiveIntrospection.onOperation
-            ? []
-            : [
-                DirectiveLocation.QUERY,
-                DirectiveLocation.MUTATION,
-                DirectiveLocation.SUBSCRIPTION,
-              ],
-          !directiveIntrospection.onFragment
-            ? []
-            : [
-                DirectiveLocation.FRAGMENT_DEFINITION,
-                DirectiveLocation.FRAGMENT_SPREAD,
-                DirectiveLocation.INLINE_FRAGMENT,
-              ],
-        );
     if (!directiveIntrospection.args) {
       throw new Error(
         'Introspection result missing directive args: ' +
-          JSON.stringify(directiveIntrospection),
+          inspect(directiveIntrospection),
+      );
+    }
+    if (!directiveIntrospection.locations) {
+      throw new Error(
+        'Introspection result missing directive locations: ' +
+          inspect(directiveIntrospection),
       );
     }
     return new GraphQLDirective({
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,
-      locations,
+      locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args),
       repeatable: directiveIntrospection.repeatable,
     });
