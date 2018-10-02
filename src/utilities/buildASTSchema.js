@@ -296,6 +296,7 @@ export class ASTDefinitionBuilder {
       args:
         directiveNode.arguments &&
         this._makeInputValues(directiveNode.arguments),
+      repeatable: directiveNode.repeatable,
       astNode: directiveNode,
     });
   }

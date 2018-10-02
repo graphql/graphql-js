@@ -1326,7 +1326,7 @@ function parseInputObjectTypeExtension(
 
 /**
  * DirectiveDefinition :
- *   - Description? directive @ Name ArgumentsDefinition? on DirectiveLocations
+ *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
  */
 function parseDirectiveDefinition(lexer: Lexer<*>): DirectiveDefinitionNode {
   const start = lexer.token;
@@ -1335,6 +1335,7 @@ function parseDirectiveDefinition(lexer: Lexer<*>): DirectiveDefinitionNode {
   expect(lexer, TokenKind.AT);
   const name = parseName(lexer);
   const args = parseArgumentDefs(lexer);
+  const repeatable = expectOptionalKeyword(lexer, 'repeatable');
   expectKeyword(lexer, 'on');
   const locations = parseDirectiveLocations(lexer);
   return {
@@ -1342,6 +1343,7 @@ function parseDirectiveDefinition(lexer: Lexer<*>): DirectiveDefinitionNode {
     description,
     name,
     arguments: args,
+    repeatable,
     locations,
     loc: loc(lexer, start),
   };
@@ -1475,6 +1477,21 @@ function expectKeyword(lexer: Lexer<*>, value: string): Token {
     token.start,
     `Expected "${value}", found ${getTokenDesc(token)}`,
   );
+}
+
+/**
+ * If the next token is a keyword with the given value, return true after advancing
+ * the lexer. Otherwise, do not change the parser state and return false.
+ */
+function expectOptionalKeyword(lexer: Lexer<*>, value: string): boolean {
+  const token = lexer.token;
+  const match = token.kind === TokenKind.NAME && token.value === value;
+
+  if (match) {
+    lexer.advance();
+  }
+
+  return match;
 }
 
 /**

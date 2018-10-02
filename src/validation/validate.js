@@ -110,6 +110,7 @@ export class ValidationContext {
     OperationDefinitionNode,
     $ReadOnlyArray<VariableUsage>,
   >;
+  _directivesByName: ?Map<string, GraphQLDirective>;
 
   constructor(
     schema: GraphQLSchema,
@@ -124,6 +125,7 @@ export class ValidationContext {
     this._recursivelyReferencedFragments = new Map();
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+    this._directivesByName = null;
   }
 
   reportError(error: GraphQLError): void {
@@ -269,6 +271,20 @@ export class ValidationContext {
 
   getDirective(): ?GraphQLDirective {
     return this._typeInfo.getDirective();
+  }
+
+  getDirectiveByName(name: string): ?GraphQLDirective {
+    if (this._directivesByName === null) {
+      this._directivesByName = new Map();
+
+      this._schema.getDirectives().forEach(directive => {
+        if (this._directivesByName) {
+          this._directivesByName.set(directive.name, directive);
+        }
+      });
+    }
+
+    return this._directivesByName ? this._directivesByName.get(name) : null;
   }
 
   getArgument(): ?GraphQLArgument {

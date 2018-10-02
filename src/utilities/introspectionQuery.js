@@ -33,6 +33,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
           args {
             ...InputValue
           }
+          repeatable
         }
       }
     }
@@ -268,4 +269,5 @@ export type IntrospectionDirective = {|
   +description?: ?string,
   +locations: $ReadOnlyArray<DirectiveLocationEnum>,
   +args: $ReadOnlyArray<IntrospectionInputValue>,
+  +repeatable: boolean,
 |};

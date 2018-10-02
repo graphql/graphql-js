@@ -404,6 +404,17 @@ export const testSchema = new GraphQLSchema({
       name: 'onInputFieldDefinition',
       locations: ['INPUT_FIELD_DEFINITION'],
     }),
+    new GraphQLDirective({
+      name: 'repeatableDirective',
+      args: {
+        id: {
+          type: GraphQLNonNull(GraphQLInt),
+          description: 'Some generic ID.',
+        },
+      },
+      repeatable: true,
+      locations: ['OBJECT'],
+    }),
   ],
 });
 

@@ -209,10 +209,11 @@ const printDocASTReducer = {
     join(['extend input', name, join(directives, ' '), block(fields)], ' '),
 
   DirectiveDefinition: addDescription(
-    ({ name, arguments: args, locations }) =>
+    ({ name, arguments: args, locations, repeatable }) =>
       'directive @' +
       name +
       wrap('(', join(args, ', '), ')') +
+      (repeatable ? ' repeatable' : '') +
       ' on ' +
       join(locations, ' | '),
   ),

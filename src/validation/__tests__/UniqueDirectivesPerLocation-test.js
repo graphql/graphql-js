@@ -77,6 +77,32 @@ describe('Validate: Directives Are Unique Per Location', () => {
     );
   });
 
+  it('repeatable directives in same location', () => {
+    expectPassesRule(
+      UniqueDirectivesPerLocation,
+      `
+      type Test @repeatableDirective(id: 1) @repeatableDirective(id: 2) {
+        field: String!
+      }
+    `,
+    );
+  });
+
+  it('repeatable directives in similar locations', () => {
+    expectPassesRule(
+      UniqueDirectivesPerLocation,
+      `
+      type Test @repeatableDirective(id: 1) @repeatableDirective(id: 2) {
+        field: String!
+      }
+      
+      extend type Test @repeatableDirective(id: 3) {
+        anotherField: String!
+      }
+    `,
+    );
+  });
+
   it('duplicate directives in one location', () => {
     expectFailsRule(
       UniqueDirectivesPerLocation,

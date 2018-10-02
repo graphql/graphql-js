@@ -373,6 +373,7 @@ export function buildClientSchema(
       description: directiveIntrospection.description,
       locations,
       args: buildInputValueDefMap(directiveIntrospection.args),
+      repeatable: directiveIntrospection.repeatable,
     });
   }
 

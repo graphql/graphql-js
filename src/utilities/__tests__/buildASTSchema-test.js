@@ -89,6 +89,22 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
   });
 
+  it('With repeatable directives', () => {
+    const body = dedent`
+      directive @foo(arg: Int) repeatable on FIELD
+
+      type Query {
+        str: String
+      }
+    `;
+
+    const output = cycleOutput(body);
+    expect(output).to.equal(body);
+
+    const schema = buildASTSchema(parse(body));
+    expect(schema.getDirective('foo').repeatable).to.equal(true);
+  });
+
   it('Supports descriptions', () => {
     const body = dedent`
       """This is a directive"""

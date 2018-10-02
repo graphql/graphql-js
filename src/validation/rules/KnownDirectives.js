@@ -9,7 +9,6 @@
 
 import type { ValidationContext } from '../index';
 import { GraphQLError } from '../../error';
-import find from '../../jsutils/find';
 import { Kind } from '../../language/kinds';
 import { DirectiveLocation } from '../../language/directiveLocation';
 import type { ASTVisitor } from '../../language/visitor';
@@ -34,10 +33,7 @@ export function misplacedDirectiveMessage(
 export function KnownDirectives(context: ValidationContext): ASTVisitor {
   return {
     Directive(node, key, parent, path, ancestors) {
-      const directiveDef = find(
-        context.getSchema().getDirectives(),
-        def => def.name === node.name.value,
-      );
+      const directiveDef = context.getDirectiveByName(node.name.value);
       if (!directiveDef) {
         context.reportError(
           new GraphQLError(unknownDirectiveMessage(node.name.value), [node]),

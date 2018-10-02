@@ -48,7 +48,11 @@ export function UniqueDirectivesPerLocation(
               ]),
             );
           } else {
-            knownDirectives[directiveName] = directive;
+            const directiveDef = context.getDirectiveByName(directiveName);
+
+            if (!directiveDef || !directiveDef.repeatable) {
+              knownDirectives[directiveName] = directive;
+            }
           }
         });
       }

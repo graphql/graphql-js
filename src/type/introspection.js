@@ -92,6 +92,12 @@ export const __Directive = new GraphQLObjectType({
       type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
       resolve: directive => directive.args || [],
     },
+    repeatable: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      description:
+        'Permits using the directive multiple times at the same location.',
+      resolve: directive => directive.repeatable,
+    },
     // NOTE: the following three fields are deprecated and are no longer part
     // of the GraphQL specification.
     onOperation: {

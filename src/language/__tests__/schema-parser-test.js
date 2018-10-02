@@ -761,6 +761,106 @@ input Hello {
     );
   });
 
+  it('Directive definition', () => {
+    const body = 'directive @foo on OBJECT | INTERFACE';
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'DirectiveDefinition',
+          name: {
+            kind: 'Name',
+            value: 'foo',
+            loc: {
+              start: 11,
+              end: 14,
+            },
+          },
+          arguments: [],
+          repeatable: false,
+          locations: [
+            {
+              kind: 'Name',
+              value: 'OBJECT',
+              loc: {
+                start: 18,
+                end: 24,
+              },
+            },
+            {
+              kind: 'Name',
+              value: 'INTERFACE',
+              loc: {
+                start: 27,
+                end: 36,
+              },
+            },
+          ],
+          loc: {
+            start: 0,
+            end: 36,
+          },
+        },
+      ],
+      loc: {
+        start: 0,
+        end: 36,
+      },
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
+  it('Repeatable directive definition', () => {
+    const body = 'directive @foo repeatable on OBJECT | INTERFACE';
+    const doc = parse(body);
+    const expected = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'DirectiveDefinition',
+          name: {
+            kind: 'Name',
+            value: 'foo',
+            loc: {
+              start: 11,
+              end: 14,
+            },
+          },
+          arguments: [],
+          repeatable: true,
+          locations: [
+            {
+              kind: 'Name',
+              value: 'OBJECT',
+              loc: {
+                start: 29,
+                end: 35,
+              },
+            },
+            {
+              kind: 'Name',
+              value: 'INTERFACE',
+              loc: {
+                start: 38,
+                end: 47,
+              },
+            },
+          ],
+          loc: {
+            start: 0,
+            end: 47,
+          },
+        },
+      ],
+      loc: {
+        start: 0,
+        end: 47,
+      },
+    };
+    expect(printJson(doc)).to.equal(printJson(expected));
+  });
+
   it('Directive with incorrect locations', () => {
     expectSyntaxError(
       `
