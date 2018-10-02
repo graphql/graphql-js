@@ -143,7 +143,7 @@ describe('Validate: Known directives', () => {
     );
   });
 
-  it('Experimental: with well placed variable definition directive', () => {
+  it('with well placed variable definition directive', () => {
     expectPassesRule(
       KnownDirectives,
       `
@@ -151,7 +151,6 @@ describe('Validate: Known directives', () => {
         name
       }
       `,
-      { experimentalVariableDefinitionDirectives: true },
     );
   });
 
@@ -177,7 +176,7 @@ describe('Validate: Known directives', () => {
     );
   });
 
-  it('Experimental: with misplaced variable definition directive', () => {
+  it('with misplaced variable definition directive', () => {
     expectFailsRule(
       KnownDirectives,
       `
@@ -186,7 +185,6 @@ describe('Validate: Known directives', () => {
       }
       `,
       [misplacedDirective('onField', 'VARIABLE_DEFINITION', 2, 31)],
-      { experimentalVariableDefinitionDirectives: true },
     );
   });
 
