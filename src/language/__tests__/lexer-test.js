@@ -7,6 +7,8 @@
  * @noflow
  */
 
+import { inspect as utilInspect } from 'util';
+
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
@@ -62,7 +64,7 @@ describe('Lexer', () => {
     expect(JSON.stringify(token)).to.equal(
       '{"kind":"Name","value":"foo","line":1,"column":1}',
     );
-    expect(require('util').inspect(token)).to.equal(
+    expect(utilInspect(token)).to.equal(
       "{ kind: 'Name', value: 'foo', line: 1, column: 1 }",
     );
   });
@@ -129,7 +131,7 @@ describe('Lexer', () => {
   it('updates line numbers in error for file context', () => {
     let caughtError;
     try {
-      const str = '' + '\n' + '\n' + '     ?\n' + '\n';
+      const str = ['', '', '     ?', ''].join('\n');
       const source = new Source(str, 'foo.js', { line: 11, column: 12 });
       createLexer(source).advance();
     } catch (error) {
