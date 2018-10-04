@@ -35,6 +35,7 @@ import {
   findAddedNonNullDirectiveArgs,
   findRemovedLocationsForDirective,
   findRemovedDirectiveLocations,
+  findRemovedDirectiveRepeatable,
 } from '../findBreakingChanges';
 
 import {
@@ -1004,6 +1005,23 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
         description: 'QUERY was removed from DirectiveName',
+      },
+    ]);
+  });
+
+  it('should detect removal of repeatable flag', () => {
+    const oldSchema = buildSchema(`
+      directive @foo repeatable on OBJECT
+    `);
+
+    const newSchema = buildSchema(`
+      directive @foo on OBJECT
+    `);
+
+    expect(findRemovedDirectiveRepeatable(oldSchema, newSchema)).to.eql([
+      {
+        type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
+        description: 'Repeatable flag was removed from foo',
       },
     ]);
   });

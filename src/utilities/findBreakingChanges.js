@@ -50,6 +50,7 @@ export const BreakingChangeType = {
   DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED',
   DIRECTIVE_ARG_REMOVED: 'DIRECTIVE_ARG_REMOVED',
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED',
+  DIRECTIVE_REPEATABLE_REMOVED: 'DIRECTIVE_REPEATABLE_REMOVED',
   REQUIRED_DIRECTIVE_ARG_ADDED: 'REQUIRED_DIRECTIVE_ARG_ADDED',
 };
 
@@ -94,6 +95,7 @@ export function findBreakingChanges(
     ...findRemovedDirectiveArgs(oldSchema, newSchema),
     ...findAddedNonNullDirectiveArgs(oldSchema, newSchema),
     ...findRemovedDirectiveLocations(oldSchema, newSchema),
+    ...findRemovedDirectiveRepeatable(oldSchema, newSchema),
   ];
 }
 
@@ -838,6 +840,31 @@ export function findRemovedDirectiveLocations(
   }
 
   return removedLocations;
+}
+
+export function findRemovedDirectiveRepeatable(
+  oldSchema: GraphQLSchema,
+  newSchema: GraphQLSchema,
+): Array<BreakingChange> {
+  const removedRepeatable = [];
+  const oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
+
+  for (const newDirective of newSchema.getDirectives()) {
+    const oldDirective = oldSchemaDirectiveMap[newDirective.name];
+
+    if (!oldDirective) {
+      continue;
+    }
+
+    if (oldDirective.repeatable && !newDirective.repeatable) {
+      removedRepeatable.push({
+        type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
+        description: `Repeatable flag was removed from ${newDirective.name}`,
+      });
+    }
+  }
+
+  return removedRepeatable;
 }
 
 function getDirectiveMapForSchema(
