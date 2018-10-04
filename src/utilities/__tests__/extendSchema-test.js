@@ -115,6 +115,15 @@ const FooDirective = new GraphQLDirective({
   ],
 });
 
+const RepeatableDirective = new GraphQLDirective({
+  name: 'repeatableDirective',
+  args: {
+    input: { type: SomeInputType },
+  },
+  repeatable: true,
+  locations: [DirectiveLocation.OBJECT, DirectiveLocation.INTERFACE],
+});
+
 const testSchema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
@@ -134,7 +143,7 @@ const testSchema = new GraphQLSchema({
     }),
   }),
   types: [FooType, BarType],
-  directives: specifiedDirectives.concat([FooDirective]),
+  directives: specifiedDirectives.concat([FooDirective, RepeatableDirective]),
 });
 
 function extendTestSchema(sdl, options) {
