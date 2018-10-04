@@ -652,7 +652,7 @@ describe('Type System Printer', () => {
         args: [__InputValue!]!
 
         """Permits using the directive multiple times at the same location."""
-        repeatable: Boolean!
+        isRepeatable: Boolean!
       }
 
       """
@@ -888,7 +888,7 @@ describe('Type System Printer', () => {
         args: [__InputValue!]!
 
         # Permits using the directive multiple times at the same location.
-        repeatable: Boolean!
+        isRepeatable: Boolean!
       }
 
       # A Directive can be adjacent to many parts of the GraphQL language, a

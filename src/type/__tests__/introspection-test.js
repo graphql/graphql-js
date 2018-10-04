@@ -704,7 +704,7 @@ describe('Introspection', () => {
                   args: [],
                   deprecationReason: null,
                   isDeprecated: false,
-                  name: 'repeatable',
+                  name: 'isRepeatable',
                   type: {
                     kind: 'NON_NULL',
                     name: null,
@@ -921,7 +921,7 @@ describe('Introspection', () => {
             defaultValue: null,
           },
         ],
-        repeatable: false,
+        isRepeatable: false,
       },
       {
         name: 'skip',
@@ -941,7 +941,7 @@ describe('Introspection', () => {
             defaultValue: null,
           },
         ],
-        repeatable: false,
+        isRepeatable: false,
       },
       {
         name: 'deprecated',
@@ -957,7 +957,7 @@ describe('Introspection', () => {
             defaultValue: '"No longer supported"',
           },
         ],
-        repeatable: false,
+        isRepeatable: false,
       },
     ]);
   });

@@ -282,7 +282,7 @@ export class ASTDefinitionBuilder {
       args:
         directiveNode.arguments &&
         this._makeInputValues(directiveNode.arguments),
-      repeatable: directiveNode.repeatable,
+      isRepeatable: directiveNode.isRepeatable,
       astNode: directiveNode,
     });
   }

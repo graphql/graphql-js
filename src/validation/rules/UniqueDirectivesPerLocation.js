@@ -40,13 +40,13 @@ export function UniqueDirectivesPerLocation(
     ? schema.getDirectives()
     : specifiedDirectives;
   for (const directive of definedDirectives) {
-    uniqueDirectiveMap[directive.name] = !directive.repeatable;
+    uniqueDirectiveMap[directive.name] = !directive.isRepeatable;
   }
 
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      uniqueDirectiveMap[def.name.value] = !def.repeatable;
+      uniqueDirectiveMap[def.name.value] = !def.isRepeatable;
     }
   }
 

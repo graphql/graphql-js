@@ -856,7 +856,7 @@ export function findRemovedDirectiveRepeatable(
       continue;
     }
 
-    if (oldDirective.repeatable && !newDirective.repeatable) {
+    if (oldDirective.isRepeatable && !newDirective.isRepeatable) {
       removedRepeatable.push({
         type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
         description: `Repeatable flag was removed from ${newDirective.name}`,

@@ -355,10 +355,10 @@ export function buildClientSchema(
       description: directiveIntrospection.description,
       locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args),
-      repeatable:
-        directiveIntrospection.repeatable === undefined
+      isRepeatable:
+        directiveIntrospection.isRepeatable === undefined
           ? false
-          : directiveIntrospection.repeatable,
+          : directiveIntrospection.isRepeatable,
     });
   }
 

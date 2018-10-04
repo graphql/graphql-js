@@ -44,14 +44,15 @@ export class GraphQLDirective {
   locations: Array<DirectiveLocationEnum>;
   args: Array<GraphQLArgument>;
   astNode: ?DirectiveDefinitionNode;
-  repeatable: boolean;
+  isRepeatable: boolean;
 
   constructor(config: GraphQLDirectiveConfig): void {
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
     this.astNode = config.astNode;
-    this.repeatable = config.repeatable == null ? false : config.repeatable;
+    this.isRepeatable =
+      config.isRepeatable == null ? false : config.isRepeatable;
 
     invariant(config.name, 'Directive must be named.');
     invariant(
@@ -95,7 +96,7 @@ export type GraphQLDirectiveConfig = {|
   locations: Array<DirectiveLocationEnum>,
   args?: ?GraphQLFieldConfigArgumentMap,
   astNode?: ?DirectiveDefinitionNode,
-  repeatable?: ?boolean,
+  isRepeatable?: ?boolean,
 |};
 
 /**

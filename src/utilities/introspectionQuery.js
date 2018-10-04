@@ -13,7 +13,7 @@ export type IntrospectionOptions = {|
   // Whether to include descriptions in the introspection result.
   // Default: true
   descriptions: boolean,
-  // Whether to include `repeatable` flag on directives.
+  // Whether to include `isRepeatable` flag on directives.
   // Default: false
   directiveRepeatableFlag?: ?boolean,
 |};
@@ -38,7 +38,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
           args {
             ...InputValue
           }
-          ${directiveRepeatableFlag ? 'repeatable' : ''}
+          ${directiveRepeatableFlag ? 'isRepeatable' : ''}
         }
       }
     }
@@ -279,5 +279,5 @@ export type IntrospectionDirective = {|
   +description?: ?string,
   +locations: $ReadOnlyArray<DirectiveLocationEnum>,
   +args: $ReadOnlyArray<IntrospectionInputValue>,
-  +repeatable?: boolean,
+  +isRepeatable?: boolean,
 |};

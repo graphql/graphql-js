@@ -823,7 +823,7 @@ input Hello {
             },
           },
           arguments: [],
-          repeatable: false,
+          isRepeatable: false,
           locations: [
             {
               kind: 'Name',
@@ -874,7 +874,7 @@ input Hello {
             },
           },
           arguments: [],
-          repeatable: true,
+          isRepeatable: true,
           locations: [
             {
               kind: 'Name',
