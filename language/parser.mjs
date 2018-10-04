@@ -232,23 +232,12 @@ function parseVariableDefinitions(lexer) {
 
 function parseVariableDefinition(lexer) {
   var start = lexer.token;
-
-  if (lexer.options.experimentalVariableDefinitionDirectives) {
-    return {
-      kind: Kind.VARIABLE_DEFINITION,
-      variable: parseVariable(lexer),
-      type: (expect(lexer, TokenKind.COLON), parseTypeReference(lexer)),
-      defaultValue: skip(lexer, TokenKind.EQUALS) ? parseValueLiteral(lexer, true) : undefined,
-      directives: parseDirectives(lexer, true),
-      loc: loc(lexer, start)
-    };
-  }
-
   return {
     kind: Kind.VARIABLE_DEFINITION,
     variable: parseVariable(lexer),
     type: (expect(lexer, TokenKind.COLON), parseTypeReference(lexer)),
     defaultValue: skip(lexer, TokenKind.EQUALS) ? parseValueLiteral(lexer, true) : undefined,
+    directives: parseDirectives(lexer, true),
     loc: loc(lexer, start)
   };
 }

@@ -252,23 +252,12 @@ function parseVariableDefinitions(lexer) {
 
 function parseVariableDefinition(lexer) {
   var start = lexer.token;
-
-  if (lexer.options.experimentalVariableDefinitionDirectives) {
-    return {
-      kind: _kinds.Kind.VARIABLE_DEFINITION,
-      variable: parseVariable(lexer),
-      type: (expect(lexer, _lexer.TokenKind.COLON), parseTypeReference(lexer)),
-      defaultValue: skip(lexer, _lexer.TokenKind.EQUALS) ? parseValueLiteral(lexer, true) : undefined,
-      directives: parseDirectives(lexer, true),
-      loc: loc(lexer, start)
-    };
-  }
-
   return {
     kind: _kinds.Kind.VARIABLE_DEFINITION,
     variable: parseVariable(lexer),
     type: (expect(lexer, _lexer.TokenKind.COLON), parseTypeReference(lexer)),
     defaultValue: skip(lexer, _lexer.TokenKind.EQUALS) ? parseValueLiteral(lexer, true) : undefined,
+    directives: parseDirectives(lexer, true),
     loc: loc(lexer, start)
   };
 }
