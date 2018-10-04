@@ -13,10 +13,15 @@ export type IntrospectionOptions = {|
   // Whether to include descriptions in the introspection result.
   // Default: true
   descriptions: boolean,
+  // Whether to include `repeatable` flag on directives.
+  // Default: false
+  directiveRepeatableFlag?: ?boolean,
 |};
 
 export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   const descriptions = !(options && options.descriptions === false);
+  const directiveRepeatableFlag =
+    options && options.directiveRepeatableFlag === true;
   return `
     query IntrospectionQuery {
       __schema {
@@ -33,7 +38,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
           args {
             ...InputValue
           }
-          repeatable
+          ${directiveRepeatableFlag ? 'repeatable' : ''}
         }
       }
     }

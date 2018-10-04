@@ -830,7 +830,6 @@ describe('Introspection', () => {
           directives: [
             {
               name: 'include',
-              repeatable: false,
               locations: ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
               args: [
                 {
@@ -850,7 +849,6 @@ describe('Introspection', () => {
             },
             {
               name: 'skip',
-              repeatable: false,
               locations: ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
               args: [
                 {
@@ -870,7 +868,6 @@ describe('Introspection', () => {
             },
             {
               name: 'deprecated',
-              repeatable: false,
               locations: ['FIELD_DEFINITION', 'ENUM_VALUE'],
               args: [
                 {
@@ -888,6 +885,81 @@ describe('Introspection', () => {
         },
       },
     });
+  });
+
+  it('includes repeatable flag on directives', () => {
+    const EmptySchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'QueryRoot',
+        fields: {
+          onlyField: { type: GraphQLString },
+        },
+      }),
+    });
+    const query = getIntrospectionQuery({
+      descriptions: false,
+      directiveRepeatableFlag: true,
+    });
+    const result = graphqlSync(EmptySchema, query);
+
+    expect((result.data: any).__schema.directives).to.deep.equal([
+      {
+        name: 'include',
+        locations: ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
+        args: [
+          {
+            name: 'if',
+            type: {
+              kind: 'NON_NULL',
+              name: null,
+              ofType: {
+                kind: 'SCALAR',
+                name: 'Boolean',
+                ofType: null,
+              },
+            },
+            defaultValue: null,
+          },
+        ],
+        repeatable: false,
+      },
+      {
+        name: 'skip',
+        locations: ['FIELD', 'FRAGMENT_SPREAD', 'INLINE_FRAGMENT'],
+        args: [
+          {
+            name: 'if',
+            type: {
+              kind: 'NON_NULL',
+              name: null,
+              ofType: {
+                kind: 'SCALAR',
+                name: 'Boolean',
+                ofType: null,
+              },
+            },
+            defaultValue: null,
+          },
+        ],
+        repeatable: false,
+      },
+      {
+        name: 'deprecated',
+        locations: ['FIELD_DEFINITION', 'ENUM_VALUE'],
+        args: [
+          {
+            name: 'reason',
+            type: {
+              kind: 'SCALAR',
+              name: 'String',
+              ofType: null,
+            },
+            defaultValue: '"No longer supported"',
+          },
+        ],
+        repeatable: false,
+      },
+    ]);
   });
 
   it('introspects on input object', () => {
