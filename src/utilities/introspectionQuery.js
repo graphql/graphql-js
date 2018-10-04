@@ -279,5 +279,5 @@ export type IntrospectionDirective = {|
   +description?: ?string,
   +locations: $ReadOnlyArray<DirectiveLocationEnum>,
   +args: $ReadOnlyArray<IntrospectionInputValue>,
-  +repeatable: boolean,
+  +repeatable?: boolean,
 |};

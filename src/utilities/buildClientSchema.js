@@ -355,7 +355,10 @@ export function buildClientSchema(
       description: directiveIntrospection.description,
       locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args),
-      repeatable: directiveIntrospection.repeatable,
+      repeatable:
+        directiveIntrospection.repeatable === undefined
+          ? false
+          : directiveIntrospection.repeatable,
     });
   }
 

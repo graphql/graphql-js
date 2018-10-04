@@ -37,9 +37,19 @@ import {
 // query against the client-side schema, it should get a result identical to
 // what was returned by the server.
 function testSchema(serverSchema) {
-  const initialIntrospection = introspectionFromSchema(serverSchema);
+  const introspectionOptions = {
+    descriptions: true,
+    directiveRepeatableFlag: true,
+  };
+  const initialIntrospection = introspectionFromSchema(
+    serverSchema,
+    introspectionOptions,
+  );
   const clientSchema = buildClientSchema(initialIntrospection);
-  const secondIntrospection = introspectionFromSchema(clientSchema);
+  const secondIntrospection = introspectionFromSchema(
+    clientSchema,
+    introspectionOptions,
+  );
   expect(secondIntrospection).to.deep.equal(initialIntrospection);
 }
 
