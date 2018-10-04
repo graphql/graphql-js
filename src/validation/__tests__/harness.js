@@ -381,6 +381,14 @@ export const testSchema = new GraphQLSchema({
       locations: ['VARIABLE_DEFINITION'],
     }),
     new GraphQLDirective({
+      name: 'genericDirectiveA',
+      locations: ['FIELD', 'FRAGMENT_DEFINITION'],
+    }),
+    new GraphQLDirective({
+      name: 'genericDirectiveB',
+      locations: ['FIELD', 'FRAGMENT_DEFINITION'],
+    }),
+    new GraphQLDirective({
       name: 'repeatableDirective',
       args: {
         id: {

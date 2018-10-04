@@ -47,8 +47,8 @@ describe('Validate: Directives Are Unique Per Location', () => {
     expectPassesRule(
       UniqueDirectivesPerLocation,
       `
-      fragment Test on Type @directiveA {
-        field @directiveB
+      fragment Test on Type @genericDirectiveA {
+        field @genericDirectiveB
       }
     `,
     );
@@ -58,8 +58,8 @@ describe('Validate: Directives Are Unique Per Location', () => {
     expectPassesRule(
       UniqueDirectivesPerLocation,
       `
-      fragment Test on Type @directiveA @directiveB {
-        field @directiveA @directiveB
+      fragment Test on Type @genericDirectiveA @genericDirectiveB {
+        field @genericDirectiveA @genericDirectiveB
       }
     `,
     );
@@ -69,8 +69,8 @@ describe('Validate: Directives Are Unique Per Location', () => {
     expectPassesRule(
       UniqueDirectivesPerLocation,
       `
-      fragment Test on Type @directiveA {
-        field @directiveA
+      fragment Test on Type @genericDirectiveA {
+        field @genericDirectiveA
       }
     `,
     );
@@ -81,8 +81,8 @@ describe('Validate: Directives Are Unique Per Location', () => {
       UniqueDirectivesPerLocation,
       `
       fragment Test on Type {
-        field @directive
-        field @directive
+        field @genericDirectiveA
+        field @genericDirectiveA
       }
     `,
     );
@@ -119,10 +119,10 @@ describe('Validate: Directives Are Unique Per Location', () => {
       UniqueDirectivesPerLocation,
       `
       fragment Test on Type {
-        field @directive @directive
+        field @genericDirectiveA @genericDirectiveA
       }
     `,
-      [duplicateDirective('directive', 3, 15, 3, 26)],
+      [duplicateDirective('genericDirectiveA', 3, 15, 3, 34)],
     );
   });
 
@@ -131,12 +131,12 @@ describe('Validate: Directives Are Unique Per Location', () => {
       UniqueDirectivesPerLocation,
       `
       fragment Test on Type {
-        field @directive @directive @directive
+        field @genericDirectiveA @genericDirectiveA @genericDirectiveA
       }
     `,
       [
-        duplicateDirective('directive', 3, 15, 3, 26),
-        duplicateDirective('directive', 3, 15, 3, 37),
+        duplicateDirective('genericDirectiveA', 3, 15, 3, 34),
+        duplicateDirective('genericDirectiveA', 3, 15, 3, 53),
       ],
     );
   });
@@ -146,12 +146,12 @@ describe('Validate: Directives Are Unique Per Location', () => {
       UniqueDirectivesPerLocation,
       `
       fragment Test on Type {
-        field @directiveA @directiveB @directiveA @directiveB
+        field @genericDirectiveA @genericDirectiveB @genericDirectiveA @genericDirectiveB
       }
     `,
       [
-        duplicateDirective('directiveA', 3, 15, 3, 39),
-        duplicateDirective('directiveB', 3, 27, 3, 51),
+        duplicateDirective('genericDirectiveA', 3, 15, 3, 53),
+        duplicateDirective('genericDirectiveB', 3, 34, 3, 72),
       ],
     );
   });
@@ -160,19 +160,27 @@ describe('Validate: Directives Are Unique Per Location', () => {
     expectFailsRule(
       UniqueDirectivesPerLocation,
       `
-      fragment Test on Type @directive @directive {
-        field @directive @directive
+      fragment Test on Type @genericDirectiveA @genericDirectiveA {
+        field @genericDirectiveA @genericDirectiveA
       }
     `,
       [
-        duplicateDirective('directive', 2, 29, 2, 40),
-        duplicateDirective('directive', 3, 15, 3, 26),
+        duplicateDirective('genericDirectiveA', 2, 29, 2, 48),
+        duplicateDirective('genericDirectiveA', 3, 15, 3, 34),
       ],
     );
   });
 
   it('duplicate directives on SDL definitions', () => {
     expectSDLErrors(`
+      directive @directive on 
+        | SCHEMA  
+        | SCALAR
+        | OBJECT
+        | INTERFACE
+        | UNION
+        | INPUT_OBJECT
+          
       schema @directive @directive { query: Dummy }
       extend schema @directive @directive
 
@@ -191,18 +199,18 @@ describe('Validate: Directives Are Unique Per Location', () => {
       input TestInput @directive @directive
       extend input TestInput @directive @directive
     `).to.deep.equal([
-      duplicateDirective('directive', 2, 14, 2, 25),
-      duplicateDirective('directive', 3, 21, 3, 32),
-      duplicateDirective('directive', 5, 25, 5, 36),
-      duplicateDirective('directive', 6, 32, 6, 43),
-      duplicateDirective('directive', 8, 23, 8, 34),
-      duplicateDirective('directive', 9, 30, 9, 41),
-      duplicateDirective('directive', 11, 31, 11, 42),
-      duplicateDirective('directive', 12, 38, 12, 49),
-      duplicateDirective('directive', 14, 23, 14, 34),
-      duplicateDirective('directive', 15, 30, 15, 41),
-      duplicateDirective('directive', 17, 23, 17, 34),
-      duplicateDirective('directive', 18, 30, 18, 41),
+      duplicateDirective('directive', 10, 14, 10, 25),
+      duplicateDirective('directive', 11, 21, 11, 32),
+      duplicateDirective('directive', 13, 25, 13, 36),
+      duplicateDirective('directive', 14, 32, 14, 43),
+      duplicateDirective('directive', 16, 23, 16, 34),
+      duplicateDirective('directive', 17, 30, 17, 41),
+      duplicateDirective('directive', 19, 31, 19, 42),
+      duplicateDirective('directive', 20, 38, 20, 49),
+      duplicateDirective('directive', 22, 23, 22, 34),
+      duplicateDirective('directive', 23, 30, 23, 41),
+      duplicateDirective('directive', 25, 23, 25, 34),
+      duplicateDirective('directive', 26, 30, 26, 41),
     ]);
   });
 });

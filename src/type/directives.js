@@ -51,10 +51,8 @@ export class GraphQLDirective {
     this.description = config.description;
     this.locations = config.locations;
     this.astNode = config.astNode;
-    this.repeatable =
-      config.repeatable === undefined || config.repeatable === null
-        ? false
-        : config.repeatable;
+    this.repeatable = config.repeatable == null ? false : config.repeatable;
+
     invariant(config.name, 'Directive must be named.');
     invariant(
       Array.isArray(config.locations),

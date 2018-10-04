@@ -62,6 +62,12 @@ export function UniqueDirectivesPerLocation(
         const knownDirectives = Object.create(null);
         for (const directive of directives) {
           const directiveName = directive.name.value;
+          const repeatable = repeatableMap[directiveName];
+
+          if (repeatable === undefined || repeatable) {
+            continue;
+          }
+
           if (knownDirectives[directiveName]) {
             context.reportError(
               new GraphQLError(duplicateDirectiveMessage(directiveName), [
@@ -70,11 +76,7 @@ export function UniqueDirectivesPerLocation(
               ]),
             );
           } else {
-            const repeatable = repeatableMap[directiveName];
-
-            if (repeatable === undefined || !repeatable) {
-              knownDirectives[directiveName] = directive;
-            }
+            knownDirectives[directiveName] = directive;
           }
         }
       }
