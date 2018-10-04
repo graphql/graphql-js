@@ -115,17 +115,6 @@ export type ParseOptions = {
    * future.
    */
   experimentalFragmentVariables?: boolean,
-
-  /**
-   * EXPERIMENTAL:
-   *
-   * If enabled, the parser understands directives on variable definitions:
-   *
-   * query Foo($var: String = "abc" @variable_definition_directive) {
-   *   ...
-   * }
-   */
-  experimentalVariableDefinitionDirectives?: boolean,
 };
 
 /**
@@ -341,19 +330,6 @@ function parseVariableDefinitions(
  */
 function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
   const start = lexer.token;
-  if (lexer.options.experimentalVariableDefinitionDirectives) {
-    return {
-      kind: Kind.VARIABLE_DEFINITION,
-      variable: parseVariable(lexer),
-      type: (expect(lexer, TokenKind.COLON), parseTypeReference(lexer)),
-      defaultValue: skip(lexer, TokenKind.EQUALS)
-        ? parseValueLiteral(lexer, true)
-        : undefined,
-      directives: parseDirectives(lexer, true),
-      loc: loc(lexer, start),
-    };
-  }
-
   return {
     kind: Kind.VARIABLE_DEFINITION,
     variable: parseVariable(lexer),
@@ -361,6 +337,7 @@ function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
     defaultValue: skip(lexer, TokenKind.EQUALS)
       ? parseValueLiteral(lexer, true)
       : undefined,
+    directives: parseDirectives(lexer, true),
     loc: loc(lexer, start),
   };
 }

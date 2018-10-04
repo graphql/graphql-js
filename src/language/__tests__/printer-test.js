@@ -77,10 +77,9 @@ describe('Printer: Query document', () => {
     `);
   });
 
-  it('Experimental: prints query with variable directives', () => {
+  it('prints query with variable directives', () => {
     const queryAstWithVariableDirective = parse(
       'query ($foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
-      { experimentalVariableDefinitionDirectives: true },
     );
     expect(print(queryAstWithVariableDirective)).to.equal(dedent`
       query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
@@ -94,7 +93,6 @@ describe('Printer: Query document', () => {
       'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
       {
         experimentalFragmentVariables: true,
-        experimentalVariableDefinitionDirectives: true,
       },
     );
     expect(print(queryAstWithVariableDirective)).to.equal(dedent`
