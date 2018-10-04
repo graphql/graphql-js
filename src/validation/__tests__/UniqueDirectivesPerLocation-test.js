@@ -114,6 +114,21 @@ describe('Validate: Directives Are Unique Per Location', () => {
     );
   });
 
+  it('unknown directives must be ignored', () => {
+    expectPassesRule(
+      UniqueDirectivesPerLocation,
+      `
+      type Test @unknownDirective @unknownDirective {
+        field: String! 
+      }
+      
+      extend type Test @unknownDirective {
+        anotherField: String!
+      }
+    `,
+    );
+  });
+
   it('duplicate directives in one location', () => {
     expectFailsRule(
       UniqueDirectivesPerLocation,
