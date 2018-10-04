@@ -33,20 +33,20 @@ export function duplicateDirectiveMessage(directiveName: string): string {
 export function UniqueDirectivesPerLocation(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
-  const repeatableMap = Object.create(null);
+  const uniqueDirectiveMap = Object.create(null);
 
   const schema = context.getSchema();
   const definedDirectives = schema
     ? schema.getDirectives()
     : specifiedDirectives;
   for (const directive of definedDirectives) {
-    repeatableMap[directive.name] = directive.repeatable;
+    uniqueDirectiveMap[directive.name] = !directive.repeatable;
   }
 
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      repeatableMap[def.name.value] = def.repeatable;
+      uniqueDirectiveMap[def.name.value] = !def.repeatable;
     }
   }
 
@@ -62,21 +62,18 @@ export function UniqueDirectivesPerLocation(
         const knownDirectives = Object.create(null);
         for (const directive of directives) {
           const directiveName = directive.name.value;
-          const repeatable = repeatableMap[directiveName];
 
-          if (repeatable === undefined || repeatable) {
-            continue;
-          }
-
-          if (knownDirectives[directiveName]) {
-            context.reportError(
-              new GraphQLError(duplicateDirectiveMessage(directiveName), [
-                knownDirectives[directiveName],
-                directive,
-              ]),
-            );
-          } else {
-            knownDirectives[directiveName] = directive;
+          if (uniqueDirectiveMap[directiveName]) {
+            if (knownDirectives[directiveName]) {
+              context.reportError(
+                new GraphQLError(duplicateDirectiveMessage(directiveName), [
+                  knownDirectives[directiveName],
+                  directive,
+                ]),
+              );
+            } else {
+              knownDirectives[directiveName] = directive;
+            }
           }
         }
       }
