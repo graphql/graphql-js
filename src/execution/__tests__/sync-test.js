@@ -28,8 +28,8 @@ describe('Execute: synchronously when possible', () => {
         },
         asyncField: {
           type: GraphQLString,
-          resolve(rootValue) {
-            return Promise.resolve(rootValue);
+          async resolve(rootValue) {
+            return rootValue;
           },
         },
       },
