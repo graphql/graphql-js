@@ -355,8 +355,9 @@ function parseConstArgument(lexer) {
 function parseFragment(lexer) {
   var start = lexer.token;
   expect(lexer, TokenKind.SPREAD);
+  var hasTypeCondition = skipKeyword(lexer, 'on');
 
-  if (peek(lexer, TokenKind.NAME) && lexer.token.value !== 'on') {
+  if (!hasTypeCondition && peek(lexer, TokenKind.NAME)) {
     return {
       kind: Kind.FRAGMENT_SPREAD,
       name: parseFragmentName(lexer),
@@ -365,16 +366,9 @@ function parseFragment(lexer) {
     };
   }
 
-  var typeCondition;
-
-  if (lexer.token.value === 'on') {
-    lexer.advance();
-    typeCondition = parseNamedType(lexer);
-  }
-
   return {
     kind: Kind.INLINE_FRAGMENT,
-    typeCondition: typeCondition,
+    typeCondition: hasTypeCondition ? parseNamedType(lexer) : undefined,
     directives: parseDirectives(lexer, false),
     selectionSet: parseSelectionSet(lexer),
     loc: loc(lexer, start)
@@ -811,9 +805,8 @@ function parseObjectTypeDefinition(lexer) {
 function parseImplementsInterfaces(lexer) {
   var types = [];
 
-  if (lexer.token.value === 'implements') {
-    lexer.advance(); // Optional leading ampersand
-
+  if (skipKeyword(lexer, 'implements')) {
+    // Optional leading ampersand
     skip(lexer, TokenKind.AMP);
 
     do {
@@ -1405,13 +1398,12 @@ function peek(lexer, kind) {
 
 
 function skip(lexer, kind) {
-  var match = lexer.token.kind === kind;
-
-  if (match) {
+  if (lexer.token.kind === kind) {
     lexer.advance();
+    return true;
   }
 
-  return match;
+  return false;
 }
 /**
  * If the next token is of the given kind, return that token after advancing
@@ -1430,21 +1422,32 @@ function expect(lexer, kind) {
   throw syntaxError(lexer.source, token.start, "Expected ".concat(kind, ", found ").concat(getTokenDesc(token)));
 }
 /**
- * If the next token is a keyword with the given value, return that token after
- * advancing the lexer. Otherwise, do not change the parser state and return
- * false.
+ * If the next token is a keyword with the given value, return true after advancing
+ * the lexer. Otherwise, do not change the parser state and return false.
  */
 
 
-function expectKeyword(lexer, value) {
+function skipKeyword(lexer, value) {
   var token = lexer.token;
 
   if (token.kind === TokenKind.NAME && token.value === value) {
     lexer.advance();
-    return token;
+    return true;
   }
 
-  throw syntaxError(lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(token)));
+  return false;
+}
+/**
+ * If the next token is a keyword with the given value, return that token after
+ * advancing the lexer. Otherwise, do not change the parser state and throw
+ * an error.
+ */
+
+
+function expectKeyword(lexer, value) {
+  if (!skipKeyword(lexer, value)) {
+    throw syntaxError(lexer.source, lexer.token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(lexer.token)));
+  }
 }
 /**
  * Helper function for creating an error when an unexpected lexed token
