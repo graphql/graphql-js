@@ -360,4 +360,10 @@ overrides:
   - files: "*"
     excludedFiles: "**/__tests__/**"
     rules:
-      no-async: error
+      no-restricted-syntax:
+        - error
+        - selector: 'FunctionDeclaration[async=true]'
+          message: >
+            async functions are not allowed outside of the test suite because
+            older versions of NodeJS do not support them without additional
+            runtime dependencies. Instead, use explicit Promises.

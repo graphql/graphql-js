@@ -145,7 +145,7 @@ function lintFiles(filepaths) {
   return filepaths.reduce((prev, filepath) => prev.then(prevSuccess => {
     if (isJS(filepath)) {
       process.stdout.write('  ' + filepath + ' ...');
-      return exec('eslint', ['--rulesdir', './resources/lint', srcPath(filepath)])
+      return exec('eslint', [srcPath(filepath)])
         .catch(() => false)
         .then(success => {
           console.log(CLEARLINE + '  ' + (success ? CHECK : X)
