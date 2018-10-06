@@ -134,7 +134,7 @@ const printDocASTReducer = {
   ),
 
   FieldDefinition: addDescription(
-    ({ name, arguments: args, type, directives }) =>
+    ({ name, arguments: args = [], type, directives }) =>
       name +
       (args.every(arg => arg.indexOf('\n') === -1)
         ? wrap('(', join(args, ', '), ')')
