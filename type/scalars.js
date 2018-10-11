@@ -18,14 +18,8 @@ var _kinds = require("../language/kinds");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
 //
@@ -121,29 +115,47 @@ var GraphQLFloat = new _definition.GraphQLScalarType({
   parseLiteral: function parseLiteral(ast) {
     return ast.kind === _kinds.Kind.FLOAT || ast.kind === _kinds.Kind.INT ? parseFloat(ast.value) : undefined;
   }
-});
+}); // Support serializing objects with custom valueOf() or toJSON() functions -
+// a common way to represent a complex value which can be represented as
+// a string (ex: MongoDB id objects).
+
 exports.GraphQLFloat = GraphQLFloat;
 
-function serializeString(value) {
-  // Support serializing objects with custom valueOf() functions - a common way
-  // to represent an complex value which can be represented as a string
-  // (ex: MongoDB id objects).
-  var result = value && typeof value.valueOf === 'function' ? value.valueOf() : value; // Serialize string, boolean and number values to a string, but do not
+function serializeObject(value) {
+  if (_typeof(value) === 'object' && value !== null) {
+    if (typeof value.valueOf === 'function') {
+      var valueOfResult = value.valueOf();
+
+      if (_typeof(valueOfResult) !== 'object') {
+        return valueOfResult;
+      }
+    }
+
+    if (typeof value.toJSON === 'function') {
+      return value.toJSON();
+    }
+  }
+
+  return value;
+}
+
+function serializeString(rawValue) {
+  var value = serializeObject(rawValue); // Serialize string, boolean and number values to a string, but do not
   // attempt to coerce object, function, symbol, or other types as strings.
 
-  if (typeof result === 'string') {
-    return result;
+  if (typeof value === 'string') {
+    return value;
   }
 
-  if (typeof result === 'boolean') {
-    return result ? 'true' : 'false';
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
   }
 
-  if ((0, _isFinite.default)(result)) {
-    return result.toString();
+  if ((0, _isFinite.default)(value)) {
+    return value.toString();
   }
 
-  throw new TypeError("String cannot represent value: ".concat((0, _inspect.default)(value)));
+  throw new TypeError("String cannot represent value: ".concat((0, _inspect.default)(rawValue)));
 }
 
 function coerceString(value) {
@@ -196,20 +208,18 @@ var GraphQLBoolean = new _definition.GraphQLScalarType({
 });
 exports.GraphQLBoolean = GraphQLBoolean;
 
-function serializeID(value) {
-  // Support serializing objects with custom valueOf() functions - a common way
-  // to represent an object identifier (ex. MongoDB).
-  var result = value && typeof value.valueOf === 'function' ? value.valueOf() : value;
+function serializeID(rawValue) {
+  var value = serializeObject(rawValue);
 
-  if (typeof result === 'string') {
-    return result;
+  if (typeof value === 'string') {
+    return value;
   }
 
-  if ((0, _isInteger.default)(result)) {
-    return String(result);
+  if ((0, _isInteger.default)(value)) {
+    return String(value);
   }
 
-  throw new TypeError("ID cannot represent value: ".concat((0, _inspect.default)(value)));
+  throw new TypeError("ID cannot represent value: ".concat((0, _inspect.default)(rawValue)));
 }
 
 function coerceID(value) {

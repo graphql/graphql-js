@@ -1,3 +1,5 @@
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -105,28 +107,45 @@ export var GraphQLFloat = new GraphQLScalarType({
   parseLiteral: function parseLiteral(ast) {
     return ast.kind === Kind.FLOAT || ast.kind === Kind.INT ? parseFloat(ast.value) : undefined;
   }
-});
+}); // Support serializing objects with custom valueOf() or toJSON() functions -
+// a common way to represent a complex value which can be represented as
+// a string (ex: MongoDB id objects).
 
-function serializeString(value) {
-  // Support serializing objects with custom valueOf() functions - a common way
-  // to represent an complex value which can be represented as a string
-  // (ex: MongoDB id objects).
-  var result = value && typeof value.valueOf === 'function' ? value.valueOf() : value; // Serialize string, boolean and number values to a string, but do not
+function serializeObject(value) {
+  if (_typeof(value) === 'object' && value !== null) {
+    if (typeof value.valueOf === 'function') {
+      var valueOfResult = value.valueOf();
+
+      if (_typeof(valueOfResult) !== 'object') {
+        return valueOfResult;
+      }
+    }
+
+    if (typeof value.toJSON === 'function') {
+      return value.toJSON();
+    }
+  }
+
+  return value;
+}
+
+function serializeString(rawValue) {
+  var value = serializeObject(rawValue); // Serialize string, boolean and number values to a string, but do not
   // attempt to coerce object, function, symbol, or other types as strings.
 
-  if (typeof result === 'string') {
-    return result;
+  if (typeof value === 'string') {
+    return value;
   }
 
-  if (typeof result === 'boolean') {
-    return result ? 'true' : 'false';
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
   }
 
-  if (isFinite(result)) {
-    return result.toString();
+  if (isFinite(value)) {
+    return value.toString();
   }
 
-  throw new TypeError("String cannot represent value: ".concat(inspect(value)));
+  throw new TypeError("String cannot represent value: ".concat(inspect(rawValue)));
 }
 
 function coerceString(value) {
@@ -177,20 +196,18 @@ export var GraphQLBoolean = new GraphQLScalarType({
   }
 });
 
-function serializeID(value) {
-  // Support serializing objects with custom valueOf() functions - a common way
-  // to represent an object identifier (ex. MongoDB).
-  var result = value && typeof value.valueOf === 'function' ? value.valueOf() : value;
+function serializeID(rawValue) {
+  var value = serializeObject(rawValue);
 
-  if (typeof result === 'string') {
-    return result;
+  if (typeof value === 'string') {
+    return value;
   }
 
-  if (isInteger(result)) {
-    return String(result);
+  if (isInteger(value)) {
+    return String(value);
   }
 
-  throw new TypeError("ID cannot represent value: ".concat(inspect(value)));
+  throw new TypeError("ID cannot represent value: ".concat(inspect(rawValue)));
 }
 
 function coerceID(value) {
