@@ -27,7 +27,7 @@ export function missingFieldArgMessage(
 ): string {
   return (
     `Field "${fieldName}" argument "${argName}" of type ` +
-    `"${type}" is required but not provided.`
+    `"${type}" is required, but not provided.`
   );
 }
 
@@ -38,7 +38,7 @@ export function missingDirectiveArgMessage(
 ): string {
   return (
     `Directive "@${directiveName}" argument "${argName}" of type ` +
-    `"${type}" is required but not provided.`
+    `"${type}" is required, but not provided.`
   );
 }
 
