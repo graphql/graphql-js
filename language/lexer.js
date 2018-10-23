@@ -147,9 +147,9 @@ function printCharCode(code) {
 /**
  * Gets the next token from the source starting at the given position.
  *
- * This skips over whitespace and comments until it finds the next lexable
- * token, then lexes punctuators immediately or calls the appropriate helper
- * function for more complicated tokens.
+ * This skips over whitespace until it finds the next lexable token, then lexes
+ * punctuators immediately or calls the appropriate helper function for more
+ * complicated tokens.
  */
 
 
@@ -332,8 +332,7 @@ function unexpectedCharacterMessage(code) {
 }
 /**
  * Reads from body starting at startPosition until it finds a non-whitespace
- * or commented character, then returns the position of that character for
- * lexing.
+ * character, then returns the position of that character for lexing.
  */
 
 
