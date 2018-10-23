@@ -28,7 +28,7 @@ const printDocASTReducer = {
   OperationDefinition(node) {
     const op = node.operation;
     const name = node.name;
-    const varDefs = wrap('(', join(node.variableDefinitions, ', '), ')');
+    const varDefs = printVariableDefinitions(node.variableDefinitions);
     const directives = join(node.directives, ' ');
     const selectionSet = node.selectionSet;
     // Anonymous queries with no directives or variable definitions can use
@@ -78,7 +78,7 @@ const printDocASTReducer = {
   }) =>
     // Note: fragment variable definitions are experimental and may be changed
     // or removed in the future.
-    `fragment ${name}${wrap('(', join(variableDefinitions, ', '), ')')} ` +
+    `fragment ${name}${printVariableDefinitions(variableDefinitions)} ` +
     `on ${typeCondition} ${wrap('', join(directives, ' '), ' ')}` +
     selectionSet,
 
@@ -282,4 +282,18 @@ function printBlockString(value, isDescription) {
   return isMultiline(value) || (value[0] !== ' ' && value[0] !== '\t')
     ? `"""\n${isDescription ? escaped : indent(escaped)}\n"""`
     : `"""${escaped.replace(/"$/, '"\n')}"""`;
+}
+
+/**
+ * Prints variables one per line with a trailing comma, when there is more
+ * than one argument. Otherwise print inline.
+ */
+function printVariableDefinitions(args) {
+  if (!args || args.length === 0) {
+    return '';
+  }
+  if (args.length === 1) {
+    return '(' + args[0] + ')';
+  }
+  return '(\n' + indent(join(args, ',\n')) + '\n)';
 }

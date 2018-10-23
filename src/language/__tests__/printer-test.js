@@ -157,11 +157,22 @@ describe('Printer: Query document', () => {
         fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
           id
         }
+
+        fragment Simple($a: Boolean = true) on TestType {
+          id
+        }
       `,
       { experimentalFragmentVariables: true },
     );
     expect(print(fragmentWithVariable)).to.equal(dedent`
-      fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
+      fragment Foo(
+        $a: ComplexType,
+        $b: Boolean = false
+      ) on TestType {
+        id
+      }
+
+      fragment Simple($a: Boolean = true) on TestType {
         id
       }
     `);
@@ -174,7 +185,10 @@ describe('Printer: Query document', () => {
 
     expect(printed).to.equal(
       dedent(String.raw`
-      query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
+      query queryName(
+        $foo: ComplexType,
+        $site: Site = MOBILE
+      ) @onQuery {
         whoever123is: node(id: [123, 456]) {
           id
           ... on User @onInlineFragment {
