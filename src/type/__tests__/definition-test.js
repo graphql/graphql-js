@@ -940,7 +940,7 @@ describe('Type System: Union types must be array', () => {
     ).not.to.throw();
   });
 
-  it('rejects a Union type without types', () => {
+  it('accepts a Union type without types', () => {
     expect(() =>
       schemaWithFieldType(
         new GraphQLUnionType({
