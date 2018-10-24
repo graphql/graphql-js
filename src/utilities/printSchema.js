@@ -294,7 +294,7 @@ function printInputValue(arg) {
   if (defaultAST) {
     argDecl += ` = ${print(defaultAST)}`;
   }
-  return argDecl;
+  return argDecl + printDeprecated(arg);
 }
 
 function printDirective(directive, options) {

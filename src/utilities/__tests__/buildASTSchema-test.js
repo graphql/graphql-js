@@ -736,6 +736,8 @@ describe('Schema Builder', () => {
         field1: String @deprecated
         field2: Int @deprecated(reason: "Because I said so")
         enum: MyEnum
+        field3(oldArg: String @deprecated, arg: String): String
+        field4(oldArg: String @deprecated(reason: "why not?"), arg: String): String
       }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);
@@ -790,6 +792,18 @@ describe('Schema Builder', () => {
     `);
 
     expect(printAllASTNodes(someScalar)).to.equal(scalarSDL);
+    const rootFields=assertObjectType(schema.getType('Query')).getFields();
+
+    expect(rootFields.field2.isDeprecated).to.equal(true);
+    expect(rootFields.field2.deprecationReason).to.equal('Because I said so');
+
+    const field3OldArg = rootFields.field3.args[0];
+    expect(field3OldArg.isDeprecated).to.equal(true);
+    expect(field3OldArg.deprecationReason).to.equal('No longer supported');
+
+    const field4OldArg = rootFields.field4.args[0];
+    expect(field4OldArg.isDeprecated).to.equal(true);
+    expect(field4OldArg.deprecationReason).to.equal('why not?');
   });
 
   it('Correctly extend object type', () => {
