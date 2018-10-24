@@ -854,6 +854,8 @@ function defineFieldMap<TSource, TContext>(
       type: argConfig.type,
       defaultValue: argConfig.defaultValue,
       extensions: argConfig.extensions && toObjMap(argConfig.extensions),
+      isDeprecated: Boolean(argConfig.deprecationReason),
+      deprecationReason: argConfig.deprecationReason,
       astNode: argConfig.astNode,
     }));
 

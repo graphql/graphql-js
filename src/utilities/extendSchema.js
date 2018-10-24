@@ -538,6 +538,7 @@ export function extendSchemaImpl(
           type,
           description: getDescription(field, options),
           defaultValue: valueFromAST(field.defaultValue, type),
+          deprecationReason: getDeprecationReason(field),
           astNode: field,
         };
       }
