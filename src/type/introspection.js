@@ -288,9 +288,19 @@ export const __Type = new GraphQLObjectType({
       },
       inputFields: {
         type: GraphQLList(GraphQLNonNull(__InputValue)),
-        resolve(type) {
+        args: {
+          includeDeprecated: {
+            type: GraphQLBoolean,
+            defaultValue: false,
+          },
+        },
+        resolve(type, {includeDeprecated}) {
           if (isInputObjectType(type)) {
-            return objectValues(type.getFields());
+            let values=objectValues(type.getFields());
+            if (!includeDeprecated) {
+              values=values.filter(value => !value.deprecationReason);
+            }
+            return values;
           }
         },
       },
@@ -317,7 +327,22 @@ export const __Field = new GraphQLObjectType({
       },
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
-        resolve: field => field.args,
+        args: {
+          includeDeprecated: {
+            type: GraphQLBoolean,
+            defaultValue: false,
+          },
+        },
+        // resolve: field => field.args || [],
+        resolve(field, {includeDeprecated}) {
+          let args=field.args||[];
+
+          if (!includeDeprecated) {
+            args=args.filter(arg => !arg.deprecationReason);
+          }
+
+          return args;
+        },
       },
       type: {
         type: GraphQLNonNull(__Type),
@@ -361,6 +386,14 @@ export const __InputValue = new GraphQLObjectType({
           const valueAST = astFromValue(defaultValue, type);
           return valueAST ? print(valueAST) : null;
         },
+      },
+      isDeprecated: {
+        type: GraphQLNonNull(GraphQLBoolean),
+        resolve: obj => obj.isDeprecated,
+      },
+      deprecationReason: {
+        type: GraphQLString,
+        resolve: obj => obj.deprecationReason,
       },
     }: GraphQLFieldConfigMap<GraphQLInputField, mixed>),
 });

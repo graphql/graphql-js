@@ -637,7 +637,7 @@ describe('Type System Printer', () => {
         Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).
         """
         reason: String = "No longer supported"
-      ) on FIELD_DEFINITION | ENUM_VALUE
+      ) on FIELD_DEFINITION | ENUM_VALUE | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
       """
       A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
@@ -721,7 +721,7 @@ describe('Type System Printer', () => {
       type __Field {
         name: String!
         description: String
-        args: [__InputValue!]!
+        args(includeDeprecated: Boolean = false): [__InputValue!]!
         type: __Type!
         isDeprecated: Boolean!
         deprecationReason: String
@@ -739,6 +739,8 @@ describe('Type System Printer', () => {
         A GraphQL-formatted string representing the default value for this input value.
         """
         defaultValue: String
+        isDeprecated: Boolean!
+        deprecationReason: String
       }
 
       """
@@ -851,7 +853,7 @@ describe('Type System Printer', () => {
       directive @deprecated(
         # Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).
         reason: String = "No longer supported"
-      ) on FIELD_DEFINITION | ENUM_VALUE
+      ) on FIELD_DEFINITION | ENUM_VALUE | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
       # A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
       type __Schema {
@@ -933,6 +935,8 @@ describe('Type System Printer', () => {
 
         # A GraphQL-formatted string representing the default value for this input value.
         defaultValue: String
+        isDeprecated: Boolean!
+        deprecationReason: String
       }
 
       # One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.

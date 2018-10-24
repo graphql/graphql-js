@@ -949,6 +949,7 @@ export type GraphQLArgumentConfig = {|
   type: GraphQLInputType,
   defaultValue?: mixed,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
+  deprecationReason?: ?string,
   astNode?: ?InputValueDefinitionNode,
 |};
 
@@ -978,6 +979,8 @@ export type GraphQLArgument = {|
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
+  isDeprecated?:boolean,
+  deprecationReason?: ? string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?InputValueDefinitionNode,
 |};
@@ -1517,13 +1520,20 @@ function defineInputFieldMap(
     isPlainObj(fieldMap),
     `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
   );
+
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     devAssert(
       !('resolve' in fieldConfig),
       `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
     );
+    devAssert(
+      !fieldConfig.hasOwnProperty('isDeprecated'),
+      `${config.name}.${fieldName} should provide "deprecationReason" `+
+      'instead of "isDeprecated".',
+    );
 
     return {
+      isDeprecated: Boolean(fieldConfig.deprecationReason),
       name: fieldName,
       description: fieldConfig.description,
       type: fieldConfig.type,
@@ -1547,6 +1557,7 @@ export type GraphQLInputFieldConfig = {|
   description?: ?string,
   type: GraphQLInputType,
   defaultValue?: mixed,
+  deprecationReason?: ? string,
   extensions?: ?ReadOnlyObjMapLike<mixed>,
   astNode?: ?InputValueDefinitionNode,
 |};
@@ -1558,6 +1569,8 @@ export type GraphQLInputField = {|
   description: ?string,
   type: GraphQLInputType,
   defaultValue: mixed,
+  isDeprecated?:boolean,
+  deprecationReason?: ?string,
   extensions: ?ReadOnlyObjMap<mixed>,
   astNode: ?InputValueDefinitionNode,
 |};
