@@ -342,7 +342,17 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'inputFields',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'SCALAR',
+                        name: 'Boolean',
+                        ofType: null,
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'LIST',
                     name: null,
@@ -460,7 +470,17 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'args',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'SCALAR',
+                        name: 'Boolean',
+                        ofType: null,
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,
@@ -576,6 +596,32 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'defaultValue',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'isDeprecated',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'Boolean',
+                      ofType: null,
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'deprecationReason',
                   args: [],
                   type: {
                     kind: 'SCALAR',
@@ -903,7 +949,12 @@ describe('Introspection', () => {
             {
               name: 'deprecated',
               isRepeatable: false,
-              locations: ['FIELD_DEFINITION', 'ENUM_VALUE'],
+              locations: [
+                'FIELD_DEFINITION',
+                'ENUM_VALUE',
+                'ARGUMENT_DEFINITION',
+                'INPUT_FIELD_DEFINITION',
+              ],
               args: [
                 {
                   defaultValue: '"No longer supported"',

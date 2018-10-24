@@ -180,7 +180,12 @@ export const DEFAULT_DEPRECATION_REASON = 'No longer supported';
 export const GraphQLDeprecatedDirective = new GraphQLDirective({
   name: 'deprecated',
   description: 'Marks an element of a GraphQL schema as no longer supported.',
-  locations: [DirectiveLocation.FIELD_DEFINITION, DirectiveLocation.ENUM_VALUE],
+  locations: [
+    DirectiveLocation.FIELD_DEFINITION,
+    DirectiveLocation.ENUM_VALUE,
+    DirectiveLocation.ARGUMENT_DEFINITION,
+    DirectiveLocation.INPUT_FIELD_DEFINITION,
+  ],
   args: {
     reason: {
       type: GraphQLString,
