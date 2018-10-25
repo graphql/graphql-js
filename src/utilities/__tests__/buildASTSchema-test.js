@@ -742,12 +742,19 @@ describe('Schema Builder', () => {
         OTHER_VALUE @deprecated(reason: "Terrible reasons")
       }
 
+      input MyInput {
+        oldInput: String @deprecated
+        otherInput: String @deprecated(reason: "Use newInput")
+        newInput: String
+      }
+
       type Query {
         field1: String @deprecated
         field2: Int @deprecated(reason: "Because I said so")
         enum: MyEnum
         field3(oldArg: String @deprecated, arg: String): String
         field4(oldArg: String @deprecated(reason: "why not?"), arg: String): String
+        field5(arg: MyInput): String
       }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);
@@ -831,6 +838,20 @@ describe('Schema Builder', () => {
     const field4OldArg = rootFields.field4.args[0];
     expect(field4OldArg.isDeprecated).to.equal(true);
     expect(field4OldArg.deprecationReason).to.equal('why not?');
+
+    const myInput = schema.getType('MyInput');
+    const inputFields = myInput.getFields();
+
+    const newInput = inputFields.newInput;
+    expect(newInput.isDeprecated).to.equal(false);
+
+    const oldInput = inputFields.oldInput;
+    expect(oldInput.isDeprecated).to.equal(true);
+    expect(oldInput.deprecationReason).to.equal('No longer supported');
+
+    const otherInput = inputFields.otherInput;
+    expect(otherInput.isDeprecated).to.equal(true);
+    expect(otherInput.deprecationReason).to.equal('Use newInput');
   });
 
   it('Correctly extend object type', () => {
