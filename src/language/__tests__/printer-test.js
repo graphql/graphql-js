@@ -174,15 +174,15 @@ describe('Printer: Query document', () => {
 
     expect(printed).to.equal(
       dedent(String.raw`
-      query queryName($foo: ComplexType, $site: Site = MOBILE) {
+      query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         whoever123is: node(id: [123, 456]) {
           id
-          ... on User @defer {
+          ... on User @onInlineFragment {
             field2 {
               id
               alias: field1(first: 10, after: $foo) @include(if: $foo) {
                 id
-                ...frag
+                ...frag @onFragmentSpread
               }
             }
           }
@@ -195,15 +195,15 @@ describe('Printer: Query document', () => {
         }
       }
 
-      mutation likeStory {
-        like(story: 123) @defer {
+      mutation likeStory @onMutation {
+        like(story: 123) @onField {
           story {
-            id
+            id @onField
           }
         }
       }
 
-      subscription StoryLikeSubscription($input: StoryLikeSubscribeInput) {
+      subscription StoryLikeSubscription($input: StoryLikeSubscribeInput) @onSubscription {
         storyLikeSubscribe(input: $input) {
           story {
             likers {
@@ -216,7 +216,7 @@ describe('Printer: Query document', () => {
         }
       }
 
-      fragment frag on Friend {
+      fragment frag on Friend @onFragmentDefinition {
         foo(size: $size, bar: $b, obj: {key: "value", block: """
           block string uses \"""
         """})
@@ -225,6 +225,10 @@ describe('Printer: Query document', () => {
       {
         unnamed(truthy: true, falsey: false, nullish: null)
         query
+      }
+
+      {
+        __typename
       }
     `),
     );
