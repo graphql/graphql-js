@@ -285,15 +285,11 @@ function printBlockString(value, isDescription) {
 }
 
 /**
- * Prints variables one per line with a trailing comma, when there is more
- * than one argument. Otherwise print inline.
+ * Prints variables one per line.
  */
 function printVariableDefinitions(args) {
   if (!args || args.length === 0) {
     return '';
   }
-  if (args.length === 1) {
-    return '(' + args[0] + ')';
-  }
-  return '(\n' + indent(join(args, ',\n')) + '\n)';
+  return '(\n' + indent(join(args, '\n')) + '\n)';
 }
