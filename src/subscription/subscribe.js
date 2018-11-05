@@ -266,6 +266,12 @@ export function createSourceEventStream(
       info,
     );
 
+    if (!result) {
+      throw new Error(
+        `The subscription field "${fieldName}" must have a "subscribe" function defined.`,
+      );
+    }
+
     // Coerce to Promise for easier error handling and consistent return type.
     return Promise.resolve(result).then(eventStream => {
       // If eventStream is an Error, rethrow a located error.

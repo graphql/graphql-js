@@ -336,6 +336,31 @@ describe('Subscription Initialization Phase', () => {
     );
   });
 
+  it('throws an error if subscribe function does not exist on a subscription', async () => {
+    const invalidSubscriptionSchema = new GraphQLSchema({
+      query: QueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          subscribeIsMissing: {
+            type: GraphQLString
+          },
+        },
+      }),
+    });
+
+    const document = parse(`
+      subscription {
+        subscribeIsMissing
+      }
+    `);
+
+    await expectPromiseToThrow(
+      () => subscribe(invalidSubscriptionSchema, document),
+      'The subscription field "subscribeIsMissing" must have a "subscribe" function defined.',
+    );
+  });
+
   it('resolves to an error for unknown subscription field', async () => {
     const ast = parse(`
       subscription {
