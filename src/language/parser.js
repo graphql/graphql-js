@@ -115,17 +115,6 @@ export type ParseOptions = {
    * future.
    */
   experimentalFragmentVariables?: boolean,
-
-  /**
-   * EXPERIMENTAL:
-   *
-   * If enabled, the parser understands directives on variable definitions:
-   *
-   * query Foo($var: String = "abc" @variable_definition_directive) {
-   *   ...
-   * }
-   */
-  experimentalVariableDefinitionDirectives?: boolean,
 };
 
 /**
@@ -341,19 +330,6 @@ function parseVariableDefinitions(
  */
 function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
   const start = lexer.token;
-  if (lexer.options.experimentalVariableDefinitionDirectives) {
-    return {
-      kind: Kind.VARIABLE_DEFINITION,
-      variable: parseVariable(lexer),
-      type: (expect(lexer, TokenKind.COLON), parseTypeReference(lexer)),
-      defaultValue: skip(lexer, TokenKind.EQUALS)
-        ? parseValueLiteral(lexer, true)
-        : undefined,
-      directives: parseDirectives(lexer, true),
-      loc: loc(lexer, start),
-    };
-  }
-
   return {
     kind: Kind.VARIABLE_DEFINITION,
     variable: parseVariable(lexer),
@@ -361,6 +337,7 @@ function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
     defaultValue: skip(lexer, TokenKind.EQUALS)
       ? parseValueLiteral(lexer, true)
       : undefined,
+    directives: parseDirectives(lexer, true),
     loc: loc(lexer, start),
   };
 }
@@ -488,7 +465,9 @@ function parseFragment(
 ): FragmentSpreadNode | InlineFragmentNode {
   const start = lexer.token;
   expect(lexer, TokenKind.SPREAD);
-  if (peek(lexer, TokenKind.NAME) && lexer.token.value !== 'on') {
+
+  const hasTypeCondition = skipKeyword(lexer, 'on');
+  if (!hasTypeCondition && peek(lexer, TokenKind.NAME)) {
     return {
       kind: Kind.FRAGMENT_SPREAD,
       name: parseFragmentName(lexer),
@@ -496,14 +475,9 @@ function parseFragment(
       loc: loc(lexer, start),
     };
   }
-  let typeCondition;
-  if (lexer.token.value === 'on') {
-    lexer.advance();
-    typeCondition = parseNamedType(lexer);
-  }
   return {
     kind: Kind.INLINE_FRAGMENT,
-    typeCondition,
+    typeCondition: hasTypeCondition ? parseNamedType(lexer) : undefined,
     directives: parseDirectives(lexer, false),
     selectionSet: parseSelectionSet(lexer),
     loc: loc(lexer, start),
@@ -912,8 +886,7 @@ function parseObjectTypeDefinition(lexer: Lexer<*>): ObjectTypeDefinitionNode {
  */
 function parseImplementsInterfaces(lexer: Lexer<*>): Array<NamedTypeNode> {
   const types = [];
-  if (lexer.token.value === 'implements') {
-    lexer.advance();
+  if (skipKeyword(lexer, 'implements')) {
     // Optional leading ampersand
     skip(lexer, TokenKind.AMP);
     do {
@@ -1489,11 +1462,11 @@ function peek(lexer: Lexer<*>, kind: TokenKindEnum): boolean {
  * the lexer. Otherwise, do not change the parser state and return false.
  */
 function skip(lexer: Lexer<*>, kind: TokenKindEnum): boolean {
-  const match = lexer.token.kind === kind;
-  if (match) {
+  if (lexer.token.kind === kind) {
     lexer.advance();
+    return true;
   }
-  return match;
+  return false;
 }
 
 /**
@@ -1514,21 +1487,31 @@ function expect(lexer: Lexer<*>, kind: TokenKindEnum): Token {
 }
 
 /**
- * If the next token is a keyword with the given value, return that token after
- * advancing the lexer. Otherwise, do not change the parser state and return
- * false.
+ * If the next token is a keyword with the given value, return true after advancing
+ * the lexer. Otherwise, do not change the parser state and return false.
  */
-function expectKeyword(lexer: Lexer<*>, value: string): Token {
+function skipKeyword(lexer: Lexer<*>, value: string): boolean {
   const token = lexer.token;
   if (token.kind === TokenKind.NAME && token.value === value) {
     lexer.advance();
-    return token;
+    return true;
   }
-  throw syntaxError(
-    lexer.source,
-    token.start,
-    `Expected "${value}", found ${getTokenDesc(token)}`,
-  );
+  return false;
+}
+
+/**
+ * If the next token is a keyword with the given value, return that token after
+ * advancing the lexer. Otherwise, do not change the parser state and throw
+ * an error.
+ */
+function expectKeyword(lexer: Lexer<*>, value: string): void {
+  if (!skipKeyword(lexer, value)) {
+    throw syntaxError(
+      lexer.source,
+      lexer.token.start,
+      `Expected "${value}", found ${getTokenDesc(lexer.token)}`,
+    );
+  }
 }
 
 /**

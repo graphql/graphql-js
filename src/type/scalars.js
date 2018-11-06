@@ -117,24 +117,39 @@ export const GraphQLFloat = new GraphQLScalarType({
   },
 });
 
-function serializeString(value: mixed): string {
-  // Support serializing objects with custom valueOf() functions - a common way
-  // to represent an complex value which can be represented as a string
-  // (ex: MongoDB id objects).
-  const result =
-    value && typeof value.valueOf === 'function' ? value.valueOf() : value;
+// Support serializing objects with custom valueOf() or toJSON() functions -
+// a common way to represent a complex value which can be represented as
+// a string (ex: MongoDB id objects).
+function serializeObject(value: mixed): mixed {
+  if (typeof value === 'object' && value !== null) {
+    if (typeof value.valueOf === 'function') {
+      const valueOfResult = value.valueOf();
+      if (typeof valueOfResult !== 'object') {
+        return valueOfResult;
+      }
+    }
+    if (typeof value.toJSON === 'function') {
+      return value.toJSON();
+    }
+  }
+  return value;
+}
+
+function serializeString(rawValue: mixed): string {
+  const value = serializeObject(rawValue);
+
   // Serialize string, boolean and number values to a string, but do not
   // attempt to coerce object, function, symbol, or other types as strings.
-  if (typeof result === 'string') {
-    return result;
+  if (typeof value === 'string') {
+    return value;
   }
-  if (typeof result === 'boolean') {
-    return result ? 'true' : 'false';
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
   }
-  if (isFinite(result)) {
-    return result.toString();
+  if (isFinite(value)) {
+    return value.toString();
   }
-  throw new TypeError(`String cannot represent value: ${inspect(value)}`);
+  throw new TypeError(`String cannot represent value: ${inspect(rawValue)}`);
 }
 
 function coerceString(value: mixed): string {
@@ -190,18 +205,16 @@ export const GraphQLBoolean = new GraphQLScalarType({
   },
 });
 
-function serializeID(value: mixed): string {
-  // Support serializing objects with custom valueOf() functions - a common way
-  // to represent an object identifier (ex. MongoDB).
-  const result =
-    value && typeof value.valueOf === 'function' ? value.valueOf() : value;
-  if (typeof result === 'string') {
-    return result;
+function serializeID(rawValue: mixed): string {
+  const value = serializeObject(rawValue);
+
+  if (typeof value === 'string') {
+    return value;
   }
-  if (isInteger(result)) {
-    return String(result);
+  if (isInteger(value)) {
+    return String(value);
   }
-  throw new TypeError(`ID cannot represent value: ${inspect(value)}`);
+  throw new TypeError(`ID cannot represent value: ${inspect(rawValue)}`);
 }
 
 function coerceID(value: mixed): string {

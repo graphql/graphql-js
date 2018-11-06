@@ -9,6 +9,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import dedent from '../../jsutils/dedent';
 import { parse } from '../parser';
 import toJSONDeep from './toJSONDeep';
 
@@ -74,28 +75,29 @@ function inputValueNode(name, type, defaultValue, loc) {
 
 describe('Schema Parser', () => {
   it('Simple type', () => {
-    const doc = parse(`
-type Hello {
-  world: String
-}`);
+    const doc = parse(dedent`
+      type Hello {
+        world: String
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', { start: 6, end: 11 }),
+          name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
           interfaces: [],
           directives: [],
           fields: [
             fieldNode(
-              nameNode('world', { start: 16, end: 21 }),
-              typeNode('String', { start: 23, end: 29 }),
-              { start: 16, end: 29 },
+              nameNode('world', { start: 15, end: 20 }),
+              typeNode('String', { start: 22, end: 28 }),
+              { start: 15, end: 28 },
             ),
           ],
-          loc: { start: 1, end: 31 },
+          loc: { start: 0, end: 30 },
         },
       ],
       loc: { start: 0, end: 31 },
@@ -103,11 +105,12 @@ type Hello {
   });
 
   it('parses type with description string', () => {
-    const doc = parse(`
-"Description"
-type Hello {
-  world: String
-}`);
+    const doc = parse(dedent`
+      "Description"
+      type Hello {
+        world: String
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.nested.deep.property(
       'definitions[0].description',
@@ -115,20 +118,21 @@ type Hello {
         kind: 'StringValue',
         value: 'Description',
         block: false,
-        loc: { start: 1, end: 14 },
+        loc: { start: 0, end: 13 },
       },
     );
   });
 
   it('parses type with description multi-line string', () => {
-    const doc = parse(`
-"""
-Description
-"""
-# Even with comments between them
-type Hello {
-  world: String
-}`);
+    const doc = parse(dedent`
+      """
+      Description
+      """
+      # Even with comments between them
+      type Hello {
+        world: String
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.nested.deep.property(
       'definitions[0].description',
@@ -136,37 +140,37 @@ type Hello {
         kind: 'StringValue',
         value: 'Description',
         block: true,
-        loc: { start: 1, end: 20 },
+        loc: { start: 0, end: 19 },
       },
     );
   });
 
   it('Simple extension', () => {
-    const doc = parse(`
-extend type Hello {
-  world: String
-}
-`);
+    const doc = parse(dedent`
+      extend type Hello {
+        world: String
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeExtension',
-          name: nameNode('Hello', { start: 13, end: 18 }),
+          name: nameNode('Hello', { start: 12, end: 17 }),
           interfaces: [],
           directives: [],
           fields: [
             fieldNode(
-              nameNode('world', { start: 23, end: 28 }),
-              typeNode('String', { start: 30, end: 36 }),
-              { start: 23, end: 36 },
+              nameNode('world', { start: 22, end: 27 }),
+              typeNode('String', { start: 29, end: 35 }),
+              { start: 22, end: 35 },
             ),
           ],
-          loc: { start: 1, end: 38 },
+          loc: { start: 0, end: 37 },
         },
       ],
-      loc: { start: 0, end: 39 },
+      loc: { start: 0, end: 38 },
     });
   });
 
@@ -307,32 +311,33 @@ extend type Hello {
   });
 
   it('Simple non-null type', () => {
-    const doc = parse(`
-type Hello {
-  world: String!
-}`);
+    const doc = parse(dedent`
+      type Hello {
+        world: String!
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', { start: 6, end: 11 }),
+          name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
           interfaces: [],
           directives: [],
           fields: [
             fieldNode(
-              nameNode('world', { start: 16, end: 21 }),
+              nameNode('world', { start: 15, end: 20 }),
               {
                 kind: 'NonNullType',
-                type: typeNode('String', { start: 23, end: 29 }),
-                loc: { start: 23, end: 30 },
+                type: typeNode('String', { start: 22, end: 28 }),
+                loc: { start: 22, end: 29 },
               },
-              { start: 16, end: 30 },
+              { start: 15, end: 29 },
             ),
           ],
-          loc: { start: 1, end: 32 },
+          loc: { start: 0, end: 31 },
         },
       ],
       loc: { start: 0, end: 32 },
@@ -465,27 +470,28 @@ type Hello {
   });
 
   it('Simple interface', () => {
-    const doc = parse(`
-interface Hello {
-  world: String
-}`);
+    const doc = parse(dedent`
+      interface Hello {
+        world: String
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'InterfaceTypeDefinition',
-          name: nameNode('Hello', { start: 11, end: 16 }),
+          name: nameNode('Hello', { start: 10, end: 15 }),
           description: undefined,
           directives: [],
           fields: [
             fieldNode(
-              nameNode('world', { start: 21, end: 26 }),
-              typeNode('String', { start: 28, end: 34 }),
-              { start: 21, end: 34 },
+              nameNode('world', { start: 20, end: 25 }),
+              typeNode('String', { start: 27, end: 33 }),
+              { start: 20, end: 33 },
             ),
           ],
-          loc: { start: 1, end: 36 },
+          loc: { start: 0, end: 35 },
         },
       ],
       loc: { start: 0, end: 36 },
@@ -493,36 +499,37 @@ interface Hello {
   });
 
   it('Simple field with arg', () => {
-    const doc = parse(`
-type Hello {
-  world(flag: Boolean): String
-}`);
+    const doc = parse(dedent`
+      type Hello {
+        world(flag: Boolean): String
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', { start: 6, end: 11 }),
+          name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
           interfaces: [],
           directives: [],
           fields: [
             fieldNodeWithArgs(
-              nameNode('world', { start: 16, end: 21 }),
-              typeNode('String', { start: 38, end: 44 }),
+              nameNode('world', { start: 15, end: 20 }),
+              typeNode('String', { start: 37, end: 43 }),
               [
                 inputValueNode(
-                  nameNode('flag', { start: 22, end: 26 }),
-                  typeNode('Boolean', { start: 28, end: 35 }),
+                  nameNode('flag', { start: 21, end: 25 }),
+                  typeNode('Boolean', { start: 27, end: 34 }),
                   undefined,
-                  { start: 22, end: 35 },
+                  { start: 21, end: 34 },
                 ),
               ],
-              { start: 16, end: 44 },
+              { start: 15, end: 43 },
             ),
           ],
-          loc: { start: 1, end: 46 },
+          loc: { start: 0, end: 45 },
         },
       ],
       loc: { start: 0, end: 46 },
@@ -530,40 +537,41 @@ type Hello {
   });
 
   it('Simple field with arg with default value', () => {
-    const doc = parse(`
-type Hello {
-  world(flag: Boolean = true): String
-}`);
+    const doc = parse(dedent`
+      type Hello {
+        world(flag: Boolean = true): String
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', { start: 6, end: 11 }),
+          name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
           interfaces: [],
           directives: [],
           fields: [
             fieldNodeWithArgs(
-              nameNode('world', { start: 16, end: 21 }),
-              typeNode('String', { start: 45, end: 51 }),
+              nameNode('world', { start: 15, end: 20 }),
+              typeNode('String', { start: 44, end: 50 }),
               [
                 inputValueNode(
-                  nameNode('flag', { start: 22, end: 26 }),
-                  typeNode('Boolean', { start: 28, end: 35 }),
+                  nameNode('flag', { start: 21, end: 25 }),
+                  typeNode('Boolean', { start: 27, end: 34 }),
                   {
                     kind: 'BooleanValue',
                     value: true,
-                    loc: { start: 38, end: 42 },
+                    loc: { start: 37, end: 41 },
                   },
-                  { start: 22, end: 42 },
+                  { start: 21, end: 41 },
                 ),
               ],
-              { start: 16, end: 51 },
+              { start: 15, end: 50 },
             ),
           ],
-          loc: { start: 1, end: 53 },
+          loc: { start: 0, end: 52 },
         },
       ],
       loc: { start: 0, end: 53 },
@@ -571,40 +579,41 @@ type Hello {
   });
 
   it('Simple field with list arg', () => {
-    const doc = parse(`
-type Hello {
-  world(things: [String]): String
-}`);
+    const doc = parse(dedent`
+      type Hello {
+        world(things: [String]): String
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', { start: 6, end: 11 }),
+          name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
           interfaces: [],
           directives: [],
           fields: [
             fieldNodeWithArgs(
-              nameNode('world', { start: 16, end: 21 }),
-              typeNode('String', { start: 41, end: 47 }),
+              nameNode('world', { start: 15, end: 20 }),
+              typeNode('String', { start: 40, end: 46 }),
               [
                 inputValueNode(
-                  nameNode('things', { start: 22, end: 28 }),
+                  nameNode('things', { start: 21, end: 27 }),
                   {
                     kind: 'ListType',
-                    type: typeNode('String', { start: 31, end: 37 }),
-                    loc: { start: 30, end: 38 },
+                    type: typeNode('String', { start: 30, end: 36 }),
+                    loc: { start: 29, end: 37 },
                   },
                   undefined,
-                  { start: 22, end: 38 },
+                  { start: 21, end: 37 },
                 ),
               ],
-              { start: 16, end: 47 },
+              { start: 15, end: 46 },
             ),
           ],
-          loc: { start: 1, end: 49 },
+          loc: { start: 0, end: 48 },
         },
       ],
       loc: { start: 0, end: 49 },
@@ -612,42 +621,43 @@ type Hello {
   });
 
   it('Simple field with two args', () => {
-    const doc = parse(`
-type Hello {
-  world(argOne: Boolean, argTwo: Int): String
-}`);
+    const doc = parse(dedent`
+      type Hello {
+        world(argOne: Boolean, argTwo: Int): String
+      }
+    `);
 
     expect(toJSONDeep(doc)).to.deep.equal({
       kind: 'Document',
       definitions: [
         {
           kind: 'ObjectTypeDefinition',
-          name: nameNode('Hello', { start: 6, end: 11 }),
+          name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
           interfaces: [],
           directives: [],
           fields: [
             fieldNodeWithArgs(
-              nameNode('world', { start: 16, end: 21 }),
-              typeNode('String', { start: 53, end: 59 }),
+              nameNode('world', { start: 15, end: 20 }),
+              typeNode('String', { start: 52, end: 58 }),
               [
                 inputValueNode(
-                  nameNode('argOne', { start: 22, end: 28 }),
-                  typeNode('Boolean', { start: 30, end: 37 }),
+                  nameNode('argOne', { start: 21, end: 27 }),
+                  typeNode('Boolean', { start: 29, end: 36 }),
                   undefined,
-                  { start: 22, end: 37 },
+                  { start: 21, end: 36 },
                 ),
                 inputValueNode(
-                  nameNode('argTwo', { start: 39, end: 45 }),
-                  typeNode('Int', { start: 47, end: 50 }),
+                  nameNode('argTwo', { start: 38, end: 44 }),
+                  typeNode('Int', { start: 46, end: 49 }),
                   undefined,
-                  { start: 39, end: 50 },
+                  { start: 38, end: 49 },
                 ),
               ],
-              { start: 16, end: 59 },
+              { start: 15, end: 58 },
             ),
           ],
-          loc: { start: 1, end: 61 },
+          loc: { start: 0, end: 60 },
         },
       ],
       loc: { start: 0, end: 61 },
