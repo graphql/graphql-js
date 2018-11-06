@@ -1039,6 +1039,30 @@ describe('findDangerousChanges', () => {
         },
       ]);
     });
+    it("should return empty result if an argument's defaultValue is an Array and it's not changed", () => {
+      const oldSchema = buildSchema(`
+        type Type1 {
+          field1(name: [String!] = []): String
+        }
+
+        type Query {
+          field1: String
+        }
+      `);
+
+      const newSchema = buildSchema(`
+        type Type1 {
+          field1(name: [String!] = []): String
+        }
+
+        type Query {
+          field1: String
+        }
+      `);
+      expect(
+        findArgChanges(oldSchema, newSchema).dangerousChanges,
+      ).to.be.empty();
+    });
   });
 
   it('should detect if a value was added to an enum type', () => {
