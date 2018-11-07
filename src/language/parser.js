@@ -1368,7 +1368,7 @@ function parseDirectiveDefinition(lexer: Lexer<*>): DirectiveDefinitionNode {
     description,
     name,
     arguments: args,
-    isRepeatable: repeatable,
+    repeatable,
     locations,
     loc: loc(lexer, start),
   };

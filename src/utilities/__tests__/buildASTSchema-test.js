@@ -104,7 +104,7 @@ describe('Schema Builder', () => {
     expect(output).to.equal(body);
 
     const schema = buildASTSchema(parse(body));
-    expect(schema.getDirective('foo').isRepeatable).to.equal(true);
+    expect(schema.getDirective('foo').repeatable).to.equal(true);
   });
 
   it('Supports descriptions', () => {

@@ -320,7 +320,7 @@ export function extendSchema(
       locations: directive.locations,
       args: extendArgs(directive.args),
       astNode: directive.astNode,
-      isRepeatable: directive.isRepeatable,
+      repeatable: directive.repeatable,
     });
   }
 

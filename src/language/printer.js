@@ -181,13 +181,13 @@ const printDocASTReducer = {
   ),
 
   DirectiveDefinition: addDescription(
-    ({ name, arguments: args, locations, isRepeatable }) =>
+    ({ name, arguments: args, locations, repeatable }) =>
       'directive @' +
       name +
       (hasMultilineItems(args)
         ? wrap('(\n', indent(join(args, '\n')), '\n)')
         : wrap('(', join(args, ', '), ')')) +
-      (isRepeatable ? ' repeatable' : '') +
+      (repeatable ? ' repeatable' : '') +
       ' on ' +
       join(locations, ' | '),
   ),

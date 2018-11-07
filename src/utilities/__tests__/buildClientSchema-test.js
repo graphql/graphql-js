@@ -596,7 +596,7 @@ describe('Type System: build schema from introspection', () => {
         new GraphQLDirective({
           name: 'customRepeatableDirective',
           description: 'This is a custom repeatable directive',
-          isRepeatable: true,
+          repeatable: true,
           locations: ['FIELD'],
         }),
       ],

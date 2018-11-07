@@ -355,7 +355,7 @@ export function buildClientSchema(
       description: directiveIntrospection.description,
       locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args),
-      isRepeatable:
+      repeatable:
         directiveIntrospection.isRepeatable === undefined
           ? false
           : directiveIntrospection.isRepeatable,

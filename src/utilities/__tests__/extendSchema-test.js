@@ -120,7 +120,7 @@ const RepeatableDirective = new GraphQLDirective({
   args: {
     input: { type: SomeInputType },
   },
-  isRepeatable: true,
+  repeatable: true,
   locations: [DirectiveLocation.OBJECT, DirectiveLocation.INTERFACE],
 });
 

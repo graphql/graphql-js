@@ -396,7 +396,7 @@ export const testSchema = new GraphQLSchema({
           description: 'Some generic ID.',
         },
       },
-      isRepeatable: true,
+      repeatable: true,
       locations: ['OBJECT'],
     }),
   ],

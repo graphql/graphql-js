@@ -102,7 +102,7 @@ export const __Directive = new GraphQLObjectType({
       type: GraphQLNonNull(GraphQLBoolean),
       description:
         'Permits using the directive multiple times at the same location.',
-      resolve: directive => directive.isRepeatable,
+      resolve: directive => directive.repeatable,
     },
   }),
 });
