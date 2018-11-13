@@ -286,7 +286,7 @@ export class ASTDefinitionBuilder {
     });
   }
 
-  buildField(field: FieldDefinitionNode): GraphQLFieldConfig<*, *> {
+  buildField(field: FieldDefinitionNode): GraphQLFieldConfig<mixed, mixed> {
     return {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
