@@ -1154,9 +1154,7 @@ export type GraphQLEnumTypeConfig /* <T> */ = {|
   extensionASTNodes?: ?$ReadOnlyArray<EnumTypeExtensionNode>,
 |};
 
-export type GraphQLEnumValueConfigMap /* <T> */ = ObjMap<
-  GraphQLEnumValueConfig /* <T> */,
->;
+export type GraphQLEnumValueConfigMap /* <T> */ = ObjMap<GraphQLEnumValueConfig /* <T> */>;
 
 export type GraphQLEnumValueConfig /* <T> */ = {|
   value?: any /* T */,

@@ -286,7 +286,7 @@ export class ASTDefinitionBuilder {
     });
   }
 
-  buildField(field: FieldDefinitionNode): GraphQLFieldConfig<*, *> {
+  buildField(field: FieldDefinitionNode): GraphQLFieldConfig<mixed, mixed> {
     return {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
@@ -360,7 +360,7 @@ export class ASTDefinitionBuilder {
     def: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
   ) {
     return def.fields
-      ? keyValMap(
+      ? keyValMap<_, GraphQLFieldConfig<mixed, mixed>>(
           def.fields,
           field => field.name.value,
           field => this.buildField(field),
@@ -369,7 +369,7 @@ export class ASTDefinitionBuilder {
   }
 
   _makeInputValues(values: $ReadOnlyArray<InputValueDefinitionNode>) {
-    return keyValMap(
+    return keyValMap<_, GraphQLInputField>(
       values,
       value => value.name.value,
       value => this.buildInputField(value),
@@ -396,7 +396,7 @@ export class ASTDefinitionBuilder {
 
   _makeValueDefMap(def: EnumTypeDefinitionNode) {
     return def.values
-      ? keyValMap(
+      ? keyValMap<_, GraphQLEnumValueConfig>(
           def.values,
           enumValue => enumValue.name.value,
           enumValue => this.buildEnumValue(enumValue),

@@ -104,8 +104,8 @@ export function GraphQLError( // eslint-disable-line no-redeclare
       ? nodes
       : undefined
     : nodes
-      ? [nodes]
-      : undefined;
+    ? [nodes]
+    : undefined;
 
   // Compute locations in the source for the given nodes/positions.
   let _source = source;
