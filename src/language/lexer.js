@@ -177,10 +177,10 @@ function printCharCode(code) {
     isNaN(code)
       ? TokenKind.EOF
       : // Trust JSON for ASCII.
-        code < 0x007f
-        ? JSON.stringify(String.fromCharCode(code))
-        : // Otherwise print the escaped form.
-          `"\\u${('00' + code.toString(16).toUpperCase()).slice(-4)}"`
+      code < 0x007f
+      ? JSON.stringify(String.fromCharCode(code))
+      : // Otherwise print the escaped form.
+        `"\\u${('00' + code.toString(16).toUpperCase()).slice(-4)}"`
   );
 }
 
@@ -713,10 +713,10 @@ function char2hex(a) {
   return a >= 48 && a <= 57
     ? a - 48 // 0-9
     : a >= 65 && a <= 70
-      ? a - 55 // A-F
-      : a >= 97 && a <= 102
-        ? a - 87 // a-f
-        : -1;
+    ? a - 55 // A-F
+    : a >= 97 && a <= 102
+    ? a - 87 // a-f
+    : -1;
 }
 
 /**

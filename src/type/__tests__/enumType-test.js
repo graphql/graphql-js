@@ -54,8 +54,8 @@ const QueryType = new GraphQLObjectType({
         return fromInt !== undefined
           ? fromInt
           : fromString !== undefined
-            ? fromString
-            : fromEnum;
+          ? fromString
+          : fromEnum;
       },
     },
     colorInt: {
