@@ -7,7 +7,7 @@
  * @noflow
  */
 
-import { inspect } from 'util';
+import inspect from '../../jsutils/inspect';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { execute } from '../execute';
@@ -81,7 +81,7 @@ function fieldWithInputArg(inputArg) {
     args: { input: inputArg },
     resolve(_, args) {
       if (args.hasOwnProperty('input')) {
-        return inspect(args.input, { depth: null });
+        return inspect(args.input);
       }
     },
   };
@@ -143,7 +143,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
+            fieldWithObjectInput: '{ a: "foo", b: ["bar"], c: "baz" }',
           },
         });
       });
@@ -157,7 +157,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
+            fieldWithObjectInput: '{ a: "foo", b: ["bar"], c: "baz" }',
           },
         });
       });
@@ -171,7 +171,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: "{ a: null, b: null, c: 'C', d: null }",
+            fieldWithObjectInput: '{ a: null, b: null, c: "C", d: null }',
           },
         });
       });
@@ -185,7 +185,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: "{ b: [ 'A', null, 'C' ], c: 'C' }",
+            fieldWithObjectInput: '{ b: ["A", null, "C"], c: "C" }',
           },
         });
       });
@@ -221,7 +221,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: "{ c: 'foo', d: 'DeserializedValue' }",
+            fieldWithObjectInput: '{ c: "foo", d: "DeserializedValue" }',
           },
         });
       });
@@ -240,7 +240,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
+            fieldWithObjectInput: '{ a: "foo", b: ["bar"], c: "baz" }',
           },
         });
       });
@@ -288,7 +288,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
+            fieldWithObjectInput: '{ a: "foo", b: ["bar"], c: "baz" }',
           },
         });
       });
@@ -303,7 +303,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithNullableStringInput: "'Variable value'",
+            fieldWithNullableStringInput: '"Variable value"',
           },
         });
       });
@@ -348,7 +348,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: "{ a: 'foo', b: [ 'bar' ], c: 'baz' }",
+            fieldWithObjectInput: '{ a: "foo", b: ["bar"], c: "baz" }',
           },
         });
       });
@@ -359,7 +359,7 @@ describe('Execute: Handles inputs', () => {
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: "{ c: 'foo', d: 'DeserializedValue' }",
+            fieldWithObjectInput: '{ c: "foo", d: "DeserializedValue" }',
           },
         });
       });
@@ -475,8 +475,8 @@ describe('Execute: Handles inputs', () => {
           null: 'null',
           NaN: 'NaN',
           false: 'false',
-          customValue: "'custom value'",
-          defaultValue: "'DEFAULT_VALUE'",
+          customValue: '"custom value"',
+          defaultValue: '"DEFAULT_VALUE"',
         },
       });
     });
@@ -564,7 +564,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: "'a'",
+          fieldWithNullableStringInput: '"a"',
         },
       });
     });
@@ -578,7 +578,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.deep.equal({
         data: {
-          fieldWithNullableStringInput: "'a'",
+          fieldWithNullableStringInput: '"a"',
         },
       });
     });
@@ -594,7 +594,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: "'default'",
+          fieldWithNonNullableStringInput: '"default"',
         },
       });
     });
@@ -646,7 +646,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: "'a'",
+          fieldWithNonNullableStringInput: '"a"',
         },
       });
     });
@@ -660,7 +660,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.deep.equal({
         data: {
-          fieldWithNonNullableStringInput: "'a'",
+          fieldWithNonNullableStringInput: '"a"',
         },
       });
     });
@@ -754,7 +754,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: ['A'] });
 
-      expect(result).to.deep.equal({ data: { list: "[ 'A' ]" } });
+      expect(result).to.deep.equal({ data: { list: '["A"]' } });
     });
 
     it('allows lists to contain null', () => {
@@ -765,7 +765,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: ['A', null, 'B'] });
 
-      expect(result).to.deep.equal({ data: { list: "[ 'A', null, 'B' ]" } });
+      expect(result).to.deep.equal({ data: { list: '["A", null, "B"]' } });
     });
 
     it('does not allow non-null lists to be null', () => {
@@ -795,7 +795,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: ['A'] });
 
-      expect(result).to.deep.equal({ data: { nnList: "[ 'A' ]" } });
+      expect(result).to.deep.equal({ data: { nnList: '["A"]' } });
     });
 
     it('allows non-null lists to contain null', () => {
@@ -806,7 +806,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: ['A', null, 'B'] });
 
-      expect(result).to.deep.equal({ data: { nnList: "[ 'A', null, 'B' ]" } });
+      expect(result).to.deep.equal({ data: { nnList: '["A", null, "B"]' } });
     });
 
     it('allows lists of non-nulls to be null', () => {
@@ -828,7 +828,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: ['A'] });
 
-      expect(result).to.deep.equal({ data: { listNN: "[ 'A' ]" } });
+      expect(result).to.deep.equal({ data: { listNN: '["A"]' } });
     });
 
     it('does not allow lists of non-nulls to contain null', () => {
@@ -878,7 +878,7 @@ describe('Execute: Handles inputs', () => {
       `;
       const result = executeQuery(doc, { input: ['A'] });
 
-      expect(result).to.deep.equal({ data: { nnListNN: "[ 'A' ]" } });
+      expect(result).to.deep.equal({ data: { nnListNN: '["A"]' } });
     });
 
     it('does not allow non-null lists of non-nulls to contain null', () => {
@@ -948,7 +948,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.deep.equal({
         data: {
-          fieldWithDefaultArgumentValue: "'Hello World'",
+          fieldWithDefaultArgumentValue: '"Hello World"',
         },
       });
     });
@@ -962,7 +962,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.deep.equal({
         data: {
-          fieldWithDefaultArgumentValue: "'Hello World'",
+          fieldWithDefaultArgumentValue: '"Hello World"',
         },
       });
     });
@@ -998,7 +998,7 @@ describe('Execute: Handles inputs', () => {
       expect(result).to.deep.equal({
         data: {
           fieldWithNonNullableStringInputAndDefaultArgumentValue:
-            "'Hello World'",
+            '"Hello World"',
         },
       });
     });
