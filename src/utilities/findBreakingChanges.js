@@ -35,6 +35,8 @@ import keyMap from '../jsutils/keyMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { DirectiveLocationEnum } from '../language/directiveLocation';
 
+import { isSpecifiedScalarType } from '../type/scalars';
+
 export const BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
   FIELD_REMOVED: 'FIELD_REMOVED',
@@ -128,7 +130,7 @@ export function findRemovedTypes(
 
   const breakingChanges = [];
   for (const typeName of Object.keys(oldTypeMap)) {
-    if (!newTypeMap[typeName]) {
+    if (!newTypeMap[typeName] && !isSpecifiedScalarType(oldTypeMap[typeName])) {
       breakingChanges.push({
         type: BreakingChangeType.TYPE_REMOVED,
         description: `${typeName} was removed.`,
