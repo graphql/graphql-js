@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -70,6 +70,8 @@ describe('Execute: resolve function', () => {
     });
 
     class Adder {
+      _num: number;
+
       constructor(num) {
         this._num = num;
       }

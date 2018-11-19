@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import inspect from '../../jsutils/inspect';
@@ -702,7 +702,7 @@ describe('Execute: Handles inputs', () => {
         ],
       });
 
-      expect(result.errors[0].originalError).not.to.equal(undefined);
+      expect(result).to.have.nested.property('errors[0].originalError');
     });
 
     it('reports error for non-provided variables for non-nullable inputs', () => {

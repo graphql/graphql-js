@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -23,6 +23,9 @@ import {
 } from '../../type';
 
 class Dog {
+  name: string;
+  barks: boolean;
+
   constructor(name, barks) {
     this.name = name;
     this.barks = barks;
@@ -30,6 +33,9 @@ class Dog {
 }
 
 class Cat {
+  name: string;
+  meows: boolean;
+
   constructor(name, meows) {
     this.name = name;
     this.meows = meows;
@@ -37,6 +43,10 @@ class Cat {
 }
 
 class Person {
+  name: string;
+  pets: ?Array<Dog | Cat>;
+  friends: ?Array<Dog | Cat | Person>;
+
   constructor(name, pets, friends) {
     this.name = name;
     this.pets = pets;
