@@ -16,6 +16,7 @@ import { buildASTSchema, buildSchema } from '../buildASTSchema';
 import dedent from '../../jsutils/dedent';
 import { Kind } from '../../language/kinds';
 import {
+  assertDirective,
   assertObjectType,
   assertInputObjectType,
   assertEnumType,
@@ -716,8 +717,7 @@ describe('Schema Builder', () => {
     const testInterface = assertInterfaceType(schema.getType('TestInterface'));
     const testType = assertObjectType(schema.getType('TestType'));
     const testScalar = assertScalarType(schema.getType('TestScalar'));
-    const testDirective = schema.getDirective('test');
-    invariant(testDirective);
+    const testDirective = assertDirective(schema.getDirective('test'));
 
     const restoredSchemaAST = {
       kind: Kind.DOCUMENT,

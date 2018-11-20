@@ -50,6 +50,14 @@ export function isSchema(schema) {
   return instanceOf(schema, GraphQLSchema);
 }
 
+export function assertSchema(schema: mixed): GraphQLSchema {
+  invariant(
+    isSchema(schema),
+    `Expected ${inspect(schema)} to be a GraphQL schema.`,
+  );
+  return schema;
+}
+
 /**
  * Schema Definition
  *

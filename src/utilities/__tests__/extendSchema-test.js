@@ -17,6 +17,7 @@ import { printSchema } from '../schemaPrinter';
 import { Kind } from '../../language/kinds';
 import { graphqlSync } from '../../';
 import {
+  assertDirective,
   assertObjectType,
   assertInputObjectType,
   assertEnumType,
@@ -325,8 +326,7 @@ describe('extendSchema', () => {
     const inputField = queryType.getFields().someInput;
     expect(inputField).to.have.nested.property('args[0].type', someInputType);
 
-    const fooDirective = extendedSchema.getDirective('foo');
-    invariant(fooDirective);
+    const fooDirective = assertDirective(extendedSchema.getDirective('foo'));
     expect(fooDirective.args[0].type).to.equal(someInputType);
   });
 
@@ -429,8 +429,9 @@ describe('extendSchema', () => {
     const testInterface = assertInterfaceType(
       extendedTwiceSchema.getType('TestInterface'),
     );
-    const testDirective = extendedTwiceSchema.getDirective('test');
-    invariant(testDirective);
+    const testDirective = assertDirective(
+      extendedTwiceSchema.getDirective('test'),
+    );
 
     expect(testType).to.include({ extensionASTNodes: undefined });
     expect(testEnum).to.include({ extensionASTNodes: undefined });
@@ -1051,8 +1052,9 @@ describe('extendSchema', () => {
       directive @profile(enable: Boolean! tag: String) on QUERY | FIELD
     `);
 
-    const extendedDirective = extendedSchema.getDirective('profile');
-    invariant(extendedDirective);
+    const extendedDirective = assertDirective(
+      extendedSchema.getDirective('profile'),
+    );
     expect(extendedDirective.locations).to.deep.equal(['QUERY', 'FIELD']);
 
     expect(extendedDirective.args).to.have.lengthOf(2);
