@@ -766,6 +766,7 @@ describe('Schema Parser', () => {
           kind: 'ScalarTypeDefinition',
           name: nameNode('Hello', { start: 7, end: 12 }),
           description: undefined,
+          type: undefined,
           directives: [],
           loc: { start: 0, end: 12 },
         },
