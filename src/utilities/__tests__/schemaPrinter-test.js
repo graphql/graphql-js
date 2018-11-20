@@ -4,15 +4,17 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import dedent from '../../jsutils/dedent';
+import invariant from '../../jsutils/invariant';
 import { printSchema, printIntrospectionSchema } from '../schemaPrinter';
 import { buildSchema } from '../buildASTSchema';
 import {
+  assertObjectType,
   GraphQLSchema,
   GraphQLInputObjectType,
   GraphQLScalarType,
@@ -173,6 +175,7 @@ describe('Type System Printer', () => {
       args: { argOne: { type: GraphQLString, defaultValue: 'tes\t de\fault' } },
     });
     expect(output).to.equal(
+      // $FlowFixMe
       dedent(String.raw`
         type Query {
           singleField(argOne: String = "tes\t de\fault"): String
@@ -466,6 +469,7 @@ describe('Type System Printer', () => {
     const OddType = new GraphQLScalarType({
       name: 'Odd',
       serialize(value) {
+        invariant(typeof value === 'number');
         return value % 2 === 1 ? value : null;
       },
     });
@@ -559,9 +563,10 @@ describe('Type System Printer', () => {
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
-    const recreatedField = recreatedRoot.getFields()['singleField'];
-    expect(recreatedField.description).to.equal(description);
+    const schema = buildSchema(output);
+    const recreatedRoot = assertObjectType(schema.getTypeMap().Query);
+    const recreatedField = recreatedRoot.getFields().singleField;
+    expect(recreatedField).to.include({ description });
   });
 
   it('Does not one-line print a description that ends with a quote', () => {
@@ -578,9 +583,10 @@ describe('Type System Printer', () => {
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
-    const recreatedField = recreatedRoot.getFields()['singleField'];
-    expect(recreatedField.description).to.equal(description);
+    const schema = buildSchema(output);
+    const recreatedRoot = assertObjectType(schema.getTypeMap().Query);
+    const recreatedField = recreatedRoot.getFields().singleField;
+    expect(recreatedField).to.include({ description });
   });
 
   it('Preserves leading spaces when printing a description', () => {
@@ -596,9 +602,10 @@ describe('Type System Printer', () => {
         singleField: String
       }
     `);
-    const recreatedRoot = buildSchema(output).getTypeMap()['Query'];
-    const recreatedField = recreatedRoot.getFields()['singleField'];
-    expect(recreatedField.description).to.equal(description);
+    const schema = buildSchema(output);
+    const recreatedRoot = assertObjectType(schema.getTypeMap().Query);
+    const recreatedField = recreatedRoot.getFields().singleField;
+    expect(recreatedField).to.include({ description });
   });
 
   it('Print Introspection Schema', () => {

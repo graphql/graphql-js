@@ -4,13 +4,20 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import invariant from '../../jsutils/invariant';
 import { getOperationRootType } from '../getOperationRootType';
-import { parse, GraphQLSchema, GraphQLObjectType, GraphQLString } from '../../';
+import {
+  Kind,
+  parse,
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString,
+} from '../../';
 
 const queryType = new GraphQLObjectType({
   name: 'FooQuery',
@@ -33,15 +40,20 @@ const subscriptionType = new GraphQLObjectType({
   }),
 });
 
+function getOperationNode(doc) {
+  const operationNode = doc.definitions[0];
+  invariant(operationNode && operationNode.kind === Kind.OPERATION_DEFINITION);
+  return operationNode;
+}
+
 describe('getOperationRootType', () => {
   it('Gets a Query type for an unnamed OperationDefinitionNode', () => {
     const testSchema = new GraphQLSchema({
       query: queryType,
     });
     const doc = parse('{ field }');
-    expect(getOperationRootType(testSchema, doc.definitions[0])).to.equal(
-      queryType,
-    );
+    const operationNode = getOperationNode(doc);
+    expect(getOperationRootType(testSchema, operationNode)).to.equal(queryType);
   });
 
   it('Gets a Query type for an named OperationDefinitionNode', () => {
@@ -50,9 +62,8 @@ describe('getOperationRootType', () => {
     });
 
     const doc = parse('query Q { field }');
-    expect(getOperationRootType(testSchema, doc.definitions[0])).to.equal(
-      queryType,
-    );
+    const operationNode = getOperationNode(doc);
+    expect(getOperationRootType(testSchema, operationNode)).to.equal(queryType);
   });
 
   it('Gets a type for OperationTypeDefinitionNodes', () => {
@@ -62,17 +73,28 @@ describe('getOperationRootType', () => {
       subscription: subscriptionType,
     });
 
-    const doc = parse(
-      'schema { query: FooQuery mutation: FooMutation subscription: FooSubscription }',
-    );
-    const operationTypes = doc.definitions[0].operationTypes;
-    expect(getOperationRootType(testSchema, operationTypes[0])).to.equal(
-      queryType,
-    );
-    expect(getOperationRootType(testSchema, operationTypes[1])).to.equal(
+    const doc = parse(`
+      schema {
+        query: FooQuery
+        mutation: FooMutation
+        subscription: FooSubscription
+      }
+    `);
+
+    const schemaNode = doc.definitions[0];
+    invariant(schemaNode && schemaNode.kind === Kind.SCHEMA_DEFINITION);
+    const [
+      queryNode,
+      mutationNode,
+      subscriptionNode,
+    ] = schemaNode.operationTypes;
+    invariant(queryNode && mutationNode && subscriptionNode);
+
+    expect(getOperationRootType(testSchema, queryNode)).to.equal(queryType);
+    expect(getOperationRootType(testSchema, mutationNode)).to.equal(
       mutationType,
     );
-    expect(getOperationRootType(testSchema, operationTypes[2])).to.equal(
+    expect(getOperationRootType(testSchema, subscriptionNode)).to.equal(
       subscriptionType,
     );
   });
@@ -83,7 +105,8 @@ describe('getOperationRootType', () => {
     });
 
     const doc = parse('mutation { field }');
-    expect(getOperationRootType(testSchema, doc.definitions[0])).to.equal(
+    const operationNode = getOperationNode(doc);
+    expect(getOperationRootType(testSchema, operationNode)).to.equal(
       mutationType,
     );
   });
@@ -94,7 +117,8 @@ describe('getOperationRootType', () => {
     });
 
     const doc = parse('subscription { field }');
-    expect(getOperationRootType(testSchema, doc.definitions[0])).to.equal(
+    const operationNode = getOperationNode(doc);
+    expect(getOperationRootType(testSchema, operationNode)).to.equal(
       subscriptionType,
     );
   });
@@ -103,7 +127,8 @@ describe('getOperationRootType', () => {
     const testSchema = new GraphQLSchema({});
 
     const doc = parse('query { field }');
-    expect(() => getOperationRootType(testSchema, doc.definitions[0])).to.throw(
+    const operationNode = getOperationNode(doc);
+    expect(() => getOperationRootType(testSchema, operationNode)).to.throw(
       'Schema does not define the required query root type.',
     );
   });
@@ -112,7 +137,8 @@ describe('getOperationRootType', () => {
     const testSchema = new GraphQLSchema({});
 
     const doc = parse('mutation { field }');
-    expect(() => getOperationRootType(testSchema, doc.definitions[0])).to.throw(
+    const operationNode = getOperationNode(doc);
+    expect(() => getOperationRootType(testSchema, operationNode)).to.throw(
       'Schema is not configured for mutations.',
     );
   });
@@ -121,7 +147,8 @@ describe('getOperationRootType', () => {
     const testSchema = new GraphQLSchema({});
 
     const doc = parse('subscription { field }');
-    expect(() => getOperationRootType(testSchema, doc.definitions[0])).to.throw(
+    const operationNode = getOperationNode(doc);
+    expect(() => getOperationRootType(testSchema, operationNode)).to.throw(
       'Schema is not configured for subscriptions.',
     );
   });
@@ -130,8 +157,12 @@ describe('getOperationRootType', () => {
     const testSchema = new GraphQLSchema({});
 
     const doc = parse('{ field }');
-    doc.definitions[0].operation = 'non_existent_operation';
-    expect(() => getOperationRootType(testSchema, doc.definitions[0])).to.throw(
+    const operationNode = {
+      ...getOperationNode(doc),
+      // $DisableFlowOnNegativeTest
+      operation: 'non_existent_operation',
+    };
+    expect(() => getOperationRootType(testSchema, operationNode)).to.throw(
       'Can only have query, mutation and subscription operations.',
     );
   });

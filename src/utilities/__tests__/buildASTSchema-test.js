@@ -4,17 +4,24 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import invariant from '../../jsutils/invariant';
 import { parse, print } from '../../language';
 import { printSchema } from '../schemaPrinter';
 import { buildASTSchema, buildSchema } from '../buildASTSchema';
 import dedent from '../../jsutils/dedent';
 import { Kind } from '../../language/kinds';
 import {
+  assertObjectType,
+  assertInputObjectType,
+  assertEnumType,
+  assertUnionType,
+  assertInterfaceType,
+  assertScalarType,
   graphqlSync,
   validateSchema,
   GraphQLSkipDirective,
@@ -29,10 +36,11 @@ import {
  * into an in-memory GraphQLSchema, and then finally
  * printing that GraphQL into the DSL
  */
-function cycleOutput(body, options) {
+function cycleOutput(body, options = {}) {
+  const commentDescriptions = options.commentDescriptions || false;
   const ast = parse(body);
   const schema = buildASTSchema(ast, options);
-  return printSchema(schema, options);
+  return printSchema(schema, { commentDescriptions });
 }
 
 describe('Schema Builder', () => {
@@ -639,25 +647,32 @@ describe('Schema Builder', () => {
     const ast = parse(body);
     const schema = buildASTSchema(ast);
 
-    const myEnum = schema.getType('MyEnum');
+    const myEnum = assertEnumType(schema.getType('MyEnum'));
 
     const value = myEnum.getValue('VALUE');
-    expect(value.isDeprecated).to.equal(false);
+    expect(value).to.include({ isDeprecated: false });
 
     const oldValue = myEnum.getValue('OLD_VALUE');
-    expect(oldValue.isDeprecated).to.equal(true);
-    expect(oldValue.deprecationReason).to.equal('No longer supported');
+    expect(oldValue).to.include({
+      isDeprecated: true,
+      deprecationReason: 'No longer supported',
+    });
 
     const otherValue = myEnum.getValue('OTHER_VALUE');
-    expect(otherValue.isDeprecated).to.equal(true);
-    expect(otherValue.deprecationReason).to.equal('Terrible reasons');
+    expect(otherValue).to.include({
+      isDeprecated: true,
+      deprecationReason: 'Terrible reasons',
+    });
 
-    const rootFields = schema.getType('Query').getFields();
-    expect(rootFields.field1.isDeprecated).to.equal(true);
-    expect(rootFields.field1.deprecationReason).to.equal('No longer supported');
-
-    expect(rootFields.field2.isDeprecated).to.equal(true);
-    expect(rootFields.field2.deprecationReason).to.equal('Because I said so');
+    const rootFields = assertObjectType(schema.getType('Query')).getFields();
+    expect(rootFields.field1).to.include({
+      isDeprecated: true,
+      deprecationReason: 'No longer supported',
+    });
+    expect(rootFields.field2).to.include({
+      isDeprecated: true,
+      deprecationReason: 'Because I said so',
+    });
   });
 
   it('Correctly assign AST nodes', () => {
@@ -694,14 +709,15 @@ describe('Schema Builder', () => {
     `);
 
     const schema = buildASTSchema(schemaAST);
-    const query = schema.getType('Query');
-    const testInput = schema.getType('TestInput');
-    const testEnum = schema.getType('TestEnum');
-    const testUnion = schema.getType('TestUnion');
-    const testInterface = schema.getType('TestInterface');
-    const testType = schema.getType('TestType');
-    const testScalar = schema.getType('TestScalar');
+    const query = assertObjectType(schema.getType('Query'));
+    const testInput = assertInputObjectType(schema.getType('TestInput'));
+    const testEnum = assertEnumType(schema.getType('TestEnum'));
+    const testUnion = assertUnionType(schema.getType('TestUnion'));
+    const testInterface = assertInterfaceType(schema.getType('TestInterface'));
+    const testType = assertObjectType(schema.getType('TestType'));
+    const testScalar = assertScalarType(schema.getType('TestScalar'));
     const testDirective = schema.getDirective('test');
+    invariant(testDirective);
 
     const restoredSchemaAST = {
       kind: Kind.DOCUMENT,
@@ -727,9 +743,10 @@ describe('Schema Builder', () => {
     expect(print(testInput.getFields().testInputField.astNode)).to.equal(
       'testInputField: TestEnum',
     );
-    expect(print(testEnum.getValue('TEST_VALUE').astNode)).to.equal(
-      'TEST_VALUE',
-    );
+    const testEnumValue = testEnum.getValue('TEST_VALUE');
+    invariant(testEnumValue);
+    expect(print(testEnumValue.astNode)).to.equal('TEST_VALUE');
+
     expect(print(testInterface.getFields().interfaceField.astNode)).to.equal(
       'interfaceField: String',
     );
@@ -751,9 +768,11 @@ describe('Schema Builder', () => {
       type SomeSubscription { str: String }
     `);
 
-    expect(schema.getQueryType().name).to.equal('SomeQuery');
-    expect(schema.getMutationType().name).to.equal('SomeMutation');
-    expect(schema.getSubscriptionType().name).to.equal('SomeSubscription');
+    expect(schema.getQueryType()).to.include({ name: 'SomeQuery' });
+    expect(schema.getMutationType()).to.include({ name: 'SomeMutation' });
+    expect(schema.getSubscriptionType()).to.include({
+      name: 'SomeSubscription',
+    });
   });
 
   it('Default root operation type names', () => {
@@ -763,9 +782,9 @@ describe('Schema Builder', () => {
       type Subscription { str: String }
     `);
 
-    expect(schema.getQueryType().name).to.equal('Query');
-    expect(schema.getMutationType().name).to.equal('Mutation');
-    expect(schema.getSubscriptionType().name).to.equal('Subscription');
+    expect(schema.getQueryType()).to.include({ name: 'Query' });
+    expect(schema.getMutationType()).to.include({ name: 'Mutation' });
+    expect(schema.getSubscriptionType()).to.include({ name: 'Subscription' });
   });
 
   it('can build invalid schema', () => {
