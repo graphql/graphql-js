@@ -10,6 +10,8 @@
 export {
   // Predicate
   isSchema,
+  // Assertion
+  assertSchema,
   // GraphQL Schema definition
   GraphQLSchema,
 } from './schema';
@@ -73,6 +75,8 @@ export {
 export {
   // Predicate
   isDirective,
+  // Assertion
+  assertDirective,
   // Directives Definition
   GraphQLDirective,
   // Built-in Directives defined by the Spec

@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.isDirective = isDirective;
+exports.assertDirective = assertDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
 exports.specifiedDirectives = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
 
@@ -19,6 +20,8 @@ var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _directiveLocation = require("../language/directiveLocation");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -28,6 +31,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 // eslint-disable-next-line no-redeclare
 function isDirective(directive) {
   return (0, _instanceOf.default)(directive, GraphQLDirective);
+}
+
+function assertDirective(directive) {
+  !isDirective(directive) ? (0, _invariant.default)(0, "Expected ".concat((0, _inspect.default)(directive), " to be a GraphQL directive.")) : void 0;
+  return directive;
 }
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution

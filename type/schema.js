@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.isSchema = isSchema;
+exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
 
 var _definition = require("./definition");
@@ -33,6 +34,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 // eslint-disable-next-line no-redeclare
 function isSchema(schema) {
   return (0, _instanceOf.default)(schema, GraphQLSchema);
+}
+
+function assertSchema(schema) {
+  !isSchema(schema) ? (0, _invariant.default)(0, "Expected ".concat((0, _inspect.default)(schema), " to be a GraphQL schema.")) : void 0;
+  return schema;
 }
 /**
  * Schema Definition

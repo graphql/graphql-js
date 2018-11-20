@@ -14,7 +14,7 @@ import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { assertValidSDLExtension } from '../validation/validate';
 import { GraphQLError } from '../error/GraphQLError';
-import { isSchema, GraphQLSchema } from '../type/schema';
+import { assertSchema, GraphQLSchema } from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 
@@ -105,7 +105,7 @@ export function extendSchema(
   documentAST: DocumentNode,
   options?: Options,
 ): GraphQLSchema {
-  invariant(isSchema(schema), 'Must provide valid GraphQLSchema');
+  assertSchema(schema);
 
   invariant(
     documentAST && documentAST.kind === Kind.DOCUMENT,

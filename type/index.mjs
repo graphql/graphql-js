@@ -7,7 +7,8 @@
  *  strict
  */
 export { // Predicate
-isSchema, // GraphQL Schema definition
+isSchema, // Assertion
+assertSchema, // GraphQL Schema definition
 GraphQLSchema } from './schema';
 export { // Predicates
 isType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isInputType, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isRequiredArgument, isRequiredInputField, // Assertions
@@ -16,7 +17,8 @@ getNullableType, getNamedType, // Definitions
 GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, // Type Wrappers
 GraphQLList, GraphQLNonNull } from './definition';
 export { // Predicate
-isDirective, // Directives Definition
+isDirective, // Assertion
+assertDirective, // Directives Definition
 GraphQLDirective, // Built-in Directives defined by the Spec
 isSpecifiedDirective, specifiedDirectives, GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective, // Constant Deprecation Reason
 DEFAULT_DEPRECATION_REASON } from './directives';

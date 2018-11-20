@@ -363,6 +363,18 @@ Object.defineProperty(exports, "isSpecifiedDirective", {
     return _type.isSpecifiedDirective;
   }
 });
+Object.defineProperty(exports, "assertSchema", {
+  enumerable: true,
+  get: function get() {
+    return _type.assertSchema;
+  }
+});
+Object.defineProperty(exports, "assertDirective", {
+  enumerable: true,
+  get: function get() {
+    return _type.assertDirective;
+  }
+});
 Object.defineProperty(exports, "assertType", {
   enumerable: true,
   get: function get() {

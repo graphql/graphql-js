@@ -9,6 +9,12 @@ Object.defineProperty(exports, "isSchema", {
     return _schema.isSchema;
   }
 });
+Object.defineProperty(exports, "assertSchema", {
+  enumerable: true,
+  get: function get() {
+    return _schema.assertSchema;
+  }
+});
 Object.defineProperty(exports, "GraphQLSchema", {
   enumerable: true,
   get: function get() {
@@ -295,6 +301,12 @@ Object.defineProperty(exports, "isDirective", {
   enumerable: true,
   get: function get() {
     return _directives.isDirective;
+  }
+});
+Object.defineProperty(exports, "assertDirective", {
+  enumerable: true,
+  get: function get() {
+    return _directives.assertDirective;
   }
 });
 Object.defineProperty(exports, "GraphQLDirective", {

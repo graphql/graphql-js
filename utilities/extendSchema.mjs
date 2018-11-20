@@ -17,7 +17,7 @@ import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { assertValidSDLExtension } from '../validation/validate';
 import { GraphQLError } from '../error/GraphQLError';
-import { isSchema, GraphQLSchema } from '../type/schema';
+import { assertSchema, GraphQLSchema } from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from '../type/definition';
@@ -44,7 +44,7 @@ import { isTypeDefinitionNode, isTypeExtensionNode } from '../language/predicate
  *
  */
 export function extendSchema(schema, documentAST, options) {
-  !isSchema(schema) ? invariant(0, 'Must provide valid GraphQLSchema') : void 0;
+  assertSchema(schema);
   !(documentAST && documentAST.kind === Kind.DOCUMENT) ? invariant(0, 'Must provide valid Document AST') : void 0;
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {

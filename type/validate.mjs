@@ -11,10 +11,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isInputType, isOutputType, isRequiredArgument } from './definition';
 import { isDirective } from './directives';
 import { isIntrospectionType } from './introspection';
-import { isSchema } from './schema';
+import { assertSchema } from './schema';
 import inspect from '../jsutils/inspect';
 import find from '../jsutils/find';
-import invariant from '../jsutils/invariant';
 import objectValues from '../jsutils/objectValues';
 import { GraphQLError } from '../error/GraphQLError';
 import { isValidNameError } from '../utilities/assertValidName';
@@ -29,7 +28,7 @@ import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 export function validateSchema(schema) {
   // First check to ensure the provided value is in fact a GraphQLSchema.
-  !isSchema(schema) ? invariant(0, "Expected ".concat(inspect(schema), " to be a GraphQL schema.")) : void 0; // If this Schema has already been validated, return the previous results.
+  assertSchema(schema); // If this Schema has already been validated, return the previous results.
 
   if (schema.__validationErrors) {
     return schema.__validationErrors;

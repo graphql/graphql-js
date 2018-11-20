@@ -58,7 +58,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  */
 function extendSchema(schema, documentAST, options) {
-  !(0, _schema.isSchema)(schema) ? (0, _invariant.default)(0, 'Must provide valid GraphQLSchema') : void 0;
+  (0, _schema.assertSchema)(schema);
   !(documentAST && documentAST.kind === _kinds.Kind.DOCUMENT) ? (0, _invariant.default)(0, 'Must provide valid Document AST') : void 0;
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {

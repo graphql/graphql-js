@@ -14,6 +14,7 @@ import defineToStringTag from '../jsutils/defineToStringTag';
 import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
+import inspect from '../jsutils/inspect';
 import { DirectiveLocation } from '../language/directiveLocation';
 /**
  * Test if the given value is a GraphQL directive.
@@ -22,6 +23,10 @@ import { DirectiveLocation } from '../language/directiveLocation';
 // eslint-disable-next-line no-redeclare
 export function isDirective(directive) {
   return instanceOf(directive, GraphQLDirective);
+}
+export function assertDirective(directive) {
+  !isDirective(directive) ? invariant(0, "Expected ".concat(inspect(directive), " to be a GraphQL directive.")) : void 0;
+  return directive;
 }
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution

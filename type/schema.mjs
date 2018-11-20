@@ -23,6 +23,10 @@ import objectValues from '../jsutils/objectValues';
 export function isSchema(schema) {
   return instanceOf(schema, GraphQLSchema);
 }
+export function assertSchema(schema) {
+  !isSchema(schema) ? invariant(0, "Expected ".concat(inspect(schema), " to be a GraphQL schema.")) : void 0;
+  return schema;
+}
 /**
  * Schema Definition
  *

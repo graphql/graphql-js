@@ -18,8 +18,6 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _find = _interopRequireDefault(require("../jsutils/find"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
-
 var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
 var _GraphQLError = require("../error/GraphQLError");
@@ -41,7 +39,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 function validateSchema(schema) {
   // First check to ensure the provided value is in fact a GraphQLSchema.
-  !(0, _schema.isSchema)(schema) ? (0, _invariant.default)(0, "Expected ".concat((0, _inspect.default)(schema), " to be a GraphQL schema.")) : void 0; // If this Schema has already been validated, return the previous results.
+  (0, _schema.assertSchema)(schema); // If this Schema has already been validated, return the previous results.
 
   if (schema.__validationErrors) {
     return schema.__validationErrors;
