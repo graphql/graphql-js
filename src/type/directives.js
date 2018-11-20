@@ -17,6 +17,7 @@ import defineToStringTag from '../jsutils/defineToStringTag';
 import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
+import inspect from '../jsutils/inspect';
 import type { DirectiveDefinitionNode } from '../language/ast';
 import {
   DirectiveLocation,
@@ -32,6 +33,14 @@ declare function isDirective(
 // eslint-disable-next-line no-redeclare
 export function isDirective(directive) {
   return instanceOf(directive, GraphQLDirective);
+}
+
+export function assertDirective(directive: mixed): GraphQLDirective {
+  invariant(
+    isDirective(directive),
+    `Expected ${inspect(directive)} to be a GraphQL directive.`,
+  );
+  return directive;
 }
 
 /**

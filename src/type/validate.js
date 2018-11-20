@@ -28,11 +28,10 @@ import type {
 import { isDirective } from './directives';
 import type { GraphQLDirective } from './directives';
 import { isIntrospectionType } from './introspection';
-import { isSchema } from './schema';
+import { assertSchema } from './schema';
 import type { GraphQLSchema } from './schema';
 import inspect from '../jsutils/inspect';
 import find from '../jsutils/find';
-import invariant from '../jsutils/invariant';
 import objectValues from '../jsutils/objectValues';
 import { GraphQLError } from '../error/GraphQLError';
 import type {
@@ -57,10 +56,7 @@ export function validateSchema(
   schema: GraphQLSchema,
 ): $ReadOnlyArray<GraphQLError> {
   // First check to ensure the provided value is in fact a GraphQLSchema.
-  invariant(
-    isSchema(schema),
-    `Expected ${inspect(schema)} to be a GraphQL schema.`,
-  );
+  assertSchema(schema);
 
   // If this Schema has already been validated, return the previous results.
   if (schema.__validationErrors) {

@@ -104,6 +104,8 @@ export {
   isIntrospectionType,
   isSpecifiedDirective,
   // Assertions
+  assertSchema,
+  assertDirective,
   assertType,
   assertScalarType,
   assertObjectType,
