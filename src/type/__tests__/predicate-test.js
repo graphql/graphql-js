@@ -217,7 +217,7 @@ describe('Type predicates', () => {
       expect(() => assertListType(ObjectType)).to.throw();
     });
 
-    it('returns true for a non-list wrapped type', () => {
+    it('returns false for a non-list wrapped type', () => {
       expect(isListType(GraphQLNonNull(GraphQLList(ObjectType)))).to.equal(
         false,
       );
@@ -240,7 +240,7 @@ describe('Type predicates', () => {
       expect(() => assertNonNullType(ObjectType)).to.throw();
     });
 
-    it('returns true for a not non-null wrapped type', () => {
+    it('returns false for a not non-null wrapped type', () => {
       expect(isNonNullType(GraphQLList(GraphQLNonNull(ObjectType)))).to.equal(
         false,
       );
