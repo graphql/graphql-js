@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -28,6 +28,7 @@ describe('inspect', () => {
   it('string', () => {
     expect(inspect('')).to.equal('""');
     expect(inspect('abc')).to.equal('"abc"');
+    // $FlowFixMe
     expect(inspect('"')).to.equal(String.raw`"\""`);
   });
 

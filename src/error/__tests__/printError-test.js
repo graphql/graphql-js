@@ -4,16 +4,17 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import dedent from '../../jsutils/dedent';
+import invariant from '../../jsutils/invariant';
 import { GraphQLError } from '../GraphQLError';
 import { printError } from '../printError';
-import { parse, Source } from '../../language';
-import dedent from '../../jsutils/dedent';
+import { Kind, parse, Source } from '../../language';
 
 describe('printError', () => {
   it('prints an line numbers with correct padding', () => {
@@ -48,7 +49,7 @@ describe('printError', () => {
   });
 
   it('prints an error with nodes from different sources', () => {
-    const sourceA = parse(
+    const docA = parse(
       new Source(
         dedent`
           type Foo {
@@ -58,9 +59,11 @@ describe('printError', () => {
         'SourceA',
       ),
     );
-    const fieldTypeA = sourceA.definitions[0].fields[0].type;
+    const opA = docA.definitions[0];
+    invariant(opA && opA.kind === Kind.OBJECT_TYPE_DEFINITION && opA.fields);
+    const fieldA = opA.fields[0];
 
-    const sourceB = parse(
+    const docB = parse(
       new Source(
         dedent`
           type Foo {
@@ -70,11 +73,14 @@ describe('printError', () => {
         'SourceB',
       ),
     );
-    const fieldTypeB = sourceB.definitions[0].fields[0].type;
+    const opB = docB.definitions[0];
+    invariant(opB && opB.kind === Kind.OBJECT_TYPE_DEFINITION && opB.fields);
+    const fieldB = opB.fields[0];
 
+    invariant(fieldA && fieldB);
     const error = new GraphQLError('Example error with two nodes', [
-      fieldTypeA,
-      fieldTypeB,
+      fieldA.type,
+      fieldB.type,
     ]);
 
     expect(printError(error)).to.equal(dedent`
