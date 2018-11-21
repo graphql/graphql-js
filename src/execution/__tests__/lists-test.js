@@ -210,7 +210,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to [Int]!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test'],
             },
@@ -239,7 +239,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to [Int]!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test'],
             },
@@ -313,7 +313,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to Int!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test', 1],
             },
@@ -337,7 +337,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to Int!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test', 1],
             },
@@ -380,7 +380,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to Int!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test', 1],
             },
@@ -424,7 +424,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to Int!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test', 1],
             },
@@ -439,7 +439,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to [Int!]!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test'],
             },
@@ -461,7 +461,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to Int!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test', 1],
             },
@@ -476,7 +476,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to [Int!]!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test'],
             },
@@ -514,7 +514,7 @@ describe('Execute: Handles list nullability', () => {
           errors: [
             {
               message:
-                'Cannot return null for non-nullable field DataType.test.',
+                'Cannot return null for non-nullable field DataType.test. Value null cannot be converted to Int!',
               locations: [{ line: 1, column: 10 }],
               path: ['nest', 'test', 1],
             },
