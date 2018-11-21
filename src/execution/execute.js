@@ -865,7 +865,9 @@ function completeValue(
       throw new Error(
         `Cannot return null for non-nullable field ${info.parentType.name}.${
           info.fieldName
-        }. Value ${inspect(result)} cannot be converted to ${inspect(returnType)}`,
+        }. Value ${inspect(result)} cannot be converted to ${inspect(
+          returnType,
+        )}`,
       );
     }
     return completed;
