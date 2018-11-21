@@ -383,30 +383,24 @@ export const testSchema = new GraphQLSchema({
   ],
 });
 
-function expectValid(schema, rule, queryString, options = {}) {
-  const errors = validate(schema, parse(queryString, options), [rule]);
+function expectValid(schema, rule, queryString) {
+  const errors = validate(schema, parse(queryString), [rule]);
   expect(errors).to.deep.equal([], 'Should validate');
 }
 
-function expectInvalid(
-  schema,
-  rule,
-  queryString,
-  expectedErrors,
-  options = {},
-) {
-  const errors = validate(schema, parse(queryString, options), [rule]);
+function expectInvalid(schema, rule, queryString, expectedErrors) {
+  const errors = validate(schema, parse(queryString), [rule]);
   expect(errors).to.have.length.of.at.least(1, 'Should not validate');
   expect(errors).to.deep.equal(expectedErrors);
   return errors;
 }
 
-export function expectPassesRule(rule, queryString, options = {}) {
-  return expectValid(testSchema, rule, queryString, options);
+export function expectPassesRule(rule, queryString) {
+  return expectValid(testSchema, rule, queryString);
 }
 
-export function expectFailsRule(rule, queryString, errors, options = {}) {
-  return expectInvalid(testSchema, rule, queryString, errors, options);
+export function expectFailsRule(rule, queryString, errors) {
+  return expectInvalid(testSchema, rule, queryString, errors);
 }
 
 export function expectPassesRuleWithSchema(schema, rule, queryString) {
