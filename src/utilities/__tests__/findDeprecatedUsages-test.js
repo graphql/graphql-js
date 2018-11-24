@@ -11,39 +11,20 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { findDeprecatedUsages } from '../findDeprecatedUsages';
 import { parse } from '../../language';
-import {
-  GraphQLEnumType,
-  GraphQLObjectType,
-  GraphQLSchema,
-  GraphQLString,
-} from '../../type';
+import { buildSchema } from '../buildASTSchema';
 
 describe('findDeprecatedUsages', () => {
-  const enumType = new GraphQLEnumType({
-    name: 'EnumType',
-    values: {
-      ONE: {},
-      TWO: { deprecationReason: 'Some enum reason.' },
-    },
-  });
+  const schema = buildSchema(`
+    enum EnumType {
+      ONE
+      TWO @deprecated(reason: "Some enum reason.")
+    }
 
-  const schema = new GraphQLSchema({
-    query: new GraphQLObjectType({
-      name: 'Query',
-      fields: {
-        normalField: {
-          args: {
-            enumArg: { type: enumType },
-          },
-          type: GraphQLString,
-        },
-        deprecatedField: {
-          type: GraphQLString,
-          deprecationReason: 'Some field reason.',
-        },
-      },
-    }),
-  });
+    type Query {
+      normalField(enumArg: EnumType): String
+      deprecatedField: String @deprecated(reason: "Some field reason.")
+    }
+  `);
 
   it('should report empty set for no deprecated usages', () => {
     const errors = findDeprecatedUsages(

@@ -9,6 +9,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import { buildSchema } from '../../';
 import {
   expectPassesRule,
   expectFailsRule,
@@ -19,16 +20,6 @@ import {
   OverlappingFieldsCanBeMerged,
   fieldsConflictMessage,
 } from '../rules/OverlappingFieldsCanBeMerged';
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLInt,
-  GraphQLString,
-  GraphQLID,
-} from '../../type';
 
 describe('Validate: Overlapping fields can be merged', () => {
   it('unique fields', () => {
@@ -569,108 +560,68 @@ describe('Validate: Overlapping fields can be merged', () => {
   });
 
   describe('return types must be unambiguous', () => {
-    const SomeBox = new GraphQLInterfaceType({
-      name: 'SomeBox',
-      fields: () => ({
-        deepBox: { type: SomeBox },
-        unrelatedField: { type: GraphQLString },
-      }),
-    });
+    const schema = buildSchema(`
+      interface SomeBox {
+        deepBox: SomeBox
+        unrelatedField: String
+      }
 
-    const StringBox = new GraphQLObjectType({
-      name: 'StringBox',
-      interfaces: [SomeBox],
-      fields: () => ({
-        scalar: { type: GraphQLString },
-        deepBox: { type: StringBox },
-        unrelatedField: { type: GraphQLString },
-        listStringBox: { type: GraphQLList(StringBox) },
-        stringBox: { type: StringBox },
-        intBox: { type: IntBox },
-      }),
-    });
+      type StringBox implements SomeBox {
+        scalar: String
+        deepBox: StringBox
+        unrelatedField: String
+        listStringBox: [StringBox]
+        stringBox: StringBox
+        intBox: IntBox
+      }
 
-    const IntBox = new GraphQLObjectType({
-      name: 'IntBox',
-      interfaces: [SomeBox],
-      fields: () => ({
-        scalar: { type: GraphQLInt },
-        deepBox: { type: IntBox },
-        unrelatedField: { type: GraphQLString },
-        listStringBox: { type: GraphQLList(StringBox) },
-        stringBox: { type: StringBox },
-        intBox: { type: IntBox },
-      }),
-    });
+      type IntBox implements SomeBox {
+        scalar: Int
+        deepBox: IntBox
+        unrelatedField: String
+        listStringBox: [StringBox]
+        stringBox: StringBox
+        intBox: IntBox
+      }
 
-    const NonNullStringBox1 = new GraphQLInterfaceType({
-      name: 'NonNullStringBox1',
-      fields: {
-        scalar: { type: GraphQLNonNull(GraphQLString) },
-      },
-    });
+      interface NonNullStringBox1 {
+        scalar: String!
+      }
 
-    const NonNullStringBox1Impl = new GraphQLObjectType({
-      name: 'NonNullStringBox1Impl',
-      interfaces: [SomeBox, NonNullStringBox1],
-      fields: {
-        scalar: { type: GraphQLNonNull(GraphQLString) },
-        unrelatedField: { type: GraphQLString },
-        deepBox: { type: SomeBox },
-      },
-    });
+      type NonNullStringBox1Impl implements SomeBox & NonNullStringBox1 {
+        scalar: String!
+        unrelatedField: String
+        deepBox: SomeBox
+      }
 
-    const NonNullStringBox2 = new GraphQLInterfaceType({
-      name: 'NonNullStringBox2',
-      fields: {
-        scalar: { type: GraphQLNonNull(GraphQLString) },
-      },
-    });
+      interface NonNullStringBox2 {
+        scalar: String!
+      }
 
-    const NonNullStringBox2Impl = new GraphQLObjectType({
-      name: 'NonNullStringBox2Impl',
-      interfaces: [SomeBox, NonNullStringBox2],
-      fields: {
-        scalar: { type: GraphQLNonNull(GraphQLString) },
-        unrelatedField: { type: GraphQLString },
-        deepBox: { type: SomeBox },
-      },
-    });
+      type NonNullStringBox2Impl implements SomeBox & NonNullStringBox2 {
+        scalar: String!
+        unrelatedField: String
+        deepBox: SomeBox
+      }
 
-    const Connection = new GraphQLObjectType({
-      name: 'Connection',
-      fields: {
-        edges: {
-          type: GraphQLList(
-            new GraphQLObjectType({
-              name: 'Edge',
-              fields: {
-                node: {
-                  type: new GraphQLObjectType({
-                    name: 'Node',
-                    fields: {
-                      id: { type: GraphQLID },
-                      name: { type: GraphQLString },
-                    },
-                  }),
-                },
-              },
-            }),
-          ),
-        },
-      },
-    });
+      type Connection {
+        edges: [Edge]
+      }
 
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'QueryRoot',
-        fields: () => ({
-          someBox: { type: SomeBox },
-          connection: { type: Connection },
-        }),
-      }),
-      types: [IntBox, StringBox, NonNullStringBox1Impl, NonNullStringBox2Impl],
-    });
+      type Edge {
+        node: Node
+      }
+
+      type Node {
+        id: ID
+        name: String
+      }
+
+      type Query {
+        someBox: SomeBox
+        connection: Connection
+      }
+    `);
 
     it('conflicting return types which potentially overlap', () => {
       // This is invalid since an object could potentially be both the Object
@@ -1106,23 +1057,15 @@ describe('Validate: Overlapping fields can be merged', () => {
     });
 
     it('works for field names that are JS keywords', () => {
-      const FooType = new GraphQLObjectType({
-        name: 'Foo',
-        fields: {
-          constructor: {
-            type: GraphQLString,
-          },
-        },
-      });
+      const schemaWithKeywords = buildSchema(`
+        type Foo {
+          constructor: String
+        }
 
-      const schemaWithKeywords = new GraphQLSchema({
-        query: new GraphQLObjectType({
-          name: 'Query',
-          fields: () => ({
-            foo: { type: FooType },
-          }),
-        }),
-      });
+        type Query {
+          foo: Foo
+        }
+      `);
 
       expectPassesRuleWithSchema(
         schemaWithKeywords,
