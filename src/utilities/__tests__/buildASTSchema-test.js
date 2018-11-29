@@ -31,15 +31,13 @@ import {
 } from '../../';
 
 /**
- * This function does a full cycle of going from a
- * string with the contents of the DSL, parsed
- * in a schema AST, materializing that schema AST
- * into an in-memory GraphQLSchema, and then finally
- * printing that GraphQL into the DSL
+ * This function does a full cycle of going from a string with the contents of
+ * the SDL, parsed in a schema AST, materializing that schema AST into an
+ * in-memory GraphQLSchema, and then finally printing that object into the SDL
  */
-function cycleOutput(body, options = {}) {
+function cycleSDL(sdl, options = {}) {
   const commentDescriptions = options.commentDescriptions || false;
-  const ast = parse(body);
+  const ast = parse(sdl);
   const schema = buildASTSchema(ast, options);
   return printSchema(schema, { commentDescriptions });
 }
@@ -74,7 +72,7 @@ describe('Schema Builder', () => {
   });
 
   it('Simple type', () => {
-    const body = dedent`
+    const sdl = dedent`
       type Query {
         str: String
         int: Int
@@ -83,25 +81,22 @@ describe('Schema Builder', () => {
         bool: Boolean
       }
     `;
-
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('With directives', () => {
-    const body = dedent`
+    const sdl = dedent`
       directive @foo(arg: Int) on FIELD
 
       type Query {
         str: String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Supports descriptions', () => {
-    const body = dedent`
+    const sdl = dedent`
       """This is a directive"""
       directive @foo(
         """It has an argument"""
@@ -123,12 +118,11 @@ describe('Schema Builder', () => {
         str: String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Supports option for comment descriptions', () => {
-    const body = dedent`
+    const sdl = dedent`
       # This is a directive
       directive @foo(
         # It has an argument
@@ -150,17 +144,16 @@ describe('Schema Builder', () => {
         str: String
       }
     `;
-    const output = cycleOutput(body, { commentDescriptions: true });
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl, { commentDescriptions: true })).to.equal(sdl);
   });
 
   it('Maintains @skip & @include', () => {
-    const body = `
+    const sdl = `
       type Query {
         str: String
       }
     `;
-    const schema = buildASTSchema(parse(body));
+    const schema = buildSchema(sdl);
     expect(schema.getDirectives().length).to.equal(3);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
@@ -170,7 +163,7 @@ describe('Schema Builder', () => {
   });
 
   it('Overriding directives excludes specified', () => {
-    const body = `
+    const sdl = `
       directive @skip on FIELD
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
@@ -179,7 +172,7 @@ describe('Schema Builder', () => {
         str: String
       }
     `;
-    const schema = buildASTSchema(parse(body));
+    const schema = buildSchema(sdl);
     expect(schema.getDirectives().length).to.equal(3);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.not.equal(
@@ -191,14 +184,14 @@ describe('Schema Builder', () => {
   });
 
   it('Adding directives maintains @skip & @include', () => {
-    const body = `
+    const sdl = `
       directive @foo(arg: Int) on FIELD
 
       type Query {
         str: String
       }
     `;
-    const schema = buildASTSchema(parse(body));
+    const schema = buildSchema(sdl);
     expect(schema.getDirectives().length).to.equal(4);
     expect(schema.getDirective('skip')).to.not.equal(undefined);
     expect(schema.getDirective('include')).to.not.equal(undefined);
@@ -206,7 +199,7 @@ describe('Schema Builder', () => {
   });
 
   it('Type modifiers', () => {
-    const body = dedent`
+    const sdl = dedent`
       type Query {
         nonNullStr: String!
         listOfStrs: [String]
@@ -215,23 +208,21 @@ describe('Schema Builder', () => {
         nonNullListOfNonNullStrs: [String!]!
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Recursive type', () => {
-    const body = dedent`
+    const sdl = dedent`
       type Query {
         str: String
         recurse: Query
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Two types circular', () => {
-    const body = dedent`
+    const sdl = dedent`
       schema {
         query: TypeOne
       }
@@ -246,12 +237,11 @@ describe('Schema Builder', () => {
         typeOne: TypeOne
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Single argument field', () => {
-    const body = dedent`
+    const sdl = dedent`
       type Query {
         str(int: Int): String
         floatToStr(float: Float): String
@@ -260,22 +250,20 @@ describe('Schema Builder', () => {
         strToStr(bool: String): String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Simple type with multiple arguments', () => {
-    const body = dedent`
+    const sdl = dedent`
       type Query {
         str(int: Int, bool: Boolean): String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Simple type with interface', () => {
-    const body = dedent`
+    const sdl = dedent`
       type Query implements WorldInterface {
         str: String
       }
@@ -284,12 +272,11 @@ describe('Schema Builder', () => {
         str: String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Simple output enum', () => {
-    const body = dedent`
+    const sdl = dedent`
       enum Hello {
         WORLD
       }
@@ -298,12 +285,11 @@ describe('Schema Builder', () => {
         hello: Hello
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Simple input enum', () => {
-    const body = dedent`
+    const sdl = dedent`
       enum Hello {
         WORLD
       }
@@ -312,12 +298,11 @@ describe('Schema Builder', () => {
         str(hello: Hello): String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Multiple value enum', () => {
-    const body = dedent`
+    const sdl = dedent`
       enum Hello {
         WO
         RLD
@@ -327,12 +312,11 @@ describe('Schema Builder', () => {
         hello: Hello
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Simple Union', () => {
-    const body = dedent`
+    const sdl = dedent`
       union Hello = World
 
       type Query {
@@ -343,12 +327,11 @@ describe('Schema Builder', () => {
         str: String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Multiple Union', () => {
-    const body = dedent`
+    const sdl = dedent`
       union Hello = WorldOne | WorldTwo
 
       type Query {
@@ -363,8 +346,7 @@ describe('Schema Builder', () => {
         str: String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Can build recursive Union', () => {
@@ -503,20 +485,18 @@ describe('Schema Builder', () => {
   });
 
   it('Custom Scalar', () => {
-    const body = dedent`
+    const sdl = dedent`
       scalar CustomScalar
 
       type Query {
         customScalar: CustomScalar
       }
     `;
-
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Input Object', () => {
-    const body = dedent`
+    const sdl = dedent`
       input Input {
         int: Int
       }
@@ -525,35 +505,31 @@ describe('Schema Builder', () => {
         field(in: Input): String
       }
     `;
-
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Simple argument field with default', () => {
-    const body = dedent`
+    const sdl = dedent`
       type Query {
         str(int: Int = 2): String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Custom scalar argument field with default', () => {
-    const body = dedent`
+    const sdl = dedent`
       scalar CustomScalar
 
       type Query {
         str(int: CustomScalar = 2): String
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Simple type with mutation', () => {
-    const body = dedent`
+    const sdl = dedent`
       schema {
         query: HelloScalars
         mutation: Mutation
@@ -569,12 +545,11 @@ describe('Schema Builder', () => {
         addHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Simple type with subscription', () => {
-    const body = dedent`
+    const sdl = dedent`
       schema {
         query: HelloScalars
         subscription: Subscription
@@ -590,12 +565,11 @@ describe('Schema Builder', () => {
         subscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Unreferenced type implementing referenced interface', () => {
-    const body = dedent`
+    const sdl = dedent`
       type Concrete implements Iface {
         key: String
       }
@@ -608,12 +582,11 @@ describe('Schema Builder', () => {
         iface: Iface
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Unreferenced type implementing referenced union', () => {
-    const body = dedent`
+    const sdl = dedent`
       type Concrete {
         key: String
       }
@@ -624,12 +597,11 @@ describe('Schema Builder', () => {
 
       union Union = Concrete
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
   it('Supports @deprecated', () => {
-    const body = dedent`
+    const sdl = dedent`
       enum MyEnum {
         VALUE
         OLD_VALUE @deprecated
@@ -642,11 +614,9 @@ describe('Schema Builder', () => {
         enum: MyEnum
       }
     `;
-    const output = cycleOutput(body);
-    expect(output).to.equal(body);
+    expect(cycleSDL(sdl)).to.equal(sdl);
 
-    const ast = parse(body);
-    const schema = buildASTSchema(ast);
+    const schema = buildSchema(sdl);
 
     const myEnum = assertEnumType(schema.getType('MyEnum'));
 
@@ -677,7 +647,7 @@ describe('Schema Builder', () => {
   });
 
   it('Correctly assign AST nodes', () => {
-    const schemaAST = parse(dedent`
+    const sdl = dedent`
       schema {
         query: Query
       }
@@ -707,9 +677,9 @@ describe('Schema Builder', () => {
       scalar TestScalar
 
       directive @test(arg: TestScalar) on FIELD
-    `);
+    `;
 
-    const schema = buildASTSchema(schemaAST);
+    const schema = buildSchema(sdl);
     const query = assertObjectType(schema.getType('Query'));
     const testInput = assertInputObjectType(schema.getType('TestInput'));
     const testEnum = assertEnumType(schema.getType('TestEnum'));
@@ -733,7 +703,7 @@ describe('Schema Builder', () => {
         testDirective.astNode,
       ],
     };
-    expect(print(restoredSchemaAST)).to.be.equal(print(schemaAST));
+    expect(print(restoredSchemaAST)).to.be.equal(sdl);
 
     const testField = query.getFields().testField;
     expect(print(testField.astNode)).to.equal(
@@ -757,7 +727,7 @@ describe('Schema Builder', () => {
   });
 
   it('Root operation types with custom names', () => {
-    const schema = buildSchema(dedent`
+    const schema = buildSchema(`
       schema {
         query: SomeQuery
         mutation: SomeMutation
@@ -776,7 +746,7 @@ describe('Schema Builder', () => {
   });
 
   it('Default root operation type names', () => {
-    const schema = buildSchema(dedent`
+    const schema = buildSchema(`
       type Query { str: String }
       type Mutation { str: String }
       type Subscription { str: String }
@@ -788,7 +758,7 @@ describe('Schema Builder', () => {
   });
 
   it('can build invalid schema', () => {
-    const schema = buildSchema(dedent`
+    const schema = buildSchema(`
       # Invalid schema, because it is missing query root type
       type Mutation {
         str: String
@@ -799,39 +769,39 @@ describe('Schema Builder', () => {
   });
 
   it('Accepts legacy names', () => {
-    const doc = parse(dedent`
+    const sdl = `
       type Query {
         __badName: String
       }
-    `);
-    const schema = buildASTSchema(doc, { allowedLegacyNames: ['__badName'] });
+    `;
+    const schema = buildSchema(sdl, { allowedLegacyNames: ['__badName'] });
     const errors = validateSchema(schema);
     expect(errors.length).to.equal(0);
   });
 
   it('Rejects invalid SDL', () => {
-    const doc = parse(`
-      type Query {
-        foo: String @unknown
-      }
-    `);
-    expect(() => buildASTSchema(doc)).to.throw('Unknown directive "unknown".');
-  });
-
-  it('Allows to disable SDL validation', () => {
-    const body = `
+    const sdl = `
       type Query {
         foo: String @unknown
       }
     `;
-    buildSchema(body, { assumeValid: true });
-    buildSchema(body, { assumeValidSDL: true });
+    expect(() => buildSchema(sdl)).to.throw('Unknown directive "unknown".');
+  });
+
+  it('Allows to disable SDL validation', () => {
+    const sdl = `
+      type Query {
+        foo: String @unknown
+      }
+    `;
+    buildSchema(sdl, { assumeValid: true });
+    buildSchema(sdl, { assumeValidSDL: true });
   });
 });
 
 describe('Failures', () => {
   it('Allows only a single query type', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Hello
         query: Yellow
@@ -845,14 +815,13 @@ describe('Failures', () => {
         isColor: Boolean
       }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Must provide only one query type in schema.',
     );
   });
 
   it('Allows only a single mutation type', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Hello
         mutation: Hello
@@ -867,14 +836,13 @@ describe('Failures', () => {
         isColor: Boolean
       }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Must provide only one mutation type in schema.',
     );
   });
 
   it('Allows only a single subscription type', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Hello
         subscription: Hello
@@ -889,14 +857,13 @@ describe('Failures', () => {
         isColor: Boolean
       }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Must provide only one subscription type in schema.',
     );
   });
 
   it('Unknown type referenced', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Hello
       }
@@ -905,37 +872,34 @@ describe('Failures', () => {
         bar: Bar
       }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Type "Bar" not found in document.',
     );
   });
 
   it('Unknown type in interface list', () => {
-    const body = dedent`
+    const sdl = `
       type Query implements Bar {
         field: String
       }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Type "Bar" not found in document.',
     );
   });
 
   it('Unknown type in union list', () => {
-    const body = dedent`
+    const sdl = `
       union TestUnion = Bar
       type Query { testUnion: TestUnion }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Type "Bar" not found in document.',
     );
   });
 
   it('Unknown query type', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Wat
       }
@@ -944,14 +908,13 @@ describe('Failures', () => {
         str: String
       }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Specified query type "Wat" not found in document.',
     );
   });
 
   it('Unknown mutation type', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Hello
         mutation: Wat
@@ -961,14 +924,13 @@ describe('Failures', () => {
         str: String
       }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Specified mutation type "Wat" not found in document.',
     );
   });
 
   it('Unknown subscription type', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Hello
         mutation: Wat
@@ -983,56 +945,52 @@ describe('Failures', () => {
         str: String
       }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Specified subscription type "Awesome" not found in document.',
     );
   });
 
   it('Does not consider directive names', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Foo
       }
 
       directive @Foo on QUERY
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Specified query type "Foo" not found in document.',
     );
   });
 
   it('Does not consider operation names', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Foo
       }
 
       query Foo { field }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Specified query type "Foo" not found in document.',
     );
   });
 
   it('Does not consider fragment names', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Foo
       }
 
       fragment Foo on Type { field }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Specified query type "Foo" not found in document.',
     );
   });
 
   it('Forbids duplicate type definitions', () => {
-    const body = dedent`
+    const sdl = `
       schema {
         query: Repeated
       }
@@ -1045,8 +1003,7 @@ describe('Failures', () => {
         id: String
       }
     `;
-    const doc = parse(body);
-    expect(() => buildASTSchema(doc)).to.throw(
+    expect(() => buildSchema(sdl)).to.throw(
       'Type "Repeated" was defined more than once.',
     );
   });
