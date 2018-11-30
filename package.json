@@ -69,7 +69,7 @@
     "eslint": "5.9.0",
     "eslint-plugin-flowtype": "3.2.0",
     "eslint-plugin-prettier": "3.0.0",
-    "flow-bin": "0.86.0",
+    "flow-bin": "0.87.0",
     "mocha": "5.2.0",
     "nyc": "13.1.0",
     "prettier": "1.15.2",
