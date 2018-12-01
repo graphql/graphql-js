@@ -1041,27 +1041,59 @@ describe('findDangerousChanges', () => {
     });
     it("should return empty result if an argument's defaultValue is an Array and it's not changed", () => {
       const oldSchema = buildSchema(`
+        input Input1 {
+          inner_array: [String]
+          inner_input: Input2
+          inner_input_array: [Input2]
+        }
+
+        input Input2 {
+          string_field: String
+          int_field: Int
+        }
+
         type Type1 {
-          field1(name: [String!] = []): String
+          empty_array_default(arr: [String!] = []): String
+          value_array_default(arr: [[String]] = [["a", "b"], ["c", "d"]]): String
+          input_default(input: Input1 = {
+            inner_array: ["a", "b"]
+            inner_input: {string_field: "abc", int_field: 32}
+            inner_input_array: [{int_field: 10}]
+          }): String
         }
 
         type Query {
-          field1: String
+          t: Type1
         }
       `);
 
       const newSchema = buildSchema(`
+        input Input1 {
+          inner_array: [String]
+          inner_input: Input2
+          inner_input_array: [Input2]
+        }
+
+        input Input2 {
+          string_field: String
+          int_field: Int
+        }
+
         type Type1 {
-          field1(name: [String!] = []): String
+          empty_array_default(arr: [String!] = []): String
+          value_array_default(arr: [[String]] = [["a", "b"], ["c", "d"]]): String
+          input_default(input: Input1 = {
+            inner_array: ["a", "b"]
+            inner_input: {string_field: "abc", int_field: 32}
+            inner_input_array: [{int_field: 10}]
+          }): String
         }
 
         type Query {
-          field1: String
+          t: Type1
         }
       `);
-      expect(
-        findArgChanges(oldSchema, newSchema).dangerousChanges,
-      ).to.be.empty();
+      expect(findArgChanges(oldSchema, newSchema).dangerousChanges).to.eql([]);
     });
   });
 

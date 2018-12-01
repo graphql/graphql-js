@@ -232,8 +232,10 @@ export function findArgChanges(
                 `${oldArgDef.type.toString()} to ${newArgDef.type.toString()}`,
             });
           } else if (
-            oldArgDef.defaultValue !== undefined &&
-            oldArgDef.defaultValue !== newArgDef.defaultValue
+            !isChangeSafeForDefaultValue(
+              oldArgDef.defaultValue,
+              newArgDef.defaultValue,
+            )
           ) {
             dangerousChanges.push({
               type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
@@ -493,6 +495,39 @@ function isChangeSafeForInputObjectFieldOrFieldArg(
         isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType))
     );
   }
+  return false;
+}
+
+function isChangeSafeForDefaultValue(
+  oldDefaultValue: mixed,
+  newDefaultValue: ?mixed,
+): boolean {
+  if (oldDefaultValue === undefined) {
+    return true;
+  }
+
+  if (oldDefaultValue === newDefaultValue) {
+    return true;
+  }
+
+  if (
+    typeof oldDefaultValue === 'object' &&
+    typeof newDefaultValue === 'object'
+  ) {
+    if (Array.isArray(oldDefaultValue) !== Array.isArray(newDefaultValue)) {
+      return false;
+    }
+
+    for (const key in oldDefaultValue) {
+      if (
+        !isChangeSafeForDefaultValue(oldDefaultValue[key], newDefaultValue[key])
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   return false;
 }
 
