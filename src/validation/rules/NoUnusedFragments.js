@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -21,7 +21,7 @@ export function unusedFragMessage(fragName: string): string {
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
  */
-export function NoUnusedFragments(context: ValidationContext): ASTVisitor {
+export function NoUnusedFragments(context: ASTValidationContext): ASTVisitor {
   const operationDefs = [];
   const fragmentDefs = [];
 
