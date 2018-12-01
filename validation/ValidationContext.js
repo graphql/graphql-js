@@ -30,8 +30,16 @@ function () {
 
     _defineProperty(this, "_errors", void 0);
 
+    _defineProperty(this, "_fragments", void 0);
+
+    _defineProperty(this, "_fragmentSpreads", void 0);
+
+    _defineProperty(this, "_recursivelyReferencedFragments", void 0);
+
     this._ast = ast;
     this._errors = [];
+    this._fragmentSpreads = new Map();
+    this._recursivelyReferencedFragments = new Map();
   }
 
   var _proto = ASTValidationContext.prototype;
@@ -46,6 +54,82 @@ function () {
 
   _proto.getDocument = function getDocument() {
     return this._ast;
+  };
+
+  _proto.getFragment = function getFragment(name) {
+    var fragments = this._fragments;
+
+    if (!fragments) {
+      this._fragments = fragments = this.getDocument().definitions.reduce(function (frags, statement) {
+        if (statement.kind === _kinds.Kind.FRAGMENT_DEFINITION) {
+          frags[statement.name.value] = statement;
+        }
+
+        return frags;
+      }, Object.create(null));
+    }
+
+    return fragments[name];
+  };
+
+  _proto.getFragmentSpreads = function getFragmentSpreads(node) {
+    var spreads = this._fragmentSpreads.get(node);
+
+    if (!spreads) {
+      spreads = [];
+      var setsToVisit = [node];
+
+      while (setsToVisit.length !== 0) {
+        var set = setsToVisit.pop();
+
+        for (var i = 0; i < set.selections.length; i++) {
+          var selection = set.selections[i];
+
+          if (selection.kind === _kinds.Kind.FRAGMENT_SPREAD) {
+            spreads.push(selection);
+          } else if (selection.selectionSet) {
+            setsToVisit.push(selection.selectionSet);
+          }
+        }
+      }
+
+      this._fragmentSpreads.set(node, spreads);
+    }
+
+    return spreads;
+  };
+
+  _proto.getRecursivelyReferencedFragments = function getRecursivelyReferencedFragments(operation) {
+    var fragments = this._recursivelyReferencedFragments.get(operation);
+
+    if (!fragments) {
+      fragments = [];
+      var collectedNames = Object.create(null);
+      var nodesToVisit = [operation.selectionSet];
+
+      while (nodesToVisit.length !== 0) {
+        var node = nodesToVisit.pop();
+        var spreads = this.getFragmentSpreads(node);
+
+        for (var i = 0; i < spreads.length; i++) {
+          var fragName = spreads[i].name.value;
+
+          if (collectedNames[fragName] !== true) {
+            collectedNames[fragName] = true;
+            var fragment = this.getFragment(fragName);
+
+            if (fragment) {
+              fragments.push(fragment);
+              nodesToVisit.push(fragment.selectionSet);
+            }
+          }
+        }
+      }
+
+      this._recursivelyReferencedFragments.set(operation, fragments);
+    }
+
+    return fragments;
   };
 
   return ASTValidationContext;
@@ -94,20 +178,12 @@ function (_ASTValidationContext2) {
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_typeInfo", void 0);
 
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_fragments", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_fragmentSpreads", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_recursivelyReferencedFragments", void 0);
-
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_variableUsages", void 0);
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_recursiveVariableUsages", void 0);
 
     _this2._schema = schema;
     _this2._typeInfo = typeInfo;
-    _this2._fragmentSpreads = new Map();
-    _this2._recursivelyReferencedFragments = new Map();
     _this2._variableUsages = new Map();
     _this2._recursiveVariableUsages = new Map();
     return _this2;
@@ -117,82 +193,6 @@ function (_ASTValidationContext2) {
 
   _proto3.getSchema = function getSchema() {
     return this._schema;
-  };
-
-  _proto3.getFragment = function getFragment(name) {
-    var fragments = this._fragments;
-
-    if (!fragments) {
-      this._fragments = fragments = this.getDocument().definitions.reduce(function (frags, statement) {
-        if (statement.kind === _kinds.Kind.FRAGMENT_DEFINITION) {
-          frags[statement.name.value] = statement;
-        }
-
-        return frags;
-      }, Object.create(null));
-    }
-
-    return fragments[name];
-  };
-
-  _proto3.getFragmentSpreads = function getFragmentSpreads(node) {
-    var spreads = this._fragmentSpreads.get(node);
-
-    if (!spreads) {
-      spreads = [];
-      var setsToVisit = [node];
-
-      while (setsToVisit.length !== 0) {
-        var set = setsToVisit.pop();
-
-        for (var i = 0; i < set.selections.length; i++) {
-          var selection = set.selections[i];
-
-          if (selection.kind === _kinds.Kind.FRAGMENT_SPREAD) {
-            spreads.push(selection);
-          } else if (selection.selectionSet) {
-            setsToVisit.push(selection.selectionSet);
-          }
-        }
-      }
-
-      this._fragmentSpreads.set(node, spreads);
-    }
-
-    return spreads;
-  };
-
-  _proto3.getRecursivelyReferencedFragments = function getRecursivelyReferencedFragments(operation) {
-    var fragments = this._recursivelyReferencedFragments.get(operation);
-
-    if (!fragments) {
-      fragments = [];
-      var collectedNames = Object.create(null);
-      var nodesToVisit = [operation.selectionSet];
-
-      while (nodesToVisit.length !== 0) {
-        var node = nodesToVisit.pop();
-        var spreads = this.getFragmentSpreads(node);
-
-        for (var i = 0; i < spreads.length; i++) {
-          var fragName = spreads[i].name.value;
-
-          if (collectedNames[fragName] !== true) {
-            collectedNames[fragName] = true;
-            var fragment = this.getFragment(fragName);
-
-            if (fragment) {
-              fragments.push(fragment);
-              nodesToVisit.push(fragment.selectionSet);
-            }
-          }
-        }
-      }
-
-      this._recursivelyReferencedFragments.set(operation, fragments);
-    }
-
-    return fragments;
   };
 
   _proto3.getVariableUsages = function getVariableUsages(node) {
