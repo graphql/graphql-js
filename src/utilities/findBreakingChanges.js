@@ -499,7 +499,7 @@ function isChangeSafeForInputObjectFieldOrFieldArg(
 }
 
 function isChangeSafeForDefaultValue(
-  oldDefaultValue: mixed,
+  oldDefaultValue: ?mixed,
   newDefaultValue: ?mixed,
 ): boolean {
   if (oldDefaultValue === undefined) {
@@ -511,6 +511,8 @@ function isChangeSafeForDefaultValue(
   }
 
   if (
+    oldDefaultValue != null &&
+    newDefaultValue != null &&
     typeof oldDefaultValue === 'object' &&
     typeof newDefaultValue === 'object'
   ) {
