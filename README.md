@@ -6,8 +6,8 @@ The JavaScript reference implementation for GraphQL, a query language for APIs c
 [![Build Status](https://travis-ci.org/graphql/graphql-js.svg?branch=master)](https://travis-ci.org/graphql/graphql-js?branch=master)
 [![Coverage Status](https://coveralls.io/repos/graphql/graphql-js/badge.svg?branch=master)](https://coveralls.io/r/graphql/graphql-js?branch=master)
 
-See more complete documentation at http://graphql.org/ and
-http://graphql.org/graphql-js/.
+See more complete documentation at https://graphql.org/ and
+https://graphql.org/graphql-js/.
 
 Looking for help? Find resources [from the community](http://graphql.org/community/).
 
