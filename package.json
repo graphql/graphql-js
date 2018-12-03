@@ -31,7 +31,7 @@
     "testonly:coveralls": "nyc --silent -- npm run testonly && nyc report --reporter text-lcov | coveralls",
     "lint": "eslint --report-unused-disable-directives src || (printf '\\033[33mTry: \\033[7m npm run lint -- --fix \\033[0m\\n' && exit 1)",
     "benchmark": "node ./resources/benchmark.js",
-    "prettier": "prettier --write 'src/**/*.js'",
+    "prettier": "prettier --write --list-different 'src/**/*.js'",
     "check": "flow check",
     "check-cover": "for file in {src/*.js,src/**/*.js}; do echo $file; flow coverage $file; done",
     "build": "npm run build:clean && npm run build:cp && npm run build:package-json && npm run build:cjs && npm run build:mjs && npm run build:flow",
