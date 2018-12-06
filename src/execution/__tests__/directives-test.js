@@ -23,7 +23,7 @@ const schema = new GraphQLSchema({
   }),
 });
 
-const data = {
+const rootValue = {
   a() {
     return 'a';
   },
@@ -32,8 +32,9 @@ const data = {
   },
 };
 
-function executeTestQuery(doc) {
-  return execute(schema, parse(doc), data);
+function executeTestQuery(query) {
+  const document = parse(query);
+  return execute({ schema, document, rootValue });
 }
 
 describe('Execute: handles directives', () => {
