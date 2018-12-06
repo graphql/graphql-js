@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import {
@@ -98,9 +98,13 @@ describe('Type System: Schema', () => {
       });
 
       it('checks the configuration for mistakes', () => {
+        // $DisableFlowOnNegativeTest
         expect(() => new GraphQLSchema(() => null)).to.throw();
+        // $DisableFlowOnNegativeTest
         expect(() => new GraphQLSchema({ types: {} })).to.throw();
+        // $DisableFlowOnNegativeTest
         expect(() => new GraphQLSchema({ directives: {} })).to.throw();
+        // $DisableFlowOnNegativeTest
         expect(() => new GraphQLSchema({ allowedLegacyNames: {} })).to.throw();
       });
     });
@@ -127,13 +131,18 @@ describe('Type System: Schema', () => {
         expect(() => {
           const config = () => null;
           config.assumeValid = true;
+          // $DisableFlowOnNegativeTest
           return new GraphQLSchema(config);
         }).to.not.throw();
+
         expect(() => {
           return new GraphQLSchema({
             assumeValid: true,
+            // $DisableFlowOnNegativeTest
             types: {},
+            // $DisableFlowOnNegativeTest
             directives: { reduce: () => [] },
+            // $DisableFlowOnNegativeTest
             allowedLegacyNames: {},
           });
         }).to.not.throw();

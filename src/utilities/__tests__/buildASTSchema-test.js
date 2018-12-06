@@ -154,7 +154,7 @@ describe('Schema Builder', () => {
       }
     `;
     const schema = buildSchema(sdl);
-    expect(schema.getDirectives().length).to.equal(3);
+    expect(schema.getDirectives()).to.have.lengthOf(3);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
     expect(schema.getDirective('deprecated')).to.equal(
@@ -173,7 +173,7 @@ describe('Schema Builder', () => {
       }
     `;
     const schema = buildSchema(sdl);
-    expect(schema.getDirectives().length).to.equal(3);
+    expect(schema.getDirectives()).to.have.lengthOf(3);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.not.equal(
       GraphQLIncludeDirective,
@@ -192,7 +192,7 @@ describe('Schema Builder', () => {
       }
     `;
     const schema = buildSchema(sdl);
-    expect(schema.getDirectives().length).to.equal(4);
+    expect(schema.getDirectives()).to.have.lengthOf(4);
     expect(schema.getDirective('skip')).to.not.equal(undefined);
     expect(schema.getDirective('include')).to.not.equal(undefined);
     expect(schema.getDirective('deprecated')).to.not.equal(undefined);
@@ -358,7 +358,7 @@ describe('Schema Builder', () => {
       }
     `);
     const errors = validateSchema(schema);
-    expect(errors.length).to.be.above(0);
+    expect(errors).to.have.lengthOf.above(0);
   });
 
   it('Specifying Union type using __typename', () => {
@@ -765,7 +765,7 @@ describe('Schema Builder', () => {
       }
     `);
     const errors = validateSchema(schema);
-    expect(errors.length).to.be.above(0);
+    expect(errors).to.have.lengthOf.above(0);
   });
 
   it('Accepts legacy names', () => {
@@ -776,7 +776,7 @@ describe('Schema Builder', () => {
     `;
     const schema = buildSchema(sdl, { allowedLegacyNames: ['__badName'] });
     const errors = validateSchema(schema);
-    expect(errors.length).to.equal(0);
+    expect(errors).to.have.lengthOf(0);
   });
 
   it('Rejects invalid SDL', () => {
