@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -60,16 +60,20 @@ import {
   getNamedType,
 } from '../';
 
-const ObjectType = new GraphQLObjectType({ name: 'Object' });
-const InterfaceType = new GraphQLInterfaceType({ name: 'Interface' });
+const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
+const InterfaceType = new GraphQLInterfaceType({
+  name: 'Interface',
+  fields: {},
+});
 const UnionType = new GraphQLUnionType({ name: 'Union', types: [ObjectType] });
 const EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
-const InputObjectType = new GraphQLInputObjectType({ name: 'InputObject' });
+const InputObjectType = new GraphQLInputObjectType({
+  name: 'InputObject',
+  fields: {},
+});
 const ScalarType = new GraphQLScalarType({
   name: 'Scalar',
   serialize() {},
-  parseValue() {},
-  parseLiteral() {},
 });
 
 describe('Type predicates', () => {
@@ -477,6 +481,7 @@ describe('Type predicates', () => {
   describe('isRequiredArgument', () => {
     it('returns true for required arguments', () => {
       const requiredArg = {
+        name: 'someArg',
         type: GraphQLNonNull(GraphQLString),
       };
       expect(isRequiredArgument(requiredArg)).to.equal(true);
@@ -484,22 +489,26 @@ describe('Type predicates', () => {
 
     it('returns false for optional arguments', () => {
       const optArg1 = {
+        name: 'someArg',
         type: GraphQLString,
       };
       expect(isRequiredArgument(optArg1)).to.equal(false);
 
       const optArg2 = {
+        name: 'someArg',
         type: GraphQLString,
         defaultValue: null,
       };
       expect(isRequiredArgument(optArg2)).to.equal(false);
 
       const optArg3 = {
+        name: 'someArg',
         type: GraphQLList(GraphQLNonNull(GraphQLString)),
       };
       expect(isRequiredArgument(optArg3)).to.equal(false);
 
       const optArg4 = {
+        name: 'someArg',
         type: GraphQLNonNull(GraphQLString),
         defaultValue: 'default',
       };
@@ -510,6 +519,7 @@ describe('Type predicates', () => {
   describe('isRequiredInputField', () => {
     it('returns true for required input field', () => {
       const requiredField = {
+        name: 'someField',
         type: GraphQLNonNull(GraphQLString),
       };
       expect(isRequiredInputField(requiredField)).to.equal(true);
@@ -517,22 +527,26 @@ describe('Type predicates', () => {
 
     it('returns false for optional input field', () => {
       const optField1 = {
+        name: 'someField',
         type: GraphQLString,
       };
       expect(isRequiredInputField(optField1)).to.equal(false);
 
       const optField2 = {
+        name: 'someField',
         type: GraphQLString,
         defaultValue: null,
       };
       expect(isRequiredInputField(optField2)).to.equal(false);
 
       const optField3 = {
+        name: 'someField',
         type: GraphQLList(GraphQLNonNull(GraphQLString)),
       };
       expect(isRequiredInputField(optField3)).to.equal(false);
 
       const optField4 = {
+        name: 'someField',
         type: GraphQLNonNull(GraphQLString),
         defaultValue: 'default',
       };

@@ -888,7 +888,6 @@ describe('Introspection', () => {
         field: {
           type: GraphQLString,
           args: { complex: { type: TestInputObject } },
-          resolve: (_, { complex }) => JSON.stringify(complex),
         },
       },
     });

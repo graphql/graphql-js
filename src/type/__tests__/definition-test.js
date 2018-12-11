@@ -416,8 +416,7 @@ describe('Type System: Example', () => {
     });
 
     const types = union.getTypes();
-    expect(types.length).to.equal(1);
-    expect(types[0]).to.equal(ObjectType);
+    expect(types).to.have.members([ObjectType]);
   });
 
   it('does not mutate passed field definitions', () => {

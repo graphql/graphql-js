@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { inspect as utilInspect } from 'util';
@@ -12,6 +12,7 @@ import { inspect as utilInspect } from 'util';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
+import { GraphQLError } from '../../error';
 import { Source } from '../source';
 import { createLexer, TokenKind } from '../lexer';
 
@@ -21,20 +22,16 @@ function lexOne(str) {
 }
 
 function expectSyntaxError(text, message, location) {
-  try {
-    lexOne(text);
-    expect.fail('Expected to throw syntax error');
-  } catch (error) {
-    expect(error.message).to.contain(message);
-    expect(error.locations).to.deep.equal([location]);
-  }
+  expect(() => lexOne(text))
+    .to.throw('Syntax Error: ' + message)
+    .with.deep.property('locations', [location]);
 }
 
 describe('Lexer', () => {
   it('disallows uncommon control characters', () => {
     expectSyntaxError(
       '\u0007',
-      'Cannot contain the invalid character "\\u0007"',
+      'Cannot contain the invalid character "\\u0007".',
       { line: 1, column: 1 },
     );
   });
@@ -236,12 +233,12 @@ describe('Lexer', () => {
       { line: 1, column: 19 },
     );
 
-    expectSyntaxError('"multi\nline"', 'Unterminated string', {
+    expectSyntaxError('"multi\nline"', 'Unterminated string.', {
       line: 1,
       column: 7,
     });
 
-    expectSyntaxError('"multi\rline"', 'Unterminated string', {
+    expectSyntaxError('"multi\rline"', 'Unterminated string.', {
       line: 1,
       column: 7,
     });
@@ -672,16 +669,13 @@ describe('Lexer', () => {
       end: 1,
       value: 'a',
     });
-    let caughtError;
-    try {
-      lexer.advance();
-    } catch (error) {
-      caughtError = error;
-    }
-    expect(caughtError.message).to.equal(
-      'Syntax Error: Invalid number, expected digit but got: "b".',
-    );
-    expect(caughtError.locations).to.deep.equal([{ line: 1, column: 3 }]);
+
+    expect(() => lexer.advance())
+      .throw(GraphQLError)
+      .that.deep.include({
+        message: 'Syntax Error: Invalid number, expected digit but got: "b".',
+        locations: [{ line: 1, column: 3 }],
+      });
   });
 
   it('produces double linked list of tokens, including comments', () => {

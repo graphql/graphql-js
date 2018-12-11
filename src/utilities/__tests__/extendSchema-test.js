@@ -301,7 +301,7 @@ describe('extendSchema', () => {
     `);
 
     const errors = validateSchema(extendedSchema);
-    expect(errors.length).to.be.above(0);
+    expect(errors).to.have.lengthOf.above(0);
 
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       union SomeUnion = Foo | Biz | SomeUnion
@@ -922,7 +922,7 @@ describe('extendSchema', () => {
     `);
 
     const errors = validateSchema(extendedSchema);
-    expect(errors.length).to.be.above(0);
+    expect(errors).to.have.lengthOf.above(0);
 
     expect(printTestSchemaChanges(extendedSchema)).to.equal(dedent`
       interface SomeInterface {

@@ -54,7 +54,7 @@ describe('separateOperations', () => {
 
     const separatedASTs = separateOperations(ast);
 
-    expect(Object.keys(separatedASTs)).to.deep.equal(['', 'One', 'Two']);
+    expect(separatedASTs).to.have.all.keys('', 'One', 'Two');
 
     expect(print(separatedASTs[''])).to.equal(dedent`
       {
@@ -136,7 +136,7 @@ describe('separateOperations', () => {
 
     const separatedASTs = separateOperations(ast);
 
-    expect(Object.keys(separatedASTs)).to.deep.equal(['One', 'Two']);
+    expect(separatedASTs).to.have.all.keys('One', 'Two');
 
     expect(print(separatedASTs.One)).to.equal(dedent`
       query One {
