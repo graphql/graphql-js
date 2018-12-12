@@ -18,7 +18,7 @@ Each sub directory within is a sub-module of graphql-js:
   fulfilling a GraphQL result.
 * [`graphql/execution`](execution/README.md): The Execution phase of fulfilling
   a GraphQL request.
-* [`graphql/error`](error/README.md): Creating and format GraphQL errors.
+* [`graphql/error`](error/README.md): Creating and formating GraphQL errors.
 * [`graphql/utilities`](utilities/README.md): Common useful computations upon
   the GraphQL language and type objects.
 * [`graphql/subscription`](subscription/README.md): Subscribe to data updates.
