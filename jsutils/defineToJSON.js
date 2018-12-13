@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = applyToJSON;
+exports.default = defineToJSON;
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -15,9 +15,9 @@ exports.default = applyToJSON;
  */
 
 /**
- * The `applyToJSON()` function defines toJSON() and inspect() prototype
+ * The `defineToJSON()` function defines toJSON() and inspect() prototype
  * methods which are aliases for toString().
  */
-function applyToJSON(classObject) {
+function defineToJSON(classObject) {
   classObject.prototype.toJSON = classObject.prototype.inspect = classObject.prototype.toString;
 }
