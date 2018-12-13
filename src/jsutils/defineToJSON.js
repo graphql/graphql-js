@@ -8,10 +8,10 @@
  */
 
 /**
- * The `applyToJSON()` function defines toJSON() and inspect() prototype
+ * The `defineToJSON()` function defines toJSON() and inspect() prototype
  * methods which are aliases for toString().
  */
-export default function applyToJSON(classObject: Class<any>): void {
+export default function defineToJSON(classObject: Class<any>): void {
   classObject.prototype.toJSON = classObject.prototype.inspect =
     classObject.prototype.toString;
 }
