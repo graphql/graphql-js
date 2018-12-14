@@ -8,6 +8,7 @@
  */
 
 import inspect from '../jsutils/inspect';
+import defineToJSON from '../jsutils/defineToJSON';
 import { Source } from './source';
 import { syntaxError } from '../error';
 import type { GraphQLError } from '../error';
@@ -1444,9 +1445,9 @@ function Loc(startToken: Token, endToken: Token, source: Source) {
 }
 
 // Print a simplified form when appearing in JSON/util.inspect.
-Loc.prototype.toJSON = Loc.prototype.inspect = function toJSON() {
+defineToJSON(Loc, function() {
   return { start: this.start, end: this.end };
-};
+});
 
 /**
  * Determines if the next token is of a given kind
