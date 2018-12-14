@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import defineToJSON from '../jsutils/defineToJSON';
 import type { Token } from './ast';
 import type { Source } from './source';
 import { syntaxError } from '../error';
@@ -162,14 +163,14 @@ function Tok(
 }
 
 // Print a simplified form when appearing in JSON/util.inspect.
-Tok.prototype.toJSON = Tok.prototype.inspect = function toJSON() {
+defineToJSON(Tok, function() {
   return {
     kind: this.kind,
     value: this.value,
     line: this.line,
     column: this.column,
   };
-};
+});
 
 function printCharCode(code) {
   return (

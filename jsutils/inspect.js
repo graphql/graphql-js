@@ -5,16 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = inspect;
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+var _nodejsCustomInspectSymbol = _interopRequireDefault(require("./nodejsCustomInspectSymbol"));
 
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *  strict
- */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /**
  * Used to print values in error messages.
@@ -29,7 +24,11 @@ function inspect(value) {
 
     case 'object':
       if (value) {
-        if (typeof value.inspect === 'function') {
+        var customInspectFn = value[String(_nodejsCustomInspectSymbol.default)];
+
+        if (typeof customInspectFn === 'function') {
+          return customInspectFn();
+        } else if (typeof value.inspect === 'function') {
           return value.inspect();
         } else if (Array.isArray(value)) {
           return '[' + value.map(inspect).join(', ') + ']';

@@ -12,6 +12,8 @@ exports.parseNamedType = parseNamedType;
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
+
 var _source = require("./source");
 
 var _error = require("../error");
@@ -1399,16 +1401,15 @@ function Loc(startToken, endToken, source) {
 } // Print a simplified form when appearing in JSON/util.inspect.
 
 
-Loc.prototype.toJSON = Loc.prototype.inspect = function toJSON() {
+(0, _defineToJSON.default)(Loc, function () {
   return {
     start: this.start,
     end: this.end
   };
-};
+});
 /**
  * Determines if the next token is of a given kind
  */
-
 
 function peek(lexer, kind) {
   return lexer.token.kind === kind;

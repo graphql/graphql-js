@@ -7,6 +7,8 @@ exports.createLexer = createLexer;
 exports.getTokenDesc = getTokenDesc;
 exports.TokenKind = void 0;
 
+var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
+
 var _error = require("../error");
 
 var _blockStringValue = _interopRequireDefault(require("./blockStringValue"));
@@ -128,14 +130,14 @@ function Tok(kind, start, end, line, column, prev, value) {
 } // Print a simplified form when appearing in JSON/util.inspect.
 
 
-Tok.prototype.toJSON = Tok.prototype.inspect = function toJSON() {
+(0, _defineToJSON.default)(Tok, function () {
   return {
     kind: this.kind,
     value: this.value,
     line: this.line,
     column: this.column
   };
-};
+});
 
 function printCharCode(code) {
   return (// NaN/undefined represents access beyond the end of the file.

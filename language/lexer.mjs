@@ -6,6 +6,7 @@
  *
  *  strict
  */
+import defineToJSON from '../jsutils/defineToJSON';
 import { syntaxError } from '../error';
 import blockStringValue from './blockStringValue';
 /**
@@ -112,14 +113,14 @@ function Tok(kind, start, end, line, column, prev, value) {
 } // Print a simplified form when appearing in JSON/util.inspect.
 
 
-Tok.prototype.toJSON = Tok.prototype.inspect = function toJSON() {
+defineToJSON(Tok, function () {
   return {
     kind: this.kind,
     value: this.value,
     line: this.line,
     column: this.column
   };
-};
+});
 
 function printCharCode(code) {
   return (// NaN/undefined represents access beyond the end of the file.

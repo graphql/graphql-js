@@ -8,10 +8,11 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  *
  *  strict
  */
-
+import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
 /**
  * Used to print values in error messages.
  */
+
 export default function inspect(value) {
   switch (_typeof(value)) {
     case 'string':
@@ -22,7 +23,11 @@ export default function inspect(value) {
 
     case 'object':
       if (value) {
-        if (typeof value.inspect === 'function') {
+        var customInspectFn = value[String(nodejsCustomInspectSymbol)];
+
+        if (typeof customInspectFn === 'function') {
+          return customInspectFn();
+        } else if (typeof value.inspect === 'function') {
           return value.inspect();
         } else if (Array.isArray(value)) {
           return '[' + value.map(inspect).join(', ') + ']';
