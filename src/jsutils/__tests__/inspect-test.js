@@ -10,6 +10,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import inspect from '../inspect';
+import invariant from '../invariant';
+import nodejsCustomInspectSymbol from '../nodejsCustomInspectSymbol';
 
 describe('inspect', () => {
   it('undefined', () => {
@@ -74,5 +76,20 @@ describe('inspect', () => {
     };
 
     expect(inspect(object)).to.equal('<custom inspect>');
+  });
+
+  it('custom inspect', () => {
+    invariant(nodejsCustomInspectSymbol);
+
+    const object = {
+      inspect() {
+        return '<custom inspect>';
+      },
+      [String(nodejsCustomInspectSymbol)]() {
+        return '<custom symbol inspect>';
+      },
+    };
+
+    expect(inspect(object)).to.equal('<custom symbol inspect>');
   });
 });
