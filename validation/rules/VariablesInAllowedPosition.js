@@ -52,9 +52,9 @@ function VariablesInAllowedPosition(context) {
         try {
           for (var _iterator = usages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
             var _ref2 = _step.value;
-            var node = _ref2.node,
-                type = _ref2.type,
-                defaultValue = _ref2.defaultValue;
+            var node = _ref2.node;
+            var type = _ref2.type;
+            var defaultValue = _ref2.defaultValue;
             var varName = node.name.value;
             var varDef = varDefMap[varName];
 
