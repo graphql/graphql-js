@@ -12,7 +12,6 @@ module.exports = {
   }]],
   "plugins": [
     "./resources/inline-invariant",
-    "@babel/plugin-proposal-class-properties",
     "@babel/plugin-transform-flow-strip-types",
     ["@babel/plugin-transform-classes", {"loose": true}],
     ["@babel/plugin-transform-destructuring", {"loose": true}],
