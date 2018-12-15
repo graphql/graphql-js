@@ -34,23 +34,24 @@ module.exports = function inlineInvariant(context) {
         var args = node.arguments.slice(0);
         args[0] = t.numericLiteral(0);
 
-        path.replaceWith(t.ifStatement(
-          t.unaryExpression('!', node.arguments[0]),
-          t.expressionStatement(
-            t.callExpression(
-              t.identifier(node.callee.name),
-              args
+        path.replaceWith(
+          t.ifStatement(
+            t.unaryExpression('!', node.arguments[0]),
+            t.expressionStatement(
+              t.callExpression(t.identifier(node.callee.name), args)
             )
           )
-        ));
+        );
       },
     },
   };
 };
 
 function isAppropriateInvariantCall(node, parent) {
-  return node.callee.type === 'Identifier'
-      && node.callee.name === 'invariant'
-      && node.arguments.length > 0
-      && parent.type === 'ExpressionStatement';
+  return (
+    node.callee.type === 'Identifier' &&
+    node.callee.name === 'invariant' &&
+    node.arguments.length > 0 &&
+    parent.type === 'ExpressionStatement'
+  );
 }

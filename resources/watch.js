@@ -10,7 +10,6 @@ const { resolve: resolvePath } = require('path');
 const { spawn } = require('child_process');
 const flowBinPath = require('flow-bin');
 
-
 process.env.PATH += ':./node_modules/.bin';
 
 var cmd = resolvePath(__dirname);
@@ -97,10 +96,13 @@ function checkFiles(filepaths) {
 
   return parseFiles(filepaths)
     .then(() => runTests(filepaths))
-    .then(testSuccess => lintFiles(filepaths)
-      .then(lintSuccess => typecheckStatus()
-        .then(typecheckSuccess =>
-          testSuccess && lintSuccess && typecheckSuccess)))
+    .then(testSuccess =>
+      lintFiles(filepaths).then(lintSuccess =>
+        typecheckStatus().then(
+          typecheckSuccess => testSuccess && lintSuccess && typecheckSuccess
+        )
+      )
+    )
     .catch(() => false)
     .then(success => {
       process.stdout.write(
@@ -114,47 +116,62 @@ function checkFiles(filepaths) {
 function parseFiles(filepaths) {
   console.log('Checking Syntax');
 
-  return Promise.all(filepaths.map(filepath => {
-    if (isJS(filepath) && !isTest(filepath)) {
-      return exec('babel', [
-        '--optional', 'runtime',
-        '--out-file', '/dev/null',
-        srcPath(filepath)
-      ]);
-    }
-  }));
+  return Promise.all(
+    filepaths.map(filepath => {
+      if (isJS(filepath) && !isTest(filepath)) {
+        return exec('babel', [
+          '--optional',
+          'runtime',
+          '--out-file',
+          '/dev/null',
+          srcPath(filepath),
+        ]);
+      }
+    })
+  );
 }
 
 function runTests(filepaths) {
   console.log('\nRunning Tests');
 
-  return exec('mocha', [
-    '--reporter', 'progress',
-    '--require', '@babel/register',
-    '--require', '@babel/polyfill',
-  ].concat(
-    allTests(filepaths) ?
-      filepaths.map(srcPath) :
-      ['src/**/__tests__/**/*-test.js']
-  )).catch(() => false);
+  return exec(
+    'mocha',
+    [
+      '--reporter',
+      'progress',
+      '--require',
+      '@babel/register',
+      '--require',
+      '@babel/polyfill',
+    ].concat(
+      allTests(filepaths)
+        ? filepaths.map(srcPath)
+        : ['src/**/__tests__/**/*-test.js']
+    )
+  ).catch(() => false);
 }
 
 function lintFiles(filepaths) {
   console.log('Linting Code\n');
 
-  return filepaths.reduce((prev, filepath) => prev.then(prevSuccess => {
-    if (isJS(filepath)) {
-      process.stdout.write('  ' + filepath + ' ...');
-      return exec('eslint', [srcPath(filepath)])
-        .catch(() => false)
-        .then(success => {
-          console.log(CLEARLINE + '  ' + (success ? CHECK : X)
-            + ' ' + filepath);
-          return prevSuccess && success;
-        });
-    }
-    return prevSuccess;
-  }), Promise.resolve(true));
+  return filepaths.reduce(
+    (prev, filepath) =>
+      prev.then(prevSuccess => {
+        if (isJS(filepath)) {
+          process.stdout.write('  ' + filepath + ' ...');
+          return exec('eslint', [srcPath(filepath)])
+            .catch(() => false)
+            .then(success => {
+              console.log(
+                CLEARLINE + '  ' + (success ? CHECK : X) + ' ' + filepath
+              );
+              return prevSuccess && success;
+            });
+        }
+        return prevSuccess;
+      }),
+    Promise.resolve(true)
+  );
 }
 
 function typecheckStatus() {
