@@ -31,7 +31,7 @@ jobs:
     - stage: deploy
       if: branch = master OR tag IS present
       script: echo "Deploying..."
-      node_js: '10'
+      node_js: 'lts/*'
       deploy:
         - provider: script
           script: npm run gitpublish
