@@ -46,7 +46,7 @@ type VariableUsage = {|
 export class ASTValidationContext {
   _ast: DocumentNode;
   _errors: Array<GraphQLError>;
-  _fragments: ObjMap<FragmentDefinitionNode>;
+  _fragments: ?ObjMap<FragmentDefinitionNode>;
   _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
   _recursivelyReferencedFragments: Map<
     OperationDefinitionNode,
@@ -56,6 +56,7 @@ export class ASTValidationContext {
   constructor(ast: DocumentNode): void {
     this._ast = ast;
     this._errors = [];
+    this._fragments = undefined;
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
   }
