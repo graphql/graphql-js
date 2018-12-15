@@ -1,9 +1,5 @@
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -25,18 +21,9 @@ export var ASTValidationContext =
 /*#__PURE__*/
 function () {
   function ASTValidationContext(ast) {
-    _defineProperty(this, "_ast", void 0);
-
-    _defineProperty(this, "_errors", void 0);
-
-    _defineProperty(this, "_fragments", void 0);
-
-    _defineProperty(this, "_fragmentSpreads", void 0);
-
-    _defineProperty(this, "_recursivelyReferencedFragments", void 0);
-
     this._ast = ast;
     this._errors = [];
+    this._fragments = undefined;
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
   }
@@ -142,9 +129,6 @@ function (_ASTValidationContext) {
     var _this;
 
     _this = _ASTValidationContext.call(this, ast) || this;
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_schema", void 0);
-
     _this._schema = schema;
     return _this;
   }
@@ -166,15 +150,6 @@ function (_ASTValidationContext2) {
     var _this2;
 
     _this2 = _ASTValidationContext2.call(this, ast) || this;
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_schema", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_typeInfo", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_variableUsages", void 0);
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "_recursiveVariableUsages", void 0);
-
     _this2._schema = schema;
     _this2._typeInfo = typeInfo;
     _this2._variableUsages = new Map();

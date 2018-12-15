@@ -311,20 +311,6 @@ export var GraphQLScalarType =
 /*#__PURE__*/
 function () {
   function GraphQLScalarType(config) {
-    _defineProperty(this, "name", void 0);
-
-    _defineProperty(this, "description", void 0);
-
-    _defineProperty(this, "serialize", void 0);
-
-    _defineProperty(this, "parseValue", void 0);
-
-    _defineProperty(this, "parseLiteral", void 0);
-
-    _defineProperty(this, "astNode", void 0);
-
-    _defineProperty(this, "extensionASTNodes", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize;
@@ -397,20 +383,6 @@ export var GraphQLObjectType =
 /*#__PURE__*/
 function () {
   function GraphQLObjectType(config) {
-    _defineProperty(this, "name", void 0);
-
-    _defineProperty(this, "description", void 0);
-
-    _defineProperty(this, "astNode", void 0);
-
-    _defineProperty(this, "extensionASTNodes", void 0);
-
-    _defineProperty(this, "isTypeOf", void 0);
-
-    _defineProperty(this, "_fields", void 0);
-
-    _defineProperty(this, "_interfaces", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -533,18 +505,6 @@ export var GraphQLInterfaceType =
 /*#__PURE__*/
 function () {
   function GraphQLInterfaceType(config) {
-    _defineProperty(this, "name", void 0);
-
-    _defineProperty(this, "description", void 0);
-
-    _defineProperty(this, "astNode", void 0);
-
-    _defineProperty(this, "extensionASTNodes", void 0);
-
-    _defineProperty(this, "resolveType", void 0);
-
-    _defineProperty(this, "_fields", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -602,18 +562,6 @@ export var GraphQLUnionType =
 /*#__PURE__*/
 function () {
   function GraphQLUnionType(config) {
-    _defineProperty(this, "name", void 0);
-
-    _defineProperty(this, "description", void 0);
-
-    _defineProperty(this, "astNode", void 0);
-
-    _defineProperty(this, "extensionASTNodes", void 0);
-
-    _defineProperty(this, "resolveType", void 0);
-
-    _defineProperty(this, "_types", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -679,20 +627,6 @@ function () {
   function GraphQLEnumType(config
   /* <T> */
   ) {
-    _defineProperty(this, "name", void 0);
-
-    _defineProperty(this, "description", void 0);
-
-    _defineProperty(this, "astNode", void 0);
-
-    _defineProperty(this, "extensionASTNodes", void 0);
-
-    _defineProperty(this, "_values", void 0);
-
-    _defineProperty(this, "_valueLookup", void 0);
-
-    _defineProperty(this, "_nameLookup", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -805,16 +739,6 @@ export var GraphQLInputObjectType =
 /*#__PURE__*/
 function () {
   function GraphQLInputObjectType(config) {
-    _defineProperty(this, "name", void 0);
-
-    _defineProperty(this, "description", void 0);
-
-    _defineProperty(this, "astNode", void 0);
-
-    _defineProperty(this, "extensionASTNodes", void 0);
-
-    _defineProperty(this, "_fields", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;

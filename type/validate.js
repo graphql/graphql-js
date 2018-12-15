@@ -28,7 +28,14 @@ var _typeComparators = require("../utilities/typeComparators");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's
@@ -76,10 +83,6 @@ var SchemaValidationContext =
 /*#__PURE__*/
 function () {
   function SchemaValidationContext(schema) {
-    _defineProperty(this, "_errors", void 0);
-
-    _defineProperty(this, "schema", void 0);
-
     this._errors = [];
     this.schema = schema;
   }

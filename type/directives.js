@@ -26,8 +26,14 @@ var _directiveLocation = require("../language/directiveLocation");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 // eslint-disable-next-line no-redeclare
 function isDirective(directive) {
   return (0, _instanceOf.default)(directive, GraphQLDirective);
@@ -47,16 +53,6 @@ var GraphQLDirective =
 /*#__PURE__*/
 function () {
   function GraphQLDirective(config) {
-    _defineProperty(this, "name", void 0);
-
-    _defineProperty(this, "description", void 0);
-
-    _defineProperty(this, "locations", void 0);
-
-    _defineProperty(this, "args", void 0);
-
-    _defineProperty(this, "astNode", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;

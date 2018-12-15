@@ -22,8 +22,14 @@ var _typeFromAST = require("../../utilities/typeFromAST");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 function fieldsConflictMessage(responseName, reason) {
   return "Fields \"".concat(responseName, "\" conflict because ").concat(reasonMessage(reason), ". ") + 'Use different aliases on the fields to fetch both if this was intentional.';
 }
@@ -549,8 +555,6 @@ var PairSet =
 /*#__PURE__*/
 function () {
   function PairSet() {
-    _defineProperty(this, "_data", void 0);
-
     this._data = Object.create(null);
   }
 

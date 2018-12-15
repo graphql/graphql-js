@@ -1,5 +1,3 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -37,16 +35,6 @@ export var GraphQLDirective =
 /*#__PURE__*/
 function () {
   function GraphQLDirective(config) {
-    _defineProperty(this, "name", void 0);
-
-    _defineProperty(this, "description", void 0);
-
-    _defineProperty(this, "locations", void 0);
-
-    _defineProperty(this, "args", void 0);
-
-    _defineProperty(this, "astNode", void 0);
-
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;

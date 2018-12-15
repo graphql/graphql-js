@@ -1,5 +1,3 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -64,10 +62,6 @@ var SchemaValidationContext =
 /*#__PURE__*/
 function () {
   function SchemaValidationContext(schema) {
-    _defineProperty(this, "_errors", void 0);
-
-    _defineProperty(this, "schema", void 0);
-
     this._errors = [];
     this.schema = schema;
   }

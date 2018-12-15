@@ -1,5 +1,3 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -162,14 +160,6 @@ export var ASTDefinitionBuilder =
 /*#__PURE__*/
 function () {
   function ASTDefinitionBuilder(typeDefinitionsMap, options, resolveType) {
-    _defineProperty(this, "_typeDefinitionsMap", void 0);
-
-    _defineProperty(this, "_options", void 0);
-
-    _defineProperty(this, "_resolveType", void 0);
-
-    _defineProperty(this, "_cache", void 0);
-
     this._typeDefinitionsMap = typeDefinitionsMap;
     this._options = options;
     this._resolveType = resolveType; // Initialize to the GraphQL built in scalars and introspection types.

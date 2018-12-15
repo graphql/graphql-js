@@ -29,8 +29,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 // eslint-disable-next-line no-redeclare
 function isSchema(schema) {
   return (0, _instanceOf.default)(schema, GraphQLSchema);
@@ -74,35 +72,14 @@ function () {
   // Used as a cache for validateSchema().
   // Referenced by validateSchema().
   function GraphQLSchema(config) {
-    _defineProperty(this, "astNode", void 0);
-
-    _defineProperty(this, "extensionASTNodes", void 0);
-
-    _defineProperty(this, "_queryType", void 0);
-
-    _defineProperty(this, "_mutationType", void 0);
-
-    _defineProperty(this, "_subscriptionType", void 0);
-
-    _defineProperty(this, "_directives", void 0);
-
-    _defineProperty(this, "_typeMap", void 0);
-
-    _defineProperty(this, "_implementations", void 0);
-
-    _defineProperty(this, "_possibleTypeMap", void 0);
-
-    _defineProperty(this, "__validationErrors", void 0);
-
-    _defineProperty(this, "__allowedLegacyNames", void 0);
-
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
     if (config && config.assumeValid) {
       this.__validationErrors = [];
     } else {
-      // Otherwise check for common mistakes during construction to produce
+      this.__validationErrors = undefined; // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
+
       !(_typeof(config) === 'object') ? (0, _invariant.default)(0, 'Must provide configuration object.') : void 0;
       !(!config.types || Array.isArray(config.types)) ? (0, _invariant.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), ".")) : void 0;
       !(!config.directives || Array.isArray(config.directives)) ? (0, _invariant.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), ".")) : void 0;
@@ -132,7 +109,8 @@ function () {
 
     typeMap = this._directives.reduce(typeMapDirectiveReducer, typeMap); // Storing the resulting map for reference by the schema.
 
-    this._typeMap = typeMap; // Keep track of all implementations by interface name.
+    this._typeMap = typeMap;
+    this._possibleTypeMap = Object.create(null); // Keep track of all implementations by interface name.
 
     this._implementations = Object.create(null);
 
@@ -213,10 +191,6 @@ function () {
 
   _proto.isPossibleType = function isPossibleType(abstractType, possibleType) {
     var possibleTypeMap = this._possibleTypeMap;
-
-    if (!possibleTypeMap) {
-      this._possibleTypeMap = possibleTypeMap = Object.create(null);
-    }
 
     if (!possibleTypeMap[abstractType.name]) {
       var possibleTypes = this.getPossibleTypes(abstractType);

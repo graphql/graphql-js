@@ -1,5 +1,3 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -26,26 +24,6 @@ function () {
   // to support non-spec-compliant codebases. You should never need to use it.
   getFieldDefFn, // Initial type may be provided in rare cases to facilitate traversals
   initialType) {
-    _defineProperty(this, "_schema", void 0);
-
-    _defineProperty(this, "_typeStack", void 0);
-
-    _defineProperty(this, "_parentTypeStack", void 0);
-
-    _defineProperty(this, "_inputTypeStack", void 0);
-
-    _defineProperty(this, "_fieldDefStack", void 0);
-
-    _defineProperty(this, "_defaultValueStack", void 0);
-
-    _defineProperty(this, "_directive", void 0);
-
-    _defineProperty(this, "_argument", void 0);
-
-    _defineProperty(this, "_enumValue", void 0);
-
-    _defineProperty(this, "_getFieldDef", void 0);
-
     this._schema = schema;
     this._typeStack = [];
     this._parentTypeStack = [];

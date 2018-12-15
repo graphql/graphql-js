@@ -17,7 +17,14 @@ var _find = _interopRequireDefault(require("../jsutils/find"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *  strict
+ */
 
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
@@ -31,26 +38,6 @@ function () {
   // to support non-spec-compliant codebases. You should never need to use it.
   getFieldDefFn, // Initial type may be provided in rare cases to facilitate traversals
   initialType) {
-    _defineProperty(this, "_schema", void 0);
-
-    _defineProperty(this, "_typeStack", void 0);
-
-    _defineProperty(this, "_parentTypeStack", void 0);
-
-    _defineProperty(this, "_inputTypeStack", void 0);
-
-    _defineProperty(this, "_fieldDefStack", void 0);
-
-    _defineProperty(this, "_defaultValueStack", void 0);
-
-    _defineProperty(this, "_directive", void 0);
-
-    _defineProperty(this, "_argument", void 0);
-
-    _defineProperty(this, "_enumValue", void 0);
-
-    _defineProperty(this, "_getFieldDef", void 0);
-
     this._schema = schema;
     this._typeStack = [];
     this._parentTypeStack = [];

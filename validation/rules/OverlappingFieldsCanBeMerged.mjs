@@ -1,5 +1,3 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -540,8 +538,6 @@ var PairSet =
 /*#__PURE__*/
 function () {
   function PairSet() {
-    _defineProperty(this, "_data", void 0);
-
     this._data = Object.create(null);
   }
 
