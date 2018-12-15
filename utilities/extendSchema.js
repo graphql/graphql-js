@@ -219,9 +219,9 @@ function extendSchema(schema, documentAST, options) {
   }
 
   var schemaExtensionASTNodes = schemaExtensions ? schema.extensionASTNodes ? schema.extensionASTNodes.concat(schemaExtensions) : schemaExtensions : schema.extensionASTNodes;
-  var types = (0, _objectValues.default)(schema.getTypeMap()).map(function (type) {
+  var types = [].concat((0, _objectValues.default)(schema.getTypeMap()).map(function (type) {
     return extendNamedType(type);
-  }).concat((0, _objectValues.default)(typeDefinitionMap).map(function (type) {
+  }), (0, _objectValues.default)(typeDefinitionMap).map(function (type) {
     return astBuilder.buildType(type);
   })); // Support both original legacy names and extended legacy names.
 
