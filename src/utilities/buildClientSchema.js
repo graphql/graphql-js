@@ -154,7 +154,7 @@ export function buildClientSchema(
     const type = getType(typeRef);
     invariant(
       isOutputType(type),
-      'Introspection must provide output type for fields. '  + inspect(type),
+      'Introspection must provide output type for fields. ' + inspect(type),
     );
     return type;
   }
