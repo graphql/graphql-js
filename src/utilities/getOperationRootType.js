@@ -21,7 +21,7 @@ import type { GraphQLObjectType } from '../type/definition';
 export function getOperationRootType(
   schema: GraphQLSchema,
   operation: OperationDefinitionNode | OperationTypeDefinitionNode,
-): GraphQLObjectType {
+): GraphQLObjectType<*, *> {
   switch (operation.operation) {
     case 'query':
       const queryType = schema.getQueryType();
