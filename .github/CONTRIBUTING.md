@@ -76,7 +76,7 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 * 80 character line length strongly preferred.
 * Prefer `'` over `"`
 * ES6 syntax when possible. However do not rely on ES6-specific functions to be available.
-* Use [Flow types](http://flowtype.org/).
+* Use [Flow types](https://flowtype.org/).
 * Use semicolons;
 * Trailing commas,
 * Avd abbr wrds.
@@ -90,7 +90,7 @@ then use `npm version patch|minor|major` in order to increment the version in
 package.json and tag and commit a release. Then `git push && git push --tags`
 this change so Travis CI can deploy to NPM. *Do not run `npm publish` directly.*
 Once published, add [release notes](https://github.com/graphql/graphql-js/tags).
-Use [semver](http://semver.org/) to determine which version part to increment.
+Use [semver](https://semver.org/) to determine which version part to increment.
 
 Example for a patch release:
 

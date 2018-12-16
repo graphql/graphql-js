@@ -2,7 +2,7 @@
 
 We want to keep signal strong in the GitHub issue tracker – to make sure that it remains the best place to track bugs and features that affect development.
 
-If you have a question on how to use GraphQL, please [post it to Stack Overflow](https://stackoverflow.com/questions/ask?tags=graphql) with the tag [#graphql](http://stackoverflow.com/questions/tagged/graphql).
+If you have a question on how to use GraphQL, please [post it to Stack Overflow](https://stackoverflow.com/questions/ask?tags=graphql) with the tag [#graphql](https://stackoverflow.com/questions/tagged/graphql).
 
 Please do not post general questions directly as GitHub issues. They may sit for weeks unanswered, or may be spontaneously closed without answer.
 
