@@ -1,9 +1,6 @@
 module.exports = {
   presets: [
-    [
-      '@babel/preset-env',
-      {
-        modules: process.env.BABEL_MODULES ? false : 'commonjs',
+    ['@babel/preset-env', {
         targets: [
           'node 6',
           'ie 9',
@@ -12,8 +9,7 @@ module.exports = {
           'last 2 edge versions',
           'last 2 firefox versions',
         ],
-      },
-    ],
+    }],
   ],
   plugins: [
     './resources/inline-invariant',
@@ -22,4 +18,16 @@ module.exports = {
     ['@babel/plugin-transform-destructuring', { loose: true }],
     ['@babel/plugin-transform-spread', { loose: true }],
   ],
+  env: {
+    cjs: {
+      presets: [
+        ['@babel/preset-env', { modules: 'commonjs' }],
+      ],
+    },
+    mjs: {
+      presets: [
+        ['@babel/preset-env', { modules: false }],
+      ],
+    },
+  },
 };
