@@ -107,7 +107,7 @@ export const GraphQLFloat = new GraphQLScalarType({
   description:
     'The `Float` scalar type represents signed double-precision fractional ' +
     'values as specified by ' +
-    '[IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point). ',
+    '[IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point). ',
   serialize: serializeFloat,
   parseValue: coerceFloat,
   parseLiteral(ast) {
