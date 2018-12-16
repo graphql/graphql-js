@@ -8,8 +8,16 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { expectValidationErrors } from './harness';
 import { KnownTypeNames, unknownTypeMessage } from '../rules/KnownTypeNames';
+
+function expectErrors(queryStr) {
+  return expectValidationErrors(KnownTypeNames, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
 
 function unknownType(typeName, suggestedTypes, line, column) {
   return {
@@ -20,9 +28,7 @@ function unknownType(typeName, suggestedTypes, line, column) {
 
 describe('Validate: Known type names', () => {
   it('known type names are valid', () => {
-    expectPassesRule(
-      KnownTypeNames,
-      `
+    expectValid(`
       query Foo($var: String, $required: [String!]!) {
         user(id: 4) {
           pets { ... on Pet { name }, ...PetFields, ... { name } }
@@ -31,14 +37,11 @@ describe('Validate: Known type names', () => {
       fragment PetFields on Pet {
         name
       }
-    `,
-    );
+    `);
   });
 
   it('unknown type names are invalid', () => {
-    expectFailsRule(
-      KnownTypeNames,
-      `
+    expectErrors(`
       query Foo($var: JumbledUpLetters) {
         user(id: 4) {
           name
@@ -48,19 +51,15 @@ describe('Validate: Known type names', () => {
       fragment PetFields on Peettt {
         name
       }
-    `,
-      [
-        unknownType('JumbledUpLetters', [], 2, 23),
-        unknownType('Badger', [], 5, 25),
-        unknownType('Peettt', ['Pet'], 8, 29),
-      ],
-    );
+    `).to.deep.equal([
+      unknownType('JumbledUpLetters', [], 2, 23),
+      unknownType('Badger', [], 5, 25),
+      unknownType('Peettt', ['Pet'], 8, 29),
+    ]);
   });
 
   it('ignores type definitions', () => {
-    expectFailsRule(
-      KnownTypeNames,
-      `
+    expectErrors(`
       type NotInTheSchema {
         field: FooBar
       }
@@ -76,8 +75,6 @@ describe('Validate: Known type names', () => {
           id
         }
       }
-    `,
-      [unknownType('NotInTheSchema', [], 12, 23)],
-    );
+    `).to.deep.equal([unknownType('NotInTheSchema', [], 12, 23)]);
   });
 });

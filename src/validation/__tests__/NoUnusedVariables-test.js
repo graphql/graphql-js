@@ -8,11 +8,19 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { expectValidationErrors } from './harness';
 import {
   NoUnusedVariables,
   unusedVariableMessage,
 } from '../rules/NoUnusedVariables';
+
+function expectErrors(queryStr) {
+  return expectValidationErrors(NoUnusedVariables, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
 
 function unusedVar(varName, opName, line, column) {
   return {
@@ -23,20 +31,15 @@ function unusedVar(varName, opName, line, column) {
 
 describe('Validate: No unused variables', () => {
   it('uses all variables', () => {
-    expectPassesRule(
-      NoUnusedVariables,
-      `
+    expectValid(`
       query ($a: String, $b: String, $c: String) {
         field(a: $a, b: $b, c: $c)
       }
-    `,
-    );
+    `);
   });
 
   it('uses all variables deeply', () => {
-    expectPassesRule(
-      NoUnusedVariables,
-      `
+    expectValid(`
       query Foo($a: String, $b: String, $c: String) {
         field(a: $a) {
           field(b: $b) {
@@ -44,14 +47,11 @@ describe('Validate: No unused variables', () => {
           }
         }
       }
-    `,
-    );
+    `);
   });
 
   it('uses all variables deeply in inline fragments', () => {
-    expectPassesRule(
-      NoUnusedVariables,
-      `
+    expectValid(`
       query Foo($a: String, $b: String, $c: String) {
         ... on Type {
           field(a: $a) {
@@ -63,14 +63,11 @@ describe('Validate: No unused variables', () => {
           }
         }
       }
-    `,
-    );
+    `);
   });
 
   it('uses all variables in fragments', () => {
-    expectPassesRule(
-      NoUnusedVariables,
-      `
+    expectValid(`
       query Foo($a: String, $b: String, $c: String) {
         ...FragA
       }
@@ -87,14 +84,11 @@ describe('Validate: No unused variables', () => {
       fragment FragC on Type {
         field(c: $c)
       }
-    `,
-    );
+    `);
   });
 
   it('variable used by fragment in multiple operations', () => {
-    expectPassesRule(
-      NoUnusedVariables,
-      `
+    expectValid(`
       query Foo($a: String) {
         ...FragA
       }
@@ -107,14 +101,11 @@ describe('Validate: No unused variables', () => {
       fragment FragB on Type {
         field(b: $b)
       }
-    `,
-    );
+    `);
   });
 
   it('variable used by recursive fragment', () => {
-    expectPassesRule(
-      NoUnusedVariables,
-      `
+    expectValid(`
       query Foo($a: String) {
         ...FragA
       }
@@ -123,38 +114,30 @@ describe('Validate: No unused variables', () => {
           ...FragA
         }
       }
-    `,
-    );
+    `);
   });
 
   it('variable not used', () => {
-    expectFailsRule(
-      NoUnusedVariables,
-      `
+    expectErrors(`
       query ($a: String, $b: String, $c: String) {
         field(a: $a, b: $b)
       }
-    `,
-      [unusedVar('c', null, 2, 38)],
-    );
+    `).to.deep.equal([unusedVar('c', null, 2, 38)]);
   });
 
   it('multiple variables not used', () => {
-    expectFailsRule(
-      NoUnusedVariables,
-      `
+    expectErrors(`
       query Foo($a: String, $b: String, $c: String) {
         field(b: $b)
       }
-    `,
-      [unusedVar('a', 'Foo', 2, 17), unusedVar('c', 'Foo', 2, 41)],
-    );
+    `).to.deep.equal([
+      unusedVar('a', 'Foo', 2, 17),
+      unusedVar('c', 'Foo', 2, 41),
+    ]);
   });
 
   it('variable not used in fragments', () => {
-    expectFailsRule(
-      NoUnusedVariables,
-      `
+    expectErrors(`
       query Foo($a: String, $b: String, $c: String) {
         ...FragA
       }
@@ -171,15 +154,11 @@ describe('Validate: No unused variables', () => {
       fragment FragC on Type {
         field
       }
-    `,
-      [unusedVar('c', 'Foo', 2, 41)],
-    );
+    `).to.deep.equal([unusedVar('c', 'Foo', 2, 41)]);
   });
 
   it('multiple variables not used in fragments', () => {
-    expectFailsRule(
-      NoUnusedVariables,
-      `
+    expectErrors(`
       query Foo($a: String, $b: String, $c: String) {
         ...FragA
       }
@@ -196,15 +175,14 @@ describe('Validate: No unused variables', () => {
       fragment FragC on Type {
         field
       }
-    `,
-      [unusedVar('a', 'Foo', 2, 17), unusedVar('c', 'Foo', 2, 41)],
-    );
+    `).to.deep.equal([
+      unusedVar('a', 'Foo', 2, 17),
+      unusedVar('c', 'Foo', 2, 41),
+    ]);
   });
 
   it('variable not used by unreferenced fragment', () => {
-    expectFailsRule(
-      NoUnusedVariables,
-      `
+    expectErrors(`
       query Foo($b: String) {
         ...FragA
       }
@@ -214,15 +192,11 @@ describe('Validate: No unused variables', () => {
       fragment FragB on Type {
         field(b: $b)
       }
-    `,
-      [unusedVar('b', 'Foo', 2, 17)],
-    );
+    `).to.deep.equal([unusedVar('b', 'Foo', 2, 17)]);
   });
 
   it('variable not used by fragment used by other operation', () => {
-    expectFailsRule(
-      NoUnusedVariables,
-      `
+    expectErrors(`
       query Foo($b: String) {
         ...FragA
       }
@@ -235,8 +209,9 @@ describe('Validate: No unused variables', () => {
       fragment FragB on Type {
         field(b: $b)
       }
-    `,
-      [unusedVar('b', 'Foo', 2, 17), unusedVar('a', 'Bar', 5, 17)],
-    );
+    `).to.deep.equal([
+      unusedVar('b', 'Foo', 2, 17),
+      unusedVar('a', 'Bar', 5, 17),
+    ]);
   });
 });

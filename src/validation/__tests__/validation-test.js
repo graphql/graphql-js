@@ -14,54 +14,9 @@ import { validate, specifiedRules } from '../';
 import { parse } from '../../language';
 import { TypeInfo } from '../../utilities/TypeInfo';
 
-function expectValid(schema, queryString) {
-  const errors = validate(schema, parse(queryString));
-  expect(errors).to.deep.equal([], 'Should validate');
-}
-
 describe('Validate: Supports full validation', () => {
   it('validates queries', () => {
-    expectValid(
-      testSchema,
-      `
-      query {
-        catOrDog {
-          ... on Cat {
-            furColor
-          }
-          ... on Dog {
-            isHousetrained
-          }
-        }
-      }
-    `,
-    );
-  });
-
-  it('detects bad scalar parse', () => {
-    const doc = `
-      query {
-        invalidArg(arg: "bad value")
-      }
-    `;
-
-    const errors = validate(testSchema, parse(doc));
-    expect(errors).to.deep.equal([
-      {
-        locations: [{ line: 3, column: 25 }],
-        message:
-          'Expected type Invalid, found "bad value"; ' +
-          'Invalid scalar is always invalid: bad value',
-      },
-    ]);
-  });
-
-  // NOTE: experimental
-  it('validates using a custom TypeInfo', () => {
-    // This TypeInfo will never return a valid field.
-    const typeInfo = new TypeInfo(testSchema, () => null);
-
-    const ast = parse(`
+    const doc = parse(`
       query {
         catOrDog {
           ... on Cat {
@@ -74,8 +29,47 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    const errors = validate(testSchema, ast, specifiedRules, typeInfo);
+    const errors = validate(testSchema, doc);
+    expect(errors).to.deep.equal([]);
+  });
 
+  it('detects bad scalar parse', () => {
+    const doc = parse(`
+      query {
+        invalidArg(arg: "bad value")
+      }
+    `);
+
+    const errors = validate(testSchema, doc);
+    expect(errors).to.deep.equal([
+      {
+        locations: [{ line: 3, column: 25 }],
+        message:
+          'Expected type Invalid, found "bad value"; ' +
+          'Invalid scalar is always invalid: "bad value"',
+      },
+    ]);
+  });
+
+  // NOTE: experimental
+  it('validates using a custom TypeInfo', () => {
+    // This TypeInfo will never return a valid field.
+    const typeInfo = new TypeInfo(testSchema, () => null);
+
+    const doc = parse(`
+      query {
+        catOrDog {
+          ... on Cat {
+            furColor
+          }
+          ... on Dog {
+            isHousetrained
+          }
+        }
+      }
+    `);
+
+    const errors = validate(testSchema, doc, specifiedRules, typeInfo);
     const errorMessages = errors.map(err => err.message);
 
     expect(errorMessages).to.deep.equal([

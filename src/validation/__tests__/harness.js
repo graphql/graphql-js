@@ -4,12 +4,14 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
-import { parse } from '../../language';
+import inspect from '../../jsutils/inspect';
+import { parse, print } from '../../language';
 import { validate, validateSDL } from '../validate';
+import type { ValidationRule, SDLValidationRule } from '../ValidationContext';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -291,11 +293,11 @@ const InvalidScalar = new GraphQLScalarType({
   serialize(value) {
     return value;
   },
-  parseLiteral(node) {
-    throw new Error('Invalid scalar is always invalid: ' + node.value);
+  parseLiteral(valueNode) {
+    throw new Error(`Invalid scalar is always invalid: ${print(valueNode)}`);
   },
-  parseValue(node) {
-    throw new Error('Invalid scalar is always invalid: ' + node);
+  parseValue(value) {
+    throw new Error(`Invalid scalar is always invalid: ${inspect(value)}`);
   },
 });
 
@@ -383,35 +385,26 @@ export const testSchema = new GraphQLSchema({
   ],
 });
 
-function expectValid(schema, rule, queryString) {
-  const errors = validate(schema, parse(queryString), [rule]);
-  expect(errors).to.deep.equal([], 'Should validate');
+export function expectValidationErrorsWithSchema(
+  schema: GraphQLSchema,
+  rule: ValidationRule,
+  queryStr: string,
+) {
+  const doc = parse(queryStr);
+  const errors = validate(schema, doc, [rule]);
+  return expect(errors);
 }
 
-function expectInvalid(schema, rule, queryString, expectedErrors) {
-  const errors = validate(schema, parse(queryString), [rule]);
-  expect(errors).to.have.length.of.at.least(1, 'Should not validate');
-  expect(errors).to.deep.equal(expectedErrors);
-  return errors;
+export function expectValidationErrors(rule: ValidationRule, queryStr: string) {
+  return expectValidationErrorsWithSchema(testSchema, rule, queryStr);
 }
 
-export function expectPassesRule(rule, queryString) {
-  return expectValid(testSchema, rule, queryString);
-}
-
-export function expectFailsRule(rule, queryString, errors) {
-  return expectInvalid(testSchema, rule, queryString, errors);
-}
-
-export function expectPassesRuleWithSchema(schema, rule, queryString) {
-  return expectValid(schema, rule, queryString);
-}
-
-export function expectFailsRuleWithSchema(schema, rule, queryString, errors) {
-  return expectInvalid(schema, rule, queryString, errors);
-}
-
-export function expectSDLErrorsFromRule(rule, sdlString, schema) {
-  const errors = validateSDL(parse(sdlString), schema, [rule]);
+export function expectSDLValidationErrors(
+  schema: ?GraphQLSchema,
+  rule: SDLValidationRule,
+  sdlStr: string,
+) {
+  const doc = parse(sdlStr);
+  const errors = validateSDL(doc, schema, [rule]);
   return expect(errors);
 }

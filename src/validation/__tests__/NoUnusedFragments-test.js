@@ -8,11 +8,19 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { expectValidationErrors } from './harness';
 import {
   NoUnusedFragments,
   unusedFragMessage,
 } from '../rules/NoUnusedFragments';
+
+function expectErrors(queryStr) {
+  return expectValidationErrors(NoUnusedFragments, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
 
 function unusedFrag(fragName, line, column) {
   return {
@@ -23,9 +31,7 @@ function unusedFrag(fragName, line, column) {
 
 describe('Validate: No unused fragments', () => {
   it('all fragment names are used', () => {
-    expectPassesRule(
-      NoUnusedFragments,
-      `
+    expectValid(`
       {
         human(id: 4) {
           ...HumanFields1
@@ -44,14 +50,11 @@ describe('Validate: No unused fragments', () => {
       fragment HumanFields3 on Human {
         name
       }
-    `,
-    );
+    `);
   });
 
   it('all fragment names are used by multiple operations', () => {
-    expectPassesRule(
-      NoUnusedFragments,
-      `
+    expectValid(`
       query Foo {
         human(id: 4) {
           ...HumanFields1
@@ -72,14 +75,11 @@ describe('Validate: No unused fragments', () => {
       fragment HumanFields3 on Human {
         name
       }
-    `,
-    );
+    `);
   });
 
   it('contains unknown fragments', () => {
-    expectFailsRule(
-      NoUnusedFragments,
-      `
+    expectErrors(`
       query Foo {
         human(id: 4) {
           ...HumanFields1
@@ -106,15 +106,14 @@ describe('Validate: No unused fragments', () => {
       fragment Unused2 on Human {
         name
       }
-    `,
-      [unusedFrag('Unused1', 22, 7), unusedFrag('Unused2', 25, 7)],
-    );
+    `).to.deep.equal([
+      unusedFrag('Unused1', 22, 7),
+      unusedFrag('Unused2', 25, 7),
+    ]);
   });
 
   it('contains unknown fragments with ref cycle', () => {
-    expectFailsRule(
-      NoUnusedFragments,
-      `
+    expectErrors(`
       query Foo {
         human(id: 4) {
           ...HumanFields1
@@ -143,15 +142,14 @@ describe('Validate: No unused fragments', () => {
         name
         ...Unused1
       }
-    `,
-      [unusedFrag('Unused1', 22, 7), unusedFrag('Unused2', 26, 7)],
-    );
+    `).to.deep.equal([
+      unusedFrag('Unused1', 22, 7),
+      unusedFrag('Unused2', 26, 7),
+    ]);
   });
 
   it('contains unknown and undef fragments', () => {
-    expectFailsRule(
-      NoUnusedFragments,
-      `
+    expectErrors(`
       query Foo {
         human(id: 4) {
           ...bar
@@ -160,8 +158,6 @@ describe('Validate: No unused fragments', () => {
       fragment foo on Human {
         name
       }
-    `,
-      [unusedFrag('foo', 7, 7)],
-    );
+    `).to.deep.equal([unusedFrag('foo', 7, 7)]);
   });
 });

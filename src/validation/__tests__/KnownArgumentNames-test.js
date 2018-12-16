@@ -9,11 +9,7 @@
 
 import { describe, it } from 'mocha';
 import { buildSchema } from '../../utilities';
-import {
-  expectPassesRule,
-  expectFailsRule,
-  expectSDLErrorsFromRule,
-} from './harness';
+import { expectValidationErrors, expectSDLValidationErrors } from './harness';
 import {
   KnownArgumentNames,
   KnownArgumentNamesOnDirectives,
@@ -21,10 +17,25 @@ import {
   unknownDirectiveArgMessage,
 } from '../rules/KnownArgumentNames';
 
-const expectSDLErrors = expectSDLErrorsFromRule.bind(
-  undefined,
-  KnownArgumentNamesOnDirectives,
-);
+function expectErrors(queryStr) {
+  return expectValidationErrors(KnownArgumentNames, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
+
+function expectSDLErrors(sdlStr, schema) {
+  return expectSDLValidationErrors(
+    schema,
+    KnownArgumentNamesOnDirectives,
+    sdlStr,
+  );
+}
+
+function expectValidSDL(sdlStr) {
+  expectSDLErrors(sdlStr).to.deep.equal([]);
+}
 
 function unknownArg(argName, fieldName, typeName, suggestedArgs, line, column) {
   return {
@@ -48,64 +59,47 @@ function unknownDirectiveArg(
 
 describe('Validate: Known argument names', () => {
   it('single arg is known', () => {
-    expectPassesRule(
-      KnownArgumentNames,
-      `
+    expectValid(`
       fragment argOnRequiredArg on Dog {
         doesKnowCommand(dogCommand: SIT)
       }
-    `,
-    );
+    `);
   });
 
   it('multiple args are known', () => {
-    expectPassesRule(
-      KnownArgumentNames,
-      `
+    expectValid(`
       fragment multipleArgs on ComplicatedArgs {
         multipleReqs(req1: 1, req2: 2)
       }
-    `,
-    );
+    `);
   });
 
   it('ignores args of unknown fields', () => {
-    expectPassesRule(
-      KnownArgumentNames,
-      `
+    expectValid(`
       fragment argOnUnknownField on Dog {
         unknownField(unknownArg: SIT)
       }
-    `,
-    );
+    `);
   });
 
   it('multiple args in reverse order are known', () => {
-    expectPassesRule(
-      KnownArgumentNames,
-      `
+    expectValid(`
       fragment multipleArgsReverseOrder on ComplicatedArgs {
         multipleReqs(req2: 2, req1: 1)
       }
-    `,
-    );
+    `);
   });
 
   it('no args on optional arg', () => {
-    expectPassesRule(
-      KnownArgumentNames,
-      `
+    expectValid(`
       fragment noArgOnOptionalArg on Dog {
         isHousetrained
       }
-    `,
-    );
+    `);
   });
 
   it('args are known deeply', () => {
-    expectPassesRule(
-      KnownArgumentNames,
-      `
+    expectValid(`
       {
         dog {
           doesKnowCommand(dogCommand: SIT)
@@ -118,97 +112,66 @@ describe('Validate: Known argument names', () => {
           }
         }
       }
-    `,
-    );
+    `);
   });
 
   it('directive args are known', () => {
-    expectPassesRule(
-      KnownArgumentNames,
-      `
+    expectValid(`
       {
         dog @skip(if: true)
       }
-    `,
-    );
+    `);
   });
 
   it('field args are invalid', () => {
-    expectFailsRule(
-      KnownArgumentNames,
-      `
+    expectErrors(`
       {
         dog @skip(unless: true)
       }
-    `,
-      [unknownDirectiveArg('unless', 'skip', [], 3, 19)],
-    );
+    `).to.deep.equal([unknownDirectiveArg('unless', 'skip', [], 3, 19)]);
   });
 
   it('misspelled directive args are reported', () => {
-    expectFailsRule(
-      KnownArgumentNames,
-      `
+    expectErrors(`
       {
         dog @skip(iff: true)
       }
-    `,
-      [unknownDirectiveArg('iff', 'skip', ['if'], 3, 19)],
-    );
+    `).to.deep.equal([unknownDirectiveArg('iff', 'skip', ['if'], 3, 19)]);
   });
 
   it('invalid arg name', () => {
-    expectFailsRule(
-      KnownArgumentNames,
-      `
+    expectErrors(`
       fragment invalidArgName on Dog {
         doesKnowCommand(unknown: true)
       }
-    `,
-      [unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 25)],
-    );
+    `).to.deep.equal([
+      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 25),
+    ]);
   });
 
   it('misspelled arg name is reported', () => {
-    expectFailsRule(
-      KnownArgumentNames,
-      `
+    expectErrors(`
       fragment invalidArgName on Dog {
         doesKnowCommand(dogcommand: true)
       }
-    `,
-      [
-        unknownArg(
-          'dogcommand',
-          'doesKnowCommand',
-          'Dog',
-          ['dogCommand'],
-          3,
-          25,
-        ),
-      ],
-    );
+    `).to.deep.equal([
+      unknownArg('dogcommand', 'doesKnowCommand', 'Dog', ['dogCommand'], 3, 25),
+    ]);
   });
 
   it('unknown args amongst known args', () => {
-    expectFailsRule(
-      KnownArgumentNames,
-      `
+    expectErrors(`
       fragment oneGoodArgOneInvalidArg on Dog {
         doesKnowCommand(whoknows: 1, dogCommand: SIT, unknown: true)
       }
-    `,
-      [
-        unknownArg('whoknows', 'doesKnowCommand', 'Dog', [], 3, 25),
-        unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 55),
-      ],
-    );
+    `).to.deep.equal([
+      unknownArg('whoknows', 'doesKnowCommand', 'Dog', [], 3, 25),
+      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 3, 55),
+    ]);
   });
 
   it('unknown args deeply', () => {
-    expectFailsRule(
-      KnownArgumentNames,
-      `
+    expectErrors(`
       {
         dog {
           doesKnowCommand(unknown: true)
@@ -221,23 +184,21 @@ describe('Validate: Known argument names', () => {
           }
         }
       }
-    `,
-      [
-        unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 4, 27),
-        unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 9, 31),
-      ],
-    );
+    `).to.deep.equal([
+      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 4, 27),
+      unknownArg('unknown', 'doesKnowCommand', 'Dog', [], 9, 31),
+    ]);
   });
 
   describe('within SDL', () => {
     it('known arg on directive defined inside SDL', () => {
-      expectSDLErrors(`
+      expectValidSDL(`
         type Query {
           foo: String @test(arg: "")
         }
 
         directive @test(arg: String) on FIELD_DEFINITION
-      `).to.deep.equal([]);
+      `);
     });
 
     it('unknown arg on directive defined inside SDL', () => {

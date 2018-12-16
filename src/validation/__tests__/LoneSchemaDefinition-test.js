@@ -8,7 +8,7 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectSDLErrorsFromRule } from './harness';
+import { expectSDLValidationErrors } from './harness';
 import {
   LoneSchemaDefinition,
   schemaDefinitionNotAloneMessage,
@@ -16,10 +16,13 @@ import {
 } from '../rules/LoneSchemaDefinition';
 import { buildSchema } from '../../utilities';
 
-const expectSDLErrors = expectSDLErrorsFromRule.bind(
-  undefined,
-  LoneSchemaDefinition,
-);
+function expectSDLErrors(sdlStr, schema) {
+  return expectSDLValidationErrors(schema, LoneSchemaDefinition, sdlStr);
+}
+
+function expectValidSDL(sdlStr, schema) {
+  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+}
 
 function schemaDefinitionNotAlone(line, column) {
   return {
@@ -37,15 +40,15 @@ function canNotDefineSchemaWithinExtension(line, column) {
 
 describe('Validate: Schema definition should be alone', () => {
   it('no schema', () => {
-    expectSDLErrors(`
+    expectValidSDL(`
       type Query {
         foo: String
       }
-    `).to.deep.equal([]);
+    `);
   });
 
   it('one schema definition', () => {
-    expectSDLErrors(`
+    expectValidSDL(`
       schema {
         query: Foo
       }
@@ -53,7 +56,7 @@ describe('Validate: Schema definition should be alone', () => {
       type Foo {
         foo: String
       }
-    `).to.deep.equal([]);
+    `);
   });
 
   it('multiple schema definitions', () => {
@@ -149,13 +152,13 @@ describe('Validate: Schema definition should be alone', () => {
       }
     `);
 
-    expectSDLErrors(
+    expectValidSDL(
       `
         extend schema {
           mutation: Foo
         }
       `,
       schema,
-    ).to.deep.equal([]);
+    );
   });
 });

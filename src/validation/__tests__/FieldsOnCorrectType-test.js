@@ -9,11 +9,19 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { expectValidationErrors } from './harness';
 import {
   FieldsOnCorrectType,
   undefinedFieldMessage,
 } from '../rules/FieldsOnCorrectType';
+
+function expectErrors(queryStr) {
+  return expectValidationErrors(FieldsOnCorrectType, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
 
 function undefinedField(
   field,
@@ -36,231 +44,186 @@ function undefinedField(
 
 describe('Validate: Fields on correct type', () => {
   it('Object field selection', () => {
-    expectPassesRule(
-      FieldsOnCorrectType,
-      `
+    expectValid(`
       fragment objectFieldSelection on Dog {
         __typename
         name
       }
-    `,
-    );
+    `);
   });
 
   it('Aliased object field selection', () => {
-    expectPassesRule(
-      FieldsOnCorrectType,
-      `
+    expectValid(`
       fragment aliasedObjectFieldSelection on Dog {
         tn : __typename
         otherName : name
       }
-    `,
-    );
+    `);
   });
 
   it('Interface field selection', () => {
-    expectPassesRule(
-      FieldsOnCorrectType,
-      `
+    expectValid(`
       fragment interfaceFieldSelection on Pet {
         __typename
         name
       }
-    `,
-    );
+    `);
   });
 
   it('Aliased interface field selection', () => {
-    expectPassesRule(
-      FieldsOnCorrectType,
-      `
+    expectValid(`
       fragment interfaceFieldSelection on Pet {
         otherName : name
       }
-    `,
-    );
+    `);
   });
 
   it('Lying alias selection', () => {
-    expectPassesRule(
-      FieldsOnCorrectType,
-      `
+    expectValid(`
       fragment lyingAliasSelection on Dog {
         name : nickname
       }
-    `,
-    );
+    `);
   });
 
   it('Ignores fields on unknown type', () => {
-    expectPassesRule(
-      FieldsOnCorrectType,
-      `
+    expectValid(`
       fragment unknownSelection on UnknownType {
         unknownField
       }
-    `,
-    );
+    `);
   });
 
   it('reports errors when type is known again', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment typeKnownAgain on Pet {
         unknown_pet_field {
           ... on Cat {
             unknown_cat_field
           }
         }
-      }`,
-      [
-        undefinedField('unknown_pet_field', 'Pet', [], [], 3, 9),
-        undefinedField('unknown_cat_field', 'Cat', [], [], 5, 13),
-      ],
-    );
+      }
+    `).to.deep.equal([
+      undefinedField('unknown_pet_field', 'Pet', [], [], 3, 9),
+      undefinedField('unknown_cat_field', 'Cat', [], [], 5, 13),
+    ]);
   });
 
   it('Field not defined on fragment', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment fieldNotDefined on Dog {
         meowVolume
-      }`,
-      [undefinedField('meowVolume', 'Dog', [], ['barkVolume'], 3, 9)],
-    );
+      }
+    `).to.deep.equal([
+      undefinedField('meowVolume', 'Dog', [], ['barkVolume'], 3, 9),
+    ]);
   });
 
   it('Ignores deeply unknown field', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment deepFieldNotDefined on Dog {
         unknown_field {
           deeper_unknown_field
         }
-      }`,
-      [undefinedField('unknown_field', 'Dog', [], [], 3, 9)],
-    );
+      }
+    `).to.deep.equal([undefinedField('unknown_field', 'Dog', [], [], 3, 9)]);
   });
 
   it('Sub-field not defined', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment subFieldNotDefined on Human {
         pets {
           unknown_field
         }
-      }`,
-      [undefinedField('unknown_field', 'Pet', [], [], 4, 11)],
-    );
+      }
+    `).to.deep.equal([undefinedField('unknown_field', 'Pet', [], [], 4, 11)]);
   });
 
   it('Field not defined on inline fragment', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment fieldNotDefined on Pet {
         ... on Dog {
           meowVolume
         }
-      }`,
-      [undefinedField('meowVolume', 'Dog', [], ['barkVolume'], 4, 11)],
-    );
+      }
+    `).to.deep.equal([
+      undefinedField('meowVolume', 'Dog', [], ['barkVolume'], 4, 11),
+    ]);
   });
 
   it('Aliased field target not defined', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment aliasedFieldTargetNotDefined on Dog {
         volume : mooVolume
-      }`,
-      [undefinedField('mooVolume', 'Dog', [], ['barkVolume'], 3, 9)],
-    );
+      }
+    `).to.deep.equal([
+      undefinedField('mooVolume', 'Dog', [], ['barkVolume'], 3, 9),
+    ]);
   });
 
   it('Aliased lying field target not defined', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment aliasedLyingFieldTargetNotDefined on Dog {
         barkVolume : kawVolume
-      }`,
-      [undefinedField('kawVolume', 'Dog', [], ['barkVolume'], 3, 9)],
-    );
+      }
+    `).to.deep.equal([
+      undefinedField('kawVolume', 'Dog', [], ['barkVolume'], 3, 9),
+    ]);
   });
 
   it('Not defined on interface', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment notDefinedOnInterface on Pet {
         tailLength
-      }`,
-      [undefinedField('tailLength', 'Pet', [], [], 3, 9)],
-    );
+      }
+    `).to.deep.equal([undefinedField('tailLength', 'Pet', [], [], 3, 9)]);
   });
 
   it('Defined on implementors but not on interface', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment definedOnImplementorsButNotInterface on Pet {
         nickname
-      }`,
-      [undefinedField('nickname', 'Pet', ['Dog', 'Cat'], ['name'], 3, 9)],
-    );
+      }
+    `).to.deep.equal([
+      undefinedField('nickname', 'Pet', ['Dog', 'Cat'], ['name'], 3, 9),
+    ]);
   });
 
   it('Meta field selection on union', () => {
-    expectPassesRule(
-      FieldsOnCorrectType,
-      `
+    expectValid(`
       fragment directFieldSelectionOnUnion on CatOrDog {
         __typename
-      }`,
-    );
+      }
+    `);
   });
 
   it('Direct field selection on union', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment directFieldSelectionOnUnion on CatOrDog {
         directField
-      }`,
-      [undefinedField('directField', 'CatOrDog', [], [], 3, 9)],
-    );
+      }
+    `).to.deep.equal([undefinedField('directField', 'CatOrDog', [], [], 3, 9)]);
   });
 
   it('Defined on implementors queried on union', () => {
-    expectFailsRule(
-      FieldsOnCorrectType,
-      `
+    expectErrors(`
       fragment definedOnImplementorsQueriedOnUnion on CatOrDog {
         name
-      }`,
-      [
-        undefinedField(
-          'name',
-          'CatOrDog',
-          ['Being', 'Pet', 'Canine', 'Dog', 'Cat'],
-          [],
-          3,
-          9,
-        ),
-      ],
-    );
+      }
+    `).to.deep.equal([
+      undefinedField(
+        'name',
+        'CatOrDog',
+        ['Being', 'Pet', 'Canine', 'Dog', 'Cat'],
+        [],
+        3,
+        9,
+      ),
+    ]);
   });
 
   it('valid field in inline fragment', () => {
-    expectPassesRule(
-      FieldsOnCorrectType,
-      `
+    expectValid(`
       fragment objectFieldSelection on Pet {
         ... on Dog {
           name
@@ -269,8 +232,7 @@ describe('Validate: Fields on correct type', () => {
           name
         }
       }
-    `,
-    );
+    `);
   });
 
   describe('Fields on correct type error message', () => {

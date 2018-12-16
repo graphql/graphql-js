@@ -8,12 +8,20 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { expectValidationErrors } from './harness';
 import {
   ScalarLeafs,
   noSubselectionAllowedMessage,
   requiredSubselectionMessage,
 } from '../rules/ScalarLeafs';
+
+function expectErrors(queryStr) {
+  return expectValidationErrors(ScalarLeafs, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
 
 function noScalarSubselection(field, type, line, column) {
   return {
@@ -31,108 +39,78 @@ function missingObjSubselection(field, type, line, column) {
 
 describe('Validate: Scalar leafs', () => {
   it('valid scalar selection', () => {
-    expectPassesRule(
-      ScalarLeafs,
-      `
+    expectValid(`
       fragment scalarSelection on Dog {
         barks
       }
-    `,
-    );
+    `);
   });
 
   it('object type missing selection', () => {
-    expectFailsRule(
-      ScalarLeafs,
-      `
+    expectErrors(`
       query directQueryOnObjectWithoutSubFields {
         human
       }
-    `,
-      [missingObjSubselection('human', 'Human', 3, 9)],
-    );
+    `).to.deep.equal([missingObjSubselection('human', 'Human', 3, 9)]);
   });
 
   it('interface type missing selection', () => {
-    expectFailsRule(
-      ScalarLeafs,
-      `
+    expectErrors(`
       {
         human { pets }
       }
-    `,
-      [missingObjSubselection('pets', '[Pet]', 3, 17)],
-    );
+    `).to.deep.equal([missingObjSubselection('pets', '[Pet]', 3, 17)]);
   });
 
   it('valid scalar selection with args', () => {
-    expectPassesRule(
-      ScalarLeafs,
-      `
+    expectValid(`
       fragment scalarSelectionWithArgs on Dog {
         doesKnowCommand(dogCommand: SIT)
       }
-    `,
-    );
+    `);
   });
 
   it('scalar selection not allowed on Boolean', () => {
-    expectFailsRule(
-      ScalarLeafs,
-      `
+    expectErrors(`
       fragment scalarSelectionsNotAllowedOnBoolean on Dog {
         barks { sinceWhen }
       }
-    `,
-      [noScalarSubselection('barks', 'Boolean', 3, 15)],
-    );
+    `).to.deep.equal([noScalarSubselection('barks', 'Boolean', 3, 15)]);
   });
 
   it('scalar selection not allowed on Enum', () => {
-    expectFailsRule(
-      ScalarLeafs,
-      `
+    expectErrors(`
       fragment scalarSelectionsNotAllowedOnEnum on Cat {
         furColor { inHexdec }
       }
-    `,
-      [noScalarSubselection('furColor', 'FurColor', 3, 18)],
-    );
+    `).to.deep.equal([noScalarSubselection('furColor', 'FurColor', 3, 18)]);
   });
 
   it('scalar selection not allowed with args', () => {
-    expectFailsRule(
-      ScalarLeafs,
-      `
+    expectErrors(`
       fragment scalarSelectionsNotAllowedWithArgs on Dog {
         doesKnowCommand(dogCommand: SIT) { sinceWhen }
       }
-    `,
-      [noScalarSubselection('doesKnowCommand', 'Boolean', 3, 42)],
-    );
+    `).to.deep.equal([
+      noScalarSubselection('doesKnowCommand', 'Boolean', 3, 42),
+    ]);
   });
 
   it('Scalar selection not allowed with directives', () => {
-    expectFailsRule(
-      ScalarLeafs,
-      `
+    expectErrors(`
       fragment scalarSelectionsNotAllowedWithDirectives on Dog {
         name @include(if: true) { isAlsoHumanName }
       }
-    `,
-      [noScalarSubselection('name', 'String', 3, 33)],
-    );
+    `).to.deep.equal([noScalarSubselection('name', 'String', 3, 33)]);
   });
 
   it('Scalar selection not allowed with directives and args', () => {
-    expectFailsRule(
-      ScalarLeafs,
-      `
+    expectErrors(`
       fragment scalarSelectionsNotAllowedWithDirectivesAndArgs on Dog {
         doesKnowCommand(dogCommand: SIT) @include(if: true) { sinceWhen }
       }
-    `,
-      [noScalarSubselection('doesKnowCommand', 'Boolean', 3, 61)],
-    );
+    `).to.deep.equal([
+      noScalarSubselection('doesKnowCommand', 'Boolean', 3, 61),
+    ]);
   });
 });

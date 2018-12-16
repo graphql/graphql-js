@@ -8,11 +8,19 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { expectValidationErrors } from './harness';
 import {
   ExecutableDefinitions,
   nonExecutableDefinitionMessage,
 } from '../rules/ExecutableDefinitions';
+
+function expectErrors(queryStr) {
+  return expectValidationErrors(ExecutableDefinitions, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
 
 function nonExecutableDefinition(defName, line, column) {
   return {
@@ -23,22 +31,17 @@ function nonExecutableDefinition(defName, line, column) {
 
 describe('Validate: Executable definitions', () => {
   it('with only operation', () => {
-    expectPassesRule(
-      ExecutableDefinitions,
-      `
+    expectValid(`
       query Foo {
         dog {
           name
         }
       }
-    `,
-    );
+    `);
   });
 
   it('with operation and fragment', () => {
-    expectPassesRule(
-      ExecutableDefinitions,
-      `
+    expectValid(`
       query Foo {
         dog {
           name
@@ -49,14 +52,11 @@ describe('Validate: Executable definitions', () => {
       fragment Frag on Dog {
         name
       }
-    `,
-    );
+    `);
   });
 
   it('with type definition', () => {
-    expectFailsRule(
-      ExecutableDefinitions,
-      `
+    expectErrors(`
       query Foo {
         dog {
           name
@@ -70,18 +70,14 @@ describe('Validate: Executable definitions', () => {
       extend type Dog {
         color: String
       }
-    `,
-      [
-        nonExecutableDefinition('Cow', 8, 7),
-        nonExecutableDefinition('Dog', 12, 7),
-      ],
-    );
+    `).to.deep.equal([
+      nonExecutableDefinition('Cow', 8, 7),
+      nonExecutableDefinition('Dog', 12, 7),
+    ]);
   });
 
   it('with schema definition', () => {
-    expectFailsRule(
-      ExecutableDefinitions,
-      `
+    expectErrors(`
       schema {
         query: Query
       }
@@ -91,12 +87,10 @@ describe('Validate: Executable definitions', () => {
       }
 
       extend schema @directive
-    `,
-      [
-        nonExecutableDefinition('schema', 2, 7),
-        nonExecutableDefinition('Query', 6, 7),
-        nonExecutableDefinition('schema', 10, 7),
-      ],
-    );
+    `).to.deep.equal([
+      nonExecutableDefinition('schema', 2, 7),
+      nonExecutableDefinition('Query', 6, 7),
+      nonExecutableDefinition('schema', 10, 7),
+    ]);
   });
 });

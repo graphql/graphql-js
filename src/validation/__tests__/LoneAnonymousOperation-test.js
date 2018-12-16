@@ -8,13 +8,21 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { expectValidationErrors } from './harness';
 import {
   LoneAnonymousOperation,
   anonOperationNotAloneMessage,
 } from '../rules/LoneAnonymousOperation';
 
-function anonNotAlone(line, column) {
+function expectErrors(queryStr) {
+  return expectValidationErrors(LoneAnonymousOperation, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
+
+function anonOperationNotAlone(line, column) {
   return {
     message: anonOperationNotAloneMessage(),
     locations: [{ line, column }],
@@ -23,31 +31,23 @@ function anonNotAlone(line, column) {
 
 describe('Validate: Anonymous operation must be alone', () => {
   it('no operations', () => {
-    expectPassesRule(
-      LoneAnonymousOperation,
-      `
+    expectValid(`
       fragment fragA on Type {
         field
       }
-    `,
-    );
+    `);
   });
 
   it('one anon operation', () => {
-    expectPassesRule(
-      LoneAnonymousOperation,
-      `
+    expectValid(`
       {
         field
       }
-    `,
-    );
+    `);
   });
 
   it('multiple named operations', () => {
-    expectPassesRule(
-      LoneAnonymousOperation,
-      `
+    expectValid(`
       query Foo {
         field
       }
@@ -55,66 +55,53 @@ describe('Validate: Anonymous operation must be alone', () => {
       query Bar {
         field
       }
-    `,
-    );
+    `);
   });
 
   it('anon operation with fragment', () => {
-    expectPassesRule(
-      LoneAnonymousOperation,
-      `
+    expectValid(`
       {
         ...Foo
       }
       fragment Foo on Type {
         field
       }
-    `,
-    );
+    `);
   });
 
   it('multiple anon operations', () => {
-    expectFailsRule(
-      LoneAnonymousOperation,
-      `
+    expectErrors(`
       {
         fieldA
       }
       {
         fieldB
       }
-    `,
-      [anonNotAlone(2, 7), anonNotAlone(5, 7)],
-    );
+    `).to.deep.equal([
+      anonOperationNotAlone(2, 7),
+      anonOperationNotAlone(5, 7),
+    ]);
   });
 
   it('anon operation with a mutation', () => {
-    expectFailsRule(
-      LoneAnonymousOperation,
-      `
+    expectErrors(`
       {
         fieldA
       }
       mutation Foo {
         fieldB
       }
-    `,
-      [anonNotAlone(2, 7)],
-    );
+    `).to.deep.equal([anonOperationNotAlone(2, 7)]);
   });
 
   it('anon operation with a subscription', () => {
-    expectFailsRule(
-      LoneAnonymousOperation,
-      `
+    expectErrors(`
       {
         fieldA
       }
       subscription Foo {
         fieldB
       }
-    `,
-      [anonNotAlone(2, 7)],
-    );
+    `).to.deep.equal([anonOperationNotAlone(2, 7)]);
   });
 });
