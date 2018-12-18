@@ -988,23 +988,4 @@ describe('Failures', () => {
       'Specified query type "Foo" not found in document.',
     );
   });
-
-  it('Forbids duplicate type definitions', () => {
-    const sdl = `
-      schema {
-        query: Repeated
-      }
-
-      type Repeated {
-        id: Int
-      }
-
-      type Repeated {
-        id: String
-      }
-    `;
-    expect(() => buildSchema(sdl)).to.throw(
-      'Type "Repeated" was defined more than once.',
-    );
-  });
 });

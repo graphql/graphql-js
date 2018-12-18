@@ -138,9 +138,6 @@ export function buildASTSchema(
       schemaDef = def;
     } else if (isTypeDefinitionNode(def)) {
       const typeName = def.name.value;
-      if (nodeMap[typeName]) {
-        throw new Error(`Type "${typeName}" was defined more than once.`);
-      }
       typeDefs.push(def);
       nodeMap[typeName] = def;
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
