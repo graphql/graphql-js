@@ -1109,52 +1109,6 @@ describe('extendSchema', () => {
     );
   });
 
-  it('does not allow replacing an existing type', () => {
-    const existingTypeError = type =>
-      `Type "${type}" already exists in the schema.` +
-      ' It cannot also be defined in this type definition.';
-
-    const typeSDL = `
-      type Bar
-    `;
-    expect(() => extendTestSchema(typeSDL)).to.throw(existingTypeError('Bar'));
-
-    const scalarSDL = `
-      scalar SomeScalar
-    `;
-    expect(() => extendTestSchema(scalarSDL)).to.throw(
-      existingTypeError('SomeScalar'),
-    );
-
-    const interfaceSDL = `
-      interface SomeInterface
-    `;
-    expect(() => extendTestSchema(interfaceSDL)).to.throw(
-      existingTypeError('SomeInterface'),
-    );
-
-    const enumSDL = `
-      enum SomeEnum
-    `;
-    expect(() => extendTestSchema(enumSDL)).to.throw(
-      existingTypeError('SomeEnum'),
-    );
-
-    const unionSDL = `
-      union SomeUnion
-    `;
-    expect(() => extendTestSchema(unionSDL)).to.throw(
-      existingTypeError('SomeUnion'),
-    );
-
-    const inputSDL = `
-      input SomeInput
-    `;
-    expect(() => extendTestSchema(inputSDL)).to.throw(
-      existingTypeError('SomeInput'),
-    );
-  });
-
   it('does not allow replacing an existing field', () => {
     const existingFieldError = (type, field) =>
       `Field "${type}.${field}" already exists in the schema.` +

@@ -135,16 +135,7 @@ export function extendSchema(
     } else if (def.kind === Kind.SCHEMA_EXTENSION) {
       schemaExtensions.push(def);
     } else if (isTypeDefinitionNode(def)) {
-      // Sanity check that none of the defined types conflict with the
-      // schema's existing types.
       const typeName = def.name.value;
-      if (schema.getType(typeName)) {
-        throw new GraphQLError(
-          `Type "${typeName}" already exists in the schema. It cannot also ` +
-            'be defined in this type definition.',
-          [def],
-        );
-      }
       typeDefinitionMap[typeName] = def;
     } else if (isTypeExtensionNode(def)) {
       // Sanity check that this type extension exists within the
