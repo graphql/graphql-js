@@ -156,15 +156,6 @@ export function extendSchema(
         ? existingTypeExtensions.concat([def])
         : [def];
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      const directiveName = def.name.value;
-      const existingDirective = schema.getDirective(directiveName);
-      if (existingDirective) {
-        throw new GraphQLError(
-          `Directive "${directiveName}" already exists in the schema. It ` +
-            'cannot be redefined.',
-          [def],
-        );
-      }
       directiveDefinitions.push(def);
     }
   }
