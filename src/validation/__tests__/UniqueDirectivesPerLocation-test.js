@@ -8,21 +8,24 @@
  */
 
 import { describe, it } from 'mocha';
-import {
-  expectPassesRule,
-  expectFailsRule,
-  expectSDLErrorsFromRule,
-} from './harness';
+import { expectValidationErrors, expectSDLValidationErrors } from './harness';
 
 import {
   UniqueDirectivesPerLocation,
   duplicateDirectiveMessage,
 } from '../rules/UniqueDirectivesPerLocation';
 
-const expectSDLErrors = expectSDLErrorsFromRule.bind(
-  undefined,
-  UniqueDirectivesPerLocation,
-);
+function expectErrors(queryStr) {
+  return expectValidationErrors(UniqueDirectivesPerLocation, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
+
+function expectSDLErrors(sdlStr, schema) {
+  return expectSDLValidationErrors(schema, UniqueDirectivesPerLocation, sdlStr);
+}
 
 function duplicateDirective(directiveName, l1, c1, l2, c2) {
   return {
@@ -33,116 +36,85 @@ function duplicateDirective(directiveName, l1, c1, l2, c2) {
 
 describe('Validate: Directives Are Unique Per Location', () => {
   it('no directives', () => {
-    expectPassesRule(
-      UniqueDirectivesPerLocation,
-      `
+    expectValid(`
       fragment Test on Type {
         field
       }
-    `,
-    );
+    `);
   });
 
   it('unique directives in different locations', () => {
-    expectPassesRule(
-      UniqueDirectivesPerLocation,
-      `
+    expectValid(`
       fragment Test on Type @directiveA {
         field @directiveB
       }
-    `,
-    );
+    `);
   });
 
   it('unique directives in same locations', () => {
-    expectPassesRule(
-      UniqueDirectivesPerLocation,
-      `
+    expectValid(`
       fragment Test on Type @directiveA @directiveB {
         field @directiveA @directiveB
       }
-    `,
-    );
+    `);
   });
 
   it('same directives in different locations', () => {
-    expectPassesRule(
-      UniqueDirectivesPerLocation,
-      `
+    expectValid(`
       fragment Test on Type @directiveA {
         field @directiveA
       }
-    `,
-    );
+    `);
   });
 
   it('same directives in similar locations', () => {
-    expectPassesRule(
-      UniqueDirectivesPerLocation,
-      `
+    expectValid(`
       fragment Test on Type {
         field @directive
         field @directive
       }
-    `,
-    );
+    `);
   });
 
   it('duplicate directives in one location', () => {
-    expectFailsRule(
-      UniqueDirectivesPerLocation,
-      `
+    expectErrors(`
       fragment Test on Type {
         field @directive @directive
       }
-    `,
-      [duplicateDirective('directive', 3, 15, 3, 26)],
-    );
+    `).to.deep.equal([duplicateDirective('directive', 3, 15, 3, 26)]);
   });
 
   it('many duplicate directives in one location', () => {
-    expectFailsRule(
-      UniqueDirectivesPerLocation,
-      `
+    expectErrors(`
       fragment Test on Type {
         field @directive @directive @directive
       }
-    `,
-      [
-        duplicateDirective('directive', 3, 15, 3, 26),
-        duplicateDirective('directive', 3, 15, 3, 37),
-      ],
-    );
+    `).to.deep.equal([
+      duplicateDirective('directive', 3, 15, 3, 26),
+      duplicateDirective('directive', 3, 15, 3, 37),
+    ]);
   });
 
   it('different duplicate directives in one location', () => {
-    expectFailsRule(
-      UniqueDirectivesPerLocation,
-      `
+    expectErrors(`
       fragment Test on Type {
         field @directiveA @directiveB @directiveA @directiveB
       }
-    `,
-      [
-        duplicateDirective('directiveA', 3, 15, 3, 39),
-        duplicateDirective('directiveB', 3, 27, 3, 51),
-      ],
-    );
+    `).to.deep.equal([
+      duplicateDirective('directiveA', 3, 15, 3, 39),
+      duplicateDirective('directiveB', 3, 27, 3, 51),
+    ]);
   });
 
   it('duplicate directives in many locations', () => {
-    expectFailsRule(
-      UniqueDirectivesPerLocation,
-      `
+    expectErrors(`
       fragment Test on Type @directive @directive {
         field @directive @directive
       }
-    `,
-      [
-        duplicateDirective('directive', 2, 29, 2, 40),
-        duplicateDirective('directive', 3, 15, 3, 26),
-      ],
-    );
+    `).to.deep.equal([
+      duplicateDirective('directive', 2, 29, 2, 40),
+      duplicateDirective('directive', 3, 15, 3, 26),
+    ]);
   });
 
   it('duplicate directives on SDL definitions', () => {

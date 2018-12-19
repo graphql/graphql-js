@@ -9,11 +9,7 @@
 
 import { describe, it } from 'mocha';
 import { buildSchema } from '../../utilities';
-import {
-  expectPassesRule,
-  expectFailsRule,
-  expectSDLErrorsFromRule,
-} from './harness';
+import { expectValidationErrors, expectSDLValidationErrors } from './harness';
 
 import {
   KnownDirectives,
@@ -21,10 +17,21 @@ import {
   misplacedDirectiveMessage,
 } from '../rules/KnownDirectives';
 
-const expectSDLErrors = expectSDLErrorsFromRule.bind(
-  undefined,
-  KnownDirectives,
-);
+function expectErrors(queryStr) {
+  return expectValidationErrors(KnownDirectives, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
+
+function expectSDLErrors(sdlStr, schema) {
+  return expectSDLValidationErrors(schema, KnownDirectives, sdlStr);
+}
+
+function expectValidSDL(sdlStr, schema) {
+  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+}
 
 function unknownDirective(directiveName, line, column) {
   return {
@@ -56,9 +63,7 @@ const schemaWithSDLDirectives = buildSchema(`
 
 describe('Validate: Known directives', () => {
   it('with no directives', () => {
-    expectPassesRule(
-      KnownDirectives,
-      `
+    expectValid(`
       query Foo {
         name
         ...Frag
@@ -67,14 +72,11 @@ describe('Validate: Known directives', () => {
       fragment Frag on Dog {
         name
       }
-    `,
-    );
+    `);
   });
 
   it('with known directives', () => {
-    expectPassesRule(
-      KnownDirectives,
-      `
+    expectValid(`
       {
         dog @include(if: true) {
           name
@@ -83,28 +85,21 @@ describe('Validate: Known directives', () => {
           name
         }
       }
-    `,
-    );
+    `);
   });
 
   it('with unknown directive', () => {
-    expectFailsRule(
-      KnownDirectives,
-      `
+    expectErrors(`
       {
         dog @unknown(directive: "value") {
           name
         }
       }
-    `,
-      [unknownDirective('unknown', 3, 13)],
-    );
+    `).to.deep.equal([unknownDirective('unknown', 3, 13)]);
   });
 
   it('with many unknown directives', () => {
-    expectFailsRule(
-      KnownDirectives,
-      `
+    expectErrors(`
       {
         dog @unknown(directive: "value") {
           name
@@ -116,19 +111,15 @@ describe('Validate: Known directives', () => {
           }
         }
       }
-    `,
-      [
-        unknownDirective('unknown', 3, 13),
-        unknownDirective('unknown', 6, 15),
-        unknownDirective('unknown', 8, 16),
-      ],
-    );
+    `).to.deep.equal([
+      unknownDirective('unknown', 3, 13),
+      unknownDirective('unknown', 6, 15),
+      unknownDirective('unknown', 8, 16),
+    ]);
   });
 
   it('with well placed directives', () => {
-    expectPassesRule(
-      KnownDirectives,
-      `
+    expectValid(`
       query Foo($var: Boolean) @onQuery {
         name @include(if: $var)
         ...Frag @include(if: true)
@@ -139,25 +130,19 @@ describe('Validate: Known directives', () => {
       mutation Bar @onMutation {
         someField
       }
-    `,
-    );
+    `);
   });
 
   it('with well placed variable definition directive', () => {
-    expectPassesRule(
-      KnownDirectives,
-      `
+    expectValid(`
       query Foo($var: Boolean @onVariableDefinition) {
         name
       }
-      `,
-    );
+    `);
   });
 
   it('with misplaced directives', () => {
-    expectFailsRule(
-      KnownDirectives,
-      `
+    expectErrors(`
       query Foo($var: Boolean) @include(if: true) {
         name @onQuery @include(if: $var)
         ...Frag @onQuery
@@ -166,54 +151,50 @@ describe('Validate: Known directives', () => {
       mutation Bar @onQuery {
         someField
       }
-    `,
-      [
-        misplacedDirective('include', 'QUERY', 2, 32),
-        misplacedDirective('onQuery', 'FIELD', 3, 14),
-        misplacedDirective('onQuery', 'FRAGMENT_SPREAD', 4, 17),
-        misplacedDirective('onQuery', 'MUTATION', 7, 20),
-      ],
-    );
+    `).to.deep.equal([
+      misplacedDirective('include', 'QUERY', 2, 32),
+      misplacedDirective('onQuery', 'FIELD', 3, 14),
+      misplacedDirective('onQuery', 'FRAGMENT_SPREAD', 4, 17),
+      misplacedDirective('onQuery', 'MUTATION', 7, 20),
+    ]);
   });
 
   it('with misplaced variable definition directive', () => {
-    expectFailsRule(
-      KnownDirectives,
-      `
+    expectErrors(`
       query Foo($var: Boolean @onField) {
         name
       }
-      `,
-      [misplacedDirective('onField', 'VARIABLE_DEFINITION', 2, 31)],
-    );
+    `).to.deep.equal([
+      misplacedDirective('onField', 'VARIABLE_DEFINITION', 2, 31),
+    ]);
   });
 
   describe('within SDL', () => {
     it('with directive defined inside SDL', () => {
-      expectSDLErrors(`
+      expectValidSDL(`
         type Query {
           foo: String @test
         }
 
         directive @test on FIELD_DEFINITION
-      `).to.deep.equal([]);
+      `);
     });
 
     it('with standard directive', () => {
-      expectSDLErrors(`
+      expectValidSDL(`
         type Query {
           foo: String @deprecated
         }
-      `).to.deep.equal([]);
+      `);
     });
 
     it('with overridden standard directive', () => {
-      expectSDLErrors(`
+      expectValidSDL(`
         schema @deprecated {
           query: Query
         }
         directive @deprecated on SCHEMA
-      `).to.deep.equal([]);
+      `);
     });
 
     it('with directive defined in schema extension', () => {
@@ -222,14 +203,14 @@ describe('Validate: Known directives', () => {
           foo: String
         }
       `);
-      expectSDLErrors(
+      expectValidSDL(
         `
           directive @test on OBJECT
 
           extend type Query @test
         `,
         schema,
-      ).to.deep.equal([]);
+      );
     });
 
     it('with directive used in schema extension', () => {
@@ -240,12 +221,12 @@ describe('Validate: Known directives', () => {
           foo: String
         }
       `);
-      expectSDLErrors(
+      expectValidSDL(
         `
           extend type Query @test
         `,
         schema,
-      ).to.deep.equal([]);
+      );
     });
 
     it('with unknown directive in schema extension', () => {
@@ -263,7 +244,7 @@ describe('Validate: Known directives', () => {
     });
 
     it('with well placed directives', () => {
-      expectSDLErrors(
+      expectValidSDL(
         `
           type MyObj implements MyInterface @onObject {
             myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
@@ -304,7 +285,7 @@ describe('Validate: Known directives', () => {
           extend schema @onSchema
         `,
         schemaWithSDLDirectives,
-      ).to.deep.equal([]);
+      );
     });
 
     it('with misplaced directives', () => {

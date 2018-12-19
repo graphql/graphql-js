@@ -9,11 +9,7 @@
 
 import { describe, it } from 'mocha';
 import { buildSchema } from '../../utilities';
-import {
-  expectPassesRule,
-  expectFailsRule,
-  expectSDLErrorsFromRule,
-} from './harness';
+import { expectValidationErrors, expectSDLValidationErrors } from './harness';
 import {
   ProvidedRequiredArguments,
   ProvidedRequiredArgumentsOnDirectives,
@@ -21,10 +17,25 @@ import {
   missingDirectiveArgMessage,
 } from '../rules/ProvidedRequiredArguments';
 
-const expectSDLErrors = expectSDLErrorsFromRule.bind(
-  undefined,
-  ProvidedRequiredArgumentsOnDirectives,
-);
+function expectErrors(queryStr) {
+  return expectValidationErrors(ProvidedRequiredArguments, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
+
+function expectSDLErrors(sdlStr, schema) {
+  return expectSDLValidationErrors(
+    schema,
+    ProvidedRequiredArgumentsOnDirectives,
+    sdlStr,
+  );
+}
+
+function expectValidSDL(sdlStr) {
+  expectSDLErrors(sdlStr).to.deep.equal([]);
+}
 
 function missingFieldArg(fieldName, argName, typeName, line, column) {
   return {
@@ -42,226 +53,177 @@ function missingDirectiveArg(directiveName, argName, typeName, line, column) {
 
 describe('Validate: Provided required arguments', () => {
   it('ignores unknown arguments', () => {
-    expectPassesRule(
-      ProvidedRequiredArguments,
-      `
+    expectValid(`
       {
         dog {
           isHousetrained(unknownArgument: true)
         }
       }
-    `,
-    );
+    `);
   });
 
   describe('Valid non-nullable value', () => {
     it('Arg on optional arg', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           dog {
             isHousetrained(atOtherHomes: true)
           }
         }
-      `,
-      );
+      `);
     });
 
     it('No Arg on optional arg', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           dog {
             isHousetrained
           }
         }
-      `,
-      );
+      `);
     });
 
     it('No arg on non-null field with default', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           complicatedArgs {
             nonNullFieldWithDefault
           }
         }
-      `,
-      );
+      `);
     });
 
     it('Multiple args', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           complicatedArgs {
             multipleReqs(req1: 1, req2: 2)
           }
         }
-      `,
-      );
+      `);
     });
 
     it('Multiple args reverse order', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           complicatedArgs {
             multipleReqs(req2: 2, req1: 1)
           }
         }
-      `,
-      );
+      `);
     });
 
     it('No args on multiple optional', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           complicatedArgs {
             multipleOpts
           }
         }
-      `,
-      );
+      `);
     });
 
     it('One arg on multiple optional', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           complicatedArgs {
             multipleOpts(opt1: 1)
           }
         }
-      `,
-      );
+      `);
     });
 
     it('Second arg on multiple optional', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           complicatedArgs {
             multipleOpts(opt2: 1)
           }
         }
-      `,
-      );
+      `);
     });
 
     it('Multiple reqs on mixedList', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           complicatedArgs {
             multipleOptAndReq(req1: 3, req2: 4)
           }
         }
-      `,
-      );
+      `);
     });
 
     it('Multiple reqs and one opt on mixedList', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           complicatedArgs {
             multipleOptAndReq(req1: 3, req2: 4, opt1: 5)
           }
         }
-      `,
-      );
+      `);
     });
 
     it('All reqs and opts on mixedList', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           complicatedArgs {
             multipleOptAndReq(req1: 3, req2: 4, opt1: 5, opt2: 6)
           }
         }
-      `,
-      );
+      `);
     });
   });
 
   describe('Invalid non-nullable value', () => {
     it('Missing one non-nullable argument', () => {
-      expectFailsRule(
-        ProvidedRequiredArguments,
-        `
+      expectErrors(`
         {
           complicatedArgs {
             multipleReqs(req2: 2)
           }
         }
-      `,
-        [missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13)],
-      );
+      `).to.deep.equal([
+        missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13),
+      ]);
     });
 
     it('Missing multiple non-nullable arguments', () => {
-      expectFailsRule(
-        ProvidedRequiredArguments,
-        `
+      expectErrors(`
         {
           complicatedArgs {
             multipleReqs
           }
         }
-      `,
-        [
-          missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13),
-          missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13),
-        ],
-      );
+      `).to.deep.equal([
+        missingFieldArg('multipleReqs', 'req1', 'Int!', 4, 13),
+        missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13),
+      ]);
     });
 
     it('Incorrect value and missing argument', () => {
-      expectFailsRule(
-        ProvidedRequiredArguments,
-        `
+      expectErrors(`
         {
           complicatedArgs {
             multipleReqs(req1: "one")
           }
         }
-      `,
-        [missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13)],
-      );
+      `).to.deep.equal([
+        missingFieldArg('multipleReqs', 'req2', 'Int!', 4, 13),
+      ]);
     });
   });
 
   describe('Directive arguments', () => {
     it('ignores unknown directives', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           dog @unknown
         }
-      `,
-      );
+      `);
     });
 
     it('with directives of valid types', () => {
-      expectPassesRule(
-        ProvidedRequiredArguments,
-        `
+      expectValid(`
         {
           dog @include(if: true) {
             name
@@ -270,37 +232,32 @@ describe('Validate: Provided required arguments', () => {
             name
           }
         }
-      `,
-      );
+      `);
     });
 
     it('with directive with missing types', () => {
-      expectFailsRule(
-        ProvidedRequiredArguments,
-        `
+      expectErrors(`
         {
           dog @include {
             name @skip
           }
         }
-      `,
-        [
-          missingDirectiveArg('include', 'if', 'Boolean!', 3, 15),
-          missingDirectiveArg('skip', 'if', 'Boolean!', 4, 18),
-        ],
-      );
+      `).to.deep.equal([
+        missingDirectiveArg('include', 'if', 'Boolean!', 3, 15),
+        missingDirectiveArg('skip', 'if', 'Boolean!', 4, 18),
+      ]);
     });
   });
 
   describe('within SDL', () => {
     it('Missing optional args on directive defined inside SDL', () => {
-      expectSDLErrors(`
+      expectValidSDL(`
         type Query {
           foo: String @test
         }
 
         directive @test(arg1: String, arg2: String! = "") on FIELD_DEFINITION
-      `).to.deep.equal([]);
+      `);
     });
 
     it('Missing arg on directive defined inside SDL', () => {

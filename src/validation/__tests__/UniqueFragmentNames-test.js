@@ -8,11 +8,19 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectPassesRule, expectFailsRule } from './harness';
+import { expectValidationErrors } from './harness';
 import {
   UniqueFragmentNames,
   duplicateFragmentNameMessage,
 } from '../rules/UniqueFragmentNames';
+
+function expectErrors(queryStr) {
+  return expectValidationErrors(UniqueFragmentNames, queryStr);
+}
+
+function expectValid(queryStr) {
+  expectErrors(queryStr).to.deep.equal([]);
+}
 
 function duplicateFrag(fragName, l1, c1, l2, c2) {
   return {
@@ -23,20 +31,15 @@ function duplicateFrag(fragName, l1, c1, l2, c2) {
 
 describe('Validate: Unique fragment names', () => {
   it('no fragments', () => {
-    expectPassesRule(
-      UniqueFragmentNames,
-      `
+    expectValid(`
       {
         field
       }
-    `,
-    );
+    `);
   });
 
   it('one fragment', () => {
-    expectPassesRule(
-      UniqueFragmentNames,
-      `
+    expectValid(`
       {
         ...fragA
       }
@@ -44,14 +47,11 @@ describe('Validate: Unique fragment names', () => {
       fragment fragA on Type {
         field
       }
-    `,
-    );
+    `);
   });
 
   it('many fragments', () => {
-    expectPassesRule(
-      UniqueFragmentNames,
-      `
+    expectValid(`
       {
         ...fragA
         ...fragB
@@ -66,14 +66,11 @@ describe('Validate: Unique fragment names', () => {
       fragment fragC on Type {
         fieldC
       }
-    `,
-    );
+    `);
   });
 
   it('inline fragments are always unique', () => {
-    expectPassesRule(
-      UniqueFragmentNames,
-      `
+    expectValid(`
       {
         ...on Type {
           fieldA
@@ -82,28 +79,22 @@ describe('Validate: Unique fragment names', () => {
           fieldB
         }
       }
-    `,
-    );
+    `);
   });
 
   it('fragment and operation named the same', () => {
-    expectPassesRule(
-      UniqueFragmentNames,
-      `
+    expectValid(`
       query Foo {
         ...Foo
       }
       fragment Foo on Type {
         field
       }
-    `,
-    );
+    `);
   });
 
   it('fragments named the same', () => {
-    expectFailsRule(
-      UniqueFragmentNames,
-      `
+    expectErrors(`
       {
         ...fragA
       }
@@ -113,23 +104,17 @@ describe('Validate: Unique fragment names', () => {
       fragment fragA on Type {
         fieldB
       }
-    `,
-      [duplicateFrag('fragA', 5, 16, 8, 16)],
-    );
+    `).to.deep.equal([duplicateFrag('fragA', 5, 16, 8, 16)]);
   });
 
   it('fragments named the same without being referenced', () => {
-    expectFailsRule(
-      UniqueFragmentNames,
-      `
+    expectErrors(`
       fragment fragA on Type {
         fieldA
       }
       fragment fragA on Type {
         fieldB
       }
-    `,
-      [duplicateFrag('fragA', 2, 16, 5, 16)],
-    );
+    `).to.deep.equal([duplicateFrag('fragA', 2, 16, 5, 16)]);
   });
 });
