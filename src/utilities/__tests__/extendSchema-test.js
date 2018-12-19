@@ -1095,53 +1095,6 @@ describe('extendSchema', () => {
     );
   });
 
-  it('does not allow replacing a custom directive', () => {
-    const extendedSchema = extendTestSchema(`
-      directive @meow(if: Boolean!) on FIELD | FRAGMENT_SPREAD
-    `);
-
-    const replacementAST = parse(`
-      directive @meow(if: Boolean!) on FIELD | QUERY
-    `);
-
-    expect(() => extendSchema(extendedSchema, replacementAST)).to.throw(
-      'Directive "meow" already exists in the schema. It cannot be redefined.',
-    );
-  });
-
-  it('does not allow replacing an existing field', () => {
-    const existingFieldError = (type, field) =>
-      `Field "${type}.${field}" already exists in the schema.` +
-      ' It cannot also be defined in this type extension.';
-
-    const typeSDL = `
-      extend type Bar {
-        foo: Foo
-      }
-    `;
-    expect(() => extendTestSchema(typeSDL)).to.throw(
-      existingFieldError('Bar', 'foo'),
-    );
-
-    const interfaceSDL = `
-      extend interface SomeInterface {
-        some: Foo
-      }
-    `;
-    expect(() => extendTestSchema(interfaceSDL)).to.throw(
-      existingFieldError('SomeInterface', 'some'),
-    );
-
-    const inputSDL = `
-      extend input SomeInput {
-        fooArg: String
-      }
-    `;
-    expect(() => extendTestSchema(inputSDL)).to.throw(
-      existingFieldError('SomeInput', 'fooArg'),
-    );
-  });
-
   it('does not allow replacing an existing enum value', () => {
     const sdl = `
       extend enum SomeEnum {
