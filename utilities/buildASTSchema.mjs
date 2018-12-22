@@ -58,11 +58,6 @@ export function buildASTSchema(documentAST, options) {
       schemaDef = def;
     } else if (isTypeDefinitionNode(def)) {
       var typeName = def.name.value;
-
-      if (nodeMap[typeName]) {
-        throw new Error("Type \"".concat(typeName, "\" was defined more than once."));
-      }
-
       typeDefs.push(def);
       nodeMap[typeName] = def;
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {

@@ -83,14 +83,7 @@ function extendSchema(schema, documentAST, options) {
     } else if (def.kind === _kinds.Kind.SCHEMA_EXTENSION) {
       schemaExtensions.push(def);
     } else if ((0, _predicates.isTypeDefinitionNode)(def)) {
-      // Sanity check that none of the defined types conflict with the
-      // schema's existing types.
       var typeName = def.name.value;
-
-      if (schema.getType(typeName)) {
-        throw new _GraphQLError.GraphQLError("Type \"".concat(typeName, "\" already exists in the schema. It cannot also ") + 'be defined in this type definition.', [def]);
-      }
-
       typeDefinitionMap[typeName] = def;
     } else if ((0, _predicates.isTypeExtensionNode)(def)) {
       // Sanity check that this type extension exists within the
@@ -106,13 +99,6 @@ function extendSchema(schema, documentAST, options) {
       var existingTypeExtensions = typeExtensionsMap[extendedTypeName];
       typeExtensionsMap[extendedTypeName] = existingTypeExtensions ? existingTypeExtensions.concat([def]) : [def];
     } else if (def.kind === _kinds.Kind.DIRECTIVE_DEFINITION) {
-      var directiveName = def.name.value;
-      var existingDirective = schema.getDirective(directiveName);
-
-      if (existingDirective) {
-        throw new _GraphQLError.GraphQLError("Directive \"".concat(directiveName, "\" already exists in the schema. It ") + 'cannot be redefined.', [def]);
-      }
-
       directiveDefinitions.push(def);
     }
   } // If this document contains no new types, extensions, or directives then
