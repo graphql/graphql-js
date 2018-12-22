@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
@@ -21,13 +21,10 @@ import {
   Source,
 } from '../../';
 
-function typeOf(object) {
-  return /(\b\w+\b)\]/.exec(Object.prototype.toString.call(object))[1];
-}
-
 describe('Check to see if Symbol.toStringTag is defined on types', () => {
-  const s = Symbol.toStringTag;
-  const hasSymbol = o => Object.getOwnPropertySymbols(o).includes(s);
+  function hasSymbol(obj) {
+    return Object.getOwnPropertySymbols(obj).includes(Symbol.toStringTag);
+  }
 
   it('GraphQLDirective should have Symbol.toStringTag', () => {
     expect(hasSymbol(GraphQLDirective.prototype)).to.equal(true);
@@ -67,52 +64,55 @@ describe('Check to see if Symbol.toStringTag is defined on types', () => {
 });
 
 describe('Check to see if Symbol.toStringTag tests on instances', () => {
-  // variables _interface and _enum have preceding underscores due to being
-  // reserved keywords in JavaScript
-
-  const schema = Object.create(GraphQLSchema.prototype);
-  const scalar = Object.create(GraphQLScalarType.prototype);
-  const object = Object.create(GraphQLObjectType.prototype);
-  const _interface = Object.create(GraphQLInterfaceType.prototype);
-  const union = Object.create(GraphQLUnionType.prototype);
-  const _enum = Object.create(GraphQLEnumType.prototype);
-  const inputType = Object.create(GraphQLInputObjectType.prototype);
-  const directive = Object.create(GraphQLDirective.prototype);
-  const source = Object.create(Source.prototype);
+  function typeOf(object) {
+    return Object.prototype.toString
+      .call(object)
+      .replace(/^\[object /, '')
+      .replace(/]$/, '');
+  }
 
   it('should return the class name for GraphQLSchema instance', () => {
-    expect(typeOf(schema)).to.equal(GraphQLSchema.name);
+    const obj = Object.create(GraphQLSchema.prototype);
+    expect(typeOf(obj)).to.equal(GraphQLSchema.name);
   });
 
   it('should return the class name for GraphQLScalarType instance', () => {
-    expect(typeOf(scalar)).to.equal(GraphQLScalarType.name);
+    const obj = Object.create(GraphQLScalarType.prototype);
+    expect(typeOf(obj)).to.equal(GraphQLScalarType.name);
   });
 
   it('should return the class name for GraphQLObjectType instance', () => {
-    expect(typeOf(object)).to.equal(GraphQLObjectType.name);
+    const obj = Object.create(GraphQLObjectType.prototype);
+    expect(typeOf(obj)).to.equal(GraphQLObjectType.name);
   });
 
   it('should return the class name for GraphQLInterfaceType instance', () => {
-    expect(typeOf(_interface)).to.equal(GraphQLInterfaceType.name);
+    const obj = Object.create(GraphQLInterfaceType.prototype);
+    expect(typeOf(obj)).to.equal(GraphQLInterfaceType.name);
   });
 
   it('should return the class name for GraphQLUnionType instance', () => {
-    expect(typeOf(union)).to.equal(GraphQLUnionType.name);
+    const obj = Object.create(GraphQLUnionType.prototype);
+    expect(typeOf(obj)).to.equal(GraphQLUnionType.name);
   });
 
   it('should return the class name for GraphQLEnumType instance', () => {
-    expect(typeOf(_enum)).to.equal(GraphQLEnumType.name);
+    const obj = Object.create(GraphQLEnumType.prototype);
+    expect(typeOf(obj)).to.equal(GraphQLEnumType.name);
   });
 
   it('should return the class name for GraphQLInputObjectType instance', () => {
-    expect(typeOf(inputType)).to.equal(GraphQLInputObjectType.name);
+    const obj = Object.create(GraphQLInputObjectType.prototype);
+    expect(typeOf(obj)).to.equal(GraphQLInputObjectType.name);
   });
 
   it('should return the class name for GraphQLDirective instance', () => {
-    expect(typeOf(directive)).to.equal(GraphQLDirective.name);
+    const obj = Object.create(GraphQLDirective.prototype);
+    expect(typeOf(obj)).to.equal(GraphQLDirective.name);
   });
 
   it('should return the class name for Source instance', () => {
-    expect(typeOf(source)).to.equal(Source.name);
+    const obj = Object.create(Source.prototype);
+    expect(typeOf(obj)).to.equal(Source.name);
   });
 });
