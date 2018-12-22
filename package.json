@@ -50,11 +50,11 @@
     "iterall": "^1.2.2"
   },
   "devDependencies": {
-    "@babel/cli": "7.2.0",
+    "@babel/cli": "7.2.3",
     "@babel/core": "7.2.2",
-    "@babel/plugin-transform-flow-strip-types": "7.2.0",
-    "@babel/polyfill": "7.0.0",
-    "@babel/preset-env": "7.2.0",
+    "@babel/plugin-transform-flow-strip-types": "7.2.3",
+    "@babel/polyfill": "7.2.5",
+    "@babel/preset-env": "7.2.3",
     "@babel/register": "7.0.0",
     "babel-eslint": "10.0.1",
     "beautify-benchmark": "0.2.4",
