@@ -18,7 +18,7 @@ var _predicates = require("../../language/predicates");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- *  strict
+ * 
  */
 function nonExecutableDefinitionMessage(defName) {
   return "The ".concat(defName, " definition is not executable.");

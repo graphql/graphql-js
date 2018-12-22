@@ -6,7 +6,7 @@ function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.crea
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- *  strict
+ * 
  */
 import { visit, visitWithTypeInfo } from '../language/visitor';
 import { Kind } from '../language/kinds';

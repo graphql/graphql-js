@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- *  strict
+ * 
  */
 import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isInputType, isOutputType, isRequiredArgument } from './definition';
 import { isDirective } from './directives';

@@ -14,7 +14,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- *  strict
+ * 
  */
 function unusedVariableMessage(varName, opName) {
   return opName ? "Variable \"$".concat(varName, "\" is never used in operation \"").concat(opName, "\".") : "Variable \"$".concat(varName, "\" is never used.");

@@ -6,7 +6,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- *  strict
+ * 
  */
 import inspect from '../jsutils/inspect';
 import isFinite from '../jsutils/isFinite';

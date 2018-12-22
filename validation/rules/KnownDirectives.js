@@ -21,7 +21,7 @@ var _directives = require("../../type/directives");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- *  strict
+ * 
  */
 function unknownDirectiveMessage(directiveName) {
   return "Unknown directive \"".concat(directiveName, "\".");
