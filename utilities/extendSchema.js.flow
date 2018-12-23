@@ -201,9 +201,6 @@ export function extendSchema(
 
   if (schemaDef) {
     for (const { operation, type } of schemaDef.operationTypes) {
-      if (operationTypes[operation]) {
-        throw new Error(`Must provide only one ${operation} type in schema.`);
-      }
       // Note: While this could make early assertions to get the correctly
       // typed values, that would throw immediately while type system
       // validation with validateSchema() will produce more actionable results.
@@ -214,9 +211,6 @@ export function extendSchema(
   for (const schemaExtension of schemaExtensions) {
     if (schemaExtension.operationTypes) {
       for (const { operation, type } of schemaExtension.operationTypes) {
-        if (operationTypes[operation]) {
-          throw new Error(`Must provide only one ${operation} type in schema.`);
-        }
         // Note: While this could make early assertions to get the correctly
         // typed values, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.

@@ -123,14 +123,9 @@ export function extendSchema(schema, documentAST, options) {
         var _ref2 = _step.value;
         var operation = _ref2.operation;
         var type = _ref2.type;
-
-        if (operationTypes[operation]) {
-          throw new Error("Must provide only one ".concat(operation, " type in schema."));
-        } // Note: While this could make early assertions to get the correctly
+        // Note: While this could make early assertions to get the correctly
         // typed values, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
-
-
         operationTypes[operation] = astBuilder.buildType(type);
       }
     } catch (err) {
@@ -163,14 +158,9 @@ export function extendSchema(schema, documentAST, options) {
           var _ref4 = _step12.value;
           var _operation = _ref4.operation;
           var _type = _ref4.type;
-
-          if (operationTypes[_operation]) {
-            throw new Error("Must provide only one ".concat(_operation, " type in schema."));
-          } // Note: While this could make early assertions to get the correctly
+          // Note: While this could make early assertions to get the correctly
           // typed values, that would throw immediately while type system
           // validation with validateSchema() will produce more actionable results.
-
-
           operationTypes[_operation] = astBuilder.buildType(_type);
         }
       } catch (err) {

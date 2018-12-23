@@ -151,10 +151,6 @@ function buildASTSchema(documentAST, options) {
         var _typeName = operationType.type.name.value;
         var operation = operationType.operation;
 
-        if (opTypes[operation]) {
-          throw new Error("Must provide only one ".concat(operation, " type in schema."));
-        }
-
         if (!nodeMap[_typeName]) {
           throw new Error("Specified ".concat(operation, " type \"").concat(_typeName, "\" not found in document."));
         }
