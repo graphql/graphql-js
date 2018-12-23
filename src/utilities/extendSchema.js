@@ -128,8 +128,7 @@ export function extendSchema(
   // Schema extensions are collected which may add additional operation types.
   const schemaExtensions: Array<SchemaExtensionNode> = [];
 
-  for (let i = 0; i < documentAST.definitions.length; i++) {
-    const def = documentAST.definitions[i];
+  for (const def of documentAST.definitions) {
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
     } else if (def.kind === Kind.SCHEMA_EXTENSION) {
