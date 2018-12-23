@@ -9,6 +9,7 @@
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
+import objectValues from '../jsutils/objectValues';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';
 import blockStringValue from '../language/blockStringValue';
@@ -47,21 +48,36 @@ export function buildASTSchema(documentAST, options) {
   }
 
   var schemaDef;
-  var typeDefs = [];
   var nodeMap = Object.create(null);
   var directiveDefs = [];
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
 
-  for (var i = 0; i < documentAST.definitions.length; i++) {
-    var def = documentAST.definitions[i];
+  try {
+    for (var _iterator = documentAST.definitions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var def = _step.value;
 
-    if (def.kind === Kind.SCHEMA_DEFINITION) {
-      schemaDef = def;
-    } else if (isTypeDefinitionNode(def)) {
-      var typeName = def.name.value;
-      typeDefs.push(def);
-      nodeMap[typeName] = def;
-    } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      directiveDefs.push(def);
+      if (def.kind === Kind.SCHEMA_DEFINITION) {
+        schemaDef = def;
+      } else if (isTypeDefinitionNode(def)) {
+        nodeMap[def.name.value] = def;
+      } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+        directiveDefs.push(def);
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return != null) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
     }
   }
 
@@ -102,7 +118,7 @@ export function buildASTSchema(documentAST, options) {
     query: operationTypes.query ? definitionBuilder.buildType(operationTypes.query) : null,
     mutation: operationTypes.mutation ? definitionBuilder.buildType(operationTypes.mutation) : null,
     subscription: operationTypes.subscription ? definitionBuilder.buildType(operationTypes.subscription) : null,
-    types: typeDefs.map(function (node) {
+    types: objectValues(nodeMap).map(function (node) {
       return definitionBuilder.buildType(node);
     }),
     directives: directives,
@@ -113,33 +129,33 @@ export function buildASTSchema(documentAST, options) {
 
   function getOperationTypes(schema) {
     var opTypes = {};
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
 
     try {
-      for (var _iterator = schema.operationTypes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var operationType = _step.value;
-        var _typeName = operationType.type.name.value;
+      for (var _iterator2 = schema.operationTypes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var operationType = _step2.value;
+        var typeName = operationType.type.name.value;
         var operation = operationType.operation;
 
-        if (!nodeMap[_typeName]) {
-          throw new Error("Specified ".concat(operation, " type \"").concat(_typeName, "\" not found in document."));
+        if (!nodeMap[typeName]) {
+          throw new Error("Specified ".concat(operation, " type \"").concat(typeName, "\" not found in document."));
         }
 
         opTypes[operation] = operationType.type;
       }
     } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion && _iterator.return != null) {
-          _iterator.return();
+        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+          _iterator2.return();
         }
       } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
+        if (_didIteratorError2) {
+          throw _iteratorError2;
         }
       }
     }

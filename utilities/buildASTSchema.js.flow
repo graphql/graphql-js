@@ -10,6 +10,7 @@
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
+import objectValues from '../jsutils/objectValues';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';
@@ -128,18 +129,14 @@ export function buildASTSchema(
   }
 
   let schemaDef: ?SchemaDefinitionNode;
-
-  const typeDefs: Array<TypeDefinitionNode> = [];
   const nodeMap: ObjMap<TypeDefinitionNode> = Object.create(null);
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
-  for (let i = 0; i < documentAST.definitions.length; i++) {
-    const def = documentAST.definitions[i];
+
+  for (const def of documentAST.definitions) {
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
     } else if (isTypeDefinitionNode(def)) {
-      const typeName = def.name.value;
-      typeDefs.push(def);
-      nodeMap[typeName] = def;
+      nodeMap[def.name.value] = def;
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       directiveDefs.push(def);
     }
@@ -191,7 +188,7 @@ export function buildASTSchema(
     subscription: operationTypes.subscription
       ? (definitionBuilder.buildType(operationTypes.subscription): any)
       : null,
-    types: typeDefs.map(node => definitionBuilder.buildType(node)),
+    types: objectValues(nodeMap).map(node => definitionBuilder.buildType(node)),
     directives,
     astNode: schemaDef,
     assumeValid: options && options.assumeValid,
