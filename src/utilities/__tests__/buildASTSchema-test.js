@@ -800,68 +800,6 @@ describe('Schema Builder', () => {
 });
 
 describe('Failures', () => {
-  it('Allows only a single query type', () => {
-    const sdl = `
-      schema {
-        query: Hello
-        query: Yellow
-      }
-
-      type Hello {
-        bar: String
-      }
-
-      type Yellow {
-        isColor: Boolean
-      }
-    `;
-    expect(() => buildSchema(sdl)).to.throw(
-      'Must provide only one query type in schema.',
-    );
-  });
-
-  it('Allows only a single mutation type', () => {
-    const sdl = `
-      schema {
-        query: Hello
-        mutation: Hello
-        mutation: Yellow
-      }
-
-      type Hello {
-        bar: String
-      }
-
-      type Yellow {
-        isColor: Boolean
-      }
-    `;
-    expect(() => buildSchema(sdl)).to.throw(
-      'Must provide only one mutation type in schema.',
-    );
-  });
-
-  it('Allows only a single subscription type', () => {
-    const sdl = `
-      schema {
-        query: Hello
-        subscription: Hello
-        subscription: Yellow
-      }
-
-      type Hello {
-        bar: String
-      }
-
-      type Yellow {
-        isColor: Boolean
-      }
-    `;
-    expect(() => buildSchema(sdl)).to.throw(
-      'Must provide only one subscription type in schema.',
-    );
-  });
-
   it('Unknown type referenced', () => {
     const sdl = `
       schema {

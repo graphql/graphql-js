@@ -203,9 +203,6 @@ export function buildASTSchema(
     for (const operationType of schema.operationTypes) {
       const typeName = operationType.type.name.value;
       const operation = operationType.operation;
-      if (opTypes[operation]) {
-        throw new Error(`Must provide only one ${operation} type in schema.`);
-      }
       if (!nodeMap[typeName]) {
         throw new Error(
           `Specified ${operation} type "${typeName}" not found in document.`,
