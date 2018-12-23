@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { inspect } from 'util';
@@ -27,10 +27,12 @@ function expectSyntaxError(text, message, location) {
 
 describe('Parser', () => {
   it('asserts that a source to parse was provided', () => {
+    // $DisableFlowOnNegativeTest
     expect(() => parse()).to.throw('Must provide Source. Received: undefined');
   });
 
-  it('asserts that a source to parse was provided', () => {
+  it('asserts that an invalid source to parse was provided', () => {
+    // $DisableFlowOnNegativeTest
     expect(() => parse({})).to.throw('Must provide Source. Received: {}');
   });
 
@@ -395,14 +397,14 @@ describe('Parser', () => {
     const source = new Source('{ id }');
     const result = parse(source);
 
-    expect(result.loc.source).to.equal(source);
+    expect(result).to.have.nested.property('loc.source', source);
   });
 
   it('contains references to start and end tokens', () => {
     const result = parse('{ id }');
 
-    expect(result.loc.startToken.kind).to.equal('<SOF>');
-    expect(result.loc.endToken.kind).to.equal('<EOF>');
+    expect(result).to.have.nested.property('loc.startToken.kind', '<SOF>');
+    expect(result).to.have.nested.property('loc.endToken.kind', '<EOF>');
   });
 
   describe('parseValue', () => {
