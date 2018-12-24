@@ -177,15 +177,9 @@ export function extendSchema(
     typeRef => {
       const typeName = typeRef.name.value;
       const existingType = schema.getType(typeName);
-      if (existingType) {
-        return extendNamedType(existingType);
-      }
 
-      throw new GraphQLError(
-        `Unknown type: "${typeName}". Ensure that this type exists ` +
-          'either in the original schema, or is added in a type definition.',
-        [typeRef],
-      );
+      invariant(existingType, `Unknown type: "${typeName}".`);
+      return extendNamedType(existingType);
     },
   );
 

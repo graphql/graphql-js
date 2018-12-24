@@ -1107,38 +1107,6 @@ describe('extendSchema', () => {
     );
   });
 
-  it('does not allow referencing an unknown type', () => {
-    const unknownTypeError =
-      'Unknown type: "Quix". Ensure that this type exists either in the ' +
-      'original schema, or is added in a type definition.';
-
-    const typeSDL = `
-      extend type Bar {
-        quix: Quix
-      }
-    `;
-    expect(() => extendTestSchema(typeSDL)).to.throw(unknownTypeError);
-
-    const interfaceSDL = `
-      extend interface SomeInterface {
-        quix: Quix
-      }
-    `;
-    expect(() => extendTestSchema(interfaceSDL)).to.throw(unknownTypeError);
-
-    const unionSDL = `
-      extend union SomeUnion = Quix
-    `;
-    expect(() => extendTestSchema(unionSDL)).to.throw(unknownTypeError);
-
-    const inputSDL = `
-      extend input SomeInput {
-        quix: Quix
-      }
-    `;
-    expect(() => extendTestSchema(inputSDL)).to.throw(unknownTypeError);
-  });
-
   it('does not allow extending an unknown type', () => {
     [
       'extend scalar UnknownType @foo',

@@ -135,6 +135,7 @@ export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = [
   UniqueOperationTypes,
   UniqueTypeNames,
   UniqueDirectiveNames,
+  KnownTypeNames,
   KnownDirectives,
   UniqueDirectivesPerLocation,
   KnownArgumentNamesOnDirectives,
