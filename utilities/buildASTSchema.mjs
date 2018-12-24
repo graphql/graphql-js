@@ -136,14 +136,7 @@ export function buildASTSchema(documentAST, options) {
     try {
       for (var _iterator2 = schema.operationTypes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
         var operationType = _step2.value;
-        var typeName = operationType.type.name.value;
-        var operation = operationType.operation;
-
-        if (!nodeMap[typeName]) {
-          throw new Error("Specified ".concat(operation, " type \"").concat(typeName, "\" not found in document."));
-        }
-
-        opTypes[operation] = operationType.type;
+        opTypes[operationType.operation] = operationType.type;
       }
     } catch (err) {
       _didIteratorError2 = true;

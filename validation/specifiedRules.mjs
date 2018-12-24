@@ -73,4 +73,4 @@ import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
 import { KnownArgumentNamesOnDirectives } from './rules/KnownArgumentNames';
 import { ProvidedRequiredArgumentsOnDirectives } from './rules/ProvidedRequiredArguments'; // @internal
 
-export var specifiedSDLRules = [LoneSchemaDefinition, UniqueOperationTypes, UniqueTypeNames, UniqueDirectiveNames, KnownDirectives, UniqueDirectivesPerLocation, KnownArgumentNamesOnDirectives, UniqueArgumentNames, UniqueInputFieldNames, ProvidedRequiredArgumentsOnDirectives];
+export var specifiedSDLRules = [LoneSchemaDefinition, UniqueOperationTypes, UniqueTypeNames, UniqueDirectiveNames, KnownTypeNames, KnownDirectives, UniqueDirectivesPerLocation, KnownArgumentNamesOnDirectives, UniqueArgumentNames, UniqueInputFieldNames, ProvidedRequiredArgumentsOnDirectives];

@@ -130,12 +130,8 @@ function extendSchema(schema, documentAST, options) {
   var astBuilder = new _buildASTSchema.ASTDefinitionBuilder(typeDefinitionMap, options, function (typeRef) {
     var typeName = typeRef.name.value;
     var existingType = schema.getType(typeName);
-
-    if (existingType) {
-      return extendNamedType(existingType);
-    }
-
-    throw new _GraphQLError.GraphQLError("Unknown type: \"".concat(typeName, "\". Ensure that this type exists ") + 'either in the original schema, or is added in a type definition.', [typeRef]);
+    !existingType ? (0, _invariant.default)(0, "Unknown type: \"".concat(typeName, "\".")) : void 0;
+    return extendNamedType(existingType);
   });
   var extendTypeCache = Object.create(null); // Get the extended root operation types.
 
