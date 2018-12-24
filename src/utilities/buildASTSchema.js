@@ -198,14 +198,7 @@ export function buildASTSchema(
   function getOperationTypes(schema: SchemaDefinitionNode) {
     const opTypes = {};
     for (const operationType of schema.operationTypes) {
-      const typeName = operationType.type.name.value;
-      const operation = operationType.operation;
-      if (!nodeMap[typeName]) {
-        throw new Error(
-          `Specified ${operation} type "${typeName}" not found in document.`,
-        );
-      }
-      opTypes[operation] = operationType.type;
+      opTypes[operationType.operation] = operationType.type;
     }
     return opTypes;
   }
