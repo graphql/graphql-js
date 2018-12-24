@@ -129,11 +129,15 @@ describe('Printer: Query document', () => {
         experimentalFragmentVariables: true,
       },
     );
-    expect(print(queryAstWithVariableDirective)).to.equal(dedent`
+    const printedQueryAstWithVariableDirective = dedent`
       fragment Foo($foo: TestType @test) on TestType @testDirective {
         id
       }
-    `);
+    `;
+
+    expect(print(queryAstWithVariableDirective)).to.equal(
+      printedQueryAstWithVariableDirective,
+    );
     expect(print(queryAstWithVariableDirective, { condense: true })).to.equal(
       'fragment Foo($foo:TestType@test)on TestType@testDirective{id}',
     );
@@ -148,11 +152,7 @@ describe('Printer: Query document', () => {
           experimentalFragmentVariables: true,
         }),
       ),
-    ).to.equal(dedent`
-      fragment Foo($foo: TestType @test) on TestType @testDirective {
-        id
-      }
-    `);
+    ).to.equal(printedQueryAstWithVariableDirective);
   });
 
   describe('block string', () => {
