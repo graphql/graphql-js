@@ -9,33 +9,6 @@
 
 import { visit } from './visitor';
 
-function condensePrintedAst(printedAst) {
-  return (
-    printedAst
-      .replace(/#.*\n/g, '')
-      .replace(/[\s|,]*\n+[\s|,]*/g, ' ')
-      .replace(/:\s/g, ':')
-      .replace(/,\s/g, ',')
-      .replace(/\)\s\{/g, '){')
-      .replace(/\}\s/g, '}')
-      .replace(/\{\s/g, '{')
-      .replace(/\s\}/g, '}')
-      .replace(/\s\{/g, '{')
-      .replace(/\)\s/g, ')')
-      .replace(/\(\s/g, '(')
-      .replace(/\s\)/g, ')')
-      .replace(/\s\(/g, '(')
-      // eslint-disable-next-line no-div-regex
-      .replace(/=\s/g, '=')
-      .replace(/\s=/g, '=')
-      .replace(/@\s/g, '@')
-      .replace(/\s@/g, '@')
-      .replace(/\s\$/g, '$')
-      .replace(/\s\./g, '.')
-      .trim()
-  );
-}
-
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules. Optionally, removes non-significant whitespace
@@ -311,4 +284,34 @@ function printBlockString(value, isDescription) {
   return isMultiline(value) || (value[0] !== ' ' && value[0] !== '\t')
     ? `"""\n${isDescription ? escaped : indent(escaped)}\n"""`
     : `"""${escaped.replace(/"$/, '"\n')}"""`;
+}
+
+/**
+ * Remove non-significant whitespace from a printed GraphQL AST string.
+ */
+function condensePrintedAst(printedAst) {
+  return (
+    printedAst
+      .replace(/#.*\n/g, '')
+      .replace(/[\s|,]*\n+[\s|,]*/g, ' ')
+      .replace(/:\s/g, ':')
+      .replace(/,\s/g, ',')
+      .replace(/\)\s\{/g, '){')
+      .replace(/\}\s/g, '}')
+      .replace(/\{\s/g, '{')
+      .replace(/\s\}/g, '}')
+      .replace(/\s\{/g, '{')
+      .replace(/\)\s/g, ')')
+      .replace(/\(\s/g, '(')
+      .replace(/\s\)/g, ')')
+      .replace(/\s\(/g, '(')
+      // eslint-disable-next-line no-div-regex
+      .replace(/=\s/g, '=')
+      .replace(/\s=/g, '=')
+      .replace(/@\s/g, '@')
+      .replace(/\s@/g, '@')
+      .replace(/\s\$/g, '$')
+      .replace(/\s\./g, '.')
+      .trim()
+  );
 }
