@@ -38,7 +38,8 @@ function condensePrintedAst(printedAst) {
 
 /**
  * Converts an AST into a string, using one set of reasonable
- * formatting rules. Optionally, removes non-signifact whitespace using the `condense` parameter.
+ * formatting rules. Optionally, removes non-significant whitespace
+ * using the `condense` parameter in the options object.
  */
 export function print(ast, { condense } = { condense: false }) {
   const printedAst = visit(ast, { leave: printDocASTReducer });
