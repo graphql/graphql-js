@@ -73,7 +73,7 @@ rules:
   flowtype/valid-syntax: off
 
   ##################################################
-  # ESLint builtin rules list based on `v5.10.0`
+  # ESLint builtin rules list based on `v5.11.0`
   ##################################################
 
   # Possible Errors
@@ -114,7 +114,6 @@ rules:
   no-unsafe-negation: error
   require-atomic-updates: error
   use-isnan: error
-  valid-jsdoc: off
   valid-typeof: error
 
   # Best Practices
@@ -180,6 +179,7 @@ rules:
   no-unused-expressions: error
   no-unused-labels: error
   no-useless-call: error
+  no-useless-catch: error
   no-useless-concat: error
   no-useless-escape: error
   no-useless-return: error
@@ -309,7 +309,6 @@ rules:
   prefer-object-spread: error
   quote-props: off
   quotes: off
-  #require-jsdoc: undecided
   semi: off
   semi-spacing: off
   semi-style: off
