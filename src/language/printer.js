@@ -9,12 +9,40 @@
 
 import { visit } from './visitor';
 
+function condensePrintedAst(printedAst) {
+  return (
+    printedAst
+      .replace(/#.*\n/g, '')
+      .replace(/[\s|,]*\n+[\s|,]*/g, ' ')
+      .replace(/:\s/g, ':')
+      .replace(/,\s/g, ',')
+      .replace(/\)\s\{/g, '){')
+      .replace(/\}\s/g, '}')
+      .replace(/\{\s/g, '{')
+      .replace(/\s\}/g, '}')
+      .replace(/\s\{/g, '{')
+      .replace(/\)\s/g, ')')
+      .replace(/\(\s/g, '(')
+      .replace(/\s\)/g, ')')
+      .replace(/\s\(/g, '(')
+      // eslint-disable-next-line no-div-regex
+      .replace(/=\s/g, '=')
+      .replace(/\s=/g, '=')
+      .replace(/@\s/g, '@')
+      .replace(/\s@/g, '@')
+      .replace(/\s\$/g, '$')
+      .replace(/\s\./g, '.')
+      .trim()
+  );
+}
+
 /**
  * Converts an AST into a string, using one set of reasonable
- * formatting rules.
+ * formatting rules. Optionally, removes non-signifact whitespace using the `condense` parameter.
  */
-export function print(ast) {
-  return visit(ast, { leave: printDocASTReducer });
+export function print(ast, { condense } = { condense: false }) {
+  const printedAst = visit(ast, { leave: printDocASTReducer });
+  return condense ? condensePrintedAst(printedAst) : printedAst;
 }
 
 const printDocASTReducer = {
