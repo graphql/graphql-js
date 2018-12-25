@@ -174,11 +174,10 @@ export function extendSchema(
   const astBuilder = new ASTDefinitionBuilder(
     typeDefinitionMap,
     options,
-    typeRef => {
-      const typeName = typeRef.name.value;
+    typeName => {
       const existingType = schema.getType(typeName);
-
       invariant(existingType, `Unknown type: "${typeName}".`);
+
       return extendNamedType(existingType);
     },
   );
