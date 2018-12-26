@@ -113,8 +113,7 @@ export function extendSchema(schema, documentAST, options) {
     return schema;
   }
 
-  var astBuilder = new ASTDefinitionBuilder(typeDefinitionMap, options, function (typeRef) {
-    var typeName = typeRef.name.value;
+  var astBuilder = new ASTDefinitionBuilder(typeDefinitionMap, options, function (typeName) {
     var existingType = schema.getType(typeName);
     !existingType ? invariant(0, "Unknown type: \"".concat(typeName, "\".")) : void 0;
     return extendNamedType(existingType);

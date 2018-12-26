@@ -86,8 +86,8 @@ export function buildASTSchema(documentAST, options) {
     mutation: nodeMap.Mutation,
     subscription: nodeMap.Subscription
   };
-  var definitionBuilder = new ASTDefinitionBuilder(nodeMap, options, function (typeRef) {
-    throw new Error("Type \"".concat(typeRef.name.value, "\" not found in document."));
+  var definitionBuilder = new ASTDefinitionBuilder(nodeMap, options, function (typeName) {
+    throw new Error("Type \"".concat(typeName, "\" not found in document."));
   });
   var directives = directiveDefs.map(function (def) {
     return definitionBuilder.buildDirective(def);
@@ -177,7 +177,7 @@ function () {
     if (!this._cache[typeName]) {
       if (node.kind === Kind.NAMED_TYPE) {
         var defNode = this._typeDefinitionsMap[typeName];
-        this._cache[typeName] = defNode ? this._makeSchemaDef(defNode) : this._resolveType(node);
+        this._cache[typeName] = defNode ? this._makeSchemaDef(defNode) : this._resolveType(node.name.value);
       } else {
         this._cache[typeName] = this._makeSchemaDef(node);
       }
