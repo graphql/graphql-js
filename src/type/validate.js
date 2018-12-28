@@ -37,7 +37,6 @@ import { GraphQLError } from '../error/GraphQLError';
 import type {
   ASTNode,
   FieldDefinitionNode,
-  EnumValueDefinitionNode,
   InputValueDefinitionNode,
   NamedTypeNode,
   TypeNode,
@@ -499,15 +498,6 @@ function validateEnumValues(
   for (const enumValue of enumValues) {
     const valueName = enumValue.name;
 
-    // Ensure no duplicates.
-    const allNodes = getEnumValueNodes(enumType, valueName);
-    if (allNodes && allNodes.length > 1) {
-      context.reportError(
-        `Enum type ${enumType.name} can include value ${valueName} only once.`,
-        allNodes,
-      );
-    }
-
     // Ensure valid name.
     validateName(context, enumValue);
     if (valueName === 'true' || valueName === 'false' || valueName === 'null') {
@@ -680,14 +670,5 @@ function getUnionMemberTypeNodes(
 ): ?$ReadOnlyArray<NamedTypeNode> {
   return getAllSubNodes(union, unionNode => unionNode.types).filter(
     typeNode => typeNode.name.value === typeName,
-  );
-}
-
-function getEnumValueNodes(
-  enumType: GraphQLEnumType,
-  valueName: string,
-): ?$ReadOnlyArray<EnumValueDefinitionNode> {
-  return getAllSubNodes(enumType, enumNode => enumNode.values).filter(
-    valueNode => valueNode.name.value === valueName,
   );
 }
