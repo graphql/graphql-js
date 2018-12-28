@@ -301,15 +301,7 @@ function validateFields(context, type) {
     for (var _iterator5 = fields[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
       var field = _step5.value;
       // Ensure they are named correctly.
-      validateName(context, field); // Ensure they were defined at most once.
-
-      var fieldNodes = getAllFieldNodes(type, field.name);
-
-      if (fieldNodes.length > 1) {
-        context.reportError("Field ".concat(type.name, ".").concat(field.name, " can only be defined once."), fieldNodes);
-        continue;
-      } // Ensure the type is an output type
-
+      validateName(context, field); // Ensure the type is an output type
 
       if (!isOutputType(field.type)) {
         context.reportError("The type of ".concat(type.name, ".").concat(field.name, " must be Output Type ") + "but got: ".concat(inspect(field.type), "."), getFieldTypeNode(type, field.name));
@@ -612,8 +604,7 @@ function validateInputFields(context, inputObj) {
     for (var _iterator12 = fields[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
       var field = _step12.value;
       // Ensure they are named correctly.
-      validateName(context, field); // TODO: Ensure they are unique per field.
-      // Ensure the type is an input type
+      validateName(context, field); // Ensure the type is an input type
 
       if (!isInputType(field.type)) {
         context.reportError("The type of ".concat(inputObj.name, ".").concat(field.name, " must be Input Type ") + "but got: ".concat(inspect(field.type), "."), field.astNode && field.astNode.type);
@@ -690,13 +681,9 @@ function getAllImplementsInterfaceNodes(type, iface) {
 }
 
 function getFieldNode(type, fieldName) {
-  return getAllFieldNodes(type, fieldName)[0];
-}
-
-function getAllFieldNodes(type, fieldName) {
-  return getAllSubNodes(type, function (typeNode) {
+  return find(getAllSubNodes(type, function (typeNode) {
     return typeNode.fields;
-  }).filter(function (fieldNode) {
+  }), function (fieldNode) {
     return fieldNode.name.value === fieldName;
   });
 }
