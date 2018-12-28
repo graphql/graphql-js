@@ -279,16 +279,6 @@ function validateFields(
     // Ensure they are named correctly.
     validateName(context, field);
 
-    // Ensure they were defined at most once.
-    const fieldNodes = getAllFieldNodes(type, field.name);
-    if (fieldNodes.length > 1) {
-      context.reportError(
-        `Field ${type.name}.${field.name} can only be defined once.`,
-        fieldNodes,
-      );
-      continue;
-    }
-
     // Ensure the type is an output type
     if (!isOutputType(field.type)) {
       context.reportError(
@@ -527,8 +517,6 @@ function validateInputFields(
     // Ensure they are named correctly.
     validateName(context, field);
 
-    // TODO: Ensure they are unique per field.
-
     // Ensure the type is an input type
     if (!isInputType(field.type)) {
       context.reportError(
@@ -592,14 +580,8 @@ function getFieldNode(
   type: GraphQLObjectType | GraphQLInterfaceType,
   fieldName: string,
 ): ?FieldDefinitionNode {
-  return getAllFieldNodes(type, fieldName)[0];
-}
-
-function getAllFieldNodes(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-  fieldName: string,
-): $ReadOnlyArray<FieldDefinitionNode> {
-  return getAllSubNodes(type, typeNode => typeNode.fields).filter(
+  return find(
+    getAllSubNodes(type, typeNode => typeNode.fields),
     fieldNode => fieldNode.name.value === fieldName,
   );
 }
