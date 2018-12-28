@@ -334,7 +334,7 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
         charCodeAt.call(body, pos + 1) === 34 &&
         charCodeAt.call(body, pos + 2) === 34
       ) {
-        return readBlockString(source, pos, line, col, prev);
+        return readBlockString(source, pos, line, col, prev, lexer);
       }
       return readString(source, pos, line, col, prev);
   }
@@ -625,7 +625,7 @@ function readString(source, start, line, col, prev): Token {
  *
  * """("?"?(\\"""|\\(?!=""")|[^"\\]))*"""
  */
-function readBlockString(source, start, line, col, prev): Token {
+function readBlockString(source, start, line, col, prev, lexer): Token {
   const body = source.body;
   let position = start + 3;
   let chunkStart = position;
@@ -668,8 +668,22 @@ function readBlockString(source, start, line, col, prev): Token {
       );
     }
 
-    // Escape Triple-Quote (\""")
-    if (
+    if (code === 10) {
+      // new line
+      ++position;
+      ++lexer.line;
+      lexer.lineStart = position;
+    } else if (code === 13) {
+      // carriage return
+      if (charCodeAt.call(body, position + 1) === 10) {
+        position += 2;
+      } else {
+        ++position;
+      }
+      ++lexer.line;
+      lexer.lineStart = position;
+    } else if (
+      // Escape Triple-Quote (\""")
       code === 92 &&
       charCodeAt.call(body, position + 1) === 34 &&
       charCodeAt.call(body, position + 2) === 34 &&
