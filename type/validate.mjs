@@ -572,14 +572,7 @@ function validateEnumValues(context, enumType) {
   try {
     for (var _iterator11 = enumValues[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
       var enumValue = _step11.value;
-      var valueName = enumValue.name; // Ensure no duplicates.
-
-      var allNodes = getEnumValueNodes(enumType, valueName);
-
-      if (allNodes && allNodes.length > 1) {
-        context.reportError("Enum type ".concat(enumType.name, " can include value ").concat(valueName, " only once."), allNodes);
-      } // Ensure valid name.
-
+      var valueName = enumValue.name; // Ensure valid name.
 
       validateName(context, enumValue);
 
@@ -776,13 +769,5 @@ function getUnionMemberTypeNodes(union, typeName) {
     return unionNode.types;
   }).filter(function (typeNode) {
     return typeNode.name.value === typeName;
-  });
-}
-
-function getEnumValueNodes(enumType, valueName) {
-  return getAllSubNodes(enumType, function (enumNode) {
-    return enumNode.values;
-  }).filter(function (valueNode) {
-    return valueNode.name.value === valueName;
   });
 }

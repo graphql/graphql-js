@@ -125,6 +125,7 @@ export const specifiedRules: $ReadOnlyArray<ValidationRule> = [
 import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
 import { UniqueOperationTypes } from './rules/UniqueOperationTypes';
 import { UniqueTypeNames } from './rules/UniqueTypeNames';
+import { UniqueEnumValueNames } from './rules/UniqueEnumValueNames';
 import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
 import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
 import { KnownArgumentNamesOnDirectives } from './rules/KnownArgumentNames';
@@ -135,6 +136,7 @@ export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = [
   LoneSchemaDefinition,
   UniqueOperationTypes,
   UniqueTypeNames,
+  UniqueEnumValueNames,
   UniqueFieldDefinitionNames,
   UniqueDirectiveNames,
   KnownTypeNames,
