@@ -282,9 +282,9 @@ export function extendSchema(schema, documentAST, options) {
     var _arr = Object.keys(oldFieldMap);
 
     for (var _i2 = 0; _i2 < _arr.length; _i2++) {
-      var _fieldName = _arr[_i2];
-      var _field = oldFieldMap[_fieldName];
-      newFieldMap[_fieldName] = {
+      var fieldName = _arr[_i2];
+      var _field = oldFieldMap[fieldName];
+      newFieldMap[fieldName] = {
         description: _field.description,
         type: extendType(_field.type),
         defaultValue: _field.defaultValue,
@@ -310,13 +310,7 @@ export function extendSchema(schema, documentAST, options) {
           try {
             for (var _iterator4 = extension.fields[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
               var field = _step4.value;
-              var fieldName = field.name.value;
-
-              if (oldFieldMap[fieldName]) {
-                throw new GraphQLError("Field \"".concat(type.name, ".").concat(fieldName, "\" already exists in the ") + 'schema. It cannot also be defined in this type extension.', [field]);
-              }
-
-              newFieldMap[fieldName] = astBuilder.buildInputField(field);
+              newFieldMap[field.name.value] = astBuilder.buildInputField(field);
             }
           } catch (err) {
             _didIteratorError4 = true;
@@ -644,9 +638,9 @@ export function extendSchema(schema, documentAST, options) {
     var _arr3 = Object.keys(oldFieldMap);
 
     for (var _i4 = 0; _i4 < _arr3.length; _i4++) {
-      var _fieldName2 = _arr3[_i4];
-      var _field2 = oldFieldMap[_fieldName2];
-      newFieldMap[_fieldName2] = {
+      var fieldName = _arr3[_i4];
+      var _field2 = oldFieldMap[fieldName];
+      newFieldMap[fieldName] = {
         description: _field2.description,
         deprecationReason: _field2.deprecationReason,
         type: extendType(_field2.type),
@@ -674,13 +668,7 @@ export function extendSchema(schema, documentAST, options) {
           try {
             for (var _iterator12 = extension.fields[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
               var field = _step12.value;
-              var fieldName = field.name.value;
-
-              if (oldFieldMap[fieldName]) {
-                throw new GraphQLError("Field \"".concat(type.name, ".").concat(fieldName, "\" already exists in the ") + 'schema. It cannot also be defined in this type extension.', [field]);
-              }
-
-              newFieldMap[fieldName] = astBuilder.buildField(field);
+              newFieldMap[field.name.value] = astBuilder.buildField(field);
             }
           } catch (err) {
             _didIteratorError12 = true;

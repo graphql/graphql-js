@@ -327,15 +327,7 @@ export function extendSchema(
     if (extensions) {
       for (const extension of extensions) {
         for (const field of extension.fields) {
-          const fieldName = field.name.value;
-          if (oldFieldMap[fieldName]) {
-            throw new GraphQLError(
-              `Field "${type.name}.${fieldName}" already exists in the ` +
-                'schema. It cannot also be defined in this type extension.',
-              [field],
-            );
-          }
-          newFieldMap[fieldName] = astBuilder.buildInputField(field);
+          newFieldMap[field.name.value] = astBuilder.buildInputField(field);
         }
       }
     }
@@ -542,15 +534,7 @@ export function extendSchema(
     if (extensions) {
       for (const extension of extensions) {
         for (const field of extension.fields) {
-          const fieldName = field.name.value;
-          if (oldFieldMap[fieldName]) {
-            throw new GraphQLError(
-              `Field "${type.name}.${fieldName}" already exists in the ` +
-                'schema. It cannot also be defined in this type extension.',
-              [field],
-            );
-          }
-          newFieldMap[fieldName] = astBuilder.buildField(field);
+          newFieldMap[field.name.value] = astBuilder.buildField(field);
         }
       }
     }
