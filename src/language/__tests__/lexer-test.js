@@ -365,7 +365,7 @@ describe('Lexer', () => {
     });
   });
 
-  it('advance line after lexing block string', () => {
+  it('advance line after lexing multiline block string', () => {
     expect(
       lexSecond(`"""
 
@@ -373,12 +373,32 @@ describe('Lexer', () => {
           multiple
             lines
 
-        """ second_token`),
+        \n """ second_token`),
     ).to.contain({
       kind: TokenKind.NAME,
-      start: 69,
-      end: 81,
-      line: 7,
+      start: 71,
+      end: 83,
+      line: 8,
+      column: 6,
+      value: 'second_token',
+    });
+
+    expect(
+      lexSecond(
+        [
+          '""" \n',
+          'spans \r\n',
+          'multiple \n\r',
+          'lines \n\n',
+          '"""\n second_token',
+        ].join(''),
+      ),
+    ).to.contain({
+      kind: TokenKind.NAME,
+      start: 37,
+      end: 49,
+      line: 8,
+      column: 2,
       value: 'second_token',
     });
   });
