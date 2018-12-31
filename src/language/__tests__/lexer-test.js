@@ -21,6 +21,12 @@ function lexOne(str) {
   return lexer.advance();
 }
 
+function lexSecond(str) {
+  const lexer = createLexer(new Source(str));
+  lexer.advance();
+  return lexer.advance();
+}
+
 function expectSyntaxError(text, message, location) {
   expect(() => lexOne(text))
     .to.throw('Syntax Error: ' + message)
@@ -356,6 +362,44 @@ describe('Lexer', () => {
       start: 0,
       end: 68,
       value: 'spans\n  multiple\n    lines',
+    });
+  });
+
+  it('advance line after lexing multiline block string', () => {
+    expect(
+      lexSecond(`"""
+
+        spans
+          multiple
+            lines
+
+        \n """ second_token`),
+    ).to.contain({
+      kind: TokenKind.NAME,
+      start: 71,
+      end: 83,
+      line: 8,
+      column: 6,
+      value: 'second_token',
+    });
+
+    expect(
+      lexSecond(
+        [
+          '""" \n',
+          'spans \r\n',
+          'multiple \n\r',
+          'lines \n\n',
+          '"""\n second_token',
+        ].join(''),
+      ),
+    ).to.contain({
+      kind: TokenKind.NAME,
+      start: 37,
+      end: 49,
+      line: 8,
+      column: 2,
+      value: 'second_token',
     });
   });
 
