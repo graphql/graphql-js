@@ -290,7 +290,7 @@ function readToken(lexer, prev) {
 
     case 34:
       if (charCodeAt.call(body, pos + 1) === 34 && charCodeAt.call(body, pos + 2) === 34) {
-        return readBlockString(source, pos, line, col, prev);
+        return readBlockString(source, pos, line, col, prev, lexer);
       }
 
       return readString(source, pos, line, col, prev);
@@ -545,7 +545,7 @@ function readString(source, start, line, col, prev) {
  */
 
 
-function readBlockString(source, start, line, col, prev) {
+function readBlockString(source, start, line, col, prev, lexer) {
   var body = source.body;
   var position = start + 3;
   var chunkStart = position;
@@ -562,10 +562,25 @@ function readBlockString(source, start, line, col, prev) {
 
     if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
       throw syntaxError(source, position, "Invalid character within String: ".concat(printCharCode(code), "."));
-    } // Escape Triple-Quote (\""")
+    }
 
+    if (code === 10) {
+      // new line
+      ++position;
+      ++lexer.line;
+      lexer.lineStart = position;
+    } else if (code === 13) {
+      // carriage return
+      if (charCodeAt.call(body, position + 1) === 10) {
+        position += 2;
+      } else {
+        ++position;
+      }
 
-    if (code === 92 && charCodeAt.call(body, position + 1) === 34 && charCodeAt.call(body, position + 2) === 34 && charCodeAt.call(body, position + 3) === 34) {
+      ++lexer.line;
+      lexer.lineStart = position;
+    } else if ( // Escape Triple-Quote (\""")
+    code === 92 && charCodeAt.call(body, position + 1) === 34 && charCodeAt.call(body, position + 2) === 34 && charCodeAt.call(body, position + 3) === 34) {
       rawValue += slice.call(body, chunkStart, position) + '"""';
       position += 4;
       chunkStart = position;
