@@ -704,8 +704,8 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful information for dashes in names', () => {
-    const q = 'a-b';
-    const lexer = createLexer(new Source(q));
+    const source = new Source('a-b');
+    const lexer = createLexer(source);
     const firstToken = lexer.advance();
     expect(firstToken).to.contain({
       kind: TokenKind.NAME,
@@ -723,21 +723,22 @@ describe('Lexer', () => {
   });
 
   it('produces double linked list of tokens, including comments', () => {
-    const lexer = createLexer(
-      new Source(`{
-      #comment
-      field
-    }`),
-    );
+    const source = new Source(`
+      {
+        #comment
+        field
+      }
+    `);
 
+    const lexer = createLexer(source);
     const startToken = lexer.token;
     let endToken;
     do {
       endToken = lexer.advance();
       // Lexer advances over ignored comment tokens to make writing parsers
       // easier, but will include them in the linked list result.
-      expect(endToken.kind).not.to.equal('Comment');
-    } while (endToken.kind !== '<EOF>');
+      expect(endToken.kind).not.to.equal(TokenKind.COMMENT);
+    } while (endToken.kind !== TokenKind.EOF);
 
     expect(startToken.prev).to.equal(null);
     expect(endToken.next).to.equal(null);
@@ -752,12 +753,12 @@ describe('Lexer', () => {
     }
 
     expect(tokens.map(tok => tok.kind)).to.deep.equal([
-      '<SOF>',
-      '{',
-      'Comment',
-      'Name',
-      '}',
-      '<EOF>',
+      TokenKind.SOF,
+      TokenKind.BRACE_L,
+      TokenKind.COMMENT,
+      TokenKind.NAME,
+      TokenKind.BRACE_R,
+      TokenKind.EOF,
     ]);
   });
 });

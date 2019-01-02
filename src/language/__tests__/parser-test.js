@@ -14,6 +14,7 @@ import { join } from 'path';
 import { Kind } from '../kinds';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import { TokenKind } from '../lexer';
 import { parse, parseValue, parseType } from '../parser';
 import { Source } from '../source';
 import dedent from '../../jsutils/dedent';
@@ -403,8 +404,11 @@ describe('Parser', () => {
   it('contains references to start and end tokens', () => {
     const result = parse('{ id }');
 
-    expect(result).to.have.nested.property('loc.startToken.kind', '<SOF>');
-    expect(result).to.have.nested.property('loc.endToken.kind', '<EOF>');
+    expect(result).to.have.nested.property(
+      'loc.startToken.kind',
+      TokenKind.SOF,
+    );
+    expect(result).to.have.nested.property('loc.endToken.kind', TokenKind.EOF);
   });
 
   describe('parseValue', () => {
