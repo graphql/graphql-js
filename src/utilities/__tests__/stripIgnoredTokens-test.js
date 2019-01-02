@@ -465,8 +465,6 @@ describe('stripIgnoredTokens: SDL document', () => {
 
     const printedStripped = stripIgnoredTokens(print(ast));
 
-    console.log(printedStripped);
-
     const resultStripped = `schema{query:QueryType mutation:MutationType}"""
 This is a description
 of the \`Foo\` type.
