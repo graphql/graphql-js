@@ -78,7 +78,7 @@ describe('inspect', () => {
     expect(inspect(object)).to.equal('<custom inspect>');
   });
 
-  it('custom inspect', () => {
+  it('custom symbol inspect is take precedence', () => {
     invariant(nodejsCustomInspectSymbol);
 
     const object = {
@@ -91,5 +91,26 @@ describe('inspect', () => {
     };
 
     expect(inspect(object)).to.equal('<custom symbol inspect>');
+  });
+
+  it('custom inspect returning object values', () => {
+    const object = {
+      inspect() {
+        return { custom: 'inspect' };
+      },
+    };
+
+    expect(inspect(object)).to.equal('{ custom: "inspect" }');
+  });
+
+  it('custom inspect function that uses this', () => {
+    const object = {
+      str: 'Hello World!',
+      inspect() {
+        return this.str;
+      },
+    };
+
+    expect(inspect(object)).to.equal('Hello World!');
   });
 });

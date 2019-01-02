@@ -7,11 +7,12 @@
  * @flow strict
  */
 
-import { inspect as utilInspect } from 'util';
+import { inspect as nodeInspect } from 'util';
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
+import inspect from '../../jsutils/inspect';
 import { GraphQLError } from '../../error';
 import { Source } from '../source';
 import { createLexer, TokenKind } from '../lexer';
@@ -62,13 +63,16 @@ describe('Lexer', () => {
     });
   });
 
-  it('can be JSON.stringified or util.inspected', () => {
+  it('can be JSON.stringified, util.inspected or jsutils.inspect', () => {
     const token = lexOne('foo');
     expect(JSON.stringify(token)).to.equal(
       '{"kind":"Name","value":"foo","line":1,"column":1}',
     );
-    expect(utilInspect(token)).to.equal(
+    expect(nodeInspect(token)).to.equal(
       "{ kind: 'Name', value: 'foo', line: 1, column: 1 }",
+    );
+    expect(inspect(token)).to.equal(
+      '{ kind: "Name", value: "foo", line: 1, column: 1 }',
     );
   });
 
