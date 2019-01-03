@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import { inspect } from 'util';
+import { inspect as nodeInspect } from 'util';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -18,6 +18,7 @@ import { TokenKind } from '../lexer';
 import { parse, parseValue, parseType } from '../parser';
 import { Source } from '../source';
 import dedent from '../../jsutils/dedent';
+import inspect from '../../jsutils/inspect';
 import toJSONDeep from './toJSONDeep';
 
 function expectSyntaxError(text, message, location) {
@@ -391,6 +392,7 @@ describe('Parser', () => {
     const result = parse('{ id }');
 
     expect(JSON.stringify(result.loc)).to.equal('{"start":0,"end":6}');
+    expect(nodeInspect(result.loc)).to.equal('{ start: 0, end: 6 }');
     expect(inspect(result.loc)).to.equal('{ start: 0, end: 6 }');
   });
 
