@@ -13,6 +13,25 @@ import { createLexer, TokenKind } from '../language/lexer';
 
 const slice = String.prototype.slice;
 
+/**
+ * Strips tokens that are not significant to the validity of a GraphQL string.
+ *
+ * Example:
+ *
+ * query SomeQuery($foo: String!, $bar: String) {
+ *   someField(foo: $foo, bar: $bar) {
+ *     a
+ *     b {
+ *       c
+ *       d
+ *     }
+ *   }
+ * }
+ *
+ * Becomes:
+ *
+ * query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}
+ */
 export function stripIgnoredTokens(source: string | Source): string {
   const sourceObj = typeof source === 'string' ? new Source(source) : source;
   if (!(sourceObj instanceof Source)) {
