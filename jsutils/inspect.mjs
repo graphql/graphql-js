@@ -23,12 +23,11 @@ export default function inspect(value) {
 
     case 'object':
       if (value) {
-        var customInspectFn = value[String(nodejsCustomInspectSymbol)];
+        var customInspectFn = getCustomFn(value);
 
-        if (typeof customInspectFn === 'function') {
-          return customInspectFn();
-        } else if (typeof value.inspect === 'function') {
-          return value.inspect();
+        if (customInspectFn) {
+          var customValue = customInspectFn.call(value);
+          return typeof customValue === 'string' ? customValue : inspect(customValue);
         } else if (Array.isArray(value)) {
           return '[' + value.map(inspect).join(', ') + ']';
         }
@@ -43,5 +42,17 @@ export default function inspect(value) {
 
     default:
       return String(value);
+  }
+}
+
+function getCustomFn(object) {
+  var customInspectFn = object[String(nodejsCustomInspectSymbol)];
+
+  if (typeof customInspectFn === 'function') {
+    return customInspectFn;
+  }
+
+  if (typeof object.inspect === 'function') {
+    return object.inspect;
   }
 }

@@ -20,11 +20,13 @@ export default function inspect(value: mixed): string {
       return value.name ? `[function ${value.name}]` : '[function]';
     case 'object':
       if (value) {
-        const customInspectFn = value[String(nodejsCustomInspectSymbol)];
-        if (typeof customInspectFn === 'function') {
-          return customInspectFn();
-        } else if (typeof value.inspect === 'function') {
-          return value.inspect();
+        const customInspectFn = getCustomFn(value);
+
+        if (customInspectFn) {
+          const customValue = customInspectFn.call(value);
+          return typeof customValue === 'string'
+            ? customValue
+            : inspect(customValue);
         } else if (Array.isArray(value)) {
           return '[' + value.map(inspect).join(', ') + ']';
         }
@@ -37,5 +39,17 @@ export default function inspect(value: mixed): string {
       return String(value);
     default:
       return String(value);
+  }
+}
+
+function getCustomFn(object) {
+  const customInspectFn = object[String(nodejsCustomInspectSymbol)];
+
+  if (typeof customInspectFn === 'function') {
+    return customInspectFn;
+  }
+
+  if (typeof object.inspect === 'function') {
+    return object.inspect;
   }
 }
