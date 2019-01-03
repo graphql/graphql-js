@@ -18,3 +18,6 @@ export const bigSchemaSDL = readLocalFile('github-schema.graphql');
 export const bigSchemaIntrospectionResult = JSON.parse(
   readLocalFile('github-schema.json'),
 );
+
+export const kitchenSinkSDL = readLocalFile('schema-kitchen-sink.graphql');
+export const kitchenSinkQuery = readLocalFile('kitchen-sink.graphql');

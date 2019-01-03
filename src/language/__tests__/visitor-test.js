@@ -11,13 +11,12 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parse } from '../parser';
 import { print } from '../printer';
-import { readFileSync } from 'fs';
 import { visit, visitInParallel, visitWithTypeInfo, BREAK } from '../visitor';
-import { join } from 'path';
 import { TypeInfo } from '../../utilities/TypeInfo';
 import { testSchema } from '../../validation/__tests__/harness';
 import { getNamedType, isCompositeType } from '../../type';
 import { Kind } from '../kinds';
+import { kitchenSinkQuery } from '../../__fixtures__';
 
 function getNodeByPath(ast, path) {
   let result = ast;
@@ -464,11 +463,7 @@ describe('Visitor', () => {
   });
 
   it('visits kitchen sink', () => {
-    const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
-      encoding: 'utf8',
-    });
-    const ast = parse(kitchenSink);
-
+    const ast = parse(kitchenSinkQuery);
     const visited = [];
 
     visit(ast, {
