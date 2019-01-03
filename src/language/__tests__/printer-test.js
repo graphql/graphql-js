@@ -10,18 +10,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parse } from '../parser';
-import { readFileSync } from 'fs';
 import { print } from '../printer';
-import { join } from 'path';
 import dedent from '../../jsutils/dedent';
+import { kitchenSinkQuery } from '../../__fixtures__';
 
 describe('Printer: Query document', () => {
-  const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
-    encoding: 'utf8',
-  });
-
   it('does not alter ast', () => {
-    const ast = parse(kitchenSink);
+    const ast = parse(kitchenSinkQuery);
     const astBefore = JSON.stringify(ast);
     print(ast);
     expect(JSON.stringify(ast)).to.equal(astBefore);
@@ -168,9 +163,7 @@ describe('Printer: Query document', () => {
   });
 
   it('prints kitchen sink', () => {
-    const ast = parse(kitchenSink);
-
-    const printed = print(ast);
+    const printed = print(parse(kitchenSinkQuery));
 
     expect(printed).to.equal(
       dedent(String.raw`

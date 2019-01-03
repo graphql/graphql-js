@@ -8,7 +8,6 @@
  */
 
 import invariant from '../jsutils/invariant';
-import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
@@ -174,11 +173,10 @@ export function extendSchema(
   const astBuilder = new ASTDefinitionBuilder(
     typeDefinitionMap,
     options,
-    typeRef => {
-      const typeName = typeRef.name.value;
+    typeName => {
       const existingType = schema.getType(typeName);
-
       invariant(existingType, `Unknown type: "${typeName}".`);
+
       return extendNamedType(existingType);
     },
   );
@@ -328,15 +326,7 @@ export function extendSchema(
     if (extensions) {
       for (const extension of extensions) {
         for (const field of extension.fields) {
-          const fieldName = field.name.value;
-          if (oldFieldMap[fieldName]) {
-            throw new GraphQLError(
-              `Field "${type.name}.${fieldName}" already exists in the ` +
-                'schema. It cannot also be defined in this type extension.',
-              [field],
-            );
-          }
-          newFieldMap[fieldName] = astBuilder.buildInputField(field);
+          newFieldMap[field.name.value] = astBuilder.buildInputField(field);
         }
       }
     }
@@ -362,11 +352,8 @@ export function extendSchema(
 
   function extendValueMap(type: GraphQLEnumType) {
     const newValueMap = Object.create(null);
-    const oldValueMap = keyMap(type.getValues(), value => value.name);
-    for (const valueName of Object.keys(oldValueMap)) {
-      const value = oldValueMap[valueName];
-      newValueMap[valueName] = {
-        name: value.name,
+    for (const value of type.getValues()) {
+      newValueMap[value.name] = {
         description: value.description,
         value: value.value,
         deprecationReason: value.deprecationReason,
@@ -379,15 +366,7 @@ export function extendSchema(
     if (extensions) {
       for (const extension of extensions) {
         for (const value of extension.values) {
-          const valueName = value.name.value;
-          if (oldValueMap[valueName]) {
-            throw new GraphQLError(
-              `Enum value "${type.name}.${valueName}" already exists in the ` +
-                'schema. It cannot also be defined in this type extension.',
-              [value],
-            );
-          }
-          newValueMap[valueName] = astBuilder.buildEnumValue(value);
+          newValueMap[value.name.value] = astBuilder.buildEnumValue(value);
         }
       }
     }
@@ -543,15 +522,7 @@ export function extendSchema(
     if (extensions) {
       for (const extension of extensions) {
         for (const field of extension.fields) {
-          const fieldName = field.name.value;
-          if (oldFieldMap[fieldName]) {
-            throw new GraphQLError(
-              `Field "${type.name}.${fieldName}" already exists in the ` +
-                'schema. It cannot also be defined in this type extension.',
-              [field],
-            );
-          }
-          newFieldMap[fieldName] = astBuilder.buildField(field);
+          newFieldMap[field.name.value] = astBuilder.buildField(field);
         }
       }
     }

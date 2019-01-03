@@ -790,25 +790,6 @@ describe('Type System: Enum types must be well defined', () => {
     ]);
   });
 
-  it('rejects an Enum type with duplicate values', () => {
-    const schema = buildSchema(`
-      type Query {
-        field: SomeEnum
-      }
-
-      enum SomeEnum {
-        SOME_VALUE
-        SOME_VALUE
-      }
-    `);
-    expect(validateSchema(schema)).to.deep.equal([
-      {
-        message: 'Enum type SomeEnum can include value SOME_VALUE only once.',
-        locations: [{ line: 7, column: 9 }, { line: 8, column: 9 }],
-      },
-    ]);
-  });
-
   it('rejects an Enum type with incorrectly named values', () => {
     function schemaWithEnum(name) {
       return schemaWithFieldType(

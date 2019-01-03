@@ -7,17 +7,24 @@
  * @flow strict
  */
 
-import { inspect as utilInspect } from 'util';
+import { inspect as nodeInspect } from 'util';
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
+import inspect from '../../jsutils/inspect';
 import { GraphQLError } from '../../error';
 import { Source } from '../source';
 import { createLexer, TokenKind } from '../lexer';
 
 function lexOne(str) {
   const lexer = createLexer(new Source(str));
+  return lexer.advance();
+}
+
+function lexSecond(str) {
+  const lexer = createLexer(new Source(str));
+  lexer.advance();
   return lexer.advance();
 }
 
@@ -56,13 +63,16 @@ describe('Lexer', () => {
     });
   });
 
-  it('can be JSON.stringified or util.inspected', () => {
+  it('can be JSON.stringified, util.inspected or jsutils.inspect', () => {
     const token = lexOne('foo');
     expect(JSON.stringify(token)).to.equal(
       '{"kind":"Name","value":"foo","line":1,"column":1}',
     );
-    expect(utilInspect(token)).to.equal(
+    expect(nodeInspect(token)).to.equal(
       "{ kind: 'Name', value: 'foo', line: 1, column: 1 }",
+    );
+    expect(inspect(token)).to.equal(
+      '{ kind: "Name", value: "foo", line: 1, column: 1 }',
     );
   });
 
@@ -356,6 +366,44 @@ describe('Lexer', () => {
       start: 0,
       end: 68,
       value: 'spans\n  multiple\n    lines',
+    });
+  });
+
+  it('advance line after lexing multiline block string', () => {
+    expect(
+      lexSecond(`"""
+
+        spans
+          multiple
+            lines
+
+        \n """ second_token`),
+    ).to.contain({
+      kind: TokenKind.NAME,
+      start: 71,
+      end: 83,
+      line: 8,
+      column: 6,
+      value: 'second_token',
+    });
+
+    expect(
+      lexSecond(
+        [
+          '""" \n',
+          'spans \r\n',
+          'multiple \n\r',
+          'lines \n\n',
+          '"""\n second_token',
+        ].join(''),
+      ),
+    ).to.contain({
+      kind: TokenKind.NAME,
+      start: 37,
+      end: 49,
+      line: 8,
+      column: 2,
+      value: 'second_token',
     });
   });
 
@@ -660,8 +708,8 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful information for dashes in names', () => {
-    const q = 'a-b';
-    const lexer = createLexer(new Source(q));
+    const source = new Source('a-b');
+    const lexer = createLexer(source);
     const firstToken = lexer.advance();
     expect(firstToken).to.contain({
       kind: TokenKind.NAME,
@@ -679,21 +727,22 @@ describe('Lexer', () => {
   });
 
   it('produces double linked list of tokens, including comments', () => {
-    const lexer = createLexer(
-      new Source(`{
-      #comment
-      field
-    }`),
-    );
+    const source = new Source(`
+      {
+        #comment
+        field
+      }
+    `);
 
+    const lexer = createLexer(source);
     const startToken = lexer.token;
     let endToken;
     do {
       endToken = lexer.advance();
       // Lexer advances over ignored comment tokens to make writing parsers
       // easier, but will include them in the linked list result.
-      expect(endToken.kind).not.to.equal('Comment');
-    } while (endToken.kind !== '<EOF>');
+      expect(endToken.kind).not.to.equal(TokenKind.COMMENT);
+    } while (endToken.kind !== TokenKind.EOF);
 
     expect(startToken.prev).to.equal(null);
     expect(endToken.next).to.equal(null);
@@ -708,12 +757,12 @@ describe('Lexer', () => {
     }
 
     expect(tokens.map(tok => tok.kind)).to.deep.equal([
-      '<SOF>',
-      '{',
-      'Comment',
-      'Name',
-      '}',
-      '<EOF>',
+      TokenKind.SOF,
+      TokenKind.BRACE_L,
+      TokenKind.COMMENT,
+      TokenKind.NAME,
+      TokenKind.BRACE_R,
+      TokenKind.EOF,
     ]);
   });
 });

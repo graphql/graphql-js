@@ -37,7 +37,6 @@ import { GraphQLError } from '../error/GraphQLError';
 import type {
   ASTNode,
   FieldDefinitionNode,
-  EnumValueDefinitionNode,
   InputValueDefinitionNode,
   NamedTypeNode,
   TypeNode,
@@ -280,16 +279,6 @@ function validateFields(
     // Ensure they are named correctly.
     validateName(context, field);
 
-    // Ensure they were defined at most once.
-    const fieldNodes = getAllFieldNodes(type, field.name);
-    if (fieldNodes.length > 1) {
-      context.reportError(
-        `Field ${type.name}.${field.name} can only be defined once.`,
-        fieldNodes,
-      );
-      continue;
-    }
-
     // Ensure the type is an output type
     if (!isOutputType(field.type)) {
       context.reportError(
@@ -499,15 +488,6 @@ function validateEnumValues(
   for (const enumValue of enumValues) {
     const valueName = enumValue.name;
 
-    // Ensure no duplicates.
-    const allNodes = getEnumValueNodes(enumType, valueName);
-    if (allNodes && allNodes.length > 1) {
-      context.reportError(
-        `Enum type ${enumType.name} can include value ${valueName} only once.`,
-        allNodes,
-      );
-    }
-
     // Ensure valid name.
     validateName(context, enumValue);
     if (valueName === 'true' || valueName === 'false' || valueName === 'null') {
@@ -536,8 +516,6 @@ function validateInputFields(
   for (const field of fields) {
     // Ensure they are named correctly.
     validateName(context, field);
-
-    // TODO: Ensure they are unique per field.
 
     // Ensure the type is an input type
     if (!isInputType(field.type)) {
@@ -602,14 +580,8 @@ function getFieldNode(
   type: GraphQLObjectType | GraphQLInterfaceType,
   fieldName: string,
 ): ?FieldDefinitionNode {
-  return getAllFieldNodes(type, fieldName)[0];
-}
-
-function getAllFieldNodes(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-  fieldName: string,
-): $ReadOnlyArray<FieldDefinitionNode> {
-  return getAllSubNodes(type, typeNode => typeNode.fields).filter(
+  return find(
+    getAllSubNodes(type, typeNode => typeNode.fields),
     fieldNode => fieldNode.name.value === fieldName,
   );
 }
@@ -680,14 +652,5 @@ function getUnionMemberTypeNodes(
 ): ?$ReadOnlyArray<NamedTypeNode> {
   return getAllSubNodes(union, unionNode => unionNode.types).filter(
     typeNode => typeNode.name.value === typeName,
-  );
-}
-
-function getEnumValueNodes(
-  enumType: GraphQLEnumType,
-  valueName: string,
-): ?$ReadOnlyArray<EnumValueDefinitionNode> {
-  return getAllSubNodes(enumType, enumNode => enumNode.values).filter(
-    valueNode => valueNode.name.value === valueName,
   );
 }

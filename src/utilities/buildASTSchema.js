@@ -153,8 +153,8 @@ export function buildASTSchema(
   const definitionBuilder = new ASTDefinitionBuilder(
     nodeMap,
     options,
-    typeRef => {
-      throw new Error(`Type "${typeRef.name.value}" not found in document.`);
+    typeName => {
+      throw new Error(`Type "${typeName}" not found in document.`);
     },
   );
 
@@ -205,7 +205,7 @@ export function buildASTSchema(
 }
 
 type TypeDefinitionsMap = ObjMap<TypeDefinitionNode>;
-type TypeResolver = (typeRef: NamedTypeNode) => GraphQLNamedType;
+type TypeResolver = (typeName: string) => GraphQLNamedType;
 
 export class ASTDefinitionBuilder {
   _typeDefinitionsMap: TypeDefinitionsMap;
@@ -235,7 +235,7 @@ export class ASTDefinitionBuilder {
         const defNode = this._typeDefinitionsMap[typeName];
         this._cache[typeName] = defNode
           ? this._makeSchemaDef(defNode)
-          : this._resolveType(node);
+          : this._resolveType(node.name.value);
       } else {
         this._cache[typeName] = this._makeSchemaDef(node);
       }

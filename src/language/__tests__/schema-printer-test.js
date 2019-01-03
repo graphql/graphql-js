@@ -9,11 +9,10 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { parse } from '../parser';
 import { print } from '../printer';
 import dedent from '../../jsutils/dedent';
+import { kitchenSinkSDL } from '../../__fixtures__';
 
 describe('Printer: SDL document', () => {
   it('prints minimal ast', () => {
@@ -31,22 +30,15 @@ describe('Printer: SDL document', () => {
     );
   });
 
-  const kitchenSink = readFileSync(
-    join(__dirname, '/schema-kitchen-sink.graphql'),
-    { encoding: 'utf8' },
-  );
-
   it('does not alter ast', () => {
-    const ast = parse(kitchenSink);
+    const ast = parse(kitchenSinkSDL);
     const astBefore = JSON.stringify(ast);
     print(ast);
     expect(JSON.stringify(ast)).to.equal(astBefore);
   });
 
   it('prints kitchen sink', () => {
-    const ast = parse(kitchenSink);
-
-    const printed = print(ast);
+    const printed = print(parse(kitchenSinkSDL));
 
     expect(printed).to.equal(dedent`
       schema {
