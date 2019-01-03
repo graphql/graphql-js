@@ -15,6 +15,8 @@ const slice = String.prototype.slice;
 
 /**
  * Strips tokens that are not significant to the validity of a GraphQL string.
+ * This can be used to save on bundle size at compile-time and network payload
+ * size at runtime.
  *
  * Example:
  *
