@@ -10,26 +10,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { parse } from '../../language/parser';
-import { readFileSync } from 'fs';
 import { print } from '../../language/printer';
-import { join } from 'path';
 import dedent from '../../jsutils/dedent';
 import { stripIgnoredTokens } from '../stripIgnoredTokens';
+import { kitchenSinkQuery, kitchenSinkSDL } from '../../__fixtures__';
 
 describe('stripIgnoredTokens: Query document', () => {
-  const kitchenSink = readFileSync(
-    join(
-      __dirname,
-      '../',
-      '../',
-      '/language',
-      '/__tests__',
-      '/kitchen-sink.graphql',
-    ),
-    {
-      encoding: 'utf8',
-    },
-  );
+  const kitchenSink = kitchenSinkQuery;
 
   it('does not alter ast', () => {
     const ast = parse(kitchenSink);
@@ -299,17 +286,7 @@ describe('stripIgnoredTokens: SDL document', () => {
     );
   });
 
-  const kitchenSink = readFileSync(
-    join(
-      __dirname,
-      '../',
-      '../',
-      '/language',
-      '/__tests__',
-      '/schema-kitchen-sink.graphql',
-    ),
-    { encoding: 'utf8' },
-  );
+  const kitchenSink = kitchenSinkSDL;
 
   it('does not alter ast', () => {
     const ast = parse(kitchenSink);
