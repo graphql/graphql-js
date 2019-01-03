@@ -12,6 +12,7 @@ import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
 import { parse } from '../parser';
 import toJSONDeep from './toJSONDeep';
+import { kitchenSinkSDL } from '../../__fixtures__';
 
 function expectSyntaxError(text, message, location) {
   expect(() => parse(text))
@@ -821,6 +822,10 @@ input Hello {
       'Unexpected Name "INCORRECT_LOCATION"',
       { line: 2, column: 33 },
     );
+  });
+
+  it('parses kitchen sink schema', () => {
+    expect(() => parse(kitchenSinkSDL)).to.not.throw();
   });
 
   it('Option: allowLegacySDLEmptyFields supports type with empty fields', () => {

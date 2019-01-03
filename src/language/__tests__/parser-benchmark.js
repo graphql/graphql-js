@@ -7,15 +7,10 @@
  * @flow strict
  */
 
-import { join } from 'path';
-import { readFileSync } from 'fs';
+import { kitchenSinkQuery } from '../../__fixtures__';
 import { parse } from '../parser';
-
-const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
-  encoding: 'utf8',
-});
 
 export const name = 'Parse kitchen sink';
 export function measure() {
-  parse(kitchenSink);
+  parse(kitchenSinkQuery);
 }

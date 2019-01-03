@@ -8,18 +8,17 @@
  */
 
 import { inspect as nodeInspect } from 'util';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
-import { Kind } from '../kinds';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import { Kind } from '../kinds';
 import { TokenKind } from '../lexer';
 import { parse, parseValue, parseType } from '../parser';
 import { Source } from '../source';
 import dedent from '../../jsutils/dedent';
 import inspect from '../../jsutils/inspect';
 import toJSONDeep from './toJSONDeep';
+import { kitchenSinkQuery } from '../../__fixtures__';
 
 function expectSyntaxError(text, message, location) {
   expect(() => parse(text))
@@ -145,12 +144,8 @@ describe('Parser', () => {
     );
   });
 
-  const kitchenSink = readFileSync(join(__dirname, '/kitchen-sink.graphql'), {
-    encoding: 'utf8',
-  });
-
   it('parses kitchen sink', () => {
-    expect(() => parse(kitchenSink)).to.not.throw();
+    expect(() => parse(kitchenSinkQuery)).to.not.throw();
   });
 
   it('allows non-keywords anywhere a Name is allowed', () => {
