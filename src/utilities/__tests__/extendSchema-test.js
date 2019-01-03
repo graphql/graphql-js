@@ -1106,21 +1106,6 @@ describe('extendSchema', () => {
     );
   });
 
-  it('does not allow extending an unknown type', () => {
-    [
-      'extend scalar UnknownType @foo',
-      'extend type UnknownType @foo',
-      'extend interface UnknownType @foo',
-      'extend enum UnknownType @foo',
-      'extend union UnknownType @foo',
-      'extend input UnknownType @foo',
-    ].forEach(sdl => {
-      expect(() => extendTestSchema(sdl)).to.throw(
-        'Cannot extend type "UnknownType" because it does not exist in the existing schema.',
-      );
-    });
-  });
-
   it('maintains configuration of the original schema object', () => {
     const testSchemaWithLegacyNames = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -1161,43 +1146,6 @@ describe('extendSchema', () => {
     expect(schema).to.deep.include({
       __allowedLegacyNames: ['__badName', '__anotherBadName'],
     });
-  });
-
-  it('does not allow extending a mismatch type', () => {
-    const typeSDL = `
-      extend type SomeInterface @foo
-    `;
-    expect(() => extendTestSchema(typeSDL)).to.throw(
-      'Cannot extend non-object type "SomeInterface".',
-    );
-
-    const interfaceSDL = `
-      extend interface Foo @foo
-    `;
-    expect(() => extendTestSchema(interfaceSDL)).to.throw(
-      'Cannot extend non-interface type "Foo".',
-    );
-
-    const enumSDL = `
-      extend enum Foo @foo
-    `;
-    expect(() => extendTestSchema(enumSDL)).to.throw(
-      'Cannot extend non-enum type "Foo".',
-    );
-
-    const unionSDL = `
-      extend union Foo @foo
-    `;
-    expect(() => extendTestSchema(unionSDL)).to.throw(
-      'Cannot extend non-union type "Foo".',
-    );
-
-    const inputSDL = `
-      extend input Foo @foo
-    `;
-    expect(() => extendTestSchema(inputSDL)).to.throw(
-      'Cannot extend non-input object type "Foo".',
-    );
   });
 
   describe('can add additional root operation types', () => {
