@@ -12,7 +12,6 @@ import keyValMap from '../jsutils/keyValMap';
 import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { assertValidSDLExtension } from '../validation/validate';
-import { GraphQLError } from '../error/GraphQLError';
 import { assertSchema, GraphQLSchema } from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
@@ -136,19 +135,7 @@ export function extendSchema(
       const typeName = def.name.value;
       typeDefinitionMap[typeName] = def;
     } else if (isTypeExtensionNode(def)) {
-      // Sanity check that this type extension exists within the
-      // schema's existing types.
       const extendedTypeName = def.name.value;
-      const existingType = schema.getType(extendedTypeName);
-      if (!existingType) {
-        throw new GraphQLError(
-          `Cannot extend type "${extendedTypeName}" because it does not ` +
-            'exist in the existing schema.',
-          [def],
-        );
-      }
-      checkExtensionNode(existingType, def);
-
       const existingTypeExtensions = typeExtensionsMap[extendedTypeName];
       typeExtensionsMap[extendedTypeName] = existingTypeExtensions
         ? existingTypeExtensions.concat([def])
@@ -538,48 +525,5 @@ export function extendSchema(
       return (GraphQLNonNull(extendType(typeDef.ofType)): any);
     }
     return extendNamedType(typeDef);
-  }
-}
-
-function checkExtensionNode(type, node) {
-  switch (node.kind) {
-    case Kind.OBJECT_TYPE_EXTENSION:
-      if (!isObjectType(type)) {
-        throw new GraphQLError(
-          `Cannot extend non-object type "${type.name}".`,
-          [node],
-        );
-      }
-      break;
-    case Kind.INTERFACE_TYPE_EXTENSION:
-      if (!isInterfaceType(type)) {
-        throw new GraphQLError(
-          `Cannot extend non-interface type "${type.name}".`,
-          [node],
-        );
-      }
-      break;
-    case Kind.ENUM_TYPE_EXTENSION:
-      if (!isEnumType(type)) {
-        throw new GraphQLError(`Cannot extend non-enum type "${type.name}".`, [
-          node,
-        ]);
-      }
-      break;
-    case Kind.UNION_TYPE_EXTENSION:
-      if (!isUnionType(type)) {
-        throw new GraphQLError(`Cannot extend non-union type "${type.name}".`, [
-          node,
-        ]);
-      }
-      break;
-    case Kind.INPUT_OBJECT_TYPE_EXTENSION:
-      if (!isInputObjectType(type)) {
-        throw new GraphQLError(
-          `Cannot extend non-input object type "${type.name}".`,
-          [node],
-        );
-      }
-      break;
   }
 }

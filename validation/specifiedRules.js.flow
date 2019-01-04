@@ -128,6 +128,7 @@ import { UniqueTypeNames } from './rules/UniqueTypeNames';
 import { UniqueEnumValueNames } from './rules/UniqueEnumValueNames';
 import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
 import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
+import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
 import { KnownArgumentNamesOnDirectives } from './rules/KnownArgumentNames';
 import { ProvidedRequiredArgumentsOnDirectives } from './rules/ProvidedRequiredArguments';
 
@@ -142,6 +143,7 @@ export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = [
   KnownTypeNames,
   KnownDirectives,
   UniqueDirectivesPerLocation,
+  PossibleTypeExtensions,
   KnownArgumentNamesOnDirectives,
   UniqueArgumentNames,
   UniqueInputFieldNames,
