@@ -196,7 +196,7 @@ describe('stripIgnoredTokens: Query document', () => {
 
     const printed = print(ast);
 
-    // $FlowFixMe
+    // $FlowFixMe workaround for: https://github.com/facebook/flow/issues/2616
     const result = dedent(String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         whoever123is: node(id: [123, 456]) {
