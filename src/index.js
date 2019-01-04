@@ -385,7 +385,7 @@ export {
   concatAST,
   // Separates an AST into an AST per Operation.
   separateOperations,
-  // Removes non-significant tokens from a GraphQL string.
+  // Strips insignificant tokens from a GraphQL string.
   stripIgnoredTokens,
   // Comparators for types
   isEqualType,
