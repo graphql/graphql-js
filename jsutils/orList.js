@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = orList;
 
+var _invariant = _interopRequireDefault(require("./invariant"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -19,8 +23,17 @@ var MAX_LENGTH = 5;
  */
 
 function orList(items) {
+  !(items.length !== 0) ? (0, _invariant.default)(0) : void 0;
+
+  if (items.length === 1) {
+    return items[0];
+  }
+
+  if (items.length === 2) {
+    return items[0] + ' or ' + items[1];
+  }
+
   var selected = items.slice(0, MAX_LENGTH);
-  return selected.reduce(function (list, quoted, index) {
-    return list + (selected.length > 2 ? ', ' : ' ') + (index === selected.length - 1 ? 'or ' : '') + quoted;
-  });
+  var lastItem = selected.pop();
+  return selected.join(', ') + ', or ' + lastItem;
 }
