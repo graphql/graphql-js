@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -13,7 +13,12 @@ import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 import dedent from '../../jsutils/dedent';
 import { stripIgnoredTokens } from '../stripIgnoredTokens';
-import { kitchenSinkQuery, kitchenSinkSDL } from '../../__fixtures__';
+import {
+  kitchenSinkQuery,
+  kitchenSinkSDL,
+  strippedKitchenSinkQuery,
+  strippedKitchenSinkSDL,
+} from '../../__fixtures__';
 
 describe('stripIgnoredTokens: Query document', () => {
   const kitchenSink = kitchenSinkQuery;
@@ -139,7 +144,7 @@ describe('stripIgnoredTokens: Query document', () => {
         }
       `);
       expect(stripIgnoredTokens(print(mutationAstWithArtifacts))).to.equal(
-        String.raw`{field(arg:"""
+        `{field(arg:"""
         first
       line
     indentation
@@ -158,7 +163,7 @@ describe('stripIgnoredTokens: Query document', () => {
         }
       `);
       expect(stripIgnoredTokens(print(mutationAstWithArtifacts))).to.equal(
-        String.raw`{field(arg:"""    space-led value "quoted string"
+        `{field(arg:"""    space-led value "quoted string"
   """)}`,
       );
       expect(() =>
@@ -191,6 +196,7 @@ describe('stripIgnoredTokens: Query document', () => {
 
     const printed = print(ast);
 
+    // $FlowFixMe
     const result = dedent(String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         whoever123is: node(id: [123, 456]) {
@@ -254,9 +260,7 @@ describe('stripIgnoredTokens: Query document', () => {
 
     const printedStripped = stripIgnoredTokens(print(ast));
 
-    const resultStripped = String.raw`query queryName($foo:ComplexType$site:Site=MOBILE)@onQuery{whoever123is:node(id:[123 456]){id...on User@onInlineFragment{field2{id alias:field1(first:10 after:$foo)@include(if:$foo){id...frag@onFragmentSpread}}}...@skip(unless:$foo){id}...{id}}}mutation likeStory@onMutation{like(story:123)@onField{story{id@onField}}}subscription StoryLikeSubscription($input:StoryLikeSubscribeInput)@onSubscription{storyLikeSubscribe(input:$input){story{likers{count}likeSentence{text}}}}fragment frag on Friend@onFragmentDefinition{foo(size:$size bar:$b obj:{key:"value" block:"""
-    block string uses \"""
-  """})}{unnamed(truthy:true falsey:false nullish:null)query}{__typename}`;
+    const resultStripped = strippedKitchenSinkQuery;
 
     expect(printedStripped).to.equal(resultStripped);
 
@@ -441,23 +445,9 @@ describe('stripIgnoredTokens: SDL document', () => {
     expect(printed).to.equal(result);
 
     const printedStripped = stripIgnoredTokens(print(ast));
+    console.log(printedStripped);
 
-    const resultStripped = `schema{query:QueryType mutation:MutationType}"""
-This is a description
-of the \`Foo\` type.
-""" type Foo implements Bar&Baz{"Description of the \`one\` field." one:Type """
-  This is a description of the \`two\` field.
-  """ two("""
-    This is a description of the \`argument\` argument.
-    """ argument:InputType!):Type """
-  This is a description of the \`three\` field.
-  """ three(argument:InputType other:String):Int four(argument:String="string"):String five(argument:[String]=["string" "string"]):String six(argument:InputType={key:"value"}):Type seven(argument:Int=null):Type}type AnnotatedObject@onObject(arg:"value"){annotatedField(arg:Type="default"@onArgumentDefinition):Type@onField}type UndefinedType extend type Foo{seven(argument:[String]):Type}extend type Foo@onType interface Bar{one:Type four(argument:String="string"):String}interface AnnotatedInterface@onInterface{annotatedField(arg:Type@onArgumentDefinition):Type@onField}interface UndefinedInterface extend interface Bar{two(argument:InputType!):Type}extend interface Bar@onInterface union Feed=Story|Article|Advert union AnnotatedUnion@onUnion=A|B union AnnotatedUnionTwo@onUnion=A|B union UndefinedUnion extend union Feed=Photo|Video extend union Feed@onUnion scalar CustomScalar scalar AnnotatedScalar@onScalar extend scalar CustomScalar@onScalar enum Site{"""
-  This is a description of the \`DESKTOP\` value
-  """ DESKTOP """
-  This is a description of the \`MOBILE\` value
-  """ MOBILE "This is a description of the \`WEB\` value" WEB}enum AnnotatedEnum@onEnum{ANNOTATED_VALUE@onEnumValue OTHER_VALUE}enum UndefinedEnum extend enum Site{VR}extend enum Site@onEnum input InputType{key:String!answer:Int=42}input AnnotatedInput@onInputObject{annotatedField:Type@onInputFieldDefinition}input UndefinedInput extend input InputType{other:Float=1.23e4@onInputFieldDefinition}extend input InputType@onInputObject """
-This is a description of the \`@skip\` directive
-""" directive@skip(if:Boolean!@onArgumentDefinition)on FIELD|FRAGMENT_SPREAD|INLINE_FRAGMENT directive@include(if:Boolean!)on FIELD|FRAGMENT_SPREAD|INLINE_FRAGMENT directive@include2(if:Boolean!)on FIELD|FRAGMENT_SPREAD|INLINE_FRAGMENT extend schema@onSchema extend schema@onSchema{subscription:SubscriptionType}`;
+    const resultStripped = strippedKitchenSinkSDL;
 
     expect(printedStripped).to.equal(resultStripped);
 

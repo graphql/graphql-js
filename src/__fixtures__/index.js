@@ -21,3 +21,14 @@ export const bigSchemaIntrospectionResult = JSON.parse(
 
 export const kitchenSinkSDL = readLocalFile('schema-kitchen-sink.graphql');
 export const kitchenSinkQuery = readLocalFile('kitchen-sink.graphql');
+
+function removeCommentsFromFixture(fixture) {
+  return fixture.replace(/#.*/g, '');
+}
+
+export const strippedKitchenSinkSDL = removeCommentsFromFixture(
+  readLocalFile('stripped-schema-kitchen-sink.graphql'),
+).trim();
+export const strippedKitchenSinkQuery = removeCommentsFromFixture(
+  readLocalFile('stripped-kitchen-sink.graphql'),
+).trim();
