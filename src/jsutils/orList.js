@@ -7,18 +7,24 @@
  * @flow strict
  */
 
+import invariant from './invariant';
+
 const MAX_LENGTH = 5;
 
 /**
  * Given [ A, B, C ] return 'A, B, or C'.
  */
 export default function orList(items: $ReadOnlyArray<string>): string {
+  invariant(items.length !== 0);
+
+  if (items.length === 1) {
+    return items[0];
+  }
+  if (items.length === 2) {
+    return items[0] + ' or ' + items[1];
+  }
+
   const selected = items.slice(0, MAX_LENGTH);
-  return selected.reduce(
-    (list, quoted, index) =>
-      list +
-      (selected.length > 2 ? ', ' : ' ') +
-      (index === selected.length - 1 ? 'or ' : '') +
-      quoted,
-  );
+  const lastItem = selected.pop();
+  return selected.join(', ') + ', or ' + lastItem;
 }

@@ -13,7 +13,7 @@ import quotedOrList from '../quotedOrList';
 
 describe('quotedOrList', () => {
   it('Does not accept an empty list', () => {
-    expect(() => quotedOrList([])).to.throw(TypeError);
+    expect(() => quotedOrList([])).to.throw(Error);
   });
 
   it('Returns single quoted item', () => {
