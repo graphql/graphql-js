@@ -445,7 +445,6 @@ describe('stripIgnoredTokens: SDL document', () => {
     expect(printed).to.equal(result);
 
     const printedStripped = stripIgnoredTokens(print(ast));
-    console.log(printedStripped);
 
     const resultStripped = strippedKitchenSinkSDL;
 
