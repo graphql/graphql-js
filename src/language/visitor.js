@@ -256,10 +256,8 @@ export function visit(
           node = node.slice();
         } else {
           const clone = {};
-          for (const k in node) {
-            if (node.hasOwnProperty(k)) {
-              clone[k] = node[k];
-            }
+          for (const k of Object.keys(node)) {
+            clone[k] = node[k];
           }
           node = clone;
         }
