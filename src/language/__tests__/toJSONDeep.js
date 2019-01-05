@@ -25,10 +25,8 @@ export default function toJSONDeep<T>(value: T): T {
   }
 
   const result: any = {};
-  for (const prop in value) {
-    if (value.hasOwnProperty(prop)) {
-      result[prop] = toJSONDeep(value[prop]);
-    }
+  for (const prop of Object.keys(value)) {
+    result[prop] = toJSONDeep(value[prop]);
   }
   return result;
 }
