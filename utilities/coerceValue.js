@@ -13,6 +13,8 @@ var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
 var _orList = _interopRequireDefault(require("../jsutils/orList"));
 
+var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
+
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
 
 var _GraphQLError = require("../error/GraphQLError");
@@ -111,39 +113,58 @@ function coerceValue(value, type, blameNode, path) {
     var _coercedValue = {};
     var fields = type.getFields(); // Ensure every defined field is valid.
 
-    for (var fieldName in fields) {
-      if (hasOwnProperty.call(fields, fieldName)) {
-        var field = fields[fieldName];
-        var fieldValue = value[fieldName];
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = (0, _objectValues.default)(fields)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var field = _step.value;
+        var fieldValue = value[field.name];
 
         if ((0, _isInvalid.default)(fieldValue)) {
           if (!(0, _isInvalid.default)(field.defaultValue)) {
-            _coercedValue[fieldName] = field.defaultValue;
+            _coercedValue[field.name] = field.defaultValue;
           } else if ((0, _definition.isNonNullType)(field.type)) {
-            _errors = add(_errors, coercionError("Field ".concat(printPath(atPath(path, fieldName)), " of required ") + "type ".concat((0, _inspect.default)(field.type), " was not provided"), blameNode));
+            _errors = add(_errors, coercionError("Field ".concat(printPath(atPath(path, field.name)), " of required ") + "type ".concat((0, _inspect.default)(field.type), " was not provided"), blameNode));
           }
         } else {
-          var coercedField = coerceValue(fieldValue, field.type, blameNode, atPath(path, fieldName));
+          var coercedField = coerceValue(fieldValue, field.type, blameNode, atPath(path, field.name));
 
           if (coercedField.errors) {
             _errors = add(_errors, coercedField.errors);
           } else if (!_errors) {
-            _coercedValue[fieldName] = coercedField.value;
+            _coercedValue[field.name] = coercedField.value;
           }
         }
-      }
-    } // Ensure every provided field is defined.
+      } // Ensure every provided field is defined.
 
-
-    for (var _fieldName in value) {
-      if (hasOwnProperty.call(value, _fieldName)) {
-        if (!fields[_fieldName]) {
-          var _suggestions = (0, _suggestionList.default)(_fieldName, Object.keys(fields));
-
-          var _didYouMean = _suggestions.length !== 0 ? "did you mean ".concat((0, _orList.default)(_suggestions), "?") : undefined;
-
-          _errors = add(_errors, coercionError("Field \"".concat(_fieldName, "\" is not defined by type ").concat(type.name), blameNode, path, _didYouMean));
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return != null) {
+          _iterator.return();
         }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    var _arr = Object.keys(value);
+
+    for (var _i = 0; _i < _arr.length; _i++) {
+      var fieldName = _arr[_i];
+
+      if (!fields[fieldName]) {
+        var _suggestions = (0, _suggestionList.default)(fieldName, Object.keys(fields));
+
+        var _didYouMean = _suggestions.length !== 0 ? "did you mean ".concat((0, _orList.default)(_suggestions), "?") : undefined;
+
+        _errors = add(_errors, coercionError("Field \"".concat(fieldName, "\" is not defined by type ").concat(type.name), blameNode, path, _didYouMean));
       }
     }
 
@@ -198,5 +219,3 @@ function printPath(path) {
 
   return pathStr ? 'value' + pathStr : '';
 }
-
-var hasOwnProperty = Object.prototype.hasOwnProperty;

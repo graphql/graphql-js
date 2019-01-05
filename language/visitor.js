@@ -192,10 +192,11 @@ function visit(root, visitor) {
         } else {
           var clone = {};
 
-          for (var k in node) {
-            if (node.hasOwnProperty(k)) {
-              clone[k] = node[k];
-            }
+          var _arr = Object.keys(node);
+
+          for (var _i = 0; _i < _arr.length; _i++) {
+            var k = _arr[_i];
+            clone[k] = node[k];
           }
 
           node = clone;
