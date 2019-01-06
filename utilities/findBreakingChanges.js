@@ -25,6 +25,8 @@ exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 
 var _definition = require("../type/definition");
 
+var _find = _interopRequireDefault(require("../jsutils/find"));
+
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -185,7 +187,7 @@ function findArgChanges(oldSchema, newSchema) {
         var _loop = function _loop() {
           var oldArgDef = _step.value;
           var newArgs = newTypeFields[fieldName].args;
-          var newArgDef = newArgs.find(function (arg) {
+          var newArgDef = (0, _find.default)(newArgs, function (arg) {
             return arg.name === oldArgDef.name;
           }); // Arg not present
 
@@ -238,7 +240,7 @@ function findArgChanges(oldSchema, newSchema) {
         var _loop2 = function _loop2() {
           var newArgDef = _step2.value;
           var oldArgs = oldTypeFields[fieldName].args;
-          var oldArgDef = oldArgs.find(function (arg) {
+          var oldArgDef = (0, _find.default)(oldArgs, function (arg) {
             return arg.name === newArgDef.name;
           });
 

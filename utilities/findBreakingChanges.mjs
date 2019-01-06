@@ -7,6 +7,7 @@
  * 
  */
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from '../type/definition';
+import find from '../jsutils/find';
 import keyMap from '../jsutils/keyMap';
 export var BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
@@ -150,7 +151,7 @@ export function findArgChanges(oldSchema, newSchema) {
         var _loop = function _loop() {
           var oldArgDef = _step.value;
           var newArgs = newTypeFields[fieldName].args;
-          var newArgDef = newArgs.find(function (arg) {
+          var newArgDef = find(newArgs, function (arg) {
             return arg.name === oldArgDef.name;
           }); // Arg not present
 
@@ -203,7 +204,7 @@ export function findArgChanges(oldSchema, newSchema) {
         var _loop2 = function _loop2() {
           var newArgDef = _step2.value;
           var oldArgs = oldTypeFields[fieldName].args;
-          var oldArgDef = oldArgs.find(function (arg) {
+          var oldArgDef = find(oldArgs, function (arg) {
             return arg.name === newArgDef.name;
           });
 
