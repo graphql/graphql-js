@@ -42,24 +42,19 @@ function () {
     this.astNode = config.astNode;
     !config.name ? invariant(0, 'Directive must be named.') : void 0;
     !Array.isArray(config.locations) ? invariant(0, 'Must provide locations for directive.') : void 0;
-    var args = config.args;
-
-    if (!args) {
-      this.args = [];
-    } else {
-      !!Array.isArray(args) ? invariant(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
-      this.args = objectEntries(args).map(function (_ref) {
-        var argName = _ref[0],
-            arg = _ref[1];
-        return {
-          name: argName,
-          description: arg.description === undefined ? null : arg.description,
-          type: arg.type,
-          defaultValue: arg.defaultValue,
-          astNode: arg.astNode
-        };
-      });
-    }
+    var args = config.args || {};
+    !!Array.isArray(args) ? invariant(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
+    this.args = objectEntries(args).map(function (_ref) {
+      var argName = _ref[0],
+          arg = _ref[1];
+      return {
+        name: argName,
+        description: arg.description === undefined ? null : arg.description,
+        type: arg.type,
+        defaultValue: arg.defaultValue,
+        astNode: arg.astNode
+      };
+    });
   }
 
   var _proto = GraphQLDirective.prototype;

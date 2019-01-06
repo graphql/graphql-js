@@ -448,25 +448,19 @@ function defineFieldMap(config) {
     });
 
     !(field.resolve == null || typeof field.resolve === 'function') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat(inspect(field.resolve), ".")) : void 0;
-    var argsConfig = fieldConfig.args;
-
-    if (!argsConfig) {
-      field.args = [];
-    } else {
-      !isPlainObj(argsConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
-      field.args = objectEntries(argsConfig).map(function (_ref) {
-        var argName = _ref[0],
-            arg = _ref[1];
-        return {
-          name: argName,
-          description: arg.description === undefined ? null : arg.description,
-          type: arg.type,
-          defaultValue: arg.defaultValue,
-          astNode: arg.astNode
-        };
-      });
-    }
-
+    var argsConfig = fieldConfig.args || {};
+    !isPlainObj(argsConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
+    field.args = objectEntries(argsConfig).map(function (_ref) {
+      var argName = _ref[0],
+          arg = _ref[1];
+      return {
+        name: argName,
+        description: arg.description === undefined ? null : arg.description,
+        type: arg.type,
+        defaultValue: arg.defaultValue,
+        astNode: arg.astNode
+      };
+    });
     resultFieldMap[fieldName] = field;
   }
 

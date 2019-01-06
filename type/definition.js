@@ -540,25 +540,19 @@ function defineFieldMap(config) {
     });
 
     !(field.resolve == null || typeof field.resolve === 'function') ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat((0, _inspect.default)(field.resolve), ".")) : void 0;
-    var argsConfig = fieldConfig.args;
-
-    if (!argsConfig) {
-      field.args = [];
-    } else {
-      !isPlainObj(argsConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
-      field.args = (0, _objectEntries.default)(argsConfig).map(function (_ref) {
-        var argName = _ref[0],
-            arg = _ref[1];
-        return {
-          name: argName,
-          description: arg.description === undefined ? null : arg.description,
-          type: arg.type,
-          defaultValue: arg.defaultValue,
-          astNode: arg.astNode
-        };
-      });
-    }
-
+    var argsConfig = fieldConfig.args || {};
+    !isPlainObj(argsConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
+    field.args = (0, _objectEntries.default)(argsConfig).map(function (_ref) {
+      var argName = _ref[0],
+          arg = _ref[1];
+      return {
+        name: argName,
+        description: arg.description === undefined ? null : arg.description,
+        type: arg.type,
+        defaultValue: arg.defaultValue,
+        astNode: arg.astNode
+      };
+    });
     resultFieldMap[fieldName] = field;
   }
 
