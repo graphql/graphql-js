@@ -33,6 +33,7 @@ import type { GraphQLSchema } from './schema';
 import inspect from '../jsutils/inspect';
 import find from '../jsutils/find';
 import objectValues from '../jsutils/objectValues';
+import objectEntries from '../jsutils/objectEntries';
 import { GraphQLError } from '../error/GraphQLError';
 import type {
   ASTNode,
@@ -354,9 +355,8 @@ function validateObjectImplementsInterface(
   const ifaceFieldMap = iface.getFields();
 
   // Assert each interface field is implemented.
-  for (const fieldName of Object.keys(ifaceFieldMap)) {
+  for (const [fieldName, ifaceField] of objectEntries(ifaceFieldMap)) {
     const objectField = objectFieldMap[fieldName];
-    const ifaceField = ifaceFieldMap[fieldName];
 
     // Assert interface field exists on object.
     if (!objectField) {

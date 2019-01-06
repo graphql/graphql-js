@@ -12,6 +12,7 @@ import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
 import find from '../../jsutils/find';
 import type { ObjMap } from '../../jsutils/ObjMap';
+import objectEntries from '../../jsutils/objectEntries';
 import type {
   SelectionSetNode,
   FieldNode,
@@ -485,8 +486,7 @@ function collectConflictsWithin(
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const responseName of Object.keys(fieldMap)) {
-    const fields = fieldMap[responseName];
+  for (const [responseName, fields] of objectEntries(fieldMap)) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.

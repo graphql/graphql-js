@@ -22,6 +22,8 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _objectEntries = _interopRequireDefault(require("../jsutils/objectEntries"));
+
 var _directiveLocation = require("../language/directiveLocation");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -65,8 +67,9 @@ function () {
       this.args = [];
     } else {
       !!Array.isArray(args) ? (0, _invariant.default)(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
-      this.args = Object.keys(args).map(function (argName) {
-        var arg = args[argName];
+      this.args = (0, _objectEntries.default)(args).map(function (_ref) {
+        var argName = _ref[0],
+            arg = _ref[1];
         return {
           name: argName,
           description: arg.description === undefined ? null : arg.description,

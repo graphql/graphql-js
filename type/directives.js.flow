@@ -18,6 +18,7 @@ import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import inspect from '../jsutils/inspect';
+import objectEntries from '../jsutils/objectEntries';
 import type { DirectiveDefinitionNode } from '../language/ast';
 import {
   DirectiveLocation,
@@ -73,16 +74,14 @@ export class GraphQLDirective {
         !Array.isArray(args),
         `@${config.name} args must be an object with argument names as keys.`,
       );
-      this.args = Object.keys(args).map(argName => {
-        const arg = args[argName];
-        return {
-          name: argName,
-          description: arg.description === undefined ? null : arg.description,
-          type: arg.type,
-          defaultValue: arg.defaultValue,
-          astNode: arg.astNode,
-        };
-      });
+
+      this.args = objectEntries(args).map(([argName, arg]) => ({
+        name: argName,
+        description: arg.description === undefined ? null : arg.description,
+        type: arg.type,
+        defaultValue: arg.defaultValue,
+        astNode: arg.astNode,
+      }));
     }
   }
 

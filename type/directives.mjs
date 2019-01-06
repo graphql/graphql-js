@@ -13,6 +13,7 @@ import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import inspect from '../jsutils/inspect';
+import objectEntries from '../jsutils/objectEntries';
 import { DirectiveLocation } from '../language/directiveLocation';
 /**
  * Test if the given value is a GraphQL directive.
@@ -47,8 +48,9 @@ function () {
       this.args = [];
     } else {
       !!Array.isArray(args) ? invariant(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
-      this.args = Object.keys(args).map(function (argName) {
-        var arg = args[argName];
+      this.args = objectEntries(args).map(function (_ref) {
+        var argName = _ref[0],
+            arg = _ref[1];
         return {
           name: argName,
           description: arg.description === undefined ? null : arg.description,

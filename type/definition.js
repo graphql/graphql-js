@@ -57,6 +57,8 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
+var _objectEntries = _interopRequireDefault(require("../jsutils/objectEntries"));
+
 var _kinds = require("../language/kinds");
 
 var _valueFromASTUntyped = require("../utilities/valueFromASTUntyped");
@@ -526,7 +528,7 @@ function defineFieldMap(config) {
 
   var _arr = Object.keys(fieldMap);
 
-  var _loop = function _loop() {
+  for (var _i = 0; _i < _arr.length; _i++) {
     var fieldName = _arr[_i];
     var fieldConfig = fieldMap[fieldName];
     !isPlainObj(fieldConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object")) : void 0;
@@ -544,8 +546,9 @@ function defineFieldMap(config) {
       field.args = [];
     } else {
       !isPlainObj(argsConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
-      field.args = Object.keys(argsConfig).map(function (argName) {
-        var arg = argsConfig[argName];
+      field.args = (0, _objectEntries.default)(argsConfig).map(function (_ref) {
+        var argName = _ref[0],
+            arg = _ref[1];
         return {
           name: argName,
           description: arg.description === undefined ? null : arg.description,
@@ -557,10 +560,6 @@ function defineFieldMap(config) {
     }
 
     resultFieldMap[fieldName] = field;
-  };
-
-  for (var _i = 0; _i < _arr.length; _i++) {
-    _loop();
   }
 
   return resultFieldMap;
@@ -797,8 +796,9 @@ function defineEnumValues(type, valueMap
 /* <T> */
 ) {
   !isPlainObj(valueMap) ? (0, _invariant.default)(0, "".concat(type.name, " values must be an object with value names as keys.")) : void 0;
-  return Object.keys(valueMap).map(function (valueName) {
-    var value = valueMap[valueName];
+  return (0, _objectEntries.default)(valueMap).map(function (_ref2) {
+    var valueName = _ref2[0],
+        value = _ref2[1];
     !isPlainObj(value) ? (0, _invariant.default)(0, "".concat(type.name, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat((0, _inspect.default)(value), ".")) : void 0;
     !!value.hasOwnProperty('isDeprecated') ? (0, _invariant.default)(0, "".concat(type.name, ".").concat(valueName, " should provide \"deprecationReason\" instead ") + 'of "isDeprecated".') : void 0;
     return {

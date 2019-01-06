@@ -14,6 +14,7 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import type { ObjMap } from '../jsutils/ObjMap';
+import objectEntries from '../jsutils/objectEntries';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 import type {
@@ -736,16 +737,13 @@ function defineFieldMap<TSource, TContext>(
         `${config.name}.${fieldName} args must be an object with argument ` +
           'names as keys.',
       );
-      field.args = Object.keys(argsConfig).map(argName => {
-        const arg = argsConfig[argName];
-        return {
-          name: argName,
-          description: arg.description === undefined ? null : arg.description,
-          type: arg.type,
-          defaultValue: arg.defaultValue,
-          astNode: arg.astNode,
-        };
-      });
+      field.args = objectEntries(argsConfig).map(([argName, arg]) => ({
+        name: argName,
+        description: arg.description === undefined ? null : arg.description,
+        type: arg.type,
+        defaultValue: arg.defaultValue,
+        astNode: arg.astNode,
+      }));
     }
     resultFieldMap[fieldName] = field;
   }
@@ -1123,8 +1121,7 @@ function defineEnumValues(
     isPlainObj(valueMap),
     `${type.name} values must be an object with value names as keys.`,
   );
-  return Object.keys(valueMap).map(valueName => {
-    const value = valueMap[valueName];
+  return objectEntries(valueMap).map(([valueName, value]) => {
     invariant(
       isPlainObj(value),
       `${type.name}.${valueName} must refer to an object with a "value" key ` +

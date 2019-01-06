@@ -9,6 +9,7 @@
 import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
 import find from '../../jsutils/find';
+import objectEntries from '../../jsutils/objectEntries';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import { getNamedType, isNonNullType, isLeafType, isObjectType, isListType, isInterfaceType } from '../../type/definition';
@@ -283,25 +284,43 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
-  // must be compared to find a potential conflict.
-  var _arr = Object.keys(fieldMap);
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
 
-  for (var _i3 = 0; _i3 < _arr.length; _i3++) {
-    var responseName = _arr[_i3];
-    var fields = fieldMap[responseName]; // This compares every field in the list to every other field in this list
-    // (except to itself). If the list only has one item, nothing needs to
-    // be compared.
+  try {
+    for (var _iterator = objectEntries(fieldMap)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _ref5 = _step.value;
+      var responseName = _ref5[0];
+      var fields = _ref5[1];
 
-    if (fields.length > 1) {
-      for (var i = 0; i < fields.length; i++) {
-        for (var j = i + 1; j < fields.length; j++) {
-          var conflict = findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, // within one collection is never mutually exclusive
-          responseName, fields[i], fields[j]);
+      // This compares every field in the list to every other field in this list
+      // (except to itself). If the list only has one item, nothing needs to
+      // be compared.
+      if (fields.length > 1) {
+        for (var i = 0; i < fields.length; i++) {
+          for (var j = i + 1; j < fields.length; j++) {
+            var conflict = findConflict(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, // within one collection is never mutually exclusive
+            responseName, fields[i], fields[j]);
 
-          if (conflict) {
-            conflicts.push(conflict);
+            if (conflict) {
+              conflicts.push(conflict);
+            }
           }
         }
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return != null) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
       }
     }
   }
@@ -318,10 +337,10 @@ function collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentName
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  var _arr2 = Object.keys(fieldMap1);
+  var _arr = Object.keys(fieldMap1);
 
-  for (var _i4 = 0; _i4 < _arr2.length; _i4++) {
-    var responseName = _arr2[_i4];
+  for (var _i3 = 0; _i3 < _arr.length; _i3++) {
+    var responseName = _arr[_i3];
     var fields2 = fieldMap2[responseName];
 
     if (fields2) {
@@ -516,14 +535,14 @@ function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeA
 
 function subfieldConflicts(conflicts, responseName, node1, node2) {
   if (conflicts.length > 0) {
-    return [[responseName, conflicts.map(function (_ref4) {
-      var reason = _ref4[0];
+    return [[responseName, conflicts.map(function (_ref6) {
+      var reason = _ref6[0];
       return reason;
-    })], conflicts.reduce(function (allFields, _ref5) {
-      var fields1 = _ref5[1];
+    })], conflicts.reduce(function (allFields, _ref7) {
+      var fields1 = _ref7[1];
       return allFields.concat(fields1);
-    }, [node1]), conflicts.reduce(function (allFields, _ref6) {
-      var fields2 = _ref6[2];
+    }, [node1]), conflicts.reduce(function (allFields, _ref8) {
+      var fields2 = _ref8[2];
       return allFields.concat(fields2);
     }, [node2])];
   }

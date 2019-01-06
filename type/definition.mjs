@@ -18,6 +18,7 @@ import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
+import objectEntries from '../jsutils/objectEntries';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 export function isType(type) {
@@ -435,7 +436,7 @@ function defineFieldMap(config) {
 
   var _arr = Object.keys(fieldMap);
 
-  var _loop = function _loop() {
+  for (var _i = 0; _i < _arr.length; _i++) {
     var fieldName = _arr[_i];
     var fieldConfig = fieldMap[fieldName];
     !isPlainObj(fieldConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object")) : void 0;
@@ -453,8 +454,9 @@ function defineFieldMap(config) {
       field.args = [];
     } else {
       !isPlainObj(argsConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
-      field.args = Object.keys(argsConfig).map(function (argName) {
-        var arg = argsConfig[argName];
+      field.args = objectEntries(argsConfig).map(function (_ref) {
+        var argName = _ref[0],
+            arg = _ref[1];
         return {
           name: argName,
           description: arg.description === undefined ? null : arg.description,
@@ -466,10 +468,6 @@ function defineFieldMap(config) {
     }
 
     resultFieldMap[fieldName] = field;
-  };
-
-  for (var _i = 0; _i < _arr.length; _i++) {
-    _loop();
   }
 
   return resultFieldMap;
@@ -700,8 +698,9 @@ function defineEnumValues(type, valueMap
 /* <T> */
 ) {
   !isPlainObj(valueMap) ? invariant(0, "".concat(type.name, " values must be an object with value names as keys.")) : void 0;
-  return Object.keys(valueMap).map(function (valueName) {
-    var value = valueMap[valueName];
+  return objectEntries(valueMap).map(function (_ref2) {
+    var valueName = _ref2[0],
+        value = _ref2[1];
     !isPlainObj(value) ? invariant(0, "".concat(type.name, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat(inspect(value), ".")) : void 0;
     !!value.hasOwnProperty('isDeprecated') ? invariant(0, "".concat(type.name, ".").concat(valueName, " should provide \"deprecationReason\" instead ") + 'of "isDeprecated".') : void 0;
     return {
