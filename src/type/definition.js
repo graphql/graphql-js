@@ -728,23 +728,20 @@ function defineFieldMap<TSource, TContext>(
       `${config.name}.${fieldName} field resolver must be a function if ` +
         `provided, but got: ${inspect(field.resolve)}.`,
     );
-    const argsConfig = fieldConfig.args;
-    if (!argsConfig) {
-      field.args = [];
-    } else {
-      invariant(
-        isPlainObj(argsConfig),
-        `${config.name}.${fieldName} args must be an object with argument ` +
-          'names as keys.',
-      );
-      field.args = objectEntries(argsConfig).map(([argName, arg]) => ({
-        name: argName,
-        description: arg.description === undefined ? null : arg.description,
-        type: arg.type,
-        defaultValue: arg.defaultValue,
-        astNode: arg.astNode,
-      }));
-    }
+    const argsConfig = fieldConfig.args || {};
+    invariant(
+      isPlainObj(argsConfig),
+      `${config.name}.${fieldName} args must be an object with argument ` +
+        'names as keys.',
+    );
+
+    field.args = objectEntries(argsConfig).map(([argName, arg]) => ({
+      name: argName,
+      description: arg.description === undefined ? null : arg.description,
+      type: arg.type,
+      defaultValue: arg.defaultValue,
+      astNode: arg.astNode,
+    }));
     resultFieldMap[fieldName] = field;
   }
   return resultFieldMap;

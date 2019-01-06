@@ -66,23 +66,19 @@ export class GraphQLDirective {
       'Must provide locations for directive.',
     );
 
-    const args = config.args;
-    if (!args) {
-      this.args = [];
-    } else {
-      invariant(
-        !Array.isArray(args),
-        `@${config.name} args must be an object with argument names as keys.`,
-      );
+    const args = config.args || {};
+    invariant(
+      !Array.isArray(args),
+      `@${config.name} args must be an object with argument names as keys.`,
+    );
 
-      this.args = objectEntries(args).map(([argName, arg]) => ({
-        name: argName,
-        description: arg.description === undefined ? null : arg.description,
-        type: arg.type,
-        defaultValue: arg.defaultValue,
-        astNode: arg.astNode,
-      }));
-    }
+    this.args = objectEntries(args).map(([argName, arg]) => ({
+      name: argName,
+      description: arg.description === undefined ? null : arg.description,
+      type: arg.type,
+      defaultValue: arg.defaultValue,
+      astNode: arg.astNode,
+    }));
   }
 
   toString(): string {
