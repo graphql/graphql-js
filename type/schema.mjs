@@ -99,48 +99,63 @@ function () {
     this._possibleTypeMap = Object.create(null); // Keep track of all implementations by interface name.
 
     this._implementations = Object.create(null);
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-    var _arr = Object.keys(this._typeMap);
+    try {
+      for (var _iterator = objectValues(this._typeMap)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var type = _step.value;
 
-    for (var _i = 0; _i < _arr.length; _i++) {
-      var typeName = _arr[_i];
-      var type = this._typeMap[typeName];
+        if (isObjectType(type)) {
+          var _iteratorNormalCompletion2 = true;
+          var _didIteratorError2 = false;
+          var _iteratorError2 = undefined;
 
-      if (isObjectType(type)) {
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+          try {
+            for (var _iterator2 = type.getInterfaces()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+              var iface = _step2.value;
 
-        try {
-          for (var _iterator = type.getInterfaces()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var iface = _step.value;
+              if (isInterfaceType(iface)) {
+                var impls = this._implementations[iface.name];
 
-            if (isInterfaceType(iface)) {
-              var impls = this._implementations[iface.name];
-
-              if (impls) {
-                impls.push(type);
-              } else {
-                this._implementations[iface.name] = [type];
+                if (impls) {
+                  impls.push(type);
+                } else {
+                  this._implementations[iface.name] = [type];
+                }
+              }
+            }
+          } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                _iterator2.return();
+              }
+            } finally {
+              if (_didIteratorError2) {
+                throw _iteratorError2;
               }
             }
           }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
-          }
+        } else if (isAbstractType(type) && !this._implementations[type.name]) {
+          this._implementations[type.name] = [];
         }
-      } else if (isAbstractType(type) && !this._implementations[type.name]) {
-        this._implementations[type.name] = [];
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return != null) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
       }
     }
   }
@@ -229,13 +244,13 @@ function typeMapReducer(map, type) {
   }
 
   if (isObjectType(type) || isInterfaceType(type)) {
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
 
     try {
-      for (var _iterator2 = objectValues(type.getFields())[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        var field = _step2.value;
+      for (var _iterator3 = objectValues(type.getFields())[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        var field = _step3.value;
 
         if (field.args) {
           var fieldArgTypes = field.args.map(function (arg) {
@@ -245,32 +260,6 @@ function typeMapReducer(map, type) {
         }
 
         reducedMap = typeMapReducer(reducedMap, field.type);
-      }
-    } catch (err) {
-      _didIteratorError2 = true;
-      _iteratorError2 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-          _iterator2.return();
-        }
-      } finally {
-        if (_didIteratorError2) {
-          throw _iteratorError2;
-        }
-      }
-    }
-  }
-
-  if (isInputObjectType(type)) {
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
-
-    try {
-      for (var _iterator3 = objectValues(type.getFields())[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        var _field = _step3.value;
-        reducedMap = typeMapReducer(reducedMap, _field.type);
       }
     } catch (err) {
       _didIteratorError3 = true;
@@ -283,6 +272,32 @@ function typeMapReducer(map, type) {
       } finally {
         if (_didIteratorError3) {
           throw _iteratorError3;
+        }
+      }
+    }
+  }
+
+  if (isInputObjectType(type)) {
+    var _iteratorNormalCompletion4 = true;
+    var _didIteratorError4 = false;
+    var _iteratorError4 = undefined;
+
+    try {
+      for (var _iterator4 = objectValues(type.getFields())[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+        var _field = _step4.value;
+        reducedMap = typeMapReducer(reducedMap, _field.type);
+      }
+    } catch (err) {
+      _didIteratorError4 = true;
+      _iteratorError4 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+          _iterator4.return();
+        }
+      } finally {
+        if (_didIteratorError4) {
+          throw _iteratorError4;
         }
       }
     }

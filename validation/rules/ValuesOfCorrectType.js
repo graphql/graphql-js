@@ -22,6 +22,8 @@ var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
 
 var _orList = _interopRequireDefault(require("../../jsutils/orList"));
 
+var _objectValues = _interopRequireDefault(require("../../jsutils/objectValues"));
+
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -81,21 +83,35 @@ function ValuesOfCorrectType(context) {
       } // Ensure every required field exists.
 
 
-      var inputFields = type.getFields();
       var fieldNodeMap = (0, _keyMap.default)(node.fields, function (field) {
         return field.name.value;
       });
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-      var _arr = Object.keys(inputFields);
+      try {
+        for (var _iterator = (0, _objectValues.default)(type.getFields())[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var fieldDef = _step.value;
+          var fieldNode = fieldNodeMap[fieldDef.name];
 
-      for (var _i = 0; _i < _arr.length; _i++) {
-        var fieldName = _arr[_i];
-        var fieldDef = inputFields[fieldName];
-        var fieldNode = fieldNodeMap[fieldName];
-
-        if (!fieldNode && (0, _definition.isRequiredInputField)(fieldDef)) {
-          var typeStr = (0, _inspect.default)(fieldDef.type);
-          context.reportError(new _GraphQLError.GraphQLError(requiredFieldMessage(type.name, fieldName, typeStr), node));
+          if (!fieldNode && (0, _definition.isRequiredInputField)(fieldDef)) {
+            var typeStr = (0, _inspect.default)(fieldDef.type);
+            context.reportError(new _GraphQLError.GraphQLError(requiredFieldMessage(type.name, fieldDef.name, typeStr), node));
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
         }
       }
     },

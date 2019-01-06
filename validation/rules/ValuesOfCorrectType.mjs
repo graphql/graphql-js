@@ -13,6 +13,7 @@ import inspect from '../../jsutils/inspect';
 import isInvalid from '../../jsutils/isInvalid';
 import keyMap from '../../jsutils/keyMap';
 import orList from '../../jsutils/orList';
+import objectValues from '../../jsutils/objectValues';
 import suggestionList from '../../jsutils/suggestionList';
 export function badValueMessage(typeName, valueName, message) {
   return "Expected type ".concat(typeName, ", found ").concat(valueName) + (message ? "; ".concat(message) : '.');
@@ -58,21 +59,35 @@ export function ValuesOfCorrectType(context) {
       } // Ensure every required field exists.
 
 
-      var inputFields = type.getFields();
       var fieldNodeMap = keyMap(node.fields, function (field) {
         return field.name.value;
       });
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-      var _arr = Object.keys(inputFields);
+      try {
+        for (var _iterator = objectValues(type.getFields())[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var fieldDef = _step.value;
+          var fieldNode = fieldNodeMap[fieldDef.name];
 
-      for (var _i = 0; _i < _arr.length; _i++) {
-        var fieldName = _arr[_i];
-        var fieldDef = inputFields[fieldName];
-        var fieldNode = fieldNodeMap[fieldName];
-
-        if (!fieldNode && isRequiredInputField(fieldDef)) {
-          var typeStr = inspect(fieldDef.type);
-          context.reportError(new GraphQLError(requiredFieldMessage(type.name, fieldName, typeStr), node));
+          if (!fieldNode && isRequiredInputField(fieldDef)) {
+            var typeStr = inspect(fieldDef.type);
+            context.reportError(new GraphQLError(requiredFieldMessage(type.name, fieldDef.name, typeStr), node));
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
         }
       }
     },
