@@ -167,8 +167,7 @@ export class GraphQLSchema {
 
     // Keep track of all implementations by interface name.
     this._implementations = Object.create(null);
-    for (const typeName of Object.keys(this._typeMap)) {
-      const type = this._typeMap[typeName];
+    for (const type of objectValues(this._typeMap)) {
       if (isObjectType(type)) {
         for (const iface of type.getInterfaces()) {
           if (isInterfaceType(iface)) {
