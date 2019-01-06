@@ -8,6 +8,7 @@
  */
 
 import invariant from '../jsutils/invariant';
+import mapValue from '../jsutils/mapValue';
 import keyValMap from '../jsutils/keyValMap';
 import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
@@ -296,17 +297,12 @@ export function extendSchema(
   }
 
   function extendInputFieldMap(type: GraphQLInputObjectType) {
-    const newFieldMap = Object.create(null);
-    const oldFieldMap = type.getFields();
-    for (const fieldName of Object.keys(oldFieldMap)) {
-      const field = oldFieldMap[fieldName];
-      newFieldMap[fieldName] = {
-        description: field.description,
-        type: extendType(field.type),
-        defaultValue: field.defaultValue,
-        astNode: field.astNode,
-      };
-    }
+    const newFieldMap = mapValue(type.getFields(), field => ({
+      description: field.description,
+      type: extendType(field.type),
+      defaultValue: field.defaultValue,
+      astNode: field.astNode,
+    }));
 
     // If there are any extensions to the fields, apply those here.
     const extensions = typeExtensionsMap[type.name];
@@ -490,19 +486,14 @@ export function extendSchema(
   }
 
   function extendFieldMap(type: GraphQLObjectType | GraphQLInterfaceType) {
-    const newFieldMap = Object.create(null);
-    const oldFieldMap = type.getFields();
-    for (const fieldName of Object.keys(oldFieldMap)) {
-      const field = oldFieldMap[fieldName];
-      newFieldMap[fieldName] = {
-        description: field.description,
-        deprecationReason: field.deprecationReason,
-        type: extendType(field.type),
-        args: extendArgs(field.args),
-        astNode: field.astNode,
-        resolve: field.resolve,
-      };
-    }
+    const newFieldMap = mapValue(type.getFields(), field => ({
+      description: field.description,
+      deprecationReason: field.deprecationReason,
+      type: extendType(field.type),
+      args: extendArgs(field.args),
+      astNode: field.astNode,
+      resolve: field.resolve,
+    }));
 
     // If there are any extensions to the fields, apply those here.
     const extensions = typeExtensionsMap[type.name];
