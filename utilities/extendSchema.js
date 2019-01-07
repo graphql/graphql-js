@@ -7,6 +7,8 @@ exports.extendSchema = extendSchema;
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
+var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
+
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
@@ -277,22 +279,14 @@ function extendSchema(schema, documentAST, options) {
   }
 
   function extendInputFieldMap(type) {
-    var newFieldMap = Object.create(null);
-    var oldFieldMap = type.getFields();
-
-    var _arr = Object.keys(oldFieldMap);
-
-    for (var _i2 = 0; _i2 < _arr.length; _i2++) {
-      var fieldName = _arr[_i2];
-      var _field = oldFieldMap[fieldName];
-      newFieldMap[fieldName] = {
-        description: _field.description,
-        type: extendType(_field.type),
-        defaultValue: _field.defaultValue,
-        astNode: _field.astNode
+    var newFieldMap = (0, _mapValue.default)(type.getFields(), function (field) {
+      return {
+        description: field.description,
+        type: extendType(field.type),
+        defaultValue: field.defaultValue,
+        astNode: field.astNode
       };
-    } // If there are any extensions to the fields, apply those here.
-
+    }); // If there are any extensions to the fields, apply those here.
 
     var extensions = typeExtensionsMap[type.name];
 
@@ -638,24 +632,16 @@ function extendSchema(schema, documentAST, options) {
   }
 
   function extendFieldMap(type) {
-    var newFieldMap = Object.create(null);
-    var oldFieldMap = type.getFields();
-
-    var _arr2 = Object.keys(oldFieldMap);
-
-    for (var _i3 = 0; _i3 < _arr2.length; _i3++) {
-      var fieldName = _arr2[_i3];
-      var _field2 = oldFieldMap[fieldName];
-      newFieldMap[fieldName] = {
-        description: _field2.description,
-        deprecationReason: _field2.deprecationReason,
-        type: extendType(_field2.type),
-        args: extendArgs(_field2.args),
-        astNode: _field2.astNode,
-        resolve: _field2.resolve
+    var newFieldMap = (0, _mapValue.default)(type.getFields(), function (field) {
+      return {
+        description: field.description,
+        deprecationReason: field.deprecationReason,
+        type: extendType(field.type),
+        args: extendArgs(field.args),
+        astNode: field.astNode,
+        resolve: field.resolve
       };
-    } // If there are any extensions to the fields, apply those here.
-
+    }); // If there are any extensions to the fields, apply those here.
 
     var extensions = typeExtensionsMap[type.name];
 

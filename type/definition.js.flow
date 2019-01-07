@@ -13,6 +13,7 @@ import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
+import mapValue from '../jsutils/mapValue';
 import type { ObjMap } from '../jsutils/ObjMap';
 import objectEntries from '../jsutils/objectEntries';
 import { Kind } from '../language/kinds';
@@ -706,9 +707,7 @@ function defineFieldMap<TSource, TContext>(
       'function which returns such an object.',
   );
 
-  const resultFieldMap = Object.create(null);
-  for (const fieldName of Object.keys(fieldMap)) {
-    const fieldConfig = fieldMap[fieldName];
+  return mapValue(fieldMap, (fieldConfig, fieldName) => {
     invariant(
       isPlainObj(fieldConfig),
       `${config.name}.${fieldName} field config must be an object`,
@@ -718,16 +717,12 @@ function defineFieldMap<TSource, TContext>(
       `${config.name}.${fieldName} should provide "deprecationReason" ` +
         'instead of "isDeprecated".',
     );
-    const field = {
-      ...fieldConfig,
-      isDeprecated: Boolean(fieldConfig.deprecationReason),
-      name: fieldName,
-    };
     invariant(
-      field.resolve == null || typeof field.resolve === 'function',
+      fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function',
       `${config.name}.${fieldName} field resolver must be a function if ` +
-        `provided, but got: ${inspect(field.resolve)}.`,
+        `provided, but got: ${inspect(fieldConfig.resolve)}.`,
     );
+
     const argsConfig = fieldConfig.args || {};
     invariant(
       isPlainObj(argsConfig),
@@ -735,16 +730,21 @@ function defineFieldMap<TSource, TContext>(
         'names as keys.',
     );
 
-    field.args = objectEntries(argsConfig).map(([argName, arg]) => ({
+    const args = objectEntries(argsConfig).map(([argName, arg]) => ({
       name: argName,
       description: arg.description === undefined ? null : arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
       astNode: arg.astNode,
     }));
-    resultFieldMap[fieldName] = field;
-  }
-  return resultFieldMap;
+
+    return {
+      ...fieldConfig,
+      isDeprecated: Boolean(fieldConfig.deprecationReason),
+      name: fieldName,
+      args,
+    };
+  });
 }
 
 function isPlainObj(obj) {
@@ -1228,20 +1228,15 @@ function defineInputFieldMap(
     `${config.name} fields must be an object with field names as keys or a ` +
       'function which returns such an object.',
   );
-  const resultFieldMap = Object.create(null);
-  for (const fieldName of Object.keys(fieldMap)) {
-    const field = {
-      ...fieldMap[fieldName],
-      name: fieldName,
-    };
+  return mapValue(fieldMap, (fieldConfig, fieldName) => {
     invariant(
-      !field.hasOwnProperty('resolve'),
+      !fieldConfig.hasOwnProperty('resolve'),
       `${config.name}.${fieldName} field has a resolve property, but ` +
         'Input Types cannot define resolvers.',
     );
-    resultFieldMap[fieldName] = field;
-  }
-  return resultFieldMap;
+
+    return { ...fieldConfig, name: fieldName };
+  });
 }
 
 export type GraphQLInputObjectTypeConfig = {|

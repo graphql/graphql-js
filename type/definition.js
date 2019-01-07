@@ -57,6 +57,8 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
+var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
+
 var _objectEntries = _interopRequireDefault(require("../jsutils/objectEntries"));
 
 var _kinds = require("../language/kinds");
@@ -524,25 +526,13 @@ function defineInterfaces(config) {
 function defineFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
   !isPlainObj(fieldMap) ? (0, _invariant.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
-  var resultFieldMap = Object.create(null);
-
-  var _arr = Object.keys(fieldMap);
-
-  for (var _i = 0; _i < _arr.length; _i++) {
-    var fieldName = _arr[_i];
-    var fieldConfig = fieldMap[fieldName];
+  return (0, _mapValue.default)(fieldMap, function (fieldConfig, fieldName) {
     !isPlainObj(fieldConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object")) : void 0;
     !!fieldConfig.hasOwnProperty('isDeprecated') ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" ") + 'instead of "isDeprecated".') : void 0;
-
-    var field = _objectSpread({}, fieldConfig, {
-      isDeprecated: Boolean(fieldConfig.deprecationReason),
-      name: fieldName
-    });
-
-    !(field.resolve == null || typeof field.resolve === 'function') ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat((0, _inspect.default)(field.resolve), ".")) : void 0;
+    !(fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function') ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat((0, _inspect.default)(fieldConfig.resolve), ".")) : void 0;
     var argsConfig = fieldConfig.args || {};
     !isPlainObj(argsConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
-    field.args = (0, _objectEntries.default)(argsConfig).map(function (_ref) {
+    var args = (0, _objectEntries.default)(argsConfig).map(function (_ref) {
       var argName = _ref[0],
           arg = _ref[1];
       return {
@@ -553,10 +543,12 @@ function defineFieldMap(config) {
         astNode: arg.astNode
       };
     });
-    resultFieldMap[fieldName] = field;
-  }
-
-  return resultFieldMap;
+    return _objectSpread({}, fieldConfig, {
+      isDeprecated: Boolean(fieldConfig.deprecationReason),
+      name: fieldName,
+      args: args
+    });
+  });
 }
 
 function isPlainObj(obj) {
@@ -863,22 +855,12 @@ exports.GraphQLInputObjectType = GraphQLInputObjectType;
 function defineInputFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
   !isPlainObj(fieldMap) ? (0, _invariant.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
-  var resultFieldMap = Object.create(null);
-
-  var _arr2 = Object.keys(fieldMap);
-
-  for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-    var fieldName = _arr2[_i2];
-
-    var field = _objectSpread({}, fieldMap[fieldName], {
+  return (0, _mapValue.default)(fieldMap, function (fieldConfig, fieldName) {
+    !!fieldConfig.hasOwnProperty('resolve') ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but ") + 'Input Types cannot define resolvers.') : void 0;
+    return _objectSpread({}, fieldConfig, {
       name: fieldName
     });
-
-    !!field.hasOwnProperty('resolve') ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but ") + 'Input Types cannot define resolvers.') : void 0;
-    resultFieldMap[fieldName] = field;
-  }
-
-  return resultFieldMap;
+  });
 }
 
 function isRequiredInputField(field) {

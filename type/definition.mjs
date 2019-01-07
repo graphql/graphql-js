@@ -18,6 +18,7 @@ import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
+import mapValue from '../jsutils/mapValue';
 import objectEntries from '../jsutils/objectEntries';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
@@ -432,25 +433,13 @@ function defineInterfaces(config) {
 function defineFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
   !isPlainObj(fieldMap) ? invariant(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
-  var resultFieldMap = Object.create(null);
-
-  var _arr = Object.keys(fieldMap);
-
-  for (var _i = 0; _i < _arr.length; _i++) {
-    var fieldName = _arr[_i];
-    var fieldConfig = fieldMap[fieldName];
+  return mapValue(fieldMap, function (fieldConfig, fieldName) {
     !isPlainObj(fieldConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object")) : void 0;
     !!fieldConfig.hasOwnProperty('isDeprecated') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" ") + 'instead of "isDeprecated".') : void 0;
-
-    var field = _objectSpread({}, fieldConfig, {
-      isDeprecated: Boolean(fieldConfig.deprecationReason),
-      name: fieldName
-    });
-
-    !(field.resolve == null || typeof field.resolve === 'function') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat(inspect(field.resolve), ".")) : void 0;
+    !(fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat(inspect(fieldConfig.resolve), ".")) : void 0;
     var argsConfig = fieldConfig.args || {};
     !isPlainObj(argsConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
-    field.args = objectEntries(argsConfig).map(function (_ref) {
+    var args = objectEntries(argsConfig).map(function (_ref) {
       var argName = _ref[0],
           arg = _ref[1];
       return {
@@ -461,10 +450,12 @@ function defineFieldMap(config) {
         astNode: arg.astNode
       };
     });
-    resultFieldMap[fieldName] = field;
-  }
-
-  return resultFieldMap;
+    return _objectSpread({}, fieldConfig, {
+      isDeprecated: Boolean(fieldConfig.deprecationReason),
+      name: fieldName,
+      args: args
+    });
+  });
 }
 
 function isPlainObj(obj) {
@@ -763,22 +754,12 @@ defineToJSON(GraphQLInputObjectType);
 function defineInputFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
   !isPlainObj(fieldMap) ? invariant(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
-  var resultFieldMap = Object.create(null);
-
-  var _arr2 = Object.keys(fieldMap);
-
-  for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-    var fieldName = _arr2[_i2];
-
-    var field = _objectSpread({}, fieldMap[fieldName], {
+  return mapValue(fieldMap, function (fieldConfig, fieldName) {
+    !!fieldConfig.hasOwnProperty('resolve') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but ") + 'Input Types cannot define resolvers.') : void 0;
+    return _objectSpread({}, fieldConfig, {
       name: fieldName
     });
-
-    !!field.hasOwnProperty('resolve') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but ") + 'Input Types cannot define resolvers.') : void 0;
-    resultFieldMap[fieldName] = field;
-  }
-
-  return resultFieldMap;
+  });
 }
 
 export function isRequiredInputField(field) {
