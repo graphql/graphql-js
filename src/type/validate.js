@@ -7,6 +7,9 @@
  * @flow strict
  */
 
+import find from '../polyfills/find';
+import objectValues from '../polyfills/objectValues';
+import objectEntries from '../polyfills/objectEntries';
 import {
   isObjectType,
   isInterfaceType,
@@ -31,9 +34,6 @@ import { isIntrospectionType } from './introspection';
 import { assertSchema } from './schema';
 import type { GraphQLSchema } from './schema';
 import inspect from '../jsutils/inspect';
-import find from '../jsutils/find';
-import objectValues from '../jsutils/objectValues';
-import objectEntries from '../jsutils/objectEntries';
 import { GraphQLError } from '../error/GraphQLError';
 import type {
   ASTNode,

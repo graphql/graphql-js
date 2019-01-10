@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import objectEntries from '../polyfills/objectEntries';
 import type {
   GraphQLFieldConfigArgumentMap,
   GraphQLArgument,
@@ -18,7 +19,6 @@ import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import inspect from '../jsutils/inspect';
-import objectEntries from '../jsutils/objectEntries';
 import type { DirectiveDefinitionNode } from '../language/ast';
 import {
   DirectiveLocation,

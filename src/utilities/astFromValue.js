@@ -9,10 +9,10 @@
 
 import { forEach, isCollection } from 'iterall';
 
+import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
-import objectValues from '../jsutils/objectValues';
 import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 import type { GraphQLInputType } from '../type/definition';

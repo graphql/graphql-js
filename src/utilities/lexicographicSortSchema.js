@@ -7,9 +7,9 @@
  * @flow strict
  */
 
+import objectValues from '../polyfills/objectValues';
 import type { ObjMap } from '../jsutils/ObjMap';
 import keyValMap from '../jsutils/keyValMap';
-import objectValues from '../jsutils/objectValues';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import type { GraphQLNamedType } from '../type/definition';

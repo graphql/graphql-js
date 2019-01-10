@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import find from '../polyfills/find';
 import {
   isScalarType,
   isObjectType,
@@ -30,7 +31,6 @@ import type {
 
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
-import find from '../jsutils/find';
 import keyMap from '../jsutils/keyMap';
 
 import type { ObjMap } from '../jsutils/ObjMap';

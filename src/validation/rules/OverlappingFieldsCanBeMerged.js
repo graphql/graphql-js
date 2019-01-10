@@ -7,12 +7,12 @@
  * @flow strict
  */
 
+import find from '../../polyfills/find';
+import objectEntries from '../../polyfills/objectEntries';
 import type { ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
-import find from '../../jsutils/find';
 import type { ObjMap } from '../../jsutils/ObjMap';
-import objectEntries from '../../jsutils/objectEntries';
 import type {
   SelectionSetNode,
   FieldNode,

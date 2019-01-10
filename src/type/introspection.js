@@ -7,8 +7,8 @@
  * @flow strict
  */
 
+import objectValues from '../polyfills/objectValues';
 import isInvalid from '../jsutils/isInvalid';
-import objectValues from '../jsutils/objectValues';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import {
