@@ -77,7 +77,6 @@ describe('printError', () => {
     invariant(opB && opB.kind === Kind.OBJECT_TYPE_DEFINITION && opB.fields);
     const fieldB = opB.fields[0];
 
-    invariant(fieldA && fieldB);
     const error = new GraphQLError('Example error with two nodes', [
       fieldA.type,
       fieldB.type,
