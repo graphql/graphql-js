@@ -7,10 +7,10 @@
  * @flow strict
  */
 
+import objectValues from '../polyfills/objectValues';
 import invariant from '../jsutils/invariant';
 import mapValue from '../jsutils/mapValue';
 import keyValMap from '../jsutils/keyValMap';
-import objectValues from '../jsutils/objectValues';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { assertValidSDLExtension } from '../validation/validate';
 import { assertSchema, GraphQLSchema } from '../type/schema';

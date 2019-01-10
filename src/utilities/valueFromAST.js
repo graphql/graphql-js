@@ -7,9 +7,9 @@
  * @flow strict
  */
 
+import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import isInvalid from '../jsutils/isInvalid';
-import objectValues from '../jsutils/objectValues';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { Kind } from '../language/kinds';
 import {

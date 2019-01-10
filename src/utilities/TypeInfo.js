@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import find from '../polyfills/find';
 import { Kind } from '../language/kinds';
 import {
   isObjectType,
@@ -39,7 +40,6 @@ import {
 import type { GraphQLSchema } from '../type/schema';
 import type { ASTNode, FieldNode } from '../language/ast';
 import { typeFromAST } from './typeFromAST';
-import find from '../jsutils/find';
 
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track

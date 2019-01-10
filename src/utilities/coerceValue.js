@@ -8,10 +8,10 @@
  */
 
 import { forEach, isCollection } from 'iterall';
+import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
 import orList from '../jsutils/orList';
-import objectValues from '../jsutils/objectValues';
 import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error/GraphQLError';
 import type { ASTNode } from '../language/ast';

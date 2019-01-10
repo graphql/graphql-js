@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import objectValues from '../../polyfills/objectValues';
 import type { ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import type { ValueNode } from '../../language/ast';
@@ -27,7 +28,6 @@ import inspect from '../../jsutils/inspect';
 import isInvalid from '../../jsutils/isInvalid';
 import keyMap from '../../jsutils/keyMap';
 import orList from '../../jsutils/orList';
-import objectValues from '../../jsutils/objectValues';
 import suggestionList from '../../jsutils/suggestionList';
 
 export function badValueMessage(

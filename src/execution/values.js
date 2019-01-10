@@ -7,8 +7,8 @@
  * @flow strict
  */
 
+import find from '../polyfills/find';
 import { GraphQLError } from '../error/GraphQLError';
-import find from '../jsutils/find';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
