@@ -6,11 +6,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.isSpecifiedScalarType = isSpecifiedScalarType;
 exports.specifiedScalarTypes = exports.GraphQLID = exports.GraphQLBoolean = exports.GraphQLString = exports.GraphQLFloat = exports.GraphQLInt = void 0;
 
+var _isFinite = _interopRequireDefault(require("../polyfills/isFinite"));
+
+var _isInteger = _interopRequireDefault(require("../polyfills/isInteger"));
+
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
-
-var _isFinite = _interopRequireDefault(require("../jsutils/isFinite"));
-
-var _isInteger = _interopRequireDefault(require("../jsutils/isInteger"));
 
 var _definition = require("./definition");
 

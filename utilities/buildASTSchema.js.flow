@@ -7,10 +7,10 @@
  * @flow strict
  */
 
+import objectValues from '../polyfills/objectValues';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
-import objectValues from '../jsutils/objectValues';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';

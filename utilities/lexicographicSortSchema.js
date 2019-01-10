@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.lexicographicSortSchema = lexicographicSortSchema;
 
-var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
+var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _schema = require("../type/schema");
 

@@ -5,13 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.extendSchema = extendSchema;
 
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
-
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
 var _buildASTSchema = require("./buildASTSchema");
 

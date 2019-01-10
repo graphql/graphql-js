@@ -12,6 +12,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  * 
  */
+import objectEntries from '../polyfills/objectEntries';
 import defineToJSON from '../jsutils/defineToJSON';
 import defineToStringTag from '../jsutils/defineToStringTag';
 import instanceOf from '../jsutils/instanceOf';
@@ -19,7 +20,6 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import mapValue from '../jsutils/mapValue';
-import objectEntries from '../jsutils/objectEntries';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 export function isType(type) {

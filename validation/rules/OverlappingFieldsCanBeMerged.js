@@ -6,13 +6,13 @@ Object.defineProperty(exports, "__esModule", {
 exports.fieldsConflictMessage = fieldsConflictMessage;
 exports.OverlappingFieldsCanBeMerged = OverlappingFieldsCanBeMerged;
 
+var _find = _interopRequireDefault(require("../../polyfills/find"));
+
+var _objectEntries = _interopRequireDefault(require("../../polyfills/objectEntries"));
+
 var _GraphQLError = require("../../error/GraphQLError");
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
-
-var _find = _interopRequireDefault(require("../../jsutils/find"));
-
-var _objectEntries = _interopRequireDefault(require("../../jsutils/objectEntries"));
 
 var _kinds = require("../../language/kinds");
 

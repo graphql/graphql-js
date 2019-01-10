@@ -8,6 +8,8 @@ exports.assertDirective = assertDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
 exports.specifiedDirectives = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
 
+var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
+
 var _definition = require("./definition");
 
 var _scalars = require("./scalars");
@@ -21,8 +23,6 @@ var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
-
-var _objectEntries = _interopRequireDefault(require("../jsutils/objectEntries"));
 
 var _directiveLocation = require("../language/directiveLocation");
 

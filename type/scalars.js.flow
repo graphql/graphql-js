@@ -7,9 +7,9 @@
  * @flow strict
  */
 
+import isFinite from '../polyfills/isFinite';
+import isInteger from '../polyfills/isInteger';
 import inspect from '../jsutils/inspect';
-import isFinite from '../jsutils/isFinite';
-import isInteger from '../jsutils/isInteger';
 import { GraphQLScalarType, isNamedType } from './definition';
 import { Kind } from '../language/kinds';
 

@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.valueFromAST = valueFromAST;
 
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
 var _kinds = require("../language/kinds");
 

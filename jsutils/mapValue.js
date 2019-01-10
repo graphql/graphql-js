@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = mapValue;
 
-var _objectEntries = _interopRequireDefault(require("./objectEntries"));
+var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

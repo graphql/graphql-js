@@ -6,8 +6,8 @@
  *
  * 
  */
+import objectValues from '../polyfills/objectValues';
 import isInvalid from '../jsutils/isInvalid';
-import objectValues from '../jsutils/objectValues';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType, isNamedType } from './definition';

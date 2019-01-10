@@ -9,10 +9,10 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * 
  */
 import { forEach, isCollection } from 'iterall';
+import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
-import objectValues from '../jsutils/objectValues';
 import { Kind } from '../language/kinds';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 import { GraphQLID } from '../type/scalars';

@@ -7,13 +7,13 @@ exports.astFromValue = astFromValue;
 
 var _iterall = require("iterall");
 
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
 var _kinds = require("../language/kinds");
 

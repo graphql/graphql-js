@@ -8,15 +8,15 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  *
  * 
  */
+import find from '../polyfills/find';
+import objectValues from '../polyfills/objectValues';
 import { isAbstractType, isObjectType, isInterfaceType, isUnionType, isInputObjectType, isWrappingType } from './definition';
 import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
 import inspect from '../jsutils/inspect';
 import { __Schema } from './introspection';
 import defineToStringTag from '../jsutils/defineToStringTag';
-import find from '../jsutils/find';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
-import objectValues from '../jsutils/objectValues';
 // eslint-disable-next-line no-redeclare
 export function isSchema(schema) {
   return instanceOf(schema, GraphQLSchema);

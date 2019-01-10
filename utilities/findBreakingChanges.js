@@ -23,9 +23,9 @@ exports.findRemovedLocationsForDirective = findRemovedLocationsForDirective;
 exports.findRemovedDirectiveLocations = findRemovedDirectiveLocations;
 exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 
-var _definition = require("../type/definition");
+var _find = _interopRequireDefault(require("../polyfills/find"));
 
-var _find = _interopRequireDefault(require("../jsutils/find"));
+var _definition = require("../type/definition");
 
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 

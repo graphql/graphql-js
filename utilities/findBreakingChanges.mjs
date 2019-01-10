@@ -6,8 +6,8 @@
  *
  * 
  */
+import find from '../polyfills/find';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from '../type/definition';
-import find from '../jsutils/find';
 import keyMap from '../jsutils/keyMap';
 export var BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',

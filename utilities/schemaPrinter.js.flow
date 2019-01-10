@@ -7,9 +7,9 @@
  * @flow strict
  */
 
+import objectValues from '../polyfills/objectValues';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
-import objectValues from '../jsutils/objectValues';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import type { GraphQLSchema } from '../type/schema';

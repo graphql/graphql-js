@@ -7,6 +7,10 @@ exports.isSchema = isSchema;
 exports.assertSchema = assertSchema;
 exports.GraphQLSchema = void 0;
 
+var _find = _interopRequireDefault(require("../polyfills/find"));
+
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+
 var _definition = require("./definition");
 
 var _directives = require("./directives");
@@ -17,13 +21,9 @@ var _introspection = require("./introspection");
 
 var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
 
-var _find = _interopRequireDefault(require("../jsutils/find"));
-
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
-
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

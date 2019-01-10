@@ -8,13 +8,13 @@ exports.getDescription = getDescription;
 exports.buildSchema = buildSchema;
 exports.ASTDefinitionBuilder = void 0;
 
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
-
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
 var _valueFromAST = require("./valueFromAST");
 

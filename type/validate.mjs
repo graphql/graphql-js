@@ -6,14 +6,14 @@
  *
  * 
  */
+import find from '../polyfills/find';
+import objectValues from '../polyfills/objectValues';
+import objectEntries from '../polyfills/objectEntries';
 import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isInputType, isOutputType, isRequiredArgument } from './definition';
 import { isDirective } from './directives';
 import { isIntrospectionType } from './introspection';
 import { assertSchema } from './schema';
 import inspect from '../jsutils/inspect';
-import find from '../jsutils/find';
-import objectValues from '../jsutils/objectValues';
-import objectEntries from '../jsutils/objectEntries';
 import { GraphQLError } from '../error/GraphQLError';
 import { isValidNameError } from '../utilities/assertValidName';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';

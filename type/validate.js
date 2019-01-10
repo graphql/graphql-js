@@ -6,6 +6,12 @@ Object.defineProperty(exports, "__esModule", {
 exports.validateSchema = validateSchema;
 exports.assertValidSchema = assertValidSchema;
 
+var _find = _interopRequireDefault(require("../polyfills/find"));
+
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+
+var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
+
 var _definition = require("./definition");
 
 var _directives = require("./directives");
@@ -15,12 +21,6 @@ var _introspection = require("./introspection");
 var _schema = require("./schema");
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
-
-var _find = _interopRequireDefault(require("../jsutils/find"));
-
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
-
-var _objectEntries = _interopRequireDefault(require("../jsutils/objectEntries"));
 
 var _GraphQLError = require("../error/GraphQLError");
 

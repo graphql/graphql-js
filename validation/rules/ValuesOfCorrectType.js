@@ -8,6 +8,8 @@ exports.requiredFieldMessage = requiredFieldMessage;
 exports.unknownFieldMessage = unknownFieldMessage;
 exports.ValuesOfCorrectType = ValuesOfCorrectType;
 
+var _objectValues = _interopRequireDefault(require("../../polyfills/objectValues"));
+
 var _GraphQLError = require("../../error/GraphQLError");
 
 var _printer = require("../../language/printer");
@@ -21,8 +23,6 @@ var _isInvalid = _interopRequireDefault(require("../../jsutils/isInvalid"));
 var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
 
 var _orList = _interopRequireDefault(require("../../jsutils/orList"));
-
-var _objectValues = _interopRequireDefault(require("../../jsutils/objectValues"));
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 

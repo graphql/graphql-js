@@ -7,13 +7,13 @@ exports.coerceValue = coerceValue;
 
 var _iterall = require("iterall");
 
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
 var _orList = _interopRequireDefault(require("../jsutils/orList"));
-
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
 

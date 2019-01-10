@@ -6,6 +6,7 @@
  *
  * 
  */
+import objectEntries from '../polyfills/objectEntries';
 import { GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import defineToStringTag from '../jsutils/defineToStringTag';
@@ -13,7 +14,6 @@ import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import inspect from '../jsutils/inspect';
-import objectEntries from '../jsutils/objectEntries';
 import { DirectiveLocation } from '../language/directiveLocation';
 /**
  * Test if the given value is a GraphQL directive.

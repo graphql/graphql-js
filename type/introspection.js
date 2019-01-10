@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.isIntrospectionType = isIntrospectionType;
 exports.introspectionTypes = exports.TypeNameMetaFieldDef = exports.TypeMetaFieldDef = exports.SchemaMetaFieldDef = exports.__TypeKind = exports.TypeKind = exports.__EnumValue = exports.__InputValue = exports.__Field = exports.__Type = exports.__DirectiveLocation = exports.__Directive = exports.__Schema = void 0;
 
-var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
+var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
 var _astFromValue = require("../utilities/astFromValue");
 

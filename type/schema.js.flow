@@ -7,6 +7,8 @@
  * @flow strict
  */
 
+import find from '../polyfills/find';
+import objectValues from '../polyfills/objectValues';
 import {
   isAbstractType,
   isObjectType,
@@ -34,10 +36,8 @@ import type { GraphQLError } from '../error/GraphQLError';
 import inspect from '../jsutils/inspect';
 import { __Schema } from './introspection';
 import defineToStringTag from '../jsutils/defineToStringTag';
-import find from '../jsutils/find';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
-import objectValues from '../jsutils/objectValues';
 import type { ObjMap } from '../jsutils/ObjMap';
 
 /**

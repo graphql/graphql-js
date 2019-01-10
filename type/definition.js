@@ -45,6 +45,8 @@ exports.isRequiredArgument = isRequiredArgument;
 exports.isRequiredInputField = isRequiredInputField;
 exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.GraphQLObjectType = exports.GraphQLScalarType = void 0;
 
+var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
+
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
 var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
@@ -58,8 +60,6 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
-
-var _objectEntries = _interopRequireDefault(require("../jsutils/objectEntries"));
 
 var _kinds = require("../language/kinds");
 

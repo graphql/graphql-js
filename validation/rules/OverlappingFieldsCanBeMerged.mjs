@@ -6,10 +6,10 @@
  *
  * 
  */
+import find from '../../polyfills/find';
+import objectEntries from '../../polyfills/objectEntries';
 import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
-import find from '../../jsutils/find';
-import objectEntries from '../../jsutils/objectEntries';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import { getNamedType, isNonNullType, isLeafType, isObjectType, isListType, isInterfaceType } from '../../type/definition';

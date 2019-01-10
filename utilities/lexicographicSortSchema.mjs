@@ -10,8 +10,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  * 
  */
+import objectValues from '../polyfills/objectValues';
 import keyValMap from '../jsutils/keyValMap';
-import objectValues from '../jsutils/objectValues';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
 import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';

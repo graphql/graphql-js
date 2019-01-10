@@ -7,11 +7,11 @@ exports.printSchema = printSchema;
 exports.printIntrospectionSchema = printIntrospectionSchema;
 exports.printType = printType;
 
+var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
+
 var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
-var _objectValues = _interopRequireDefault(require("../jsutils/objectValues"));
 
 var _astFromValue = require("../utilities/astFromValue");
 

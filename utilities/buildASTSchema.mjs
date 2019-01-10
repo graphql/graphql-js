@@ -6,10 +6,10 @@
  *
  * 
  */
+import objectValues from '../polyfills/objectValues';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
-import objectValues from '../jsutils/objectValues';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';
 import blockStringValue from '../language/blockStringValue';

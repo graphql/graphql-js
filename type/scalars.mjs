@@ -8,9 +8,9 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  *
  * 
  */
+import isFinite from '../polyfills/isFinite';
+import isInteger from '../polyfills/isInteger';
 import inspect from '../jsutils/inspect';
-import isFinite from '../jsutils/isFinite';
-import isInteger from '../jsutils/isInteger';
 import { GraphQLScalarType, isNamedType } from './definition';
 import { Kind } from '../language/kinds'; // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.

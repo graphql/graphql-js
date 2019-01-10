@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.TypeInfo = void 0;
 
+var _find = _interopRequireDefault(require("../polyfills/find"));
+
 var _kinds = require("../language/kinds");
 
 var _definition = require("../type/definition");
@@ -12,8 +14,6 @@ var _definition = require("../type/definition");
 var _introspection = require("../type/introspection");
 
 var _typeFromAST = require("./typeFromAST");
-
-var _find = _interopRequireDefault(require("../jsutils/find"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
