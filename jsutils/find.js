@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = find;
+exports.default = void 0;
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -13,10 +13,19 @@ exports.default = find;
  *
  * 
  */
-function find(list, predicate) {
+
+/* eslint-disable no-redeclare */
+// $FlowFixMe
+var find = Array.prototype.find ? function (list, predicate) {
+  return Array.prototype.find.call(list, predicate);
+} : function (list, predicate) {
   for (var i = 0; i < list.length; i++) {
-    if (predicate(list[i])) {
-      return list[i];
+    var value = list[i];
+
+    if (predicate(value)) {
+      return value;
     }
   }
-}
+};
+var _default = find;
+exports.default = _default;
