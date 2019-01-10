@@ -7,13 +7,23 @@
  * @flow strict
  */
 
-export default function find<T>(
+declare function find<T>(
   list: $ReadOnlyArray<T>,
   predicate: (item: T) => boolean,
-): ?T {
-  for (let i = 0; i < list.length; i++) {
-    if (predicate(list[i])) {
-      return list[i];
+): T | void;
+
+/* eslint-disable no-redeclare */
+// $FlowFixMe
+const find = Array.prototype.find
+  ? function(list, predicate) {
+      return Array.prototype.find.call(list, predicate);
     }
-  }
-}
+  : function(list, predicate) {
+      for (let i = 0; i < list.length; i++) {
+        const value = list[i];
+        if (predicate(value)) {
+          return value;
+        }
+      }
+    };
+export default find;
