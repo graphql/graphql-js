@@ -88,7 +88,6 @@ describe('getOperationRootType', () => {
       mutationNode,
       subscriptionNode,
     ] = schemaNode.operationTypes;
-    invariant(queryNode && mutationNode && subscriptionNode);
 
     expect(getOperationRootType(testSchema, queryNode)).to.equal(queryType);
     expect(getOperationRootType(testSchema, mutationNode)).to.equal(
