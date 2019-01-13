@@ -27,7 +27,7 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import inspect from '../../jsutils/inspect';
-import { isObjectType, isInputType, isOutputType } from '../definition';
+import { isObjectType } from '../definition';
 
 const BlogImage = new GraphQLObjectType({
   name: 'Image',
@@ -382,38 +382,6 @@ describe('Type System: Example', () => {
     expect(JSON.stringify(GraphQLList(GraphQLList(GraphQLInt)))).to.equal(
       '"[[Int]]"',
     );
-  });
-
-  it('identifies input types', () => {
-    const expected = [
-      [GraphQLInt, true],
-      [ObjectType, false],
-      [InterfaceType, false],
-      [UnionType, false],
-      [EnumType, true],
-      [InputObjectType, true],
-    ];
-    for (const [type, answer] of expected) {
-      expect(isInputType(type)).to.equal(answer);
-      expect(isInputType(GraphQLList(type))).to.equal(answer);
-      expect(isInputType(GraphQLNonNull(type))).to.equal(answer);
-    }
-  });
-
-  it('identifies output types', () => {
-    const expected = [
-      [GraphQLInt, true],
-      [ObjectType, true],
-      [InterfaceType, true],
-      [UnionType, true],
-      [EnumType, true],
-      [InputObjectType, false],
-    ];
-    for (const [type, answer] of expected) {
-      expect(isOutputType(type)).to.equal(answer);
-      expect(isOutputType(GraphQLList(type))).to.equal(answer);
-      expect(isOutputType(GraphQLNonNull(type))).to.equal(answer);
-    }
   });
 
   it('prohibits nesting NonNull inside NonNull', () => {

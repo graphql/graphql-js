@@ -255,60 +255,89 @@ describe('Type predicates', () => {
   });
 
   describe('isInputType', () => {
+    function expectInputType(type) {
+      expect(isInputType(type)).to.equal(true);
+      expect(() => assertInputType(type)).not.to.throw();
+    }
+
     it('returns true for an input type', () => {
-      expect(isInputType(InputObjectType)).to.equal(true);
-      expect(() => assertInputType(InputObjectType)).not.to.throw();
+      expectInputType(GraphQLString);
+      expectInputType(EnumType);
+      expectInputType(InputObjectType);
     });
 
     it('returns true for a wrapped input type', () => {
-      expect(isInputType(GraphQLList(InputObjectType))).to.equal(true);
-      expect(() =>
-        assertInputType(GraphQLList(InputObjectType)),
-      ).not.to.throw();
-      expect(isInputType(GraphQLNonNull(InputObjectType))).to.equal(true);
-      expect(() =>
-        assertInputType(GraphQLNonNull(InputObjectType)),
-      ).not.to.throw();
+      expectInputType(GraphQLList(GraphQLString));
+      expectInputType(GraphQLList(EnumType));
+      expectInputType(GraphQLList(InputObjectType));
+
+      expectInputType(GraphQLNonNull(GraphQLString));
+      expectInputType(GraphQLNonNull(EnumType));
+      expectInputType(GraphQLNonNull(InputObjectType));
     });
 
+    function expectNonInputType(type) {
+      expect(isInputType(type)).to.equal(false);
+      expect(() => assertInputType(type)).to.throw();
+    }
+
     it('returns false for an output type', () => {
-      expect(isInputType(ObjectType)).to.equal(false);
-      expect(() => assertInputType(ObjectType)).to.throw();
+      expectNonInputType(ObjectType);
+      expectNonInputType(InterfaceType);
+      expectNonInputType(UnionType);
     });
 
     it('returns false for a wrapped output type', () => {
-      expect(isInputType(GraphQLList(ObjectType))).to.equal(false);
-      expect(() => assertInputType(GraphQLList(ObjectType))).to.throw();
-      expect(isInputType(GraphQLNonNull(ObjectType))).to.equal(false);
-      expect(() => assertInputType(GraphQLNonNull(ObjectType))).to.throw();
+      expectNonInputType(GraphQLList(ObjectType));
+      expectNonInputType(GraphQLList(InterfaceType));
+      expectNonInputType(GraphQLList(UnionType));
+
+      expectNonInputType(GraphQLNonNull(ObjectType));
+      expectNonInputType(GraphQLNonNull(InterfaceType));
+      expectNonInputType(GraphQLNonNull(UnionType));
     });
   });
 
   describe('isOutputType', () => {
+    function expectOutputType(type) {
+      expect(isOutputType(type)).to.equal(true);
+      expect(() => assertOutputType(type)).not.to.throw();
+    }
+
     it('returns true for an output type', () => {
-      expect(isOutputType(ObjectType)).to.equal(true);
-      expect(() => assertOutputType(ObjectType)).not.to.throw();
+      expectOutputType(GraphQLString);
+      expectOutputType(ObjectType);
+      expectOutputType(InterfaceType);
+      expectOutputType(UnionType);
+      expectOutputType(EnumType);
     });
 
     it('returns true for a wrapped output type', () => {
-      expect(isOutputType(GraphQLList(ObjectType))).to.equal(true);
-      expect(() => assertOutputType(GraphQLList(ObjectType))).not.to.throw();
-      expect(isOutputType(GraphQLNonNull(ObjectType))).to.equal(true);
-      expect(() => assertOutputType(GraphQLNonNull(ObjectType))).not.to.throw();
+      expectOutputType(GraphQLList(GraphQLString));
+      expectOutputType(GraphQLList(ObjectType));
+      expectOutputType(GraphQLList(InterfaceType));
+      expectOutputType(GraphQLList(UnionType));
+      expectOutputType(GraphQLList(EnumType));
+
+      expectOutputType(GraphQLNonNull(GraphQLString));
+      expectOutputType(GraphQLNonNull(ObjectType));
+      expectOutputType(GraphQLNonNull(InterfaceType));
+      expectOutputType(GraphQLNonNull(UnionType));
+      expectOutputType(GraphQLNonNull(EnumType));
     });
 
+    function expectNonOutputType(type) {
+      expect(isOutputType(type)).to.equal(false);
+      expect(() => assertOutputType(type)).to.throw();
+    }
+
     it('returns false for an input type', () => {
-      expect(isOutputType(InputObjectType)).to.equal(false);
-      expect(() => assertOutputType(InputObjectType)).to.throw();
+      expectNonOutputType(InputObjectType);
     });
 
     it('returns false for a wrapped input type', () => {
-      expect(isOutputType(GraphQLList(InputObjectType))).to.equal(false);
-      expect(() => assertOutputType(GraphQLList(InputObjectType))).to.throw();
-      expect(isOutputType(GraphQLNonNull(InputObjectType))).to.equal(false);
-      expect(() =>
-        assertOutputType(GraphQLNonNull(InputObjectType)),
-      ).to.throw();
+      expectNonOutputType(GraphQLList(InputObjectType));
+      expectNonOutputType(GraphQLNonNull(InputObjectType));
     });
   });
 
