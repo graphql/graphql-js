@@ -507,6 +507,7 @@ export function getNamedType(type) {
 export type Thunk<+T> = (() => T) | T;
 
 function resolveThunk<+T>(thunk: Thunk<T>): T {
+  // $FlowFixMe(>=0.90.0)
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
