@@ -23,6 +23,7 @@ export default function inspect(value: mixed): string {
         const customInspectFn = getCustomFn(value);
 
         if (customInspectFn) {
+          // $FlowFixMe(>=0.90.0)
           const customValue = customInspectFn.call(value);
           return typeof customValue === 'string'
             ? customValue
