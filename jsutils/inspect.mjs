@@ -26,6 +26,7 @@ export default function inspect(value) {
         var customInspectFn = getCustomFn(value);
 
         if (customInspectFn) {
+          // $FlowFixMe(>=0.90.0)
           var customValue = customInspectFn.call(value);
           return typeof customValue === 'string' ? customValue : inspect(customValue);
         } else if (Array.isArray(value)) {

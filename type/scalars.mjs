@@ -122,6 +122,7 @@ function serializeObject(value) {
     }
 
     if (typeof value.toJSON === 'function') {
+      // $FlowFixMe(>=0.90.0)
       return value.toJSON();
     }
   }

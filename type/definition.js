@@ -370,6 +370,7 @@ function getNamedType(type) {
 
 
 function resolveThunk(thunk) {
+  // $FlowFixMe(>=0.90.0)
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 /**
