@@ -63,12 +63,12 @@ export class GraphQLDirective {
     invariant(config.name, 'Directive must be named.');
     invariant(
       Array.isArray(config.locations),
-      'Must provide locations for directive.',
+      `@${config.name} locations must be an Array.`,
     );
 
     const args = config.args || {};
     invariant(
-      !Array.isArray(args),
+      typeof args === 'object' && !Array.isArray(args),
       `@${config.name} args must be an object with argument names as keys.`,
     );
 

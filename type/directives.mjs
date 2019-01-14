@@ -1,3 +1,5 @@
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -41,9 +43,9 @@ function () {
     this.locations = config.locations;
     this.astNode = config.astNode;
     !config.name ? invariant(0, 'Directive must be named.') : void 0;
-    !Array.isArray(config.locations) ? invariant(0, 'Must provide locations for directive.') : void 0;
+    !Array.isArray(config.locations) ? invariant(0, "@".concat(config.name, " locations must be an Array.")) : void 0;
     var args = config.args || {};
-    !!Array.isArray(args) ? invariant(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
+    !(_typeof(args) === 'object' && !Array.isArray(args)) ? invariant(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
     this.args = objectEntries(args).map(function (_ref) {
       var argName = _ref[0],
           arg = _ref[1];
