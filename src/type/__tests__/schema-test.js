@@ -61,12 +61,7 @@ const Schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      getObject: {
-        type: InterfaceType,
-        resolve() {
-          return {};
-        },
-      },
+      getObject: { type: InterfaceType },
     },
   }),
   directives: [Directive],
@@ -176,24 +171,21 @@ describe('Type System: Schema', () => {
       });
 
       it('does not check the configuration for mistakes', () => {
-        expect(() => {
-          const config = () => null;
-          config.assumeValid = true;
-          // $DisableFlowOnNegativeTest
-          return new GraphQLSchema(config);
-        }).to.not.throw();
+        const config = () => null;
+        config.assumeValid = true;
+        // $DisableFlowOnNegativeTest
+        expect(() => new GraphQLSchema(config)).to.not.throw();
 
-        expect(() => {
-          return new GraphQLSchema({
-            assumeValid: true,
+        expect(
+          () =>
             // $DisableFlowOnNegativeTest
-            types: {},
-            // $DisableFlowOnNegativeTest
-            directives: { reduce: () => [] },
-            // $DisableFlowOnNegativeTest
-            allowedLegacyNames: {},
-          });
-        }).to.not.throw();
+            new GraphQLSchema({
+              assumeValid: true,
+              types: {},
+              directives: { reduce: () => [] },
+              allowedLegacyNames: {},
+            }),
+        ).to.not.throw();
       });
     });
   });

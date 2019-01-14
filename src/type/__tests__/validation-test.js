@@ -687,10 +687,12 @@ describe('Type System: Union types must be valid', () => {
       SomeInputObjectType,
     ];
     for (const memberType of badUnionMemberTypes) {
-      const badSchema = schemaWithFieldType(
+      const badUnion = new GraphQLUnionType({
+        name: 'BadUnion',
         // $DisableFlowOnNegativeTest
-        new GraphQLUnionType({ name: 'BadUnion', types: [memberType] }),
-      );
+        types: [memberType],
+      });
+      const badSchema = schemaWithFieldType(badUnion);
       expect(validateSchema(badSchema)).to.deep.equal([
         {
           message:
@@ -944,9 +946,9 @@ describe('Type System: Object fields must have output types', () => {
 describe('Type System: Objects can only implement unique interfaces', () => {
   it('rejects an Object implementing a non-type values', () => {
     const schema = new GraphQLSchema({
-      // $DisableFlowOnNegativeTest
       query: new GraphQLObjectType({
         name: 'BadObject',
+        // $DisableFlowOnNegativeTest
         interfaces: [undefined],
         fields: { f: { type: GraphQLString } },
       }),
