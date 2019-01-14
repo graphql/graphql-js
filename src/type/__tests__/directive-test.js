@@ -78,10 +78,10 @@ describe('Type System: Directive', () => {
   it('reject directive incorrectly typed args', () => {
     expect(
       () =>
-        // $DisableFlowOnNegativeTest
         new GraphQLDirective({
           name: 'Foo',
-          locations: ['Query'],
+          locations: ['QUERY'],
+          // $DisableFlowOnNegativeTest
           args: [],
         }),
     ).to.throw('@Foo args must be an object with argument names as keys.');
