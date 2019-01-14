@@ -9,6 +9,7 @@
 
 import {
   GraphQLSchema,
+  GraphQLScalarType,
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLString,
@@ -106,6 +107,53 @@ describe('Type System: Schema', () => {
         expect(() => new GraphQLSchema({ directives: {} })).to.throw();
         // $DisableFlowOnNegativeTest
         expect(() => new GraphQLSchema({ allowedLegacyNames: {} })).to.throw();
+      });
+    });
+
+    describe('A Schema must contain uniquely named types', () => {
+      it('rejects a Schema which redefines a built-in type', () => {
+        const FakeString = new GraphQLScalarType({
+          name: 'String',
+          serialize: () => null,
+        });
+
+        const QueryType = new GraphQLObjectType({
+          name: 'Query',
+          fields: {
+            normal: { type: GraphQLString },
+            fake: { type: FakeString },
+          },
+        });
+
+        expect(() => new GraphQLSchema({ query: QueryType })).to.throw(
+          'Schema must contain unique named types but contains multiple types named "String".',
+        );
+      });
+
+      it('rejects a Schema which defines an object type twice', () => {
+        const types = [
+          new GraphQLObjectType({ name: 'SameName', fields: {} }),
+          new GraphQLObjectType({ name: 'SameName', fields: {} }),
+        ];
+
+        expect(() => new GraphQLSchema({ types })).to.throw(
+          'Schema must contain unique named types but contains multiple types named "SameName".',
+        );
+      });
+
+      it('rejects a Schema which defines fields with conflicting types', () => {
+        const fields = {};
+        const QueryType = new GraphQLObjectType({
+          name: 'Query',
+          fields: {
+            a: { type: new GraphQLObjectType({ name: 'SameName', fields }) },
+            b: { type: new GraphQLObjectType({ name: 'SameName', fields }) },
+          },
+        });
+
+        expect(() => new GraphQLSchema({ query: QueryType })).to.throw(
+          'Schema must contain unique named types but contains multiple types named "SameName".',
+        );
       });
     });
 
