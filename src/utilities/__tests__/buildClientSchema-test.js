@@ -490,31 +490,41 @@ describe('Type System: build schema from introspection', () => {
     const introspection = introspectionFromSchema(schema);
     const clientSchema = buildClientSchema(introspection);
 
-    const result = graphqlSync(
-      clientSchema,
-      'query Limited($v: CustomScalar) { foo(custom1: 123, custom2: $v) }',
-      { foo: 'bar', unused: 'value' },
-      null,
-      { v: 'baz' },
-    );
+    const result = graphqlSync({
+      schema: clientSchema,
+      source:
+        'query Limited($v: CustomScalar) { foo(custom1: 123, custom2: $v) }',
+      rootValue: { foo: 'bar', unused: 'value' },
+      variableValues: { v: 'baz' },
+    });
 
     expect(result.data).to.deep.equal({ foo: 'bar' });
   });
 
-  describe('throws when given incomplete introspection', () => {
+  describe('throws when given invalid introspection', () => {
     const dummySchema = buildSchema(`
       type Query {
+        foo(bar: String): String
+      }
+
+      union SomeUnion = Query
+
+      enum SomeEnum { FOO }
+
+      input SomeInputObject {
         foo: String
       }
 
-      directive @Foo on QUERY
+      directive @SomeDirective on QUERY
     `);
 
-    it('throws when given empty types', () => {
+    it('throws when referenced unknown type', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
       // $DisableFlowOnNegativeTest
-      introspection.__schema.types = [];
+      introspection.__schema.types = introspection.__schema.types.filter(
+        ({ name }) => name !== 'Query',
+      );
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Invalid or incomplete schema, unknown type: Query. Ensure that a ' +
@@ -522,14 +532,25 @@ describe('Type System: build schema from introspection', () => {
       );
     });
 
-    it('throws when missing kind', () => {
+    it('throws when type reference is missing name', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
-      const queryTypeIntrospection = introspection.__schema.types[0];
-      expect(queryTypeIntrospection).to.deep.include({
-        name: 'Query',
-        kind: 'OBJECT',
-      });
+      expect(introspection).to.have.nested.property('__schema.queryType.name');
+      // $DisableFlowOnNegativeTest
+      delete introspection.__schema.queryType.name;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Unknown type reference: {}',
+      );
+    });
+
+    it('throws when missing kind', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const queryTypeIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'Query',
+      );
+
+      expect(queryTypeIntrospection).to.have.property('kind');
       // $DisableFlowOnNegativeTest
       delete queryTypeIntrospection.kind;
 
@@ -541,35 +562,159 @@ describe('Type System: build schema from introspection', () => {
 
     it('throws when missing interfaces', () => {
       const introspection = introspectionFromSchema(dummySchema);
+      const queryTypeIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'Query',
+      );
 
-      const queryTypeIntrospection = introspection.__schema.types[0];
-      expect(queryTypeIntrospection).to.deep.include({
-        name: 'Query',
-        interfaces: [],
-      });
+      expect(queryTypeIntrospection).to.have.property('interfaces');
       // $DisableFlowOnNegativeTest
       delete queryTypeIntrospection.interfaces;
 
       expect(() => buildClientSchema(introspection)).to.throw(
-        'Introspection result missing interfaces: ' +
-          '{ kind: "OBJECT", name: "Query", description: null, fields: [{ name: "foo", description: null, args: [], type: { kind: "SCALAR", name: "String", ofType: null }, isDeprecated: false, deprecationReason: null }], inputFields: null, enumValues: null, possibleTypes: null }',
+        'Introspection result missing interfaces: { kind: "OBJECT", name: "Query",',
+      );
+    });
+
+    it('throws when missing fields', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const queryTypeIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'Query',
+      );
+
+      expect(queryTypeIntrospection).to.have.property('fields');
+      // $DisableFlowOnNegativeTest
+      delete queryTypeIntrospection.fields;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Introspection result missing fields: { kind: "OBJECT", name: "Query",',
+      );
+    });
+
+    it('throws when missing field args', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const queryTypeIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'Query',
+      );
+
+      expect(queryTypeIntrospection).to.have.nested.property('fields[0].args');
+      // $DisableFlowOnNegativeTest
+      delete queryTypeIntrospection.fields[0].args;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Introspection result missing field args: { name: "foo",',
+      );
+    });
+
+    it('throws when output type is used as an arg type', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const queryTypeIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'Query',
+      );
+
+      expect(queryTypeIntrospection).to.have.nested.property(
+        'fields[0].args[0].type.name',
+        'String',
+      );
+      // $DisableFlowOnNegativeTest
+      queryTypeIntrospection.fields[0].args[0].type.name = 'SomeUnion';
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Introspection must provide input type for arguments.',
+      );
+    });
+
+    it('throws when input type is used as a field type', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const queryTypeIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'Query',
+      );
+
+      expect(queryTypeIntrospection).to.have.nested.property(
+        'fields[0].type.name',
+        'String',
+      );
+      // $DisableFlowOnNegativeTest
+      queryTypeIntrospection.fields[0].type.name = 'SomeInputObject';
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Introspection must provide output type for fields.',
+      );
+    });
+
+    it('throws when missing possibleTypes', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const someUnionIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'SomeUnion',
+      );
+
+      expect(someUnionIntrospection).to.have.property('possibleTypes');
+      // $DisableFlowOnNegativeTest
+      delete someUnionIntrospection.possibleTypes;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Introspection result missing possibleTypes: { kind: "UNION", name: "SomeUnion",',
+      );
+    });
+
+    it('throws when missing enumValues', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const someEnumIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'SomeEnum',
+      );
+
+      expect(someEnumIntrospection).to.have.property('enumValues');
+      // $DisableFlowOnNegativeTest
+      delete someEnumIntrospection.enumValues;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Introspection result missing enumValues: { kind: "ENUM", name: "SomeEnum",',
+      );
+    });
+
+    it('throws when missing inputFields', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+      const someInputObjectIntrospection = introspection.__schema.types.find(
+        ({ name }) => name === 'SomeInputObject',
+      );
+
+      expect(someInputObjectIntrospection).to.have.property('inputFields');
+      // $DisableFlowOnNegativeTest
+      delete someInputObjectIntrospection.inputFields;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Introspection result missing inputFields: { kind: "INPUT_OBJECT", name: "SomeInputObject",',
       );
     });
 
     it('throws when missing directive locations', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
-      const fooDirectiveIntrospection = introspection.__schema.directives[0];
-      expect(fooDirectiveIntrospection).to.deep.include({
-        name: 'Foo',
+      const someDirectiveIntrospection = introspection.__schema.directives[0];
+      expect(someDirectiveIntrospection).to.deep.include({
+        name: 'SomeDirective',
         locations: ['QUERY'],
       });
       // $DisableFlowOnNegativeTest
-      delete fooDirectiveIntrospection.locations;
+      delete someDirectiveIntrospection.locations;
 
       expect(() => buildClientSchema(introspection)).to.throw(
-        'Introspection result missing directive locations: ' +
-          '{ name: "Foo", description: null, args: [] }',
+        'Introspection result missing directive locations: { name: "SomeDirective",',
+      );
+    });
+
+    it('throws when missing directive args', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+
+      const someDirectiveIntrospection = introspection.__schema.directives[0];
+      expect(someDirectiveIntrospection).to.deep.include({
+        name: 'SomeDirective',
+        args: [],
+      });
+      // $DisableFlowOnNegativeTest
+      delete someDirectiveIntrospection.args;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Introspection result missing directive args: { name: "SomeDirective",',
       );
     });
   });
