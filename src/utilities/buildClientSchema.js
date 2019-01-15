@@ -143,7 +143,9 @@ export function buildClientSchema(
     const type = getType(typeRef);
     invariant(
       isInputType(type),
-      'Introspection must provide input type for arguments.',
+      'Introspection must provide input type for arguments, but received: ' +
+        inspect(type) +
+        '.',
     );
     return type;
   }
@@ -154,7 +156,9 @@ export function buildClientSchema(
     const type = getType(typeRef);
     invariant(
       isOutputType(type),
-      'Introspection must provide output type for fields.',
+      'Introspection must provide output type for fields, but received: ' +
+        inspect(type) +
+        '.',
     );
     return type;
   }

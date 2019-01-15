@@ -619,7 +619,7 @@ describe('Type System: build schema from introspection', () => {
       queryTypeIntrospection.fields[0].args[0].type.name = 'SomeUnion';
 
       expect(() => buildClientSchema(introspection)).to.throw(
-        'Introspection must provide input type for arguments.',
+        'Introspection must provide input type for arguments, but received: SomeUnion.',
       );
     });
 
@@ -637,7 +637,7 @@ describe('Type System: build schema from introspection', () => {
       queryTypeIntrospection.fields[0].type.name = 'SomeInputObject';
 
       expect(() => buildClientSchema(introspection)).to.throw(
-        'Introspection must provide output type for fields.',
+        'Introspection must provide output type for fields, but received: SomeInputObject.',
       );
     });
 
