@@ -4,18 +4,20 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import dedent from '../../jsutils/dedent';
+import invariant from '../../jsutils/invariant';
 import { buildClientSchema } from '../buildClientSchema';
 import { introspectionFromSchema } from '../introspectionFromSchema';
 import {
   buildSchema,
   printSchema,
   graphqlSync,
+  isEnumType,
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLEnumType,
@@ -323,7 +325,7 @@ describe('Type System: build schema from introspection', () => {
     const clientFoodEnum = clientSchema.getType('Food');
 
     // It's also an Enum type on the client.
-    expect(clientFoodEnum).to.be.an.instanceOf(GraphQLEnumType);
+    invariant(isEnumType(clientFoodEnum));
 
     // Client types do not get server-only values, so `value` mirrors `name`,
     // rather than using the integers defined in the "server" schema.
@@ -430,31 +432,21 @@ describe('Type System: build schema from introspection', () => {
   });
 
   it('builds a schema with legacy names', () => {
-    const introspection = {
-      __schema: {
-        queryType: {
-          name: 'Query',
-        },
-        types: [
-          {
-            name: 'Query',
-            kind: 'OBJECT',
-            fields: [
-              {
-                name: '__badName',
-                args: [],
-                type: { name: 'String' },
-              },
-            ],
-            interfaces: [],
-          },
-        ],
-      },
-    };
-    const schema = buildClientSchema(introspection, {
-      allowedLegacyNames: ['__badName'],
+    const sdl = dedent`
+      type Query {
+        __badName: String
+      }
+    `;
+    const allowedLegacyNames = ['__badName'];
+    const schema = buildSchema(sdl, { allowedLegacyNames });
+
+    const introspection = introspectionFromSchema(schema);
+    const clientSchema = buildClientSchema(introspection, {
+      allowedLegacyNames,
     });
+
     expect(schema.__allowedLegacyNames).to.deep.equal(['__badName']);
+    expect(printSchema(clientSchema)).to.equal(sdl);
   });
 
   it('builds a schema aware of deprecation', () => {
@@ -510,73 +502,74 @@ describe('Type System: build schema from introspection', () => {
   });
 
   describe('throws when given incomplete introspection', () => {
-    it('throws when given empty types', () => {
-      const incompleteIntrospection = {
-        __schema: {
-          queryType: { name: 'QueryType' },
-          types: [],
-        },
-      };
+    const dummySchema = buildSchema(`
+      type Query {
+        foo: String
+      }
 
-      expect(() => buildClientSchema(incompleteIntrospection)).to.throw(
-        'Invalid or incomplete schema, unknown type: QueryType. Ensure ' +
-          'that a full introspection query is used in order to build a ' +
-          'client schema.',
+      directive @Foo on QUERY
+    `);
+
+    it('throws when given empty types', () => {
+      const introspection = introspectionFromSchema(dummySchema);
+
+      // $DisableFlowOnNegativeTest
+      introspection.__schema.types = [];
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Invalid or incomplete schema, unknown type: Query. Ensure that a ' +
+          'full introspection query is used in order to build a client schema.',
       );
     });
 
     it('throws when missing kind', () => {
-      const incompleteIntrospection = {
-        __schema: {
-          queryType: { name: 'QueryType' },
-          types: [{ name: 'QueryType' }],
-        },
-      };
+      const introspection = introspectionFromSchema(dummySchema);
 
-      expect(() => buildClientSchema(incompleteIntrospection)).to.throw(
+      const queryTypeIntrospection = introspection.__schema.types[0];
+      expect(queryTypeIntrospection).to.deep.include({
+        name: 'Query',
+        kind: 'OBJECT',
+      });
+      // $DisableFlowOnNegativeTest
+      delete queryTypeIntrospection.kind;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
         'Invalid or incomplete introspection result. Ensure that a full ' +
           'introspection query is used in order to build a client schema',
       );
     });
 
     it('throws when missing interfaces', () => {
-      const nullInterfaceIntrospection = {
-        __schema: {
-          queryType: { name: 'QueryType' },
-          types: [
-            {
-              kind: 'OBJECT',
-              name: 'QueryType',
-              fields: [
-                {
-                  name: 'aString',
-                  args: [],
-                  type: { kind: 'SCALAR', name: 'String', ofType: null },
-                  isDeprecated: false,
-                },
-              ],
-            },
-          ],
-        },
-      };
+      const introspection = introspectionFromSchema(dummySchema);
 
-      expect(() => buildClientSchema(nullInterfaceIntrospection)).to.throw(
+      const queryTypeIntrospection = introspection.__schema.types[0];
+      expect(queryTypeIntrospection).to.deep.include({
+        name: 'Query',
+        interfaces: [],
+      });
+      // $DisableFlowOnNegativeTest
+      delete queryTypeIntrospection.interfaces;
+
+      expect(() => buildClientSchema(introspection)).to.throw(
         'Introspection result missing interfaces: ' +
-          '{ kind: "OBJECT", name: "QueryType", fields: [{ name: "aString", args: [], type: { kind: "SCALAR", name: "String", ofType: null }, isDeprecated: false }] }',
+          '{ kind: "OBJECT", name: "Query", description: null, fields: [{ name: "foo", description: null, args: [], type: { kind: "SCALAR", name: "String", ofType: null }, isDeprecated: false, deprecationReason: null }], inputFields: null, enumValues: null, possibleTypes: null }',
       );
     });
 
     it('throws when missing directive locations', () => {
-      const introspection = {
-        __schema: {
-          types: [],
-          directives: [{ name: 'test', args: [] }],
-        },
-      };
+      const introspection = introspectionFromSchema(dummySchema);
+
+      const fooDirectiveIntrospection = introspection.__schema.directives[0];
+      expect(fooDirectiveIntrospection).to.deep.include({
+        name: 'Foo',
+        locations: ['QUERY'],
+      });
+      // $DisableFlowOnNegativeTest
+      delete fooDirectiveIntrospection.locations;
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Introspection result missing directive locations: ' +
-          '{ name: "test", args: [] }',
+          '{ name: "Foo", description: null, args: [] }',
       );
     });
   });
@@ -622,35 +615,44 @@ describe('Type System: build schema from introspection', () => {
 
   describe('prevents infinite recursion on invalid introspection', () => {
     it('recursive interfaces', () => {
-      const introspection = {
-        __schema: {
-          types: [
-            {
-              name: 'Foo',
-              kind: 'OBJECT',
-              fields: [],
-              interfaces: [{ name: 'Foo' }],
-            },
-          ],
-        },
-      };
+      const sdl = `
+        type Query {
+          foo: Foo
+        }
+
+        type Foo implements Foo {
+          foo: String
+        }
+      `;
+      const schema = buildSchema(sdl, { assumeValid: true });
+      const introspection = introspectionFromSchema(schema);
+
+      expect(introspection.__schema.types[1]).to.deep.include({
+        name: 'Foo',
+        interfaces: [{ kind: 'OBJECT', name: 'Foo', ofType: null }],
+      });
+
       expect(() => buildClientSchema(introspection)).to.throw(
         'Expected Foo to be a GraphQL Interface type.',
       );
     });
 
     it('recursive union', () => {
-      const introspection = {
-        __schema: {
-          types: [
-            {
-              name: 'Foo',
-              kind: 'UNION',
-              possibleTypes: [{ name: 'Foo' }],
-            },
-          ],
-        },
-      };
+      const sdl = `
+        type Query {
+          foo: Foo
+        }
+
+        union Foo = Foo
+      `;
+      const schema = buildSchema(sdl, { assumeValid: true });
+      const introspection = introspectionFromSchema(schema);
+
+      expect(introspection.__schema.types[1]).to.deep.include({
+        name: 'Foo',
+        possibleTypes: [{ kind: 'UNION', name: 'Foo', ofType: null }],
+      });
+
       expect(() => buildClientSchema(introspection)).to.throw(
         'Expected Foo to be a GraphQL Object type.',
       );
