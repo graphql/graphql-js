@@ -199,28 +199,51 @@ function () {
     return this.buildType(typeNode);
   };
 
-  _proto.buildDirective = function buildDirective(directiveNode) {
+  _proto.buildDirective = function buildDirective(directive) {
+    var _this = this;
+
+    var locations = directive.locations.map(function (_ref) {
+      var value = _ref.value;
+      return value;
+    });
     return new GraphQLDirective({
-      name: directiveNode.name.value,
-      description: getDescription(directiveNode, this._options),
-      locations: directiveNode.locations.map(function (node) {
-        return node.value;
+      name: directive.name.value,
+      description: getDescription(directive, this._options),
+      locations: locations,
+      args: keyByNameNode(directive.arguments || [], function (arg) {
+        return _this.buildArg(arg);
       }),
-      args: directiveNode.arguments && this._makeInputValues(directiveNode.arguments),
-      astNode: directiveNode
+      astNode: directive
     });
   };
 
   _proto.buildField = function buildField(field) {
+    var _this2 = this;
+
     return {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
       // with validateSchema() will produce more actionable results.
       type: this._buildWrappedType(field.type),
       description: getDescription(field, this._options),
-      args: field.arguments && this._makeInputValues(field.arguments),
+      args: keyByNameNode(field.arguments || [], function (arg) {
+        return _this2.buildArg(arg);
+      }),
       deprecationReason: getDeprecationReason(field),
       astNode: field
+    };
+  };
+
+  _proto.buildArg = function buildArg(value) {
+    // Note: While this could make assertions to get the correctly typed
+    // value, that would throw immediately while type system validation
+    var type = this._buildWrappedType(value.type);
+
+    return {
+      type: type,
+      description: getDescription(value, this._options),
+      defaultValue: valueFromAST(value.defaultValue, type),
+      astNode: value
     };
   };
 
@@ -230,7 +253,6 @@ function () {
     var type = this._buildWrappedType(value.type);
 
     return {
-      name: value.name.value,
       type: type,
       description: getDescription(value, this._options),
       defaultValue: valueFromAST(value.defaultValue, type),
@@ -246,129 +268,114 @@ function () {
     };
   };
 
-  _proto._makeSchemaDef = function _makeSchemaDef(def) {
-    switch (def.kind) {
+  _proto._makeSchemaDef = function _makeSchemaDef(astNode) {
+    switch (astNode.kind) {
       case Kind.OBJECT_TYPE_DEFINITION:
-        return this._makeTypeDef(def);
+        return this._makeTypeDef(astNode);
 
       case Kind.INTERFACE_TYPE_DEFINITION:
-        return this._makeInterfaceDef(def);
+        return this._makeInterfaceDef(astNode);
 
       case Kind.ENUM_TYPE_DEFINITION:
-        return this._makeEnumDef(def);
+        return this._makeEnumDef(astNode);
 
       case Kind.UNION_TYPE_DEFINITION:
-        return this._makeUnionDef(def);
+        return this._makeUnionDef(astNode);
 
       case Kind.SCALAR_TYPE_DEFINITION:
-        return this._makeScalarDef(def);
+        return this._makeScalarDef(astNode);
 
       case Kind.INPUT_OBJECT_TYPE_DEFINITION:
-        return this._makeInputObjectDef(def);
+        return this._makeInputObjectDef(astNode);
 
       default:
-        throw new Error("Type kind \"".concat(def.kind, "\" not supported."));
+        throw new Error("Type kind \"".concat(astNode.kind, "\" not supported."));
     }
   };
 
-  _proto._makeTypeDef = function _makeTypeDef(def) {
-    var _this = this;
-
-    var interfaces = def.interfaces;
-    return new GraphQLObjectType({
-      name: def.name.value,
-      description: getDescription(def, this._options),
-      fields: function fields() {
-        return _this._makeFieldDefMap(def);
-      },
-      // Note: While this could make early assertions to get the correctly
-      // typed values, that would throw immediately while type system
-      // validation with validateSchema() will produce more actionable results.
-      interfaces: interfaces ? function () {
-        return interfaces.map(function (ref) {
-          return _this.buildType(ref);
-        });
-      } : [],
-      astNode: def
-    });
-  };
-
-  _proto._makeFieldDefMap = function _makeFieldDefMap(def) {
-    var _this2 = this;
-
-    return def.fields ? keyValMap(def.fields, function (field) {
-      return field.name.value;
-    }, function (field) {
-      return _this2.buildField(field);
-    }) : {};
-  };
-
-  _proto._makeInputValues = function _makeInputValues(values) {
+  _proto._makeTypeDef = function _makeTypeDef(astNode) {
     var _this3 = this;
 
-    return keyValMap(values, function (value) {
-      return value.name.value;
-    }, function (value) {
-      return _this3.buildInputField(value);
+    var interfaceNodes = astNode.interfaces;
+    var fieldNodes = astNode.fields; // Note: While this could make assertions to get the correctly typed
+    // values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+
+    var interfaces = interfaceNodes && interfaceNodes.length > 0 ? function () {
+      return interfaceNodes.map(function (ref) {
+        return _this3.buildType(ref);
+      });
+    } : [];
+    var fields = fieldNodes && fieldNodes.length > 0 ? function () {
+      return keyByNameNode(fieldNodes, function (field) {
+        return _this3.buildField(field);
+      });
+    } : Object.create(null);
+    return new GraphQLObjectType({
+      name: astNode.name.value,
+      description: getDescription(astNode, this._options),
+      interfaces: interfaces,
+      fields: fields,
+      astNode: astNode
     });
   };
 
-  _proto._makeInterfaceDef = function _makeInterfaceDef(def) {
+  _proto._makeInterfaceDef = function _makeInterfaceDef(astNode) {
     var _this4 = this;
 
+    var fieldNodes = astNode.fields;
+    var fields = fieldNodes && fieldNodes.length > 0 ? function () {
+      return keyByNameNode(fieldNodes, function (field) {
+        return _this4.buildField(field);
+      });
+    } : Object.create(null);
     return new GraphQLInterfaceType({
-      name: def.name.value,
-      description: getDescription(def, this._options),
-      fields: function fields() {
-        return _this4._makeFieldDefMap(def);
-      },
-      astNode: def
+      name: astNode.name.value,
+      description: getDescription(astNode, this._options),
+      fields: fields,
+      astNode: astNode
     });
   };
 
-  _proto._makeEnumDef = function _makeEnumDef(def) {
-    return new GraphQLEnumType({
-      name: def.name.value,
-      description: getDescription(def, this._options),
-      values: this._makeValueDefMap(def),
-      astNode: def
-    });
-  };
-
-  _proto._makeValueDefMap = function _makeValueDefMap(def) {
+  _proto._makeEnumDef = function _makeEnumDef(astNode) {
     var _this5 = this;
 
-    return def.values ? keyValMap(def.values, function (enumValue) {
-      return enumValue.name.value;
-    }, function (enumValue) {
-      return _this5.buildEnumValue(enumValue);
-    }) : {};
-  };
-
-  _proto._makeUnionDef = function _makeUnionDef(def) {
-    var _this6 = this;
-
-    var types = def.types;
-    return new GraphQLUnionType({
-      name: def.name.value,
-      description: getDescription(def, this._options),
-      // Note: While this could make assertions to get the correctly typed
-      // values below, that would throw immediately while type system
-      // validation with validateSchema() will produce more actionable results.
-      types: types ? function () {
-        return types.map(function (ref) {
-          return _this6.buildType(ref);
-        });
-      } : [],
-      astNode: def
+    var valueNodes = astNode.values || [];
+    return new GraphQLEnumType({
+      name: astNode.name.value,
+      description: getDescription(astNode, this._options),
+      values: keyByNameNode(valueNodes, function (value) {
+        return _this5.buildEnumValue(value);
+      }),
+      astNode: astNode
     });
   };
 
-  _proto._makeScalarDef = function _makeScalarDef(def) {
+  _proto._makeUnionDef = function _makeUnionDef(astNode) {
+    var _this6 = this;
+
+    var typeNodes = astNode.types; // Note: While this could make assertions to get the correctly typed
+    // values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+
+    var types = typeNodes && typeNodes.length > 0 ? function () {
+      return typeNodes.map(function (ref) {
+        return _this6.buildType(ref);
+      });
+    } : [];
+    return new GraphQLUnionType({
+      name: astNode.name.value,
+      description: getDescription(astNode, this._options),
+      types: types,
+      astNode: astNode
+    });
+  };
+
+  _proto._makeScalarDef = function _makeScalarDef(astNode) {
     return new GraphQLScalarType({
-      name: def.name.value,
-      description: getDescription(def, this._options),
-      astNode: def,
+      name: astNode.name.value,
+      description: getDescription(astNode, this._options),
+      astNode: astNode,
       serialize: function serialize(value) {
         return value;
       }
@@ -378,22 +385,33 @@ function () {
   _proto._makeInputObjectDef = function _makeInputObjectDef(def) {
     var _this7 = this;
 
+    var fields = def.fields;
     return new GraphQLInputObjectType({
       name: def.name.value,
       description: getDescription(def, this._options),
-      fields: function fields() {
-        return def.fields ? _this7._makeInputValues(def.fields) : {};
-      },
+      fields: fields ? function () {
+        return keyByNameNode(fields, function (field) {
+          return _this7.buildInputField(field);
+        });
+      } : Object.create(null),
       astNode: def
     });
   };
 
   return ASTDefinitionBuilder;
 }();
+
+function keyByNameNode(list, valFn) {
+  return keyValMap(list, function (_ref2) {
+    var name = _ref2.name;
+    return name.value;
+  }, valFn);
+}
 /**
  * Given a field or enum value node, returns the string value for the
  * deprecation reason.
  */
+
 
 function getDeprecationReason(node) {
   var deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
