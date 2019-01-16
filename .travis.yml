@@ -40,9 +40,9 @@ jobs:
             branch: master
         - provider: npm
           skip_cleanup: true
-          email: "lee@leebyron.com"
+          email: "mahoney.mattj@gmail.com"
           api_key:
-            secure: tCIGE/3CLOQlC49i/9ug42ILQjZnMOrSjyjdHkqmTVN5q9p9bljjziXQbNxYfVPYa9icICnVnI4c5psjktW+vwaz2WJAJhpWD6P3YGcpmKjjgPKKHKWOcXvq3HdIzH7DIbXyVtE0QLpV5zgbyxglD96vYScO9dvGeAhTGY/9qJaDvVkLOZ+6YpKiTwZlZcyPHlD1tbxzd4NytJgIsi7CedFdfATAmOyVsot1NRZr5q3oV0aXFjJRnhBQ3RtykGgGHtXEWYTNhAmYxcIwezYRYXLxtlkbrlwxixpKAdJr/UXHg6amplkaHtCopi+QChPQRmdndcDC6F+e2nFHut6BCi14Jnbvf7seaqWrmh0uqdopqMJFRP3OBc9lXZf3hljVKV9+iVbWNjxoUB7ezurOOEpgkXleJ5AO2o3u8oYh3OFfLYu7E1a4uSjfe4nP/zi+th+wvS4Wy2UWqErYFUMotMyStS/vllXUpK7pl+Qt59MUVHB8YzREyCVKxakQ/uvNvY+bzKf4sM8UJ/Dqnl3MaAjLG3rWZbFyzXdaJnRGdTeFK2lpz8nrfJEDzLIQX5ZC88yR30WahrRjAhLnnq0V1fYp0wLbLxs4SdN+tuMRlkzQhQEYYDYa5osgEo2C+O4D/H9F7GWHHJp9zPE+hMi5+ZwTPKHkln4/AqrABUKOk78=
+            secure: VrDxiDK9vhe0F8WulJ+HcAkMwuvqIhtXYethlJBwkS9N57F4RuxzCJE0VuDDS90qMAewA450lfT5caCazir4opvpZebB16iy8/9J2ymhBj6bJs9rm/B3Xg/xQSLOWAmdq1H4lPF6CihQ5LR57BZbi9Rx3f5JOeXgiqQNASJH+mrXiQh3qZ9Ry8YJXhvcUDQNX57ooSBeGYXf5PcKsEUF0Qs6XLUCUdOztMrtA+sIZkQxAaEBBG7tkE6LdF3OJl2ORNMig05juyfeevcGk6g4XnoIA4gvnW1KHToLvuGWdoCHAW1N269JAaH4bL2JfcA5A7KXbZVwif0jIJz47dmOsnIMlMdSqBpw7zSRSq2Ikv1Vb5XRPeVk0CK0d2kUZej6Jb9+/Jed39chfyAAMVM4Wba8UcTKbOIqv7Kl1SmmgBOGveK7k4fpffbWdofi9avuqzeftdFrM1FULsX5Wne9n3xuJDvVLW0YRB2+FVmfwGNwzW5X/bzgLDRWB5W5JL60FXt91Hrk5bIi0GcPx6n0Ls7IJ9U6r5kWfcuTYl0gxOiWQDJ0OCXBXA5taIO6/AX/d9af4VhGc/EVxuIpUaW52nZOL49KG/3tYx39mDCqRf7w7/658RVXNO/yLy6b/QPY7+3Lua9y88xLxru3bI9gpNUdnYUFIehktuiAkuunWoA=
           on:
             branch: master
             tags: true
