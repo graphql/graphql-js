@@ -424,7 +424,6 @@ describe('Execute: Handles basic execution tasks', () => {
         return Promise.reject('Error getting asyncRawReject');
       },
       asyncObjectReject() {
-        // eslint-disable-next-line no-throw-literal
         return Promise.reject({ message: 'Error getting asyncObjectReject' });
       },
       asyncEmptyReject() {
