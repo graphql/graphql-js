@@ -349,12 +349,14 @@ describe('Execute: Handles basic execution tasks', () => {
           sync: { type: GraphQLString },
           syncError: { type: GraphQLString },
           syncRawError: { type: GraphQLString },
+          syncObjectError: { type: GraphQLString },
           syncReturnError: { type: GraphQLString },
           syncReturnErrorList: { type: GraphQLList(GraphQLString) },
           async: { type: GraphQLString },
           asyncReject: { type: GraphQLString },
           asyncRejectWithExtensions: { type: GraphQLString },
           asyncRawReject: { type: GraphQLString },
+          asyncObjectReject: { type: GraphQLString },
           asyncEmptyReject: { type: GraphQLString },
           asyncError: { type: GraphQLString },
           asyncRawError: { type: GraphQLString },
@@ -369,11 +371,13 @@ describe('Execute: Handles basic execution tasks', () => {
         sync
         syncError
         syncRawError
+        syncObjectError
         syncReturnError
         syncReturnErrorList
         async
         asyncReject
         asyncRawReject
+        asyncObjectReject
         asyncEmptyReject
         asyncError
         asyncRawError
@@ -392,6 +396,10 @@ describe('Execute: Handles basic execution tasks', () => {
       syncRawError() {
         // eslint-disable-next-line no-throw-literal
         throw 'Error getting syncRawError';
+      },
+      syncObjectError() {
+        // eslint-disable-next-line no-throw-literal
+        throw { message: 'Error getting syncObjectError' };
       },
       syncReturnError() {
         return new Error('Error getting syncReturnError');
@@ -414,6 +422,10 @@ describe('Execute: Handles basic execution tasks', () => {
       },
       asyncRawReject() {
         return Promise.reject('Error getting asyncRawReject');
+      },
+      asyncObjectReject() {
+        // eslint-disable-next-line no-throw-literal
+        return Promise.reject({ message: 'Error getting asyncObjectReject' });
       },
       asyncEmptyReject() {
         return Promise.reject();
@@ -448,11 +460,13 @@ describe('Execute: Handles basic execution tasks', () => {
         sync: 'sync',
         syncError: null,
         syncRawError: null,
+        syncObjectError: null,
         syncReturnError: null,
         syncReturnErrorList: ['sync0', null, 'sync2', null],
         async: 'async',
         asyncReject: null,
         asyncRawReject: null,
+        asyncObjectReject: null,
         asyncEmptyReject: null,
         asyncError: null,
         asyncRawError: null,
@@ -471,53 +485,63 @@ describe('Execute: Handles basic execution tasks', () => {
           path: ['syncRawError'],
         },
         {
-          message: 'Error getting syncReturnError',
+          message: '{"message":"Error getting syncObjectError"}',
           locations: [{ line: 6, column: 9 }],
+          path: ['syncObjectError'],
+        },
+        {
+          message: 'Error getting syncReturnError',
+          locations: [{ line: 7, column: 9 }],
           path: ['syncReturnError'],
         },
         {
           message: 'Error getting syncReturnErrorList1',
-          locations: [{ line: 7, column: 9 }],
+          locations: [{ line: 8, column: 9 }],
           path: ['syncReturnErrorList', 1],
         },
         {
           message: 'Error getting syncReturnErrorList3',
-          locations: [{ line: 7, column: 9 }],
+          locations: [{ line: 8, column: 9 }],
           path: ['syncReturnErrorList', 3],
         },
         {
           message: 'Error getting asyncReject',
-          locations: [{ line: 9, column: 9 }],
+          locations: [{ line: 10, column: 9 }],
           path: ['asyncReject'],
         },
         {
           message: 'Error getting asyncRawReject',
-          locations: [{ line: 10, column: 9 }],
+          locations: [{ line: 11, column: 9 }],
           path: ['asyncRawReject'],
         },
         {
+          message: '{"message":"Error getting asyncObjectReject"}',
+          locations: [{ line: 12, column: 9 }],
+          path: ['asyncObjectReject'],
+        },
+        {
           message: '',
-          locations: [{ line: 11, column: 9 }],
+          locations: [{ line: 13, column: 9 }],
           path: ['asyncEmptyReject'],
         },
         {
           message: 'Error getting asyncError',
-          locations: [{ line: 12, column: 9 }],
+          locations: [{ line: 14, column: 9 }],
           path: ['asyncError'],
         },
         {
           message: 'Error getting asyncRawError',
-          locations: [{ line: 13, column: 9 }],
+          locations: [{ line: 15, column: 9 }],
           path: ['asyncRawError'],
         },
         {
           message: 'Error getting asyncReturnError',
-          locations: [{ line: 14, column: 9 }],
+          locations: [{ line: 16, column: 9 }],
           path: ['asyncReturnError'],
         },
         {
           message: 'Error getting asyncReturnErrorWithExtensions',
-          locations: [{ line: 15, column: 9 }],
+          locations: [{ line: 17, column: 9 }],
           path: ['asyncReturnErrorWithExtensions'],
           extensions: { foo: 'bar' },
         },
