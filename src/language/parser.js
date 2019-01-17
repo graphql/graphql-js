@@ -150,9 +150,9 @@ export function parseValue(
 ): ValueNode {
   const sourceObj = typeof source === 'string' ? new Source(source) : source;
   const lexer = createLexer(sourceObj, options || {});
-  expect(lexer, TokenKind.SOF);
+  expectToken(lexer, TokenKind.SOF);
   const value = parseValueLiteral(lexer, false);
-  expect(lexer, TokenKind.EOF);
+  expectToken(lexer, TokenKind.EOF);
   return value;
 }
 
@@ -172,9 +172,9 @@ export function parseType(
 ): TypeNode {
   const sourceObj = typeof source === 'string' ? new Source(source) : source;
   const lexer = createLexer(sourceObj, options || {});
-  expect(lexer, TokenKind.SOF);
+  expectToken(lexer, TokenKind.SOF);
   const type = parseTypeReference(lexer);
-  expect(lexer, TokenKind.EOF);
+  expectToken(lexer, TokenKind.EOF);
   return type;
 }
 
@@ -182,7 +182,7 @@ export function parseType(
  * Converts a name lex token into a name parse node.
  */
 function parseName(lexer: Lexer<*>): NameNode {
-  const token = expect(lexer, TokenKind.NAME);
+  const token = expectToken(lexer, TokenKind.NAME);
   return {
     kind: Kind.NAME,
     value: ((token.value: any): string),
@@ -302,7 +302,7 @@ function parseOperationDefinition(lexer: Lexer<*>): OperationDefinitionNode {
  * OperationType : one of query mutation subscription
  */
 function parseOperationType(lexer: Lexer<*>): OperationTypeNode {
-  const operationToken = expect(lexer, TokenKind.NAME);
+  const operationToken = expectToken(lexer, TokenKind.NAME);
   switch (operationToken.value) {
     case 'query':
       return 'query';
@@ -334,8 +334,8 @@ function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
   return {
     kind: Kind.VARIABLE_DEFINITION,
     variable: parseVariable(lexer),
-    type: (expect(lexer, TokenKind.COLON), parseTypeReference(lexer)),
-    defaultValue: skip(lexer, TokenKind.EQUALS)
+    type: (expectToken(lexer, TokenKind.COLON), parseTypeReference(lexer)),
+    defaultValue: expectOptionalToken(lexer, TokenKind.EQUALS)
       ? parseValueLiteral(lexer, true)
       : undefined,
     directives: parseDirectives(lexer, true),
@@ -348,7 +348,7 @@ function parseVariableDefinition(lexer: Lexer<*>): VariableDefinitionNode {
  */
 function parseVariable(lexer: Lexer<*>): VariableNode {
   const start = lexer.token;
-  expect(lexer, TokenKind.DOLLAR);
+  expectToken(lexer, TokenKind.DOLLAR);
   return {
     kind: Kind.VARIABLE,
     name: parseName(lexer),
@@ -396,7 +396,7 @@ function parseField(lexer: Lexer<*>): FieldNode {
   const nameOrAlias = parseName(lexer);
   let alias;
   let name;
-  if (skip(lexer, TokenKind.COLON)) {
+  if (expectOptionalToken(lexer, TokenKind.COLON)) {
     alias = nameOrAlias;
     name = parseName(lexer);
   } else {
@@ -434,10 +434,13 @@ function parseArguments(
  */
 function parseArgument(lexer: Lexer<*>): ArgumentNode {
   const start = lexer.token;
+  const name = parseName(lexer);
+
+  expectToken(lexer, TokenKind.COLON);
   return {
     kind: Kind.ARGUMENT,
-    name: parseName(lexer),
-    value: (expect(lexer, TokenKind.COLON), parseValueLiteral(lexer, false)),
+    name,
+    value: parseValueLiteral(lexer, false),
     loc: loc(lexer, start),
   };
 }
@@ -447,7 +450,7 @@ function parseConstArgument(lexer: Lexer<*>): ArgumentNode {
   return {
     kind: Kind.ARGUMENT,
     name: parseName(lexer),
-    value: (expect(lexer, TokenKind.COLON), parseConstValue(lexer)),
+    value: (expectToken(lexer, TokenKind.COLON), parseConstValue(lexer)),
     loc: loc(lexer, start),
   };
 }
@@ -465,9 +468,9 @@ function parseFragment(
   lexer: Lexer<*>,
 ): FragmentSpreadNode | InlineFragmentNode {
   const start = lexer.token;
-  expect(lexer, TokenKind.SPREAD);
+  expectToken(lexer, TokenKind.SPREAD);
 
-  const hasTypeCondition = skipKeyword(lexer, 'on');
+  const hasTypeCondition = expectOptionalKeyword(lexer, 'on');
   if (!hasTypeCondition && peek(lexer, TokenKind.NAME)) {
     return {
       kind: Kind.FRAGMENT_SPREAD,
@@ -643,9 +646,9 @@ function parseList(lexer: Lexer<*>, isConst: boolean): ListValueNode {
  */
 function parseObject(lexer: Lexer<*>, isConst: boolean): ObjectValueNode {
   const start = lexer.token;
-  expect(lexer, TokenKind.BRACE_L);
+  expectToken(lexer, TokenKind.BRACE_L);
   const fields = [];
-  while (!skip(lexer, TokenKind.BRACE_R)) {
+  while (!expectOptionalToken(lexer, TokenKind.BRACE_R)) {
     fields.push(parseObjectField(lexer, isConst));
   }
   return {
@@ -660,10 +663,13 @@ function parseObject(lexer: Lexer<*>, isConst: boolean): ObjectValueNode {
  */
 function parseObjectField(lexer: Lexer<*>, isConst: boolean): ObjectFieldNode {
   const start = lexer.token;
+  const name = parseName(lexer);
+  expectToken(lexer, TokenKind.COLON);
+
   return {
     kind: Kind.OBJECT_FIELD,
-    name: parseName(lexer),
-    value: (expect(lexer, TokenKind.COLON), parseValueLiteral(lexer, isConst)),
+    name,
+    value: parseValueLiteral(lexer, isConst),
     loc: loc(lexer, start),
   };
 }
@@ -689,7 +695,7 @@ function parseDirectives(
  */
 function parseDirective(lexer: Lexer<*>, isConst: boolean): DirectiveNode {
   const start = lexer.token;
-  expect(lexer, TokenKind.AT);
+  expectToken(lexer, TokenKind.AT);
   return {
     kind: Kind.DIRECTIVE,
     name: parseName(lexer),
@@ -709,9 +715,9 @@ function parseDirective(lexer: Lexer<*>, isConst: boolean): DirectiveNode {
 export function parseTypeReference(lexer: Lexer<*>): TypeNode {
   const start = lexer.token;
   let type;
-  if (skip(lexer, TokenKind.BRACKET_L)) {
+  if (expectOptionalToken(lexer, TokenKind.BRACKET_L)) {
     type = parseTypeReference(lexer);
-    expect(lexer, TokenKind.BRACKET_R);
+    expectToken(lexer, TokenKind.BRACKET_R);
     type = ({
       kind: Kind.LIST_TYPE,
       type,
@@ -720,7 +726,7 @@ export function parseTypeReference(lexer: Lexer<*>): TypeNode {
   } else {
     type = parseNamedType(lexer);
   }
-  if (skip(lexer, TokenKind.BANG)) {
+  if (expectOptionalToken(lexer, TokenKind.BANG)) {
     return ({
       kind: Kind.NON_NULL_TYPE,
       type,
@@ -828,7 +834,7 @@ function parseOperationTypeDefinition(
 ): OperationTypeDefinitionNode {
   const start = lexer.token;
   const operation = parseOperationType(lexer);
-  expect(lexer, TokenKind.COLON);
+  expectToken(lexer, TokenKind.COLON);
   const type = parseNamedType(lexer);
   return {
     kind: Kind.OPERATION_TYPE_DEFINITION,
@@ -887,13 +893,13 @@ function parseObjectTypeDefinition(lexer: Lexer<*>): ObjectTypeDefinitionNode {
  */
 function parseImplementsInterfaces(lexer: Lexer<*>): Array<NamedTypeNode> {
   const types = [];
-  if (skipKeyword(lexer, 'implements')) {
+  if (expectOptionalKeyword(lexer, 'implements')) {
     // Optional leading ampersand
-    skip(lexer, TokenKind.AMP);
+    expectOptionalToken(lexer, TokenKind.AMP);
     do {
       types.push(parseNamedType(lexer));
     } while (
-      skip(lexer, TokenKind.AMP) ||
+      expectOptionalToken(lexer, TokenKind.AMP) ||
       // Legacy support for the SDL?
       (lexer.options.allowLegacySDLImplementsInterfaces &&
         peek(lexer, TokenKind.NAME))
@@ -930,7 +936,7 @@ function parseFieldDefinition(lexer: Lexer<*>): FieldDefinitionNode {
   const description = parseDescription(lexer);
   const name = parseName(lexer);
   const args = parseArgumentDefs(lexer);
-  expect(lexer, TokenKind.COLON);
+  expectToken(lexer, TokenKind.COLON);
   const type = parseTypeReference(lexer);
   const directives = parseDirectives(lexer, true);
   return {
@@ -962,10 +968,10 @@ function parseInputValueDef(lexer: Lexer<*>): InputValueDefinitionNode {
   const start = lexer.token;
   const description = parseDescription(lexer);
   const name = parseName(lexer);
-  expect(lexer, TokenKind.COLON);
+  expectToken(lexer, TokenKind.COLON);
   const type = parseTypeReference(lexer);
   let defaultValue;
-  if (skip(lexer, TokenKind.EQUALS)) {
+  if (expectOptionalToken(lexer, TokenKind.EQUALS)) {
     defaultValue = parseConstValue(lexer);
   }
   const directives = parseDirectives(lexer, true);
@@ -1031,12 +1037,12 @@ function parseUnionTypeDefinition(lexer: Lexer<*>): UnionTypeDefinitionNode {
  */
 function parseUnionMemberTypes(lexer: Lexer<*>): Array<NamedTypeNode> {
   const types = [];
-  if (skip(lexer, TokenKind.EQUALS)) {
+  if (expectOptionalToken(lexer, TokenKind.EQUALS)) {
     // Optional leading pipe
-    skip(lexer, TokenKind.PIPE);
+    expectOptionalToken(lexer, TokenKind.PIPE);
     do {
       types.push(parseNamedType(lexer));
-    } while (skip(lexer, TokenKind.PIPE));
+    } while (expectOptionalToken(lexer, TokenKind.PIPE));
   }
   return types;
 }
@@ -1358,7 +1364,7 @@ function parseDirectiveDefinition(lexer: Lexer<*>): DirectiveDefinitionNode {
   const start = lexer.token;
   const description = parseDescription(lexer);
   expectKeyword(lexer, 'directive');
-  expect(lexer, TokenKind.AT);
+  expectToken(lexer, TokenKind.AT);
   const name = parseName(lexer);
   const args = parseArgumentDefs(lexer);
   expectKeyword(lexer, 'on');
@@ -1380,11 +1386,11 @@ function parseDirectiveDefinition(lexer: Lexer<*>): DirectiveDefinitionNode {
  */
 function parseDirectiveLocations(lexer: Lexer<*>): Array<NameNode> {
   // Optional leading pipe
-  skip(lexer, TokenKind.PIPE);
+  expectOptionalToken(lexer, TokenKind.PIPE);
   const locations = [];
   do {
     locations.push(parseDirectiveLocation(lexer));
-  } while (skip(lexer, TokenKind.PIPE));
+  } while (expectOptionalToken(lexer, TokenKind.PIPE));
   return locations;
 }
 
@@ -1457,27 +1463,16 @@ function peek(lexer: Lexer<*>, kind: TokenKindEnum): boolean {
 }
 
 /**
- * If the next token is of the given kind, return true after advancing
- * the lexer. Otherwise, do not change the parser state and return false.
- */
-function skip(lexer: Lexer<*>, kind: TokenKindEnum): boolean {
-  if (lexer.token.kind === kind) {
-    lexer.advance();
-    return true;
-  }
-  return false;
-}
-
-/**
  * If the next token is of the given kind, return that token after advancing
  * the lexer. Otherwise, do not change the parser state and throw an error.
  */
-function expect(lexer: Lexer<*>, kind: TokenKindEnum): Token {
+function expectToken(lexer: Lexer<*>, kind: TokenKindEnum): Token {
   const token = lexer.token;
   if (token.kind === kind) {
     lexer.advance();
     return token;
   }
+
   throw syntaxError(
     lexer.source,
     token.start,
@@ -1486,31 +1481,47 @@ function expect(lexer: Lexer<*>, kind: TokenKindEnum): Token {
 }
 
 /**
- * If the next token is a keyword with the given value, return true after advancing
- * the lexer. Otherwise, do not change the parser state and return false.
+ * If the next token is of the given kind, return that token after advancing
+ * the lexer. Otherwise, do not change the parser state and return undefined.
  */
-function skipKeyword(lexer: Lexer<*>, value: string): boolean {
+function expectOptionalToken(lexer: Lexer<*>, kind: TokenKindEnum): ?Token {
   const token = lexer.token;
-  if (token.kind === TokenKind.NAME && token.value === value) {
+  if (token.kind === kind) {
     lexer.advance();
-    return true;
+    return token;
   }
-  return false;
+  return undefined;
 }
 
 /**
- * If the next token is a keyword with the given value, return that token after
- * advancing the lexer. Otherwise, do not change the parser state and throw
- * an error.
+ * If the next token is a given keyword, return that token after advancing
+ * the lexer. Otherwise, do not change the parser state and throw an error.
  */
-function expectKeyword(lexer: Lexer<*>, value: string): void {
-  if (!skipKeyword(lexer, value)) {
-    throw syntaxError(
-      lexer.source,
-      lexer.token.start,
-      `Expected "${value}", found ${getTokenDesc(lexer.token)}`,
-    );
+function expectKeyword(lexer: Lexer<*>, value: string): Token {
+  const token = lexer.token;
+  if (token.kind === TokenKind.NAME && token.value === value) {
+    lexer.advance();
+    return token;
   }
+
+  throw syntaxError(
+    lexer.source,
+    lexer.token.start,
+    `Expected "${value}", found ${getTokenDesc(lexer.token)}`,
+  );
+}
+
+/**
+ * If the next token is a given keyword, return that token after advancing
+ * the lexer. Otherwise, do not change the parser state and return undefined.
+ */
+function expectOptionalKeyword(lexer: Lexer<*>, value: string): ?Token {
+  const token = lexer.token;
+  if (token.kind === TokenKind.NAME && token.value === value) {
+    lexer.advance();
+    return token;
+  }
+  return undefined;
 }
 
 /**
@@ -1538,9 +1549,9 @@ function any<T>(
   parseFn: (lexer: Lexer<*>) => T,
   closeKind: TokenKindEnum,
 ): Array<T> {
-  expect(lexer, openKind);
+  expectToken(lexer, openKind);
   const nodes = [];
-  while (!skip(lexer, closeKind)) {
+  while (!expectOptionalToken(lexer, closeKind)) {
     nodes.push(parseFn(lexer));
   }
   return nodes;
@@ -1558,9 +1569,9 @@ function many<T>(
   parseFn: (lexer: Lexer<*>) => T,
   closeKind: TokenKindEnum,
 ): Array<T> {
-  expect(lexer, openKind);
+  expectToken(lexer, openKind);
   const nodes = [parseFn(lexer)];
-  while (!skip(lexer, closeKind)) {
+  while (!expectOptionalToken(lexer, closeKind)) {
     nodes.push(parseFn(lexer));
   }
   return nodes;
