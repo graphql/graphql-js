@@ -743,7 +743,7 @@ function asErrorInstance(error: mixed): Error {
   if (error instanceof Error) {
     return error;
   }
-  if (error instanceof Object) {
+  if (typeof error === 'object') {
     return new Error(JSON.stringify(error));
   }
   return new Error(error || undefined);
