@@ -550,11 +550,9 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
 ): $ReadOnlyArray<L> {
   let result = [];
   for (const astNode of getAllNodes(object)) {
-    if (astNode) {
-      const subNodes = getter(astNode);
-      if (subNodes) {
-        result = result.concat(subNodes);
-      }
+    const subNodes = getter(astNode);
+    if (subNodes) {
+      result = result.concat(subNodes);
     }
   }
   return result;
