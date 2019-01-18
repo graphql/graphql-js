@@ -740,7 +740,10 @@ export function resolveFieldValueOrError<TSource>(
 // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a
 // consistent Error interface.
 function asErrorInstance(error: mixed): Error {
-  return error instanceof Error ? error : new Error(error || undefined);
+  if (error instanceof Error) {
+    return error;
+  }
+  return new Error('Unexpected error value: ' + inspect(error));
 }
 
 // This is a small wrapper around completeValue which detects and logs errors

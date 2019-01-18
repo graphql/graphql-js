@@ -546,7 +546,7 @@ describe('Execute: Handles execution of abstract types with promises', () => {
   it('resolveType can be caught', async () => {
     const PetType = new GraphQLInterfaceType({
       name: 'Pet',
-      resolveType: () => Promise.reject('We are testing this error'),
+      resolveType: () => Promise.reject(new Error('We are testing this error')),
       fields: {
         name: { type: GraphQLString },
       },
