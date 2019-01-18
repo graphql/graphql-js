@@ -743,10 +743,7 @@ function asErrorInstance(error: mixed): Error {
   if (error instanceof Error) {
     return error;
   }
-  if (typeof error === 'object') {
-    return new Error(inspect(error));
-  }
-  return new Error(error || undefined);
+  return new Error('Unexpected error value: ' + inspect(error));
 }
 
 // This is a small wrapper around completeValue which detects and logs errors
