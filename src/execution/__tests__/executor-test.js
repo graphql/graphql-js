@@ -484,7 +484,7 @@ describe('Execute: Handles basic execution tasks', () => {
           path: ['syncRawError'],
         },
         {
-          message: '{"message":"Error getting syncObjectError"}',
+          message: '{ message: "Error getting syncObjectError" }',
           locations: [{ line: 6, column: 9 }],
           path: ['syncObjectError'],
         },
@@ -514,7 +514,7 @@ describe('Execute: Handles basic execution tasks', () => {
           path: ['asyncRawReject'],
         },
         {
-          message: '{"message":"Error getting asyncObjectReject"}',
+          message: '{ message: "Error getting asyncObjectReject" }',
           locations: [{ line: 12, column: 9 }],
           path: ['asyncObjectReject'],
         },

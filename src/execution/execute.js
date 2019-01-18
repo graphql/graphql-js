@@ -744,7 +744,7 @@ function asErrorInstance(error: mixed): Error {
     return error;
   }
   if (typeof error === 'object') {
-    return new Error(JSON.stringify(error));
+    return new Error(inspect(error));
   }
   return new Error(error || undefined);
 }
