@@ -14,6 +14,7 @@ import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
+import keyValMap from '../jsutils/keyValMap';
 import mapValue from '../jsutils/mapValue';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { Kind } from '../language/kinds';
@@ -511,6 +512,10 @@ function resolveThunk<+T>(thunk: Thunk<T>): T {
   return typeof thunk === 'function' ? thunk() : thunk;
 }
 
+function undefineIfEmpty<T>(arr: ?$ReadOnlyArray<T>): ?$ReadOnlyArray<T> {
+  return arr && arr.length > 0 ? arr : undefined;
+}
+
 /**
  * Scalar Type Definition
  *
@@ -551,7 +556,7 @@ export class GraphQLScalarType {
     this.parseValue = config.parseValue || (value => value);
     this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     invariant(typeof config.name === 'string', 'Must provide name.');
     invariant(
       typeof config.serialize === 'function',
@@ -567,6 +572,23 @@ export class GraphQLScalarType {
           'functions.',
       );
     }
+  }
+
+  toConfig(): {|
+    ...GraphQLScalarTypeConfig<*, *>,
+    parseValue: GraphQLScalarValueParser<*>,
+    parseLiteral: GraphQLScalarLiteralParser<*>,
+    extensionASTNodes: $ReadOnlyArray<ScalarTypeExtensionNode>,
+  |} {
+    return {
+      name: this.name,
+      description: this.description,
+      serialize: this.serialize,
+      parseValue: this.parseValue,
+      parseLiteral: this.parseLiteral,
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || [],
+    };
   }
 
   toString(): string {
@@ -649,7 +671,7 @@ export class GraphQLObjectType {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.isTypeOf = config.isTypeOf;
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
@@ -673,6 +695,23 @@ export class GraphQLObjectType {
       this._interfaces = this._interfaces();
     }
     return this._interfaces;
+  }
+
+  toConfig(): {|
+    ...GraphQLObjectTypeConfig<*, *>,
+    interfaces: Array<GraphQLInterfaceType>,
+    fields: GraphQLFieldConfigMap<*, *>,
+    extensionASTNodes: $ReadOnlyArray<ObjectTypeExtensionNode>,
+  |} {
+    return {
+      name: this.name,
+      description: this.description,
+      isTypeOf: this.isTypeOf,
+      interfaces: this.getInterfaces(),
+      fields: fieldsToFieldsConfig(this.getFields()),
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || [],
+    };
   }
 
   toString(): string {
@@ -750,6 +789,33 @@ function defineFieldMap<TSource, TContext>(
 
 function isPlainObj(obj) {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
+}
+
+function fieldsToFieldsConfig(fields) {
+  return mapValue(fields, field => ({
+    type: field.type,
+    args: argsToArgsConfig(field.args),
+    resolve: field.resolve,
+    subscribe: field.subscribe,
+    deprecationReason: field.deprecationReason,
+    description: field.description,
+    astNode: field.astNode,
+  }));
+}
+
+export function argsToArgsConfig(
+  args: Array<GraphQLArgument>,
+): GraphQLFieldConfigArgumentMap {
+  return keyValMap(
+    args,
+    arg => arg.name,
+    arg => ({
+      type: arg.type,
+      defaultValue: arg.defaultValue,
+      description: arg.description,
+      astNode: arg.astNode,
+    }),
+  );
 }
 
 export type GraphQLObjectTypeConfig<TSource, TContext> = {|
@@ -893,7 +959,7 @@ export class GraphQLInterfaceType {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.resolveType = config.resolveType;
     this._fields = defineFieldMap.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
@@ -909,6 +975,21 @@ export class GraphQLInterfaceType {
       this._fields = this._fields();
     }
     return this._fields;
+  }
+
+  toConfig(): {|
+    ...GraphQLInterfaceTypeConfig<*, *>,
+    fields: GraphQLFieldConfigMap<*, *>,
+    extensionASTNodes: $ReadOnlyArray<InterfaceTypeExtensionNode>,
+  |} {
+    return {
+      name: this.name,
+      description: this.description,
+      resolveType: this.resolveType,
+      fields: fieldsToFieldsConfig(this.getFields()),
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || [],
+    };
   }
 
   toString(): string {
@@ -970,7 +1051,7 @@ export class GraphQLUnionType {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.resolveType = config.resolveType;
     this._types = defineTypes.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
@@ -986,6 +1067,21 @@ export class GraphQLUnionType {
       this._types = this._types();
     }
     return this._types;
+  }
+
+  toConfig(): {|
+    ...GraphQLUnionTypeConfig<*, *>,
+    types: Array<GraphQLObjectType>,
+    extensionASTNodes: $ReadOnlyArray<UnionTypeExtensionNode>,
+  |} {
+    return {
+      name: this.name,
+      description: this.description,
+      resolveType: this.resolveType,
+      types: this.getTypes(),
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || [],
+    };
   }
 
   toString(): string {
@@ -1058,7 +1154,7 @@ export class GraphQLEnumType /* <T> */ {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._values = defineEnumValues(this, config.values);
     this._valueLookup = new Map(
       this._values.map(enumValue => [enumValue.value, enumValue]),
@@ -1100,6 +1196,30 @@ export class GraphQLEnumType /* <T> */ {
         return enumValue.value;
       }
     }
+  }
+
+  toConfig(): {|
+    ...GraphQLEnumTypeConfig,
+    extensionASTNodes: $ReadOnlyArray<EnumTypeExtensionNode>,
+  |} {
+    const values = keyValMap(
+      this.getValues(),
+      value => value.name,
+      value => ({
+        description: value.description,
+        value: value.value,
+        deprecationReason: value.deprecationReason,
+        astNode: value.astNode,
+      }),
+    );
+
+    return {
+      name: this.name,
+      description: this.description,
+      values,
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || [],
+    };
   }
 
   toString(): string {
@@ -1199,7 +1319,7 @@ export class GraphQLInputObjectType {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._fields = defineInputFieldMap.bind(undefined, config);
     invariant(typeof config.name === 'string', 'Must provide name.');
   }
@@ -1209,6 +1329,27 @@ export class GraphQLInputObjectType {
       this._fields = this._fields();
     }
     return this._fields;
+  }
+
+  toConfig(): {|
+    ...GraphQLInputObjectTypeConfig,
+    fields: GraphQLInputFieldConfigMap,
+    extensionASTNodes: $ReadOnlyArray<InputObjectTypeExtensionNode>,
+  |} {
+    const fields = mapValue(this.getFields(), field => ({
+      description: field.description,
+      type: field.type,
+      defaultValue: field.defaultValue,
+      astNode: field.astNode,
+    }));
+
+    return {
+      name: this.name,
+      description: this.description,
+      fields,
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || [],
+    };
   }
 
   toString(): string {
