@@ -7,6 +7,8 @@
  * @flow strict
  */
 
+import objectValues from '../polyfills/objectValues';
+import keyValMap from '../jsutils/keyValMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
@@ -28,25 +30,44 @@ import {
   isEnumType,
   isInputObjectType,
 } from '../type/definition';
-import { isSpecifiedScalarType } from '../type/scalars';
 import { isIntrospectionType } from '../type/introspection';
 
 /**
  * Sort GraphQLSchema.
  */
 export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
-  const cache = Object.create(null);
-
   const schemaConfig = schema.toConfig();
-  const sortMaybeType = maybeType => maybeType && sortNamedType(maybeType);
+  const typeMap = keyValMap(
+    sortByName(schemaConfig.types),
+    type => type.name,
+    sortNamedType,
+  );
+
   return new GraphQLSchema({
     ...schemaConfig,
-    types: sortTypes(schemaConfig.types),
+    types: objectValues(typeMap),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
-    query: sortMaybeType(schemaConfig.query),
-    mutation: sortMaybeType(schemaConfig.mutation),
-    subscription: sortMaybeType(schemaConfig.subscription),
+    query: replaceMaybeType(schemaConfig.query),
+    mutation: replaceMaybeType(schemaConfig.mutation),
+    subscription: replaceMaybeType(schemaConfig.subscription),
   });
+
+  function replaceType(type) {
+    if (isListType(type)) {
+      return new GraphQLList(replaceType(type.ofType));
+    } else if (isNonNullType(type)) {
+      return new GraphQLNonNull(replaceType(type.ofType));
+    }
+    return replaceNamedType(type);
+  }
+
+  function replaceNamedType<T: GraphQLNamedType>(type: T): T {
+    return ((typeMap[type.name]: any): T);
+  }
+
+  function replaceMaybeType(maybeType) {
+    return maybeType && replaceNamedType(maybeType);
+  }
 
   function sortDirective(directive) {
     const config = directive.toConfig();
@@ -60,14 +81,14 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   function sortArgs(args) {
     return sortObjMap(args, arg => ({
       ...arg,
-      type: sortType(arg.type),
+      type: replaceType(arg.type),
     }));
   }
 
   function sortFields(fieldsMap) {
     return sortObjMap(fieldsMap, field => ({
       ...field,
-      type: sortType(field.type),
+      type: replaceType(field.type),
       args: sortArgs(field.args),
     }));
   }
@@ -75,38 +96,16 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   function sortInputFields(fieldsMap) {
     return sortObjMap(fieldsMap, field => ({
       ...field,
-      type: sortType(field.type),
+      type: replaceType(field.type),
     }));
   }
 
-  function sortType(type) {
-    if (isListType(type)) {
-      return new GraphQLList(sortType(type.ofType));
-    } else if (isNonNullType(type)) {
-      return new GraphQLNonNull(sortType(type.ofType));
-    }
-    return sortNamedType(type);
-  }
-
   function sortTypes<T: GraphQLNamedType>(arr: Array<T>): Array<T> {
-    return sortByName(arr).map(sortNamedType);
+    return sortByName(arr).map(replaceNamedType);
   }
 
-  function sortNamedType<T: GraphQLNamedType>(type: T): T {
-    if (isSpecifiedScalarType(type) || isIntrospectionType(type)) {
-      return type;
-    }
-
-    let sortedType = cache[type.name];
-    if (!sortedType) {
-      sortedType = sortNamedTypeImpl(type);
-      cache[type.name] = sortedType;
-    }
-    return ((sortedType: any): T);
-  }
-
-  function sortNamedTypeImpl(type) {
-    if (isScalarType(type)) {
+  function sortNamedType(type) {
+    if (isScalarType(type) || isIntrospectionType(type)) {
       return type;
     } else if (isObjectType(type)) {
       const config = type.toConfig();
