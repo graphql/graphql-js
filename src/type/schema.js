@@ -82,6 +82,15 @@ export function assertSchema(schema: mixed): GraphQLSchema {
  *       ...
  *       directives: specifiedDirectives.concat([ myCustomDirective ]),
  *     })
+
+ * Note: ObjectTypes which do not have their own queries in the Schema will not end up
+ * in the final Schema. To achieve this, You need to explicitly mention the ObjectType
+ * while creating the Schema. Example:
+ *
+ *      const schema = new GraphQLSchema({
+ *        types: [CarType],
+ *        ...
+ *      }) 
  *
  */
 export class GraphQLSchema {
