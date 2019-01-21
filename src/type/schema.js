@@ -72,6 +72,62 @@ export function assertSchema(schema: mixed): GraphQLSchema {
  *       mutation: MyAppMutationRootType,
  *     })
  *
+ * Note: When the schema is constructed, only the types that are reachable through
+ * traversing the root types & those that are explicitly referenced are included.
+ * Example:
+ *      const {
+ *        GraphQLID,
+ *        GraphQLInterfaceType,
+ *        GraphQLNonNull,
+ *        GraphQLObjectType,
+ *        GraphQLSchema,
+ *        printSchema,
+ *      } = require('graphql')
+ *
+ *      const NodeType = new GraphQLInterfaceType({
+ *        name: 'Node',
+ *        fields: {
+ *          id: {
+ *            type: new GraphQLNonNull(GraphQLID),
+ *          },
+ *        },
+ *      })
+ *
+ *      class Car {} // For demo
+ *
+ *      const CarType = new GraphQLObjectType({
+ *        name: 'Car',
+ *        interfaces: [NodeType],
+ *        fields: {
+ *          id: {
+ *            type: new GraphQLNonNull(GraphQLID),
+ *          },
+ *        },
+ *        isTypeOf: value => value instanceof Car,
+ *      })
+ *
+ *      // Here, If the CarType is not explicitly mentioned, it will not be
+ *      // is not referenced, or used within the schema.
+ *      // included in the final schema. The same goes for any other type that
+ *      const schema = new GraphQLSchema({
+ *        types: [CarType],
+ *        query: new GraphQLObjectType({
+ *          name: 'Query',
+ *          fields: {
+ *            node: {
+ *              type: NodeType,
+ *              args: {
+ *                id: {
+ *                  type: new GraphQLNonNull(GraphQLID),
+ *                },
+ *              },
+ *              resolve: () => new Car(),
+ *            },
+ *          }
+ *        }),
+ *        ...
+ *      })
+ *
  * Note: If an array of `directives` are provided to GraphQLSchema, that will be
  * the exact list of directives represented and allowed. If `directives` is not
  * provided then a default set of the specified directives (e.g. @include and
@@ -83,14 +139,6 @@ export function assertSchema(schema: mixed): GraphQLSchema {
  *       directives: specifiedDirectives.concat([ myCustomDirective ]),
  *     })
  *
- * Note: ObjectTypes which do not have their own queries in the Schema will not end up
- * in the final Schema. To achieve this, You need to explicitly mention the ObjectType
- * while creating the Schema. Example:
- *
- *      const schema = new GraphQLSchema({
- *        types: [CarType],
- *        ...
- *      })
  *
  */
 export class GraphQLSchema {
