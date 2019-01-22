@@ -120,7 +120,6 @@ export function assertSchema(schema: mixed): GraphQLSchema {
  *       directives: specifiedDirectives.concat([ myCustomDirective ]),
  *     })
  *
- *
  */
 export class GraphQLSchema {
   astNode: ?SchemaDefinitionNode;
