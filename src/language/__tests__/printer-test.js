@@ -55,7 +55,9 @@ describe('Printer: Query document', () => {
       'query ($foo: TestType) @testDirective { id, name }',
     );
     expect(print(queryAstWithArtifacts)).to.equal(dedent`
-      query ($foo: TestType) @testDirective {
+      query (
+        $foo: TestType
+      ) @testDirective {
         id
         name
       }
@@ -65,7 +67,9 @@ describe('Printer: Query document', () => {
       'mutation ($foo: TestType) @testDirective { id, name }',
     );
     expect(print(mutationAstWithArtifacts)).to.equal(dedent`
-      mutation ($foo: TestType) @testDirective {
+      mutation (
+        $foo: TestType
+      ) @testDirective {
         id
         name
       }
@@ -77,7 +81,9 @@ describe('Printer: Query document', () => {
       'query ($foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
     );
     expect(print(queryAstWithVariableDirective)).to.equal(dedent`
-      query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
+      query (
+        $foo: TestType = {a: 123} @testDirective(if: true) @test
+      ) {
         id
       }
     `);
@@ -91,7 +97,9 @@ describe('Printer: Query document', () => {
       },
     );
     expect(print(queryAstWithVariableDirective)).to.equal(dedent`
-      fragment Foo($foo: TestType @test) on TestType @testDirective {
+      fragment Foo(
+        $foo: TestType @test
+      ) on TestType @testDirective {
         id
       }
     `);
@@ -156,7 +164,10 @@ describe('Printer: Query document', () => {
       { experimentalFragmentVariables: true },
     );
     expect(print(fragmentWithVariable)).to.equal(dedent`
-      fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
+      fragment Foo(
+        $a: ComplexType
+        $b: Boolean = false
+      ) on TestType {
         id
       }
     `);
@@ -167,7 +178,10 @@ describe('Printer: Query document', () => {
 
     expect(printed).to.equal(
       dedent(String.raw`
-      query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
+      query queryName(
+        $foo: ComplexType
+        $site: Site = MOBILE
+      ) @onQuery {
         whoever123is: node(id: [123, 456]) {
           id
           ... on User @onInlineFragment {
@@ -196,7 +210,9 @@ describe('Printer: Query document', () => {
         }
       }
 
-      subscription StoryLikeSubscription($input: StoryLikeSubscribeInput) @onSubscription {
+      subscription StoryLikeSubscription(
+        $input: StoryLikeSubscribeInput
+      ) @onSubscription {
         storyLikeSubscribe(input: $input) {
           story {
             likers {
