@@ -54,7 +54,7 @@
     "@babel/core": "7.2.2",
     "@babel/plugin-transform-flow-strip-types": "7.2.3",
     "@babel/polyfill": "7.2.5",
-    "@babel/preset-env": "7.2.3",
+    "@babel/preset-env": "7.3.1",
     "@babel/register": "7.0.0",
     "babel-eslint": "10.0.1",
     "beautify-benchmark": "0.2.4",
@@ -67,7 +67,7 @@
     "flow-bin": "0.91.0",
     "mocha": "5.2.0",
     "nyc": "13.1.0",
-    "prettier": "1.16.0",
+    "prettier": "1.16.1",
     "sane": "4.0.2"
   }
 }
