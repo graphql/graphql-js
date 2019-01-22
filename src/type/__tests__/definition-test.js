@@ -1180,3 +1180,20 @@ describe('Type System: NonNull must only accept non-nullable types', () => {
     });
   }
 });
+
+describe('Type System: Configs', () => {
+  it('GraphQLObjectType have correct configs', () => {
+    const objectConfig = {
+      name: 'Object',
+      fields: {},
+      description: 'Graphql object type',
+      isTypeOf: () => true,
+      interfaces: [],
+      astNode: null,
+      extensionASTNodes: [],
+    };
+    const someObjectType = new GraphQLObjectType(objectConfig);
+
+    expect(someObjectType.toConfig()).to.deep.equal(objectConfig);
+  });
+});
