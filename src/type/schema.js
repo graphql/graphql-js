@@ -72,61 +72,42 @@ export function assertSchema(schema: mixed): GraphQLSchema {
  *       mutation: MyAppMutationRootType,
  *     })
  *
- * Note: When the schema is constructed, only the types that are reachable through
- * traversing the root types & those that are explicitly referenced are included.
+ * Note: When the schema is constructed, by default only the types that are
+ * reachable by traversing the root types are included, other types must be
+ * explicitly referenced.
+ *
  * Example:
- *      const {
- *        GraphQLID,
- *        GraphQLInterfaceType,
- *        GraphQLNonNull,
- *        GraphQLObjectType,
- *        GraphQLSchema,
- *        printSchema,
- *      } = require('graphql')
  *
- *      const NodeType = new GraphQLInterfaceType({
- *        name: 'Node',
- *        fields: {
- *          id: {
- *            type: new GraphQLNonNull(GraphQLID),
- *          },
- *        },
- *      })
+ *     const characterInterface = new GraphQLInterfaceType({
+ *       name: 'Character',
+ *       ...
+ *     });
  *
- *      class Car {} // For demo
+ *     const humanType = new GraphQLObjectType({
+ *       name: 'Human',
+ *       interfaces: [characterInterface],
+ *       ...
+ *     });
  *
- *      const CarType = new GraphQLObjectType({
- *        name: 'Car',
- *        interfaces: [NodeType],
- *        fields: {
- *          id: {
- *            type: new GraphQLNonNull(GraphQLID),
- *          },
- *        },
- *        isTypeOf: value => value instanceof Car,
- *      })
+ *     const droidType = new GraphQLObjectType({
+ *       name: 'Droid',
+ *       interfaces: [characterInterface],
+ *       ...
+ *     });
  *
- *      // Here, If the CarType is not explicitly mentioned, it will not be
- *      // is not referenced, or used within the schema.
- *      // included in the final schema. The same goes for any other type that
- *      const schema = new GraphQLSchema({
- *        types: [CarType],
- *        query: new GraphQLObjectType({
- *          name: 'Query',
- *          fields: {
- *            node: {
- *              type: NodeType,
- *              args: {
- *                id: {
- *                  type: new GraphQLNonNull(GraphQLID),
- *                },
- *              },
- *              resolve: () => new Car(),
- *            },
- *          }
- *        }),
- *        ...
- *      })
+ *     const schema = new GraphQLSchema({
+ *       query: new GraphQLObjectType({
+ *         name: 'Query',
+ *         fields: {
+ *           hero: { type: characterInterface, ... },
+ *         }
+ *       }),
+ *       ...
+ *       // Since this schema references only the `Character` interface it's
+ *       // necessary to explicitly list the types that implement it if
+ *       // you want them to be included in the final schema.
+ *       types: [humanType, droidType],
+ *     })
  *
  * Note: If an array of `directives` are provided to GraphQLSchema, that will be
  * the exact list of directives represented and allowed. If `directives` is not
