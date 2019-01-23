@@ -8,6 +8,7 @@
  */
 
 import find from '../polyfills/find';
+import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import objectEntries from '../polyfills/objectEntries';
 import {
@@ -548,14 +549,7 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
   object: SDLDefinedObject<T, K>,
   getter: (T | K) => ?(L | $ReadOnlyArray<L>),
 ): $ReadOnlyArray<L> {
-  let result = [];
-  for (const astNode of getAllNodes(object)) {
-    const subNodes = getter(astNode);
-    if (subNodes) {
-      result = result.concat(subNodes);
-    }
-  }
-  return result;
+  return flatMap(getAllNodes(object), item => getter(item) || []);
 }
 
 function getImplementsInterfaceNode(
