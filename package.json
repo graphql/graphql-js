@@ -47,7 +47,6 @@
     "gitpublish": ". ./resources/gitpublish.sh"
   },
   "dependencies": {
-    "codecov": "^3.1.0",
     "iterall": "^1.2.2"
   },
   "devDependencies": {
@@ -61,6 +60,7 @@
     "beautify-benchmark": "0.2.4",
     "benchmark": "2.1.4",
     "chai": "4.2.0",
+    "codecov": "3.1.0",
     "eslint": "5.12.1",
     "eslint-plugin-flowtype": "3.2.1",
     "eslint-plugin-prettier": "3.0.1",
