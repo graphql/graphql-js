@@ -12,7 +12,7 @@ exports.collectFields = collectFields;
 exports.buildResolveInfo = buildResolveInfo;
 exports.resolveFieldValueOrError = resolveFieldValueOrError;
 exports.getFieldDef = getFieldDef;
-exports.defaultFieldResolver = void 0;
+exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
 
 var _iterall = require("iterall");
 
@@ -56,18 +56,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function execute(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver) {
+function execute(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
-  return arguments.length === 1 ? executeImpl(argsOrSchema.schema, argsOrSchema.document, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver) : executeImpl(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver);
+  return arguments.length === 1 ? executeImpl(argsOrSchema.schema, argsOrSchema.document, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.typeResolver) : executeImpl(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver);
 }
 
-function executeImpl(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver) {
+function executeImpl(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
 
-  var exeContext = buildExecutionContext(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver); // Return early errors if execution context failed.
+  var exeContext = buildExecutionContext(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver); // Return early errors if execution context failed.
 
   if (Array.isArray(exeContext)) {
     return {
@@ -155,7 +155,7 @@ function assertValidExecutionArguments(schema, document, rawVariableValues) {
  */
 
 
-function buildExecutionContext(schema, document, rootValue, contextValue, rawVariableValues, operationName, fieldResolver) {
+function buildExecutionContext(schema, document, rootValue, contextValue, rawVariableValues, operationName, fieldResolver, typeResolver) {
   var errors = [];
   var operation;
   var hasMultipleAssumedOperations = false;
@@ -216,6 +216,7 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
     operation: operation,
     variableValues: variableValues,
     fieldResolver: fieldResolver || defaultFieldResolver,
+    typeResolver: typeResolver || defaultTypeResolver,
     errors: errors
   };
 }
@@ -486,7 +487,11 @@ function resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, s
 
 
 function asErrorInstance(error) {
-  return error instanceof Error ? error : new Error(error || undefined);
+  if (error instanceof Error) {
+    return error;
+  }
+
+  return new Error('Unexpected error value: ' + (0, _inspect.default)(error));
 } // This is a small wrapper around completeValue which detects and logs errors
 // in the execution context.
 
@@ -653,7 +658,9 @@ function completeLeafValue(returnType, result) {
 
 
 function completeAbstractValue(exeContext, returnType, fieldNodes, info, path, result) {
-  var runtimeType = returnType.resolveType ? returnType.resolveType(result, exeContext.contextValue, info) : defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
+  var resolveTypeFn = returnType.resolveType || exeContext.typeResolver;
+  var contextValue = exeContext.contextValue;
+  var runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
   if ((0, _isPromise.default)(runtimeType)) {
     return runtimeType.then(function (resolvedRuntimeType) {
@@ -751,7 +758,7 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
  */
 
 
-function defaultResolveTypeFn(value, contextValue, info, abstractType) {
+var defaultTypeResolver = function defaultTypeResolver(value, contextValue, info, abstractType) {
   // First, look for `__typename`.
   if (value !== null && _typeof(value) === 'object' && typeof value.__typename === 'string') {
     return value.__typename;
@@ -784,7 +791,7 @@ function defaultResolveTypeFn(value, contextValue, info, abstractType) {
       }
     });
   }
-}
+};
 /**
  * If a resolve function is not given, then a default resolve behavior is used
  * which takes the property of the source object of the same name as the field
@@ -792,6 +799,8 @@ function defaultResolveTypeFn(value, contextValue, info, abstractType) {
  * of calling that function while passing along args and context value.
  */
 
+
+exports.defaultTypeResolver = defaultTypeResolver;
 
 var defaultFieldResolver = function defaultFieldResolver(source, args, contextValue, info) {
   // ensure source is a value for which property access is acceptable.

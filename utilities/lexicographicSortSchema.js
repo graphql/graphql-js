@@ -15,8 +15,6 @@ var _directives = require("../type/directives");
 
 var _definition = require("../type/definition");
 
-var _scalars = require("../type/scalars");
-
 var _introspection = require("../type/introspection");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -29,160 +27,118 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * Sort GraphQLSchema.
  */
 function lexicographicSortSchema(schema) {
-  var cache = Object.create(null);
+  var schemaConfig = schema.toConfig();
+  var typeMap = (0, _keyValMap.default)(sortByName(schemaConfig.types), function (type) {
+    return type.name;
+  }, sortNamedType);
+  return new _schema.GraphQLSchema(_objectSpread({}, schemaConfig, {
+    types: (0, _objectValues.default)(typeMap),
+    directives: sortByName(schemaConfig.directives).map(sortDirective),
+    query: replaceMaybeType(schemaConfig.query),
+    mutation: replaceMaybeType(schemaConfig.mutation),
+    subscription: replaceMaybeType(schemaConfig.subscription)
+  }));
 
-  var sortMaybeType = function sortMaybeType(maybeType) {
-    return maybeType && sortNamedType(maybeType);
-  };
+  function replaceType(type) {
+    if ((0, _definition.isListType)(type)) {
+      return new _definition.GraphQLList(replaceType(type.ofType));
+    } else if ((0, _definition.isNonNullType)(type)) {
+      return new _definition.GraphQLNonNull(replaceType(type.ofType));
+    }
 
-  return new _schema.GraphQLSchema({
-    types: sortTypes((0, _objectValues.default)(schema.getTypeMap())),
-    directives: sortByName(schema.getDirectives()).map(sortDirective),
-    query: sortMaybeType(schema.getQueryType()),
-    mutation: sortMaybeType(schema.getMutationType()),
-    subscription: sortMaybeType(schema.getSubscriptionType()),
-    astNode: schema.astNode
-  });
+    return replaceNamedType(type);
+  }
+
+  function replaceNamedType(type) {
+    return typeMap[type.name];
+  }
+
+  function replaceMaybeType(maybeType) {
+    return maybeType && replaceNamedType(maybeType);
+  }
 
   function sortDirective(directive) {
-    return new _directives.GraphQLDirective({
-      name: directive.name,
-      description: directive.description,
-      locations: sortBy(directive.locations, function (x) {
+    var config = directive.toConfig();
+    return new _directives.GraphQLDirective(_objectSpread({}, config, {
+      locations: sortBy(config.locations, function (x) {
         return x;
       }),
-      args: sortArgs(directive.args),
-      astNode: directive.astNode
-    });
+      args: sortArgs(config.args)
+    }));
   }
 
   function sortArgs(args) {
-    return (0, _keyValMap.default)(sortByName(args), function (arg) {
-      return arg.name;
-    }, function (arg) {
+    return sortObjMap(args, function (arg) {
       return _objectSpread({}, arg, {
-        type: sortType(arg.type)
+        type: replaceType(arg.type)
       });
     });
   }
 
   function sortFields(fieldsMap) {
     return sortObjMap(fieldsMap, function (field) {
-      return {
-        type: sortType(field.type),
-        args: sortArgs(field.args),
-        resolve: field.resolve,
-        subscribe: field.subscribe,
-        deprecationReason: field.deprecationReason,
-        description: field.description,
-        astNode: field.astNode
-      };
+      return _objectSpread({}, field, {
+        type: replaceType(field.type),
+        args: sortArgs(field.args)
+      });
     });
   }
 
   function sortInputFields(fieldsMap) {
     return sortObjMap(fieldsMap, function (field) {
-      return {
-        type: sortType(field.type),
-        defaultValue: field.defaultValue,
-        description: field.description,
-        astNode: field.astNode
-      };
+      return _objectSpread({}, field, {
+        type: replaceType(field.type)
+      });
     });
   }
 
-  function sortType(type) {
-    if ((0, _definition.isListType)(type)) {
-      return new _definition.GraphQLList(sortType(type.ofType));
-    } else if ((0, _definition.isNonNullType)(type)) {
-      return new _definition.GraphQLNonNull(sortType(type.ofType));
-    }
-
-    return sortNamedType(type);
-  }
-
   function sortTypes(arr) {
-    return sortByName(arr).map(sortNamedType);
+    return sortByName(arr).map(replaceNamedType);
   }
 
   function sortNamedType(type) {
-    if ((0, _scalars.isSpecifiedScalarType)(type) || (0, _introspection.isIntrospectionType)(type)) {
-      return type;
-    }
-
-    var sortedType = cache[type.name];
-
-    if (!sortedType) {
-      sortedType = sortNamedTypeImpl(type);
-      cache[type.name] = sortedType;
-    }
-
-    return sortedType;
-  }
-
-  function sortNamedTypeImpl(type) {
-    if ((0, _definition.isScalarType)(type)) {
+    if ((0, _definition.isScalarType)(type) || (0, _introspection.isIntrospectionType)(type)) {
       return type;
     } else if ((0, _definition.isObjectType)(type)) {
-      return new _definition.GraphQLObjectType({
-        name: type.name,
+      var config = type.toConfig();
+      return new _definition.GraphQLObjectType(_objectSpread({}, config, {
         interfaces: function interfaces() {
-          return sortTypes(type.getInterfaces());
+          return sortTypes(config.interfaces);
         },
         fields: function fields() {
-          return sortFields(type.getFields());
-        },
-        isTypeOf: type.isTypeOf,
-        description: type.description,
-        astNode: type.astNode,
-        extensionASTNodes: type.extensionASTNodes
-      });
+          return sortFields(config.fields);
+        }
+      }));
     } else if ((0, _definition.isInterfaceType)(type)) {
-      return new _definition.GraphQLInterfaceType({
-        name: type.name,
+      var _config = type.toConfig();
+
+      return new _definition.GraphQLInterfaceType(_objectSpread({}, _config, {
         fields: function fields() {
-          return sortFields(type.getFields());
-        },
-        resolveType: type.resolveType,
-        description: type.description,
-        astNode: type.astNode,
-        extensionASTNodes: type.extensionASTNodes
-      });
+          return sortFields(_config.fields);
+        }
+      }));
     } else if ((0, _definition.isUnionType)(type)) {
-      return new _definition.GraphQLUnionType({
-        name: type.name,
+      var _config2 = type.toConfig();
+
+      return new _definition.GraphQLUnionType(_objectSpread({}, _config2, {
         types: function types() {
-          return sortTypes(type.getTypes());
-        },
-        resolveType: type.resolveType,
-        description: type.description,
-        astNode: type.astNode
-      });
+          return sortTypes(_config2.types);
+        }
+      }));
     } else if ((0, _definition.isEnumType)(type)) {
-      return new _definition.GraphQLEnumType({
-        name: type.name,
-        values: (0, _keyValMap.default)(sortByName(type.getValues()), function (val) {
-          return val.name;
-        }, function (val) {
-          return {
-            value: val.value,
-            deprecationReason: val.deprecationReason,
-            description: val.description,
-            astNode: val.astNode
-          };
-        }),
-        description: type.description,
-        astNode: type.astNode
-      });
+      var _config3 = type.toConfig();
+
+      return new _definition.GraphQLEnumType(_objectSpread({}, _config3, {
+        values: sortObjMap(_config3.values)
+      }));
     } else if ((0, _definition.isInputObjectType)(type)) {
-      return new _definition.GraphQLInputObjectType({
-        name: type.name,
+      var _config4 = type.toConfig();
+
+      return new _definition.GraphQLInputObjectType(_objectSpread({}, _config4, {
         fields: function fields() {
-          return sortInputFields(type.getFields());
-        },
-        description: type.description,
-        astNode: type.astNode
-      });
+          return sortInputFields(_config4.fields);
+        }
+      }));
     }
 
     throw new Error("Unknown type: \"".concat(type, "\""));

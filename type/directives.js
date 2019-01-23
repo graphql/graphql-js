@@ -76,6 +76,16 @@ function () {
     return '@' + this.name;
   };
 
+  _proto.toConfig = function toConfig() {
+    return {
+      name: this.name,
+      description: this.description,
+      locations: this.locations,
+      args: (0, _definition.argsToArgsConfig)(this.args),
+      astNode: this.astNode
+    };
+  };
+
   return GraphQLDirective;
 }(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 

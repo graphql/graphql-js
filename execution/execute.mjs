@@ -27,18 +27,18 @@ import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } f
 import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from '../type/introspection';
 import { GraphQLIncludeDirective, GraphQLSkipDirective } from '../type/directives';
 import { assertValidSchema } from '../type/validate';
-export function execute(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver) {
+export function execute(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
-  return arguments.length === 1 ? executeImpl(argsOrSchema.schema, argsOrSchema.document, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver) : executeImpl(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver);
+  return arguments.length === 1 ? executeImpl(argsOrSchema.schema, argsOrSchema.document, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.typeResolver) : executeImpl(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver);
 }
 
-function executeImpl(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver) {
+function executeImpl(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
 
-  var exeContext = buildExecutionContext(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver); // Return early errors if execution context failed.
+  var exeContext = buildExecutionContext(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver); // Return early errors if execution context failed.
 
   if (Array.isArray(exeContext)) {
     return {
@@ -123,7 +123,7 @@ export function assertValidExecutionArguments(schema, document, rawVariableValue
  * Throws a GraphQLError if a valid execution context cannot be created.
  */
 
-export function buildExecutionContext(schema, document, rootValue, contextValue, rawVariableValues, operationName, fieldResolver) {
+export function buildExecutionContext(schema, document, rootValue, contextValue, rawVariableValues, operationName, fieldResolver, typeResolver) {
   var errors = [];
   var operation;
   var hasMultipleAssumedOperations = false;
@@ -184,6 +184,7 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
     operation: operation,
     variableValues: variableValues,
     fieldResolver: fieldResolver || defaultFieldResolver,
+    typeResolver: typeResolver || defaultTypeResolver,
     errors: errors
   };
 }
@@ -450,7 +451,11 @@ export function resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resol
 // consistent Error interface.
 
 function asErrorInstance(error) {
-  return error instanceof Error ? error : new Error(error || undefined);
+  if (error instanceof Error) {
+    return error;
+  }
+
+  return new Error('Unexpected error value: ' + inspect(error));
 } // This is a small wrapper around completeValue which detects and logs errors
 // in the execution context.
 
@@ -617,7 +622,9 @@ function completeLeafValue(returnType, result) {
 
 
 function completeAbstractValue(exeContext, returnType, fieldNodes, info, path, result) {
-  var runtimeType = returnType.resolveType ? returnType.resolveType(result, exeContext.contextValue, info) : defaultResolveTypeFn(result, exeContext.contextValue, info, returnType);
+  var resolveTypeFn = returnType.resolveType || exeContext.typeResolver;
+  var contextValue = exeContext.contextValue;
+  var runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
   if (isPromise(runtimeType)) {
     return runtimeType.then(function (resolvedRuntimeType) {
@@ -715,7 +722,7 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
  */
 
 
-function defaultResolveTypeFn(value, contextValue, info, abstractType) {
+export var defaultTypeResolver = function defaultTypeResolver(value, contextValue, info, abstractType) {
   // First, look for `__typename`.
   if (value !== null && _typeof(value) === 'object' && typeof value.__typename === 'string') {
     return value.__typename;
@@ -748,14 +755,13 @@ function defaultResolveTypeFn(value, contextValue, info, abstractType) {
       }
     });
   }
-}
+};
 /**
  * If a resolve function is not given, then a default resolve behavior is used
  * which takes the property of the source object of the same name as the field
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context value.
  */
-
 
 export var defaultFieldResolver = function defaultFieldResolver(source, args, contextValue, info) {
   // ensure source is a value for which property access is acceptable.

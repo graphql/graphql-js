@@ -19,6 +19,7 @@ import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
+import keyValMap from '../jsutils/keyValMap';
 import mapValue from '../jsutils/mapValue';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
@@ -284,6 +285,10 @@ function resolveThunk(thunk) {
   // $FlowFixMe(>=0.90.0)
   return typeof thunk === 'function' ? thunk() : thunk;
 }
+
+function undefineIfEmpty(arr) {
+  return arr && arr.length > 0 ? arr : undefined;
+}
 /**
  * Scalar Type Definition
  *
@@ -324,7 +329,7 @@ function () {
 
     this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
     !(typeof config.serialize === 'function') ? invariant(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar ") + 'is also used as an input type, ensure "parseValue" and "parseLiteral" ' + 'functions are also provided.') : void 0;
 
@@ -334,6 +339,18 @@ function () {
   }
 
   var _proto = GraphQLScalarType.prototype;
+
+  _proto.toConfig = function toConfig() {
+    return {
+      name: this.name,
+      description: this.description,
+      serialize: this.serialize,
+      parseValue: this.parseValue,
+      parseLiteral: this.parseLiteral,
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || []
+    };
+  };
 
   _proto.toString = function toString() {
     return this.name;
@@ -389,7 +406,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.isTypeOf = config.isTypeOf;
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
@@ -413,6 +430,18 @@ function () {
     }
 
     return this._interfaces;
+  };
+
+  _proto2.toConfig = function toConfig() {
+    return {
+      name: this.name,
+      description: this.description,
+      isTypeOf: this.isTypeOf,
+      interfaces: this.getInterfaces(),
+      fields: fieldsToFieldsConfig(this.getFields()),
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || []
+    };
   };
 
   _proto2.toString = function toString() {
@@ -463,6 +492,32 @@ function isPlainObj(obj) {
   return obj && _typeof(obj) === 'object' && !Array.isArray(obj);
 }
 
+function fieldsToFieldsConfig(fields) {
+  return mapValue(fields, function (field) {
+    return {
+      type: field.type,
+      args: argsToArgsConfig(field.args),
+      resolve: field.resolve,
+      subscribe: field.subscribe,
+      deprecationReason: field.deprecationReason,
+      description: field.description,
+      astNode: field.astNode
+    };
+  });
+}
+
+export function argsToArgsConfig(args) {
+  return keyValMap(args, function (arg) {
+    return arg.name;
+  }, function (arg) {
+    return {
+      type: arg.type,
+      defaultValue: arg.defaultValue,
+      description: arg.description,
+      astNode: arg.astNode
+    };
+  });
+}
 export function isRequiredArgument(arg) {
   return isNonNullType(arg.type) && arg.defaultValue === undefined;
 }
@@ -492,7 +547,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.resolveType = config.resolveType;
     this._fields = defineFieldMap.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
@@ -507,6 +562,17 @@ function () {
     }
 
     return this._fields;
+  };
+
+  _proto3.toConfig = function toConfig() {
+    return {
+      name: this.name,
+      description: this.description,
+      resolveType: this.resolveType,
+      fields: fieldsToFieldsConfig(this.getFields()),
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || []
+    };
   };
 
   _proto3.toString = function toString() {
@@ -549,7 +615,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.resolveType = config.resolveType;
     this._types = defineTypes.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
@@ -564,6 +630,17 @@ function () {
     }
 
     return this._types;
+  };
+
+  _proto4.toConfig = function toConfig() {
+    return {
+      name: this.name,
+      description: this.description,
+      resolveType: this.resolveType,
+      types: this.getTypes(),
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || []
+    };
   };
 
   _proto4.toString = function toString() {
@@ -614,7 +691,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._values = defineEnumValues(this, config.values);
     this._valueLookup = new Map(this._values.map(function (enumValue) {
       return [enumValue.value, enumValue];
@@ -668,6 +745,26 @@ function () {
         return enumValue.value;
       }
     }
+  };
+
+  _proto5.toConfig = function toConfig() {
+    var values = keyValMap(this.getValues(), function (value) {
+      return value.name;
+    }, function (value) {
+      return {
+        description: value.description,
+        value: value.value,
+        deprecationReason: value.deprecationReason,
+        astNode: value.astNode
+      };
+    });
+    return {
+      name: this.name,
+      description: this.description,
+      values: values,
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || []
+    };
   };
 
   _proto5.toString = function toString() {
@@ -727,7 +824,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
+    this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._fields = defineInputFieldMap.bind(undefined, config);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
   }
@@ -740,6 +837,24 @@ function () {
     }
 
     return this._fields;
+  };
+
+  _proto6.toConfig = function toConfig() {
+    var fields = mapValue(this.getFields(), function (field) {
+      return {
+        description: field.description,
+        type: field.type,
+        defaultValue: field.defaultValue,
+        astNode: field.astNode
+      };
+    });
+    return {
+      name: this.name,
+      description: this.description,
+      fields: fields,
+      astNode: this.astNode,
+      extensionASTNodes: this.extensionASTNodes || []
+    };
   };
 
   _proto6.toString = function toString() {

@@ -13,7 +13,10 @@ import { validate } from './validation/validate';
 import { execute } from './execution/execute';
 import type { ObjMap } from './jsutils/ObjMap';
 import type { Source } from './language/source';
-import type { GraphQLFieldResolver } from './type/definition';
+import type {
+  GraphQLFieldResolver,
+  GraphQLTypeResolver,
+} from './type/definition';
 import type { GraphQLSchema } from './type/schema';
 import type { ExecutionResult } from './execution/execute';
 import type { MaybePromise } from './jsutils/MaybePromise';
@@ -61,6 +64,7 @@ export type GraphQLArgs = {|
   variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  typeResolver?: ?GraphQLTypeResolver<any, any>,
 |};
 declare function graphql(GraphQLArgs, ..._: []): Promise<ExecutionResult>;
 /* eslint-disable no-redeclare */
@@ -72,6 +76,7 @@ declare function graphql(
   variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  typeResolver?: ?GraphQLTypeResolver<any, any>,
 ): Promise<ExecutionResult>;
 export function graphql(
   argsOrSchema,
@@ -81,6 +86,7 @@ export function graphql(
   variableValues,
   operationName,
   fieldResolver,
+  typeResolver,
 ) {
   /* eslint-enable no-redeclare */
   // Always return a Promise for a consistent API.
@@ -96,6 +102,7 @@ export function graphql(
             argsOrSchema.variableValues,
             argsOrSchema.operationName,
             argsOrSchema.fieldResolver,
+            argsOrSchema.typeResolver,
           )
         : graphqlImpl(
             argsOrSchema,
@@ -105,6 +112,7 @@ export function graphql(
             variableValues,
             operationName,
             fieldResolver,
+            typeResolver,
           ),
     ),
   );
@@ -126,6 +134,7 @@ declare function graphqlSync(
   variableValues?: ?ObjMap<mixed>,
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  typeResolver?: ?GraphQLTypeResolver<any, any>,
 ): ExecutionResult;
 export function graphqlSync(
   argsOrSchema,
@@ -135,6 +144,7 @@ export function graphqlSync(
   variableValues,
   operationName,
   fieldResolver,
+  typeResolver,
 ) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
@@ -148,6 +158,7 @@ export function graphqlSync(
           argsOrSchema.variableValues,
           argsOrSchema.operationName,
           argsOrSchema.fieldResolver,
+          argsOrSchema.typeResolver,
         )
       : graphqlImpl(
           argsOrSchema,
@@ -157,6 +168,7 @@ export function graphqlSync(
           variableValues,
           operationName,
           fieldResolver,
+          typeResolver,
         );
 
   // Assert that the execution was synchronous.
@@ -175,6 +187,7 @@ function graphqlImpl(
   variableValues,
   operationName,
   fieldResolver,
+  typeResolver,
 ): MaybePromise<ExecutionResult> {
   // Validate Schema
   const schemaValidationErrors = validateSchema(schema);
@@ -205,5 +218,6 @@ function graphqlImpl(
     variableValues,
     operationName,
     fieldResolver,
+    typeResolver,
   );
 }

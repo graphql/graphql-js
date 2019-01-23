@@ -52,7 +52,7 @@ print, // Visit
 visit, visitInParallel, visitWithTypeInfo, getVisitFn, Kind, TokenKind, DirectiveLocation, BREAK, // Predicates
 isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from './language';
 // Execute GraphQL queries.
-export { execute, defaultFieldResolver, responsePathAsArray, getDirectiveValues } from './execution';
+export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from './execution';
 export { subscribe, createSourceEventStream } from './subscription'; // Validate GraphQL queries.
 
 export { validate, ValidationContext, // All validation rules in the GraphQL Specification.

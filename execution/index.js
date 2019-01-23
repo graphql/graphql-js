@@ -15,6 +15,12 @@ Object.defineProperty(exports, "defaultFieldResolver", {
     return _execute.defaultFieldResolver;
   }
 });
+Object.defineProperty(exports, "defaultTypeResolver", {
+  enumerable: true,
+  get: function get() {
+    return _execute.defaultTypeResolver;
+  }
+});
 Object.defineProperty(exports, "responsePathAsArray", {
   enumerable: true,
   get: function get() {

@@ -682,13 +682,10 @@ function getAllSubNodes(object, getter) {
   try {
     for (var _iterator14 = getAllNodes(object)[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
       var astNode = _step14.value;
+      var subNodes = getter(astNode);
 
-      if (astNode) {
-        var subNodes = getter(astNode);
-
-        if (subNodes) {
-          result = result.concat(subNodes);
-        }
+      if (subNodes) {
+        result = result.concat(subNodes);
       }
     }
   } catch (err) {

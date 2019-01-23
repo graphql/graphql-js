@@ -6,9 +6,9 @@
  *
  * 
  */
+import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
-import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
@@ -32,16 +32,40 @@ import { specifiedScalarTypes } from '../type/scalars';
  */
 export function buildClientSchema(introspection, options) {
   // Get the schema from the introspection result.
-  var schemaIntrospection = introspection.__schema; // Converts the list of types into a keyMap based on the type names.
+  var schemaIntrospection = introspection.__schema; // Iterate through all types, getting the type definition for each.
 
-  var typeIntrospectionMap = keyMap(schemaIntrospection.types, function (type) {
-    return type.name;
-  }); // A cache to use to store the actual GraphQLType definition objects by name.
-  // Initialize to the GraphQL built in scalars. All functions below are inline
-  // so that this type def cache is within the scope of the closure.
+  var typeMap = keyValMap(schemaIntrospection.types, function (typeIntrospection) {
+    return typeIntrospection.name;
+  }, function (typeIntrospection) {
+    return buildType(typeIntrospection);
+  });
 
-  var typeDefCache = keyMap(specifiedScalarTypes.concat(introspectionTypes), function (type) {
-    return type.name;
+  var _arr = [].concat(specifiedScalarTypes, introspectionTypes);
+
+  for (var _i = 0; _i < _arr.length; _i++) {
+    var stdType = _arr[_i];
+
+    if (typeMap[stdType.name]) {
+      typeMap[stdType.name] = stdType;
+    }
+  } // Get the root Query, Mutation, and Subscription types.
+
+
+  var queryType = schemaIntrospection.queryType ? getObjectType(schemaIntrospection.queryType) : null;
+  var mutationType = schemaIntrospection.mutationType ? getObjectType(schemaIntrospection.mutationType) : null;
+  var subscriptionType = schemaIntrospection.subscriptionType ? getObjectType(schemaIntrospection.subscriptionType) : null; // Get the directives supported by Introspection, assuming empty-set if
+  // directives were not queried for.
+
+  var directives = schemaIntrospection.directives ? schemaIntrospection.directives.map(buildDirective) : []; // Then produce and return a Schema with these types.
+
+  return new GraphQLSchema({
+    query: queryType,
+    mutation: mutationType,
+    subscription: subscriptionType,
+    types: objectValues(typeMap),
+    directives: directives,
+    assumeValid: options && options.assumeValid,
+    allowedLegacyNames: options && options.allowedLegacyNames
   }); // Given a type reference in introspection, return the GraphQLType instance.
   // preferring cached instances before building new instances.
 
@@ -75,19 +99,13 @@ export function buildClientSchema(introspection, options) {
   }
 
   function getNamedType(typeName) {
-    if (typeDefCache[typeName]) {
-      return typeDefCache[typeName];
-    }
+    var type = typeMap[typeName];
 
-    var typeIntrospection = typeIntrospectionMap[typeName];
-
-    if (!typeIntrospection) {
+    if (!type) {
       throw new Error("Invalid or incomplete schema, unknown type: ".concat(typeName, ". Ensure ") + 'that a full introspection query is used in order to build a ' + 'client schema.');
     }
 
-    var typeDef = buildType(typeIntrospection);
-    typeDefCache[typeName] = typeDef;
-    return typeDef;
+    return type;
   }
 
   function getInputType(typeRef) {
@@ -276,28 +294,5 @@ export function buildClientSchema(introspection, options) {
       locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args)
     });
-  } // Iterate through all types, getting the type definition for each, ensuring
-  // that any type not directly referenced by a field will get created.
-
-
-  var types = schemaIntrospection.types.map(function (typeIntrospection) {
-    return getNamedType(typeIntrospection.name);
-  }); // Get the root Query, Mutation, and Subscription types.
-
-  var queryType = schemaIntrospection.queryType ? getObjectType(schemaIntrospection.queryType) : null;
-  var mutationType = schemaIntrospection.mutationType ? getObjectType(schemaIntrospection.mutationType) : null;
-  var subscriptionType = schemaIntrospection.subscriptionType ? getObjectType(schemaIntrospection.subscriptionType) : null; // Get the directives supported by Introspection, assuming empty-set if
-  // directives were not queried for.
-
-  var directives = schemaIntrospection.directives ? schemaIntrospection.directives.map(buildDirective) : []; // Then produce and return a Schema with these types.
-
-  return new GraphQLSchema({
-    query: queryType,
-    mutation: mutationType,
-    subscription: subscriptionType,
-    types: types,
-    directives: directives,
-    assumeValid: options && options.assumeValid,
-    allowedLegacyNames: options && options.allowedLegacyNames
-  });
+  }
 }

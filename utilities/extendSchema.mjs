@@ -108,12 +108,13 @@ export function extendSchema(schema, documentAST, options) {
     !existingType ? invariant(0, "Unknown type: \"".concat(typeName, "\".")) : void 0;
     return extendNamedType(existingType);
   });
-  var extendTypeCache = Object.create(null); // Get the extended root operation types.
+  var extendTypeCache = Object.create(null);
+  var schemaConfig = schema.toConfig(); // Get the extended root operation types.
 
   var operationTypes = {
-    query: extendMaybeNamedType(schema.getQueryType()),
-    mutation: extendMaybeNamedType(schema.getMutationType()),
-    subscription: extendMaybeNamedType(schema.getSubscriptionType())
+    query: extendMaybeNamedType(schemaConfig.query),
+    mutation: extendMaybeNamedType(schemaConfig.mutation),
+    subscription: extendMaybeNamedType(schemaConfig.subscription)
   };
 
   if (schemaDef) {
@@ -152,13 +153,13 @@ export function extendSchema(schema, documentAST, options) {
     var schemaExtension = schemaExtensions[_i];
 
     if (schemaExtension.operationTypes) {
-      var _iteratorNormalCompletion14 = true;
-      var _didIteratorError14 = false;
-      var _iteratorError14 = undefined;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator14 = schemaExtension.operationTypes[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-          var _ref4 = _step14.value;
+        for (var _iterator3 = schemaExtension.operationTypes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var _ref4 = _step3.value;
           var _operation = _ref4.operation;
           var _type = _ref4.type;
           // Note: While this could make early assertions to get the correctly
@@ -167,37 +168,35 @@ export function extendSchema(schema, documentAST, options) {
           operationTypes[_operation] = astBuilder.buildType(_type);
         }
       } catch (err) {
-        _didIteratorError14 = true;
-        _iteratorError14 = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion14 && _iterator14.return != null) {
-            _iterator14.return();
+          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+            _iterator3.return();
           }
         } finally {
-          if (_didIteratorError14) {
-            throw _iteratorError14;
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
     }
   }
 
-  var schemaExtensionASTNodes = schemaExtensions ? schema.extensionASTNodes ? schema.extensionASTNodes.concat(schemaExtensions) : schemaExtensions : schema.extensionASTNodes;
-  var types = [].concat(objectValues(schema.getTypeMap()).map(function (type) {
+  var schemaTypes = [].concat(schemaConfig.types.map(function (type) {
     return extendNamedType(type);
   }), objectValues(typeDefinitionMap).map(function (type) {
     return astBuilder.buildType(type);
   })); // Support both original legacy names and extended legacy names.
 
-  var allowedLegacyNames = schema.__allowedLegacyNames.concat(options && options.allowedLegacyNames || []); // Then produce and return a Schema with these types.
-
+  var allowedLegacyNames = schemaConfig.allowedLegacyNames.concat(options && options.allowedLegacyNames || []); // Then produce and return a Schema with these types.
 
   return new GraphQLSchema(_objectSpread({}, operationTypes, {
-    types: types,
+    types: schemaTypes,
     directives: getMergedDirectives(),
-    astNode: schema.astNode,
-    extensionASTNodes: schemaExtensionASTNodes,
+    astNode: schemaConfig.astNode,
+    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
     allowedLegacyNames: allowedLegacyNames
   })); // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
@@ -242,445 +241,129 @@ export function extendSchema(schema, documentAST, options) {
   }
 
   function extendDirective(directive) {
-    return new GraphQLDirective({
-      name: directive.name,
-      description: directive.description,
-      locations: directive.locations,
-      args: extendArgs(directive.args),
-      astNode: directive.astNode
-    });
+    var config = directive.toConfig();
+    return new GraphQLDirective(_objectSpread({}, config, {
+      args: mapValue(config.args, extendArg)
+    }));
   }
 
   function extendInputObjectType(type) {
-    var name = type.name;
-    var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
-    return new GraphQLInputObjectType({
-      name: name,
-      description: type.description,
-      fields: function fields() {
-        return extendInputFieldMap(type);
-      },
-      astNode: type.astNode,
-      extensionASTNodes: extensionASTNodes
+    var config = type.toConfig();
+    var extensions = typeExtensionsMap[config.name] || [];
+    var fieldNodes = flatMap(extensions, function (node) {
+      return node.fields || [];
     });
-  }
-
-  function extendInputFieldMap(type) {
-    var newFieldMap = mapValue(type.getFields(), function (field) {
-      return {
-        description: field.description,
-        type: extendType(field.type),
-        defaultValue: field.defaultValue,
-        astNode: field.astNode
-      };
-    }); // If there are any extensions to the fields, apply those here.
-
-    var extensions = typeExtensionsMap[type.name];
-
-    if (extensions) {
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
-
-      try {
-        for (var _iterator3 = extensions[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var extension = _step3.value;
-          var _iteratorNormalCompletion4 = true;
-          var _didIteratorError4 = false;
-          var _iteratorError4 = undefined;
-
-          try {
-            for (var _iterator4 = extension.fields[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-              var field = _step4.value;
-              newFieldMap[field.name.value] = astBuilder.buildInputField(field);
-            }
-          } catch (err) {
-            _didIteratorError4 = true;
-            _iteratorError4 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-                _iterator4.return();
-              }
-            } finally {
-              if (_didIteratorError4) {
-                throw _iteratorError4;
-              }
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-            _iterator3.return();
-          }
-        } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
-          }
-        }
-      }
-    }
-
-    return newFieldMap;
+    return new GraphQLInputObjectType(_objectSpread({}, config, {
+      fields: function fields() {
+        return _objectSpread({}, mapValue(config.fields, function (field) {
+          return _objectSpread({}, field, {
+            type: extendType(field.type)
+          });
+        }), keyValMap(fieldNodes, function (field) {
+          return field.name.value;
+        }, function (field) {
+          return astBuilder.buildInputField(field);
+        }));
+      },
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+    }));
   }
 
   function extendEnumType(type) {
-    var name = type.name;
-    var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
-    return new GraphQLEnumType({
-      name: name,
-      description: type.description,
-      values: extendValueMap(type),
-      astNode: type.astNode,
-      extensionASTNodes: extensionASTNodes
+    var config = type.toConfig();
+    var extensions = typeExtensionsMap[type.name] || [];
+    var valueNodes = flatMap(extensions, function (node) {
+      return node.values || [];
     });
-  }
-
-  function extendValueMap(type) {
-    var newValueMap = Object.create(null);
-    var _iteratorNormalCompletion5 = true;
-    var _didIteratorError5 = false;
-    var _iteratorError5 = undefined;
-
-    try {
-      for (var _iterator5 = type.getValues()[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-        var _value = _step5.value;
-        newValueMap[_value.name] = {
-          description: _value.description,
-          value: _value.value,
-          deprecationReason: _value.deprecationReason,
-          astNode: _value.astNode
-        };
-      } // If there are any extensions to the values, apply those here.
-
-    } catch (err) {
-      _didIteratorError5 = true;
-      _iteratorError5 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
-          _iterator5.return();
-        }
-      } finally {
-        if (_didIteratorError5) {
-          throw _iteratorError5;
-        }
-      }
-    }
-
-    var extensions = typeExtensionsMap[type.name];
-
-    if (extensions) {
-      var _iteratorNormalCompletion6 = true;
-      var _didIteratorError6 = false;
-      var _iteratorError6 = undefined;
-
-      try {
-        for (var _iterator6 = extensions[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-          var extension = _step6.value;
-          var _iteratorNormalCompletion7 = true;
-          var _didIteratorError7 = false;
-          var _iteratorError7 = undefined;
-
-          try {
-            for (var _iterator7 = extension.values[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-              var value = _step7.value;
-              newValueMap[value.name.value] = astBuilder.buildEnumValue(value);
-            }
-          } catch (err) {
-            _didIteratorError7 = true;
-            _iteratorError7 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion7 && _iterator7.return != null) {
-                _iterator7.return();
-              }
-            } finally {
-              if (_didIteratorError7) {
-                throw _iteratorError7;
-              }
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion6 && _iterator6.return != null) {
-            _iterator6.return();
-          }
-        } finally {
-          if (_didIteratorError6) {
-            throw _iteratorError6;
-          }
-        }
-      }
-    }
-
-    return newValueMap;
+    return new GraphQLEnumType(_objectSpread({}, config, {
+      values: _objectSpread({}, config.values, keyValMap(valueNodes, function (value) {
+        return value.name.value;
+      }, function (value) {
+        return astBuilder.buildEnumValue(value);
+      })),
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+    }));
   }
 
   function extendScalarType(type) {
-    var name = type.name;
-    var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
-    return new GraphQLScalarType({
-      name: name,
-      description: type.description,
-      astNode: type.astNode,
-      extensionASTNodes: extensionASTNodes,
-      serialize: type.serialize,
-      parseValue: type.parseValue,
-      parseLiteral: type.parseLiteral
-    });
+    var config = type.toConfig();
+    var extensions = typeExtensionsMap[config.name] || [];
+    return new GraphQLScalarType(_objectSpread({}, config, {
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+    }));
   }
 
   function extendObjectType(type) {
-    var name = type.name;
-    var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
-    return new GraphQLObjectType({
-      name: name,
-      description: type.description,
+    var config = type.toConfig();
+    var extensions = typeExtensionsMap[config.name] || [];
+    var interfaceNodes = flatMap(extensions, function (node) {
+      return node.interfaces || [];
+    });
+    var fieldNodes = flatMap(extensions, function (node) {
+      return node.fields || [];
+    });
+    return new GraphQLObjectType(_objectSpread({}, config, {
       interfaces: function interfaces() {
-        return extendImplementedInterfaces(type);
+        return [].concat(type.getInterfaces().map(extendNamedType), interfaceNodes.map(function (node) {
+          return astBuilder.buildType(node);
+        }));
       },
       fields: function fields() {
-        return extendFieldMap(type);
+        return _objectSpread({}, mapValue(config.fields, extendField), keyValMap(fieldNodes, function (node) {
+          return node.name.value;
+        }, function (node) {
+          return astBuilder.buildField(node);
+        }));
       },
-      astNode: type.astNode,
-      extensionASTNodes: extensionASTNodes,
-      isTypeOf: type.isTypeOf
-    });
-  }
-
-  function extendArgs(args) {
-    return keyValMap(args, function (arg) {
-      return arg.name;
-    }, function (arg) {
-      return {
-        type: extendType(arg.type),
-        defaultValue: arg.defaultValue,
-        description: arg.description,
-        astNode: arg.astNode
-      };
-    });
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+    }));
   }
 
   function extendInterfaceType(type) {
-    var name = type.name;
-    var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
-    return new GraphQLInterfaceType({
-      name: type.name,
-      description: type.description,
-      fields: function fields() {
-        return extendFieldMap(type);
-      },
-      astNode: type.astNode,
-      extensionASTNodes: extensionASTNodes,
-      resolveType: type.resolveType
+    var config = type.toConfig();
+    var extensions = typeExtensionsMap[config.name] || [];
+    var fieldNodes = flatMap(extensions, function (node) {
+      return node.fields || [];
     });
+    return new GraphQLInterfaceType(_objectSpread({}, config, {
+      fields: function fields() {
+        return _objectSpread({}, mapValue(config.fields, extendField), keyValMap(fieldNodes, function (node) {
+          return node.name.value;
+        }, function (node) {
+          return astBuilder.buildField(node);
+        }));
+      },
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+    }));
   }
 
   function extendUnionType(type) {
-    var name = type.name;
-    var extensionASTNodes = typeExtensionsMap[name] ? type.extensionASTNodes ? type.extensionASTNodes.concat(typeExtensionsMap[name]) : typeExtensionsMap[name] : type.extensionASTNodes;
-    return new GraphQLUnionType({
-      name: name,
-      description: type.description,
+    var config = type.toConfig();
+    var extensions = typeExtensionsMap[config.name] || [];
+    var typeNodes = flatMap(extensions, function (node) {
+      return node.types || [];
+    });
+    return new GraphQLUnionType(_objectSpread({}, config, {
       types: function types() {
-        return extendPossibleTypes(type);
+        return [].concat(type.getTypes().map(extendNamedType), typeNodes.map(function (node) {
+          return astBuilder.buildType(node);
+        }));
       },
-      astNode: type.astNode,
-      resolveType: type.resolveType,
-      extensionASTNodes: extensionASTNodes
+      extensionASTNodes: config.extensionASTNodes.concat(extensions)
+    }));
+  }
+
+  function extendField(field) {
+    return _objectSpread({}, field, {
+      type: extendType(field.type),
+      args: mapValue(field.args, extendArg)
     });
   }
 
-  function extendPossibleTypes(type) {
-    var possibleTypes = type.getTypes().map(extendNamedType); // If there are any extensions to the union, apply those here.
-
-    var extensions = typeExtensionsMap[type.name];
-
-    if (extensions) {
-      var _iteratorNormalCompletion8 = true;
-      var _didIteratorError8 = false;
-      var _iteratorError8 = undefined;
-
-      try {
-        for (var _iterator8 = extensions[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-          var extension = _step8.value;
-          var _iteratorNormalCompletion9 = true;
-          var _didIteratorError9 = false;
-          var _iteratorError9 = undefined;
-
-          try {
-            for (var _iterator9 = extension.types[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-              var namedType = _step9.value;
-              // Note: While this could make early assertions to get the correctly
-              // typed values, that would throw immediately while type system
-              // validation with validateSchema() will produce more actionable results.
-              possibleTypes.push(astBuilder.buildType(namedType));
-            }
-          } catch (err) {
-            _didIteratorError9 = true;
-            _iteratorError9 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
-                _iterator9.return();
-              }
-            } finally {
-              if (_didIteratorError9) {
-                throw _iteratorError9;
-              }
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError8 = true;
-        _iteratorError8 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion8 && _iterator8.return != null) {
-            _iterator8.return();
-          }
-        } finally {
-          if (_didIteratorError8) {
-            throw _iteratorError8;
-          }
-        }
-      }
-    }
-
-    return possibleTypes;
-  }
-
-  function extendImplementedInterfaces(type) {
-    var interfaces = type.getInterfaces().map(extendNamedType); // If there are any extensions to the interfaces, apply those here.
-
-    var extensions = typeExtensionsMap[type.name];
-
-    if (extensions) {
-      var _iteratorNormalCompletion10 = true;
-      var _didIteratorError10 = false;
-      var _iteratorError10 = undefined;
-
-      try {
-        for (var _iterator10 = extensions[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-          var extension = _step10.value;
-          var _iteratorNormalCompletion11 = true;
-          var _didIteratorError11 = false;
-          var _iteratorError11 = undefined;
-
-          try {
-            for (var _iterator11 = extension.interfaces[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-              var namedType = _step11.value;
-              // Note: While this could make early assertions to get the correctly
-              // typed values, that would throw immediately while type system
-              // validation with validateSchema() will produce more actionable results.
-              interfaces.push(astBuilder.buildType(namedType));
-            }
-          } catch (err) {
-            _didIteratorError11 = true;
-            _iteratorError11 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion11 && _iterator11.return != null) {
-                _iterator11.return();
-              }
-            } finally {
-              if (_didIteratorError11) {
-                throw _iteratorError11;
-              }
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError10 = true;
-        _iteratorError10 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion10 && _iterator10.return != null) {
-            _iterator10.return();
-          }
-        } finally {
-          if (_didIteratorError10) {
-            throw _iteratorError10;
-          }
-        }
-      }
-    }
-
-    return interfaces;
-  }
-
-  function extendFieldMap(type) {
-    var newFieldMap = mapValue(type.getFields(), function (field) {
-      return {
-        description: field.description,
-        deprecationReason: field.deprecationReason,
-        type: extendType(field.type),
-        args: extendArgs(field.args),
-        astNode: field.astNode,
-        resolve: field.resolve
-      };
-    }); // If there are any extensions to the fields, apply those here.
-
-    var extensions = typeExtensionsMap[type.name];
-
-    if (extensions) {
-      var _iteratorNormalCompletion12 = true;
-      var _didIteratorError12 = false;
-      var _iteratorError12 = undefined;
-
-      try {
-        for (var _iterator12 = extensions[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-          var extension = _step12.value;
-          var _iteratorNormalCompletion13 = true;
-          var _didIteratorError13 = false;
-          var _iteratorError13 = undefined;
-
-          try {
-            for (var _iterator13 = extension.fields[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-              var field = _step13.value;
-              newFieldMap[field.name.value] = astBuilder.buildField(field);
-            }
-          } catch (err) {
-            _didIteratorError13 = true;
-            _iteratorError13 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion13 && _iterator13.return != null) {
-                _iterator13.return();
-              }
-            } finally {
-              if (_didIteratorError13) {
-                throw _iteratorError13;
-              }
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError12 = true;
-        _iteratorError12 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion12 && _iterator12.return != null) {
-            _iterator12.return();
-          }
-        } finally {
-          if (_didIteratorError12) {
-            throw _iteratorError12;
-          }
-        }
-      }
-    }
-
-    return newFieldMap;
+  function extendArg(arg) {
+    return _objectSpread({}, arg, {
+      type: extendType(arg.type)
+    });
   }
 
   function extendType(typeDef) {
@@ -694,4 +377,33 @@ export function extendSchema(schema, documentAST, options) {
 
     return extendNamedType(typeDef);
   }
+}
+
+function flatMap(list, mapFn) {
+  var result = [];
+  var _iteratorNormalCompletion4 = true;
+  var _didIteratorError4 = false;
+  var _iteratorError4 = undefined;
+
+  try {
+    for (var _iterator4 = list[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+      var item = _step4.value;
+      result = result.concat(mapFn(item));
+    }
+  } catch (err) {
+    _didIteratorError4 = true;
+    _iteratorError4 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+        _iterator4.return();
+      }
+    } finally {
+      if (_didIteratorError4) {
+        throw _iteratorError4;
+      }
+    }
+  }
+
+  return result;
 }

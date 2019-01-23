@@ -10,14 +10,14 @@ import { validateSchema } from './type/validate';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
 import { execute } from './execution/execute';
-export function graphql(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver) {
+export function graphql(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   var _arguments = arguments;
 
   /* eslint-enable no-redeclare */
   // Always return a Promise for a consistent API.
   return new Promise(function (resolve) {
     return resolve( // Extract arguments from object args if provided.
-    _arguments.length === 1 ? graphqlImpl(argsOrSchema.schema, argsOrSchema.source, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver) : graphqlImpl(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver));
+    _arguments.length === 1 ? graphqlImpl(argsOrSchema.schema, argsOrSchema.source, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.typeResolver) : graphqlImpl(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver));
   });
 }
 /**
@@ -27,10 +27,10 @@ export function graphql(argsOrSchema, source, rootValue, contextValue, variableV
  * that all field resolvers are also synchronous.
  */
 
-export function graphqlSync(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver) {
+export function graphqlSync(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
-  var result = arguments.length === 1 ? graphqlImpl(argsOrSchema.schema, argsOrSchema.source, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver) : graphqlImpl(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver); // Assert that the execution was synchronous.
+  var result = arguments.length === 1 ? graphqlImpl(argsOrSchema.schema, argsOrSchema.source, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.typeResolver) : graphqlImpl(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver); // Assert that the execution was synchronous.
 
   if (result.then) {
     throw new Error('GraphQL execution failed to complete synchronously.');
@@ -39,7 +39,7 @@ export function graphqlSync(argsOrSchema, source, rootValue, contextValue, varia
   return result;
 }
 
-function graphqlImpl(schema, source, rootValue, contextValue, variableValues, operationName, fieldResolver) {
+function graphqlImpl(schema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   // Validate Schema
   var schemaValidationErrors = validateSchema(schema);
 
@@ -70,5 +70,5 @@ function graphqlImpl(schema, source, rootValue, contextValue, variableValues, op
   } // Execute
 
 
-  return execute(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver);
+  return execute(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver);
 }

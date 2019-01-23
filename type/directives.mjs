@@ -9,6 +9,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * 
  */
 import objectEntries from '../polyfills/objectEntries';
+import { argsToArgsConfig } from './definition';
 import { GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import defineToStringTag from '../jsutils/defineToStringTag';
@@ -63,6 +64,16 @@ function () {
 
   _proto.toString = function toString() {
     return '@' + this.name;
+  };
+
+  _proto.toConfig = function toConfig() {
+    return {
+      name: this.name,
+      description: this.description,
+      locations: this.locations,
+      args: argsToArgsConfig(this.args),
+      astNode: this.astNode
+    };
   };
 
   return GraphQLDirective;
