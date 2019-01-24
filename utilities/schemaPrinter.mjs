@@ -6,6 +6,7 @@
  *
  * 
  */
+import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
@@ -280,31 +281,19 @@ function printDescriptionWithComments(lines, indentation, firstInBlock) {
 }
 
 function descriptionLines(description, maxLen) {
-  var lines = [];
   var rawLines = description.split('\n');
+  return flatMap(rawLines, function (line) {
+    if (line.length < maxLen + 5) {
+      return line;
+    } // For > 120 character long lines, cut at space boundaries into sublines
+    // of ~80 chars.
 
-  for (var i = 0; i < rawLines.length; i++) {
-    if (rawLines[i] === '') {
-      lines.push(rawLines[i]);
-    } else {
-      // For > 120 character long lines, cut at space boundaries into sublines
-      // of ~80 chars.
-      var sublines = breakLine(rawLines[i], maxLen);
 
-      for (var j = 0; j < sublines.length; j++) {
-        lines.push(sublines[j]);
-      }
-    }
-  }
-
-  return lines;
+    return breakLine(line, maxLen);
+  });
 }
 
 function breakLine(line, maxLen) {
-  if (line.length < maxLen + 5) {
-    return [line];
-  }
-
   var parts = line.split(new RegExp("((?: |^).{15,".concat(maxLen - 40, "}(?= |$))")));
 
   if (parts.length < 4) {

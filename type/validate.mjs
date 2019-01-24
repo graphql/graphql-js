@@ -7,6 +7,7 @@
  * 
  */
 import find from '../polyfills/find';
+import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import objectEntries from '../polyfills/objectEntries';
 import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isInputType, isOutputType, isRequiredArgument } from './definition';
@@ -652,36 +653,9 @@ function getAllNodes(object) {
 }
 
 function getAllSubNodes(object, getter) {
-  var result = [];
-  var _iteratorNormalCompletion14 = true;
-  var _didIteratorError14 = false;
-  var _iteratorError14 = undefined;
-
-  try {
-    for (var _iterator14 = getAllNodes(object)[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-      var astNode = _step14.value;
-      var subNodes = getter(astNode);
-
-      if (subNodes) {
-        result = result.concat(subNodes);
-      }
-    }
-  } catch (err) {
-    _didIteratorError14 = true;
-    _iteratorError14 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion14 && _iterator14.return != null) {
-        _iterator14.return();
-      }
-    } finally {
-      if (_didIteratorError14) {
-        throw _iteratorError14;
-      }
-    }
-  }
-
-  return result;
+  return flatMap(getAllNodes(object), function (item) {
+    return getter(item) || [];
+  });
 }
 
 function getImplementsInterfaceNode(type, iface) {
@@ -718,29 +692,29 @@ function getAllFieldArgNodes(type, fieldName, argName) {
   var fieldNode = getFieldNode(type, fieldName);
 
   if (fieldNode && fieldNode.arguments) {
-    var _iteratorNormalCompletion15 = true;
-    var _didIteratorError15 = false;
-    var _iteratorError15 = undefined;
+    var _iteratorNormalCompletion14 = true;
+    var _didIteratorError14 = false;
+    var _iteratorError14 = undefined;
 
     try {
-      for (var _iterator15 = fieldNode.arguments[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
-        var node = _step15.value;
+      for (var _iterator14 = fieldNode.arguments[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+        var node = _step14.value;
 
         if (node.name.value === argName) {
           argNodes.push(node);
         }
       }
     } catch (err) {
-      _didIteratorError15 = true;
-      _iteratorError15 = err;
+      _didIteratorError14 = true;
+      _iteratorError14 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion15 && _iterator15.return != null) {
-          _iterator15.return();
+        if (!_iteratorNormalCompletion14 && _iterator14.return != null) {
+          _iterator14.return();
         }
       } finally {
-        if (_didIteratorError15) {
-          throw _iteratorError15;
+        if (_didIteratorError14) {
+          throw _iteratorError14;
         }
       }
     }

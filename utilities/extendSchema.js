@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.extendSchema = extendSchema;
 
+var _flatMap = _interopRequireDefault(require("../polyfills/flatMap"));
+
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
@@ -263,7 +265,7 @@ function extendSchema(schema, documentAST, options) {
   function extendInputObjectType(type) {
     var config = type.toConfig();
     var extensions = typeExtensionsMap[config.name] || [];
-    var fieldNodes = flatMap(extensions, function (node) {
+    var fieldNodes = (0, _flatMap.default)(extensions, function (node) {
       return node.fields || [];
     });
     return new _definition.GraphQLInputObjectType(_objectSpread({}, config, {
@@ -285,7 +287,7 @@ function extendSchema(schema, documentAST, options) {
   function extendEnumType(type) {
     var config = type.toConfig();
     var extensions = typeExtensionsMap[type.name] || [];
-    var valueNodes = flatMap(extensions, function (node) {
+    var valueNodes = (0, _flatMap.default)(extensions, function (node) {
       return node.values || [];
     });
     return new _definition.GraphQLEnumType(_objectSpread({}, config, {
@@ -309,10 +311,10 @@ function extendSchema(schema, documentAST, options) {
   function extendObjectType(type) {
     var config = type.toConfig();
     var extensions = typeExtensionsMap[config.name] || [];
-    var interfaceNodes = flatMap(extensions, function (node) {
+    var interfaceNodes = (0, _flatMap.default)(extensions, function (node) {
       return node.interfaces || [];
     });
-    var fieldNodes = flatMap(extensions, function (node) {
+    var fieldNodes = (0, _flatMap.default)(extensions, function (node) {
       return node.fields || [];
     });
     return new _definition.GraphQLObjectType(_objectSpread({}, config, {
@@ -335,7 +337,7 @@ function extendSchema(schema, documentAST, options) {
   function extendInterfaceType(type) {
     var config = type.toConfig();
     var extensions = typeExtensionsMap[config.name] || [];
-    var fieldNodes = flatMap(extensions, function (node) {
+    var fieldNodes = (0, _flatMap.default)(extensions, function (node) {
       return node.fields || [];
     });
     return new _definition.GraphQLInterfaceType(_objectSpread({}, config, {
@@ -353,7 +355,7 @@ function extendSchema(schema, documentAST, options) {
   function extendUnionType(type) {
     var config = type.toConfig();
     var extensions = typeExtensionsMap[config.name] || [];
-    var typeNodes = flatMap(extensions, function (node) {
+    var typeNodes = (0, _flatMap.default)(extensions, function (node) {
       return node.types || [];
     });
     return new _definition.GraphQLUnionType(_objectSpread({}, config, {
@@ -390,33 +392,4 @@ function extendSchema(schema, documentAST, options) {
 
     return extendNamedType(typeDef);
   }
-}
-
-function flatMap(list, mapFn) {
-  var result = [];
-  var _iteratorNormalCompletion4 = true;
-  var _didIteratorError4 = false;
-  var _iteratorError4 = undefined;
-
-  try {
-    for (var _iterator4 = list[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-      var item = _step4.value;
-      result = result.concat(mapFn(item));
-    }
-  } catch (err) {
-    _didIteratorError4 = true;
-    _iteratorError4 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-        _iterator4.return();
-      }
-    } finally {
-      if (_didIteratorError4) {
-        throw _iteratorError4;
-      }
-    }
-  }
-
-  return result;
 }

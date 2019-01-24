@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.concatAST = concatAST;
 
+var _flatMap = _interopRequireDefault(require("../polyfills/flatMap"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  *
@@ -20,18 +24,10 @@ exports.concatAST = concatAST;
  * GraphQL source files which together represent one conceptual application.
  */
 function concatAST(asts) {
-  var batchDefinitions = [];
-
-  for (var i = 0; i < asts.length; i++) {
-    var definitions = asts[i].definitions;
-
-    for (var j = 0; j < definitions.length; j++) {
-      batchDefinitions.push(definitions[j]);
-    }
-  }
-
   return {
     kind: 'Document',
-    definitions: batchDefinitions
+    definitions: (0, _flatMap.default)(asts, function (ast) {
+      return ast.definitions;
+    })
   };
 }

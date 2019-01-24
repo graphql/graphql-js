@@ -6,6 +6,7 @@
  *
  * 
  */
+import flatMap from '../polyfills/flatMap';
 
 /**
  * Provided a collection of ASTs, presumably each from different files,
@@ -13,18 +14,10 @@
  * GraphQL source files which together represent one conceptual application.
  */
 export function concatAST(asts) {
-  var batchDefinitions = [];
-
-  for (var i = 0; i < asts.length; i++) {
-    var definitions = asts[i].definitions;
-
-    for (var j = 0; j < definitions.length; j++) {
-      batchDefinitions.push(definitions[j]);
-    }
-  }
-
   return {
     kind: 'Document',
-    definitions: batchDefinitions
+    definitions: flatMap(asts, function (ast) {
+      return ast.definitions;
+    })
   };
 }

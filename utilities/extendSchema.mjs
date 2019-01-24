@@ -10,6 +10,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  * 
  */
+import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import invariant from '../jsutils/invariant';
 import mapValue from '../jsutils/mapValue';
@@ -377,33 +378,4 @@ export function extendSchema(schema, documentAST, options) {
 
     return extendNamedType(typeDef);
   }
-}
-
-function flatMap(list, mapFn) {
-  var result = [];
-  var _iteratorNormalCompletion4 = true;
-  var _didIteratorError4 = false;
-  var _iteratorError4 = undefined;
-
-  try {
-    for (var _iterator4 = list[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-      var item = _step4.value;
-      result = result.concat(mapFn(item));
-    }
-  } catch (err) {
-    _didIteratorError4 = true;
-    _iteratorError4 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-        _iterator4.return();
-      }
-    } finally {
-      if (_didIteratorError4) {
-        throw _iteratorError4;
-      }
-    }
-  }
-
-  return result;
 }
