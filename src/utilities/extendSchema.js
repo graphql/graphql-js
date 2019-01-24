@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import invariant from '../jsutils/invariant';
 import mapValue from '../jsutils/mapValue';
@@ -409,15 +410,4 @@ export function extendSchema(
     }
     return extendNamedType(typeDef);
   }
-}
-
-function flatMap<T, U>(
-  list: $ReadOnlyArray<T>,
-  mapFn: T => $ReadOnlyArray<U>,
-): Array<U> {
-  let result = [];
-  for (const item of list) {
-    result = result.concat(mapFn(item));
-  }
-  return result;
 }

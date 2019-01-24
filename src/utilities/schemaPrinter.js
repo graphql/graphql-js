@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
@@ -392,27 +393,18 @@ function printDescriptionWithComments(lines, indentation, firstInBlock) {
 }
 
 function descriptionLines(description: string, maxLen: number): Array<string> {
-  const lines = [];
   const rawLines = description.split('\n');
-  for (let i = 0; i < rawLines.length; i++) {
-    if (rawLines[i] === '') {
-      lines.push(rawLines[i]);
-    } else {
-      // For > 120 character long lines, cut at space boundaries into sublines
-      // of ~80 chars.
-      const sublines = breakLine(rawLines[i], maxLen);
-      for (let j = 0; j < sublines.length; j++) {
-        lines.push(sublines[j]);
-      }
+  return flatMap(rawLines, line => {
+    if (line.length < maxLen + 5) {
+      return line;
     }
-  }
-  return lines;
+    // For > 120 character long lines, cut at space boundaries into sublines
+    // of ~80 chars.
+    return breakLine(line, maxLen);
+  });
 }
 
 function breakLine(line: string, maxLen: number): Array<string> {
-  if (line.length < maxLen + 5) {
-    return [line];
-  }
   const parts = line.split(new RegExp(`((?: |^).{15,${maxLen - 40}}(?= |$))`));
   if (parts.length < 4) {
     return [line];
