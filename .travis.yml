@@ -2,7 +2,7 @@ language: node_js
 
 # https://github.com/nodejs/Release
 node_js:
-  - '11'
+  - '11.6' #Temporary fix for https://github.com/graphql/graphql-js/issues/1682
   - '10'
   - '8'
   - '6'
