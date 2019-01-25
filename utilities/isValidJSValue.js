@@ -16,6 +16,8 @@ var _coerceValue = require("./coerceValue");
  * 
  */
 
+/* istanbul ignore file */
+
 /**
  * Deprecated. Use coerceValue() directly for richer information.
  *

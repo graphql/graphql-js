@@ -6,6 +6,8 @@
  *
  * 
  */
+
+/* istanbul ignore file */
 import { coerceValue } from './coerceValue';
 
 /**
