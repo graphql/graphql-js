@@ -1,33 +1,21 @@
+git:
+  depth: 5
 language: node_js
+cache: yarn
 
 # https://github.com/nodejs/Release
 node_js:
-  - '11.6' #Temporary fix for https://github.com/graphql/graphql-js/issues/1682
+  - '11'
   - '10'
   - '8'
   - '6'
 
-git:
-  depth: 5
-
-cache: yarn
-
-notifications:
-  irc:
-    use_notice: true
-    on_success: change
-    on_failure: change
-    skip_join: true
-    channels:
-      - "chat.freenode.net#graphql"
-  slack:
-    secure: G7fzaXoPI1cyyW7dlpQ8oG/ot73n4kE83HgbyK1iEN1YBfodsytVgh0jS+zB3DhhRAotS/VfGVz9Wj2Oo109U5w/FyxdMGuKvFan/0B/aAws1sPxLGWA5230u1wTKQCHAu17+yppFOODUu1ILDXaD2A//Wj5iru9M4NnKc1bO6VHkfBHPTLQLbdPHmorwuSH02Ocbh7K4XOWzXRxM6VrwamEn1KnyXGu2w3QdJUT31OjGEEdf6FUzvjwzFgXPhngCw5+enpwm71ljHDNu8YHhXvHtS4328O5pYQO8np7j653HNEqi+ZUiYEOWpwC8be1xHdvi/s32tPFZiCx28ZmDoCUrY744tpPtE6tzuncmSKB0Y3EjutdXBpxllNr5l5hpX5092G2MlpokFbv85J+E2ALcZYNYeFOqTYTKwTYkxK6B1x4amBNpM+FXgUhloK4BK9OT0Qh5SiQOsM8cZT0h6QP91n+REljtpugW3VbuIxq5OJAi42FYbHBC27pohhq6ohU1euZfobk9a7ZawnjoEUk1EZHXiJzYKY/QqzyB6dwk0ersBl3l3OX/wnjwKTkqc9aTmDWo2L+lHaUCXuCY1+KQXsRicfnH395szTJXQbvcbN0zz188gdz6sawzi5BxndWo0NRwZyOG2YcyUHFQR4bK1rL7Lo6t6rijQ/XMeQ=
-
-script:
-  - if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then npm run test:ci; else npm run testonly; fi
+script: npm run testonly
 
 jobs:
   include:
+    - node_js: 'lts/*'
+      script: npm run test:ci
     - stage: deploy
       if: branch = master OR tag IS present
       script: echo "Deploying..."
@@ -46,6 +34,17 @@ jobs:
           on:
             branch: master
             tags: true
+
+notifications:
+  irc:
+    use_notice: true
+    on_success: change
+    on_failure: change
+    skip_join: true
+    channels:
+      - "chat.freenode.net#graphql"
+  slack:
+    secure: G7fzaXoPI1cyyW7dlpQ8oG/ot73n4kE83HgbyK1iEN1YBfodsytVgh0jS+zB3DhhRAotS/VfGVz9Wj2Oo109U5w/FyxdMGuKvFan/0B/aAws1sPxLGWA5230u1wTKQCHAu17+yppFOODUu1ILDXaD2A//Wj5iru9M4NnKc1bO6VHkfBHPTLQLbdPHmorwuSH02Ocbh7K4XOWzXRxM6VrwamEn1KnyXGu2w3QdJUT31OjGEEdf6FUzvjwzFgXPhngCw5+enpwm71ljHDNu8YHhXvHtS4328O5pYQO8np7j653HNEqi+ZUiYEOWpwC8be1xHdvi/s32tPFZiCx28ZmDoCUrY744tpPtE6tzuncmSKB0Y3EjutdXBpxllNr5l5hpX5092G2MlpokFbv85J+E2ALcZYNYeFOqTYTKwTYkxK6B1x4amBNpM+FXgUhloK4BK9OT0Qh5SiQOsM8cZT0h6QP91n+REljtpugW3VbuIxq5OJAi42FYbHBC27pohhq6ohU1euZfobk9a7ZawnjoEUk1EZHXiJzYKY/QqzyB6dwk0ersBl3l3OX/wnjwKTkqc9aTmDWo2L+lHaUCXuCY1+KQXsRicfnH395szTJXQbvcbN0zz188gdz6sawzi5BxndWo0NRwZyOG2YcyUHFQR4bK1rL7Lo6t6rijQ/XMeQ=
 
 env:
   global:
