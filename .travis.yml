@@ -15,7 +15,7 @@ script: npm run testonly
 jobs:
   include:
     - node_js: 'lts/*'
-      script: npm run test:ci
+      script: npm run test:ci && bash <(curl -s https://codecov.io/bash) -f coverage/coverage-final.json
     - stage: deploy
       if: branch = master OR tag IS present
       script: echo "Deploying..."
