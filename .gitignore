@@ -8,6 +8,5 @@
 .nyc_output
 node_modules
 coverage
-coverage.lcov
 dist
 npm
