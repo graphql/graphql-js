@@ -1,3 +1,14 @@
+codecov:
+  notify:
+    require_ci_to_pass: yes
+
 parsers:
   javascript:
     enable_partials: yes
+
+comment: no
+coverage:
+  status:
+    project:
+      default:
+        target: auto
