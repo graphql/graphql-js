@@ -111,58 +111,54 @@ export function extendSchema(
   }
 
   // Collect the type definitions and extensions found in the document.
-  const typeDefinitionMap = Object.create(null);
-  const typeExtensionsMap = Object.create(null);
+  const typeDefMap = Object.create(null);
+  const typeExtsMap = Object.create(null);
 
   // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
-  const directiveDefinitions: Array<DirectiveDefinitionNode> = [];
+  const directiveDefs: Array<DirectiveDefinitionNode> = [];
 
   let schemaDef: ?SchemaDefinitionNode;
   // Schema extensions are collected which may add additional operation types.
-  const schemaExtensions: Array<SchemaExtensionNode> = [];
+  const schemaExts: Array<SchemaExtensionNode> = [];
 
   for (const def of documentAST.definitions) {
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
     } else if (def.kind === Kind.SCHEMA_EXTENSION) {
-      schemaExtensions.push(def);
+      schemaExts.push(def);
     } else if (isTypeDefinitionNode(def)) {
       const typeName = def.name.value;
-      typeDefinitionMap[typeName] = def;
+      typeDefMap[typeName] = def;
     } else if (isTypeExtensionNode(def)) {
       const extendedTypeName = def.name.value;
-      const existingTypeExtensions = typeExtensionsMap[extendedTypeName];
-      typeExtensionsMap[extendedTypeName] = existingTypeExtensions
-        ? existingTypeExtensions.concat([def])
+      const existingTypeExts = typeExtsMap[extendedTypeName];
+      typeExtsMap[extendedTypeName] = existingTypeExts
+        ? existingTypeExts.concat([def])
         : [def];
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      directiveDefinitions.push(def);
+      directiveDefs.push(def);
     }
   }
 
   // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
   if (
-    Object.keys(typeExtensionsMap).length === 0 &&
-    Object.keys(typeDefinitionMap).length === 0 &&
-    directiveDefinitions.length === 0 &&
-    schemaExtensions.length === 0 &&
+    Object.keys(typeExtsMap).length === 0 &&
+    Object.keys(typeDefMap).length === 0 &&
+    directiveDefs.length === 0 &&
+    schemaExts.length === 0 &&
     !schemaDef
   ) {
     return schema;
   }
 
-  const astBuilder = new ASTDefinitionBuilder(
-    typeDefinitionMap,
-    options,
-    typeName => {
-      const existingType = schema.getType(typeName);
-      invariant(existingType, `Unknown type: "${typeName}".`);
+  const astBuilder = new ASTDefinitionBuilder(typeDefMap, options, typeName => {
+    const existingType = schema.getType(typeName);
+    invariant(existingType, `Unknown type: "${typeName}".`);
 
-      return extendNamedType(existingType);
-    },
-  );
+    return extendNamedType(existingType);
+  });
 
   const extendTypeCache = Object.create(null);
   const schemaConfig = schema.toConfig();
@@ -183,9 +179,9 @@ export function extendSchema(
     }
   }
   // Then, incorporate schema definition and all schema extensions.
-  for (const schemaExtension of schemaExtensions) {
-    if (schemaExtension.operationTypes) {
-      for (const { operation, type } of schemaExtension.operationTypes) {
+  for (const schemaExt of schemaExts) {
+    if (schemaExt.operationTypes) {
+      for (const { operation, type } of schemaExt.operationTypes) {
         // Note: While this could make early assertions to get the correctly
         // typed values, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
@@ -199,7 +195,7 @@ export function extendSchema(
     // that any type not directly referenced by a field will get created.
     ...schemaConfig.types.map(type => extendNamedType(type)),
     // Do the same with new types.
-    ...objectValues(typeDefinitionMap).map(type => astBuilder.buildType(type)),
+    ...objectValues(typeDefMap).map(type => astBuilder.buildType(type)),
   ];
 
   // Support both original legacy names and extended legacy names.
@@ -213,7 +209,7 @@ export function extendSchema(
     types: schemaTypes,
     directives: getMergedDirectives(),
     astNode: schemaConfig.astNode,
-    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
+    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExts),
     allowedLegacyNames,
   });
 
@@ -225,7 +221,7 @@ export function extendSchema(
     invariant(existingDirectives, 'schema must have default directives');
 
     return existingDirectives.concat(
-      directiveDefinitions.map(node => astBuilder.buildDirective(node)),
+      directiveDefs.map(node => astBuilder.buildDirective(node)),
     );
   }
 
@@ -271,7 +267,7 @@ export function extendSchema(
     type: GraphQLInputObjectType,
   ): GraphQLInputObjectType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtsMap[config.name] || [];
     const fieldNodes = flatMap(extensions, node => node.fields || []);
 
     return new GraphQLInputObjectType({
@@ -293,7 +289,7 @@ export function extendSchema(
 
   function extendEnumType(type: GraphQLEnumType): GraphQLEnumType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[type.name] || [];
+    const extensions = typeExtsMap[type.name] || [];
     const valueNodes = flatMap(extensions, node => node.values || []);
 
     return new GraphQLEnumType({
@@ -312,7 +308,7 @@ export function extendSchema(
 
   function extendScalarType(type: GraphQLScalarType): GraphQLScalarType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtsMap[config.name] || [];
 
     return new GraphQLScalarType({
       ...config,
@@ -322,7 +318,7 @@ export function extendSchema(
 
   function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtsMap[config.name] || [];
     const interfaceNodes = flatMap(extensions, node => node.interfaces || []);
     const fieldNodes = flatMap(extensions, node => node.fields || []);
 
@@ -351,7 +347,7 @@ export function extendSchema(
     type: GraphQLInterfaceType,
   ): GraphQLInterfaceType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtsMap[config.name] || [];
     const fieldNodes = flatMap(extensions, node => node.fields || []);
 
     return new GraphQLInterfaceType({
@@ -370,7 +366,7 @@ export function extendSchema(
 
   function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
     const config = type.toConfig();
-    const extensions = typeExtensionsMap[config.name] || [];
+    const extensions = typeExtsMap[config.name] || [];
     const typeNodes = flatMap(extensions, node => node.types || []);
 
     return new GraphQLUnionType({
