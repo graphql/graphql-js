@@ -152,17 +152,11 @@ export function buildASTSchema(
         subscription: nodeMap.Subscription,
       };
 
-  const definitionBuilder = new ASTDefinitionBuilder(
-    nodeMap,
-    options,
-    typeName => {
-      throw new Error(`Type "${typeName}" not found in document.`);
-    },
-  );
+  const astBuilder = new ASTDefinitionBuilder(nodeMap, options, typeName => {
+    throw new Error(`Type "${typeName}" not found in document.`);
+  });
 
-  const directives = directiveDefs.map(def =>
-    definitionBuilder.buildDirective(def),
-  );
+  const directives = directiveDefs.map(def => astBuilder.buildDirective(def));
 
   // If specified directives were not explicitly declared, add them.
   if (!directives.some(directive => directive.name === 'skip')) {
@@ -182,15 +176,15 @@ export function buildASTSchema(
   // validation with validateSchema() will produce more actionable results.
   return new GraphQLSchema({
     query: operationTypes.query
-      ? (definitionBuilder.buildType(operationTypes.query): any)
+      ? (astBuilder.buildType(operationTypes.query): any)
       : null,
     mutation: operationTypes.mutation
-      ? (definitionBuilder.buildType(operationTypes.mutation): any)
+      ? (astBuilder.buildType(operationTypes.mutation): any)
       : null,
     subscription: operationTypes.subscription
-      ? (definitionBuilder.buildType(operationTypes.subscription): any)
+      ? (astBuilder.buildType(operationTypes.subscription): any)
       : null,
-    types: objectValues(nodeMap).map(node => definitionBuilder.buildType(node)),
+    types: objectValues(nodeMap).map(node => astBuilder.buildType(node)),
     directives,
     astNode: schemaDef,
     assumeValid: options && options.assumeValid,
