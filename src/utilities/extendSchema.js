@@ -19,7 +19,7 @@ import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
-import type { GraphQLType, GraphQLNamedType } from '../type/definition';
+import type { GraphQLNamedType } from '../type/definition';
 
 import {
   isScalarType,
@@ -111,7 +111,7 @@ export function extendSchema(
   }
 
   // Collect the type definitions and extensions found in the document.
-  const typeDefMap = Object.create(null);
+  const typeDefs = [];
   const typeExtsMap = Object.create(null);
 
   // New directives and types are separate because a directives and types can
@@ -128,8 +128,7 @@ export function extendSchema(
     } else if (def.kind === Kind.SCHEMA_EXTENSION) {
       schemaExts.push(def);
     } else if (isTypeDefinitionNode(def)) {
-      const typeName = def.name.value;
-      typeDefMap[typeName] = def;
+      typeDefs.push(def);
     } else if (isTypeExtensionNode(def)) {
       const extendedTypeName = def.name.value;
       const existingTypeExts = typeExtsMap[extendedTypeName];
@@ -145,7 +144,7 @@ export function extendSchema(
   // return the same unmodified GraphQLSchema instance.
   if (
     Object.keys(typeExtsMap).length === 0 &&
-    Object.keys(typeDefMap).length === 0 &&
+    typeDefs.length === 0 &&
     directiveDefs.length === 0 &&
     schemaExts.length === 0 &&
     !schemaDef
@@ -153,50 +152,43 @@ export function extendSchema(
     return schema;
   }
 
-  const astBuilder = new ASTDefinitionBuilder(typeDefMap, options, typeName => {
-    const existingType = schema.getType(typeName);
-    invariant(existingType, `Unknown type: "${typeName}".`);
-
-    return extendNamedType(existingType);
+  const schemaConfig = schema.toConfig();
+  const astBuilder = new ASTDefinitionBuilder(options, typeName => {
+    const type = typeMap[typeName];
+    invariant(type, `Unknown type: "${typeName}".`);
+    return type;
   });
 
-  const extendTypeCache = Object.create(null);
-  const schemaConfig = schema.toConfig();
+  const typeMap = keyValMap(
+    typeDefs,
+    node => node.name.value,
+    node => astBuilder.buildType(node),
+  );
+  for (const existingType of schemaConfig.types) {
+    typeMap[existingType.name] = extendNamedType(existingType);
+  }
 
   // Get the extended root operation types.
   const operationTypes = {
-    query: extendMaybeNamedType(schemaConfig.query),
-    mutation: extendMaybeNamedType(schemaConfig.mutation),
-    subscription: extendMaybeNamedType(schemaConfig.subscription),
+    query: schemaConfig.query && schemaConfig.query.name,
+    mutation: schemaConfig.mutation && schemaConfig.mutation.name,
+    subscription: schemaConfig.subscription && schemaConfig.subscription.name,
   };
 
   if (schemaDef) {
     for (const { operation, type } of schemaDef.operationTypes) {
-      // Note: While this could make early assertions to get the correctly
-      // typed values, that would throw immediately while type system
-      // validation with validateSchema() will produce more actionable results.
-      operationTypes[operation] = (astBuilder.buildType(type): any);
+      operationTypes[operation] = type.name.value;
     }
   }
+
   // Then, incorporate schema definition and all schema extensions.
   for (const schemaExt of schemaExts) {
     if (schemaExt.operationTypes) {
       for (const { operation, type } of schemaExt.operationTypes) {
-        // Note: While this could make early assertions to get the correctly
-        // typed values, that would throw immediately while type system
-        // validation with validateSchema() will produce more actionable results.
-        operationTypes[operation] = (astBuilder.buildType(type): any);
+        operationTypes[operation] = type.name.value;
       }
     }
   }
-
-  const schemaTypes = [
-    // Iterate through all types, getting the type definition for each, ensuring
-    // that any type not directly referenced by a field will get created.
-    ...schemaConfig.types.map(type => extendNamedType(type)),
-    // Do the same with new types.
-    ...objectValues(typeDefMap).map(type => astBuilder.buildType(type)),
-  ];
 
   // Support both original legacy names and extended legacy names.
   const allowedLegacyNames = schemaConfig.allowedLegacyNames.concat(
@@ -205,8 +197,14 @@ export function extendSchema(
 
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
-    ...operationTypes,
-    types: schemaTypes,
+    // Note: While this could make early assertions to get the correctly
+    // typed values, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+    query: (getMaybeTypeByName(operationTypes.query): any),
+    mutation: (getMaybeTypeByName(operationTypes.mutation): any),
+    subscription: (getMaybeTypeByName(operationTypes.subscription): any),
+
+    types: objectValues(typeMap),
     directives: getMergedDirectives(),
     astNode: schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExts),
@@ -215,6 +213,23 @@ export function extendSchema(
 
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.
+
+  function replaceType(type) {
+    if (isListType(type)) {
+      return new GraphQLList(replaceType(type.ofType));
+    } else if (isNonNullType(type)) {
+      return new GraphQLNonNull(replaceType(type.ofType));
+    }
+    return replaceNamedType(type);
+  }
+
+  function replaceNamedType<T: GraphQLNamedType>(type: T): T {
+    return ((typeMap[type.name]: any): T);
+  }
+
+  function getMaybeTypeByName(typeName: ?string): ?GraphQLNamedType {
+    return typeName ? typeMap[typeName] : null;
+  }
 
   function getMergedDirectives(): Array<GraphQLDirective> {
     const existingDirectives = schema.getDirectives().map(extendDirective);
@@ -225,33 +240,27 @@ export function extendSchema(
     );
   }
 
-  function extendMaybeNamedType<T: GraphQLNamedType>(type: ?T): ?T {
-    return type ? extendNamedType(type) : null;
-  }
-
-  function extendNamedType<T: GraphQLNamedType>(type: T): T {
+  function extendNamedType(type: GraphQLNamedType): GraphQLNamedType {
     if (isIntrospectionType(type) || isSpecifiedScalarType(type)) {
       // Builtin types are not extended.
       return type;
+    } else if (isScalarType(type)) {
+      return extendScalarType(type);
+    } else if (isObjectType(type)) {
+      return extendObjectType(type);
+    } else if (isInterfaceType(type)) {
+      return extendInterfaceType(type);
+    } else if (isUnionType(type)) {
+      return extendUnionType(type);
+    } else if (isEnumType(type)) {
+      return extendEnumType(type);
+    } else if (isInputObjectType(type)) {
+      return extendInputObjectType(type);
     }
 
-    const name = type.name;
-    if (!extendTypeCache[name]) {
-      if (isScalarType(type)) {
-        extendTypeCache[name] = extendScalarType(type);
-      } else if (isObjectType(type)) {
-        extendTypeCache[name] = extendObjectType(type);
-      } else if (isInterfaceType(type)) {
-        extendTypeCache[name] = extendInterfaceType(type);
-      } else if (isUnionType(type)) {
-        extendTypeCache[name] = extendUnionType(type);
-      } else if (isEnumType(type)) {
-        extendTypeCache[name] = extendEnumType(type);
-      } else if (isInputObjectType(type)) {
-        extendTypeCache[name] = extendInputObjectType(type);
-      }
-    }
-    return (extendTypeCache[name]: any);
+    // Not reachable. All possible types have been considered.
+    /* istanbul ignore next */
+    throw new Error(`Type "${(type: empty)}" not supported.`);
   }
 
   function extendDirective(directive: GraphQLDirective): GraphQLDirective {
@@ -275,7 +284,7 @@ export function extendSchema(
       fields: () => ({
         ...mapValue(config.fields, field => ({
           ...field,
-          type: extendType(field.type),
+          type: replaceType(field.type),
         })),
         ...keyValMap(
           fieldNodes,
@@ -325,11 +334,11 @@ export function extendSchema(
     return new GraphQLObjectType({
       ...config,
       interfaces: () => [
-        ...type.getInterfaces().map(extendNamedType),
+        ...type.getInterfaces().map(replaceNamedType),
         // Note: While this could make early assertions to get the correctly
         // typed values, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
-        ...interfaceNodes.map(node => (astBuilder.buildType(node): any)),
+        ...interfaceNodes.map(node => (astBuilder.getNamedType(node): any)),
       ],
       fields: () => ({
         ...mapValue(config.fields, extendField),
@@ -372,11 +381,11 @@ export function extendSchema(
     return new GraphQLUnionType({
       ...config,
       types: () => [
-        ...type.getTypes().map(extendNamedType),
+        ...type.getTypes().map(replaceNamedType),
         // Note: While this could make early assertions to get the correctly
         // typed values, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
-        ...typeNodes.map(node => (astBuilder.buildType(node): any)),
+        ...typeNodes.map(node => (astBuilder.getNamedType(node): any)),
       ],
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
@@ -385,7 +394,7 @@ export function extendSchema(
   function extendField(field) {
     return {
       ...field,
-      type: extendType(field.type),
+      type: replaceType(field.type),
       args: mapValue(field.args, extendArg),
     };
   }
@@ -393,17 +402,7 @@ export function extendSchema(
   function extendArg(arg) {
     return {
       ...arg,
-      type: extendType(arg.type),
+      type: replaceType(arg.type),
     };
-  }
-
-  function extendType<T: GraphQLType>(typeDef: T): T {
-    if (isListType(typeDef)) {
-      return (GraphQLList(extendType(typeDef.ofType)): any);
-    }
-    if (isNonNullType(typeDef)) {
-      return (GraphQLNonNull(extendType(typeDef.ofType)): any);
-    }
-    return extendNamedType(typeDef);
   }
 }

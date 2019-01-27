@@ -131,30 +131,34 @@ export function buildASTSchema(
   }
 
   let schemaDef: ?SchemaDefinitionNode;
-  const nodeMap: ObjMap<TypeDefinitionNode> = Object.create(null);
+  const typeDefs: Array<TypeDefinitionNode> = [];
   const directiveDefs: Array<DirectiveDefinitionNode> = [];
 
   for (const def of documentAST.definitions) {
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
     } else if (isTypeDefinitionNode(def)) {
-      nodeMap[def.name.value] = def;
+      typeDefs.push(def);
     } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       directiveDefs.push(def);
     }
   }
 
+  const astBuilder = new ASTDefinitionBuilder(options, typeName => {
+    const type = typeMap[typeName];
+    invariant(type, `Type "${typeName}" not found in document.`);
+    return type;
+  });
+
+  const typeMap = keyByNameNode(typeDefs, node => astBuilder.buildType(node));
+
   const operationTypes = schemaDef
     ? getOperationTypes(schemaDef)
     : {
-        query: nodeMap.Query,
-        mutation: nodeMap.Mutation,
-        subscription: nodeMap.Subscription,
+        query: 'Query',
+        mutation: 'Mutation',
+        subscription: 'Subscription',
       };
-
-  const astBuilder = new ASTDefinitionBuilder(nodeMap, options, typeName => {
-    throw new Error(`Type "${typeName}" not found in document.`);
-  });
 
   const directives = directiveDefs.map(def => astBuilder.buildDirective(def));
 
@@ -171,20 +175,19 @@ export function buildASTSchema(
     directives.push(GraphQLDeprecatedDirective);
   }
 
-  // Note: While this could make early assertions to get the correctly
-  // typed values below, that would throw immediately while type system
-  // validation with validateSchema() will produce more actionable results.
   return new GraphQLSchema({
-    query: operationTypes.query
-      ? (astBuilder.buildType(operationTypes.query): any)
-      : null,
+    // Note: While this could make early assertions to get the correctly
+    // typed values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+    query: operationTypes.query ? (typeMap[operationTypes.query]: any) : null,
     mutation: operationTypes.mutation
-      ? (astBuilder.buildType(operationTypes.mutation): any)
+      ? (typeMap[operationTypes.mutation]: any)
       : null,
     subscription: operationTypes.subscription
-      ? (astBuilder.buildType(operationTypes.subscription): any)
+      ? (typeMap[operationTypes.subscription]: any)
       : null,
-    types: objectValues(nodeMap).map(node => astBuilder.buildType(node)),
+
+    types: objectValues(typeMap),
     directives,
     astNode: schemaDef,
     assumeValid: options && options.assumeValid,
@@ -194,62 +197,44 @@ export function buildASTSchema(
   function getOperationTypes(schema: SchemaDefinitionNode) {
     const opTypes = {};
     for (const operationType of schema.operationTypes) {
-      opTypes[operationType.operation] = operationType.type;
+      opTypes[operationType.operation] = operationType.type.name.value;
     }
     return opTypes;
   }
 }
 
-type TypeDefinitionsMap = ObjMap<TypeDefinitionNode>;
 type TypeResolver = (typeName: string) => GraphQLNamedType;
 
+const stdTypeMap = keyMap(
+  specifiedScalarTypes.concat(introspectionTypes),
+  type => type.name,
+);
+
 export class ASTDefinitionBuilder {
-  _typeDefinitionsMap: TypeDefinitionsMap;
   _options: ?BuildSchemaOptions;
   _resolveType: TypeResolver;
-  _cache: ObjMap<GraphQLNamedType>;
 
-  constructor(
-    typeDefinitionsMap: TypeDefinitionsMap,
-    options: ?BuildSchemaOptions,
-    resolveType: TypeResolver,
-  ) {
-    this._typeDefinitionsMap = typeDefinitionsMap;
+  constructor(options: ?BuildSchemaOptions, resolveType: TypeResolver) {
     this._options = options;
     this._resolveType = resolveType;
-    // Initialize to the GraphQL built in scalars and introspection types.
-    this._cache = keyMap(
-      specifiedScalarTypes.concat(introspectionTypes),
-      type => type.name,
-    );
   }
 
-  buildType(node: NamedTypeNode | TypeDefinitionNode): GraphQLNamedType {
-    const typeName = node.name.value;
-    if (!this._cache[typeName]) {
-      if (node.kind === Kind.NAMED_TYPE) {
-        const defNode = this._typeDefinitionsMap[typeName];
-        this._cache[typeName] = defNode
-          ? this._makeSchemaDef(defNode)
-          : this._resolveType(node.name.value);
-      } else {
-        this._cache[typeName] = this._makeSchemaDef(node);
-      }
-    }
-    return this._cache[typeName];
+  getNamedType(node: NamedTypeNode): GraphQLNamedType {
+    const name = node.name.value;
+    return stdTypeMap[name] || this._resolveType(name);
   }
 
-  _buildWrappedType(typeNode: TypeNode): GraphQLType {
-    if (typeNode.kind === Kind.LIST_TYPE) {
-      return GraphQLList(this._buildWrappedType(typeNode.type));
+  getWrappedType(node: TypeNode): GraphQLType {
+    if (node.kind === Kind.LIST_TYPE) {
+      return GraphQLList(this.getWrappedType(node.type));
     }
-    if (typeNode.kind === Kind.NON_NULL_TYPE) {
+    if (node.kind === Kind.NON_NULL_TYPE) {
       return GraphQLNonNull(
         // Note: GraphQLNonNull constructor validates this type
-        (this._buildWrappedType(typeNode.type): any),
+        (this.getWrappedType(node.type): any),
       );
     }
-    return this.buildType(typeNode);
+    return this.getNamedType(node);
   }
 
   buildDirective(directive: DirectiveDefinitionNode): GraphQLDirective {
@@ -271,7 +256,7 @@ export class ASTDefinitionBuilder {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
       // with validateSchema() will produce more actionable results.
-      type: (this._buildWrappedType(field.type): any),
+      type: (this.getWrappedType(field.type): any),
       description: getDescription(field, this._options),
       args: keyByNameNode(field.arguments || [], arg => this.buildArg(arg)),
       deprecationReason: getDeprecationReason(field),
@@ -283,7 +268,7 @@ export class ASTDefinitionBuilder {
     // Note: While this could make assertions to get the correctly typed
     // value, that would throw immediately while type system validation
     // with validateSchema() will produce more actionable results.
-    const type: any = this._buildWrappedType(value.type);
+    const type: any = this.getWrappedType(value.type);
     return {
       type,
       description: getDescription(value, this._options),
@@ -296,7 +281,7 @@ export class ASTDefinitionBuilder {
     // Note: While this could make assertions to get the correctly typed
     // value, that would throw immediately while type system validation
     // with validateSchema() will produce more actionable results.
-    const type: any = this._buildWrappedType(value.type);
+    const type: any = this.getWrappedType(value.type);
     return {
       type,
       description: getDescription(value, this._options),
@@ -313,7 +298,12 @@ export class ASTDefinitionBuilder {
     };
   }
 
-  _makeSchemaDef(astNode: TypeDefinitionNode): GraphQLNamedType {
+  buildType(astNode: TypeDefinitionNode): GraphQLNamedType {
+    const name = astNode.name.value;
+    if (stdTypeMap[name]) {
+      return stdTypeMap[name];
+    }
+
     switch (astNode.kind) {
       case Kind.OBJECT_TYPE_DEFINITION:
         return this._makeTypeDef(astNode);
@@ -327,9 +317,11 @@ export class ASTDefinitionBuilder {
         return this._makeScalarDef(astNode);
       case Kind.INPUT_OBJECT_TYPE_DEFINITION:
         return this._makeInputObjectDef(astNode);
-      default:
-        throw new Error(`Type kind "${astNode.kind}" not supported.`);
     }
+
+    // Not reachable. All possible type definition nodes have been considered.
+    /* istanbul ignore next */
+    throw new Error(`Type kind "${(astNode: empty).kind}" not supported.`);
   }
 
   _makeTypeDef(astNode: ObjectTypeDefinitionNode) {
@@ -341,7 +333,7 @@ export class ASTDefinitionBuilder {
     // validation with validateSchema() will produce more actionable results.
     const interfaces =
       interfaceNodes && interfaceNodes.length > 0
-        ? () => interfaceNodes.map(ref => (this.buildType(ref): any))
+        ? () => interfaceNodes.map(ref => (this.getNamedType(ref): any))
         : [];
 
     const fields =
@@ -393,7 +385,7 @@ export class ASTDefinitionBuilder {
     // validation with validateSchema() will produce more actionable results.
     const types =
       typeNodes && typeNodes.length > 0
-        ? () => typeNodes.map(ref => (this.buildType(ref): any))
+        ? () => typeNodes.map(ref => (this.getNamedType(ref): any))
         : [];
 
     return new GraphQLUnionType({
