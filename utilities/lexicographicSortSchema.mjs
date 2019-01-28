@@ -133,7 +133,10 @@ export function lexicographicSortSchema(schema) {
           return sortInputFields(_config4.fields);
         }
       }));
-    }
+    } // Not reachable. All possible type definition nodes have been considered.
+
+    /* istanbul ignore next */
+
 
     throw new Error("Unknown type: \"".concat(type, "\""));
   }
