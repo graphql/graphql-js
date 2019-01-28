@@ -48,7 +48,7 @@ export function buildASTSchema(documentAST, options) {
   }
 
   var schemaDef;
-  var nodeMap = Object.create(null);
+  var typeDefs = [];
   var directiveDefs = [];
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
@@ -61,7 +61,7 @@ export function buildASTSchema(documentAST, options) {
       if (def.kind === Kind.SCHEMA_DEFINITION) {
         schemaDef = def;
       } else if (isTypeDefinitionNode(def)) {
-        nodeMap[def.name.value] = def;
+        typeDefs.push(def);
       } else if (def.kind === Kind.DIRECTIVE_DEFINITION) {
         directiveDefs.push(def);
       }
@@ -81,16 +81,21 @@ export function buildASTSchema(documentAST, options) {
     }
   }
 
-  var operationTypes = schemaDef ? getOperationTypes(schemaDef) : {
-    query: nodeMap.Query,
-    mutation: nodeMap.Mutation,
-    subscription: nodeMap.Subscription
-  };
-  var definitionBuilder = new ASTDefinitionBuilder(nodeMap, options, function (typeName) {
-    throw new Error("Type \"".concat(typeName, "\" not found in document."));
+  var astBuilder = new ASTDefinitionBuilder(options, function (typeName) {
+    var type = typeMap[typeName];
+    !type ? invariant(0, "Type \"".concat(typeName, "\" not found in document.")) : void 0;
+    return type;
   });
+  var typeMap = keyByNameNode(typeDefs, function (node) {
+    return astBuilder.buildType(node);
+  });
+  var operationTypes = schemaDef ? getOperationTypes(schemaDef) : {
+    query: 'Query',
+    mutation: 'Mutation',
+    subscription: 'Subscription'
+  };
   var directives = directiveDefs.map(function (def) {
-    return definitionBuilder.buildDirective(def);
+    return astBuilder.buildDirective(def);
   }); // If specified directives were not explicitly declared, add them.
 
   if (!directives.some(function (directive) {
@@ -109,18 +114,16 @@ export function buildASTSchema(documentAST, options) {
     return directive.name === 'deprecated';
   })) {
     directives.push(GraphQLDeprecatedDirective);
-  } // Note: While this could make early assertions to get the correctly
-  // typed values below, that would throw immediately while type system
-  // validation with validateSchema() will produce more actionable results.
-
+  }
 
   return new GraphQLSchema({
-    query: operationTypes.query ? definitionBuilder.buildType(operationTypes.query) : null,
-    mutation: operationTypes.mutation ? definitionBuilder.buildType(operationTypes.mutation) : null,
-    subscription: operationTypes.subscription ? definitionBuilder.buildType(operationTypes.subscription) : null,
-    types: objectValues(nodeMap).map(function (node) {
-      return definitionBuilder.buildType(node);
-    }),
+    // Note: While this could make early assertions to get the correctly
+    // typed values below, that would throw immediately while type system
+    // validation with validateSchema() will produce more actionable results.
+    query: operationTypes.query ? typeMap[operationTypes.query] : null,
+    mutation: operationTypes.mutation ? typeMap[operationTypes.mutation] : null,
+    subscription: operationTypes.subscription ? typeMap[operationTypes.subscription] : null,
+    types: objectValues(typeMap),
     directives: directives,
     astNode: schemaDef,
     assumeValid: options && options.assumeValid,
@@ -136,7 +139,7 @@ export function buildASTSchema(documentAST, options) {
     try {
       for (var _iterator2 = schema.operationTypes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
         var operationType = _step2.value;
-        opTypes[operationType.operation] = operationType.type;
+        opTypes[operationType.operation] = operationType.type.name.value;
       }
     } catch (err) {
       _didIteratorError2 = true;
@@ -156,47 +159,35 @@ export function buildASTSchema(documentAST, options) {
     return opTypes;
   }
 }
+var stdTypeMap = keyMap(specifiedScalarTypes.concat(introspectionTypes), function (type) {
+  return type.name;
+});
 export var ASTDefinitionBuilder =
 /*#__PURE__*/
 function () {
-  function ASTDefinitionBuilder(typeDefinitionsMap, options, resolveType) {
-    this._typeDefinitionsMap = typeDefinitionsMap;
+  function ASTDefinitionBuilder(options, resolveType) {
     this._options = options;
-    this._resolveType = resolveType; // Initialize to the GraphQL built in scalars and introspection types.
-
-    this._cache = keyMap(specifiedScalarTypes.concat(introspectionTypes), function (type) {
-      return type.name;
-    });
+    this._resolveType = resolveType;
   }
 
   var _proto = ASTDefinitionBuilder.prototype;
 
-  _proto.buildType = function buildType(node) {
-    var typeName = node.name.value;
-
-    if (!this._cache[typeName]) {
-      if (node.kind === Kind.NAMED_TYPE) {
-        var defNode = this._typeDefinitionsMap[typeName];
-        this._cache[typeName] = defNode ? this._makeSchemaDef(defNode) : this._resolveType(node.name.value);
-      } else {
-        this._cache[typeName] = this._makeSchemaDef(node);
-      }
-    }
-
-    return this._cache[typeName];
+  _proto.getNamedType = function getNamedType(node) {
+    var name = node.name.value;
+    return stdTypeMap[name] || this._resolveType(name);
   };
 
-  _proto._buildWrappedType = function _buildWrappedType(typeNode) {
-    if (typeNode.kind === Kind.LIST_TYPE) {
-      return GraphQLList(this._buildWrappedType(typeNode.type));
+  _proto.getWrappedType = function getWrappedType(node) {
+    if (node.kind === Kind.LIST_TYPE) {
+      return GraphQLList(this.getWrappedType(node.type));
     }
 
-    if (typeNode.kind === Kind.NON_NULL_TYPE) {
+    if (node.kind === Kind.NON_NULL_TYPE) {
       return GraphQLNonNull( // Note: GraphQLNonNull constructor validates this type
-      this._buildWrappedType(typeNode.type));
+      this.getWrappedType(node.type));
     }
 
-    return this.buildType(typeNode);
+    return this.getNamedType(node);
   };
 
   _proto.buildDirective = function buildDirective(directive) {
@@ -224,7 +215,7 @@ function () {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
       // with validateSchema() will produce more actionable results.
-      type: this._buildWrappedType(field.type),
+      type: this.getWrappedType(field.type),
       description: getDescription(field, this._options),
       args: keyByNameNode(field.arguments || [], function (arg) {
         return _this2.buildArg(arg);
@@ -237,8 +228,7 @@ function () {
   _proto.buildArg = function buildArg(value) {
     // Note: While this could make assertions to get the correctly typed
     // value, that would throw immediately while type system validation
-    var type = this._buildWrappedType(value.type);
-
+    var type = this.getWrappedType(value.type);
     return {
       type: type,
       description: getDescription(value, this._options),
@@ -250,8 +240,7 @@ function () {
   _proto.buildInputField = function buildInputField(value) {
     // Note: While this could make assertions to get the correctly typed
     // value, that would throw immediately while type system validation
-    var type = this._buildWrappedType(value.type);
-
+    var type = this.getWrappedType(value.type);
     return {
       type: type,
       description: getDescription(value, this._options),
@@ -268,7 +257,13 @@ function () {
     };
   };
 
-  _proto._makeSchemaDef = function _makeSchemaDef(astNode) {
+  _proto.buildType = function buildType(astNode) {
+    var name = astNode.name.value;
+
+    if (stdTypeMap[name]) {
+      return stdTypeMap[name];
+    }
+
     switch (astNode.kind) {
       case Kind.OBJECT_TYPE_DEFINITION:
         return this._makeTypeDef(astNode);
@@ -287,10 +282,12 @@ function () {
 
       case Kind.INPUT_OBJECT_TYPE_DEFINITION:
         return this._makeInputObjectDef(astNode);
+    } // Not reachable. All possible type definition nodes have been considered.
 
-      default:
-        throw new Error("Type kind \"".concat(astNode.kind, "\" not supported."));
-    }
+    /* istanbul ignore next */
+
+
+    throw new Error("Type kind \"".concat(astNode.kind, "\" not supported."));
   };
 
   _proto._makeTypeDef = function _makeTypeDef(astNode) {
@@ -303,7 +300,7 @@ function () {
 
     var interfaces = interfaceNodes && interfaceNodes.length > 0 ? function () {
       return interfaceNodes.map(function (ref) {
-        return _this3.buildType(ref);
+        return _this3.getNamedType(ref);
       });
     } : [];
     var fields = fieldNodes && fieldNodes.length > 0 ? function () {
@@ -360,7 +357,7 @@ function () {
 
     var types = typeNodes && typeNodes.length > 0 ? function () {
       return typeNodes.map(function (ref) {
-        return _this6.buildType(ref);
+        return _this6.getNamedType(ref);
       });
     } : [];
     return new GraphQLUnionType({
