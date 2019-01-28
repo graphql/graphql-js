@@ -9,6 +9,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import { Source } from '../../language/source';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
 import dedent from '../../jsutils/dedent';
@@ -39,6 +40,12 @@ describe('stripIgnoredTokens: Query document', () => {
     const badAst1 = { random: 'Data' };
     expect(() => stripIgnoredTokens(print(badAst1))).to.throw(
       'Invalid AST Node: { random: "Data" }',
+    );
+  });
+
+  it('prints Source', () => {
+    expect(stripIgnoredTokens(new Source('query { id, name }'))).to.equal(
+      'query{id name}',
     );
   });
 
