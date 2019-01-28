@@ -52,8 +52,14 @@ describe('stripIgnoredTokens: Query document', () => {
   it('throws TypeError when not Source or string', () => {
     expect(() =>
       // $FlowFixMe
-      stripIgnoredTokens(new Error('query { id, name }')),
+      stripIgnoredTokens(new Error()),
     ).to.throw('Must provide Source. Received: {}');
+  });
+
+  it('strips comments', () => {
+    expect(
+      stripIgnoredTokens(new Source('query { id, name } # comment')),
+    ).to.equal('query{id name}');
   });
 
   it('correctly prints non-query operations without name', () => {
