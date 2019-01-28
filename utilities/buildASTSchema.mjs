@@ -179,12 +179,11 @@ function () {
 
   _proto.getWrappedType = function getWrappedType(node) {
     if (node.kind === Kind.LIST_TYPE) {
-      return GraphQLList(this.getWrappedType(node.type));
+      return new GraphQLList(this.getWrappedType(node.type));
     }
 
     if (node.kind === Kind.NON_NULL_TYPE) {
-      return GraphQLNonNull( // Note: GraphQLNonNull constructor validates this type
-      this.getWrappedType(node.type));
+      return new GraphQLNonNull(this.getWrappedType(node.type));
     }
 
     return this.getNamedType(node);
