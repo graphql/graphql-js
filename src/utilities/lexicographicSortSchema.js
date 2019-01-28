@@ -139,7 +139,10 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
         fields: () => sortInputFields(config.fields),
       });
     }
-    throw new Error(`Unknown type: "${type}"`);
+
+    // Not reachable. All possible type definition nodes have been considered.
+    /* istanbul ignore next */
+    throw new Error(`Unknown type: "${(type: empty)}"`);
   }
 }
 
