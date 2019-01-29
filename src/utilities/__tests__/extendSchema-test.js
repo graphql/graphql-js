@@ -1165,14 +1165,15 @@ describe('extendSchema', () => {
       });
       expect(schema.getQueryType()).to.equal(undefined);
 
-      const ast = parse(`
+      const extensionSDL = dedent`
         schema @foo {
           query: Foo
-        }
-      `);
-      schema = extendSchema(schema, ast);
+        }`;
+      schema = extendSchema(schema, parse(extensionSDL));
+
       const queryType = schema.getQueryType();
       expect(queryType).to.include({ name: 'Foo' });
+      expect(print(schema.astNode)).to.equal(extensionSDL);
     });
 
     it('adds new root types via schema extension', () => {
