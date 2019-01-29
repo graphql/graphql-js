@@ -206,7 +206,7 @@ export function extendSchema(
 
     types: objectValues(typeMap),
     directives: getMergedDirectives(),
-    astNode: schemaConfig.astNode,
+    astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExts),
     allowedLegacyNames,
   });

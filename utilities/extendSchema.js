@@ -232,7 +232,7 @@ function extendSchema(schema, documentAST, options) {
     subscription: getMaybeTypeByName(operationTypes.subscription),
     types: (0, _objectValues.default)(typeMap),
     directives: getMergedDirectives(),
-    astNode: schemaConfig.astNode,
+    astNode: schemaDef || schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExts),
     allowedLegacyNames: allowedLegacyNames
   }); // Below are functions used for producing this schema that have closed over
