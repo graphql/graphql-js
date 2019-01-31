@@ -62,10 +62,10 @@
     "eslint": "5.12.1",
     "eslint-plugin-flowtype": "3.2.1",
     "eslint-plugin-prettier": "3.0.1",
-    "flow-bin": "0.91.0",
+    "flow-bin": "0.92.0",
     "mocha": "5.2.0",
     "nyc": "13.1.0",
-    "prettier": "1.16.2",
+    "prettier": "1.16.3",
     "sane": "4.0.2"
   }
 }

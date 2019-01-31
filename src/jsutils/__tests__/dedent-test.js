@@ -129,7 +129,7 @@ describe('dedent', () => {
       {
         "me": {
           "name": "${name}"
-          "age": ${age}
+          "age": ${String(age)}
         }
       }
     `;
