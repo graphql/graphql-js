@@ -4,20 +4,22 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
+import type { ASTNode } from './ast';
 import { visit } from './visitor';
 
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
  */
-export function print(ast) {
+export function print(ast: ASTNode): string {
   return visit(ast, { leave: printDocASTReducer });
 }
 
-const printDocASTReducer = {
+// TODO: provide better type coverage in future
+const printDocASTReducer: any = {
   Name: node => node.value,
   Variable: node => '$' + node.name,
 

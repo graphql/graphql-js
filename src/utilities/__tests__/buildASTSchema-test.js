@@ -42,6 +42,11 @@ function cycleSDL(sdl, options = {}) {
   return printSchema(schema, { commentDescriptions });
 }
 
+function printNode(node) {
+  invariant(node);
+  return print(node);
+}
+
 describe('Schema Builder', () => {
   it('can use built schema for limited execution', () => {
     const schema = buildASTSchema(
@@ -678,8 +683,9 @@ describe('Schema Builder', () => {
 
       directive @test(arg: TestScalar) on FIELD
     `;
+    const ast = parse(sdl, { noLocation: true });
 
-    const schema = buildSchema(sdl);
+    const schema = buildASTSchema(ast);
     const query = assertObjectType(schema.getType('Query'));
     const testInput = assertInputObjectType(schema.getType('TestInput'));
     const testEnum = assertEnumType(schema.getType('TestEnum'));
@@ -702,28 +708,31 @@ describe('Schema Builder', () => {
         testScalar.astNode,
         testDirective.astNode,
       ],
+      loc: undefined,
     };
-    expect(print(restoredSchemaAST)).to.be.equal(sdl);
+    expect(restoredSchemaAST).to.be.deep.equal(ast);
 
     const testField = query.getFields().testField;
-    expect(print(testField.astNode)).to.equal(
+    expect(printNode(testField.astNode)).to.equal(
       'testField(testArg: TestInput): TestUnion',
     );
-    expect(print(testField.args[0].astNode)).to.equal('testArg: TestInput');
-    expect(print(testInput.getFields().testInputField.astNode)).to.equal(
+    expect(printNode(testField.args[0].astNode)).to.equal('testArg: TestInput');
+    expect(printNode(testInput.getFields().testInputField.astNode)).to.equal(
       'testInputField: TestEnum',
     );
     const testEnumValue = testEnum.getValue('TEST_VALUE');
     invariant(testEnumValue);
-    expect(print(testEnumValue.astNode)).to.equal('TEST_VALUE');
+    expect(printNode(testEnumValue.astNode)).to.equal('TEST_VALUE');
 
-    expect(print(testInterface.getFields().interfaceField.astNode)).to.equal(
+    expect(
+      printNode(testInterface.getFields().interfaceField.astNode),
+    ).to.equal('interfaceField: String');
+    expect(printNode(testType.getFields().interfaceField.astNode)).to.equal(
       'interfaceField: String',
     );
-    expect(print(testType.getFields().interfaceField.astNode)).to.equal(
-      'interfaceField: String',
+    expect(printNode(testDirective.args[0].astNode)).to.equal(
+      'arg: TestScalar',
     );
-    expect(print(testDirective.args[0].astNode)).to.equal('arg: TestScalar');
   });
 
   it('Root operation types with custom names', () => {
