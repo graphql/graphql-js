@@ -8,8 +8,6 @@
  */
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
-import isNullish from '../jsutils/isNullish';
-import isInvalid from '../jsutils/isInvalid';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
@@ -196,10 +194,11 @@ function printArgs(options, args) {
 }
 
 function printInputValue(arg) {
+  var defaultAST = astFromValue(arg.defaultValue, arg.type);
   var argDecl = arg.name + ': ' + String(arg.type);
 
-  if (!isInvalid(arg.defaultValue)) {
-    argDecl += " = ".concat(print(astFromValue(arg.defaultValue, arg.type)));
+  if (defaultAST) {
+    argDecl += " = ".concat(print(defaultAST));
   }
 
   return argDecl;
@@ -215,12 +214,13 @@ function printDeprecated(fieldOrEnumVal) {
   }
 
   var reason = fieldOrEnumVal.deprecationReason;
+  var reasonAST = astFromValue(reason, GraphQLString);
 
-  if (isNullish(reason) || reason === '' || reason === DEFAULT_DEPRECATION_REASON) {
-    return ' @deprecated';
+  if (reasonAST && reason !== '' && reason !== DEFAULT_DEPRECATION_REASON) {
+    return ' @deprecated(reason: ' + print(reasonAST) + ')';
   }
 
-  return ' @deprecated(reason: ' + print(astFromValue(reason, GraphQLString)) + ')';
+  return ' @deprecated';
 }
 
 function printDescription(options, def) {

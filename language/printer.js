@@ -24,7 +24,8 @@ function print(ast) {
   return (0, _visitor.visit)(ast, {
     leave: printDocASTReducer
   });
-}
+} // TODO: provide better type coverage in future
+
 
 var printDocASTReducer = {
   Name: function Name(node) {

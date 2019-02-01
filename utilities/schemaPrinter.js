@@ -11,10 +11,6 @@ var _flatMap = _interopRequireDefault(require("../polyfills/flatMap"));
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
-var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
-
-var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
 var _astFromValue = require("../utilities/astFromValue");
 
 var _printer = require("../language/printer");
@@ -218,10 +214,11 @@ function printArgs(options, args) {
 }
 
 function printInputValue(arg) {
+  var defaultAST = (0, _astFromValue.astFromValue)(arg.defaultValue, arg.type);
   var argDecl = arg.name + ': ' + String(arg.type);
 
-  if (!(0, _isInvalid.default)(arg.defaultValue)) {
-    argDecl += " = ".concat((0, _printer.print)((0, _astFromValue.astFromValue)(arg.defaultValue, arg.type)));
+  if (defaultAST) {
+    argDecl += " = ".concat((0, _printer.print)(defaultAST));
   }
 
   return argDecl;
@@ -237,12 +234,13 @@ function printDeprecated(fieldOrEnumVal) {
   }
 
   var reason = fieldOrEnumVal.deprecationReason;
+  var reasonAST = (0, _astFromValue.astFromValue)(reason, _scalars.GraphQLString);
 
-  if ((0, _isNullish.default)(reason) || reason === '' || reason === _directives.DEFAULT_DEPRECATION_REASON) {
-    return ' @deprecated';
+  if (reasonAST && reason !== '' && reason !== _directives.DEFAULT_DEPRECATION_REASON) {
+    return ' @deprecated(reason: ' + (0, _printer.print)(reasonAST) + ')';
   }
 
-  return ' @deprecated(reason: ' + (0, _printer.print)((0, _astFromValue.astFromValue)(reason, _scalars.GraphQLString)) + ')';
+  return ' @deprecated';
 }
 
 function printDescription(options, def) {

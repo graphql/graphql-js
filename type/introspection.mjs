@@ -7,7 +7,6 @@
  * 
  */
 import objectValues from '../polyfills/objectValues';
-import isInvalid from '../jsutils/isInvalid';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType, isNamedType } from './definition';
@@ -367,7 +366,8 @@ export var __InputValue = new GraphQLObjectType({
         type: GraphQLString,
         description: 'A GraphQL-formatted string representing the default value for this ' + 'input value.',
         resolve: function resolve(inputVal) {
-          return isInvalid(inputVal.defaultValue) ? null : print(astFromValue(inputVal.defaultValue, inputVal.type));
+          var valueAST = astFromValue(inputVal.defaultValue, inputVal.type);
+          return valueAST ? print(valueAST) : null;
         }
       }
     };

@@ -9,8 +9,6 @@
 
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
-import isNullish from '../jsutils/isNullish';
-import isInvalid from '../jsutils/isInvalid';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import type { GraphQLSchema } from '../type/schema';
@@ -297,9 +295,10 @@ function printArgs(options, args, indentation = '') {
 }
 
 function printInputValue(arg) {
+  const defaultAST = astFromValue(arg.defaultValue, arg.type);
   let argDecl = arg.name + ': ' + String(arg.type);
-  if (!isInvalid(arg.defaultValue)) {
-    argDecl += ` = ${print(astFromValue(arg.defaultValue, arg.type))}`;
+  if (defaultAST) {
+    argDecl += ` = ${print(defaultAST)}`;
   }
   return argDecl;
 }
@@ -320,16 +319,11 @@ function printDeprecated(fieldOrEnumVal) {
     return '';
   }
   const reason = fieldOrEnumVal.deprecationReason;
-  if (
-    isNullish(reason) ||
-    reason === '' ||
-    reason === DEFAULT_DEPRECATION_REASON
-  ) {
-    return ' @deprecated';
+  const reasonAST = astFromValue(reason, GraphQLString);
+  if (reasonAST && reason !== '' && reason !== DEFAULT_DEPRECATION_REASON) {
+    return ' @deprecated(reason: ' + print(reasonAST) + ')';
   }
-  return (
-    ' @deprecated(reason: ' + print(astFromValue(reason, GraphQLString)) + ')'
-  );
+  return ' @deprecated';
 }
 
 function printDescription(

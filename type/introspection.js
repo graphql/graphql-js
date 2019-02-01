@@ -8,8 +8,6 @@ exports.introspectionTypes = exports.TypeNameMetaFieldDef = exports.TypeMetaFiel
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
-var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
 var _astFromValue = require("../utilities/astFromValue");
 
 var _printer = require("../language/printer");
@@ -399,7 +397,8 @@ var __InputValue = new _definition.GraphQLObjectType({
         type: _scalars.GraphQLString,
         description: 'A GraphQL-formatted string representing the default value for this ' + 'input value.',
         resolve: function resolve(inputVal) {
-          return (0, _isInvalid.default)(inputVal.defaultValue) ? null : (0, _printer.print)((0, _astFromValue.astFromValue)(inputVal.defaultValue, inputVal.type));
+          var valueAST = (0, _astFromValue.astFromValue)(inputVal.defaultValue, inputVal.type);
+          return valueAST ? (0, _printer.print)(valueAST) : null;
         }
       }
     };
