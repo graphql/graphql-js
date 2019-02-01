@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -29,6 +29,7 @@ describe('Printer: Query document', () => {
 
   it('produces helpful error messages', () => {
     const badAst1 = { random: 'Data' };
+    // $DisableFlowOnNegativeTest
     expect(() => print(badAst1)).to.throw(
       'Invalid AST Node: { random: "Data" }',
     );
@@ -166,6 +167,7 @@ describe('Printer: Query document', () => {
     const printed = print(parse(kitchenSinkQuery));
 
     expect(printed).to.equal(
+      // $FlowFixMe
       dedent(String.raw`
       query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
         whoever123is: node(id: [123, 456]) {
