@@ -73,7 +73,7 @@ rules:
   flowtype/valid-syntax: off
 
   ##################################################
-  # ESLint builtin rules list based on `v5.12.x`
+  # ESLint builtin rules list based on `v5.13.x`
   ##################################################
 
   # Possible Errors
