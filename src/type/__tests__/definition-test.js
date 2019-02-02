@@ -1183,244 +1183,197 @@ describe('Type System: NonNull must only accept non-nullable types', () => {
 });
 
 describe('Type System: Configs', () => {
-  function fields() {
-    const input = {
-      field: {
-        type: GraphQLString,
-        deprecationReason: 'deprecated field',
-        args: {
-          id: {
-            defaultValue: 'default',
-            description: 'String argument',
-            type: GraphQLString,
-          },
-        },
-      },
-    };
-    return {
-      getActualField() {
-        return input;
-      },
-      getExpectedField() {
-        return {
-          field: {
-            ...input.field,
-            args: {
-              id: {
-                ...input.field.args.id,
-                astNode: undefined,
-              },
-            },
-            astNode: undefined,
-            resolve: undefined,
-            description: undefined,
-            subscribe: undefined,
-          },
-        };
-      },
-    };
-  }
-
   function convertToThunk(config) {
     return mapValue(config, (value, key) => {
-      if (key === 'interfaces') {
-        return () => value.interfaces;
-      }
-      if (key === 'fields') {
-        return () => value.fields;
+      if (['interfaces', 'fields'].includes(key)) {
+        return () => value;
       }
       return value;
     });
   }
 
-  function configHelpers(type) {
-    return function(objectConfig, expectedConfig) {
-      return {
-        getType() {
-          return new type(objectConfig);
+  const fields = {
+    field: {
+      type: GraphQLString,
+      deprecationReason: 'deprecated field',
+      args: {
+        id: {
+          defaultValue: 'default',
+          description: 'String argument',
+          type: GraphQLString,
         },
-        getExpectedConfig() {
-          return expectedConfig;
-        },
-      };
-    };
-  }
-
-  function configTests(type, config, expectedConfig) {
-    const helperMethods = configHelpers(type);
-    return {
-      ...helperMethods(config, expectedConfig),
-      thunk: helperMethods(convertToThunk(config), expectedConfig),
-    };
-  }
-
-  function objectType() {
-    const { getActualField, getExpectedField } = fields();
-    const objectConfig = {
-      name: 'Object',
-      fields: getActualField(),
-      description: 'Some object type',
-      isTypeOf: () => true,
-      interfaces: [interfaceType().getType()],
-      astNode: null,
-      extensionASTNodes: [],
-    };
-    const expected = {
-      ...objectConfig,
-      fields: getExpectedField(),
-    };
-    return configTests(GraphQLObjectType, objectConfig, expected);
-  }
-
-  function scalarType() {
-    const config = {
-      name: 'Scalar',
-      serialize() {},
-      parseValue() {},
-      parseLiteral() {},
-    };
-    return configTests(GraphQLScalarType, config, {
-      ...config,
-      astNode: undefined,
-      description: undefined,
-      extensionASTNodes: [],
-    });
-  }
-
-  function interfaceType() {
-    const config = {
-      name: 'Interface',
-      fields: {},
-    };
-    return configTests(GraphQLInterfaceType, config, {
-      ...config,
-      astNode: undefined,
-      description: undefined,
-      resolveType: undefined,
-      extensionASTNodes: [],
-    });
-  }
-
-  function unionType() {
-    const config = {
-      name: 'Union',
-      types: [objectType().getType()],
-    };
-    return configTests(GraphQLUnionType, config, {
-      ...config,
-      astNode: undefined,
-      description: undefined,
-      resolveType: undefined,
-      extensionASTNodes: [],
-    });
-  }
-
-  function enumType() {
-    const config = { name: 'Enum', values: { foo: {} } };
-    return configTests(GraphQLEnumType, config, {
-      ...config,
-      values: {
-        foo: {
+      },
+    },
+  };
+  const expectedFields = {
+    field: {
+      ...fields.field,
+      args: {
+        id: {
+          ...fields.field.args.id,
           astNode: undefined,
-          description: undefined,
-          deprecationReason: undefined,
-          value: 'foo',
         },
       },
       astNode: undefined,
+      resolve: undefined,
       description: undefined,
-      extensionASTNodes: [],
-    });
-  }
+      subscribe: undefined,
+    },
+  };
 
-  function inputType() {
-    const config = {
-      name: 'InputObject',
-      fields: {},
-    };
-    return configTests(GraphQLUnionType, config, {
-      name: 'InputObject',
-      types: [],
-      resolveType: undefined,
-      astNode: undefined,
-      description: undefined,
-      extensionASTNodes: [],
-    });
-  }
+  const scalarConfig = {
+    name: 'Scalar',
+    serialize() {},
+    parseValue() {},
+    parseLiteral() {},
+  };
+  const expectedScalarConfig = {
+    ...scalarConfig,
+    astNode: undefined,
+    description: undefined,
+    extensionASTNodes: [],
+  };
+
+  const interfaceConfig = {
+    name: 'Interface',
+    fields: {},
+  };
+  const expectedInterfaceConfig = {
+    ...interfaceConfig,
+    astNode: undefined,
+    description: undefined,
+    resolveType: undefined,
+    extensionASTNodes: [],
+  };
+
+  const enumConfig = { name: 'Enum', values: { foo: {} } };
+  const expectedEnumConfig = {
+    ...enumConfig,
+    values: {
+      foo: {
+        astNode: undefined,
+        description: undefined,
+        deprecationReason: undefined,
+        value: 'foo',
+      },
+    },
+    astNode: undefined,
+    description: undefined,
+    extensionASTNodes: [],
+  };
+
+  const inputConfig = {
+    name: 'InputObject',
+    fields: {},
+  };
+  const expectedInputConfig = {
+    name: 'InputObject',
+    types: [],
+    resolveType: undefined,
+    astNode: undefined,
+    description: undefined,
+    extensionASTNodes: [],
+  };
+
+  const objectConfig = {
+    name: 'Object',
+    fields,
+    description: 'Some object type',
+    isTypeOf: () => true,
+    interfaces: [new GraphQLInterfaceType(interfaceConfig)],
+    astNode: null,
+    extensionASTNodes: [],
+  };
+  const expectedObjectConfig = {
+    ...objectConfig,
+    fields: expectedFields,
+  };
+
+  const unionConfig = {
+    name: 'Union',
+    types: [new GraphQLObjectType(objectConfig)],
+  };
+  const expectedUnionConfig = {
+    ...unionConfig,
+    astNode: undefined,
+    description: undefined,
+    resolveType: undefined,
+    extensionASTNodes: [],
+  };
 
   describe('Configs values', () => {
     it('GraphQLObjectType have correct configs', () => {
-      const { getType, getExpectedConfig } = objectType();
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(new GraphQLObjectType(objectConfig).toConfig()).to.deep.equal(
+        expectedObjectConfig,
+      );
     });
 
     it('GraphQLScalarType have correct configs', () => {
-      const { getType, getExpectedConfig } = scalarType();
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(new GraphQLScalarType(scalarConfig).toConfig()).to.deep.equal(
+        expectedScalarConfig,
+      );
     });
 
     it('GraphQLInterfaceType have correct configs', () => {
-      const { getType, getExpectedConfig } = interfaceType();
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(
+        new GraphQLInterfaceType(interfaceConfig).toConfig(),
+      ).to.deep.equal(expectedInterfaceConfig);
     });
 
     it('GraphQLUnionType have correct configs', () => {
-      const { getType, getExpectedConfig } = unionType();
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(new GraphQLUnionType(unionConfig).toConfig()).to.deep.equal(
+        expectedUnionConfig,
+      );
     });
 
     it('GraphQLEnumType have correct configs', () => {
-      const { getType, getExpectedConfig } = enumType();
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(new GraphQLEnumType(enumConfig).toConfig()).to.deep.equal(
+        expectedEnumConfig,
+      );
     });
 
     it('GraphQLInputObjectType have correct configs', () => {
-      const { getType, getExpectedConfig } = inputType();
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(new GraphQLUnionType(inputConfig).toConfig()).to.deep.equal(
+        expectedInputConfig,
+      );
     });
   });
 
   describe('Configs values with thunk', () => {
     it('GraphQLObjectType have correct configs', () => {
-      const { getType, getExpectedConfig } = objectType();
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(
+        new GraphQLObjectType(convertToThunk(objectConfig)).toConfig(),
+      ).to.deep.equal(expectedObjectConfig);
     });
 
     it('GraphQLScalarType have correct configs', () => {
-      const { getType, getExpectedConfig } = scalarType().thunk;
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(
+        new GraphQLScalarType(convertToThunk(scalarConfig)).toConfig(),
+      ).to.deep.equal(expectedScalarConfig);
     });
 
     it('GraphQLInterfaceType have correct configs', () => {
-      const { getType, getExpectedConfig } = interfaceType().thunk;
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(
+        new GraphQLInterfaceType(convertToThunk(interfaceConfig)).toConfig(),
+      ).to.deep.equal(expectedInterfaceConfig);
     });
 
     it('GraphQLUnionType have correct configs', () => {
-      const { getType, getExpectedConfig } = unionType().thunk;
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(
+        new GraphQLUnionType(convertToThunk(unionConfig)).toConfig(),
+      ).to.deep.equal(expectedUnionConfig);
     });
 
     it('GraphQLEnumType have correct configs', () => {
-      const { getType, getExpectedConfig } = enumType().thunk;
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(
+        new GraphQLEnumType(convertToThunk(enumConfig)).toConfig(),
+      ).to.deep.equal(expectedEnumConfig);
     });
 
     it('GraphQLInputObjectType have correct configs', () => {
-      const { getType, getExpectedConfig } = inputType().thunk;
-
-      expect(getType().toConfig()).to.deep.equal(getExpectedConfig());
+      expect(
+        new GraphQLUnionType(convertToThunk(inputConfig)).toConfig(),
+      ).to.deep.equal(expectedInputConfig);
     });
   });
 });
