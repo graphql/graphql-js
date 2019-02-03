@@ -646,14 +646,10 @@ function parseList(lexer: Lexer<*>, isConst: boolean): ListValueNode {
  */
 function parseObject(lexer: Lexer<*>, isConst: boolean): ObjectValueNode {
   const start = lexer.token;
-  expectToken(lexer, TokenKind.BRACE_L);
-  const fields = [];
-  while (!expectOptionalToken(lexer, TokenKind.BRACE_R)) {
-    fields.push(parseObjectField(lexer, isConst));
-  }
+  const item = () => parseObjectField(lexer, isConst);
   return {
     kind: Kind.OBJECT,
-    fields,
+    fields: any(lexer, TokenKind.BRACE_L, item, TokenKind.BRACE_R),
     loc: loc(lexer, start),
   };
 }
