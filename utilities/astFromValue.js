@@ -138,7 +138,7 @@ function astFromValue(value, type) {
     };
   }
 
-  if ((0, _definition.isScalarType)(type) || (0, _definition.isEnumType)(type)) {
+  if ((0, _definition.isLeafType)(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
     var serialized = type.serialize(value);

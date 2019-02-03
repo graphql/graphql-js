@@ -14,7 +14,7 @@ import inspect from '../jsutils/inspect';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import { Kind } from '../language/kinds';
-import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
+import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 import { GraphQLID } from '../type/scalars';
 /**
  * Produces a GraphQL Value AST given a JavaScript value.
@@ -130,7 +130,7 @@ export function astFromValue(value, type) {
     };
   }
 
-  if (isScalarType(type) || isEnumType(type)) {
+  if (isLeafType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
     var serialized = type.serialize(value);
