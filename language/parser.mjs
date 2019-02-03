@@ -552,16 +552,14 @@ function parseList(lexer, isConst) {
 
 function parseObject(lexer, isConst) {
   var start = lexer.token;
-  expectToken(lexer, TokenKind.BRACE_L);
-  var fields = [];
 
-  while (!expectOptionalToken(lexer, TokenKind.BRACE_R)) {
-    fields.push(parseObjectField(lexer, isConst));
-  }
+  var item = function item() {
+    return parseObjectField(lexer, isConst);
+  };
 
   return {
     kind: Kind.OBJECT,
-    fields: fields,
+    fields: any(lexer, TokenKind.BRACE_L, item, TokenKind.BRACE_R),
     loc: loc(lexer, start)
   };
 }
