@@ -76,6 +76,13 @@ describe('Schema Builder', () => {
     });
   });
 
+  it('Empty type', () => {
+    const sdl = dedent`
+      type EmptyType
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
   it('Simple type', () => {
     const sdl = dedent`
       type Query {
@@ -267,6 +274,13 @@ describe('Schema Builder', () => {
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
+  it('Empty interface', () => {
+    const sdl = dedent`
+      interface EmptyInterface
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
   it('Simple type with interface', () => {
     const sdl = dedent`
       type Query implements WorldInterface {
@@ -276,6 +290,13 @@ describe('Schema Builder', () => {
       interface WorldInterface {
         str: String
       }
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
+  it('Empty enum', () => {
+    const sdl = dedent`
+      enum EmptyEnum
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
@@ -316,6 +337,13 @@ describe('Schema Builder', () => {
       type Query {
         hello: Hello
       }
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
+  it('Empty union', () => {
+    const sdl = dedent`
+      union EmptyUnion
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
@@ -500,7 +528,14 @@ describe('Schema Builder', () => {
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
-  it('Input Object', () => {
+  it('Empty Input Object', () => {
+    const sdl = dedent`
+      input EmptyInputObject
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
+  it('Simple Input Object', () => {
     const sdl = dedent`
       input Input {
         int: Int
