@@ -139,39 +139,42 @@ function printObject(type, options) {
   var implementedInterfaces = interfaces.length ? ' implements ' + interfaces.map(function (i) {
     return i.name;
   }).join(' & ') : '';
-  return printDescription(options, type) + "type ".concat(type.name).concat(implementedInterfaces, " {\n") + printFields(options, type) + '\n' + '}';
+  return printDescription(options, type) + "type ".concat(type.name).concat(implementedInterfaces) + printFields(options, type);
 }
 
 function printInterface(type, options) {
-  return printDescription(options, type) + "interface ".concat(type.name, " {\n") + printFields(options, type) + '\n' + '}';
+  return printDescription(options, type) + "interface ".concat(type.name) + printFields(options, type);
 }
 
 function printUnion(type, options) {
-  return printDescription(options, type) + "union ".concat(type.name, " = ").concat(type.getTypes().join(' | '));
+  var types = type.getTypes();
+  var possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
+  return printDescription(options, type) + 'union ' + type.name + possibleTypes;
 }
 
 function printEnum(type, options) {
-  return printDescription(options, type) + "enum ".concat(type.name, " {\n") + printEnumValues(type.getValues(), options) + '\n' + '}';
-}
-
-function printEnumValues(values, options) {
-  return values.map(function (value, i) {
+  var values = type.getValues().map(function (value, i) {
     return printDescription(options, value, '  ', !i) + '  ' + value.name + printDeprecated(value);
-  }).join('\n');
+  });
+  return printDescription(options, type) + "enum ".concat(type.name) + printBlock(values);
 }
 
 function printInputObject(type, options) {
-  var fields = objectValues(type.getFields());
-  return printDescription(options, type) + "input ".concat(type.name, " {\n") + fields.map(function (f, i) {
+  var fields = objectValues(type.getFields()).map(function (f, i) {
     return printDescription(options, f, '  ', !i) + '  ' + printInputValue(f);
-  }).join('\n') + '\n' + '}';
+  });
+  return printDescription(options, type) + "input ".concat(type.name) + printBlock(fields);
 }
 
 function printFields(options, type) {
-  var fields = objectValues(type.getFields());
-  return fields.map(function (f, i) {
+  var fields = objectValues(type.getFields()).map(function (f, i) {
     return printDescription(options, f, '  ', !i) + '  ' + f.name + printArgs(options, f.args, '  ') + ': ' + String(f.type) + printDeprecated(f);
-  }).join('\n');
+  });
+  return printBlock(fields);
+}
+
+function printBlock(items) {
+  return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
 }
 
 function printArgs(options, args) {

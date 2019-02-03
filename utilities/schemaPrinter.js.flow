@@ -189,82 +189,67 @@ function printObject(type: GraphQLObjectType, options): string {
     : '';
   return (
     printDescription(options, type) +
-    `type ${type.name}${implementedInterfaces} {\n` +
-    printFields(options, type) +
-    '\n' +
-    '}'
+    `type ${type.name}${implementedInterfaces}` +
+    printFields(options, type)
   );
 }
 
 function printInterface(type: GraphQLInterfaceType, options): string {
   return (
     printDescription(options, type) +
-    `interface ${type.name} {\n` +
-    printFields(options, type) +
-    '\n' +
-    '}'
+    `interface ${type.name}` +
+    printFields(options, type)
   );
 }
 
 function printUnion(type: GraphQLUnionType, options): string {
-  return (
-    printDescription(options, type) +
-    `union ${type.name} = ${type.getTypes().join(' | ')}`
-  );
+  const types = type.getTypes();
+  const possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
+  return printDescription(options, type) + 'union ' + type.name + possibleTypes;
 }
 
 function printEnum(type: GraphQLEnumType, options): string {
-  return (
-    printDescription(options, type) +
-    `enum ${type.name} {\n` +
-    printEnumValues(type.getValues(), options) +
-    '\n' +
-    '}'
-  );
-}
-
-function printEnumValues(values, options): string {
-  return values
+  const values = type
+    .getValues()
     .map(
       (value, i) =>
         printDescription(options, value, '  ', !i) +
         '  ' +
         value.name +
         printDeprecated(value),
-    )
-    .join('\n');
+    );
+
+  return (
+    printDescription(options, type) + `enum ${type.name}` + printBlock(values)
+  );
 }
 
 function printInputObject(type: GraphQLInputObjectType, options): string {
-  const fields = objectValues(type.getFields());
+  const fields = objectValues(type.getFields()).map(
+    (f, i) =>
+      printDescription(options, f, '  ', !i) + '  ' + printInputValue(f),
+  );
   return (
-    printDescription(options, type) +
-    `input ${type.name} {\n` +
-    fields
-      .map(
-        (f, i) =>
-          printDescription(options, f, '  ', !i) + '  ' + printInputValue(f),
-      )
-      .join('\n') +
-    '\n' +
-    '}'
+    printDescription(options, type) + `input ${type.name}` + printBlock(fields)
   );
 }
 
 function printFields(options, type) {
-  const fields = objectValues(type.getFields());
-  return fields
-    .map(
-      (f, i) =>
-        printDescription(options, f, '  ', !i) +
-        '  ' +
-        f.name +
-        printArgs(options, f.args, '  ') +
-        ': ' +
-        String(f.type) +
-        printDeprecated(f),
-    )
-    .join('\n');
+  const fields = objectValues(type.getFields()).map(
+    (f, i) =>
+      printDescription(options, f, '  ', !i) +
+      '  ' +
+      f.name +
+      printArgs(options, f.args, '  ') +
+      ': ' +
+      String(f.type) +
+      printDeprecated(f),
+  );
+  return printBlock(fields);
+}
+
+function printBlock(items) {
+  return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
 }
 
 function printArgs(options, args, indentation = '') {
