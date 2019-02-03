@@ -438,6 +438,31 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints empty types', () => {
+    const Schema = new GraphQLSchema({
+      types: [
+        new GraphQLEnumType({ name: 'SomeEnum', values: {} }),
+        new GraphQLInputObjectType({ name: 'SomeInputObject', fields: {} }),
+        new GraphQLInterfaceType({ name: 'SomeInterface', fields: {} }),
+        new GraphQLObjectType({ name: 'SomeObject', fields: {} }),
+        new GraphQLUnionType({ name: 'SomeUnion', types: [] }),
+      ],
+    });
+
+    const output = printForTest(Schema);
+    expect(output).to.equal(dedent`
+      enum SomeEnum
+
+      input SomeInputObject
+
+      interface SomeInterface
+
+      type SomeObject
+
+      union SomeUnion
+    `);
+  });
+
   it('Prints custom directives', () => {
     const CustomDirective = new GraphQLDirective({
       name: 'customDirective',
