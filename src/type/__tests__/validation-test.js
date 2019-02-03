@@ -35,8 +35,6 @@ import { extendSchema } from '../../utilities/extendSchema';
 const SomeScalarType = new GraphQLScalarType({
   name: 'SomeScalar',
   serialize() {},
-  parseValue() {},
-  parseLiteral() {},
 });
 
 const SomeInterfaceType = new GraphQLInterfaceType({

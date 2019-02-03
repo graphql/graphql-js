@@ -105,12 +105,7 @@ const InputObjectType = new GraphQLInputObjectType({
   name: 'InputObject',
   fields: {},
 });
-const ScalarType = new GraphQLScalarType({
-  name: 'Scalar',
-  serialize() {},
-  parseValue() {},
-  parseLiteral() {},
-});
+const ScalarType = new GraphQLScalarType({ name: 'Scalar', serialize() {} });
 
 function schemaWithFieldType(type) {
   return new GraphQLSchema({
