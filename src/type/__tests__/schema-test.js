@@ -10,7 +10,6 @@
 import {
   GraphQLSchema,
   GraphQLScalarType,
-  GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLString,
   GraphQLInputObjectType,
@@ -21,57 +20,26 @@ import {
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
-const InterfaceType = new GraphQLInterfaceType({
-  name: 'Interface',
-  fields: { fieldName: { type: GraphQLString } },
-});
-
-const DirectiveInputType = new GraphQLInputObjectType({
-  name: 'DirInput',
-  fields: {
-    field: {
-      type: GraphQLString,
-    },
-  },
-});
-
-const WrappedDirectiveInputType = new GraphQLInputObjectType({
-  name: 'WrappedDirInput',
-  fields: {
-    field: {
-      type: GraphQLString,
-    },
-  },
-});
-
-const Directive = new GraphQLDirective({
-  name: 'dir',
-  locations: ['OBJECT'],
-  args: {
-    arg: {
-      type: DirectiveInputType,
-    },
-    argList: {
-      type: new GraphQLList(WrappedDirectiveInputType),
-    },
-  },
-});
-
-const Schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: 'Query',
-    fields: {
-      getObject: { type: InterfaceType },
-    },
-  }),
-  directives: [Directive],
-});
-
 describe('Type System: Schema', () => {
   describe('Type Map', () => {
     it('includes input types only used in directives', () => {
-      expect(Schema.getTypeMap()).to.include.key('DirInput');
-      expect(Schema.getTypeMap()).to.include.key('WrappedDirInput');
+      const directive = new GraphQLDirective({
+        name: 'dir',
+        locations: ['OBJECT'],
+        args: {
+          arg: {
+            type: new GraphQLInputObjectType({ name: 'Foo', fields: {} }),
+          },
+          argList: {
+            type: new GraphQLList(
+              new GraphQLInputObjectType({ name: 'Bar', fields: {} }),
+            ),
+          },
+        },
+      });
+      const schema = new GraphQLSchema({ directives: [directive] });
+
+      expect(schema.getTypeMap()).to.include.keys('Foo', 'Bar');
     });
   });
 
