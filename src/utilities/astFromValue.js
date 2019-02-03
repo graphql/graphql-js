@@ -17,7 +17,7 @@ import type { ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 import type { GraphQLInputType } from '../type/definition';
 import {
-  isScalarType,
+  isLeafType,
   isEnumType,
   isInputObjectType,
   isListType,
@@ -99,7 +99,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     return { kind: Kind.OBJECT, fields: fieldNodes };
   }
 
-  if (isScalarType(type) || isEnumType(type)) {
+  if (isLeafType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
     const serialized = type.serialize(value);
