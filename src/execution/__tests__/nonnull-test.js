@@ -177,7 +177,7 @@ describe('Execute: handles non-nullable types', () => {
         errors: [
           {
             message:
-              'Cannot return null for non-nullable field DataType.syncNonNull. Value null cannot be converted to String!',
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
             path: ['syncNest', 'syncNonNull'],
             locations: [{ line: 4, column: 11 }],
           },
@@ -216,7 +216,7 @@ describe('Execute: handles non-nullable types', () => {
         errors: [
           {
             message:
-              'Cannot return null for non-nullable field DataType.syncNonNull. Value null cannot be converted to String!',
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
             path: ['promiseNest', 'syncNonNull'],
             locations: [{ line: 4, column: 11 }],
           },
@@ -409,7 +409,7 @@ describe('Execute: handles non-nullable types', () => {
         errors: [
           {
             message:
-              'Cannot return null for non-nullable field DataType.syncNonNull. Value null cannot be converted to String!',
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
             path: [
               'syncNest',
               'syncNonNullNest',
@@ -422,7 +422,7 @@ describe('Execute: handles non-nullable types', () => {
           },
           {
             message:
-              'Cannot return null for non-nullable field DataType.syncNonNull. Value null cannot be converted to String!',
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
             path: [
               'promiseNest',
               'syncNonNullNest',
@@ -435,7 +435,7 @@ describe('Execute: handles non-nullable types', () => {
           },
           {
             message:
-              'Cannot return null for non-nullable field DataType.promiseNonNull. Value null cannot be converted to String!',
+              'Cannot return null for non-nullable field DataType.promiseNonNull.',
             path: [
               'anotherNest',
               'syncNonNullNest',
@@ -448,7 +448,7 @@ describe('Execute: handles non-nullable types', () => {
           },
           {
             message:
-              'Cannot return null for non-nullable field DataType.promiseNonNull. Value null cannot be converted to String!',
+              'Cannot return null for non-nullable field DataType.promiseNonNull.',
             path: [
               'anotherPromiseNest',
               'syncNonNullNest',
@@ -535,7 +535,7 @@ describe('Execute: handles non-nullable types', () => {
         errors: [
           {
             message:
-              'Cannot return null for non-nullable field DataType.syncNonNull. Value null cannot be converted to String!',
+              'Cannot return null for non-nullable field DataType.syncNonNull.',
             path: ['syncNonNull'],
             locations: [{ line: 3, column: 9 }],
           },
