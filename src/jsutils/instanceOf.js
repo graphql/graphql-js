@@ -16,18 +16,41 @@ declare function instanceOf(
   constructor: mixed,
 ): boolean %checks(value instanceof constructor);
 
-/* global window */
-// window is undefined on node, let's not trip the linter.
-let glbl;
-try {
-  glbl = global;
-} catch (e) {
-  glbl = window;
+function getGlobal() {
+  /* global window self */
+  if (
+    typeof self !== 'undefined' &&
+    self.self === self &&
+    self.Array === Array &&
+    self.setInterval === setInterval
+  ) {
+    return self;
+  }
+  if (
+    typeof window !== 'undefined' &&
+    window.window === window &&
+    window.Array === Array &&
+    window.setInterval === setInterval
+  ) {
+    return window;
+  }
+  if (
+    typeof global !== 'undefined' &&
+    global.global === global &&
+    global.Array === Array &&
+    global.setInterval === setInterval
+  ) {
+    return global;
+  }
+  throw new Error('Cannot find the global object');
 }
+
+const production =
+  getGlobal().process && getGlobal().process.env.NODE_ENV === 'production';
 
 // See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
 // See: https://webpack.js.org/guides/production/
-export default (glbl.process && glbl.process.env.NODE_ENV === 'production'
+export default (production
   ? // eslint-disable-next-line no-shadow
     function instanceOf(value: mixed, constructor: mixed) {
       return value instanceof constructor;
