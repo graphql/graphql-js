@@ -201,8 +201,9 @@ export function coerceValue(
     return errors ? ofErrors(errors) : ofValue(coercedValue);
   }
 
+  // Not reachable. All possible input types have been considered.
   /* istanbul ignore next */
-  throw new Error(`Unexpected type: ${(type: empty)}.`);
+  throw new Error(`Unexpected input type: "${inspect((type: empty))}".`);
 }
 
 function ofValue(value) {

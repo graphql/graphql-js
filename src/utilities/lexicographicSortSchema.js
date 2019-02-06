@@ -8,6 +8,7 @@
  */
 
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import keyValMap from '../jsutils/keyValMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { GraphQLSchema } from '../type/schema';
@@ -140,9 +141,9 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       });
     }
 
-    // Not reachable. All possible type definition nodes have been considered.
+    // Not reachable. All possible types have been considered.
     /* istanbul ignore next */
-    throw new Error(`Unknown type: "${(type: empty)}"`);
+    throw new Error(`Unexpected type: "${inspect((type: empty))}".`);
   }
 }
 
