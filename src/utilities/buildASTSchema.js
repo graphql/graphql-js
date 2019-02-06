@@ -8,6 +8,7 @@
  */
 
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
@@ -318,7 +319,9 @@ export class ASTDefinitionBuilder {
 
     // Not reachable. All possible type definition nodes have been considered.
     /* istanbul ignore next */
-    throw new Error(`Type kind "${(astNode: empty).kind}" not supported.`);
+    throw new Error(
+      `Unexpected type definition node: "${inspect((astNode: empty))}".`,
+    );
   }
 
   _makeTypeDef(astNode: ObjectTypeDefinitionNode) {

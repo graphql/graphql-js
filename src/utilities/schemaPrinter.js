@@ -9,6 +9,7 @@
 
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import type { GraphQLSchema } from '../type/schema';
@@ -174,8 +175,10 @@ export function printType(type: GraphQLNamedType, options?: Options): string {
   } else if (isInputObjectType(type)) {
     return printInputObject(type, options);
   }
+
+  // Not reachable. All possible types have been considered.
   /* istanbul ignore next */
-  throw new Error(`Unknown type: ${(type: empty)}.`);
+  throw new Error(`Unexpected type: "${inspect((type: empty))}".`);
 }
 
 function printScalar(type: GraphQLScalarType, options): string {

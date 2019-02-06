@@ -140,8 +140,9 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
     throw new TypeError(`Cannot convert value to AST: ${inspect(serialized)}`);
   }
 
+  // Not reachable. All possible input types have been considered.
   /* istanbul ignore next */
-  throw new Error(`Unknown type: ${(type: empty)}.`);
+  throw new Error(`Unexpected input type: "${inspect((type: empty))}".`);
 }
 
 /**
