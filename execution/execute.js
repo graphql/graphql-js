@@ -606,7 +606,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
   /* istanbul ignore next */
 
 
-  throw new Error("Cannot complete value of unexpected type \"".concat((0, _inspect.default)(returnType), "\"."));
+  throw new Error("Cannot complete value of unexpected output type: \"".concat((0, _inspect.default)(returnType), "\"."));
 }
 /**
  * Complete a list value by completing each item in the list with the

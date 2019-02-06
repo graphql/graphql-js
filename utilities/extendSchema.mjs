@@ -12,6 +12,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import mapValue from '../jsutils/mapValue';
 import keyValMap from '../jsutils/keyValMap';
@@ -271,7 +272,7 @@ export function extendSchema(schema, documentAST, options) {
     /* istanbul ignore next */
 
 
-    throw new Error("Type \"".concat(type, "\" not supported."));
+    throw new Error("Unexpected type: \"".concat(inspect(type), "\"."));
   }
 
   function extendDirective(directive) {

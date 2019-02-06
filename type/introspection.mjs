@@ -7,6 +7,7 @@
  * 
  */
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType, isNamedType } from './definition';
@@ -193,9 +194,12 @@ export var __Type = new GraphQLObjectType({
             return TypeKind.LIST;
           } else if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
-          }
+          } // Not reachable. All possible types have been considered.
 
-          throw new Error('Unknown kind of type: ' + type);
+          /* istanbul ignore next */
+
+
+          throw new Error("Unexpected type: \"".concat(inspect(type), "\"."));
         }
       },
       name: {

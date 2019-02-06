@@ -11,6 +11,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * 
  */
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import keyValMap from '../jsutils/keyValMap';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
@@ -133,12 +134,12 @@ export function lexicographicSortSchema(schema) {
           return sortInputFields(_config4.fields);
         }
       }));
-    } // Not reachable. All possible type definition nodes have been considered.
+    } // Not reachable. All possible types have been considered.
 
     /* istanbul ignore next */
 
 
-    throw new Error("Unknown type: \"".concat(type, "\""));
+    throw new Error("Unexpected type: \"".concat(inspect(type), "\"."));
   }
 }
 

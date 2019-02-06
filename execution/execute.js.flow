@@ -922,7 +922,7 @@ function completeValue(
   // Not reachable. All possible output types have been considered.
   /* istanbul ignore next */
   throw new Error(
-    `Cannot complete value of unexpected type "${inspect(
+    `Cannot complete value of unexpected output type: "${inspect(
       (returnType: empty),
     )}".`,
   );

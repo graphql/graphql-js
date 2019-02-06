@@ -7,6 +7,8 @@ exports.lexicographicSortSchema = lexicographicSortSchema;
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _schema = require("../type/schema");
@@ -139,12 +141,12 @@ function lexicographicSortSchema(schema) {
           return sortInputFields(_config4.fields);
         }
       }));
-    } // Not reachable. All possible type definition nodes have been considered.
+    } // Not reachable. All possible types have been considered.
 
     /* istanbul ignore next */
 
 
-    throw new Error("Unknown type: \"".concat(type, "\""));
+    throw new Error("Unexpected type: \"".concat((0, _inspect.default)(type), "\"."));
   }
 }
 

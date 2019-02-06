@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import inspect from '../jsutils/inspect';
 import keyValMap from '../jsutils/keyValMap';
 import isInvalid from '../jsutils/isInvalid';
 import type { ObjMap } from '../jsutils/ObjMap';
@@ -58,6 +59,8 @@ export function valueFromASTUntyped(
         ? variables[variableName]
         : undefined;
   }
+
+  // Not reachable. All possible value nodes have been considered.
   /* istanbul ignore next */
-  throw new Error('Unexpected value kind: ' + (valueNode.kind: empty));
+  throw new Error(`Unexpected value node: "${inspect((valueNode: empty))}".`);
 }

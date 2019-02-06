@@ -8,6 +8,7 @@
  */
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
@@ -123,11 +124,12 @@ export function printType(type, options) {
     return printEnum(type, options);
   } else if (isInputObjectType(type)) {
     return printInputObject(type, options);
-  }
+  } // Not reachable. All possible types have been considered.
+
   /* istanbul ignore next */
 
 
-  throw new Error("Unknown type: ".concat(type, "."));
+  throw new Error("Unexpected type: \"".concat(inspect(type), "\"."));
 }
 
 function printScalar(type, options) {

@@ -161,11 +161,12 @@ export function coerceValue(value, type, blameNode, path) {
     }
 
     return _errors ? ofErrors(_errors) : ofValue(_coercedValue);
-  }
+  } // Not reachable. All possible input types have been considered.
+
   /* istanbul ignore next */
 
 
-  throw new Error("Unexpected type: ".concat(type, "."));
+  throw new Error("Unexpected input type: \"".concat(inspect(type), "\"."));
 }
 
 function ofValue(value) {

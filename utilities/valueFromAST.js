@@ -7,6 +7,8 @@ exports.valueFromAST = valueFromAST;
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
@@ -193,11 +195,12 @@ function valueFromAST(valueNode, type, variables) {
     }
 
     return result;
-  }
+  } // Not reachable. All possible input types have been considered.
+
   /* istanbul ignore next */
 
 
-  throw new Error("Unknown type: ".concat(type, "."));
+  throw new Error("Unexpected input type: \"".concat((0, _inspect.default)(type), "\"."));
 } // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 

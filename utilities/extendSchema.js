@@ -9,6 +9,8 @@ var _flatMap = _interopRequireDefault(require("../polyfills/flatMap"));
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
@@ -285,7 +287,7 @@ function extendSchema(schema, documentAST, options) {
     /* istanbul ignore next */
 
 
-    throw new Error("Type \"".concat(type, "\" not supported."));
+    throw new Error("Unexpected type: \"".concat((0, _inspect.default)(type), "\"."));
   }
 
   function extendDirective(directive) {

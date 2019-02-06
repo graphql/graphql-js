@@ -11,6 +11,8 @@ var _flatMap = _interopRequireDefault(require("../polyfills/flatMap"));
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _astFromValue = require("../utilities/astFromValue");
 
 var _printer = require("../language/printer");
@@ -143,11 +145,12 @@ function printType(type, options) {
     return printEnum(type, options);
   } else if ((0, _definition.isInputObjectType)(type)) {
     return printInputObject(type, options);
-  }
+  } // Not reachable. All possible types have been considered.
+
   /* istanbul ignore next */
 
 
-  throw new Error("Unknown type: ".concat(type, "."));
+  throw new Error("Unexpected type: \"".concat((0, _inspect.default)(type), "\"."));
 }
 
 function printScalar(type, options) {

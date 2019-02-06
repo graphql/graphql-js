@@ -9,6 +9,7 @@
 
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import mapValue from '../jsutils/mapValue';
 import keyValMap from '../jsutils/keyValMap';
@@ -260,7 +261,7 @@ export function extendSchema(
 
     // Not reachable. All possible types have been considered.
     /* istanbul ignore next */
-    throw new Error(`Type "${(type: empty)}" not supported.`);
+    throw new Error(`Unexpected type: "${inspect((type: empty))}".`);
   }
 
   function extendDirective(directive: GraphQLDirective): GraphQLDirective {

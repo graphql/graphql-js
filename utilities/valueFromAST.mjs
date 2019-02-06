@@ -7,6 +7,7 @@
  * 
  */
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
 import isInvalid from '../jsutils/isInvalid';
 import { Kind } from '../language/kinds';
@@ -179,11 +180,12 @@ export function valueFromAST(valueNode, type, variables) {
     }
 
     return result;
-  }
+  } // Not reachable. All possible input types have been considered.
+
   /* istanbul ignore next */
 
 
-  throw new Error("Unknown type: ".concat(type, "."));
+  throw new Error("Unexpected input type: \"".concat(inspect(type), "\"."));
 } // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 

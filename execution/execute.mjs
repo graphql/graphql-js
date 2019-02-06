@@ -570,7 +570,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
   /* istanbul ignore next */
 
 
-  throw new Error("Cannot complete value of unexpected type \"".concat(inspect(returnType), "\"."));
+  throw new Error("Cannot complete value of unexpected output type: \"".concat(inspect(returnType), "\"."));
 }
 /**
  * Complete a list value by completing each item in the list with the

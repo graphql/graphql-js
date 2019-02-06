@@ -7,6 +7,7 @@
  * 
  */
 import objectValues from '../polyfills/objectValues';
+import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
@@ -286,7 +287,7 @@ function () {
     /* istanbul ignore next */
 
 
-    throw new Error("Type kind \"".concat(astNode.kind, "\" not supported."));
+    throw new Error("Unexpected type definition node: \"".concat(inspect(astNode), "\"."));
   };
 
   _proto._makeTypeDef = function _makeTypeDef(astNode) {

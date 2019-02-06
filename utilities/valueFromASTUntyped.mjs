@@ -6,6 +6,7 @@
  *
  * 
  */
+import inspect from '../jsutils/inspect';
 import keyValMap from '../jsutils/keyValMap';
 import isInvalid from '../jsutils/isInvalid';
 import { Kind } from '../language/kinds';
@@ -57,9 +58,10 @@ export function valueFromASTUntyped(valueNode, variables) {
     case Kind.VARIABLE:
       var variableName = valueNode.name.value;
       return variables && !isInvalid(variables[variableName]) ? variables[variableName] : undefined;
-  }
+  } // Not reachable. All possible value nodes have been considered.
+
   /* istanbul ignore next */
 
 
-  throw new Error('Unexpected value kind: ' + valueNode.kind);
+  throw new Error("Unexpected value node: \"".concat(inspect(valueNode), "\"."));
 }

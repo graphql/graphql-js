@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.valueFromASTUntyped = valueFromASTUntyped;
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
@@ -69,9 +71,10 @@ function valueFromASTUntyped(valueNode, variables) {
     case _kinds.Kind.VARIABLE:
       var variableName = valueNode.name.value;
       return variables && !(0, _isInvalid.default)(variables[variableName]) ? variables[variableName] : undefined;
-  }
+  } // Not reachable. All possible value nodes have been considered.
+
   /* istanbul ignore next */
 
 
-  throw new Error('Unexpected value kind: ' + valueNode.kind);
+  throw new Error("Unexpected value node: \"".concat((0, _inspect.default)(valueNode), "\"."));
 }

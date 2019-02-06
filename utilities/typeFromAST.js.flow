@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import inspect from '../jsutils/inspect';
 import { Kind } from '../language/kinds';
 import type {
   NamedTypeNode,
@@ -51,6 +52,8 @@ export function typeFromAST(schema, typeNode) {
   if (typeNode.kind === Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);
   }
+
+  // Not reachable. All possible type nodes have been considered.
   /* istanbul ignore next */
-  throw new Error(`Unexpected type kind: ${(typeNode.kind: empty)}.`);
+  throw new Error(`Unexpected type node: "${inspect((typeNode: empty))}".`);
 }

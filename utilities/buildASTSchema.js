@@ -10,6 +10,8 @@ exports.ASTDefinitionBuilder = void 0;
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
@@ -317,7 +319,7 @@ function () {
     /* istanbul ignore next */
 
 
-    throw new Error("Type kind \"".concat(astNode.kind, "\" not supported."));
+    throw new Error("Unexpected type definition node: \"".concat((0, _inspect.default)(astNode), "\"."));
   };
 
   _proto._makeTypeDef = function _makeTypeDef(astNode) {

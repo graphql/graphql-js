@@ -5,9 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.typeFromAST = typeFromAST;
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _kinds = require("../language/kinds");
 
 var _definition = require("../type/definition");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -33,9 +37,10 @@ function typeFromAST(schema, typeNode) {
 
   if (typeNode.kind === _kinds.Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);
-  }
+  } // Not reachable. All possible type nodes have been considered.
+
   /* istanbul ignore next */
 
 
-  throw new Error("Unexpected type kind: ".concat(typeNode.kind, "."));
+  throw new Error("Unexpected type node: \"".concat((0, _inspect.default)(typeNode), "\"."));
 }

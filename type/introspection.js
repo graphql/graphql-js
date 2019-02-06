@@ -8,6 +8,8 @@ exports.introspectionTypes = exports.TypeNameMetaFieldDef = exports.TypeMetaFiel
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _astFromValue = require("../utilities/astFromValue");
 
 var _printer = require("../language/printer");
@@ -218,9 +220,12 @@ var __Type = new _definition.GraphQLObjectType({
             return TypeKind.LIST;
           } else if ((0, _definition.isNonNullType)(type)) {
             return TypeKind.NON_NULL;
-          }
+          } // Not reachable. All possible types have been considered.
 
-          throw new Error('Unknown kind of type: ' + type);
+          /* istanbul ignore next */
+
+
+          throw new Error("Unexpected type: \"".concat((0, _inspect.default)(type), "\"."));
         }
       },
       name: {
