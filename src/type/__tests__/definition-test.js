@@ -28,6 +28,7 @@ import { expect } from 'chai';
 
 import inspect from '../../jsutils/inspect';
 import { isObjectType } from '../definition';
+import mapValue from '../../jsutils/mapValue';
 
 const BlogImage = new GraphQLObjectType({
   name: 'Image',
@@ -1174,4 +1175,200 @@ describe('Type System: NonNull must only accept non-nullable types', () => {
       );
     });
   }
+});
+
+describe('Type System: Configs', () => {
+  function convertToThunk(config) {
+    return mapValue(config, (value, key) => {
+      if (['interfaces', 'fields'].includes(key)) {
+        return () => value;
+      }
+      return value;
+    });
+  }
+
+  const fields = {
+    field: {
+      type: GraphQLString,
+      deprecationReason: 'deprecated field',
+      args: {
+        id: {
+          defaultValue: 'default',
+          description: 'String argument',
+          type: GraphQLString,
+        },
+      },
+    },
+  };
+  const expectedFields = {
+    field: {
+      ...fields.field,
+      args: {
+        id: {
+          ...fields.field.args.id,
+          astNode: undefined,
+        },
+      },
+      astNode: undefined,
+      resolve: undefined,
+      description: undefined,
+      subscribe: undefined,
+    },
+  };
+
+  const scalarConfig = {
+    name: 'Scalar',
+    serialize() {},
+    parseValue() {},
+    parseLiteral() {},
+  };
+  const expectedScalarConfig = {
+    ...scalarConfig,
+    astNode: undefined,
+    description: undefined,
+    extensionASTNodes: [],
+  };
+
+  const interfaceConfig = {
+    name: 'Interface',
+    fields: {},
+  };
+  const expectedInterfaceConfig = {
+    ...interfaceConfig,
+    astNode: undefined,
+    description: undefined,
+    resolveType: undefined,
+    extensionASTNodes: [],
+  };
+
+  const enumConfig = { name: 'Enum', values: { foo: {} } };
+  const expectedEnumConfig = {
+    ...enumConfig,
+    values: {
+      foo: {
+        astNode: undefined,
+        description: undefined,
+        deprecationReason: undefined,
+        value: 'foo',
+      },
+    },
+    astNode: undefined,
+    description: undefined,
+    extensionASTNodes: [],
+  };
+
+  const inputConfig = {
+    name: 'InputObject',
+    fields: {},
+  };
+  const expectedInputConfig = {
+    name: 'InputObject',
+    types: [],
+    resolveType: undefined,
+    astNode: undefined,
+    description: undefined,
+    extensionASTNodes: [],
+  };
+
+  const objectConfig = {
+    name: 'Object',
+    fields,
+    description: 'Some object type',
+    isTypeOf: () => true,
+    interfaces: [new GraphQLInterfaceType(interfaceConfig)],
+    astNode: null,
+    extensionASTNodes: [],
+  };
+  const expectedObjectConfig = {
+    ...objectConfig,
+    fields: expectedFields,
+  };
+
+  const unionConfig = {
+    name: 'Union',
+    types: [new GraphQLObjectType(objectConfig)],
+  };
+  const expectedUnionConfig = {
+    ...unionConfig,
+    astNode: undefined,
+    description: undefined,
+    resolveType: undefined,
+    extensionASTNodes: [],
+  };
+
+  describe('Configs values', () => {
+    it('GraphQLObjectType have correct configs', () => {
+      expect(new GraphQLObjectType(objectConfig).toConfig()).to.deep.equal(
+        expectedObjectConfig,
+      );
+    });
+
+    it('GraphQLScalarType have correct configs', () => {
+      expect(new GraphQLScalarType(scalarConfig).toConfig()).to.deep.equal(
+        expectedScalarConfig,
+      );
+    });
+
+    it('GraphQLInterfaceType have correct configs', () => {
+      expect(
+        new GraphQLInterfaceType(interfaceConfig).toConfig(),
+      ).to.deep.equal(expectedInterfaceConfig);
+    });
+
+    it('GraphQLUnionType have correct configs', () => {
+      expect(new GraphQLUnionType(unionConfig).toConfig()).to.deep.equal(
+        expectedUnionConfig,
+      );
+    });
+
+    it('GraphQLEnumType have correct configs', () => {
+      expect(new GraphQLEnumType(enumConfig).toConfig()).to.deep.equal(
+        expectedEnumConfig,
+      );
+    });
+
+    it('GraphQLInputObjectType have correct configs', () => {
+      expect(new GraphQLUnionType(inputConfig).toConfig()).to.deep.equal(
+        expectedInputConfig,
+      );
+    });
+  });
+
+  describe('Configs values with thunk', () => {
+    it('GraphQLObjectType have correct configs', () => {
+      expect(
+        new GraphQLObjectType(convertToThunk(objectConfig)).toConfig(),
+      ).to.deep.equal(expectedObjectConfig);
+    });
+
+    it('GraphQLScalarType have correct configs', () => {
+      expect(
+        new GraphQLScalarType(convertToThunk(scalarConfig)).toConfig(),
+      ).to.deep.equal(expectedScalarConfig);
+    });
+
+    it('GraphQLInterfaceType have correct configs', () => {
+      expect(
+        new GraphQLInterfaceType(convertToThunk(interfaceConfig)).toConfig(),
+      ).to.deep.equal(expectedInterfaceConfig);
+    });
+
+    it('GraphQLUnionType have correct configs', () => {
+      expect(
+        new GraphQLUnionType(convertToThunk(unionConfig)).toConfig(),
+      ).to.deep.equal(expectedUnionConfig);
+    });
+
+    it('GraphQLEnumType have correct configs', () => {
+      expect(
+        new GraphQLEnumType(convertToThunk(enumConfig)).toConfig(),
+      ).to.deep.equal(expectedEnumConfig);
+    });
+
+    it('GraphQLInputObjectType have correct configs', () => {
+      expect(
+        new GraphQLUnionType(convertToThunk(inputConfig)).toConfig(),
+      ).to.deep.equal(expectedInputConfig);
+    });
+  });
 });
