@@ -7,6 +7,10 @@
  * @flow strict
  */
 
+import { describe, it } from 'mocha';
+import { expect } from 'chai';
+
+import inspect from '../../jsutils/inspect';
 import {
   GraphQLSchema,
   GraphQLScalarType,
@@ -19,80 +23,8 @@ import {
   GraphQLNonNull,
   GraphQLInt,
   GraphQLString,
-  GraphQLBoolean,
 } from '../';
 import type { GraphQLFieldResolver } from '../';
-
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
-
-import inspect from '../../jsutils/inspect';
-import { isObjectType } from '../definition';
-
-const BlogImage = new GraphQLObjectType({
-  name: 'Image',
-  fields: {
-    url: { type: GraphQLString },
-    width: { type: GraphQLInt },
-    height: { type: GraphQLInt },
-  },
-});
-
-const BlogAuthor = new GraphQLObjectType({
-  name: 'Author',
-  fields: () => ({
-    id: { type: GraphQLString },
-    name: { type: GraphQLString },
-    pic: {
-      args: { width: { type: GraphQLInt }, height: { type: GraphQLInt } },
-      type: BlogImage,
-    },
-    recentArticle: { type: BlogArticle },
-  }),
-});
-
-const BlogArticle = new GraphQLObjectType({
-  name: 'Article',
-  fields: {
-    id: { type: GraphQLString },
-    isPublished: { type: GraphQLBoolean },
-    author: { type: BlogAuthor },
-    title: { type: GraphQLString },
-    body: { type: GraphQLString },
-  },
-});
-
-const BlogQuery = new GraphQLObjectType({
-  name: 'Query',
-  fields: {
-    article: {
-      args: { id: { type: GraphQLString } },
-      type: BlogArticle,
-    },
-    feed: {
-      type: GraphQLList(BlogArticle),
-    },
-  },
-});
-
-const BlogMutation = new GraphQLObjectType({
-  name: 'Mutation',
-  fields: {
-    writeArticle: {
-      type: BlogArticle,
-    },
-  },
-});
-
-const BlogSubscription = new GraphQLObjectType({
-  name: 'Subscription',
-  fields: {
-    articleSubscribe: {
-      args: { id: { type: GraphQLString } },
-      type: BlogArticle,
-    },
-  },
-});
 
 const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
 const InterfaceType = new GraphQLInterfaceType({
@@ -118,75 +50,6 @@ function schemaWithFieldType(type) {
 }
 
 describe('Type System: Example', () => {
-  it('defines a query only schema', () => {
-    const BlogSchema = new GraphQLSchema({
-      query: BlogQuery,
-    });
-
-    expect(BlogSchema.getQueryType()).to.equal(BlogQuery);
-
-    expect(BlogQuery).to.satisfy(isObjectType);
-    const articleField = BlogQuery.getFields()['article'];
-    expect(articleField).to.include({
-      name: 'article',
-      type: BlogArticle,
-    });
-
-    expect(BlogArticle).to.satisfy(isObjectType);
-    const blogArticleFields = BlogArticle.getFields();
-    expect(blogArticleFields['title']).to.include({
-      name: 'title',
-      type: GraphQLString,
-    });
-    expect(blogArticleFields['author']).to.include({
-      name: 'author',
-      type: BlogAuthor,
-    });
-
-    expect(BlogAuthor).to.satisfy(isObjectType);
-    const recentArticleField = BlogAuthor.getFields()['recentArticle'];
-    expect(recentArticleField).to.include({
-      name: 'recentArticle',
-      type: BlogArticle,
-    });
-
-    const feedField = BlogQuery.getFields()['feed'];
-    expect(feedField).to.have.property('name', 'feed');
-    expect(feedField).to.have.nested.property('type.ofType', BlogArticle);
-  });
-
-  it('defines a mutation schema', () => {
-    const BlogSchema = new GraphQLSchema({
-      query: BlogQuery,
-      mutation: BlogMutation,
-    });
-
-    expect(BlogSchema.getMutationType()).to.equal(BlogMutation);
-
-    expect(BlogMutation).to.satisfy(isObjectType);
-    const writeMutation = BlogMutation.getFields()['writeArticle'];
-    expect(writeMutation).to.include({
-      name: 'writeArticle',
-      type: BlogArticle,
-    });
-  });
-
-  it('defines a subscription schema', () => {
-    const BlogSchema = new GraphQLSchema({
-      query: BlogQuery,
-      subscription: BlogSubscription,
-    });
-
-    expect(BlogSchema.getSubscriptionType()).to.equal(BlogSubscription);
-
-    expect(BlogSubscription).to.satisfy(isObjectType);
-    const sub = BlogSubscription.getFields()['articleSubscribe'];
-    expect(sub).to.include({
-      name: 'articleSubscribe',
-      type: BlogArticle,
-    });
-  });
-
   it('defines an enum type with deprecated value', () => {
     const EnumTypeWithDeprecatedValue = new GraphQLEnumType({
       name: 'EnumWithDeprecatedValue',
@@ -252,102 +115,10 @@ describe('Type System: Example', () => {
     });
   });
 
-  it('includes nested input objects in the map', () => {
-    const NestedInputObject = new GraphQLInputObjectType({
-      name: 'NestedInputObject',
-      fields: { value: { type: GraphQLString } },
-    });
-    const SomeInputObject = new GraphQLInputObjectType({
-      name: 'SomeInputObject',
-      fields: { nested: { type: NestedInputObject } },
-    });
-    const SomeMutation = new GraphQLObjectType({
-      name: 'SomeMutation',
-      fields: {
-        mutateSomething: {
-          type: BlogArticle,
-          args: { input: { type: SomeInputObject } },
-        },
-      },
-    });
-    const SomeSubscription = new GraphQLObjectType({
-      name: 'SomeSubscription',
-      fields: {
-        subscribeToSomething: {
-          type: BlogArticle,
-          args: { input: { type: SomeInputObject } },
-        },
-      },
-    });
-    const schema = new GraphQLSchema({
-      query: BlogQuery,
-      mutation: SomeMutation,
-      subscription: SomeSubscription,
-    });
-    expect(schema.getTypeMap().NestedInputObject).to.equal(NestedInputObject);
-  });
-
-  it('includes interface possible types in the type map', () => {
-    const SomeInterface = new GraphQLInterfaceType({
-      name: 'SomeInterface',
-      fields: {
-        f: { type: GraphQLInt },
-      },
-    });
-
-    const SomeSubtype = new GraphQLObjectType({
-      name: 'SomeSubtype',
-      fields: {
-        f: { type: GraphQLInt },
-      },
-      interfaces: [SomeInterface],
-    });
-
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          iface: { type: SomeInterface },
-        },
-      }),
-      types: [SomeSubtype],
-    });
-
-    expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);
-  });
-
-  it("includes interfaces' thunk subtypes in the type map", () => {
-    const SomeInterface = new GraphQLInterfaceType({
-      name: 'SomeInterface',
-      fields: {
-        f: { type: GraphQLInt },
-      },
-    });
-
-    const SomeSubtype = new GraphQLObjectType({
-      name: 'SomeSubtype',
-      fields: {
-        f: { type: GraphQLInt },
-      },
-      interfaces: () => [SomeInterface],
-    });
-
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          iface: { type: SomeInterface },
-        },
-      }),
-      types: [SomeSubtype],
-    });
-
-    expect(schema.getTypeMap().SomeSubtype).to.equal(SomeSubtype);
-  });
-
   it('stringifies simple types', () => {
     expect(String(GraphQLInt)).to.equal('Int');
-    expect(String(BlogArticle)).to.equal('Article');
+    expect(String(ScalarType)).to.equal('Scalar');
+    expect(String(ObjectType)).to.equal('Object');
     expect(String(InterfaceType)).to.equal('Interface');
     expect(String(UnionType)).to.equal('Union');
     expect(String(EnumType)).to.equal('Enum');
@@ -361,7 +132,8 @@ describe('Type System: Example', () => {
 
   it('JSON stringifies simple types', () => {
     expect(JSON.stringify(GraphQLInt)).to.equal('"Int"');
-    expect(JSON.stringify(BlogArticle)).to.equal('"Article"');
+    expect(JSON.stringify(ScalarType)).to.equal('"Scalar"');
+    expect(JSON.stringify(ObjectType)).to.equal('"Object"');
     expect(JSON.stringify(InterfaceType)).to.equal('"Interface"');
     expect(JSON.stringify(UnionType)).to.equal('"Union"');
     expect(JSON.stringify(EnumType)).to.equal('"Enum"');
