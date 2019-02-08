@@ -10,7 +10,6 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
-import inspect from '../../jsutils/inspect';
 import {
   GraphQLSchema,
   GraphQLScalarType,
@@ -21,10 +20,14 @@ import {
   GraphQLUnionType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLInt,
   GraphQLString,
 } from '../';
-import type { GraphQLFieldResolver } from '../';
+
+import type {
+  GraphQLType,
+  GraphQLNullableType,
+  GraphQLFieldResolver,
+} from '../';
 
 const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
 const InterfaceType = new GraphQLInterfaceType({
@@ -38,6 +41,10 @@ const InputObjectType = new GraphQLInputObjectType({
   fields: {},
 });
 const ScalarType = new GraphQLScalarType({ name: 'Scalar', serialize() {} });
+const NonNullScalarType = GraphQLNonNull(ScalarType);
+const ListOfScalarsType = GraphQLList(ScalarType);
+const NonNullListofScalars = GraphQLNonNull(ListOfScalarsType);
+const ListOfNonNullScalarsType = GraphQLList(NonNullScalarType);
 
 function schemaWithFieldType(type) {
   return new GraphQLSchema({
@@ -116,45 +123,41 @@ describe('Type System: Example', () => {
   });
 
   it('stringifies simple types', () => {
-    expect(String(GraphQLInt)).to.equal('Int');
     expect(String(ScalarType)).to.equal('Scalar');
     expect(String(ObjectType)).to.equal('Object');
     expect(String(InterfaceType)).to.equal('Interface');
     expect(String(UnionType)).to.equal('Union');
     expect(String(EnumType)).to.equal('Enum');
     expect(String(InputObjectType)).to.equal('InputObject');
-    expect(String(GraphQLNonNull(GraphQLInt))).to.equal('Int!');
-    expect(String(GraphQLList(GraphQLInt))).to.equal('[Int]');
-    expect(String(GraphQLNonNull(GraphQLList(GraphQLInt)))).to.equal('[Int]!');
-    expect(String(GraphQLList(GraphQLNonNull(GraphQLInt)))).to.equal('[Int!]');
-    expect(String(GraphQLList(GraphQLList(GraphQLInt)))).to.equal('[[Int]]');
+
+    expect(String(NonNullScalarType)).to.equal('Scalar!');
+    expect(String(ListOfScalarsType)).to.equal('[Scalar]');
+    expect(String(NonNullListofScalars)).to.equal('[Scalar]!');
+    expect(String(ListOfNonNullScalarsType)).to.equal('[Scalar!]');
+    expect(String(GraphQLList(ListOfScalarsType))).to.equal('[[Scalar]]');
   });
 
   it('JSON stringifies simple types', () => {
-    expect(JSON.stringify(GraphQLInt)).to.equal('"Int"');
     expect(JSON.stringify(ScalarType)).to.equal('"Scalar"');
     expect(JSON.stringify(ObjectType)).to.equal('"Object"');
     expect(JSON.stringify(InterfaceType)).to.equal('"Interface"');
     expect(JSON.stringify(UnionType)).to.equal('"Union"');
     expect(JSON.stringify(EnumType)).to.equal('"Enum"');
     expect(JSON.stringify(InputObjectType)).to.equal('"InputObject"');
-    expect(JSON.stringify(GraphQLNonNull(GraphQLInt))).to.equal('"Int!"');
-    expect(JSON.stringify(GraphQLList(GraphQLInt))).to.equal('"[Int]"');
-    expect(JSON.stringify(GraphQLNonNull(GraphQLList(GraphQLInt)))).to.equal(
-      '"[Int]!"',
-    );
-    expect(JSON.stringify(GraphQLList(GraphQLNonNull(GraphQLInt)))).to.equal(
-      '"[Int!]"',
-    );
-    expect(JSON.stringify(GraphQLList(GraphQLList(GraphQLInt)))).to.equal(
-      '"[[Int]]"',
+
+    expect(JSON.stringify(NonNullScalarType)).to.equal('"Scalar!"');
+    expect(JSON.stringify(ListOfScalarsType)).to.equal('"[Scalar]"');
+    expect(JSON.stringify(NonNullListofScalars)).to.equal('"[Scalar]!"');
+    expect(JSON.stringify(ListOfNonNullScalarsType)).to.equal('"[Scalar!]"');
+    expect(JSON.stringify(GraphQLList(ListOfScalarsType))).to.equal(
+      '"[[Scalar]]"',
     );
   });
 
   it('prohibits nesting NonNull inside NonNull', () => {
     // $DisableFlowOnNegativeTest
-    expect(() => GraphQLNonNull(GraphQLNonNull(GraphQLInt))).to.throw(
-      'Expected Int! to be a GraphQL nullable type.',
+    expect(() => GraphQLNonNull(NonNullScalarType)).to.throw(
+      'Expected Scalar! to be a GraphQL nullable type.',
     );
   });
 
@@ -877,73 +880,69 @@ describe('Type System: Enum types must be well defined', () => {
 });
 
 describe('Type System: List must accept only types', () => {
-  const types = [
-    GraphQLString,
-    ScalarType,
-    ObjectType,
-    UnionType,
-    InterfaceType,
-    EnumType,
-    InputObjectType,
-    GraphQLList(GraphQLString),
-    GraphQLNonNull(GraphQLString),
-  ];
-
-  const notTypes = [{}, String, undefined, null];
-
-  for (const type of types) {
-    const typeStr = inspect(type);
-    it(`accepts an type as item type of list: ${typeStr}`, () => {
-      expect(() => GraphQLList(type)).not.to.throw();
-    });
+  function expectList(type: GraphQLType) {
+    return expect(() => GraphQLList(type));
   }
 
-  for (const type of notTypes) {
-    const typeStr = inspect(type);
-    it(`rejects a non-type as item type of list: ${typeStr}`, () => {
-      // $DisableFlowOnNegativeTest
-      expect(() => GraphQLList(type)).to.throw(
-        `Expected ${typeStr} to be a GraphQL type.`,
-      );
-    });
-  }
+  it('accepts an type as item type of list', () => {
+    expectList(ScalarType).not.to.throw();
+    expectList(ObjectType).not.to.throw();
+    expectList(UnionType).not.to.throw();
+    expectList(InterfaceType).not.to.throw();
+    expectList(EnumType).not.to.throw();
+    expectList(InputObjectType).not.to.throw();
+    expectList(ListOfScalarsType).not.to.throw();
+    expectList(NonNullScalarType).not.to.throw();
+  });
+
+  it('rejects a non-type as item type of list', () => {
+    // $DisableFlowOnNegativeTest
+    expectList({}).to.throw('Expected {} to be a GraphQL type.');
+    // $DisableFlowOnNegativeTest
+    expectList(String).to.throw(
+      'Expected [function String] to be a GraphQL type.',
+    );
+    // $DisableFlowOnNegativeTest
+    expectList(null).to.throw('Expected null to be a GraphQL type.');
+    // $DisableFlowOnNegativeTest
+    expectList(undefined).to.throw('Expected undefined to be a GraphQL type.');
+  });
 });
 
 describe('Type System: NonNull must only accept non-nullable types', () => {
-  const nullableTypes = [
-    GraphQLString,
-    ScalarType,
-    ObjectType,
-    UnionType,
-    InterfaceType,
-    EnumType,
-    InputObjectType,
-    GraphQLList(GraphQLString),
-    GraphQLList(GraphQLNonNull(GraphQLString)),
-  ];
-
-  const notNullableTypes = [
-    GraphQLNonNull(GraphQLString),
-    {},
-    String,
-    undefined,
-    null,
-  ];
-
-  for (const type of nullableTypes) {
-    const typeStr = inspect(type);
-    it(`accepts an type as nullable type of non-null: ${typeStr}`, () => {
-      expect(() => GraphQLNonNull(type)).not.to.throw();
-    });
+  function expectNonNull(type: GraphQLNullableType) {
+    return expect(() => GraphQLNonNull(type));
   }
 
-  for (const type of notNullableTypes) {
-    const typeStr = inspect(type);
-    it(`rejects a non-type as nullable type of non-null: ${typeStr}`, () => {
-      // $DisableFlowOnNegativeTest
-      expect(() => GraphQLNonNull(type)).to.throw(
-        `Expected ${typeStr} to be a GraphQL nullable type.`,
-      );
-    });
-  }
+  it('accepts an type as nullable type of non-null', () => {
+    expectNonNull(ScalarType).not.to.throw();
+    expectNonNull(ObjectType).not.to.throw();
+    expectNonNull(UnionType).not.to.throw();
+    expectNonNull(InterfaceType).not.to.throw();
+    expectNonNull(EnumType).not.to.throw();
+    expectNonNull(InputObjectType).not.to.throw();
+    expectNonNull(ListOfScalarsType).not.to.throw();
+    expectNonNull(ListOfNonNullScalarsType).not.to.throw();
+  });
+
+  it('rejects a non-type as nullable type of non-null', () => {
+    // $DisableFlowOnNegativeTest
+    expectNonNull(NonNullScalarType).to.throw(
+      'Expected Scalar! to be a GraphQL nullable type.',
+    );
+    // $DisableFlowOnNegativeTest
+    expectNonNull({}).to.throw('Expected {} to be a GraphQL nullable type.');
+    // $DisableFlowOnNegativeTest
+    expectNonNull(String).to.throw(
+      'Expected [function String] to be a GraphQL nullable type.',
+    );
+    // $DisableFlowOnNegativeTest
+    expectNonNull(null).to.throw(
+      'Expected null to be a GraphQL nullable type.',
+    );
+    // $DisableFlowOnNegativeTest
+    expectNonNull(undefined).to.throw(
+      'Expected undefined to be a GraphQL nullable type.',
+    );
+  });
 });
