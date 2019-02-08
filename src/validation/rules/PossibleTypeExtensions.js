@@ -27,7 +27,7 @@ export function extendingUnknownTypeMessage(
   typeName: string,
   suggestedTypes: Array<string>,
 ): string {
-  let message = `Cannot extend type "${typeName}" because it does not defined.`;
+  let message = `Cannot extend type "${typeName}" because it is not defined.`;
   if (suggestedTypes.length) {
     message += ` Did you mean ${quotedOrList(suggestedTypes)}?`;
   }
