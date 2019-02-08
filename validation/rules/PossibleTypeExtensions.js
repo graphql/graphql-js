@@ -26,7 +26,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function extendingUnknownTypeMessage(typeName, suggestedTypes) {
-  var message = "Cannot extend type \"".concat(typeName, "\" because it does not defined.");
+  var message = "Cannot extend type \"".concat(typeName, "\" because it is not defined.");
 
   if (suggestedTypes.length) {
     message += " Did you mean ".concat((0, _quotedOrList.default)(suggestedTypes), "?");

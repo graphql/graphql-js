@@ -17,7 +17,7 @@ import { Kind } from '../../language/kinds';
 import { isTypeDefinitionNode } from '../../language/predicates';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../../type/definition';
 export function extendingUnknownTypeMessage(typeName, suggestedTypes) {
-  var message = "Cannot extend type \"".concat(typeName, "\" because it does not defined.");
+  var message = "Cannot extend type \"".concat(typeName, "\" because it is not defined.");
 
   if (suggestedTypes.length) {
     message += " Did you mean ".concat(quotedOrList(suggestedTypes), "?");
