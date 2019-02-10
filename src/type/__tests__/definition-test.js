@@ -154,13 +154,6 @@ describe('Type System: Example', () => {
     );
   });
 
-  it('prohibits nesting NonNull inside NonNull', () => {
-    // $DisableFlowOnNegativeTest
-    expect(() => GraphQLNonNull(NonNullScalarType)).to.throw(
-      'Expected Scalar! to be a GraphQL nullable type.',
-    );
-  });
-
   it('allows a thunk for Union member types', () => {
     const union = new GraphQLUnionType({
       name: 'ThunkUnion',
