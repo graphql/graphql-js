@@ -183,8 +183,10 @@ export function GraphQLList(ofType) {
 
 GraphQLList.prototype.toString = function toString() {
   return '[' + String(this.ofType) + ']';
-};
+}; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
+
+defineToStringTag(GraphQLList);
 defineToJSON(GraphQLList);
 /**
  * Non-Null Type Wrapper
@@ -218,8 +220,10 @@ export function GraphQLNonNull(ofType) {
 
 GraphQLNonNull.prototype.toString = function toString() {
   return String(this.ofType) + '!';
-};
+}; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
+
+defineToStringTag(GraphQLNonNull);
 defineToJSON(GraphQLNonNull);
 /**
  * These types wrap and modify other types
