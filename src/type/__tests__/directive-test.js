@@ -58,7 +58,7 @@ describe('Type System: Directive', () => {
     });
   });
 
-  it('can be stringified and JSON.stringified', () => {
+  it('can be stringified, JSON.stringified and Object.toStingified', () => {
     const directive = new GraphQLDirective({
       name: 'Foo',
       locations: ['QUERY'],
@@ -66,6 +66,9 @@ describe('Type System: Directive', () => {
 
     expect(String(directive)).to.equal('@Foo');
     expect(JSON.stringify(directive)).to.equal('"@Foo"');
+    expect(Object.prototype.toString.call(directive)).to.equal(
+      '[object GraphQLDirective]',
+    );
   });
 
   it('reject an unnamed directive', () => {
