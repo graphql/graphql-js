@@ -361,6 +361,9 @@ export function GraphQLList(ofType) {
 (GraphQLList.prototype: any).toString = function toString() {
   return '[' + String(this.ofType) + ']';
 };
+
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+defineToStringTag(GraphQLList);
 defineToJSON(GraphQLList);
 
 /**
@@ -402,6 +405,9 @@ export function GraphQLNonNull(ofType) {
 (GraphQLNonNull.prototype: any).toString = function toString() {
   return String(this.ofType) + '!';
 };
+
+// Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
+defineToStringTag(GraphQLNonNull);
 defineToJSON(GraphQLNonNull);
 
 /**

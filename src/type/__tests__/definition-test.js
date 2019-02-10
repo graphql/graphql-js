@@ -954,5 +954,7 @@ describe('Type System: test utility methods', () => {
     expect(toString(InputObjectType)).to.equal(
       '[object GraphQLInputObjectType]',
     );
+    expect(toString(NonNullScalarType)).to.equal('[object GraphQLNonNull]');
+    expect(toString(ListOfScalarsType)).to.equal('[object GraphQLList]');
   });
 });
