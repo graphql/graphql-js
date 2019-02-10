@@ -258,6 +258,14 @@ describe('Type System: Schema', () => {
     });
   });
 
+  it('can be Object.toStringified', () => {
+    const schema = new GraphQLSchema({});
+
+    expect(Object.prototype.toString.call(schema)).to.equal(
+      '[object GraphQLSchema]',
+    );
+  });
+
   describe('Validity', () => {
     describe('when not assumed valid', () => {
       it('configures the schema to still needing validation', () => {

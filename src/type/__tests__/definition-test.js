@@ -122,38 +122,6 @@ describe('Type System: Example', () => {
     });
   });
 
-  it('stringifies simple types', () => {
-    expect(String(ScalarType)).to.equal('Scalar');
-    expect(String(ObjectType)).to.equal('Object');
-    expect(String(InterfaceType)).to.equal('Interface');
-    expect(String(UnionType)).to.equal('Union');
-    expect(String(EnumType)).to.equal('Enum');
-    expect(String(InputObjectType)).to.equal('InputObject');
-
-    expect(String(NonNullScalarType)).to.equal('Scalar!');
-    expect(String(ListOfScalarsType)).to.equal('[Scalar]');
-    expect(String(NonNullListofScalars)).to.equal('[Scalar]!');
-    expect(String(ListOfNonNullScalarsType)).to.equal('[Scalar!]');
-    expect(String(GraphQLList(ListOfScalarsType))).to.equal('[[Scalar]]');
-  });
-
-  it('JSON stringifies simple types', () => {
-    expect(JSON.stringify(ScalarType)).to.equal('"Scalar"');
-    expect(JSON.stringify(ObjectType)).to.equal('"Object"');
-    expect(JSON.stringify(InterfaceType)).to.equal('"Interface"');
-    expect(JSON.stringify(UnionType)).to.equal('"Union"');
-    expect(JSON.stringify(EnumType)).to.equal('"Enum"');
-    expect(JSON.stringify(InputObjectType)).to.equal('"InputObject"');
-
-    expect(JSON.stringify(NonNullScalarType)).to.equal('"Scalar!"');
-    expect(JSON.stringify(ListOfScalarsType)).to.equal('"[Scalar]"');
-    expect(JSON.stringify(NonNullListofScalars)).to.equal('"[Scalar]!"');
-    expect(JSON.stringify(ListOfNonNullScalarsType)).to.equal('"[Scalar!]"');
-    expect(JSON.stringify(GraphQLList(ListOfScalarsType))).to.equal(
-      '"[[Scalar]]"',
-    );
-  });
-
   it('allows a thunk for Union member types', () => {
     const union = new GraphQLUnionType({
       name: 'ThunkUnion',
@@ -936,6 +904,55 @@ describe('Type System: NonNull must only accept non-nullable types', () => {
     // $DisableFlowOnNegativeTest
     expectNonNull(undefined).to.throw(
       'Expected undefined to be a GraphQL nullable type.',
+    );
+  });
+});
+
+describe('Type System: test utility methods', () => {
+  it('stringifies types', () => {
+    expect(String(ScalarType)).to.equal('Scalar');
+    expect(String(ObjectType)).to.equal('Object');
+    expect(String(InterfaceType)).to.equal('Interface');
+    expect(String(UnionType)).to.equal('Union');
+    expect(String(EnumType)).to.equal('Enum');
+    expect(String(InputObjectType)).to.equal('InputObject');
+
+    expect(String(NonNullScalarType)).to.equal('Scalar!');
+    expect(String(ListOfScalarsType)).to.equal('[Scalar]');
+    expect(String(NonNullListofScalars)).to.equal('[Scalar]!');
+    expect(String(ListOfNonNullScalarsType)).to.equal('[Scalar!]');
+    expect(String(GraphQLList(ListOfScalarsType))).to.equal('[[Scalar]]');
+  });
+
+  it('JSON.stringifies types', () => {
+    expect(JSON.stringify(ScalarType)).to.equal('"Scalar"');
+    expect(JSON.stringify(ObjectType)).to.equal('"Object"');
+    expect(JSON.stringify(InterfaceType)).to.equal('"Interface"');
+    expect(JSON.stringify(UnionType)).to.equal('"Union"');
+    expect(JSON.stringify(EnumType)).to.equal('"Enum"');
+    expect(JSON.stringify(InputObjectType)).to.equal('"InputObject"');
+
+    expect(JSON.stringify(NonNullScalarType)).to.equal('"Scalar!"');
+    expect(JSON.stringify(ListOfScalarsType)).to.equal('"[Scalar]"');
+    expect(JSON.stringify(NonNullListofScalars)).to.equal('"[Scalar]!"');
+    expect(JSON.stringify(ListOfNonNullScalarsType)).to.equal('"[Scalar!]"');
+    expect(JSON.stringify(GraphQLList(ListOfScalarsType))).to.equal(
+      '"[[Scalar]]"',
+    );
+  });
+
+  it('Object.toStringifies types', () => {
+    function toString(obj) {
+      return Object.prototype.toString.call(obj);
+    }
+
+    expect(toString(ScalarType)).to.equal('[object GraphQLScalarType]');
+    expect(toString(ObjectType)).to.equal('[object GraphQLObjectType]');
+    expect(toString(InterfaceType)).to.equal('[object GraphQLInterfaceType]');
+    expect(toString(UnionType)).to.equal('[object GraphQLUnionType]');
+    expect(toString(EnumType)).to.equal('[object GraphQLEnumType]');
+    expect(toString(InputObjectType)).to.equal(
+      '[object GraphQLInputObjectType]',
     );
   });
 });
