@@ -527,8 +527,7 @@ describe('Type System: build schema from introspection', () => {
       );
 
       expect(() => buildClientSchema(introspection)).to.throw(
-        'Invalid or incomplete schema, unknown type: Query. Ensure that a ' +
-          'full introspection query is used in order to build a client schema.',
+        'Invalid or incomplete schema, unknown type: Query. Ensure that a full introspection query is used in order to build a client schema.',
       );
     });
 
@@ -555,8 +554,7 @@ describe('Type System: build schema from introspection', () => {
       delete queryTypeIntrospection.kind;
 
       expect(() => buildClientSchema(introspection)).to.throw(
-        'Invalid or incomplete introspection result. Ensure that a full ' +
-          'introspection query is used in order to build a client schema',
+        'Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema',
       );
     });
 

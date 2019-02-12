@@ -466,8 +466,7 @@ describe('Type System: Objects must have fields', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but ' +
-          '"bad-name-with-dashes" does not.',
+          'Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "bad-name-with-dashes" does not.',
       },
     ]);
   });
@@ -489,8 +488,7 @@ describe('Type System: Objects must have fields', () => {
     expect(validateSchema(schemaBad)).to.deep.equal([
       {
         message:
-          'Name "__badName" must not begin with "__", which is reserved by ' +
-          'GraphQL introspection.',
+          'Name "__badName" must not begin with "__", which is reserved by GraphQL introspection.',
       },
     ]);
     expect(validateSchema(schemaOk)).to.deep.equal([]);
@@ -1537,8 +1535,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Interface field AnotherInterface.field expected but ' +
-          'AnotherObject does not provide it.',
+          'Interface field AnotherInterface.field expected but AnotherObject does not provide it.',
         locations: [{ line: 7, column: 9 }, { line: 10, column: 7 }],
       },
     ]);
@@ -1561,8 +1558,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Interface field AnotherInterface.field expects type String but ' +
-          'AnotherObject.field is type Int.',
+          'Interface field AnotherInterface.field expects type String but AnotherObject.field is type Int.',
         locations: [{ line: 7, column: 31 }, { line: 11, column: 31 }],
       },
     ]);
@@ -1588,8 +1584,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Interface field AnotherInterface.field expects type A but ' +
-          'AnotherObject.field is type B.',
+          'Interface field AnotherInterface.field expects type A but AnotherObject.field is type B.',
         locations: [{ line: 10, column: 16 }, { line: 14, column: 16 }],
       },
     ]);
@@ -1652,8 +1647,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Interface field argument AnotherInterface.field(input:) expected ' +
-          'but AnotherObject.field does not provide it.',
+          'Interface field argument AnotherInterface.field(input:) expected but AnotherObject.field does not provide it.',
         locations: [{ line: 7, column: 15 }, { line: 11, column: 9 }],
       },
     ]);
@@ -1676,8 +1670,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Interface field argument AnotherInterface.field(input:) expects ' +
-          'type String but AnotherObject.field(input:) is type Int.',
+          'Interface field argument AnotherInterface.field(input:) expects type String but AnotherObject.field(input:) is type Int.',
         locations: [{ line: 7, column: 22 }, { line: 11, column: 22 }],
       },
     ]);
@@ -1700,14 +1693,12 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Interface field AnotherInterface.field expects type String but ' +
-          'AnotherObject.field is type Int.',
+          'Interface field AnotherInterface.field expects type String but AnotherObject.field is type Int.',
         locations: [{ line: 7, column: 31 }, { line: 11, column: 28 }],
       },
       {
         message:
-          'Interface field argument AnotherInterface.field(input:) expects ' +
-          'type String but AnotherObject.field(input:) is type Int.',
+          'Interface field argument AnotherInterface.field(input:) expects type String but AnotherObject.field(input:) is type Int.',
         locations: [{ line: 7, column: 22 }, { line: 11, column: 22 }],
       },
     ]);
@@ -1735,9 +1726,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Object field AnotherObject.field includes required argument ' +
-          'requiredArg that is missing from the Interface field ' +
-          'AnotherInterface.field.',
+          'Object field AnotherObject.field includes required argument requiredArg that is missing from the Interface field AnotherInterface.field.',
         locations: [{ line: 13, column: 11 }, { line: 7, column: 9 }],
       },
     ]);
@@ -1777,8 +1766,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Interface field AnotherInterface.field expects type [String] ' +
-          'but AnotherObject.field is type String.',
+          'Interface field AnotherInterface.field expects type [String] but AnotherObject.field is type String.',
         locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
       },
     ]);
@@ -1801,8 +1789,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Interface field AnotherInterface.field expects type String but ' +
-          'AnotherObject.field is type [String].',
+          'Interface field AnotherInterface.field expects type String but AnotherObject.field is type [String].',
         locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
       },
     ]);
@@ -1842,8 +1829,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expect(validateSchema(schema)).to.deep.equal([
       {
         message:
-          'Interface field AnotherInterface.field expects type String! ' +
-          'but AnotherObject.field is type String.',
+          'Interface field AnotherInterface.field expects type String! but AnotherObject.field is type String.',
         locations: [{ line: 7, column: 16 }, { line: 11, column: 16 }],
       },
     ]);

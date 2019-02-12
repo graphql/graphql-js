@@ -114,9 +114,7 @@ describe('Type System: Scalars', () => {
         }),
       ),
     ).to.throw(
-      'SomeScalar must provide "serialize" function. If this custom Scalar ' +
-        'is also used as an input type, ensure "parseValue" and "parseLiteral" ' +
-        'functions are also provided.',
+      'SomeScalar must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
     );
   });
 
@@ -130,9 +128,7 @@ describe('Type System: Scalars', () => {
         }),
       ),
     ).to.throw(
-      'SomeScalar must provide "serialize" function. If this custom Scalar ' +
-        'is also used as an input type, ensure "parseValue" and "parseLiteral" ' +
-        'functions are also provided.',
+      'SomeScalar must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
     );
   });
 
@@ -330,8 +326,7 @@ describe('Type System: Objects', () => {
       fields: [{ field: GraphQLString }],
     });
     expect(() => objType.getFields()).to.throw(
-      'SomeObject fields must be an object with field names as keys or a ' +
-        'function which returns such an object.',
+      'SomeObject fields must be an object with field names as keys or a function which returns such an object.',
     );
   });
 
@@ -344,8 +339,7 @@ describe('Type System: Objects', () => {
       },
     });
     expect(() => objType.getFields()).to.throw(
-      'SomeObject fields must be an object with field names as keys or a ' +
-        'function which returns such an object.',
+      'SomeObject fields must be an object with field names as keys or a function which returns such an object.',
     );
   });
 
@@ -377,8 +371,7 @@ describe('Type System: Objects', () => {
 
       return schemaWithFieldType(OldObject);
     }).to.throw(
-      'OldObject.field should provide "deprecationReason" instead ' +
-        'of "isDeprecated".',
+      'OldObject.field should provide "deprecationReason" instead of "isDeprecated".',
     );
   });
 
@@ -411,16 +404,14 @@ describe('Type System: Objects', () => {
   it('rejects an empty Object field resolver', () => {
     // $DisableFlowOnNegativeTest
     expect(() => schemaWithObjectWithFieldResolver({})).to.throw(
-      'BadResolver.badField field resolver must be a function if provided, ' +
-        'but got: {}.',
+      'BadResolver.badField field resolver must be a function if provided, but got: {}.',
     );
   });
 
   it('rejects a constant scalar value resolver', () => {
     // $DisableFlowOnNegativeTest
     expect(() => schemaWithObjectWithFieldResolver(0)).to.throw(
-      'BadResolver.badField field resolver must be a function if provided, ' +
-        'but got: 0.',
+      'BadResolver.badField field resolver must be a function if provided, but got: 0.',
     );
   });
 
@@ -553,8 +544,7 @@ describe('Type System: Unions', () => {
         }),
       ),
     ).to.throw(
-      'Must provide Array of types or a function which returns such an array ' +
-        'for Union SomeUnion.',
+      'Must provide Array of types or a function which returns such an array for Union SomeUnion.',
     );
   });
 });
@@ -647,8 +637,7 @@ describe('Type System: Enums', () => {
       values: { FOO: null },
     };
     expect(() => new GraphQLEnumType(config)).to.throw(
-      'SomeEnum.FOO must refer to an object with a "value" key representing ' +
-        'an internal value but got: null.',
+      'SomeEnum.FOO must refer to an object with a "value" key representing an internal value but got: null.',
     );
   });
 
@@ -659,8 +648,7 @@ describe('Type System: Enums', () => {
       values: { FOO: 10 },
     };
     expect(() => new GraphQLEnumType(config)).to.throw(
-      'SomeEnum.FOO must refer to an object with a "value" key representing ' +
-        'an internal value but got: 10.',
+      'SomeEnum.FOO must refer to an object with a "value" key representing an internal value but got: 10.',
     );
   });
 
@@ -673,8 +661,7 @@ describe('Type System: Enums', () => {
       },
     };
     expect(() => new GraphQLEnumType(config)).to.throw(
-      'SomeEnum.FOO should provide "deprecationReason" instead ' +
-        'of "isDeprecated".',
+      'SomeEnum.FOO should provide "deprecationReason" instead of "isDeprecated".',
     );
   });
 });
@@ -710,8 +697,7 @@ describe('Type System: Input Objects', () => {
         fields: [],
       });
       expect(() => inputObjType.getFields()).to.throw(
-        'SomeInputObject fields must be an object with field names as keys or a ' +
-          'function which returns such an object.',
+        'SomeInputObject fields must be an object with field names as keys or a function which returns such an object.',
       );
     });
 
@@ -722,8 +708,7 @@ describe('Type System: Input Objects', () => {
         fields: () => [],
       });
       expect(() => inputObjType.getFields()).to.throw(
-        'SomeInputObject fields must be an object with field names as keys or a ' +
-          'function which returns such an object.',
+        'SomeInputObject fields must be an object with field names as keys or a function which returns such an object.',
       );
     });
   });
@@ -738,8 +723,7 @@ describe('Type System: Input Objects', () => {
         },
       });
       expect(() => inputObjType.getFields()).to.throw(
-        'SomeInputObject.f field has a resolve property, ' +
-          'but Input Types cannot define resolvers.',
+        'SomeInputObject.f field has a resolve property, but Input Types cannot define resolvers.',
       );
     });
 
@@ -752,8 +736,7 @@ describe('Type System: Input Objects', () => {
         },
       });
       expect(() => inputObjType.getFields()).to.throw(
-        'SomeInputObject.f field has a resolve property, ' +
-          'but Input Types cannot define resolvers.',
+        'SomeInputObject.f field has a resolve property, but Input Types cannot define resolvers.',
       );
     });
   });

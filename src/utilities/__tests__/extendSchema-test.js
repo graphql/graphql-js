@@ -1094,8 +1094,7 @@ describe('extendSchema', () => {
     `;
 
     expect(() => extendTestSchema(sdl)).to.throw(
-      'Directive "include" already exists in the schema. It cannot be ' +
-        'redefined.',
+      'Directive "include" already exists in the schema. It cannot be redefined.',
     );
   });
 
@@ -1106,8 +1105,7 @@ describe('extendSchema', () => {
       }
     `;
     expect(() => extendTestSchema(sdl)).to.throw(
-      'Enum value "SomeEnum.ONE" already exists in the schema. It cannot ' +
-        'also be defined in this type extension.',
+      'Enum value "SomeEnum.ONE" already exists in the schema. It cannot also be defined in this type extension.',
     );
   });
 
