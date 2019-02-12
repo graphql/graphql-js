@@ -262,8 +262,7 @@ const queryType = new GraphQLObjectType({
       args: {
         episode: {
           description:
-            'If omitted, returns the hero of the whole saga. ' +
-            'If provided, returns the hero of that particular episode.',
+            'If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.',
           type: episodeEnum,
         },
       },

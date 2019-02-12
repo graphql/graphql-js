@@ -45,8 +45,7 @@ describe('Validate: Supports full validation', () => {
       {
         locations: [{ line: 3, column: 25 }],
         message:
-          'Expected type Invalid, found "bad value"; ' +
-          'Invalid scalar is always invalid: "bad value"',
+          'Expected type Invalid, found "bad value"; Invalid scalar is always invalid: "bad value"',
       },
     ]);
   });
@@ -73,12 +72,9 @@ describe('Validate: Supports full validation', () => {
     const errorMessages = errors.map(err => err.message);
 
     expect(errorMessages).to.deep.equal([
-      'Cannot query field "catOrDog" on type "QueryRoot". ' +
-        'Did you mean "catOrDog"?',
-      'Cannot query field "furColor" on type "Cat". ' +
-        'Did you mean "furColor"?',
-      'Cannot query field "isHousetrained" on type "Dog". ' +
-        'Did you mean "isHousetrained"?',
+      'Cannot query field "catOrDog" on type "QueryRoot". Did you mean "catOrDog"?',
+      'Cannot query field "furColor" on type "Cat". Did you mean "furColor"?',
+      'Cannot query field "isHousetrained" on type "Dog". Did you mean "isHousetrained"?',
     ]);
   });
 });

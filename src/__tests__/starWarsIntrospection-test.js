@@ -346,8 +346,7 @@ describe('Star Wars Introspection Tests', () => {
                   {
                     defaultValue: null,
                     description:
-                      'If omitted, returns the hero of the whole saga. ' +
-                      'If provided, returns the hero of that particular episode.',
+                      'If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.',
                     name: 'episode',
                     type: {
                       kind: 'ENUM',

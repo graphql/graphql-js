@@ -965,8 +965,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       // different aliases.
       const error = fieldsConflictMessage('x', 'a and b are different fields');
       expect(error).to.equal(
-        'Fields "x" conflict because a and b are different fields. Use ' +
-          'different aliases on the fields to fetch both if this was intentional.',
+        'Fields "x" conflict because a and b are different fields. Use different aliases on the fields to fetch both if this was intentional.',
       );
     });
 

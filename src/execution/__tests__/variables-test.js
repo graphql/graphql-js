@@ -372,9 +372,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value ' +
-                '{ a: "foo", b: "bar", c: null }; ' +
-                'Expected non-nullable type String! not to be null at value.c.',
+                'Variable "$input" got invalid value { a: "foo", b: "bar", c: null }; Expected non-nullable type String! not to be null at value.c.',
               locations: [{ line: 2, column: 16 }],
             },
           ],
@@ -388,8 +386,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value "foo bar"; ' +
-                'Expected type TestInputObject to be an object.',
+                'Variable "$input" got invalid value "foo bar"; Expected type TestInputObject to be an object.',
               locations: [{ line: 2, column: 16 }],
             },
           ],
@@ -403,8 +400,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value { a: "foo", b: "bar" }; ' +
-                'Field value.c of required type String! was not provided.',
+                'Variable "$input" got invalid value { a: "foo", b: "bar" }; Field value.c of required type String! was not provided.',
               locations: [{ line: 2, column: 16 }],
             },
           ],
@@ -423,14 +419,12 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value { na: { a: "foo" } }; ' +
-                'Field value.na.c of required type String! was not provided.',
+                'Variable "$input" got invalid value { na: { a: "foo" } }; Field value.na.c of required type String! was not provided.',
               locations: [{ line: 2, column: 18 }],
             },
             {
               message:
-                'Variable "$input" got invalid value { na: { a: "foo" } }; ' +
-                'Field value.nb of required type String! was not provided.',
+                'Variable "$input" got invalid value { na: { a: "foo" } }; Field value.nb of required type String! was not provided.',
               locations: [{ line: 2, column: 18 }],
             },
           ],
@@ -447,9 +441,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value ' +
-                '{ a: "foo", b: "bar", c: "baz", extra: "dog" }; ' +
-                'Field "extra" is not defined by type TestInputObject.',
+                'Variable "$input" got invalid value { a: "foo", b: "bar", c: "baz", extra: "dog" }; Field "extra" is not defined by type TestInputObject.',
               locations: [{ line: 2, column: 16 }],
             },
           ],
@@ -695,8 +687,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$value" got invalid value [1, 2, 3]; Expected type ' +
-              'String; String cannot represent a non string value: [1, 2, 3]',
+              'Variable "$value" got invalid value [1, 2, 3]; Expected type String; String cannot represent a non string value: [1, 2, 3]',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -724,8 +715,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Argument "input" of required type "String!" was provided the ' +
-              'variable "$foo" which was not provided a runtime value.',
+              'Argument "input" of required type "String!" was provided the variable "$foo" which was not provided a runtime value.',
             locations: [{ line: 3, column: 50 }],
             path: ['fieldWithNonNullableStringInput'],
           },
@@ -843,8 +833,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" got invalid value ["A", null, "B"]; ' +
-              'Expected non-nullable type String! not to be null at value[1].',
+              'Variable "$input" got invalid value ["A", null, "B"]; Expected non-nullable type String! not to be null at value[1].',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -893,8 +882,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" got invalid value ["A", null, "B"]; ' +
-              'Expected non-nullable type String! not to be null at value[1].',
+              'Variable "$input" got invalid value ["A", null, "B"]; Expected non-nullable type String! not to be null at value[1].',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -913,8 +901,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" expected value of type "TestType!" which ' +
-              'cannot be used as an input type.',
+              'Variable "$input" expected value of type "TestType!" which cannot be used as an input type.',
             locations: [{ line: 2, column: 24 }],
           },
         ],
@@ -933,8 +920,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" expected value of type "UnknownType!" which ' +
-              'cannot be used as an input type.',
+              'Variable "$input" expected value of type "UnknownType!" which cannot be used as an input type.',
             locations: [{ line: 2, column: 24 }],
           },
         ],
