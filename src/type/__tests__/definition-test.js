@@ -80,11 +80,6 @@ function schemaWithObjectWithFieldResolver(
   });
 }
 
-const ObjectWithIsTypeOf = new GraphQLObjectType({
-  name: 'ObjectWithIsTypeOf',
-  fields: { f: { type: GraphQLString } },
-});
-
 describe('Type System: Scalars', () => {
   it('accepts a Scalar type defining serialize', () => {
     expect(() =>
@@ -315,17 +310,6 @@ describe('Type System: Objects', () => {
     expect(() => schemaWithObjectWithFieldResolver(() => ({}))).not.to.throw();
   });
 
-  it('accepts an Object type with an isTypeOf function', () => {
-    expect(() => {
-      schemaWithFieldType(
-        new GraphQLObjectType({
-          name: 'AnotherObject',
-          fields: { f: { type: GraphQLString } },
-        }),
-      );
-    }).not.to.throw();
-  });
-
   it('rejects an Object type field with undefined config', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
@@ -474,40 +458,6 @@ describe('Type System: Interfaces', () => {
     }).not.to.throw();
   });
 
-  it('accepts an Interface with implementing type defining isTypeOf', () => {
-    expect(() => {
-      const InterfaceTypeWithoutResolveType = new GraphQLInterfaceType({
-        name: 'InterfaceTypeWithoutResolveType',
-        fields: { f: { type: GraphQLString } },
-      });
-
-      schemaWithFieldType(
-        new GraphQLObjectType({
-          name: 'SomeObject',
-          interfaces: [InterfaceTypeWithoutResolveType],
-          fields: { f: { type: GraphQLString } },
-        }),
-      );
-    }).not.to.throw();
-  });
-
-  it('accepts an Interface type defining resolveType with implementing type defining isTypeOf', () => {
-    expect(() => {
-      const AnotherInterfaceType = new GraphQLInterfaceType({
-        name: 'AnotherInterface',
-        fields: { f: { type: GraphQLString } },
-      });
-
-      schemaWithFieldType(
-        new GraphQLObjectType({
-          name: 'SomeObject',
-          interfaces: [AnotherInterfaceType],
-          fields: { f: { type: GraphQLString } },
-        }),
-      );
-    }).not.to.throw();
-  });
-
   it('rejects an Interface type with an incorrect type for resolveType', () => {
     expect(
       () =>
@@ -540,28 +490,6 @@ describe('Type System: Unions', () => {
         new GraphQLUnionType({
           name: 'SomeUnion',
           types: [ObjectType],
-        }),
-      ),
-    ).not.to.throw();
-  });
-
-  it('accepts a Union of Object types defining isTypeOf', () => {
-    expect(() =>
-      schemaWithFieldType(
-        new GraphQLUnionType({
-          name: 'SomeUnion',
-          types: [ObjectWithIsTypeOf],
-        }),
-      ),
-    ).not.to.throw();
-  });
-
-  it('accepts a Union type defining resolveType of Object types defining isTypeOf', () => {
-    expect(() =>
-      schemaWithFieldType(
-        new GraphQLUnionType({
-          name: 'SomeUnion',
-          types: [ObjectWithIsTypeOf],
         }),
       ),
     ).not.to.throw();
