@@ -128,7 +128,7 @@ describe('Visitor', () => {
 
     let selectionSet;
 
-    const editedAst = visit(ast, {
+    const editedAST = visit(ast, {
       OperationDefinition: {
         enter(node) {
           checkVisitorFnArgs(ast, arguments);
@@ -153,7 +153,7 @@ describe('Visitor', () => {
       },
     });
 
-    expect(editedAst).to.deep.equal({
+    expect(editedAST).to.deep.equal({
       ...ast,
       definitions: [
         {
@@ -170,7 +170,7 @@ describe('Visitor', () => {
 
     const { definitions } = ast;
 
-    const editedAst = visit(ast, {
+    const editedAST = visit(ast, {
       Document: {
         enter(node) {
           checkVisitorFnArgs(ast, arguments);
@@ -191,7 +191,7 @@ describe('Visitor', () => {
       },
     });
 
-    expect(editedAst).to.deep.equal({
+    expect(editedAST).to.deep.equal({
       ...ast,
       didEnter: true,
       didLeave: true,
@@ -200,7 +200,7 @@ describe('Visitor', () => {
 
   it('allows for editing on enter', () => {
     const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
-    const editedAst = visit(ast, {
+    const editedAST = visit(ast, {
       enter(node) {
         checkVisitorFnArgs(ast, arguments);
         if (node.kind === 'Field' && node.name.value === 'b') {
@@ -213,14 +213,14 @@ describe('Visitor', () => {
       parse('{ a, b, c { a, b, c } }', { noLocation: true }),
     );
 
-    expect(editedAst).to.deep.equal(
+    expect(editedAST).to.deep.equal(
       parse('{ a,    c { a,    c } }', { noLocation: true }),
     );
   });
 
   it('allows for editing on leave', () => {
     const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
-    const editedAst = visit(ast, {
+    const editedAST = visit(ast, {
       leave(node) {
         checkVisitorFnArgs(ast, arguments, /* isEdited */ true);
         if (node.kind === 'Field' && node.name.value === 'b') {
@@ -233,7 +233,7 @@ describe('Visitor', () => {
       parse('{ a, b, c { a, b, c } }', { noLocation: true }),
     );
 
-    expect(editedAst).to.deep.equal(
+    expect(editedAST).to.deep.equal(
       parse('{ a,    c { a,    c } }', { noLocation: true }),
     );
   });
@@ -1169,7 +1169,7 @@ describe('Visitor', () => {
       const visited = [];
 
       const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
-      const editedAst = visit(
+      const editedAST = visit(
         ast,
         visitInParallel([
           {
@@ -1197,7 +1197,7 @@ describe('Visitor', () => {
         parse('{ a, b, c { a, b, c } }', { noLocation: true }),
       );
 
-      expect(editedAst).to.deep.equal(
+      expect(editedAST).to.deep.equal(
         parse('{ a,    c { a,    c } }', { noLocation: true }),
       );
 
@@ -1233,7 +1233,7 @@ describe('Visitor', () => {
       const visited = [];
 
       const ast = parse('{ a, b, c { a, b, c } }', { noLocation: true });
-      const editedAst = visit(
+      const editedAST = visit(
         ast,
         visitInParallel([
           {
@@ -1261,7 +1261,7 @@ describe('Visitor', () => {
         parse('{ a, b, c { a, b, c } }', { noLocation: true }),
       );
 
-      expect(editedAst).to.deep.equal(
+      expect(editedAST).to.deep.equal(
         parse('{ a,    c { a,    c } }', { noLocation: true }),
       );
 
@@ -1392,7 +1392,7 @@ describe('Visitor', () => {
       const typeInfo = new TypeInfo(testSchema);
 
       const ast = parse('{ human(id: 4) { name, pets }, alien }');
-      const editedAst = visit(
+      const editedAST = visit(
         ast,
         visitWithTypeInfo(typeInfo, {
           enter(node) {
@@ -1454,7 +1454,7 @@ describe('Visitor', () => {
         print(parse('{ human(id: 4) { name, pets }, alien }')),
       );
 
-      expect(print(editedAst)).to.deep.equal(
+      expect(print(editedAST)).to.deep.equal(
         print(
           parse(
             '{ human(id: 4) { name, pets { __typename } }, alien { __typename } }',

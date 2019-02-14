@@ -28,44 +28,44 @@ describe('Printer: Query document', () => {
   });
 
   it('produces helpful error messages', () => {
-    const badAst1 = { random: 'Data' };
+    const badAST = { random: 'Data' };
     // $DisableFlowOnNegativeTest
-    expect(() => print(badAst1)).to.throw(
+    expect(() => print(badAST)).to.throw(
       'Invalid AST Node: { random: "Data" }',
     );
   });
 
   it('correctly prints non-query operations without name', () => {
-    const queryAstShorthanded = parse('query { id, name }');
-    expect(print(queryAstShorthanded)).to.equal(dedent`
+    const queryASTShorthanded = parse('query { id, name }');
+    expect(print(queryASTShorthanded)).to.equal(dedent`
       {
         id
         name
       }
     `);
 
-    const mutationAst = parse('mutation { id, name }');
-    expect(print(mutationAst)).to.equal(dedent`
+    const mutationAST = parse('mutation { id, name }');
+    expect(print(mutationAST)).to.equal(dedent`
       mutation {
         id
         name
       }
     `);
 
-    const queryAstWithArtifacts = parse(
+    const queryASTWithArtifacts = parse(
       'query ($foo: TestType) @testDirective { id, name }',
     );
-    expect(print(queryAstWithArtifacts)).to.equal(dedent`
+    expect(print(queryASTWithArtifacts)).to.equal(dedent`
       query ($foo: TestType) @testDirective {
         id
         name
       }
     `);
 
-    const mutationAstWithArtifacts = parse(
+    const mutationASTWithArtifacts = parse(
       'mutation ($foo: TestType) @testDirective { id, name }',
     );
-    expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+    expect(print(mutationASTWithArtifacts)).to.equal(dedent`
       mutation ($foo: TestType) @testDirective {
         id
         name
@@ -74,10 +74,10 @@ describe('Printer: Query document', () => {
   });
 
   it('prints query with variable directives', () => {
-    const queryAstWithVariableDirective = parse(
+    const queryASTWithVariableDirective = parse(
       'query ($foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
     );
-    expect(print(queryAstWithVariableDirective)).to.equal(dedent`
+    expect(print(queryASTWithVariableDirective)).to.equal(dedent`
       query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
         id
       }
@@ -85,13 +85,13 @@ describe('Printer: Query document', () => {
   });
 
   it('Experimental: prints fragment with variable directives', () => {
-    const queryAstWithVariableDirective = parse(
+    const queryASTWithVariableDirective = parse(
       'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
       {
         experimentalFragmentVariables: true,
       },
     );
-    expect(print(queryAstWithVariableDirective)).to.equal(dedent`
+    expect(print(queryASTWithVariableDirective)).to.equal(dedent`
       fragment Foo($foo: TestType @test) on TestType @testDirective {
         id
       }
@@ -100,10 +100,10 @@ describe('Printer: Query document', () => {
 
   describe('block string', () => {
     it('correctly prints single-line with leading space', () => {
-      const mutationAstWithArtifacts = parse(
+      const mutationASTWithArtifacts = parse(
         '{ field(arg: """    space-led value""") }',
       );
-      expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+      expect(print(mutationASTWithArtifacts)).to.equal(dedent`
         {
           field(arg: """    space-led value""")
         }
@@ -111,7 +111,7 @@ describe('Printer: Query document', () => {
     });
 
     it('correctly prints string with a first line indentation', () => {
-      const mutationAstWithArtifacts = parse(`
+      const mutationASTWithArtifacts = parse(`
         {
           field(arg: """
                 first
@@ -120,7 +120,7 @@ describe('Printer: Query document', () => {
           """)
         }
       `);
-      expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+      expect(print(mutationASTWithArtifacts)).to.equal(dedent`
         {
           field(arg: """
                 first
@@ -132,13 +132,13 @@ describe('Printer: Query document', () => {
     });
 
     it('correctly prints single-line with leading space and quotation', () => {
-      const mutationAstWithArtifacts = parse(`
+      const mutationASTWithArtifacts = parse(`
         {
           field(arg: """    space-led value "quoted string"
           """)
         }
       `);
-      expect(print(mutationAstWithArtifacts)).to.equal(dedent`
+      expect(print(mutationASTWithArtifacts)).to.equal(dedent`
         {
           field(arg: """    space-led value "quoted string"
           """)

@@ -24,9 +24,9 @@ describe('Printer: SDL document', () => {
   });
 
   it('produces helpful error messages', () => {
-    const badAst1 = { random: 'Data' };
+    const badAST = { random: 'Data' };
     // $DisableFlowOnNegativeTest
-    expect(() => print(badAst1)).to.throw(
+    expect(() => print(badAST)).to.throw(
       'Invalid AST Node: { random: "Data" }',
     );
   });
