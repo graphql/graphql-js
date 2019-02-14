@@ -11,7 +11,6 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import {
-  GraphQLSchema,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -20,14 +19,8 @@ import {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLString,
-} from '../';
-
-import type {
-  GraphQLType,
-  GraphQLNullableType,
-  GraphQLFieldResolver,
-} from '../';
+} from '../definition';
+import type { GraphQLType, GraphQLNullableType } from '../definition';
 
 const ScalarType = new GraphQLScalarType({ name: 'Scalar', serialize() {} });
 const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
@@ -47,122 +40,80 @@ const NonNullScalarType = GraphQLNonNull(ScalarType);
 const ListOfNonNullScalarsType = GraphQLList(NonNullScalarType);
 const NonNullListofScalars = GraphQLNonNull(ListOfScalarsType);
 
-function schemaWithFieldType(type) {
-  return new GraphQLSchema({
-    query: new GraphQLObjectType({
-      name: 'Query',
-      fields: { field: { type } },
-    }),
-    types: [type],
-  });
-}
-
-function schemaWithObjectWithFieldResolver(
-  resolveValue: GraphQLFieldResolver<*, *>,
-) {
-  const BadResolverType = new GraphQLObjectType({
-    name: 'BadResolver',
-    fields: {
-      badField: {
-        type: GraphQLString,
-        resolve: resolveValue,
-      },
-    },
-  });
-
-  return new GraphQLSchema({
-    query: new GraphQLObjectType({
-      name: 'Query',
-      fields: {
-        f: { type: BadResolverType },
-      },
-    }),
-  });
-}
-
 describe('Type System: Scalars', () => {
   it('accepts a Scalar type defining serialize', () => {
-    expect(() =>
-      schemaWithFieldType(
+    expect(
+      () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
           serialize: () => null,
         }),
-      ),
     ).not.to.throw();
   });
 
   it('accepts a Scalar type defining parseValue and parseLiteral', () => {
-    expect(() =>
-      schemaWithFieldType(
+    expect(
+      () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
           serialize: () => null,
           parseValue: () => null,
           parseLiteral: () => null,
         }),
-      ),
     ).not.to.throw();
   });
 
   it('rejects a Scalar type not defining serialize', () => {
-    expect(() =>
-      schemaWithFieldType(
-        // $DisableFlowOnNegativeTest
-        new GraphQLScalarType({
-          name: 'SomeScalar',
-        }),
-      ),
+    expect(
+      // $DisableFlowOnNegativeTest
+      () => new GraphQLScalarType({ name: 'SomeScalar' }),
     ).to.throw(
       'SomeScalar must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
     );
   });
 
   it('rejects a Scalar type defining serialize with an incorrect type', () => {
-    expect(() =>
-      schemaWithFieldType(
+    expect(
+      () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
           // $DisableFlowOnNegativeTest
           serialize: {},
         }),
-      ),
     ).to.throw(
       'SomeScalar must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
     );
   });
 
   it('rejects a Scalar type defining parseValue but not parseLiteral', () => {
-    expect(() =>
-      schemaWithFieldType(
+    expect(
+      () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
           serialize: () => null,
           parseValue: () => null,
         }),
-      ),
     ).to.throw(
       'SomeScalar must provide both "parseValue" and "parseLiteral" functions.',
     );
   });
 
   it('rejects a Scalar type defining parseLiteral but not parseValue', () => {
-    expect(() =>
-      schemaWithFieldType(
+    expect(
+      () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
           serialize: () => null,
           parseLiteral: () => null,
         }),
-      ),
     ).to.throw(
       'SomeScalar must provide both "parseValue" and "parseLiteral" functions.',
     );
   });
 
   it('rejects a Scalar type defining parseValue and parseLiteral with an incorrect type', () => {
-    expect(() =>
-      schemaWithFieldType(
+    expect(
+      () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
           serialize: () => null,
@@ -171,7 +122,6 @@ describe('Type System: Scalars', () => {
           // $DisableFlowOnNegativeTest
           parseLiteral: {},
         }),
-      ),
     ).to.throw(
       'SomeScalar must provide both "parseValue" and "parseLiteral" functions.',
     );
@@ -181,13 +131,11 @@ describe('Type System: Scalars', () => {
 describe('Type System: Objects', () => {
   it('does not mutate passed field definitions', () => {
     const outputFields = {
-      field1: { type: GraphQLString },
+      field1: { type: ScalarType },
       field2: {
-        type: GraphQLString,
+        type: ScalarType,
         args: {
-          id: {
-            type: GraphQLString,
-          },
+          id: { type: ScalarType },
         },
       },
     };
@@ -203,21 +151,19 @@ describe('Type System: Objects', () => {
     expect(testObject1.getFields()).to.deep.equal(testObject2.getFields());
     expect(outputFields).to.deep.equal({
       field1: {
-        type: GraphQLString,
+        type: ScalarType,
       },
       field2: {
-        type: GraphQLString,
+        type: ScalarType,
         args: {
-          id: {
-            type: GraphQLString,
-          },
+          id: { type: ScalarType },
         },
       },
     });
 
     const inputFields = {
-      field1: { type: GraphQLString },
-      field2: { type: GraphQLString },
+      field1: { type: ScalarType },
+      field2: { type: ScalarType },
     };
     const testInputObject1 = new GraphQLInputObjectType({
       name: 'Test1',
@@ -232,8 +178,8 @@ describe('Type System: Objects', () => {
       testInputObject2.getFields(),
     );
     expect(inputFields).to.deep.equal({
-      field1: { type: GraphQLString },
-      field2: { type: GraphQLString },
+      field1: { type: ScalarType },
+      field2: { type: ScalarType },
     });
   });
 
@@ -242,14 +188,14 @@ describe('Type System: Objects', () => {
       name: 'foo',
       fields: {
         bar: {
-          type: GraphQLString,
+          type: ScalarType,
           deprecationReason: 'A terrible reason',
         },
       },
     });
 
     expect(TypeWithDeprecatedField.getFields().bar).to.deep.equal({
-      type: GraphQLString,
+      type: ScalarType,
       deprecationReason: 'A terrible reason',
       isDeprecated: true,
       name: 'bar',
@@ -260,50 +206,74 @@ describe('Type System: Objects', () => {
   it('accepts an Object type with a field function', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
-      fields() {
-        return {
-          f: { type: GraphQLString },
-        };
-      },
+      fields: () => ({
+        f: { type: ScalarType },
+      }),
     });
-    expect(objType.getFields().f.type).to.equal(GraphQLString);
+    expect(objType.getFields()).to.deep.equal({
+      f: { name: 'f', type: ScalarType, args: [], isDeprecated: false },
+    });
   });
 
   it('accepts an Object type with field args', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {
-        goodField: {
-          type: GraphQLString,
+        f: {
+          type: ScalarType,
           args: {
-            goodArg: { type: GraphQLString },
+            arg: { type: ScalarType },
           },
         },
       },
     });
-    expect(() => objType.getFields()).not.to.throw();
+    expect(objType.getFields()).to.deep.equal({
+      f: {
+        name: 'f',
+        type: ScalarType,
+        args: [
+          {
+            name: 'arg',
+            type: ScalarType,
+            description: null,
+            defaultValue: undefined,
+            astNode: undefined,
+          },
+        ],
+        isDeprecated: false,
+      },
+    });
   });
 
   it('accepts an Object type with array interfaces', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
+      fields: {},
       interfaces: [InterfaceType],
-      fields: { f: { type: GraphQLString } },
     });
-    expect(objType.getInterfaces()[0]).to.equal(InterfaceType);
+    expect(objType.getInterfaces()).to.deep.equal([InterfaceType]);
   });
 
   it('accepts an Object type with interfaces as a function returning an array', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
+      fields: {},
       interfaces: () => [InterfaceType],
-      fields: { f: { type: GraphQLString } },
     });
-    expect(objType.getInterfaces()[0]).to.equal(InterfaceType);
+    expect(objType.getInterfaces()).to.deep.equal([InterfaceType]);
   });
 
   it('accepts a lambda as an Object field resolver', () => {
-    expect(() => schemaWithObjectWithFieldResolver(() => ({}))).not.to.throw();
+    const objType = new GraphQLObjectType({
+      name: 'SomeObject',
+      fields: {
+        f: {
+          type: ScalarType,
+          resolve: () => ({}),
+        },
+      },
+    });
+    expect(() => objType.getFields()).not.to.throw();
   });
 
   it('rejects an Object type field with undefined config', () => {
@@ -323,7 +293,7 @@ describe('Type System: Objects', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       // $DisableFlowOnNegativeTest
-      fields: [{ field: GraphQLString }],
+      fields: [{ field: ScalarType }],
     });
     expect(() => objType.getFields()).to.throw(
       'SomeObject fields must be an object with field names as keys or a function which returns such an object.',
@@ -335,7 +305,7 @@ describe('Type System: Objects', () => {
       name: 'SomeObject',
       fields() {
         // $DisableFlowOnNegativeTest
-        return [{ field: GraphQLString }];
+        return [{ field: ScalarType }];
       },
     });
     expect(() => objType.getFields()).to.throw(
@@ -348,9 +318,9 @@ describe('Type System: Objects', () => {
       name: 'SomeObject',
       fields: {
         badField: {
-          type: GraphQLString,
+          type: ScalarType,
           // $DisableFlowOnNegativeTest
-          args: [{ badArg: GraphQLString }],
+          args: [{ badArg: ScalarType }],
         },
       },
     });
@@ -360,17 +330,15 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an Object type with an isDeprecated instead of deprecationReason on field', () => {
-    expect(() => {
-      const OldObject = new GraphQLObjectType({
-        name: 'OldObject',
-        fields: {
-          // $DisableFlowOnNegativeTest
-          field: { type: GraphQLString, isDeprecated: true },
-        },
-      });
+    const OldObject = new GraphQLObjectType({
+      name: 'OldObject',
+      fields: {
+        // $DisableFlowOnNegativeTest
+        field: { type: ScalarType, isDeprecated: true },
+      },
+    });
 
-      return schemaWithFieldType(OldObject);
-    }).to.throw(
+    expect(() => OldObject.getFields()).to.throw(
       'OldObject.field should provide "deprecationReason" instead of "isDeprecated".',
     );
   });
@@ -402,30 +370,43 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an empty Object field resolver', () => {
-    // $DisableFlowOnNegativeTest
-    expect(() => schemaWithObjectWithFieldResolver({})).to.throw(
-      'BadResolver.badField field resolver must be a function if provided, but got: {}.',
+    const objType = new GraphQLObjectType({
+      name: 'SomeObject',
+      fields: {
+        // $DisableFlowOnNegativeTest
+        field: { type: ScalarType, resolve: {} },
+      },
+    });
+
+    expect(() => objType.getFields()).to.throw(
+      'SomeObject.field field resolver must be a function if provided, but got: {}.',
     );
   });
 
   it('rejects a constant scalar value resolver', () => {
-    // $DisableFlowOnNegativeTest
-    expect(() => schemaWithObjectWithFieldResolver(0)).to.throw(
-      'BadResolver.badField field resolver must be a function if provided, but got: 0.',
+    const objType = new GraphQLObjectType({
+      name: 'SomeObject',
+      fields: {
+        // $DisableFlowOnNegativeTest
+        field: { type: ScalarType, resolve: 0 },
+      },
+    });
+
+    expect(() => objType.getFields()).to.throw(
+      'SomeObject.field field resolver must be a function if provided, but got: 0.',
     );
   });
 
   it('rejects an Object type with an incorrect type for isTypeOf', () => {
-    expect(() => {
-      schemaWithFieldType(
+    expect(
+      () =>
         new GraphQLObjectType({
           name: 'AnotherObject',
           fields: {},
           // $DisableFlowOnNegativeTest
           isTypeOf: {},
         }),
-      );
-    }).to.throw(
+    ).to.throw(
       'AnotherObject must provide "isTypeOf" as a function, but got: {}.',
     );
   });
@@ -433,20 +414,13 @@ describe('Type System: Objects', () => {
 
 describe('Type System: Interfaces', () => {
   it('accepts an Interface type defining resolveType', () => {
-    expect(() => {
-      const AnotherInterfaceType = new GraphQLInterfaceType({
-        name: 'AnotherInterface',
-        fields: { f: { type: GraphQLString } },
-      });
-
-      schemaWithFieldType(
-        new GraphQLObjectType({
-          name: 'SomeObject',
-          interfaces: [AnotherInterfaceType],
-          fields: { f: { type: GraphQLString } },
+    expect(
+      () =>
+        new GraphQLInterfaceType({
+          name: 'AnotherInterface',
+          fields: { f: { type: ScalarType } },
         }),
-      );
-    }).not.to.throw();
+    ).not.to.throw();
   });
 
   it('rejects an Interface type with an incorrect type for resolveType', () => {
@@ -465,85 +439,62 @@ describe('Type System: Interfaces', () => {
 });
 
 describe('Type System: Unions', () => {
-  it('allows a thunk for Union member types', () => {
-    const union = new GraphQLUnionType({
-      name: 'ThunkUnion',
-      types: () => [ObjectType],
-    });
-
-    const types = union.getTypes();
-    expect(types).to.have.members([ObjectType]);
-  });
-
   it('accepts a Union type defining resolveType', () => {
-    expect(() =>
-      schemaWithFieldType(
+    expect(
+      () =>
         new GraphQLUnionType({
           name: 'SomeUnion',
           types: [ObjectType],
         }),
-      ),
     ).not.to.throw();
   });
 
   it('accepts a Union type with array types', () => {
-    expect(() =>
-      schemaWithFieldType(
-        new GraphQLUnionType({
-          name: 'SomeUnion',
-          types: [ObjectType],
-        }),
-      ),
-    ).not.to.throw();
+    const unionType = new GraphQLUnionType({
+      name: 'SomeUnion',
+      types: [ObjectType],
+    });
+    expect(unionType.getTypes()).to.deep.equal([ObjectType]);
   });
 
   it('accepts a Union type with function returning an array of types', () => {
-    expect(() =>
-      schemaWithFieldType(
-        new GraphQLUnionType({
-          name: 'SomeUnion',
-          types: () => [ObjectType],
-        }),
-      ),
-    ).not.to.throw();
+    const unionType = new GraphQLUnionType({
+      name: 'SomeUnion',
+      types: () => [ObjectType],
+    });
+    expect(unionType.getTypes()).to.deep.equal([ObjectType]);
   });
 
   it('accepts a Union type without types', () => {
-    expect(() =>
-      schemaWithFieldType(
-        new GraphQLUnionType({
-          name: 'SomeUnion',
-          types: [],
-        }),
-      ),
-    ).not.to.throw();
+    const unionType = new GraphQLUnionType({
+      name: 'SomeUnion',
+      types: [],
+    });
+    expect(unionType.getTypes()).to.deep.equal([]);
   });
 
-  it('rejects an Interface type with an incorrect type for resolveType', () => {
-    expect(() =>
-      schemaWithFieldType(
+  it('rejects an Union type with an incorrect type for resolveType', () => {
+    expect(
+      () =>
         new GraphQLUnionType({
           name: 'SomeUnion',
           types: [],
           // $DisableFlowOnNegativeTest
           resolveType: {},
         }),
-      ),
     ).to.throw(
       'SomeUnion must provide "resolveType" as a function, but got: {}.',
     );
   });
 
   it('rejects a Union type with incorrectly typed types', () => {
-    expect(() =>
-      schemaWithFieldType(
-        new GraphQLUnionType({
-          name: 'SomeUnion',
-          // $DisableFlowOnNegativeTest
-          types: { ObjectType },
-        }),
-      ),
-    ).to.throw(
+    const unionType = new GraphQLUnionType({
+      name: 'SomeUnion',
+      // $DisableFlowOnNegativeTest
+      types: { ObjectType },
+    });
+
+    expect(() => unionType.getTypes()).to.throw(
       'Must provide Array of types or a function which returns such an array for Union SomeUnion.',
     );
   });
@@ -620,47 +571,53 @@ describe('Type System: Enums', () => {
   });
 
   it('rejects an Enum type with incorrectly typed values', () => {
-    const config = {
-      name: 'SomeEnum',
-      // $DisableFlowOnNegativeTest
-      values: [{ FOO: 10 }],
-    };
-    expect(() => new GraphQLEnumType(config)).to.throw(
-      'SomeEnum values must be an object with value names as keys.',
-    );
+    expect(
+      () =>
+        new GraphQLEnumType({
+          name: 'SomeEnum',
+          // $DisableFlowOnNegativeTest
+          values: [{ FOO: 10 }],
+        }),
+    ).to.throw('SomeEnum values must be an object with value names as keys.');
   });
 
   it('rejects an Enum type with missing value definition', () => {
-    const config = {
-      name: 'SomeEnum',
-      // $DisableFlowOnNegativeTest
-      values: { FOO: null },
-    };
-    expect(() => new GraphQLEnumType(config)).to.throw(
+    expect(
+      () =>
+        new GraphQLEnumType({
+          name: 'SomeEnum',
+          // $DisableFlowOnNegativeTest
+          values: { FOO: null },
+        }),
+    ).to.throw(
       'SomeEnum.FOO must refer to an object with a "value" key representing an internal value but got: null.',
     );
   });
 
   it('rejects an Enum type with incorrectly typed value definition', () => {
-    const config = {
-      name: 'SomeEnum',
-      // $DisableFlowOnNegativeTest
-      values: { FOO: 10 },
-    };
-    expect(() => new GraphQLEnumType(config)).to.throw(
+    expect(
+      () =>
+        new GraphQLEnumType({
+          name: 'SomeEnum',
+          // $DisableFlowOnNegativeTest
+          values: { FOO: 10 },
+        }),
+    ).to.throw(
       'SomeEnum.FOO must refer to an object with a "value" key representing an internal value but got: 10.',
     );
   });
 
   it('does not allow isDeprecated instead of deprecationReason on enum', () => {
-    const config = {
-      name: 'SomeEnum',
-      values: {
-        // $DisableFlowOnNegativeTest
-        FOO: { isDeprecated: true },
-      },
-    };
-    expect(() => new GraphQLEnumType(config)).to.throw(
+    expect(
+      () =>
+        new GraphQLEnumType({
+          name: 'SomeEnum',
+          values: {
+            // $DisableFlowOnNegativeTest
+            FOO: { isDeprecated: true },
+          },
+        }),
+    ).to.throw(
       'SomeEnum.FOO should provide "deprecationReason" instead of "isDeprecated".',
     );
   });
@@ -672,22 +629,24 @@ describe('Type System: Input Objects', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
         fields: {
-          f: { type: GraphQLString },
+          f: { type: ScalarType },
         },
       });
-      expect(inputObjType.getFields().f.type).to.equal(GraphQLString);
+      expect(inputObjType.getFields()).to.deep.equal({
+        f: { name: 'f', type: ScalarType },
+      });
     });
 
     it('accepts an Input Object type with a field function', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
-        fields() {
-          return {
-            f: { type: GraphQLString },
-          };
-        },
+        fields: () => ({
+          f: { type: ScalarType },
+        }),
       });
-      expect(inputObjType.getFields().f.type).to.equal(GraphQLString);
+      expect(inputObjType.getFields()).to.deep.equal({
+        f: { name: 'f', type: ScalarType },
+      });
     });
 
     it('rejects an Input Object type with incorrect fields', () => {
@@ -719,7 +678,7 @@ describe('Type System: Input Objects', () => {
         name: 'SomeInputObject',
         fields: {
           // $DisableFlowOnNegativeTest
-          f: { type: GraphQLString, resolve: () => 0 },
+          f: { type: ScalarType, resolve: () => 0 },
         },
       });
       expect(() => inputObjType.getFields()).to.throw(
@@ -732,7 +691,7 @@ describe('Type System: Input Objects', () => {
         name: 'SomeInputObject',
         fields: {
           // $DisableFlowOnNegativeTest
-          f: { type: GraphQLString, resolve: {} },
+          f: { type: ScalarType, resolve: {} },
         },
       });
       expect(() => inputObjType.getFields()).to.throw(
