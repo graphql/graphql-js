@@ -111,7 +111,7 @@ async function createSubscription(pubsub, schema = emailSchema, ast, vars) {
     });
   }
 
-  const defaultAst = parse(`
+  const defaultAST = parse(`
     subscription ($priority: Int = 0) {
       importantEmail(priority: $priority) {
         email {
@@ -129,7 +129,7 @@ async function createSubscription(pubsub, schema = emailSchema, ast, vars) {
   // `subscribe` returns Promise<AsyncIterator | ExecutionResult>
   return {
     sendImportantEmail,
-    subscription: await subscribe(schema, ast || defaultAst, data, null, vars),
+    subscription: await subscribe(schema, ast || defaultAST, data, null, vars),
   };
 }
 
