@@ -18,15 +18,6 @@ import { getNamedType, isCompositeType } from '../../type';
 import { Kind } from '../kinds';
 import { kitchenSinkQuery } from '../../__fixtures__';
 
-function getNodeByPath(ast, path) {
-  let result = ast;
-  for (const key of path) {
-    expect(result).to.have.property(key);
-    result = result[key];
-  }
-  return result;
-}
-
 function checkVisitorFnArgs(ast, args, isEdited) {
   const [node, key, parent, path, ancestors] = args;
 
@@ -55,12 +46,16 @@ function checkVisitorFnArgs(ast, args, isEdited) {
   expect(ancestors.length).to.equal(path.length - 1);
 
   if (!isEdited) {
-    expect(parent[key]).to.equal(node);
-    expect(getNodeByPath(ast, path)).to.be.equal(node);
+    let currentNode = ast;
     for (let i = 0; i < ancestors.length; ++i) {
-      const ancestorPath = path.slice(0, i);
-      expect(ancestors[i]).to.equal(getNodeByPath(ast, ancestorPath));
+      expect(ancestors[i]).to.equal(currentNode);
+
+      currentNode = currentNode[path[i]];
+      expect(currentNode).to.not.equal(undefined);
     }
+
+    expect(parent).to.equal(currentNode);
+    expect(parent[key]).to.equal(node);
   }
 }
 
