@@ -26,7 +26,7 @@
     "test": "npm run lint && npm run check && npm run testonly",
     "test:ci": "npm run lint && npm run check && npm run testonly:cover",
     "t": "mocha --require @babel/register --require @babel/polyfill",
-    "testonly": "mocha --throw-deprecation --require @babel/register --require @babel/polyfill --check-leaks --full-trace --timeout 15000 src/**/__tests__/**/*-test.js",
+    "testonly": "mocha --throw-deprecation --require @babel/register --require @babel/polyfill --check-leaks --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc --clean --skip-full --reporter json --reporter html --reporter text -- npm run testonly",
     "lint": "eslint --report-unused-disable-directives src || (printf '\\033[33mTry: \\033[7m npm run lint -- --fix \\033[0m\\n' && exit 1)",
     "benchmark": "node ./resources/benchmark.js",
