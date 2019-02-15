@@ -460,19 +460,24 @@ describe('Visitor', () => {
   it('visits kitchen sink', () => {
     const ast = parse(kitchenSinkQuery);
     const visited = [];
+    const argsStack = [];
 
     visit(ast, {
       enter(node, key, parent) {
-        checkVisitorFnArgs(ast, arguments);
         visited.push(['enter', node.kind, key, parent && parent.kind]);
+
+        checkVisitorFnArgs(ast, arguments);
+        argsStack.push([...arguments]);
       },
 
       leave(node, key, parent) {
-        checkVisitorFnArgs(ast, arguments);
         visited.push(['leave', node.kind, key, parent && parent.kind]);
+
+        expect(argsStack.pop()).to.deep.equal([...arguments]);
       },
     });
 
+    expect(argsStack).to.deep.equal([]);
     expect(visited).to.deep.equal([
       ['enter', 'Document', undefined, undefined],
       ['enter', 'OperationDefinition', 0, undefined],
