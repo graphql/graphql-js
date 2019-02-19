@@ -25,7 +25,6 @@
     "watch": "node ./resources/watch.js",
     "test": "npm run lint && npm run check && npm run testonly",
     "test:ci": "npm run lint && npm run check && npm run testonly:cover",
-    "t": "mocha",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc --clean --skip-full --reporter json --reporter html --reporter text -- npm run testonly",
     "lint": "eslint --report-unused-disable-directives src || (printf '\\033[33mTry: \\033[7m npm run lint -- --fix \\033[0m\\n' && exit 1)",
