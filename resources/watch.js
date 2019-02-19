@@ -94,8 +94,7 @@ function guardedCheck() {
 function checkFiles(filepaths) {
   console.log('\u001b[2J');
 
-  return parseFiles(filepaths)
-    .then(() => runTests(filepaths))
+  return runTests(filepaths)
     .then(testSuccess =>
       lintFiles(filepaths).then(lintSuccess =>
         typecheckStatus().then(
@@ -112,25 +111,6 @@ function checkFiles(filepaths) {
 }
 
 // Checking steps
-
-function parseFiles(filepaths) {
-  console.log('Checking Syntax');
-
-  return Promise.all(
-    filepaths.map(filepath => {
-      if (isJS(filepath) && !isTest(filepath)) {
-        return exec('babel', [
-          '--optional',
-          'runtime',
-          '--out-file',
-          '/dev/null',
-          srcPath(filepath),
-        ]);
-      }
-    })
-  );
-}
-
 function runTests(filepaths) {
   console.log('\nRunning Tests');
 
