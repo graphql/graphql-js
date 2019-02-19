@@ -10,7 +10,6 @@
 'use strict';
 
 const { Suite } = require('benchmark');
-const beautifyBenchmark = require('beautify-benchmark');
 const { execSync } = require('child_process');
 const os = require('os');
 const fs = require('fs');
@@ -83,25 +82,89 @@ function runBenchmark(benchmark, environments) {
   const modules = environments.map(({ distPath }) =>
     require(path.join(distPath, benchmark))
   );
+  const benchResults = []
+
   const suite = new Suite(modules[0].name, {
     onStart(event) {
       console.log('⏱️  ' + event.currentTarget.name);
-      beautifyBenchmark.reset();
     },
-    onCycle(event) {
-      beautifyBenchmark.add(event.target);
+    onCycle({ target }) {
+      benchResults.push(target);
+      process.stdout.write(
+        '  ' + cyan(benchResults.length) + ' tests completed.\u000D',
+      );
     },
     onError(event) {
       console.error(event.target.error);
     },
     onComplete() {
-      beautifyBenchmark.log();
+      console.log('\n');
+      beautifyBenchmark(benchResults);
     },
   });
   for (let i = 0; i < environments.length; i++) {
     suite.add(environments[i].revision, modules[i].measure);
   }
   suite.run({ async: false });
+  console.log('');
+}
+
+function beautifyBenchmark(results) {
+  const benches = results.map(result => ({
+    name: result.name,
+    error: result.error,
+    ops: result.hz,
+    deviation: result.stats.rme,
+    numRuns: result.stats.sample.length,
+  }));
+
+  const nameMaxLen = maxBy(benches, ({ name }) => name.length);
+  const opsTop = maxBy(benches, ({ ops }) => ops);
+  const opsMaxLen = maxBy(benches, ({ ops }) => beautifyNumber(ops).length);
+
+  for (const bench of benches) {
+    if (bench.error) {
+      console.log('  ' + bench.name + ': ' + red(String(bench.error)));
+      continue;
+    }
+
+    const { name, ops, deviation, numRuns } = bench;
+    console.log(
+      '  ' + nameStr() + grey(' x ') + opsStr() + ' ops/sec ' +
+      grey('\xb1') + deviationStr() + cyan('%') +
+      grey(' (' + numRuns + ' runs sampled)')
+    );
+
+    function nameStr() {
+      const nameFmt = name.padEnd(nameMaxLen);
+      return (ops === opsTop) ? green(nameFmt) : nameFmt;
+    }
+
+    function opsStr() {
+      const percent = ops / opsTop;
+      const colorFn = percent > 0.95 ? green : (percent > 0.80 ? yellow : red);
+      return colorFn(beautifyNumber(ops).padStart(opsMaxLen));
+    }
+
+    function deviationStr() {
+      const colorFn = deviation > 5 ? red : (deviation > 2 ? yellow : green);
+      return colorFn(deviation.toFixed(2));
+    }
+  }
+}
+
+function red(str)    { return '\u001b[31m' + str + '\u001b[0m' }
+function green(str)  { return '\u001b[32m' + str + '\u001b[0m' }
+function yellow(str) { return '\u001b[33m' + str + '\u001b[0m' }
+function cyan(str)   { return '\u001b[36m' + str + '\u001b[0m' }
+function grey(str)   { return '\u001b[90m' + str + '\u001b[0m' }
+
+function beautifyNumber(num) {
+  return Number(num.toFixed(num > 100 ? 0 : 2)).toLocaleString();
+}
+
+function maxBy(array, fn) {
+  return Math.max(...array.map(fn));
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
