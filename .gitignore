@@ -6,6 +6,7 @@
 # https://www.gitignore.io/
 
 .nyc_output
+.eslintcache
 node_modules
 coverage
 dist
