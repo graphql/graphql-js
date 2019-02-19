@@ -47,11 +47,9 @@ export function KnownDirectives(
     locationsMap[directive.name] = directive.locations;
   }
 
-  const astDefinitions = context.getDocument().definitions;
-  for (const def of astDefinitions) {
-    if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      locationsMap[def.name.value] = def.locations.map(name => name.value);
-    }
+  const defNodes = context.getDefinitionsMap().DirectiveDefinition || [];
+  for (const node of defNodes) {
+    locationsMap[node.name.value] = node.locations.map(name => name.value);
   }
 
   return {

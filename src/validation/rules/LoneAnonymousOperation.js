@@ -9,7 +9,6 @@
 
 import type { ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
-import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
 export function anonOperationNotAloneMessage(): string {
@@ -25,13 +24,9 @@ export function anonOperationNotAloneMessage(): string {
 export function LoneAnonymousOperation(
   context: ASTValidationContext,
 ): ASTVisitor {
-  let operationCount = 0;
+  const operationDefs = context.getDefinitionsMap().OperationDefinition;
+  const operationCount = operationDefs ? operationDefs.length : 0;
   return {
-    Document(node) {
-      operationCount = node.definitions.filter(
-        definition => definition.kind === Kind.OPERATION_DEFINITION,
-      ).length;
-    },
     OperationDefinition(node) {
       if (!node.name && operationCount > 1) {
         context.reportError(
