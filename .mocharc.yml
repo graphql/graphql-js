@@ -1,0 +1,5 @@
+throw-deprecation: true
+check-leaks: true
+require:
+  - '@babel/register'
+  - '@babel/polyfill'
