@@ -96,7 +96,7 @@ function checkFiles(filepaths) {
 
   return runTests(filepaths)
     .then(testSuccess =>
-      lintFiles(filepaths).then(lintSuccess =>
+      lintFiles().then(lintSuccess =>
         typecheckStatus().then(
           typecheckSuccess => testSuccess && lintSuccess && typecheckSuccess
         )
@@ -124,27 +124,9 @@ function runTests(filepaths) {
   ).catch(() => false);
 }
 
-function lintFiles(filepaths) {
+function lintFiles() {
   console.log('Linting Code\n');
-
-  return filepaths.reduce(
-    (prev, filepath) =>
-      prev.then(prevSuccess => {
-        if (isJS(filepath)) {
-          process.stdout.write('  ' + filepath + ' ...');
-          return exec('eslint', [srcPath(filepath)])
-            .catch(() => false)
-            .then(success => {
-              console.log(
-                CLEARLINE + '  ' + (success ? CHECK : X) + ' ' + filepath
-              );
-              return prevSuccess && success;
-            });
-        }
-        return prevSuccess;
-      }),
-    Promise.resolve(true)
-  );
+  return exec('eslint', ['--cache', 'src/']).catch(() => false);
 }
 
 function typecheckStatus() {
@@ -159,10 +141,6 @@ function srcPath(filepath) {
 }
 
 // Predicates
-
-function isJS(filepath) {
-  return filepath.indexOf('.js') === filepath.length - 3;
-}
 
 function allTests(filepaths) {
   return filepaths.length > 0 && filepaths.every(isTest);
