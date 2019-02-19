@@ -136,14 +136,7 @@ function runTests(filepaths) {
 
   return exec(
     'mocha',
-    [
-      '--reporter',
-      'progress',
-      '--require',
-      '@babel/register',
-      '--require',
-      '@babel/polyfill',
-    ].concat(
+    ['--reporter', 'progress'].concat(
       allTests(filepaths)
         ? filepaths.map(srcPath)
         : ['src/**/__tests__/**/*-test.js']
