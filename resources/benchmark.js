@@ -9,7 +9,7 @@
 
 'use strict';
 
-const { Suite } = require('benchmark');
+const { Benchmark } = require('benchmark');
 const { execSync } = require('child_process');
 const os = require('os');
 const fs = require('fs');
@@ -79,33 +79,21 @@ function findFiles(cwd, pattern) {
 
 // Run a given benchmark test with the provided revisions.
 function runBenchmark(benchmark, environments) {
-  const modules = environments.map(({ distPath }) =>
-    require(path.join(distPath, benchmark))
-  );
-  const benchResults = []
-
-  const suite = new Suite(modules[0].name, {
-    onStart(event) {
-      console.log('⏱️  ' + event.currentTarget.name);
-    },
-    onCycle({ target }) {
-      benchResults.push(target);
-      process.stdout.write(
-        '  ' + cyan(benchResults.length) + ' tests completed.\u000D',
-      );
-    },
-    onError(event) {
-      console.error(event.target.error);
-    },
-    onComplete() {
-      console.log('\n');
-      beautifyBenchmark(benchResults);
-    },
+  let benchmarkName;
+  const benches = environments.map(environment => {
+    const module = require(path.join(environment.distPath, benchmark))
+    benchmarkName = module.name;
+    return new Benchmark(environment.revision, module.measure);
   });
-  for (let i = 0; i < environments.length; i++) {
-    suite.add(environments[i].revision, modules[i].measure);
+
+  console.log('⏱️   ' + benchmarkName);
+  for (let i = 0; i < benches.length; ++i) {
+    benches[i].run({ async: false });
+    process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
   }
-  suite.run({ async: false });
+  console.log('\n');
+
+  beautifyBenchmark(benches);
   console.log('');
 }
 
