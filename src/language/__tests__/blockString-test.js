@@ -9,7 +9,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { dedentBlockStringValue } from '../blockString';
+import { dedentBlockStringValue, printBlockString } from '../blockString';
 
 function joinLines(...args) {
   return args.join('\n');
@@ -94,6 +94,54 @@ describe('dedentBlockStringValue', () => {
         '           ',
         'Yours,     ',
         '  GraphQL. ',
+      ),
+    );
+  });
+});
+
+describe('printBlockString', () => {
+  it('by default print block strings as single line', () => {
+    const str = 'one liner';
+    expect(printBlockString(str)).to.equal('"""one liner"""');
+    expect(printBlockString(str, '', true)).to.equal('"""\none liner\n"""');
+  });
+
+  it('correctly prints single-line with leading space', () => {
+    const str = '    space-led string';
+    expect(printBlockString(str)).to.equal('"""    space-led string"""');
+    expect(printBlockString(str, '', true)).to.equal(
+      '"""    space-led string\n"""',
+    );
+  });
+
+  it('correctly prints single-line with leading space and quotation', () => {
+    const str = '    space-led value "quoted string"';
+
+    expect(printBlockString(str)).to.equal(
+      '"""    space-led value "quoted string"\n"""',
+    );
+
+    expect(printBlockString(str, '', true)).to.equal(
+      '"""    space-led value "quoted string"\n"""',
+    );
+  });
+
+  it('correctly prints string with a first line indentation', () => {
+    const str = joinLines(
+      '    first  ',
+      '  line     ',
+      'indentation',
+      '     string',
+    );
+
+    expect(printBlockString(str)).to.equal(
+      joinLines(
+        '"""',
+        '    first  ',
+        '  line     ',
+        'indentation',
+        '     string',
+        '"""',
       ),
     );
   });

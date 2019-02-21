@@ -494,45 +494,6 @@ describe('Type System Printer', () => {
     expect(recreatedField).to.include({ description });
   });
 
-  it('Does not one-line print a description that ends with a quote', () => {
-    const description = 'This field is "awesome"';
-    const output = printSingleFieldSchema({
-      type: GraphQLString,
-      description,
-    });
-    expect(output).to.equal(dedent`
-      type Query {
-        """
-        This field is "awesome"
-        """
-        singleField: String
-      }
-    `);
-    const schema = buildSchema(output);
-    const recreatedRoot = assertObjectType(schema.getTypeMap().Query);
-    const recreatedField = recreatedRoot.getFields().singleField;
-    expect(recreatedField).to.include({ description });
-  });
-
-  it('Preserves leading spaces when printing a description', () => {
-    const description = '    This field is "awesome"';
-    const output = printSingleFieldSchema({
-      type: GraphQLString,
-      description,
-    });
-    expect(output).to.equal(dedent`
-      type Query {
-        """    This field is "awesome"
-        """
-        singleField: String
-      }
-    `);
-    const schema = buildSchema(output);
-    const recreatedRoot = assertObjectType(schema.getTypeMap().Query);
-    const recreatedField = recreatedRoot.getFields().singleField;
-    expect(recreatedField).to.include({ description });
-  });
-
   it('Print Introspection Schema', () => {
     const Schema = new GraphQLSchema({});
     const output = printIntrospectionSchema(Schema);
