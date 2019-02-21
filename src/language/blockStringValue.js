@@ -13,7 +13,7 @@
  *
  * This implements the GraphQL spec's BlockStringValue() static algorithm.
  */
-export default function blockStringValue(rawString: string): string {
+export function dedentBlockStringValue(rawString: string): string {
   // Expand a block string's raw value into independent lines.
   const lines = rawString.split(/\r\n|[\n\r]/g);
 
