@@ -22,7 +22,7 @@ var _valueFromAST = require("./valueFromAST");
 
 var _validate = require("../validation/validate");
 
-var _blockStringValue = _interopRequireDefault(require("../language/blockStringValue"));
+var _blockString = require("../language/blockString");
 
 var _lexer = require("../language/lexer");
 
@@ -469,7 +469,7 @@ function getDescription(node, options) {
     var rawValue = getLeadingCommentBlock(node);
 
     if (rawValue !== undefined) {
-      return (0, _blockStringValue.default)('\n' + rawValue);
+      return (0, _blockString.dedentBlockStringValue)('\n' + rawValue);
     }
   }
 }

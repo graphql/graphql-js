@@ -12,6 +12,7 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
+import { printBlockString } from '../language/blockString';
 import type { GraphQLSchema } from '../type/schema';
 import {
   isScalarType,
@@ -329,37 +330,13 @@ function printDescription(
     return printDescriptionWithComments(lines, indentation, firstInBlock);
   }
 
-  let description =
-    indentation && !firstInBlock
-      ? '\n' + indentation + '"""'
-      : indentation + '"""';
+  const text = lines.join('\n');
+  const preferMultipleLines = text.length > 70;
+  const blockString = printBlockString(text, '', preferMultipleLines);
+  const prefix =
+    indentation && !firstInBlock ? '\n' + indentation : indentation;
 
-  // In some circumstances, a single line can be used for the description.
-  if (
-    lines.length === 1 &&
-    lines[0].length < 70 &&
-    lines[0][lines[0].length - 1] !== '"'
-  ) {
-    return description + escapeQuote(lines[0]) + '"""\n';
-  }
-
-  // Format a multi-line block quote to account for leading space.
-  const hasLeadingSpace = lines[0][0] === ' ' || lines[0][0] === '\t';
-  if (!hasLeadingSpace) {
-    description += '\n';
-  }
-  for (let i = 0; i < lines.length; i++) {
-    if (i !== 0 || !hasLeadingSpace) {
-      description += indentation;
-    }
-    description += escapeQuote(lines[i]) + '\n';
-  }
-  description += indentation + '"""\n';
-  return description;
-}
-
-function escapeQuote(line) {
-  return line.replace(/"""/g, '\\"""');
+  return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
 }
 
 function printDescriptionWithComments(lines, indentation, firstInBlock) {

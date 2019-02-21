@@ -7,6 +7,7 @@
  * 
  */
 import { visit } from './visitor';
+import { printBlockString } from './blockString';
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
@@ -98,7 +99,7 @@ var printDocASTReducer = {
   StringValue: function StringValue(_ref10, key) {
     var value = _ref10.value,
         isBlockString = _ref10.block;
-    return isBlockString ? printBlockString(value, key === 'description') : JSON.stringify(value);
+    return isBlockString ? printBlockString(value, key === 'description' ? '' : '  ') : JSON.stringify(value);
   },
   BooleanValue: function BooleanValue(_ref11) {
     var value = _ref11.value;
@@ -303,15 +304,4 @@ function isMultiline(string) {
 
 function hasMultilineItems(maybeArray) {
   return maybeArray && maybeArray.some(isMultiline);
-}
-/**
- * Print a block string in the indented block form by adding a leading and
- * trailing blank line. However, if a block string starts with whitespace and is
- * a single-line, adding a leading blank line would strip that whitespace.
- */
-
-
-function printBlockString(value, isDescription) {
-  var escaped = value.replace(/"""/g, '\\"""');
-  return isMultiline(value) || value[0] !== ' ' && value[0] !== '\t' ? "\"\"\"\n".concat(isDescription ? escaped : indent(escaped), "\n\"\"\"") : "\"\"\"".concat(escaped.replace(/"$/, '"\n'), "\"\"\"");
 }

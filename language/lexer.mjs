@@ -8,7 +8,7 @@
  */
 import defineToJSON from '../jsutils/defineToJSON';
 import { syntaxError } from '../error';
-import blockStringValue from './blockStringValue';
+import { dedentBlockStringValue } from './blockString';
 /**
  * Given a Source object, this returns a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
@@ -556,7 +556,7 @@ function readBlockString(source, start, line, col, prev, lexer) {
     // Closing Triple-Quote (""")
     if (code === 34 && charCodeAt.call(body, position + 1) === 34 && charCodeAt.call(body, position + 2) === 34) {
       rawValue += slice.call(body, chunkStart, position);
-      return new Tok(TokenKind.BLOCK_STRING, start, position + 3, line, col, prev, blockStringValue(rawValue));
+      return new Tok(TokenKind.BLOCK_STRING, start, position + 3, line, col, prev, dedentBlockStringValue(rawValue));
     } // SourceCharacter
 
 

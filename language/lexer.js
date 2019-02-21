@@ -11,7 +11,7 @@ var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
 var _error = require("../error");
 
-var _blockStringValue = _interopRequireDefault(require("./blockStringValue"));
+var _blockString = require("./blockString");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -573,7 +573,7 @@ function readBlockString(source, start, line, col, prev, lexer) {
     // Closing Triple-Quote (""")
     if (code === 34 && charCodeAt.call(body, position + 1) === 34 && charCodeAt.call(body, position + 2) === 34) {
       rawValue += slice.call(body, chunkStart, position);
-      return new Tok(TokenKind.BLOCK_STRING, start, position + 3, line, col, prev, (0, _blockStringValue.default)(rawValue));
+      return new Tok(TokenKind.BLOCK_STRING, start, position + 3, line, col, prev, (0, _blockString.dedentBlockStringValue)(rawValue));
     } // SourceCharacter
 
 

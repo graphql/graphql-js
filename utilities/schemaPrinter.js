@@ -17,6 +17,8 @@ var _astFromValue = require("../utilities/astFromValue");
 
 var _printer = require("../language/printer");
 
+var _blockString = require("../language/blockString");
+
 var _definition = require("../type/definition");
 
 var _scalars = require("../type/scalars");
@@ -263,33 +265,11 @@ function printDescription(options, def) {
     return printDescriptionWithComments(lines, indentation, firstInBlock);
   }
 
-  var description = indentation && !firstInBlock ? '\n' + indentation + '"""' : indentation + '"""'; // In some circumstances, a single line can be used for the description.
-
-  if (lines.length === 1 && lines[0].length < 70 && lines[0][lines[0].length - 1] !== '"') {
-    return description + escapeQuote(lines[0]) + '"""\n';
-  } // Format a multi-line block quote to account for leading space.
-
-
-  var hasLeadingSpace = lines[0][0] === ' ' || lines[0][0] === '\t';
-
-  if (!hasLeadingSpace) {
-    description += '\n';
-  }
-
-  for (var i = 0; i < lines.length; i++) {
-    if (i !== 0 || !hasLeadingSpace) {
-      description += indentation;
-    }
-
-    description += escapeQuote(lines[i]) + '\n';
-  }
-
-  description += indentation + '"""\n';
-  return description;
-}
-
-function escapeQuote(line) {
-  return line.replace(/"""/g, '\\"""');
+  var text = lines.join('\n');
+  var preferMultipleLines = text.length > 70;
+  var blockString = (0, _blockString.printBlockString)(text, '', preferMultipleLines);
+  var prefix = indentation && !firstInBlock ? '\n' + indentation : indentation;
+  return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
 }
 
 function printDescriptionWithComments(lines, indentation, firstInBlock) {

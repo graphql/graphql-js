@@ -13,7 +13,7 @@
  *
  * This implements the GraphQL spec's BlockStringValue() static algorithm.
  */
-export default function blockStringValue(rawString) {
+export function dedentBlockStringValue(rawString) {
   // Expand a block string's raw value into independent lines.
   var lines = rawString.split(/\r\n|[\n\r]/g); // Remove common indentation from all lines but first.
 
@@ -63,4 +63,32 @@ function leadingWhitespace(str) {
 
 function isBlank(str) {
   return leadingWhitespace(str) === str.length;
+}
+/**
+ * Print a block string in the indented block form by adding a leading and
+ * trailing blank line. However, if a block string starts with whitespace and is
+ * a single-line, adding a leading blank line would strip that whitespace.
+ */
+
+
+export function printBlockString(value) {
+  var indentation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  var preferMultipleLines = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+  var isSingleLine = value.indexOf('\n') === -1;
+  var hasLeadingSpace = value[0] === ' ' || value[0] === '\t';
+  var hasTrailingQuote = value[value.length - 1] === '"';
+  var printAsMultipleLines = !isSingleLine || hasTrailingQuote || preferMultipleLines;
+  var result = ''; // Format a multi-line block quote to account for leading space.
+
+  if (printAsMultipleLines && !(isSingleLine && hasLeadingSpace)) {
+    result += '\n' + indentation;
+  }
+
+  result += indentation ? value.replace(/\n/g, '\n' + indentation) : value;
+
+  if (printAsMultipleLines) {
+    result += '\n';
+  }
+
+  return '"""' + result.replace(/"""/g, '\\"""') + '"""';
 }

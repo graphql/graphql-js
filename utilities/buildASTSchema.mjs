@@ -13,7 +13,7 @@ import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';
-import blockStringValue from '../language/blockStringValue';
+import { dedentBlockStringValue } from '../language/blockString';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
 import { getDirectiveValues } from '../execution/values';
@@ -435,7 +435,7 @@ export function getDescription(node, options) {
     var rawValue = getLeadingCommentBlock(node);
 
     if (rawValue !== undefined) {
-      return blockStringValue('\n' + rawValue);
+      return dedentBlockStringValue('\n' + rawValue);
     }
   }
 }

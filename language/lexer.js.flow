@@ -11,7 +11,7 @@ import defineToJSON from '../jsutils/defineToJSON';
 import type { Token } from './ast';
 import type { Source } from './source';
 import { syntaxError } from '../error';
-import blockStringValue from './blockStringValue';
+import { dedentBlockStringValue } from './blockString';
 
 /**
  * Given a Source object, this returns a Lexer for that source.
@@ -650,7 +650,7 @@ function readBlockString(source, start, line, col, prev, lexer): Token {
         line,
         col,
         prev,
-        blockStringValue(rawValue),
+        dedentBlockStringValue(rawValue),
       );
     }
 
