@@ -98,55 +98,6 @@ describe('Printer: Query document', () => {
     `);
   });
 
-  describe('block string', () => {
-    it('correctly prints single-line with leading space', () => {
-      const mutationASTWithArtifacts = parse(
-        '{ field(arg: """    space-led value""") }',
-      );
-      expect(print(mutationASTWithArtifacts)).to.equal(dedent`
-        {
-          field(arg: """    space-led value""")
-        }
-      `);
-    });
-
-    it('correctly prints string with a first line indentation', () => {
-      const mutationASTWithArtifacts = parse(`
-        {
-          field(arg: """
-                first
-              line
-            indentation
-          """)
-        }
-      `);
-      expect(print(mutationASTWithArtifacts)).to.equal(dedent`
-        {
-          field(arg: """
-                first
-              line
-            indentation
-          """)
-        }
-      `);
-    });
-
-    it('correctly prints single-line with leading space and quotation', () => {
-      const mutationASTWithArtifacts = parse(`
-        {
-          field(arg: """    space-led value "quoted string"
-          """)
-        }
-      `);
-      expect(print(mutationASTWithArtifacts)).to.equal(dedent`
-        {
-          field(arg: """    space-led value "quoted string"
-          """)
-        }
-      `);
-    });
-  });
-
   it('Experimental: correctly prints fragment defined variables', () => {
     const fragmentWithVariable = parse(
       `
