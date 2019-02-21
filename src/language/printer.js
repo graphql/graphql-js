@@ -9,6 +9,7 @@
 
 import type { ASTNode } from './ast';
 import { visit } from './visitor';
+import { printBlockString } from './blockStringValue';
 
 /**
  * Converts an AST into a string, using one set of reasonable
@@ -90,7 +91,7 @@ const printDocASTReducer: any = {
   FloatValue: ({ value }) => value,
   StringValue: ({ value, block: isBlockString }, key) =>
     isBlockString
-      ? printBlockString(value, key === 'description')
+      ? printBlockString(value, key === 'description' ? '' : '  ')
       : JSON.stringify(value),
   BooleanValue: ({ value }) => (value ? 'true' : 'false'),
   NullValue: () => 'null',
@@ -272,16 +273,4 @@ function isMultiline(string) {
 
 function hasMultilineItems(maybeArray) {
   return maybeArray && maybeArray.some(isMultiline);
-}
-
-/**
- * Print a block string in the indented block form by adding a leading and
- * trailing blank line. However, if a block string starts with whitespace and is
- * a single-line, adding a leading blank line would strip that whitespace.
- */
-function printBlockString(value, isDescription) {
-  const escaped = value.replace(/"""/g, '\\"""');
-  return isMultiline(value) || (value[0] !== ' ' && value[0] !== '\t')
-    ? `"""\n${isDescription ? escaped : indent(escaped)}\n"""`
-    : `"""${escaped.replace(/"$/, '"\n')}"""`;
 }
