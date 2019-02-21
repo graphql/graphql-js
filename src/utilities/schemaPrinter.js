@@ -12,7 +12,7 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
-import { printBlockString } from '../language/blockStringValue';
+import { printBlockString } from '../language/blockString';
 import type { GraphQLSchema } from '../type/schema';
 import {
   isScalarType,

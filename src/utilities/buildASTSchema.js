@@ -15,7 +15,7 @@ import keyValMap from '../jsutils/keyValMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';
-import { dedentBlockStringValue } from '../language/blockStringValue';
+import { dedentBlockStringValue } from '../language/blockString';
 import { TokenKind } from '../language/lexer';
 import { parse } from '../language/parser';
 import type { ParseOptions } from '../language/parser';

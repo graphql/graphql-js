@@ -9,7 +9,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { dedentBlockStringValue } from '../blockStringValue';
+import { dedentBlockStringValue } from '../blockString';
 
 describe('dedentBlockStringValue', () => {
   it('removes uniform indentation from a string', () => {

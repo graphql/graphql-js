@@ -9,7 +9,7 @@
 
 import type { ASTNode } from './ast';
 import { visit } from './visitor';
-import { printBlockString } from './blockStringValue';
+import { printBlockString } from './blockString';
 
 /**
  * Converts an AST into a string, using one set of reasonable
