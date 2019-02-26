@@ -49,10 +49,10 @@
   },
   "devDependencies": {
     "@babel/cli": "7.2.3",
-    "@babel/core": "7.3.3",
-    "@babel/plugin-transform-flow-strip-types": "7.2.3",
+    "@babel/core": "7.3.4",
+    "@babel/plugin-transform-flow-strip-types": "7.3.4",
     "@babel/polyfill": "7.2.5",
-    "@babel/preset-env": "7.3.1",
+    "@babel/preset-env": "7.3.4",
     "@babel/register": "7.0.0",
     "babel-eslint": "10.0.1",
     "benchmark": "2.1.4",
@@ -61,7 +61,7 @@
     "eslint-plugin-flowtype": "3.4.2",
     "eslint-plugin-prettier": "3.0.1",
     "flow-bin": "0.93.0",
-    "mocha": "6.0.1",
+    "mocha": "6.0.2",
     "nyc": "13.3.0",
     "prettier": "1.16.4",
     "sane": "4.0.2"
