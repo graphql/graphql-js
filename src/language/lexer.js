@@ -137,9 +137,6 @@ export function getTokenDesc(token: Token): string {
   return value ? `${token.kind} "${value}"` : token.kind;
 }
 
-const charCodeAt = String.prototype.charCodeAt;
-const slice = String.prototype.slice;
-
 /**
  * Helper function for constructing the Token object.
  */
@@ -205,7 +202,7 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
     return new Tok(TokenKind.EOF, bodyLength, bodyLength, line, col, prev);
   }
 
-  const code = charCodeAt.call(body, pos);
+  const code = body.charCodeAt(pos);
 
   // SourceCharacter
   switch (code) {
@@ -229,10 +226,7 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
       return new Tok(TokenKind.PAREN_R, pos, pos + 1, line, col, prev);
     // .
     case 46:
-      if (
-        charCodeAt.call(body, pos + 1) === 46 &&
-        charCodeAt.call(body, pos + 2) === 46
-      ) {
+      if (body.charCodeAt(pos + 1) === 46 && body.charCodeAt(pos + 2) === 46) {
         return new Tok(TokenKind.SPREAD, pos, pos + 3, line, col, prev);
       }
       break;
@@ -330,10 +324,7 @@ function readToken(lexer: Lexer<*>, prev: Token): Token {
       return readNumber(source, pos, code, line, col, prev);
     // "
     case 34:
-      if (
-        charCodeAt.call(body, pos + 1) === 34 &&
-        charCodeAt.call(body, pos + 2) === 34
-      ) {
+      if (body.charCodeAt(pos + 1) === 34 && body.charCodeAt(pos + 2) === 34) {
         return readBlockString(source, pos, line, col, prev, lexer);
       }
       return readString(source, pos, line, col, prev);
@@ -373,7 +364,7 @@ function positionAfterWhitespace(
   const bodyLength = body.length;
   let position = startPosition;
   while (position < bodyLength) {
-    const code = charCodeAt.call(body, position);
+    const code = body.charCodeAt(position);
     // tab | space | comma | BOM
     if (code === 9 || code === 32 || code === 44 || code === 0xfeff) {
       ++position;
@@ -384,7 +375,7 @@ function positionAfterWhitespace(
       lexer.lineStart = position;
     } else if (code === 13) {
       // carriage return
-      if (charCodeAt.call(body, position + 1) === 10) {
+      if (body.charCodeAt(position + 1) === 10) {
         position += 2;
       } else {
         ++position;
@@ -409,7 +400,7 @@ function readComment(source, start, line, col, prev): Token {
   let position = start;
 
   do {
-    code = charCodeAt.call(body, ++position);
+    code = body.charCodeAt(++position);
   } while (
     code !== null &&
     // SourceCharacter but not LineTerminator
@@ -423,7 +414,7 @@ function readComment(source, start, line, col, prev): Token {
     line,
     col,
     prev,
-    slice.call(body, start + 1, position),
+    body.slice(start + 1, position),
   );
 }
 
@@ -442,12 +433,12 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
 
   if (code === 45) {
     // -
-    code = charCodeAt.call(body, ++position);
+    code = body.charCodeAt(++position);
   }
 
   if (code === 48) {
     // 0
-    code = charCodeAt.call(body, ++position);
+    code = body.charCodeAt(++position);
     if (code >= 48 && code <= 57) {
       throw syntaxError(
         source,
@@ -457,26 +448,26 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
     }
   } else {
     position = readDigits(source, position, code);
-    code = charCodeAt.call(body, position);
+    code = body.charCodeAt(position);
   }
 
   if (code === 46) {
     // .
     isFloat = true;
 
-    code = charCodeAt.call(body, ++position);
+    code = body.charCodeAt(++position);
     position = readDigits(source, position, code);
-    code = charCodeAt.call(body, position);
+    code = body.charCodeAt(position);
   }
 
   if (code === 69 || code === 101) {
     // E e
     isFloat = true;
 
-    code = charCodeAt.call(body, ++position);
+    code = body.charCodeAt(++position);
     if (code === 43 || code === 45) {
       // + -
-      code = charCodeAt.call(body, ++position);
+      code = body.charCodeAt(++position);
     }
     position = readDigits(source, position, code);
   }
@@ -488,7 +479,7 @@ function readNumber(source, start, firstCode, line, col, prev): Token {
     line,
     col,
     prev,
-    slice.call(body, start, position),
+    body.slice(start, position),
   );
 }
 
@@ -502,7 +493,7 @@ function readDigits(source, start, firstCode) {
   if (code >= 48 && code <= 57) {
     // 0 - 9
     do {
-      code = charCodeAt.call(body, ++position);
+      code = body.charCodeAt(++position);
     } while (code >= 48 && code <= 57); // 0 - 9
     return position;
   }
@@ -527,14 +518,14 @@ function readString(source, start, line, col, prev): Token {
 
   while (
     position < body.length &&
-    (code = charCodeAt.call(body, position)) !== null &&
+    (code = body.charCodeAt(position)) !== null &&
     // not LineTerminator
     code !== 0x000a &&
     code !== 0x000d
   ) {
     // Closing Quote (")
     if (code === 34) {
-      value += slice.call(body, chunkStart, position);
+      value += body.slice(chunkStart, position);
       return new Tok(
         TokenKind.STRING,
         start,
@@ -558,8 +549,8 @@ function readString(source, start, line, col, prev): Token {
     ++position;
     if (code === 92) {
       // \
-      value += slice.call(body, chunkStart, position - 1);
-      code = charCodeAt.call(body, position);
+      value += body.slice(chunkStart, position - 1);
+      code = body.charCodeAt(position);
       switch (code) {
         case 34:
           value += '"';
@@ -587,10 +578,10 @@ function readString(source, start, line, col, prev): Token {
           break;
         case 117: // u
           const charCode = uniCharCode(
-            charCodeAt.call(body, position + 1),
-            charCodeAt.call(body, position + 2),
-            charCodeAt.call(body, position + 3),
-            charCodeAt.call(body, position + 4),
+            body.charCodeAt(position + 1),
+            body.charCodeAt(position + 2),
+            body.charCodeAt(position + 3),
+            body.charCodeAt(position + 4),
           );
           if (charCode < 0) {
             throw syntaxError(
@@ -634,15 +625,15 @@ function readBlockString(source, start, line, col, prev, lexer): Token {
 
   while (
     position < body.length &&
-    (code = charCodeAt.call(body, position)) !== null
+    (code = body.charCodeAt(position)) !== null
   ) {
     // Closing Triple-Quote (""")
     if (
       code === 34 &&
-      charCodeAt.call(body, position + 1) === 34 &&
-      charCodeAt.call(body, position + 2) === 34
+      body.charCodeAt(position + 1) === 34 &&
+      body.charCodeAt(position + 2) === 34
     ) {
-      rawValue += slice.call(body, chunkStart, position);
+      rawValue += body.slice(chunkStart, position);
       return new Tok(
         TokenKind.BLOCK_STRING,
         start,
@@ -675,7 +666,7 @@ function readBlockString(source, start, line, col, prev, lexer): Token {
       lexer.lineStart = position;
     } else if (code === 13) {
       // carriage return
-      if (charCodeAt.call(body, position + 1) === 10) {
+      if (body.charCodeAt(position + 1) === 10) {
         position += 2;
       } else {
         ++position;
@@ -685,11 +676,11 @@ function readBlockString(source, start, line, col, prev, lexer): Token {
     } else if (
       // Escape Triple-Quote (\""")
       code === 92 &&
-      charCodeAt.call(body, position + 1) === 34 &&
-      charCodeAt.call(body, position + 2) === 34 &&
-      charCodeAt.call(body, position + 3) === 34
+      body.charCodeAt(position + 1) === 34 &&
+      body.charCodeAt(position + 2) === 34 &&
+      body.charCodeAt(position + 3) === 34
     ) {
-      rawValue += slice.call(body, chunkStart, position) + '"""';
+      rawValue += body.slice(chunkStart, position) + '"""';
       position += 4;
       chunkStart = position;
     } else {
@@ -746,7 +737,7 @@ function readName(source, start, line, col, prev): Token {
   let code = 0;
   while (
     position !== bodyLength &&
-    (code = charCodeAt.call(body, position)) !== null &&
+    (code = body.charCodeAt(position)) !== null &&
     (code === 95 || // _
     (code >= 48 && code <= 57) || // 0-9
     (code >= 65 && code <= 90) || // A-Z
@@ -761,6 +752,6 @@ function readName(source, start, line, col, prev): Token {
     line,
     col,
     prev,
-    slice.call(body, start, position),
+    body.slice(start, position),
   );
 }
