@@ -90,7 +90,7 @@ describe('GraphQLError', () => {
   });
 
   it('converts node with loc.start === 0 to positions and locations', () => {
-    const e = new GraphQLError('msg', [operationNode]);
+    const e = new GraphQLError('msg', operationNode);
     expect(e).to.have.property('source', source);
     expect(e).to.deep.include({
       nodes: [operationNode],
@@ -115,7 +115,7 @@ describe('GraphQLError', () => {
   });
 
   it('serializes to include message and locations', () => {
-    const e = new GraphQLError('msg', [fieldNode]);
+    const e = new GraphQLError('msg', fieldNode);
     expect(JSON.stringify(e)).to.equal(
       '{"message":"msg","locations":[{"line":2,"column":3}]}',
     );
