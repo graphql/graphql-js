@@ -39,7 +39,7 @@ export function findDeprecatedUsages(
               new GraphQLError(
                 `The field ${parentType.name}.${fieldDef.name} is deprecated.` +
                   (reason ? ' ' + reason : ''),
-                [node],
+                node,
               ),
             );
           }
@@ -55,7 +55,7 @@ export function findDeprecatedUsages(
               new GraphQLError(
                 `The enum value ${type.name}.${enumVal.name} is deprecated.` +
                   (reason ? ' ' + reason : ''),
-                [node],
+                node,
               ),
             );
           }

@@ -35,7 +35,7 @@ export function LoneAnonymousOperation(
     OperationDefinition(node) {
       if (!node.name && operationCount > 1) {
         context.reportError(
-          new GraphQLError(anonOperationNotAloneMessage(), [node]),
+          new GraphQLError(anonOperationNotAloneMessage(), node),
         );
       }
     },

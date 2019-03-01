@@ -62,7 +62,7 @@ export function getVariableValues(
             `"${print(
               varDefNode.type,
             )}" which cannot be used as an input type.`,
-          [varDefNode.type],
+          varDefNode.type,
         ),
       );
     } else {
@@ -82,7 +82,7 @@ export function getVariableValues(
                 `"${inspect(varType)}" must not be null.`
               : `Variable "$${varName}" of required type ` +
                 `"${inspect(varType)}" was not provided.`,
-            [varDefNode],
+            varDefNode,
           ),
         );
       } else if (hasValue) {
@@ -161,7 +161,7 @@ export function getArgumentValues(
         throw new GraphQLError(
           `Argument "${name}" of non-null type "${inspect(argType)}" ` +
             'must not be null.',
-          [argumentNode.value],
+          argumentNode.value,
         );
       } else if (argumentNode && argumentNode.value.kind === Kind.VARIABLE) {
         const variableName = argumentNode.value.name.value;
@@ -169,13 +169,13 @@ export function getArgumentValues(
           `Argument "${name}" of required type "${inspect(argType)}" ` +
             `was provided the variable "$${variableName}" ` +
             'which was not provided a runtime value.',
-          [argumentNode.value],
+          argumentNode.value,
         );
       } else {
         throw new GraphQLError(
           `Argument "${name}" of required type "${inspect(argType)}" ` +
             'was not provided.',
-          [node],
+          node,
         );
       }
     } else if (hasValue) {
@@ -199,7 +199,7 @@ export function getArgumentValues(
           // continue with an invalid argument value.
           throw new GraphQLError(
             `Argument "${name}" has invalid value ${print(valueNode)}.`,
-            [argumentNode.value],
+            argumentNode.value,
           );
         }
         coercedValues[name] = coercedValue;

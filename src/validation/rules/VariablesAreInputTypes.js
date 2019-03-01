@@ -39,7 +39,7 @@ export function VariablesAreInputTypes(context: ValidationContext): ASTVisitor {
         context.reportError(
           new GraphQLError(
             nonInputTypeOnVarMessage(variableName, print(node.type)),
-            [node.type],
+            node.type,
           ),
         );
       }

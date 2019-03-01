@@ -38,7 +38,7 @@ export function ExecutableDefinitions(
                   ? 'schema'
                   : definition.name.value,
               ),
-              [definition],
+              definition,
             ),
           );
         }
