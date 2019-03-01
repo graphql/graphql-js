@@ -55,7 +55,7 @@ export function ProvidedRequiredArguments(context) {
             var argNode = argNodeMap[argDef.name];
 
             if (!argNode && isRequiredArgument(argDef)) {
-              context.reportError(new GraphQLError(missingFieldArgMessage(fieldDef.name, argDef.name, inspect(argDef.type)), [fieldNode]));
+              context.reportError(new GraphQLError(missingFieldArgMessage(fieldDef.name, argDef.name, inspect(argDef.type)), fieldNode));
             }
           }
         } catch (err) {

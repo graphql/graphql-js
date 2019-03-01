@@ -32,7 +32,7 @@ export function PossibleFragmentSpreads(context) {
       var parentType = context.getParentType();
 
       if (isCompositeType(fragType) && isCompositeType(parentType) && !doTypesOverlap(context.getSchema(), fragType, parentType)) {
-        context.reportError(new GraphQLError(typeIncompatibleAnonSpreadMessage(inspect(parentType), inspect(fragType)), [node]));
+        context.reportError(new GraphQLError(typeIncompatibleAnonSpreadMessage(inspect(parentType), inspect(fragType)), node));
       }
     },
     FragmentSpread: function FragmentSpread(node) {
@@ -41,7 +41,7 @@ export function PossibleFragmentSpreads(context) {
       var parentType = context.getParentType();
 
       if (fragType && parentType && !doTypesOverlap(context.getSchema(), fragType, parentType)) {
-        context.reportError(new GraphQLError(typeIncompatibleSpreadMessage(fragName, inspect(parentType), inspect(fragType)), [node]));
+        context.reportError(new GraphQLError(typeIncompatibleSpreadMessage(fragName, inspect(parentType), inspect(fragType)), node));
       }
     }
   };

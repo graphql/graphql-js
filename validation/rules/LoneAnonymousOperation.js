@@ -39,7 +39,7 @@ function LoneAnonymousOperation(context) {
     },
     OperationDefinition: function OperationDefinition(node) {
       if (!node.name && operationCount > 1) {
-        context.reportError(new _GraphQLError.GraphQLError(anonOperationNotAloneMessage(), [node]));
+        context.reportError(new _GraphQLError.GraphQLError(anonOperationNotAloneMessage(), node));
       }
     }
   };

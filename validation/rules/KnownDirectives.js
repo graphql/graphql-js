@@ -102,14 +102,14 @@ function KnownDirectives(context) {
       var locations = locationsMap[name];
 
       if (!locations) {
-        context.reportError(new _GraphQLError.GraphQLError(unknownDirectiveMessage(name), [node]));
+        context.reportError(new _GraphQLError.GraphQLError(unknownDirectiveMessage(name), node));
         return;
       }
 
       var candidateLocation = getDirectiveLocationForASTPath(ancestors);
 
       if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
-        context.reportError(new _GraphQLError.GraphQLError(misplacedDirectiveMessage(name, candidateLocation), [node]));
+        context.reportError(new _GraphQLError.GraphQLError(misplacedDirectiveMessage(name, candidateLocation), node));
       }
     }
   };

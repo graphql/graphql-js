@@ -33,7 +33,7 @@ export function FragmentsOnCompositeTypes(context) {
         var type = typeFromAST(context.getSchema(), typeCondition);
 
         if (type && !isCompositeType(type)) {
-          context.reportError(new GraphQLError(inlineFragmentOnNonCompositeErrorMessage(print(typeCondition)), [typeCondition]));
+          context.reportError(new GraphQLError(inlineFragmentOnNonCompositeErrorMessage(print(typeCondition)), typeCondition));
         }
       }
     },
@@ -41,7 +41,7 @@ export function FragmentsOnCompositeTypes(context) {
       var type = typeFromAST(context.getSchema(), node.typeCondition);
 
       if (type && !isCompositeType(type)) {
-        context.reportError(new GraphQLError(fragmentOnNonCompositeErrorMessage(node.name.value, print(node.typeCondition)), [node.typeCondition]));
+        context.reportError(new GraphQLError(fragmentOnNonCompositeErrorMessage(node.name.value, print(node.typeCondition)), node.typeCondition));
       }
     }
   };

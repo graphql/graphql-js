@@ -31,7 +31,7 @@ export function ExecutableDefinitions(context) {
           var definition = _step.value;
 
           if (!isExecutableDefinitionNode(definition)) {
-            context.reportError(new GraphQLError(nonExecutableDefinitionMessage(definition.kind === Kind.SCHEMA_DEFINITION || definition.kind === Kind.SCHEMA_EXTENSION ? 'schema' : definition.name.value), [definition]));
+            context.reportError(new GraphQLError(nonExecutableDefinitionMessage(definition.kind === Kind.SCHEMA_DEFINITION || definition.kind === Kind.SCHEMA_EXTENSION ? 'schema' : definition.name.value), definition));
           }
         }
       } catch (err) {

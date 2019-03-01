@@ -31,10 +31,10 @@ export function ScalarLeafs(context) {
       if (type) {
         if (isLeafType(getNamedType(type))) {
           if (selectionSet) {
-            context.reportError(new GraphQLError(noSubselectionAllowedMessage(node.name.value, inspect(type)), [selectionSet]));
+            context.reportError(new GraphQLError(noSubselectionAllowedMessage(node.name.value, inspect(type)), selectionSet));
           }
         } else if (!selectionSet) {
-          context.reportError(new GraphQLError(requiredSubselectionMessage(node.name.value, inspect(type)), [node]));
+          context.reportError(new GraphQLError(requiredSubselectionMessage(node.name.value, inspect(type)), node));
         }
       }
     }

@@ -47,7 +47,7 @@ export function FragmentsOnCompositeTypes(
           context.reportError(
             new GraphQLError(
               inlineFragmentOnNonCompositeErrorMessage(print(typeCondition)),
-              [typeCondition],
+              typeCondition,
             ),
           );
         }
@@ -62,7 +62,7 @@ export function FragmentsOnCompositeTypes(
               node.name.value,
               print(node.typeCondition),
             ),
-            [node.typeCondition],
+            node.typeCondition,
           ),
         );
       }

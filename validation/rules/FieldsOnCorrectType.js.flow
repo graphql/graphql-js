@@ -74,7 +74,7 @@ export function FieldsOnCorrectType(context: ValidationContext): ASTVisitor {
                 suggestedTypeNames,
                 suggestedFieldNames,
               ),
-              [node],
+              node,
             ),
           );
         }

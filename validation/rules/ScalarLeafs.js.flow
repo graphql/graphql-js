@@ -51,7 +51,7 @@ export function ScalarLeafs(context: ValidationContext): ASTVisitor {
             context.reportError(
               new GraphQLError(
                 noSubselectionAllowedMessage(node.name.value, inspect(type)),
-                [selectionSet],
+                selectionSet,
               ),
             );
           }
@@ -59,7 +59,7 @@ export function ScalarLeafs(context: ValidationContext): ASTVisitor {
           context.reportError(
             new GraphQLError(
               requiredSubselectionMessage(node.name.value, inspect(type)),
-              [node],
+              node,
             ),
           );
         }

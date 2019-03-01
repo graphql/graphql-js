@@ -61,16 +61,17 @@ export function KnownDirectives(
 
       if (!locations) {
         context.reportError(
-          new GraphQLError(unknownDirectiveMessage(name), [node]),
+          new GraphQLError(unknownDirectiveMessage(name), node),
         );
         return;
       }
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
       if (candidateLocation && locations.indexOf(candidateLocation) === -1) {
         context.reportError(
-          new GraphQLError(misplacedDirectiveMessage(name, candidateLocation), [
+          new GraphQLError(
+            misplacedDirectiveMessage(name, candidateLocation),
             node,
-          ]),
+          ),
         );
       }
     },

@@ -71,7 +71,7 @@ function () {
   var _proto = SchemaValidationContext.prototype;
 
   _proto.reportError = function reportError(message, nodes) {
-    var _nodes = (Array.isArray(nodes) ? nodes : [nodes]).filter(Boolean);
+    var _nodes = Array.isArray(nodes) ? nodes.filter(Boolean) : nodes;
 
     this.addError(new GraphQLError(message, _nodes));
   };

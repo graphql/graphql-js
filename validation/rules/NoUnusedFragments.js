@@ -75,7 +75,7 @@ function NoUnusedFragments(context) {
           var fragName = fragmentDef.name.value;
 
           if (fragmentNameUsed[fragName] !== true) {
-            context.reportError(new _GraphQLError.GraphQLError(unusedFragMessage(fragName), [fragmentDef]));
+            context.reportError(new _GraphQLError.GraphQLError(unusedFragMessage(fragName), fragmentDef));
           }
         }
       }

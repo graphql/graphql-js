@@ -101,7 +101,7 @@ class SchemaValidationContext {
     message: string,
     nodes?: $ReadOnlyArray<?ASTNode> | ?ASTNode,
   ): void {
-    const _nodes = (Array.isArray(nodes) ? nodes : [nodes]).filter(Boolean);
+    const _nodes = Array.isArray(nodes) ? nodes.filter(Boolean) : nodes;
     this.addError(new GraphQLError(message, _nodes));
   }
 

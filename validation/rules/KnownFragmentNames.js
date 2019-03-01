@@ -34,7 +34,7 @@ function KnownFragmentNames(context) {
       var fragment = context.getFragment(fragmentName);
 
       if (!fragment) {
-        context.reportError(new _GraphQLError.GraphQLError(unknownFragmentMessage(fragmentName), [node.name]));
+        context.reportError(new _GraphQLError.GraphQLError(unknownFragmentMessage(fragmentName), node.name));
       }
     }
   };

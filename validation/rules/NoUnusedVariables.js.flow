@@ -47,9 +47,10 @@ export function NoUnusedVariables(context: ValidationContext): ASTVisitor {
           const variableName = variableDef.variable.name.value;
           if (variableNameUsed[variableName] !== true) {
             context.reportError(
-              new GraphQLError(unusedVariableMessage(variableName, opName), [
+              new GraphQLError(
+                unusedVariableMessage(variableName, opName),
                 variableDef,
-              ]),
+              ),
             );
           }
         }

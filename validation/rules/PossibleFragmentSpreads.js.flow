@@ -61,7 +61,7 @@ export function PossibleFragmentSpreads(
               inspect(parentType),
               inspect(fragType),
             ),
-            [node],
+            node,
           ),
         );
       }
@@ -82,7 +82,7 @@ export function PossibleFragmentSpreads(
               inspect(parentType),
               inspect(fragType),
             ),
-            [node],
+            node,
           ),
         );
       }

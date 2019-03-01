@@ -68,7 +68,7 @@ function NoUnusedVariables(context) {
           var variableName = variableDef.variable.name.value;
 
           if (variableNameUsed[variableName] !== true) {
-            context.reportError(new _GraphQLError.GraphQLError(unusedVariableMessage(variableName, opName), [variableDef]));
+            context.reportError(new _GraphQLError.GraphQLError(unusedVariableMessage(variableName, opName), variableDef));
           }
         }
       }

@@ -73,7 +73,7 @@ export function ProvidedRequiredArguments(
                   argDef.name,
                   inspect(argDef.type),
                 ),
-                [fieldNode],
+                fieldNode,
               ),
             );
           }

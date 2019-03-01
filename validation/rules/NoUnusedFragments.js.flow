@@ -49,7 +49,7 @@ export function NoUnusedFragments(context: ASTValidationContext): ASTVisitor {
           const fragName = fragmentDef.name.value;
           if (fragmentNameUsed[fragName] !== true) {
             context.reportError(
-              new GraphQLError(unusedFragMessage(fragName), [fragmentDef]),
+              new GraphQLError(unusedFragMessage(fragName), fragmentDef),
             );
           }
         }

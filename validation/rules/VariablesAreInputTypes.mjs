@@ -27,7 +27,7 @@ export function VariablesAreInputTypes(context) {
 
       if (type && !isInputType(type)) {
         var variableName = node.variable.name.value;
-        context.reportError(new GraphQLError(nonInputTypeOnVarMessage(variableName, print(node.type)), [node.type]));
+        context.reportError(new GraphQLError(nonInputTypeOnVarMessage(variableName, print(node.type)), node.type));
       }
     }
   };
