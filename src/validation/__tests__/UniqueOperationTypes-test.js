@@ -45,7 +45,7 @@ describe('Validate: Unique operation types', () => {
     `);
   });
 
-  it('schema definiton with all types', () => {
+  it('schema definition with all types', () => {
     expectValidSDL(`
       type Foo
 
@@ -57,7 +57,7 @@ describe('Validate: Unique operation types', () => {
     `);
   });
 
-  it('schema definiton with single extensions', () => {
+  it('schema definition with single extension', () => {
     expectValidSDL(`
       type Foo
 
@@ -70,7 +70,7 @@ describe('Validate: Unique operation types', () => {
     `);
   });
 
-  it('schema definiton with separate extensions', () => {
+  it('schema definition with separate extensions', () => {
     expectValidSDL(`
       type Foo
 
@@ -80,7 +80,7 @@ describe('Validate: Unique operation types', () => {
     `);
   });
 
-  it('extend schema before defintion', () => {
+  it('extend schema before definition', () => {
     expectValidSDL(`
       type Foo
 
@@ -91,7 +91,7 @@ describe('Validate: Unique operation types', () => {
     `);
   });
 
-  it('duplicate operation types inside single schema defintion', () => {
+  it('duplicate operation types inside single schema definition', () => {
     expectSDLErrors(`
       type Foo
 
@@ -111,7 +111,7 @@ describe('Validate: Unique operation types', () => {
     ]);
   });
 
-  it('duplicate inside schema extension', () => {
+  it('duplicate operation types inside schema extension', () => {
     expectSDLErrors(`
       type Foo
 
@@ -133,7 +133,7 @@ describe('Validate: Unique operation types', () => {
     ]);
   });
 
-  it('duplicate inside schema extension twice', () => {
+  it('duplicate operation types inside schema extension twice', () => {
     expectSDLErrors(`
       type Foo
 
@@ -164,7 +164,7 @@ describe('Validate: Unique operation types', () => {
     ]);
   });
 
-  it('duplicate inside second schema extension', () => {
+  it('duplicate operation types inside second schema extension', () => {
     expectSDLErrors(`
       type Foo
 
@@ -223,7 +223,7 @@ describe('Validate: Unique operation types', () => {
     expectValidSDL(sdl, schema);
   });
 
-  it('adding conflicting operation type to existing schema', () => {
+  it('adding conflicting operation types to existing schema', () => {
     const schema = buildSchema(`
       type Query
       type Mutation
@@ -247,7 +247,7 @@ describe('Validate: Unique operation types', () => {
     ]);
   });
 
-  it('adding conflicting operation type to existing schema twice', () => {
+  it('adding conflicting operation types to existing schema twice', () => {
     const schema = buildSchema(`
       type Query
       type Mutation
