@@ -53,8 +53,9 @@ export function UniqueEnumValueNames(
       knownValueNames[typeName] = Object.create(null);
     }
 
-    const valueNames = knownValueNames[typeName];
     if (node.values) {
+      const valueNames = knownValueNames[typeName];
+
       for (const valueDef of node.values) {
         const valueName = valueDef.name.value;
 
@@ -66,10 +67,7 @@ export function UniqueEnumValueNames(
               valueDef.name,
             ),
           );
-          continue;
-        }
-
-        if (valueNames[valueName]) {
+        } else if (valueNames[valueName]) {
           context.reportError(
             new GraphQLError(
               duplicateEnumValueNameMessage(typeName, valueName),
