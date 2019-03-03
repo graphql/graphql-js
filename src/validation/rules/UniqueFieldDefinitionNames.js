@@ -61,8 +61,9 @@ export function UniqueFieldDefinitionNames(
       knownFieldNames[typeName] = Object.create(null);
     }
 
-    const fieldNames = knownFieldNames[typeName];
     if (node.fields) {
+      const fieldNames = knownFieldNames[typeName];
+
       for (const fieldDef of node.fields) {
         const fieldName = fieldDef.name.value;
 
@@ -73,10 +74,7 @@ export function UniqueFieldDefinitionNames(
               fieldDef.name,
             ),
           );
-          continue;
-        }
-
-        if (fieldNames[fieldName]) {
+        } else if (fieldNames[fieldName]) {
           context.reportError(
             new GraphQLError(
               duplicateFieldDefinitionNameMessage(typeName, fieldName),
