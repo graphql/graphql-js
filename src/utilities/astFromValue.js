@@ -150,4 +150,4 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
  *   - NegativeSign? 0
  *   - NegativeSign? NonZeroDigit ( Digit+ )?
  */
-const integerStringRegExp = /^-?(0|[1-9][0-9]*)$/;
+const integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;
