@@ -49,9 +49,8 @@ function UniqueEnumValueNames(context) {
       knownValueNames[typeName] = Object.create(null);
     }
 
-    var valueNames = knownValueNames[typeName];
-
     if (node.values) {
+      var valueNames = knownValueNames[typeName];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -64,10 +63,7 @@ function UniqueEnumValueNames(context) {
 
           if ((0, _definition.isEnumType)(existingType) && existingType.getValue(valueName)) {
             context.reportError(new _GraphQLError.GraphQLError(existedEnumValueNameMessage(typeName, valueName), valueDef.name));
-            continue;
-          }
-
-          if (valueNames[valueName]) {
+          } else if (valueNames[valueName]) {
             context.reportError(new _GraphQLError.GraphQLError(duplicateEnumValueNameMessage(typeName, valueName), [valueNames[valueName], valueDef.name]));
           } else {
             valueNames[valueName] = valueDef.name;

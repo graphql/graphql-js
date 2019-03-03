@@ -40,9 +40,8 @@ export function UniqueFieldDefinitionNames(context) {
       knownFieldNames[typeName] = Object.create(null);
     }
 
-    var fieldNames = knownFieldNames[typeName];
-
     if (node.fields) {
+      var fieldNames = knownFieldNames[typeName];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -54,10 +53,7 @@ export function UniqueFieldDefinitionNames(context) {
 
           if (hasField(existingTypeMap[typeName], fieldName)) {
             context.reportError(new GraphQLError(existedFieldDefinitionNameMessage(typeName, fieldName), fieldDef.name));
-            continue;
-          }
-
-          if (fieldNames[fieldName]) {
+          } else if (fieldNames[fieldName]) {
             context.reportError(new GraphQLError(duplicateFieldDefinitionNameMessage(typeName, fieldName), [fieldNames[fieldName], fieldDef.name]));
           } else {
             fieldNames[fieldName] = fieldDef.name;
