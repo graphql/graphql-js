@@ -74,7 +74,7 @@ rules:
   flowtype/valid-syntax: off
 
   ##################################################
-  # ESLint builtin rules list based on `v5.14.x`
+  # ESLint builtin rules list based on `v5.15.x`
   ##################################################
 
   # Possible Errors
@@ -187,6 +187,7 @@ rules:
   no-void: error
   no-warning-comments: off
   no-with: error
+  prefer-named-capture-group: off # ES2018
   #prefer-promise-reject-errors: undecided
   radix: error
   #require-await: undecided
