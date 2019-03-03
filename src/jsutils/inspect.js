@@ -9,6 +9,8 @@
 
 import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
 
+const MAX_ARRAY_LENGTH = 10;
+
 /**
  * Used to print values in error messages.
  */
@@ -29,7 +31,7 @@ export default function inspect(value: mixed): string {
             ? customValue
             : inspect(customValue);
         } else if (Array.isArray(value)) {
-          return '[' + value.map(inspect).join(', ') + ']';
+          return inspectArray(value);
         }
 
         const properties = Object.keys(value)
@@ -41,6 +43,24 @@ export default function inspect(value: mixed): string {
     default:
       return String(value);
   }
+}
+
+function inspectArray(array) {
+  const len = Math.min(MAX_ARRAY_LENGTH, array.length);
+  const remaining = array.length - len;
+  const items = [];
+
+  for (let i = 0; i < len; ++i) {
+    items.push(inspect(array[i]));
+  }
+
+  if (remaining === 1) {
+    items.push('... 1 more item');
+  } else if (remaining > 1) {
+    items.push(`... ${remaining} more items`);
+  }
+
+  return '[' + items.join(', ') + ']';
 }
 
 function getCustomFn(object) {

@@ -54,6 +54,18 @@ describe('inspect', () => {
     expect(inspect([null])).to.equal('[null]');
     expect(inspect([1, NaN])).to.equal('[1, NaN]');
     expect(inspect([['a', 'b'], 'c'])).to.equal('[["a", "b"], "c"]');
+
+    expect(inspect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])).to.equal(
+      '[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]',
+    );
+
+    expect(inspect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).to.equal(
+      '[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ... 1 more item]',
+    );
+
+    expect(inspect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])).to.equal(
+      '[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ... 2 more items]',
+    );
   });
 
   it('object', () => {
