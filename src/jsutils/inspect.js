@@ -15,6 +15,10 @@ const MAX_ARRAY_LENGTH = 10;
  * Used to print values in error messages.
  */
 export default function inspect(value: mixed): string {
+  return formatValue(value);
+}
+
+function formatValue(value) {
   switch (typeof value) {
     case 'string':
       return JSON.stringify(value);
@@ -29,29 +33,45 @@ export default function inspect(value: mixed): string {
           const customValue = customInspectFn.call(value);
           return typeof customValue === 'string'
             ? customValue
-            : inspect(customValue);
+            : formatValue(customValue);
         } else if (Array.isArray(value)) {
-          return inspectArray(value);
+          return formatArray(value);
         }
 
-        const properties = Object.keys(value)
-          .map(k => `${k}: ${inspect(value[k])}`)
-          .join(', ');
-        return properties ? '{ ' + properties + ' }' : '{}';
+        return formatObject(value);
       }
+
       return String(value);
     default:
       return String(value);
   }
 }
 
-function inspectArray(array) {
+function formatObject(object) {
+  const keys = Object.keys(object);
+  if (keys.length === 0) {
+    return '{}';
+  }
+
+  const properties = keys.map(key => {
+    const value = formatValue(object[key]);
+    return key + ': ' + value;
+  });
+
+  return '{ ' + properties.join(', ') + ' }';
+}
+
+function formatArray(array) {
+  if (array.length === 0) {
+    return '[]';
+  }
+
   const len = Math.min(MAX_ARRAY_LENGTH, array.length);
   const remaining = array.length - len;
   const items = [];
 
   for (let i = 0; i < len; ++i) {
-    items.push(inspect(array[i]));
+    items.push(formatValue(array[i]));
   }
 
   if (remaining === 1) {
