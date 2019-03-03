@@ -152,7 +152,7 @@ describe('Validate: Unique enum value names', () => {
     ]);
   });
 
-  it('adding fields to existing schema twice', () => {
+  it('adding enum values to existing schema twice', () => {
     const schema = buildSchema('enum SomeEnum');
     const sdl = `
       extend enum SomeEnum {
