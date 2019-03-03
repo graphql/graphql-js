@@ -47,7 +47,7 @@ describe('Validate: Unique field definition names', () => {
     `);
   });
 
-  it('one fields', () => {
+  it('one field', () => {
     expectValidSDL(`
       type SomeObject {
         foo: String
