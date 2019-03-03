@@ -205,4 +205,4 @@ function astFromValue(value, type) {
  */
 
 
-var integerStringRegExp = /^-?(0|[1-9][0-9]*)$/;
+var integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;

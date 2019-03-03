@@ -196,4 +196,4 @@ export function astFromValue(value, type) {
  *   - NegativeSign? NonZeroDigit ( Digit+ )?
  */
 
-var integerStringRegExp = /^-?(0|[1-9][0-9]*)$/;
+var integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;
