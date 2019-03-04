@@ -55,6 +55,9 @@ describe('inspect', () => {
     expect(inspect([1, NaN])).to.equal('[1, NaN]');
     expect(inspect([['a', 'b'], 'c'])).to.equal('[["a", "b"], "c"]');
 
+    expect(inspect([[[]]])).to.equal('[[[]]]');
+    expect(inspect([[['a']]])).to.equal('[[[Array]]]');
+
     expect(inspect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])).to.equal(
       '[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]',
     );
@@ -73,6 +76,9 @@ describe('inspect', () => {
     expect(inspect({ a: 1 })).to.equal('{ a: 1 }');
     expect(inspect({ a: 1, b: 2 })).to.equal('{ a: 1, b: 2 }');
     expect(inspect({ array: [null, 0] })).to.equal('{ array: [null, 0] }');
+
+    expect(inspect({ a: { b: {} } })).to.equal('{ a: { b: {} } }');
+    expect(inspect({ a: { b: { c: 1 } } })).to.equal('{ a: { b: [Object] } }');
 
     const map = Object.create(null);
     map['a'] = true;
@@ -124,5 +130,20 @@ describe('inspect', () => {
     };
 
     expect(inspect(object)).to.equal('Hello World!');
+  });
+
+  it('Use class names for the shortform of an object', () => {
+    class Foo {
+      foo: string;
+
+      constructor() {
+        this.foo = 'bar';
+      }
+    }
+
+    expect(inspect([[new Foo()]])).to.equal('[[[Foo]]]');
+
+    (Foo.prototype: any)[Symbol.toStringTag] = 'Bar';
+    expect(inspect([[new Foo()]])).to.equal('[[[Bar]]]');
   });
 });

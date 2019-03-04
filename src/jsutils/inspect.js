@@ -10,15 +10,16 @@
 import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
 
 const MAX_ARRAY_LENGTH = 10;
+const MAX_RECURSIVE_DEPTH = 2;
 
 /**
  * Used to print values in error messages.
  */
 export default function inspect(value: mixed): string {
-  return formatValue(value);
+  return formatValue(value, 0);
 }
 
-function formatValue(value) {
+function formatValue(value, recurseTimes) {
   switch (typeof value) {
     case 'string':
       return JSON.stringify(value);
@@ -33,12 +34,12 @@ function formatValue(value) {
           const customValue = customInspectFn.call(value);
           return typeof customValue === 'string'
             ? customValue
-            : formatValue(customValue);
+            : formatValue(customValue, recurseTimes);
         } else if (Array.isArray(value)) {
-          return formatArray(value);
+          return formatArray(value, recurseTimes);
         }
 
-        return formatObject(value);
+        return formatObject(value, recurseTimes);
       }
 
       return String(value);
@@ -47,23 +48,31 @@ function formatValue(value) {
   }
 }
 
-function formatObject(object) {
+function formatObject(object, recurseTimes) {
   const keys = Object.keys(object);
   if (keys.length === 0) {
     return '{}';
   }
 
+  if (recurseTimes === MAX_RECURSIVE_DEPTH) {
+    return '[' + getObjectTag(object) + ']';
+  }
+
   const properties = keys.map(key => {
-    const value = formatValue(object[key]);
+    const value = formatValue(object[key], recurseTimes + 1);
     return key + ': ' + value;
   });
 
   return '{ ' + properties.join(', ') + ' }';
 }
 
-function formatArray(array) {
+function formatArray(array, recurseTimes) {
   if (array.length === 0) {
     return '[]';
+  }
+
+  if (recurseTimes === MAX_RECURSIVE_DEPTH) {
+    return '[Array]';
   }
 
   const len = Math.min(MAX_ARRAY_LENGTH, array.length);
@@ -71,7 +80,7 @@ function formatArray(array) {
   const items = [];
 
   for (let i = 0; i < len; ++i) {
-    items.push(formatValue(array[i]));
+    items.push(formatValue(array[i], recurseTimes + 1));
   }
 
   if (remaining === 1) {
@@ -93,4 +102,20 @@ function getCustomFn(object) {
   if (typeof object.inspect === 'function') {
     return object.inspect;
   }
+}
+
+function getObjectTag(object) {
+  const tag = Object.prototype.toString
+    .call(object)
+    .replace(/^\[object /, '')
+    .replace(/]$/, '');
+
+  if (tag === 'Object' && typeof object.constructor === 'function') {
+    const name = object.constructor.name;
+    if (typeof name === 'string') {
+      return name;
+    }
+  }
+
+  return tag;
 }
