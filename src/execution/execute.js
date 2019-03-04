@@ -754,7 +754,9 @@ function asErrorInstance(error: mixed): Error {
   if (error instanceof Error) {
     return error;
   }
-  return new Error('Unexpected error value: ' + inspect(error));
+  let tmpError =  new Error('Unexpected error value: ' + inspect(error));
+  tmpError.originalGqlError = error;
+  return tmpError;
 }
 
 // This is a small wrapper around completeValue which detects and logs errors
