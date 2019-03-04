@@ -747,14 +747,18 @@ export function resolveFieldValueOrError<TSource>(
     return asErrorInstance(error);
   }
 }
-
+export class EmbededError extends Error {
+  originalGqlError: any;
+}
 // Sometimes a non-error is thrown, wrap it as an Error instance to ensure a
 // consistent Error interface.
 function asErrorInstance(error: mixed): Error {
   if (error instanceof Error) {
     return error;
   }
-  const tmpError = new Error('Unexpected error value: ' + inspect(error));
+  const tmpError = new EmbededError(
+    'Unexpected error value: ' + inspect(error),
+  );
   tmpError.originalGqlError = error;
   return tmpError;
 }
