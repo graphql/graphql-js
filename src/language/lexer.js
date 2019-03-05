@@ -518,7 +518,7 @@ function readString(source, start, line, col, prev): Token {
 
   while (
     position < body.length &&
-    !isNaN(code = body.charCodeAt(position)) &&
+    !isNaN((code = body.charCodeAt(position))) &&
     // not LineTerminator
     code !== 0x000a &&
     code !== 0x000d
@@ -623,10 +623,7 @@ function readBlockString(source, start, line, col, prev, lexer): Token {
   let code = 0;
   let rawValue = '';
 
-  while (
-    position < body.length &&
-    !isNaN(code = body.charCodeAt(position))
-  ) {
+  while (position < body.length && !isNaN((code = body.charCodeAt(position)))) {
     // Closing Triple-Quote (""")
     if (
       code === 34 &&
@@ -737,7 +734,7 @@ function readName(source, start, line, col, prev): Token {
   let code = 0;
   while (
     position !== bodyLength &&
-    !isNaN(code = body.charCodeAt(position)) &&
+    !isNaN((code = body.charCodeAt(position))) &&
     (code === 95 || // _
     (code >= 48 && code <= 57) || // 0-9
     (code >= 65 && code <= 90) || // A-Z
