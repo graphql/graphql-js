@@ -364,7 +364,7 @@ function readComment(source, start, line, col, prev) {
 
   do {
     code = body.charCodeAt(++position);
-  } while (code !== null && ( // SourceCharacter but not LineTerminator
+  } while (!isNaN(code) && ( // SourceCharacter but not LineTerminator
   code > 0x001f || code === 0x0009));
 
   return new Tok(TokenKind.COMMENT, start, position, line, col, prev, body.slice(start + 1, position));
@@ -460,7 +460,7 @@ function readString(source, start, line, col, prev) {
   var code = 0;
   var value = '';
 
-  while (position < body.length && (code = body.charCodeAt(position)) !== null && // not LineTerminator
+  while (position < body.length && !isNaN(code = body.charCodeAt(position)) && // not LineTerminator
   code !== 0x000a && code !== 0x000d) {
     // Closing Quote (")
     if (code === 34) {
@@ -550,7 +550,7 @@ function readBlockString(source, start, line, col, prev, lexer) {
   var code = 0;
   var rawValue = '';
 
-  while (position < body.length && (code = body.charCodeAt(position)) !== null) {
+  while (position < body.length && !isNaN(code = body.charCodeAt(position))) {
     // Closing Triple-Quote (""")
     if (code === 34 && body.charCodeAt(position + 1) === 34 && body.charCodeAt(position + 2) === 34) {
       rawValue += body.slice(chunkStart, position);
@@ -633,7 +633,7 @@ function readName(source, start, line, col, prev) {
   var position = start + 1;
   var code = 0;
 
-  while (position !== bodyLength && (code = body.charCodeAt(position)) !== null && (code === 95 || // _
+  while (position !== bodyLength && !isNaN(code = body.charCodeAt(position)) && (code === 95 || // _
   code >= 48 && code <= 57 || // 0-9
   code >= 65 && code <= 90 || // A-Z
   code >= 97 && code <= 122) // a-z
