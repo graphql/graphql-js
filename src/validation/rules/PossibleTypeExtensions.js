@@ -44,7 +44,7 @@ export function extendingDifferentTypeKindMessage(
 /**
  * Possible type extension
  *
- * A type extension is only valid if the type defined and have the same kind.
+ * A type extension is only valid if the type is defined and has the same kind.
  */
 export function PossibleTypeExtensions(
   context: SDLValidationContext,

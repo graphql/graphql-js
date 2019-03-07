@@ -71,7 +71,7 @@ describe('Validate: Possible type extensions', () => {
     `);
   });
 
-  it('many extension per type', () => {
+  it('many extensions per type', () => {
     expectValidSDL(`
       scalar FooScalar
       type FooObject
@@ -96,7 +96,7 @@ describe('Validate: Possible type extensions', () => {
     `);
   });
 
-  it('extending unknow type', () => {
+  it('extending unknown type', () => {
     expectSDLErrors(`
       type Known
 
@@ -116,7 +116,7 @@ describe('Validate: Possible type extensions', () => {
     ]);
   });
 
-  it('doesnot consider non-type definitions', () => {
+  it('does not consider non-type definitions', () => {
     expectSDLErrors(`
       query Foo { __typename }
       fragment Foo on Query { __typename }
