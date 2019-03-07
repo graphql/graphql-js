@@ -696,6 +696,13 @@ export class GraphQLObjectType {
     return this._fields;
   }
 
+  addField(name: string, field: GraphQLField<*, *>) {
+    if (typeof this._fields === 'function') {
+      this._fields = this._fields();
+    }
+    this._fields[name] = field;
+  }
+
   getInterfaces(): Array<GraphQLInterfaceType> {
     if (typeof this._interfaces === 'function') {
       this._interfaces = this._interfaces();
@@ -1336,6 +1343,13 @@ export class GraphQLInputObjectType {
       this._fields = this._fields();
     }
     return this._fields;
+  }
+
+  addField(name: string, field: GraphQLInputField) {
+    if (typeof this._fields === 'function') {
+      this._fields = this._fields();
+    }
+    this._fields[name] = field;
   }
 
   toConfig(): {|
