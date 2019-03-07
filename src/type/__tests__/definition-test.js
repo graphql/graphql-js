@@ -410,6 +410,40 @@ describe('Type System: Objects', () => {
       'AnotherObject must provide "isTypeOf" as a function, but got: {}.',
     );
   });
+
+  describe('Add field correctly', () => {
+    it('normal fields', () => {
+      const objType = new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: {},
+      });
+      // $DisableFlowOnNegativeTest
+      objType.addField('add', { name: 'add', type: ScalarType });
+
+      expect(objType.getFields()).to.deep.equal({
+        add: {
+          name: 'add',
+          type: ScalarType,
+        },
+      });
+    });
+
+    it('thunk fields', () => {
+      const objType = new GraphQLObjectType({
+        name: 'SomeObject',
+        fields: () => ({}),
+      });
+      // $DisableFlowOnNegativeTest
+      objType.addField('add', { name: 'add', type: ScalarType });
+
+      expect(objType.getFields()).to.deep.equal({
+        add: {
+          name: 'add',
+          type: ScalarType,
+        },
+      });
+    });
+  });
 });
 
 describe('Type System: Interfaces', () => {
@@ -697,6 +731,38 @@ describe('Type System: Input Objects', () => {
       expect(() => inputObjType.getFields()).to.throw(
         'SomeInputObject.f field has a resolve property, but Input Types cannot define resolvers.',
       );
+    });
+  });
+
+  describe('Add field correctly', () => {
+    it('normal fields', () => {
+      const objType = new GraphQLInputObjectType({
+        name: 'SomeObject',
+        fields: {},
+      });
+      objType.addField('add', { name: 'add', type: ScalarType });
+
+      expect(objType.getFields()).to.deep.equal({
+        add: {
+          name: 'add',
+          type: ScalarType,
+        },
+      });
+    });
+
+    it('thunk fields', () => {
+      const objType = new GraphQLInputObjectType({
+        name: 'SomeObject',
+        fields: () => ({}),
+      });
+      objType.addField('add', { name: 'add', type: ScalarType });
+
+      expect(objType.getFields()).to.deep.equal({
+        add: {
+          name: 'add',
+          type: ScalarType,
+        },
+      });
     });
   });
 });
