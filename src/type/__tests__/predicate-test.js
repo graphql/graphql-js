@@ -20,6 +20,10 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLString,
+  GraphQLDirective,
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
+  GraphQLDeprecatedDirective,
   isType,
   isScalarType,
   isObjectType,
@@ -39,6 +43,8 @@ import {
   isNamedType,
   isRequiredArgument,
   isRequiredInputField,
+  isDirective,
+  isSpecifiedDirective,
   assertType,
   assertScalarType,
   assertObjectType,
@@ -56,6 +62,7 @@ import {
   assertWrappingType,
   assertNullableType,
   assertNamedType,
+  assertDirective,
   getNullableType,
   getNamedType,
 } from '../';
@@ -580,6 +587,77 @@ describe('Type predicates', () => {
         defaultValue: 'default',
       };
       expect(isRequiredInputField(optField4)).to.equal(false);
+    });
+  });
+});
+
+describe('Directive predicates', () => {
+  describe('isDirective', () => {
+    it('returns true for directives', () => {
+      const directive = new GraphQLDirective({
+        name: 'Foo',
+        locations: ['QUERY'],
+      });
+      expect(isDirective(directive)).to.equal(true);
+      expect(() => assertDirective(directive)).not.to.throw();
+      expect(isDirective(GraphQLSkipDirective)).to.equal(true);
+      expect(() => assertDirective(GraphQLSkipDirective)).not.to.throw();
+    });
+
+    it('returns false for directive class (rather than instance)', () => {
+      // $DisableFlowOnNegativeTest
+      expect(isDirective(GraphQLDirective)).to.equal(false);
+      expect(() => assertDirective(GraphQLDirective)).to.throw();
+    });
+
+    it('returns false for object type', () => {
+      expect(isDirective(ObjectType)).to.equal(false);
+      expect(() => assertDirective(ObjectType)).to.throw();
+    });
+
+    it('returns false for scalar type', () => {
+      expect(isDirective(GraphQLString)).to.equal(false);
+      expect(() => assertDirective(GraphQLString)).to.throw();
+    });
+
+    it('returns false for random garbage', () => {
+      expect(isDirective({ what: 'is this' })).to.equal(false);
+      expect(() => assertDirective({ what: 'is this' })).to.throw();
+    });
+  });
+  describe('isSpecifiedDirective', () => {
+    it('returns true for specified directives', () => {
+      expect(isSpecifiedDirective(GraphQLIncludeDirective)).to.equal(true);
+      expect(isSpecifiedDirective(GraphQLSkipDirective)).to.equal(true);
+      expect(isSpecifiedDirective(GraphQLDeprecatedDirective)).to.equal(true);
+    });
+
+    it('returns false for custom directive', () => {
+      const directive = new GraphQLDirective({
+        name: 'Foo',
+        locations: ['QUERY'],
+      });
+      expect(isSpecifiedDirective(directive)).to.equal(false);
+    });
+
+    it('returns false for directive class (rather than specified instance)', () => {
+      // $DisableFlowOnNegativeTest
+      expect(isSpecifiedDirective(GraphQLDirective)).to.equal(false);
+    });
+
+    it('returns false for object type', () => {
+      // $DisableFlowOnNegativeTest
+      expect(isSpecifiedDirective(ObjectType)).to.equal(false);
+    });
+
+    it('returns false for spec defined scalar type', () => {
+      // $DisableFlowOnNegativeTest
+      expect(isSpecifiedDirective(GraphQLString)).to.equal(false);
+    });
+
+    it('returns false for random garbage', () => {
+      // $DisableFlowOnNegativeTest
+      expect(isSpecifiedDirective({ what: 'is this' })).to.equal(false);
     });
   });
 });
