@@ -312,7 +312,7 @@ describe('Type System: Schema', () => {
         });
 
         expect(() => new GraphQLSchema({ query: QueryType })).to.throw(
-          'Schema must contain unique named types but contains multiple types named "String".',
+          'Schema must contain uniquely named types but contains multiple types named "String".',
         );
       });
 
@@ -323,7 +323,7 @@ describe('Type System: Schema', () => {
         ];
 
         expect(() => new GraphQLSchema({ types })).to.throw(
-          'Schema must contain unique named types but contains multiple types named "SameName".',
+          'Schema must contain uniquely named types but contains multiple types named "SameName".',
         );
       });
 
@@ -338,7 +338,7 @@ describe('Type System: Schema', () => {
         });
 
         expect(() => new GraphQLSchema({ query: QueryType })).to.throw(
-          'Schema must contain unique named types but contains multiple types named "SameName".',
+          'Schema must contain uniquely named types but contains multiple types named "SameName".',
         );
       });
     });
