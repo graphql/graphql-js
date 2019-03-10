@@ -344,7 +344,7 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (map[type.name]) {
     invariant(
       map[type.name] === type,
-      'Schema must contain unique named types but contains multiple ' +
+      'Schema must contain uniquely named types but contains multiple ' +
         `types named "${type.name}".`,
     );
     return map;
