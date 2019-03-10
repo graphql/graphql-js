@@ -279,7 +279,7 @@ function typeMapReducer(map, type) {
   }
 
   if (map[type.name]) {
-    !(map[type.name] === type) ? invariant(0, 'Schema must contain unique named types but contains multiple ' + "types named \"".concat(type.name, "\".")) : void 0;
+    !(map[type.name] === type) ? invariant(0, 'Schema must contain uniquely named types but contains multiple ' + "types named \"".concat(type.name, "\".")) : void 0;
     return map;
   }
 
