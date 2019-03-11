@@ -250,7 +250,7 @@ describe('Execute: Union and intersection types', () => {
     });
   });
 
-  it('executes union types with inline fragments', () => {
+  it('executes interface types with inline fragments', () => {
     // This is the valid version of the query in the above test.
     const ast = parse(`
       {
