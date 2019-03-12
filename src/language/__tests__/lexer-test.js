@@ -129,8 +129,8 @@ describe('Lexer', () => {
 
       GraphQL request (3:5)
       2: 
+             ↓
       3:     ?
-             ^
       4: 
     `);
   });
@@ -149,8 +149,8 @@ describe('Lexer', () => {
 
       foo.js (13:6)
       12: 
+               ↓
       13:      ?
-               ^
       14: 
     `);
   });
@@ -167,8 +167,8 @@ describe('Lexer', () => {
       Syntax Error: Cannot parse the unexpected character "?".
 
       foo.js (1:5)
+             ↓
       1:     ?
-             ^
     `);
   });
 

@@ -28,8 +28,8 @@ describe('printError', () => {
       Single digit line number with no padding
 
       Test (9:1)
+         ↓
       9: *
-         ^
     `);
 
     const doubleDigit = new GraphQLError(
@@ -42,8 +42,8 @@ describe('printError', () => {
       Left padded first line number
 
       Test (9:1)
+          ↓
        9: *
-          ^
       10: 
     `);
   });
@@ -87,14 +87,14 @@ describe('printError', () => {
 
       SourceA (2:10)
       1: type Foo {
+                  ↓
       2:   field: String
-                  ^
       3: }
 
       SourceB (2:10)
       1: type Foo {
+                  ↓
       2:   field: Int
-                  ^
       3: }
     `);
   });

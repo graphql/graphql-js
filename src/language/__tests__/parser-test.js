@@ -55,8 +55,8 @@ describe('Parser', () => {
       Syntax Error: Expected Name, found <EOF>
 
       GraphQL request (1:2)
+          ↓
       1: {
-          ^
     `);
 
     expectSyntaxError(
@@ -92,8 +92,8 @@ describe('Parser', () => {
       Syntax Error: Expected {, found <EOF>
 
       MyQuery.graphql (1:6)
+              ↓
       1: query
-              ^
     `);
   });
 

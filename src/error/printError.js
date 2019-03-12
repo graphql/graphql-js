@@ -64,8 +64,8 @@ function highlightSourceAtLocation(
     printPrefixedLines([
       // Lines specified like this: ["prefix", "string"],
       [`${lineNum - 1}: `, lines[lineIndex - 1]],
+      ['', whitespace(columnNum - 1) + '↓'],
       [`${lineNum}: `, lines[lineIndex]],
-      ['', whitespace(columnNum - 1) + '^'],
       [`${lineNum + 1}: `, lines[lineIndex + 1]],
     ])
   );
