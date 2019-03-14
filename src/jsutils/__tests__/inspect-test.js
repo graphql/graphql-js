@@ -96,6 +96,16 @@ describe('inspect', () => {
     expect(inspect(object)).to.equal('<custom inspect>');
   });
 
+  it('custom inspect that return `this` should work', () => {
+    const object = {
+      inspect() {
+        return this;
+      },
+    };
+
+    expect(inspect(object)).to.equal('{ inspect: [function inspect] }');
+  });
+
   it('custom symbol inspect is take precedence', () => {
     invariant(nodejsCustomInspectSymbol);
 

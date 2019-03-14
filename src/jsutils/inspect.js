@@ -32,9 +32,13 @@ function formatValue(value, recurseTimes) {
         if (customInspectFn) {
           // $FlowFixMe(>=0.90.0)
           const customValue = customInspectFn.call(value);
-          return typeof customValue === 'string'
-            ? customValue
-            : formatValue(customValue, recurseTimes);
+
+          // check for infinite recursion
+          if (customValue !== value) {
+            return typeof customValue === 'string'
+              ? customValue
+              : formatValue(customValue, recurseTimes);
+          }
         } else if (Array.isArray(value)) {
           return formatArray(value, recurseTimes);
         }
