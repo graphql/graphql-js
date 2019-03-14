@@ -86,6 +86,27 @@ describe('inspect', () => {
     expect(inspect(map)).to.equal('{ a: true, b: null }');
   });
 
+  it('detect circular objects', () => {
+    const obj = {};
+    obj.self = obj;
+    obj.deepSelf = { self: obj };
+
+    expect(inspect(obj)).to.equal(
+      '{ self: [Circular], deepSelf: { self: [Circular] } }',
+    );
+
+    const array = [];
+    array[0] = array;
+    array[1] = [array];
+
+    expect(inspect(array)).to.equal('[[Circular], [[Circular]]]');
+
+    const mixed = { array: [] };
+    mixed.array[0] = mixed;
+
+    expect(inspect(mixed)).to.equal('{ array: [[Circular]] }');
+  });
+
   it('custom inspect', () => {
     const object = {
       inspect() {
