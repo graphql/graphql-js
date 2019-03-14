@@ -88,4 +88,12 @@ describe('Validate: Unique input field names', () => {
       duplicateField('f1', 3, 22, 3, 48),
     ]);
   });
+
+  it('nested duplicate input object fields', () => {
+    expectErrors(`
+      {
+        field(arg: { f1: {f2: "value", f2: "value" }})
+      }
+    `).to.deep.equal([duplicateField('f2', 3, 27, 3, 40)]);
+  });
 });
