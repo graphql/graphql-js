@@ -16,66 +16,75 @@ const MAX_RECURSIVE_DEPTH = 2;
  * Used to print values in error messages.
  */
 export default function inspect(value: mixed): string {
-  return formatValue(value, 0);
+  return formatValue(value, []);
 }
 
-function formatValue(value, recurseTimes) {
+function formatValue(value, seenValues) {
   switch (typeof value) {
     case 'string':
       return JSON.stringify(value);
     case 'function':
       return value.name ? `[function ${value.name}]` : '[function]';
     case 'object':
-      if (value) {
-        const customInspectFn = getCustomFn(value);
-
-        if (customInspectFn) {
-          // $FlowFixMe(>=0.90.0)
-          const customValue = customInspectFn.call(value);
-
-          // check for infinite recursion
-          if (customValue !== value) {
-            return typeof customValue === 'string'
-              ? customValue
-              : formatValue(customValue, recurseTimes);
-          }
-        } else if (Array.isArray(value)) {
-          return formatArray(value, recurseTimes);
-        }
-
-        return formatObject(value, recurseTimes);
-      }
-
-      return String(value);
+      return formatObjectValue(value, seenValues);
     default:
       return String(value);
   }
 }
 
-function formatObject(object, recurseTimes) {
+function formatObjectValue(value, previouslySeenValues) {
+  if (previouslySeenValues.indexOf(value) !== -1) {
+    return '[Circular]';
+  }
+  const seenValues = [...previouslySeenValues, value];
+
+  if (value) {
+    const customInspectFn = getCustomFn(value);
+
+    if (customInspectFn) {
+      // $FlowFixMe(>=0.90.0)
+      const customValue = customInspectFn.call(value);
+
+      // check for infinite recursion
+      if (customValue !== value) {
+        return typeof customValue === 'string'
+          ? customValue
+          : formatValue(customValue, seenValues);
+      }
+    } else if (Array.isArray(value)) {
+      return formatArray(value, seenValues);
+    }
+
+    return formatObject(value, seenValues);
+  }
+
+  return String(value);
+}
+
+function formatObject(object, seenValues) {
   const keys = Object.keys(object);
   if (keys.length === 0) {
     return '{}';
   }
 
-  if (recurseTimes === MAX_RECURSIVE_DEPTH) {
+  if (seenValues.length > MAX_RECURSIVE_DEPTH) {
     return '[' + getObjectTag(object) + ']';
   }
 
   const properties = keys.map(key => {
-    const value = formatValue(object[key], recurseTimes + 1);
+    const value = formatValue(object[key], seenValues);
     return key + ': ' + value;
   });
 
   return '{ ' + properties.join(', ') + ' }';
 }
 
-function formatArray(array, recurseTimes) {
+function formatArray(array, seenValues) {
   if (array.length === 0) {
     return '[]';
   }
 
-  if (recurseTimes === MAX_RECURSIVE_DEPTH) {
+  if (seenValues.length > MAX_RECURSIVE_DEPTH) {
     return '[Array]';
   }
 
@@ -84,7 +93,7 @@ function formatArray(array, recurseTimes) {
   const items = [];
 
   for (let i = 0; i < len; ++i) {
-    items.push(formatValue(array[i], recurseTimes + 1));
+    items.push(formatValue(array[i], seenValues));
   }
 
   if (remaining === 1) {
