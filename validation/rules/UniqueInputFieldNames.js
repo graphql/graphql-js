@@ -48,8 +48,6 @@ function UniqueInputFieldNames(context) {
       } else {
         knownNames[fieldName] = node.name;
       }
-
-      return false;
     }
   };
 }
