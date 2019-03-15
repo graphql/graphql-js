@@ -49,7 +49,6 @@ export function UniqueInputFieldNames(
       } else {
         knownNames[fieldName] = node.name;
       }
-      return false;
     },
   };
 }
