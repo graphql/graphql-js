@@ -31,7 +31,7 @@
     "benchmark": "node ./resources/benchmark.js",
     "prettier": "prettier --write --list-different 'src/**/*.js'",
     "check": "flow check",
-    "check-cover": "for file in {src/*.js,src/**/*.js}; do echo $file; flow coverage $file; done",
+    "check-cover": "flow batch-coverage --quiet --strip-root --show-all src/ && flow stop --quiet",
     "build": "npm run build:clean && npm run build:cp && npm run build:package-json && npm run build:cjs && npm run build:mjs && npm run build:flow",
     "build:clean": "rm -rf ./dist && mkdir ./dist",
     "build:cp": "cp README.md LICENSE ./dist",
