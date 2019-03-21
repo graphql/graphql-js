@@ -63,8 +63,10 @@ function NoUnusedVariables(context) {
           }
         }
 
-        for (var _i = 0; _i < variableDefs.length; _i++) {
-          var variableDef = variableDefs[_i];
+        var _arr = variableDefs;
+
+        for (var _i = 0; _i < _arr.length; _i++) {
+          var variableDef = _arr[_i];
           var variableName = variableDef.variable.name.value;
 
           if (variableNameUsed[variableName] !== true) {

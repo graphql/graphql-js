@@ -42,9 +42,10 @@ function NoUnusedFragments(context) {
     Document: {
       leave: function leave() {
         var fragmentNameUsed = Object.create(null);
+        var _arr = operationDefs;
 
-        for (var _i = 0; _i < operationDefs.length; _i++) {
-          var operation = operationDefs[_i];
+        for (var _i = 0; _i < _arr.length; _i++) {
+          var operation = _arr[_i];
           var _iteratorNormalCompletion = true;
           var _didIteratorError = false;
           var _iteratorError = undefined;
@@ -70,8 +71,10 @@ function NoUnusedFragments(context) {
           }
         }
 
-        for (var _i2 = 0; _i2 < fragmentDefs.length; _i2++) {
-          var fragmentDef = fragmentDefs[_i2];
+        var _arr2 = fragmentDefs;
+
+        for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+          var fragmentDef = _arr2[_i2];
           var fragName = fragmentDef.name.value;
 
           if (fragmentNameUsed[fragName] !== true) {

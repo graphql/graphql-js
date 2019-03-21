@@ -175,8 +175,10 @@ export function extendSchema(schema, documentAST, options) {
   } // Then, incorporate schema definition and all schema extensions.
 
 
-  for (var _i = 0; _i < schemaExts.length; _i++) {
-    var schemaExt = schemaExts[_i];
+  var _arr = schemaExts;
+
+  for (var _i = 0; _i < _arr.length; _i++) {
+    var schemaExt = _arr[_i];
 
     if (schemaExt.operationTypes) {
       var _iteratorNormalCompletion4 = true;
