@@ -8,7 +8,7 @@
  */
 
 import isPromise from './isPromise';
-import type { MaybePromise } from './MaybePromise';
+import type { PromiseOrValue } from './PromiseOrValue';
 
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
@@ -19,9 +19,9 @@ import type { MaybePromise } from './MaybePromise';
  */
 export default function promiseReduce<T, U>(
   values: $ReadOnlyArray<T>,
-  callback: (U, T) => MaybePromise<U>,
-  initialValue: MaybePromise<U>,
-): MaybePromise<U> {
+  callback: (U, T) => PromiseOrValue<U>,
+  initialValue: PromiseOrValue<U>,
+): PromiseOrValue<U> {
   return values.reduce(
     (previous, value) =>
       isPromise(previous)
