@@ -8,7 +8,7 @@
  */
 
 import { $$asyncIterator, getAsyncIterator } from 'iterall';
-import type { MaybePromise } from '../jsutils/MaybePromise';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
@@ -16,8 +16,8 @@ import type { MaybePromise } from '../jsutils/MaybePromise';
  */
 export default function mapAsyncIterator<T, U>(
   iterable: AsyncIterable<T>,
-  callback: T => MaybePromise<U>,
-  rejectCallback?: any => MaybePromise<U>,
+  callback: T => PromiseOrValue<U>,
+  rejectCallback?: any => PromiseOrValue<U>,
 ): AsyncGenerator<U, void, void> {
   const iterator = getAsyncIterator(iterable);
   let $return;
@@ -71,7 +71,7 @@ export default function mapAsyncIterator<T, U>(
 
 function asyncMapValue<T, U>(
   value: T,
-  callback: T => MaybePromise<U>,
+  callback: T => PromiseOrValue<U>,
 ): Promise<U> {
   return new Promise(resolve => resolve(callback(value)));
 }

@@ -19,7 +19,7 @@ import memoize3 from '../jsutils/memoize3';
 import promiseForObject from '../jsutils/promiseForObject';
 import promiseReduce from '../jsutils/promiseReduce';
 import type { ObjMap } from '../jsutils/ObjMap';
-import type { MaybePromise } from '../jsutils/MaybePromise';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 import { getOperationRootType } from '../utilities/getOperationRootType';
 import { typeFromAST } from '../utilities/typeFromAST';
@@ -144,7 +144,7 @@ export type ExecutionArgs = {|
 declare function execute(
   ExecutionArgs,
   ..._: []
-): MaybePromise<ExecutionResult>;
+): PromiseOrValue<ExecutionResult>;
 /* eslint-disable no-redeclare */
 declare function execute(
   schema: GraphQLSchema,
@@ -155,7 +155,7 @@ declare function execute(
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
-): MaybePromise<ExecutionResult>;
+): PromiseOrValue<ExecutionResult>;
 export function execute(
   argsOrSchema,
   document,
@@ -239,7 +239,7 @@ function executeImpl(
  */
 function buildResponse(
   exeContext: ExecutionContext,
-  data: MaybePromise<ObjMap<mixed> | null>,
+  data: PromiseOrValue<ObjMap<mixed> | null>,
 ) {
   if (isPromise(data)) {
     return data.then(resolved => buildResponse(exeContext, resolved));
@@ -393,7 +393,7 @@ function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
   rootValue: mixed,
-): MaybePromise<ObjMap<mixed> | null> {
+): PromiseOrValue<ObjMap<mixed> | null> {
   const type = getOperationRootType(exeContext.schema, operation);
   const fields = collectFields(
     exeContext,
@@ -438,7 +438,7 @@ function executeFieldsSerially(
   sourceValue: mixed,
   path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
-): MaybePromise<ObjMap<mixed>> {
+): PromiseOrValue<ObjMap<mixed>> {
   return promiseReduce(
     Object.keys(fields),
     (results, responseName) => {
@@ -477,7 +477,7 @@ function executeFields(
   sourceValue: mixed,
   path: ResponsePath | void,
   fields: ObjMap<Array<FieldNode>>,
-): MaybePromise<ObjMap<mixed>> {
+): PromiseOrValue<ObjMap<mixed>> {
   const results = Object.create(null);
   let containsPromise = false;
 
@@ -653,7 +653,7 @@ function resolveField(
   source: mixed,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   path: ResponsePath,
-): MaybePromise<mixed> {
+): PromiseOrValue<mixed> {
   const fieldNode = fieldNodes[0];
   const fieldName = fieldNode.name.value;
 
@@ -766,7 +766,7 @@ function completeValueCatchingError(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): MaybePromise<mixed> {
+): PromiseOrValue<mixed> {
   try {
     let completed;
     if (isPromise(result)) {
@@ -844,7 +844,7 @@ function completeValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): MaybePromise<mixed> {
+): PromiseOrValue<mixed> {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
@@ -939,7 +939,7 @@ function completeListValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): MaybePromise<$ReadOnlyArray<mixed>> {
+): PromiseOrValue<$ReadOnlyArray<mixed>> {
   invariant(
     isCollection(result),
     `Expected Iterable, but did not find one for field ${
@@ -1001,7 +1001,7 @@ function completeAbstractValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): MaybePromise<ObjMap<mixed>> {
+): PromiseOrValue<ObjMap<mixed>> {
   const resolveTypeFn = returnType.resolveType || exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
@@ -1088,7 +1088,7 @@ function completeObjectValue(
   info: GraphQLResolveInfo,
   path: ResponsePath,
   result: mixed,
-): MaybePromise<ObjMap<mixed>> {
+): PromiseOrValue<ObjMap<mixed>> {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
@@ -1141,7 +1141,7 @@ function collectAndExecuteSubfields(
   fieldNodes: $ReadOnlyArray<FieldNode>,
   path: ResponsePath,
   result: mixed,
-): MaybePromise<ObjMap<mixed>> {
+): PromiseOrValue<ObjMap<mixed>> {
   // Collect sub-fields to execute to complete this value.
   const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
   return executeFields(exeContext, returnType, result, path, subFieldNodes);

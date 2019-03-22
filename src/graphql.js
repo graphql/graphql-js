@@ -19,7 +19,7 @@ import type {
 } from './type/definition';
 import type { GraphQLSchema } from './type/schema';
 import type { ExecutionResult } from './execution/execute';
-import type { MaybePromise } from './jsutils/MaybePromise';
+import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -188,7 +188,7 @@ function graphqlImpl(
   operationName,
   fieldResolver,
   typeResolver,
-): MaybePromise<ExecutionResult> {
+): PromiseOrValue<ExecutionResult> {
   // Validate Schema
   const schemaValidationErrors = validateSchema(schema);
   if (schemaValidationErrors.length > 0) {
