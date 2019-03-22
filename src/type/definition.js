@@ -41,7 +41,7 @@ import type {
   ValueNode,
 } from '../language/ast';
 import type { GraphQLSchema } from './schema';
-import type { MaybePromise } from '../jsutils/MaybePromise';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 // Predicates & Assertions
 
@@ -839,13 +839,13 @@ export type GraphQLTypeResolver<TSource, TContext> = (
   context: TContext,
   info: GraphQLResolveInfo,
   abstractType: GraphQLAbstractType,
-) => MaybePromise<?GraphQLObjectType | string>;
+) => PromiseOrValue<?GraphQLObjectType | string>;
 
 export type GraphQLIsTypeOfFn<TSource, TContext> = (
   source: TSource,
   context: TContext,
   info: GraphQLResolveInfo,
-) => MaybePromise<boolean>;
+) => PromiseOrValue<boolean>;
 
 export type GraphQLFieldResolver<
   TSource,
