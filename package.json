@@ -52,7 +52,7 @@
     "@babel/core": "7.4.0",
     "@babel/plugin-transform-flow-strip-types": "7.4.0",
     "@babel/polyfill": "7.4.0",
-    "@babel/preset-env": "7.4.1",
+    "@babel/preset-env": "7.4.2",
     "@babel/register": "7.4.0",
     "babel-eslint": "10.0.1",
     "benchmark": "2.1.4",
