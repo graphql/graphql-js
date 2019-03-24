@@ -1439,7 +1439,7 @@ function expectKeyword(lexer, value) {
     return token;
   }
 
-  throw syntaxError(lexer.source, lexer.token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(lexer.token)));
+  throw syntaxError(lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(token)));
 }
 /**
  * If the next token is a given keyword, return that token after advancing
