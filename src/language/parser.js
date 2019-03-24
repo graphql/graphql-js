@@ -1502,8 +1502,8 @@ function expectKeyword(lexer: Lexer<*>, value: string): Token {
 
   throw syntaxError(
     lexer.source,
-    lexer.token.start,
-    `Expected "${value}", found ${getTokenDesc(lexer.token)}`,
+    token.start,
+    `Expected "${value}", found ${getTokenDesc(token)}`,
   );
 }
 
