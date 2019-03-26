@@ -386,6 +386,9 @@ export {
   concatAST,
   // Separates an AST into an AST per Operation.
   separateOperations,
+  // Strips characters that are not significant to the validity or execution
+  // of a GraphQL document.
+  stripIgnoredCharacters,
   // Comparators for types
   isEqualType,
   isTypeSubTypeOf,
