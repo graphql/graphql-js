@@ -9,7 +9,11 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { dedentBlockStringValue, printBlockString } from '../blockString';
+import {
+  dedentBlockStringValue,
+  getBlockStringIndentation,
+  printBlockString,
+} from '../blockString';
 
 function joinLines(...args) {
   return args.join('\n');
@@ -96,6 +100,37 @@ describe('dedentBlockStringValue', () => {
         '  GraphQL. ',
       ),
     );
+  });
+});
+
+describe('getBlockStringIndentation', () => {
+  it('returns zero for an empty array', () => {
+    expect(getBlockStringIndentation([])).to.equal(0);
+  });
+
+  it('do not take first line into account', () => {
+    expect(getBlockStringIndentation(['  a'])).to.equal(0);
+    expect(getBlockStringIndentation([' a', '  b'])).to.equal(2);
+  });
+
+  it('returns minimal indentation length', () => {
+    expect(getBlockStringIndentation(['', ' a', '  b'])).to.equal(1);
+    expect(getBlockStringIndentation(['', '  a', ' b'])).to.equal(1);
+    expect(getBlockStringIndentation(['', '  a', ' b', 'c'])).to.equal(0);
+  });
+
+  it('count both tab and space as single character', () => {
+    expect(getBlockStringIndentation(['', '\ta', '          b'])).to.equal(1);
+    expect(getBlockStringIndentation(['', '\t a', '          b'])).to.equal(2);
+    expect(getBlockStringIndentation(['', ' \t a', '          b'])).to.equal(3);
+  });
+
+  it('do not take empty lines into account', () => {
+    expect(getBlockStringIndentation(['a', '\t'])).to.equal(0);
+    expect(getBlockStringIndentation(['a', ' '])).to.equal(0);
+    expect(getBlockStringIndentation(['a', ' ', '  b'])).to.equal(2);
+    expect(getBlockStringIndentation(['a', ' ', '  b'])).to.equal(2);
+    expect(getBlockStringIndentation(['a', '', ' b'])).to.equal(1);
   });
 });
 
