@@ -104,6 +104,10 @@ export { concatAST } from './concatAST';
 // Separates an AST into an AST per Operation.
 export { separateOperations } from './separateOperations';
 
+// Strips characters that are not significant to the validity or execution
+// of a GraphQL document.
+export { stripIgnoredCharacters } from './stripIgnoredCharacters';
+
 // Comparators for types
 export {
   isEqualType,
