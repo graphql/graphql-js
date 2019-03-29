@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -33,6 +33,7 @@ describe('asyncIteratorReject', () => {
     const iter = asyncIteratorReject(error);
 
     // Close iterator
+    // $FlowFixMe
     expect(await iter.return()).to.deep.equal({ done: true, value: undefined });
 
     expect(await iter.next()).to.deep.equal({ done: true, value: undefined });

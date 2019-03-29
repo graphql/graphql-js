@@ -926,7 +926,7 @@ describe('Subscription Publish Phase', () => {
     }
 
     expect(expectedError).to.be.instanceof(Error);
-    expect(expectedError.message).to.equal('test error');
+    expect(expectedError).to.have.property('message', 'test error');
 
     const payload2 = await subscription.next();
     expect(payload2).to.deep.equal({
