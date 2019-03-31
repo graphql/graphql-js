@@ -11,6 +11,7 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
+import { buildSchema } from '../buildASTSchema';
 import { extendSchema } from '../extendSchema';
 import { parse, print, DirectiveLocation } from '../../language';
 import { printSchema } from '../schemaPrinter';
@@ -30,7 +31,10 @@ import {
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLID,
+  GraphQLInt,
+  GraphQLFloat,
   GraphQLString,
+  GraphQLBoolean,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLNonNull,
@@ -264,6 +268,48 @@ describe('extendSchema', () => {
     const fooType = assertObjectType(extendedSchema.getType('Foo'));
     const queryType = assertObjectType(extendedSchema.getType('Query'));
     expect(queryType.getFields().foo).to.include({ type: fooType });
+  });
+
+  it('extends objects with standard type fields', () => {
+    const schema = buildSchema(`
+      type Query {
+        str: String
+      }
+    `);
+
+    expect(schema.getType('Int')).to.equal(undefined);
+    expect(schema.getType('Float')).to.equal(undefined);
+    expect(schema.getType('String')).to.equal(GraphQLString);
+    expect(schema.getType('Boolean')).to.equal(GraphQLBoolean);
+    expect(schema.getType('ID')).to.equal(undefined);
+
+    const extendAST = parse(`
+      extend type Query {
+        bool: Boolean
+      }
+    `);
+    const extendedSchema = extendSchema(schema, extendAST);
+
+    expect(extendedSchema.getType('Int')).to.equal(undefined);
+    expect(extendedSchema.getType('Float')).to.equal(undefined);
+    expect(extendedSchema.getType('String')).to.equal(GraphQLString);
+    expect(extendedSchema.getType('Boolean')).to.equal(GraphQLBoolean);
+    expect(extendedSchema.getType('ID')).to.equal(undefined);
+
+    const extendTwiceAST = parse(`
+      extend type Query {
+        int: Int
+        float: Float
+        id: ID
+      }
+    `);
+    const extendedTwiceSchema = extendSchema(schema, extendTwiceAST);
+
+    expect(extendedTwiceSchema.getType('Int')).to.equal(GraphQLInt);
+    expect(extendedTwiceSchema.getType('Float')).to.equal(GraphQLFloat);
+    expect(extendedTwiceSchema.getType('String')).to.equal(GraphQLString);
+    expect(extendedTwiceSchema.getType('Boolean')).to.equal(GraphQLBoolean);
+    expect(extendedTwiceSchema.getType('ID')).to.equal(GraphQLID);
   });
 
   it('extends enums by adding new values', () => {
