@@ -38,15 +38,25 @@ function cycleIntrospection(sdlString) {
   const serverSchema = buildSchema(sdlString);
   const initialIntrospection = introspectionFromSchema(serverSchema);
   const clientSchema = buildClientSchema(initialIntrospection);
+  const secondIntrospection = introspectionFromSchema(clientSchema);
+
+  hackToRemoveStandardTypes(secondIntrospection);
+  hackToRemoveStandardTypes(initialIntrospection);
 
   /**
    * If the client then runs the introspection query against the client-side
    * schema, it should get a result identical to what was returned by the server
    */
-  const secondIntrospection = introspectionFromSchema(clientSchema);
   expect(secondIntrospection).to.deep.equal(initialIntrospection);
-
   return printSchema(clientSchema);
+}
+
+// Temporary hack to remove always presented standard types should be removed in 15.0
+function hackToRemoveStandardTypes(introspection) {
+  (introspection.__schema: any).types = introspection.__schema.types.filter(
+    ({ name }) =>
+      ['ID', 'Float', 'Int', 'Boolean', 'String'].indexOf(name) === -1,
+  );
 }
 
 describe('Type System: build schema from introspection', () => {
@@ -320,6 +330,9 @@ describe('Type System: build schema from introspection', () => {
     const introspection = introspectionFromSchema(schema);
     const clientSchema = buildClientSchema(introspection);
     const secondIntrospection = introspectionFromSchema(clientSchema);
+
+    hackToRemoveStandardTypes(secondIntrospection);
+    hackToRemoveStandardTypes(introspection);
     expect(secondIntrospection).to.deep.equal(introspection);
 
     const clientFoodEnum = clientSchema.getType('Food');
