@@ -92,7 +92,9 @@ export function buildClientSchema(
   );
 
   for (const stdType of [...specifiedScalarTypes, ...introspectionTypes]) {
-    typeMap[stdType.name] = stdType;
+    if (typeMap[stdType.name]) {
+      typeMap[stdType.name] = stdType;
+    }
   }
 
   // Get the root Query, Mutation, and Subscription types.
