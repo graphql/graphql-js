@@ -60,9 +60,7 @@ function buildClientSchema(introspection, options) {
     return buildType(typeIntrospection);
   });
 
-  var _arr = [].concat(_scalars.specifiedScalarTypes, _introspection.introspectionTypes);
-
-  for (var _i = 0; _i < _arr.length; _i++) {
+  for (var _i = 0, _arr = [].concat(_scalars.specifiedScalarTypes, _introspection.introspectionTypes); _i < _arr.length; _i++) {
     var stdType = _arr[_i];
     typeMap[stdType.name] = stdType;
   } // Get the root Query, Mutation, and Subscription types.

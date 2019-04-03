@@ -155,10 +155,9 @@ function sortObjMap(map, sortValueFn) {
   var sortedKeys = sortBy(Object.keys(map), function (x) {
     return x;
   });
-  var _arr = sortedKeys;
 
-  for (var _i = 0; _i < _arr.length; _i++) {
-    var key = _arr[_i];
+  for (var _i = 0, _sortedKeys = sortedKeys; _i < _sortedKeys.length; _i++) {
+    var key = _sortedKeys[_i];
     var value = map[key];
     sortedMap[key] = sortValueFn ? sortValueFn(value) : value;
   }

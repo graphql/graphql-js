@@ -164,10 +164,8 @@ function ProvidedRequiredArgumentsOnDirectives(context) {
             return arg.name.value;
           });
 
-          var _arr = Object.keys(requiredArgs);
-
-          for (var _i = 0; _i < _arr.length; _i++) {
-            var argName = _arr[_i];
+          for (var _i = 0, _Object$keys = Object.keys(requiredArgs); _i < _Object$keys.length; _i++) {
+            var argName = _Object$keys[_i];
 
             if (!argNodeMap[argName]) {
               var argType = requiredArgs[argName].type;

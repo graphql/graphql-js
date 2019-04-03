@@ -53,10 +53,8 @@ export function NoUnusedVariables(context) {
           }
         }
 
-        var _arr = variableDefs;
-
-        for (var _i = 0; _i < _arr.length; _i++) {
-          var variableDef = _arr[_i];
+        for (var _i = 0, _variableDefs = variableDefs; _i < _variableDefs.length; _i++) {
+          var variableDef = _variableDefs[_i];
           var variableName = variableDef.variable.name.value;
 
           if (variableNameUsed[variableName] !== true) {

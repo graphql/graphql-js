@@ -154,10 +154,8 @@ function coerceValue(value, type, blameNode, path) {
       }
     }
 
-    var _arr = Object.keys(value);
-
-    for (var _i = 0; _i < _arr.length; _i++) {
-      var fieldName = _arr[_i];
+    for (var _i = 0, _Object$keys = Object.keys(value); _i < _Object$keys.length; _i++) {
+      var fieldName = _Object$keys[_i];
 
       if (!fields[fieldName]) {
         var _suggestions = (0, _suggestionList.default)(fieldName, Object.keys(fields));

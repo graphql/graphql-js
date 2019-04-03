@@ -41,10 +41,9 @@ export function separateOperations(documentAST) {
   // is necessary for completing that operation.
 
   var separatedDocumentASTs = Object.create(null);
-  var _arr = operations;
 
-  for (var _i = 0; _i < _arr.length; _i++) {
-    var operation = _arr[_i];
+  for (var _i = 0, _operations = operations; _i < _operations.length; _i++) {
+    var operation = _operations[_i];
     var operationName = opName(operation);
     var dependencies = Object.create(null);
     collectTransitiveDependencies(dependencies, depGraph, operationName); // The list of definition nodes to be included for this operation, sorted
@@ -52,10 +51,8 @@ export function separateOperations(documentAST) {
 
     var definitions = [operation];
 
-    var _arr2 = Object.keys(dependencies);
-
-    for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-      var name = _arr2[_i2];
+    for (var _i2 = 0, _Object$keys = Object.keys(dependencies); _i2 < _Object$keys.length; _i2++) {
+      var name = _Object$keys[_i2];
       definitions.push(fragments[name]);
     }
 
@@ -82,10 +79,8 @@ function collectTransitiveDependencies(collected, depGraph, fromName) {
   var immediateDeps = depGraph[fromName];
 
   if (immediateDeps) {
-    var _arr3 = Object.keys(immediateDeps);
-
-    for (var _i3 = 0; _i3 < _arr3.length; _i3++) {
-      var toName = _arr3[_i3];
+    for (var _i3 = 0, _Object$keys2 = Object.keys(immediateDeps); _i3 < _Object$keys2.length; _i3++) {
+      var toName = _Object$keys2[_i3];
 
       if (!collected[toName]) {
         collected[toName] = true;

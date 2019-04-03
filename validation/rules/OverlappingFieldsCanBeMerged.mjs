@@ -50,10 +50,9 @@ export function OverlappingFieldsCanBeMerged(context) {
   return {
     SelectionSet: function SelectionSet(selectionSet) {
       var conflicts = findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, comparedFragmentPairs, context.getParentType(), selectionSet);
-      var _arr = conflicts;
 
-      for (var _i = 0; _i < _arr.length; _i++) {
-        var _ref3 = _arr[_i];
+      for (var _i = 0, _conflicts = conflicts; _i < _conflicts.length; _i++) {
+        var _ref3 = _conflicts[_i];
         var _ref2$ = _ref3[0];
         var responseName = _ref2$[0];
         var reason = _ref2$[1];
@@ -338,10 +337,8 @@ function collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentName
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  var _arr2 = Object.keys(fieldMap1);
-
-  for (var _i3 = 0; _i3 < _arr2.length; _i3++) {
-    var responseName = _arr2[_i3];
+  for (var _i3 = 0, _Object$keys = Object.keys(fieldMap1); _i3 < _Object$keys.length; _i3++) {
+    var responseName = _Object$keys[_i3];
     var fields2 = fieldMap2[responseName];
 
     if (fields2) {

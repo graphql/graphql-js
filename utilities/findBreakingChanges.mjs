@@ -60,10 +60,8 @@ export function findRemovedTypes(oldSchema, newSchema) {
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
 
-  var _arr = Object.keys(oldTypeMap);
-
-  for (var _i = 0; _i < _arr.length; _i++) {
-    var typeName = _arr[_i];
+  for (var _i = 0, _Object$keys = Object.keys(oldTypeMap); _i < _Object$keys.length; _i++) {
+    var typeName = _Object$keys[_i];
 
     if (!newTypeMap[typeName]) {
       breakingChanges.push({
@@ -85,10 +83,8 @@ export function findTypesThatChangedKind(oldSchema, newSchema) {
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
 
-  var _arr2 = Object.keys(oldTypeMap);
-
-  for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-    var typeName = _arr2[_i2];
+  for (var _i2 = 0, _Object$keys2 = Object.keys(oldTypeMap); _i2 < _Object$keys2.length; _i2++) {
+    var typeName = _Object$keys2[_i2];
 
     if (!newTypeMap[typeName]) {
       continue;
@@ -120,10 +116,8 @@ export function findArgChanges(oldSchema, newSchema) {
   var breakingChanges = [];
   var dangerousChanges = [];
 
-  var _arr3 = Object.keys(oldTypeMap);
-
-  for (var _i3 = 0; _i3 < _arr3.length; _i3++) {
-    var typeName = _arr3[_i3];
+  for (var _i3 = 0, _Object$keys3 = Object.keys(oldTypeMap); _i3 < _Object$keys3.length; _i3++) {
+    var typeName = _Object$keys3[_i3];
     var oldType = oldTypeMap[typeName];
     var newType = newTypeMap[typeName];
 
@@ -134,10 +128,8 @@ export function findArgChanges(oldSchema, newSchema) {
     var oldTypeFields = oldType.getFields();
     var newTypeFields = newType.getFields();
 
-    var _arr4 = Object.keys(oldTypeFields);
-
-    for (var _i4 = 0; _i4 < _arr4.length; _i4++) {
-      var fieldName = _arr4[_i4];
+    for (var _i4 = 0, _Object$keys4 = Object.keys(oldTypeFields); _i4 < _Object$keys4.length; _i4++) {
+      var fieldName = _Object$keys4[_i4];
 
       if (!newTypeFields[fieldName]) {
         continue;
@@ -284,10 +276,8 @@ export function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, new
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
 
-  var _arr5 = Object.keys(oldTypeMap);
-
-  for (var _i5 = 0; _i5 < _arr5.length; _i5++) {
-    var typeName = _arr5[_i5];
+  for (var _i5 = 0, _Object$keys5 = Object.keys(oldTypeMap); _i5 < _Object$keys5.length; _i5++) {
+    var typeName = _Object$keys5[_i5];
     var oldType = oldTypeMap[typeName];
     var newType = newTypeMap[typeName];
 
@@ -298,10 +288,8 @@ export function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, new
     var oldTypeFieldsDef = oldType.getFields();
     var newTypeFieldsDef = newType.getFields();
 
-    var _arr6 = Object.keys(oldTypeFieldsDef);
-
-    for (var _i6 = 0; _i6 < _arr6.length; _i6++) {
-      var fieldName = _arr6[_i6];
+    for (var _i6 = 0, _Object$keys6 = Object.keys(oldTypeFieldsDef); _i6 < _Object$keys6.length; _i6++) {
+      var fieldName = _Object$keys6[_i6];
 
       // Check if the field is missing on the type in the new schema.
       if (!(fieldName in newTypeFieldsDef)) {
@@ -334,10 +322,8 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema
   var breakingChanges = [];
   var dangerousChanges = [];
 
-  var _arr7 = Object.keys(oldTypeMap);
-
-  for (var _i7 = 0; _i7 < _arr7.length; _i7++) {
-    var typeName = _arr7[_i7];
+  for (var _i7 = 0, _Object$keys7 = Object.keys(oldTypeMap); _i7 < _Object$keys7.length; _i7++) {
+    var typeName = _Object$keys7[_i7];
     var oldType = oldTypeMap[typeName];
     var newType = newTypeMap[typeName];
 
@@ -348,10 +334,8 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema
     var oldTypeFieldsDef = oldType.getFields();
     var newTypeFieldsDef = newType.getFields();
 
-    var _arr8 = Object.keys(oldTypeFieldsDef);
-
-    for (var _i8 = 0; _i8 < _arr8.length; _i8++) {
-      var fieldName = _arr8[_i8];
+    for (var _i8 = 0, _Object$keys8 = Object.keys(oldTypeFieldsDef); _i8 < _Object$keys8.length; _i8++) {
+      var fieldName = _Object$keys8[_i8];
 
       // Check if the field is missing on the type in the new schema.
       if (!(fieldName in newTypeFieldsDef)) {
@@ -376,10 +360,8 @@ export function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema
     } // Check if a field was added to the input object type
 
 
-    var _arr9 = Object.keys(newTypeFieldsDef);
-
-    for (var _i9 = 0; _i9 < _arr9.length; _i9++) {
-      var _fieldName = _arr9[_i9];
+    for (var _i9 = 0, _Object$keys9 = Object.keys(newTypeFieldsDef); _i9 < _Object$keys9.length; _i9++) {
+      var _fieldName = _Object$keys9[_i9];
 
       if (!(_fieldName in oldTypeFieldsDef)) {
         if (isRequiredInputField(newTypeFieldsDef[_fieldName])) {
@@ -450,10 +432,8 @@ export function findTypesRemovedFromUnions(oldSchema, newSchema) {
   var newTypeMap = newSchema.getTypeMap();
   var typesRemovedFromUnion = [];
 
-  var _arr10 = Object.keys(oldTypeMap);
-
-  for (var _i10 = 0; _i10 < _arr10.length; _i10++) {
-    var typeName = _arr10[_i10];
+  for (var _i10 = 0, _Object$keys10 = Object.keys(oldTypeMap); _i10 < _Object$keys10.length; _i10++) {
+    var typeName = _Object$keys10[_i10];
     var oldType = oldTypeMap[typeName];
     var newType = newTypeMap[typeName];
 
@@ -529,10 +509,8 @@ export function findTypesAddedToUnions(oldSchema, newSchema) {
   var newTypeMap = newSchema.getTypeMap();
   var typesAddedToUnion = [];
 
-  var _arr11 = Object.keys(newTypeMap);
-
-  for (var _i11 = 0; _i11 < _arr11.length; _i11++) {
-    var typeName = _arr11[_i11];
+  for (var _i11 = 0, _Object$keys11 = Object.keys(newTypeMap); _i11 < _Object$keys11.length; _i11++) {
+    var typeName = _Object$keys11[_i11];
     var oldType = oldTypeMap[typeName];
     var newType = newTypeMap[typeName];
 
@@ -608,10 +586,8 @@ export function findValuesRemovedFromEnums(oldSchema, newSchema) {
   var newTypeMap = newSchema.getTypeMap();
   var valuesRemovedFromEnums = [];
 
-  var _arr12 = Object.keys(oldTypeMap);
-
-  for (var _i12 = 0; _i12 < _arr12.length; _i12++) {
-    var typeName = _arr12[_i12];
+  for (var _i12 = 0, _Object$keys12 = Object.keys(oldTypeMap); _i12 < _Object$keys12.length; _i12++) {
+    var typeName = _Object$keys12[_i12];
     var oldType = oldTypeMap[typeName];
     var newType = newTypeMap[typeName];
 
@@ -687,10 +663,8 @@ export function findValuesAddedToEnums(oldSchema, newSchema) {
   var newTypeMap = newSchema.getTypeMap();
   var valuesAddedToEnums = [];
 
-  var _arr13 = Object.keys(oldTypeMap);
-
-  for (var _i13 = 0; _i13 < _arr13.length; _i13++) {
-    var typeName = _arr13[_i13];
+  for (var _i13 = 0, _Object$keys13 = Object.keys(oldTypeMap); _i13 < _Object$keys13.length; _i13++) {
+    var typeName = _Object$keys13[_i13];
     var oldType = oldTypeMap[typeName];
     var newType = newTypeMap[typeName];
 
@@ -761,10 +735,8 @@ export function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
 
-  var _arr14 = Object.keys(oldTypeMap);
-
-  for (var _i14 = 0; _i14 < _arr14.length; _i14++) {
-    var typeName = _arr14[_i14];
+  for (var _i14 = 0, _Object$keys14 = Object.keys(oldTypeMap); _i14 < _Object$keys14.length; _i14++) {
+    var typeName = _Object$keys14[_i14];
     var oldType = oldTypeMap[typeName];
     var newType = newTypeMap[typeName];
 
@@ -818,10 +790,8 @@ export function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
   var newTypeMap = newSchema.getTypeMap();
   var interfacesAddedToObjectTypes = [];
 
-  var _arr15 = Object.keys(newTypeMap);
-
-  for (var _i15 = 0; _i15 < _arr15.length; _i15++) {
-    var typeName = _arr15[_i15];
+  for (var _i15 = 0, _Object$keys15 = Object.keys(newTypeMap); _i15 < _Object$keys15.length; _i15++) {
+    var typeName = _Object$keys15[_i15];
     var oldType = oldTypeMap[typeName];
     var newType = newTypeMap[typeName];
 
