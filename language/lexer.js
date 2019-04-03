@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createLexer = createLexer;
+exports.isPunctuatorToken = isPunctuatorToken;
 exports.getTokenDesc = getTokenDesc;
 exports.TokenKind = void 0;
 
@@ -104,9 +105,16 @@ var TokenKind = Object.freeze({
 
 exports.TokenKind = TokenKind;
 
+// @internal
+function isPunctuatorToken(token) {
+  var kind = token.kind;
+  return kind === TokenKind.BANG || kind === TokenKind.DOLLAR || kind === TokenKind.AMP || kind === TokenKind.PAREN_L || kind === TokenKind.PAREN_R || kind === TokenKind.SPREAD || kind === TokenKind.COLON || kind === TokenKind.EQUALS || kind === TokenKind.AT || kind === TokenKind.BRACKET_L || kind === TokenKind.BRACKET_R || kind === TokenKind.BRACE_L || kind === TokenKind.PIPE || kind === TokenKind.BRACE_R;
+}
 /**
  * A helper function to describe a token as a string for debugging
  */
+
+
 function getTokenDesc(token) {
   var value = token.value;
   return value ? "".concat(token.kind, " \"").concat(value, "\"") : token.kind;

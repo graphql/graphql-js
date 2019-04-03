@@ -147,6 +147,12 @@ Object.defineProperty(exports, "separateOperations", {
     return _separateOperations.separateOperations;
   }
 });
+Object.defineProperty(exports, "stripIgnoredCharacters", {
+  enumerable: true,
+  get: function get() {
+    return _stripIgnoredCharacters.stripIgnoredCharacters;
+  }
+});
 Object.defineProperty(exports, "isEqualType", {
   enumerable: true,
   get: function get() {
@@ -245,6 +251,8 @@ var _isValidLiteralValue = require("./isValidLiteralValue");
 var _concatAST = require("./concatAST");
 
 var _separateOperations = require("./separateOperations");
+
+var _stripIgnoredCharacters = require("./stripIgnoredCharacters");
 
 var _typeComparators = require("./typeComparators");
 

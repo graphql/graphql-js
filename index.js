@@ -1011,6 +1011,12 @@ Object.defineProperty(exports, "separateOperations", {
     return _utilities.separateOperations;
   }
 });
+Object.defineProperty(exports, "stripIgnoredCharacters", {
+  enumerable: true,
+  get: function get() {
+    return _utilities.stripIgnoredCharacters;
+  }
+});
 Object.defineProperty(exports, "isEqualType", {
   enumerable: true,
   get: function get() {

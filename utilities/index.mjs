@@ -47,7 +47,10 @@ export { isValidLiteralValue } from './isValidLiteralValue'; // Concatenates mul
 
 export { concatAST } from './concatAST'; // Separates an AST into an AST per Operation.
 
-export { separateOperations } from './separateOperations'; // Comparators for types
+export { separateOperations } from './separateOperations'; // Strips characters that are not significant to the validity or execution
+// of a GraphQL document.
+
+export { stripIgnoredCharacters } from './stripIgnoredCharacters'; // Comparators for types
 
 export { isEqualType, isTypeSubTypeOf, doTypesOverlap } from './typeComparators'; // Asserts that a string is a valid GraphQL name
 

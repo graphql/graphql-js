@@ -90,7 +90,9 @@ coerceValue, // @deprecated use coerceValue - will be removed in v15
 isValidJSValue, // @deprecated use validation - will be removed in v15
 isValidLiteralValue, // Concatenates multiple AST together.
 concatAST, // Separates an AST into an AST per Operation.
-separateOperations, // Comparators for types
+separateOperations, // Strips characters that are not significant to the validity or execution
+// of a GraphQL document.
+stripIgnoredCharacters, // Comparators for types
 isEqualType, isTypeSubTypeOf, doTypesOverlap, // Asserts a string is a valid GraphQL name.
 assertValidName, // Determine if a string is a valid GraphQL name.
 isValidNameError, // Compares two GraphQLSchemas and detects breaking changes.

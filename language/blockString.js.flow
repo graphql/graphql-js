@@ -18,22 +18,9 @@ export function dedentBlockStringValue(rawString: string): string {
   const lines = rawString.split(/\r\n|[\n\r]/g);
 
   // Remove common indentation from all lines but first.
-  let commonIndent = null;
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    const indent = leadingWhitespace(line);
-    if (
-      indent < line.length &&
-      (commonIndent === null || indent < commonIndent)
-    ) {
-      commonIndent = indent;
-      if (commonIndent === 0) {
-        break;
-      }
-    }
-  }
+  const commonIndent = getBlockStringIndentation(lines);
 
-  if (commonIndent) {
+  if (commonIndent !== 0) {
     for (let i = 1; i < lines.length; i++) {
       lines[i] = lines[i].slice(commonIndent);
     }
@@ -49,6 +36,28 @@ export function dedentBlockStringValue(rawString: string): string {
 
   // Return a string of the lines joined with U+000A.
   return lines.join('\n');
+}
+
+// @internal
+export function getBlockStringIndentation(lines: Array<string>): number {
+  let commonIndent = null;
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    const indent = leadingWhitespace(line);
+    if (indent === line.length) {
+      continue; // skip empty lines
+    }
+
+    if (commonIndent === null || indent < commonIndent) {
+      commonIndent = indent;
+      if (commonIndent === 0) {
+        break;
+      }
+    }
+  }
+
+  return commonIndent === null ? 0 : commonIndent;
 }
 
 function leadingWhitespace(str) {

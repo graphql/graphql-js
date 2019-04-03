@@ -129,6 +129,27 @@ export const TokenKind = Object.freeze({
  */
 export type TokenKindEnum = $Values<typeof TokenKind>;
 
+// @internal
+export function isPunctuatorToken(token: Token) {
+  const kind = token.kind;
+  return (
+    kind === TokenKind.BANG ||
+    kind === TokenKind.DOLLAR ||
+    kind === TokenKind.AMP ||
+    kind === TokenKind.PAREN_L ||
+    kind === TokenKind.PAREN_R ||
+    kind === TokenKind.SPREAD ||
+    kind === TokenKind.COLON ||
+    kind === TokenKind.EQUALS ||
+    kind === TokenKind.AT ||
+    kind === TokenKind.BRACKET_L ||
+    kind === TokenKind.BRACKET_R ||
+    kind === TokenKind.BRACE_L ||
+    kind === TokenKind.PIPE ||
+    kind === TokenKind.BRACE_R
+  );
+}
+
 /**
  * A helper function to describe a token as a string for debugging
  */
