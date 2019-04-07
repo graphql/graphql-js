@@ -55,6 +55,10 @@ import type { PromiseOrValue } from './jsutils/PromiseOrValue';
  *    A resolver function to use when one is not provided by the schema.
  *    If not provided, the default field resolver is used (which looks for a
  *    value or method on the source value with the field's name).
+ * typeResolver:
+ *    A type resolver function to use when none is provided by the schema.
+ *    If not provided, the default type resolver is used (which looks for a
+ *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 export type GraphQLArgs = {|
   schema: GraphQLSchema,
