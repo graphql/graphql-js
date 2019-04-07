@@ -12,6 +12,7 @@ import {
   isObjectType,
   isInterfaceType,
   isUnionType,
+  isInputUnionType,
   isEnumType,
   isInputObjectType,
   isNonNullType,
@@ -39,6 +40,7 @@ export const BreakingChangeType = {
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND',
   TYPE_REMOVED: 'TYPE_REMOVED',
   TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION',
+  TYPE_REMOVED_FROM_INPUT_UNION: 'TYPE_REMOVED_FROM_INPUT_UNION',
   VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM',
   ARG_REMOVED: 'ARG_REMOVED',
   ARG_CHANGED_KIND: 'ARG_CHANGED_KIND',
@@ -56,6 +58,7 @@ export const DangerousChangeType = {
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
   INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT',
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
+  TYPE_ADDED_TO_INPUT_UNION: 'TYPE_ADDED_TO_INPUT_UNION',
   NULLABLE_INPUT_FIELD_ADDED: 'NULLABLE_INPUT_FIELD_ADDED',
   NULLABLE_ARG_ADDED: 'NULLABLE_ARG_ADDED',
 };
@@ -285,6 +288,9 @@ function typeKindName(type: GraphQLNamedType): string {
   }
   if (isUnionType(type)) {
     return 'a Union type';
+  }
+  if (isInputUnionType(type)) {
+    return 'an Input Union type';
   }
   if (isEnumType(type)) {
     return 'an Enum type';

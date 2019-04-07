@@ -49,6 +49,7 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInputUnionType,
 } from '../type/definition';
 
 import { GraphQLList, GraphQLNonNull } from '../type/wrappers';
@@ -342,6 +343,8 @@ export class ASTDefinitionBuilder {
         return this._makeScalarDef(def);
       case Kind.INPUT_OBJECT_TYPE_DEFINITION:
         return this._makeInputObjectDef(def);
+      case Kind.INPUT_UNION_TYPE_DEFINITION:
+        return this._makeInputUnionDef(def);
       default:
         throw new Error(`Type kind "${def.kind}" not supported.`);
     }
@@ -454,6 +457,14 @@ export class ASTDefinitionBuilder {
       description: getDescription(def, this._options),
       fields: () => (def.fields ? this._makeInputValues(def.fields) : {}),
       astNode: def,
+    });
+  }
+  _makeInputUnionDef(def: InputUnionTypeDefinitionNode) {
+    return new GraphQLInputUnionType({
+      name: def.name.value,
+      description: getDescription(def, this._options),
+      astNode: def,
+      types: def.types ? def.types.map(t => (this.buildType(t): any)) : [],
     });
   }
 }
