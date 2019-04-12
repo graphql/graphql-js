@@ -34,6 +34,7 @@ import type {
   EnumTypeDefinitionNode,
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
+  InputUnionTypeDefinitionNode,
   DirectiveDefinitionNode,
   StringValueNode,
   Location,
@@ -459,6 +460,7 @@ export class ASTDefinitionBuilder {
       astNode: def,
     });
   }
+
   _makeInputUnionDef(def: InputUnionTypeDefinitionNode) {
     return new GraphQLInputUnionType({
       name: def.name.value,

@@ -189,6 +189,10 @@ export class GraphQLSchema {
     if (isUnionType(abstractType)) {
       return abstractType.getTypes();
     }
+    if (isInputUnionType(abstractType)) {
+      return abstractType.getTypes();
+    }
+
     return this._implementations[(abstractType: GraphQLInterfaceType).name];
   }
 

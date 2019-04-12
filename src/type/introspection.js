@@ -340,6 +340,7 @@ export const __InputValue = new GraphQLObjectType({
     name: { type: GraphQLNonNull(GraphQLString) },
     description: { type: GraphQLString },
     type: { type: GraphQLNonNull(__Type) },
+    possibleTypes: { type: new GraphQLList(__Type) },
     defaultValue: {
       type: GraphQLString,
       description:

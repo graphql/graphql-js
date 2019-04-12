@@ -64,6 +64,7 @@ describe('Printer: SDL document', () => {
         five(argument: [String] = ["string", "string"]): String
         six(argument: InputType = {key: "value"}): Type
         seven(argument: Int = null): Type
+        eight(argument: AnnotatedInput): Type
       }
 
       type AnnotatedObject @onObject(arg: "value") {

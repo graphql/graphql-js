@@ -75,6 +75,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
       ${descriptions ? 'description' : ''}
       type { ...TypeRef }
       defaultValue
+      possibleTypes { ...TypeRef }
     }
 
     fragment TypeRef on __Type {
@@ -263,6 +264,7 @@ export type IntrospectionInputValue = {|
   +description?: ?string,
   +type: IntrospectionInputTypeRef,
   +defaultValue: ?string,
+  +possibleTypes: $ReadOnlyArray<IntrospectionInputObjectType>,
 |};
 
 export type IntrospectionEnumValue = {|

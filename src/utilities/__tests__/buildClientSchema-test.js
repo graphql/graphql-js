@@ -18,6 +18,7 @@ import {
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInputUnionType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLInt,
@@ -559,6 +560,63 @@ describe('Type System: build schema from introspection', () => {
             args: {
               intArg: {
                 type: GraphQLInt,
+              },
+            },
+          },
+        },
+      }),
+    });
+
+    await testSchema(schema);
+  });
+
+  it('builds a schema with an input union argument', async () => {
+    const GeomTypeEnum = new GraphQLEnumType({
+      name: 'GeomTypeEnum',
+      description: 'GeoJSON geometry types',
+      values: {
+        Point: {
+          value: 1,
+        },
+        LineString: {
+          value: 2,
+        },
+        Polygon: {
+          value: 3,
+        },
+      },
+    });
+
+    const GeoJSONLineString = new GraphQLInputObjectType({
+      name: 'GeoLine',
+      fields: {
+        type: { type: GeomTypeEnum },
+        coordinates: { type: GraphQLList(GraphQLList(GraphQLInt)) },
+      },
+    });
+
+    const GeoJSONPoint = new GraphQLInputObjectType({
+      name: 'GeoPoint',
+      fields: {
+        type: { type: GeomTypeEnum },
+        coordinates: { type: GraphQLList(GraphQLInt) },
+      },
+    });
+
+    const GeoJSONGeometry = new GraphQLInputUnionType({
+      name: 'GeoJSONGeometry',
+      types: [GeoJSONLineString, GeoJSONPoint],
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'ArgFields',
+        fields: {
+          example: {
+            type: GraphQLString,
+            args: {
+              geometry: {
+                type: GeoJSONGeometry,
               },
             },
           },

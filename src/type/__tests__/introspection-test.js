@@ -15,6 +15,7 @@ import {
   GraphQLObjectType,
   GraphQLList,
   GraphQLInputObjectType,
+  GraphQLInputUnionType,
   GraphQLString,
   GraphQLEnumType,
 } from '../../';
@@ -904,6 +905,89 @@ describe('Introspection', () => {
                 ofType: null,
               },
               defaultValue: 'null',
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  it('introspects on input union', () => {
+    const TestInputObject = new GraphQLInputObjectType({
+      name: 'TestInputObject',
+      fields: {
+        a: { type: GraphQLString, defaultValue: 'tes\t de\fault' },
+        b: { type: GraphQLList(GraphQLString) },
+        c: { type: GraphQLString, defaultValue: null },
+      },
+    });
+    const TestInputObject2 = new GraphQLInputObjectType({
+      name: 'TestInputObject2',
+      fields: {
+        a: { type: GraphQLString, defaultValue: 'tes\t de\fault' },
+        b: { type: GraphQLList(GraphQLString) },
+        d: { type: GraphQLString, defaultValue: null },
+      },
+    });
+
+    const TestInputUnion = new GraphQLInputUnionType({
+      name: 'TestInputUnion',
+      types: [TestInputObject, TestInputObject2],
+    });
+
+    const TestType = new GraphQLObjectType({
+      name: 'TestType',
+      fields: {
+        field: {
+          type: GraphQLString,
+          args: { inputUnion: { type: TestInputUnion } },
+          resolve: (_, { inputUnion }) => JSON.stringify(inputUnion),
+        },
+      },
+    });
+
+    const schema = new GraphQLSchema({ query: TestType });
+    const request = `
+      {
+        __type(name: "TestInputUnion") {
+          kind
+          name
+          possibleTypes { ...TypeRef }
+        }
+      }
+
+      fragment TypeRef on __Type {
+        kind
+        name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+            }
+          }
+        }
+      }
+    `;
+    return expect(graphqlSync(schema, request)).to.deep.equal({
+      data: {
+        __type: {
+          kind: 'INPUT_UNION',
+          name: 'TestInputUnion',
+          possibleTypes: [
+            {
+              kind: 'INPUT_OBJECT',
+              name: 'TestInputObject',
+              ofType: null,
+            },
+            {
+              kind: 'INPUT_OBJECT',
+              name: 'TestInputObject2',
+              ofType: null,
             },
           ],
         },

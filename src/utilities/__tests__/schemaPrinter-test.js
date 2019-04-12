@@ -765,6 +765,7 @@ describe('Type System Printer', () => {
         name: String!
         description: String
         type: __Type!
+        possibleTypes: [__Type]
 
         """
         A GraphQL-formatted string representing the default value for this input value.
@@ -1002,6 +1003,7 @@ describe('Type System Printer', () => {
         name: String!
         description: String
         type: __Type!
+        possibleTypes: [__Type]
 
         # A GraphQL-formatted string representing the default value for this input value.
         defaultValue: String

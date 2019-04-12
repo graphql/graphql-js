@@ -408,7 +408,7 @@ describe('Parser', () => {
     // NB: util.inspect used to suck
     if (parseFloat(process.version.slice(1)) > 0.1) {
       expect(require('util').inspect(result.loc)).to.equal(
-        '{ start: 0, end: 6 }',
+        "Loc {\n  start: 0,\n  end: 6,\n  startToken:\n   Tok {\n     kind: '<SOF>',\n     start: 0,\n     end: 0,\n     line: 0,\n     column: 0,\n     value: undefined,\n     prev: null,\n     next:\n      Tok {\n        kind: '{',\n        start: 0,\n        end: 1,\n        line: 1,\n        column: 1,\n        value: undefined,\n        prev: [Circular],\n        next: [Tok] } },\n  endToken:\n   Tok {\n     kind: '<EOF>',\n     start: 6,\n     end: 6,\n     line: 1,\n     column: 7,\n     value: undefined,\n     prev:\n      Tok {\n        kind: '}',\n        start: 5,\n        end: 6,\n        line: 1,\n        column: 6,\n        value: undefined,\n        prev: [Tok],\n        next: [Circular] },\n     next: null },\n  source:\n   Source {\n     body: '{ id }',\n     name: 'GraphQL request',\n     locationOffset: { line: 1, column: 1 } } }",
       );
     }
   });

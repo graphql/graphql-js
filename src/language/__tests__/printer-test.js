@@ -146,7 +146,7 @@ describe('Printer: Query document', () => {
     const printed = print(ast);
 
     expect(printed).to.equal(dedent`
-      query queryName($foo: ComplexType, $site: Site = MOBILE) {
+      query queryName($foo: ComplexType, $site: Site = MOBILE, $inputUnion: InputOrAnnotated) {
         whoever123is: node(id: [123, 456]) {
           id
           ... on User @defer {

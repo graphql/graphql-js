@@ -325,7 +325,7 @@ export function assertCompositeType(type: mixed): GraphQLCompositeType {
 export type GraphQLAbstractType = GraphQLInterfaceType | GraphQLUnionType;
 
 export function isAbstractType(type: mixed): boolean %checks {
-  return isInterfaceType(type) || isUnionType(type);
+  return isInterfaceType(type) || isUnionType(type) || isInputUnionType(type);
 }
 
 export function assertAbstractType(type: mixed): GraphQLAbstractType {

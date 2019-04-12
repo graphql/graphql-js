@@ -220,6 +220,17 @@ const printDocASTReducer = {
   InputObjectTypeExtension: ({ name, directives, fields }) =>
     join(['extend input', name, join(directives, ' '), block(fields)], ' '),
 
+  InputUnionTypeExtension: ({ name, directives, types }) =>
+    join(
+      [
+        'extend inputUnion',
+        name,
+        join(directives, ' '),
+        types && types.length !== 0 ? '= ' + join(types, ' | ') : '',
+      ],
+      ' ',
+    ),
+
   DirectiveDefinition: addDescription(
     ({ name, arguments: args, locations }) =>
       'directive @' +
