@@ -178,6 +178,8 @@ export type {
 export {
   Source,
   getLocation,
+  // Lex
+  createLexer,
   // Parse
   parse,
   parseValue,
@@ -327,7 +329,13 @@ export {
 export type { ValidationRule } from './validation';
 
 // Create, format, and print GraphQL errors.
-export { GraphQLError, formatError, printError } from './error';
+export {
+  GraphQLError,
+  syntaxError,
+  locatedError,
+  printError,
+  formatError,
+} from './error';
 
 export type { GraphQLFormattedError } from './error';
 
