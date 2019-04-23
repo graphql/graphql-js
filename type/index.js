@@ -393,12 +393,6 @@ Object.defineProperty(exports, "GraphQLID", {
     return _scalars.GraphQLID;
   }
 });
-Object.defineProperty(exports, "TypeKind", {
-  enumerable: true,
-  get: function get() {
-    return _introspection.TypeKind;
-  }
-});
 Object.defineProperty(exports, "isIntrospectionType", {
   enumerable: true,
   get: function get() {
@@ -457,6 +451,12 @@ Object.defineProperty(exports, "__TypeKind", {
   enumerable: true,
   get: function get() {
     return _introspection.__TypeKind;
+  }
+});
+Object.defineProperty(exports, "TypeKind", {
+  enumerable: true,
+  get: function get() {
+    return _introspection.TypeKind;
   }
 });
 Object.defineProperty(exports, "SchemaMetaFieldDef", {

@@ -33,28 +33,28 @@
 // The primary entry point into fulfilling a GraphQL request.
 export { graphql, graphqlSync } from './graphql'; // Create and operate on GraphQL type definitions and schema.
 
-export { GraphQLSchema, // Definitions
-GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLDirective, // "Enum" of Type Kinds
-TypeKind, // Scalars
+export { // Definitions
+GraphQLSchema, GraphQLDirective, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, // Standard GraphQL Scalars
 specifiedScalarTypes, GraphQLInt, GraphQLFloat, GraphQLString, GraphQLBoolean, GraphQLID, // Built-in Directives defined by the Spec
-specifiedDirectives, GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective, // Constant Deprecation Reason
-DEFAULT_DEPRECATION_REASON, // Meta-field definitions.
-SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef, // GraphQL Types for introspection.
-introspectionTypes, __Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind, // Predicates
+specifiedDirectives, GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective, // "Enum" of Type Kinds
+TypeKind, // Constant Deprecation Reason
+DEFAULT_DEPRECATION_REASON, // GraphQL Types for introspection.
+introspectionTypes, __Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind, // Meta-field definitions.
+SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef, // Predicates
 isSchema, isDirective, isType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isInputType, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isRequiredArgument, isRequiredInputField, isSpecifiedScalarType, isIntrospectionType, isSpecifiedDirective, // Assertions
 assertSchema, assertDirective, assertType, assertScalarType, assertObjectType, assertInterfaceType, assertUnionType, assertEnumType, assertInputObjectType, assertListType, assertNonNullType, assertInputType, assertOutputType, assertLeafType, assertCompositeType, assertAbstractType, assertWrappingType, assertNullableType, assertNamedType, // Un-modifiers
 getNullableType, getNamedType, // Validate GraphQL schema.
 validateSchema, assertValidSchema } from './type';
 // Parse and operate on GraphQL language source files.
 export { Source, getLocation, // Lex
-createLexer, // Parse
+createLexer, TokenKind, // Parse
 parse, parseValue, parseType, // Print
 print, // Visit
-visit, visitInParallel, visitWithTypeInfo, getVisitFn, Kind, TokenKind, DirectiveLocation, BREAK, // Predicates
+visit, visitInParallel, visitWithTypeInfo, getVisitFn, BREAK, Kind, DirectiveLocation, // Predicates
 isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from './language';
 // Execute GraphQL queries.
 export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from './execution';
-export { subscribe, createSourceEventStream } from './subscription'; // Validate GraphQL queries.
+export { subscribe, createSourceEventStream } from './subscription'; // Validate GraphQL documents.
 
 export { validate, ValidationContext, // All validation rules in the GraphQL Specification.
 specifiedRules, // Individual validation rules.
@@ -64,23 +64,23 @@ export { GraphQLError, syntaxError, locatedError, printError, formatError } from
 // Utilities for operating on GraphQL type schema and parsed sources.
 export { // Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.
-getIntrospectionQuery, // @deprecated: use getIntrospectionQuery - will be removed in v15
-introspectionQuery, // Gets the target Operation from a Document
+getIntrospectionQuery, // @deprecated: use getIntrospectionQuery - will be removed in v15.
+introspectionQuery, // Gets the target Operation from a Document.
 getOperationAST, // Gets the Type for the target Operation AST.
-getOperationRootType, // Convert a GraphQLSchema to an IntrospectionQuery
+getOperationRootType, // Convert a GraphQLSchema to an IntrospectionQuery.
 introspectionFromSchema, // Build a GraphQLSchema from an introspection result.
 buildClientSchema, // Build a GraphQLSchema from a parsed GraphQL Schema language AST.
 buildASTSchema, // Build a GraphQLSchema from a GraphQL schema language document.
 buildSchema, // @deprecated: Get the description from a schema AST node and supports legacy
-// syntax for specifying descriptions - will be removed in v16
+// syntax for specifying descriptions - will be removed in v16.
 getDescription, // Extends an existing GraphQLSchema from a parsed GraphQL Schema
 // language AST.
 extendSchema, // Sort a GraphQLSchema.
 lexicographicSortSchema, // Print a GraphQLSchema to GraphQL Schema language.
-printSchema, // Prints the built-in introspection schema in the Schema Language
+printSchema, // Print a GraphQLType to GraphQL Schema language.
+printType, // Prints the built-in introspection schema in the Schema Language
 // format.
-printIntrospectionSchema, // Print a GraphQLType to GraphQL Schema language.
-printType, // Create a GraphQLType from a GraphQL language AST.
+printIntrospectionSchema, // Create a GraphQLType from a GraphQL language AST.
 typeFromAST, // Create a JavaScript value from a GraphQL language AST with a Type.
 valueFromAST, // Create a JavaScript value from a GraphQL language AST without a Type.
 valueFromASTUntyped, // Create a GraphQL language AST from a JavaScript value.
@@ -97,5 +97,5 @@ stripIgnoredCharacters, // Comparators for types
 isEqualType, isTypeSubTypeOf, doTypesOverlap, // Asserts a string is a valid GraphQL name.
 assertValidName, // Determine if a string is a valid GraphQL name.
 isValidNameError, // Compares two GraphQLSchemas and detects breaking changes.
-findBreakingChanges, findDangerousChanges, BreakingChangeType, DangerousChangeType, // Report all deprecated usage within a GraphQL document.
+BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges, // Report all deprecated usage within a GraphQL document.
 findDeprecatedUsages } from './utilities';

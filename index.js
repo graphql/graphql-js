@@ -21,6 +21,12 @@ Object.defineProperty(exports, "GraphQLSchema", {
     return _type.GraphQLSchema;
   }
 });
+Object.defineProperty(exports, "GraphQLDirective", {
+  enumerable: true,
+  get: function get() {
+    return _type.GraphQLDirective;
+  }
+});
 Object.defineProperty(exports, "GraphQLScalarType", {
   enumerable: true,
   get: function get() {
@@ -67,18 +73,6 @@ Object.defineProperty(exports, "GraphQLNonNull", {
   enumerable: true,
   get: function get() {
     return _type.GraphQLNonNull;
-  }
-});
-Object.defineProperty(exports, "GraphQLDirective", {
-  enumerable: true,
-  get: function get() {
-    return _type.GraphQLDirective;
-  }
-});
-Object.defineProperty(exports, "TypeKind", {
-  enumerable: true,
-  get: function get() {
-    return _type.TypeKind;
   }
 });
 Object.defineProperty(exports, "specifiedScalarTypes", {
@@ -141,28 +135,16 @@ Object.defineProperty(exports, "GraphQLDeprecatedDirective", {
     return _type.GraphQLDeprecatedDirective;
   }
 });
+Object.defineProperty(exports, "TypeKind", {
+  enumerable: true,
+  get: function get() {
+    return _type.TypeKind;
+  }
+});
 Object.defineProperty(exports, "DEFAULT_DEPRECATION_REASON", {
   enumerable: true,
   get: function get() {
     return _type.DEFAULT_DEPRECATION_REASON;
-  }
-});
-Object.defineProperty(exports, "SchemaMetaFieldDef", {
-  enumerable: true,
-  get: function get() {
-    return _type.SchemaMetaFieldDef;
-  }
-});
-Object.defineProperty(exports, "TypeMetaFieldDef", {
-  enumerable: true,
-  get: function get() {
-    return _type.TypeMetaFieldDef;
-  }
-});
-Object.defineProperty(exports, "TypeNameMetaFieldDef", {
-  enumerable: true,
-  get: function get() {
-    return _type.TypeNameMetaFieldDef;
   }
 });
 Object.defineProperty(exports, "introspectionTypes", {
@@ -217,6 +199,24 @@ Object.defineProperty(exports, "__TypeKind", {
   enumerable: true,
   get: function get() {
     return _type.__TypeKind;
+  }
+});
+Object.defineProperty(exports, "SchemaMetaFieldDef", {
+  enumerable: true,
+  get: function get() {
+    return _type.SchemaMetaFieldDef;
+  }
+});
+Object.defineProperty(exports, "TypeMetaFieldDef", {
+  enumerable: true,
+  get: function get() {
+    return _type.TypeMetaFieldDef;
+  }
+});
+Object.defineProperty(exports, "TypeNameMetaFieldDef", {
+  enumerable: true,
+  get: function get() {
+    return _type.TypeNameMetaFieldDef;
   }
 });
 Object.defineProperty(exports, "isSchema", {
@@ -519,6 +519,12 @@ Object.defineProperty(exports, "createLexer", {
     return _language.createLexer;
   }
 });
+Object.defineProperty(exports, "TokenKind", {
+  enumerable: true,
+  get: function get() {
+    return _language.TokenKind;
+  }
+});
 Object.defineProperty(exports, "parse", {
   enumerable: true,
   get: function get() {
@@ -567,28 +573,22 @@ Object.defineProperty(exports, "getVisitFn", {
     return _language.getVisitFn;
   }
 });
+Object.defineProperty(exports, "BREAK", {
+  enumerable: true,
+  get: function get() {
+    return _language.BREAK;
+  }
+});
 Object.defineProperty(exports, "Kind", {
   enumerable: true,
   get: function get() {
     return _language.Kind;
   }
 });
-Object.defineProperty(exports, "TokenKind", {
-  enumerable: true,
-  get: function get() {
-    return _language.TokenKind;
-  }
-});
 Object.defineProperty(exports, "DirectiveLocation", {
   enumerable: true,
   get: function get() {
     return _language.DirectiveLocation;
-  }
-});
-Object.defineProperty(exports, "BREAK", {
-  enumerable: true,
-  get: function get() {
-    return _language.BREAK;
   }
 });
 Object.defineProperty(exports, "isDefinitionNode", {
@@ -957,16 +957,16 @@ Object.defineProperty(exports, "printSchema", {
     return _utilities.printSchema;
   }
 });
-Object.defineProperty(exports, "printIntrospectionSchema", {
-  enumerable: true,
-  get: function get() {
-    return _utilities.printIntrospectionSchema;
-  }
-});
 Object.defineProperty(exports, "printType", {
   enumerable: true,
   get: function get() {
     return _utilities.printType;
+  }
+});
+Object.defineProperty(exports, "printIntrospectionSchema", {
+  enumerable: true,
+  get: function get() {
+    return _utilities.printIntrospectionSchema;
   }
 });
 Object.defineProperty(exports, "typeFromAST", {
@@ -1065,18 +1065,6 @@ Object.defineProperty(exports, "isValidNameError", {
     return _utilities.isValidNameError;
   }
 });
-Object.defineProperty(exports, "findBreakingChanges", {
-  enumerable: true,
-  get: function get() {
-    return _utilities.findBreakingChanges;
-  }
-});
-Object.defineProperty(exports, "findDangerousChanges", {
-  enumerable: true,
-  get: function get() {
-    return _utilities.findDangerousChanges;
-  }
-});
 Object.defineProperty(exports, "BreakingChangeType", {
   enumerable: true,
   get: function get() {
@@ -1087,6 +1075,18 @@ Object.defineProperty(exports, "DangerousChangeType", {
   enumerable: true,
   get: function get() {
     return _utilities.DangerousChangeType;
+  }
+});
+Object.defineProperty(exports, "findBreakingChanges", {
+  enumerable: true,
+  get: function get() {
+    return _utilities.findBreakingChanges;
+  }
+});
+Object.defineProperty(exports, "findDangerousChanges", {
+  enumerable: true,
+  get: function get() {
+    return _utilities.findDangerousChanges;
   }
 });
 Object.defineProperty(exports, "findDeprecatedUsages", {

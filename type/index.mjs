@@ -23,9 +23,13 @@ GraphQLDirective, // Built-in Directives defined by the Spec
 isSpecifiedDirective, specifiedDirectives, GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective, // Constant Deprecation Reason
 DEFAULT_DEPRECATION_REASON } from './directives';
 // Common built-in scalar instances.
-export { isSpecifiedScalarType, specifiedScalarTypes, GraphQLInt, GraphQLFloat, GraphQLString, GraphQLBoolean, GraphQLID } from './scalars';
-export { // "Enum" of Type Kinds
-TypeKind, // GraphQL Types for introspection.
-isIntrospectionType, introspectionTypes, __Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind, // Meta-field definitions.
+export { // Predicate
+isSpecifiedScalarType, // Standard GraphQL Scalars
+specifiedScalarTypes, GraphQLInt, GraphQLFloat, GraphQLString, GraphQLBoolean, GraphQLID } from './scalars';
+export { // Predicate
+isIntrospectionType, // GraphQL Types for introspection.
+introspectionTypes, __Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind, // "Enum" of Type Kinds
+TypeKind, // Meta-field definitions.
 SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from './introspection';
+// Validate GraphQL schema.
 export { validateSchema, assertValidSchema } from './validate';

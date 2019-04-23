@@ -8,6 +8,7 @@
  */
 export { validate } from './validate';
 export { ValidationContext } from './ValidationContext';
+// All validation rules in the GraphQL Specification.
 export { specifiedRules } from './specifiedRules'; // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 
 export { FieldsOnCorrectType as FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectType'; // Spec Section: "Fragments on Composite Types"

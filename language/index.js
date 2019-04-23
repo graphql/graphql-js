@@ -3,6 +3,12 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+Object.defineProperty(exports, "Source", {
+  enumerable: true,
+  get: function get() {
+    return _source.Source;
+  }
+});
 Object.defineProperty(exports, "getLocation", {
   enumerable: true,
   get: function get() {
@@ -49,12 +55,6 @@ Object.defineProperty(exports, "print", {
   enumerable: true,
   get: function get() {
     return _printer.print;
-  }
-});
-Object.defineProperty(exports, "Source", {
-  enumerable: true,
-  get: function get() {
-    return _source.Source;
   }
 });
 Object.defineProperty(exports, "visit", {
@@ -148,6 +148,8 @@ Object.defineProperty(exports, "DirectiveLocation", {
   }
 });
 
+var _source = require("./source");
+
 var _location = require("./location");
 
 var _kinds = require("./kinds");
@@ -157,8 +159,6 @@ var _lexer = require("./lexer");
 var _parser = require("./parser");
 
 var _printer = require("./printer");
-
-var _source = require("./source");
 
 var _visitor = require("./visitor");
 
