@@ -93,7 +93,9 @@ export type { GraphQLDirectiveConfig } from './directives';
 
 // Common built-in scalar instances.
 export {
+  // Predicate
   isSpecifiedScalarType,
+  // Standard GraphQL Scalars
   specifiedScalarTypes,
   GraphQLInt,
   GraphQLFloat,
@@ -103,10 +105,9 @@ export {
 } from './scalars';
 
 export {
-  // "Enum" of Type Kinds
-  TypeKind,
-  // GraphQL Types for introspection.
+  // Predicate
   isIntrospectionType,
+  // GraphQL Types for introspection.
   introspectionTypes,
   __Schema,
   __Directive,
@@ -116,6 +117,8 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
+  // "Enum" of Type Kinds
+  TypeKind,
   // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
@@ -163,4 +166,5 @@ export type {
   GraphQLScalarLiteralParser,
 } from './definition';
 
+// Validate GraphQL schema.
 export { validateSchema, assertValidSchema } from './validate';
