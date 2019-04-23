@@ -46,7 +46,8 @@ assertSchema, assertDirective, assertType, assertScalarType, assertObjectType, a
 getNullableType, getNamedType, // Validate GraphQL schema.
 validateSchema, assertValidSchema } from './type';
 // Parse and operate on GraphQL language source files.
-export { Source, getLocation, // Parse
+export { Source, getLocation, // Lex
+createLexer, // Parse
 parse, parseValue, parseType, // Print
 print, // Visit
 visit, visitInParallel, visitWithTypeInfo, getVisitFn, Kind, TokenKind, DirectiveLocation, BREAK, // Predicates
@@ -59,7 +60,7 @@ export { validate, ValidationContext, // All validation rules in the GraphQL Spe
 specifiedRules, // Individual validation rules.
 FieldsOnCorrectTypeRule, FragmentsOnCompositeTypesRule, KnownArgumentNamesRule, KnownDirectivesRule, KnownFragmentNamesRule, KnownTypeNamesRule, LoneAnonymousOperationRule, NoFragmentCyclesRule, NoUndefinedVariablesRule, NoUnusedFragmentsRule, NoUnusedVariablesRule, OverlappingFieldsCanBeMergedRule, PossibleFragmentSpreadsRule, ProvidedRequiredArgumentsRule, ScalarLeafsRule, SingleFieldSubscriptionsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule, UniqueFragmentNamesRule, UniqueInputFieldNamesRule, UniqueOperationNamesRule, UniqueVariableNamesRule, ValuesOfCorrectTypeRule, VariablesAreInputTypesRule, VariablesInAllowedPositionRule } from './validation';
 // Create, format, and print GraphQL errors.
-export { GraphQLError, formatError, printError } from './error';
+export { GraphQLError, syntaxError, locatedError, printError, formatError } from './error';
 // Utilities for operating on GraphQL type schema and parsed sources.
 export { // Produce the GraphQL query recommended for a full schema introspection.
 // Accepts optional IntrospectionOptions.

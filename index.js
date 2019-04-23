@@ -513,6 +513,12 @@ Object.defineProperty(exports, "getLocation", {
     return _language.getLocation;
   }
 });
+Object.defineProperty(exports, "createLexer", {
+  enumerable: true,
+  get: function get() {
+    return _language.createLexer;
+  }
+});
 Object.defineProperty(exports, "parse", {
   enumerable: true,
   get: function get() {
@@ -855,16 +861,28 @@ Object.defineProperty(exports, "GraphQLError", {
     return _error.GraphQLError;
   }
 });
-Object.defineProperty(exports, "formatError", {
+Object.defineProperty(exports, "syntaxError", {
   enumerable: true,
   get: function get() {
-    return _error.formatError;
+    return _error.syntaxError;
+  }
+});
+Object.defineProperty(exports, "locatedError", {
+  enumerable: true,
+  get: function get() {
+    return _error.locatedError;
   }
 });
 Object.defineProperty(exports, "printError", {
   enumerable: true,
   get: function get() {
     return _error.printError;
+  }
+});
+Object.defineProperty(exports, "formatError", {
+  enumerable: true,
+  get: function get() {
+    return _error.formatError;
   }
 });
 Object.defineProperty(exports, "getIntrospectionQuery", {
