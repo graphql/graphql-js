@@ -36,10 +36,9 @@
     "build:clean": "rm -rf ./dist && mkdir ./dist",
     "build:cp": "cp README.md LICENSE ./dist",
     "build:package-json": "node ./resources/copy-package-json.js",
-    "build:js": "babel src --ignore 'src/__fixtures__,**/__tests__'",
-    "build:cjs": "npm run build:js -- --env-name cjs --out-dir dist/",
-    "build:mjs": "npm run build:js -- --env-name mjs --out-dir dist/module && for file in $(find dist/module -name '*.js'); do mv \"$file\" `echo \"$file\" | sed 's/dist\\/module/dist/g; s/.js$/.mjs/g'`; done && rm -rf dist/module",
-    "build:flow": "for file in $(find ./src -name '*.js' -not -path '*/__fixtures__*' -not -path '*/__tests__*'); do cp \"$file\" `echo \"$file\" | sed 's/\\/src\\//\\/dist\\//g'`.flow; done",
+    "build:cjs": "babel src --env-name cjs --out-dir dist/",
+    "build:mjs": "babel src --env-name mjs --out-dir dist/module && for file in $(find dist/module -name '*.js'); do mv \"$file\" `echo \"$file\" | sed 's/dist\\/module/dist/g; s/.js$/.mjs/g'`; done && rm -rf dist/module",
+    "build:flow": "for file in $(find ./src -name '*.js' -not -path '*/__*__*'); do cp \"$file\" `echo \"$file\" | sed 's/\\/src\\//\\/dist\\//g'`.flow; done",
     "preversion": ". ./resources/checkgit.sh && npm test",
     "prepublishOnly": ". ./resources/prepublish.sh",
     "gitpublish": ". ./resources/gitpublish.sh"
