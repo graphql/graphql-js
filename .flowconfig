@@ -10,6 +10,8 @@
 [libs]
 
 [options]
+include_warnings=true
+module.use_strict=true
 suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)?)\\)
 suppress_comment=\\(.\\|\n\\)*\\$FlowIssue\\((\\(<VERSION>\\)?)\\)?:? #[0-9]+
 suppress_comment=\\(.\\|\n\\)*\\$DisableFlowOnNegativeTest
