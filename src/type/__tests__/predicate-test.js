@@ -605,7 +605,6 @@ describe('Directive predicates', () => {
     });
 
     it('returns false for directive class (rather than instance)', () => {
-      // $DisableFlowOnNegativeTest
       expect(isDirective(GraphQLDirective)).to.equal(false);
       expect(() => assertDirective(GraphQLDirective)).to.throw();
     });

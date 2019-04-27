@@ -548,7 +548,6 @@ describe('Type System: build schema from introspection', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
       expect(introspection).to.have.nested.property('__schema.queryType.name');
-      // $DisableFlowOnNegativeTest
       delete introspection.__schema.queryType.name;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -705,7 +704,6 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         locations: ['QUERY'],
       });
-      // $DisableFlowOnNegativeTest
       delete someDirectiveIntrospection.locations;
 
       expect(() => buildClientSchema(introspection)).to.throw(
@@ -721,7 +719,6 @@ describe('Type System: build schema from introspection', () => {
         name: 'SomeDirective',
         args: [],
       });
-      // $DisableFlowOnNegativeTest
       delete someDirectiveIntrospection.args;
 
       expect(() => buildClientSchema(introspection)).to.throw(
