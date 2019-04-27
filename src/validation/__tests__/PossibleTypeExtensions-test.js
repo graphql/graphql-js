@@ -35,7 +35,7 @@ function extendingDifferentTypeKind(typeName, kind, l1, c1, l2, c2) {
   const message = extendingDifferentTypeKindMessage(typeName, kind);
   const locations = [{ line: l1, column: c1 }];
 
-  if (l2 && c2) {
+  if (l2 !== undefined && c2 !== undefined) {
     locations.push({ line: l2, column: c2 });
   }
   return { message, locations };
