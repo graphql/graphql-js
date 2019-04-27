@@ -9,6 +9,24 @@
 
 [libs]
 
+[lints]
+sketchy-null-bool=off
+sketchy-null-string=off
+sketchy-null-number=error
+sketchy-null-mixed=off
+sketchy-number=off
+untyped-type-import=error
+nonstrict-import=off
+untyped-import=off
+unclear-type=off
+deprecated-type=off
+deprecated-utility=error
+dynamic-export=off
+unsafe-getters-setters=error
+inexact-spread=error
+unnecessary-optional-chain=error
+unnecessary-invariant=off
+
 [options]
 include_warnings=true
 module.use_strict=true
