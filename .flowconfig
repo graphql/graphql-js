@@ -1,8 +1,9 @@
 [ignore]
-.*/lib/.*
-.*/dist/.*
-.*/coverage/.*
-.*/resources/.*
+.*
+!<PROJECT_ROOT>/src
+!<PROJECT_ROOT>/node_modules/chai
+!<PROJECT_ROOT>/node_modules/mocha
+!<PROJECT_ROOT>/node_modules/iterall
 
 [include]
 
