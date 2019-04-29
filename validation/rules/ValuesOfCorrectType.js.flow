@@ -8,12 +8,13 @@
  */
 
 import objectValues from '../../polyfills/objectValues';
-import type { ValidationContext } from '../ValidationContext';
+import { type ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
-import type { ValueNode } from '../../language/ast';
+import { type ValueNode } from '../../language/ast';
 import { print } from '../../language/printer';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTVisitor } from '../../language/visitor';
 import {
+  type GraphQLType,
   isScalarType,
   isEnumType,
   isInputObjectType,
@@ -23,7 +24,6 @@ import {
   getNullableType,
   getNamedType,
 } from '../../type/definition';
-import type { GraphQLType } from '../../type/definition';
 import inspect from '../../jsutils/inspect';
 import isInvalid from '../../jsutils/isInvalid';
 import keyMap from '../../jsutils/keyMap';

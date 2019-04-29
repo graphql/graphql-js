@@ -45,13 +45,15 @@ import { KnownDirectives } from './rules/KnownDirectives'; // Spec Section: "Dir
 
 import { UniqueDirectivesPerLocation } from './rules/UniqueDirectivesPerLocation'; // Spec Section: "Argument Names"
 
-import { KnownArgumentNames } from './rules/KnownArgumentNames'; // Spec Section: "Argument Uniqueness"
+import { KnownArgumentNames, KnownArgumentNamesOnDirectives } from // @internal
+'./rules/KnownArgumentNames'; // Spec Section: "Argument Uniqueness"
 
 import { UniqueArgumentNames } from './rules/UniqueArgumentNames'; // Spec Section: "Value Type Correctness"
 
 import { ValuesOfCorrectType } from './rules/ValuesOfCorrectType'; // Spec Section: "Argument Optionality"
 
-import { ProvidedRequiredArguments } from './rules/ProvidedRequiredArguments'; // Spec Section: "All Variable Usages Are Allowed"
+import { ProvidedRequiredArguments, ProvidedRequiredArgumentsOnDirectives } from // @internal
+'./rules/ProvidedRequiredArguments'; // Spec Section: "All Variable Usages Are Allowed"
 
 import { VariablesInAllowedPosition } from './rules/VariablesInAllowedPosition'; // Spec Section: "Field Selection Merging"
 
@@ -72,8 +74,6 @@ import { UniqueTypeNames } from './rules/UniqueTypeNames';
 import { UniqueEnumValueNames } from './rules/UniqueEnumValueNames';
 import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
 import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
-import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
-import { KnownArgumentNamesOnDirectives } from './rules/KnownArgumentNames';
-import { ProvidedRequiredArgumentsOnDirectives } from './rules/ProvidedRequiredArguments'; // @internal
+import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions'; // @internal
 
 export var specifiedSDLRules = [LoneSchemaDefinition, UniqueOperationTypes, UniqueTypeNames, UniqueEnumValueNames, UniqueFieldDefinitionNames, UniqueDirectiveNames, KnownTypeNames, KnownDirectives, UniqueDirectivesPerLocation, PossibleTypeExtensions, KnownArgumentNamesOnDirectives, UniqueArgumentNames, UniqueInputFieldNames, ProvidedRequiredArgumentsOnDirectives];

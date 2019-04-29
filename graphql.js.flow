@@ -10,16 +10,15 @@
 import { validateSchema } from './type/validate';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
-import { execute } from './execution/execute';
-import type { ObjMap } from './jsutils/ObjMap';
-import type { Source } from './language/source';
-import type {
-  GraphQLFieldResolver,
-  GraphQLTypeResolver,
+import { type ExecutionResult, execute } from './execution/execute';
+import { type ObjMap } from './jsutils/ObjMap';
+import { type Source } from './language/source';
+import {
+  type GraphQLFieldResolver,
+  type GraphQLTypeResolver,
 } from './type/definition';
-import type { GraphQLSchema } from './type/schema';
-import type { ExecutionResult } from './execution/execute';
-import type { PromiseOrValue } from './jsutils/PromiseOrValue';
+import { type GraphQLSchema } from './type/schema';
+import { type PromiseOrValue } from './jsutils/PromiseOrValue';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations

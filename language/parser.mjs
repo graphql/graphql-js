@@ -10,7 +10,7 @@ import inspect from '../jsutils/inspect';
 import defineToJSON from '../jsutils/defineToJSON';
 import { Source } from './source';
 import { syntaxError } from '../error';
-import { createLexer, TokenKind, getTokenDesc } from './lexer';
+import { TokenKind, getTokenDesc, createLexer } from './lexer';
 import { Kind } from './kinds';
 import { DirectiveLocation } from './directiveLocation';
 /**

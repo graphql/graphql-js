@@ -12,51 +12,47 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
-import type { ObjMap } from '../jsutils/ObjMap';
+import { type ObjMap } from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';
 import { dedentBlockStringValue } from '../language/blockString';
 import { TokenKind } from '../language/lexer';
-import { parse } from '../language/parser';
-import type { ParseOptions } from '../language/parser';
-import type { Source } from '../language/source';
+import { type ParseOptions, parse } from '../language/parser';
+import { type Source } from '../language/source';
 import { getDirectiveValues } from '../execution/values';
 import { Kind } from '../language/kinds';
 
-import type {
-  DocumentNode,
-  NameNode,
-  TypeNode,
-  NamedTypeNode,
-  SchemaDefinitionNode,
-  TypeDefinitionNode,
-  ScalarTypeDefinitionNode,
-  ObjectTypeDefinitionNode,
-  FieldDefinitionNode,
-  InputValueDefinitionNode,
-  InterfaceTypeDefinitionNode,
-  UnionTypeDefinitionNode,
-  EnumTypeDefinitionNode,
-  EnumValueDefinitionNode,
-  InputObjectTypeDefinitionNode,
-  DirectiveDefinitionNode,
-  StringValueNode,
-  Location,
+import {
+  type DocumentNode,
+  type NameNode,
+  type TypeNode,
+  type NamedTypeNode,
+  type SchemaDefinitionNode,
+  type TypeDefinitionNode,
+  type ScalarTypeDefinitionNode,
+  type ObjectTypeDefinitionNode,
+  type FieldDefinitionNode,
+  type InputValueDefinitionNode,
+  type InterfaceTypeDefinitionNode,
+  type UnionTypeDefinitionNode,
+  type EnumTypeDefinitionNode,
+  type EnumValueDefinitionNode,
+  type InputObjectTypeDefinitionNode,
+  type DirectiveDefinitionNode,
+  type StringValueNode,
+  type Location,
 } from '../language/ast';
 import { isTypeDefinitionNode } from '../language/predicates';
 
-import type { DirectiveLocationEnum } from '../language/directiveLocation';
-
-import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLFieldConfig,
-  GraphQLArgumentConfig,
-  GraphQLEnumValueConfig,
-  GraphQLInputFieldConfig,
-} from '../type/definition';
+import { type DirectiveLocationEnum } from '../language/directiveLocation';
 
 import {
+  type GraphQLType,
+  type GraphQLNamedType,
+  type GraphQLFieldConfig,
+  type GraphQLArgumentConfig,
+  type GraphQLEnumValueConfig,
+  type GraphQLInputFieldConfig,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -78,8 +74,10 @@ import { introspectionTypes } from '../type/introspection';
 
 import { specifiedScalarTypes } from '../type/scalars';
 
-import { GraphQLSchema } from '../type/schema';
-import type { GraphQLSchemaValidationOptions } from '../type/schema';
+import {
+  type GraphQLSchemaValidationOptions,
+  GraphQLSchema,
+} from '../type/schema';
 
 export type BuildSchemaOptions = {
   ...GraphQLSchemaValidationOptions,

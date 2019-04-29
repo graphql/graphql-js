@@ -7,10 +7,9 @@
  * 
  */
 import invariant from '../jsutils/invariant';
-import { getIntrospectionQuery } from './introspectionQuery';
 import { execute } from '../execution/execute';
 import { parse } from '../language/parser';
-
+import { getIntrospectionQuery } from './introspectionQuery';
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
  *
@@ -20,6 +19,7 @@ import { parse } from '../language/parser';
  * This is the inverse of buildClientSchema. The primary use case is outside
  * of the server context, for instance when doing schema comparisons.
  */
+
 export function introspectionFromSchema(schema, options) {
   var queryAST = parse(getIntrospectionQuery(options));
   var result = execute(schema, queryAST);

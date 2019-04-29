@@ -8,10 +8,9 @@
  */
 
 import { printError } from './printError';
-import { getLocation } from '../language/location';
-import type { SourceLocation } from '../language/location';
-import type { ASTNode } from '../language/ast';
-import type { Source } from '../language/source';
+import { type ASTNode } from '../language/ast';
+import { type Source } from '../language/source';
+import { type SourceLocation, getLocation } from '../language/location';
 
 /**
  * A GraphQLError describes an Error found during the parse, validate, or

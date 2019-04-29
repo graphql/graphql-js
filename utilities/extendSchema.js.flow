@@ -15,14 +15,16 @@ import mapValue from '../jsutils/mapValue';
 import keyValMap from '../jsutils/keyValMap';
 import { ASTDefinitionBuilder } from './buildASTSchema';
 import { assertValidSDLExtension } from '../validation/validate';
-import { assertSchema, GraphQLSchema } from '../type/schema';
+import {
+  type GraphQLSchemaValidationOptions,
+  assertSchema,
+  GraphQLSchema,
+} from '../type/schema';
 import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 
-import type { GraphQLSchemaValidationOptions } from '../type/schema';
-import type { GraphQLNamedType } from '../type/definition';
-
 import {
+  type GraphQLNamedType,
   isScalarType,
   isObjectType,
   isInterfaceType,
@@ -45,11 +47,11 @@ import { GraphQLDirective } from '../type/directives';
 
 import { Kind } from '../language/kinds';
 
-import type {
-  DocumentNode,
-  DirectiveDefinitionNode,
-  SchemaExtensionNode,
-  SchemaDefinitionNode,
+import {
+  type DocumentNode,
+  type DirectiveDefinitionNode,
+  type SchemaExtensionNode,
+  type SchemaDefinitionNode,
 } from '../language/ast';
 import {
   isTypeDefinitionNode,

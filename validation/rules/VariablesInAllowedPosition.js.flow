@@ -8,16 +8,15 @@
  */
 
 import inspect from '../../jsutils/inspect';
-import type { ValidationContext } from '../ValidationContext';
+import { type ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
-import type { ValueNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
-import { isNonNullType } from '../../type/definition';
+import { type ValueNode } from '../../language/ast';
+import { type ASTVisitor } from '../../language/visitor';
+import { type GraphQLType, isNonNullType } from '../../type/definition';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
-import type { GraphQLType } from '../../type/definition';
-import type { GraphQLSchema } from '../../type/schema';
+import { type GraphQLSchema } from '../../type/schema';
 
 export function badVarPosMessage(
   varName: string,

@@ -17,15 +17,18 @@ import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
-import { isInputType, isNonNullType } from '../type/definition';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { GraphQLField } from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
-import type { GraphQLSchema } from '../type/schema';
-import type {
-  FieldNode,
-  DirectiveNode,
-  VariableDefinitionNode,
+import {
+  type GraphQLField,
+  isInputType,
+  isNonNullType,
+} from '../type/definition';
+import { type GraphQLDirective } from '../type/directives';
+import { type ObjMap } from '../jsutils/ObjMap';
+import { type GraphQLSchema } from '../type/schema';
+import {
+  type FieldNode,
+  type DirectiveNode,
+  type VariableDefinitionNode,
 } from '../language/ast';
 
 type CoercedVariableValues = {|

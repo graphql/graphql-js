@@ -12,6 +12,7 @@ import inspect from '../jsutils/inspect';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import {
+  type GraphQLField,
   GraphQLObjectType,
   GraphQLEnumType,
   GraphQLList,
@@ -29,7 +30,6 @@ import {
 } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from '../language/directiveLocation';
-import type { GraphQLField } from './definition';
 
 export const __Schema = new GraphQLObjectType({
   name: '__Schema',

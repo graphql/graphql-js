@@ -7,28 +7,27 @@
  * @flow strict
  */
 
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { GraphQLError } from '../error';
-import { visit, visitWithTypeInfo } from '../language/visitor';
+import { type ObjMap } from '../jsutils/ObjMap';
+import { type GraphQLError } from '../error';
+import { type ASTVisitor, visit, visitWithTypeInfo } from '../language/visitor';
 import { Kind } from '../language/kinds';
-import type {
-  DocumentNode,
-  OperationDefinitionNode,
-  VariableNode,
-  SelectionSetNode,
-  FragmentSpreadNode,
-  FragmentDefinitionNode,
+import {
+  type DocumentNode,
+  type OperationDefinitionNode,
+  type VariableNode,
+  type SelectionSetNode,
+  type FragmentSpreadNode,
+  type FragmentDefinitionNode,
 } from '../language/ast';
-import type { ASTVisitor } from '../language/visitor';
-import type { GraphQLSchema } from '../type/schema';
-import type {
-  GraphQLInputType,
-  GraphQLOutputType,
-  GraphQLCompositeType,
-  GraphQLField,
-  GraphQLArgument,
+import { type GraphQLSchema } from '../type/schema';
+import {
+  type GraphQLInputType,
+  type GraphQLOutputType,
+  type GraphQLCompositeType,
+  type GraphQLField,
+  type GraphQLArgument,
 } from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
+import { type GraphQLDirective } from '../type/directives';
 import { TypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;

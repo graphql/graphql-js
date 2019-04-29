@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type { ASTNode } from './ast';
+import { type ASTNode } from './ast';
 import { Kind } from './kinds';
 
 export function isDefinitionNode(node: ASTNode): boolean %checks {

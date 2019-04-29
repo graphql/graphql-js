@@ -7,12 +7,12 @@
  * @flow strict
  */
 
-import type {
-  ValidationContext,
-  SDLValidationContext,
+import {
+  type ValidationContext,
+  type SDLValidationContext,
 } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTVisitor } from '../../language/visitor';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
 import { Kind } from '../../language/kinds';

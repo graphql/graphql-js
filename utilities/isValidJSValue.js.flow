@@ -9,7 +9,7 @@
 
 /* istanbul ignore file */
 import { coerceValue } from './coerceValue';
-import type { GraphQLInputType } from '../type/definition';
+import { type GraphQLInputType } from '../type/definition';
 
 /**
  * Deprecated. Use coerceValue() directly for richer information.

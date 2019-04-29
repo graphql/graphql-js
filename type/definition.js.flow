@@ -16,32 +16,32 @@ import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import mapValue from '../jsutils/mapValue';
-import type { ObjMap } from '../jsutils/ObjMap';
+import { type ObjMap } from '../jsutils/ObjMap';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
-import type {
-  ScalarTypeDefinitionNode,
-  ObjectTypeDefinitionNode,
-  FieldDefinitionNode,
-  InputValueDefinitionNode,
-  InterfaceTypeDefinitionNode,
-  UnionTypeDefinitionNode,
-  EnumTypeDefinitionNode,
-  EnumValueDefinitionNode,
-  InputObjectTypeDefinitionNode,
-  ScalarTypeExtensionNode,
-  ObjectTypeExtensionNode,
-  InterfaceTypeExtensionNode,
-  UnionTypeExtensionNode,
-  EnumTypeExtensionNode,
-  InputObjectTypeExtensionNode,
-  OperationDefinitionNode,
-  FieldNode,
-  FragmentDefinitionNode,
-  ValueNode,
+import {
+  type ScalarTypeDefinitionNode,
+  type ObjectTypeDefinitionNode,
+  type FieldDefinitionNode,
+  type InputValueDefinitionNode,
+  type InterfaceTypeDefinitionNode,
+  type UnionTypeDefinitionNode,
+  type EnumTypeDefinitionNode,
+  type EnumValueDefinitionNode,
+  type InputObjectTypeDefinitionNode,
+  type ScalarTypeExtensionNode,
+  type ObjectTypeExtensionNode,
+  type InterfaceTypeExtensionNode,
+  type UnionTypeExtensionNode,
+  type EnumTypeExtensionNode,
+  type InputObjectTypeExtensionNode,
+  type OperationDefinitionNode,
+  type FieldNode,
+  type FragmentDefinitionNode,
+  type ValueNode,
 } from '../language/ast';
-import type { GraphQLSchema } from './schema';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import { type GraphQLSchema } from './schema';
+import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 // Predicates & Assertions
 

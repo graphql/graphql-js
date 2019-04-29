@@ -9,8 +9,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
  * 
  */
 import objectEntries from '../polyfills/objectEntries';
-import { argsToArgsConfig } from './definition';
-import { GraphQLNonNull } from './definition';
+import { argsToArgsConfig, GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import defineToStringTag from '../jsutils/defineToStringTag';
 import defineToJSON from '../jsutils/defineToJSON';

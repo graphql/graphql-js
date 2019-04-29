@@ -7,9 +7,9 @@
  * @flow strict
  */
 
-import type { SDLValidationContext } from '../ValidationContext';
+import { type SDLValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTVisitor } from '../../language/visitor';
 
 export function duplicateDirectiveNameMessage(directiveName: string): string {
   return `There can be only one directive named "${directiveName}".`;

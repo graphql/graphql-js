@@ -7,9 +7,9 @@
  * @flow strict
  */
 
-import type { ASTValidationContext } from '../ValidationContext';
+import { type ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTVisitor } from '../../language/visitor';
 
 export function duplicateFragmentNameMessage(fragName: string): string {
   return `There can be only one fragment named "${fragName}".`;

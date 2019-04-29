@@ -8,19 +8,19 @@
  */
 
 import objectEntries from '../polyfills/objectEntries';
-import { argsToArgsConfig } from './definition';
-import type {
-  GraphQLFieldConfigArgumentMap,
-  GraphQLArgument,
+import {
+  type GraphQLFieldConfigArgumentMap,
+  type GraphQLArgument,
+  argsToArgsConfig,
+  GraphQLNonNull,
 } from './definition';
-import { GraphQLNonNull } from './definition';
 import { GraphQLString, GraphQLBoolean } from './scalars';
 import defineToStringTag from '../jsutils/defineToStringTag';
 import defineToJSON from '../jsutils/defineToJSON';
 import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
 import inspect from '../jsutils/inspect';
-import type { DirectiveDefinitionNode } from '../language/ast';
+import { type DirectiveDefinitionNode } from '../language/ast';
 import {
   DirectiveLocation,
   type DirectiveLocationEnum,

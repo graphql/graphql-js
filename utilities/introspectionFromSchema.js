@@ -7,11 +7,11 @@ exports.introspectionFromSchema = introspectionFromSchema;
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _introspectionQuery = require("./introspectionQuery");
-
 var _execute = require("../execution/execute");
 
 var _parser = require("../language/parser");
+
+var _introspectionQuery = require("./introspectionQuery");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
