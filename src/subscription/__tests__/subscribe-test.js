@@ -381,9 +381,9 @@ describe('Subscription Initialization Phase', () => {
 
   it('resolves to an error for subscription resolver errors', async () => {
     // Returning an error
-    const subscriptionReturningErrorSchema = emailSchemaWithResolvers(() => {
-      return new Error('test error');
-    });
+    const subscriptionReturningErrorSchema = emailSchemaWithResolvers(
+      () => new Error('test error'),
+    );
     await testReportsError(subscriptionReturningErrorSchema);
 
     // Throwing an error
@@ -394,9 +394,7 @@ describe('Subscription Initialization Phase', () => {
 
     // Resolving to an error
     const subscriptionResolvingErrorSchema = emailSchemaWithResolvers(
-      async () => {
-        return new Error('test error');
-      },
+      async () => new Error('test error'),
     );
     await testReportsError(subscriptionResolvingErrorSchema);
 
