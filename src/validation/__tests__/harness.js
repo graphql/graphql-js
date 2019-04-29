@@ -11,7 +11,10 @@ import { expect } from 'chai';
 import inspect from '../../jsutils/inspect';
 import { parse, print } from '../../language';
 import { validate, validateSDL } from '../validate';
-import type { ValidationRule, SDLValidationRule } from '../ValidationContext';
+import {
+  type ValidationRule,
+  type SDLValidationRule,
+} from '../ValidationContext';
 import {
   GraphQLSchema,
   GraphQLObjectType,

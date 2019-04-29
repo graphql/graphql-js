@@ -7,8 +7,8 @@
  * @flow strict
  */
 
-import type { Source } from './source';
-import type { TokenKindEnum } from './lexer';
+import { type Source } from './source';
+import { type TokenKindEnum } from './lexer';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that

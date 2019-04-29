@@ -8,7 +8,7 @@
  */
 
 import { $$asyncIterator, getAsyncIterator } from 'iterall';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator

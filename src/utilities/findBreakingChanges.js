@@ -9,6 +9,10 @@
 
 import find from '../polyfills/find';
 import {
+  type GraphQLNamedType,
+  type GraphQLFieldMap,
+  type GraphQLType,
+  type GraphQLArgument,
   isScalarType,
   isObjectType,
   isInterfaceType,
@@ -21,20 +25,12 @@ import {
   isRequiredArgument,
   isRequiredInputField,
 } from '../type/definition';
-
-import type {
-  GraphQLNamedType,
-  GraphQLFieldMap,
-  GraphQLType,
-  GraphQLArgument,
-} from '../type/definition';
-
-import type { GraphQLDirective } from '../type/directives';
-import type { GraphQLSchema } from '../type/schema';
+import { type GraphQLDirective } from '../type/directives';
+import { type GraphQLSchema } from '../type/schema';
 import keyMap from '../jsutils/keyMap';
 
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { DirectiveLocationEnum } from '../language/directiveLocation';
+import { type ObjMap } from '../jsutils/ObjMap';
+import { type DirectiveLocationEnum } from '../language/directiveLocation';
 
 export const BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',

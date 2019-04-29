@@ -7,16 +7,16 @@
  * @flow strict
  */
 
-import type {
-  ValidationContext,
-  SDLValidationContext,
+import {
+  type ValidationContext,
+  type SDLValidationContext,
 } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import inspect from '../../jsutils/inspect';
 import keyMap from '../../jsutils/keyMap';
 import { isType, isRequiredArgument } from '../../type/definition';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTVisitor } from '../../language/visitor';
 import { print } from '../../language/printer';
 import { specifiedDirectives } from '../../type/directives';
 

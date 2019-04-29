@@ -8,8 +8,8 @@
  */
 
 import defineToJSON from '../jsutils/defineToJSON';
-import type { Token } from './ast';
-import type { Source } from './source';
+import { type Token } from './ast';
+import { type Source } from './source';
 import { syntaxError } from '../error';
 import { dedentBlockStringValue } from './blockString';
 

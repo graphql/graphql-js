@@ -8,7 +8,7 @@
  */
 
 import { GraphQLError } from './GraphQLError';
-import type { ASTNode } from '../language/ast';
+import { type ASTNode } from '../language/ast';
 
 /**
  * Given an arbitrary Error, presumably thrown while attempting to execute a

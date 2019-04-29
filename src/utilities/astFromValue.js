@@ -13,10 +13,10 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
-import type { ValueNode } from '../language/ast';
+import { type ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
-import type { GraphQLInputType } from '../type/definition';
 import {
+  type GraphQLInputType,
   isLeafType,
   isEnumType,
   isInputObjectType,

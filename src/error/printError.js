@@ -7,10 +7,9 @@
  * @flow strict
  */
 
-import { getLocation } from '../language/location';
-import type { SourceLocation } from '../language/location';
-import type { Source } from '../language/source';
-import type { GraphQLError } from './GraphQLError';
+import { type SourceLocation, getLocation } from '../language/location';
+import { type Source } from '../language/source';
+import { type GraphQLError } from './GraphQLError';
 
 /**
  * Prints a GraphQLError to a string, representing useful location information

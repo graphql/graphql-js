@@ -8,13 +8,13 @@
  */
 
 import invariant from '../jsutils/invariant';
-import { getIntrospectionQuery } from './introspectionQuery';
-import type { GraphQLSchema } from '../type/schema';
+import { type GraphQLSchema } from '../type/schema';
 import { execute } from '../execution/execute';
 import { parse } from '../language/parser';
-import type {
-  IntrospectionQuery,
-  IntrospectionOptions,
+import {
+  type IntrospectionQuery,
+  type IntrospectionOptions,
+  getIntrospectionQuery,
 } from './introspectionQuery';
 
 /**

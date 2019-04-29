@@ -10,6 +10,14 @@
 import find from '../polyfills/find';
 import { Kind } from '../language/kinds';
 import {
+  type GraphQLType,
+  type GraphQLInputType,
+  type GraphQLOutputType,
+  type GraphQLCompositeType,
+  type GraphQLField,
+  type GraphQLArgument,
+  type GraphQLInputField,
+  type GraphQLEnumValue,
   isObjectType,
   isInterfaceType,
   isEnumType,
@@ -21,24 +29,14 @@ import {
   getNullableType,
   getNamedType,
 } from '../type/definition';
-import type {
-  GraphQLType,
-  GraphQLInputType,
-  GraphQLOutputType,
-  GraphQLCompositeType,
-  GraphQLField,
-  GraphQLArgument,
-  GraphQLInputField,
-  GraphQLEnumValue,
-} from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
+import { type GraphQLDirective } from '../type/directives';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection';
-import type { GraphQLSchema } from '../type/schema';
-import type { ASTNode, FieldNode } from '../language/ast';
+import { type GraphQLSchema } from '../type/schema';
+import { type ASTNode, type FieldNode } from '../language/ast';
 import { typeFromAST } from './typeFromAST';
 
 /**

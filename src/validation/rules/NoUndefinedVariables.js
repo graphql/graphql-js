@@ -7,9 +7,9 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../ValidationContext';
+import { type ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTVisitor } from '../../language/visitor';
 
 export function undefinedVarMessage(varName: string, opName: ?string): string {
   return opName

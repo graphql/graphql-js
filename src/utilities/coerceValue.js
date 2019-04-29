@@ -14,15 +14,15 @@ import isInvalid from '../jsutils/isInvalid';
 import orList from '../jsutils/orList';
 import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error/GraphQLError';
-import type { ASTNode } from '../language/ast';
+import { type ASTNode } from '../language/ast';
 import {
+  type GraphQLInputType,
   isScalarType,
   isEnumType,
   isInputObjectType,
   isListType,
   isNonNullType,
 } from '../type/definition';
-import type { GraphQLInputType } from '../type/definition';
 
 type CoercedValue = {|
   +errors: $ReadOnlyArray<GraphQLError> | void,

@@ -10,11 +10,11 @@
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import keyValMap from '../jsutils/keyValMap';
-import type { ObjMap } from '../jsutils/ObjMap';
+import { type ObjMap } from '../jsutils/ObjMap';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
-import type { GraphQLNamedType } from '../type/definition';
 import {
+  type GraphQLNamedType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,

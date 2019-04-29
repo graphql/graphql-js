@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type { DirectiveLocationEnum } from '../language/directiveLocation';
+import { type DirectiveLocationEnum } from '../language/directiveLocation';
 
 export type IntrospectionOptions = {|
   // Whether to include descriptions in the introspection result.

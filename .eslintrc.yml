@@ -69,7 +69,7 @@ rules:
   flowtype/space-before-type-colon: off
   flowtype/spread-exact-type: off
   flowtype/type-id-match: off
-  #flowtype/type-import-style: undecided
+  flowtype/type-import-style: [error, identifier, { ignoreTypeDefault: true }]
   flowtype/union-intersection-spacing: off
   flowtype/use-flow-type: error
   flowtype/valid-syntax: off
@@ -340,7 +340,7 @@ rules:
   no-confusing-arrow: off
   no-const-assign: error
   no-dupe-class-members: error
-  #no-duplicate-imports: undecided
+  no-duplicate-imports: error
   no-new-symbol: error
   no-restricted-imports: off
   no-this-before-super: error

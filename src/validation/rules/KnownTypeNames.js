@@ -7,15 +7,15 @@
  * @flow strict
  */
 
-import type {
-  ValidationContext,
-  SDLValidationContext,
+import {
+  type ValidationContext,
+  type SDLValidationContext,
 } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
-import type { ASTNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTNode } from '../../language/ast';
+import { type ASTVisitor } from '../../language/visitor';
 import {
   isTypeDefinitionNode,
   isTypeSystemDefinitionNode,

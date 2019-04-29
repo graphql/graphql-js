@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type { ObjMap } from './ObjMap';
+import { type ObjMap } from './ObjMap';
 import objectEntries from '../polyfills/objectEntries';
 
 /**
