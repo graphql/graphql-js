@@ -10,7 +10,7 @@
 import isFinite from '../polyfills/isFinite';
 import isInteger from '../polyfills/isInteger';
 import inspect from '../jsutils/inspect';
-import { GraphQLScalarType, isNamedType } from './definition';
+import { GraphQLScalarType, isScalarType } from './definition';
 import { Kind } from '../language/kinds';
 
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
@@ -255,7 +255,7 @@ export const specifiedScalarTypes: $ReadOnlyArray<*> = [
 
 export function isSpecifiedScalarType(type: mixed): boolean %checks {
   return (
-    isNamedType(type) &&
+    isScalarType(type) &&
     // Would prefer to use specifiedScalarTypes.some(), however %checks needs
     // a simple expression.
     (type.name === GraphQLString.name ||
