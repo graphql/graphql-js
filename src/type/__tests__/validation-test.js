@@ -11,6 +11,9 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import inspect from '../../jsutils/inspect';
 import {
+  type GraphQLNamedType,
+  type GraphQLInputType,
+  type GraphQLOutputType,
   GraphQLSchema,
   GraphQLScalarType,
   GraphQLObjectType,
@@ -21,11 +24,6 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLString,
-} from '../../';
-import type {
-  GraphQLNamedType,
-  GraphQLInputType,
-  GraphQLOutputType,
 } from '../../';
 import { parse } from '../../language/parser';
 import { validateSchema } from '../validate';

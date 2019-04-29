@@ -13,9 +13,16 @@ import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
-import { GraphQLSchema } from '../type/schema';
+import {
+  type GraphQLSchemaValidationOptions,
+  GraphQLSchema,
+} from '../type/schema';
 
 import {
+  type GraphQLType,
+  type GraphQLInputType,
+  type GraphQLOutputType,
+  type GraphQLNamedType,
   isInputType,
   isOutputType,
   GraphQLScalarType,
@@ -31,35 +38,26 @@ import {
   assertInterfaceType,
 } from '../type/definition';
 
-import type {
-  GraphQLType,
-  GraphQLInputType,
-  GraphQLOutputType,
-  GraphQLNamedType,
-} from '../type/definition';
-
 import { GraphQLDirective } from '../type/directives';
 
 import { introspectionTypes, TypeKind } from '../type/introspection';
 
 import { specifiedScalarTypes } from '../type/scalars';
 
-import type {
-  IntrospectionQuery,
-  IntrospectionType,
-  IntrospectionScalarType,
-  IntrospectionObjectType,
-  IntrospectionInterfaceType,
-  IntrospectionUnionType,
-  IntrospectionEnumType,
-  IntrospectionInputObjectType,
-  IntrospectionTypeRef,
-  IntrospectionInputTypeRef,
-  IntrospectionOutputTypeRef,
-  IntrospectionNamedTypeRef,
+import {
+  type IntrospectionQuery,
+  type IntrospectionType,
+  type IntrospectionScalarType,
+  type IntrospectionObjectType,
+  type IntrospectionInterfaceType,
+  type IntrospectionUnionType,
+  type IntrospectionEnumType,
+  type IntrospectionInputObjectType,
+  type IntrospectionTypeRef,
+  type IntrospectionInputTypeRef,
+  type IntrospectionOutputTypeRef,
+  type IntrospectionNamedTypeRef,
 } from './introspectionQuery';
-
-import type { GraphQLSchemaValidationOptions } from '../type/schema';
 
 type Options = {|
   ...GraphQLSchemaValidationOptions,

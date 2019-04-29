@@ -7,15 +7,15 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../ValidationContext';
+import { type ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import suggestionList from '../../jsutils/suggestionList';
 import quotedOrList from '../../jsutils/quotedOrList';
-import type { FieldNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
-import type { GraphQLSchema } from '../../type/schema';
-import type { GraphQLOutputType } from '../../type/definition';
+import { type FieldNode } from '../../language/ast';
+import { type ASTVisitor } from '../../language/visitor';
+import { type GraphQLSchema } from '../../type/schema';
 import {
+  type GraphQLOutputType,
   isObjectType,
   isInterfaceType,
   isAbstractType,

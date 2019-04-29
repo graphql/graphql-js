@@ -11,6 +11,8 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import {
+  type GraphQLType,
+  type GraphQLNullableType,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -20,7 +22,6 @@ import {
   GraphQLList,
   GraphQLNonNull,
 } from '../definition';
-import type { GraphQLType, GraphQLNullableType } from '../definition';
 
 const ScalarType = new GraphQLScalarType({ name: 'Scalar', serialize() {} });
 const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });

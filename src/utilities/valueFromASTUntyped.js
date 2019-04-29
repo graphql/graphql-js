@@ -10,9 +10,9 @@
 import inspect from '../jsutils/inspect';
 import keyValMap from '../jsutils/keyValMap';
 import isInvalid from '../jsutils/isInvalid';
-import type { ObjMap } from '../jsutils/ObjMap';
+import { type ObjMap } from '../jsutils/ObjMap';
 import { Kind } from '../language/kinds';
-import type { ValueNode } from '../language/ast';
+import { type ValueNode } from '../language/ast';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.

@@ -7,7 +7,10 @@
  * @flow strict
  */
 
-import type { ValidationRule, SDLValidationRule } from './ValidationContext';
+import {
+  type ValidationRule,
+  type SDLValidationRule,
+} from './ValidationContext';
 
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitions } from './rules/ExecutableDefinitions';
@@ -67,7 +70,10 @@ import { KnownDirectives } from './rules/KnownDirectives';
 import { UniqueDirectivesPerLocation } from './rules/UniqueDirectivesPerLocation';
 
 // Spec Section: "Argument Names"
-import { KnownArgumentNames } from './rules/KnownArgumentNames';
+import {
+  KnownArgumentNames,
+  KnownArgumentNamesOnDirectives, // @internal
+} from './rules/KnownArgumentNames';
 
 // Spec Section: "Argument Uniqueness"
 import { UniqueArgumentNames } from './rules/UniqueArgumentNames';
@@ -76,7 +82,10 @@ import { UniqueArgumentNames } from './rules/UniqueArgumentNames';
 import { ValuesOfCorrectType } from './rules/ValuesOfCorrectType';
 
 // Spec Section: "Argument Optionality"
-import { ProvidedRequiredArguments } from './rules/ProvidedRequiredArguments';
+import {
+  ProvidedRequiredArguments,
+  ProvidedRequiredArgumentsOnDirectives, // @internal
+} from './rules/ProvidedRequiredArguments';
 
 // Spec Section: "All Variable Usages Are Allowed"
 import { VariablesInAllowedPosition } from './rules/VariablesInAllowedPosition';
@@ -129,8 +138,6 @@ import { UniqueEnumValueNames } from './rules/UniqueEnumValueNames';
 import { UniqueFieldDefinitionNames } from './rules/UniqueFieldDefinitionNames';
 import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
 import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
-import { KnownArgumentNamesOnDirectives } from './rules/KnownArgumentNames';
-import { ProvidedRequiredArgumentsOnDirectives } from './rules/ProvidedRequiredArguments';
 
 // @internal
 export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = [

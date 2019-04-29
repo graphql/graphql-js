@@ -7,10 +7,10 @@
  * @flow strict
  */
 
-import type { ValidationContext } from '../ValidationContext';
+import { type ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import { print } from '../../language/printer';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTVisitor } from '../../language/visitor';
 import { isCompositeType } from '../../type/definition';
 import { typeFromAST } from '../../utilities/typeFromAST';
 

@@ -13,23 +13,21 @@ import inspect from '../jsutils/inspect';
 import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
-import type { GraphQLSchema } from '../type/schema';
+import { type GraphQLSchema } from '../type/schema';
 import {
+  type GraphQLNamedType,
+  type GraphQLScalarType,
+  type GraphQLEnumType,
+  type GraphQLObjectType,
+  type GraphQLInterfaceType,
+  type GraphQLUnionType,
+  type GraphQLInputObjectType,
   isScalarType,
   isObjectType,
   isInterfaceType,
   isUnionType,
   isEnumType,
   isInputObjectType,
-} from '../type/definition';
-import type {
-  GraphQLNamedType,
-  GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLInputObjectType,
 } from '../type/definition';
 import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
 import {

@@ -9,11 +9,11 @@
 
 import quotedOrList from '../../jsutils/quotedOrList';
 import suggestionList from '../../jsutils/suggestionList';
-import type { SDLValidationContext } from '../ValidationContext';
+import { type SDLValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { isTypeDefinitionNode } from '../../language/predicates';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTVisitor } from '../../language/visitor';
 import {
   isScalarType,
   isObjectType,

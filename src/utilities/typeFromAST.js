@@ -9,14 +9,17 @@
 
 import inspect from '../jsutils/inspect';
 import { Kind } from '../language/kinds';
-import type {
-  NamedTypeNode,
-  ListTypeNode,
-  NonNullTypeNode,
+import {
+  type NamedTypeNode,
+  type ListTypeNode,
+  type NonNullTypeNode,
 } from '../language/ast';
-import { GraphQLList, GraphQLNonNull } from '../type/definition';
-import type { GraphQLNamedType } from '../type/definition';
-import type { GraphQLSchema } from '../type/schema';
+import {
+  type GraphQLNamedType,
+  GraphQLList,
+  GraphQLNonNull,
+} from '../type/definition';
+import { type GraphQLSchema } from '../type/schema';
 
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType

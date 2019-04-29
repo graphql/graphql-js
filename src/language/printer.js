@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import type { ASTNode } from './ast';
+import { type ASTNode } from './ast';
 import { visit } from './visitor';
 import { printBlockString } from './blockString';
 

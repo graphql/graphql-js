@@ -7,10 +7,10 @@
  * @flow strict
  */
 
-import type { ASTValidationContext } from '../ValidationContext';
+import { type ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
-import type { OperationDefinitionNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import { type OperationDefinitionNode } from '../../language/ast';
+import { type ASTVisitor } from '../../language/visitor';
 
 export function singleFieldOnlyMessage(name: ?string): string {
   return (

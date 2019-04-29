@@ -7,10 +7,10 @@
  * @flow strict
  */
 
-import type { ASTValidationContext } from '../ValidationContext';
+import { type ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
-import type { ASTVisitor } from '../../language/visitor';
+import { type ASTVisitor } from '../../language/visitor';
 
 export function anonOperationNotAloneMessage(): string {
   return 'This anonymous operation must be the only defined operation.';
