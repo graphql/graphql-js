@@ -43,16 +43,16 @@ rules:
   flowtype/define-flow-type: error
   flowtype/newline-after-flow-annotation: [error, always]
   flowtype/no-dupe-keys: error
-  flowtype/no-existential-type: off
-  flowtype/no-flow-fix-me-comments: off
+  flowtype/no-existential-type: off # TODO
+  flowtype/no-flow-fix-me-comments: off # TODO
   flowtype/no-mixed: off
   flowtype/no-mutable-array: off
   flowtype/no-primitive-constructor-types: error
   flowtype/no-types-missing-file-annotation: error
-  #flowtype/no-unused-expressions: undecided
+  flowtype/no-unused-expressions: off
   flowtype/no-weak-types: [error, { any: false }]
-  #flowtype/require-compound-type-alias: undecided
-  flowtype/require-exact-type: off
+  flowtype/require-compound-type-alias: off
+  flowtype/require-exact-type: off # TODO
   flowtype/require-parameter-type: off
   flowtype/require-return-type: off
   flowtype/require-types-at-top: off
@@ -60,10 +60,10 @@ rules:
   flowtype/require-variable-type: off
   flowtype/sort-keys: off
   flowtype/spread-exact-type: off
-  flowtype/type-id-match: off
+  flowtype/type-id-match: [error, '^[A-Z]']
   flowtype/type-import-style: [error, identifier, { ignoreTypeDefault: true }]
   flowtype/use-flow-type: error
-  flowtype/valid-syntax: off
+
   # Bellow rules are disabled because coflicts with Prettier, see:
   # https://github.com/prettier/eslint-config-prettier/blob/master/flowtype.js
   flowtype/boolean-style: off
@@ -91,7 +91,7 @@ rules:
   no-cond-assign: error
   no-console: warn
   no-constant-condition: error
-  no-control-regex: off
+  no-control-regex: error
   no-debugger: warn
   no-dupe-args: error
   no-dupe-keys: error
@@ -101,12 +101,12 @@ rules:
   no-ex-assign: error
   no-extra-boolean-cast: error
   no-func-assign: error
-  no-inner-declarations: [error, functions]
+  no-inner-declarations: [error, both]
   no-invalid-regexp: error
   no-irregular-whitespace: error
   no-misleading-character-class: error
   no-obj-calls: error
-  #no-prototype-builtins: undecided
+  no-prototype-builtins: off # TODO
   no-regex-spaces: error
   no-sparse-arrays: error
   no-template-curly-in-string: error
@@ -122,10 +122,10 @@ rules:
 
   accessor-pairs: error
   array-callback-return: [error, { allowImplicit: true }]
-  block-scoped-var: off
+  block-scoped-var: error
   class-methods-use-this: off
-  complexity: off
-  consistent-return: off
+  complexity: off # maybe
+  consistent-return: off # TODO
   curly: [error, all]
   default-case: off
   dot-notation: off
@@ -138,7 +138,7 @@ rules:
   # no-case-declarations: error
   no-div-regex: error
   no-else-return: error
-  no-empty-function: off
+  no-empty-function: off # TODO
   no-empty-pattern: error
   no-eq-null: off
   no-eval: error
@@ -154,11 +154,11 @@ rules:
   no-iterator: error
   no-labels: [error, {allowLoop: true}]
   no-lone-blocks: error
-  no-loop-func: off
+  no-loop-func: error
   no-magic-numbers: off
   no-multi-str: error
   no-new: error
-  no-new-func: off
+  no-new-func: error
   no-new-wrappers: error
   no-octal: error
   no-octal-escape: error
@@ -170,8 +170,8 @@ rules:
   no-return-await: error
   no-script-url: error
   no-self-assign: error
-  no-self-compare: off
-  no-sequences: off
+  no-self-compare: off # TODO
+  no-sequences: off # TODO
   no-throw-literal: error
   no-unmodified-loop-condition: error
   no-unused-expressions: error
@@ -182,20 +182,20 @@ rules:
   no-useless-escape: error
   no-useless-return: error
   no-void: error
-  no-warning-comments: off
+  no-warning-comments: off # TODO
   no-with: error
   prefer-named-capture-group: off # ES2018
-  #prefer-promise-reject-errors: undecided
+  prefer-promise-reject-errors: off # TODO
   radix: error
-  #require-await: undecided
+  require-await: off # TODO
   require-unicode-regexp: off
-  vars-on-top: off
+  vars-on-top: error
   yoda: [error, never, {exceptRange: true}]
 
   # Strict Mode
   # https://eslint.org/docs/rules/#strict-mode
 
-  strict: off
+  strict: error
 
   # Variables
   # https://eslint.org/docs/rules/#variables
@@ -231,7 +231,7 @@ rules:
   # https://eslint.org/docs/rules/#stylistic-issues
 
   camelcase: [error, {properties: always}]
-  #capitalized-comments: undecided
+  capitalized-comments: off # maybe
   consistent-this: off
   func-name-matching: off
   func-names: off
@@ -239,9 +239,9 @@ rules:
   id-blacklist: off
   id-length: off
   id-match: [error, "^(?:_?[a-zA-Z0-9]*)|[_A-Z0-9]+$"]
-  #line-comment-position: undecided
+  line-comment-position: off
   lines-around-comment: off
-  lines-between-class-members: off
+  lines-between-class-members: [error, always, { exceptAfterSingleLine: true }]
   max-depth: off
   max-lines: off
   max-lines-per-function: off
@@ -249,8 +249,8 @@ rules:
   max-params: off
   max-statements: off
   max-statements-per-line: off
-  #multiline-comment-style: undecided
-  new-cap: off
+  multiline-comment-style: off
+  new-cap: off # TODO
   no-array-constructor: error
   no-bitwise: off
   no-continue: off
@@ -270,7 +270,7 @@ rules:
   operator-assignment: [error, always]
   padding-line-between-statements: off
   prefer-object-spread: error
-  quotes: off
+  quotes: [error, single, { avoidEscape: true, allowTemplateLiterals: true }]
   sort-keys: off
   sort-vars: off
   spaced-comment: [error, always]
@@ -296,12 +296,12 @@ rules:
   prefer-const: error
   prefer-destructuring: off
   prefer-numeric-literals: error
-  #prefer-rest-params: undecided
-  prefer-spread: off
+  prefer-rest-params: off # TODO
+  prefer-spread: error
   prefer-template: off
   require-yield: off
-  #sort-imports: undecided
-  #symbol-description: undecided
+  sort-imports: off
+  symbol-description: off
 
   # Bellow rules are disabled because coflicts with Prettier, see:
   # https://github.com/prettier/eslint-config-prettier/blob/master/index.js
