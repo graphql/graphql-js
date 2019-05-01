@@ -32,18 +32,22 @@ function rmdirRecursive(dirPath) {
 
 function readdirRecursive(dirPath, opts = {}) {
   const { ignoreDir } = opts;
-  return fs.readdirSync(dirPath, { withFileTypes: true })
-    .flatMap(dirent => {
-      const name = dirent.name;
-      if (dirent.isDirectory()) {
-        if (ignoreDir && ignoreDir.test(name)) {
-          return [];
-        }
-        return readdirRecursive(path.join(dirPath, name), opts)
-          .map(f => path.join(name, f));
-      }
-      return dirent.name;
-    });
+  const result = [];
+  for (const dirent of fs.readdirSync(dirPath, { withFileTypes: true })) {
+    const name = dirent.name;
+    if (!dirent.isDirectory()) {
+      result.push(dirent.name);
+      continue;
+    }
+
+    if (ignoreDir && ignoreDir.test(name)) {
+      continue;
+    }
+    const list = readdirRecursive(path.join(dirPath, name), opts)
+        .map(f => path.join(name, f));
+    result.push(...list);
+  }
+  return result;
 }
 
 function writeFile(destPath, data) {
