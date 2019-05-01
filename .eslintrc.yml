@@ -278,7 +278,7 @@ rules:
   # ECMAScript 6
   # https://eslint.org/docs/rules/#ecmascript-6
 
-  arrow-body-style: off
+  arrow-body-style: error
   constructor-super: error
   no-class-assign: error
   no-const-assign: error
