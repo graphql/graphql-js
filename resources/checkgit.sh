@@ -1,3 +1,6 @@
+# Exit immediately if any subcommand terminated
+trap "exit 1" TERM
+
 #
 # This script determines if current git state is the up to date master. If so
 # it exits normally. If not it prompts for an explicit continue. This script
