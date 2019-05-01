@@ -9,14 +9,20 @@
 
 'use strict';
 
-const { Benchmark } = require('benchmark');
-const { execSync } = require('child_process');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
+const { Benchmark } = require('benchmark');
 
-// Like build:cjs, but includes __tests__ and copies other files.
-const BUILD_CMD = 'babel src --copy-files --out-dir dist/';
+const {
+  copyFile,
+  writeFile,
+  rmdirRecursive,
+  mkdirRecursive,
+  readdirRecursive,
+} = require('./fs-utils');
+
 const LOCAL = 'local';
 
 function LOCAL_DIR(...paths) {
@@ -43,8 +49,7 @@ function prepareRevision(revision) {
   console.log(`🍳  Preparing ${revision}...`);
 
   if (revision === LOCAL) {
-    execSync(`yarn run ${BUILD_CMD}`);
-    return LOCAL_DIR('dist');
+    return babelBuild(LOCAL_DIR());
   } else {
     if (!fs.existsSync(TEMP_DIR())) {
       fs.mkdirSync(TEMP_DIR());
@@ -66,10 +71,33 @@ function prepareRevision(revision) {
     execSync(
       `cp -R "${LOCAL_DIR()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`
     );
-    execSync(`yarn run ${BUILD_CMD}`, { cwd: dir });
 
-    return path.join(dir, 'dist');
+    return babelBuild(dir);
   }
+}
+
+function babelBuild(dir) {
+  const oldCWD = process.cwd();
+  process.chdir(dir);
+
+  rmdirRecursive('./benchmarkDist');
+  mkdirRecursive('./benchmarkDist');
+
+  const babel = require('@babel/core');
+  for (const filepath of readdirRecursive('./src')) {
+    const srcPath = path.join('./src', filepath);
+    const distPath = path.join('./benchmarkDist', filepath);
+
+    if (filepath.endsWith('.js')) {
+      const cjs = babel.transformFileSync(srcPath, { envName: 'cjs' });
+      writeFile(distPath, cjs.code);
+    } else {
+      copyFile(srcPath, distPath);
+    }
+  }
+
+  process.chdir(oldCWD);
+  return path.join(dir, 'benchmarkDist');
 }
 
 function findFiles(cwd, pattern) {
