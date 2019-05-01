@@ -32,13 +32,7 @@
     "prettier": "prettier --write --list-different 'src/**/*.js'",
     "check": "flow check",
     "check-cover": "flow batch-coverage --quiet --strip-root --show-all src/ && flow stop --quiet",
-    "build": "npm run build:clean && npm run build:cp && npm run build:package-json && npm run build:cjs && npm run build:mjs && npm run build:flow",
-    "build:clean": "rm -rf ./dist && mkdir ./dist",
-    "build:cp": "cp README.md LICENSE ./dist",
-    "build:package-json": "node ./resources/copy-package-json.js",
-    "build:cjs": "babel src --env-name cjs --out-dir dist/",
-    "build:mjs": "babel src --env-name mjs --out-dir dist/module && for file in $(find dist/module -name '*.js'); do mv \"$file\" `echo \"$file\" | sed 's/dist\\/module/dist/g; s/.js$/.mjs/g'`; done && rm -rf dist/module",
-    "build:flow": "for file in $(find ./src -name '*.js' -not -path '*/__*__*'); do cp \"$file\" `echo \"$file\" | sed 's/\\/src\\//\\/dist\\//g'`.flow; done",
+    "build": "node resources/build.js",
     "preversion": ". ./resources/checkgit.sh && npm test",
     "prepublishOnly": ". ./resources/prepublish.sh",
     "gitpublish": ". ./resources/gitpublish.sh"
@@ -47,7 +41,6 @@
     "iterall": "^1.2.2"
   },
   "devDependencies": {
-    "@babel/cli": "7.4.4",
     "@babel/core": "7.4.4",
     "@babel/plugin-transform-flow-strip-types": "7.4.4",
     "@babel/polyfill": "7.4.4",
