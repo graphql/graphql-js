@@ -1,5 +1,5 @@
 # Exit immediately if any subcommand terminated
-trap "exit 1" TERM
+trap "exit 1" ERR
 
 # Publishing to NPM is currently supported by Travis CI, which ensures that all
 # tests pass first and the deployed module contains the correct file structure.

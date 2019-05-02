@@ -1,7 +1,7 @@
-#!/bin/sh -e
+#!/bin/sh
 
 # Exit immediately if any subcommand terminated
-trap "exit 1" TERM
+trap "exit 1" ERR
 
 # This script maintains a git branch which mirrors master but in a form that
 # what will eventually be deployed to npm, allowing npm dependencies to use:

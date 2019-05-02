@@ -1,5 +1,5 @@
 # Exit immediately if any subcommand terminated
-trap "exit 1" TERM
+trap "exit 1" ERR
 
 #
 # This script determines if current git state is the up to date master. If so
