@@ -234,7 +234,8 @@ export var GraphQLID = new GraphQLScalarType({
 });
 export var specifiedScalarTypes = [GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID];
 export function isSpecifiedScalarType(type) {
-  return isScalarType(type) && ( // Would prefer to use specifiedScalarTypes.some(), however %checks needs
-  // a simple expression.
-  type.name === GraphQLString.name || type.name === GraphQLInt.name || type.name === GraphQLFloat.name || type.name === GraphQLBoolean.name || type.name === GraphQLID.name);
+  return isScalarType(type) && specifiedScalarTypes.some(function (_ref) {
+    var name = _ref.name;
+    return type.name === name;
+  });
 }

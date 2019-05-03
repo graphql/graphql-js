@@ -498,7 +498,8 @@ export var TypeNameMetaFieldDef = {
 };
 export var introspectionTypes = [__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind];
 export function isIntrospectionType(type) {
-  return isNamedType(type) && ( // Would prefer to use introspectionTypes.some(), however %checks needs
-  // a simple expression.
-  type.name === __Schema.name || type.name === __Directive.name || type.name === __DirectiveLocation.name || type.name === __Type.name || type.name === __Field.name || type.name === __InputValue.name || type.name === __EnumValue.name || type.name === __TypeKind.name);
+  return isNamedType(type) && introspectionTypes.some(function (_ref8) {
+    var name = _ref8.name;
+    return type.name === name;
+  });
 }

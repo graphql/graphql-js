@@ -544,7 +544,8 @@ var introspectionTypes = [__Schema, __Directive, __DirectiveLocation, __Type, __
 exports.introspectionTypes = introspectionTypes;
 
 function isIntrospectionType(type) {
-  return (0, _definition.isNamedType)(type) && ( // Would prefer to use introspectionTypes.some(), however %checks needs
-  // a simple expression.
-  type.name === __Schema.name || type.name === __Directive.name || type.name === __DirectiveLocation.name || type.name === __Type.name || type.name === __Field.name || type.name === __InputValue.name || type.name === __EnumValue.name || type.name === __TypeKind.name);
+  return (0, _definition.isNamedType)(type) && introspectionTypes.some(function (_ref8) {
+    var name = _ref8.name;
+    return type.name === name;
+  });
 }
