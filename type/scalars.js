@@ -249,7 +249,7 @@ var specifiedScalarTypes = [GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBool
 exports.specifiedScalarTypes = specifiedScalarTypes;
 
 function isSpecifiedScalarType(type) {
-  return (0, _definition.isNamedType)(type) && ( // Would prefer to use specifiedScalarTypes.some(), however %checks needs
+  return (0, _definition.isScalarType)(type) && ( // Would prefer to use specifiedScalarTypes.some(), however %checks needs
   // a simple expression.
   type.name === GraphQLString.name || type.name === GraphQLInt.name || type.name === GraphQLFloat.name || type.name === GraphQLBoolean.name || type.name === GraphQLID.name);
 }

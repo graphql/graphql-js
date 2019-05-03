@@ -137,7 +137,7 @@ export var GraphQLDeprecatedDirective = new GraphQLDirective({
 
 export var specifiedDirectives = [GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective];
 export function isSpecifiedDirective(directive) {
-  return specifiedDirectives.some(function (specifiedDirective) {
-    return specifiedDirective.name === directive.name;
-  });
+  return isDirective(directive) && ( // Would prefer to use specifiedDirectives.some(), however %checks needs
+  // a simple expression.
+  directive.name === GraphQLIncludeDirective.name || directive.name === GraphQLSkipDirective.name || directive.name === GraphQLDeprecatedDirective.name);
 }

@@ -11,7 +11,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 import isFinite from '../polyfills/isFinite';
 import isInteger from '../polyfills/isInteger';
 import inspect from '../jsutils/inspect';
-import { GraphQLScalarType, isNamedType } from './definition';
+import { GraphQLScalarType, isScalarType } from './definition';
 import { Kind } from '../language/kinds'; // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
 //
@@ -234,7 +234,7 @@ export var GraphQLID = new GraphQLScalarType({
 });
 export var specifiedScalarTypes = [GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID];
 export function isSpecifiedScalarType(type) {
-  return isNamedType(type) && ( // Would prefer to use specifiedScalarTypes.some(), however %checks needs
+  return isScalarType(type) && ( // Would prefer to use specifiedScalarTypes.some(), however %checks needs
   // a simple expression.
   type.name === GraphQLString.name || type.name === GraphQLInt.name || type.name === GraphQLFloat.name || type.name === GraphQLBoolean.name || type.name === GraphQLID.name);
 }
