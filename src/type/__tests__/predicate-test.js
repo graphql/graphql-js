@@ -12,6 +12,11 @@ import { expect } from 'chai';
 
 import {
   GraphQLScalarType,
+  GraphQLBoolean,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLString,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -19,13 +24,13 @@ import {
   GraphQLUnionType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLString,
   GraphQLDirective,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
   isType,
   isScalarType,
+  isSpecifiedScalarType,
   isObjectType,
   isInterfaceType,
   isUnionType,
@@ -82,6 +87,10 @@ const ScalarType = new GraphQLScalarType({
   name: 'Scalar',
   serialize() {},
 });
+const Directive = new GraphQLDirective({
+  name: 'Directive',
+  locations: ['QUERY'],
+});
 
 describe('Type predicates', () => {
   describe('isType', () => {
@@ -119,6 +128,11 @@ describe('Type predicates', () => {
       expect(() => assertScalarType(ScalarType)).not.to.throw();
     });
 
+    it('returns false for scalar class (rather than instance)', () => {
+      expect(isScalarType(GraphQLScalarType)).to.equal(false);
+      expect(() => assertScalarType(GraphQLScalarType)).to.throw();
+    });
+
     it('returns false for wrapped scalar', () => {
       expect(isScalarType(GraphQLList(ScalarType))).to.equal(false);
       expect(() => assertScalarType(GraphQLList(ScalarType))).to.throw();
@@ -127,6 +141,56 @@ describe('Type predicates', () => {
     it('returns false for non-scalar', () => {
       expect(isScalarType(EnumType)).to.equal(false);
       expect(() => assertScalarType(EnumType)).to.throw();
+      expect(isScalarType(Directive)).to.equal(false);
+      expect(() => assertScalarType(Directive)).to.throw();
+    });
+
+    it('returns false for random garbage', () => {
+      expect(isScalarType({ what: 'is this' })).to.equal(false);
+      expect(() => assertScalarType({ what: 'is this' })).to.throw();
+    });
+  });
+
+  describe('isSpecifiedScalarType', () => {
+    it('returns true for specified scalars', () => {
+      expect(isSpecifiedScalarType(GraphQLString)).to.equal(true);
+      expect(isSpecifiedScalarType(GraphQLInt)).to.equal(true);
+      expect(isSpecifiedScalarType(GraphQLFloat)).to.equal(true);
+      expect(isSpecifiedScalarType(GraphQLBoolean)).to.equal(true);
+      expect(isSpecifiedScalarType(GraphQLID)).to.equal(true);
+    });
+
+    it('returns false for custom scalar', () => {
+      expect(isSpecifiedScalarType(ScalarType)).to.equal(false);
+    });
+
+    it('returns false for scalar class (rather than specified instance)', () => {
+      expect(isSpecifiedScalarType(GraphQLScalarType)).to.equal(false);
+    });
+
+    it('returns false for wrapped specified scalar', () => {
+      expect(isSpecifiedScalarType(GraphQLList(GraphQLString))).to.equal(false);
+    });
+
+    it('returns false for non-scalar', () => {
+      expect(isSpecifiedScalarType(EnumType)).to.equal(false);
+      expect(isSpecifiedScalarType(Directive)).to.equal(false);
+    });
+
+    it('returns false for spec defined directive', () => {
+      expect(isSpecifiedScalarType(GraphQLSkipDirective)).to.equal(false);
+    });
+
+    it('returns false for object type named like specified scalar', () => {
+      const ObjectNamedLikeScalar = new GraphQLObjectType({
+        name: 'String',
+        fields: { serialize: { type: GraphQLString } },
+      });
+      expect(isSpecifiedScalarType(ObjectNamedLikeScalar)).to.equal(false);
+    });
+
+    it('returns false for random garbage', () => {
+      expect(isSpecifiedScalarType({ what: 'is this' })).to.equal(false);
     });
   });
 
@@ -593,15 +657,14 @@ describe('Type predicates', () => {
 
 describe('Directive predicates', () => {
   describe('isDirective', () => {
-    it('returns true for directives', () => {
-      const directive = new GraphQLDirective({
-        name: 'Foo',
-        locations: ['QUERY'],
-      });
-      expect(isDirective(directive)).to.equal(true);
-      expect(() => assertDirective(directive)).not.to.throw();
+    it('returns true for spec defined directive', () => {
       expect(isDirective(GraphQLSkipDirective)).to.equal(true);
       expect(() => assertDirective(GraphQLSkipDirective)).not.to.throw();
+    });
+
+    it('returns true for custom directive', () => {
+      expect(isDirective(Directive)).to.equal(true);
+      expect(() => assertDirective(Directive)).not.to.throw();
     });
 
     it('returns false for directive class (rather than instance)', () => {
@@ -609,14 +672,11 @@ describe('Directive predicates', () => {
       expect(() => assertDirective(GraphQLDirective)).to.throw();
     });
 
-    it('returns false for object type', () => {
-      expect(isDirective(ObjectType)).to.equal(false);
-      expect(() => assertDirective(ObjectType)).to.throw();
-    });
-
-    it('returns false for scalar type', () => {
-      expect(isDirective(GraphQLString)).to.equal(false);
-      expect(() => assertDirective(GraphQLString)).to.throw();
+    it('returns false for non-directive', () => {
+      expect(isDirective(EnumType)).to.equal(false);
+      expect(() => assertDirective(EnumType)).to.throw();
+      expect(isDirective(ScalarType)).to.equal(false);
+      expect(() => assertDirective(ScalarType)).to.throw();
     });
 
     it('returns false for random garbage', () => {
@@ -632,30 +692,31 @@ describe('Directive predicates', () => {
     });
 
     it('returns false for custom directive', () => {
-      const directive = new GraphQLDirective({
-        name: 'Foo',
-        locations: ['QUERY'],
-      });
-      expect(isSpecifiedDirective(directive)).to.equal(false);
+      expect(isSpecifiedDirective(Directive)).to.equal(false);
     });
 
     it('returns false for directive class (rather than specified instance)', () => {
-      // $DisableFlowOnNegativeTest
       expect(isSpecifiedDirective(GraphQLDirective)).to.equal(false);
     });
 
-    it('returns false for object type', () => {
-      // $DisableFlowOnNegativeTest
-      expect(isSpecifiedDirective(ObjectType)).to.equal(false);
+    it('returns false for non-directive', () => {
+      expect(isSpecifiedDirective(EnumType)).to.equal(false);
+      expect(isSpecifiedDirective(ScalarType)).to.equal(false);
     });
 
     it('returns false for spec defined scalar type', () => {
-      // $DisableFlowOnNegativeTest
       expect(isSpecifiedDirective(GraphQLString)).to.equal(false);
     });
 
+    it('returns false for scalar type named like specified directive', () => {
+      const ScalarNamedLikeDirective = new GraphQLScalarType({
+        name: 'deprecated',
+        serialize: () => null,
+      });
+      expect(isSpecifiedDirective(ScalarNamedLikeDirective)).to.equal(false);
+    });
+
     it('returns false for random garbage', () => {
-      // $DisableFlowOnNegativeTest
       expect(isSpecifiedDirective({ what: 'is this' })).to.equal(false);
     });
   });
