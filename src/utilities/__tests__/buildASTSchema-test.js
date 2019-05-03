@@ -116,6 +116,7 @@ describe('Schema Builder', () => {
       }
     `);
 
+    // String and Boolean are always included through introspection types
     expect(schema.getType('Int')).to.equal(undefined);
     expect(schema.getType('Float')).to.equal(undefined);
     expect(schema.getType('ID')).to.equal(undefined);
