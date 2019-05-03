@@ -190,10 +190,6 @@ export const specifiedDirectives: $ReadOnlyArray<*> = [
 export function isSpecifiedDirective(directive: mixed): boolean %checks {
   return (
     isDirective(directive) &&
-    // Would prefer to use specifiedDirectives.some(), however %checks needs
-    // a simple expression.
-    (directive.name === GraphQLIncludeDirective.name ||
-      directive.name === GraphQLSkipDirective.name ||
-      directive.name === GraphQLDeprecatedDirective.name)
+    specifiedDirectives.some(({ name }) => name === directive.name)
   );
 }
