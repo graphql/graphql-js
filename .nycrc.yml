@@ -1,0 +1,8 @@
+include:
+  - "src/"
+exclude:
+  - "src/polyfills"
+clean: true
+temp-directory: "coverage"
+skip-full: true
+reporter: [json, html, text]
