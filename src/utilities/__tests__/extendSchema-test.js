@@ -277,6 +277,7 @@ describe('extendSchema', () => {
       }
     `);
 
+    // String and Boolean are always included through introspection types
     expect(schema.getType('Int')).to.equal(undefined);
     expect(schema.getType('Float')).to.equal(undefined);
     expect(schema.getType('String')).to.equal(GraphQLString);
