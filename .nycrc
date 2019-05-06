@@ -1,5 +1,0 @@
-{
-  "include": ["src/"],
-  "exclude": ["src/polyfills"],
-  "temp-directory": "coverage"
-}
