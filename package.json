@@ -4,6 +4,7 @@
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "main": "index",
+  "type": "module"
   "module": "index.mjs",
   "sideEffects": false,
   "homepage": "https://github.com/graphql/graphql-js",
