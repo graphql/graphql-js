@@ -35,7 +35,7 @@ rules:
   # https://github.com/prettier/eslint-plugin-prettier#installation
   prettier/prettier: error
 
-  # `eslint-plugin-flowtype` rule list based on `v3.7.x`
+  # `eslint-plugin-flowtype` rule list based on `v3.8.x`
   # https://github.com/gajus/eslint-plugin-flowtype#eslint-plugin-flowtype
 
   flowtype/array-style-complex-type: [error, verbose]
