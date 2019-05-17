@@ -25,15 +25,15 @@ import {
  *   - Comma
  *   - BlockString indentation
  *
- * Note: It is required to have delimiter character between neighboring
- * non-Punctuator tokes and this function always use single space as delimiter.
+ * Note: It is required to have a delimiter character between neighboring
+ * non-punctuator tokens and this function always uses single space as delimiter.
  *
  * It is guaranteed that both input and output documents if parsed would result
  * in the exact same AST except for nodes location.
  *
- * Warning: It guaranteed that this function will always produce stable results
- * however, it's not guaranteed that it will stay the same between different
- * releases due to bugfixes or changes in the GraphQL Specification.
+ * Warning: It is guaranteed that this function will always produce stable results.
+ * However, it's not guaranteed that it will stay the same between different
+ * releases due to bugfixes or changes in the GraphQL specification.
  *
  * Query example:
  *
@@ -87,7 +87,7 @@ export function stripIgnoredCharacters(source: string | Source): string {
     /**
      * Every two non-punctuator tokens should have space between them.
      * Also prevent case of non-punctuator token following by spread resulting
-     * in invalid toke (e.g. `1...` is invalid Float token).
+     * in invalid token (e.g. `1...` is invalid Float token).
      */
     const isNonPunctuator = !isPunctuatorToken(currentToken);
     if (wasLastAddedTokenNonPunctuator) {

@@ -118,7 +118,7 @@ describe('stripIgnoredCharacters', () => {
     );
   });
 
-  it('asserts that an invalid source was provided', () => {
+  it('asserts that a valid source was provided', () => {
     // $DisableFlowOnNegativeTest
     expect(() => stripIgnoredCharacters({})).to.throw(
       'Must provide string or Source. Received: {}',
@@ -220,7 +220,7 @@ describe('stripIgnoredCharacters', () => {
     }
   });
 
-  it('strips ignored tokens beetween punctuator tokens', () => {
+  it('strips ignored tokens between punctuator tokens', () => {
     expectStripped('[,)').toEqual('[)');
     expectStripped('[\r)').toEqual('[)');
     expectStripped('[\r\r)').toEqual('[)');
@@ -246,7 +246,7 @@ describe('stripIgnoredCharacters', () => {
     }
   });
 
-  it('strips ignored tokens beetween punctuator and non-punctuator tokens', () => {
+  it('strips ignored tokens between punctuator and non-punctuator tokens', () => {
     expectStripped('[,1').toEqual('[1');
     expectStripped('[\r1').toEqual('[1');
     expectStripped('[\r\r1').toEqual('[1');
@@ -274,7 +274,7 @@ describe('stripIgnoredCharacters', () => {
     }
   });
 
-  it('strips ignored tokens beetween non-punctuator and punctuator tokens', () => {
+  it('strips ignored tokens between non-punctuator and punctuator tokens', () => {
     expectStripped('1,[').toEqual('1[');
     expectStripped('1\r[').toEqual('1[');
     expectStripped('1\r\r[').toEqual('1[');
@@ -307,7 +307,7 @@ describe('stripIgnoredCharacters', () => {
     }
   });
 
-  it('replace ignored tokens beetween non-punctuator tokens and spead with space', () => {
+  it('replace ignored tokens between non-punctuator tokens and spread with space', () => {
     expectStripped('a ...').toEqual('a ...');
     expectStripped('1 ...').toEqual('1 ...');
     expectStripped('1 ... ...').toEqual('1 ......');
@@ -331,7 +331,7 @@ describe('stripIgnoredCharacters', () => {
     }
   });
 
-  it('replace ignored tokens beetween non-punctuator tokens with space', () => {
+  it('replace ignored tokens between non-punctuator tokens with space', () => {
     expectStripped('1 2').toStayTheSame();
     expectStripped('"" ""').toStayTheSame();
     expectStripped('a b').toStayTheSame();
@@ -384,13 +384,13 @@ describe('stripIgnoredCharacters', () => {
     expectStripped('""",,"""').toStayTheSame();
     expectStripped('""",|"""').toStayTheSame();
 
-    const ignoredTokensWithoutFormating = ignoredTokens.filter(
+    const ignoredTokensWithoutFormatting = ignoredTokens.filter(
       token => ['\n', '\r', '\r\n', '\t', ' '].indexOf(token) === -1,
     );
-    for (const ignored of ignoredTokensWithoutFormating) {
+    for (const ignored of ignoredTokensWithoutFormatting) {
       expectStripped('"""|' + ignored + '|"""').toStayTheSame();
 
-      for (const anotherIgnored of ignoredTokensWithoutFormating) {
+      for (const anotherIgnored of ignoredTokensWithoutFormatting) {
         expectStripped(
           '"""|' + ignored + anotherIgnored + '|"""',
         ).toStayTheSame();
@@ -398,7 +398,7 @@ describe('stripIgnoredCharacters', () => {
     }
 
     expectStripped(
-      '"""|' + ignoredTokensWithoutFormating.join('') + '|"""',
+      '"""|' + ignoredTokensWithoutFormatting.join('') + '|"""',
     ).toStayTheSame();
   });
 
@@ -434,13 +434,13 @@ describe('stripIgnoredCharacters', () => {
     expectStrippedString('"""\n a\n b"""').toEqual('"""a\nb"""');
     expectStrippedString('"""\na\n b\nc"""').toEqual('"""a\n b\nc"""');
 
-    // Testing with length >5 is taking exponentially more time however it
-    // highly recommended to test with increased limit if you make any change
-    const maxCombinationLenght = 5;
+    // Testing with length >5 is taking exponentially more time. However it is
+    // highly recommended to test with increased limit if you make any change.
+    const maxCombinationLength = 5;
     const possibleChars = ['\n', ' ', '"', 'a', '\\'];
     const numPossibleChars = possibleChars.length;
     let numCombinations = 1;
-    for (let length = 1; length < maxCombinationLenght; ++length) {
+    for (let length = 1; length < maxCombinationLength; ++length) {
       numCombinations *= numPossibleChars;
       for (let combination = 0; combination < numCombinations; ++combination) {
         let testStr = '"""';
@@ -469,7 +469,7 @@ describe('stripIgnoredCharacters', () => {
     }
   });
 
-  it('strips kitchen sink query but maintain the exact same AST', () => {
+  it('strips kitchen sink query but maintains the exact same AST', () => {
     const strippedQuery = stripIgnoredCharacters(kitchenSinkQuery);
     expect(stripIgnoredCharacters(strippedQuery)).to.equal(strippedQuery);
 
@@ -478,7 +478,7 @@ describe('stripIgnoredCharacters', () => {
     expect(strippedAST).to.deep.equal(queryAST);
   });
 
-  it('strips kitchen sink SDL but maintain the exact same AST', () => {
+  it('strips kitchen sink SDL but maintains the exact same AST', () => {
     const strippedSDL = stripIgnoredCharacters(kitchenSinkSDL);
     expect(stripIgnoredCharacters(strippedSDL)).to.equal(strippedSDL);
 
