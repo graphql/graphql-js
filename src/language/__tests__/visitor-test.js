@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @noflow
+ * @flow strict
  */
 
 import { expect } from 'chai';
@@ -57,6 +57,10 @@ function checkVisitorFnArgs(ast, args, isEdited) {
     expect(parent).to.equal(currentNode);
     expect(parent[key]).to.equal(node);
   }
+}
+
+function getValue(node) {
+  return node.value != null ? node.value : undefined;
 }
 
 describe('Visitor', () => {
@@ -270,7 +274,7 @@ describe('Visitor', () => {
     visit(ast, {
       enter(node) {
         checkVisitorFnArgs(ast, arguments);
-        visited.push(['enter', node.kind, node.value]);
+        visited.push(['enter', node.kind, getValue(node)]);
         if (node.kind === 'Field' && node.name.value === 'b') {
           return false;
         }
@@ -278,7 +282,7 @@ describe('Visitor', () => {
 
       leave(node) {
         checkVisitorFnArgs(ast, arguments);
-        visited.push(['leave', node.kind, node.value]);
+        visited.push(['leave', node.kind, getValue(node)]);
       },
     });
 
@@ -308,7 +312,7 @@ describe('Visitor', () => {
     visit(ast, {
       enter(node) {
         checkVisitorFnArgs(ast, arguments);
-        visited.push(['enter', node.kind, node.value]);
+        visited.push(['enter', node.kind, getValue(node)]);
         if (node.kind === 'Name' && node.value === 'x') {
           return BREAK;
         }
@@ -316,7 +320,7 @@ describe('Visitor', () => {
 
       leave(node) {
         checkVisitorFnArgs(ast, arguments);
-        visited.push(['leave', node.kind, node.value]);
+        visited.push(['leave', node.kind, getValue(node)]);
       },
     });
 
@@ -344,12 +348,12 @@ describe('Visitor', () => {
     visit(ast, {
       enter(node) {
         checkVisitorFnArgs(ast, arguments);
-        visited.push(['enter', node.kind, node.value]);
+        visited.push(['enter', node.kind, getValue(node)]);
       },
 
       leave(node) {
         checkVisitorFnArgs(ast, arguments);
-        visited.push(['leave', node.kind, node.value]);
+        visited.push(['leave', node.kind, getValue(node)]);
         if (node.kind === 'Name' && node.value === 'x') {
           return BREAK;
         }
@@ -381,16 +385,16 @@ describe('Visitor', () => {
     visit(ast, {
       Name(node) {
         checkVisitorFnArgs(ast, arguments);
-        visited.push(['enter', node.kind, node.value]);
+        visited.push(['enter', node.kind, getValue(node)]);
       },
       SelectionSet: {
         enter(node) {
           checkVisitorFnArgs(ast, arguments);
-          visited.push(['enter', node.kind, node.value]);
+          visited.push(['enter', node.kind, getValue(node)]);
         },
         leave(node) {
           checkVisitorFnArgs(ast, arguments);
-          visited.push(['leave', node.kind, node.value]);
+          visited.push(['leave', node.kind, getValue(node)]);
         },
       },
     });
@@ -417,11 +421,11 @@ describe('Visitor', () => {
     visit(ast, {
       enter(node) {
         checkVisitorFnArgs(ast, arguments);
-        visited.push(['enter', node.kind, node.value]);
+        visited.push(['enter', node.kind, getValue(node)]);
       },
       leave(node) {
         checkVisitorFnArgs(ast, arguments);
-        visited.push(['leave', node.kind, node.value]);
+        visited.push(['leave', node.kind, getValue(node)]);
       },
     });
 
@@ -464,14 +468,24 @@ describe('Visitor', () => {
 
     visit(ast, {
       enter(node, key, parent) {
-        visited.push(['enter', node.kind, key, parent && parent.kind]);
+        visited.push([
+          'enter',
+          node.kind,
+          key,
+          parent && parent.kind ? parent.kind : undefined,
+        ]);
 
         checkVisitorFnArgs(ast, arguments);
         argsStack.push([...arguments]);
       },
 
       leave(node, key, parent) {
-        visited.push(['leave', node.kind, key, parent && parent.kind]);
+        visited.push([
+          'leave',
+          node.kind,
+          key,
+          parent && parent.kind ? parent.kind : undefined,
+        ]);
 
         expect(argsStack.pop()).to.deep.equal([...arguments]);
       },
@@ -837,7 +851,7 @@ describe('Visitor', () => {
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['enter', node.kind, node.value]);
+              visited.push(['enter', node.kind, getValue(node)]);
               if (node.kind === 'Field' && node.name.value === 'b') {
                 return false;
               }
@@ -845,7 +859,7 @@ describe('Visitor', () => {
 
             leave(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['leave', node.kind, node.value]);
+              visited.push(['leave', node.kind, getValue(node)]);
             },
           },
         ]),
@@ -880,27 +894,27 @@ describe('Visitor', () => {
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['no-a', 'enter', node.kind, node.value]);
+              visited.push(['no-a', 'enter', node.kind, getValue(node)]);
               if (node.kind === 'Field' && node.name.value === 'a') {
                 return false;
               }
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['no-a', 'leave', node.kind, node.value]);
+              visited.push(['no-a', 'leave', node.kind, getValue(node)]);
             },
           },
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['no-b', 'enter', node.kind, node.value]);
+              visited.push(['no-b', 'enter', node.kind, getValue(node)]);
               if (node.kind === 'Field' && node.name.value === 'b') {
                 return false;
               }
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['no-b', 'leave', node.kind, node.value]);
+              visited.push(['no-b', 'leave', node.kind, getValue(node)]);
             },
           },
         ]),
@@ -956,14 +970,14 @@ describe('Visitor', () => {
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['enter', node.kind, node.value]);
+              visited.push(['enter', node.kind, getValue(node)]);
               if (node.kind === 'Name' && node.value === 'x') {
                 return BREAK;
               }
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['leave', node.kind, node.value]);
+              visited.push(['leave', node.kind, getValue(node)]);
             },
           },
         ]),
@@ -996,27 +1010,27 @@ describe('Visitor', () => {
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['break-a', 'enter', node.kind, node.value]);
+              visited.push(['break-a', 'enter', node.kind, getValue(node)]);
               if (node.kind === 'Name' && node.value === 'a') {
                 return BREAK;
               }
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['break-a', 'leave', node.kind, node.value]);
+              visited.push(['break-a', 'leave', node.kind, getValue(node)]);
             },
           },
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['break-b', 'enter', node.kind, node.value]);
+              visited.push(['break-b', 'enter', node.kind, getValue(node)]);
               if (node.kind === 'Name' && node.value === 'b') {
                 return BREAK;
               }
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['break-b', 'leave', node.kind, node.value]);
+              visited.push(['break-b', 'leave', node.kind, getValue(node)]);
             },
           },
         ]),
@@ -1058,11 +1072,11 @@ describe('Visitor', () => {
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['enter', node.kind, node.value]);
+              visited.push(['enter', node.kind, getValue(node)]);
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['leave', node.kind, node.value]);
+              visited.push(['leave', node.kind, getValue(node)]);
               if (node.kind === 'Name' && node.value === 'x') {
                 return BREAK;
               }
@@ -1099,11 +1113,11 @@ describe('Visitor', () => {
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['break-a', 'enter', node.kind, node.value]);
+              visited.push(['break-a', 'enter', node.kind, getValue(node)]);
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['break-a', 'leave', node.kind, node.value]);
+              visited.push(['break-a', 'leave', node.kind, getValue(node)]);
               if (node.kind === 'Field' && node.name.value === 'a') {
                 return BREAK;
               }
@@ -1112,11 +1126,11 @@ describe('Visitor', () => {
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['break-b', 'enter', node.kind, node.value]);
+              visited.push(['break-b', 'enter', node.kind, getValue(node)]);
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['break-b', 'leave', node.kind, node.value]);
+              visited.push(['break-b', 'leave', node.kind, getValue(node)]);
               if (node.kind === 'Field' && node.name.value === 'b') {
                 return BREAK;
               }
@@ -1183,11 +1197,11 @@ describe('Visitor', () => {
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['enter', node.kind, node.value]);
+              visited.push(['enter', node.kind, getValue(node)]);
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments, /* isEdited */ true);
-              visited.push(['leave', node.kind, node.value]);
+              visited.push(['leave', node.kind, getValue(node)]);
             },
           },
         ]),
@@ -1247,11 +1261,11 @@ describe('Visitor', () => {
           {
             enter(node) {
               checkVisitorFnArgs(ast, arguments);
-              visited.push(['enter', node.kind, node.value]);
+              visited.push(['enter', node.kind, getValue(node)]);
             },
             leave(node) {
               checkVisitorFnArgs(ast, arguments, /* isEdited */ true);
-              visited.push(['leave', node.kind, node.value]);
+              visited.push(['leave', node.kind, getValue(node)]);
             },
           },
         ]),
