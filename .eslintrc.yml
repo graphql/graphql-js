@@ -262,7 +262,13 @@ rules:
   no-nested-ternary: off
   no-new-object: error
   no-plusplus: off
-  no-restricted-syntax: off
+  no-restricted-syntax:
+    - error
+    - selector: 'FunctionDeclaration[async=true]'
+      message: >
+        async functions are not allowed outside of the test suite because
+        older versions of NodeJS do not support them without additional
+        runtime dependencies. Instead, use explicit Promises.
   no-tabs: error
   no-ternary: off
   no-underscore-dangle: off
@@ -370,13 +376,6 @@ rules:
   yield-star-spacing: off
 
 overrides:
-  - files: "*"
-    excludedFiles: "**/__tests__/**"
+  - files: "**/__tests__/**"
     rules:
-      no-restricted-syntax:
-        - error
-        - selector: 'FunctionDeclaration[async=true]'
-          message: >
-            async functions are not allowed outside of the test suite because
-            older versions of NodeJS do not support them without additional
-            runtime dependencies. Instead, use explicit Promises.
+      no-restricted-syntax: off
