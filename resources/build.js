@@ -9,7 +9,6 @@
 
 'use strict';
 
-const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const babel = require('@babel/core');

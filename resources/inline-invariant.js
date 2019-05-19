@@ -25,7 +25,7 @@ module.exports = function inlineInvariant(context) {
 
   return {
     visitor: {
-      CallExpression: function(path) {
+      CallExpression(path) {
         const node = path.node;
         const parent = path.parent;
 

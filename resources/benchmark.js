@@ -50,30 +50,30 @@ function prepareRevision(revision) {
 
   if (revision === LOCAL) {
     return babelBuild(LOCAL_DIR());
-  } else {
-    if (!fs.existsSync(TEMP_DIR())) {
-      fs.mkdirSync(TEMP_DIR());
-    }
-
-    const hash = hashForRevision(revision);
-    const dir = TEMP_DIR(hash);
-
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
-      execSync(`git archive "${hash}" | tar -xC "${dir}"`);
-      execSync('yarn install', { cwd: dir });
-    }
-    for (const file of findFiles(LOCAL_DIR('src'), '*/__tests__/*')) {
-      const from = LOCAL_DIR('src', file);
-      const to = path.join(dir, 'src', file);
-      fs.copyFileSync(from, to);
-    }
-    execSync(
-      `cp -R "${LOCAL_DIR()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`
-    );
-
-    return babelBuild(dir);
   }
+
+  if (!fs.existsSync(TEMP_DIR())) {
+    fs.mkdirSync(TEMP_DIR());
+  }
+
+  const hash = hashForRevision(revision);
+  const dir = TEMP_DIR(hash);
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+    execSync(`git archive "${hash}" | tar -xC "${dir}"`);
+    execSync('yarn install', { cwd: dir });
+  }
+  for (const file of findFiles(LOCAL_DIR('src'), '*/__tests__/*')) {
+    const from = LOCAL_DIR('src', file);
+    const to = path.join(dir, 'src', file);
+    fs.copyFileSync(from, to);
+  }
+  execSync(
+    `cp -R "${LOCAL_DIR()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`
+  );
+
+  return babelBuild(dir);
 }
 
 function babelBuild(dir) {
