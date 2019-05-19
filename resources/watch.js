@@ -24,7 +24,7 @@ function exec(command, options) {
     const child = spawn(command, options, {
       cmd,
       env: process.env,
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
     child.on('exit', code => {
       if (code === 0) {
@@ -38,7 +38,7 @@ function exec(command, options) {
 
 const flowServer = spawn(flowBinPath, ['server'], {
   cmd,
-  env: process.env
+  env: process.env,
 });
 
 const watcher = sane(srcDir, { glob: ['**/*.js', '**/*.graphql'] })
@@ -102,14 +102,14 @@ function checkFiles(filepaths) {
     .then(testSuccess =>
       lintFiles().then(lintSuccess =>
         typecheckStatus().then(
-          typecheckSuccess => testSuccess && lintSuccess && typecheckSuccess
-        )
-      )
+          typecheckSuccess => testSuccess && lintSuccess && typecheckSuccess,
+        ),
+      ),
     )
     .catch(() => false)
     .then(success => {
       process.stdout.write(
-        '\n' + (success ? '' : '\x07') + green(invert('watching...'))
+        '\n' + (success ? '' : '\x07') + green(invert('watching...')),
       );
     });
 }
@@ -123,8 +123,8 @@ function runTests(filepaths) {
     ['--reporter', 'progress'].concat(
       allTests(filepaths)
         ? filepaths.map(srcPath)
-        : ['src/**/__tests__/**/*-test.js']
-    )
+        : ['src/**/__tests__/**/*-test.js'],
+    ),
   ).catch(() => false);
 }
 

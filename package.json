@@ -29,7 +29,7 @@
     "testonly:cover": "nyc npm run testonly",
     "lint": "eslint --cache --report-unused-disable-directives src resources",
     "benchmark": "node ./resources/benchmark.js",
-    "prettier": "prettier --write --list-different 'src/**/*.js'",
+    "prettier": "prettier --write --list-different 'src/**/*.js' 'resources/**/*.js'",
     "check": "flow check",
     "check-cover": "flow batch-coverage --quiet --strip-root --show-all src/ && flow stop --quiet",
     "build": "node resources/build.js",

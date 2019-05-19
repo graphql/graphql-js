@@ -43,8 +43,9 @@ function readdirRecursive(dirPath, opts = {}) {
     if (ignoreDir && ignoreDir.test(name)) {
       continue;
     }
-    const list = readdirRecursive(path.join(dirPath, name), opts)
-        .map(f => path.join(name, f));
+    const list = readdirRecursive(path.join(dirPath, name), opts).map(f =>
+      path.join(name, f),
+    );
     result.push(...list);
   }
   return result;
