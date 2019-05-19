@@ -70,7 +70,7 @@ function prepareRevision(revision) {
     fs.copyFileSync(from, to);
   }
   execSync(
-    `cp -R "${LOCAL_DIR()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`
+    `cp -R "${LOCAL_DIR()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`,
   );
 
   return babelBuild(dir);
@@ -109,7 +109,7 @@ function findFiles(cwd, pattern) {
 function runBenchmark(benchmark, environments) {
   let benchmarkName;
   const benches = environments.map(environment => {
-    const module = require(path.join(environment.distPath, benchmark))
+    const module = require(path.join(environment.distPath, benchmark));
     benchmarkName = module.name;
     return new Benchmark(environment.revision, module.measure);
   });
@@ -149,34 +149,50 @@ function beautifyBenchmark(results) {
   function printBench(bench) {
     const { name, ops, deviation, numRuns } = bench;
     console.log(
-      '  ' + nameStr() + grey(' x ') + opsStr() + ' ops/sec ' +
-      grey('\xb1') + deviationStr() + cyan('%') +
-      grey(' (' + numRuns + ' runs sampled)')
+      '  ' +
+        nameStr() +
+        grey(' x ') +
+        opsStr() +
+        ' ops/sec ' +
+        grey('\xb1') +
+        deviationStr() +
+        cyan('%') +
+        grey(' (' + numRuns + ' runs sampled)'),
     );
 
     function nameStr() {
       const nameFmt = name.padEnd(nameMaxLen);
-      return (ops === opsTop) ? green(nameFmt) : nameFmt;
+      return ops === opsTop ? green(nameFmt) : nameFmt;
     }
 
     function opsStr() {
       const percent = ops / opsTop;
-      const colorFn = percent > 0.95 ? green : (percent > 0.80 ? yellow : red);
+      const colorFn = percent > 0.95 ? green : percent > 0.8 ? yellow : red;
       return colorFn(beautifyNumber(ops).padStart(opsMaxLen));
     }
 
     function deviationStr() {
-      const colorFn = deviation > 5 ? red : (deviation > 2 ? yellow : green);
+      const colorFn = deviation > 5 ? red : deviation > 2 ? yellow : green;
       return colorFn(deviation.toFixed(2));
     }
   }
 }
 
-function red(str)    { return '\u001b[31m' + str + '\u001b[0m' }
-function green(str)  { return '\u001b[32m' + str + '\u001b[0m' }
-function yellow(str) { return '\u001b[33m' + str + '\u001b[0m' }
-function cyan(str)   { return '\u001b[36m' + str + '\u001b[0m' }
-function grey(str)   { return '\u001b[90m' + str + '\u001b[0m' }
+function red(str) {
+  return '\u001b[31m' + str + '\u001b[0m';
+}
+function green(str) {
+  return '\u001b[32m' + str + '\u001b[0m';
+}
+function yellow(str) {
+  return '\u001b[33m' + str + '\u001b[0m';
+}
+function cyan(str) {
+  return '\u001b[36m' + str + '\u001b[0m';
+}
+function grey(str) {
+  return '\u001b[90m' + str + '\u001b[0m';
+}
 
 function beautifyNumber(num) {
   return Number(num.toFixed(num > 100 ? 0 : 2)).toLocaleString();
@@ -193,15 +209,15 @@ function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
   if (benchmarkPatterns.length !== 0) {
     benchmarks = benchmarks.filter(benchmark =>
       benchmarkPatterns.some(pattern =>
-        path.join('src', benchmark).includes(pattern)
-      )
+        path.join('src', benchmark).includes(pattern),
+      ),
     );
   }
 
   if (benchmarks.length === 0) {
     console.warn(
       'No benchmarks matching: ' +
-        `\u001b[1m${benchmarkPatterns.join('\u001b[0m or \u001b[1m')}\u001b[0m`
+        `\u001b[1m${benchmarkPatterns.join('\u001b[0m or \u001b[1m')}\u001b[0m`,
     );
     return;
   }
@@ -234,7 +250,7 @@ function getArguments(argv) {
   }
   if (assumeArgs) {
     console.warn(
-      `Assuming you meant: \u001b[1mbenchmark ${assumeArgs.join(' ')}\u001b[0m`
+      `Assuming you meant: \u001b[1mbenchmark ${assumeArgs.join(' ')}\u001b[0m`,
     );
   }
   return { benchmarkPatterns, revisions };
