@@ -363,9 +363,7 @@ overrides:
       no-console: off
       no-sync: off
       global-require: off
-      no-var: off #TODO
       no-shadow: off #TODO
-      vars-on-top: off #TODO
       no-unused-vars: off #TODO
       no-else-return: off #TODO
       object-shorthand: off #TODO
