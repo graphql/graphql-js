@@ -143,7 +143,10 @@ function beautifyBenchmark(results) {
       console.log('  ' + bench.name + ': ' + red(String(bench.error)));
       continue;
     }
+    printBench(bench);
+  }
 
+  function printBench(bench) {
     const { name, ops, deviation, numRuns } = bench;
     console.log(
       '  ' + nameStr() + grey(' x ') + opsStr() + ' ops/sec ' +

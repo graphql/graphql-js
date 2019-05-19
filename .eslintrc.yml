@@ -363,5 +363,4 @@ overrides:
       no-console: off
       no-sync: off
       global-require: off
-      no-inner-declarations: off #TODO
       prettier/prettier: off #TODO
