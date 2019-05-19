@@ -22,7 +22,7 @@ const srcDir = resolvePath(cmd, '../src');
 function exec(command, options) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, options, {
-      cmd: cmd,
+      cmd,
       env: process.env,
       stdio: 'inherit'
     });
@@ -37,7 +37,7 @@ function exec(command, options) {
 }
 
 const flowServer = spawn(flowBinPath, ['server'], {
-  cmd: cmd,
+  cmd,
   env: process.env
 });
 
@@ -160,15 +160,9 @@ function isTest(filepath) {
 
 const CLEARSCREEN = '\u001b[2J';
 const CLEARLINE = '\r\x1B[K';
-const CHECK = green('\u2713');
-const X = red('\u2718');
 
 function invert(str) {
   return `\u001b[7m ${str} \u001b[27m`;
-}
-
-function red(str) {
-  return `\x1B[K\u001b[1m\u001b[31m${str}\u001b[39m\u001b[22m`;
 }
 
 function green(str) {

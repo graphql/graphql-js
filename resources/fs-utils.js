@@ -12,8 +12,8 @@
 const fs = require('fs');
 const path = require('path');
 
-function mkdirRecursive(path) {
-  fs.mkdirSync(path, { recursive: true });
+function mkdirRecursive(dirPath) {
+  fs.mkdirSync(dirPath, { recursive: true });
 }
 
 function rmdirRecursive(dirPath) {
