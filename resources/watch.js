@@ -7,6 +7,8 @@
  * @noflow
  */
 
+'use strict';
+
 const sane = require('sane');
 const { resolve: resolvePath } = require('path');
 const { spawn } = require('child_process');
