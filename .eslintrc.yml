@@ -356,3 +356,18 @@ overrides:
   - files: "**/__tests__/**"
     rules:
       no-restricted-syntax: off
+  - files: "resources/**"
+    parserOptions:
+      sourceType: script
+    rules:
+      no-console: off
+      no-sync: off
+      global-require: off
+      no-var: off #TODO
+      no-shadow: off #TODO
+      vars-on-top: off #TODO
+      no-unused-vars: off #TODO
+      no-else-return: off #TODO
+      object-shorthand: off #TODO
+      no-inner-declarations: off #TODO
+      prettier/prettier: off #TODO
