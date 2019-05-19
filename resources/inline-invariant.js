@@ -26,14 +26,14 @@ module.exports = function inlineInvariant(context) {
   return {
     visitor: {
       CallExpression: function(path) {
-        var node = path.node;
-        var parent = path.parent;
+        const node = path.node;
+        const parent = path.parent;
 
         if (!isAppropriateInvariantCall(node, parent)) {
           return;
         }
 
-        var args = node.arguments.slice(0);
+        const args = node.arguments.slice(0);
         args[0] = t.numericLiteral(0);
 
         path.replaceWith(
