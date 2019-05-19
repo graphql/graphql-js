@@ -18,7 +18,7 @@ const {
   rmdirRecursive,
   mkdirRecursive,
   readdirRecursive,
-} = require('./fs-utils');
+} = require('./utils');
 
 if (require.main === module) {
   rmdirRecursive('./dist');

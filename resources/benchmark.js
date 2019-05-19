@@ -21,7 +21,7 @@ const {
   rmdirRecursive,
   mkdirRecursive,
   readdirRecursive,
-} = require('./fs-utils');
+} = require('./utils');
 
 const LOCAL = 'local';
 
