@@ -21,7 +21,11 @@
  *  !<cond> ? invariant(0, ...) : undefined;
  */
 module.exports = function inlineInvariant(context) {
-  const t = context.types;
+  const replaceTemplate = context.template(`
+    if (!%%cond%%) {
+      invariant(0, %%args%%);
+    }
+  `);
 
   return {
     visitor: {
@@ -33,17 +37,8 @@ module.exports = function inlineInvariant(context) {
           return;
         }
 
-        const args = node.arguments.slice(0);
-        args[0] = t.numericLiteral(0);
-
-        path.replaceWith(
-          t.ifStatement(
-            t.unaryExpression('!', node.arguments[0]),
-            t.expressionStatement(
-              t.callExpression(t.identifier(node.callee.name), args)
-            )
-          )
-        );
+        const [cond, args] = node.arguments;
+        path.replaceWith(replaceTemplate({ cond, args }));
       },
     },
   };
