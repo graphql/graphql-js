@@ -1,35 +1,12 @@
 parser: babel-eslint
-plugins:
-  - flowtype
-  - prettier
+parserOptions:
+  sourceType: module
 env:
   es6: true
   node: true
-parserOptions:
-  arrowFunctions: true
-  binaryLiterals: true
-  blockBindings: true
-  classes: true
-  defaultParams: true
-  destructuring: true
-  experimentalObjectRestSpread: true
-  forOf: true
-  generators: true
-  globalReturn: true
-  jsx: true
-  modules: true
-  objectLiteralComputedProperties: true
-  objectLiteralDuplicateProperties: true
-  objectLiteralShorthandMethods: true
-  objectLiteralShorthandProperties: true
-  octalLiterals: true
-  regexUFlag: true
-  regexYFlag: true
-  restParams: true
-  spread: true
-  superInFunctions: true
-  templateStrings: true
-  unicodeCodePointEscapes: true
+plugins:
+  - flowtype
+  - prettier
 
 rules:
   # https://github.com/prettier/eslint-plugin-prettier#installation
