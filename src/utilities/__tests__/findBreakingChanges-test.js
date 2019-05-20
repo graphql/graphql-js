@@ -41,6 +41,12 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'Type1 was removed.',
+        oldLoc: {
+          startLine: 2,
+          startColumn: 7,
+          endLine: 4,
+          endColumn: 7,
+        },
       },
     ]);
     expect(findBreakingChanges(oldSchema, oldSchema)).to.deep.equal([]);
