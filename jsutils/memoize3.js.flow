@@ -36,7 +36,7 @@ export default function memoize3<T: (a1: any, a2: any, a3: any) => any>(
       cache2 = new WeakMap();
       cache1.set(a2, cache2);
     }
-    const newValue = fn.apply(this, arguments);
+    const newValue = fn(a1, a2, a3);
     cache2.set(a3, newValue);
     return newValue;
   }

@@ -48,7 +48,7 @@ function memoize3(fn) {
       cache1.set(a2, cache2);
     }
 
-    var newValue = fn.apply(this, arguments);
+    var newValue = fn(a1, a2, a3);
     cache2.set(a3, newValue);
     return newValue;
   }
