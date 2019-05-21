@@ -328,43 +328,49 @@ function collectFields(exeContext, runtimeType, selectionSet, fields, visitedFra
 
     switch (selection.kind) {
       case _kinds.Kind.FIELD:
-        if (!shouldIncludeNode(exeContext, selection)) {
-          continue;
+        {
+          if (!shouldIncludeNode(exeContext, selection)) {
+            continue;
+          }
+
+          var name = getFieldEntryKey(selection);
+
+          if (!fields[name]) {
+            fields[name] = [];
+          }
+
+          fields[name].push(selection);
+          break;
         }
-
-        var name = getFieldEntryKey(selection);
-
-        if (!fields[name]) {
-          fields[name] = [];
-        }
-
-        fields[name].push(selection);
-        break;
 
       case _kinds.Kind.INLINE_FRAGMENT:
-        if (!shouldIncludeNode(exeContext, selection) || !doesFragmentConditionMatch(exeContext, selection, runtimeType)) {
-          continue;
-        }
+        {
+          if (!shouldIncludeNode(exeContext, selection) || !doesFragmentConditionMatch(exeContext, selection, runtimeType)) {
+            continue;
+          }
 
-        collectFields(exeContext, runtimeType, selection.selectionSet, fields, visitedFragmentNames);
-        break;
+          collectFields(exeContext, runtimeType, selection.selectionSet, fields, visitedFragmentNames);
+          break;
+        }
 
       case _kinds.Kind.FRAGMENT_SPREAD:
-        var fragName = selection.name.value;
+        {
+          var fragName = selection.name.value;
 
-        if (visitedFragmentNames[fragName] || !shouldIncludeNode(exeContext, selection)) {
-          continue;
+          if (visitedFragmentNames[fragName] || !shouldIncludeNode(exeContext, selection)) {
+            continue;
+          }
+
+          visitedFragmentNames[fragName] = true;
+          var fragment = exeContext.fragments[fragName];
+
+          if (!fragment || !doesFragmentConditionMatch(exeContext, fragment, runtimeType)) {
+            continue;
+          }
+
+          collectFields(exeContext, runtimeType, fragment.selectionSet, fields, visitedFragmentNames);
+          break;
         }
-
-        visitedFragmentNames[fragName] = true;
-        var fragment = exeContext.fragments[fragName];
-
-        if (!fragment || !doesFragmentConditionMatch(exeContext, fragment, runtimeType)) {
-          continue;
-        }
-
-        collectFields(exeContext, runtimeType, fragment.selectionSet, fields, visitedFragmentNames);
-        break;
     }
   }
 

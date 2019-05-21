@@ -22,38 +22,41 @@ export function getOperationRootType(
   schema: GraphQLSchema,
   operation: OperationDefinitionNode | OperationTypeDefinitionNode,
 ): GraphQLObjectType {
-  switch (operation.operation) {
-    case 'query':
-      const queryType = schema.getQueryType();
-      if (!queryType) {
-        throw new GraphQLError(
-          'Schema does not define the required query root type.',
-          operation,
-        );
-      }
-      return queryType;
-    case 'mutation':
-      const mutationType = schema.getMutationType();
-      if (!mutationType) {
-        throw new GraphQLError(
-          'Schema is not configured for mutations.',
-          operation,
-        );
-      }
-      return mutationType;
-    case 'subscription':
-      const subscriptionType = schema.getSubscriptionType();
-      if (!subscriptionType) {
-        throw new GraphQLError(
-          'Schema is not configured for subscriptions.',
-          operation,
-        );
-      }
-      return subscriptionType;
-    default:
+  if (operation.operation === 'query') {
+    const queryType = schema.getQueryType();
+    if (!queryType) {
       throw new GraphQLError(
-        'Can only have query, mutation and subscription operations.',
+        'Schema does not define the required query root type.',
         operation,
       );
+    }
+    return queryType;
   }
+
+  if (operation.operation === 'mutation') {
+    const mutationType = schema.getMutationType();
+    if (!mutationType) {
+      throw new GraphQLError(
+        'Schema is not configured for mutations.',
+        operation,
+      );
+    }
+    return mutationType;
+  }
+
+  if (operation.operation === 'subscription') {
+    const subscriptionType = schema.getSubscriptionType();
+    if (!subscriptionType) {
+      throw new GraphQLError(
+        'Schema is not configured for subscriptions.',
+        operation,
+      );
+    }
+    return subscriptionType;
+  }
+
+  throw new GraphQLError(
+    'Can only have query, mutation and subscription operations.',
+    operation,
+  );
 }

@@ -520,16 +520,18 @@ function readString(source, start, line, col, prev) {
           break;
 
         case 117:
-          // u
-          var charCode = uniCharCode(body.charCodeAt(position + 1), body.charCodeAt(position + 2), body.charCodeAt(position + 3), body.charCodeAt(position + 4));
+          {
+            // uXXXX
+            var charCode = uniCharCode(body.charCodeAt(position + 1), body.charCodeAt(position + 2), body.charCodeAt(position + 3), body.charCodeAt(position + 4));
 
-          if (charCode < 0) {
-            throw syntaxError(source, position, 'Invalid character escape sequence: ' + "\\u".concat(body.slice(position + 1, position + 5), "."));
+            if (charCode < 0) {
+              throw syntaxError(source, position, 'Invalid character escape sequence: ' + "\\u".concat(body.slice(position + 1, position + 5), "."));
+            }
+
+            value += String.fromCharCode(charCode);
+            position += 4;
+            break;
           }
-
-          value += String.fromCharCode(charCode);
-          position += 4;
-          break;
 
         default:
           throw syntaxError(source, position, "Invalid character escape sequence: \\".concat(String.fromCharCode(code), "."));

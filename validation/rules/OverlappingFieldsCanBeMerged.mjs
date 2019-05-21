@@ -498,33 +498,37 @@ function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeA
 
     switch (selection.kind) {
       case Kind.FIELD:
-        var fieldName = selection.name.value;
-        var fieldDef = void 0;
+        {
+          var fieldName = selection.name.value;
+          var fieldDef = void 0;
 
-        if (isObjectType(parentType) || isInterfaceType(parentType)) {
-          fieldDef = parentType.getFields()[fieldName];
+          if (isObjectType(parentType) || isInterfaceType(parentType)) {
+            fieldDef = parentType.getFields()[fieldName];
+          }
+
+          var responseName = selection.alias ? selection.alias.value : fieldName;
+
+          if (!nodeAndDefs[responseName]) {
+            nodeAndDefs[responseName] = [];
+          }
+
+          nodeAndDefs[responseName].push([parentType, selection, fieldDef]);
+          break;
         }
-
-        var responseName = selection.alias ? selection.alias.value : fieldName;
-
-        if (!nodeAndDefs[responseName]) {
-          nodeAndDefs[responseName] = [];
-        }
-
-        nodeAndDefs[responseName].push([parentType, selection, fieldDef]);
-        break;
 
       case Kind.FRAGMENT_SPREAD:
         fragmentNames[selection.name.value] = true;
         break;
 
       case Kind.INLINE_FRAGMENT:
-        var typeCondition = selection.typeCondition;
-        var inlineFragmentType = typeCondition ? typeFromAST(context.getSchema(), typeCondition) : parentType;
+        {
+          var typeCondition = selection.typeCondition;
+          var inlineFragmentType = typeCondition ? typeFromAST(context.getSchema(), typeCondition) : parentType;
 
-        _collectFieldsAndFragmentNames(context, inlineFragmentType, selection.selectionSet, nodeAndDefs, fragmentNames);
+          _collectFieldsAndFragmentNames(context, inlineFragmentType, selection.selectionSet, nodeAndDefs, fragmentNames);
 
-        break;
+          break;
+        }
     }
   }
 } // Given a series of Conflicts which occurred between two sub-fields, generate

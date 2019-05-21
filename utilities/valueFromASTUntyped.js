@@ -69,8 +69,10 @@ function valueFromASTUntyped(valueNode, variables) {
       });
 
     case _kinds.Kind.VARIABLE:
-      var variableName = valueNode.name.value;
-      return variables && !(0, _isInvalid.default)(variables[variableName]) ? variables[variableName] : undefined;
+      {
+        var variableName = valueNode.name.value;
+        return variables && !(0, _isInvalid.default)(variables[variableName]) ? variables[variableName] : undefined;
+      }
   } // Not reachable. All possible value nodes have been considered.
 
   /* istanbul ignore next */

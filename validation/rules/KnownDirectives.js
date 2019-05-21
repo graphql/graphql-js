@@ -184,8 +184,10 @@ function getDirectiveLocationForASTPath(ancestors) {
         return _directiveLocation.DirectiveLocation.INPUT_OBJECT;
 
       case _kinds.Kind.INPUT_VALUE_DEFINITION:
-        var parentNode = ancestors[ancestors.length - 3];
-        return parentNode.kind === _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
+        {
+          var parentNode = ancestors[ancestors.length - 3];
+          return parentNode.kind === _kinds.Kind.INPUT_OBJECT_TYPE_DEFINITION ? _directiveLocation.DirectiveLocation.INPUT_FIELD_DEFINITION : _directiveLocation.DirectiveLocation.ARGUMENT_DEFINITION;
+        }
     }
   }
 }

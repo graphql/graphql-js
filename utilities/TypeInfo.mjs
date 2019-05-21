@@ -108,128 +108,146 @@ function () {
 
     switch (node.kind) {
       case Kind.SELECTION_SET:
-        var namedType = getNamedType(this.getType());
+        {
+          var namedType = getNamedType(this.getType());
 
-        this._parentTypeStack.push(isCompositeType(namedType) ? namedType : undefined);
+          this._parentTypeStack.push(isCompositeType(namedType) ? namedType : undefined);
 
-        break;
-
-      case Kind.FIELD:
-        var parentType = this.getParentType();
-        var fieldDef;
-        var fieldType;
-
-        if (parentType) {
-          fieldDef = this._getFieldDef(schema, parentType, node);
-
-          if (fieldDef) {
-            fieldType = fieldDef.type;
-          }
+          break;
         }
 
-        this._fieldDefStack.push(fieldDef);
+      case Kind.FIELD:
+        {
+          var parentType = this.getParentType();
+          var fieldDef;
+          var fieldType;
 
-        this._typeStack.push(isOutputType(fieldType) ? fieldType : undefined);
+          if (parentType) {
+            fieldDef = this._getFieldDef(schema, parentType, node);
 
-        break;
+            if (fieldDef) {
+              fieldType = fieldDef.type;
+            }
+          }
+
+          this._fieldDefStack.push(fieldDef);
+
+          this._typeStack.push(isOutputType(fieldType) ? fieldType : undefined);
+
+          break;
+        }
 
       case Kind.DIRECTIVE:
         this._directive = schema.getDirective(node.name.value);
         break;
 
       case Kind.OPERATION_DEFINITION:
-        var type;
+        {
+          var type;
 
-        if (node.operation === 'query') {
-          type = schema.getQueryType();
-        } else if (node.operation === 'mutation') {
-          type = schema.getMutationType();
-        } else if (node.operation === 'subscription') {
-          type = schema.getSubscriptionType();
+          if (node.operation === 'query') {
+            type = schema.getQueryType();
+          } else if (node.operation === 'mutation') {
+            type = schema.getMutationType();
+          } else if (node.operation === 'subscription') {
+            type = schema.getSubscriptionType();
+          }
+
+          this._typeStack.push(isObjectType(type) ? type : undefined);
+
+          break;
         }
-
-        this._typeStack.push(isObjectType(type) ? type : undefined);
-
-        break;
 
       case Kind.INLINE_FRAGMENT:
       case Kind.FRAGMENT_DEFINITION:
-        var typeConditionAST = node.typeCondition;
-        var outputType = typeConditionAST ? typeFromAST(schema, typeConditionAST) : getNamedType(this.getType());
+        {
+          var typeConditionAST = node.typeCondition;
+          var outputType = typeConditionAST ? typeFromAST(schema, typeConditionAST) : getNamedType(this.getType());
 
-        this._typeStack.push(isOutputType(outputType) ? outputType : undefined);
+          this._typeStack.push(isOutputType(outputType) ? outputType : undefined);
 
-        break;
+          break;
+        }
 
       case Kind.VARIABLE_DEFINITION:
-        var inputType = typeFromAST(schema, node.type);
+        {
+          var inputType = typeFromAST(schema, node.type);
 
-        this._inputTypeStack.push(isInputType(inputType) ? inputType : undefined);
+          this._inputTypeStack.push(isInputType(inputType) ? inputType : undefined);
 
-        break;
+          break;
+        }
 
       case Kind.ARGUMENT:
-        var argDef;
-        var argType;
-        var fieldOrDirective = this.getDirective() || this.getFieldDef();
+        {
+          var argDef;
+          var argType;
+          var fieldOrDirective = this.getDirective() || this.getFieldDef();
 
-        if (fieldOrDirective) {
-          argDef = find(fieldOrDirective.args, function (arg) {
-            return arg.name === node.name.value;
-          });
+          if (fieldOrDirective) {
+            argDef = find(fieldOrDirective.args, function (arg) {
+              return arg.name === node.name.value;
+            });
 
-          if (argDef) {
-            argType = argDef.type;
+            if (argDef) {
+              argType = argDef.type;
+            }
           }
+
+          this._argument = argDef;
+
+          this._defaultValueStack.push(argDef ? argDef.defaultValue : undefined);
+
+          this._inputTypeStack.push(isInputType(argType) ? argType : undefined);
+
+          break;
         }
-
-        this._argument = argDef;
-
-        this._defaultValueStack.push(argDef ? argDef.defaultValue : undefined);
-
-        this._inputTypeStack.push(isInputType(argType) ? argType : undefined);
-
-        break;
 
       case Kind.LIST:
-        var listType = getNullableType(this.getInputType());
-        var itemType = isListType(listType) ? listType.ofType : listType; // List positions never have a default value.
+        {
+          var listType = getNullableType(this.getInputType());
+          var itemType = isListType(listType) ? listType.ofType : listType; // List positions never have a default value.
 
-        this._defaultValueStack.push(undefined);
+          this._defaultValueStack.push(undefined);
 
-        this._inputTypeStack.push(isInputType(itemType) ? itemType : undefined);
+          this._inputTypeStack.push(isInputType(itemType) ? itemType : undefined);
 
-        break;
+          break;
+        }
 
       case Kind.OBJECT_FIELD:
-        var objectType = getNamedType(this.getInputType());
-        var inputFieldType;
-        var inputField;
+        {
+          var objectType = getNamedType(this.getInputType());
+          var inputFieldType;
+          var inputField;
 
-        if (isInputObjectType(objectType)) {
-          inputField = objectType.getFields()[node.name.value];
+          if (isInputObjectType(objectType)) {
+            inputField = objectType.getFields()[node.name.value];
 
-          if (inputField) {
-            inputFieldType = inputField.type;
+            if (inputField) {
+              inputFieldType = inputField.type;
+            }
           }
+
+          this._defaultValueStack.push(inputField ? inputField.defaultValue : undefined);
+
+          this._inputTypeStack.push(isInputType(inputFieldType) ? inputFieldType : undefined);
+
+          break;
         }
-
-        this._defaultValueStack.push(inputField ? inputField.defaultValue : undefined);
-
-        this._inputTypeStack.push(isInputType(inputFieldType) ? inputFieldType : undefined);
-
-        break;
 
       case Kind.ENUM:
-        var enumType = getNamedType(this.getInputType());
-        var enumValue;
+        {
+          var enumType = getNamedType(this.getInputType());
+          var enumValue;
 
-        if (isEnumType(enumType)) {
-          enumValue = enumType.getValue(node.value);
+          if (isEnumType(enumType)) {
+            enumValue = enumType.getValue(node.value);
+          }
+
+          this._enumValue = enumValue;
+          break;
         }
-
-        this._enumValue = enumValue;
-        break;
     }
   };
 
