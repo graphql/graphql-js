@@ -45,7 +45,7 @@ describe('findBreakingChanges', () => {
           startLine: 2,
           startColumn: 7,
           endLine: 4,
-          endColumn: 7,
+          endColumn: 8,
         },
       },
     ]);
@@ -685,7 +685,7 @@ describe('findBreakingChanges', () => {
           startLine: 42,
           startColumn: 7,
           endLine: 44,
-          endColumn: 7,
+          endColumn: 8,
         },
       },
       {
