@@ -9,14 +9,8 @@ var _printError = require("./printError");
 
 var _location = require("../language/location");
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function GraphQLError( // eslint-disable-line no-redeclare
 message, nodes, source, positions, path, originalError, extensions) {
   // Compute list of blame nodes.
@@ -62,7 +56,15 @@ message, nodes, source, positions, path, originalError, extensions) {
     }, []);
   }
 
-  var _extensions = extensions || originalError && originalError.extensions;
+  var _extensions = extensions;
+
+  if (_extensions == null && originalError != null) {
+    var originalExtensions = originalError.extensions;
+
+    if (originalExtensions != null && _typeof(originalExtensions) === 'object') {
+      _extensions = originalExtensions;
+    }
+  }
 
   Object.defineProperties(this, {
     message: {

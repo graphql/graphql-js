@@ -1,3 +1,5 @@
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -60,7 +62,15 @@ message, nodes, source, positions, path, originalError, extensions) {
     }, []);
   }
 
-  var _extensions = extensions || originalError && originalError.extensions;
+  var _extensions = extensions;
+
+  if (_extensions == null && originalError != null) {
+    var originalExtensions = originalError.extensions;
+
+    if (originalExtensions != null && _typeof(originalExtensions) === 'object') {
+      _extensions = originalExtensions;
+    }
+  }
 
   Object.defineProperties(this, {
     message: {

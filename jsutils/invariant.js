@@ -14,8 +14,10 @@ exports.default = invariant;
  * 
  */
 function invariant(condition, message) {
+  var booleanCondition = Boolean(condition);
   /* istanbul ignore else */
-  if (!condition) {
+
+  if (!booleanCondition) {
     throw new Error(message);
   }
 }

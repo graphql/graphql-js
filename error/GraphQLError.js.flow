@@ -138,7 +138,13 @@ export function GraphQLError( // eslint-disable-line no-redeclare
     }, []);
   }
 
-  const _extensions = extensions || (originalError && originalError.extensions);
+  let _extensions = extensions;
+  if (_extensions == null && originalError != null) {
+    const originalExtensions = originalError.extensions;
+    if (originalExtensions != null && typeof originalExtensions === 'object') {
+      _extensions = originalExtensions;
+    }
+  }
 
   Object.defineProperties(this, {
     message: {
