@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.graphql = graphql;
 exports.graphqlSync = graphqlSync;
 
+var _isPromise = _interopRequireDefault(require("./jsutils/isPromise"));
+
 var _validate = require("./type/validate");
 
 var _parser = require("./language/parser");
@@ -13,6 +15,8 @@ var _parser = require("./language/parser");
 var _validate2 = require("./validation/validate");
 
 var _execute = require("./execution/execute");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -45,7 +49,7 @@ function graphqlSync(argsOrSchema, source, rootValue, contextValue, variableValu
   // Extract arguments from object args if provided.
   var result = arguments.length === 1 ? graphqlImpl(argsOrSchema.schema, argsOrSchema.source, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.typeResolver) : graphqlImpl(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver); // Assert that the execution was synchronous.
 
-  if (result.then) {
+  if ((0, _isPromise.default)(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 

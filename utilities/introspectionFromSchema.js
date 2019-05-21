@@ -7,6 +7,8 @@ exports.introspectionFromSchema = introspectionFromSchema;
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
+var _isPromise = _interopRequireDefault(require("../jsutils/isPromise"));
+
 var _execute = require("../execution/execute");
 
 var _parser = require("../language/parser");
@@ -36,6 +38,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function introspectionFromSchema(schema, options) {
   var queryAST = (0, _parser.parse)((0, _introspectionQuery.getIntrospectionQuery)(options));
   var result = (0, _execute.execute)(schema, queryAST);
-  !(!result.then && !result.errors && result.data) ? (0, _invariant.default)(0) : void 0;
+  !(!(0, _isPromise.default)(result) && !result.errors && result.data) ? (0, _invariant.default)(0) : void 0;
   return result.data;
 }

@@ -6,6 +6,7 @@
  *
  * 
  */
+import isPromise from './jsutils/isPromise';
 import { validateSchema } from './type/validate';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
@@ -32,7 +33,7 @@ export function graphqlSync(argsOrSchema, source, rootValue, contextValue, varia
   // Extract arguments from object args if provided.
   var result = arguments.length === 1 ? graphqlImpl(argsOrSchema.schema, argsOrSchema.source, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.typeResolver) : graphqlImpl(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver); // Assert that the execution was synchronous.
 
-  if (result.then) {
+  if (isPromise(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 

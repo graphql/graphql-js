@@ -7,6 +7,7 @@
  * 
  */
 import invariant from '../jsutils/invariant';
+import isPromise from '../jsutils/isPromise';
 import { execute } from '../execution/execute';
 import { parse } from '../language/parser';
 import { getIntrospectionQuery } from './introspectionQuery';
@@ -23,6 +24,6 @@ import { getIntrospectionQuery } from './introspectionQuery';
 export function introspectionFromSchema(schema, options) {
   var queryAST = parse(getIntrospectionQuery(options));
   var result = execute(schema, queryAST);
-  !(!result.then && !result.errors && result.data) ? invariant(0) : void 0;
+  !(!isPromise(result) && !result.errors && result.data) ? invariant(0) : void 0;
   return result.data;
 }

@@ -7,6 +7,7 @@
  * @flow strict
  */
 
+import isPromise from './jsutils/isPromise';
 import { validateSchema } from './type/validate';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
@@ -175,7 +176,7 @@ export function graphqlSync(
         );
 
   // Assert that the execution was synchronous.
-  if (result.then) {
+  if (isPromise(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
