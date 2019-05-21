@@ -80,7 +80,7 @@ function fieldWithInputArg(inputArg) {
     type: GraphQLString,
     args: { input: inputArg },
     resolve(_, args) {
-      if (args.hasOwnProperty('input')) {
+      if ('input' in args) {
         return inspect(args.input);
       }
     },

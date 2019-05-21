@@ -1424,7 +1424,7 @@ function parseDirectiveLocations(lexer: Lexer<*>): Array<NameNode> {
 function parseDirectiveLocation(lexer: Lexer<*>): NameNode {
   const start = lexer.token;
   const name = parseName(lexer);
-  if (DirectiveLocation.hasOwnProperty(name.value)) {
+  if (DirectiveLocation[name.value] !== undefined) {
     return name;
   }
   throw unexpected(lexer, start);
