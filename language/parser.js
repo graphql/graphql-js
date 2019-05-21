@@ -1375,7 +1375,7 @@ function parseDirectiveLocation(lexer) {
   var start = lexer.token;
   var name = parseName(lexer);
 
-  if (_directiveLocation.DirectiveLocation.hasOwnProperty(name.value)) {
+  if (_directiveLocation.DirectiveLocation[name.value] !== undefined) {
     return name;
   }
 
