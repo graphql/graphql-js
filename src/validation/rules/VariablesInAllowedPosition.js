@@ -97,7 +97,7 @@ function allowedVariableUsage(
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =
-      varDefaultValue && varDefaultValue.kind !== Kind.NULL;
+      varDefaultValue != null && varDefaultValue.kind !== Kind.NULL;
     const hasLocationDefaultValue = locationDefaultValue !== undefined;
     if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {
       return false;
