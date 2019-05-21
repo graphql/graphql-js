@@ -676,10 +676,17 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'Int was removed.',
+        oldLoc: undefined,
       },
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'TypeThatGetsRemoved was removed.',
+        oldLoc: {
+          startLine: 42,
+          startColumn: 7,
+          endLine: 44,
+          endColumn: 7,
+        },
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
