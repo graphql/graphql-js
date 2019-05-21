@@ -247,7 +247,8 @@ function () {
     if (!possibleTypeMap[abstractType.name]) {
       var possibleTypes = this.getPossibleTypes(abstractType);
       possibleTypeMap[abstractType.name] = possibleTypes.reduce(function (map, type) {
-        return map[type.name] = true, map;
+        map[type.name] = true;
+        return map;
       }, Object.create(null));
     }
 

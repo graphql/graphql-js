@@ -33,6 +33,7 @@ exports.default = keyValMap;
  */
 function keyValMap(list, keyFn, valFn) {
   return list.reduce(function (map, item) {
-    return map[keyFn(item)] = valFn(item), map;
+    map[keyFn(item)] = valFn(item);
+    return map;
   }, Object.create(null));
 }

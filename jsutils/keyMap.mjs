@@ -32,6 +32,7 @@
  */
 export default function keyMap(list, keyFn) {
   return list.reduce(function (map, item) {
-    return map[keyFn(item)] = item, map;
+    map[keyFn(item)] = item;
+    return map;
   }, Object.create(null));
 }
