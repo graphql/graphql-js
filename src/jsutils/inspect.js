@@ -41,7 +41,7 @@ function formatObjectValue(value, previouslySeenValues) {
   if (value) {
     const customInspectFn = getCustomFn(value);
 
-    if (customInspectFn) {
+    if (customInspectFn !== undefined) {
       // $FlowFixMe(>=0.90.0)
       const customValue = customInspectFn.call(value);
 

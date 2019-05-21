@@ -13,7 +13,7 @@
 sketchy-null-bool=off
 sketchy-null-string=off
 sketchy-null-number=error
-sketchy-null-mixed=off
+sketchy-null-mixed=error
 sketchy-number=error
 untyped-type-import=error
 nonstrict-import=off
