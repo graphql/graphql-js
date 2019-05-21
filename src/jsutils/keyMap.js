@@ -36,8 +36,8 @@ export default function keyMap<T>(
   list: $ReadOnlyArray<T>,
   keyFn: (item: T) => string,
 ): ObjMap<T> {
-  return list.reduce(
-    (map, item) => ((map[keyFn(item)] = item), map),
-    Object.create(null),
-  );
+  return list.reduce((map, item) => {
+    map[keyFn(item)] = item;
+    return map;
+  }, Object.create(null));
 }

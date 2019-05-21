@@ -257,10 +257,10 @@ export class GraphQLSchema {
 
     if (!possibleTypeMap[abstractType.name]) {
       const possibleTypes = this.getPossibleTypes(abstractType);
-      possibleTypeMap[abstractType.name] = possibleTypes.reduce(
-        (map, type) => ((map[type.name] = true), map),
-        Object.create(null),
-      );
+      possibleTypeMap[abstractType.name] = possibleTypes.reduce((map, type) => {
+        map[type.name] = true;
+        return map;
+      }, Object.create(null));
     }
 
     return Boolean(possibleTypeMap[abstractType.name][possibleType.name]);
