@@ -759,7 +759,7 @@ function defineFieldMap<TSource, TContext>(
       `${config.name}.${fieldName} field config must be an object`,
     );
     invariant(
-      !fieldConfig.hasOwnProperty('isDeprecated'),
+      !('isDeprecated' in fieldConfig),
       `${config.name}.${fieldName} should provide "deprecationReason" ` +
         'instead of "isDeprecated".',
     );
@@ -1253,7 +1253,7 @@ function defineEnumValues(
         `representing an internal value but got: ${inspect(value)}.`,
     );
     invariant(
-      !value.hasOwnProperty('isDeprecated'),
+      !('isDeprecated' in value),
       `${type.name}.${valueName} should provide "deprecationReason" instead ` +
         'of "isDeprecated".',
     );
@@ -1263,7 +1263,7 @@ function defineEnumValues(
       isDeprecated: Boolean(value.deprecationReason),
       deprecationReason: value.deprecationReason,
       astNode: value.astNode,
-      value: value.hasOwnProperty('value') ? value.value : valueName,
+      value: 'value' in value ? value.value : valueName,
     };
   });
 }
@@ -1379,7 +1379,7 @@ function defineInputFieldMap(
   );
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     invariant(
-      !fieldConfig.hasOwnProperty('resolve'),
+      !('resolve' in fieldConfig),
       `${config.name}.${fieldName} field has a resolve property, but ` +
         'Input Types cannot define resolvers.',
     );
