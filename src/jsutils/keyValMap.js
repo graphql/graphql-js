@@ -31,8 +31,8 @@ export default function keyValMap<T, V>(
   keyFn: (item: T) => string,
   valFn: (item: T) => V,
 ): ObjMap<V> {
-  return list.reduce(
-    (map, item) => ((map[keyFn(item)] = valFn(item)), map),
-    Object.create(null),
-  );
+  return list.reduce((map, item) => {
+    map[keyFn(item)] = valFn(item);
+    return map;
+  }, Object.create(null));
 }
