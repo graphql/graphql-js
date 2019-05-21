@@ -102,7 +102,7 @@ function VariablesInAllowedPosition(context) {
 
 function allowedVariableUsage(schema, varType, varDefaultValue, locationType, locationDefaultValue) {
   if ((0, _definition.isNonNullType)(locationType) && !(0, _definition.isNonNullType)(varType)) {
-    var hasNonNullVariableDefaultValue = varDefaultValue && varDefaultValue.kind !== _kinds.Kind.NULL;
+    var hasNonNullVariableDefaultValue = varDefaultValue != null && varDefaultValue.kind !== _kinds.Kind.NULL;
     var hasLocationDefaultValue = locationDefaultValue !== undefined;
 
     if (!hasNonNullVariableDefaultValue && !hasLocationDefaultValue) {

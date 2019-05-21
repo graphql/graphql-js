@@ -80,7 +80,7 @@ function isBlank(str) {
 export function printBlockString(
   value: string,
   indentation?: string = '',
-  preferMultipleLines?: ?boolean = false,
+  preferMultipleLines?: boolean = false,
 ): string {
   const isSingleLine = value.indexOf('\n') === -1;
   const hasLeadingSpace = value[0] === ' ' || value[0] === '\t';

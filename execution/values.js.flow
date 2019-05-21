@@ -146,11 +146,12 @@ export function getArgumentValues(
     let isNull;
     if (argumentNode && argumentNode.value.kind === Kind.VARIABLE) {
       const variableName = argumentNode.value.name.value;
-      hasValue = variableValues && hasOwnProperty(variableValues, variableName);
-      isNull = variableValues && variableValues[variableName] === null;
+      hasValue =
+        variableValues != null && hasOwnProperty(variableValues, variableName);
+      isNull = variableValues != null && variableValues[variableName] === null;
     } else {
       hasValue = argumentNode != null;
-      isNull = argumentNode && argumentNode.value.kind === Kind.NULL;
+      isNull = argumentNode != null && argumentNode.value.kind === Kind.NULL;
     }
 
     if (!hasValue && argDef.defaultValue !== undefined) {
