@@ -414,9 +414,11 @@ describe('Execute: Handles basic execution tasks', () => {
         );
       },
       asyncRawReject() {
+        // eslint-disable-next-line prefer-promise-reject-errors
         return Promise.reject('Error getting asyncRawReject');
       },
       asyncEmptyReject() {
+        // eslint-disable-next-line prefer-promise-reject-errors
         return Promise.reject();
       },
       asyncError() {

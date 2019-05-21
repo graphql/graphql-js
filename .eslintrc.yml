@@ -163,7 +163,7 @@ rules:
   no-warning-comments: off # TODO
   no-with: error
   prefer-named-capture-group: off # ES2018
-  prefer-promise-reject-errors: off # TODO
+  prefer-promise-reject-errors: error
   radix: error
   require-await: off # TODO
   require-unicode-regexp: off
