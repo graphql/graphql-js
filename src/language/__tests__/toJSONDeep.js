@@ -12,7 +12,7 @@
  * on any nested value which defines it.
  */
 export default function toJSONDeep<T>(value: T): T {
-  if (!value || typeof value !== 'object') {
+  if (value == null || typeof value !== 'object') {
     return value;
   }
 
