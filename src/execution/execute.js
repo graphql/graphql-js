@@ -528,7 +528,7 @@ export function collectFields(
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
     switch (selection.kind) {
-      case Kind.FIELD:
+      case Kind.FIELD: {
         if (!shouldIncludeNode(exeContext, selection)) {
           continue;
         }
@@ -538,7 +538,8 @@ export function collectFields(
         }
         fields[name].push(selection);
         break;
-      case Kind.INLINE_FRAGMENT:
+      }
+      case Kind.INLINE_FRAGMENT: {
         if (
           !shouldIncludeNode(exeContext, selection) ||
           !doesFragmentConditionMatch(exeContext, selection, runtimeType)
@@ -553,7 +554,8 @@ export function collectFields(
           visitedFragmentNames,
         );
         break;
-      case Kind.FRAGMENT_SPREAD:
+      }
+      case Kind.FRAGMENT_SPREAD: {
         const fragName = selection.name.value;
         if (
           visitedFragmentNames[fragName] ||
@@ -577,6 +579,7 @@ export function collectFields(
           visitedFragmentNames,
         );
         break;
+      }
     }
   }
   return fields;

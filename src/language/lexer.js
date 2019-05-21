@@ -597,7 +597,8 @@ function readString(source, start, line, col, prev): Token {
         case 116:
           value += '\t';
           break;
-        case 117: // u
+        case 117: {
+          // uXXXX
           const charCode = uniCharCode(
             body.charCodeAt(position + 1),
             body.charCodeAt(position + 2),
@@ -615,6 +616,7 @@ function readString(source, start, line, col, prev): Token {
           value += String.fromCharCode(charCode);
           position += 4;
           break;
+        }
         default:
           throw syntaxError(
             source,
