@@ -112,8 +112,7 @@ rules:
   max-classes-per-file: off
   no-alert: error
   no-caller: error
-  # TODO: recommended rule but disable due to errors in existing code
-  # no-case-declarations: error
+  no-case-declarations: error
   no-div-regex: error
   no-else-return: error
   no-empty-function: off # TODO

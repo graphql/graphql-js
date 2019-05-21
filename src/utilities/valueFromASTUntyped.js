@@ -53,11 +53,12 @@ export function valueFromASTUntyped(
         field => field.name.value,
         field => valueFromASTUntyped(field.value, variables),
       );
-    case Kind.VARIABLE:
+    case Kind.VARIABLE: {
       const variableName = valueNode.name.value;
       return variables && !isInvalid(variables[variableName])
         ? variables[variableName]
         : undefined;
+    }
   }
 
   // Not reachable. All possible value nodes have been considered.

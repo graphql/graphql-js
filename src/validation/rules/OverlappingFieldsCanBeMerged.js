@@ -747,7 +747,7 @@ function _collectFieldsAndFragmentNames(
   for (let i = 0; i < selectionSet.selections.length; i++) {
     const selection = selectionSet.selections[i];
     switch (selection.kind) {
-      case Kind.FIELD:
+      case Kind.FIELD: {
         const fieldName = selection.name.value;
         let fieldDef;
         if (isObjectType(parentType) || isInterfaceType(parentType)) {
@@ -761,10 +761,11 @@ function _collectFieldsAndFragmentNames(
         }
         nodeAndDefs[responseName].push([parentType, selection, fieldDef]);
         break;
+      }
       case Kind.FRAGMENT_SPREAD:
         fragmentNames[selection.name.value] = true;
         break;
-      case Kind.INLINE_FRAGMENT:
+      case Kind.INLINE_FRAGMENT: {
         const typeCondition = selection.typeCondition;
         const inlineFragmentType = typeCondition
           ? typeFromAST(context.getSchema(), typeCondition)
@@ -777,6 +778,7 @@ function _collectFieldsAndFragmentNames(
           fragmentNames,
         );
         break;
+      }
     }
   }
 }
