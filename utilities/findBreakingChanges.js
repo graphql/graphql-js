@@ -5,22 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.findBreakingChanges = findBreakingChanges;
 exports.findDangerousChanges = findDangerousChanges;
-exports.findRemovedTypes = findRemovedTypes;
-exports.findTypesThatChangedKind = findTypesThatChangedKind;
-exports.findArgChanges = findArgChanges;
-exports.findFieldsThatChangedTypeOnObjectOrInterfaceTypes = findFieldsThatChangedTypeOnObjectOrInterfaceTypes;
-exports.findFieldsThatChangedTypeOnInputObjectTypes = findFieldsThatChangedTypeOnInputObjectTypes;
-exports.findTypesRemovedFromUnions = findTypesRemovedFromUnions;
-exports.findTypesAddedToUnions = findTypesAddedToUnions;
-exports.findValuesRemovedFromEnums = findValuesRemovedFromEnums;
-exports.findValuesAddedToEnums = findValuesAddedToEnums;
-exports.findInterfacesRemovedFromObjectTypes = findInterfacesRemovedFromObjectTypes;
-exports.findInterfacesAddedToObjectTypes = findInterfacesAddedToObjectTypes;
-exports.findRemovedDirectives = findRemovedDirectives;
-exports.findRemovedDirectiveArgs = findRemovedDirectiveArgs;
-exports.findAddedNonNullDirectiveArgs = findAddedNonNullDirectiveArgs;
-exports.findRemovedLocationsForDirective = findRemovedLocationsForDirective;
-exports.findRemovedDirectiveLocations = findRemovedDirectiveLocations;
 exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 
 var _find = _interopRequireDefault(require("../polyfills/find"));

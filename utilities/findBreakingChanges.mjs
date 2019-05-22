@@ -55,7 +55,7 @@ export function findDangerousChanges(oldSchema, newSchema) {
  * changes in the newSchema related to removing an entire type.
  */
 
-export function findRemovedTypes(oldSchema, newSchema) {
+function findRemovedTypes(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
@@ -78,7 +78,8 @@ export function findRemovedTypes(oldSchema, newSchema) {
  * changes in the newSchema related to changing the type of a type.
  */
 
-export function findTypesThatChangedKind(oldSchema, newSchema) {
+
+function findTypesThatChangedKind(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
@@ -110,7 +111,8 @@ export function findTypesThatChangedKind(oldSchema, newSchema) {
  * argument's default value).
  */
 
-export function findArgChanges(oldSchema, newSchema) {
+
+function findArgChanges(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
@@ -271,7 +273,7 @@ function typeKindName(type) {
   throw new TypeError('Unknown type ' + type.constructor.name);
 }
 
-export function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema) {
+function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
@@ -316,7 +318,8 @@ export function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, new
 
   return breakingChanges;
 }
-export function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
+
+function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
@@ -427,7 +430,7 @@ function isChangeSafeForInputObjectFieldOrFieldArg(oldType, newType) {
  */
 
 
-export function findTypesRemovedFromUnions(oldSchema, newSchema) {
+function findTypesRemovedFromUnions(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var typesRemovedFromUnion = [];
@@ -504,7 +507,8 @@ export function findTypesRemovedFromUnions(oldSchema, newSchema) {
  * changes in the newSchema related to adding types to a union type.
  */
 
-export function findTypesAddedToUnions(oldSchema, newSchema) {
+
+function findTypesAddedToUnions(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var typesAddedToUnion = [];
@@ -581,7 +585,8 @@ export function findTypesAddedToUnions(oldSchema, newSchema) {
  * changes in the newSchema related to removing values from an enum type.
  */
 
-export function findValuesRemovedFromEnums(oldSchema, newSchema) {
+
+function findValuesRemovedFromEnums(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var valuesRemovedFromEnums = [];
@@ -658,7 +663,8 @@ export function findValuesRemovedFromEnums(oldSchema, newSchema) {
  * changes in the newSchema related to adding values to an enum type.
  */
 
-export function findValuesAddedToEnums(oldSchema, newSchema) {
+
+function findValuesAddedToEnums(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var valuesAddedToEnums = [];
@@ -730,7 +736,8 @@ export function findValuesAddedToEnums(oldSchema, newSchema) {
 
   return valuesAddedToEnums;
 }
-export function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
+
+function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var breakingChanges = [];
@@ -785,7 +792,8 @@ export function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
 
   return breakingChanges;
 }
-export function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
+
+function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
   var interfacesAddedToObjectTypes = [];
@@ -840,7 +848,8 @@ export function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
 
   return interfacesAddedToObjectTypes;
 }
-export function findRemovedDirectives(oldSchema, newSchema) {
+
+function findRemovedDirectives(oldSchema, newSchema) {
   var removedDirectives = [];
   var newSchemaDirectiveMap = getDirectiveMapForSchema(newSchema);
   var _iteratorNormalCompletion13 = true;
@@ -909,7 +918,7 @@ function findRemovedArgsForDirective(oldDirective, newDirective) {
   return removedArgs;
 }
 
-export function findRemovedDirectiveArgs(oldSchema, newSchema) {
+function findRemovedDirectiveArgs(oldSchema, newSchema) {
   var removedDirectiveArgs = [];
   var oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
   var _iteratorNormalCompletion15 = true;
@@ -1003,7 +1012,7 @@ function findAddedArgsForDirective(oldDirective, newDirective) {
   return addedArgs;
 }
 
-export function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
+function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
   var addedNonNullableArgs = [];
   var oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
   var _iteratorNormalCompletion18 = true;
@@ -1066,7 +1075,8 @@ export function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
 
   return addedNonNullableArgs;
 }
-export function findRemovedLocationsForDirective(oldDirective, newDirective) {
+
+function findRemovedLocationsForDirective(oldDirective, newDirective) {
   var removedLocations = [];
   var newLocationSet = new Set(newDirective.locations);
   var _iteratorNormalCompletion20 = true;
@@ -1098,7 +1108,8 @@ export function findRemovedLocationsForDirective(oldDirective, newDirective) {
 
   return removedLocations;
 }
-export function findRemovedDirectiveLocations(oldSchema, newSchema) {
+
+function findRemovedDirectiveLocations(oldSchema, newSchema) {
   var removedLocations = [];
   var oldSchemaDirectiveMap = getDirectiveMapForSchema(oldSchema);
   var _iteratorNormalCompletion21 = true;
