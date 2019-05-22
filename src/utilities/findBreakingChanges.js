@@ -8,6 +8,7 @@
  */
 
 import find from '../polyfills/find';
+import inspect from '../jsutils/inspect';
 import {
   type GraphQLNamedType,
   type GraphQLFieldMap,
@@ -292,7 +293,10 @@ function typeKindName(type: GraphQLNamedType): string {
   if (isInputObjectType(type)) {
     return 'an Input type';
   }
-  throw new TypeError('Unknown type ' + type.constructor.name);
+
+  // Not reachable. All possible named types have been considered.
+  /* istanbul ignore next */
+  throw new TypeError(`Unexpected type: ${inspect((type: empty))}.`);
 }
 
 function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
