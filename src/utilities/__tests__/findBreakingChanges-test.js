@@ -131,60 +131,61 @@ describe('findBreakingChanges', () => {
     `);
 
     const changes = findBreakingChanges(oldSchema, newSchema);
-    expect(changes).to.deep.equal([
-      {
-        type: BreakingChangeType.FIELD_REMOVED,
-        description: 'Type1.field2 was removed.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field3 changed type from String to Boolean.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field4 changed type from TypeA to TypeB.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field6 changed type from String to [String].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field7 changed type from [String] to String.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field9 changed type from Int! to Int.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field10 changed type from [Int]! to [Int].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field11 changed type from Int to [Int]!.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field13 changed type from [Int!] to [Int].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field14 changed type from [Int] to [[Int]].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field15 changed type from [[Int]] to [Int].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field16 changed type from Int! to [Int]!.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field18 changed type from [[Int!]!] to [[Int!]].',
-      },
-    ]);
+    expect(changes[0]).to.deep.include({
+      type: BreakingChangeType.FIELD_REMOVED,
+      description: 'Type1.field2 was removed.',
+    });
+    // $FlowFixMe
+    expect(changes[0].oldNode.name.value).to.equal('field2');
+    expect(changes[0]).not.to.have.property('newNode');
+    expect(changes[1]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field3 changed type from String to Boolean.',
+    });
+    expect(changes[2]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field4 changed type from TypeA to TypeB.',
+    });
+    expect(changes[3]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field6 changed type from String to [String].',
+    });
+    expect(changes[4]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field7 changed type from [String] to String.',
+    });
+    expect(changes[5]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field9 changed type from Int! to Int.',
+    });
+    expect(changes[6]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field10 changed type from [Int]! to [Int].',
+    });
+    expect(changes[7]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field11 changed type from Int to [Int]!.',
+    });
+    expect(changes[8]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field13 changed type from [Int!] to [Int].',
+    });
+    expect(changes[9]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field14 changed type from [Int] to [[Int]].',
+    });
+    expect(changes[10]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field15 changed type from [[Int]] to [Int].',
+    });
+    expect(changes[11]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field16 changed type from Int! to [Int]!.',
+    });
+    expect(changes[12]).to.deep.include({
+      type: BreakingChangeType.FIELD_CHANGED_KIND,
+      description: 'Type1.field18 changed type from [[Int!]!] to [[Int!]].',
+    });
   });
 
   it('should detect if fields on input types changed kind or were removed', () => {
