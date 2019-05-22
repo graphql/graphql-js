@@ -36,15 +36,17 @@ if (require.main === module) {
   }
 }
 
+function babelBuild(srcPath, envName) {
+  return babel.transformFileSync(srcPath, { envName }).code + '\n';
+}
+
 function buildJSFile(filepath) {
   const srcPath = path.join('./src', filepath);
   const destPath = path.join('./dist', filepath);
-  const cjs = babel.transformFileSync(srcPath, { envName: 'cjs' });
-  const mjs = babel.transformFileSync(srcPath, { envName: 'mjs' });
 
   copyFile(srcPath, destPath + '.flow');
-  writeFile(destPath, cjs.code);
-  writeFile(destPath.replace(/\.js$/, '.mjs'), mjs.code);
+  writeFile(destPath, babelBuild(srcPath, 'cjs'));
+  writeFile(destPath.replace(/\.js$/, '.mjs'), babelBuild(srcPath, 'mjs'));
 }
 
 function buildPackageJSON() {
