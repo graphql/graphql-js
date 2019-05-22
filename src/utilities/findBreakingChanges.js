@@ -201,6 +201,8 @@ function findTypeChanges(
         description:
           `${oldType.name} changed from ` +
           `${typeKindName(oldType)} to ${typeKindName(newType)}.`,
+        oldNode: oldType.astNode ? oldType.astNode : undefined,
+        newNode: newType.astNode ? newType.astNode : undefined,
       });
     }
   }
