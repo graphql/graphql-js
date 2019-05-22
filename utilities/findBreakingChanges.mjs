@@ -7,6 +7,7 @@
  * 
  */
 import find from '../polyfills/find';
+import inspect from '../jsutils/inspect';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from '../type/definition';
 import keyMap from '../jsutils/keyMap';
 export var BreakingChangeType = {
@@ -268,9 +269,12 @@ function typeKindName(type) {
 
   if (isInputObjectType(type)) {
     return 'an Input type';
-  }
+  } // Not reachable. All possible named types have been considered.
 
-  throw new TypeError('Unknown type ' + type.constructor.name);
+  /* istanbul ignore next */
+
+
+  throw new TypeError("Unexpected type: ".concat(inspect(type), "."));
 }
 
 function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema) {

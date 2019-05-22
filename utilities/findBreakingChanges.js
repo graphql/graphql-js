@@ -9,6 +9,8 @@ exports.DangerousChangeType = exports.BreakingChangeType = void 0;
 
 var _find = _interopRequireDefault(require("../polyfills/find"));
 
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
 var _definition = require("../type/definition");
 
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
@@ -286,9 +288,12 @@ function typeKindName(type) {
 
   if ((0, _definition.isInputObjectType)(type)) {
     return 'an Input type';
-  }
+  } // Not reachable. All possible named types have been considered.
 
-  throw new TypeError('Unknown type ' + type.constructor.name);
+  /* istanbul ignore next */
+
+
+  throw new TypeError("Unexpected type: ".concat((0, _inspect.default)(type), "."));
 }
 
 function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema) {
