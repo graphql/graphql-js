@@ -30,19 +30,12 @@ import {
 describe('findBreakingChanges', () => {
   it('should detect if a type was removed or not', () => {
     const oldSchema = buildSchema(`
-      type Type1 {
-        field1: String
-      }
-
-      type Type2 {
-        field1: String
-      }
+      type Type1
+      type Type2
     `);
 
     const newSchema = buildSchema(`
-      type Type2 {
-        field1: String
-      }
+      type Type2
     `);
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
@@ -55,17 +48,11 @@ describe('findBreakingChanges', () => {
 
   it('should detect if a type changed its type', () => {
     const oldSchema = buildSchema(`
-      interface Type1 {
-        field1: String
-      }
+      interface Type1
     `);
 
     const newSchema = buildSchema(`
-      type ObjectType {
-        field1: String
-      }
-
-      union Type1 = ObjectType
+      union Type1
     `);
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
@@ -77,9 +64,8 @@ describe('findBreakingChanges', () => {
 
   it('should detect if a field on a type was deleted or changed type', () => {
     const oldSchema = buildSchema(`
-      type TypeA {
-        field1: String
-      }
+      type TypeA
+      type TypeB
 
       interface Type1 {
         field1: TypeA
@@ -103,13 +89,8 @@ describe('findBreakingChanges', () => {
     `);
 
     const newSchema = buildSchema(`
-      type TypeA {
-        field1: String
-      }
-
-      type TypeB {
-        field1: String
-      }
+      type TypeA
+      type TypeB
 
       interface Type1 {
         field1: TypeA
@@ -305,32 +286,16 @@ describe('findBreakingChanges', () => {
 
   it('should detect if a type was removed from a union type', () => {
     const oldSchema = buildSchema(`
-      type Type1 {
-        field1: String
-      }
-
-      type Type2 {
-        field1: String
-      }
-
-      type Type3 {
-        field1: String
-      }
+      type Type1
+      type Type2
+      type Type3
 
       union UnionType1 = Type1 | Type2
     `);
     const newSchema = buildSchema(`
-      type Type1 {
-        field1: String
-      }
-
-      type Type2 {
-        field1: String
-      }
-
-      type Type3 {
-        field1: String
-      }
+      type Type1
+      type Type2
+      type Type3
 
       union UnionType1 = Type1 | Type3
     `);
@@ -582,23 +547,15 @@ describe('findBreakingChanges', () => {
 
   it('should detect interfaces removed from types', () => {
     const oldSchema = buildSchema(`
-      interface Interface1 {
-        field1: String
-      }
+      interface Interface1
 
-      type Type1 implements Interface1 {
-        field1: String
-      }
+      type Type1 implements Interface1
     `);
 
     const newSchema = buildSchema(`
-      interface Interface1 {
-        field1: String
-      }
+      interface Interface1
 
-      type Type1 {
-        field1: String
-      }
+      type Type1
     `);
 
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
@@ -629,31 +586,16 @@ describe('findBreakingChanges', () => {
         VALUE2
       }
 
-      interface Interface1 {
-        field1: String
-      }
+      interface Interface1
+      type TypeThatLooseInterface1 implements Interface1
 
-      type TypeThatGainsInterface1 implements Interface1 {
-        field1: String
-      }
-
-      type TypeInUnion1 {
-        field1: String
-      }
-
-      type TypeInUnion2 {
-        field1: String
-      }
-
+      type TypeInUnion1
+      type TypeInUnion2
       union UnionTypeThatLosesAType = TypeInUnion1 | TypeInUnion2
 
-      type TypeThatChangesType {
-        field1: String
-      }
+      type TypeThatChangesType
 
-      type TypeThatGetsRemoved {
-        field1: String
-      }
+      type TypeThatGetsRemoved
 
       interface TypeThatHasBreakingFieldChanges {
         field1: String
@@ -677,23 +619,14 @@ describe('findBreakingChanges', () => {
         VALUE2
       }
 
-      interface Interface1 {
-        field1: String
-      }
+      interface Interface1
+      type TypeThatLooseInterface1
 
-      type TypeInUnion1 {
-        field1: String
-      }
-
+      type TypeInUnion1
+      type TypeInUnion2
       union UnionTypeThatLosesAType = TypeInUnion1
 
-      interface TypeThatChangesType {
-        field1: String
-      }
-
-      type TypeThatGainsInterface1 {
-        field1: String
-      }
+      interface TypeThatChangesType
 
       interface TypeThatHasBreakingFieldChanges {
         field2: Boolean
@@ -704,10 +637,6 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'Int was removed.',
-      },
-      {
-        type: BreakingChangeType.TYPE_REMOVED,
-        description: 'TypeInUnion2 was removed.',
       },
       {
         type: BreakingChangeType.TYPE_REMOVED,
@@ -745,7 +674,7 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
         description:
-          'TypeThatGainsInterface1 no longer implements interface Interface1.',
+          'TypeThatLooseInterface1 no longer implements interface Interface1.',
       },
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
@@ -905,19 +834,15 @@ describe('findDangerousChanges', () => {
 
   it('should detect interfaces added to types', () => {
     const oldSchema = buildSchema(`
-      type Type1 {
-        field1: String
-      }
+      interface Interface1
+
+      type Type1
     `);
 
     const newSchema = buildSchema(`
-      interface Interface1 {
-        field1: String
-      }
+      interface Interface1
 
-      type Type1 implements Interface1 {
-        field1: String
-      }
+      type Type1 implements Interface1
     `);
 
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
@@ -930,21 +855,15 @@ describe('findDangerousChanges', () => {
 
   it('should detect if a type was added to a union type', () => {
     const oldSchema = buildSchema(`
-      type Type1 {
-        field1: String
-      }
+      type Type1
+      type Type2
 
       union UnionType1 = Type1
     `);
 
     const newSchema = buildSchema(`
-      type Type1 {
-        field1: String
-      }
-
-      type Type2 {
-        field1: String
-      }
+      type Type1
+      type Type2
 
       union UnionType1 = Type1 | Type2
     `);
@@ -988,17 +907,13 @@ describe('findDangerousChanges', () => {
       }
 
       type Type1 {
-        field1(name: String = "test"): String
+        field1(argThatChangesDefaultValue: String = "test"): String
       }
 
-      type TypeThatGainsInterface1 {
-        field1: String
-      }
+      interface Interface1
+      type TypeThatGainsInterface1
 
-      type TypeInUnion1 {
-        field1: String
-      }
-
+      type TypeInUnion1
       union UnionTypeThatGainsAType = TypeInUnion1
     `);
 
@@ -1009,32 +924,22 @@ describe('findDangerousChanges', () => {
         VALUE2
       }
 
-      interface Interface1 {
-        field1: String
-      }
-
-      type TypeThatGainsInterface1 implements Interface1 {
-        field1: String
-      }
-
       type Type1 {
-        field1(name: String = "Test"): String
+        field1(argThatChangesDefaultValue: String = "Test"): String
       }
 
-      type TypeInUnion1 {
-        field1: String
-      }
+      interface Interface1
+      type TypeThatGainsInterface1 implements Interface1
 
-      type TypeInUnion2 {
-        field1: String
-      }
-
+      type TypeInUnion1
+      type TypeInUnion2
       union UnionTypeThatGainsAType = TypeInUnion1 | TypeInUnion2
     `);
 
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
-        description: 'Type1.field1 arg name has changed defaultValue',
+        description:
+          'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue',
         type: 'ARG_DEFAULT_VALUE_CHANGE',
       },
       {
