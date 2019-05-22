@@ -64,18 +64,11 @@ export const DangerousChangeType = Object.freeze({
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
 });
 
-export type ChangeLocation = {
-  startLine: number,
-  startColumn: number,
-  endLine: number,
-  endColumn: number,
-};
-
 export type BreakingChange = {
   type: $Keys<typeof BreakingChangeType>,
   description: string,
-  oldLoc?: ChangeLocation,
-  newLoc?: ChangeLocation,
+  oldLoc?: ASTNode,
+  newLoc?: ASTNode,
 };
 
 export type DangerousChange = {
