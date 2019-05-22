@@ -56,18 +56,10 @@ describe('findBreakingChanges', () => {
       type Type2 {
         field1: String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
       type Type2 {
-        field1: String
-      }
-
-      type Query {
         field1: String
       }
     `);
@@ -85,10 +77,6 @@ describe('findBreakingChanges', () => {
       interface Type1 {
         field1: String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -97,10 +85,6 @@ describe('findBreakingChanges', () => {
       }
 
       union Type1 = ObjectType
-
-      type Query {
-        field1: String
-      }
     `);
     expect(findTypesThatChangedKind(oldSchema, newSchema)).to.deep.equal([
       {
@@ -135,10 +119,6 @@ describe('findBreakingChanges', () => {
         field17: [Int]
         field18: [[Int!]!]
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -168,10 +148,6 @@ describe('findBreakingChanges', () => {
         field16: [Int]!
         field17: [Int]!
         field18: [[Int!]]
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -254,10 +230,6 @@ describe('findBreakingChanges', () => {
         field14: [[Int]!]
         field15: [[Int]!]
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -276,10 +248,6 @@ describe('findBreakingChanges', () => {
         field13: [Int]!
         field14: [[Int]]
         field15: [[Int!]!]
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -341,10 +309,6 @@ describe('findBreakingChanges', () => {
       input InputType1 {
         field1: String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -353,10 +317,6 @@ describe('findBreakingChanges', () => {
         requiredField: Int!
         optionalField1: Boolean
         optionalField2: Boolean! = false
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -384,10 +344,6 @@ describe('findBreakingChanges', () => {
       }
 
       union UnionType1 = Type1 | Type2
-
-      type Query {
-        field1: String
-      }
     `);
     const newSchema = buildSchema(`
       type Type1 {
@@ -399,10 +355,6 @@ describe('findBreakingChanges', () => {
       }
 
       union UnionType1 = Type1 | Type3
-
-      type Query {
-        field1: String
-      }
     `);
 
     expect(findTypesRemovedFromUnions(oldSchema, newSchema)).to.deep.equal([
@@ -420,10 +372,6 @@ describe('findBreakingChanges', () => {
         VALUE1
         VALUE2
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -431,10 +379,6 @@ describe('findBreakingChanges', () => {
         VALUE0
         VALUE2
         VALUE3
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -459,10 +403,6 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1(name: String): String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -471,10 +411,6 @@ describe('findBreakingChanges', () => {
       }
 
       type Type1 {
-        field1: String
-      }
-
-      type Query {
         field1: String
       }
     `);
@@ -517,10 +453,6 @@ describe('findBreakingChanges', () => {
           arg15: [[Int]!]
         ): String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -542,10 +474,6 @@ describe('findBreakingChanges', () => {
           arg14: [[Int]]
           arg15: [[Int!]!]
          ): String
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -619,10 +547,6 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1(arg1: String): String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -633,10 +557,6 @@ describe('findBreakingChanges', () => {
           newOptionalArg1: Int
           newOptionalArg2: Int! = 0
         ): String
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -658,10 +578,6 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1(arg1: Int!, arg2: InputType1): Int
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -671,10 +587,6 @@ describe('findBreakingChanges', () => {
 
       type Type1 {
         field1(arg1: Int!, arg2: InputType1): Int
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -687,19 +599,11 @@ describe('findBreakingChanges', () => {
       type Type1 {
         field1(name: String!): String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
       type Type1 {
         field1(name: String): String
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -716,18 +620,10 @@ describe('findBreakingChanges', () => {
       type Type1 implements Interface1 {
         field1: String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
       type Type1 {
-        field1: String
-      }
-
-      type Query {
         field1: String
       }
     `);
@@ -791,10 +687,6 @@ describe('findBreakingChanges', () => {
         field1: String
         field2: String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -833,10 +725,6 @@ describe('findBreakingChanges', () => {
 
       interface TypeThatHasBreakingFieldChanges {
         field2: Boolean
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -1021,19 +909,11 @@ describe('findDangerousChanges', () => {
         type Type1 {
           field1(name: String = "test"): String
         }
-
-        type Query {
-          field1: String
-        }
       `);
 
       const newSchema = buildSchema(`
         type Type1 {
           field1(name: String = "Test"): String
-        }
-
-        type Query {
-          field1: String
         }
       `);
 
@@ -1053,10 +933,6 @@ describe('findDangerousChanges', () => {
         VALUE0
         VALUE1
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -1064,10 +940,6 @@ describe('findDangerousChanges', () => {
         VALUE0
         VALUE1
         VALUE2
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -1084,10 +956,6 @@ describe('findDangerousChanges', () => {
       type Type1 {
         field1: String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -1096,10 +964,6 @@ describe('findDangerousChanges', () => {
       }
 
       type Type1 implements Interface1 {
-        field1: String
-      }
-
-      type Query {
         field1: String
       }
     `);
@@ -1120,10 +984,6 @@ describe('findDangerousChanges', () => {
       }
 
       union UnionType1 = Type1
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -1136,10 +996,6 @@ describe('findDangerousChanges', () => {
       }
 
       union UnionType1 = Type1 | Type2
-
-      type Query {
-        field1: String
-      }
     `);
 
     expect(findTypesAddedToUnions(oldSchema, newSchema)).to.deep.equal([
@@ -1155,20 +1011,12 @@ describe('findDangerousChanges', () => {
       input InputType1 {
         field1: String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
       input InputType1 {
         field1: String
         field2: Int
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
@@ -1205,10 +1053,6 @@ describe('findDangerousChanges', () => {
       }
 
       union UnionTypeThatGainsAType = TypeInUnion1
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
@@ -1239,10 +1083,6 @@ describe('findDangerousChanges', () => {
       }
 
       union UnionTypeThatGainsAType = TypeInUnion1 | TypeInUnion2
-
-      type Query {
-        field1: String
-      }
     `);
 
     const changes = findDangerousChanges(oldSchema, newSchema);
@@ -1273,19 +1113,11 @@ describe('findDangerousChanges', () => {
       type Type1 {
         field1(arg1: String): String
       }
-
-      type Query {
-        field1: String
-      }
     `);
 
     const newSchema = buildSchema(`
       type Type1 {
         field1(arg1: String, arg2: String): String
-      }
-
-      type Query {
-        field1: String
       }
     `);
 
