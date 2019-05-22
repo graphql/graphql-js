@@ -412,40 +412,40 @@ function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
 }
 
 function isChangeSafeForObjectOrInterfaceField(oldType, newType) {
-  if ((0, _definition.isNamedType)(oldType)) {
-    return (// if they're both named types, see if their names are equivalent
-      (0, _definition.isNamedType)(newType) && oldType.name === newType.name || // moving from nullable to non-null of the same underlying type is safe
-      (0, _definition.isNonNullType)(newType) && isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType)
-    );
-  } else if ((0, _definition.isListType)(oldType)) {
+  if ((0, _definition.isListType)(oldType)) {
     return (// if they're both lists, make sure the underlying types are compatible
       (0, _definition.isListType)(newType) && isChangeSafeForObjectOrInterfaceField(oldType.ofType, newType.ofType) || // moving from nullable to non-null of the same underlying type is safe
       (0, _definition.isNonNullType)(newType) && isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType)
     );
-  } else if ((0, _definition.isNonNullType)(oldType)) {
+  }
+
+  if ((0, _definition.isNonNullType)(oldType)) {
     // if they're both non-null, make sure the underlying types are compatible
     return (0, _definition.isNonNullType)(newType) && isChangeSafeForObjectOrInterfaceField(oldType.ofType, newType.ofType);
   }
 
-  return false;
+  return (// if they're both named types, see if their names are equivalent
+    (0, _definition.isNamedType)(newType) && oldType.name === newType.name || // moving from nullable to non-null of the same underlying type is safe
+    (0, _definition.isNonNullType)(newType) && isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType)
+  );
 }
 
 function isChangeSafeForInputObjectFieldOrFieldArg(oldType, newType) {
-  if ((0, _definition.isNamedType)(oldType)) {
-    // if they're both named types, see if their names are equivalent
-    return (0, _definition.isNamedType)(newType) && oldType.name === newType.name;
-  } else if ((0, _definition.isListType)(oldType)) {
+  if ((0, _definition.isListType)(oldType)) {
     // if they're both lists, make sure the underlying types are compatible
     return (0, _definition.isListType)(newType) && isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType.ofType);
-  } else if ((0, _definition.isNonNullType)(oldType)) {
+  }
+
+  if ((0, _definition.isNonNullType)(oldType)) {
     return (// if they're both non-null, make sure the underlying types are
       // compatible
       (0, _definition.isNonNullType)(newType) && isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType.ofType) || // moving from non-null to nullable of the same underlying type is safe
       !(0, _definition.isNonNullType)(newType) && isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType)
     );
-  }
+  } // if they're both named types, see if their names are equivalent
 
-  return false;
+
+  return (0, _definition.isNamedType)(newType) && oldType.name === newType.name;
 }
 /**
  * Given two schemas, returns an Array containing descriptions of any breaking
