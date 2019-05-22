@@ -437,15 +437,7 @@ function isChangeSafeForObjectOrInterfaceField(
   oldType: GraphQLType,
   newType: GraphQLType,
 ): boolean {
-  if (isNamedType(oldType)) {
-    return (
-      // if they're both named types, see if their names are equivalent
-      (isNamedType(newType) && oldType.name === newType.name) ||
-      // moving from nullable to non-null of the same underlying type is safe
-      (isNonNullType(newType) &&
-        isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
-    );
-  } else if (isListType(oldType)) {
+  if (isListType(oldType)) {
     return (
       // if they're both lists, make sure the underlying types are compatible
       (isListType(newType) &&
@@ -457,30 +449,38 @@ function isChangeSafeForObjectOrInterfaceField(
       (isNonNullType(newType) &&
         isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
     );
-  } else if (isNonNullType(oldType)) {
+  }
+
+  if (isNonNullType(oldType)) {
     // if they're both non-null, make sure the underlying types are compatible
     return (
       isNonNullType(newType) &&
       isChangeSafeForObjectOrInterfaceField(oldType.ofType, newType.ofType)
     );
   }
-  return false;
+
+  return (
+    // if they're both named types, see if their names are equivalent
+    (isNamedType(newType) && oldType.name === newType.name) ||
+    // moving from nullable to non-null of the same underlying type is safe
+    (isNonNullType(newType) &&
+      isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
+  );
 }
 
 function isChangeSafeForInputObjectFieldOrFieldArg(
   oldType: GraphQLType,
   newType: GraphQLType,
 ): boolean {
-  if (isNamedType(oldType)) {
-    // if they're both named types, see if their names are equivalent
-    return isNamedType(newType) && oldType.name === newType.name;
-  } else if (isListType(oldType)) {
+  if (isListType(oldType)) {
     // if they're both lists, make sure the underlying types are compatible
     return (
       isListType(newType) &&
       isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType.ofType)
     );
-  } else if (isNonNullType(oldType)) {
+  }
+
+  if (isNonNullType(oldType)) {
     return (
       // if they're both non-null, make sure the underlying types are
       // compatible
@@ -494,7 +494,9 @@ function isChangeSafeForInputObjectFieldOrFieldArg(
         isChangeSafeForInputObjectFieldOrFieldArg(oldType.ofType, newType))
     );
   }
-  return false;
+
+  // if they're both named types, see if their names are equivalent
+  return isNamedType(newType) && oldType.name === newType.name;
 }
 
 /**
