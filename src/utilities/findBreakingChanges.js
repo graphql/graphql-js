@@ -67,8 +67,8 @@ export const DangerousChangeType = Object.freeze({
 export type BreakingChange = {
   type: $Keys<typeof BreakingChangeType>,
   description: string,
-  oldLoc?: ASTNode,
-  newLoc?: ASTNode,
+  oldNode?: ASTNode,
+  newNode?: ASTNode,
 };
 
 export type DangerousChange = {

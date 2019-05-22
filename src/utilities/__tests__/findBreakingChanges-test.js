@@ -37,18 +37,14 @@ describe('findBreakingChanges', () => {
     const newSchema = buildSchema(`
       type Type2
     `);
-    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
-      {
-        type: BreakingChangeType.TYPE_REMOVED,
-        description: 'Type1 was removed.',
-        oldLoc: {
-          startLine: 2,
-          startColumn: 7,
-          endLine: 4,
-          endColumn: 8,
-        },
-      },
-    ]);
+    expect(findBreakingChanges(oldSchema, newSchema)[0]).to.deep.include({
+      type: BreakingChangeType.TYPE_REMOVED,
+      description: 'Type1 was removed.',
+    });
+    // flow ensures that oldNode is of type ASTNode, checking its presence should be enough
+    expect(findBreakingChanges(oldSchema, newSchema)[0]).to.have.property(
+      'oldNode',
+    );
     expect(findBreakingChanges(oldSchema, oldSchema)).to.deep.equal([]);
   });
 
