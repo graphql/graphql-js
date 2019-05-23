@@ -41,10 +41,10 @@
     "iterall": "^1.2.2"
   },
   "devDependencies": {
-    "@babel/core": "7.4.4",
+    "@babel/core": "7.4.5",
     "@babel/plugin-transform-flow-strip-types": "7.4.4",
     "@babel/polyfill": "7.4.4",
-    "@babel/preset-env": "7.4.4",
+    "@babel/preset-env": "7.4.5",
     "@babel/register": "7.4.4",
     "babel-eslint": "10.0.1",
     "benchmark": "2.1.4",
