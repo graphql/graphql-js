@@ -260,6 +260,7 @@ function () {
   _proto.buildArg = function buildArg(value) {
     // Note: While this could make assertions to get the correctly typed
     // value, that would throw immediately while type system validation
+    // with validateSchema() will produce more actionable results.
     var type = this.getWrappedType(value.type);
     return {
       type: type,
@@ -272,6 +273,7 @@ function () {
   _proto.buildInputField = function buildInputField(value) {
     // Note: While this could make assertions to get the correctly typed
     // value, that would throw immediately while type system validation
+    // with validateSchema() will produce more actionable results.
     var type = this.getWrappedType(value.type);
     return {
       type: type,

@@ -284,6 +284,7 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
+  // must be compared to find a potential conflict.
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;

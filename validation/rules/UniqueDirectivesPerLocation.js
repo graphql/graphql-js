@@ -34,6 +34,7 @@ function UniqueDirectivesPerLocation(context) {
     // defines any directives.
     enter: function enter(node) {
       // Flow can't refine that node.directives will only contain directives,
+      // so we cast so the rest of the code is well typed.
       var directives = node.directives;
 
       if (directives) {

@@ -689,9 +689,7 @@ export var GraphQLEnumType
 =
 /*#__PURE__*/
 function () {
-  function GraphQLEnumType(config
-  /* <T> */
-  ) {
+  function GraphQLEnumType(config) {
     this.name = config.name;
     this.description = config.description;
     this.astNode = config.astNode;
@@ -716,9 +714,7 @@ function () {
     return this._nameLookup[name];
   };
 
-  _proto5.serialize = function serialize(value
-  /* T */
-  ) {
+  _proto5.serialize = function serialize(value) {
     var enumValue = this._valueLookup.get(value);
 
     if (enumValue) {
@@ -781,9 +777,7 @@ function () {
 defineToStringTag(GraphQLEnumType);
 defineToJSON(GraphQLEnumType);
 
-function defineEnumValues(type, valueMap
-/* <T> */
-) {
+function defineEnumValues(type, valueMap) {
   !isPlainObj(valueMap) ? invariant(0, "".concat(type.name, " values must be an object with value names as keys.")) : void 0;
   return objectEntries(valueMap).map(function (_ref2) {
     var valueName = _ref2[0],
