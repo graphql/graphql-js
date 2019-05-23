@@ -48,16 +48,31 @@ describe('findBreakingChanges', () => {
 
   it('should detect if a type changed its type', () => {
     const oldSchema = buildSchema(`
-      interface Type1
+      scalar TypeWasScalarBecomesEnum
+      interface TypeWasInterfaceBecomesUnion
+      type TypeWasObjectBecomesInputObject
     `);
 
     const newSchema = buildSchema(`
-      union Type1
+      enum TypeWasScalarBecomesEnum
+      union TypeWasInterfaceBecomesUnion
+      input TypeWasObjectBecomesInputObject
     `);
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
-        description: 'Type1 changed from an Interface type to a Union type.',
+        description:
+          'TypeWasScalarBecomesEnum changed from a Scalar type to an Enum type.',
+      },
+      {
+        type: BreakingChangeType.TYPE_CHANGED_KIND,
+        description:
+          'TypeWasInterfaceBecomesUnion changed from an Interface type to a Union type.',
+      },
+      {
+        type: BreakingChangeType.TYPE_CHANGED_KIND,
+        description:
+          'TypeWasObjectBecomesInputObject changed from an Object type to an Input type.',
       },
     ]);
   });
@@ -566,6 +581,24 @@ describe('findBreakingChanges', () => {
     ]);
   });
 
+  it('should ignore changes in order of interfaces', () => {
+    const oldSchema = buildSchema(`
+      interface FirstInterface
+      interface SecondInterface
+
+      type Type1 implements FirstInterface & SecondInterface
+    `);
+
+    const newSchema = buildSchema(`
+      interface FirstInterface
+      interface SecondInterface
+
+      type Type1 implements SecondInterface & FirstInterface
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
+  });
+
   it('should detect all breaking changes', () => {
     const oldSchema = buildSchema(`
       directive @DirectiveThatIsRemoved on FIELD_DEFINITION
@@ -834,20 +867,22 @@ describe('findDangerousChanges', () => {
 
   it('should detect interfaces added to types', () => {
     const oldSchema = buildSchema(`
-      interface Interface1
+      interface OldInterface
+      interface NewInterface
 
-      type Type1
+      type Type1 implements OldInterface
     `);
 
     const newSchema = buildSchema(`
-      interface Interface1
+      interface OldInterface
+      interface NewInterface
 
-      type Type1 implements Interface1
+      type Type1 implements OldInterface & NewInterface
     `);
 
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
-        description: 'Interface1 added to interfaces implemented by Type1.',
+        description: 'NewInterface added to interfaces implemented by Type1.',
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
       },
     ]);
