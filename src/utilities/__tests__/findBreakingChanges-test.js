@@ -142,50 +142,98 @@ describe('findBreakingChanges', () => {
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field3 changed type from String to Boolean.',
     });
+    // $FlowFixMe
+    expect(changes[1].oldNode.type.name.value).to.equal('String');
+    // $FlowFixMe
+    expect(changes[1].newNode.type.name.value).to.equal('Boolean');
     expect(changes[2]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field4 changed type from TypeA to TypeB.',
     });
+    // $FlowFixMe
+    expect(changes[2].oldNode.type.name.value).to.equal('TypeA');
+    // $FlowFixMe
+    expect(changes[2].newNode.type.name.value).to.equal('TypeB');
     expect(changes[3]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field6 changed type from String to [String].',
     });
+    // $FlowFixMe
+    expect(changes[3].oldNode.type.name.value).to.equal('String');
+    // $FlowFixMe
+    expect(changes[3].newNode.type.kind).to.equal('ListType');
     expect(changes[4]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field7 changed type from [String] to String.',
     });
+    // $FlowFixMe
+    expect(changes[4].oldNode.type.kind).to.equal('ListType');
+    // $FlowFixMe
+    expect(changes[4].newNode.type.name.value).to.equal('String');
     expect(changes[5]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field9 changed type from Int! to Int.',
     });
+    // $FlowFixMe
+    expect(changes[5].oldNode.type.kind).to.equal('NonNullType');
+    // $FlowFixMe
+    expect(changes[5].newNode.type.name.value).to.equal('Int');
     expect(changes[6]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field10 changed type from [Int]! to [Int].',
     });
+    // $FlowFixMe
+    expect(changes[6].oldNode.type.kind).to.equal('NonNullType');
+    // $FlowFixMe
+    expect(changes[6].newNode.type.kind).to.equal('ListType');
     expect(changes[7]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field11 changed type from Int to [Int]!.',
     });
+    // $FlowFixMe
+    expect(changes[7].oldNode.type.name.value).to.equal('Int');
+    // $FlowFixMe
+    expect(changes[7].newNode.type.kind).to.equal('NonNullType');
     expect(changes[8]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field13 changed type from [Int!] to [Int].',
     });
+    // $FlowFixMe
+    expect(changes[8].oldNode.type.type.kind).to.equal('NonNullType');
+    // $FlowFixMe
+    expect(changes[8].newNode.type.kind).to.equal('ListType');
     expect(changes[9]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field14 changed type from [Int] to [[Int]].',
     });
+    // $FlowFixMe
+    expect(changes[9].oldNode.type.type.name.value).to.equal('Int');
+    // $FlowFixMe
+    expect(changes[9].newNode.type.type.kind).to.equal('ListType');
     expect(changes[10]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field15 changed type from [[Int]] to [Int].',
     });
+    // $FlowFixMe
+    expect(changes[10].oldNode.type.type.kind).to.equal('ListType');
+    // $FlowFixMe
+    expect(changes[10].newNode.type.type.name.value).to.equal('Int');
     expect(changes[11]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field16 changed type from Int! to [Int]!.',
     });
+    // $FlowFixMe
+    expect(changes[11].oldNode.type.type.name.value).to.equal('Int');
+    // $FlowFixMe
+    expect(changes[11].newNode.type.type.kind).to.equal('ListType');
     expect(changes[12]).to.deep.include({
       type: BreakingChangeType.FIELD_CHANGED_KIND,
       description: 'Type1.field18 changed type from [[Int!]!] to [[Int!]].',
     });
+    // $FlowFixMe
+    expect(changes[12].oldNode.type.type.kind).to.equal('NonNullType');
+    // $FlowFixMe
+    expect(changes[12].newNode.type.type.kind).to.equal('ListType');
   });
 
   it('should detect if fields on input types changed kind or were removed', () => {
