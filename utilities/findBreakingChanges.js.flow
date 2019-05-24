@@ -206,7 +206,7 @@ function findArgChanges(
 
       for (const oldArgDef of oldTypeFields[fieldName].args) {
         const newArgs = newTypeFields[fieldName].args;
-        const newArgDef = find(newArgs, arg => arg.name === oldArgDef.name);
+        const newArgDef = findByName(newArgs, oldArgDef.name);
 
         // Arg not present
         if (!newArgDef) {
@@ -245,7 +245,7 @@ function findArgChanges(
       // Check if arg was added to the field
       for (const newArgDef of newTypeFields[fieldName].args) {
         const oldArgs = oldTypeFields[fieldName].args;
-        const oldArgDef = find(oldArgs, arg => arg.name === newArgDef.name);
+        const oldArgDef = findByName(oldArgs, newArgDef.name);
         if (!oldArgDef) {
           const argName = newArgDef.name;
           if (isRequiredArgument(newArgDef)) {
@@ -853,4 +853,8 @@ function getArgumentMapForDirective(
   directive: GraphQLDirective,
 ): ObjMap<GraphQLArgument> {
   return keyMap(directive.args, arg => arg.name);
+}
+
+function findByName(array, name) {
+  return find(array, item => item.name === name);
 }

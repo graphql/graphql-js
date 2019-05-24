@@ -143,12 +143,10 @@ function findArgChanges(oldSchema, newSchema) {
       var _iteratorError = undefined;
 
       try {
-        var _loop = function _loop() {
+        for (var _iterator = oldTypeFields[fieldName].args[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var oldArgDef = _step.value;
           var newArgs = newTypeFields[fieldName].args;
-          var newArgDef = find(newArgs, function (arg) {
-            return arg.name === oldArgDef.name;
-          }); // Arg not present
+          var newArgDef = findByName(newArgs, oldArgDef.name); // Arg not present
 
           if (!newArgDef) {
             breakingChanges.push({
@@ -170,10 +168,6 @@ function findArgChanges(oldSchema, newSchema) {
               });
             }
           }
-        };
-
-        for (var _iterator = oldTypeFields[fieldName].args[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          _loop();
         } // Check if arg was added to the field
 
       } catch (err) {
@@ -196,17 +190,16 @@ function findArgChanges(oldSchema, newSchema) {
       var _iteratorError2 = undefined;
 
       try {
-        var _loop2 = function _loop2() {
-          var newArgDef = _step2.value;
+        for (var _iterator2 = newTypeFields[fieldName].args[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var _newArgDef = _step2.value;
           var oldArgs = oldTypeFields[fieldName].args;
-          var oldArgDef = find(oldArgs, function (arg) {
-            return arg.name === newArgDef.name;
-          });
 
-          if (!oldArgDef) {
-            var argName = newArgDef.name;
+          var _oldArgDef = findByName(oldArgs, _newArgDef.name);
 
-            if (isRequiredArgument(newArgDef)) {
+          if (!_oldArgDef) {
+            var argName = _newArgDef.name;
+
+            if (isRequiredArgument(_newArgDef)) {
               breakingChanges.push({
                 type: BreakingChangeType.REQUIRED_ARG_ADDED,
                 description: "A required arg ".concat(argName, " on ") + "".concat(typeName, ".").concat(fieldName, " was added")
@@ -218,10 +211,6 @@ function findArgChanges(oldSchema, newSchema) {
               });
             }
           }
-        };
-
-        for (var _iterator2 = newTypeFields[fieldName].args[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          _loop2();
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -762,7 +751,7 @@ function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
     var _iteratorError11 = undefined;
 
     try {
-      var _loop3 = function _loop3() {
+      var _loop = function _loop() {
         var oldInterface = _step11.value;
 
         if (!newInterfaces.some(function (int) {
@@ -776,7 +765,7 @@ function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
       };
 
       for (var _iterator11 = oldInterfaces[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-        _loop3();
+        _loop();
       }
     } catch (err) {
       _didIteratorError11 = true;
@@ -818,7 +807,7 @@ function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
     var _iteratorError12 = undefined;
 
     try {
-      var _loop4 = function _loop4() {
+      var _loop2 = function _loop2() {
         var newInterface = _step12.value;
 
         if (!oldInterfaces.some(function (int) {
@@ -832,7 +821,7 @@ function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
       };
 
       for (var _iterator12 = newInterfaces[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-        _loop4();
+        _loop2();
       }
     } catch (err) {
       _didIteratorError12 = true;
@@ -1183,5 +1172,11 @@ function getDirectiveMapForSchema(schema) {
 function getArgumentMapForDirective(directive) {
   return keyMap(directive.args, function (arg) {
     return arg.name;
+  });
+}
+
+function findByName(array, name) {
+  return find(array, function (item) {
+    return item.name === name;
   });
 }
