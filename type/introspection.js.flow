@@ -385,7 +385,7 @@ export const __EnumValue = new GraphQLObjectType({
   }),
 });
 
-export const TypeKind = {
+export const TypeKind = Object.freeze({
   SCALAR: 'SCALAR',
   OBJECT: 'OBJECT',
   INTERFACE: 'INTERFACE',
@@ -394,7 +394,7 @@ export const TypeKind = {
   INPUT_OBJECT: 'INPUT_OBJECT',
   LIST: 'LIST',
   NON_NULL: 'NON_NULL',
-};
+});
 
 export const __TypeKind = new GraphQLEnumType({
   name: '__TypeKind',
@@ -473,7 +473,7 @@ export const TypeNameMetaFieldDef: GraphQLField<*, *> = {
   resolve: (source, args, context, { parentType }) => parentType.name,
 };
 
-export const introspectionTypes: $ReadOnlyArray<*> = [
+export const introspectionTypes = Object.freeze([
   __Schema,
   __Directive,
   __DirectiveLocation,
@@ -482,7 +482,7 @@ export const introspectionTypes: $ReadOnlyArray<*> = [
   __InputValue,
   __EnumValue,
   __TypeKind,
-];
+]);
 
 export function isIntrospectionType(type: mixed): boolean %checks {
   return (

@@ -69,7 +69,7 @@ var QueryDocumentKeys = {
   InputObjectTypeExtension: ['name', 'directives', 'fields']
 };
 exports.QueryDocumentKeys = QueryDocumentKeys;
-var BREAK = {};
+var BREAK = Object.freeze({});
 /**
  * visit() will walk through an AST using a depth first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the

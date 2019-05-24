@@ -54,7 +54,7 @@ export var QueryDocumentKeys = {
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields']
 };
-export var BREAK = {};
+export var BREAK = Object.freeze({});
 /**
  * visit() will walk through an AST using a depth first traversal, calling
  * the visitor's enter function at each node in the traversal, and calling the

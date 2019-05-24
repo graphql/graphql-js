@@ -232,7 +232,7 @@ export var GraphQLID = new GraphQLScalarType({
     return ast.kind === Kind.STRING || ast.kind === Kind.INT ? ast.value : undefined;
   }
 });
-export var specifiedScalarTypes = [GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID];
+export var specifiedScalarTypes = Object.freeze([GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID]);
 export function isSpecifiedScalarType(type) {
   return isScalarType(type) && specifiedScalarTypes.some(function (_ref) {
     var name = _ref.name;

@@ -446,7 +446,7 @@ var __EnumValue = new _definition.GraphQLObjectType({
 });
 
 exports.__EnumValue = __EnumValue;
-var TypeKind = {
+var TypeKind = Object.freeze({
   SCALAR: 'SCALAR',
   OBJECT: 'OBJECT',
   INTERFACE: 'INTERFACE',
@@ -455,7 +455,7 @@ var TypeKind = {
   INPUT_OBJECT: 'INPUT_OBJECT',
   LIST: 'LIST',
   NON_NULL: 'NON_NULL'
-};
+});
 exports.TypeKind = TypeKind;
 
 var __TypeKind = new _definition.GraphQLEnumType({
@@ -540,7 +540,7 @@ var TypeNameMetaFieldDef = {
   }
 };
 exports.TypeNameMetaFieldDef = TypeNameMetaFieldDef;
-var introspectionTypes = [__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind];
+var introspectionTypes = Object.freeze([__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind]);
 exports.introspectionTypes = introspectionTypes;
 
 function isIntrospectionType(type) {

@@ -152,7 +152,7 @@ var GraphQLDeprecatedDirective = new GraphQLDirective({
  */
 
 exports.GraphQLDeprecatedDirective = GraphQLDeprecatedDirective;
-var specifiedDirectives = [GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective];
+var specifiedDirectives = Object.freeze([GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective]);
 exports.specifiedDirectives = specifiedDirectives;
 
 function isSpecifiedDirective(directive) {

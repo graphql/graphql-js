@@ -409,7 +409,7 @@ export var __EnumValue = new GraphQLObjectType({
     };
   }
 });
-export var TypeKind = {
+export var TypeKind = Object.freeze({
   SCALAR: 'SCALAR',
   OBJECT: 'OBJECT',
   INTERFACE: 'INTERFACE',
@@ -418,7 +418,7 @@ export var TypeKind = {
   INPUT_OBJECT: 'INPUT_OBJECT',
   LIST: 'LIST',
   NON_NULL: 'NON_NULL'
-};
+});
 export var __TypeKind = new GraphQLEnumType({
   name: '__TypeKind',
   description: 'An enum describing what kind of type a given `__Type` is.',
@@ -496,7 +496,7 @@ export var TypeNameMetaFieldDef = {
     return parentType.name;
   }
 };
-export var introspectionTypes = [__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind];
+export var introspectionTypes = Object.freeze([__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind]);
 export function isIntrospectionType(type) {
   return isNamedType(type) && introspectionTypes.some(function (_ref8) {
     var name = _ref8.name;

@@ -25,7 +25,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  * 
  */
-var BreakingChangeType = {
+var BreakingChangeType = Object.freeze({
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
   FIELD_REMOVED: 'FIELD_REMOVED',
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND',
@@ -41,16 +41,16 @@ var BreakingChangeType = {
   DIRECTIVE_ARG_REMOVED: 'DIRECTIVE_ARG_REMOVED',
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED',
   REQUIRED_DIRECTIVE_ARG_ADDED: 'REQUIRED_DIRECTIVE_ARG_ADDED'
-};
+});
 exports.BreakingChangeType = BreakingChangeType;
-var DangerousChangeType = {
+var DangerousChangeType = Object.freeze({
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE',
   VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM',
   INTERFACE_ADDED_TO_OBJECT: 'INTERFACE_ADDED_TO_OBJECT',
   TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION',
   OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED',
   OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED'
-};
+});
 exports.DangerousChangeType = DangerousChangeType;
 
 /**

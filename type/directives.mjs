@@ -135,7 +135,7 @@ export var GraphQLDeprecatedDirective = new GraphQLDirective({
  * The full list of specified directives.
  */
 
-export var specifiedDirectives = [GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective];
+export var specifiedDirectives = Object.freeze([GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLDeprecatedDirective]);
 export function isSpecifiedDirective(directive) {
   return isDirective(directive) && specifiedDirectives.some(function (_ref2) {
     var name = _ref2.name;

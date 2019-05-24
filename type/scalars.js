@@ -245,7 +245,7 @@ var GraphQLID = new _definition.GraphQLScalarType({
   }
 });
 exports.GraphQLID = GraphQLID;
-var specifiedScalarTypes = [GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID];
+var specifiedScalarTypes = Object.freeze([GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID]);
 exports.specifiedScalarTypes = specifiedScalarTypes;
 
 function isSpecifiedScalarType(type) {
