@@ -575,8 +575,8 @@ describe('findBreakingChanges', () => {
 
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
-        description: 'Type1 no longer implements interface Interface1.',
         type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+        description: 'Type1 no longer implements interface Interface1.',
       },
     ]);
   });
@@ -742,7 +742,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
-        description: `DirectiveThatIsRemoved was removed.`,
+        description: 'DirectiveThatIsRemoved was removed.',
       },
     ]);
   });
@@ -882,8 +882,8 @@ describe('findDangerousChanges', () => {
 
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
-        description: 'NewInterface added to interfaces implemented by Type1.',
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+        description: 'NewInterface added to interfaces implemented by Type1.',
       },
     ]);
   });
@@ -973,18 +973,18 @@ describe('findDangerousChanges', () => {
 
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
+        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue.',
-        type: 'ARG_DEFAULT_VALUE_CHANGE',
       },
       {
+        type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
         description: 'VALUE2 was added to enum type EnumType1.',
-        type: 'VALUE_ADDED_TO_ENUM',
       },
       {
+        type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
         description:
           'Interface1 added to interfaces implemented by TypeThatGainsInterface1.',
-        type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
       },
       {
         type: DangerousChangeType.TYPE_ADDED_TO_UNION,
