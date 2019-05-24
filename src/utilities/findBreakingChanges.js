@@ -227,7 +227,7 @@ function findArgChanges(
               description:
                 `${oldType.name}.${fieldName} arg ` +
                 `${oldArgDef.name} has changed type from ` +
-                `${oldArgDef.type.toString()} to ${newArgDef.type.toString()}`,
+                `${String(oldArgDef.type)} to ${String(newArgDef.type)}`,
             });
           } else if (
             oldArgDef.defaultValue !== undefined &&
@@ -335,17 +335,11 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
           newFieldType,
         );
         if (!isSafe) {
-          const oldFieldTypeString = isNamedType(oldFieldType)
-            ? oldFieldType.name
-            : oldFieldType.toString();
-          const newFieldTypeString = isNamedType(newFieldType)
-            ? newFieldType.name
-            : newFieldType.toString();
           breakingChanges.push({
             type: BreakingChangeType.FIELD_CHANGED_KIND,
             description:
               `${typeName}.${fieldName} changed type from ` +
-              `${oldFieldTypeString} to ${newFieldTypeString}.`,
+              `${String(oldFieldType)} to ${String(newFieldType)}.`,
           });
         }
       }
@@ -391,17 +385,11 @@ function findFieldsThatChangedTypeOnInputObjectTypes(
           newFieldType,
         );
         if (!isSafe) {
-          const oldFieldTypeString = isNamedType(oldFieldType)
-            ? oldFieldType.name
-            : oldFieldType.toString();
-          const newFieldTypeString = isNamedType(newFieldType)
-            ? newFieldType.name
-            : newFieldType.toString();
           breakingChanges.push({
             type: BreakingChangeType.FIELD_CHANGED_KIND,
             description:
               `${typeName}.${fieldName} changed type from ` +
-              `${oldFieldTypeString} to ${newFieldTypeString}.`,
+              `${String(oldFieldType)} to ${String(newFieldType)}.`,
           });
         }
       }
