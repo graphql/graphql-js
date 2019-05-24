@@ -151,7 +151,7 @@ function findArgChanges(oldSchema, newSchema) {
           if (!newArgDef) {
             breakingChanges.push({
               type: BreakingChangeType.ARG_REMOVED,
-              description: "".concat(oldType.name, ".").concat(fieldName, " arg ") + "".concat(oldArgDef.name, " was removed")
+              description: "".concat(oldType.name, ".").concat(fieldName, " arg ") + "".concat(oldArgDef.name, " was removed.")
             });
           } else {
             var isSafe = isChangeSafeForInputObjectFieldOrFieldArg(oldArgDef.type, newArgDef.type);
@@ -159,12 +159,12 @@ function findArgChanges(oldSchema, newSchema) {
             if (!isSafe) {
               breakingChanges.push({
                 type: BreakingChangeType.ARG_CHANGED_KIND,
-                description: "".concat(oldType.name, ".").concat(fieldName, " arg ") + "".concat(oldArgDef.name, " has changed type from ") + "".concat(String(oldArgDef.type), " to ").concat(String(newArgDef.type))
+                description: "".concat(oldType.name, ".").concat(fieldName, " arg ") + "".concat(oldArgDef.name, " has changed type from ") + "".concat(String(oldArgDef.type), " to ").concat(String(newArgDef.type), ".")
               });
             } else if (oldArgDef.defaultValue !== undefined && oldArgDef.defaultValue !== newArgDef.defaultValue) {
               dangerousChanges.push({
                 type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-                description: "".concat(oldType.name, ".").concat(fieldName, " arg ") + "".concat(oldArgDef.name, " has changed defaultValue")
+                description: "".concat(oldType.name, ".").concat(fieldName, " arg ") + "".concat(oldArgDef.name, " has changed defaultValue.")
               });
             }
           }
@@ -202,12 +202,12 @@ function findArgChanges(oldSchema, newSchema) {
             if (isRequiredArgument(_newArgDef)) {
               breakingChanges.push({
                 type: BreakingChangeType.REQUIRED_ARG_ADDED,
-                description: "A required arg ".concat(argName, " on ") + "".concat(typeName, ".").concat(fieldName, " was added")
+                description: "A required arg ".concat(argName, " on ") + "".concat(typeName, ".").concat(fieldName, " was added.")
               });
             } else {
               dangerousChanges.push({
                 type: DangerousChangeType.OPTIONAL_ARG_ADDED,
-                description: "An optional arg ".concat(argName, " on ") + "".concat(typeName, ".").concat(fieldName, " was added")
+                description: "An optional arg ".concat(argName, " on ") + "".concat(typeName, ".").concat(fieldName, " was added.")
               });
             }
           }
@@ -852,7 +852,7 @@ function findRemovedDirectives(oldSchema, newSchema) {
       if (!newSchemaDirectiveMap[directive.name]) {
         removedDirectives.push({
           type: BreakingChangeType.DIRECTIVE_REMOVED,
-          description: "".concat(directive.name, " was removed")
+          description: "".concat(directive.name, " was removed.")
         });
       }
     }
@@ -932,7 +932,7 @@ function findRemovedDirectiveArgs(oldSchema, newSchema) {
           var arg = _step16.value;
           removedDirectiveArgs.push({
             type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
-            description: "".concat(arg.name, " was removed from ").concat(newDirective.name)
+            description: "".concat(arg.name, " was removed from ").concat(newDirective.name, ".")
           });
         }
       } catch (err) {
@@ -1028,7 +1028,7 @@ function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
           if (isRequiredArgument(arg)) {
             addedNonNullableArgs.push({
               type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
-              description: "A required arg ".concat(arg.name, " on directive ") + "".concat(newDirective.name, " was added")
+              description: "A required arg ".concat(arg.name, " on directive ") + "".concat(newDirective.name, " was added.")
             });
           }
         }
@@ -1123,7 +1123,7 @@ function findRemovedDirectiveLocations(oldSchema, newSchema) {
           var location = _step22.value;
           removedLocations.push({
             type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
-            description: "".concat(location, " was removed from ").concat(newDirective.name)
+            description: "".concat(location, " was removed from ").concat(newDirective.name, ".")
           });
         }
       } catch (err) {

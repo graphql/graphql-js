@@ -214,7 +214,7 @@ function findArgChanges(
             type: BreakingChangeType.ARG_REMOVED,
             description:
               `${oldType.name}.${fieldName} arg ` +
-              `${oldArgDef.name} was removed`,
+              `${oldArgDef.name} was removed.`,
           });
         } else {
           const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(
@@ -227,7 +227,7 @@ function findArgChanges(
               description:
                 `${oldType.name}.${fieldName} arg ` +
                 `${oldArgDef.name} has changed type from ` +
-                `${String(oldArgDef.type)} to ${String(newArgDef.type)}`,
+                `${String(oldArgDef.type)} to ${String(newArgDef.type)}.`,
             });
           } else if (
             oldArgDef.defaultValue !== undefined &&
@@ -237,7 +237,7 @@ function findArgChanges(
               type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
               description:
                 `${oldType.name}.${fieldName} arg ` +
-                `${oldArgDef.name} has changed defaultValue`,
+                `${oldArgDef.name} has changed defaultValue.`,
             });
           }
         }
@@ -253,14 +253,14 @@ function findArgChanges(
               type: BreakingChangeType.REQUIRED_ARG_ADDED,
               description:
                 `A required arg ${argName} on ` +
-                `${typeName}.${fieldName} was added`,
+                `${typeName}.${fieldName} was added.`,
             });
           } else {
             dangerousChanges.push({
               type: DangerousChangeType.OPTIONAL_ARG_ADDED,
               description:
                 `An optional arg ${argName} on ` +
-                `${typeName}.${fieldName} was added`,
+                `${typeName}.${fieldName} was added.`,
             });
           }
         }
@@ -696,7 +696,7 @@ function findRemovedDirectives(
     if (!newSchemaDirectiveMap[directive.name]) {
       removedDirectives.push({
         type: BreakingChangeType.DIRECTIVE_REMOVED,
-        description: `${directive.name} was removed`,
+        description: `${directive.name} was removed.`,
       });
     }
   }
@@ -736,7 +736,7 @@ function findRemovedDirectiveArgs(
     for (const arg of findRemovedArgsForDirective(oldDirective, newDirective)) {
       removedDirectiveArgs.push({
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
-        description: `${arg.name} was removed from ${newDirective.name}`,
+        description: `${arg.name} was removed from ${newDirective.name}.`,
       });
     }
   }
@@ -779,7 +779,7 @@ function findAddedNonNullDirectiveArgs(
           type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
           description:
             `A required arg ${arg.name} on directive ` +
-            `${newDirective.name} was added`,
+            `${newDirective.name} was added.`,
         });
       }
     }
@@ -823,7 +823,7 @@ function findRemovedDirectiveLocations(
     )) {
       removedLocations.push({
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
-        description: `${location} was removed from ${newDirective.name}`,
+        description: `${location} was removed from ${newDirective.name}.`,
       });
     }
   }
