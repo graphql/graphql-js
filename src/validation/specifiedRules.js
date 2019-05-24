@@ -7,11 +7,6 @@
  * @flow strict
  */
 
-import {
-  type ValidationRule,
-  type SDLValidationRule,
-} from './ValidationContext';
-
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitions } from './rules/ExecutableDefinitions';
 
@@ -102,7 +97,7 @@ import { UniqueInputFieldNames } from './rules/UniqueInputFieldNames';
  * The order of the rules in this list has been adjusted to lead to the
  * most clear output when encountering multiple validation errors.
  */
-export const specifiedRules: $ReadOnlyArray<ValidationRule> = [
+export const specifiedRules = Object.freeze([
   ExecutableDefinitions,
   UniqueOperationNames,
   LoneAnonymousOperation,
@@ -129,7 +124,7 @@ export const specifiedRules: $ReadOnlyArray<ValidationRule> = [
   VariablesInAllowedPosition,
   OverlappingFieldsCanBeMerged,
   UniqueInputFieldNames,
-];
+]);
 
 import { LoneSchemaDefinition } from './rules/LoneSchemaDefinition';
 import { UniqueOperationTypes } from './rules/UniqueOperationTypes';
@@ -140,7 +135,7 @@ import { UniqueDirectiveNames } from './rules/UniqueDirectiveNames';
 import { PossibleTypeExtensions } from './rules/PossibleTypeExtensions';
 
 // @internal
-export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = [
+export const specifiedSDLRules = Object.freeze([
   LoneSchemaDefinition,
   UniqueOperationTypes,
   UniqueTypeNames,
@@ -155,4 +150,4 @@ export const specifiedSDLRules: $ReadOnlyArray<SDLValidationRule> = [
   UniqueArgumentNames,
   UniqueInputFieldNames,
   ProvidedRequiredArgumentsOnDirectives,
-];
+]);

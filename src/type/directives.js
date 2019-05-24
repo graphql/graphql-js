@@ -181,11 +181,11 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
 /**
  * The full list of specified directives.
  */
-export const specifiedDirectives: $ReadOnlyArray<*> = [
+export const specifiedDirectives = Object.freeze([
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
   GraphQLDeprecatedDirective,
-];
+]);
 
 export function isSpecifiedDirective(directive: mixed): boolean %checks {
   return (
