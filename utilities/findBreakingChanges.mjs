@@ -159,7 +159,7 @@ function findArgChanges(oldSchema, newSchema) {
             if (!isSafe) {
               breakingChanges.push({
                 type: BreakingChangeType.ARG_CHANGED_KIND,
-                description: "".concat(oldType.name, ".").concat(fieldName, " arg ") + "".concat(oldArgDef.name, " has changed type from ") + "".concat(oldArgDef.type.toString(), " to ").concat(newArgDef.type.toString())
+                description: "".concat(oldType.name, ".").concat(fieldName, " arg ") + "".concat(oldArgDef.name, " has changed type from ") + "".concat(String(oldArgDef.type), " to ").concat(String(newArgDef.type))
               });
             } else if (oldArgDef.defaultValue !== undefined && oldArgDef.defaultValue !== newArgDef.defaultValue) {
               dangerousChanges.push({
@@ -298,11 +298,9 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema)
         var isSafe = isChangeSafeForObjectOrInterfaceField(oldFieldType, newFieldType);
 
         if (!isSafe) {
-          var oldFieldTypeString = isNamedType(oldFieldType) ? oldFieldType.name : oldFieldType.toString();
-          var newFieldTypeString = isNamedType(newFieldType) ? newFieldType.name : newFieldType.toString();
           breakingChanges.push({
             type: BreakingChangeType.FIELD_CHANGED_KIND,
-            description: "".concat(typeName, ".").concat(fieldName, " changed type from ") + "".concat(oldFieldTypeString, " to ").concat(newFieldTypeString, ".")
+            description: "".concat(typeName, ".").concat(fieldName, " changed type from ") + "".concat(String(oldFieldType), " to ").concat(String(newFieldType), ".")
           });
         }
       }
@@ -345,11 +343,9 @@ function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
         var isSafe = isChangeSafeForInputObjectFieldOrFieldArg(oldFieldType, newFieldType);
 
         if (!isSafe) {
-          var oldFieldTypeString = isNamedType(oldFieldType) ? oldFieldType.name : oldFieldType.toString();
-          var newFieldTypeString = isNamedType(newFieldType) ? newFieldType.name : newFieldType.toString();
           breakingChanges.push({
             type: BreakingChangeType.FIELD_CHANGED_KIND,
-            description: "".concat(typeName, ".").concat(fieldName, " changed type from ") + "".concat(oldFieldTypeString, " to ").concat(newFieldTypeString, ".")
+            description: "".concat(typeName, ".").concat(fieldName, " changed type from ") + "".concat(String(oldFieldType), " to ").concat(String(newFieldType), ".")
           });
         }
       }
