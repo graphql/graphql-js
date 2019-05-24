@@ -245,13 +245,13 @@ export const GraphQLID = new GraphQLScalarType({
   },
 });
 
-export const specifiedScalarTypes: $ReadOnlyArray<*> = [
+export const specifiedScalarTypes = Object.freeze([
   GraphQLString,
   GraphQLInt,
   GraphQLFloat,
   GraphQLBoolean,
   GraphQLID,
-];
+]);
 
 export function isSpecifiedScalarType(type: mixed): boolean %checks {
   return (
