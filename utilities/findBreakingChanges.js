@@ -77,15 +77,10 @@ function findDangerousChanges(oldSchema, newSchema) {
 }
 
 function findSchemaChanges(oldSchema, newSchema) {
-  return [].concat(findRemovedTypes(oldSchema, newSchema), findTypesThatChangedKind(oldSchema, newSchema), findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema), findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema), findTypesAddedToUnions(oldSchema, newSchema), findTypesRemovedFromUnions(oldSchema, newSchema), findValuesAddedToEnums(oldSchema, newSchema), findValuesRemovedFromEnums(oldSchema, newSchema), findArgChanges(oldSchema, newSchema), findInterfacesAddedToObjectTypes(oldSchema, newSchema), findInterfacesRemovedFromObjectTypes(oldSchema, newSchema), findRemovedDirectives(oldSchema, newSchema), findRemovedDirectiveArgs(oldSchema, newSchema), findAddedNonNullDirectiveArgs(oldSchema, newSchema), findRemovedDirectiveLocations(oldSchema, newSchema));
+  return [].concat(findTypeChanges(oldSchema, newSchema), findFieldChanges(oldSchema, newSchema), findInputObjectTypeChanges(oldSchema, newSchema), findUnionTypeChanges(oldSchema, newSchema), findEnumTypeChanges(oldSchema, newSchema), findArgChanges(oldSchema, newSchema), findObjectTypeChanges(oldSchema, newSchema), findDirectiveChanges(oldSchema, newSchema));
 }
-/**
- * Given two schemas, returns an Array containing descriptions of any breaking
- * changes in the newSchema related to removing an entire type.
- */
 
-
-function findRemovedTypes(oldSchema, newSchema) {
+function findTypeChanges(oldSchema, newSchema) {
   var schemaChanges = [];
   var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
   var _iteratorNormalCompletion = true;
@@ -115,17 +110,6 @@ function findRemovedTypes(oldSchema, newSchema) {
     }
   }
 
-  return schemaChanges;
-}
-/**
- * Given two schemas, returns an Array containing descriptions of any breaking
- * changes in the newSchema related to changing the type of a type.
- */
-
-
-function findTypesThatChangedKind(oldSchema, newSchema) {
-  var schemaChanges = [];
-  var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
   var _iteratorNormalCompletion2 = true;
   var _didIteratorError2 = false;
   var _iteratorError2 = undefined;
@@ -133,13 +117,13 @@ function findTypesThatChangedKind(oldSchema, newSchema) {
   try {
     for (var _iterator2 = typesDiff.persisted[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
       var _ref2 = _step2.value;
-      var oldType = _ref2[0];
+      var _oldType = _ref2[0];
       var newType = _ref2[1];
 
-      if (oldType.constructor !== newType.constructor) {
+      if (_oldType.constructor !== newType.constructor) {
         schemaChanges.push({
           type: BreakingChangeType.TYPE_CHANGED_KIND,
-          description: "".concat(oldType.name, " changed from ") + "".concat(typeKindName(oldType), " to ").concat(typeKindName(newType), ".")
+          description: "".concat(_oldType.name, " changed from ") + "".concat(typeKindName(_oldType), " to ").concat(typeKindName(newType), ".")
         });
       }
     }
@@ -160,13 +144,6 @@ function findTypesThatChangedKind(oldSchema, newSchema) {
 
   return schemaChanges;
 }
-/**
- * Given two schemas, returns an Array containing descriptions of any
- * breaking or dangerous changes in the newSchema related to arguments
- * (such as removal or change of type of an argument, or a change in an
- * argument's default value).
- */
-
 
 function findArgChanges(oldSchema, newSchema) {
   var schemaChanges = [];
@@ -360,7 +337,7 @@ function typeKindName(type) {
   throw new TypeError("Unexpected type: ".concat((0, _inspect.default)(type), "."));
 }
 
-function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema) {
+function findFieldChanges(oldSchema, newSchema) {
   var schemaChanges = [];
   var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
   var _iteratorNormalCompletion8 = true;
@@ -456,7 +433,7 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema)
   return schemaChanges;
 }
 
-function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
+function findInputObjectTypeChanges(oldSchema, newSchema) {
   var schemaChanges = [];
   var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
   var _iteratorNormalCompletion11 = true;
@@ -623,13 +600,8 @@ function isChangeSafeForInputObjectFieldOrFieldArg(oldType, newType) {
 
   return (0, _definition.isNamedType)(newType) && oldType.name === newType.name;
 }
-/**
- * Given two schemas, returns an Array containing descriptions of any breaking
- * changes in the newSchema related to removing types from a union type.
- */
 
-
-function findTypesRemovedFromUnions(oldSchema, newSchema) {
+function findUnionTypeChanges(oldSchema, newSchema) {
   var schemaChanges = [];
   var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
   var _iteratorNormalCompletion15 = true;
@@ -652,11 +624,11 @@ function findTypesRemovedFromUnions(oldSchema, newSchema) {
       var _iteratorError16 = undefined;
 
       try {
-        for (var _iterator16 = possibleTypesDiff.removed[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
-          var oldPossibleType = _step16.value;
+        for (var _iterator16 = possibleTypesDiff.added[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
+          var newPossibleType = _step16.value;
           schemaChanges.push({
-            type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
-            description: "".concat(oldPossibleType.name, " was removed from ") + "union type ".concat(oldType.name, ".")
+            type: DangerousChangeType.TYPE_ADDED_TO_UNION,
+            description: "".concat(newPossibleType.name, " was added to ") + "union type ".concat(oldType.name, ".")
           });
         }
       } catch (err) {
@@ -670,6 +642,33 @@ function findTypesRemovedFromUnions(oldSchema, newSchema) {
         } finally {
           if (_didIteratorError16) {
             throw _iteratorError16;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion17 = true;
+      var _didIteratorError17 = false;
+      var _iteratorError17 = undefined;
+
+      try {
+        for (var _iterator17 = possibleTypesDiff.removed[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
+          var oldPossibleType = _step17.value;
+          schemaChanges.push({
+            type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
+            description: "".concat(oldPossibleType.name, " was removed from ") + "union type ".concat(oldType.name, ".")
+          });
+        }
+      } catch (err) {
+        _didIteratorError17 = true;
+        _iteratorError17 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion17 && _iterator17.return != null) {
+            _iterator17.return();
+          }
+        } finally {
+          if (_didIteratorError17) {
+            throw _iteratorError17;
           }
         }
       }
@@ -691,98 +690,52 @@ function findTypesRemovedFromUnions(oldSchema, newSchema) {
 
   return schemaChanges;
 }
-/**
- * Given two schemas, returns an Array containing descriptions of any dangerous
- * changes in the newSchema related to adding types to a union type.
- */
 
-
-function findTypesAddedToUnions(oldSchema, newSchema) {
+function findEnumTypeChanges(oldSchema, newSchema) {
   var schemaChanges = [];
   var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
-  var _iteratorNormalCompletion17 = true;
-  var _didIteratorError17 = false;
-  var _iteratorError17 = undefined;
+  var _iteratorNormalCompletion18 = true;
+  var _didIteratorError18 = false;
+  var _iteratorError18 = undefined;
 
   try {
-    for (var _iterator17 = typesDiff.persisted[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
-      var _ref20 = _step17.value;
+    for (var _iterator18 = typesDiff.persisted[Symbol.iterator](), _step18; !(_iteratorNormalCompletion18 = (_step18 = _iterator18.next()).done); _iteratorNormalCompletion18 = true) {
+      var _ref20 = _step18.value;
       var oldType = _ref20[0];
       var newType = _ref20[1];
-
-      if (!(0, _definition.isUnionType)(oldType) || !(0, _definition.isUnionType)(newType)) {
-        continue;
-      }
-
-      var possibleTypesDiff = diff(oldType.getTypes(), newType.getTypes());
-      var _iteratorNormalCompletion18 = true;
-      var _didIteratorError18 = false;
-      var _iteratorError18 = undefined;
-
-      try {
-        for (var _iterator18 = possibleTypesDiff.added[Symbol.iterator](), _step18; !(_iteratorNormalCompletion18 = (_step18 = _iterator18.next()).done); _iteratorNormalCompletion18 = true) {
-          var newPossibleType = _step18.value;
-          schemaChanges.push({
-            type: DangerousChangeType.TYPE_ADDED_TO_UNION,
-            description: "".concat(newPossibleType.name, " was added to ") + "union type ".concat(oldType.name, ".")
-          });
-        }
-      } catch (err) {
-        _didIteratorError18 = true;
-        _iteratorError18 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion18 && _iterator18.return != null) {
-            _iterator18.return();
-          }
-        } finally {
-          if (_didIteratorError18) {
-            throw _iteratorError18;
-          }
-        }
-      }
-    }
-  } catch (err) {
-    _didIteratorError17 = true;
-    _iteratorError17 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion17 && _iterator17.return != null) {
-        _iterator17.return();
-      }
-    } finally {
-      if (_didIteratorError17) {
-        throw _iteratorError17;
-      }
-    }
-  }
-
-  return schemaChanges;
-}
-/**
- * Given two schemas, returns an Array containing descriptions of any breaking
- * changes in the newSchema related to removing values from an enum type.
- */
-
-
-function findValuesRemovedFromEnums(oldSchema, newSchema) {
-  var schemaChanges = [];
-  var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
-  var _iteratorNormalCompletion19 = true;
-  var _didIteratorError19 = false;
-  var _iteratorError19 = undefined;
-
-  try {
-    for (var _iterator19 = typesDiff.persisted[Symbol.iterator](), _step19; !(_iteratorNormalCompletion19 = (_step19 = _iterator19.next()).done); _iteratorNormalCompletion19 = true) {
-      var _ref22 = _step19.value;
-      var oldType = _ref22[0];
-      var newType = _ref22[1];
 
       if (!(0, _definition.isEnumType)(oldType) || !(0, _definition.isEnumType)(newType)) {
         continue;
       }
 
       var valuesDiff = diff(oldType.getValues(), newType.getValues());
+      var _iteratorNormalCompletion19 = true;
+      var _didIteratorError19 = false;
+      var _iteratorError19 = undefined;
+
+      try {
+        for (var _iterator19 = valuesDiff.added[Symbol.iterator](), _step19; !(_iteratorNormalCompletion19 = (_step19 = _iterator19.next()).done); _iteratorNormalCompletion19 = true) {
+          var newValue = _step19.value;
+          schemaChanges.push({
+            type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
+            description: "".concat(newValue.name, " was added to enum type ").concat(oldType.name, ".")
+          });
+        }
+      } catch (err) {
+        _didIteratorError19 = true;
+        _iteratorError19 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion19 && _iterator19.return != null) {
+            _iterator19.return();
+          }
+        } finally {
+          if (_didIteratorError19) {
+            throw _iteratorError19;
+          }
+        }
+      }
+
       var _iteratorNormalCompletion20 = true;
       var _didIteratorError20 = false;
       var _iteratorError20 = undefined;
@@ -811,29 +764,24 @@ function findValuesRemovedFromEnums(oldSchema, newSchema) {
       }
     }
   } catch (err) {
-    _didIteratorError19 = true;
-    _iteratorError19 = err;
+    _didIteratorError18 = true;
+    _iteratorError18 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion19 && _iterator19.return != null) {
-        _iterator19.return();
+      if (!_iteratorNormalCompletion18 && _iterator18.return != null) {
+        _iterator18.return();
       }
     } finally {
-      if (_didIteratorError19) {
-        throw _iteratorError19;
+      if (_didIteratorError18) {
+        throw _iteratorError18;
       }
     }
   }
 
   return schemaChanges;
 }
-/**
- * Given two schemas, returns an Array containing descriptions of any dangerous
- * changes in the newSchema related to adding values to an enum type.
- */
 
-
-function findValuesAddedToEnums(oldSchema, newSchema) {
+function findObjectTypeChanges(oldSchema, newSchema) {
   var schemaChanges = [];
   var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
   var _iteratorNormalCompletion21 = true;
@@ -842,25 +790,25 @@ function findValuesAddedToEnums(oldSchema, newSchema) {
 
   try {
     for (var _iterator21 = typesDiff.persisted[Symbol.iterator](), _step21; !(_iteratorNormalCompletion21 = (_step21 = _iterator21.next()).done); _iteratorNormalCompletion21 = true) {
-      var _ref24 = _step21.value;
-      var oldType = _ref24[0];
-      var newType = _ref24[1];
+      var _ref22 = _step21.value;
+      var oldType = _ref22[0];
+      var newType = _ref22[1];
 
-      if (!(0, _definition.isEnumType)(oldType) || !(0, _definition.isEnumType)(newType)) {
+      if (!(0, _definition.isObjectType)(oldType) || !(0, _definition.isObjectType)(newType)) {
         continue;
       }
 
-      var valuesDiff = diff(oldType.getValues(), newType.getValues());
+      var interfacesDiff = diff(oldType.getInterfaces(), newType.getInterfaces());
       var _iteratorNormalCompletion22 = true;
       var _didIteratorError22 = false;
       var _iteratorError22 = undefined;
 
       try {
-        for (var _iterator22 = valuesDiff.added[Symbol.iterator](), _step22; !(_iteratorNormalCompletion22 = (_step22 = _iterator22.next()).done); _iteratorNormalCompletion22 = true) {
-          var newValue = _step22.value;
+        for (var _iterator22 = interfacesDiff.added[Symbol.iterator](), _step22; !(_iteratorNormalCompletion22 = (_step22 = _iterator22.next()).done); _iteratorNormalCompletion22 = true) {
+          var newInterface = _step22.value;
           schemaChanges.push({
-            type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
-            description: "".concat(newValue.name, " was added to enum type ").concat(oldType.name, ".")
+            type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+            description: "".concat(newInterface.name, " added to interfaces implemented ") + "by ".concat(oldType.name, ".")
           });
         }
       } catch (err) {
@@ -874,6 +822,33 @@ function findValuesAddedToEnums(oldSchema, newSchema) {
         } finally {
           if (_didIteratorError22) {
             throw _iteratorError22;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion23 = true;
+      var _didIteratorError23 = false;
+      var _iteratorError23 = undefined;
+
+      try {
+        for (var _iterator23 = interfacesDiff.removed[Symbol.iterator](), _step23; !(_iteratorNormalCompletion23 = (_step23 = _iterator23.next()).done); _iteratorNormalCompletion23 = true) {
+          var oldInterface = _step23.value;
+          schemaChanges.push({
+            type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+            description: "".concat(oldType.name, " no longer implements interface ") + "".concat(oldInterface.name, ".")
+          });
+        }
+      } catch (err) {
+        _didIteratorError23 = true;
+        _iteratorError23 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion23 && _iterator23.return != null) {
+            _iterator23.return();
+          }
+        } finally {
+          if (_didIteratorError23) {
+            throw _iteratorError23;
           }
         }
       }
@@ -896,98 +871,60 @@ function findValuesAddedToEnums(oldSchema, newSchema) {
   return schemaChanges;
 }
 
-function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
+function findDirectiveChanges(oldSchema, newSchema) {
   var schemaChanges = [];
-  var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
-  var _iteratorNormalCompletion23 = true;
-  var _didIteratorError23 = false;
-  var _iteratorError23 = undefined;
+  var directivesDiff = diff(oldSchema.getDirectives(), newSchema.getDirectives());
+  var _iteratorNormalCompletion24 = true;
+  var _didIteratorError24 = false;
+  var _iteratorError24 = undefined;
 
   try {
-    for (var _iterator23 = typesDiff.persisted[Symbol.iterator](), _step23; !(_iteratorNormalCompletion23 = (_step23 = _iterator23.next()).done); _iteratorNormalCompletion23 = true) {
-      var _ref26 = _step23.value;
-      var oldType = _ref26[0];
-      var newType = _ref26[1];
-
-      if (!(0, _definition.isObjectType)(oldType) || !(0, _definition.isObjectType)(newType)) {
-        continue;
-      }
-
-      var interfacesDiff = diff(oldType.getInterfaces(), newType.getInterfaces());
-      var _iteratorNormalCompletion24 = true;
-      var _didIteratorError24 = false;
-      var _iteratorError24 = undefined;
-
-      try {
-        for (var _iterator24 = interfacesDiff.removed[Symbol.iterator](), _step24; !(_iteratorNormalCompletion24 = (_step24 = _iterator24.next()).done); _iteratorNormalCompletion24 = true) {
-          var oldInterface = _step24.value;
-          schemaChanges.push({
-            type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
-            description: "".concat(oldType.name, " no longer implements interface ") + "".concat(oldInterface.name, ".")
-          });
-        }
-      } catch (err) {
-        _didIteratorError24 = true;
-        _iteratorError24 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion24 && _iterator24.return != null) {
-            _iterator24.return();
-          }
-        } finally {
-          if (_didIteratorError24) {
-            throw _iteratorError24;
-          }
-        }
-      }
+    for (var _iterator24 = directivesDiff.removed[Symbol.iterator](), _step24; !(_iteratorNormalCompletion24 = (_step24 = _iterator24.next()).done); _iteratorNormalCompletion24 = true) {
+      var oldDirective = _step24.value;
+      schemaChanges.push({
+        type: BreakingChangeType.DIRECTIVE_REMOVED,
+        description: "".concat(oldDirective.name, " was removed.")
+      });
     }
   } catch (err) {
-    _didIteratorError23 = true;
-    _iteratorError23 = err;
+    _didIteratorError24 = true;
+    _iteratorError24 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion23 && _iterator23.return != null) {
-        _iterator23.return();
+      if (!_iteratorNormalCompletion24 && _iterator24.return != null) {
+        _iterator24.return();
       }
     } finally {
-      if (_didIteratorError23) {
-        throw _iteratorError23;
+      if (_didIteratorError24) {
+        throw _iteratorError24;
       }
     }
   }
 
-  return schemaChanges;
-}
-
-function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
-  var schemaChanges = [];
-  var typesDiff = diff((0, _objectValues.default)(oldSchema.getTypeMap()), (0, _objectValues.default)(newSchema.getTypeMap()));
   var _iteratorNormalCompletion25 = true;
   var _didIteratorError25 = false;
   var _iteratorError25 = undefined;
 
   try {
-    for (var _iterator25 = typesDiff.persisted[Symbol.iterator](), _step25; !(_iteratorNormalCompletion25 = (_step25 = _iterator25.next()).done); _iteratorNormalCompletion25 = true) {
-      var _ref28 = _step25.value;
-      var oldType = _ref28[0];
-      var newType = _ref28[1];
-
-      if (!(0, _definition.isObjectType)(oldType) || !(0, _definition.isObjectType)(newType)) {
-        continue;
-      }
-
-      var interfacesDiff = diff(oldType.getInterfaces(), newType.getInterfaces());
+    for (var _iterator25 = directivesDiff.persisted[Symbol.iterator](), _step25; !(_iteratorNormalCompletion25 = (_step25 = _iterator25.next()).done); _iteratorNormalCompletion25 = true) {
+      var _ref24 = _step25.value;
+      var _oldDirective = _ref24[0];
+      var newDirective = _ref24[1];
+      var argsDiff = diff(_oldDirective.args, newDirective.args);
       var _iteratorNormalCompletion26 = true;
       var _didIteratorError26 = false;
       var _iteratorError26 = undefined;
 
       try {
-        for (var _iterator26 = interfacesDiff.added[Symbol.iterator](), _step26; !(_iteratorNormalCompletion26 = (_step26 = _iterator26.next()).done); _iteratorNormalCompletion26 = true) {
-          var newInterface = _step26.value;
-          schemaChanges.push({
-            type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
-            description: "".concat(newInterface.name, " added to interfaces implemented ") + "by ".concat(oldType.name, ".")
-          });
+        for (var _iterator26 = argsDiff.added[Symbol.iterator](), _step26; !(_iteratorNormalCompletion26 = (_step26 = _iterator26.next()).done); _iteratorNormalCompletion26 = true) {
+          var newArg = _step26.value;
+
+          if ((0, _definition.isRequiredArgument)(newArg)) {
+            schemaChanges.push({
+              type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
+              description: "A required arg ".concat(newArg.name, " on directive ") + "".concat(newDirective.name, " was added.")
+            });
+          }
         }
       } catch (err) {
         _didIteratorError26 = true;
@@ -1000,6 +937,63 @@ function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
         } finally {
           if (_didIteratorError26) {
             throw _iteratorError26;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion27 = true;
+      var _didIteratorError27 = false;
+      var _iteratorError27 = undefined;
+
+      try {
+        for (var _iterator27 = argsDiff.removed[Symbol.iterator](), _step27; !(_iteratorNormalCompletion27 = (_step27 = _iterator27.next()).done); _iteratorNormalCompletion27 = true) {
+          var oldArg = _step27.value;
+          schemaChanges.push({
+            type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
+            description: "".concat(oldArg.name, " was removed from ").concat(_oldDirective.name, ".")
+          });
+        }
+      } catch (err) {
+        _didIteratorError27 = true;
+        _iteratorError27 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion27 && _iterator27.return != null) {
+            _iterator27.return();
+          }
+        } finally {
+          if (_didIteratorError27) {
+            throw _iteratorError27;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion28 = true;
+      var _didIteratorError28 = false;
+      var _iteratorError28 = undefined;
+
+      try {
+        for (var _iterator28 = _oldDirective.locations[Symbol.iterator](), _step28; !(_iteratorNormalCompletion28 = (_step28 = _iterator28.next()).done); _iteratorNormalCompletion28 = true) {
+          var location = _step28.value;
+
+          if (newDirective.locations.indexOf(location) === -1) {
+            schemaChanges.push({
+              type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
+              description: "".concat(location, " was removed from ").concat(_oldDirective.name, ".")
+            });
+          }
+        }
+      } catch (err) {
+        _didIteratorError28 = true;
+        _iteratorError28 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion28 && _iterator28.return != null) {
+            _iterator28.return();
+          }
+        } finally {
+          if (_didIteratorError28) {
+            throw _iteratorError28;
           }
         }
       }
@@ -1022,138 +1016,58 @@ function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
   return schemaChanges;
 }
 
-function findRemovedDirectives(oldSchema, newSchema) {
-  var schemaChanges = [];
-  var directivesDiff = diff(oldSchema.getDirectives(), newSchema.getDirectives());
-  var _iteratorNormalCompletion27 = true;
-  var _didIteratorError27 = false;
-  var _iteratorError27 = undefined;
+function diff(oldArray, newArray) {
+  var added = [];
+  var removed = [];
+  var persisted = [];
+  var oldMap = (0, _keyMap.default)(oldArray, function (_ref25) {
+    var name = _ref25.name;
+    return name;
+  });
+  var newMap = (0, _keyMap.default)(newArray, function (_ref26) {
+    var name = _ref26.name;
+    return name;
+  });
+  var _iteratorNormalCompletion29 = true;
+  var _didIteratorError29 = false;
+  var _iteratorError29 = undefined;
 
   try {
-    for (var _iterator27 = directivesDiff.removed[Symbol.iterator](), _step27; !(_iteratorNormalCompletion27 = (_step27 = _iterator27.next()).done); _iteratorNormalCompletion27 = true) {
-      var oldDirective = _step27.value;
-      schemaChanges.push({
-        type: BreakingChangeType.DIRECTIVE_REMOVED,
-        description: "".concat(oldDirective.name, " was removed.")
-      });
+    for (var _iterator29 = oldArray[Symbol.iterator](), _step29; !(_iteratorNormalCompletion29 = (_step29 = _iterator29.next()).done); _iteratorNormalCompletion29 = true) {
+      var oldItem = _step29.value;
+      var newItem = newMap[oldItem.name];
+
+      if (newItem === undefined) {
+        removed.push(oldItem);
+      } else {
+        persisted.push([oldItem, newItem]);
+      }
     }
   } catch (err) {
-    _didIteratorError27 = true;
-    _iteratorError27 = err;
+    _didIteratorError29 = true;
+    _iteratorError29 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion27 && _iterator27.return != null) {
-        _iterator27.return();
+      if (!_iteratorNormalCompletion29 && _iterator29.return != null) {
+        _iterator29.return();
       }
     } finally {
-      if (_didIteratorError27) {
-        throw _iteratorError27;
+      if (_didIteratorError29) {
+        throw _iteratorError29;
       }
     }
   }
 
-  return schemaChanges;
-}
-
-function findRemovedDirectiveArgs(oldSchema, newSchema) {
-  var schemaChanges = [];
-  var directivesDiff = diff(oldSchema.getDirectives(), newSchema.getDirectives());
-  var _iteratorNormalCompletion28 = true;
-  var _didIteratorError28 = false;
-  var _iteratorError28 = undefined;
-
-  try {
-    for (var _iterator28 = directivesDiff.persisted[Symbol.iterator](), _step28; !(_iteratorNormalCompletion28 = (_step28 = _iterator28.next()).done); _iteratorNormalCompletion28 = true) {
-      var _ref30 = _step28.value;
-      var oldDirective = _ref30[0];
-      var newDirective = _ref30[1];
-      var argsDiff = diff(oldDirective.args, newDirective.args);
-      var _iteratorNormalCompletion29 = true;
-      var _didIteratorError29 = false;
-      var _iteratorError29 = undefined;
-
-      try {
-        for (var _iterator29 = argsDiff.removed[Symbol.iterator](), _step29; !(_iteratorNormalCompletion29 = (_step29 = _iterator29.next()).done); _iteratorNormalCompletion29 = true) {
-          var oldArg = _step29.value;
-          schemaChanges.push({
-            type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
-            description: "".concat(oldArg.name, " was removed from ").concat(oldDirective.name, ".")
-          });
-        }
-      } catch (err) {
-        _didIteratorError29 = true;
-        _iteratorError29 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion29 && _iterator29.return != null) {
-            _iterator29.return();
-          }
-        } finally {
-          if (_didIteratorError29) {
-            throw _iteratorError29;
-          }
-        }
-      }
-    }
-  } catch (err) {
-    _didIteratorError28 = true;
-    _iteratorError28 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion28 && _iterator28.return != null) {
-        _iterator28.return();
-      }
-    } finally {
-      if (_didIteratorError28) {
-        throw _iteratorError28;
-      }
-    }
-  }
-
-  return schemaChanges;
-}
-
-function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
-  var schemaChanges = [];
-  var directivesDiff = diff(oldSchema.getDirectives(), newSchema.getDirectives());
   var _iteratorNormalCompletion30 = true;
   var _didIteratorError30 = false;
   var _iteratorError30 = undefined;
 
   try {
-    for (var _iterator30 = directivesDiff.persisted[Symbol.iterator](), _step30; !(_iteratorNormalCompletion30 = (_step30 = _iterator30.next()).done); _iteratorNormalCompletion30 = true) {
-      var _ref32 = _step30.value;
-      var oldDirective = _ref32[0];
-      var newDirective = _ref32[1];
-      var argsDiff = diff(oldDirective.args, newDirective.args);
-      var _iteratorNormalCompletion31 = true;
-      var _didIteratorError31 = false;
-      var _iteratorError31 = undefined;
+    for (var _iterator30 = newArray[Symbol.iterator](), _step30; !(_iteratorNormalCompletion30 = (_step30 = _iterator30.next()).done); _iteratorNormalCompletion30 = true) {
+      var _newItem = _step30.value;
 
-      try {
-        for (var _iterator31 = argsDiff.added[Symbol.iterator](), _step31; !(_iteratorNormalCompletion31 = (_step31 = _iterator31.next()).done); _iteratorNormalCompletion31 = true) {
-          var newArg = _step31.value;
-
-          if ((0, _definition.isRequiredArgument)(newArg)) {
-            schemaChanges.push({
-              type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
-              description: "A required arg ".concat(newArg.name, " on directive ") + "".concat(newDirective.name, " was added.")
-            });
-          }
-        }
-      } catch (err) {
-        _didIteratorError31 = true;
-        _iteratorError31 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion31 && _iterator31.return != null) {
-            _iterator31.return();
-          }
-        } finally {
-          if (_didIteratorError31) {
-            throw _iteratorError31;
-          }
-        }
+      if (oldMap[_newItem.name] === undefined) {
+        added.push(_newItem);
       }
     }
   } catch (err) {
@@ -1167,138 +1081,6 @@ function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
     } finally {
       if (_didIteratorError30) {
         throw _iteratorError30;
-      }
-    }
-  }
-
-  return schemaChanges;
-}
-
-function findRemovedDirectiveLocations(oldSchema, newSchema) {
-  var schemaChanges = [];
-  var directivesDiff = diff(oldSchema.getDirectives(), newSchema.getDirectives());
-  var _iteratorNormalCompletion32 = true;
-  var _didIteratorError32 = false;
-  var _iteratorError32 = undefined;
-
-  try {
-    for (var _iterator32 = directivesDiff.persisted[Symbol.iterator](), _step32; !(_iteratorNormalCompletion32 = (_step32 = _iterator32.next()).done); _iteratorNormalCompletion32 = true) {
-      var _ref34 = _step32.value;
-      var oldDirective = _ref34[0];
-      var newDirective = _ref34[1];
-      var _iteratorNormalCompletion33 = true;
-      var _didIteratorError33 = false;
-      var _iteratorError33 = undefined;
-
-      try {
-        for (var _iterator33 = oldDirective.locations[Symbol.iterator](), _step33; !(_iteratorNormalCompletion33 = (_step33 = _iterator33.next()).done); _iteratorNormalCompletion33 = true) {
-          var location = _step33.value;
-
-          if (newDirective.locations.indexOf(location) === -1) {
-            schemaChanges.push({
-              type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
-              description: "".concat(location, " was removed from ").concat(oldDirective.name, ".")
-            });
-          }
-        }
-      } catch (err) {
-        _didIteratorError33 = true;
-        _iteratorError33 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion33 && _iterator33.return != null) {
-            _iterator33.return();
-          }
-        } finally {
-          if (_didIteratorError33) {
-            throw _iteratorError33;
-          }
-        }
-      }
-    }
-  } catch (err) {
-    _didIteratorError32 = true;
-    _iteratorError32 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion32 && _iterator32.return != null) {
-        _iterator32.return();
-      }
-    } finally {
-      if (_didIteratorError32) {
-        throw _iteratorError32;
-      }
-    }
-  }
-
-  return schemaChanges;
-}
-
-function diff(oldArray, newArray) {
-  var added = [];
-  var persisted = [];
-  var removed = [];
-  var oldMap = (0, _keyMap.default)(oldArray, function (_ref35) {
-    var name = _ref35.name;
-    return name;
-  });
-  var newMap = (0, _keyMap.default)(newArray, function (_ref36) {
-    var name = _ref36.name;
-    return name;
-  });
-  var _iteratorNormalCompletion34 = true;
-  var _didIteratorError34 = false;
-  var _iteratorError34 = undefined;
-
-  try {
-    for (var _iterator34 = oldArray[Symbol.iterator](), _step34; !(_iteratorNormalCompletion34 = (_step34 = _iterator34.next()).done); _iteratorNormalCompletion34 = true) {
-      var oldItem = _step34.value;
-      var newItem = newMap[oldItem.name];
-
-      if (newItem === undefined) {
-        removed.push(oldItem);
-      } else {
-        persisted.push([oldItem, newItem]);
-      }
-    }
-  } catch (err) {
-    _didIteratorError34 = true;
-    _iteratorError34 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion34 && _iterator34.return != null) {
-        _iterator34.return();
-      }
-    } finally {
-      if (_didIteratorError34) {
-        throw _iteratorError34;
-      }
-    }
-  }
-
-  var _iteratorNormalCompletion35 = true;
-  var _didIteratorError35 = false;
-  var _iteratorError35 = undefined;
-
-  try {
-    for (var _iterator35 = newArray[Symbol.iterator](), _step35; !(_iteratorNormalCompletion35 = (_step35 = _iterator35.next()).done); _iteratorNormalCompletion35 = true) {
-      var _newItem = _step35.value;
-
-      if (oldMap[_newItem.name] === undefined) {
-        added.push(_newItem);
-      }
-    }
-  } catch (err) {
-    _didIteratorError35 = true;
-    _iteratorError35 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion35 && _iterator35.return != null) {
-        _iterator35.return();
-      }
-    } finally {
-      if (_didIteratorError35) {
-        throw _iteratorError35;
       }
     }
   }
