@@ -7,8 +7,8 @@
  * @flow strict
  */
 
-import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
+import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import {
   type GraphQLNamedType,
@@ -125,15 +125,16 @@ function findRemovedTypes(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    if (!newTypeMap[oldType.name]) {
-      schemaChanges.push({
-        type: BreakingChangeType.TYPE_REMOVED,
-        description: `${oldType.name} was removed.`,
-      });
-    }
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
+
+  for (const oldType of typesDiff.removed) {
+    schemaChanges.push({
+      type: BreakingChangeType.TYPE_REMOVED,
+      description: `${oldType.name} was removed.`,
+    });
   }
   return schemaChanges;
 }
@@ -148,14 +149,12 @@ function findTypesThatChangedKind(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
-    if (!newType) {
-      continue;
-    }
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
 
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (oldType.constructor !== newType.constructor) {
       schemaChanges.push({
         type: BreakingChangeType.TYPE_CHANGED_KIND,
@@ -180,11 +179,12 @@ function findArgChanges(
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
 
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (
       !(isObjectType(oldType) || isInterfaceType(oldType)) ||
       !(isObjectType(newType) || isInterfaceType(newType)) ||
@@ -193,28 +193,24 @@ function findArgChanges(
       continue;
     }
 
-    const oldFields = oldType.getFields();
-    const newFields = newType.getFields();
-    for (const oldField of objectValues(oldFields)) {
-      const newField = newFields[oldField.name];
-      if (newField === undefined) {
-        continue;
+    const fieldsDiff = diff(
+      objectValues(oldType.getFields()),
+      objectValues(newType.getFields()),
+    );
+
+    for (const [oldField, newField] of fieldsDiff.persisted) {
+      const argsDiff = diff(oldField.args, newField.args);
+
+      for (const oldArg of argsDiff.removed) {
+        schemaChanges.push({
+          type: BreakingChangeType.ARG_REMOVED,
+          description:
+            `${oldType.name}.${oldField.name} arg ` +
+            `${oldArg.name} was removed.`,
+        });
       }
 
-      for (const oldArg of oldField.args) {
-        const newArg = findByName(newField.args, oldArg.name);
-
-        // Arg not present
-        if (newArg === undefined) {
-          schemaChanges.push({
-            type: BreakingChangeType.ARG_REMOVED,
-            description:
-              `${oldType.name}.${oldField.name} arg ` +
-              `${oldArg.name} was removed.`,
-          });
-          continue;
-        }
-
+      for (const [oldArg, newArg] of argsDiff.persisted) {
         const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(
           oldArg.type,
           newArg.type,
@@ -239,25 +235,22 @@ function findArgChanges(
           });
         }
       }
-      // Check if arg was added to the field
-      for (const newArg of newField.args) {
-        const oldArg = findByName(oldField.args, newArg.name);
-        if (oldArg === undefined) {
-          if (isRequiredArgument(newArg)) {
-            schemaChanges.push({
-              type: BreakingChangeType.REQUIRED_ARG_ADDED,
-              description:
-                `A required arg ${newArg.name} on ` +
-                `${newType.name}.${newField.name} was added.`,
-            });
-          } else {
-            schemaChanges.push({
-              type: DangerousChangeType.OPTIONAL_ARG_ADDED,
-              description:
-                `An optional arg ${newArg.name} on ` +
-                `${newType.name}.${newField.name} was added.`,
-            });
-          }
+
+      for (const newArg of argsDiff.added) {
+        if (isRequiredArgument(newArg)) {
+          schemaChanges.push({
+            type: BreakingChangeType.REQUIRED_ARG_ADDED,
+            description:
+              `A required arg ${newArg.name} on ` +
+              `${newType.name}.${newField.name} was added.`,
+          });
+        } else {
+          schemaChanges.push({
+            type: DangerousChangeType.OPTIONAL_ARG_ADDED,
+            description:
+              `An optional arg ${newArg.name} on ` +
+              `${newType.name}.${newField.name} was added.`,
+          });
         }
       }
     }
@@ -297,10 +290,12 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
+
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (
       !(isObjectType(oldType) || isInterfaceType(oldType)) ||
       !(isObjectType(newType) || isInterfaceType(newType)) ||
@@ -309,20 +304,19 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(
       continue;
     }
 
-    const oldFields = oldType.getFields();
-    const newFields = newType.getFields();
-    for (const oldField of objectValues(oldFields)) {
-      const newField = newFields[oldField.name];
+    const fieldsDiff = diff(
+      objectValues(oldType.getFields()),
+      objectValues(newType.getFields()),
+    );
 
-      // Check if the field is missing on the type in the new schema.
-      if (newField === undefined) {
-        schemaChanges.push({
-          type: BreakingChangeType.FIELD_REMOVED,
-          description: `${oldType.name}.${oldField.name} was removed.`,
-        });
-        continue;
-      }
+    for (const oldField of fieldsDiff.removed) {
+      schemaChanges.push({
+        type: BreakingChangeType.FIELD_REMOVED,
+        description: `${oldType.name}.${oldField.name} was removed.`,
+      });
+    }
 
+    for (const [oldField, newField] of fieldsDiff.persisted) {
       const isSafe = isChangeSafeForObjectOrInterfaceField(
         oldField.type,
         newField.type,
@@ -346,28 +340,29 @@ function findFieldsThatChangedTypeOnInputObjectTypes(
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
+
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (!isInputObjectType(oldType) || !isInputObjectType(newType)) {
       continue;
     }
 
-    const oldFields = oldType.getFields();
-    const newFields = newType.getFields();
-    for (const oldField of objectValues(oldFields)) {
-      const newField = newFields[oldField.name];
+    const fieldsDiff = diff(
+      objectValues(oldType.getFields()),
+      objectValues(newType.getFields()),
+    );
 
-      // Check if the field is missing on the type in the new schema.
-      if (newField === undefined) {
-        schemaChanges.push({
-          type: BreakingChangeType.FIELD_REMOVED,
-          description: `${oldType.name}.${oldField.name} was removed.`,
-        });
-        continue;
-      }
+    for (const oldField of fieldsDiff.removed) {
+      schemaChanges.push({
+        type: BreakingChangeType.FIELD_REMOVED,
+        description: `${oldType.name}.${oldField.name} was removed.`,
+      });
+    }
 
+    for (const [oldField, newField] of fieldsDiff.persisted) {
       const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(
         oldField.type,
         newField.type,
@@ -382,26 +377,21 @@ function findFieldsThatChangedTypeOnInputObjectTypes(
       }
     }
 
-    // Check if a field was added to the input object type
-    for (const newField of objectValues(newFields)) {
-      const oldField = oldFields[newField.name];
-
-      if (oldField === undefined) {
-        if (isRequiredInputField(newField)) {
-          schemaChanges.push({
-            type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
-            description:
-              `A required field ${newField.name} on ` +
-              `input type ${oldType.name} was added.`,
-          });
-        } else {
-          schemaChanges.push({
-            type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
-            description:
-              `An optional field ${newField.name} on ` +
-              `input type ${oldType.name} was added.`,
-          });
-        }
+    for (const newField of fieldsDiff.added) {
+      if (isRequiredInputField(newField)) {
+        schemaChanges.push({
+          type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
+          description:
+            `A required field ${newField.name} on ` +
+            `input type ${oldType.name} was added.`,
+        });
+      } else {
+        schemaChanges.push({
+          type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
+          description:
+            `An optional field ${newField.name} on ` +
+            `input type ${oldType.name} was added.`,
+        });
       }
     }
   }
@@ -484,30 +474,25 @@ function findTypesRemovedFromUnions(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
+
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (!isUnionType(oldType) || !isUnionType(newType)) {
       continue;
     }
 
-    const oldPossibleTypes = oldType.getTypes();
-    const newPossibleTypes = newType.getTypes();
-    for (const oldPossibleType of oldPossibleTypes) {
-      const newPossibleType = findByName(
-        newPossibleTypes,
-        oldPossibleType.name,
-      );
+    const possibleTypesDiff = diff(oldType.getTypes(), newType.getTypes());
 
-      if (newPossibleType === undefined) {
-        schemaChanges.push({
-          type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
-          description:
-            `${oldPossibleType.name} was removed from ` +
-            `union type ${oldType.name}.`,
-        });
-      }
+    for (const oldPossibleType of possibleTypesDiff.removed) {
+      schemaChanges.push({
+        type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
+        description:
+          `${oldPossibleType.name} was removed from ` +
+          `union type ${oldType.name}.`,
+      });
     }
   }
   return schemaChanges;
@@ -523,30 +508,25 @@ function findTypesAddedToUnions(
 ): Array<DangerousChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
+
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (!isUnionType(oldType) || !isUnionType(newType)) {
       continue;
     }
 
-    const oldPossibleTypes = oldType.getTypes();
-    const newPossibleTypes = newType.getTypes();
-    for (const newPossibleType of newPossibleTypes) {
-      const oldPossibleType = findByName(
-        oldPossibleTypes,
-        newPossibleType.name,
-      );
+    const possibleTypesDiff = diff(oldType.getTypes(), newType.getTypes());
 
-      if (oldPossibleType === undefined) {
-        schemaChanges.push({
-          type: DangerousChangeType.TYPE_ADDED_TO_UNION,
-          description:
-            `${newPossibleType.name} was added to ` +
-            `union type ${oldType.name}.`,
-        });
-      }
+    for (const newPossibleType of possibleTypesDiff.added) {
+      schemaChanges.push({
+        type: DangerousChangeType.TYPE_ADDED_TO_UNION,
+        description:
+          `${newPossibleType.name} was added to ` +
+          `union type ${oldType.name}.`,
+      });
     }
   }
   return schemaChanges;
@@ -561,26 +541,25 @@ function findValuesRemovedFromEnums(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
+
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (!isEnumType(oldType) || !isEnumType(newType)) {
       continue;
     }
 
-    const oldValues = oldType.getValues();
-    const newValues = newType.getValues();
-    for (const oldValue of oldValues) {
-      const newValue = findByName(newValues, oldValue.name);
-      if (newValue === undefined) {
-        schemaChanges.push({
-          type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-          description: `${oldValue.name} was removed from enum type ${
-            oldType.name
-          }.`,
-        });
-      }
+    const valuesDiff = diff(oldType.getValues(), newType.getValues());
+
+    for (const oldValue of valuesDiff.removed) {
+      schemaChanges.push({
+        type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
+        description: `${oldValue.name} was removed from enum type ${
+          oldType.name
+        }.`,
+      });
     }
   }
   return schemaChanges;
@@ -596,26 +575,23 @@ function findValuesAddedToEnums(
 ): Array<DangerousChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
+
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (!isEnumType(oldType) || !isEnumType(newType)) {
       continue;
     }
 
-    const oldValues = oldType.getValues();
-    const newValues = newType.getValues();
-    for (const newValue of newValues) {
-      const oldValue = findByName(oldValues, newValue.name);
-      if (oldValue === undefined) {
-        schemaChanges.push({
-          type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
-          description: `${newValue.name} was added to enum type ${
-            oldType.name
-          }.`,
-        });
-      }
+    const valuesDiff = diff(oldType.getValues(), newType.getValues());
+
+    for (const newValue of valuesDiff.added) {
+      schemaChanges.push({
+        type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
+        description: `${newValue.name} was added to enum type ${oldType.name}.`,
+      });
     }
   }
   return schemaChanges;
@@ -627,26 +603,28 @@ function findInterfacesRemovedFromObjectTypes(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
+
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (!isObjectType(oldType) || !isObjectType(newType)) {
       continue;
     }
 
-    const oldInterfaces = oldType.getInterfaces();
-    const newInterfaces = newType.getInterfaces();
-    for (const oldInterface of oldInterfaces) {
-      const newInterface = findByName(newInterfaces, oldInterface.name);
-      if (newInterface === undefined) {
-        schemaChanges.push({
-          type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
-          description:
-            `${oldType.name} no longer implements interface ` +
-            `${oldInterface.name}.`,
-        });
-      }
+    const interfacesDiff = diff(
+      oldType.getInterfaces(),
+      newType.getInterfaces(),
+    );
+
+    for (const oldInterface of interfacesDiff.removed) {
+      schemaChanges.push({
+        type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+        description:
+          `${oldType.name} no longer implements interface ` +
+          `${oldInterface.name}.`,
+      });
     }
   }
   return schemaChanges;
@@ -658,26 +636,28 @@ function findInterfacesAddedToObjectTypes(
 ): Array<DangerousChange> {
   const schemaChanges = [];
 
-  const oldTypeMap = oldSchema.getTypeMap();
-  const newTypeMap = newSchema.getTypeMap();
-  for (const oldType of objectValues(oldTypeMap)) {
-    const newType = newTypeMap[oldType.name];
+  const typesDiff = diff(
+    objectValues(oldSchema.getTypeMap()),
+    objectValues(newSchema.getTypeMap()),
+  );
+
+  for (const [oldType, newType] of typesDiff.persisted) {
     if (!isObjectType(oldType) || !isObjectType(newType)) {
       continue;
     }
 
-    const oldInterfaces = oldType.getInterfaces();
-    const newInterfaces = newType.getInterfaces();
-    for (const newInterface of newInterfaces) {
-      const oldInterface = findByName(oldInterfaces, newInterface.name);
-      if (oldInterface === undefined) {
-        schemaChanges.push({
-          type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
-          description:
-            `${newInterface.name} added to interfaces implemented ` +
-            `by ${oldType.name}.`,
-        });
-      }
+    const interfacesDiff = diff(
+      oldType.getInterfaces(),
+      newType.getInterfaces(),
+    );
+
+    for (const newInterface of interfacesDiff.added) {
+      schemaChanges.push({
+        type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
+        description:
+          `${newInterface.name} added to interfaces implemented ` +
+          `by ${oldType.name}.`,
+      });
     }
   }
   return schemaChanges;
@@ -689,16 +669,16 @@ function findRemovedDirectives(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldDirectives = oldSchema.getDirectives();
-  const newDirectives = newSchema.getDirectives();
-  for (const oldDirective of oldDirectives) {
-    const newDirective = findByName(newDirectives, oldDirective.name);
-    if (newDirective === undefined) {
-      schemaChanges.push({
-        type: BreakingChangeType.DIRECTIVE_REMOVED,
-        description: `${oldDirective.name} was removed.`,
-      });
-    }
+  const directivesDiff = diff(
+    oldSchema.getDirectives(),
+    newSchema.getDirectives(),
+  );
+
+  for (const oldDirective of directivesDiff.removed) {
+    schemaChanges.push({
+      type: BreakingChangeType.DIRECTIVE_REMOVED,
+      description: `${oldDirective.name} was removed.`,
+    });
   }
 
   return schemaChanges;
@@ -710,22 +690,18 @@ function findRemovedDirectiveArgs(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldDirectives = oldSchema.getDirectives();
-  const newDirectives = newSchema.getDirectives();
-  for (const oldDirective of oldDirectives) {
-    const newDirective = findByName(newDirectives, oldDirective.name);
-    if (newDirective === undefined) {
-      continue;
-    }
+  const directivesDiff = diff(
+    oldSchema.getDirectives(),
+    newSchema.getDirectives(),
+  );
 
-    for (const oldArg of oldDirective.args) {
-      const newArg = findByName(newDirective.args, oldArg.name);
-      if (newArg === undefined) {
-        schemaChanges.push({
-          type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
-          description: `${oldArg.name} was removed from ${oldDirective.name}.`,
-        });
-      }
+  for (const [oldDirective, newDirective] of directivesDiff.persisted) {
+    const argsDiff = diff(oldDirective.args, newDirective.args);
+    for (const oldArg of argsDiff.removed) {
+      schemaChanges.push({
+        type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
+        description: `${oldArg.name} was removed from ${oldDirective.name}.`,
+      });
     }
   }
 
@@ -738,17 +714,15 @@ function findAddedNonNullDirectiveArgs(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldDirectives = oldSchema.getDirectives();
-  const newDirectives = newSchema.getDirectives();
-  for (const oldDirective of oldDirectives) {
-    const newDirective = findByName(newDirectives, oldDirective.name);
-    if (newDirective === undefined) {
-      continue;
-    }
+  const directivesDiff = diff(
+    oldSchema.getDirectives(),
+    newSchema.getDirectives(),
+  );
 
-    for (const newArg of newDirective.args) {
-      const oldArg = findByName(oldDirective.args, newArg.name);
-      if (oldArg === undefined && isRequiredArgument(newArg)) {
+  for (const [oldDirective, newDirective] of directivesDiff.persisted) {
+    const argsDiff = diff(oldDirective.args, newDirective.args);
+    for (const newArg of argsDiff.added) {
+      if (isRequiredArgument(newArg)) {
         schemaChanges.push({
           type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
           description:
@@ -768,14 +742,12 @@ function findRemovedDirectiveLocations(
 ): Array<BreakingChange> {
   const schemaChanges = [];
 
-  const oldDirectives = oldSchema.getDirectives();
-  const newDirectives = newSchema.getDirectives();
-  for (const oldDirective of oldDirectives) {
-    const newDirective = findByName(newDirectives, oldDirective.name);
-    if (newDirective === undefined) {
-      continue;
-    }
+  const directivesDiff = diff(
+    oldSchema.getDirectives(),
+    newSchema.getDirectives(),
+  );
 
+  for (const [oldDirective, newDirective] of directivesDiff.persisted) {
     for (const location of oldDirective.locations) {
       if (newDirective.locations.indexOf(location) === -1) {
         schemaChanges.push({
@@ -789,9 +761,35 @@ function findRemovedDirectiveLocations(
   return schemaChanges;
 }
 
-function findByName<T: { name: string }>(
-  array: $ReadOnlyArray<T>,
-  name: string,
-): T | void {
-  return find(array, item => item.name === name);
+function diff<T: { name: string }>(
+  oldArray: $ReadOnlyArray<T>,
+  newArray: $ReadOnlyArray<T>,
+): {
+  added: Array<T>,
+  persisted: Array<[T, T]>,
+  removed: Array<T>,
+} {
+  const added = [];
+  const persisted = [];
+  const removed = [];
+
+  const oldMap = keyMap(oldArray, ({ name }) => name);
+  const newMap = keyMap(newArray, ({ name }) => name);
+
+  for (const oldItem of oldArray) {
+    const newItem = newMap[oldItem.name];
+    if (newItem === undefined) {
+      removed.push(oldItem);
+    } else {
+      persisted.push([oldItem, newItem]);
+    }
+  }
+
+  for (const newItem of newArray) {
+    if (oldMap[newItem.name] === undefined) {
+      added.push(newItem);
+    }
+  }
+
+  return { added, persisted, removed };
 }
