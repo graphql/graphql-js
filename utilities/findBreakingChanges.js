@@ -58,7 +58,10 @@ exports.DangerousChangeType = DangerousChangeType;
  * of breaking changes covered by the other functions down below.
  */
 function findBreakingChanges(oldSchema, newSchema) {
-  return [].concat(findRemovedTypes(oldSchema, newSchema), findTypesThatChangedKind(oldSchema, newSchema), findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema), findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema).breakingChanges, findTypesRemovedFromUnions(oldSchema, newSchema), findValuesRemovedFromEnums(oldSchema, newSchema), findArgChanges(oldSchema, newSchema).breakingChanges, findInterfacesRemovedFromObjectTypes(oldSchema, newSchema), findRemovedDirectives(oldSchema, newSchema), findRemovedDirectiveArgs(oldSchema, newSchema), findAddedNonNullDirectiveArgs(oldSchema, newSchema), findRemovedDirectiveLocations(oldSchema, newSchema));
+  var breakingChanges = findSchemaChanges(oldSchema, newSchema).filter(function (change) {
+    return change.type in BreakingChangeType;
+  });
+  return breakingChanges;
 }
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
@@ -67,7 +70,14 @@ function findBreakingChanges(oldSchema, newSchema) {
 
 
 function findDangerousChanges(oldSchema, newSchema) {
-  return [].concat(findArgChanges(oldSchema, newSchema).dangerousChanges, findValuesAddedToEnums(oldSchema, newSchema), findInterfacesAddedToObjectTypes(oldSchema, newSchema), findTypesAddedToUnions(oldSchema, newSchema), findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema).dangerousChanges);
+  var dangerousChanges = findSchemaChanges(oldSchema, newSchema).filter(function (change) {
+    return change.type in DangerousChangeType;
+  });
+  return dangerousChanges;
+}
+
+function findSchemaChanges(oldSchema, newSchema) {
+  return [].concat(findRemovedTypes(oldSchema, newSchema), findTypesThatChangedKind(oldSchema, newSchema), findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema), findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema), findTypesAddedToUnions(oldSchema, newSchema), findTypesRemovedFromUnions(oldSchema, newSchema), findValuesAddedToEnums(oldSchema, newSchema), findValuesRemovedFromEnums(oldSchema, newSchema), findArgChanges(oldSchema, newSchema), findInterfacesAddedToObjectTypes(oldSchema, newSchema), findInterfacesRemovedFromObjectTypes(oldSchema, newSchema), findRemovedDirectives(oldSchema, newSchema), findRemovedDirectiveArgs(oldSchema, newSchema), findAddedNonNullDirectiveArgs(oldSchema, newSchema), findRemovedDirectiveLocations(oldSchema, newSchema));
 }
 /**
  * Given two schemas, returns an Array containing descriptions of any breaking
@@ -76,9 +86,9 @@ function findDangerousChanges(oldSchema, newSchema) {
 
 
 function findRemovedTypes(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var breakingChanges = [];
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;
@@ -88,7 +98,7 @@ function findRemovedTypes(oldSchema, newSchema) {
       var oldType = _step.value;
 
       if (!newTypeMap[oldType.name]) {
-        breakingChanges.push({
+        schemaChanges.push({
           type: BreakingChangeType.TYPE_REMOVED,
           description: "".concat(oldType.name, " was removed.")
         });
@@ -109,7 +119,7 @@ function findRemovedTypes(oldSchema, newSchema) {
     }
   }
 
-  return breakingChanges;
+  return schemaChanges;
 }
 /**
  * Given two schemas, returns an Array containing descriptions of any breaking
@@ -118,9 +128,9 @@ function findRemovedTypes(oldSchema, newSchema) {
 
 
 function findTypesThatChangedKind(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var breakingChanges = [];
   var _iteratorNormalCompletion2 = true;
   var _didIteratorError2 = false;
   var _iteratorError2 = undefined;
@@ -135,7 +145,7 @@ function findTypesThatChangedKind(oldSchema, newSchema) {
       }
 
       if (oldType.constructor !== newType.constructor) {
-        breakingChanges.push({
+        schemaChanges.push({
           type: BreakingChangeType.TYPE_CHANGED_KIND,
           description: "".concat(oldType.name, " changed from ") + "".concat(typeKindName(oldType), " to ").concat(typeKindName(newType), ".")
         });
@@ -156,7 +166,7 @@ function findTypesThatChangedKind(oldSchema, newSchema) {
     }
   }
 
-  return breakingChanges;
+  return schemaChanges;
 }
 /**
  * Given two schemas, returns an Array containing descriptions of any
@@ -167,10 +177,9 @@ function findTypesThatChangedKind(oldSchema, newSchema) {
 
 
 function findArgChanges(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var breakingChanges = [];
-  var dangerousChanges = [];
   var _iteratorNormalCompletion3 = true;
   var _didIteratorError3 = false;
   var _iteratorError3 = undefined;
@@ -209,7 +218,7 @@ function findArgChanges(oldSchema, newSchema) {
               var newArg = findByName(newField.args, oldArg.name); // Arg not present
 
               if (newArg === undefined) {
-                breakingChanges.push({
+                schemaChanges.push({
                   type: BreakingChangeType.ARG_REMOVED,
                   description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(oldArg.name, " was removed.")
                 });
@@ -219,12 +228,12 @@ function findArgChanges(oldSchema, newSchema) {
               var isSafe = isChangeSafeForInputObjectFieldOrFieldArg(oldArg.type, newArg.type);
 
               if (!isSafe) {
-                breakingChanges.push({
+                schemaChanges.push({
                   type: BreakingChangeType.ARG_CHANGED_KIND,
                   description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(oldArg.name, " has changed type from ") + "".concat(String(oldArg.type), " to ").concat(String(newArg.type), ".")
                 });
               } else if (oldArg.defaultValue !== undefined && oldArg.defaultValue !== newArg.defaultValue) {
-                dangerousChanges.push({
+                schemaChanges.push({
                   type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
                   description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(oldArg.name, " has changed defaultValue.")
                 });
@@ -258,12 +267,12 @@ function findArgChanges(oldSchema, newSchema) {
 
               if (_oldArg === undefined) {
                 if ((0, _definition.isRequiredArgument)(_newArg)) {
-                  breakingChanges.push({
+                  schemaChanges.push({
                     type: BreakingChangeType.REQUIRED_ARG_ADDED,
                     description: "A required arg ".concat(_newArg.name, " on ") + "".concat(newType.name, ".").concat(newField.name, " was added.")
                   });
                 } else {
-                  dangerousChanges.push({
+                  schemaChanges.push({
                     type: DangerousChangeType.OPTIONAL_ARG_ADDED,
                     description: "An optional arg ".concat(_newArg.name, " on ") + "".concat(newType.name, ".").concat(newField.name, " was added.")
                   });
@@ -315,10 +324,7 @@ function findArgChanges(oldSchema, newSchema) {
     }
   }
 
-  return {
-    breakingChanges: breakingChanges,
-    dangerousChanges: dangerousChanges
-  };
+  return schemaChanges;
 }
 
 function typeKindName(type) {
@@ -353,9 +359,9 @@ function typeKindName(type) {
 }
 
 function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var breakingChanges = [];
   var _iteratorNormalCompletion7 = true;
   var _didIteratorError7 = false;
   var _iteratorError7 = undefined;
@@ -381,7 +387,7 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema)
           var newField = newFields[oldField.name]; // Check if the field is missing on the type in the new schema.
 
           if (newField === undefined) {
-            breakingChanges.push({
+            schemaChanges.push({
               type: BreakingChangeType.FIELD_REMOVED,
               description: "".concat(oldType.name, ".").concat(oldField.name, " was removed.")
             });
@@ -391,7 +397,7 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema)
           var isSafe = isChangeSafeForObjectOrInterfaceField(oldField.type, newField.type);
 
           if (!isSafe) {
-            breakingChanges.push({
+            schemaChanges.push({
               type: BreakingChangeType.FIELD_CHANGED_KIND,
               description: "".concat(oldType.name, ".").concat(oldField.name, " changed type from ") + "".concat(String(oldField.type), " to ").concat(String(newField.type), ".")
             });
@@ -427,14 +433,13 @@ function findFieldsThatChangedTypeOnObjectOrInterfaceTypes(oldSchema, newSchema)
     }
   }
 
-  return breakingChanges;
+  return schemaChanges;
 }
 
 function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var breakingChanges = [];
-  var dangerousChanges = [];
   var _iteratorNormalCompletion9 = true;
   var _didIteratorError9 = false;
   var _iteratorError9 = undefined;
@@ -460,7 +465,7 @@ function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
           var newField = newFields[oldField.name]; // Check if the field is missing on the type in the new schema.
 
           if (newField === undefined) {
-            breakingChanges.push({
+            schemaChanges.push({
               type: BreakingChangeType.FIELD_REMOVED,
               description: "".concat(oldType.name, ".").concat(oldField.name, " was removed.")
             });
@@ -470,7 +475,7 @@ function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
           var isSafe = isChangeSafeForInputObjectFieldOrFieldArg(oldField.type, newField.type);
 
           if (!isSafe) {
-            breakingChanges.push({
+            schemaChanges.push({
               type: BreakingChangeType.FIELD_CHANGED_KIND,
               description: "".concat(oldType.name, ".").concat(oldField.name, " changed type from ") + "".concat(String(oldField.type), " to ").concat(String(newField.type), ".")
             });
@@ -503,12 +508,12 @@ function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
 
           if (_oldField === undefined) {
             if ((0, _definition.isRequiredInputField)(_newField)) {
-              breakingChanges.push({
+              schemaChanges.push({
                 type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
                 description: "A required field ".concat(_newField.name, " on ") + "input type ".concat(oldType.name, " was added.")
               });
             } else {
-              dangerousChanges.push({
+              schemaChanges.push({
                 type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
                 description: "An optional field ".concat(_newField.name, " on ") + "input type ".concat(oldType.name, " was added.")
               });
@@ -545,10 +550,7 @@ function findFieldsThatChangedTypeOnInputObjectTypes(oldSchema, newSchema) {
     }
   }
 
-  return {
-    breakingChanges: breakingChanges,
-    dangerousChanges: dangerousChanges
-  };
+  return schemaChanges;
 }
 
 function isChangeSafeForObjectOrInterfaceField(oldType, newType) {
@@ -594,9 +596,9 @@ function isChangeSafeForInputObjectFieldOrFieldArg(oldType, newType) {
 
 
 function findTypesRemovedFromUnions(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var typesRemovedFromUnion = [];
   var _iteratorNormalCompletion12 = true;
   var _didIteratorError12 = false;
   var _iteratorError12 = undefined;
@@ -622,7 +624,7 @@ function findTypesRemovedFromUnions(oldSchema, newSchema) {
           var newPossibleType = findByName(newPossibleTypes, oldPossibleType.name);
 
           if (newPossibleType === undefined) {
-            typesRemovedFromUnion.push({
+            schemaChanges.push({
               type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
               description: "".concat(oldPossibleType.name, " was removed from ") + "union type ".concat(oldType.name, ".")
             });
@@ -658,7 +660,7 @@ function findTypesRemovedFromUnions(oldSchema, newSchema) {
     }
   }
 
-  return typesRemovedFromUnion;
+  return schemaChanges;
 }
 /**
  * Given two schemas, returns an Array containing descriptions of any dangerous
@@ -667,9 +669,9 @@ function findTypesRemovedFromUnions(oldSchema, newSchema) {
 
 
 function findTypesAddedToUnions(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var typesAddedToUnion = [];
   var _iteratorNormalCompletion14 = true;
   var _didIteratorError14 = false;
   var _iteratorError14 = undefined;
@@ -695,7 +697,7 @@ function findTypesAddedToUnions(oldSchema, newSchema) {
           var oldPossibleType = findByName(oldPossibleTypes, newPossibleType.name);
 
           if (oldPossibleType === undefined) {
-            typesAddedToUnion.push({
+            schemaChanges.push({
               type: DangerousChangeType.TYPE_ADDED_TO_UNION,
               description: "".concat(newPossibleType.name, " was added to ") + "union type ".concat(oldType.name, ".")
             });
@@ -731,7 +733,7 @@ function findTypesAddedToUnions(oldSchema, newSchema) {
     }
   }
 
-  return typesAddedToUnion;
+  return schemaChanges;
 }
 /**
  * Given two schemas, returns an Array containing descriptions of any breaking
@@ -740,9 +742,9 @@ function findTypesAddedToUnions(oldSchema, newSchema) {
 
 
 function findValuesRemovedFromEnums(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var valuesRemovedFromEnums = [];
   var _iteratorNormalCompletion16 = true;
   var _didIteratorError16 = false;
   var _iteratorError16 = undefined;
@@ -768,7 +770,7 @@ function findValuesRemovedFromEnums(oldSchema, newSchema) {
           var newValue = findByName(newValues, oldValue.name);
 
           if (newValue === undefined) {
-            valuesRemovedFromEnums.push({
+            schemaChanges.push({
               type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
               description: "".concat(oldValue.name, " was removed from enum type ").concat(oldType.name, ".")
             });
@@ -804,7 +806,7 @@ function findValuesRemovedFromEnums(oldSchema, newSchema) {
     }
   }
 
-  return valuesRemovedFromEnums;
+  return schemaChanges;
 }
 /**
  * Given two schemas, returns an Array containing descriptions of any dangerous
@@ -813,9 +815,9 @@ function findValuesRemovedFromEnums(oldSchema, newSchema) {
 
 
 function findValuesAddedToEnums(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var valuesAddedToEnums = [];
   var _iteratorNormalCompletion18 = true;
   var _didIteratorError18 = false;
   var _iteratorError18 = undefined;
@@ -841,7 +843,7 @@ function findValuesAddedToEnums(oldSchema, newSchema) {
           var oldValue = findByName(oldValues, newValue.name);
 
           if (oldValue === undefined) {
-            valuesAddedToEnums.push({
+            schemaChanges.push({
               type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
               description: "".concat(newValue.name, " was added to enum type ").concat(oldType.name, ".")
             });
@@ -877,13 +879,13 @@ function findValuesAddedToEnums(oldSchema, newSchema) {
     }
   }
 
-  return valuesAddedToEnums;
+  return schemaChanges;
 }
 
 function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var breakingChanges = [];
   var _iteratorNormalCompletion20 = true;
   var _didIteratorError20 = false;
   var _iteratorError20 = undefined;
@@ -909,7 +911,7 @@ function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
           var newInterface = findByName(newInterfaces, oldInterface.name);
 
           if (newInterface === undefined) {
-            breakingChanges.push({
+            schemaChanges.push({
               type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
               description: "".concat(oldType.name, " no longer implements interface ") + "".concat(oldInterface.name, ".")
             });
@@ -945,13 +947,13 @@ function findInterfacesRemovedFromObjectTypes(oldSchema, newSchema) {
     }
   }
 
-  return breakingChanges;
+  return schemaChanges;
 }
 
 function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
+  var schemaChanges = [];
   var oldTypeMap = oldSchema.getTypeMap();
   var newTypeMap = newSchema.getTypeMap();
-  var interfacesAddedToObjectTypes = [];
   var _iteratorNormalCompletion22 = true;
   var _didIteratorError22 = false;
   var _iteratorError22 = undefined;
@@ -977,7 +979,7 @@ function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
           var oldInterface = findByName(oldInterfaces, newInterface.name);
 
           if (oldInterface === undefined) {
-            interfacesAddedToObjectTypes.push({
+            schemaChanges.push({
               type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
               description: "".concat(newInterface.name, " added to interfaces implemented ") + "by ".concat(oldType.name, ".")
             });
@@ -1013,11 +1015,11 @@ function findInterfacesAddedToObjectTypes(oldSchema, newSchema) {
     }
   }
 
-  return interfacesAddedToObjectTypes;
+  return schemaChanges;
 }
 
 function findRemovedDirectives(oldSchema, newSchema) {
-  var removedDirectives = [];
+  var schemaChanges = [];
   var oldDirectives = oldSchema.getDirectives();
   var newDirectives = newSchema.getDirectives();
   var _iteratorNormalCompletion24 = true;
@@ -1030,7 +1032,7 @@ function findRemovedDirectives(oldSchema, newSchema) {
       var newDirective = findByName(newDirectives, oldDirective.name);
 
       if (newDirective === undefined) {
-        removedDirectives.push({
+        schemaChanges.push({
           type: BreakingChangeType.DIRECTIVE_REMOVED,
           description: "".concat(oldDirective.name, " was removed.")
         });
@@ -1051,11 +1053,11 @@ function findRemovedDirectives(oldSchema, newSchema) {
     }
   }
 
-  return removedDirectives;
+  return schemaChanges;
 }
 
 function findRemovedDirectiveArgs(oldSchema, newSchema) {
-  var removedDirectiveArgs = [];
+  var schemaChanges = [];
   var oldDirectives = oldSchema.getDirectives();
   var newDirectives = newSchema.getDirectives();
   var _iteratorNormalCompletion25 = true;
@@ -1081,7 +1083,7 @@ function findRemovedDirectiveArgs(oldSchema, newSchema) {
           var newArg = findByName(newDirective.args, oldArg.name);
 
           if (newArg === undefined) {
-            removedDirectiveArgs.push({
+            schemaChanges.push({
               type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
               description: "".concat(oldArg.name, " was removed from ").concat(oldDirective.name, ".")
             });
@@ -1117,11 +1119,11 @@ function findRemovedDirectiveArgs(oldSchema, newSchema) {
     }
   }
 
-  return removedDirectiveArgs;
+  return schemaChanges;
 }
 
 function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
-  var addedNonNullableArgs = [];
+  var schemaChanges = [];
   var oldDirectives = oldSchema.getDirectives();
   var newDirectives = newSchema.getDirectives();
   var _iteratorNormalCompletion27 = true;
@@ -1147,7 +1149,7 @@ function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
           var oldArg = findByName(oldDirective.args, newArg.name);
 
           if (oldArg === undefined && (0, _definition.isRequiredArgument)(newArg)) {
-            addedNonNullableArgs.push({
+            schemaChanges.push({
               type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
               description: "A required arg ".concat(newArg.name, " on directive ") + "".concat(newDirective.name, " was added.")
             });
@@ -1183,11 +1185,11 @@ function findAddedNonNullDirectiveArgs(oldSchema, newSchema) {
     }
   }
 
-  return addedNonNullableArgs;
+  return schemaChanges;
 }
 
 function findRemovedDirectiveLocations(oldSchema, newSchema) {
-  var removedLocations = [];
+  var schemaChanges = [];
   var oldDirectives = oldSchema.getDirectives();
   var newDirectives = newSchema.getDirectives();
   var _iteratorNormalCompletion29 = true;
@@ -1212,7 +1214,7 @@ function findRemovedDirectiveLocations(oldSchema, newSchema) {
           var location = _step30.value;
 
           if (newDirective.locations.indexOf(location) === -1) {
-            removedLocations.push({
+            schemaChanges.push({
               type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
               description: "".concat(location, " was removed from ").concat(oldDirective.name, ".")
             });
@@ -1248,7 +1250,7 @@ function findRemovedDirectiveLocations(oldSchema, newSchema) {
     }
   }
 
-  return removedLocations;
+  return schemaChanges;
 }
 
 function findByName(array, name) {
