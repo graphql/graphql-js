@@ -973,23 +973,23 @@ describe('findDangerousChanges', () => {
 
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
-        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+        type: DangerousChangeType.TYPE_ADDED_TO_UNION,
         description:
-          'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue.',
+          'TypeInUnion2 was added to union type UnionTypeThatGainsAType.',
       },
       {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
         description: 'VALUE2 was added to enum type EnumType1.',
       },
       {
+        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+        description:
+          'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue.',
+      },
+      {
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
         description:
           'Interface1 added to interfaces implemented by TypeThatGainsInterface1.',
-      },
-      {
-        type: DangerousChangeType.TYPE_ADDED_TO_UNION,
-        description:
-          'TypeInUnion2 was added to union type UnionTypeThatGainsAType.',
       },
     ]);
   });
