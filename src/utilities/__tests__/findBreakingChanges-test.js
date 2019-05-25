@@ -227,12 +227,12 @@ describe('findBreakingChanges', () => {
 
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field1 changed type from String to Int.',
-      },
-      {
         type: BreakingChangeType.FIELD_REMOVED,
         description: 'InputType1.field2 was removed.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'InputType1.field1 changed type from String to Int.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
