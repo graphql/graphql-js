@@ -86,9 +86,8 @@ export function valueFromAST(
     const itemType = type.ofType;
     if (valueNode.kind === Kind.LIST) {
       const coercedValues = [];
-      const itemNodes = valueNode.values;
-      for (let i = 0; i < itemNodes.length; i++) {
-        if (isMissingVariable(itemNodes[i], variables)) {
+      for (const itemNode of valueNode.values) {
+        if (isMissingVariable(itemNode, variables)) {
           // If an array contains a missing variable, it is either coerced to
           // null or if the item type is non-null, it considered invalid.
           if (isNonNullType(itemType)) {
@@ -96,7 +95,7 @@ export function valueFromAST(
           }
           coercedValues.push(null);
         } else {
-          const itemValue = valueFromAST(itemNodes[i], itemType, variables);
+          const itemValue = valueFromAST(itemNode, itemType, variables);
           if (isInvalid(itemValue)) {
             return; // Invalid: intentionally return no value.
           }
@@ -118,9 +117,7 @@ export function valueFromAST(
     }
     const coercedObj = Object.create(null);
     const fieldNodes = keyMap(valueNode.fields, field => field.name.value);
-    const fields = objectValues(type.getFields());
-    for (let i = 0; i < fields.length; i++) {
-      const field = fields[i];
+    for (const field of objectValues(type.getFields())) {
       const fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
