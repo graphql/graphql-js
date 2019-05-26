@@ -339,11 +339,11 @@ function printDescription(
 
 function printDescriptionWithComments(lines, indentation, firstInBlock) {
   let description = indentation && !firstInBlock ? '\n' : '';
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i] === '') {
+  for (const line of lines) {
+    if (line === '') {
       description += indentation + '#\n';
     } else {
-      description += indentation + '# ' + lines[i] + '\n';
+      description += indentation + '# ' + line + '\n';
     }
   }
   return description;

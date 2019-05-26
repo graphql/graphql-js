@@ -87,14 +87,13 @@ export function astFromValue(value, type) {
       return null;
     }
 
-    var fields = objectValues(type.getFields());
     var fieldNodes = [];
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
     var _iteratorError = undefined;
 
     try {
-      for (var _iterator = fields[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      for (var _iterator = objectValues(type.getFields())[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var field = _step.value;
         var fieldValue = astFromValue(value[field.name], field.type);
 
