@@ -676,6 +676,26 @@ describe('findBreakingChanges', () => {
         description: 'TypeThatGetsRemoved was removed.',
       },
       {
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+        description:
+          'ArgThatChanges.field1 arg id has changed type from Int to String.',
+      },
+      {
+        type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
+        description:
+          'VALUE0 was removed from enum type EnumTypeThatLosesAValue.',
+      },
+      {
+        type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
+        description:
+          'TypeThatLooseInterface1 no longer implements interface Interface1.',
+      },
+      {
+        type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
+        description:
+          'TypeInUnion2 was removed from union type UnionTypeThatLosesAType.',
+      },
+      {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeThatChangesType changed from an Object type to an Interface type.',
@@ -688,26 +708,6 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
           'TypeThatHasBreakingFieldChanges.field2 changed type from String to Boolean.',
-      },
-      {
-        type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
-        description:
-          'TypeInUnion2 was removed from union type UnionTypeThatLosesAType.',
-      },
-      {
-        type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-        description:
-          'VALUE0 was removed from enum type EnumTypeThatLosesAValue.',
-      },
-      {
-        type: BreakingChangeType.ARG_CHANGED_KIND,
-        description:
-          'ArgThatChanges.field1 arg id has changed type from Int to String.',
-      },
-      {
-        type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
-        description:
-          'TypeThatLooseInterface1 no longer implements interface Interface1.',
       },
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
@@ -973,11 +973,6 @@ describe('findDangerousChanges', () => {
 
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
-        type: DangerousChangeType.TYPE_ADDED_TO_UNION,
-        description:
-          'TypeInUnion2 was added to union type UnionTypeThatGainsAType.',
-      },
-      {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
         description: 'VALUE2 was added to enum type EnumType1.',
       },
@@ -990,6 +985,11 @@ describe('findDangerousChanges', () => {
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
         description:
           'Interface1 added to interfaces implemented by TypeThatGainsInterface1.',
+      },
+      {
+        type: DangerousChangeType.TYPE_ADDED_TO_UNION,
+        description:
+          'TypeInUnion2 was added to union type UnionTypeThatGainsAType.',
       },
     ]);
   });
