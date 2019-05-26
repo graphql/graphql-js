@@ -57,8 +57,7 @@ export function NoFragmentCycles(context: ASTValidationContext): ASTVisitor {
 
     spreadPathIndexByName[fragmentName] = spreadPath.length;
 
-    for (let i = 0; i < spreadNodes.length; i++) {
-      const spreadNode = spreadNodes[i];
+    for (const spreadNode of spreadNodes) {
       const spreadName = spreadNode.name.value;
       const cycleIndex = spreadPathIndexByName[spreadName];
 

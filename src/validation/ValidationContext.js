@@ -97,8 +97,7 @@ export class ASTValidationContext {
       const setsToVisit: Array<SelectionSetNode> = [node];
       while (setsToVisit.length !== 0) {
         const set = setsToVisit.pop();
-        for (let i = 0; i < set.selections.length; i++) {
-          const selection = set.selections[i];
+        for (const selection of set.selections) {
           if (selection.kind === Kind.FRAGMENT_SPREAD) {
             spreads.push(selection);
           } else if (selection.selectionSet) {
@@ -121,9 +120,8 @@ export class ASTValidationContext {
       const nodesToVisit: Array<SelectionSetNode> = [operation.selectionSet];
       while (nodesToVisit.length !== 0) {
         const node = nodesToVisit.pop();
-        const spreads = this.getFragmentSpreads(node);
-        for (let i = 0; i < spreads.length; i++) {
-          const fragName = spreads[i].name.value;
+        for (const spread of this.getFragmentSpreads(node)) {
+          const fragName = spread.name.value;
           if (collectedNames[fragName] !== true) {
             collectedNames[fragName] = true;
             const fragment = this.getFragment(fragName);
@@ -212,12 +210,8 @@ export class ValidationContext extends ASTValidationContext {
     let usages = this._recursiveVariableUsages.get(operation);
     if (!usages) {
       usages = this.getVariableUsages(operation);
-      const fragments = this.getRecursivelyReferencedFragments(operation);
-      for (let i = 0; i < fragments.length; i++) {
-        Array.prototype.push.apply(
-          usages,
-          this.getVariableUsages(fragments[i]),
-        );
+      for (const frag of this.getRecursivelyReferencedFragments(operation)) {
+        usages = usages.concat(this.getVariableUsages(frag));
       }
       this._recursiveVariableUsages.set(operation, usages);
     }
