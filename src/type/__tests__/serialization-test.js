@@ -104,7 +104,7 @@ describe('Type System: Scalar coercion', () => {
     );
   });
 
-  it(`serializes output as String`, () => {
+  it('serializes output as String', () => {
     expect(GraphQLString.serialize('string')).to.equal('string');
     expect(GraphQLString.serialize(1)).to.equal('1');
     expect(GraphQLString.serialize(-1.1)).to.equal('-1.1');
