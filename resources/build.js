@@ -41,7 +41,7 @@ if (require.main === module) {
     'Version in package.json and version.js should match',
   );
 
-  writeFile('./dist/package.json', packageJSON);
+  writeFile('./dist/package.json', JSON.stringify(packageJSON, null, 2));
 }
 
 function babelBuild(srcPath, envName) {
@@ -71,5 +71,5 @@ function buildPackageJSON() {
     packageJSON.publishConfig = { tag: tag || 'latest' };
   }
 
-  return JSON.stringify(packageJSON, null, 2);
+  return packageJSON;
 }
