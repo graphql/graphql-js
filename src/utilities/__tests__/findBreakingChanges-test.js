@@ -820,25 +820,114 @@ describe('findBreakingChanges', () => {
 });
 
 describe('findDangerousChanges', () => {
-  it("should detect if an argument's defaultValue has changed", () => {
-    const oldSchema = buildSchema(`
-      type Type1 {
-        field1(name: String = "test"): String
+  it('should detect if a defaultValue changed on an argument', () => {
+    const oldSDL = `
+      input Input1 {
+        innerInputArray: [Input2]
       }
-    `);
+
+      input Input2 {
+        arrayField: [Int]
+      }
+
+      type Type1 {
+        field1(
+          withDefaultValue: String = "TO BE DELETED"
+          stringArg: String = "test"
+          emptyArray: [Int!] = []
+          valueArray: [[String]] = [["a", "b"], ["c"]]
+          complexObject: Input1 = {
+            innerInputArray: [{ arrayField: [1, 2, 3] }]
+          }
+        ): String
+      }
+    `;
+
+    const oldSchema = buildSchema(oldSDL);
+    const copyOfOldSchema = buildSchema(oldSDL);
+    expect(findDangerousChanges(oldSchema, copyOfOldSchema)).to.deep.equal([]);
 
     const newSchema = buildSchema(`
+      input Input1 {
+        innerInputArray: [Input2]
+      }
+
+      input Input2 {
+        arrayField: [Int]
+      }
+
       type Type1 {
-        field1(name: String = "Test"): String
+        field1(
+          withDefaultValue: String
+          stringArg: String = "Test"
+          emptyArray: [Int!] = [7]
+          valueArray: [[String]] = [["b", "a"], ["d"]]
+          complexObject: Input1 = {
+            innerInputArray: [{ arrayField: [3, 2, 1] }]
+          }
+        ): String
       }
     `);
 
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-        description: 'Type1.field1 arg name has changed defaultValue.',
+        description:
+          'Type1.field1 arg withDefaultValue defaultValue was removed.',
+      },
+      {
+        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+        description:
+          'Type1.field1 arg stringArg has changed defaultValue from "test" to "Test".',
+      },
+      {
+        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+        description:
+          'Type1.field1 arg emptyArray has changed defaultValue from [] to [7].',
+      },
+      {
+        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+        description:
+          'Type1.field1 arg valueArray has changed defaultValue from [["a", "b"], ["c"]] to [["b", "a"], ["d"]].',
+      },
+      {
+        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+        description:
+          'Type1.field1 arg complexObject has changed defaultValue from {innerInputArray: [{arrayField: [1, 2, 3]}]} to {innerInputArray: [{arrayField: [3, 2, 1]}]}.',
       },
     ]);
+  });
+
+  it('should ignore changes in field order of defaultValue', () => {
+    const oldSchema = buildSchema(`
+      input Input1 {
+        a: String
+        b: String
+        c: String
+      }
+
+      type Type1 {
+        field1(
+          arg1: Input1 = { a: "a", b: "b", c: "c" }
+        ): String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      input Input1 {
+        a: String
+        b: String
+        c: String
+      }
+
+      type Type1 {
+        field1(
+          arg1: Input1 = { c: "c", b: "b", a: "a" }
+        ): String
+      }
+    `);
+
+    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([]);
   });
 
   it('should detect if a value was added to an enum type', () => {
@@ -979,7 +1068,7 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
-          'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue.',
+          'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue from "test" to "Test".',
       },
       {
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
