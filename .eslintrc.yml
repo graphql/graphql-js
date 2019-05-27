@@ -253,7 +253,7 @@ rules:
   operator-assignment: [error, always]
   padding-line-between-statements: off
   prefer-object-spread: error
-  quotes: [error, single, { avoidEscape: true, allowTemplateLiterals: true }]
+  quotes: [error, single, { avoidEscape: true, allowTemplateLiterals: false }]
   sort-keys: off
   sort-vars: off
   spaced-comment: [error, always]

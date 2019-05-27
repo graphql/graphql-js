@@ -33,20 +33,20 @@ function expectErrors(result) {
 }
 
 describe('coerceValue', () => {
-  describe(`for GraphQLString`, () => {
+  describe('for GraphQLString', () => {
     it('returns error for array input as string', () => {
       const result = coerceValue([1, 2, 3], GraphQLString);
       expectErrors(result).to.deep.equal([
-        `Expected type String; String cannot represent a non string value: [1, 2, 3]`,
+        'Expected type String; String cannot represent a non string value: [1, 2, 3]',
       ]);
     });
   });
 
-  describe(`for GraphQLID`, () => {
+  describe('for GraphQLID', () => {
     it('returns error for array input as ID', () => {
       const result = coerceValue([1, 2, 3], GraphQLID);
       expectErrors(result).to.deep.equal([
-        `Expected type ID; ID cannot represent value: [1, 2, 3]`,
+        'Expected type ID; ID cannot represent value: [1, 2, 3]',
       ]);
     });
   });
@@ -60,7 +60,7 @@ describe('coerceValue', () => {
     it('returns error for numeric looking string', () => {
       const result = coerceValue('1', GraphQLInt);
       expectErrors(result).to.deep.equal([
-        `Expected type Int; Int cannot represent non-integer value: "1"`,
+        'Expected type Int; Int cannot represent non-integer value: "1"',
       ]);
     });
 
