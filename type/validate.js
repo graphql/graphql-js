@@ -115,7 +115,7 @@ function validateRootTypes(context) {
   var queryType = schema.getQueryType();
 
   if (!queryType) {
-    context.reportError("Query root type must be provided.", schema.astNode);
+    context.reportError('Query root type must be provided.', schema.astNode);
   } else if (!(0, _definition.isObjectType)(queryType)) {
     context.reportError("Query root type must be Object type, it cannot be ".concat((0, _inspect.default)(queryType), "."), getOperationTypeNode(schema, queryType, 'query'));
   }
