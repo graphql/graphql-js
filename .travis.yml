@@ -11,12 +11,16 @@ node_js:
   - '8'
   - '6'
 
-script: npm run testonly
+script: |
+  if [[ "$(node -pe process.version)" == v10.* ]]; then # Is latest LTS?
+    npm run test:ci &&
+    bash <(curl -s https://codecov.io/bash) -f coverage/coverage-final.json
+  else
+    npm run testonly
+  fi
 
 jobs:
   include:
-    - node_js: 'lts/*'
-      script: npm run test:ci && bash <(curl -s https://codecov.io/bash) -f coverage/coverage-final.json
     - stage: deploy
       if: branch = master OR tag IS present
       script: echo "Deploying..."
