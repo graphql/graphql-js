@@ -3,6 +3,18 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+Object.defineProperty(exports, "version", {
+  enumerable: true,
+  get: function get() {
+    return _version.version;
+  }
+});
+Object.defineProperty(exports, "versionInfo", {
+  enumerable: true,
+  get: function get() {
+    return _version.versionInfo;
+  }
+});
 Object.defineProperty(exports, "graphql", {
   enumerable: true,
   get: function get() {
@@ -1095,6 +1107,8 @@ Object.defineProperty(exports, "findDeprecatedUsages", {
     return _utilities.findDeprecatedUsages;
   }
 });
+
+var _version = require("./version");
 
 var _graphql = require("./graphql");
 

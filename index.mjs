@@ -30,7 +30,9 @@
  *     import { parse } from 'graphql';
  *     import { parse } from 'graphql/language';
  */
-// The primary entry point into fulfilling a GraphQL request.
+// The GraphQL.js version info.
+export { version, versionInfo } from './version'; // The primary entry point into fulfilling a GraphQL request.
+
 export { graphql, graphqlSync } from './graphql'; // Create and operate on GraphQL type definitions and schema.
 
 export { // Definitions
