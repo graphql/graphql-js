@@ -13,7 +13,13 @@ var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
+var _printer = require("../language/printer");
+
 var _definition = require("../type/definition");
+
+var _astFromValue = require("./astFromValue");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -694,11 +700,23 @@ function findArgChanges(oldType, oldField, newField) {
           type: BreakingChangeType.ARG_CHANGED_KIND,
           description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " has changed type from ") + "".concat(String(_oldArg.type), " to ").concat(String(newArg.type), ".")
         });
-      } else if (_oldArg.defaultValue !== undefined && _oldArg.defaultValue !== newArg.defaultValue) {
-        schemaChanges.push({
-          type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-          description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " has changed defaultValue.")
-        });
+      } else if (_oldArg.defaultValue !== undefined) {
+        if (newArg.defaultValue === undefined) {
+          schemaChanges.push({
+            type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+            description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " defaultValue was removed.")
+          });
+        } else {
+          var oldValueStr = stringifyValue(_oldArg.defaultValue, _oldArg.type);
+          var newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+
+          if (oldValueStr !== newValueStr) {
+            schemaChanges.push({
+              type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+              description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " has changed defaultValue ") + "from ".concat(oldValueStr, " to ").concat(newValueStr, ".")
+            });
+          }
+        }
       }
     }
   } catch (err) {
@@ -820,6 +838,12 @@ function typeKindName(type) {
 
 
   throw new TypeError("Unexpected type: ".concat((0, _inspect.default)(type), "."));
+}
+
+function stringifyValue(value, type) {
+  var ast = (0, _astFromValue.astFromValue)(value, type);
+  !(ast != null) ? (0, _invariant.default)(0) : void 0;
+  return (0, _printer.print)(ast);
 }
 
 function diff(oldArray, newArray) {

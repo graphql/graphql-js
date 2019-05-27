@@ -9,7 +9,10 @@
 import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
+import { print } from '../language/printer';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNonNullType, isListType, isNamedType, isRequiredArgument, isRequiredInputField } from '../type/definition';
+import { astFromValue } from './astFromValue';
 export var BreakingChangeType = Object.freeze({
   TYPE_REMOVED: 'TYPE_REMOVED',
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND',
@@ -676,11 +679,23 @@ function findArgChanges(oldType, oldField, newField) {
           type: BreakingChangeType.ARG_CHANGED_KIND,
           description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " has changed type from ") + "".concat(String(_oldArg.type), " to ").concat(String(newArg.type), ".")
         });
-      } else if (_oldArg.defaultValue !== undefined && _oldArg.defaultValue !== newArg.defaultValue) {
-        schemaChanges.push({
-          type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-          description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " has changed defaultValue.")
-        });
+      } else if (_oldArg.defaultValue !== undefined) {
+        if (newArg.defaultValue === undefined) {
+          schemaChanges.push({
+            type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+            description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " defaultValue was removed.")
+          });
+        } else {
+          var oldValueStr = stringifyValue(_oldArg.defaultValue, _oldArg.type);
+          var newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+
+          if (oldValueStr !== newValueStr) {
+            schemaChanges.push({
+              type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+              description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " has changed defaultValue ") + "from ".concat(oldValueStr, " to ").concat(newValueStr, ".")
+            });
+          }
+        }
       }
     }
   } catch (err) {
@@ -802,6 +817,12 @@ function typeKindName(type) {
 
 
   throw new TypeError("Unexpected type: ".concat(inspect(type), "."));
+}
+
+function stringifyValue(value, type) {
+  var ast = astFromValue(value, type);
+  !(ast != null) ? invariant(0) : void 0;
+  return print(ast);
 }
 
 function diff(oldArray, newArray) {

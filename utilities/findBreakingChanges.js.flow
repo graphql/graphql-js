@@ -10,9 +10,12 @@
 import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
+import { print } from '../language/printer';
 import {
   type GraphQLField,
   type GraphQLType,
+  type GraphQLInputType,
   type GraphQLNamedType,
   type GraphQLEnumType,
   type GraphQLUnionType,
@@ -32,6 +35,7 @@ import {
   isRequiredInputField,
 } from '../type/definition';
 import { type GraphQLSchema } from '../type/schema';
+import { astFromValue } from './astFromValue';
 
 export const BreakingChangeType = Object.freeze({
   TYPE_REMOVED: 'TYPE_REMOVED',
@@ -404,16 +408,28 @@ function findArgChanges(
           `${oldArg.name} has changed type from ` +
           `${String(oldArg.type)} to ${String(newArg.type)}.`,
       });
-    } else if (
-      oldArg.defaultValue !== undefined &&
-      oldArg.defaultValue !== newArg.defaultValue
-    ) {
-      schemaChanges.push({
-        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-        description:
-          `${oldType.name}.${oldField.name} arg ` +
-          `${oldArg.name} has changed defaultValue.`,
-      });
+    } else if (oldArg.defaultValue !== undefined) {
+      if (newArg.defaultValue === undefined) {
+        schemaChanges.push({
+          type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+          description:
+            `${oldType.name}.${oldField.name} arg ` +
+            `${oldArg.name} defaultValue was removed.`,
+        });
+      } else {
+        const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
+        const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+
+        if (oldValueStr !== newValueStr) {
+          schemaChanges.push({
+            type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+            description:
+              `${oldType.name}.${oldField.name} arg ` +
+              `${oldArg.name} has changed defaultValue ` +
+              `from ${oldValueStr} to ${newValueStr}.`,
+          });
+        }
+      }
     }
   }
 
@@ -527,6 +543,12 @@ function typeKindName(type: GraphQLNamedType): string {
   // Not reachable. All possible named types have been considered.
   /* istanbul ignore next */
   throw new TypeError(`Unexpected type: ${inspect((type: empty))}.`);
+}
+
+function stringifyValue(value: mixed, type: GraphQLInputType): string {
+  const ast = astFromValue(value, type);
+  invariant(ast != null);
+  return print(ast);
 }
 
 function diff<T: { name: string }>(
