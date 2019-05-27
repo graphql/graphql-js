@@ -863,11 +863,18 @@ function completeValue(
       result,
     );
     if (completed === null) {
-      throw new Error(
-        `Cannot return null for non-nullable field ${info.parentType.name}.${
-          info.fieldName
-        }.`,
-      );
+      if (result == null) {
+        throw new Error(
+          `Cannot return null for non-nullable field ` +
+            `${info.parentType.name}.${info.fieldName}.`,
+        );
+      } else {
+        throw new Error(
+          `Cannot coerce '${inspect(result)}' into type ` +
+            `${inspect(returnType)} for non-nullable field ` +
+            `${info.parentType.name}.${info.fieldName}`,
+        );
+      }
     }
     return completed;
   }
