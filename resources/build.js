@@ -18,6 +18,7 @@ const {
   rmdirRecursive,
   mkdirRecursive,
   readdirRecursive,
+  parseSemver,
 } = require('./utils');
 
 if (require.main === module) {
@@ -26,7 +27,6 @@ if (require.main === module) {
 
   copyFile('./LICENSE', './dist/LICENSE');
   copyFile('./README.md', './dist/README.md');
-  writeFile('./dist/package.json', buildPackageJSON());
 
   const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
   for (const filepath of srcFiles) {
@@ -34,6 +34,14 @@ if (require.main === module) {
       buildJSFile(filepath);
     }
   }
+
+  const packageJSON = buildPackageJSON();
+  assert(
+    packageJSON.version === require('../dist/version').version,
+    'Version in package.json and version.js should match',
+  );
+
+  writeFile('./dist/package.json', packageJSON);
 }
 
 function babelBuild(srcPath, envName) {
@@ -54,13 +62,14 @@ function buildPackageJSON() {
   delete packageJSON.scripts;
   delete packageJSON.devDependencies;
 
-  const { version } = packageJSON;
-  const match = /^[0-9]+\.[0-9]+\.[0-9]+-?([^.]*)/.exec(version);
-  assert(match, 'Version does not match semver spec.');
-  const tag = match[1];
-  assert(!tag || tag === 'rc', 'Only "rc" tag is supported.');
+  const { preReleaseTag } = parseSemver(packageJSON.version);
+  if (preReleaseTag != null) {
+    const [tag] = preReleaseTag.split('.');
+    assert(tag === 'rc', 'Only "rc" tag is supported.');
 
-  assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
-  packageJSON.publishConfig = { tag: tag || 'latest' };
+    assert(!packageJSON.publishConfig, 'Can not override "publishConfig".');
+    packageJSON.publishConfig = { tag: tag || 'latest' };
+  }
+
   return JSON.stringify(packageJSON, null, 2);
 }
