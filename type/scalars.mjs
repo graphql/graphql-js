@@ -57,7 +57,7 @@ function coerceInt(value) {
 
 export var GraphQLInt = new GraphQLScalarType({
   name: 'Int',
-  description: 'The `Int` scalar type represents non-fractional signed whole numeric ' + 'values. Int can represent values between -(2^31) and 2^31 - 1. ',
+  description: 'The `Int` scalar type represents non-fractional signed whole numeric ' + 'values. Int can represent values between -(2^31) and 2^31 - 1.',
   serialize: serializeInt,
   parseValue: coerceInt,
   parseLiteral: function parseLiteral(ast) {
@@ -101,7 +101,7 @@ function coerceFloat(value) {
 
 export var GraphQLFloat = new GraphQLScalarType({
   name: 'Float',
-  description: 'The `Float` scalar type represents signed double-precision fractional ' + 'values as specified by ' + '[IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point). ',
+  description: 'The `Float` scalar type represents signed double-precision fractional ' + 'values as specified by ' + '[IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).',
   serialize: serializeFloat,
   parseValue: coerceFloat,
   parseLiteral: function parseLiteral(ast) {
