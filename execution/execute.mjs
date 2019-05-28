@@ -114,7 +114,7 @@ export function assertValidExecutionArguments(schema, document, rawVariableValue
 
   assertValidSchema(schema); // Variables, if provided, must be an object.
 
-  !(!rawVariableValues || _typeof(rawVariableValues) === 'object') ? invariant(0, 'Variables must be provided as an Object where each property is a ' + 'variable value. Perhaps look to see if an unparsed JSON string ' + 'was provided.') : void 0;
+  !(!rawVariableValues || _typeof(rawVariableValues) === 'object') ? invariant(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.') : void 0;
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to

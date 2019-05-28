@@ -120,7 +120,7 @@ function buildClientSchema(introspection, options) {
     var type = typeMap[typeName];
 
     if (!type) {
-      throw new Error("Invalid or incomplete schema, unknown type: ".concat(typeName, ". Ensure ") + 'that a full introspection query is used in order to build a ' + 'client schema.');
+      throw new Error("Invalid or incomplete schema, unknown type: ".concat(typeName, ". Ensure ") + 'that a full introspection query is used in order to build a client schema.');
     }
 
     return type;
@@ -173,7 +173,7 @@ function buildClientSchema(introspection, options) {
       }
     }
 
-    throw new Error('Invalid or incomplete introspection result. Ensure that a full ' + 'introspection query is used in order to build a client schema:' + (0, _inspect.default)(type));
+    throw new Error('Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema:' + (0, _inspect.default)(type));
   }
 
   function buildScalarDef(scalarIntrospection) {

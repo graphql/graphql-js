@@ -61,8 +61,7 @@ function coerceInt(value: mixed): number {
 export const GraphQLInt = new GraphQLScalarType({
   name: 'Int',
   description:
-    'The `Int` scalar type represents non-fractional signed whole numeric ' +
-    'values. Int can represent values between -(2^31) and 2^31 - 1.',
+    'The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.',
   serialize: serializeInt,
   parseValue: coerceInt,
   parseLiteral(ast) {
@@ -105,9 +104,7 @@ function coerceFloat(value: mixed): number {
 export const GraphQLFloat = new GraphQLScalarType({
   name: 'Float',
   description:
-    'The `Float` scalar type represents signed double-precision fractional ' +
-    'values as specified by ' +
-    '[IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).',
+    'The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).',
   serialize: serializeFloat,
   parseValue: coerceFloat,
   parseLiteral(ast) {
@@ -165,9 +162,7 @@ function coerceString(value: mixed): string {
 export const GraphQLString = new GraphQLScalarType({
   name: 'String',
   description:
-    'The `String` scalar type represents textual data, represented as UTF-8 ' +
-    'character sequences. The String type is most often used by GraphQL to ' +
-    'represent free-form human-readable text.',
+    'The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.',
   serialize: serializeString,
   parseValue: coerceString,
   parseLiteral(ast) {
@@ -231,11 +226,7 @@ function coerceID(value: mixed): string {
 export const GraphQLID = new GraphQLScalarType({
   name: 'ID',
   description:
-    'The `ID` scalar type represents a unique identifier, often used to ' +
-    'refetch an object or as key for a cache. The ID type appears in a JSON ' +
-    'response as a String; however, it is not intended to be human-readable. ' +
-    'When expected as an input type, any string (such as `"4"`) or integer ' +
-    '(such as `4`) input value will be accepted as an ID.',
+    'The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.',
   serialize: serializeID,
   parseValue: coerceID,
   parseLiteral(ast) {

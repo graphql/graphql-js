@@ -99,7 +99,7 @@ exports.GraphQLDirective = GraphQLDirective;
  */
 var GraphQLIncludeDirective = new GraphQLDirective({
   name: 'include',
-  description: 'Directs the executor to include this field or fragment only when ' + 'the `if` argument is true.',
+  description: 'Directs the executor to include this field or fragment only when the `if` argument is true.',
   locations: [_directiveLocation.DirectiveLocation.FIELD, _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD, _directiveLocation.DirectiveLocation.INLINE_FRAGMENT],
   args: {
     if: {
@@ -115,7 +115,7 @@ var GraphQLIncludeDirective = new GraphQLDirective({
 exports.GraphQLIncludeDirective = GraphQLIncludeDirective;
 var GraphQLSkipDirective = new GraphQLDirective({
   name: 'skip',
-  description: 'Directs the executor to skip this field or fragment when the `if` ' + 'argument is true.',
+  description: 'Directs the executor to skip this field or fragment when the `if` argument is true.',
   locations: [_directiveLocation.DirectiveLocation.FIELD, _directiveLocation.DirectiveLocation.FRAGMENT_SPREAD, _directiveLocation.DirectiveLocation.INLINE_FRAGMENT],
   args: {
     if: {
@@ -142,7 +142,7 @@ var GraphQLDeprecatedDirective = new GraphQLDirective({
   args: {
     reason: {
       type: _scalars.GraphQLString,
-      description: 'Explains why this element was deprecated, usually also including a ' + 'suggestion for how to access supported similar data. Formatted using ' + 'the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).',
+      description: 'Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).',
       defaultValue: DEFAULT_DEPRECATION_REASON
     }
   }
