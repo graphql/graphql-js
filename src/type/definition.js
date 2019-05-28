@@ -567,8 +567,7 @@ export class GraphQLScalarType {
     invariant(
       typeof config.serialize === 'function',
       `${this.name} must provide "serialize" function. If this custom Scalar ` +
-        'is also used as an input type, ensure "parseValue" and "parseLiteral" ' +
-        'functions are also provided.',
+        'is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
     );
     if (config.parseValue || config.parseLiteral) {
       invariant(

@@ -288,9 +288,7 @@ export function assertValidExecutionArguments(
   // Variables, if provided, must be an object.
   invariant(
     !rawVariableValues || typeof rawVariableValues === 'object',
-    'Variables must be provided as an Object where each property is a ' +
-      'variable value. Perhaps look to see if an unparsed JSON string ' +
-      'was provided.',
+    'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
   );
 }
 

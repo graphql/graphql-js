@@ -364,10 +364,7 @@ function unexpectedCharacterMessage(code) {
 
   if (code === 39) {
     // '
-    return (
-      "Unexpected single quote character ('), did you mean to use " +
-      'a double quote (")?'
-    );
+    return 'Unexpected single quote character (\'), did you mean to use a double quote (")?';
   }
 
   return `Cannot parse the unexpected character ${printCharCode(code)}.`;

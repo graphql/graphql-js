@@ -118,8 +118,7 @@ export type GraphQLDirectiveConfig = {|
 export const GraphQLIncludeDirective = new GraphQLDirective({
   name: 'include',
   description:
-    'Directs the executor to include this field or fragment only when ' +
-    'the `if` argument is true.',
+    'Directs the executor to include this field or fragment only when the `if` argument is true.',
   locations: [
     DirectiveLocation.FIELD,
     DirectiveLocation.FRAGMENT_SPREAD,
@@ -139,8 +138,7 @@ export const GraphQLIncludeDirective = new GraphQLDirective({
 export const GraphQLSkipDirective = new GraphQLDirective({
   name: 'skip',
   description:
-    'Directs the executor to skip this field or fragment when the `if` ' +
-    'argument is true.',
+    'Directs the executor to skip this field or fragment when the `if` argument is true.',
   locations: [
     DirectiveLocation.FIELD,
     DirectiveLocation.FRAGMENT_SPREAD,
@@ -170,9 +168,7 @@ export const GraphQLDeprecatedDirective = new GraphQLDirective({
     reason: {
       type: GraphQLString,
       description:
-        'Explains why this element was deprecated, usually also including a ' +
-        'suggestion for how to access supported similar data. Formatted using ' +
-        'the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).',
+        'Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).',
       defaultValue: DEFAULT_DEPRECATION_REASON,
     },
   },

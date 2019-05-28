@@ -423,10 +423,7 @@ describe('Execute: Handles execution of abstract types', () => {
       errors: [
         {
           message:
-            'Abstract type FooInterface must resolve to an Object type at ' +
-            'runtime for field Query.foo with value "dummy", received "[]". ' +
-            'Either the FooInterface type should provide a "resolveType" ' +
-            'function or each possible type should provide an "isTypeOf" function.',
+            'Abstract type FooInterface must resolve to an Object type at runtime for field Query.foo with value "dummy", received "[]". Either the FooInterface type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
           locations: [{ line: 1, column: 3 }],
           path: ['foo'],
         },
