@@ -12,6 +12,7 @@ package-lock.json
 .babelrc
 .nycrc
 .nyc_output
+codecov.yml
 CONTRIBUTING.md
 node_modules
 coverage
