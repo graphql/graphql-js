@@ -154,8 +154,7 @@ export function buildClientSchema(
     if (!type) {
       throw new Error(
         `Invalid or incomplete schema, unknown type: ${typeName}. Ensure ` +
-          'that a full introspection query is used in order to build a ' +
-          'client schema.',
+          'that a full introspection query is used in order to build a client schema.',
       );
     }
 
@@ -220,8 +219,7 @@ export function buildClientSchema(
       }
     }
     throw new Error(
-      'Invalid or incomplete introspection result. Ensure that a full ' +
-        'introspection query is used in order to build a client schema:' +
+      'Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema:' +
         inspect(type),
     );
   }

@@ -226,8 +226,7 @@ describe('Lexer', () => {
 
     expectSyntaxError(
       "'single quotes'",
-      "Unexpected single quote character ('), " +
-        'did you mean to use a double quote (")?',
+      'Unexpected single quote character (\'), did you mean to use a double quote (")?',
       { line: 1, column: 1 },
     );
 
