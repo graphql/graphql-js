@@ -62,7 +62,7 @@ export const GraphQLInt = new GraphQLScalarType({
   name: 'Int',
   description:
     'The `Int` scalar type represents non-fractional signed whole numeric ' +
-    'values. Int can represent values between -(2^31) and 2^31 - 1. ',
+    'values. Int can represent values between -(2^31) and 2^31 - 1.',
   serialize: serializeInt,
   parseValue: coerceInt,
   parseLiteral(ast) {
@@ -107,7 +107,7 @@ export const GraphQLFloat = new GraphQLScalarType({
   description:
     'The `Float` scalar type represents signed double-precision fractional ' +
     'values as specified by ' +
-    '[IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point). ',
+    '[IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).',
   serialize: serializeFloat,
   parseValue: coerceFloat,
   parseLiteral(ast) {
