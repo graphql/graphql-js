@@ -168,9 +168,9 @@ function printTestSchemaChanges(extendedSchema) {
   });
 }
 
-function printNode(node) {
-  invariant(node);
-  return print(node);
+function printASTNode(obj) {
+  invariant(obj != null && obj.astNode != null);
+  return print(obj.astNode);
 }
 
 describe('extendSchema', () => {
@@ -528,49 +528,47 @@ describe('extendSchema', () => {
     ).to.be.equal(printSchema(extendedTwiceSchema));
 
     const newField = query.getFields().newField;
-    expect(printNode(newField.astNode)).to.equal(
+    expect(printASTNode(newField)).to.equal(
       'newField(testArg: TestInput): TestEnum',
     );
-    expect(printNode(newField.args[0].astNode)).to.equal('testArg: TestInput');
-    expect(printNode(query.getFields().oneMoreNewField.astNode)).to.equal(
+    expect(printASTNode(newField.args[0])).to.equal('testArg: TestInput');
+    expect(printASTNode(query.getFields().oneMoreNewField)).to.equal(
       'oneMoreNewField: TestUnion',
     );
 
-    const newValue = someEnum.getValue('NEW_VALUE');
-    invariant(newValue);
-    expect(printNode(newValue.astNode)).to.equal('NEW_VALUE');
+    expect(printASTNode(someEnum.getValue('NEW_VALUE'))).to.equal('NEW_VALUE');
+    expect(printASTNode(someEnum.getValue('ONE_MORE_NEW_VALUE'))).to.equal(
+      'ONE_MORE_NEW_VALUE',
+    );
 
-    const oneMoreNewValue = someEnum.getValue('ONE_MORE_NEW_VALUE');
-    invariant(oneMoreNewValue);
-    expect(printNode(oneMoreNewValue.astNode)).to.equal('ONE_MORE_NEW_VALUE');
-    expect(printNode(someInput.getFields().newField.astNode)).to.equal(
+    expect(printASTNode(someInput.getFields().newField)).to.equal(
       'newField: String',
     );
-    expect(printNode(someInput.getFields().oneMoreNewField.astNode)).to.equal(
+    expect(printASTNode(someInput.getFields().oneMoreNewField)).to.equal(
       'oneMoreNewField: String',
     );
-    expect(printNode(someInterface.getFields().newField.astNode)).to.equal(
+    expect(printASTNode(someInterface.getFields().newField)).to.equal(
       'newField: String',
     );
-    expect(
-      printNode(someInterface.getFields().oneMoreNewField.astNode),
-    ).to.equal('oneMoreNewField: String');
+    expect(printASTNode(someInterface.getFields().oneMoreNewField)).to.equal(
+      'oneMoreNewField: String',
+    );
 
-    expect(printNode(testInput.getFields().testInputField.astNode)).to.equal(
+    expect(printASTNode(testInput.getFields().testInputField)).to.equal(
       'testInputField: TestEnum',
     );
 
-    const testValue = testEnum.getValue('TEST_VALUE');
-    invariant(testValue);
-    expect(printNode(testValue.astNode)).to.equal('TEST_VALUE');
+    expect(printASTNode(testEnum.getValue('TEST_VALUE'))).to.equal(
+      'TEST_VALUE',
+    );
 
-    expect(
-      printNode(testInterface.getFields().interfaceField.astNode),
-    ).to.equal('interfaceField: String');
-    expect(printNode(testType.getFields().interfaceField.astNode)).to.equal(
+    expect(printASTNode(testInterface.getFields().interfaceField)).to.equal(
       'interfaceField: String',
     );
-    expect(printNode(testDirective.args[0].astNode)).to.equal('arg: Int');
+    expect(printASTNode(testType.getFields().interfaceField)).to.equal(
+      'interfaceField: String',
+    );
+    expect(printASTNode(testDirective.args[0])).to.equal('arg: Int');
   });
 
   it('builds types with deprecated fields/values', () => {
@@ -1223,7 +1221,7 @@ describe('extendSchema', () => {
 
       const queryType = schema.getQueryType();
       expect(queryType).to.include({ name: 'Foo' });
-      expect(printNode(schema.astNode)).to.equal(extensionSDL);
+      expect(printASTNode(schema)).to.equal(extensionSDL);
     });
 
     it('adds new root types via schema extension', () => {

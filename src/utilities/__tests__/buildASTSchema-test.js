@@ -47,9 +47,9 @@ function cycleSDL(sdl, options = {}) {
   return printSchema(schema, { commentDescriptions });
 }
 
-function printNode(node) {
-  invariant(node);
-  return print(node);
+function printASTNode(obj) {
+  invariant(obj != null && obj.astNode != null);
+  return print(obj.astNode);
 }
 
 describe('Schema Builder', () => {
@@ -774,26 +774,25 @@ describe('Schema Builder', () => {
     expect(restoredSchemaAST).to.be.deep.equal(ast);
 
     const testField = query.getFields().testField;
-    expect(printNode(testField.astNode)).to.equal(
+    expect(printASTNode(testField)).to.equal(
       'testField(testArg: TestInput): TestUnion',
     );
-    expect(printNode(testField.args[0].astNode)).to.equal('testArg: TestInput');
-    expect(printNode(testInput.getFields().testInputField.astNode)).to.equal(
+    expect(printASTNode(testField.args[0])).to.equal('testArg: TestInput');
+    expect(printASTNode(testInput.getFields().testInputField)).to.equal(
       'testInputField: TestEnum',
     );
-    const testEnumValue = testEnum.getValue('TEST_VALUE');
-    invariant(testEnumValue);
-    expect(printNode(testEnumValue.astNode)).to.equal('TEST_VALUE');
 
-    expect(
-      printNode(testInterface.getFields().interfaceField.astNode),
-    ).to.equal('interfaceField: String');
-    expect(printNode(testType.getFields().interfaceField.astNode)).to.equal(
+    expect(printASTNode(testEnum.getValue('TEST_VALUE'))).to.equal(
+      'TEST_VALUE',
+    );
+
+    expect(printASTNode(testInterface.getFields().interfaceField)).to.equal(
       'interfaceField: String',
     );
-    expect(printNode(testDirective.args[0].astNode)).to.equal(
-      'arg: TestScalar',
+    expect(printASTNode(testType.getFields().interfaceField)).to.equal(
+      'interfaceField: String',
     );
+    expect(printASTNode(testDirective.args[0])).to.equal('arg: TestScalar');
   });
 
   it('Root operation types with custom names', () => {
