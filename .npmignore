@@ -18,6 +18,7 @@ node_modules
 coverage
 resources
 src
+docs
 dist
 __tests__
 npm
