@@ -181,6 +181,7 @@ function findTypeChanges(
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED,
       description: `${oldType.name} was removed.`,
+      oldNode: oldType.astNode ? oldType.astNode : undefined,
     });
   }
 
