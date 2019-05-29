@@ -309,12 +309,6 @@ const AnyScalar = new GraphQLScalarType({
   serialize(value) {
     return value;
   },
-  parseLiteral(node) {
-    return node; // Allows any value
-  },
-  parseValue(value) {
-    return value; // Allows any value
-  },
 });
 
 const QueryRoot = new GraphQLObjectType({
