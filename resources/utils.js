@@ -11,6 +11,19 @@
 
 const fs = require('fs');
 const path = require('path');
+const childProcess = require('child_process');
+
+function exec(command, options) {
+  const output = childProcess.execSync(command, {
+    encoding: 'utf-8',
+    ...options,
+  });
+  // Remove trailing new line
+  return output
+    .split('\n')
+    .slice(0, -1)
+    .join('\n');
+}
 
 function mkdirRecursive(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
@@ -72,6 +85,7 @@ function parseSemver(version) {
 }
 
 module.exports = {
+  exec,
   copyFile,
   writeFile,
   rmdirRecursive,

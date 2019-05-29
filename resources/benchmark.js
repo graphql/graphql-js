@@ -12,10 +12,10 @@
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 const { Benchmark } = require('benchmark');
 
 const {
+  exec,
   copyFile,
   writeFile,
   rmdirRecursive,
@@ -33,16 +33,6 @@ function TEMP_DIR(...paths) {
   return path.join(os.tmpdir(), 'graphql-js-benchmark', ...paths);
 }
 
-// Returns the complete git hash for a given git revision reference.
-function hashForRevision(revision) {
-  const out = execSync(`git rev-parse "${revision}"`, { encoding: 'utf8' });
-  const match = /[0-9a-f]{8,40}/.exec(out);
-  if (!match) {
-    throw new Error(`Bad results for revision ${revision}: ${out}`);
-  }
-  return match[0];
-}
-
 // Build a benchmarkable environment for the given revision
 // and returns path to its 'dist' directory.
 function prepareRevision(revision) {
@@ -56,22 +46,21 @@ function prepareRevision(revision) {
     fs.mkdirSync(TEMP_DIR());
   }
 
-  const hash = hashForRevision(revision);
+  // Returns the complete git hash for a given git revision reference.
+  const hash = exec(`git rev-parse "${revision}"`);
   const dir = TEMP_DIR(hash);
 
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
-    execSync(`git archive "${hash}" | tar -xC "${dir}"`);
-    execSync('yarn install', { cwd: dir });
+    exec(`git archive "${hash}" | tar -xC "${dir}"`);
+    exec('yarn install', { cwd: dir });
   }
   for (const file of findFiles(LOCAL_DIR('src'), '*/__tests__/*')) {
     const from = LOCAL_DIR('src', file);
     const to = path.join(dir, 'src', file);
     fs.copyFileSync(from, to);
   }
-  execSync(
-    `cp -R "${LOCAL_DIR()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`,
-  );
+  exec(`cp -R "${LOCAL_DIR()}/src/__fixtures__/" "${dir}/src/__fixtures__/"`);
 
   return babelBuild(dir);
 }
@@ -101,7 +90,7 @@ function babelBuild(dir) {
 }
 
 function findFiles(cwd, pattern) {
-  const out = execSync(`find . -path '${pattern}'`, { cwd, encoding: 'utf8' });
+  const out = exec(`find . -path '${pattern}'`, { cwd });
   return out.split('\n').filter(Boolean);
 }
 
