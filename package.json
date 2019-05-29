@@ -31,7 +31,7 @@
     "benchmark": "node ./resources/benchmark.js",
     "prettier": "prettier --write --list-different 'src/**/*.js' 'resources/**/*.js'",
     "check": "flow check",
-    "check-cover": "flow batch-coverage --quiet --strip-root --show-all src/ && flow stop --quiet",
+    "check:cover": "flow batch-coverage --quiet --strip-root --show-all src/ && flow stop --quiet",
     "build": "node resources/build.js",
     "preversion": ". ./resources/checkgit.sh",
     "version": "node resources/gen-version.js && npm test",
