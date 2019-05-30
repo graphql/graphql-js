@@ -24,7 +24,7 @@
   "scripts": {
     "watch": "node ./resources/watch.js",
     "test": "npm run lint && npm run check && npm run testonly",
-    "test:ci": "yarn check --integrity && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run build",
+    "test:ci": "yarn check --integrity && npm run lint -- --no-cache && npm run check:cover && npm run testonly:cover && npm run build",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc npm run testonly",
     "lint": "eslint --cache --report-unused-disable-directives src resources",

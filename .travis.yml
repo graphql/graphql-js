@@ -14,7 +14,8 @@ node_js:
 script: |
   if [[ "$(node -pe process.version)" == v10.* ]]; then # Is latest LTS?
     npm run test:ci &&
-    bash <(curl -s https://codecov.io/bash) -f coverage/tests/coverage-final.json
+    bash <(curl -s https://codecov.io/bash) -F tests -f coverage/tests/coverage-final.json
+    bash <(curl -s https://codecov.io/bash) -F flow -f coverage/flow/coverage-final.json
   else
     npm run testonly
   fi
