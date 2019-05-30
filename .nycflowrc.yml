@@ -3,7 +3,8 @@ include:
 exclude:
   - "src/polyfills"
 clean: true
-temp-directory: "coverage/tests"
-report-dir: "coverage/tests"
+temp-directory: "coverage/flow"
+report-dir: "coverage/flow"
 skip-full: true
+skip-empty: true
 reporter: [json, html, text]

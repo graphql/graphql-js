@@ -15,11 +15,12 @@ const childProcess = require('child_process');
 
 function exec(command, options) {
   const output = childProcess.execSync(command, {
+    maxBuffer: 10 * 1024 * 1024, // 10MB
     encoding: 'utf-8',
     ...options,
   });
   // Remove trailing new line
-  return output
+  return (output || '')
     .split('\n')
     .slice(0, -1)
     .join('\n');
