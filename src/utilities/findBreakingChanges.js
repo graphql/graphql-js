@@ -242,6 +242,7 @@ function findInputObjectTypeChanges(
         description:
           `An optional field ${newField.name} on ` +
           `input type ${oldType.name} was added.`,
+        newNode: newField.astNode ? newField.astNode : undefined,
       });
     }
   }
@@ -287,6 +288,8 @@ function findUnionTypeChanges(
       description: `${newPossibleType.name} was added to union type ${
         oldType.name
       }.`,
+      oldNode: oldType.astNode ? oldType.astNode : undefined,
+      newNode: newType.astNode ? newType.astNode : undefined,
     });
   }
 
@@ -296,7 +299,8 @@ function findUnionTypeChanges(
       description:
         `${oldPossibleType.name} was removed from ` +
         `union type ${oldType.name}.`,
-      oldNode: oldPossibleType.astNode ? oldPossibleType.astNode : undefined,
+      oldNode: oldType.astNode ? oldType.astNode : undefined,
+      newNode: newType.astNode ? newType.astNode : undefined,
     });
   }
 
@@ -314,6 +318,7 @@ function findEnumTypeChanges(
     schemaChanges.push({
       type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
       description: `${newValue.name} was added to enum type ${oldType.name}.`,
+      newNode: newValue.astNode ? newValue.astNode : undefined,
     });
   }
 
@@ -343,6 +348,8 @@ function findObjectTypeChanges(
       description:
         `${newInterface.name} added to interfaces implemented ` +
         `by ${oldType.name}.`,
+      oldNode: oldType.astNode ? oldType.astNode : undefined,
+      newNode: newType.astNode ? newType.astNode : undefined,
     });
   }
 
@@ -353,6 +360,7 @@ function findObjectTypeChanges(
         `${oldType.name} no longer implements interface ` +
         `${oldInterface.name}.`,
       oldNode: oldType.astNode ? oldType.astNode : undefined,
+      newNode: newType.astNode ? newType.astNode : undefined,
     });
   }
 
@@ -476,6 +484,7 @@ function findArgChanges(
         description:
           `An optional arg ${newArg.name} on ` +
           `${oldType.name}.${oldField.name} was added.`,
+        newNode: newArg.astNode ? newArg.astNode : undefined,
       });
     }
   }

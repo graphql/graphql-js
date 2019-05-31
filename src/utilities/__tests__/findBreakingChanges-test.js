@@ -449,16 +449,12 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
         description: 'Type2 was removed from union type UnionType1.',
-        // $FlowFixMe
-        oldNode: oldSchema
-          .getTypeMap()
-          ['UnionType1'].getTypes()
-          .find(type => type.name === 'Type2').astNode,
+        oldNode: oldSchema.getTypeMap()['UnionType1'].astNode,
+        newNode: newSchema.getTypeMap()['UnionType1'].astNode,
       },
     ]);
   });
 
-  // TODO: complete test
   it('should detect if a value was removed from an enum type', () => {
     const oldSchema = buildSchema(`
       enum EnumType1 {
@@ -858,6 +854,8 @@ describe('findBreakingChanges', () => {
         description: 'Type1 no longer implements interface Interface1.',
         // $FlowFixMe
         oldNode: oldSchema.getType('Type1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').astNode,
       },
     ]);
   });
@@ -989,16 +987,15 @@ describe('findBreakingChanges', () => {
           'TypeThatLooseInterface1 no longer implements interface Interface1.',
         // $FlowFixMe
         oldNode: oldSchema.getType('TypeThatLooseInterface1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('TypeThatLooseInterface1').astNode,
       },
       {
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
         description:
           'TypeInUnion2 was removed from union type UnionTypeThatLosesAType.',
-        // $FlowFixMe
-        oldNode: oldSchema
-          .getTypeMap()
-          ['UnionTypeThatLosesAType'].getTypes()
-          .find(type => type.name === 'TypeInUnion2').astNode,
+        oldNode: oldSchema.getTypeMap()['UnionTypeThatLosesAType'].astNode,
+        newNode: newSchema.getTypeMap()['UnionTypeThatLosesAType'].astNode,
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
@@ -1225,7 +1222,6 @@ describe('findDangerousChanges', () => {
           .getType('Type1')
           .getFields()
           ['field1'].args.find(arg => arg.name === 'withDefaultValue').astNode,
-        // $FlowFixMe
         newNode: undefined,
       },
       {
@@ -1343,6 +1339,8 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
         description: 'VALUE2 was added to enum type EnumType1.',
+        // $FlowFixMe
+        newNode: newSchema.getType('EnumType1').getValue('VALUE2').astNode,
       },
     ]);
   });
@@ -1366,6 +1364,10 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
         description: 'NewInterface added to interfaces implemented by Type1.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').astNode,
       },
     ]);
   });
@@ -1389,6 +1391,10 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.TYPE_ADDED_TO_UNION,
         description: 'Type2 was added to union type UnionType1.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('UnionType1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('UnionType1').astNode,
       },
     ]);
   });
@@ -1412,11 +1418,13 @@ describe('findDangerousChanges', () => {
         type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
         description:
           'An optional field field2 on input type InputType1 was added.',
+        // $FlowFixMe
+        newNode: newSchema.getType('InputType1').getFields()['field2'].astNode,
       },
     ]);
   });
 
-  it.skip('should find all dangerous changes', () => {
+  it('should find all dangerous changes', () => {
     const oldSchema = buildSchema(`
       enum EnumType1 {
         VALUE0
@@ -1457,21 +1465,43 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
         description: 'VALUE2 was added to enum type EnumType1.',
+        // $FlowFixMe
+        newNode: newSchema.getType('EnumType1').getValue('VALUE2').astNode,
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue from "test" to "Test".',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'argThatChangesDefaultValue')
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'argThatChangesDefaultValue')
+          .astNode,
       },
       {
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
         description:
           'Interface1 added to interfaces implemented by TypeThatGainsInterface1.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('TypeThatGainsInterface1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('TypeThatGainsInterface1').astNode,
       },
       {
         type: DangerousChangeType.TYPE_ADDED_TO_UNION,
         description:
           'TypeInUnion2 was added to union type UnionTypeThatGainsAType.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('UnionTypeThatGainsAType').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('UnionTypeThatGainsAType').astNode,
       },
     ]);
   });
@@ -1493,6 +1523,11 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.OPTIONAL_ARG_ADDED,
         description: 'An optional arg arg2 on Type1.field1 was added.',
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg2').astNode,
       },
     ]);
   });
