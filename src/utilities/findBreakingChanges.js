@@ -439,6 +439,8 @@ function findArgChanges(
           description:
             `${oldType.name}.${oldField.name} arg ` +
             `${oldArg.name} defaultValue was removed.`,
+          oldNode: oldArg.astNode ? oldArg.astNode : undefined,
+          newNode: undefined,
         });
       } else {
         const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
@@ -451,6 +453,8 @@ function findArgChanges(
               `${oldType.name}.${oldField.name} arg ` +
               `${oldArg.name} has changed defaultValue ` +
               `from ${oldValueStr} to ${newValueStr}.`,
+            oldNode: oldArg.astNode ? oldArg.astNode : undefined,
+            newNode: newArg.astNode ? newArg.astNode : undefined,
           });
         }
       }
