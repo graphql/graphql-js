@@ -205,13 +205,13 @@ export var __Type = new GraphQLObjectType({
       name: {
         type: GraphQLString,
         resolve: function resolve(obj) {
-          return obj.name;
+          return obj.name !== undefined ? obj.name : undefined;
         }
       },
       description: {
         type: GraphQLString,
         resolve: function resolve(obj) {
-          return obj.description;
+          return obj.description !== undefined ? obj.description : undefined;
         }
       },
       fields: {
@@ -293,7 +293,7 @@ export var __Type = new GraphQLObjectType({
       ofType: {
         type: __Type,
         resolve: function resolve(obj) {
-          return obj.ofType;
+          return obj.ofType !== undefined ? obj.ofType : undefined;
         }
       }
     };

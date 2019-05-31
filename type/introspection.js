@@ -231,13 +231,13 @@ var __Type = new _definition.GraphQLObjectType({
       name: {
         type: _scalars.GraphQLString,
         resolve: function resolve(obj) {
-          return obj.name;
+          return obj.name !== undefined ? obj.name : undefined;
         }
       },
       description: {
         type: _scalars.GraphQLString,
         resolve: function resolve(obj) {
-          return obj.description;
+          return obj.description !== undefined ? obj.description : undefined;
         }
       },
       fields: {
@@ -319,7 +319,7 @@ var __Type = new _definition.GraphQLObjectType({
       ofType: {
         type: __Type,
         resolve: function resolve(obj) {
-          return obj.ofType;
+          return obj.ofType !== undefined ? obj.ofType : undefined;
         }
       }
     };
