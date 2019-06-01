@@ -12,7 +12,6 @@ import { validateSchema } from './type/validate';
 import { parse } from './language/parser';
 import { validate } from './validation/validate';
 import { type ExecutionResult, execute } from './execution/execute';
-import { type ObjMap } from './jsutils/ObjMap';
 import { type Source } from './language/source';
 import {
   type GraphQLFieldResolver,
@@ -65,7 +64,7 @@ export type GraphQLArgs = {|
   source: string | Source,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?ObjMap<mixed>,
+  variableValues?: ?{ [variable: string]: mixed },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
@@ -77,7 +76,7 @@ declare function graphql(
   source: Source | string,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?ObjMap<mixed>,
+  variableValues?: ?{ [variable: string]: mixed },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
@@ -135,7 +134,7 @@ declare function graphqlSync(
   source: Source | string,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?ObjMap<mixed>,
+  variableValues?: ?{ [variable: string]: mixed },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
