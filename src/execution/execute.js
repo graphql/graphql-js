@@ -113,7 +113,7 @@ export type ExecutionContext = {|
  */
 export type ExecutionResult = {
   errors?: $ReadOnlyArray<GraphQLError>,
-  data?: ObjMap<mixed>,
+  data?: ObjMap<mixed> | null,
 };
 
 export type ExecutionArgs = {|
@@ -238,7 +238,7 @@ function executeImpl(
 function buildResponse(
   exeContext: ExecutionContext,
   data: PromiseOrValue<ObjMap<mixed> | null>,
-) {
+): ExecutionResult {
   if (isPromise(data)) {
     return data.then(resolved => buildResponse(exeContext, resolved));
   }
