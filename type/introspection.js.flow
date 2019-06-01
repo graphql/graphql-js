@@ -95,7 +95,7 @@ export const __Directive = new GraphQLObjectType({
       },
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
-        resolve: directive => directive.args || [],
+        resolve: directive => directive.args,
       },
     }: GraphQLFieldConfigMap<GraphQLDirective, mixed>),
 });
@@ -303,7 +303,7 @@ export const __Field = new GraphQLObjectType({
       },
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
-        resolve: field => field.args || [],
+        resolve: field => field.args,
       },
       type: {
         type: GraphQLNonNull(__Type),

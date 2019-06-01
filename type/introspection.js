@@ -102,7 +102,7 @@ var __Directive = new _definition.GraphQLObjectType({
       args: {
         type: (0, _definition.GraphQLNonNull)((0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__InputValue))),
         resolve: function resolve(directive) {
-          return directive.args || [];
+          return directive.args;
         }
       }
     };
@@ -348,7 +348,7 @@ var __Field = new _definition.GraphQLObjectType({
       args: {
         type: (0, _definition.GraphQLNonNull)((0, _definition.GraphQLList)((0, _definition.GraphQLNonNull)(__InputValue))),
         resolve: function resolve(field) {
-          return field.args || [];
+          return field.args;
         }
       },
       type: {

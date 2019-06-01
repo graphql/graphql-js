@@ -82,7 +82,7 @@ export var __Directive = new GraphQLObjectType({
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
         resolve: function resolve(directive) {
-          return directive.args || [];
+          return directive.args;
         }
       }
     };
@@ -319,7 +319,7 @@ export var __Field = new GraphQLObjectType({
       args: {
         type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
         resolve: function resolve(field) {
-          return field.args || [];
+          return field.args;
         }
       },
       type: {
