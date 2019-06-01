@@ -242,7 +242,7 @@ rules:
     - error
     - selector: 'FunctionDeclaration[async=true]'
       message: >
-        async functions are not allowed outside of the test suite because
+        async functions are not allowed inside package source code because
         older versions of NodeJS do not support them without additional
         runtime dependencies. Instead, use explicit Promises.
   no-tabs: error
@@ -359,6 +359,7 @@ overrides:
     parserOptions:
       sourceType: script
     rules:
+      no-restricted-syntax: off
       no-console: off
       no-sync: off
       global-require: off
