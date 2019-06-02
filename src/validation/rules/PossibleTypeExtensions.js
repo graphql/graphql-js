@@ -7,7 +7,7 @@
  * @flow strict
  */
 
-import quotedOrList from '../../jsutils/quotedOrList';
+import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 import { type SDLValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
@@ -27,11 +27,10 @@ export function extendingUnknownTypeMessage(
   typeName: string,
   suggestedTypes: Array<string>,
 ): string {
-  let message = `Cannot extend type "${typeName}" because it is not defined.`;
-  if (suggestedTypes.length) {
-    message += ` Did you mean ${quotedOrList(suggestedTypes)}?`;
-  }
-  return message;
+  return (
+    `Cannot extend type "${typeName}" because it is not defined.` +
+    didYouMean(suggestedTypes.map(x => `"${x}"`))
+  );
 }
 
 export function extendingDifferentTypeKindMessage(

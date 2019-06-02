@@ -11,7 +11,7 @@ import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
-import orList from '../jsutils/orList';
+import didYouMean from '../jsutils/didYouMean';
 import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error/GraphQLError';
 import { type ASTNode } from '../language/ast';
@@ -81,7 +81,7 @@ export function coerceValue(
           `Expected type ${type.name}`,
           blameNode,
           path,
-          error.message,
+          ' ' + error.message,
           error,
         ),
       ]);
@@ -99,12 +99,13 @@ export function coerceValue(
       String(value),
       type.getValues().map(enumValue => enumValue.name),
     );
-    const didYouMean =
-      suggestions.length !== 0
-        ? `did you mean ${orList(suggestions)}?`
-        : undefined;
     return ofErrors([
-      coercionError(`Expected type ${type.name}`, blameNode, path, didYouMean),
+      coercionError(
+        `Expected type ${type.name}`,
+        blameNode,
+        path,
+        didYouMean(suggestions),
+      ),
     ]);
   }
 
@@ -182,17 +183,13 @@ export function coerceValue(
     for (const fieldName of Object.keys(value)) {
       if (!fields[fieldName]) {
         const suggestions = suggestionList(fieldName, Object.keys(fields));
-        const didYouMean =
-          suggestions.length !== 0
-            ? `did you mean ${orList(suggestions)}?`
-            : undefined;
         errors = add(
           errors,
           coercionError(
             `Field "${fieldName}" is not defined by type ${type.name}`,
             blameNode,
             path,
-            didYouMean,
+            didYouMean(suggestions),
           ),
         );
       }
@@ -224,11 +221,16 @@ function atPath(prev, key) {
 
 function coercionError(message, blameNode, path, subMessage, originalError) {
   const pathStr = printPath(path);
+  let fullMessage = message;
+
+  if (pathStr) {
+    fullMessage += ' at ' + pathStr;
+  }
+  fullMessage += subMessage ? '.' + subMessage : '.';
+
   // Return a GraphQLError instance
   return new GraphQLError(
-    message +
-      (pathStr ? ' at ' + pathStr : '') +
-      (subMessage ? '; ' + subMessage : '.'),
+    fullMessage,
     blameNode,
     undefined,
     undefined,
