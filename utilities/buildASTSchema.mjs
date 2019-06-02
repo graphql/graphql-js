@@ -11,6 +11,7 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
+import identityFunc from '../jsutils/identityFunc';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';
 import { dedentBlockStringValue } from '../language/blockString';
@@ -375,9 +376,7 @@ function () {
       name: astNode.name.value,
       description: getDescription(astNode, this._options),
       astNode: astNode,
-      serialize: function serialize(value) {
-        return value;
-      }
+      serialize: identityFunc
     });
   };
 

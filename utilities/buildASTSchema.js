@@ -18,6 +18,8 @@ var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
+var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc"));
+
 var _valueFromAST = require("./valueFromAST");
 
 var _validate = require("../validation/validate");
@@ -407,9 +409,7 @@ function () {
       name: astNode.name.value,
       description: getDescription(astNode, this._options),
       astNode: astNode,
-      serialize: function serialize(value) {
-        return value;
-      }
+      serialize: _identityFunc.default
     });
   };
 

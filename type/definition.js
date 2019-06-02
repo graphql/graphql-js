@@ -52,6 +52,8 @@ var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
 var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
 
+var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc"));
+
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
@@ -417,11 +419,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize;
-
-    this.parseValue = config.parseValue || function (value) {
-      return value;
-    };
-
+    this.parseValue = config.parseValue || _identityFunc.default;
     this.parseLiteral = config.parseLiteral || _valueFromASTUntyped.valueFromASTUntyped;
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);

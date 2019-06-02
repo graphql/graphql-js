@@ -15,6 +15,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 import objectEntries from '../polyfills/objectEntries';
 import defineToJSON from '../jsutils/defineToJSON';
 import defineToStringTag from '../jsutils/defineToStringTag';
+import identityFunc from '../jsutils/identityFunc';
 import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
@@ -326,11 +327,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize;
-
-    this.parseValue = config.parseValue || function (value) {
-      return value;
-    };
-
+    this.parseValue = config.parseValue || identityFunc;
     this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);

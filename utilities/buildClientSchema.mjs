@@ -10,6 +10,7 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
+import identityFunc from '../jsutils/identityFunc';
 import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
 import { GraphQLSchema } from '../type/schema';
@@ -160,9 +161,7 @@ export function buildClientSchema(introspection, options) {
     return new GraphQLScalarType({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
-      serialize: function serialize(value) {
-        return value;
-      }
+      serialize: identityFunc
     });
   }
 

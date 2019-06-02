@@ -10,6 +10,7 @@
 import objectEntries from '../polyfills/objectEntries';
 import defineToJSON from '../jsutils/defineToJSON';
 import defineToStringTag from '../jsutils/defineToStringTag';
+import identityFunc from '../jsutils/identityFunc';
 import instanceOf from '../jsutils/instanceOf';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
@@ -559,7 +560,7 @@ export class GraphQLScalarType {
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize;
-    this.parseValue = config.parseValue || (value => value);
+    this.parseValue = config.parseValue || identityFunc;
     this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);

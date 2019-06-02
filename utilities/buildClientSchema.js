@@ -13,6 +13,8 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
+var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc"));
+
 var _valueFromAST = require("./valueFromAST");
 
 var _parser = require("../language/parser");
@@ -180,9 +182,7 @@ function buildClientSchema(introspection, options) {
     return new _definition.GraphQLScalarType({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
-      serialize: function serialize(value) {
-        return value;
-      }
+      serialize: _identityFunc.default
     });
   }
 
