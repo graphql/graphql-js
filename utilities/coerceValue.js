@@ -13,7 +13,7 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
-var _orList = _interopRequireDefault(require("../jsutils/orList"));
+var _didYouMean = _interopRequireDefault(require("../jsutils/didYouMean"));
 
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
 
@@ -60,7 +60,7 @@ function coerceValue(value, type, blameNode, path) {
 
       return ofValue(parseResult);
     } catch (error) {
-      return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path, error.message, error)]);
+      return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path, ' ' + error.message, error)]);
     }
   }
 
@@ -76,8 +76,7 @@ function coerceValue(value, type, blameNode, path) {
     var suggestions = (0, _suggestionList.default)(String(value), type.getValues().map(function (enumValue) {
       return enumValue.name;
     }));
-    var didYouMean = suggestions.length !== 0 ? "did you mean ".concat((0, _orList.default)(suggestions), "?") : undefined;
-    return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path, didYouMean)]);
+    return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path, (0, _didYouMean.default)(suggestions))]);
   }
 
   if ((0, _definition.isListType)(type)) {
@@ -160,9 +159,7 @@ function coerceValue(value, type, blameNode, path) {
       if (!fields[fieldName]) {
         var _suggestions = (0, _suggestionList.default)(fieldName, Object.keys(fields));
 
-        var _didYouMean = _suggestions.length !== 0 ? "did you mean ".concat((0, _orList.default)(_suggestions), "?") : undefined;
-
-        _errors = add(_errors, coercionError("Field \"".concat(fieldName, "\" is not defined by type ").concat(type.name), blameNode, path, _didYouMean));
+        _errors = add(_errors, coercionError("Field \"".concat(fieldName, "\" is not defined by type ").concat(type.name), blameNode, path, (0, _didYouMean.default)(_suggestions)));
       }
     }
 
@@ -201,9 +198,16 @@ function atPath(prev, key) {
 }
 
 function coercionError(message, blameNode, path, subMessage, originalError) {
-  var pathStr = printPath(path); // Return a GraphQLError instance
+  var pathStr = printPath(path);
+  var fullMessage = message;
 
-  return new _GraphQLError.GraphQLError(message + (pathStr ? ' at ' + pathStr : '') + (subMessage ? '; ' + subMessage : '.'), blameNode, undefined, undefined, undefined, originalError);
+  if (pathStr) {
+    fullMessage += ' at ' + pathStr;
+  }
+
+  fullMessage += subMessage ? '.' + subMessage : '.'; // Return a GraphQLError instance
+
+  return new _GraphQLError.GraphQLError(fullMessage, blameNode, undefined, undefined, undefined, originalError);
 } // Build a string describing the path into the value where the error was found
 
 

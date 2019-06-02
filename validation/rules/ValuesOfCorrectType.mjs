@@ -13,16 +13,19 @@ import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType,
 import inspect from '../../jsutils/inspect';
 import isInvalid from '../../jsutils/isInvalid';
 import keyMap from '../../jsutils/keyMap';
-import orList from '../../jsutils/orList';
+import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 export function badValueMessage(typeName, valueName, message) {
   return "Expected type ".concat(typeName, ", found ").concat(valueName) + (message ? "; ".concat(message) : '.');
 }
+export function badEnumValueMessage(typeName, valueName, suggestedValues) {
+  return "Expected type ".concat(typeName, ", found ").concat(valueName, ".") + didYouMean('the enum value', suggestedValues);
+}
 export function requiredFieldMessage(typeName, fieldName, fieldTypeName) {
   return "Field ".concat(typeName, ".").concat(fieldName, " of required type ") + "".concat(fieldTypeName, " was not provided.");
 }
-export function unknownFieldMessage(typeName, fieldName, message) {
-  return "Field \"".concat(fieldName, "\" is not defined by type ").concat(typeName) + (message ? "; ".concat(message) : '.');
+export function unknownFieldMessage(typeName, fieldName, suggestedFields) {
+  return "Field \"".concat(fieldName, "\" is not defined by type ").concat(typeName, ".") + didYouMean(suggestedFields);
 }
 /**
  * Value literals of correct type
@@ -97,8 +100,7 @@ export function ValuesOfCorrectType(context) {
 
       if (!fieldType && isInputObjectType(parentType)) {
         var suggestions = suggestionList(node.name.value, Object.keys(parentType.getFields()));
-        var didYouMean = suggestions.length !== 0 ? "Did you mean ".concat(orList(suggestions), "?") : undefined;
-        context.reportError(new GraphQLError(unknownFieldMessage(parentType.name, node.name.value, didYouMean), node));
+        context.reportError(new GraphQLError(unknownFieldMessage(parentType.name, node.name.value, suggestions), node));
       }
     },
     EnumValue: function EnumValue(node) {
@@ -107,7 +109,7 @@ export function ValuesOfCorrectType(context) {
       if (!isEnumType(type)) {
         isValidScalar(context, node);
       } else if (!type.getValue(node.value)) {
-        context.reportError(new GraphQLError(badValueMessage(type.name, print(node), enumTypeSuggestion(type, node)), node));
+        context.reportError(new GraphQLError(badEnumValueMessage(type.name, print(node), enumTypeSuggestion(type, node)), node));
       }
     },
     IntValue: function IntValue(node) {
@@ -140,7 +142,8 @@ function isValidScalar(context, node) {
   var type = getNamedType(locationType);
 
   if (!isScalarType(type)) {
-    context.reportError(new GraphQLError(badValueMessage(inspect(locationType), print(node), enumTypeSuggestion(type, node)), node));
+    var message = isEnumType(type) ? badEnumValueMessage(inspect(locationType), print(node), enumTypeSuggestion(type, node)) : badValueMessage(inspect(locationType), print(node));
+    context.reportError(new GraphQLError(message, node));
     return;
   } // Scalars determine if a literal value is valid via parseLiteral() which
   // may throw or return an invalid value to indicate failure.
@@ -161,13 +164,8 @@ function isValidScalar(context, node) {
 }
 
 function enumTypeSuggestion(type, node) {
-  if (isEnumType(type)) {
-    var suggestions = suggestionList(print(node), type.getValues().map(function (value) {
-      return value.name;
-    }));
-
-    if (suggestions.length !== 0) {
-      return "Did you mean the enum value ".concat(orList(suggestions), "?");
-    }
-  }
+  var allNames = type.getValues().map(function (value) {
+    return value.name;
+  });
+  return suggestionList(print(node), allNames);
 }

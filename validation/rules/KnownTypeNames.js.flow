@@ -13,7 +13,7 @@ import {
 } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import suggestionList from '../../jsutils/suggestionList';
-import quotedOrList from '../../jsutils/quotedOrList';
+import didYouMean from '../../jsutils/didYouMean';
 import { type ASTNode } from '../../language/ast';
 import { type ASTVisitor } from '../../language/visitor';
 import {
@@ -27,11 +27,10 @@ export function unknownTypeMessage(
   typeName: string,
   suggestedTypes: Array<string>,
 ): string {
-  let message = `Unknown type "${typeName}".`;
-  if (suggestedTypes.length) {
-    message += ` Did you mean ${quotedOrList(suggestedTypes)}?`;
-  }
-  return message;
+  return (
+    `Unknown type "${typeName}".` +
+    didYouMean(suggestedTypes.map(x => `"${x}"`))
+  );
 }
 
 /**

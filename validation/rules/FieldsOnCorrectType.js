@@ -10,7 +10,7 @@ var _GraphQLError = require("../../error/GraphQLError");
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
-var _quotedOrList = _interopRequireDefault(require("../../jsutils/quotedOrList"));
+var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _definition = require("../../type/definition");
 
@@ -25,16 +25,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * 
  */
 function undefinedFieldMessage(fieldName, type, suggestedTypeNames, suggestedFieldNames) {
-  var message = "Cannot query field \"".concat(fieldName, "\" on type \"").concat(type, "\".");
-
-  if (suggestedTypeNames.length !== 0) {
-    var suggestions = (0, _quotedOrList.default)(suggestedTypeNames);
-    message += " Did you mean to use an inline fragment on ".concat(suggestions, "?");
-  } else if (suggestedFieldNames.length !== 0) {
-    message += " Did you mean ".concat((0, _quotedOrList.default)(suggestedFieldNames), "?");
-  }
-
-  return message;
+  var quotedTypeNames = suggestedTypeNames.map(function (x) {
+    return "\"".concat(x, "\"");
+  });
+  var quotedFieldNames = suggestedFieldNames.map(function (x) {
+    return "\"".concat(x, "\"");
+  });
+  return "Cannot query field \"".concat(fieldName, "\" on type \"").concat(type, "\".") + ((0, _didYouMean.default)('to use an inline fragment on', quotedTypeNames) || (0, _didYouMean.default)(quotedFieldNames));
 }
 /**
  * Fields on correct type

@@ -7,7 +7,7 @@ exports.extendingUnknownTypeMessage = extendingUnknownTypeMessage;
 exports.extendingDifferentTypeKindMessage = extendingDifferentTypeKindMessage;
 exports.PossibleTypeExtensions = PossibleTypeExtensions;
 
-var _quotedOrList = _interopRequireDefault(require("../../jsutils/quotedOrList"));
+var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
@@ -26,13 +26,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function extendingUnknownTypeMessage(typeName, suggestedTypes) {
-  var message = "Cannot extend type \"".concat(typeName, "\" because it is not defined.");
-
-  if (suggestedTypes.length) {
-    message += " Did you mean ".concat((0, _quotedOrList.default)(suggestedTypes), "?");
-  }
-
-  return message;
+  return "Cannot extend type \"".concat(typeName, "\" because it is not defined.") + (0, _didYouMean.default)(suggestedTypes.map(function (x) {
+    return "\"".concat(x, "\"");
+  }));
 }
 
 function extendingDifferentTypeKindMessage(typeName, kind) {

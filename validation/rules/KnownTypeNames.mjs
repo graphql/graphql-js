@@ -8,17 +8,13 @@
  */
 import { GraphQLError } from '../../error/GraphQLError';
 import suggestionList from '../../jsutils/suggestionList';
-import quotedOrList from '../../jsutils/quotedOrList';
+import didYouMean from '../../jsutils/didYouMean';
 import { isTypeDefinitionNode, isTypeSystemDefinitionNode, isTypeSystemExtensionNode } from '../../language/predicates';
 import { specifiedScalarTypes } from '../../type/scalars';
 export function unknownTypeMessage(typeName, suggestedTypes) {
-  var message = "Unknown type \"".concat(typeName, "\".");
-
-  if (suggestedTypes.length) {
-    message += " Did you mean ".concat(quotedOrList(suggestedTypes), "?");
-  }
-
-  return message;
+  return "Unknown type \"".concat(typeName, "\".") + didYouMean(suggestedTypes.map(function (x) {
+    return "\"".concat(x, "\"");
+  }));
 }
 /**
  * Known type names

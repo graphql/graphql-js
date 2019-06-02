@@ -12,26 +12,18 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 import { GraphQLError } from '../../error/GraphQLError';
 import suggestionList from '../../jsutils/suggestionList';
-import quotedOrList from '../../jsutils/quotedOrList';
+import didYouMean from '../../jsutils/didYouMean';
 import { Kind } from '../../language/kinds';
 import { specifiedDirectives } from '../../type/directives';
 export function unknownArgMessage(argName, fieldName, typeName, suggestedArgs) {
-  var message = "Unknown argument \"".concat(argName, "\" on field \"").concat(fieldName, "\" of ") + "type \"".concat(typeName, "\".");
-
-  if (suggestedArgs.length) {
-    message += " Did you mean ".concat(quotedOrList(suggestedArgs), "?");
-  }
-
-  return message;
+  return "Unknown argument \"".concat(argName, "\" on field \"").concat(fieldName, "\" of type \"").concat(typeName, "\".") + didYouMean(suggestedArgs.map(function (x) {
+    return "\"".concat(x, "\"");
+  }));
 }
 export function unknownDirectiveArgMessage(argName, directiveName, suggestedArgs) {
-  var message = "Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".");
-
-  if (suggestedArgs.length) {
-    message += " Did you mean ".concat(quotedOrList(suggestedArgs), "?");
-  }
-
-  return message;
+  return "Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".") + didYouMean(suggestedArgs.map(function (x) {
+    return "\"".concat(x, "\"");
+  }));
 }
 /**
  * Known argument names

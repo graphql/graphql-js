@@ -28,7 +28,7 @@ function noSubselectionAllowedMessage(fieldName, type) {
 }
 
 function requiredSubselectionMessage(fieldName, type) {
-  return "Field \"".concat(fieldName, "\" of type \"").concat(type, "\" must have a ") + "selection of subfields. Did you mean \"".concat(fieldName, " { ... }\"?");
+  return "Field \"".concat(fieldName, "\" of type \"").concat(type, "\" must have a selection of subfields.") + " Did you mean \"".concat(fieldName, " { ... }\"?");
 }
 /**
  * Scalar leafs

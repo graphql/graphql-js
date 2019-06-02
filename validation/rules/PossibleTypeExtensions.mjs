@@ -10,20 +10,16 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  * 
  */
-import quotedOrList from '../../jsutils/quotedOrList';
+import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { isTypeDefinitionNode } from '../../language/predicates';
 import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../../type/definition';
 export function extendingUnknownTypeMessage(typeName, suggestedTypes) {
-  var message = "Cannot extend type \"".concat(typeName, "\" because it is not defined.");
-
-  if (suggestedTypes.length) {
-    message += " Did you mean ".concat(quotedOrList(suggestedTypes), "?");
-  }
-
-  return message;
+  return "Cannot extend type \"".concat(typeName, "\" because it is not defined.") + didYouMean(suggestedTypes.map(function (x) {
+    return "\"".concat(x, "\"");
+  }));
 }
 export function extendingDifferentTypeKindMessage(typeName, kind) {
   return "Cannot extend non-".concat(kind, " type \"").concat(typeName, "\".");

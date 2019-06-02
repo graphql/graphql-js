@@ -12,7 +12,7 @@ var _GraphQLError = require("../../error/GraphQLError");
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
-var _quotedOrList = _interopRequireDefault(require("../../jsutils/quotedOrList"));
+var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _kinds = require("../../language/kinds");
 
@@ -25,23 +25,15 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function unknownArgMessage(argName, fieldName, typeName, suggestedArgs) {
-  var message = "Unknown argument \"".concat(argName, "\" on field \"").concat(fieldName, "\" of ") + "type \"".concat(typeName, "\".");
-
-  if (suggestedArgs.length) {
-    message += " Did you mean ".concat((0, _quotedOrList.default)(suggestedArgs), "?");
-  }
-
-  return message;
+  return "Unknown argument \"".concat(argName, "\" on field \"").concat(fieldName, "\" of type \"").concat(typeName, "\".") + (0, _didYouMean.default)(suggestedArgs.map(function (x) {
+    return "\"".concat(x, "\"");
+  }));
 }
 
 function unknownDirectiveArgMessage(argName, directiveName, suggestedArgs) {
-  var message = "Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".");
-
-  if (suggestedArgs.length) {
-    message += " Did you mean ".concat((0, _quotedOrList.default)(suggestedArgs), "?");
-  }
-
-  return message;
+  return "Unknown argument \"".concat(argName, "\" on directive \"@").concat(directiveName, "\".") + (0, _didYouMean.default)(suggestedArgs.map(function (x) {
+    return "\"".concat(x, "\"");
+  }));
 }
 /**
  * Known argument names

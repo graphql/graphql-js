@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.badValueMessage = badValueMessage;
+exports.badEnumValueMessage = badEnumValueMessage;
 exports.requiredFieldMessage = requiredFieldMessage;
 exports.unknownFieldMessage = unknownFieldMessage;
 exports.ValuesOfCorrectType = ValuesOfCorrectType;
@@ -22,7 +23,7 @@ var _isInvalid = _interopRequireDefault(require("../../jsutils/isInvalid"));
 
 var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
 
-var _orList = _interopRequireDefault(require("../../jsutils/orList"));
+var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
@@ -40,12 +41,16 @@ function badValueMessage(typeName, valueName, message) {
   return "Expected type ".concat(typeName, ", found ").concat(valueName) + (message ? "; ".concat(message) : '.');
 }
 
+function badEnumValueMessage(typeName, valueName, suggestedValues) {
+  return "Expected type ".concat(typeName, ", found ").concat(valueName, ".") + (0, _didYouMean.default)('the enum value', suggestedValues);
+}
+
 function requiredFieldMessage(typeName, fieldName, fieldTypeName) {
   return "Field ".concat(typeName, ".").concat(fieldName, " of required type ") + "".concat(fieldTypeName, " was not provided.");
 }
 
-function unknownFieldMessage(typeName, fieldName, message) {
-  return "Field \"".concat(fieldName, "\" is not defined by type ").concat(typeName) + (message ? "; ".concat(message) : '.');
+function unknownFieldMessage(typeName, fieldName, suggestedFields) {
+  return "Field \"".concat(fieldName, "\" is not defined by type ").concat(typeName, ".") + (0, _didYouMean.default)(suggestedFields);
 }
 /**
  * Value literals of correct type
@@ -121,8 +126,7 @@ function ValuesOfCorrectType(context) {
 
       if (!fieldType && (0, _definition.isInputObjectType)(parentType)) {
         var suggestions = (0, _suggestionList.default)(node.name.value, Object.keys(parentType.getFields()));
-        var didYouMean = suggestions.length !== 0 ? "Did you mean ".concat((0, _orList.default)(suggestions), "?") : undefined;
-        context.reportError(new _GraphQLError.GraphQLError(unknownFieldMessage(parentType.name, node.name.value, didYouMean), node));
+        context.reportError(new _GraphQLError.GraphQLError(unknownFieldMessage(parentType.name, node.name.value, suggestions), node));
       }
     },
     EnumValue: function EnumValue(node) {
@@ -131,7 +135,7 @@ function ValuesOfCorrectType(context) {
       if (!(0, _definition.isEnumType)(type)) {
         isValidScalar(context, node);
       } else if (!type.getValue(node.value)) {
-        context.reportError(new _GraphQLError.GraphQLError(badValueMessage(type.name, (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));
+        context.reportError(new _GraphQLError.GraphQLError(badEnumValueMessage(type.name, (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));
       }
     },
     IntValue: function IntValue(node) {
@@ -165,7 +169,8 @@ function isValidScalar(context, node) {
   var type = (0, _definition.getNamedType)(locationType);
 
   if (!(0, _definition.isScalarType)(type)) {
-    context.reportError(new _GraphQLError.GraphQLError(badValueMessage((0, _inspect.default)(locationType), (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));
+    var message = (0, _definition.isEnumType)(type) ? badEnumValueMessage((0, _inspect.default)(locationType), (0, _printer.print)(node), enumTypeSuggestion(type, node)) : badValueMessage((0, _inspect.default)(locationType), (0, _printer.print)(node));
+    context.reportError(new _GraphQLError.GraphQLError(message, node));
     return;
   } // Scalars determine if a literal value is valid via parseLiteral() which
   // may throw or return an invalid value to indicate failure.
@@ -186,13 +191,8 @@ function isValidScalar(context, node) {
 }
 
 function enumTypeSuggestion(type, node) {
-  if ((0, _definition.isEnumType)(type)) {
-    var suggestions = (0, _suggestionList.default)((0, _printer.print)(node), type.getValues().map(function (value) {
-      return value.name;
-    }));
-
-    if (suggestions.length !== 0) {
-      return "Did you mean the enum value ".concat((0, _orList.default)(suggestions), "?");
-    }
-  }
+  var allNames = type.getValues().map(function (value) {
+    return value.name;
+  });
+  return (0, _suggestionList.default)((0, _printer.print)(node), allNames);
 }

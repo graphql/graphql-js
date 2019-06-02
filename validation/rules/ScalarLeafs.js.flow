@@ -29,8 +29,8 @@ export function requiredSubselectionMessage(
   type: string,
 ): string {
   return (
-    `Field "${fieldName}" of type "${type}" must have a ` +
-    `selection of subfields. Did you mean "${fieldName} { ... }"?`
+    `Field "${fieldName}" of type "${type}" must have a selection of subfields.` +
+    ` Did you mean "${fieldName} { ... }"?`
   );
 }
 

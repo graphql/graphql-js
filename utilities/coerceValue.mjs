@@ -12,7 +12,7 @@ import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
-import orList from '../jsutils/orList';
+import didYouMean from '../jsutils/didYouMean';
 import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error/GraphQLError';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
@@ -52,7 +52,7 @@ export function coerceValue(value, type, blameNode, path) {
 
       return ofValue(parseResult);
     } catch (error) {
-      return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path, error.message, error)]);
+      return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path, ' ' + error.message, error)]);
     }
   }
 
@@ -68,8 +68,7 @@ export function coerceValue(value, type, blameNode, path) {
     var suggestions = suggestionList(String(value), type.getValues().map(function (enumValue) {
       return enumValue.name;
     }));
-    var didYouMean = suggestions.length !== 0 ? "did you mean ".concat(orList(suggestions), "?") : undefined;
-    return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path, didYouMean)]);
+    return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path, didYouMean(suggestions))]);
   }
 
   if (isListType(type)) {
@@ -152,9 +151,7 @@ export function coerceValue(value, type, blameNode, path) {
       if (!fields[fieldName]) {
         var _suggestions = suggestionList(fieldName, Object.keys(fields));
 
-        var _didYouMean = _suggestions.length !== 0 ? "did you mean ".concat(orList(_suggestions), "?") : undefined;
-
-        _errors = add(_errors, coercionError("Field \"".concat(fieldName, "\" is not defined by type ").concat(type.name), blameNode, path, _didYouMean));
+        _errors = add(_errors, coercionError("Field \"".concat(fieldName, "\" is not defined by type ").concat(type.name), blameNode, path, didYouMean(_suggestions)));
       }
     }
 
@@ -193,9 +190,16 @@ function atPath(prev, key) {
 }
 
 function coercionError(message, blameNode, path, subMessage, originalError) {
-  var pathStr = printPath(path); // Return a GraphQLError instance
+  var pathStr = printPath(path);
+  var fullMessage = message;
 
-  return new GraphQLError(message + (pathStr ? ' at ' + pathStr : '') + (subMessage ? '; ' + subMessage : '.'), blameNode, undefined, undefined, undefined, originalError);
+  if (pathStr) {
+    fullMessage += ' at ' + pathStr;
+  }
+
+  fullMessage += subMessage ? '.' + subMessage : '.'; // Return a GraphQLError instance
+
+  return new GraphQLError(fullMessage, blameNode, undefined, undefined, undefined, originalError);
 } // Build a string describing the path into the value where the error was found
 
 

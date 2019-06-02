@@ -10,7 +10,7 @@ var _GraphQLError = require("../../error/GraphQLError");
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
-var _quotedOrList = _interopRequireDefault(require("../../jsutils/quotedOrList"));
+var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _predicates = require("../../language/predicates");
 
@@ -27,13 +27,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * 
  */
 function unknownTypeMessage(typeName, suggestedTypes) {
-  var message = "Unknown type \"".concat(typeName, "\".");
-
-  if (suggestedTypes.length) {
-    message += " Did you mean ".concat((0, _quotedOrList.default)(suggestedTypes), "?");
-  }
-
-  return message;
+  return "Unknown type \"".concat(typeName, "\".") + (0, _didYouMean.default)(suggestedTypes.map(function (x) {
+    return "\"".concat(x, "\"");
+  }));
 }
 /**
  * Known type names

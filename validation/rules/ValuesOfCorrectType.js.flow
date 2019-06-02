@@ -14,7 +14,6 @@ import { type ValueNode } from '../../language/ast';
 import { print } from '../../language/printer';
 import { type ASTVisitor } from '../../language/visitor';
 import {
-  type GraphQLType,
   isScalarType,
   isEnumType,
   isInputObjectType,
@@ -27,7 +26,7 @@ import {
 import inspect from '../../jsutils/inspect';
 import isInvalid from '../../jsutils/isInvalid';
 import keyMap from '../../jsutils/keyMap';
-import orList from '../../jsutils/orList';
+import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
 
 export function badValueMessage(
@@ -38,6 +37,17 @@ export function badValueMessage(
   return (
     `Expected type ${typeName}, found ${valueName}` +
     (message ? `; ${message}` : '.')
+  );
+}
+
+export function badEnumValueMessage(
+  typeName: string,
+  valueName: string,
+  suggestedValues: $ReadOnlyArray<string>,
+) {
+  return (
+    `Expected type ${typeName}, found ${valueName}.` +
+    didYouMean('the enum value', suggestedValues)
   );
 }
 
@@ -55,11 +65,11 @@ export function requiredFieldMessage(
 export function unknownFieldMessage(
   typeName: string,
   fieldName: string,
-  message?: string,
+  suggestedFields: $ReadOnlyArray<string>,
 ): string {
   return (
-    `Field "${fieldName}" is not defined by type ${typeName}` +
-    (message ? `; ${message}` : '.')
+    `Field "${fieldName}" is not defined by type ${typeName}.` +
+    didYouMean(suggestedFields)
   );
 }
 
@@ -117,13 +127,9 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
           node.name.value,
           Object.keys(parentType.getFields()),
         );
-        const didYouMean =
-          suggestions.length !== 0
-            ? `Did you mean ${orList(suggestions)}?`
-            : undefined;
         context.reportError(
           new GraphQLError(
-            unknownFieldMessage(parentType.name, node.name.value, didYouMean),
+            unknownFieldMessage(parentType.name, node.name.value, suggestions),
             node,
           ),
         );
@@ -136,7 +142,7 @@ export function ValuesOfCorrectType(context: ValidationContext): ASTVisitor {
       } else if (!type.getValue(node.value)) {
         context.reportError(
           new GraphQLError(
-            badValueMessage(
+            badEnumValueMessage(
               type.name,
               print(node),
               enumTypeSuggestion(type, node),
@@ -167,16 +173,14 @@ function isValidScalar(context: ValidationContext, node: ValueNode): void {
   const type = getNamedType(locationType);
 
   if (!isScalarType(type)) {
-    context.reportError(
-      new GraphQLError(
-        badValueMessage(
+    const message = isEnumType(type)
+      ? badEnumValueMessage(
           inspect(locationType),
           print(node),
           enumTypeSuggestion(type, node),
-        ),
-        node,
-      ),
-    );
+        )
+      : badValueMessage(inspect(locationType), print(node));
+    context.reportError(new GraphQLError(message, node));
     return;
   }
 
@@ -207,14 +211,7 @@ function isValidScalar(context: ValidationContext, node: ValueNode): void {
   }
 }
 
-function enumTypeSuggestion(type: GraphQLType, node: ValueNode): string | void {
-  if (isEnumType(type)) {
-    const suggestions = suggestionList(
-      print(node),
-      type.getValues().map(value => value.name),
-    );
-    if (suggestions.length !== 0) {
-      return `Did you mean the enum value ${orList(suggestions)}?`;
-    }
-  }
+function enumTypeSuggestion(type, node) {
+  const allNames = type.getValues().map(value => value.name);
+  return suggestionList(print(node), allNames);
 }

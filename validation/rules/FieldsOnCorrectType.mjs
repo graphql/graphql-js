@@ -8,19 +8,16 @@
  */
 import { GraphQLError } from '../../error/GraphQLError';
 import suggestionList from '../../jsutils/suggestionList';
-import quotedOrList from '../../jsutils/quotedOrList';
+import didYouMean from '../../jsutils/didYouMean';
 import { isObjectType, isInterfaceType, isAbstractType } from '../../type/definition';
 export function undefinedFieldMessage(fieldName, type, suggestedTypeNames, suggestedFieldNames) {
-  var message = "Cannot query field \"".concat(fieldName, "\" on type \"").concat(type, "\".");
-
-  if (suggestedTypeNames.length !== 0) {
-    var suggestions = quotedOrList(suggestedTypeNames);
-    message += " Did you mean to use an inline fragment on ".concat(suggestions, "?");
-  } else if (suggestedFieldNames.length !== 0) {
-    message += " Did you mean ".concat(quotedOrList(suggestedFieldNames), "?");
-  }
-
-  return message;
+  var quotedTypeNames = suggestedTypeNames.map(function (x) {
+    return "\"".concat(x, "\"");
+  });
+  var quotedFieldNames = suggestedFieldNames.map(function (x) {
+    return "\"".concat(x, "\"");
+  });
+  return "Cannot query field \"".concat(fieldName, "\" on type \"").concat(type, "\".") + (didYouMean('to use an inline fragment on', quotedTypeNames) || didYouMean(quotedFieldNames));
 }
 /**
  * Fields on correct type
