@@ -30,6 +30,17 @@ import { type DocumentNode } from '../language/ast';
 import { type GraphQLFieldResolver } from '../type/definition';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 
+export type SubscriptionArgs = {|
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: ?{ [variable: string]: mixed },
+  operationName?: ?string,
+  fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
+|};
+
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
@@ -51,16 +62,7 @@ import { getOperationRootType } from '../utilities/getOperationRootType';
  * Accepts either an object with named arguments, or individual arguments.
  */
 declare function subscribe(
-  {|
-    schema: GraphQLSchema,
-    document: DocumentNode,
-    rootValue?: mixed,
-    contextValue?: mixed,
-    variableValues?: ?{ [variable: string]: mixed },
-    operationName?: ?string,
-    fieldResolver?: ?GraphQLFieldResolver<any, any>,
-    subscribeFieldResolver?: ?GraphQLFieldResolver<any, any>,
-  |},
+  SubscriptionArgs,
   ..._: []
 ): Promise<AsyncIterator<ExecutionResult> | ExecutionResult>;
 /* eslint-disable no-redeclare */
