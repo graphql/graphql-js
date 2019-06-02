@@ -97,18 +97,9 @@ export function graphql(
     resolve(
       // Extract arguments from object args if provided.
       arguments.length === 1
-        ? graphqlImpl(
-            argsOrSchema.schema,
-            argsOrSchema.source,
-            argsOrSchema.rootValue,
-            argsOrSchema.contextValue,
-            argsOrSchema.variableValues,
-            argsOrSchema.operationName,
-            argsOrSchema.fieldResolver,
-            argsOrSchema.typeResolver,
-          )
-        : graphqlImpl(
-            argsOrSchema,
+        ? graphqlImpl(argsOrSchema)
+        : graphqlImpl({
+            schema: argsOrSchema,
             source,
             rootValue,
             contextValue,
@@ -116,7 +107,7 @@ export function graphql(
             operationName,
             fieldResolver,
             typeResolver,
-          ),
+          }),
     ),
   );
 }
@@ -153,18 +144,9 @@ export function graphqlSync(
   // Extract arguments from object args if provided.
   const result =
     arguments.length === 1
-      ? graphqlImpl(
-          argsOrSchema.schema,
-          argsOrSchema.source,
-          argsOrSchema.rootValue,
-          argsOrSchema.contextValue,
-          argsOrSchema.variableValues,
-          argsOrSchema.operationName,
-          argsOrSchema.fieldResolver,
-          argsOrSchema.typeResolver,
-        )
-      : graphqlImpl(
-          argsOrSchema,
+      ? graphqlImpl(argsOrSchema)
+      : graphqlImpl({
+          schema: argsOrSchema,
           source,
           rootValue,
           contextValue,
@@ -172,7 +154,7 @@ export function graphqlSync(
           operationName,
           fieldResolver,
           typeResolver,
-        );
+        });
 
   // Assert that the execution was synchronous.
   if (isPromise(result)) {
@@ -182,16 +164,18 @@ export function graphqlSync(
   return result;
 }
 
-function graphqlImpl(
-  schema,
-  source,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver,
-  typeResolver,
-): PromiseOrValue<ExecutionResult> {
+function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
+  const {
+    schema,
+    source,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+    typeResolver,
+  } = args;
+
   // Validate Schema
   const schemaValidationErrors = validateSchema(schema);
   if (schemaValidationErrors.length > 0) {
@@ -213,7 +197,7 @@ function graphqlImpl(
   }
 
   // Execute
-  return execute(
+  return execute({
     schema,
     document,
     rootValue,
@@ -222,5 +206,5 @@ function graphqlImpl(
     operationName,
     fieldResolver,
     typeResolver,
-  );
+  });
 }
