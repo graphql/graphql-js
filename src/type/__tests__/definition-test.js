@@ -10,6 +10,8 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
+import identityFunc from '../../jsutils/identityFunc';
+import { valueFromASTUntyped } from '../../utilities/valueFromASTUntyped';
 import {
   type GraphQLType,
   type GraphQLNullableType,
@@ -62,6 +64,16 @@ describe('Type System: Scalars', () => {
           parseLiteral: () => null,
         }),
     ).not.to.throw();
+  });
+
+  it('provides default methods if omitted', () => {
+    const scalar = new GraphQLScalarType({
+      name: 'Foo',
+      serialize: () => null,
+    });
+
+    expect(scalar.parseValue).to.equal(identityFunc);
+    expect(scalar.parseLiteral).to.equal(valueFromASTUntyped);
   });
 
   it('rejects a Scalar type not defining serialize', () => {
