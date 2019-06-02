@@ -167,18 +167,9 @@ export function execute(
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
   return arguments.length === 1
-    ? executeImpl(
-        argsOrSchema.schema,
-        argsOrSchema.document,
-        argsOrSchema.rootValue,
-        argsOrSchema.contextValue,
-        argsOrSchema.variableValues,
-        argsOrSchema.operationName,
-        argsOrSchema.fieldResolver,
-        argsOrSchema.typeResolver,
-      )
-    : executeImpl(
-        argsOrSchema,
+    ? executeImpl(argsOrSchema)
+    : executeImpl({
+        schema: argsOrSchema,
         document,
         rootValue,
         contextValue,
@@ -186,19 +177,21 @@ export function execute(
         operationName,
         fieldResolver,
         typeResolver,
-      );
+      });
 }
 
-function executeImpl(
-  schema,
-  document,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver,
-  typeResolver,
-) {
+function executeImpl(args: ExecutionArgs): ExecutionResult {
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+    typeResolver,
+  } = args;
+
   // If arguments are missing or incorrect, throw an error.
   assertValidExecutionArguments(schema, document, variableValues);
 

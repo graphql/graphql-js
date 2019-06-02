@@ -89,18 +89,9 @@ export function subscribe(
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
   return arguments.length === 1
-    ? subscribeImpl(
-        argsOrSchema.schema,
-        argsOrSchema.document,
-        argsOrSchema.rootValue,
-        argsOrSchema.contextValue,
-        argsOrSchema.variableValues,
-        argsOrSchema.operationName,
-        argsOrSchema.fieldResolver,
-        argsOrSchema.subscribeFieldResolver,
-      )
-    : subscribeImpl(
-        argsOrSchema,
+    ? subscribeImpl(argsOrSchema)
+    : subscribeImpl({
+        schema: argsOrSchema,
         document,
         rootValue,
         contextValue,
@@ -108,7 +99,7 @@ export function subscribe(
         operationName,
         fieldResolver,
         subscribeFieldResolver,
-      );
+      });
 }
 
 /**
@@ -124,15 +115,19 @@ function reportGraphQLError(error) {
 }
 
 function subscribeImpl(
-  schema,
-  document,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver,
-  subscribeFieldResolver,
-) {
+  args: SubscriptionArgs,
+): Promise<AsyncIterator<ExecutionResult> | ExecutionResult> {
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+    subscribeFieldResolver,
+  } = args;
+
   const sourcePromise = createSourceEventStream(
     schema,
     document,
