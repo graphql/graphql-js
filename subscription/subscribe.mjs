@@ -13,27 +13,6 @@ import { locatedError } from '../error/locatedError';
 import { addPath, assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError, responsePathAsArray } from '../execution/execute';
 import mapAsyncIterator from './mapAsyncIterator';
 import { getOperationRootType } from '../utilities/getOperationRootType';
-/**
- * Implements the "Subscribe" algorithm described in the GraphQL specification.
- *
- * Returns a Promise which resolves to either an AsyncIterator (if successful)
- * or an ExecutionResult (client error). The promise will be rejected if a
- * server error occurs.
- *
- * If the client-provided arguments to this function do not result in a
- * compliant subscription, a GraphQL Response (ExecutionResult) with
- * descriptive errors and no data will be returned.
- *
- * If the source stream could not be created due to faulty subscription
- * resolver logic or underlying systems, the promise will resolve to a single
- * ExecutionResult containing `errors` and no `data`.
- *
- * If the operation succeeded, the promise resolves to an AsyncIterator, which
- * yields a stream of ExecutionResults representing the response stream.
- *
- * Accepts either an object with named arguments, or individual arguments.
- */
-
 export function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.

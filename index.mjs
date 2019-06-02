@@ -56,8 +56,8 @@ visit, visitInParallel, visitWithTypeInfo, getVisitFn, BREAK, Kind, DirectiveLoc
 isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode } from './language';
 // Execute GraphQL queries.
 export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getDirectiveValues } from './execution';
-export { subscribe, createSourceEventStream } from './subscription'; // Validate GraphQL documents.
-
+export { subscribe, createSourceEventStream } from './subscription';
+// Validate GraphQL documents.
 export { validate, ValidationContext, // All validation rules in the GraphQL Specification.
 specifiedRules, // Individual validation rules.
 FieldsOnCorrectTypeRule, FragmentsOnCompositeTypesRule, KnownArgumentNamesRule, KnownDirectivesRule, KnownFragmentNamesRule, KnownTypeNamesRule, LoneAnonymousOperationRule, NoFragmentCyclesRule, NoUndefinedVariablesRule, NoUnusedFragmentsRule, NoUnusedVariablesRule, OverlappingFieldsCanBeMergedRule, PossibleFragmentSpreadsRule, ProvidedRequiredArgumentsRule, ScalarLeafsRule, SingleFieldSubscriptionsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule, UniqueFragmentNamesRule, UniqueInputFieldNamesRule, UniqueOperationNamesRule, UniqueVariableNamesRule, ValuesOfCorrectTypeRule, VariablesAreInputTypesRule, VariablesInAllowedPositionRule } from './validation';

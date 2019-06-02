@@ -295,6 +295,7 @@ export {
 export type { ExecutionArgs, ExecutionResult } from './execution';
 
 export { subscribe, createSourceEventStream } from './subscription';
+export type { SubscriptionArgs } from './subscription';
 
 // Validate GraphQL documents.
 export {
