@@ -14,7 +14,7 @@ import {
 import { GraphQLError } from '../../error/GraphQLError';
 import { type ASTVisitor } from '../../language/visitor';
 import suggestionList from '../../jsutils/suggestionList';
-import quotedOrList from '../../jsutils/quotedOrList';
+import didYouMean from '../../jsutils/didYouMean';
 import { Kind } from '../../language/kinds';
 import { specifiedDirectives } from '../../type/directives';
 
@@ -24,13 +24,10 @@ export function unknownArgMessage(
   typeName: string,
   suggestedArgs: Array<string>,
 ): string {
-  let message =
-    `Unknown argument "${argName}" on field "${fieldName}" of ` +
-    `type "${typeName}".`;
-  if (suggestedArgs.length) {
-    message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
-  }
-  return message;
+  return (
+    `Unknown argument "${argName}" on field "${fieldName}" of type "${typeName}".` +
+    didYouMean(suggestedArgs.map(x => `"${x}"`))
+  );
 }
 
 export function unknownDirectiveArgMessage(
@@ -38,11 +35,10 @@ export function unknownDirectiveArgMessage(
   directiveName: string,
   suggestedArgs: Array<string>,
 ): string {
-  let message = `Unknown argument "${argName}" on directive "@${directiveName}".`;
-  if (suggestedArgs.length) {
-    message += ` Did you mean ${quotedOrList(suggestedArgs)}?`;
-  }
-  return message;
+  return (
+    `Unknown argument "${argName}" on directive "@${directiveName}".` +
+    didYouMean(suggestedArgs.map(x => `"${x}"`))
+  );
 }
 
 /**

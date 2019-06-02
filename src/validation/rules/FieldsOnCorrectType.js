@@ -10,7 +10,7 @@
 import { type ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import suggestionList from '../../jsutils/suggestionList';
-import quotedOrList from '../../jsutils/quotedOrList';
+import didYouMean from '../../jsutils/didYouMean';
 import { type FieldNode } from '../../language/ast';
 import { type ASTVisitor } from '../../language/visitor';
 import { type GraphQLSchema } from '../../type/schema';
@@ -27,14 +27,13 @@ export function undefinedFieldMessage(
   suggestedTypeNames: Array<string>,
   suggestedFieldNames: Array<string>,
 ): string {
-  let message = `Cannot query field "${fieldName}" on type "${type}".`;
-  if (suggestedTypeNames.length !== 0) {
-    const suggestions = quotedOrList(suggestedTypeNames);
-    message += ` Did you mean to use an inline fragment on ${suggestions}?`;
-  } else if (suggestedFieldNames.length !== 0) {
-    message += ` Did you mean ${quotedOrList(suggestedFieldNames)}?`;
-  }
-  return message;
+  const quotedTypeNames = suggestedTypeNames.map(x => `"${x}"`);
+  const quotedFieldNames = suggestedFieldNames.map(x => `"${x}"`);
+  return (
+    `Cannot query field "${fieldName}" on type "${type}".` +
+    (didYouMean('to use an inline fragment on', quotedTypeNames) ||
+      didYouMean(quotedFieldNames))
+  );
 }
 
 /**

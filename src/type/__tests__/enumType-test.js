@@ -165,7 +165,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected type Color, found "GREEN"; Did you mean the enum value GREEN?',
+            'Expected type Color, found "GREEN". Did you mean the enum value GREEN?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -179,7 +179,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected type Color, found GREENISH; Did you mean the enum value GREEN?',
+            'Expected type Color, found GREENISH. Did you mean the enum value GREEN?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -193,7 +193,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Expected type Color, found green; Did you mean the enum value GREEN?',
+            'Expected type Color, found green. Did you mean the enum value GREEN?',
           locations: [{ line: 1, column: 23 }],
         },
       ],
