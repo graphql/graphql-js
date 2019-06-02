@@ -10,30 +10,45 @@
 'use strict';
 
 const path = require('path');
-const { exec, writeFile, readdirRecursive } = require('./utils');
+const { exec, execAsync, writeFile, readdirRecursive } = require('./utils');
 
-const fullCoverage = {};
+getFullCoverage()
+  .then(fullCoverage =>
+    writeFile(
+      './coverage/flow/full-coverage.json',
+      JSON.stringify(fullCoverage),
+    ),
+  )
+  .catch(error => {
+    console.error(error.stack);
+    process.exit(1);
+  });
 
-exec('flow start --quiet');
-try {
-  exec('flow check', { stdio: 'inherit' });
+async function getFullCoverage() {
+  const fullCoverage = {};
 
-  // TODO: measure coverage for all files.
-  // ATM it takes too much time and test files missing types for chai & mocha
-  for (const filepath of readdirRecursive('./src', { ignoreDir: /^__.*__$/ })) {
-    if (filepath.endsWith('.js')) {
-      const fullpath = path.join('src/', filepath);
-      fullCoverage[fullpath] = getCoverage(fullpath);
-    }
+  exec('flow start --quiet');
+  try {
+    exec('flow check', { stdio: 'inherit' });
+
+    // TODO: measure coverage for all files. ATM  missing types for chai & mocha
+    const files = readdirRecursive('./src', { ignoreDir: /^__.*__$/ })
+      .filter(filepath => filepath.endsWith('.js'))
+      .map(filepath => path.join('src/', filepath));
+
+    await Promise.all(files.map(getCoverage)).then(covarageObjs => {
+      for (const coverage of covarageObjs) {
+        fullCoverage[coverage.path] = coverage;
+      }
+    });
+  } finally {
+    exec('flow stop --quiet');
   }
-} finally {
-  exec('flow stop --quiet');
+  return fullCoverage;
 }
 
-writeFile('./coverage/flow/full-coverage.json', JSON.stringify(fullCoverage));
-
-function getCoverage(filepath) {
-  const json = exec(`flow coverage --json ${filepath}`);
+async function getCoverage(filepath) {
+  const json = await execAsync(`flow coverage --json ${filepath}`);
   const flowExpressions = JSON.parse(json).expressions;
 
   const s = {};
