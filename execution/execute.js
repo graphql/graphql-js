@@ -59,11 +59,28 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 function execute(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
-  return arguments.length === 1 ? executeImpl(argsOrSchema.schema, argsOrSchema.document, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.typeResolver) : executeImpl(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver);
+  return arguments.length === 1 ? executeImpl(argsOrSchema) : executeImpl({
+    schema: argsOrSchema,
+    document: document,
+    rootValue: rootValue,
+    contextValue: contextValue,
+    variableValues: variableValues,
+    operationName: operationName,
+    fieldResolver: fieldResolver,
+    typeResolver: typeResolver
+  });
 }
 
-function executeImpl(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
-  // If arguments are missing or incorrect, throw an error.
+function executeImpl(args) {
+  var schema = args.schema,
+      document = args.document,
+      rootValue = args.rootValue,
+      contextValue = args.contextValue,
+      variableValues = args.variableValues,
+      operationName = args.operationName,
+      fieldResolver = args.fieldResolver,
+      typeResolver = args.typeResolver; // If arguments are missing or incorrect, throw an error.
+
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
 

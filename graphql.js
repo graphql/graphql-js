@@ -33,7 +33,16 @@ function graphql(argsOrSchema, source, rootValue, contextValue, variableValues, 
   // Always return a Promise for a consistent API.
   return new Promise(function (resolve) {
     return resolve( // Extract arguments from object args if provided.
-    _arguments.length === 1 ? graphqlImpl(argsOrSchema.schema, argsOrSchema.source, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.typeResolver) : graphqlImpl(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver));
+    _arguments.length === 1 ? graphqlImpl(argsOrSchema) : graphqlImpl({
+      schema: argsOrSchema,
+      source: source,
+      rootValue: rootValue,
+      contextValue: contextValue,
+      variableValues: variableValues,
+      operationName: operationName,
+      fieldResolver: fieldResolver,
+      typeResolver: typeResolver
+    }));
   });
 }
 /**
@@ -47,7 +56,16 @@ function graphql(argsOrSchema, source, rootValue, contextValue, variableValues, 
 function graphqlSync(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
-  var result = arguments.length === 1 ? graphqlImpl(argsOrSchema.schema, argsOrSchema.source, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.typeResolver) : graphqlImpl(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver); // Assert that the execution was synchronous.
+  var result = arguments.length === 1 ? graphqlImpl(argsOrSchema) : graphqlImpl({
+    schema: argsOrSchema,
+    source: source,
+    rootValue: rootValue,
+    contextValue: contextValue,
+    variableValues: variableValues,
+    operationName: operationName,
+    fieldResolver: fieldResolver,
+    typeResolver: typeResolver
+  }); // Assert that the execution was synchronous.
 
   if ((0, _isPromise.default)(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
@@ -56,8 +74,16 @@ function graphqlSync(argsOrSchema, source, rootValue, contextValue, variableValu
   return result;
 }
 
-function graphqlImpl(schema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
-  // Validate Schema
+function graphqlImpl(args) {
+  var schema = args.schema,
+      source = args.source,
+      rootValue = args.rootValue,
+      contextValue = args.contextValue,
+      variableValues = args.variableValues,
+      operationName = args.operationName,
+      fieldResolver = args.fieldResolver,
+      typeResolver = args.typeResolver; // Validate Schema
+
   var schemaValidationErrors = (0, _validate.validateSchema)(schema);
 
   if (schemaValidationErrors.length > 0) {
@@ -87,5 +113,14 @@ function graphqlImpl(schema, source, rootValue, contextValue, variableValues, op
   } // Execute
 
 
-  return (0, _execute.execute)(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver);
+  return (0, _execute.execute)({
+    schema: schema,
+    document: document,
+    rootValue: rootValue,
+    contextValue: contextValue,
+    variableValues: variableValues,
+    operationName: operationName,
+    fieldResolver: fieldResolver,
+    typeResolver: typeResolver
+  });
 }

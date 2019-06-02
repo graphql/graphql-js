@@ -33,7 +33,16 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.
-  return arguments.length === 1 ? subscribeImpl(argsOrSchema.schema, argsOrSchema.document, argsOrSchema.rootValue, argsOrSchema.contextValue, argsOrSchema.variableValues, argsOrSchema.operationName, argsOrSchema.fieldResolver, argsOrSchema.subscribeFieldResolver) : subscribeImpl(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver);
+  return arguments.length === 1 ? subscribeImpl(argsOrSchema) : subscribeImpl({
+    schema: argsOrSchema,
+    document: document,
+    rootValue: rootValue,
+    contextValue: contextValue,
+    variableValues: variableValues,
+    operationName: operationName,
+    fieldResolver: fieldResolver,
+    subscribeFieldResolver: subscribeFieldResolver
+  });
 }
 /**
  * This function checks if the error is a GraphQLError. If it is, report it as
@@ -52,7 +61,15 @@ function reportGraphQLError(error) {
   throw error;
 }
 
-function subscribeImpl(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
+function subscribeImpl(args) {
+  var schema = args.schema,
+      document = args.document,
+      rootValue = args.rootValue,
+      contextValue = args.contextValue,
+      variableValues = args.variableValues,
+      operationName = args.operationName,
+      fieldResolver = args.fieldResolver,
+      subscribeFieldResolver = args.subscribeFieldResolver;
   var sourcePromise = createSourceEventStream(schema, document, rootValue, contextValue, variableValues, operationName, subscribeFieldResolver); // For each payload yielded from a subscription, map it over the normal
   // GraphQL `execute` function, with `payload` as the rootValue.
   // This implements the "MapSourceToResponseEvent" algorithm described in
