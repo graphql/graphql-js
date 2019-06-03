@@ -10,7 +10,7 @@ import find from '../polyfills/find';
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import objectEntries from '../polyfills/objectEntries';
-import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isInputType, isOutputType, isRequiredArgument } from './definition';
+import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument } from './definition';
 import { isDirective } from './directives';
 import { isIntrospectionType } from './introspection';
 import { assertSchema } from './schema';
@@ -233,6 +233,7 @@ function validateName(context, node) {
 }
 
 function validateTypes(context) {
+  var validateInputObjectCircularRefs = createInputObjectCircularRefsValidator(context);
   var typeMap = context.schema.getTypeMap();
   var _iteratorNormalCompletion4 = true;
   var _didIteratorError4 = false;
@@ -269,7 +270,9 @@ function validateTypes(context) {
         validateEnumValues(context, type);
       } else if (isInputObjectType(type)) {
         // Ensure Input Object fields are valid.
-        validateInputFields(context, type);
+        validateInputFields(context, type); // Ensure Input Objects do not contain non-nullable circular references
+
+        validateInputObjectCircularRefs(type);
       }
     }
   } catch (err) {
@@ -646,6 +649,74 @@ function validateInputFields(context, inputObj) {
   }
 }
 
+function createInputObjectCircularRefsValidator(context) {
+  // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
+  // Tracks already visited types to maintain O(N) and to ensure that cycles
+  // are not redundantly reported.
+  var visitedTypes = Object.create(null); // Array of types nodes used to produce meaningful errors
+
+  var fieldPath = []; // Position in the type path
+
+  var fieldPathIndexByTypeName = Object.create(null);
+  return detectCycleRecursive; // This does a straight-forward DFS to find cycles.
+  // It does not terminate when a cycle was found but continues to explore
+  // the graph to find all possible cycles.
+
+  function detectCycleRecursive(inputObj) {
+    if (visitedTypes[inputObj.name]) {
+      return;
+    }
+
+    visitedTypes[inputObj.name] = true;
+    fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
+    var fields = objectValues(inputObj.getFields());
+    var _iteratorNormalCompletion14 = true;
+    var _didIteratorError14 = false;
+    var _iteratorError14 = undefined;
+
+    try {
+      for (var _iterator14 = fields[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+        var field = _step14.value;
+
+        if (isNonNullType(field.type) && isInputObjectType(field.type.ofType)) {
+          var fieldType = field.type.ofType;
+          var cycleIndex = fieldPathIndexByTypeName[fieldType.name];
+          fieldPath.push(field);
+
+          if (cycleIndex === undefined) {
+            detectCycleRecursive(fieldType);
+          } else {
+            var cyclePath = fieldPath.slice(cycleIndex);
+            var fieldNames = cyclePath.map(function (fieldObj) {
+              return fieldObj.name;
+            });
+            context.reportError("Cannot reference Input Object \"".concat(fieldType.name, "\" within itself ") + "through a series of non-null fields: \"".concat(fieldNames.join('.'), "\"."), cyclePath.map(function (fieldObj) {
+              return fieldObj.astNode;
+            }));
+          }
+
+          fieldPath.pop();
+        }
+      }
+    } catch (err) {
+      _didIteratorError14 = true;
+      _iteratorError14 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion14 && _iterator14.return != null) {
+          _iterator14.return();
+        }
+      } finally {
+        if (_didIteratorError14) {
+          throw _iteratorError14;
+        }
+      }
+    }
+
+    fieldPathIndexByTypeName[inputObj.name] = undefined;
+  }
+}
+
 function getAllNodes(object) {
   var astNode = object.astNode,
       extensionASTNodes = object.extensionASTNodes;
@@ -692,29 +763,29 @@ function getAllFieldArgNodes(type, fieldName, argName) {
   var fieldNode = getFieldNode(type, fieldName);
 
   if (fieldNode && fieldNode.arguments) {
-    var _iteratorNormalCompletion14 = true;
-    var _didIteratorError14 = false;
-    var _iteratorError14 = undefined;
+    var _iteratorNormalCompletion15 = true;
+    var _didIteratorError15 = false;
+    var _iteratorError15 = undefined;
 
     try {
-      for (var _iterator14 = fieldNode.arguments[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-        var node = _step14.value;
+      for (var _iterator15 = fieldNode.arguments[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+        var node = _step15.value;
 
         if (node.name.value === argName) {
           argNodes.push(node);
         }
       }
     } catch (err) {
-      _didIteratorError14 = true;
-      _iteratorError14 = err;
+      _didIteratorError15 = true;
+      _iteratorError15 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion14 && _iterator14.return != null) {
-          _iterator14.return();
+        if (!_iteratorNormalCompletion15 && _iterator15.return != null) {
+          _iterator15.return();
         }
       } finally {
-        if (_didIteratorError14) {
-          throw _iteratorError14;
+        if (_didIteratorError15) {
+          throw _iteratorError15;
         }
       }
     }
