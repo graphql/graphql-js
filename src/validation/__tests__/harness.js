@@ -293,9 +293,6 @@ const ComplicatedArgs = new GraphQLObjectType({
 
 const InvalidScalar = new GraphQLScalarType({
   name: 'Invalid',
-  serialize(value) {
-    return value;
-  },
   parseLiteral(valueNode) {
     throw new Error(`Invalid scalar is always invalid: ${print(valueNode)}`);
   },
@@ -304,12 +301,7 @@ const InvalidScalar = new GraphQLScalarType({
   },
 });
 
-const AnyScalar = new GraphQLScalarType({
-  name: 'Any',
-  serialize(value) {
-    return value;
-  },
-});
+const AnyScalar = new GraphQLScalarType({ name: 'Any' });
 
 const QueryRoot = new GraphQLObjectType({
   name: 'QueryRoot',

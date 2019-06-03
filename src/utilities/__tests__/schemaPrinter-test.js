@@ -405,10 +405,7 @@ describe('Type System Printer', () => {
   });
 
   it('Custom Scalar', () => {
-    const OddType = new GraphQLScalarType({
-      name: 'Odd',
-      serialize() {},
-    });
+    const OddType = new GraphQLScalarType({ name: 'Odd' });
 
     const Schema = new GraphQLSchema({ types: [OddType] });
     const output = printForTest(Schema);

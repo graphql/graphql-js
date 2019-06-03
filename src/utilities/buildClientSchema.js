@@ -11,7 +11,6 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
-import identityFunc from '../jsutils/identityFunc';
 import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
 import {
@@ -231,7 +230,6 @@ export function buildClientSchema(
     return new GraphQLScalarType({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
-      serialize: identityFunc,
     });
   }
 

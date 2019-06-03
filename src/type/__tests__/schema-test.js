@@ -298,10 +298,7 @@ describe('Type System: Schema', () => {
 
     describe('A Schema must contain uniquely named types', () => {
       it('rejects a Schema which redefines a built-in type', () => {
-        const FakeString = new GraphQLScalarType({
-          name: 'String',
-          serialize: () => null,
-        });
+        const FakeString = new GraphQLScalarType({ name: 'String' });
 
         const QueryType = new GraphQLObjectType({
           name: 'Query',

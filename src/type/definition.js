@@ -559,14 +559,14 @@ export class GraphQLScalarType {
   constructor(config: GraphQLScalarTypeConfig<*, *>): void {
     this.name = config.name;
     this.description = config.description;
-    this.serialize = config.serialize;
+    this.serialize = config.serialize || identityFunc;
     this.parseValue = config.parseValue || identityFunc;
     this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     invariant(typeof config.name === 'string', 'Must provide name.');
     invariant(
-      typeof config.serialize === 'function',
+      config.serialize == null || typeof config.serialize === 'function',
       `${this.name} must provide "serialize" function. If this custom Scalar ` +
         'is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
     );
@@ -582,6 +582,7 @@ export class GraphQLScalarType {
 
   toConfig(): {|
     ...GraphQLScalarTypeConfig<*, *>,
+    serialize: GraphQLScalarSerializer<*>,
     parseValue: GraphQLScalarValueParser<*>,
     parseLiteral: GraphQLScalarLiteralParser<*>,
     extensionASTNodes: $ReadOnlyArray<ScalarTypeExtensionNode>,
@@ -617,7 +618,7 @@ export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
   name: string,
   description?: ?string,
   // Serializes an internal value to include in a response.
-  serialize: GraphQLScalarSerializer<TExternal>,
+  serialize?: GraphQLScalarSerializer<TExternal>,
   // Parses an externally provided value to use as an input.
   parseValue?: GraphQLScalarValueParser<TInternal>,
   // Parses an externally provided literal value to use as an input.

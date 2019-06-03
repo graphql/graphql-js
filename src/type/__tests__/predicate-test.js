@@ -83,10 +83,7 @@ const InputObjectType = new GraphQLInputObjectType({
   name: 'InputObject',
   fields: {},
 });
-const ScalarType = new GraphQLScalarType({
-  name: 'Scalar',
-  serialize() {},
-});
+const ScalarType = new GraphQLScalarType({ name: 'Scalar' });
 const Directive = new GraphQLDirective({
   name: 'Directive',
   locations: ['QUERY'],
@@ -711,7 +708,6 @@ describe('Directive predicates', () => {
     it('returns false for scalar type named like specified directive', () => {
       const ScalarNamedLikeDirective = new GraphQLScalarType({
         name: 'deprecated',
-        serialize: () => null,
       });
       expect(isSpecifiedDirective(ScalarNamedLikeDirective)).to.equal(false);
     });

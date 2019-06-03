@@ -12,7 +12,6 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
-import identityFunc from '../jsutils/identityFunc';
 import { type ObjMap } from '../jsutils/ObjMap';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';
@@ -400,7 +399,6 @@ export class ASTDefinitionBuilder {
       name: astNode.name.value,
       description: getDescription(astNode, this._options),
       astNode,
-      serialize: identityFunc,
     });
   }
 
