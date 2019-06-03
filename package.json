@@ -22,7 +22,6 @@
     "node": ">= 6.x"
   },
   "scripts": {
-    "watch": "node ./resources/watch.js",
     "test": "npm run lint && npm run check && npm run testonly",
     "test:ci": "yarn check --integrity && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run build",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
@@ -56,7 +55,6 @@
     "flow-bin": "0.100.0",
     "mocha": "6.1.4",
     "nyc": "14.1.1",
-    "prettier": "1.17.1",
-    "sane": "4.1.0"
+    "prettier": "1.17.1"
   }
 }
