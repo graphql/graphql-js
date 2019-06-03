@@ -30,10 +30,7 @@ import { validateSchema } from '../validate';
 import { buildSchema } from '../../utilities/buildASTSchema';
 import { extendSchema } from '../../utilities/extendSchema';
 
-const SomeScalarType = new GraphQLScalarType({
-  name: 'SomeScalar',
-  serialize() {},
-});
+const SomeScalarType = new GraphQLScalarType({ name: 'SomeScalar' });
 
 const SomeInterfaceType = new GraphQLInterfaceType({
   name: 'SomeInterface',

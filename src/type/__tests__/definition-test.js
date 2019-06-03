@@ -25,7 +25,7 @@ import {
   GraphQLNonNull,
 } from '../definition';
 
-const ScalarType = new GraphQLScalarType({ name: 'Scalar', serialize() {} });
+const ScalarType = new GraphQLScalarType({ name: 'Scalar' });
 const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
 const InterfaceType = new GraphQLInterfaceType({
   name: 'Interface',
@@ -45,13 +45,7 @@ const NonNullListofScalars = GraphQLNonNull(ListOfScalarsType);
 
 describe('Type System: Scalars', () => {
   it('accepts a Scalar type defining serialize', () => {
-    expect(
-      () =>
-        new GraphQLScalarType({
-          name: 'SomeScalar',
-          serialize: () => null,
-        }),
-    ).not.to.throw();
+    expect(() => new GraphQLScalarType({ name: 'SomeScalar' })).not.to.throw();
   });
 
   it('accepts a Scalar type defining parseValue and parseLiteral', () => {
@@ -59,7 +53,6 @@ describe('Type System: Scalars', () => {
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
-          serialize: () => null,
           parseValue: () => null,
           parseLiteral: () => null,
         }),
@@ -67,22 +60,11 @@ describe('Type System: Scalars', () => {
   });
 
   it('provides default methods if omitted', () => {
-    const scalar = new GraphQLScalarType({
-      name: 'Foo',
-      serialize: () => null,
-    });
+    const scalar = new GraphQLScalarType({ name: 'Foo' });
 
+    expect(scalar.serialize).to.equal(identityFunc);
     expect(scalar.parseValue).to.equal(identityFunc);
     expect(scalar.parseLiteral).to.equal(valueFromASTUntyped);
-  });
-
-  it('rejects a Scalar type not defining serialize', () => {
-    expect(
-      // $DisableFlowOnNegativeTest
-      () => new GraphQLScalarType({ name: 'SomeScalar' }),
-    ).to.throw(
-      'SomeScalar must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
-    );
   });
 
   it('rejects a Scalar type defining serialize with an incorrect type', () => {
@@ -103,7 +85,6 @@ describe('Type System: Scalars', () => {
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
-          serialize: () => null,
           parseValue: () => null,
         }),
     ).to.throw(
@@ -116,7 +97,6 @@ describe('Type System: Scalars', () => {
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
-          serialize: () => null,
           parseLiteral: () => null,
         }),
     ).to.throw(
@@ -129,7 +109,6 @@ describe('Type System: Scalars', () => {
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
-          serialize: () => null,
           // $DisableFlowOnNegativeTest
           parseValue: {},
           // $DisableFlowOnNegativeTest

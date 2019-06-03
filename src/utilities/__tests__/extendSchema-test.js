@@ -45,10 +45,7 @@ import {
 } from '../../type';
 
 // Test schema.
-const SomeScalarType = new GraphQLScalarType({
-  name: 'SomeScalar',
-  serialize: x => x,
-});
+const SomeScalarType = new GraphQLScalarType({ name: 'SomeScalar' });
 
 const SomeInterfaceType = new GraphQLInterfaceType({
   name: 'SomeInterface',
