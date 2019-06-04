@@ -165,7 +165,7 @@ describe('stripIgnoredCharacters', () => {
     expectStripped('{ foo(arg: "\n"').toThrow(dedent`
       Syntax Error: Unterminated string.
 
-      GraphQL request (1:13)
+      GraphQL request:1:13
       1: { foo(arg: "
                      ^
       2: "
