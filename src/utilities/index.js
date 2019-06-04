@@ -104,6 +104,9 @@ export { isValidLiteralValue } from './isValidLiteralValue';
 // Concatenates multiple AST together.
 export { concatAST } from './concatAST';
 
+// Inline named fragments from AST
+export { inlineNamedFragments } from './inlineNamedFragments';
+
 // Separates an AST into an AST per Operation.
 export { separateOperations } from './separateOperations';
 

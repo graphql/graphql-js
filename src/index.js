@@ -397,6 +397,8 @@ export {
   isValidLiteralValue,
   // Concatenates multiple AST together.
   concatAST,
+  // Inline named fragments from AST
+  inlineNamedFragments,
   // Separates an AST into an AST per Operation.
   separateOperations,
   // Strips characters that are not significant to the validity or execution
