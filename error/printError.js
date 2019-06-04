@@ -94,7 +94,7 @@ function highlightSourceAtLocation(source, location) {
   var columnOffset = location.line === 1 ? firstLineColumnOffset : 0;
   var columnNum = location.column + columnOffset;
   var lines = body.split(/\r\n|[\n\r]/g);
-  return "".concat(source.name, " (").concat(lineNum, ":").concat(columnNum, ")\n") + printPrefixedLines([// Lines specified like this: ["prefix", "string"],
+  return "".concat(source.name, ":").concat(lineNum, ":").concat(columnNum, "\n") + printPrefixedLines([// Lines specified like this: ["prefix", "string"],
   ["".concat(lineNum - 1, ": "), lines[lineIndex - 1]], ["".concat(lineNum, ": "), lines[lineIndex]], ['', whitespace(columnNum - 1) + '^'], ["".concat(lineNum + 1, ": "), lines[lineIndex + 1]]]);
 }
 
