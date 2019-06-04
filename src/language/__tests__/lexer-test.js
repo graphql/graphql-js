@@ -127,7 +127,7 @@ describe('Lexer', () => {
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Cannot parse the unexpected character "?".
 
-      GraphQL request (3:5)
+      GraphQL request:3:5
       2: 
       3:     ?
              ^
@@ -147,7 +147,7 @@ describe('Lexer', () => {
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Cannot parse the unexpected character "?".
 
-      foo.js (13:6)
+      foo.js:13:6
       12: 
       13:      ?
                ^
@@ -166,7 +166,7 @@ describe('Lexer', () => {
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Cannot parse the unexpected character "?".
 
-      foo.js (1:5)
+      foo.js:1:5
       1:     ?
              ^
     `);

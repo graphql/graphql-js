@@ -27,7 +27,7 @@ describe('printError', () => {
     expect(printError(singleDigit)).to.equal(dedent`
       Single digit line number with no padding
 
-      Test (9:1)
+      Test:9:1
       9: *
          ^
     `);
@@ -41,7 +41,7 @@ describe('printError', () => {
     expect(printError(doubleDigit)).to.equal(dedent`
       Left padded first line number
 
-      Test (9:1)
+      Test:9:1
        9: *
           ^
       10: 
@@ -85,13 +85,13 @@ describe('printError', () => {
     expect(printError(error)).to.equal(dedent`
       Example error with two nodes
 
-      SourceA (2:10)
+      SourceA:2:10
       1: type Foo {
       2:   field: String
                   ^
       3: }
 
-      SourceB (2:10)
+      SourceB:2:10
       1: type Foo {
       2:   field: Int
                   ^

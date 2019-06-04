@@ -59,7 +59,7 @@ function highlightSourceAtLocation(
 
   const lines = body.split(/\r\n|[\n\r]/g);
   return (
-    `${source.name} (${lineNum}:${columnNum})\n` +
+    `${source.name}:${lineNum}:${columnNum}\n` +
     printPrefixedLines([
       // Lines specified like this: ["prefix", "string"],
       [`${lineNum - 1}: `, lines[lineIndex - 1]],

@@ -54,7 +54,7 @@ describe('Parser', () => {
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Expected Name, found <EOF>
 
-      GraphQL request (1:2)
+      GraphQL request:1:2
       1: {
           ^
     `);
@@ -91,7 +91,7 @@ describe('Parser', () => {
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Expected {, found <EOF>
 
-      MyQuery.graphql (1:6)
+      MyQuery.graphql:1:6
       1: query
               ^
     `);
