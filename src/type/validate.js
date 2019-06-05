@@ -28,18 +28,12 @@ import {
   isOutputType,
   isRequiredArgument,
 } from './definition';
-import { type GraphQLDirective, isDirective } from './directives';
+import { isDirective } from './directives';
 import { isIntrospectionType } from './introspection';
 import { type GraphQLSchema, assertSchema } from './schema';
 import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
-import {
-  type ASTNode,
-  type FieldDefinitionNode,
-  type InputValueDefinitionNode,
-  type NamedTypeNode,
-  type TypeNode,
-} from '../language/ast';
+import { type ASTNode, type NamedTypeNode } from '../language/ast';
 import { isValidNameError } from '../utilities/assertValidName';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
@@ -187,7 +181,10 @@ function validateDirectives(context: SchemaValidationContext): void {
       if (argNames[argName]) {
         context.reportError(
           `Argument @${directive.name}(${argName}:) can only be defined once.`,
-          getAllDirectiveArgNodes(directive, argName),
+          directive.astNode &&
+            directive.args
+              .filter(({ name }) => name === argName)
+              .map(({ astNode }) => astNode),
         );
         continue;
       }
@@ -198,7 +195,7 @@ function validateDirectives(context: SchemaValidationContext): void {
         context.reportError(
           `The type of @${directive.name}(${argName}:) must be Input Type ` +
             `but got: ${inspect(arg.type)}.`,
-          getDirectiveArgTypeNode(directive, argName),
+          arg.astNode,
         );
       }
     }
@@ -289,7 +286,7 @@ function validateFields(
       context.reportError(
         `The type of ${type.name}.${field.name} must be Output Type ` +
           `but got: ${inspect(field.type)}.`,
-        getFieldTypeNode(type, field.name),
+        field.astNode && field.astNode.type,
       );
     }
 
@@ -306,7 +303,9 @@ function validateFields(
         context.reportError(
           `Field argument ${type.name}.${field.name}(${argName}:) can only ` +
             'be defined once.',
-          getAllFieldArgNodes(type, field.name, argName),
+          field.args
+            .filter(({ name }) => name === argName)
+            .map(({ astNode }) => astNode),
         );
       }
       argNames[argName] = true;
@@ -316,7 +315,7 @@ function validateFields(
         context.reportError(
           `The type of ${type.name}.${field.name}(${argName}:) must be Input ` +
             `Type but got: ${inspect(arg.type)}.`,
-          getFieldArgTypeNode(type, field.name, argName),
+          arg.astNode && arg.astNode.type,
         );
       }
     }
@@ -333,7 +332,7 @@ function validateObjectInterfaces(
       context.reportError(
         `Type ${inspect(object)} must only implement Interface types, ` +
           `it cannot implement ${inspect(iface)}.`,
-        getImplementsInterfaceNode(object, iface),
+        getAllImplementsInterfaceNodes(object, iface),
       );
       continue;
     }
@@ -367,7 +366,7 @@ function validateObjectImplementsInterface(
       context.reportError(
         `Interface field ${iface.name}.${fieldName} expected but ` +
           `${object.name} does not provide it.`,
-        [getFieldNode(iface, fieldName), ...getAllNodes(object)],
+        [ifaceField.astNode, ...getAllNodes(object)],
       );
       continue;
     }
@@ -380,8 +379,8 @@ function validateObjectImplementsInterface(
           `${inspect(ifaceField.type)} but ${object.name}.${fieldName} ` +
           `is type ${inspect(objectField.type)}.`,
         [
-          getFieldTypeNode(iface, fieldName),
-          getFieldTypeNode(object, fieldName),
+          ifaceField.astNode && ifaceField.astNode.type,
+          objectField.astNode && objectField.astNode.type,
         ],
       );
     }
@@ -396,10 +395,7 @@ function validateObjectImplementsInterface(
         context.reportError(
           `Interface field argument ${iface.name}.${fieldName}(${argName}:) ` +
             `expected but ${object.name}.${fieldName} does not provide it.`,
-          [
-            getFieldArgNode(iface, fieldName, argName),
-            getFieldNode(object, fieldName),
-          ],
+          [ifaceArg.astNode, objectField.astNode],
         );
         continue;
       }
@@ -414,8 +410,8 @@ function validateObjectImplementsInterface(
             `${object.name}.${fieldName}(${argName}:) is type ` +
             `${inspect(objectArg.type)}.`,
           [
-            getFieldArgTypeNode(iface, fieldName, argName),
-            getFieldArgTypeNode(object, fieldName, argName),
+            ifaceArg.astNode && ifaceArg.astNode.type,
+            objectArg.astNode && objectArg.astNode.type,
           ],
         );
       }
@@ -432,10 +428,7 @@ function validateObjectImplementsInterface(
           `Object field ${object.name}.${fieldName} includes required ` +
             `argument ${argName} that is missing from the Interface field ` +
             `${iface.name}.${fieldName}.`,
-          [
-            getFieldArgNode(object, fieldName, argName),
-            getFieldNode(iface, fieldName),
-          ],
+          [objectArg.astNode, ifaceField.astNode],
         );
       }
     }
@@ -608,13 +601,6 @@ function getAllSubNodes<T: ASTNode, K: ASTNode, L: ASTNode>(
   return flatMap(getAllNodes(object), item => getter(item) || []);
 }
 
-function getImplementsInterfaceNode(
-  type: GraphQLObjectType,
-  iface: GraphQLInterfaceType,
-): ?NamedTypeNode {
-  return getAllImplementsInterfaceNodes(type, iface)[0];
-}
-
 function getAllImplementsInterfaceNodes(
   type: GraphQLObjectType,
   iface: GraphQLInterfaceType,
@@ -622,76 +608,6 @@ function getAllImplementsInterfaceNodes(
   return getAllSubNodes(type, typeNode => typeNode.interfaces).filter(
     ifaceNode => ifaceNode.name.value === iface.name,
   );
-}
-
-function getFieldNode(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-  fieldName: string,
-): ?FieldDefinitionNode {
-  return find(
-    getAllSubNodes(type, typeNode => typeNode.fields),
-    fieldNode => fieldNode.name.value === fieldName,
-  );
-}
-
-function getFieldTypeNode(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-  fieldName: string,
-): ?TypeNode {
-  const fieldNode = getFieldNode(type, fieldName);
-  return fieldNode && fieldNode.type;
-}
-
-function getFieldArgNode(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-  fieldName: string,
-  argName: string,
-): ?InputValueDefinitionNode {
-  return getAllFieldArgNodes(type, fieldName, argName)[0];
-}
-
-function getAllFieldArgNodes(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-  fieldName: string,
-  argName: string,
-): $ReadOnlyArray<InputValueDefinitionNode> {
-  const argNodes = [];
-  const fieldNode = getFieldNode(type, fieldName);
-  if (fieldNode && fieldNode.arguments) {
-    for (const node of fieldNode.arguments) {
-      if (node.name.value === argName) {
-        argNodes.push(node);
-      }
-    }
-  }
-  return argNodes;
-}
-
-function getFieldArgTypeNode(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-  fieldName: string,
-  argName: string,
-): ?TypeNode {
-  const fieldArgNode = getFieldArgNode(type, fieldName, argName);
-  return fieldArgNode && fieldArgNode.type;
-}
-
-function getAllDirectiveArgNodes(
-  directive: GraphQLDirective,
-  argName: string,
-): $ReadOnlyArray<InputValueDefinitionNode> {
-  return getAllSubNodes(
-    directive,
-    directiveNode => directiveNode.arguments,
-  ).filter(argNode => argNode.name.value === argName);
-}
-
-function getDirectiveArgTypeNode(
-  directive: GraphQLDirective,
-  argName: string,
-): ?TypeNode {
-  const argNode = getAllDirectiveArgNodes(directive, argName)[0];
-  return argNode && argNode.type;
 }
 
 function getUnionMemberTypeNodes(
