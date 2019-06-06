@@ -10,8 +10,15 @@
 'use strict';
 
 const path = require('path');
-const { exec, execAsync, writeFile, readdirRecursive } = require('./utils');
+const {
+  exec,
+  execAsync,
+  writeFile,
+  rmdirRecursive,
+  readdirRecursive,
+} = require('./utils');
 
+rmdirRecursive('./coverage/flow');
 getFullCoverage()
   .then(fullCoverage =>
     writeFile(
