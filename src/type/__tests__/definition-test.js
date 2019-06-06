@@ -10,8 +10,9 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
+import inspect from '../../jsutils/inspect';
 import identityFunc from '../../jsutils/identityFunc';
-import { valueFromASTUntyped } from '../../utilities/valueFromASTUntyped';
+import { parseValue } from '../../language/parser';
 import {
   type GraphQLType,
   type GraphQLNullableType,
@@ -64,7 +65,23 @@ describe('Type System: Scalars', () => {
 
     expect(scalar.serialize).to.equal(identityFunc);
     expect(scalar.parseValue).to.equal(identityFunc);
-    expect(scalar.parseLiteral).to.equal(valueFromASTUntyped);
+    expect(scalar.parseLiteral).to.be.a('function');
+  });
+
+  it('use parseValue for parsing literals if parseLiteral omitted', () => {
+    const scalar = new GraphQLScalarType({
+      name: 'Foo',
+      parseValue(value) {
+        return 'parseValue: ' + inspect(value);
+      },
+    });
+
+    expect(scalar.parseLiteral(parseValue('null'))).to.equal(
+      'parseValue: null',
+    );
+    expect(scalar.parseLiteral(parseValue('{ foo: "bar" }'))).to.equal(
+      'parseValue: { foo: "bar" }',
+    );
   });
 
   it('rejects a Scalar type defining serialize with an incorrect type', () => {
@@ -77,18 +94,6 @@ describe('Type System: Scalars', () => {
         }),
     ).to.throw(
       'SomeScalar must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
-    );
-  });
-
-  it('rejects a Scalar type defining parseValue but not parseLiteral', () => {
-    expect(
-      () =>
-        new GraphQLScalarType({
-          name: 'SomeScalar',
-          parseValue: () => null,
-        }),
-    ).to.throw(
-      'SomeScalar must provide both "parseValue" and "parseLiteral" functions.',
     );
   });
 
