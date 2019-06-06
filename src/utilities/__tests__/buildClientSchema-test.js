@@ -10,14 +10,13 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import dedent from '../../jsutils/dedent';
-import invariant from '../../jsutils/invariant';
 import { buildClientSchema } from '../buildClientSchema';
 import { introspectionFromSchema } from '../introspectionFromSchema';
 import {
   buildSchema,
   printSchema,
   graphqlSync,
-  isEnumType,
+  assertEnumType,
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLEnumType,
@@ -336,10 +335,8 @@ describe('Type System: build schema from introspection', () => {
     const secondIntrospection = introspectionFromSchema(clientSchema);
     expect(secondIntrospection).to.deep.equal(introspection);
 
-    const clientFoodEnum = clientSchema.getType('Food');
-
     // It's also an Enum type on the client.
-    invariant(isEnumType(clientFoodEnum));
+    const clientFoodEnum = assertEnumType(clientSchema.getType('Food'));
 
     // Client types do not get server-only values, so `value` mirrors `name`,
     // rather than using the integers defined in the "server" schema.
