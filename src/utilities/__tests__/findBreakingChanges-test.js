@@ -41,6 +41,8 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'Type1 was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').astNode,
       },
     ]);
     expect(findBreakingChanges(oldSchema, oldSchema)).to.deep.equal([]);
@@ -63,16 +65,28 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeWasScalarBecomesEnum changed from a Scalar type to an Enum type.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('TypeWasScalarBecomesEnum').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('TypeWasScalarBecomesEnum').astNode,
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeWasInterfaceBecomesUnion changed from an Interface type to a Union type.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('TypeWasInterfaceBecomesUnion').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('TypeWasInterfaceBecomesUnion').astNode,
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeWasObjectBecomesInputObject changed from an Object type to an Input type.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('TypeWasObjectBecomesInputObject').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('TypeWasObjectBecomesInputObject').astNode,
       },
     ]);
   });
@@ -133,54 +147,104 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.FIELD_REMOVED,
         description: 'Type1.field2 was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field2'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field3 changed type from String to Boolean.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field3'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field3'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field4 changed type from TypeA to TypeB.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field4'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field4'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field6 changed type from String to [String].',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field6'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field6'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field7 changed type from [String] to String.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field7'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field7'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field9 changed type from Int! to Int.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field9'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field9'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field10 changed type from [Int]! to [Int].',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field10'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field10'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field11 changed type from Int to [Int]!.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field11'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field11'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field13 changed type from [Int!] to [Int].',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field13'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field13'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field14 changed type from [Int] to [[Int]].',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field14'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field14'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field15 changed type from [[Int]] to [Int].',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field15'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field15'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field16 changed type from Int! to [Int]!.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field16'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field16'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'Type1.field18 changed type from [[Int!]!] to [[Int!]].',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').getFields()['field18'].astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').getFields()['field18'].astNode,
       },
     ]);
   });
@@ -229,47 +293,110 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.FIELD_REMOVED,
         description: 'InputType1.field2 was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field2']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field1 changed type from String to Int.',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field1']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field1']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field3 changed type from [String] to String.',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field3']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field3']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field5 changed type from String to String!.',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field5']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field5']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field6 changed type from [Int] to [Int]!.',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field6']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field6']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field8 changed type from Int to [Int]!.',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field8']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field8']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field9 changed type from [Int] to [Int!].',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field9']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field9']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field11 changed type from [Int] to [[Int]].',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field11']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field11']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field12 changed type from [[Int]] to [Int].',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field12']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field12']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description: 'InputType1.field13 changed type from Int! to [Int]!.',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field13']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field13']
+          .astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
           'InputType1.field15 changed type from [[Int]!] to [[Int!]!].',
+        // $FlowFixMe
+        oldNode: oldSchema.getTypeMap()['InputType1'].getFields()['field15']
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema.getTypeMap()['InputType1'].getFields()['field15']
+          .astNode,
       },
     ]);
   });
@@ -295,6 +422,9 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
         description:
           'A required field requiredField on input type InputType1 was added.',
+        // $FlowFixMe
+        newNode: newSchema.getType('InputType1').getFields()['requiredField']
+          .astNode,
       },
     ]);
   });
@@ -319,6 +449,8 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
         description: 'Type2 was removed from union type UnionType1.',
+        oldNode: oldSchema.getTypeMap()['UnionType1'].astNode,
+        newNode: newSchema.getTypeMap()['UnionType1'].astNode,
       },
     ]);
   });
@@ -344,6 +476,8 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
         description: 'VALUE1 was removed from enum type EnumType1.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('EnumType1').getValue('VALUE1').astNode,
       },
     ]);
   });
@@ -373,14 +507,29 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.ARG_REMOVED,
         description: 'Interface1.field1 arg arg1 was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Interface1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg1').astNode,
       },
       {
         type: BreakingChangeType.ARG_REMOVED,
         description: 'Interface1.field1 arg objectArg was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Interface1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'objectArg').astNode,
       },
       {
         type: BreakingChangeType.ARG_REMOVED,
         description: 'Type1.field1 arg name was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'name').astNode,
       },
     ]);
   });
@@ -435,61 +584,181 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg1 has changed type from String to Int.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg1').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg1').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg2 has changed type from String to [String].',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg2').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg2').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg3 has changed type from [String] to String.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg3').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg3').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg4 has changed type from String to String!.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg4').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg4').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg5 has changed type from String! to Int.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg5').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg5').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg6 has changed type from String! to Int!.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg6').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg6').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg8 has changed type from Int to [Int]!.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg8').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg8').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg9 has changed type from [Int] to [Int!].',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg9').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg9').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg11 has changed type from [Int] to [[Int]].',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg11').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg11').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg12 has changed type from [[Int]] to [Int].',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg12').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg12').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg13 has changed type from Int! to [Int]!.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg13').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg13').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'Type1.field1 arg arg15 has changed type from [[Int]!] to [[Int!]!].',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg15').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg15').astNode,
       },
     ]);
   });
@@ -516,6 +785,11 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.REQUIRED_ARG_ADDED,
         description: 'A required arg newRequiredArg on Type1.field1 was added.',
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'newRequiredArg').astNode,
       },
     ]);
   });
@@ -560,6 +834,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
   });
 
+  // TODO: implement test changes
   it('should detect interfaces removed from types', () => {
     const oldSchema = buildSchema(`
       interface Interface1
@@ -577,6 +852,10 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
         description: 'Type1 no longer implements interface Interface1.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').astNode,
       },
     ]);
   });
@@ -670,61 +949,112 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'Int was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Int').astNode,
       },
       {
         type: BreakingChangeType.TYPE_REMOVED,
         description: 'TypeThatGetsRemoved was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('TypeThatGetsRemoved').astNode,
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
           'ArgThatChanges.field1 arg id has changed type from Int to String.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('ArgThatChanges')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'id').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('ArgThatChanges')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'id').astNode,
       },
       {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
         description:
           'VALUE0 was removed from enum type EnumTypeThatLosesAValue.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('EnumTypeThatLosesAValue').getValue('VALUE0')
+          .astNode,
       },
       {
         type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
         description:
           'TypeThatLooseInterface1 no longer implements interface Interface1.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('TypeThatLooseInterface1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('TypeThatLooseInterface1').astNode,
       },
       {
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
         description:
           'TypeInUnion2 was removed from union type UnionTypeThatLosesAType.',
+        oldNode: oldSchema.getTypeMap()['UnionTypeThatLosesAType'].astNode,
+        newNode: newSchema.getTypeMap()['UnionTypeThatLosesAType'].astNode,
       },
       {
         type: BreakingChangeType.TYPE_CHANGED_KIND,
         description:
           'TypeThatChangesType changed from an Object type to an Interface type.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('TypeThatChangesType').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('TypeThatChangesType').astNode,
       },
       {
         type: BreakingChangeType.FIELD_REMOVED,
         description: 'TypeThatHasBreakingFieldChanges.field1 was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('TypeThatHasBreakingFieldChanges')
+          .getFields()['field1'].astNode,
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
           'TypeThatHasBreakingFieldChanges.field2 changed type from String to Boolean.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('TypeThatHasBreakingFieldChanges')
+          .getFields()['field2'].astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('TypeThatHasBreakingFieldChanges')
+          .getFields()['field2'].astNode,
       },
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
         description: 'DirectiveThatIsRemoved was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema.getDirective('DirectiveThatIsRemoved').astNode,
       },
       {
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
         description: 'arg1 was removed from DirectiveThatRemovesArg.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getDirective('DirectiveThatRemovesArg')
+          .args.find(arg => arg.name === 'arg1').astNode,
       },
       {
         type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
         description:
           'A required arg arg1 on directive NonNullDirectiveAdded was added.',
+        // $FlowFixMe
+        newNode: newSchema
+          .getDirective('NonNullDirectiveAdded')
+          .args.find(arg => arg.name === 'arg1').astNode,
       },
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
         description: 'QUERY was removed from DirectiveName.',
+        // $FlowFixMe
+        oldNode: oldSchema.getDirective('DirectiveName').astNode,
       },
     ]);
   });
@@ -743,6 +1073,8 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
         description: 'DirectiveThatIsRemoved was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema.getDirective('DirectiveThatIsRemoved').astNode,
       },
     ]);
   });
@@ -758,6 +1090,7 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
         description: `${GraphQLDeprecatedDirective.name} was removed.`,
+        oldNode: undefined,
       },
     ]);
   });
@@ -775,11 +1108,15 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
         description: 'arg1 was removed from DirectiveWithArg.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getDirective('DirectiveWithArg')
+          .args.find(arg => arg.name === 'arg1').astNode,
       },
     ]);
   });
 
-  it('should detect if an optional directive argument was added', () => {
+  it('should detect if an required directive argument was added', () => {
     const oldSchema = buildSchema(`
       directive @DirectiveName on FIELD_DEFINITION
     `);
@@ -797,6 +1134,10 @@ describe('findBreakingChanges', () => {
         type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
         description:
           'A required arg newRequiredArg on directive DirectiveName was added.',
+        // $FlowFixMe
+        newNode: newSchema
+          .getDirective('DirectiveName')
+          .args.find(arg => arg.name === 'newRequiredArg').astNode,
       },
     ]);
   });
@@ -814,6 +1155,8 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
         description: 'QUERY was removed from DirectiveName.',
+        // $FlowFixMe
+        oldNode: oldSchema.getDirective('DirectiveName').astNode,
       },
     ]);
   });
@@ -874,26 +1217,72 @@ describe('findDangerousChanges', () => {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg withDefaultValue defaultValue was removed.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'withDefaultValue').astNode,
+        newNode: undefined,
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg stringArg has changed defaultValue from "test" to "Test".',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'stringArg').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'stringArg').astNode,
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg emptyArray has changed defaultValue from [] to [7].',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'emptyArray').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'emptyArray').astNode,
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg valueArray has changed defaultValue from [["a", "b"], ["c"]] to [["b", "a"], ["d"]].',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'valueArray').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'valueArray').astNode,
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg complexObject has changed defaultValue from {innerInputArray: [{arrayField: [1, 2, 3]}]} to {innerInputArray: [{arrayField: [3, 2, 1]}]}.',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'complexObject').astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'complexObject').astNode,
       },
     ]);
   });
@@ -950,6 +1339,8 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
         description: 'VALUE2 was added to enum type EnumType1.',
+        // $FlowFixMe
+        newNode: newSchema.getType('EnumType1').getValue('VALUE2').astNode,
       },
     ]);
   });
@@ -973,6 +1364,10 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
         description: 'NewInterface added to interfaces implemented by Type1.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('Type1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('Type1').astNode,
       },
     ]);
   });
@@ -996,6 +1391,10 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.TYPE_ADDED_TO_UNION,
         description: 'Type2 was added to union type UnionType1.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('UnionType1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('UnionType1').astNode,
       },
     ]);
   });
@@ -1019,6 +1418,8 @@ describe('findDangerousChanges', () => {
         type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
         description:
           'An optional field field2 on input type InputType1 was added.',
+        // $FlowFixMe
+        newNode: newSchema.getType('InputType1').getFields()['field2'].astNode,
       },
     ]);
   });
@@ -1064,21 +1465,43 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
         description: 'VALUE2 was added to enum type EnumType1.',
+        // $FlowFixMe
+        newNode: newSchema.getType('EnumType1').getValue('VALUE2').astNode,
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
           'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue from "test" to "Test".',
+        // $FlowFixMe
+        oldNode: oldSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'argThatChangesDefaultValue')
+          .astNode,
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'argThatChangesDefaultValue')
+          .astNode,
       },
       {
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
         description:
           'Interface1 added to interfaces implemented by TypeThatGainsInterface1.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('TypeThatGainsInterface1').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('TypeThatGainsInterface1').astNode,
       },
       {
         type: DangerousChangeType.TYPE_ADDED_TO_UNION,
         description:
           'TypeInUnion2 was added to union type UnionTypeThatGainsAType.',
+        // $FlowFixMe
+        oldNode: oldSchema.getType('UnionTypeThatGainsAType').astNode,
+        // $FlowFixMe
+        newNode: newSchema.getType('UnionTypeThatGainsAType').astNode,
       },
     ]);
   });
@@ -1100,6 +1523,11 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.OPTIONAL_ARG_ADDED,
         description: 'An optional arg arg2 on Type1.field1 was added.',
+        // $FlowFixMe
+        newNode: newSchema
+          .getType('Type1')
+          .getFields()
+          ['field1'].args.find(arg => arg.name === 'arg2').astNode,
       },
     ]);
   });

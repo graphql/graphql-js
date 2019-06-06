@@ -36,6 +36,7 @@ import {
 } from '../type/definition';
 import { type GraphQLSchema } from '../type/schema';
 import { astFromValue } from './astFromValue';
+import { type ASTNode } from './../language/ast';
 
 export const BreakingChangeType = Object.freeze({
   TYPE_REMOVED: 'TYPE_REMOVED',
@@ -67,6 +68,8 @@ export const DangerousChangeType = Object.freeze({
 export type BreakingChange = {
   type: $Keys<typeof BreakingChangeType>,
   description: string,
+  oldNode?: ASTNode,
+  newNode?: ASTNode,
 };
 
 export type DangerousChange = {
@@ -127,6 +130,7 @@ function findDirectiveChanges(
     schemaChanges.push({
       type: BreakingChangeType.DIRECTIVE_REMOVED,
       description: `${oldDirective.name} was removed.`,
+      oldNode: oldDirective.astNode ? oldDirective.astNode : undefined,
     });
   }
 
@@ -140,6 +144,7 @@ function findDirectiveChanges(
           description:
             `A required arg ${newArg.name} on directive ` +
             `${oldDirective.name} was added.`,
+          newNode: newArg.astNode ? newArg.astNode : undefined,
         });
       }
     }
@@ -148,6 +153,7 @@ function findDirectiveChanges(
       schemaChanges.push({
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
         description: `${oldArg.name} was removed from ${oldDirective.name}.`,
+        oldNode: oldArg.astNode ? oldArg.astNode : undefined,
       });
     }
 
@@ -156,6 +162,8 @@ function findDirectiveChanges(
         schemaChanges.push({
           type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
           description: `${location} was removed from ${oldDirective.name}.`,
+          // locations are not a node, so the full directive is returned
+          oldNode: oldDirective.astNode ? oldDirective.astNode : undefined,
         });
       }
     }
@@ -179,6 +187,7 @@ function findTypeChanges(
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED,
       description: `${oldType.name} was removed.`,
+      oldNode: oldType.astNode ? oldType.astNode : undefined,
     });
   }
 
@@ -199,6 +208,8 @@ function findTypeChanges(
         description:
           `${oldType.name} changed from ` +
           `${typeKindName(oldType)} to ${typeKindName(newType)}.`,
+        oldNode: oldType.astNode ? oldType.astNode : undefined,
+        newNode: newType.astNode ? newType.astNode : undefined,
       });
     }
   }
@@ -223,6 +234,7 @@ function findInputObjectTypeChanges(
         description:
           `A required field ${newField.name} on ` +
           `input type ${oldType.name} was added.`,
+        newNode: newField.astNode ? newField.astNode : undefined,
       });
     } else {
       schemaChanges.push({
@@ -230,6 +242,7 @@ function findInputObjectTypeChanges(
         description:
           `An optional field ${newField.name} on ` +
           `input type ${oldType.name} was added.`,
+        newNode: newField.astNode ? newField.astNode : undefined,
       });
     }
   }
@@ -238,6 +251,7 @@ function findInputObjectTypeChanges(
     schemaChanges.push({
       type: BreakingChangeType.FIELD_REMOVED,
       description: `${oldType.name}.${oldField.name} was removed.`,
+      oldNode: oldField.astNode ? oldField.astNode : undefined,
     });
   }
 
@@ -252,6 +266,8 @@ function findInputObjectTypeChanges(
         description:
           `${oldType.name}.${oldField.name} changed type from ` +
           `${String(oldField.type)} to ${String(newField.type)}.`,
+        oldNode: oldField.astNode ? oldField.astNode : undefined,
+        newNode: newField.astNode ? newField.astNode : undefined,
       });
     }
   }
@@ -272,6 +288,8 @@ function findUnionTypeChanges(
       description: `${newPossibleType.name} was added to union type ${
         oldType.name
       }.`,
+      oldNode: oldType.astNode ? oldType.astNode : undefined,
+      newNode: newType.astNode ? newType.astNode : undefined,
     });
   }
 
@@ -281,6 +299,8 @@ function findUnionTypeChanges(
       description:
         `${oldPossibleType.name} was removed from ` +
         `union type ${oldType.name}.`,
+      oldNode: oldType.astNode ? oldType.astNode : undefined,
+      newNode: newType.astNode ? newType.astNode : undefined,
     });
   }
 
@@ -298,6 +318,7 @@ function findEnumTypeChanges(
     schemaChanges.push({
       type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
       description: `${newValue.name} was added to enum type ${oldType.name}.`,
+      newNode: newValue.astNode ? newValue.astNode : undefined,
     });
   }
 
@@ -307,6 +328,7 @@ function findEnumTypeChanges(
       description: `${oldValue.name} was removed from enum type ${
         oldType.name
       }.`,
+      oldNode: oldValue.astNode ? oldValue.astNode : undefined,
     });
   }
 
@@ -326,6 +348,8 @@ function findObjectTypeChanges(
       description:
         `${newInterface.name} added to interfaces implemented ` +
         `by ${oldType.name}.`,
+      oldNode: oldType.astNode ? oldType.astNode : undefined,
+      newNode: newType.astNode ? newType.astNode : undefined,
     });
   }
 
@@ -335,6 +359,8 @@ function findObjectTypeChanges(
       description:
         `${oldType.name} no longer implements interface ` +
         `${oldInterface.name}.`,
+      oldNode: oldType.astNode ? oldType.astNode : undefined,
+      newNode: newType.astNode ? newType.astNode : undefined,
     });
   }
 
@@ -355,6 +381,7 @@ function findFieldChanges(
     schemaChanges.push({
       type: BreakingChangeType.FIELD_REMOVED,
       description: `${oldType.name}.${oldField.name} was removed.`,
+      oldNode: oldField.astNode ? oldField.astNode : undefined,
     });
   }
 
@@ -371,6 +398,8 @@ function findFieldChanges(
         description:
           `${oldType.name}.${oldField.name} changed type from ` +
           `${String(oldField.type)} to ${String(newField.type)}.`,
+        oldNode: oldField.astNode ? oldField.astNode : undefined,
+        newNode: newField.astNode ? newField.astNode : undefined,
       });
     }
   }
@@ -392,6 +421,7 @@ function findArgChanges(
       description: `${oldType.name}.${oldField.name} arg ${
         oldArg.name
       } was removed.`,
+      oldNode: oldArg.astNode ? oldArg.astNode : undefined,
     });
   }
 
@@ -407,6 +437,8 @@ function findArgChanges(
           `${oldType.name}.${oldField.name} arg ` +
           `${oldArg.name} has changed type from ` +
           `${String(oldArg.type)} to ${String(newArg.type)}.`,
+        oldNode: oldArg.astNode ? oldArg.astNode : undefined,
+        newNode: newArg.astNode ? newArg.astNode : undefined,
       });
     } else if (oldArg.defaultValue !== undefined) {
       if (newArg.defaultValue === undefined) {
@@ -415,6 +447,8 @@ function findArgChanges(
           description:
             `${oldType.name}.${oldField.name} arg ` +
             `${oldArg.name} defaultValue was removed.`,
+          oldNode: oldArg.astNode ? oldArg.astNode : undefined,
+          newNode: undefined,
         });
       } else {
         const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
@@ -427,6 +461,8 @@ function findArgChanges(
               `${oldType.name}.${oldField.name} arg ` +
               `${oldArg.name} has changed defaultValue ` +
               `from ${oldValueStr} to ${newValueStr}.`,
+            oldNode: oldArg.astNode ? oldArg.astNode : undefined,
+            newNode: newArg.astNode ? newArg.astNode : undefined,
           });
         }
       }
@@ -440,6 +476,7 @@ function findArgChanges(
         description:
           `A required arg ${newArg.name} on ` +
           `${oldType.name}.${oldField.name} was added.`,
+        newNode: newArg.astNode ? newArg.astNode : undefined,
       });
     } else {
       schemaChanges.push({
@@ -447,6 +484,7 @@ function findArgChanges(
         description:
           `An optional arg ${newArg.name} on ` +
           `${oldType.name}.${oldField.name} was added.`,
+        newNode: newArg.astNode ? newArg.astNode : undefined,
       });
     }
   }
