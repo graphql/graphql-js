@@ -16,10 +16,7 @@ export function duplicateOperationTypeMessage(operation: string): string {
 }
 
 export function existedOperationTypeMessage(operation: string): string {
-  return (
-    `Type for ${operation} already defined in the schema. ` +
-    'It cannot be redefined.'
-  );
+  return `Type for ${operation} already defined in the schema. It cannot be redefined.`;
 }
 
 /**

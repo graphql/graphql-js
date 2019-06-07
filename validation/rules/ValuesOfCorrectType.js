@@ -46,7 +46,7 @@ function badEnumValueMessage(typeName, valueName, suggestedValues) {
 }
 
 function requiredFieldMessage(typeName, fieldName, fieldTypeName) {
-  return "Field ".concat(typeName, ".").concat(fieldName, " of required type ") + "".concat(fieldTypeName, " was not provided.");
+  return "Field ".concat(typeName, ".").concat(fieldName, " of required type ").concat(fieldTypeName, " was not provided.");
 }
 
 function unknownFieldMessage(typeName, fieldName, suggestedFields) {

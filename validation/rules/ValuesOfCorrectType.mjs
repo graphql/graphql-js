@@ -22,7 +22,7 @@ export function badEnumValueMessage(typeName, valueName, suggestedValues) {
   return "Expected type ".concat(typeName, ", found ").concat(valueName, ".") + didYouMean('the enum value', suggestedValues);
 }
 export function requiredFieldMessage(typeName, fieldName, fieldTypeName) {
-  return "Field ".concat(typeName, ".").concat(fieldName, " of required type ") + "".concat(fieldTypeName, " was not provided.");
+  return "Field ".concat(typeName, ".").concat(fieldName, " of required type ").concat(fieldTypeName, " was not provided.");
 }
 export function unknownFieldMessage(typeName, fieldName, suggestedFields) {
   return "Field \"".concat(fieldName, "\" is not defined by type ").concat(typeName, ".") + didYouMean(suggestedFields);

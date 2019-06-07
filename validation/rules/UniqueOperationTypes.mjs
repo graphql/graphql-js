@@ -11,7 +11,7 @@ export function duplicateOperationTypeMessage(operation) {
   return "There can be only one ".concat(operation, " type in schema.");
 }
 export function existedOperationTypeMessage(operation) {
-  return "Type for ".concat(operation, " already defined in the schema. ") + 'It cannot be redefined.';
+  return "Type for ".concat(operation, " already defined in the schema. It cannot be redefined.");
 }
 /**
  * Unique operation types

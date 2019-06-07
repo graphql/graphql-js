@@ -22,7 +22,7 @@ function duplicateTypeNameMessage(typeName) {
 }
 
 function existedTypeNameMessage(typeName) {
-  return "Type \"".concat(typeName, "\" already exists in the schema. ") + 'It cannot also be defined in this type definition.';
+  return "Type \"".concat(typeName, "\" already exists in the schema. It cannot also be defined in this type definition.");
 }
 /**
  * Unique type names

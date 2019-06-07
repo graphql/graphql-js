@@ -43,7 +43,7 @@ function isValidNameError(name, node) {
   !(typeof name === 'string') ? (0, _invariant.default)(0, 'Expected string') : void 0;
 
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
-    return new _GraphQLError.GraphQLError("Name \"".concat(name, "\" must not begin with \"__\", which is reserved by ") + 'GraphQL introspection.', node);
+    return new _GraphQLError.GraphQLError("Name \"".concat(name, "\" must not begin with \"__\", which is reserved by GraphQL introspection."), node);
   }
 
   if (!NAME_RX.test(name)) {

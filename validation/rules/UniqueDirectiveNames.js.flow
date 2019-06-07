@@ -16,10 +16,7 @@ export function duplicateDirectiveNameMessage(directiveName: string): string {
 }
 
 export function existedDirectiveNameMessage(directiveName: string): string {
-  return (
-    `Directive "${directiveName}" already exists in the schema. ` +
-    'It cannot be redefined.'
-  );
+  return `Directive "${directiveName}" already exists in the schema. It cannot be redefined.`;
 }
 
 /**

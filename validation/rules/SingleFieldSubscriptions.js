@@ -17,7 +17,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * 
  */
 function singleFieldOnlyMessage(name) {
-  return (name ? "Subscription \"".concat(name, "\" ") : 'Anonymous Subscription ') + 'must select only one top level field.';
+  return name ? "Subscription \"".concat(name, "\" must select only one top level field.") : 'Anonymous Subscription must select only one top level field.';
 }
 /**
  * Subscriptions must only include one field.

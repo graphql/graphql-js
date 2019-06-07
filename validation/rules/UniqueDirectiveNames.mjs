@@ -11,7 +11,7 @@ export function duplicateDirectiveNameMessage(directiveName) {
   return "There can be only one directive named \"".concat(directiveName, "\".");
 }
 export function existedDirectiveNameMessage(directiveName) {
-  return "Directive \"".concat(directiveName, "\" already exists in the schema. ") + 'It cannot be redefined.';
+  return "Directive \"".concat(directiveName, "\" already exists in the schema. It cannot be redefined.");
 }
 /**
  * Unique directive names

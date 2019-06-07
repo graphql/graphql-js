@@ -430,10 +430,10 @@ function () {
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     !(typeof config.name === 'string') ? (0, _invariant.default)(0, 'Must provide name.') : void 0;
-    !(config.serialize == null || typeof config.serialize === 'function') ? (0, _invariant.default)(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar ") + 'is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.') : void 0;
+    !(config.serialize == null || typeof config.serialize === 'function') ? (0, _invariant.default)(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar is also used as an input type, ensure \"parseValue\" and \"parseLiteral\" functions are also provided.")) : void 0;
 
     if (config.parseLiteral) {
-      !(typeof config.parseValue === 'function' && typeof config.parseLiteral === 'function') ? (0, _invariant.default)(0, "".concat(this.name, " must provide both \"parseValue\" and \"parseLiteral\" ") + 'functions.') : void 0;
+      !(typeof config.parseValue === 'function' && typeof config.parseLiteral === 'function') ? (0, _invariant.default)(0, "".concat(this.name, " must provide both \"parseValue\" and \"parseLiteral\" functions.")) : void 0;
     }
   }
 
@@ -559,19 +559,19 @@ exports.GraphQLObjectType = GraphQLObjectType;
 
 function defineInterfaces(config) {
   var interfaces = resolveThunk(config.interfaces) || [];
-  !Array.isArray(interfaces) ? (0, _invariant.default)(0, "".concat(config.name, " interfaces must be an Array or a function which returns ") + 'an Array.') : void 0;
+  !Array.isArray(interfaces) ? (0, _invariant.default)(0, "".concat(config.name, " interfaces must be an Array or a function which returns an Array.")) : void 0;
   return interfaces;
 }
 
 function defineFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
-  !isPlainObj(fieldMap) ? (0, _invariant.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
+  !isPlainObj(fieldMap) ? (0, _invariant.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object.")) : void 0;
   return (0, _mapValue.default)(fieldMap, function (fieldConfig, fieldName) {
     !isPlainObj(fieldConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object")) : void 0;
-    !!('isDeprecated' in fieldConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" ") + 'instead of "isDeprecated".') : void 0;
+    !!('isDeprecated' in fieldConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" instead of \"isDeprecated\".")) : void 0;
     !(fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function') ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat((0, _inspect.default)(fieldConfig.resolve), ".")) : void 0;
     var argsConfig = fieldConfig.args || {};
-    !isPlainObj(argsConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument ") + 'names as keys.') : void 0;
+    !isPlainObj(argsConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument names as keys.")) : void 0;
     var args = (0, _objectEntries.default)(argsConfig).map(function (_ref) {
       var argName = _ref[0],
           arg = _ref[1];
@@ -763,7 +763,7 @@ exports.GraphQLUnionType = GraphQLUnionType;
 
 function defineTypes(config) {
   var types = resolveThunk(config.types) || [];
-  !Array.isArray(types) ? (0, _invariant.default)(0, 'Must provide Array of types or a function which returns ' + "such an array for Union ".concat(config.name, ".")) : void 0;
+  !Array.isArray(types) ? (0, _invariant.default)(0, "Must provide Array of types or a function which returns such an array for Union ".concat(config.name, ".")) : void 0;
   return types;
 }
 
@@ -889,7 +889,7 @@ function defineEnumValues(type, valueMap) {
     var valueName = _ref2[0],
         value = _ref2[1];
     !isPlainObj(value) ? (0, _invariant.default)(0, "".concat(type.name, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat((0, _inspect.default)(value), ".")) : void 0;
-    !!('isDeprecated' in value) ? (0, _invariant.default)(0, "".concat(type.name, ".").concat(valueName, " should provide \"deprecationReason\" instead ") + 'of "isDeprecated".') : void 0;
+    !!('isDeprecated' in value) ? (0, _invariant.default)(0, "".concat(type.name, ".").concat(valueName, " should provide \"deprecationReason\" instead of \"isDeprecated\".")) : void 0;
     return {
       name: valueName,
       description: value.description,
@@ -975,9 +975,9 @@ exports.GraphQLInputObjectType = GraphQLInputObjectType;
 
 function defineInputFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
-  !isPlainObj(fieldMap) ? (0, _invariant.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a ") + 'function which returns such an object.') : void 0;
+  !isPlainObj(fieldMap) ? (0, _invariant.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object.")) : void 0;
   return (0, _mapValue.default)(fieldMap, function (fieldConfig, fieldName) {
-    !!('resolve' in fieldConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but ") + 'Input Types cannot define resolvers.') : void 0;
+    !!('resolve' in fieldConfig) ? (0, _invariant.default)(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but Input Types cannot define resolvers.")) : void 0;
     return _objectSpread({}, fieldConfig, {
       name: fieldName
     });

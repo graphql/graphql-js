@@ -24,11 +24,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * 
  */
 function noSubselectionAllowedMessage(fieldName, type) {
-  return "Field \"".concat(fieldName, "\" must not have a selection since ") + "type \"".concat(type, "\" has no subfields.");
+  return "Field \"".concat(fieldName, "\" must not have a selection since type \"").concat(type, "\" has no subfields.");
 }
 
 function requiredSubselectionMessage(fieldName, type) {
-  return "Field \"".concat(fieldName, "\" of type \"").concat(type, "\" must have a selection of subfields.") + " Did you mean \"".concat(fieldName, " { ... }\"?");
+  return "Field \"".concat(fieldName, "\" of type \"").concat(type, "\" must have a selection of subfields. Did you mean \"").concat(fieldName, " { ... }\"?");
 }
 /**
  * Scalar leafs

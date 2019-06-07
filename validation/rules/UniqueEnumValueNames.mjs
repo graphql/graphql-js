@@ -12,7 +12,7 @@ export function duplicateEnumValueNameMessage(typeName, valueName) {
   return "Enum value \"".concat(typeName, ".").concat(valueName, "\" can only be defined once.");
 }
 export function existedEnumValueNameMessage(typeName, valueName) {
-  return "Enum value \"".concat(typeName, ".").concat(valueName, "\" already exists in the schema. ") + 'It cannot also be defined in this type extension.';
+  return "Enum value \"".concat(typeName, ".").concat(valueName, "\" already exists in the schema. It cannot also be defined in this type extension.");
 }
 /**
  * Unique enum value names

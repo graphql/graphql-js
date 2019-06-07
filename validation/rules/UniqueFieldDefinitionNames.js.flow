@@ -27,10 +27,7 @@ export function existedFieldDefinitionNameMessage(
   typeName: string,
   fieldName: string,
 ): string {
-  return (
-    `Field "${typeName}.${fieldName}" already exists in the schema. ` +
-    'It cannot also be defined in this type extension.'
-  );
+  return `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`;
 }
 
 /**

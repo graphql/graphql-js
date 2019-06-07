@@ -22,7 +22,7 @@ function duplicateOperationTypeMessage(operation) {
 }
 
 function existedOperationTypeMessage(operation) {
-  return "Type for ".concat(operation, " already defined in the schema. ") + 'It cannot be redefined.';
+  return "Type for ".concat(operation, " already defined in the schema. It cannot be redefined.");
 }
 /**
  * Unique operation types

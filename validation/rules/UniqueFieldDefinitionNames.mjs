@@ -12,7 +12,7 @@ export function duplicateFieldDefinitionNameMessage(typeName, fieldName) {
   return "Field \"".concat(typeName, ".").concat(fieldName, "\" can only be defined once.");
 }
 export function existedFieldDefinitionNameMessage(typeName, fieldName) {
-  return "Field \"".concat(typeName, ".").concat(fieldName, "\" already exists in the schema. ") + 'It cannot also be defined in this type extension.';
+  return "Field \"".concat(typeName, ".").concat(fieldName, "\" already exists in the schema. It cannot also be defined in this type extension.");
 }
 /**
  * Unique field definition names

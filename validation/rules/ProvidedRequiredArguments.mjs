@@ -18,10 +18,10 @@ import { isType, isRequiredArgument } from '../../type/definition';
 import { print } from '../../language/printer';
 import { specifiedDirectives } from '../../type/directives';
 export function missingFieldArgMessage(fieldName, argName, type) {
-  return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(type, "\" is required, but it was not provided.");
+  return "Field \"".concat(fieldName, "\" argument \"").concat(argName, "\" of type \"").concat(type, "\" is required, but it was not provided.");
 }
 export function missingDirectiveArgMessage(directiveName, argName, type) {
-  return "Directive \"@".concat(directiveName, "\" argument \"").concat(argName, "\" of type ") + "\"".concat(type, "\" is required, but it was not provided.");
+  return "Directive \"@".concat(directiveName, "\" argument \"").concat(argName, "\" of type \"").concat(type, "\" is required, but it was not provided.");
 }
 /**
  * Provided required arguments

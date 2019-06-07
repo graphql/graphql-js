@@ -17,7 +17,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * 
  */
 function duplicateDirectiveMessage(directiveName) {
-  return "The directive \"".concat(directiveName, "\" can only be used once at ") + 'this location.';
+  return "The directive \"".concat(directiveName, "\" can only be used once at this location.");
 }
 /**
  * Unique directive names per location

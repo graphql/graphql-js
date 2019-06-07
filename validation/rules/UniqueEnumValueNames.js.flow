@@ -23,10 +23,7 @@ export function existedEnumValueNameMessage(
   typeName: string,
   valueName: string,
 ): string {
-  return (
-    `Enum value "${typeName}.${valueName}" already exists in the schema. ` +
-    'It cannot also be defined in this type extension.'
-  );
+  return `Enum value "${typeName}.${valueName}" already exists in the schema. It cannot also be defined in this type extension.`;
 }
 
 /**

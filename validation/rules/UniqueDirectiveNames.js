@@ -22,7 +22,7 @@ function duplicateDirectiveNameMessage(directiveName) {
 }
 
 function existedDirectiveNameMessage(directiveName) {
-  return "Directive \"".concat(directiveName, "\" already exists in the schema. ") + 'It cannot be redefined.';
+  return "Directive \"".concat(directiveName, "\" already exists in the schema. It cannot be redefined.");
 }
 /**
  * Unique directive names

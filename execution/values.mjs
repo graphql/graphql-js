@@ -155,7 +155,7 @@ export function getArgumentValues(def, node, variableValues) {
         throw new GraphQLError("Argument \"".concat(name, "\" of non-null type \"").concat(inspect(argType), "\" ") + 'must not be null.', argumentNode.value);
       } else if (argumentNode && argumentNode.value.kind === Kind.VARIABLE) {
         var _variableName = argumentNode.value.name.value;
-        throw new GraphQLError("Argument \"".concat(name, "\" of required type \"").concat(inspect(argType), "\" ") + "was provided the variable \"$".concat(_variableName, "\" ") + 'which was not provided a runtime value.', argumentNode.value);
+        throw new GraphQLError("Argument \"".concat(name, "\" of required type \"").concat(inspect(argType), "\" ") + "was provided the variable \"$".concat(_variableName, "\" which was not provided a runtime value."), argumentNode.value);
       } else {
         throw new GraphQLError("Argument \"".concat(name, "\" of required type \"").concat(inspect(argType), "\" ") + 'was not provided.', node);
       }

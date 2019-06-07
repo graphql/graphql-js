@@ -171,8 +171,7 @@ export function getArgumentValues(
         const variableName = argumentNode.value.name.value;
         throw new GraphQLError(
           `Argument "${name}" of required type "${inspect(argType)}" ` +
-            `was provided the variable "$${variableName}" ` +
-            'which was not provided a runtime value.',
+            `was provided the variable "$${variableName}" which was not provided a runtime value.`,
           argumentNode.value,
         );
       } else {

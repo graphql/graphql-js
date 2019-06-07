@@ -137,7 +137,7 @@ function findDirectiveChanges(oldSchema, newSchema) {
           if ((0, _definition.isRequiredArgument)(newArg)) {
             schemaChanges.push({
               type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
-              description: "A required arg ".concat(newArg.name, " on directive ") + "".concat(_oldDirective.name, " was added.")
+              description: "A required arg ".concat(newArg.name, " on directive ").concat(_oldDirective.name, " was added.")
             });
           }
         }
@@ -320,12 +320,12 @@ function findInputObjectTypeChanges(oldType, newType) {
       if ((0, _definition.isRequiredInputField)(newField)) {
         schemaChanges.push({
           type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
-          description: "A required field ".concat(newField.name, " on ") + "input type ".concat(oldType.name, " was added.")
+          description: "A required field ".concat(newField.name, " on input type ").concat(oldType.name, " was added.")
         });
       } else {
         schemaChanges.push({
           type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
-          description: "An optional field ".concat(newField.name, " on ") + "input type ".concat(oldType.name, " was added.")
+          description: "An optional field ".concat(newField.name, " on input type ").concat(oldType.name, " was added.")
         });
       }
     }
@@ -446,7 +446,7 @@ function findUnionTypeChanges(oldType, newType) {
       var oldPossibleType = _step12.value;
       schemaChanges.push({
         type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
-        description: "".concat(oldPossibleType.name, " was removed from ") + "union type ".concat(oldType.name, ".")
+        description: "".concat(oldPossibleType.name, " was removed from union type ").concat(oldType.name, ".")
       });
     }
   } catch (err) {
@@ -539,7 +539,7 @@ function findObjectTypeChanges(oldType, newType) {
       var newInterface = _step15.value;
       schemaChanges.push({
         type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
-        description: "".concat(newInterface.name, " added to interfaces implemented ") + "by ".concat(oldType.name, ".")
+        description: "".concat(newInterface.name, " added to interfaces implemented by ").concat(oldType.name, ".")
       });
     }
   } catch (err) {
@@ -566,7 +566,7 @@ function findObjectTypeChanges(oldType, newType) {
       var oldInterface = _step16.value;
       schemaChanges.push({
         type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
-        description: "".concat(oldType.name, " no longer implements interface ") + "".concat(oldInterface.name, ".")
+        description: "".concat(oldType.name, " no longer implements interface ").concat(oldInterface.name, ".")
       });
     }
   } catch (err) {
@@ -698,13 +698,13 @@ function findArgChanges(oldType, oldField, newField) {
       if (!isSafe) {
         schemaChanges.push({
           type: BreakingChangeType.ARG_CHANGED_KIND,
-          description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " has changed type from ") + "".concat(String(_oldArg.type), " to ").concat(String(newArg.type), ".")
+          description: "".concat(oldType.name, ".").concat(oldField.name, " arg ").concat(_oldArg.name, " has changed type from ") + "".concat(String(_oldArg.type), " to ").concat(String(newArg.type), ".")
         });
       } else if (_oldArg.defaultValue !== undefined) {
         if (newArg.defaultValue === undefined) {
           schemaChanges.push({
             type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-            description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " defaultValue was removed.")
+            description: "".concat(oldType.name, ".").concat(oldField.name, " arg ").concat(_oldArg.name, " defaultValue was removed.")
           });
         } else {
           var oldValueStr = stringifyValue(_oldArg.defaultValue, _oldArg.type);
@@ -713,7 +713,7 @@ function findArgChanges(oldType, oldField, newField) {
           if (oldValueStr !== newValueStr) {
             schemaChanges.push({
               type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-              description: "".concat(oldType.name, ".").concat(oldField.name, " arg ") + "".concat(_oldArg.name, " has changed defaultValue ") + "from ".concat(oldValueStr, " to ").concat(newValueStr, ".")
+              description: "".concat(oldType.name, ".").concat(oldField.name, " arg ").concat(_oldArg.name, " has changed defaultValue from ").concat(oldValueStr, " to ").concat(newValueStr, ".")
             });
           }
         }
@@ -745,12 +745,12 @@ function findArgChanges(oldType, oldField, newField) {
       if ((0, _definition.isRequiredArgument)(_newArg)) {
         schemaChanges.push({
           type: BreakingChangeType.REQUIRED_ARG_ADDED,
-          description: "A required arg ".concat(_newArg.name, " on ") + "".concat(oldType.name, ".").concat(oldField.name, " was added.")
+          description: "A required arg ".concat(_newArg.name, " on ").concat(oldType.name, ".").concat(oldField.name, " was added.")
         });
       } else {
         schemaChanges.push({
           type: DangerousChangeType.OPTIONAL_ARG_ADDED,
-          description: "An optional arg ".concat(_newArg.name, " on ") + "".concat(oldType.name, ".").concat(oldField.name, " was added.")
+          description: "An optional arg ".concat(_newArg.name, " on ").concat(oldType.name, ".").concat(oldField.name, " was added.")
         });
       }
     }

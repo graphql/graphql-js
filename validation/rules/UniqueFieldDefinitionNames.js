@@ -24,7 +24,7 @@ function duplicateFieldDefinitionNameMessage(typeName, fieldName) {
 }
 
 function existedFieldDefinitionNameMessage(typeName, fieldName) {
-  return "Field \"".concat(typeName, ".").concat(fieldName, "\" already exists in the schema. ") + 'It cannot also be defined in this type extension.';
+  return "Field \"".concat(typeName, ".").concat(fieldName, "\" already exists in the schema. It cannot also be defined in this type extension.");
 }
 /**
  * Unique field definition names

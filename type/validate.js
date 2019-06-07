@@ -361,7 +361,7 @@ function validateFields(context, type) {
           validateName(context, arg); // Ensure they are unique per field.
 
           if (argNames[argName]) {
-            context.reportError("Field argument ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) can only ") + 'be defined once.', field.args.filter(function (_ref3) {
+            context.reportError("Field argument ".concat(type.name, ".").concat(field.name, "(").concat(argName, ":) can only be defined once."), field.args.filter(function (_ref3) {
               var name = _ref3.name;
               return name === argName;
             }).map(function (_ref4) {
@@ -466,7 +466,7 @@ function validateObjectImplementsInterface(context, object, iface) {
       var objectField = objectFieldMap[fieldName]; // Assert interface field exists on object.
 
       if (!objectField) {
-        context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expected but ") + "".concat(object.name, " does not provide it."), [ifaceField.astNode].concat(getAllNodes(object)));
+        context.reportError("Interface field ".concat(iface.name, ".").concat(fieldName, " expected but ").concat(object.name, " does not provide it."), [ifaceField.astNode].concat(getAllNodes(object)));
         continue;
       } // Assert interface field type is satisfied by object field type, by being
       // a valid subtype. (covariant)
@@ -490,7 +490,7 @@ function validateObjectImplementsInterface(context, object, iface) {
           }); // Assert interface field arg exists on object field.
 
           if (!objectArg) {
-            context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) ") + "expected but ".concat(object.name, ".").concat(fieldName, " does not provide it."), [ifaceArg.astNode, objectField.astNode]);
+            context.reportError("Interface field argument ".concat(iface.name, ".").concat(fieldName, "(").concat(argName, ":) expected but ").concat(object.name, ".").concat(fieldName, " does not provide it."), [ifaceArg.astNode, objectField.astNode]);
             return "continue";
           } // Assert interface field arg type matches object field arg type.
           // (invariant)
@@ -537,7 +537,7 @@ function validateObjectImplementsInterface(context, object, iface) {
           });
 
           if (!ifaceArg && (0, _definition.isRequiredArgument)(objectArg)) {
-            context.reportError("Object field ".concat(object.name, ".").concat(fieldName, " includes required ") + "argument ".concat(argName, " that is missing from the Interface field ") + "".concat(iface.name, ".").concat(fieldName, "."), [objectArg.astNode, ifaceField.astNode]);
+            context.reportError("Object field ".concat(object.name, ".").concat(fieldName, " includes required argument ").concat(argName, " that is missing from the Interface field ").concat(iface.name, ".").concat(fieldName, "."), [objectArg.astNode, ifaceField.astNode]);
           }
         };
 
@@ -592,7 +592,7 @@ function validateUnionMembers(context, union) {
       var memberType = _step11.value;
 
       if (includedTypeNames[memberType.name]) {
-        context.reportError("Union type ".concat(union.name, " can only include type ") + "".concat(memberType.name, " once."), getUnionMemberTypeNodes(union, memberType.name));
+        context.reportError("Union type ".concat(union.name, " can only include type ").concat(memberType.name, " once."), getUnionMemberTypeNodes(union, memberType.name));
         continue;
       }
 
@@ -732,10 +732,10 @@ function createInputObjectCircularRefsValidator(context) {
             detectCycleRecursive(fieldType);
           } else {
             var cyclePath = fieldPath.slice(cycleIndex);
-            var fieldNames = cyclePath.map(function (fieldObj) {
+            var pathStr = cyclePath.map(function (fieldObj) {
               return fieldObj.name;
-            });
-            context.reportError("Cannot reference Input Object \"".concat(fieldType.name, "\" within itself ") + "through a series of non-null fields: \"".concat(fieldNames.join('.'), "\"."), cyclePath.map(function (fieldObj) {
+            }).join('.');
+            context.reportError("Cannot reference Input Object \"".concat(fieldType.name, "\" within itself through a series of non-null fields: \"").concat(pathStr, "\"."), cyclePath.map(function (fieldObj) {
               return fieldObj.astNode;
             }));
           }

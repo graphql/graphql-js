@@ -13,10 +13,9 @@ import { type OperationDefinitionNode } from '../../language/ast';
 import { type ASTVisitor } from '../../language/visitor';
 
 export function singleFieldOnlyMessage(name: ?string): string {
-  return (
-    (name ? `Subscription "${name}" ` : 'Anonymous Subscription ') +
-    'must select only one top level field.'
-  );
+  return name
+    ? `Subscription "${name}" must select only one top level field.`
+    : 'Anonymous Subscription must select only one top level field.';
 }
 
 /**

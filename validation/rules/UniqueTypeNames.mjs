@@ -11,7 +11,7 @@ export function duplicateTypeNameMessage(typeName) {
   return "There can be only one type named \"".concat(typeName, "\".");
 }
 export function existedTypeNameMessage(typeName) {
-  return "Type \"".concat(typeName, "\" already exists in the schema. ") + 'It cannot also be defined in this type definition.';
+  return "Type \"".concat(typeName, "\" already exists in the schema. It cannot also be defined in this type definition.");
 }
 /**
  * Unique type names

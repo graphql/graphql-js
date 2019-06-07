@@ -28,7 +28,7 @@ function inlineFragmentOnNonCompositeErrorMessage(type) {
 }
 
 function fragmentOnNonCompositeErrorMessage(fragName, type) {
-  return "Fragment \"".concat(fragName, "\" cannot condition on non composite ") + "type \"".concat(type, "\".");
+  return "Fragment \"".concat(fragName, "\" cannot condition on non composite type \"").concat(type, "\".");
 }
 /**
  * Fragments on composite type
