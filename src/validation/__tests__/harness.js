@@ -9,7 +9,7 @@
 
 import { expect } from 'chai';
 import inspect from '../../jsutils/inspect';
-import { parse, print } from '../../language';
+import { parse } from '../../language';
 import { validate, validateSDL } from '../validate';
 import {
   type ValidationRule,
@@ -293,9 +293,6 @@ const ComplicatedArgs = new GraphQLObjectType({
 
 const InvalidScalar = new GraphQLScalarType({
   name: 'Invalid',
-  parseLiteral(valueNode) {
-    throw new Error(`Invalid scalar is always invalid: ${print(valueNode)}`);
-  },
   parseValue(value) {
     throw new Error(`Invalid scalar is always invalid: ${inspect(value)}`);
   },

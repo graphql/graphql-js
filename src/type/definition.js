@@ -561,7 +561,10 @@ export class GraphQLScalarType {
     this.description = config.description;
     this.serialize = config.serialize || identityFunc;
     this.parseValue = config.parseValue || identityFunc;
-    this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
+    this.parseLiteral =
+      config.parseLiteral ||
+      (node => this.parseValue(valueFromASTUntyped(node)));
+
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     invariant(typeof config.name === 'string', 'Must provide name.');
@@ -570,7 +573,8 @@ export class GraphQLScalarType {
       `${this.name} must provide "serialize" function. If this custom Scalar ` +
         'is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
     );
-    if (config.parseValue || config.parseLiteral) {
+
+    if (config.parseLiteral) {
       invariant(
         typeof config.parseValue === 'function' &&
           typeof config.parseLiteral === 'function',
