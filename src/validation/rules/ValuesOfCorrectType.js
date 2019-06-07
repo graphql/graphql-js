@@ -56,10 +56,7 @@ export function requiredFieldMessage(
   fieldName: string,
   fieldTypeName: string,
 ): string {
-  return (
-    `Field ${typeName}.${fieldName} of required type ` +
-    `${fieldTypeName} was not provided.`
-  );
+  return `Field ${typeName}.${fieldName} of required type ${fieldTypeName} was not provided.`;
 }
 
 export function unknownFieldMessage(

@@ -301,8 +301,7 @@ function validateFields(
       // Ensure they are unique per field.
       if (argNames[argName]) {
         context.reportError(
-          `Field argument ${type.name}.${field.name}(${argName}:) can only ` +
-            'be defined once.',
+          `Field argument ${type.name}.${field.name}(${argName}:) can only be defined once.`,
           field.args
             .filter(({ name }) => name === argName)
             .map(({ astNode }) => astNode),
@@ -364,8 +363,7 @@ function validateObjectImplementsInterface(
     // Assert interface field exists on object.
     if (!objectField) {
       context.reportError(
-        `Interface field ${iface.name}.${fieldName} expected but ` +
-          `${object.name} does not provide it.`,
+        `Interface field ${iface.name}.${fieldName} expected but ${object.name} does not provide it.`,
         [ifaceField.astNode, ...getAllNodes(object)],
       );
       continue;
@@ -393,8 +391,7 @@ function validateObjectImplementsInterface(
       // Assert interface field arg exists on object field.
       if (!objectArg) {
         context.reportError(
-          `Interface field argument ${iface.name}.${fieldName}(${argName}:) ` +
-            `expected but ${object.name}.${fieldName} does not provide it.`,
+          `Interface field argument ${iface.name}.${fieldName}(${argName}:) expected but ${object.name}.${fieldName} does not provide it.`,
           [ifaceArg.astNode, objectField.astNode],
         );
         continue;
@@ -425,9 +422,7 @@ function validateObjectImplementsInterface(
       const ifaceArg = find(ifaceField.args, arg => arg.name === argName);
       if (!ifaceArg && isRequiredArgument(objectArg)) {
         context.reportError(
-          `Object field ${object.name}.${fieldName} includes required ` +
-            `argument ${argName} that is missing from the Interface field ` +
-            `${iface.name}.${fieldName}.`,
+          `Object field ${object.name}.${fieldName} includes required argument ${argName} that is missing from the Interface field ${iface.name}.${fieldName}.`,
           [objectArg.astNode, ifaceField.astNode],
         );
       }
@@ -452,8 +447,7 @@ function validateUnionMembers(
   for (const memberType of memberTypes) {
     if (includedTypeNames[memberType.name]) {
       context.reportError(
-        `Union type ${union.name} can only include type ` +
-          `${memberType.name} once.`,
+        `Union type ${union.name} can only include type ${memberType.name} once.`,
         getUnionMemberTypeNodes(union, memberType.name),
       );
       continue;
@@ -563,10 +557,9 @@ function createInputObjectCircularRefsValidator(
           detectCycleRecursive(fieldType);
         } else {
           const cyclePath = fieldPath.slice(cycleIndex);
-          const fieldNames = cyclePath.map(fieldObj => fieldObj.name);
+          const pathStr = cyclePath.map(fieldObj => fieldObj.name).join('.');
           context.reportError(
-            `Cannot reference Input Object "${fieldType.name}" within itself ` +
-              `through a series of non-null fields: "${fieldNames.join('.')}".`,
+            `Cannot reference Input Object "${fieldType.name}" within itself through a series of non-null fields: "${pathStr}".`,
             cyclePath.map(fieldObj => fieldObj.astNode),
           );
         }

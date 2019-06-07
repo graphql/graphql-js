@@ -137,9 +137,7 @@ function findDirectiveChanges(
       if (isRequiredArgument(newArg)) {
         schemaChanges.push({
           type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
-          description:
-            `A required arg ${newArg.name} on directive ` +
-            `${oldDirective.name} was added.`,
+          description: `A required arg ${newArg.name} on directive ${oldDirective.name} was added.`,
         });
       }
     }
@@ -220,16 +218,12 @@ function findInputObjectTypeChanges(
     if (isRequiredInputField(newField)) {
       schemaChanges.push({
         type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
-        description:
-          `A required field ${newField.name} on ` +
-          `input type ${oldType.name} was added.`,
+        description: `A required field ${newField.name} on input type ${oldType.name} was added.`,
       });
     } else {
       schemaChanges.push({
         type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
-        description:
-          `An optional field ${newField.name} on ` +
-          `input type ${oldType.name} was added.`,
+        description: `An optional field ${newField.name} on input type ${oldType.name} was added.`,
       });
     }
   }
@@ -276,9 +270,7 @@ function findUnionTypeChanges(
   for (const oldPossibleType of possibleTypesDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
-      description:
-        `${oldPossibleType.name} was removed from ` +
-        `union type ${oldType.name}.`,
+      description: `${oldPossibleType.name} was removed from union type ${oldType.name}.`,
     });
   }
 
@@ -319,18 +311,14 @@ function findObjectTypeChanges(
   for (const newInterface of interfacesDiff.added) {
     schemaChanges.push({
       type: DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
-      description:
-        `${newInterface.name} added to interfaces implemented ` +
-        `by ${oldType.name}.`,
+      description: `${newInterface.name} added to interfaces implemented by ${oldType.name}.`,
     });
   }
 
   for (const oldInterface of interfacesDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
-      description:
-        `${oldType.name} no longer implements interface ` +
-        `${oldInterface.name}.`,
+      description: `${oldType.name} no longer implements interface ${oldInterface.name}.`,
     });
   }
 
@@ -398,17 +386,14 @@ function findArgChanges(
       schemaChanges.push({
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          `${oldType.name}.${oldField.name} arg ` +
-          `${oldArg.name} has changed type from ` +
+          `${oldType.name}.${oldField.name} arg ${oldArg.name} has changed type from ` +
           `${String(oldArg.type)} to ${String(newArg.type)}.`,
       });
     } else if (oldArg.defaultValue !== undefined) {
       if (newArg.defaultValue === undefined) {
         schemaChanges.push({
           type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-          description:
-            `${oldType.name}.${oldField.name} arg ` +
-            `${oldArg.name} defaultValue was removed.`,
+          description: `${oldType.name}.${oldField.name} arg ${oldArg.name} defaultValue was removed.`,
         });
       } else {
         const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
@@ -417,10 +402,7 @@ function findArgChanges(
         if (oldValueStr !== newValueStr) {
           schemaChanges.push({
             type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-            description:
-              `${oldType.name}.${oldField.name} arg ` +
-              `${oldArg.name} has changed defaultValue ` +
-              `from ${oldValueStr} to ${newValueStr}.`,
+            description: `${oldType.name}.${oldField.name} arg ${oldArg.name} has changed defaultValue from ${oldValueStr} to ${newValueStr}.`,
           });
         }
       }
@@ -431,16 +413,12 @@ function findArgChanges(
     if (isRequiredArgument(newArg)) {
       schemaChanges.push({
         type: BreakingChangeType.REQUIRED_ARG_ADDED,
-        description:
-          `A required arg ${newArg.name} on ` +
-          `${oldType.name}.${oldField.name} was added.`,
+        description: `A required arg ${newArg.name} on ${oldType.name}.${oldField.name} was added.`,
       });
     } else {
       schemaChanges.push({
         type: DangerousChangeType.OPTIONAL_ARG_ADDED,
-        description:
-          `An optional arg ${newArg.name} on ` +
-          `${oldType.name}.${oldField.name} was added.`,
+        description: `An optional arg ${newArg.name} on ${oldType.name}.${oldField.name} was added.`,
       });
     }
   }

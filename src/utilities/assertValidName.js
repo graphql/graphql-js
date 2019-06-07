@@ -34,8 +34,7 @@ export function isValidNameError(
   invariant(typeof name === 'string', 'Expected string');
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new GraphQLError(
-      `Name "${name}" must not begin with "__", which is reserved by ` +
-        'GraphQL introspection.',
+      `Name "${name}" must not begin with "__", which is reserved by GraphQL introspection.`,
       node,
     );
   }

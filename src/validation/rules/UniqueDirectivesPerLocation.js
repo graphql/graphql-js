@@ -13,10 +13,7 @@ import { type DirectiveNode } from '../../language/ast';
 import { type ASTVisitor } from '../../language/visitor';
 
 export function duplicateDirectiveMessage(directiveName: string): string {
-  return (
-    `The directive "${directiveName}" can only be used once at ` +
-    'this location.'
-  );
+  return `The directive "${directiveName}" can only be used once at this location.`;
 }
 
 /**
