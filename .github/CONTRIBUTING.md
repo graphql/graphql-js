@@ -4,7 +4,7 @@ Contributing to graphql-js
 We want to make contributing to this project as easy and transparent as
 possible. Hopefully this document makes the process for contributing clear and
 answers any questions you may have. If not, feel free to open an
-[Issue](https://github.com/facebook/graphql/issues).
+[Issue](https://github.com/graphql/graphql-spec/issues/).
 
 ## Issues
 
@@ -24,10 +24,10 @@ your [pull requests](https://help.github.com/articles/creating-a-pull-request).
 ### Considered Changes
 
 Since graphql-js is a reference implementation of the
-[GraphQL spec](https://facebook.github.io/graphql/), only changes which comply
+[GraphQL spec](https://graphql.github.io/graphql-spec/), only changes which comply
 with this spec will be considered. If you have a change in mind which requires a
 change to the spec, please first open an
-[issue](https://github.com/facebook/graphql/issues/) against the spec.
+[issue](https://github.com/graphql/graphql-spec/issues/) against the spec.
 
 ### Contributor License Agreement ("CLA")
 
