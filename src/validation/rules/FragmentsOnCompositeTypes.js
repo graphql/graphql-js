@@ -22,10 +22,7 @@ export function fragmentOnNonCompositeErrorMessage(
   fragName: string,
   type: string,
 ): string {
-  return (
-    `Fragment "${fragName}" cannot condition on non composite ` +
-    `type "${type}".`
-  );
+  return `Fragment "${fragName}" cannot condition on non composite type "${type}".`;
 }
 
 /**

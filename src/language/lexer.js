@@ -603,11 +603,11 @@ function readString(source, start, line, col, prev): Token {
             body.charCodeAt(position + 4),
           );
           if (charCode < 0) {
+            const invalidSequence = body.slice(position + 1, position + 5);
             throw syntaxError(
               source,
               position,
-              'Invalid character escape sequence: ' +
-                `\\u${body.slice(position + 1, position + 5)}.`,
+              `Invalid character escape sequence: \\u${invalidSequence}.`,
             );
           }
           value += String.fromCharCode(charCode);

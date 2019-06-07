@@ -1046,19 +1046,16 @@ function ensureValidRuntimeType(
 
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
-      `Abstract type ${returnType.name} must resolve to an Object type at ` +
-        `runtime for field ${info.parentType.name}.${info.fieldName} with ` +
+      `Abstract type ${returnType.name} must resolve to an Object type at runtime for field ${info.parentType.name}.${info.fieldName} with ` +
         `value ${inspect(result)}, received "${inspect(runtimeType)}". ` +
-        `Either the ${returnType.name} type should provide a "resolveType" ` +
-        'function or each possible type should provide an "isTypeOf" function.',
+        `Either the ${returnType.name} type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
       fieldNodes,
     );
   }
 
   if (!exeContext.schema.isPossibleType(returnType, runtimeType)) {
     throw new GraphQLError(
-      `Runtime Object type "${runtimeType.name}" is not a possible type ` +
-        `for "${returnType.name}".`,
+      `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
       fieldNodes,
     );
   }

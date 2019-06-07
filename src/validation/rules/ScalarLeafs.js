@@ -18,20 +18,14 @@ export function noSubselectionAllowedMessage(
   fieldName: string,
   type: string,
 ): string {
-  return (
-    `Field "${fieldName}" must not have a selection since ` +
-    `type "${type}" has no subfields.`
-  );
+  return `Field "${fieldName}" must not have a selection since type "${type}" has no subfields.`;
 }
 
 export function requiredSubselectionMessage(
   fieldName: string,
   type: string,
 ): string {
-  return (
-    `Field "${fieldName}" of type "${type}" must have a selection of subfields.` +
-    ` Did you mean "${fieldName} { ... }"?`
-  );
+  return `Field "${fieldName}" of type "${type}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`;
 }
 
 /**

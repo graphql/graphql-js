@@ -17,10 +17,7 @@ export function duplicateTypeNameMessage(typeName: string): string {
 }
 
 export function existedTypeNameMessage(typeName: string): string {
-  return (
-    `Type "${typeName}" already exists in the schema. ` +
-    'It cannot also be defined in this type definition.'
-  );
+  return `Type "${typeName}" already exists in the schema. It cannot also be defined in this type definition.`;
 }
 
 /**

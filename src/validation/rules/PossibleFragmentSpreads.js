@@ -20,20 +20,14 @@ export function typeIncompatibleSpreadMessage(
   parentType: string,
   fragType: string,
 ): string {
-  return (
-    `Fragment "${fragName}" cannot be spread here as objects of ` +
-    `type "${parentType}" can never be of type "${fragType}".`
-  );
+  return `Fragment "${fragName}" cannot be spread here as objects of type "${parentType}" can never be of type "${fragType}".`;
 }
 
 export function typeIncompatibleAnonSpreadMessage(
   parentType: string,
   fragType: string,
 ): string {
-  return (
-    'Fragment cannot be spread here as objects of ' +
-    `type "${parentType}" can never be of type "${fragType}".`
-  );
+  return `Fragment cannot be spread here as objects of type "${parentType}" can never be of type "${fragType}".`;
 }
 
 /**

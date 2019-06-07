@@ -23,10 +23,7 @@ export function badVarPosMessage(
   varType: string,
   expectedType: string,
 ): string {
-  return (
-    `Variable "$${varName}" of type "${varType}" used in ` +
-    `position expecting type "${expectedType}".`
-  );
+  return `Variable "$${varName}" of type "${varType}" used in position expecting type "${expectedType}".`;
 }
 
 /**

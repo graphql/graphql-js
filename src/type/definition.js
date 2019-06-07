@@ -570,16 +570,14 @@ export class GraphQLScalarType {
     invariant(typeof config.name === 'string', 'Must provide name.');
     invariant(
       config.serialize == null || typeof config.serialize === 'function',
-      `${this.name} must provide "serialize" function. If this custom Scalar ` +
-        'is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
+      `${this.name} must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.`,
     );
 
     if (config.parseLiteral) {
       invariant(
         typeof config.parseValue === 'function' &&
           typeof config.parseLiteral === 'function',
-        `${this.name} must provide both "parseValue" and "parseLiteral" ` +
-          'functions.',
+        `${this.name} must provide both "parseValue" and "parseLiteral" functions.`,
       );
     }
   }
@@ -740,8 +738,7 @@ function defineInterfaces(
   const interfaces = resolveThunk(config.interfaces) || [];
   invariant(
     Array.isArray(interfaces),
-    `${config.name} interfaces must be an Array or a function which returns ` +
-      'an Array.',
+    `${config.name} interfaces must be an Array or a function which returns an Array.`,
   );
   return interfaces;
 }
@@ -754,8 +751,7 @@ function defineFieldMap<TSource, TContext>(
   const fieldMap = resolveThunk(config.fields) || {};
   invariant(
     isPlainObj(fieldMap),
-    `${config.name} fields must be an object with field names as keys or a ` +
-      'function which returns such an object.',
+    `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
   );
 
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
@@ -765,8 +761,7 @@ function defineFieldMap<TSource, TContext>(
     );
     invariant(
       !('isDeprecated' in fieldConfig),
-      `${config.name}.${fieldName} should provide "deprecationReason" ` +
-        'instead of "isDeprecated".',
+      `${config.name}.${fieldName} should provide "deprecationReason" instead of "isDeprecated".`,
     );
     invariant(
       fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function',
@@ -777,8 +772,7 @@ function defineFieldMap<TSource, TContext>(
     const argsConfig = fieldConfig.args || {};
     invariant(
       isPlainObj(argsConfig),
-      `${config.name}.${fieldName} args must be an object with argument ` +
-        'names as keys.',
+      `${config.name}.${fieldName} args must be an object with argument names as keys.`,
     );
 
     const args = objectEntries(argsConfig).map(([argName, arg]) => ({
@@ -1111,8 +1105,7 @@ function defineTypes(
   const types = resolveThunk(config.types) || [];
   invariant(
     Array.isArray(types),
-    'Must provide Array of types or a function which returns ' +
-      `such an array for Union ${config.name}.`,
+    `Must provide Array of types or a function which returns such an array for Union ${config.name}.`,
   );
   return types;
 }
@@ -1259,8 +1252,7 @@ function defineEnumValues(
     );
     invariant(
       !('isDeprecated' in value),
-      `${type.name}.${valueName} should provide "deprecationReason" instead ` +
-        'of "isDeprecated".',
+      `${type.name}.${valueName} should provide "deprecationReason" instead of "isDeprecated".`,
     );
     return {
       name: valueName,
@@ -1379,14 +1371,12 @@ function defineInputFieldMap(
   const fieldMap = resolveThunk(config.fields) || {};
   invariant(
     isPlainObj(fieldMap),
-    `${config.name} fields must be an object with field names as keys or a ` +
-      'function which returns such an object.',
+    `${config.name} fields must be an object with field names as keys or a function which returns such an object.`,
   );
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     invariant(
       !('resolve' in fieldConfig),
-      `${config.name}.${fieldName} field has a resolve property, but ` +
-        'Input Types cannot define resolvers.',
+      `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
     );
 
     return { ...fieldConfig, name: fieldName };
