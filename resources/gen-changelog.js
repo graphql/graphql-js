@@ -1,4 +1,4 @@
-/* @noflow */
+// @noflow
 
 'use strict';
 
