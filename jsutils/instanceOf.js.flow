@@ -18,7 +18,7 @@ declare function instanceOf(
 
 // See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
 // See: https://webpack.js.org/guides/production/
-export default (process.env.NODE_ENV === 'production'
+export default process.env.NODE_ENV === 'production'
   ? // eslint-disable-next-line no-shadow
     function instanceOf(value: mixed, constructor: mixed) {
       return value instanceof constructor;
@@ -49,4 +49,4 @@ spurious results.`,
         }
       }
       return false;
-    });
+    };
