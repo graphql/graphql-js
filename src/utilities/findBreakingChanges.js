@@ -269,9 +269,7 @@ function findUnionTypeChanges(
   for (const newPossibleType of possibleTypesDiff.added) {
     schemaChanges.push({
       type: DangerousChangeType.TYPE_ADDED_TO_UNION,
-      description: `${newPossibleType.name} was added to union type ${
-        oldType.name
-      }.`,
+      description: `${newPossibleType.name} was added to union type ${oldType.name}.`,
     });
   }
 
@@ -304,9 +302,7 @@ function findEnumTypeChanges(
   for (const oldValue of valuesDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-      description: `${oldValue.name} was removed from enum type ${
-        oldType.name
-      }.`,
+      description: `${oldValue.name} was removed from enum type ${oldType.name}.`,
     });
   }
 
@@ -389,9 +385,7 @@ function findArgChanges(
   for (const oldArg of argsDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.ARG_REMOVED,
-      description: `${oldType.name}.${oldField.name} arg ${
-        oldArg.name
-      } was removed.`,
+      description: `${oldType.name}.${oldField.name} arg ${oldArg.name} was removed.`,
     });
   }
 

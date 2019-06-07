@@ -855,9 +855,7 @@ function completeValue(
     );
     if (completed === null) {
       throw new Error(
-        `Cannot return null for non-nullable field ${info.parentType.name}.${
-          info.fieldName
-        }.`,
+        `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
     }
     return completed;
@@ -934,9 +932,7 @@ function completeListValue(
 ): PromiseOrValue<$ReadOnlyArray<mixed>> {
   invariant(
     isCollection(result),
-    `Expected Iterable, but did not find one for field ${
-      info.parentType.name
-    }.${info.fieldName}.`,
+    `Expected Iterable, but did not find one for field ${info.parentType.name}.${info.fieldName}.`,
   );
 
   // This is specified as a simple map, however we're optimizing the path
