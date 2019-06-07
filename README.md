@@ -15,8 +15,8 @@ Looking for help? Find resources [from the community](https://graphql.org/commun
 ## Getting Started
 
 An overview of GraphQL in general is available in the
-[README](https://github.com/facebook/graphql/blob/master/README.md) for the
-[Specification for GraphQL](https://github.com/facebook/graphql). That overview
+[README](https://github.com/graphql/graphql-spec/blob/master/README.md) for the
+[Specification for GraphQL](https://github.com/graphql/graphql-spec). That overview
 describes a simple set of GraphQL examples that exist as [tests](src/__tests__)
 in this repository. A good way to get started with this repository is to walk
 through that README and the corresponding tests in parallel.
