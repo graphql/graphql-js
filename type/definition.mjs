@@ -324,17 +324,23 @@ export var GraphQLScalarType =
 /*#__PURE__*/
 function () {
   function GraphQLScalarType(config) {
+    var _this = this;
+
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize || identityFunc;
     this.parseValue = config.parseValue || identityFunc;
-    this.parseLiteral = config.parseLiteral || valueFromASTUntyped;
+
+    this.parseLiteral = config.parseLiteral || function (node) {
+      return _this.parseValue(valueFromASTUntyped(node));
+    };
+
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
     !(config.serialize == null || typeof config.serialize === 'function') ? invariant(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar ") + 'is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.') : void 0;
 
-    if (config.parseValue || config.parseLiteral) {
+    if (config.parseLiteral) {
       !(typeof config.parseValue === 'function' && typeof config.parseLiteral === 'function') ? invariant(0, "".concat(this.name, " must provide both \"parseValue\" and \"parseLiteral\" ") + 'functions.') : void 0;
     }
   }
