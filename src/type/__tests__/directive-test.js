@@ -22,6 +22,7 @@ describe('Type System: Directive', () => {
     expect(directive).to.deep.include({
       name: 'Foo',
       args: [],
+      isRepeatable: false,
       locations: ['QUERY'],
     });
   });
@@ -54,6 +55,22 @@ describe('Type System: Directive', () => {
           astNode: undefined,
         },
       ],
+      isRepeatable: false,
+      locations: ['QUERY'],
+    });
+  });
+
+  it('defines a repeatable directive', () => {
+    const directive = new GraphQLDirective({
+      name: 'Foo',
+      isRepeatable: true,
+      locations: ['QUERY'],
+    });
+
+    expect(directive).to.deep.include({
+      name: 'Foo',
+      args: [],
+      isRepeatable: true,
       locations: ['QUERY'],
     });
   });

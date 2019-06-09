@@ -160,6 +160,8 @@ describe('Printer: SDL document', () => {
 
       directive @include2(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
+      directive @myRepeatableDir(name: String!) repeatable on OBJECT | INTERFACE
+
       extend schema @onSchema
 
       extend schema @onSchema {

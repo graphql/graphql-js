@@ -107,6 +107,7 @@ const FooDirective = new GraphQLDirective({
   args: {
     input: { type: SomeInputType },
   },
+  isRepeatable: true,
   locations: [
     DirectiveLocation.SCHEMA,
     DirectiveLocation.SCALAR,
@@ -448,7 +449,7 @@ describe('extendSchema', () => {
         interfaceField: String
       }
 
-      directive @test(arg: Int) on FIELD | SCALAR
+      directive @test(arg: Int) repeatable on FIELD | SCALAR
     `);
     const extendedTwiceSchema = extendSchema(extendedSchema, ast);
 
@@ -1091,7 +1092,7 @@ describe('extendSchema', () => {
 
   it('may extend directives with new complex directive', () => {
     const extendedSchema = extendTestSchema(`
-      directive @profile(enable: Boolean! tag: String) on QUERY | FIELD
+      directive @profile(enable: Boolean! tag: String) repeatable on QUERY | FIELD
     `);
 
     const extendedDirective = assertDirective(
