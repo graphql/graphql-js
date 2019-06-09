@@ -1494,34 +1494,33 @@ function expectOptionalToken(lexer: Lexer<*>, kind: TokenKindEnum): ?Token {
 }
 
 /**
- * If the next token is a given keyword, return that token after advancing
- * the lexer. Otherwise, do not change the parser state and throw an error.
+ * If the next token is a given keyword, advance the lexer.
+ * Otherwise, do not change the parser state and throw an error.
  */
-function expectKeyword(lexer: Lexer<*>, value: string): Token {
+function expectKeyword(lexer: Lexer<*>, value: string) {
   const token = lexer.token;
   if (token.kind === TokenKind.NAME && token.value === value) {
     lexer.advance();
-    return token;
+  } else {
+    throw syntaxError(
+      lexer.source,
+      token.start,
+      `Expected "${value}", found ${getTokenDesc(token)}`,
+    );
   }
-
-  throw syntaxError(
-    lexer.source,
-    token.start,
-    `Expected "${value}", found ${getTokenDesc(token)}`,
-  );
 }
 
 /**
- * If the next token is a given keyword, return that token after advancing
- * the lexer. Otherwise, do not change the parser state and return undefined.
+ * If the next token is a given keyword, return "true" after advancing
+ * the lexer. Otherwise, do not change the parser state and return "false".
  */
-function expectOptionalKeyword(lexer: Lexer<*>, value: string): ?Token {
+function expectOptionalKeyword(lexer: Lexer<*>, value: string): boolean {
   const token = lexer.token;
   if (token.kind === TokenKind.NAME && token.value === value) {
     lexer.advance();
-    return token;
+    return true;
   }
-  return undefined;
+  return false;
 }
 
 /**

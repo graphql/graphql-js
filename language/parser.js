@@ -1449,8 +1449,8 @@ function expectOptionalToken(lexer, kind) {
   return undefined;
 }
 /**
- * If the next token is a given keyword, return that token after advancing
- * the lexer. Otherwise, do not change the parser state and throw an error.
+ * If the next token is a given keyword, advance the lexer.
+ * Otherwise, do not change the parser state and throw an error.
  */
 
 
@@ -1459,14 +1459,13 @@ function expectKeyword(lexer, value) {
 
   if (token.kind === _lexer.TokenKind.NAME && token.value === value) {
     lexer.advance();
-    return token;
+  } else {
+    throw (0, _error.syntaxError)(lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat((0, _lexer.getTokenDesc)(token)));
   }
-
-  throw (0, _error.syntaxError)(lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat((0, _lexer.getTokenDesc)(token)));
 }
 /**
- * If the next token is a given keyword, return that token after advancing
- * the lexer. Otherwise, do not change the parser state and return undefined.
+ * If the next token is a given keyword, return "true" after advancing
+ * the lexer. Otherwise, do not change the parser state and return "false".
  */
 
 
@@ -1475,10 +1474,10 @@ function expectOptionalKeyword(lexer, value) {
 
   if (token.kind === _lexer.TokenKind.NAME && token.value === value) {
     lexer.advance();
-    return token;
+    return true;
   }
 
-  return undefined;
+  return false;
 }
 /**
  * Helper function for creating an error when an unexpected lexed token
