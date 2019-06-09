@@ -110,11 +110,7 @@ describe('Schema Builder', () => {
   });
 
   it('include standard type only if it is used', () => {
-    const schema = buildSchema(`
-      type Query {
-        str: String
-      }
-    `);
+    const schema = buildSchema('type Query');
 
     // String and Boolean are always included through introspection types
     expect(schema.getType('Int')).to.equal(undefined);
@@ -125,10 +121,6 @@ describe('Schema Builder', () => {
   it('With directives', () => {
     const sdl = dedent`
       directive @foo(arg: Int) on FIELD
-
-      type Query {
-        str: String
-      }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
@@ -186,11 +178,7 @@ describe('Schema Builder', () => {
   });
 
   it('Maintains @skip & @include', () => {
-    const schema = buildSchema(`
-      type Query {
-        str: String
-      }
-    `);
+    const schema = buildSchema('type Query');
 
     expect(schema.getDirectives()).to.have.lengthOf(3);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
@@ -205,10 +193,6 @@ describe('Schema Builder', () => {
       directive @skip on FIELD
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
-
-      type Query {
-        str: String
-      }
     `);
 
     expect(schema.getDirectives()).to.have.lengthOf(3);
@@ -224,10 +208,6 @@ describe('Schema Builder', () => {
   it('Adding directives maintains @skip & @include', () => {
     const schema = buildSchema(`
       directive @foo(arg: Int) on FIELD
-
-      type Query {
-        str: String
-      }
     `);
 
     expect(schema.getDirectives()).to.have.lengthOf(4);
@@ -261,10 +241,6 @@ describe('Schema Builder', () => {
 
   it('Two types circular', () => {
     const sdl = dedent`
-      schema {
-        query: TypeOne
-      }
-
       type TypeOne {
         str: String
         typeTwo: TypeTwo
@@ -802,9 +778,9 @@ describe('Schema Builder', () => {
         mutation: SomeMutation
         subscription: SomeSubscription
       }
-      type SomeQuery { str: String }
-      type SomeMutation { str: String }
-      type SomeSubscription { str: String }
+      type SomeQuery
+      type SomeMutation
+      type SomeSubscription
     `);
 
     expect(schema.getQueryType()).to.include({ name: 'SomeQuery' });
@@ -816,9 +792,9 @@ describe('Schema Builder', () => {
 
   it('Default root operation type names', () => {
     const schema = buildSchema(`
-      type Query { str: String }
-      type Mutation { str: String }
-      type Subscription { str: String }
+      type Query
+      type Mutation
+      type Subscription
     `);
 
     expect(schema.getQueryType()).to.include({ name: 'Query' });
@@ -827,12 +803,8 @@ describe('Schema Builder', () => {
   });
 
   it('can build invalid schema', () => {
-    const schema = buildSchema(`
-      # Invalid schema, because it is missing query root type
-      type Mutation {
-        str: String
-      }
-    `);
+    // Invalid schema, because it is missing query root type
+    const schema = buildSchema('type Mutation');
     const errors = validateSchema(schema);
     expect(errors).to.have.lengthOf.above(0);
   });
