@@ -268,11 +268,7 @@ describe('extendSchema', () => {
   });
 
   it('extends objects with standard type fields', () => {
-    const schema = buildSchema(`
-      type Query {
-        str: String
-      }
-    `);
+    const schema = buildSchema('type Query');
 
     // String and Boolean are always included through introspection types
     expect(schema.getType('Int')).to.equal(undefined);
@@ -1196,9 +1192,7 @@ describe('extendSchema', () => {
   describe('can add additional root operation types', () => {
     it('does not automatically include common root type names', () => {
       const schema = extendTestSchema(`
-        type Mutation {
-          doSomething: String
-        }
+        type Mutation
       `);
       expect(schema.getMutationType()).to.equal(null);
     });
@@ -1227,9 +1221,7 @@ describe('extendSchema', () => {
           mutation: Mutation
         }
 
-        type Mutation {
-          doSomething: String
-        }
+        type Mutation
       `);
       const mutationType = schema.getMutationType();
       expect(mutationType).to.include({ name: 'Mutation' });
@@ -1242,13 +1234,8 @@ describe('extendSchema', () => {
           subscription: Subscription
         }
 
-        type Mutation {
-          doSomething: String
-        }
-
-        type Subscription {
-          hearSomething: String
-        }
+        type Mutation
+        type Subscription
       `);
       const mutationType = schema.getMutationType();
       const subscriptionType = schema.getSubscriptionType();
@@ -1261,18 +1248,12 @@ describe('extendSchema', () => {
         extend schema {
           mutation: Mutation
         }
+        type Mutation
 
         extend schema {
           subscription: Subscription
         }
-
-        type Mutation {
-          doSomething: String
-        }
-
-        type Subscription {
-          hearSomething: String
-        }
+        type Subscription
       `);
       const mutationType = schema.getMutationType();
       const subscriptionType = schema.getSubscriptionType();
@@ -1285,18 +1266,12 @@ describe('extendSchema', () => {
         extend schema {
           mutation: Mutation
         }
+        type Mutation
 
         extend schema {
           subscription: Subscription
         }
-
-        type Mutation {
-          doSomething: String
-        }
-
-        type Subscription {
-          hearSomething: String
-        }
+        type Subscription
       `);
 
       const ast = parse(`
