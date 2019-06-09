@@ -213,8 +213,9 @@ var printDocASTReducer = {
   DirectiveDefinition: addDescription(function (_ref31) {
     var name = _ref31.name,
         args = _ref31.arguments,
+        repeatable = _ref31.repeatable,
         locations = _ref31.locations;
-    return 'directive @' + name + (hasMultilineItems(args) ? wrap('(\n', indent(join(args, '\n')), '\n)') : wrap('(', join(args, ', '), ')')) + ' on ' + join(locations, ' | ');
+    return 'directive @' + name + (hasMultilineItems(args) ? wrap('(\n', indent(join(args, '\n')), '\n)') : wrap('(', join(args, ', '), ')')) + (repeatable ? ' repeatable' : '') + ' on ' + join(locations, ' | ');
   }),
   SchemaExtension: function SchemaExtension(_ref32) {
     var directives = _ref32.directives,

@@ -508,6 +508,7 @@ export type DirectiveDefinitionNode = {
   +description?: StringValueNode,
   +name: NameNode,
   +arguments?: $ReadOnlyArray<InputValueDefinitionNode>,
+  +repeatable: boolean,
   +locations: $ReadOnlyArray<NameNode>,
 };
 

@@ -296,6 +296,7 @@ function printDirective(directive, options) {
     'directive @' +
     directive.name +
     printArgs(options, directive.args) +
+    (directive.isRepeatable ? ' repeatable' : '') +
     ' on ' +
     directive.locations.join(' | ')
   );

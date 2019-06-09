@@ -211,7 +211,7 @@ function printInputValue(arg) {
 }
 
 function printDirective(directive, options) {
-  return printDescription(options, directive) + 'directive @' + directive.name + printArgs(options, directive.args) + ' on ' + directive.locations.join(' | ');
+  return printDescription(options, directive) + 'directive @' + directive.name + printArgs(options, directive.args) + (directive.isRepeatable ? ' repeatable' : '') + ' on ' + directive.locations.join(' | ');
 }
 
 function printDeprecated(fieldOrEnumVal) {

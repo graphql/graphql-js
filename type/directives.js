@@ -52,6 +52,7 @@ function () {
     this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
+    this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
     this.astNode = config.astNode;
     !config.name ? (0, _invariant.default)(0, 'Directive must be named.') : void 0;
     !Array.isArray(config.locations) ? (0, _invariant.default)(0, "@".concat(config.name, " locations must be an Array.")) : void 0;
@@ -82,6 +83,7 @@ function () {
       description: this.description,
       locations: this.locations,
       args: (0, _definition.argsToArgsConfig)(this.args),
+      isRepeatable: this.isRepeatable,
       astNode: this.astNode
     };
   };

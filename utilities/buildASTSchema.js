@@ -233,6 +233,7 @@ function () {
       name: directive.name.value,
       description: getDescription(directive, this._options),
       locations: locations,
+      isRepeatable: directive.repeatable,
       args: keyByNameNode(directive.arguments || [], function (arg) {
         return _this.buildArg(arg);
       }),

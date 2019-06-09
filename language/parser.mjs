@@ -1279,7 +1279,7 @@ function parseInputObjectTypeExtension(lexer) {
 }
 /**
  * DirectiveDefinition :
- *   - Description? directive @ Name ArgumentsDefinition? on DirectiveLocations
+ *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
  */
 
 
@@ -1290,6 +1290,7 @@ function parseDirectiveDefinition(lexer) {
   expectToken(lexer, TokenKind.AT);
   var name = parseName(lexer);
   var args = parseArgumentDefs(lexer);
+  var repeatable = expectOptionalKeyword(lexer, 'repeatable');
   expectKeyword(lexer, 'on');
   var locations = parseDirectiveLocations(lexer);
   return {
@@ -1297,6 +1298,7 @@ function parseDirectiveDefinition(lexer) {
     description: description,
     name: name,
     arguments: args,
+    repeatable: repeatable,
     locations: locations,
     loc: loc(lexer, start)
   };
