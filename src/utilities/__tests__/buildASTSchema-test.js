@@ -121,6 +121,8 @@ describe('Schema Builder', () => {
   it('With directives', () => {
     const sdl = dedent`
       directive @foo(arg: Int) on FIELD
+
+      directive @repeatableFoo(arg: Int) repeatable on FIELD
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);
   });

@@ -461,15 +461,30 @@ describe('Type System Printer', () => {
   });
 
   it('Prints custom directives', () => {
-    const CustomDirective = new GraphQLDirective({
-      name: 'customDirective',
+    const SimpleDirective = new GraphQLDirective({
+      name: 'simpleDirective',
       locations: [DirectiveLocation.FIELD],
     });
+    const ComplexDirective = new GraphQLDirective({
+      name: 'complexDirective',
+      description: 'Complex Directive',
+      args: {
+        stringArg: { type: GraphQLString },
+        intArg: { type: GraphQLInt, defaultValue: -1 },
+      },
+      isRepeatable: true,
+      locations: [DirectiveLocation.FIELD, DirectiveLocation.QUERY],
+    });
 
-    const Schema = new GraphQLSchema({ directives: [CustomDirective] });
+    const Schema = new GraphQLSchema({
+      directives: [SimpleDirective, ComplexDirective],
+    });
     const output = printForTest(Schema);
     expect(output).to.equal(dedent`
-      directive @customDirective on FIELD
+      directive @simpleDirective on FIELD
+
+      """Complex Directive"""
+      directive @complexDirective(stringArg: String, intArg: Int = -1) repeatable on FIELD | QUERY
     `);
   });
 

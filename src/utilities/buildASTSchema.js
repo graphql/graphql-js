@@ -242,6 +242,7 @@ export class ASTDefinitionBuilder {
       name: directive.name.value,
       description: getDescription(directive, this._options),
       locations,
+      isRepeatable: directive.repeatable,
       args: keyByNameNode(directive.arguments || [], arg => this.buildArg(arg)),
       astNode: directive,
     });

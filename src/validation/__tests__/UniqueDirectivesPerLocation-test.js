@@ -8,15 +8,33 @@
  */
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors, expectSDLValidationErrors } from './harness';
+import {
+  testSchema,
+  expectValidationErrorsWithSchema,
+  expectSDLValidationErrors,
+} from './harness';
 
+import { parse } from '../../language/parser';
+import { extendSchema } from '../../utilities/extendSchema';
 import {
   UniqueDirectivesPerLocation,
   duplicateDirectiveMessage,
 } from '../rules/UniqueDirectivesPerLocation';
 
+const extensionSDL = `
+  directive @directive on FIELD | FRAGMENT_DEFINITION
+  directive @directiveA on FIELD | FRAGMENT_DEFINITION
+  directive @directiveB on FIELD | FRAGMENT_DEFINITION
+  directive @repeatable repeatable on FIELD | FRAGMENT_DEFINITION
+`;
+const schemaWithDirectives = extendSchema(testSchema, parse(extensionSDL));
+
 function expectErrors(queryStr) {
-  return expectValidationErrors(UniqueDirectivesPerLocation, queryStr);
+  return expectValidationErrorsWithSchema(
+    schemaWithDirectives,
+    UniqueDirectivesPerLocation,
+    queryStr,
+  );
 }
 
 function expectValid(queryStr) {
@@ -76,6 +94,26 @@ describe('Validate: Directives Are Unique Per Location', () => {
     `);
   });
 
+  it('repeatable directives in same location', () => {
+    expectValid(`
+      fragment Test on Type @repeatable @repeatable {
+        field @repeatable @repeatable
+      }
+    `);
+  });
+
+  it('unknown directives must be ignored', () => {
+    expectValid(`
+      type Test @unknown @unknown {
+        field: String! @unknown @unknown
+      }
+
+      extend type Test @unknown {
+        anotherField: String!
+      }
+    `);
+  });
+
   it('duplicate directives in one location', () => {
     expectErrors(`
       fragment Test on Type {
@@ -119,36 +157,39 @@ describe('Validate: Directives Are Unique Per Location', () => {
 
   it('duplicate directives on SDL definitions', () => {
     expectSDLErrors(`
-      schema @directive @directive { query: Dummy }
-      extend schema @directive @directive
+      directive @nonRepeatable on
+        SCHEMA | SCALAR | OBJECT | INTERFACE | UNION | INPUT_OBJECT
 
-      scalar TestScalar @directive @directive
-      extend scalar TestScalar @directive @directive
+      schema @nonRepeatable @nonRepeatable { query: Dummy }
+      extend schema @nonRepeatable @nonRepeatable
 
-      type TestObject @directive @directive
-      extend type TestObject @directive @directive
+      scalar TestScalar @nonRepeatable @nonRepeatable
+      extend scalar TestScalar @nonRepeatable @nonRepeatable
 
-      interface TestInterface @directive @directive
-      extend interface TestInterface @directive @directive
+      type TestObject @nonRepeatable @nonRepeatable
+      extend type TestObject @nonRepeatable @nonRepeatable
 
-      union TestUnion @directive @directive
-      extend union TestUnion @directive @directive
+      interface TestInterface @nonRepeatable @nonRepeatable
+      extend interface TestInterface @nonRepeatable @nonRepeatable
 
-      input TestInput @directive @directive
-      extend input TestInput @directive @directive
+      union TestUnion @nonRepeatable @nonRepeatable
+      extend union TestUnion @nonRepeatable @nonRepeatable
+
+      input TestInput @nonRepeatable @nonRepeatable
+      extend input TestInput @nonRepeatable @nonRepeatable
     `).to.deep.equal([
-      duplicateDirective('directive', 2, 14, 2, 25),
-      duplicateDirective('directive', 3, 21, 3, 32),
-      duplicateDirective('directive', 5, 25, 5, 36),
-      duplicateDirective('directive', 6, 32, 6, 43),
-      duplicateDirective('directive', 8, 23, 8, 34),
-      duplicateDirective('directive', 9, 30, 9, 41),
-      duplicateDirective('directive', 11, 31, 11, 42),
-      duplicateDirective('directive', 12, 38, 12, 49),
-      duplicateDirective('directive', 14, 23, 14, 34),
-      duplicateDirective('directive', 15, 30, 15, 41),
-      duplicateDirective('directive', 17, 23, 17, 34),
-      duplicateDirective('directive', 18, 30, 18, 41),
+      duplicateDirective('nonRepeatable', 5, 14, 5, 29),
+      duplicateDirective('nonRepeatable', 6, 21, 6, 36),
+      duplicateDirective('nonRepeatable', 8, 25, 8, 40),
+      duplicateDirective('nonRepeatable', 9, 32, 9, 47),
+      duplicateDirective('nonRepeatable', 11, 23, 11, 38),
+      duplicateDirective('nonRepeatable', 12, 30, 12, 45),
+      duplicateDirective('nonRepeatable', 14, 31, 14, 46),
+      duplicateDirective('nonRepeatable', 15, 38, 15, 53),
+      duplicateDirective('nonRepeatable', 17, 23, 17, 38),
+      duplicateDirective('nonRepeatable', 18, 30, 18, 45),
+      duplicateDirective('nonRepeatable', 20, 23, 20, 38),
+      duplicateDirective('nonRepeatable', 21, 30, 21, 45),
     ]);
   });
 });
