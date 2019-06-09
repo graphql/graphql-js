@@ -186,12 +186,12 @@ describe('Schema Builder', () => {
   });
 
   it('Maintains @skip & @include', () => {
-    const sdl = `
+    const schema = buildSchema(`
       type Query {
         str: String
       }
-    `;
-    const schema = buildSchema(sdl);
+    `);
+
     expect(schema.getDirectives()).to.have.lengthOf(3);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
@@ -201,7 +201,7 @@ describe('Schema Builder', () => {
   });
 
   it('Overriding directives excludes specified', () => {
-    const sdl = `
+    const schema = buildSchema(`
       directive @skip on FIELD
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
@@ -209,8 +209,8 @@ describe('Schema Builder', () => {
       type Query {
         str: String
       }
-    `;
-    const schema = buildSchema(sdl);
+    `);
+
     expect(schema.getDirectives()).to.have.lengthOf(3);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.not.equal(
@@ -222,14 +222,14 @@ describe('Schema Builder', () => {
   });
 
   it('Adding directives maintains @skip & @include', () => {
-    const sdl = `
+    const schema = buildSchema(`
       directive @foo(arg: Int) on FIELD
 
       type Query {
         str: String
       }
-    `;
-    const schema = buildSchema(sdl);
+    `);
+
     expect(schema.getDirectives()).to.have.lengthOf(4);
     expect(schema.getDirective('skip')).to.not.equal(undefined);
     expect(schema.getDirective('include')).to.not.equal(undefined);
