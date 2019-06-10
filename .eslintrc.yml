@@ -34,7 +34,7 @@ rules:
   flowtype/require-readonly-react-props: off
   flowtype/require-return-type: off
   flowtype/require-types-at-top: off
-  flowtype/require-valid-file-annotation: [error, always, { annotationStyle: block }]
+  flowtype/require-valid-file-annotation: [error, always, { annotationStyle: line }]
   flowtype/require-variable-type: off
   flowtype/sort-keys: off
   flowtype/spread-exact-type: off
