@@ -6,15 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = keyMap;
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
-
-/**
  * Creates a keyed JS object from an array, given a function to produce the keys
  * for each value in the array.
  *

@@ -1,13 +1,5 @@
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
 import { visit, visitWithTypeInfo } from '../language/visitor';
 import { Kind } from '../language/kinds';
 import { TypeInfo } from '../utilities/TypeInfo';

@@ -1,13 +1,4 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
-
-/**
  * The `defineToStringTag()` function checks first to see if the runtime
  * supports the `Symbol` class and then if the `Symbol.toStringTag` constant
  * is defined as a `Symbol` instance. If both conditions are met, the

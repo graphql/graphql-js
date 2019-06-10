@@ -10,15 +10,6 @@ var _isPromise = _interopRequireDefault(require("./isPromise"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
-
-/**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
  * a Promise, in which case reduction will continue after each promise resolves.
  *

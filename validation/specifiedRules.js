@@ -71,14 +71,6 @@ var _UniqueDirectiveNames = require("./rules/UniqueDirectiveNames");
 
 var _PossibleTypeExtensions = require("./rules/PossibleTypeExtensions");
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
 // Spec Section: "Executable Definitions"
 // Spec Section: "Operation Name Uniqueness"
 // Spec Section: "Lone Anonymous Operation"

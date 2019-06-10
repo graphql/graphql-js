@@ -18,14 +18,6 @@ var _scalars = require("../../type/scalars");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
 function unknownTypeMessage(typeName, suggestedTypes) {
   return "Unknown type \"".concat(typeName, "\".") + (0, _didYouMean.default)(suggestedTypes.map(function (x) {
     return "\"".concat(x, "\"");

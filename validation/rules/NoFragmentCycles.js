@@ -8,14 +8,6 @@ exports.NoFragmentCycles = NoFragmentCycles;
 
 var _GraphQLError = require("../../error/GraphQLError");
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
 function cycleErrorMessage(fragName, spreadNames) {
   var via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
   return "Cannot spread fragment \"".concat(fragName, "\" within itself").concat(via, ".");

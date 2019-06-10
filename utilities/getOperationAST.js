@@ -8,15 +8,6 @@ exports.getOperationAST = getOperationAST;
 var _kinds = require("../language/kinds");
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
-
-/**
  * Returns an operation AST given a document AST and optionally an operation
  * name. If a name is not provided, an operation is only returned if only one is
  * provided in the document.

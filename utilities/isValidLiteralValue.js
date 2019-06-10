@@ -18,15 +18,6 @@ var _ValuesOfCorrectType = require("../validation/rules/ValuesOfCorrectType");
 var _ValidationContext = require("../validation/ValidationContext");
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
-
-/**
  * Utility which determines if a value literal node is valid for an input type.
  *
  * Deprecated. Rely on validation for documents containing literal values.

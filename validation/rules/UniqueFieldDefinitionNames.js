@@ -11,14 +11,6 @@ var _GraphQLError = require("../../error/GraphQLError");
 
 var _definition = require("../../type/definition");
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
 function duplicateFieldDefinitionNameMessage(typeName, fieldName) {
   return "Field \"".concat(typeName, ".").concat(fieldName, "\" can only be defined once.");
 }

@@ -17,15 +17,6 @@ var _blockString = require("./blockString");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
-
-/**
  * Given a Source object, this returns a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time
  * it is advanced, it returns the next token in the Source. Assuming the

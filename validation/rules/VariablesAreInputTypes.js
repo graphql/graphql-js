@@ -14,14 +14,6 @@ var _definition = require("../../type/definition");
 
 var _typeFromAST = require("../../utilities/typeFromAST");
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
 function nonInputTypeOnVarMessage(variableName, typeName) {
   return "Variable \"$".concat(variableName, "\" cannot be non-input type \"").concat(typeName, "\".");
 }
