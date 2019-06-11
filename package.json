@@ -32,6 +32,7 @@
     "check": "flow check",
     "check:cover": "node resources/check-cover.js && nyc report --nycrc-path .nycflowrc.yml",
     "build": "node resources/build.js",
+    "changelog": "node resources/gen-changelog.js",
     "preversion": ". ./resources/checkgit.sh",
     "version": "node resources/gen-version.js && npm test",
     "prepublishOnly": ". ./resources/prepublish.sh",

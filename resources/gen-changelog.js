@@ -35,7 +35,6 @@ const labelsConfig = {
     fold: true,
   },
 };
-const lastTag = `v${packageJSON.version}`;
 const GH_TOKEN = process.env['GH_TOKEN'];
 
 if (!GH_TOKEN) {
@@ -43,12 +42,29 @@ if (!GH_TOKEN) {
   process.exit(1);
 }
 
-getCommitsInfo(lastTag)
-  .then(genChangeLog)
+getChangeLog()
   .then(changelog => process.stdout.write(changelog))
   .catch(error => console.error(error));
 
-function genChangeLog(commitsInfo) {
+function getChangeLog() {
+  const { version } = packageJSON;
+
+  let tag = null;
+  let commitsList = exec(`git rev-list --reverse v${version}..`);
+  if (commitsList === '') {
+    const parentPackageJSON = exec('git cat-file blob HEAD~1:package.json');
+    const parentVersion = JSON.parse(parentPackageJSON).version;
+    commitsList = exec(`git rev-list --reverse v${parentVersion}..HEAD~1`);
+    tag = `v${version}`;
+  }
+
+  const date = exec('git log -1 --format=%cd --date=short');
+  return getCommitsInfo(commitsList.split('\n')).then(commitsInfo =>
+    genChangeLog(tag, date, commitsInfo),
+  );
+}
+
+function genChangeLog(tag, date, commitsInfo) {
   const allPRs = commitsInfoToPRs(commitsInfo);
   const byLabel = {};
   const commitersByLogin = {};
@@ -62,7 +78,7 @@ function genChangeLog(commitsInfo) {
     commitersByLogin[pr.author.login] = pr.author;
   }
 
-  let changelog = '';
+  let changelog = `## ${tag || 'Unreleased'} (${date})\n`;
   for (const [label, config] of Object.entries(labelsConfig)) {
     const prs = byLabel[label];
     if (prs) {
@@ -239,9 +255,7 @@ function commitsInfoToPRs(commits) {
   return prs;
 }
 
-async function getCommitsInfo(tag) {
-  const commits = exec(`git rev-list --reverse ${tag}..`).split('\n');
-
+async function getCommitsInfo(commits) {
   // Split commits into batches of 50 to prevent timeouts
   const commitInfoPromises = [];
   for (let i = 0; i < commits.length; i += 50) {
