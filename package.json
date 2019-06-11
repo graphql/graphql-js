@@ -51,9 +51,9 @@
     "benchmark": "2.1.4",
     "chai": "4.2.0",
     "eslint": "5.16.0",
-    "eslint-plugin-flowtype": "3.9.1",
+    "eslint-plugin-flowtype": "3.10.1",
     "eslint-plugin-prettier": "3.1.0",
-    "flow-bin": "0.100.0",
+    "flow-bin": "0.101.0",
     "mocha": "6.1.4",
     "nyc": "14.1.1",
     "prettier": "1.18.2"

@@ -1023,9 +1023,9 @@ doctrine@^3.0.0:
     esutils "^2.0.2"
 
 electron-to-chromium@^1.3.150:
-  version "1.3.152"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.152.tgz#8f1c08e101d58fe2ef72655481bbf8c83f9450fa"
-  integrity sha512-Ah10cGMWIXYD8aUTH2Y7lGRhaOFQLyWuxvXmCPCZCbUIGJ4swnNmT6P4aA8RTgUmNw9kmcDL6SoU8TZC4YuZGg==
+  version "1.3.155"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.155.tgz#ebf0cc8eeaffd6151d1efad60fd9e021fb45fd3a"
+  integrity sha512-/ci/XgZG8jkLYOgOe3mpJY1onxPPTDY17y7scldhnSjjZqV6VvREG/LvwhRuV7BJbnENFfuDWZkSqlTh4x9ZjQ==
 
 emoji-regex@^7.0.1:
   version "7.0.3"
@@ -1077,10 +1077,10 @@ escape-string-regexp@1.0.5, escape-string-regexp@^1.0.5:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
   integrity sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
 
-eslint-plugin-flowtype@3.9.1:
-  version "3.9.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-flowtype/-/eslint-plugin-flowtype-3.9.1.tgz#6491d930e1f96d53c510e0393e635fddd4a4cac5"
-  integrity sha512-ZlV6SbIXqz2ysvG0F64ZH07dqzLrwMdM1s0UNfoxdXjr4kMKuPPoLViwK+gFC952QIf341AmP4BKtKOhcB96Ug==
+eslint-plugin-flowtype@3.10.1:
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-flowtype/-/eslint-plugin-flowtype-3.10.1.tgz#f83d4c9a4594b3444433c8efb1caf91dcc0be32a"
+  integrity sha512-TnwILo1XT5w6Fgz8j+NEqivmgsYJA7FYFnnE2jdXot/H7Pb9C2Fp+Tqdzb//O+PSVi5X2ureYqCCn7KDfon4iQ==
   dependencies:
     lodash "^4.17.11"
 
@@ -1290,10 +1290,10 @@ flatted@^2.0.0:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-2.0.0.tgz#55122b6536ea496b4b44893ee2608141d10d9916"
   integrity sha512-R+H8IZclI8AAkSBRQJLVOsxwAoHd6WC40b4QTNWIjzAa6BXOBfQcM587MXDTVPeYaopFNWHUFLx7eNmHDSxMWg==
 
-flow-bin@0.100.0:
-  version "0.100.0"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.100.0.tgz#729902726658cfa0a81425d6401f9625cf9f5534"
-  integrity sha512-jcethhgrslBJukH7Z7883ohFFpzLrdsOEwHxvn5NwuTWbNaE71GAl55/PEBRJwYpDvYkRlqgcNkANTv0x5XjqA==
+flow-bin@0.101.0:
+  version "0.101.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.101.0.tgz#c56fa0afb9c151eeba7954136e9066d408691063"
+  integrity sha512-2xriPEOSrGQklAArNw1ixoIUiLTWhIquYV26WqnxEu7IcXWgoZUcfJXufG9kIvrNbdwCNd5RBjTwbB0p6L6XaA==
 
 foreground-child@^1.5.6:
   version "1.5.6"
@@ -2560,9 +2560,9 @@ trim-right@^1.0.1:
   integrity sha1-yy4SAwZ+DI3h9hQJS5/kVwTqYAM=
 
 tslib@^1.9.0:
-  version "1.9.3"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.3.tgz#d7e4dd79245d85428c4d7e4822a79917954ca286"
-  integrity sha512-4krF8scpejhaOgqzBEcGM7yDIEfi0/8+8zDRZhNZZ2kjmHJ4hv3zCbQWxoJGz1iw5U0Jl0nma13xzHXcncMavQ==
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.10.0.tgz#c3c19f95973fb0a62973fb09d90d961ee43e5c8a"
+  integrity sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
 
 type-check@~0.3.2:
   version "0.3.2"
@@ -2721,9 +2721,9 @@ yargs-parser@^11.1.1:
     decamelize "^1.2.0"
 
 yargs-parser@^13.0.0, yargs-parser@^13.1.0:
-  version "13.1.0"
-  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-13.1.0.tgz#7016b6dd03e28e1418a510e258be4bff5a31138f"
-  integrity sha512-Yq+32PrijHRri0vVKQEm+ys8mbqWjLiwQkMFNXEENutzLPP0bE4Lcd4iA3OQY5HF+GD3xXxf0MEHb8E4/SA3AA==
+  version "13.1.1"
+  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-13.1.1.tgz#d26058532aa06d365fe091f6a1fc06b2f7e5eca0"
+  integrity sha512-oVAVsHz6uFrg3XQheFII8ESO2ssAf9luWuAd6Wexsu4F3OtIW0o8IribPXYrD4WC24LWtPrJlGy87y5udK+dxQ==
   dependencies:
     camelcase "^5.0.0"
     decamelize "^1.2.0"
