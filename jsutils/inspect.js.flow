@@ -19,6 +19,9 @@ function formatValue(value, seenValues) {
     case 'function':
       return value.name ? `[function ${value.name}]` : '[function]';
     case 'object':
+      if (value === null) {
+        return 'null';
+      }
       return formatObjectValue(value, seenValues);
     default:
       return String(value);
@@ -29,29 +32,25 @@ function formatObjectValue(value, previouslySeenValues) {
   if (previouslySeenValues.indexOf(value) !== -1) {
     return '[Circular]';
   }
+
   const seenValues = [...previouslySeenValues, value];
+  const customInspectFn = getCustomFn(value);
 
-  if (value) {
-    const customInspectFn = getCustomFn(value);
+  if (customInspectFn !== undefined) {
+    // $FlowFixMe(>=0.90.0)
+    const customValue = customInspectFn.call(value);
 
-    if (customInspectFn !== undefined) {
-      // $FlowFixMe(>=0.90.0)
-      const customValue = customInspectFn.call(value);
-
-      // check for infinite recursion
-      if (customValue !== value) {
-        return typeof customValue === 'string'
-          ? customValue
-          : formatValue(customValue, seenValues);
-      }
-    } else if (Array.isArray(value)) {
-      return formatArray(value, seenValues);
+    // check for infinite recursion
+    if (customValue !== value) {
+      return typeof customValue === 'string'
+        ? customValue
+        : formatValue(customValue, seenValues);
     }
-
-    return formatObject(value, seenValues);
+  } else if (Array.isArray(value)) {
+    return formatArray(value, seenValues);
   }
 
-  return String(value);
+  return formatObject(value, seenValues);
 }
 
 function formatObject(object, seenValues) {

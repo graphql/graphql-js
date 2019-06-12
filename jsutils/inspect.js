@@ -30,6 +30,10 @@ function formatValue(value, seenValues) {
       return value.name ? "[function ".concat(value.name, "]") : '[function]';
 
     case 'object':
+      if (value === null) {
+        return 'null';
+      }
+
       return formatObjectValue(value, seenValues);
 
     default:
@@ -43,25 +47,20 @@ function formatObjectValue(value, previouslySeenValues) {
   }
 
   var seenValues = [].concat(previouslySeenValues, [value]);
+  var customInspectFn = getCustomFn(value);
 
-  if (value) {
-    var customInspectFn = getCustomFn(value);
+  if (customInspectFn !== undefined) {
+    // $FlowFixMe(>=0.90.0)
+    var customValue = customInspectFn.call(value); // check for infinite recursion
 
-    if (customInspectFn !== undefined) {
-      // $FlowFixMe(>=0.90.0)
-      var customValue = customInspectFn.call(value); // check for infinite recursion
-
-      if (customValue !== value) {
-        return typeof customValue === 'string' ? customValue : formatValue(customValue, seenValues);
-      }
-    } else if (Array.isArray(value)) {
-      return formatArray(value, seenValues);
+    if (customValue !== value) {
+      return typeof customValue === 'string' ? customValue : formatValue(customValue, seenValues);
     }
-
-    return formatObject(value, seenValues);
+  } else if (Array.isArray(value)) {
+    return formatArray(value, seenValues);
   }
 
-  return String(value);
+  return formatObject(value, seenValues);
 }
 
 function formatObject(object, seenValues) {
