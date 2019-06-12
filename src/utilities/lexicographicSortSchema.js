@@ -150,7 +150,9 @@ function sortObjMap<T, R>(map: ObjMap<T>, sortValueFn?: T => R): ObjMap<R> {
   return sortedMap;
 }
 
-function sortByName<T: { +name: string }>(array: $ReadOnlyArray<T>): Array<T> {
+function sortByName<T: { +name: string, ... }>(
+  array: $ReadOnlyArray<T>,
+): Array<T> {
   return sortBy(array, obj => obj.name);
 }
 

@@ -113,6 +113,8 @@ export type ParseOptions = {
    * future.
    */
   experimentalFragmentVariables?: boolean,
+
+  ...
 };
 
 /**

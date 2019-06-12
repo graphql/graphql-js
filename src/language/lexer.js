@@ -86,6 +86,8 @@ export type Lexer<TOptions> = {
    * the Lexer's state.
    */
   lookahead(): Token,
+
+  ...
 };
 
 /**

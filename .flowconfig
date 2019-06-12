@@ -24,6 +24,7 @@ deprecated-utility=error
 dynamic-export=off
 unsafe-getters-setters=error
 inexact-spread=error
+implicit-inexact-object=error
 unnecessary-optional-chain=error
 unnecessary-invariant=off
 

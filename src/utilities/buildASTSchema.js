@@ -91,6 +91,8 @@ export type BuildSchemaOptions = {
    * Default: false
    */
   assumeValidSDL?: boolean,
+
+  ...
 };
 
 /**
@@ -410,7 +412,7 @@ export class ASTDefinitionBuilder {
   }
 }
 
-function keyByNameNode<T: { +name: NameNode }, V>(
+function keyByNameNode<T: { +name: NameNode, ... }, V>(
   list: $ReadOnlyArray<T>,
   valFn: (item: T) => V,
 ): ObjMap<V> {
@@ -439,7 +441,7 @@ function getDeprecationReason(
  *
  */
 export function getDescription(
-  node: { +description?: StringValueNode, +loc?: Location },
+  node: { +description?: StringValueNode, +loc?: Location, ... },
   options: ?BuildSchemaOptions,
 ): void | string {
   if (node.description) {

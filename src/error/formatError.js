@@ -24,5 +24,5 @@ export type GraphQLFormattedError = {|
   +message: string,
   +locations: $ReadOnlyArray<SourceLocation> | void,
   +path: $ReadOnlyArray<string | number> | void,
-  +extensions?: { [key: string]: mixed },
+  +extensions?: { [key: string]: mixed, ... },
 |};
