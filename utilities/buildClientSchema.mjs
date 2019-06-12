@@ -2,6 +2,7 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
+import isObjectLike from '../jsutils/isObjectLike';
 import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
 import { GraphQLSchema } from '../type/schema';
@@ -23,7 +24,8 @@ import { specifiedScalarTypes } from '../type/scalars';
  * the "errors" field of a server response before calling this function.
  */
 export function buildClientSchema(introspection, options) {
-  // Get the schema from the introspection result.
+  !(isObjectLike(introspection) && isObjectLike(introspection.__schema)) ? invariant(0, 'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' + inspect(introspection)) : void 0; // Get the schema from the introspection result.
+
   var schemaIntrospection = introspection.__schema; // Iterate through all types, getting the type definition for each.
 
   var typeMap = keyValMap(schemaIntrospection.types, function (typeIntrospection) {

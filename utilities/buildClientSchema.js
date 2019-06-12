@@ -13,6 +13,8 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
 var _valueFromAST = require("./valueFromAST");
 
 var _parser = require("../language/parser");
@@ -42,7 +44,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * the "errors" field of a server response before calling this function.
  */
 function buildClientSchema(introspection, options) {
-  // Get the schema from the introspection result.
+  !((0, _isObjectLike.default)(introspection) && (0, _isObjectLike.default)(introspection.__schema)) ? (0, _invariant.default)(0, 'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' + (0, _inspect.default)(introspection)) : void 0; // Get the schema from the introspection result.
+
   var schemaIntrospection = introspection.__schema; // Iterate through all types, getting the type definition for each.
 
   var typeMap = (0, _keyValMap.default)(schemaIntrospection.types, function (typeIntrospection) {
