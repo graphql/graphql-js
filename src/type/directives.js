@@ -1,6 +1,7 @@
 // @flow strict
 
 import objectEntries from '../polyfills/objectEntries';
+import isObjectLike from '../jsutils/isObjectLike';
 import {
   type GraphQLFieldConfigArgumentMap,
   type GraphQLArgument,
@@ -65,7 +66,7 @@ export class GraphQLDirective {
 
     const args = config.args || {};
     invariant(
-      typeof args === 'object' && !Array.isArray(args),
+      isObjectLike(args) && !Array.isArray(args),
       `@${config.name} args must be an object with argument names as keys.`,
     );
 

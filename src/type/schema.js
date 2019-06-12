@@ -2,6 +2,7 @@
 
 import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
+import isObjectLike from '../jsutils/isObjectLike';
 import {
   type GraphQLType,
   type GraphQLNamedType,
@@ -137,10 +138,7 @@ export class GraphQLSchema {
 
       // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
-      invariant(
-        typeof config === 'object',
-        'Must provide configuration object.',
-      );
+      invariant(isObjectLike(config), 'Must provide configuration object.');
       invariant(
         !config.types || Array.isArray(config.types),
         `"types" must be Array if provided but got: ${inspect(config.types)}.`,

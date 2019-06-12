@@ -1,5 +1,6 @@
 // @flow strict
 
+import isObjectLike from '../jsutils/isObjectLike';
 import { printError } from './printError';
 import { type ASTNode } from '../language/ast';
 import { type Source } from '../language/source';
@@ -134,7 +135,7 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   let _extensions = extensions;
   if (_extensions == null && originalError != null) {
     const originalExtensions = originalError.extensions;
-    if (originalExtensions != null && typeof originalExtensions === 'object') {
+    if (isObjectLike(originalExtensions)) {
       _extensions = originalExtensions;
     }
   }
