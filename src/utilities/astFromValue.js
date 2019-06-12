@@ -6,6 +6,7 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
+import isObjectLike from '../jsutils/isObjectLike';
 import { type ValueNode } from '../language/ast';
 import { Kind } from '../language/kinds';
 import {
@@ -74,7 +75,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   // Populate the fields of the input object by creating ASTs from each value
   // in the JavaScript object according to the fields in the input type.
   if (isInputObjectType(type)) {
-    if (value === null || typeof value !== 'object') {
+    if (!isObjectLike(value)) {
       return null;
     }
     const fieldNodes = [];

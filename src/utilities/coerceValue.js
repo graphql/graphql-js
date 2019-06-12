@@ -5,6 +5,7 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
 import didYouMean from '../jsutils/didYouMean';
+import isObjectLike from '../jsutils/isObjectLike';
 import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error/GraphQLError';
 import { type ASTNode } from '../language/ast';
@@ -128,7 +129,7 @@ export function coerceValue(
   }
 
   if (isInputObjectType(type)) {
-    if (typeof value !== 'object') {
+    if (!isObjectLike(value)) {
       return ofErrors([
         coercionError(
           `Expected type ${type.name} to be an object`,

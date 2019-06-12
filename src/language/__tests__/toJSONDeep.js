@@ -1,11 +1,13 @@
 // @flow strict
 
+import isObjectLike from '../../jsutils/isObjectLike';
+
 /**
  * Deeply transforms an arbitrary value to a JSON-safe value by calling toJSON
  * on any nested value which defines it.
  */
 export default function toJSONDeep<T>(value: T): T {
-  if (value == null || typeof value !== 'object') {
+  if (!isObjectLike(value)) {
     return value;
   }
 
