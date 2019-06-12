@@ -10,6 +10,8 @@ exports.specifiedDirectives = exports.GraphQLDeprecatedDirective = exports.DEFAU
 
 var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
 
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
 var _definition = require("./definition");
 
 var _scalars = require("./scalars");
@@ -27,8 +29,6 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 var _directiveLocation = require("../language/directiveLocation");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 // eslint-disable-next-line no-redeclare
 function isDirective(directive) {
@@ -57,7 +57,7 @@ function () {
     !config.name ? (0, _invariant.default)(0, 'Directive must be named.') : void 0;
     !Array.isArray(config.locations) ? (0, _invariant.default)(0, "@".concat(config.name, " locations must be an Array.")) : void 0;
     var args = config.args || {};
-    !(_typeof(args) === 'object' && !Array.isArray(args)) ? (0, _invariant.default)(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
+    !((0, _isObjectLike.default)(args) && !Array.isArray(args)) ? (0, _invariant.default)(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
     this.args = (0, _objectEntries.default)(args).map(function (_ref) {
       var argName = _ref[0],
           arg = _ref[1];

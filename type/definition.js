@@ -66,13 +66,13 @@ var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
 
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
 var _kinds = require("../language/kinds");
 
 var _valueFromASTUntyped = require("../utilities/valueFromASTUntyped");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
@@ -592,7 +592,7 @@ function defineFieldMap(config) {
 }
 
 function isPlainObj(obj) {
-  return obj && _typeof(obj) === 'object' && !Array.isArray(obj);
+  return (0, _isObjectLike.default)(obj) && !Array.isArray(obj);
 }
 
 function fieldsToFieldsConfig(fields) {

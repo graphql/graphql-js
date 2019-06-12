@@ -3,6 +3,7 @@
 import isFinite from '../polyfills/isFinite';
 import isInteger from '../polyfills/isInteger';
 import inspect from '../jsutils/inspect';
+import isObjectLike from '../jsutils/isObjectLike';
 import { GraphQLScalarType, isScalarType } from './definition';
 import { Kind } from '../language/kinds';
 
@@ -111,10 +112,10 @@ export const GraphQLFloat = new GraphQLScalarType({
 // a common way to represent a complex value which can be represented as
 // a string (ex: MongoDB id objects).
 function serializeObject(value: mixed): mixed {
-  if (typeof value === 'object' && value !== null) {
+  if (isObjectLike(value)) {
     if (typeof value.valueOf === 'function') {
       const valueOfResult = value.valueOf();
-      if (typeof valueOfResult !== 'object') {
+      if (!isObjectLike(valueOfResult)) {
         return valueOfResult;
       }
     }

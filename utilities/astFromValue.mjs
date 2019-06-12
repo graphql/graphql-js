@@ -1,10 +1,9 @@
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
+import isObjectLike from '../jsutils/isObjectLike';
 import { Kind } from '../language/kinds';
 import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 import { GraphQLID } from '../type/scalars';
@@ -75,7 +74,7 @@ export function astFromValue(value, type) {
 
 
   if (isInputObjectType(type)) {
-    if (value === null || _typeof(value) !== 'object') {
+    if (!isObjectLike(value)) {
       return null;
     }
 

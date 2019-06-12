@@ -15,6 +15,8 @@ var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
 var _kinds = require("../language/kinds");
 
 var _definition = require("../type/definition");
@@ -22,8 +24,6 @@ var _definition = require("../type/definition");
 var _scalars = require("../type/scalars");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /**
  * Produces a GraphQL Value AST given a JavaScript value.
@@ -91,7 +91,7 @@ function astFromValue(value, type) {
 
 
   if ((0, _definition.isInputObjectType)(type)) {
-    if (value === null || _typeof(value) !== 'object') {
+    if (!(0, _isObjectLike.default)(value)) {
       return null;
     }
 

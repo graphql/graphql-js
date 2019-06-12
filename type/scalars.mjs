@@ -1,8 +1,7 @@
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 import isFinite from '../polyfills/isFinite';
 import isInteger from '../polyfills/isInteger';
 import inspect from '../jsutils/inspect';
+import isObjectLike from '../jsutils/isObjectLike';
 import { GraphQLScalarType, isScalarType } from './definition';
 import { Kind } from '../language/kinds'; // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
@@ -104,11 +103,11 @@ export var GraphQLFloat = new GraphQLScalarType({
 // a string (ex: MongoDB id objects).
 
 function serializeObject(value) {
-  if (_typeof(value) === 'object' && value !== null) {
+  if (isObjectLike(value)) {
     if (typeof value.valueOf === 'function') {
       var valueOfResult = value.valueOf();
 
-      if (_typeof(valueOfResult) !== 'object') {
+      if (!isObjectLike(valueOfResult)) {
         return valueOfResult;
       }
     }

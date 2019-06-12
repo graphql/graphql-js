@@ -1,10 +1,9 @@
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
 import didYouMean from '../jsutils/didYouMean';
+import isObjectLike from '../jsutils/isObjectLike';
 import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error/GraphQLError';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
@@ -87,7 +86,7 @@ export function coerceValue(value, type, blameNode, path) {
   }
 
   if (isInputObjectType(type)) {
-    if (_typeof(value) !== 'object') {
+    if (!isObjectLike(value)) {
       return ofErrors([coercionError("Expected type ".concat(type.name, " to be an object"), blameNode, path)]);
     }
 

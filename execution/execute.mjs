@@ -1,5 +1,3 @@
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 import { forEach, isCollection } from 'iterall';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
@@ -8,6 +6,7 @@ import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import isPromise from '../jsutils/isPromise';
+import isObjectLike from '../jsutils/isObjectLike';
 import memoize3 from '../jsutils/memoize3';
 import promiseForObject from '../jsutils/promiseForObject';
 import promiseReduce from '../jsutils/promiseReduce';
@@ -123,7 +122,7 @@ export function assertValidExecutionArguments(schema, document, rawVariableValue
 
   assertValidSchema(schema); // Variables, if provided, must be an object.
 
-  !(!rawVariableValues || _typeof(rawVariableValues) === 'object') ? invariant(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.') : void 0;
+  !(rawVariableValues == null || isObjectLike(rawVariableValues)) ? invariant(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.') : void 0;
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -739,7 +738,7 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
 
 export var defaultTypeResolver = function defaultTypeResolver(value, contextValue, info, abstractType) {
   // First, look for `__typename`.
-  if (value !== null && _typeof(value) === 'object' && typeof value.__typename === 'string') {
+  if (isObjectLike(value) && typeof value.__typename === 'string') {
     return value.__typename;
   } // Otherwise, test each possible type.
 
@@ -780,7 +779,7 @@ export var defaultTypeResolver = function defaultTypeResolver(value, contextValu
 
 export var defaultFieldResolver = function defaultFieldResolver(source, args, contextValue, info) {
   // ensure source is a value for which property access is acceptable.
-  if (_typeof(source) === 'object' || typeof source === 'function') {
+  if (isObjectLike(source) || typeof source === 'function') {
     var property = source[info.fieldName];
 
     if (typeof property === 'function') {

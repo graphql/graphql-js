@@ -8,6 +8,7 @@ import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import isPromise from '../jsutils/isPromise';
+import isObjectLike from '../jsutils/isObjectLike';
 import memoize3 from '../jsutils/memoize3';
 import promiseForObject from '../jsutils/promiseForObject';
 import promiseReduce from '../jsutils/promiseReduce';
@@ -273,7 +274,7 @@ export function assertValidExecutionArguments(
 
   // Variables, if provided, must be an object.
   invariant(
-    !rawVariableValues || typeof rawVariableValues === 'object',
+    rawVariableValues == null || isObjectLike(rawVariableValues),
     'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
   );
 }
@@ -1170,11 +1171,7 @@ export const defaultTypeResolver: GraphQLTypeResolver<any, *> = function(
   abstractType,
 ) {
   // First, look for `__typename`.
-  if (
-    value !== null &&
-    typeof value === 'object' &&
-    typeof value.__typename === 'string'
-  ) {
+  if (isObjectLike(value) && typeof value.__typename === 'string') {
     return value.__typename;
   }
 
@@ -1220,7 +1217,7 @@ export const defaultFieldResolver: GraphQLFieldResolver<any, *> = function(
   info,
 ) {
   // ensure source is a value for which property access is acceptable.
-  if (typeof source === 'object' || typeof source === 'function') {
+  if (isObjectLike(source) || typeof source === 'function') {
     const property = source[info.fieldName];
     if (typeof property === 'function') {
       return source[info.fieldName](args, contextValue, info);

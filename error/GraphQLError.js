@@ -5,11 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.GraphQLError = GraphQLError;
 
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
 var _printError = require("./printError");
 
 var _location = require("../language/location");
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function GraphQLError( // eslint-disable-line no-redeclare
 message, nodes, source, positions, path, originalError, extensions) {
@@ -61,7 +63,7 @@ message, nodes, source, positions, path, originalError, extensions) {
   if (_extensions == null && originalError != null) {
     var originalExtensions = originalError.extensions;
 
-    if (originalExtensions != null && _typeof(originalExtensions) === 'object') {
+    if ((0, _isObjectLike.default)(originalExtensions)) {
       _extensions = originalExtensions;
     }
   }

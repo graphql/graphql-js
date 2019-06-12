@@ -30,6 +30,8 @@ var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
 
 var _isPromise = _interopRequireDefault(require("../jsutils/isPromise"));
 
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
 var _memoize = _interopRequireDefault(require("../jsutils/memoize3"));
 
 var _promiseForObject = _interopRequireDefault(require("../jsutils/promiseForObject"));
@@ -53,8 +55,6 @@ var _directives = require("../type/directives");
 var _validate = require("../type/validate");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function execute(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   /* eslint-enable no-redeclare */
@@ -162,7 +162,7 @@ function assertValidExecutionArguments(schema, document, rawVariableValues) {
 
   (0, _validate.assertValidSchema)(schema); // Variables, if provided, must be an object.
 
-  !(!rawVariableValues || _typeof(rawVariableValues) === 'object') ? (0, _invariant.default)(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.') : void 0;
+  !(rawVariableValues == null || (0, _isObjectLike.default)(rawVariableValues)) ? (0, _invariant.default)(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.') : void 0;
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -783,7 +783,7 @@ function _collectSubfields(exeContext, returnType, fieldNodes) {
 
 var defaultTypeResolver = function defaultTypeResolver(value, contextValue, info, abstractType) {
   // First, look for `__typename`.
-  if (value !== null && _typeof(value) === 'object' && typeof value.__typename === 'string') {
+  if ((0, _isObjectLike.default)(value) && typeof value.__typename === 'string') {
     return value.__typename;
   } // Otherwise, test each possible type.
 
@@ -827,7 +827,7 @@ exports.defaultTypeResolver = defaultTypeResolver;
 
 var defaultFieldResolver = function defaultFieldResolver(source, args, contextValue, info) {
   // ensure source is a value for which property access is acceptable.
-  if (_typeof(source) === 'object' || typeof source === 'function') {
+  if ((0, _isObjectLike.default)(source) || typeof source === 'function') {
     var property = source[info.fieldName];
 
     if (typeof property === 'function') {

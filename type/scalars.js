@@ -12,13 +12,13 @@ var _isInteger = _interopRequireDefault(require("../polyfills/isInteger"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
 var _definition = require("./definition");
 
 var _kinds = require("../language/kinds");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 // As per the GraphQL Spec, Integers are only treated as valid when a valid
 // 32-bit signed integer, providing the broadest support across platforms.
@@ -122,11 +122,11 @@ var GraphQLFloat = new _definition.GraphQLScalarType({
 exports.GraphQLFloat = GraphQLFloat;
 
 function serializeObject(value) {
-  if (_typeof(value) === 'object' && value !== null) {
+  if ((0, _isObjectLike.default)(value)) {
     if (typeof value.valueOf === 'function') {
       var valueOfResult = value.valueOf();
 
-      if (_typeof(valueOfResult) !== 'object') {
+      if (!(0, _isObjectLike.default)(valueOfResult)) {
         return valueOfResult;
       }
     }

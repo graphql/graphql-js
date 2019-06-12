@@ -11,6 +11,8 @@ var _find = _interopRequireDefault(require("../polyfills/find"));
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
 var _definition = require("./definition");
 
 var _directives = require("./directives");
@@ -26,8 +28,6 @@ var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 // eslint-disable-next-line no-redeclare
 function isSchema(schema) {
@@ -117,7 +117,7 @@ function () {
       this.__validationErrors = undefined; // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
 
-      !(_typeof(config) === 'object') ? (0, _invariant.default)(0, 'Must provide configuration object.') : void 0;
+      !(0, _isObjectLike.default)(config) ? (0, _invariant.default)(0, 'Must provide configuration object.') : void 0;
       !(!config.types || Array.isArray(config.types)) ? (0, _invariant.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), ".")) : void 0;
       !(!config.directives || Array.isArray(config.directives)) ? (0, _invariant.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), ".")) : void 0;
       !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? (0, _invariant.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.allowedLegacyNames), ".")) : void 0;

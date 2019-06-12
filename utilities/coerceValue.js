@@ -15,6 +15,8 @@ var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
 var _didYouMean = _interopRequireDefault(require("../jsutils/didYouMean"));
 
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
 var _suggestionList = _interopRequireDefault(require("../jsutils/suggestionList"));
 
 var _GraphQLError = require("../error/GraphQLError");
@@ -22,8 +24,6 @@ var _GraphQLError = require("../error/GraphQLError");
 var _definition = require("../type/definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /**
  * Coerces a JavaScript value given a GraphQL Type.
@@ -103,7 +103,7 @@ function coerceValue(value, type, blameNode, path) {
   }
 
   if ((0, _definition.isInputObjectType)(type)) {
-    if (_typeof(value) !== 'object') {
+    if (!(0, _isObjectLike.default)(value)) {
       return ofErrors([coercionError("Expected type ".concat(type.name, " to be an object"), blameNode, path)]);
     }
 

@@ -10,6 +10,7 @@ import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import mapValue from '../jsutils/mapValue';
+import isObjectLike from '../jsutils/isObjectLike';
 import { type ObjMap } from '../jsutils/ObjMap';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
@@ -786,7 +787,7 @@ function defineFieldMap<TSource, TContext>(
 }
 
 function isPlainObj(obj) {
-  return obj && typeof obj === 'object' && !Array.isArray(obj);
+  return isObjectLike(obj) && !Array.isArray(obj);
 }
 
 function fieldsToFieldsConfig(fields) {

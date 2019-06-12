@@ -1,5 +1,4 @@
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+import isObjectLike from '../jsutils/isObjectLike';
 import { printError } from './printError';
 import { getLocation } from '../language/location';
 /**
@@ -59,7 +58,7 @@ message, nodes, source, positions, path, originalError, extensions) {
   if (_extensions == null && originalError != null) {
     var originalExtensions = originalError.extensions;
 
-    if (originalExtensions != null && _typeof(originalExtensions) === 'object') {
+    if (isObjectLike(originalExtensions)) {
       _extensions = originalExtensions;
     }
   }

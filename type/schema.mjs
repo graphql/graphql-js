@@ -1,7 +1,6 @@
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
+import isObjectLike from '../jsutils/isObjectLike';
 import { isAbstractType, isObjectType, isInterfaceType, isUnionType, isInputObjectType, isWrappingType } from './definition';
 import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
 import inspect from '../jsutils/inspect';
@@ -95,7 +94,7 @@ function () {
       this.__validationErrors = undefined; // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
 
-      !(_typeof(config) === 'object') ? invariant(0, 'Must provide configuration object.') : void 0;
+      !isObjectLike(config) ? invariant(0, 'Must provide configuration object.') : void 0;
       !(!config.types || Array.isArray(config.types)) ? invariant(0, "\"types\" must be Array if provided but got: ".concat(inspect(config.types), ".")) : void 0;
       !(!config.directives || Array.isArray(config.directives)) ? invariant(0, '"directives" must be Array if provided but got: ' + "".concat(inspect(config.directives), ".")) : void 0;
       !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? invariant(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat(inspect(config.allowedLegacyNames), ".")) : void 0;
