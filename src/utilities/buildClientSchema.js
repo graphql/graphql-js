@@ -4,6 +4,7 @@ import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
+import isObjectLike from '../jsutils/isObjectLike';
 import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
 import {
@@ -72,6 +73,12 @@ export function buildClientSchema(
   introspection: IntrospectionQuery,
   options?: Options,
 ): GraphQLSchema {
+  invariant(
+    isObjectLike(introspection) && isObjectLike(introspection.__schema),
+    'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' +
+      inspect(introspection),
+  );
+
   // Get the schema from the introspection result.
   const schemaIntrospection = introspection.__schema;
 
