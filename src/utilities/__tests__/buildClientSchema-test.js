@@ -522,6 +522,18 @@ describe('Type System: build schema from introspection', () => {
       directive @SomeDirective on QUERY
     `);
 
+    it('throws when introspection is missing __schema property', () => {
+      // $DisableFlowOnNegativeTest
+      expect(() => buildClientSchema(null)).to.throw(
+        'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: null',
+      );
+
+      // $DisableFlowOnNegativeTest
+      expect(() => buildClientSchema({})).to.throw(
+        'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: {}',
+      );
+    });
+
     it('throws when referenced unknown type', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
