@@ -29,7 +29,7 @@ export function printError(error: GraphQLError): string {
   }
   return printedLocations.length === 0
     ? error.message
-    : [error.message, ...printedLocations].join('\n\n') + '\n';
+    : [error.message, ...printedLocations].join('\n\n');
 }
 
 /**
