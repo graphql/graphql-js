@@ -1,7 +1,7 @@
 // @flow strict
 
 import { type ObjMap } from '../jsutils/ObjMap';
-import { type GraphQLError } from '../error';
+import { type GraphQLError } from '../error/GraphQLError';
 import { type ASTVisitor, visit, visitWithTypeInfo } from '../language/visitor';
 import { Kind } from '../language/kinds';
 import {

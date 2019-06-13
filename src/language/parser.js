@@ -3,7 +3,8 @@
 import inspect from '../jsutils/inspect';
 import defineToJSON from '../jsutils/defineToJSON';
 import { Source } from './source';
-import { type GraphQLError, syntaxError } from '../error';
+import { type GraphQLError } from '../error/GraphQLError';
+import { syntaxError } from '../error/syntaxError';
 import {
   type Lexer,
   type TokenKindEnum,
