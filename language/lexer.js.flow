@@ -3,7 +3,7 @@
 import defineToJSON from '../jsutils/defineToJSON';
 import { type Token } from './ast';
 import { type Source } from './source';
-import { syntaxError } from '../error';
+import { syntaxError } from '../error/syntaxError';
 import { dedentBlockStringValue } from './blockString';
 
 /**

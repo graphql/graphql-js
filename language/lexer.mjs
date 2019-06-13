@@ -1,5 +1,5 @@
 import defineToJSON from '../jsutils/defineToJSON';
-import { syntaxError } from '../error';
+import { syntaxError } from '../error/syntaxError';
 import { dedentBlockStringValue } from './blockString';
 /**
  * Given a Source object, this returns a Lexer for that source.

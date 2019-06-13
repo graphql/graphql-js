@@ -16,7 +16,7 @@ var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
 var _source = require("./source");
 
-var _error = require("../error");
+var _syntaxError = require("../error/syntaxError");
 
 var _lexer = require("./lexer");
 
@@ -1423,7 +1423,7 @@ function expectToken(lexer, kind) {
     return token;
   }
 
-  throw (0, _error.syntaxError)(lexer.source, token.start, "Expected ".concat(kind, ", found ").concat((0, _lexer.getTokenDesc)(token)));
+  throw (0, _syntaxError.syntaxError)(lexer.source, token.start, "Expected ".concat(kind, ", found ").concat((0, _lexer.getTokenDesc)(token)));
 }
 /**
  * If the next token is of the given kind, return that token after advancing
@@ -1453,7 +1453,7 @@ function expectKeyword(lexer, value) {
   if (token.kind === _lexer.TokenKind.NAME && token.value === value) {
     lexer.advance();
   } else {
-    throw (0, _error.syntaxError)(lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat((0, _lexer.getTokenDesc)(token)));
+    throw (0, _syntaxError.syntaxError)(lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat((0, _lexer.getTokenDesc)(token)));
   }
 }
 /**
@@ -1480,7 +1480,7 @@ function expectOptionalKeyword(lexer, value) {
 
 function unexpected(lexer, atToken) {
   var token = atToken || lexer.token;
-  return (0, _error.syntaxError)(lexer.source, token.start, "Unexpected ".concat((0, _lexer.getTokenDesc)(token)));
+  return (0, _syntaxError.syntaxError)(lexer.source, token.start, "Unexpected ".concat((0, _lexer.getTokenDesc)(token)));
 }
 /**
  * Returns a possibly empty list of parse nodes, determined by

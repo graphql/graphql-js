@@ -10,7 +10,7 @@ exports.TokenKind = void 0;
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
-var _error = require("../error");
+var _syntaxError = require("../error/syntaxError");
 
 var _blockString = require("./blockString");
 
@@ -310,7 +310,7 @@ function readToken(lexer, prev) {
       return readString(source, pos, line, col, prev);
   }
 
-  throw (0, _error.syntaxError)(source, pos, unexpectedCharacterMessage(code));
+  throw (0, _syntaxError.syntaxError)(source, pos, unexpectedCharacterMessage(code));
 }
 /**
  * Report a message that an unexpected character was encountered.
@@ -410,7 +410,7 @@ function readNumber(source, start, firstCode, line, col, prev) {
     code = body.charCodeAt(++position);
 
     if (code >= 48 && code <= 57) {
-      throw (0, _error.syntaxError)(source, position, "Invalid number, unexpected digit after 0: ".concat(printCharCode(code), "."));
+      throw (0, _syntaxError.syntaxError)(source, position, "Invalid number, unexpected digit after 0: ".concat(printCharCode(code), "."));
     }
   } else {
     position = readDigits(source, position, code);
@@ -460,7 +460,7 @@ function readDigits(source, start, firstCode) {
     return position;
   }
 
-  throw (0, _error.syntaxError)(source, position, "Invalid number, expected digit but got: ".concat(printCharCode(code), "."));
+  throw (0, _syntaxError.syntaxError)(source, position, "Invalid number, expected digit but got: ".concat(printCharCode(code), "."));
 }
 /**
  * Reads a string token from the source file.
@@ -486,7 +486,7 @@ function readString(source, start, line, col, prev) {
 
 
     if (code < 0x0020 && code !== 0x0009) {
-      throw (0, _error.syntaxError)(source, position, "Invalid character within String: ".concat(printCharCode(code), "."));
+      throw (0, _syntaxError.syntaxError)(source, position, "Invalid character within String: ".concat(printCharCode(code), "."));
     }
 
     ++position;
@@ -536,7 +536,7 @@ function readString(source, start, line, col, prev) {
 
             if (charCode < 0) {
               var invalidSequence = body.slice(position + 1, position + 5);
-              throw (0, _error.syntaxError)(source, position, "Invalid character escape sequence: \\u".concat(invalidSequence, "."));
+              throw (0, _syntaxError.syntaxError)(source, position, "Invalid character escape sequence: \\u".concat(invalidSequence, "."));
             }
 
             value += String.fromCharCode(charCode);
@@ -545,7 +545,7 @@ function readString(source, start, line, col, prev) {
           }
 
         default:
-          throw (0, _error.syntaxError)(source, position, "Invalid character escape sequence: \\".concat(String.fromCharCode(code), "."));
+          throw (0, _syntaxError.syntaxError)(source, position, "Invalid character escape sequence: \\".concat(String.fromCharCode(code), "."));
       }
 
       ++position;
@@ -553,7 +553,7 @@ function readString(source, start, line, col, prev) {
     }
   }
 
-  throw (0, _error.syntaxError)(source, position, 'Unterminated string.');
+  throw (0, _syntaxError.syntaxError)(source, position, 'Unterminated string.');
 }
 /**
  * Reads a block string token from the source file.
@@ -578,7 +578,7 @@ function readBlockString(source, start, line, col, prev, lexer) {
 
 
     if (code < 0x0020 && code !== 0x0009 && code !== 0x000a && code !== 0x000d) {
-      throw (0, _error.syntaxError)(source, position, "Invalid character within String: ".concat(printCharCode(code), "."));
+      throw (0, _syntaxError.syntaxError)(source, position, "Invalid character within String: ".concat(printCharCode(code), "."));
     }
 
     if (code === 10) {
@@ -606,7 +606,7 @@ function readBlockString(source, start, line, col, prev, lexer) {
     }
   }
 
-  throw (0, _error.syntaxError)(source, position, 'Unterminated string.');
+  throw (0, _syntaxError.syntaxError)(source, position, 'Unterminated string.');
 }
 /**
  * Converts four hexadecimal chars to the integer that the
