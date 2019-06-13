@@ -57,6 +57,22 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
+  it('builds a schema without the query type', () => {
+    const sdl = dedent`
+      type Query {
+        foo: String
+      }
+    `;
+
+    const schema = buildSchema(sdl);
+    const introspection = introspectionFromSchema(schema);
+    delete introspection.__schema.queryType;
+
+    const clientSchema = buildClientSchema(introspection);
+    expect(clientSchema.getQueryType()).to.equal(null);
+    expect(printSchema(clientSchema)).to.equal(sdl);
+  });
+
   it('builds a simple schema with all operation types', () => {
     const sdl = dedent`
       schema {
@@ -433,6 +449,24 @@ describe('Type System: build schema from introspection', () => {
     `;
 
     expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
+  it('builds a schema without directives', () => {
+    const sdl = dedent`
+      type Query {
+        string: String
+      }
+    `;
+
+    const schema = buildSchema(sdl);
+    const introspection = introspectionFromSchema(schema);
+    delete introspection.__schema.directives;
+
+    const clientSchema = buildClientSchema(introspection);
+
+    expect(schema.getDirectives()).to.have.lengthOf.above(0);
+    expect(clientSchema.getDirectives()).to.deep.equal([]);
+    expect(printSchema(clientSchema)).to.equal(sdl);
   });
 
   it('builds a schema with legacy names', () => {
