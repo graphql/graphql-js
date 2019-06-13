@@ -1,7 +1,7 @@
 // @flow strict
 
 import invariant from '../jsutils/invariant';
-import { type GraphQLError } from '../error';
+import { type GraphQLError } from '../error/GraphQLError';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import { type DocumentNode } from '../language/ast';
 import { type GraphQLSchema } from '../type/schema';
