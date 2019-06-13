@@ -22,8 +22,7 @@ describe('inspect', () => {
   it('string', () => {
     expect(inspect('')).to.equal('""');
     expect(inspect('abc')).to.equal('"abc"');
-    // $FlowFixMe
-    expect(inspect('"')).to.equal(String.raw`"\""`);
+    expect(inspect('"')).to.equal('"\\""');
   });
 
   it('number', () => {
