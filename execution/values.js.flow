@@ -26,7 +26,7 @@ import {
 
 type CoercedVariableValues = {|
   errors: $ReadOnlyArray<GraphQLError> | void,
-  coerced: { [variable: string]: mixed } | void,
+  coerced: { [variable: string]: mixed, ... } | void,
 |};
 
 /**
@@ -122,7 +122,7 @@ export function getArgumentValues(
   def: GraphQLField<*, *> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
   variableValues?: ?ObjMap<mixed>,
-): { [argument: string]: mixed } {
+): { [argument: string]: mixed, ... } {
   const coercedValues = {};
   const argDefs = def.args;
   const argNodes = node.arguments;
@@ -218,9 +218,9 @@ export function getArgumentValues(
  */
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
-  node: { +directives?: $ReadOnlyArray<DirectiveNode> },
+  node: { +directives?: $ReadOnlyArray<DirectiveNode>, ... },
   variableValues?: ?ObjMap<mixed>,
-): void | { [argument: string]: mixed } {
+): void | { [argument: string]: mixed, ... } {
   const directiveNode =
     node.directives &&
     find(

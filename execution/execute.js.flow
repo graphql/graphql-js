@@ -93,7 +93,7 @@ export type ExecutionContext = {|
   rootValue: mixed,
   contextValue: mixed,
   operation: OperationDefinitionNode,
-  variableValues: { [variable: string]: mixed },
+  variableValues: { [variable: string]: mixed, ... },
   fieldResolver: GraphQLFieldResolver<any, any>,
   typeResolver: GraphQLTypeResolver<any, any>,
   errors: Array<GraphQLError>,
@@ -108,6 +108,7 @@ export type ExecutionContext = {|
 export type ExecutionResult = {
   errors?: $ReadOnlyArray<GraphQLError>,
   data?: ObjMap<mixed> | null,
+  ...
 };
 
 export type ExecutionArgs = {|
@@ -115,7 +116,7 @@ export type ExecutionArgs = {|
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{ [variable: string]: mixed },
+  variableValues?: ?{ [variable: string]: mixed, ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
@@ -143,7 +144,7 @@ declare function execute(
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{ [variable: string]: mixed },
+  variableValues?: ?{ [variable: string]: mixed, ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
