@@ -197,7 +197,7 @@ function validateDirectives(context: SchemaValidationContext): void {
 
 function validateName(
   context: SchemaValidationContext,
-  node: { +name: string, +astNode: ?ASTNode },
+  node: { +name: string, +astNode: ?ASTNode, ... },
 ): void {
   // If a schema explicitly allows some legacy name which is no longer valid,
   // allow it to be assumed valid.
@@ -567,6 +567,7 @@ function createInputObjectCircularRefsValidator(
 type SDLDefinedObject<T, K> = {
   +astNode: ?T,
   +extensionASTNodes?: ?$ReadOnlyArray<K>,
+  ...
 };
 
 function getAllNodes<T: ASTNode, K: ASTNode>(

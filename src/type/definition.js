@@ -843,7 +843,7 @@ export type GraphQLIsTypeOfFn<TSource, TContext> = (
 export type GraphQLFieldResolver<
   TSource,
   TContext,
-  TArgs = { [argument: string]: any },
+  TArgs = { [argument: string]: any, ... },
 > = (
   source: TSource,
   args: TArgs,
@@ -861,7 +861,7 @@ export type GraphQLResolveInfo = {|
   +fragments: ObjMap<FragmentDefinitionNode>,
   +rootValue: mixed,
   +operation: OperationDefinitionNode,
-  +variableValues: { [variable: string]: mixed },
+  +variableValues: { [variable: string]: mixed, ... },
 |};
 
 export type ResponsePath = {|
@@ -872,7 +872,7 @@ export type ResponsePath = {|
 export type GraphQLFieldConfig<
   TSource,
   TContext,
-  TArgs = { [argument: string]: any },
+  TArgs = { [argument: string]: any, ... },
 > = {|
   type: GraphQLOutputType,
   args?: GraphQLFieldConfigArgumentMap,
@@ -899,7 +899,7 @@ export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
 export type GraphQLField<
   TSource,
   TContext,
-  TArgs = { [argument: string]: any },
+  TArgs = { [argument: string]: any, ... },
 > = {
   name: string,
   description: ?string,
@@ -910,6 +910,7 @@ export type GraphQLField<
   isDeprecated?: boolean,
   deprecationReason?: ?string,
   astNode?: ?FieldDefinitionNode,
+  ...
 };
 
 export type GraphQLArgument = {
@@ -918,6 +919,7 @@ export type GraphQLArgument = {
   defaultValue?: mixed,
   description?: ?string,
   astNode?: ?InputValueDefinitionNode,
+  ...
 };
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean %checks {
@@ -1283,6 +1285,7 @@ export type GraphQLEnumValue /* <T> */ = {
   deprecationReason: ?string,
   astNode?: ?EnumValueDefinitionNode,
   value: any /* T */,
+  ...
 };
 
 /**
@@ -1400,6 +1403,7 @@ export type GraphQLInputField = {
   defaultValue?: mixed,
   description?: ?string,
   astNode?: ?InputValueDefinitionNode,
+  ...
 };
 
 export function isRequiredInputField(

@@ -20,7 +20,7 @@ declare class GraphQLError extends Error {
     positions?: ?$ReadOnlyArray<number>,
     path?: ?$ReadOnlyArray<string | number>,
     originalError?: ?Error,
-    extensions?: ?{ [key: string]: mixed },
+    extensions?: ?{ [key: string]: mixed, ... },
   ): void;
 
   /**
@@ -79,7 +79,7 @@ declare class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  +extensions: { [key: string]: mixed } | void;
+  +extensions: { [key: string]: mixed, ... } | void;
 }
 
 export function GraphQLError( // eslint-disable-line no-redeclare
@@ -88,8 +88,8 @@ export function GraphQLError( // eslint-disable-line no-redeclare
   source?: ?Source,
   positions?: ?$ReadOnlyArray<number>,
   path?: ?$ReadOnlyArray<string | number>,
-  originalError?: ?Error & { +extensions: mixed },
-  extensions?: ?{ [key: string]: mixed },
+  originalError?: ?Error & { +extensions: mixed, ... },
+  extensions?: ?{ [key: string]: mixed, ... },
 ) {
   // Compute list of blame nodes.
   const _nodes = Array.isArray(nodes)
