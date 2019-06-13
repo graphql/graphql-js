@@ -21,16 +21,16 @@ Object.defineProperty(exports, "Kind", {
     return _kinds.Kind;
   }
 });
+Object.defineProperty(exports, "TokenKind", {
+  enumerable: true,
+  get: function get() {
+    return _tokenKind.TokenKind;
+  }
+});
 Object.defineProperty(exports, "createLexer", {
   enumerable: true,
   get: function get() {
     return _lexer.createLexer;
-  }
-});
-Object.defineProperty(exports, "TokenKind", {
-  enumerable: true,
-  get: function get() {
-    return _lexer.TokenKind;
   }
 });
 Object.defineProperty(exports, "parse", {
@@ -153,6 +153,8 @@ var _source = require("./source");
 var _location = require("./location");
 
 var _kinds = require("./kinds");
+
+var _tokenKind = require("./tokenKind");
 
 var _lexer = require("./lexer");
 

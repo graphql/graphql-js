@@ -9,6 +9,8 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _source = require("../language/source");
 
+var _tokenKind = require("../language/tokenKind");
+
 var _lexer = require("../language/lexer");
 
 var _blockString = require("../language/blockString");
@@ -79,7 +81,7 @@ function stripIgnoredCharacters(source) {
   var strippedBody = '';
   var wasLastAddedTokenNonPunctuator = false;
 
-  while (lexer.advance().kind !== _lexer.TokenKind.EOF) {
+  while (lexer.advance().kind !== _tokenKind.TokenKind.EOF) {
     var currentToken = lexer.token;
     var tokenKind = currentToken.kind;
     /**
@@ -91,14 +93,14 @@ function stripIgnoredCharacters(source) {
     var isNonPunctuator = !(0, _lexer.isPunctuatorToken)(currentToken);
 
     if (wasLastAddedTokenNonPunctuator) {
-      if (isNonPunctuator || currentToken.kind === _lexer.TokenKind.SPREAD) {
+      if (isNonPunctuator || currentToken.kind === _tokenKind.TokenKind.SPREAD) {
         strippedBody += ' ';
       }
     }
 
     var tokenBody = body.slice(currentToken.start, currentToken.end);
 
-    if (tokenKind === _lexer.TokenKind.BLOCK_STRING) {
+    if (tokenKind === _tokenKind.TokenKind.BLOCK_STRING) {
       strippedBody += dedentBlockString(tokenBody);
     } else {
       strippedBody += tokenBody;

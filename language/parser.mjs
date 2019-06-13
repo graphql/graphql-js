@@ -2,7 +2,8 @@ import inspect from '../jsutils/inspect';
 import defineToJSON from '../jsutils/defineToJSON';
 import { Source } from './source';
 import { syntaxError } from '../error/syntaxError';
-import { TokenKind, getTokenDesc, createLexer } from './lexer';
+import { TokenKind } from './tokenKind';
+import { getTokenDesc, createLexer } from './lexer';
 import { Kind } from './kinds';
 import { DirectiveLocation } from './directiveLocation';
 /**

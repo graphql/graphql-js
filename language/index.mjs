@@ -1,7 +1,8 @@
 export { Source } from './source';
 export { getLocation } from './location';
 export { Kind } from './kinds';
-export { createLexer, TokenKind } from './lexer';
+export { TokenKind } from './tokenKind';
+export { createLexer } from './lexer';
 export { parse, parseValue, parseType } from './parser';
 export { print } from './printer';
 export { visit, visitInParallel, visitWithTypeInfo, getVisitFn, BREAK } from './visitor';

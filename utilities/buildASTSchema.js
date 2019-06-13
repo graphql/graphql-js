@@ -24,7 +24,7 @@ var _validate = require("../validation/validate");
 
 var _blockString = require("../language/blockString");
 
-var _lexer = require("../language/lexer");
+var _tokenKind = require("../language/tokenKind");
 
 var _parser = require("../language/parser");
 
@@ -475,7 +475,7 @@ function getLeadingCommentBlock(node) {
   var comments = [];
   var token = loc.startToken.prev;
 
-  while (token && token.kind === _lexer.TokenKind.COMMENT && token.next && token.prev && token.line + 1 === token.next.line && token.line !== token.prev.line) {
+  while (token && token.kind === _tokenKind.TokenKind.COMMENT && token.next && token.prev && token.line + 1 === token.next.line && token.line !== token.prev.line) {
     var value = String(token.value);
     comments.push(value);
     token = token.prev;

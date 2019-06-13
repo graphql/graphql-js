@@ -6,7 +6,7 @@ import keyValMap from '../jsutils/keyValMap';
 import { valueFromAST } from './valueFromAST';
 import { assertValidSDL } from '../validation/validate';
 import { dedentBlockStringValue } from '../language/blockString';
-import { TokenKind } from '../language/lexer';
+import { TokenKind } from '../language/tokenKind';
 import { parse } from '../language/parser';
 import { getDirectiveValues } from '../execution/values';
 import { Kind } from '../language/kinds';
