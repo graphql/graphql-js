@@ -2,7 +2,8 @@
 
 import inspect from '../jsutils/inspect';
 import { Source } from '../language/source';
-import { createLexer, TokenKind, isPunctuatorToken } from '../language/lexer';
+import { TokenKind } from '../language/tokenKind';
+import { createLexer, isPunctuatorToken } from '../language/lexer';
 import {
   dedentBlockStringValue,
   getBlockStringIndentation,
