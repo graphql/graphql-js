@@ -5,13 +5,8 @@ import defineToJSON from '../jsutils/defineToJSON';
 import { Source } from './source';
 import { type GraphQLError } from '../error/GraphQLError';
 import { syntaxError } from '../error/syntaxError';
-import {
-  type Lexer,
-  type TokenKindEnum,
-  TokenKind,
-  getTokenDesc,
-  createLexer,
-} from './lexer';
+import { type TokenKindEnum, TokenKind } from './tokenKind';
+import { type Lexer, getTokenDesc, createLexer } from './lexer';
 import {
   type Location,
   type Token,

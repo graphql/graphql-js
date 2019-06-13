@@ -5,7 +5,7 @@ import { inspect as nodeInspect } from 'util';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { Kind } from '../kinds';
-import { TokenKind } from '../lexer';
+import { TokenKind } from '../tokenKind';
 import { parse, parseValue, parseType } from '../parser';
 import { Source } from '../source';
 import dedent from '../../jsutils/dedent';

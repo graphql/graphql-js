@@ -8,7 +8,8 @@ import dedent from '../../jsutils/dedent';
 import inspect from '../../jsutils/inspect';
 import { GraphQLError } from '../../error';
 import { Source } from '../source';
-import { createLexer, TokenKind, isPunctuatorToken } from '../lexer';
+import { TokenKind } from '../tokenKind';
+import { createLexer, isPunctuatorToken } from '../lexer';
 
 function lexOne(str) {
   const lexer = createLexer(new Source(str));
