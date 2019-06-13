@@ -10,6 +10,21 @@ import { printError } from '../printError';
 import { Kind, parse, Source } from '../../language';
 
 describe('printError', () => {
+  it('prints an error without location', () => {
+    const error = new GraphQLError('Error without location');
+    expect(printError(error)).to.equal('Error without location');
+  });
+
+  it('prints an error using node without location', () => {
+    const error = new GraphQLError(
+      'Error attached to node without location',
+      parse('{ foo }', { noLocation: true }),
+    );
+    expect(printError(error)).to.equal(
+      'Error attached to node without location',
+    );
+  });
+
   it('prints an line numbers with correct padding', () => {
     const singleDigit = new GraphQLError(
       'Single digit line number with no padding',
