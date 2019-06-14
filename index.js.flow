@@ -174,6 +174,9 @@ export type {
 export {
   Source,
   getLocation,
+  // Print source location
+  printLocation,
+  printSourceLocation,
   // Lex
   createLexer,
   TokenKind,

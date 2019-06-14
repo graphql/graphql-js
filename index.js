@@ -525,6 +525,18 @@ Object.defineProperty(exports, "getLocation", {
     return _language.getLocation;
   }
 });
+Object.defineProperty(exports, "printLocation", {
+  enumerable: true,
+  get: function get() {
+    return _language.printLocation;
+  }
+});
+Object.defineProperty(exports, "printSourceLocation", {
+  enumerable: true,
+  get: function get() {
+    return _language.printSourceLocation;
+  }
+});
 Object.defineProperty(exports, "createLexer", {
   enumerable: true,
   get: function get() {

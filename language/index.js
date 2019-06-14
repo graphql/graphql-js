@@ -15,6 +15,18 @@ Object.defineProperty(exports, "getLocation", {
     return _location.getLocation;
   }
 });
+Object.defineProperty(exports, "printLocation", {
+  enumerable: true,
+  get: function get() {
+    return _printLocation.printLocation;
+  }
+});
+Object.defineProperty(exports, "printSourceLocation", {
+  enumerable: true,
+  get: function get() {
+    return _printLocation.printSourceLocation;
+  }
+});
 Object.defineProperty(exports, "Kind", {
   enumerable: true,
   get: function get() {
@@ -151,6 +163,8 @@ Object.defineProperty(exports, "DirectiveLocation", {
 var _source = require("./source");
 
 var _location = require("./location");
+
+var _printLocation = require("./printLocation");
 
 var _kinds = require("./kinds");
 

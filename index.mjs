@@ -39,7 +39,8 @@ assertSchema, assertDirective, assertType, assertScalarType, assertObjectType, a
 getNullableType, getNamedType, // Validate GraphQL schema.
 validateSchema, assertValidSchema } from './type';
 // Parse and operate on GraphQL language source files.
-export { Source, getLocation, // Lex
+export { Source, getLocation, // Print source location
+printLocation, printSourceLocation, // Lex
 createLexer, TokenKind, // Parse
 parse, parseValue, parseType, // Print
 print, // Visit
