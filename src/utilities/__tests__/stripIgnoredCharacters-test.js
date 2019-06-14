@@ -82,16 +82,6 @@ function expectStripped(docString) {
     toStayTheSame() {
       this.toEqual(docString);
     },
-    toThrow(expectedStringifyError) {
-      let catchedError;
-
-      try {
-        stripIgnoredCharacters(docString);
-      } catch (e) {
-        catchedError = e;
-      }
-      expect(String(catchedError)).to.equal(expectedStringifyError);
-    },
   };
 
   function inspectStr(str) {
@@ -155,7 +145,15 @@ describe('stripIgnoredCharacters', () => {
   });
 
   it('report document with invalid token', () => {
-    expectStripped('{ foo(arg: "\n"').toThrow(dedent`
+    let catchedError;
+
+    try {
+      stripIgnoredCharacters('{ foo(arg: "\n"');
+    } catch (e) {
+      catchedError = e;
+    }
+
+    expect(String(catchedError) + '\n').to.equal(dedent`
       Syntax Error: Unterminated string.
 
       GraphQL request:1:13

@@ -32,7 +32,7 @@ describe('printError', () => {
       new Source('*', 'Test', { line: 9, column: 1 }),
       [0],
     );
-    expect(printError(singleDigit)).to.equal(dedent`
+    expect(printError(singleDigit) + '\n').to.equal(dedent`
       Single digit line number with no padding
 
       Test:9:1
@@ -46,7 +46,7 @@ describe('printError', () => {
       new Source('*\n', 'Test', { line: 9, column: 1 }),
       [0],
     );
-    expect(printError(doubleDigit)).to.equal(dedent`
+    expect(printError(doubleDigit) + '\n').to.equal(dedent`
       Left padded first line number
 
       Test:9:1
@@ -90,7 +90,7 @@ describe('printError', () => {
       fieldB.type,
     ]);
 
-    expect(printError(error)).to.equal(dedent`
+    expect(printError(error) + '\n').to.equal(dedent`
       Example error with two nodes
 
       SourceA:2:10

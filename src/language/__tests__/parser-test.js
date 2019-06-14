@@ -44,7 +44,7 @@ describe('Parser', () => {
       locations: [{ line: 1, column: 2 }],
     });
 
-    expect(String(caughtError)).to.equal(dedent`
+    expect(String(caughtError) + '\n').to.equal(dedent`
       Syntax Error: Expected Name, found <EOF>
 
       GraphQL request:1:2
@@ -81,7 +81,7 @@ describe('Parser', () => {
     } catch (error) {
       caughtError = error;
     }
-    expect(String(caughtError)).to.equal(dedent`
+    expect(String(caughtError) + '\n').to.equal(dedent`
       Syntax Error: Expected {, found <EOF>
 
       MyQuery.graphql:1:6
