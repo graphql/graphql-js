@@ -36,10 +36,10 @@ export function printSourceLocation(
     `${source.name}:${lineNum}:${columnNum}\n` +
     printPrefixedLines([
       // Lines specified like this: ["prefix", "string"],
-      [`${lineNum - 1}: `, lines[lineIndex - 1]],
-      [`${lineNum}: `, lines[lineIndex]],
+      [`${lineNum - 1}`, lines[lineIndex - 1]],
+      [`${lineNum}`, lines[lineIndex]],
       ['', whitespace(columnNum - 1) + '^'],
-      [`${lineNum + 1}: `, lines[lineIndex + 1]],
+      [`${lineNum + 1}`, lines[lineIndex + 1]],
     ])
   );
 }
@@ -47,13 +47,9 @@ export function printSourceLocation(
 function printPrefixedLines(lines: Array<[string, string]>): string {
   const existingLines = lines.filter(([_, line]) => line !== undefined);
 
-  let padLen = 0;
-  for (const [prefix] of existingLines) {
-    padLen = Math.max(padLen, prefix.length);
-  }
-
+  const padLen = Math.max(...existingLines.map(([prefix]) => prefix.length));
   return existingLines
-    .map(([prefix, line]) => lpad(padLen, prefix) + line)
+    .map(([prefix, line]) => lpad(padLen, prefix) + ' | ' + line)
     .join('\n');
 }
 

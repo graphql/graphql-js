@@ -16,8 +16,8 @@ describe('printLocation', () => {
 
     expect(result + '\n').to.equal(dedent`
       Test:9:1
-      9: *
-         ^
+      9 | *
+        | ^
     `);
   });
 
@@ -29,9 +29,9 @@ describe('printLocation', () => {
 
     expect(result + '\n').to.equal(dedent`
       Test:9:1
-       9: *
-          ^
-      10: 
+       9 | *
+         | ^
+      10 | 
     `);
   });
 });
