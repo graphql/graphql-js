@@ -1,10 +1,10 @@
 // @flow strict
 
 import isObjectLike from '../jsutils/isObjectLike';
-import { printError } from './printError';
 import { type ASTNode } from '../language/ast';
 import { type Source } from '../language/source';
 import { type SourceLocation, getLocation } from '../language/location';
+import { printLocation, printSourceLocation } from '../language/printLocation';
 
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
@@ -217,3 +217,25 @@ export function GraphQLError( // eslint-disable-line no-redeclare
     },
   },
 });
+
+/**
+ * Prints a GraphQLError to a string, representing useful location information
+ * about the error's position in the source.
+ */
+export function printError(error: GraphQLError): string {
+  let output = error.message;
+
+  if (error.nodes) {
+    for (const node of error.nodes) {
+      if (node.loc) {
+        output += '\n\n' + printLocation(node.loc);
+      }
+    }
+  } else if (error.source && error.locations) {
+    for (const location of error.locations) {
+      output += '\n\n' + printSourceLocation(error.source, location);
+    }
+  }
+
+  return output;
+}

@@ -5,7 +5,14 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
-import { Kind, parse, Source, GraphQLError, formatError } from '../../';
+import {
+  Kind,
+  parse,
+  Source,
+  GraphQLError,
+  printError,
+  formatError,
+} from '../../';
 
 const source = new Source(dedent`
   {
@@ -153,5 +160,73 @@ describe('GraphQLError', () => {
       path: undefined,
       extensions: { foo: 'bar' },
     });
+  });
+});
+
+describe('printError', () => {
+  it('prints an error without location', () => {
+    const error = new GraphQLError('Error without location');
+    expect(printError(error)).to.equal('Error without location');
+  });
+
+  it('prints an error using node without location', () => {
+    const error = new GraphQLError(
+      'Error attached to node without location',
+      parse('{ foo }', { noLocation: true }),
+    );
+    expect(printError(error)).to.equal(
+      'Error attached to node without location',
+    );
+  });
+
+  it('prints an error with nodes from different sources', () => {
+    const docA = parse(
+      new Source(
+        dedent`
+          type Foo {
+            field: String
+          }
+        `,
+        'SourceA',
+      ),
+    );
+    const opA = docA.definitions[0];
+    invariant(opA && opA.kind === Kind.OBJECT_TYPE_DEFINITION && opA.fields);
+    const fieldA = opA.fields[0];
+
+    const docB = parse(
+      new Source(
+        dedent`
+          type Foo {
+            field: Int
+          }
+        `,
+        'SourceB',
+      ),
+    );
+    const opB = docB.definitions[0];
+    invariant(opB && opB.kind === Kind.OBJECT_TYPE_DEFINITION && opB.fields);
+    const fieldB = opB.fields[0];
+
+    const error = new GraphQLError('Example error with two nodes', [
+      fieldA.type,
+      fieldB.type,
+    ]);
+
+    expect(printError(error) + '\n').to.equal(dedent`
+      Example error with two nodes
+
+      SourceA:2:10
+      1: type Foo {
+      2:   field: String
+                  ^
+      3: }
+
+      SourceB:2:10
+      1: type Foo {
+      2:   field: Int
+                  ^
+      3: }
+    `);
   });
 });
