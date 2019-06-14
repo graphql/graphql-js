@@ -5,6 +5,8 @@ export { Source } from './source';
 export { getLocation } from './location';
 export type { SourceLocation } from './location';
 
+export { printLocation, printSourceLocation } from './printLocation';
+
 export { Kind } from './kinds';
 export type { KindEnum } from './kinds';
 
