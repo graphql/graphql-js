@@ -30,14 +30,37 @@ export function printSourceLocation(
 
   const columnOffset = sourceLocation.line === 1 ? firstLineColumnOffset : 0;
   const columnNum = sourceLocation.column + columnOffset;
+  const locationStr = `${source.name}:${lineNum}:${columnNum}\n`;
 
   const lines = body.split(/\r\n|[\n\r]/g);
+  const locationLine = lines[lineIndex];
+
+  // Special case for minified documents
+  if (locationLine.length > 120) {
+    const sublineIndex = Math.floor(columnNum / 80);
+    const sublineColumnNum = columnNum % 80;
+    const sublines = [];
+    for (let i = 0; i < locationLine.length; i += 80) {
+      sublines.push(locationLine.slice(i, i + 80));
+    }
+
+    return (
+      locationStr +
+      printPrefixedLines([
+        [`${lineNum}`, sublines[0]],
+        ...sublines.slice(1, sublineIndex + 1).map(subline => ['', subline]),
+        [' ', whitespace(sublineColumnNum - 1) + '^'],
+        ['', sublines[sublineIndex + 1]],
+      ])
+    );
+  }
+
   return (
-    `${source.name}:${lineNum}:${columnNum}\n` +
+    locationStr +
     printPrefixedLines([
       // Lines specified like this: ["prefix", "string"],
       [`${lineNum - 1}`, lines[lineIndex - 1]],
-      [`${lineNum}`, lines[lineIndex]],
+      [`${lineNum}`, locationLine],
       ['', whitespace(columnNum - 1) + '^'],
       [`${lineNum + 1}`, lines[lineIndex + 1]],
     ])
