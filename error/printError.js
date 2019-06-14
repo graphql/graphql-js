@@ -68,7 +68,7 @@ function printError(error) {
     }
   }
 
-  return printedLocations.length === 0 ? error.message : [error.message].concat(printedLocations).join('\n\n') + '\n';
+  return printedLocations.length === 0 ? error.message : [error.message].concat(printedLocations).join('\n\n');
 }
 /**
  * Render a helpful description of the location of the error in the GraphQL
