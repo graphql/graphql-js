@@ -122,6 +122,38 @@ describe('Schema Builder', () => {
     });
   });
 
+  it('can define custom scalar converters', () => {
+    const schema = buildSchema(
+      `
+      scalar Uppercase
+      scalar Lowercase
+      type Query {
+        hello: Uppercase
+        lower(str: Lowercase!): String
+      }
+    `,
+      {
+        resolvers: {
+          Uppercase: {
+            serialize: (value: string) => value.toUpperCase(),
+          },
+          Lowercase: {
+            parseValue: (value: string) => value.toLowerCase(),
+          },
+          Query: {
+            lower: (_, { str }: { str: string, ... }) => str,
+          },
+        },
+      },
+    );
+
+    expect(
+      graphqlSync(schema, '{ hello lower(str: "World") }', { hello: 'hello' }),
+    ).to.deep.equal({
+      data: { hello: 'HELLO', lower: 'world' },
+    });
+  });
+
   it('Empty type', () => {
     const sdl = dedent`
       type EmptyType

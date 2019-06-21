@@ -47,6 +47,7 @@ import {
   type GraphQLEnumValueConfig,
   type GraphQLInputFieldConfig,
   type GraphQLFieldResolver,
+  type GraphQLScalarTypeConverters,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -73,10 +74,15 @@ import {
   GraphQLSchema,
 } from '../type/schema';
 
-export type TypeFieldResolverMap = ObjMap<
-  | ObjMap<GraphQLFieldResolver<mixed, mixed, mixed>> /* type and interface */
-  | ObjMap<any> /* enum */,
->;
+export type TypeFieldResolver =
+  /* scalars */
+  | GraphQLScalarTypeConverters<any, any>
+  /* type and interface */
+  | ObjMap<GraphQLFieldResolver<mixed, mixed, mixed>>
+  /* enum */
+  | ObjMap<any>;
+
+export type TypeFieldResolverMap = ObjMap<TypeFieldResolver>;
 
 export type BuildSchemaOptions = {
   ...GraphQLSchemaValidationOptions,
@@ -127,6 +133,7 @@ export type BuildSchemaOptions = {
  *    - resolvers — map of named types
  *      - Object, Interface — field resolvers
  *      - Enum — External string → any internal value
+ *      - Scalars — serialize, parseValue, parseLiteral
  *
  */
 export function buildASTSchema(
@@ -272,7 +279,7 @@ export class ASTDefinitionBuilder {
       type: (this.getWrappedType(field.type): any),
       description: getDescription(field, this._options),
       args: keyByNameNode(field.arguments || [], arg => this.buildArg(arg)),
-      resolve: this._lookupResolver(typeName, field.name.value),
+      resolve: this._lookupResolverField(typeName, field.name.value),
       deprecationReason: getDeprecationReason(field),
       astNode: field,
     };
@@ -309,7 +316,7 @@ export class ASTDefinitionBuilder {
     typeName?: string,
   ): GraphQLEnumValueConfig {
     return {
-      value: this._lookupResolver(typeName, value.name.value),
+      value: this._lookupResolverField(typeName, value.name.value),
       description: getDescription(value, this._options),
       deprecationReason: getDeprecationReason(value),
       astNode: value,
@@ -423,9 +430,17 @@ export class ASTDefinitionBuilder {
   }
 
   _makeScalarDef(astNode: ScalarTypeDefinitionNode) {
+    const name = astNode.name.value;
+    const resolver = ((this._lookupResolver(
+      name,
+    ): any): GraphQLScalarTypeConverters<any, any>);
+
     return new GraphQLScalarType({
-      name: astNode.name.value,
+      name,
       description: getDescription(astNode, this._options),
+      serialize: (resolver && resolver.serialize) || undefined,
+      parseValue: (resolver && resolver.parseValue) || undefined,
+      parseLiteral: (resolver && resolver.parseLiteral) || undefined,
       astNode,
     });
   }
@@ -443,15 +458,17 @@ export class ASTDefinitionBuilder {
     });
   }
 
-  _lookupResolver(typeName: ?string, key: string) {
+  _lookupResolver(typeName: ?string) {
+    const opts = this._options;
     return (
-      (typeName &&
-        this._options &&
-        this._options.resolvers &&
-        this._options.resolvers[typeName] &&
-        this._options.resolvers[typeName][key]) ||
+      (typeName && opts && opts.resolvers && opts.resolvers[typeName]) ||
       undefined
     );
+  }
+
+  _lookupResolverField(typeName: ?string, key: string) {
+    const resolver = this._lookupResolver(typeName);
+    return (resolver && resolver[key]) || undefined;
   }
 }
 
