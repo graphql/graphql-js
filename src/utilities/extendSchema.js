@@ -314,7 +314,7 @@ export function extendSchema(
         ...keyValMap(
           valueNodes,
           value => value.name.value,
-          value => astBuilder.buildEnumValue(value),
+          value => astBuilder.buildEnumValue(value, config.name),
         ),
       },
       extensionASTNodes: config.extensionASTNodes.concat(extensions),

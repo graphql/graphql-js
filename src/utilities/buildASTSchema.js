@@ -74,7 +74,8 @@ import {
 } from '../type/schema';
 
 export type TypeFieldResolverMap = ObjMap<
-  ObjMap<GraphQLFieldResolver<mixed, mixed, mixed>>,
+  | ObjMap<GraphQLFieldResolver<mixed, mixed, mixed>> /* type and interface */
+  | ObjMap<any> /* enum */,
 >;
 
 export type BuildSchemaOptions = {
@@ -259,14 +260,6 @@ export class ASTDefinitionBuilder {
     field: FieldDefinitionNode,
     typeName?: string,
   ): GraphQLFieldConfig<mixed, mixed> {
-    const resolve =
-      (typeName &&
-        this._options &&
-        this._options.resolvers &&
-        this._options.resolvers[typeName] &&
-        this._options.resolvers[typeName][field.name.value]) ||
-      undefined;
-
     return {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
@@ -274,7 +267,7 @@ export class ASTDefinitionBuilder {
       type: (this.getWrappedType(field.type): any),
       description: getDescription(field, this._options),
       args: keyByNameNode(field.arguments || [], arg => this.buildArg(arg)),
-      resolve,
+      resolve: this._lookupResolver(typeName, field.name.value),
       deprecationReason: getDeprecationReason(field),
       astNode: field,
     };
@@ -306,8 +299,12 @@ export class ASTDefinitionBuilder {
     };
   }
 
-  buildEnumValue(value: EnumValueDefinitionNode): GraphQLEnumValueConfig {
+  buildEnumValue(
+    value: EnumValueDefinitionNode,
+    typeName?: string,
+  ): GraphQLEnumValueConfig {
     return {
+      value: this._lookupResolver(typeName, value.name.value),
       description: getDescription(value, this._options),
       deprecationReason: getDeprecationReason(value),
       astNode: value,
@@ -389,11 +386,14 @@ export class ASTDefinitionBuilder {
 
   _makeEnumDef(astNode: EnumTypeDefinitionNode) {
     const valueNodes = astNode.values || [];
+    const name = astNode.name.value;
 
     return new GraphQLEnumType({
-      name: astNode.name.value,
+      name,
       description: getDescription(astNode, this._options),
-      values: keyByNameNode(valueNodes, value => this.buildEnumValue(value)),
+      values: keyByNameNode(valueNodes, value =>
+        this.buildEnumValue(value, name),
+      ),
       astNode,
     });
   }
@@ -436,6 +436,17 @@ export class ASTDefinitionBuilder {
         : Object.create(null),
       astNode: def,
     });
+  }
+
+  _lookupResolver(typeName: ?string, key: string) {
+    return (
+      (typeName &&
+        this._options &&
+        this._options.resolvers &&
+        this._options.resolvers[typeName] &&
+        this._options.resolvers[typeName][key]) ||
+      undefined
+    );
   }
 }
 
