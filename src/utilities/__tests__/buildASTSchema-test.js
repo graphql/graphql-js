@@ -74,6 +74,54 @@ describe('Schema Builder', () => {
     });
   });
 
+  it('can lookup type resolvers', () => {
+    const schema = buildSchema(
+      `
+      type Query {
+        mult(a: Int!, b: Int!): Int!
+      }
+    `,
+      {
+        resolvers: {
+          Query: {
+            mult: (_: { ... }, { a, b }) => a * b,
+          },
+        },
+      },
+    );
+
+    expect(graphqlSync(schema, '{ mult(a: 3, b: 4) }', null)).to.deep.equal({
+      data: { mult: 12 },
+    });
+  });
+
+  it('can lookup enum values', () => {
+    const schema = buildSchema(
+      `
+      enum Color { RED, GREEN, BLUE }
+      type Query {
+        colors: [Color!]!
+      }
+    `,
+      {
+        resolvers: {
+          Query: {
+            colors: () => [4, 2, 1],
+          },
+          Color: {
+            RED: 1,
+            GREEN: 2,
+            BLUE: 4,
+          },
+        },
+      },
+    );
+
+    expect(graphqlSync(schema, '{ colors }', null)).to.deep.equal({
+      data: { colors: ['BLUE', 'GREEN', 'RED'] },
+    });
+  });
+
   it('Empty type', () => {
     const sdl = dedent`
       type EmptyType
