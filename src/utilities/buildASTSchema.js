@@ -112,16 +112,21 @@ export type BuildSchemaOptions = {
  * This takes the ast of a schema document produced by the parse function in
  * src/language/parser.js.
  *
- * If no schema definition is provided, then it will look for types named Query
- * and Mutation.
+ * If no schema definition is provided, then it will look for types named Query,
+ * Mutation and Subscription.
  *
- * Given that AST it constructs a GraphQLSchema. The resulting schema
- * has no resolve methods, so execution will use default resolvers.
+ * Given that AST it constructs a GraphQLSchema. The built schema will use
+ * resolve methods from `options.resolvers[typeName][fieldName]` if found.
+ * Otherwise it will use default resolvers.
  *
  * Accepts options as a second argument:
  *
  *    - commentDescriptions:
  *        Provide true to use preceding comments as the description.
+ *
+ *    - resolvers — map of named types
+ *      - Object, Interface — field resolvers
+ *      - Enum — External string → any internal value
  *
  */
 export function buildASTSchema(
