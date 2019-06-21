@@ -46,6 +46,7 @@ import {
   type GraphQLArgumentConfig,
   type GraphQLEnumValueConfig,
   type GraphQLInputFieldConfig,
+  type GraphQLFieldResolver,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -72,6 +73,10 @@ import {
   GraphQLSchema,
 } from '../type/schema';
 
+export type TypeFieldResolverMap = ObjMap<
+  ObjMap<GraphQLFieldResolver<mixed, mixed, mixed>>,
+>;
+
 export type BuildSchemaOptions = {
   ...GraphQLSchemaValidationOptions,
 
@@ -91,6 +96,13 @@ export type BuildSchemaOptions = {
    * Default: false
    */
   assumeValidSDL?: boolean,
+
+  /**
+   * Object map of object maps to resolver funtions.
+   *
+   * Default: undefined
+   */
+  resolvers?: TypeFieldResolverMap,
 
   ...
 };
@@ -243,7 +255,18 @@ export class ASTDefinitionBuilder {
     });
   }
 
-  buildField(field: FieldDefinitionNode): GraphQLFieldConfig<mixed, mixed> {
+  buildField(
+    field: FieldDefinitionNode,
+    typeName?: string,
+  ): GraphQLFieldConfig<mixed, mixed> {
+    const resolve =
+      (typeName &&
+        this._options &&
+        this._options.resolvers &&
+        this._options.resolvers[typeName] &&
+        this._options.resolvers[typeName][field.name.value]) ||
+      undefined;
+
     return {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
@@ -251,6 +274,7 @@ export class ASTDefinitionBuilder {
       type: (this.getWrappedType(field.type): any),
       description: getDescription(field, this._options),
       args: keyByNameNode(field.arguments || [], arg => this.buildArg(arg)),
+      resolve,
       deprecationReason: getDeprecationReason(field),
       astNode: field,
     };
@@ -330,13 +354,15 @@ export class ASTDefinitionBuilder {
         ? () => interfaceNodes.map(ref => (this.getNamedType(ref): any))
         : [];
 
+    const name = astNode.name.value;
+
     const fields =
       fieldNodes && fieldNodes.length > 0
-        ? () => keyByNameNode(fieldNodes, field => this.buildField(field))
+        ? () => keyByNameNode(fieldNodes, field => this.buildField(field, name))
         : Object.create(null);
 
     return new GraphQLObjectType({
-      name: astNode.name.value,
+      name,
       description: getDescription(astNode, this._options),
       interfaces,
       fields,
@@ -346,14 +372,15 @@ export class ASTDefinitionBuilder {
 
   _makeInterfaceDef(astNode: InterfaceTypeDefinitionNode) {
     const fieldNodes = astNode.fields;
+    const name = astNode.name.value;
 
     const fields =
       fieldNodes && fieldNodes.length > 0
-        ? () => keyByNameNode(fieldNodes, field => this.buildField(field))
+        ? () => keyByNameNode(fieldNodes, field => this.buildField(field, name))
         : Object.create(null);
 
     return new GraphQLInterfaceType({
-      name: astNode.name.value,
+      name,
       description: getDescription(astNode, this._options),
       fields,
       astNode,

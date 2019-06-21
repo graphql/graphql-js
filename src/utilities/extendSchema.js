@@ -6,7 +6,10 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import mapValue from '../jsutils/mapValue';
 import keyValMap from '../jsutils/keyValMap';
-import { ASTDefinitionBuilder } from './buildASTSchema';
+import {
+  type TypeFieldResolverMap,
+  ASTDefinitionBuilder,
+} from './buildASTSchema';
 import { assertValidSDLExtension } from '../validation/validate';
 import {
   type GraphQLSchemaValidationOptions,
@@ -70,6 +73,13 @@ type Options = {|
    * Default: false
    */
   assumeValidSDL?: boolean,
+
+  /**
+   * Object map of object maps to resolver funtions.
+   *
+   * Default: undefined
+   */
+  resolvers?: TypeFieldResolverMap,
 |};
 
 /**
@@ -341,7 +351,7 @@ export function extendSchema(
         ...keyValMap(
           fieldNodes,
           node => node.name.value,
-          node => astBuilder.buildField(node),
+          node => astBuilder.buildField(node, config.name),
         ),
       }),
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
@@ -362,7 +372,7 @@ export function extendSchema(
         ...keyValMap(
           fieldNodes,
           node => node.name.value,
-          node => astBuilder.buildField(node),
+          node => astBuilder.buildField(node, config.name),
         ),
       }),
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
