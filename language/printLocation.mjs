@@ -18,9 +18,26 @@ export function printSourceLocation(source, sourceLocation) {
   var lineNum = sourceLocation.line + lineOffset;
   var columnOffset = sourceLocation.line === 1 ? firstLineColumnOffset : 0;
   var columnNum = sourceLocation.column + columnOffset;
+  var locationStr = "".concat(source.name, ":").concat(lineNum, ":").concat(columnNum, "\n");
   var lines = body.split(/\r\n|[\n\r]/g);
-  return "".concat(source.name, ":").concat(lineNum, ":").concat(columnNum, "\n") + printPrefixedLines([// Lines specified like this: ["prefix", "string"],
-  ["".concat(lineNum - 1, ": "), lines[lineIndex - 1]], ["".concat(lineNum, ": "), lines[lineIndex]], ['', whitespace(columnNum - 1) + '^'], ["".concat(lineNum + 1, ": "), lines[lineIndex + 1]]]);
+  var locationLine = lines[lineIndex]; // Special case for minified documents
+
+  if (locationLine.length > 120) {
+    var sublineIndex = Math.floor(columnNum / 80);
+    var sublineColumnNum = columnNum % 80;
+    var sublines = [];
+
+    for (var i = 0; i < locationLine.length; i += 80) {
+      sublines.push(locationLine.slice(i, i + 80));
+    }
+
+    return locationStr + printPrefixedLines([["".concat(lineNum), sublines[0]]].concat(sublines.slice(1, sublineIndex + 1).map(function (subline) {
+      return ['', subline];
+    }), [[' ', whitespace(sublineColumnNum - 1) + '^'], ['', sublines[sublineIndex + 1]]]));
+  }
+
+  return locationStr + printPrefixedLines([// Lines specified like this: ["prefix", "string"],
+  ["".concat(lineNum - 1), lines[lineIndex - 1]], ["".concat(lineNum), locationLine], ['', whitespace(columnNum - 1) + '^'], ["".concat(lineNum + 1), lines[lineIndex + 1]]]);
 }
 
 function printPrefixedLines(lines) {
@@ -29,36 +46,14 @@ function printPrefixedLines(lines) {
         line = _ref[1];
     return line !== undefined;
   });
-  var padLen = 0;
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
-
-  try {
-    for (var _iterator = existingLines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var _ref4 = _step.value;
-      var prefix = _ref4[0];
-      padLen = Math.max(padLen, prefix.length);
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
-  }
-
+  var padLen = Math.max.apply(Math, existingLines.map(function (_ref2) {
+    var prefix = _ref2[0];
+    return prefix.length;
+  }));
   return existingLines.map(function (_ref3) {
     var prefix = _ref3[0],
         line = _ref3[1];
-    return lpad(padLen, prefix) + line;
+    return lpad(padLen, prefix) + ' | ' + line;
   }).join('\n');
 }
 
