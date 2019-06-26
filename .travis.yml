@@ -21,24 +21,24 @@ script: |
 
 jobs:
   include:
-    - stage: deploy
-      if: branch = master OR tag IS present
-      script: echo "Deploying..."
-      node_js: lts/*
-      deploy:
-      - provider: script
-        script: npm run gitpublish
-        skip_cleanup: true
+  - stage: deploy
+    if: branch = master OR tag IS present
+    script: echo "Deploying..."
+    node_js: lts/*
+    deploy:
+    - provider: script
+      script: npm run gitpublish
+      skip_cleanup: true
+      on:
+        branch: master
+    - provider: npm
+      skip_cleanup: true
+      email: mahoney.mattj@gmail.com
+      api_key:
+        secure: VrDxiDK9vhe0F8WulJ+HcAkMwuvqIhtXYethlJBwkS9N57F4RuxzCJE0VuDDS90qMAewA450lfT5caCazir4opvpZebB16iy8/9J2ymhBj6bJs9rm/B3Xg/xQSLOWAmdq1H4lPF6CihQ5LR57BZbi9Rx3f5JOeXgiqQNASJH+mrXiQh3qZ9Ry8YJXhvcUDQNX57ooSBeGYXf5PcKsEUF0Qs6XLUCUdOztMrtA+sIZkQxAaEBBG7tkE6LdF3OJl2ORNMig05juyfeevcGk6g4XnoIA4gvnW1KHToLvuGWdoCHAW1N269JAaH4bL2JfcA5A7KXbZVwif0jIJz47dmOsnIMlMdSqBpw7zSRSq2Ikv1Vb5XRPeVk0CK0d2kUZej6Jb9+/Jed39chfyAAMVM4Wba8UcTKbOIqv7Kl1SmmgBOGveK7k4fpffbWdofi9avuqzeftdFrM1FULsX5Wne9n3xuJDvVLW0YRB2+FVmfwGNwzW5X/bzgLDRWB5W5JL60FXt91Hrk5bIi0GcPx6n0Ls7IJ9U6r5kWfcuTYl0gxOiWQDJ0OCXBXA5taIO6/AX/d9af4VhGc/EVxuIpUaW52nZOL49KG/3tYx39mDCqRf7w7/658RVXNO/yLy6b/QPY7+3Lua9y88xLxru3bI9gpNUdnYUFIehktuiAkuunWoA=
         on:
           branch: master
-      - provider: npm
-        skip_cleanup: true
-        email: mahoney.mattj@gmail.com
-        api_key:
-          secure: VrDxiDK9vhe0F8WulJ+HcAkMwuvqIhtXYethlJBwkS9N57F4RuxzCJE0VuDDS90qMAewA450lfT5caCazir4opvpZebB16iy8/9J2ymhBj6bJs9rm/B3Xg/xQSLOWAmdq1H4lPF6CihQ5LR57BZbi9Rx3f5JOeXgiqQNASJH+mrXiQh3qZ9Ry8YJXhvcUDQNX57ooSBeGYXf5PcKsEUF0Qs6XLUCUdOztMrtA+sIZkQxAaEBBG7tkE6LdF3OJl2ORNMig05juyfeevcGk6g4XnoIA4gvnW1KHToLvuGWdoCHAW1N269JAaH4bL2JfcA5A7KXbZVwif0jIJz47dmOsnIMlMdSqBpw7zSRSq2Ikv1Vb5XRPeVk0CK0d2kUZej6Jb9+/Jed39chfyAAMVM4Wba8UcTKbOIqv7Kl1SmmgBOGveK7k4fpffbWdofi9avuqzeftdFrM1FULsX5Wne9n3xuJDvVLW0YRB2+FVmfwGNwzW5X/bzgLDRWB5W5JL60FXt91Hrk5bIi0GcPx6n0Ls7IJ9U6r5kWfcuTYl0gxOiWQDJ0OCXBXA5taIO6/AX/d9af4VhGc/EVxuIpUaW52nZOL49KG/3tYx39mDCqRf7w7/658RVXNO/yLy6b/QPY7+3Lua9y88xLxru3bI9gpNUdnYUFIehktuiAkuunWoA=
-          on:
-            branch: master
-            tags: true
+          tags: true
 
 notifications:
   irc:
