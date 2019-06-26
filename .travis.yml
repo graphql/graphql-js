@@ -5,11 +5,11 @@ cache: yarn
 
 # https://github.com/nodejs/Release
 node_js:
-  - '12'
-  - '11'
-  - '10'
-  - '8'
-  - '6'
+- '12'
+- '11'
+- '10'
+- '8'
+- '6'
 
 script: |
   if [[ "$(node -pe process.version)" == v10.* ]]; then # Is latest LTS?
@@ -24,18 +24,18 @@ jobs:
     - stage: deploy
       if: branch = master OR tag IS present
       script: echo "Deploying..."
-      node_js: 'lts/*'
+      node_js: lts/*
       deploy:
-        - provider: script
-          script: npm run gitpublish
-          skip_cleanup: true
-          on:
-            branch: master
-        - provider: npm
-          skip_cleanup: true
-          email: "mahoney.mattj@gmail.com"
-          api_key:
-            secure: VrDxiDK9vhe0F8WulJ+HcAkMwuvqIhtXYethlJBwkS9N57F4RuxzCJE0VuDDS90qMAewA450lfT5caCazir4opvpZebB16iy8/9J2ymhBj6bJs9rm/B3Xg/xQSLOWAmdq1H4lPF6CihQ5LR57BZbi9Rx3f5JOeXgiqQNASJH+mrXiQh3qZ9Ry8YJXhvcUDQNX57ooSBeGYXf5PcKsEUF0Qs6XLUCUdOztMrtA+sIZkQxAaEBBG7tkE6LdF3OJl2ORNMig05juyfeevcGk6g4XnoIA4gvnW1KHToLvuGWdoCHAW1N269JAaH4bL2JfcA5A7KXbZVwif0jIJz47dmOsnIMlMdSqBpw7zSRSq2Ikv1Vb5XRPeVk0CK0d2kUZej6Jb9+/Jed39chfyAAMVM4Wba8UcTKbOIqv7Kl1SmmgBOGveK7k4fpffbWdofi9avuqzeftdFrM1FULsX5Wne9n3xuJDvVLW0YRB2+FVmfwGNwzW5X/bzgLDRWB5W5JL60FXt91Hrk5bIi0GcPx6n0Ls7IJ9U6r5kWfcuTYl0gxOiWQDJ0OCXBXA5taIO6/AX/d9af4VhGc/EVxuIpUaW52nZOL49KG/3tYx39mDCqRf7w7/658RVXNO/yLy6b/QPY7+3Lua9y88xLxru3bI9gpNUdnYUFIehktuiAkuunWoA=
+      - provider: script
+        script: npm run gitpublish
+        skip_cleanup: true
+        on:
+          branch: master
+      - provider: npm
+        skip_cleanup: true
+        email: mahoney.mattj@gmail.com
+        api_key:
+          secure: VrDxiDK9vhe0F8WulJ+HcAkMwuvqIhtXYethlJBwkS9N57F4RuxzCJE0VuDDS90qMAewA450lfT5caCazir4opvpZebB16iy8/9J2ymhBj6bJs9rm/B3Xg/xQSLOWAmdq1H4lPF6CihQ5LR57BZbi9Rx3f5JOeXgiqQNASJH+mrXiQh3qZ9Ry8YJXhvcUDQNX57ooSBeGYXf5PcKsEUF0Qs6XLUCUdOztMrtA+sIZkQxAaEBBG7tkE6LdF3OJl2ORNMig05juyfeevcGk6g4XnoIA4gvnW1KHToLvuGWdoCHAW1N269JAaH4bL2JfcA5A7KXbZVwif0jIJz47dmOsnIMlMdSqBpw7zSRSq2Ikv1Vb5XRPeVk0CK0d2kUZej6Jb9+/Jed39chfyAAMVM4Wba8UcTKbOIqv7Kl1SmmgBOGveK7k4fpffbWdofi9avuqzeftdFrM1FULsX5Wne9n3xuJDvVLW0YRB2+FVmfwGNwzW5X/bzgLDRWB5W5JL60FXt91Hrk5bIi0GcPx6n0Ls7IJ9U6r5kWfcuTYl0gxOiWQDJ0OCXBXA5taIO6/AX/d9af4VhGc/EVxuIpUaW52nZOL49KG/3tYx39mDCqRf7w7/658RVXNO/yLy6b/QPY7+3Lua9y88xLxru3bI9gpNUdnYUFIehktuiAkuunWoA=
           on:
             branch: master
             tags: true
@@ -47,10 +47,10 @@ notifications:
     on_failure: change
     skip_join: true
     channels:
-      - "chat.freenode.net#graphql"
+    - chat.freenode.net#graphql
   slack:
     secure: G7fzaXoPI1cyyW7dlpQ8oG/ot73n4kE83HgbyK1iEN1YBfodsytVgh0jS+zB3DhhRAotS/VfGVz9Wj2Oo109U5w/FyxdMGuKvFan/0B/aAws1sPxLGWA5230u1wTKQCHAu17+yppFOODUu1ILDXaD2A//Wj5iru9M4NnKc1bO6VHkfBHPTLQLbdPHmorwuSH02Ocbh7K4XOWzXRxM6VrwamEn1KnyXGu2w3QdJUT31OjGEEdf6FUzvjwzFgXPhngCw5+enpwm71ljHDNu8YHhXvHtS4328O5pYQO8np7j653HNEqi+ZUiYEOWpwC8be1xHdvi/s32tPFZiCx28ZmDoCUrY744tpPtE6tzuncmSKB0Y3EjutdXBpxllNr5l5hpX5092G2MlpokFbv85J+E2ALcZYNYeFOqTYTKwTYkxK6B1x4amBNpM+FXgUhloK4BK9OT0Qh5SiQOsM8cZT0h6QP91n+REljtpugW3VbuIxq5OJAi42FYbHBC27pohhq6ohU1euZfobk9a7ZawnjoEUk1EZHXiJzYKY/QqzyB6dwk0ersBl3l3OX/wnjwKTkqc9aTmDWo2L+lHaUCXuCY1+KQXsRicfnH395szTJXQbvcbN0zz188gdz6sawzi5BxndWo0NRwZyOG2YcyUHFQR4bK1rL7Lo6t6rijQ/XMeQ=
 
 env:
   global:
-    secure: "uUjOV39iCLSLtShQfKk9AelIu2PqyKf8dYu4rqVcL5Y9yCHdds1KYysVgCx9XhndrugHNCXWzT/sKDS8voc/NRsfycnvdCIvu+dtBwf9lCHGcMyABFpvsjQfKTGyMCbYNDO8Hd/OQqHCFVj1lh4aNGev8tGqpJoMEDPdQbDKsvMVKWfo9QraXYYK7yh7U2vbidAV+YBj/e3VFfR2UQ+OECHxyxFGxWMbyTF8qRZ7JUsgCaJ82zrx0A7VoEJ6BeXxzhYDPuh3QTON9bXiJpWR/QcsKZNQ7d6Dxf06yo4XQDU9igxe6qst41Hj3IiZzLCyucoPXvoRsbmUcsAVdF4PWq3fnHUmyjRwOMcTjPd2SM4FPJpwnSGZEpstzKSJ3pDzpgRGsF7ai5nGNCes6RCi4AUf96GTjt0JAD+AXwD7mrGlcn4oi0m6r1GcNhDOFsBEgFqz26FXUFQcAqrHzZvsqvG01Cs5pAFMUIEpCyCrkDKClc/LWjJoVInDEVCwGqZk6Qz2XroYjFs25m+aB3ycSIN1qgkTg6szMO76tds4YtL8JDHaAXDbvXAk8YRYbQCAIFQVaIpkp8R1kJa++dP8Q3j/lwAkz+57XJ5KPRlLh7KMqF1joTGKptA0c2vD0sees2RxPrcZGmp6eaOLy3JhQmXfPaRLLpiK+plz6T25f7Y="
+    secure: uUjOV39iCLSLtShQfKk9AelIu2PqyKf8dYu4rqVcL5Y9yCHdds1KYysVgCx9XhndrugHNCXWzT/sKDS8voc/NRsfycnvdCIvu+dtBwf9lCHGcMyABFpvsjQfKTGyMCbYNDO8Hd/OQqHCFVj1lh4aNGev8tGqpJoMEDPdQbDKsvMVKWfo9QraXYYK7yh7U2vbidAV+YBj/e3VFfR2UQ+OECHxyxFGxWMbyTF8qRZ7JUsgCaJ82zrx0A7VoEJ6BeXxzhYDPuh3QTON9bXiJpWR/QcsKZNQ7d6Dxf06yo4XQDU9igxe6qst41Hj3IiZzLCyucoPXvoRsbmUcsAVdF4PWq3fnHUmyjRwOMcTjPd2SM4FPJpwnSGZEpstzKSJ3pDzpgRGsF7ai5nGNCes6RCi4AUf96GTjt0JAD+AXwD7mrGlcn4oi0m6r1GcNhDOFsBEgFqz26FXUFQcAqrHzZvsqvG01Cs5pAFMUIEpCyCrkDKClc/LWjJoVInDEVCwGqZk6Qz2XroYjFs25m+aB3ycSIN1qgkTg6szMO76tds4YtL8JDHaAXDbvXAk8YRYbQCAIFQVaIpkp8R1kJa++dP8Q3j/lwAkz+57XJ5KPRlLh7KMqF1joTGKptA0c2vD0sees2RxPrcZGmp6eaOLy3JhQmXfPaRLLpiK+plz6T25f7Y=
