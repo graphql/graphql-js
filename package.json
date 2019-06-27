@@ -35,6 +35,7 @@
     "changelog": "node resources/gen-changelog.js",
     "preversion": ". ./resources/checkgit.sh",
     "version": "node resources/gen-version.js && npm test",
+    "postversion": "git commit --amend --all --no-edit",
     "prepublishOnly": ". ./resources/prepublish.sh",
     "gitpublish": ". ./resources/gitpublish.sh"
   },
