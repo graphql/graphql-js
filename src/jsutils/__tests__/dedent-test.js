@@ -59,15 +59,6 @@ describe('dedent', () => {
     );
   });
 
-  it('also works as an ordinary function on strings', () => {
-    const output = dedent(`
-      type Query {
-        me: User
-      }
-    `);
-    expect(output).to.equal(['type Query {', '  me: User', '}', ''].join('\n'));
-  });
-
   it('also removes indentation using tabs', () => {
     const output = dedent`
         \t\t    type Query {

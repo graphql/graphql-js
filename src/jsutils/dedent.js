@@ -1,20 +1,5 @@
 // @flow strict
 
-import invariant from './invariant';
-
-/**
- * fixes indentation by removing leading spaces and tabs from each line
- */
-function fixIndent(str: string): string {
-  const trimmedStr = str
-    .replace(/^\n*/m, '') //  remove leading newline
-    .replace(/[ \t]*$/, ''); // remove trailing spaces and tabs
-  const indentMatch = /^[ \t]*/.exec(trimmedStr);
-  invariant(Array.isArray(indentMatch));
-  const indent = indentMatch[0]; // figure out indent
-  return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
-}
-
 /**
  * An ES6 string tag that fixes indentation. Also removes leading newlines
  * and trailing spaces and tabs, but keeps trailing newlines.
@@ -28,20 +13,29 @@ function fixIndent(str: string): string {
  * str === "{\n  test\n}\n";
  */
 export default function dedent(
-  strings: string | Array<string>,
+  strings: Array<string>,
   ...values: Array<string>
 ): string {
-  // when used as an ordinary function, allow passing a singleton string
-  const strArray = typeof strings === 'string' ? [strings] : strings;
-  const numValues = values.length;
+  let str = '';
 
-  const str = strArray.reduce((prev, cur, index) => {
-    let next = prev + cur;
-    if (index < numValues) {
-      next += values[index]; // interpolation
+  for (let i = 0; i < strings.length; ++i) {
+    str += strings[i];
+    if (i < values.length) {
+      str += values[i]; // interpolation
     }
-    return next;
-  }, '');
+  }
 
-  return fixIndent(str);
+  const trimmedStr = str
+    .replace(/^\n*/m, '') //  remove leading newline
+    .replace(/[ \t]*$/, ''); // remove trailing spaces and tabs
+
+  // fixes indentation by removing leading spaces and tabs from each line
+  let indent = '';
+  for (const char of trimmedStr) {
+    if (char !== ' ' && char !== '\t') {
+      break;
+    }
+    indent += char;
+  }
+  return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
 }
