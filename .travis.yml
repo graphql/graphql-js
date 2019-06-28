@@ -22,23 +22,10 @@ script: |
 jobs:
   include:
   - stage: deploy
-    if: branch = master OR tag IS present
-    script: echo "Deploying..."
-    node_js: lts/*
-    deploy:
-    - provider: script
-      script: npm run gitpublish
-      skip_cleanup: true
-      on:
-        branch: master
-    - provider: npm
-      skip_cleanup: true
-      on:
-        branch: master
-        tags: true
-      email: ivan.goncharov.ua@gmail.com
-      api_key:
-        secure: c4qeYtN4p41iqGxJFczGGaKgVKXEhKeCUOLAsgweLRN2yCAextWpZDP5EGn3lKZdLtovMIGsyVmdF1HDTKsAk/aBfPYsyvRgUpjtCUfxz0N48O009Erzkz7ibRrXkhcHWAKyE/RJRNpEkn8f7XdkEgewP1rjoSYhINizNZijDIhUfKVq41OfNRJoIv5WOX9DaArSJESde0z/wASlxS0vM4nrt0qjUdnMK4Dm0KGcJKJEqu/LA0YbZHfjl90pjr87MQzsYV1LF14EAI2JVzincrlOlyF872vLbja6AmFcugWNlefDGroV9LvSJUdlRdhDzc9Sr7Z4zgydOyHG6mvXgp0t4dV2fiJVWuU+oJL/v5LZ6jNEkk3jH5xDjC2xB9P45gm93HHekZzf5R3LQh8lfmdiFlhFDMVfv+8+T+nm+rwE9edxc68IBTPRaIRwnvNMpLJ1vuseBfWf5B6CKR1YNQESz1eweNdVa8DrKqXzOsMVNh1/lMIB5rqT6J/C+XQJbmiaYso5tksgr0FmyFJ6I/NQX0IazRS4Ao7paIf+hdgogePI4G5U4MW3M6WUTP9J2hQkqiWmmbgYAXYoYmrvoEMUi85voUdBjoyJtSvIQSz2Ai8JvwX3mNyinzef2wd9xP1eyTEqfY5CgNS5GgScIarcW9kWpQXT9lU4qFtklGw=
+    if: branch = master
+    script: npm run gitpublish
+    skip_cleanup: true
+    node_js: '10'
 
 notifications:
   irc:
