@@ -18,7 +18,7 @@ import {
 
 export function extendingUnknownTypeMessage(
   typeName: string,
-  suggestedTypes: Array<string>,
+  suggestedTypes: $ReadOnlyArray<string>,
 ): string {
   return (
     `Cannot extend type "${typeName}" because it is not defined.` +

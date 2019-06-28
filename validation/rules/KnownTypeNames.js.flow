@@ -18,7 +18,7 @@ import { specifiedScalarTypes } from '../../type/scalars';
 
 export function unknownTypeMessage(
   typeName: string,
-  suggestedTypes: Array<string>,
+  suggestedTypes: $ReadOnlyArray<string>,
 ): string {
   return (
     `Unknown type "${typeName}".` +

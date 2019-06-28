@@ -32,7 +32,9 @@ export function dedentBlockStringValue(rawString: string): string {
 }
 
 // @internal
-export function getBlockStringIndentation(lines: Array<string>): number {
+export function getBlockStringIndentation(
+  lines: $ReadOnlyArray<string>,
+): number {
   let commonIndent = null;
 
   for (let i = 1; i < lines.length; i++) {

@@ -15,7 +15,7 @@ export function unknownArgMessage(
   argName: string,
   fieldName: string,
   typeName: string,
-  suggestedArgs: Array<string>,
+  suggestedArgs: $ReadOnlyArray<string>,
 ): string {
   return (
     `Unknown argument "${argName}" on field "${fieldName}" of type "${typeName}".` +
@@ -26,7 +26,7 @@ export function unknownArgMessage(
 export function unknownDirectiveArgMessage(
   argName: string,
   directiveName: string,
-  suggestedArgs: Array<string>,
+  suggestedArgs: $ReadOnlyArray<string>,
 ): string {
   return (
     `Unknown argument "${argName}" on directive "@${directiveName}".` +

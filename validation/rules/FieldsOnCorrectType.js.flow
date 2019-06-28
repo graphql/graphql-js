@@ -17,8 +17,8 @@ import {
 export function undefinedFieldMessage(
   fieldName: string,
   type: string,
-  suggestedTypeNames: Array<string>,
-  suggestedFieldNames: Array<string>,
+  suggestedTypeNames: $ReadOnlyArray<string>,
+  suggestedFieldNames: $ReadOnlyArray<string>,
 ): string {
   const quotedTypeNames = suggestedTypeNames.map(x => `"${x}"`);
   const quotedFieldNames = suggestedFieldNames.map(x => `"${x}"`);

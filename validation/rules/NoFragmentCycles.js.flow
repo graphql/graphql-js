@@ -7,7 +7,7 @@ import { type ASTVisitor } from '../../language/visitor';
 
 export function cycleErrorMessage(
   fragName: string,
-  spreadNames: Array<string>,
+  spreadNames: $ReadOnlyArray<string>,
 ): string {
   const via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
   return `Cannot spread fragment "${fragName}" within itself${via}.`;
