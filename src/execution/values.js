@@ -41,7 +41,7 @@ type CoercedVariableValues = {|
 export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: $ReadOnlyArray<VariableDefinitionNode>,
-  inputs: ObjMap<mixed>,
+  inputs: { +[variable: string]: mixed, ... },
 ): CoercedVariableValues {
   const errors = [];
   const coercedValues = {};

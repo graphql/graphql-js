@@ -116,7 +116,7 @@ export type ExecutionArgs = {|
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{ [variable: string]: mixed, ... },
+  variableValues?: ?{ +[variable: string]: mixed, ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
@@ -144,7 +144,7 @@ declare function execute(
   document: DocumentNode,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{ [variable: string]: mixed, ... },
+  variableValues?: ?{ +[variable: string]: mixed, ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
@@ -266,7 +266,7 @@ export function addPath(prev: ResponsePath | void, key: string | number) {
 export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
-  rawVariableValues: ?ObjMap<mixed>,
+  rawVariableValues: ?{ +[variable: string]: mixed, ... },
 ): void {
   invariant(document, 'Must provide document');
 
@@ -291,7 +291,7 @@ export function buildExecutionContext(
   document: DocumentNode,
   rootValue: mixed,
   contextValue: mixed,
-  rawVariableValues: ?ObjMap<mixed>,
+  rawVariableValues: ?{ +[variable: string]: mixed, ... },
   operationName: ?string,
   fieldResolver: ?GraphQLFieldResolver<any, any>,
   typeResolver?: ?GraphQLTypeResolver<any, any>,
