@@ -779,7 +779,7 @@ function _collectFieldsAndFragmentNames(
 // Given a series of Conflicts which occurred between two sub-fields, generate
 // a single Conflict.
 function subfieldConflicts(
-  conflicts: Array<Conflict>,
+  conflicts: $ReadOnlyArray<Conflict>,
   responseName: string,
   node1: FieldNode,
   node2: FieldNode,
