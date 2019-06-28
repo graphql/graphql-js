@@ -214,7 +214,7 @@ async function batchCommitInfo(commits) {
 }
 
 function commitsInfoToPRs(commits) {
-  const prs = [];
+  const prs = {};
   for (const commit of commits) {
     const associatedPRs = commit.associatedPullRequests.nodes.filter(
       pr => pr.repository.nameWithOwner === 'graphql/graphql-js',
@@ -243,16 +243,17 @@ function commitsInfoToPRs(commits) {
         `PR #${pr.number} has conflicting labels: ` + labels.join('\n'),
       );
     }
-    prs.push({
+
+    prs[pr.number] = {
       number: pr.number,
       title: pr.title,
       url: pr.url,
       author: pr.author,
       label: labels[0],
-    });
+    };
   }
 
-  return prs;
+  return Object.values(prs);
 }
 
 async function getCommitsInfo(commits) {
