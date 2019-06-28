@@ -803,7 +803,7 @@ function fieldsToFieldsConfig(fields) {
 }
 
 export function argsToArgsConfig(
-  args: Array<GraphQLArgument>,
+  args: $ReadOnlyArray<GraphQLArgument>,
 ): GraphQLFieldConfigArgumentMap {
   return keyValMap(
     args,

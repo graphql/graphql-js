@@ -94,7 +94,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }));
   }
 
-  function sortTypes<T: GraphQLNamedType>(arr: Array<T>): Array<T> {
+  function sortTypes<T: GraphQLNamedType>(arr: $ReadOnlyArray<T>): Array<T> {
     return sortByName(arr).map(replaceNamedType);
   }
 

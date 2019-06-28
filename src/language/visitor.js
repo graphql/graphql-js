@@ -354,7 +354,7 @@ function isNode(maybeNode): boolean %checks {
  * If a prior visitor edits a node, no following visitors will see that node.
  */
 export function visitInParallel(
-  visitors: Array<Visitor<ASTKindToNode>>,
+  visitors: $ReadOnlyArray<Visitor<ASTKindToNode>>,
 ): Visitor<ASTKindToNode> {
   const skipping = new Array(visitors.length);
 
