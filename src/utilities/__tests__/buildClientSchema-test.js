@@ -581,6 +581,24 @@ describe('Type System: build schema from introspection', () => {
       );
     });
 
+    it('throws when missing definition for one of the standard scalars', () => {
+      const schema = buildSchema(`
+        type Query {
+          foo: Float
+        }
+      `);
+      const introspection = introspectionFromSchema(schema);
+
+      // $DisableFlowOnNegativeTest
+      introspection.__schema.types = introspection.__schema.types.filter(
+        ({ name }) => name !== 'Float',
+      );
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Invalid or incomplete schema, unknown type: Float. Ensure that a full introspection query is used in order to build a client schema.',
+      );
+    });
+
     it('throws when type reference is missing name', () => {
       const introspection = introspectionFromSchema(dummySchema);
 
