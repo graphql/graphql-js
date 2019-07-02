@@ -7,9 +7,8 @@ import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
  * methods, if no function provided they become aliases for toString().
  */
 export default function defineToJSON(
-  // eslint-disable-next-line flowtype/no-weak-types
-  classObject: Class<any> | Function,
-  fn?: () => any = classObject.prototype.toString,
+  classObject: Class<any> | ((...args: Array<any>) => mixed),
+  fn?: () => mixed = classObject.prototype.toString,
 ): void {
   classObject.prototype.toJSON = fn;
   classObject.prototype.inspect = fn;
