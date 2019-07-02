@@ -4,8 +4,7 @@ import nodejsCustomInspectSymbol from './nodejsCustomInspectSymbol';
  * methods, if no function provided they become aliases for toString().
  */
 
-export default function defineToJSON( // eslint-disable-next-line flowtype/no-weak-types
-classObject) {
+export default function defineToJSON(classObject) {
   var fn = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : classObject.prototype.toString;
   classObject.prototype.toJSON = fn;
   classObject.prototype.inspect = fn;
