@@ -4,18 +4,21 @@ language: node_js
 cache: yarn
 
 # https://github.com/nodejs/Release
-node_js:
-- '12'
-- '10'
-- '8'
-- '6'
+matrix:
+  include:
+  - node_js: '12'
+    env: RUN_TESTONLY=1
+  - node_js: '10' # Latest LTS
+    env: RUN_TESTONLY=0
+  - node_js: '8'
+    env: RUN_TESTONLY=1
 
 script: |
-  if [[ "$(node -pe process.version)" == v10.* ]]; then # Is latest LTS?
+  if [ $RUN_TESTONLY -eq 1 ]; then
+    npm run testonly
+  else
     npm run test:ci &&
     bash <(curl -s https://codecov.io/bash) -f coverage/tests/coverage-final.json
-  else
-    npm run testonly
   fi
 
 jobs:
