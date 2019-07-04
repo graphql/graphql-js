@@ -172,7 +172,7 @@ function printCharCode(code) {
  * punctuators immediately or calls the appropriate helper function for more
  * complicated tokens.
  */
-function readToken(lexer: Lexer<*>, prev: Token): Token {
+function readToken(lexer: Lexer<mixed>, prev: Token): Token {
   const source = lexer.source;
   const body = source.body;
   const bodyLength = body.length;
@@ -339,7 +339,7 @@ function unexpectedCharacterMessage(code) {
 function positionAfterWhitespace(
   body: string,
   startPosition: number,
-  lexer: Lexer<*>,
+  lexer: Lexer<mixed>,
 ): number {
   const bodyLength = body.length;
   let position = startPosition;

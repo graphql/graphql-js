@@ -13,7 +13,7 @@
  * typically one of your own creation through the class keyword; `class A {}`,
  * for example.
  */
-export default function defineToStringTag(classObject: Class<any>): void {
+export default function defineToStringTag(classObject: Class<mixed>): void {
   if (typeof Symbol === 'function' && Symbol.toStringTag) {
     Object.defineProperty(classObject.prototype, Symbol.toStringTag, {
       get() {

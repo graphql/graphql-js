@@ -727,7 +727,7 @@ defineToStringTag(GraphQLObjectType);
 defineToJSON(GraphQLObjectType);
 
 function defineInterfaces(
-  config: GraphQLObjectTypeConfig<*, *>,
+  config: GraphQLObjectTypeConfig<mixed, mixed>,
 ): Array<GraphQLInterfaceType> {
   const interfaces = resolveThunk(config.interfaces) || [];
   invariant(
@@ -1096,7 +1096,7 @@ defineToStringTag(GraphQLUnionType);
 defineToJSON(GraphQLUnionType);
 
 function defineTypes(
-  config: GraphQLUnionTypeConfig<*, *>,
+  config: GraphQLUnionTypeConfig<mixed, mixed>,
 ): Array<GraphQLObjectType> {
   const types = resolveThunk(config.types) || [];
   invariant(
