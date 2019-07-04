@@ -3,6 +3,7 @@
   "version": "14.4.2",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
+  "private": true,
   "main": "index",
   "module": "index.mjs",
   "sideEffects": false,
