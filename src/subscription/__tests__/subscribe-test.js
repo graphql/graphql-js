@@ -434,9 +434,9 @@ describe('Subscription Initialization Phase', () => {
 
   it('resolves to an error for source event stream resolver errors', async () => {
     // Returning an error
-    const subscriptionReturningErrorSchema = emailSchemaWithResolvers(() => {
-      return new Error('test error');
-    });
+    const subscriptionReturningErrorSchema = emailSchemaWithResolvers(
+      () => new Error('test error'),
+    );
     await testReportsError(subscriptionReturningErrorSchema);
 
     // Throwing an error
@@ -446,10 +446,8 @@ describe('Subscription Initialization Phase', () => {
     await testReportsError(subscriptionThrowingErrorSchema);
 
     // Resolving to an error
-    const subscriptionResolvingErrorSchema = emailSchemaWithResolvers(
-      async () => {
-        return new Error('test error');
-      },
+    const subscriptionResolvingErrorSchema = emailSchemaWithResolvers(() =>
+      Promise.resolve(new Error('test error')),
     );
     await testReportsError(subscriptionResolvingErrorSchema);
 
@@ -1013,6 +1011,7 @@ describe('Subscription Publish Phase', () => {
       `),
     );
 
+    // $FlowFixMe
     const payload1 = await subscription.next();
     expect(payload1).to.deep.equal({
       done: false,
