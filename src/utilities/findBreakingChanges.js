@@ -359,8 +359,8 @@ function findFieldChanges(
 
 function findArgChanges(
   oldType: GraphQLObjectType | GraphQLInterfaceType,
-  oldField: GraphQLField<*, *>,
-  newField: GraphQLField<*, *>,
+  oldField: GraphQLField<mixed, mixed>,
+  newField: GraphQLField<mixed, mixed>,
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
   const argsDiff = diff(oldField.args, newField.args);

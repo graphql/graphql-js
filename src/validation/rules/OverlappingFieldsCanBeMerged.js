@@ -100,7 +100,11 @@ type ConflictReason = [string, ConflictReasonMessage];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining a field node in a context.
-type NodeAndDef = [GraphQLCompositeType, FieldNode, ?GraphQLField<*, *>];
+type NodeAndDef = [
+  GraphQLCompositeType,
+  FieldNode,
+  ?GraphQLField<mixed, mixed>,
+];
 // Map of array of those.
 type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
 

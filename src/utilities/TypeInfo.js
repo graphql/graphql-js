@@ -42,7 +42,7 @@ export class TypeInfo {
   _typeStack: Array<?GraphQLOutputType>;
   _parentTypeStack: Array<?GraphQLCompositeType>;
   _inputTypeStack: Array<?GraphQLInputType>;
-  _fieldDefStack: Array<?GraphQLField<*, *>>;
+  _fieldDefStack: Array<?GraphQLField<mixed, mixed>>;
   _defaultValueStack: Array<?mixed>;
   _directive: ?GraphQLDirective;
   _argument: ?GraphQLArgument;
@@ -106,7 +106,7 @@ export class TypeInfo {
     }
   }
 
-  getFieldDef(): ?GraphQLField<*, *> {
+  getFieldDef(): ?GraphQLField<mixed, mixed> {
     if (this._fieldDefStack.length > 0) {
       return this._fieldDefStack[this._fieldDefStack.length - 1];
     }
@@ -293,7 +293,7 @@ function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLType,
   fieldNode: FieldNode,
-): ?GraphQLField<*, *> {
+): ?GraphQLField<mixed, mixed> {
   const name = fieldNode.name.value;
   if (
     name === SchemaMetaFieldDef.name &&

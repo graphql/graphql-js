@@ -119,7 +119,7 @@ export function getVariableValues(
  * Object prototype.
  */
 export function getArgumentValues(
-  def: GraphQLField<*, *> | GraphQLDirective,
+  def: GraphQLField<mixed, mixed> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
   variableValues?: ?ObjMap<mixed>,
 ): { [argument: string]: mixed, ... } {
