@@ -227,7 +227,7 @@ export class ValidationContext extends ASTValidationContext {
     return this._typeInfo.getParentInputType();
   }
 
-  getFieldDef(): ?GraphQLField<*, *> {
+  getFieldDef(): ?GraphQLField<mixed, mixed> {
     return this._typeInfo.getFieldDef();
   }
 

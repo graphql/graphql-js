@@ -293,8 +293,8 @@ export function buildExecutionContext(
   contextValue: mixed,
   rawVariableValues: ?{ +[variable: string]: mixed, ... },
   operationName: ?string,
-  fieldResolver: ?GraphQLFieldResolver<any, any>,
-  typeResolver?: ?GraphQLTypeResolver<any, any>,
+  fieldResolver: ?GraphQLFieldResolver<mixed, mixed>,
+  typeResolver?: ?GraphQLTypeResolver<mixed, mixed>,
 ): $ReadOnlyArray<GraphQLError> | ExecutionContext {
   const errors: Array<GraphQLError> = [];
   let operation: OperationDefinitionNode | void;
@@ -682,7 +682,7 @@ function resolveField(
 
 export function buildResolveInfo(
   exeContext: ExecutionContext,
-  fieldDef: GraphQLField<*, *>,
+  fieldDef: GraphQLField<mixed, mixed>,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   parentType: GraphQLObjectType,
   path: ResponsePath,
@@ -705,12 +705,12 @@ export function buildResolveInfo(
 
 // Isolates the "ReturnOrAbrupt" behavior to not de-opt the `resolveField`
 // function. Returns the result of resolveFn or the abrupt-return Error object.
-export function resolveFieldValueOrError<TSource>(
+export function resolveFieldValueOrError(
   exeContext: ExecutionContext,
-  fieldDef: GraphQLField<TSource, *>,
+  fieldDef: GraphQLField<mixed, mixed>,
   fieldNodes: $ReadOnlyArray<FieldNode>,
-  resolveFn: GraphQLFieldResolver<TSource, *>,
-  source: TSource,
+  resolveFn: GraphQLFieldResolver<mixed, mixed>,
+  source: mixed,
   info: GraphQLResolveInfo,
 ): Error | mixed {
   try {
@@ -1165,7 +1165,7 @@ function _collectSubfields(
  * Otherwise, test each possible type for the abstract type by calling
  * isTypeOf for the object being coerced, returning the first type that matches.
  */
-export const defaultTypeResolver: GraphQLTypeResolver<any, *> = function(
+export const defaultTypeResolver: GraphQLTypeResolver<mixed, mixed> = function(
   value,
   contextValue,
   info,
@@ -1211,12 +1211,10 @@ export const defaultTypeResolver: GraphQLTypeResolver<any, *> = function(
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context value.
  */
-export const defaultFieldResolver: GraphQLFieldResolver<any, *> = function(
-  source,
-  args,
-  contextValue,
-  info,
-) {
+export const defaultFieldResolver: GraphQLFieldResolver<
+  mixed,
+  mixed,
+> = function(source: any, args, contextValue, info) {
   // ensure source is a value for which property access is acceptable.
   if (isObjectLike(source) || typeof source === 'function') {
     const property = source[info.fieldName];
@@ -1240,7 +1238,7 @@ export function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
   fieldName: string,
-): ?GraphQLField<*, *> {
+): ?GraphQLField<mixed, mixed> {
   if (
     fieldName === SchemaMetaFieldDef.name &&
     schema.getQueryType() === parentType
