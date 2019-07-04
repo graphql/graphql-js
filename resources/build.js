@@ -100,6 +100,7 @@ function buildJSFile(filepath) {
 
 function buildPackageJSON() {
   const packageJSON = require('../package.json');
+  delete packageJSON.private;
   delete packageJSON.scripts;
   delete packageJSON.devDependencies;
 
