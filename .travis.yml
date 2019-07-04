@@ -21,7 +21,7 @@ script: |
 jobs:
   include:
   - stage: deploy
-    if: branch = master
+    if: type = push AND branch = master
     script: npm run gitpublish
     skip_cleanup: true
     node_js: '10'
