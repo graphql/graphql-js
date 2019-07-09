@@ -97,36 +97,6 @@ function findFiles(cwd, pattern) {
   return out.split('\n').filter(Boolean);
 }
 
-// Run a given benchmark test with the provided revisions.
-function runBenchmark(benchmark, environments) {
-  let benchmarkName;
-  const benches = environments.map(environment => {
-    const module = require(path.join(environment.distPath, benchmark));
-    benchmarkName = module.name;
-    return {
-      name: environment.revision,
-      fn: module.measure,
-    };
-  });
-
-  console.log('⏱️   ' + benchmarkName);
-  const results = [];
-  for (let i = 0; i < benches.length; ++i) {
-    const { name, fn } = benches[i];
-    try {
-      const samples = collectSamples(fn);
-      results.push({ name, samples, ...computeStats(samples) });
-      process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
-    } catch (error) {
-      console.log('  ' + name + ': ' + red(String(error)));
-    }
-  }
-  console.log('\n');
-
-  beautifyBenchmark(results);
-  console.log('');
-}
-
 function collectSamples(fn) {
   clock(initCount, fn); // initial warm up
 
@@ -269,29 +239,57 @@ function maxBy(array, fn) {
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
 function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
-  // Find all benchmark tests to be run.
+  const environments = revisions.map(revision => ({
+    revision,
+    distPath: prepareRevision(revision),
+  }));
+
+  for (const benchmark of matchBenchmarks(benchmarkPatterns)) {
+    const results = [];
+    for (let i = 0; i < environments.length; ++i) {
+      const environment = environments[i];
+      const module = require(path.join(environment.distPath, benchmark));
+
+      if (i) {
+        console.log('⏱️   ' + module.name);
+      }
+
+      try {
+        const samples = collectSamples(module.measure);
+        results.push({
+          name: environment.revision,
+          samples,
+          ...computeStats(samples),
+        });
+        process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
+      } catch (error) {
+        console.log('  ' + module.name + ': ' + red(String(error)));
+      }
+    }
+    console.log('\n');
+
+    beautifyBenchmark(results);
+    console.log('');
+  }
+}
+
+// Find all benchmark tests to be run.
+function matchBenchmarks(patterns) {
   let benchmarks = findFiles(LOCAL_DIR('src'), '*/__tests__/*-benchmark.js');
-  if (benchmarkPatterns.length !== 0) {
+  if (patterns.length > 0) {
     benchmarks = benchmarks.filter(benchmark =>
-      benchmarkPatterns.some(pattern =>
-        path.join('src', benchmark).includes(pattern),
-      ),
+      patterns.some(pattern => path.join('src', benchmark).includes(pattern)),
     );
   }
 
   if (benchmarks.length === 0) {
     console.warn(
       'No benchmarks matching: ' +
-        `\u001b[1m${benchmarkPatterns.join('\u001b[0m or \u001b[1m')}\u001b[0m`,
+        `\u001b[1m${patterns.join('\u001b[0m or \u001b[1m')}\u001b[0m`,
     );
-    return;
   }
 
-  const environments = revisions.map(revision => ({
-    revision,
-    distPath: prepareRevision(revision),
-  }));
-  benchmarks.forEach(benchmark => runBenchmark(benchmark, environments));
+  return benchmarks;
 }
 
 function getArguments(argv) {
