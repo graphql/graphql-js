@@ -3,7 +3,7 @@ import defineToJSON from '../jsutils/defineToJSON';
 import { Source } from './source';
 import { syntaxError } from '../error/syntaxError';
 import { TokenKind } from './tokenKind';
-import { getTokenDesc, createLexer } from './lexer';
+import { createLexer } from './lexer';
 import { Kind } from './kinds';
 import { DirectiveLocation } from './directiveLocation';
 /**
@@ -1498,4 +1498,13 @@ function many(lexer, openKind, parseFn, closeKind) {
   } while (!expectOptionalToken(lexer, closeKind));
 
   return nodes;
+}
+/**
+ * A helper function to describe a token as a string for debugging
+ */
+
+
+function getTokenDesc(token) {
+  var value = token.value;
+  return value ? "".concat(token.kind, " \"").concat(value, "\"") : token.kind;
 }

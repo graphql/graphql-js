@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createLexer = createLexer;
 exports.isPunctuatorToken = isPunctuatorToken;
-exports.getTokenDesc = getTokenDesc;
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
@@ -67,15 +66,6 @@ function lookahead() {
 function isPunctuatorToken(token) {
   var kind = token.kind;
   return kind === _tokenKind.TokenKind.BANG || kind === _tokenKind.TokenKind.DOLLAR || kind === _tokenKind.TokenKind.AMP || kind === _tokenKind.TokenKind.PAREN_L || kind === _tokenKind.TokenKind.PAREN_R || kind === _tokenKind.TokenKind.SPREAD || kind === _tokenKind.TokenKind.COLON || kind === _tokenKind.TokenKind.EQUALS || kind === _tokenKind.TokenKind.AT || kind === _tokenKind.TokenKind.BRACKET_L || kind === _tokenKind.TokenKind.BRACKET_R || kind === _tokenKind.TokenKind.BRACE_L || kind === _tokenKind.TokenKind.PIPE || kind === _tokenKind.TokenKind.BRACE_R;
-}
-/**
- * A helper function to describe a token as a string for debugging
- */
-
-
-function getTokenDesc(token) {
-  var value = token.value;
-  return value ? "".concat(token.kind, " \"").concat(value, "\"") : token.kind;
 }
 /**
  * Helper function for constructing the Token object.

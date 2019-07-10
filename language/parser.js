@@ -1422,7 +1422,7 @@ function expectToken(lexer, kind) {
     return token;
   }
 
-  throw (0, _syntaxError.syntaxError)(lexer.source, token.start, "Expected ".concat(kind, ", found ").concat((0, _lexer.getTokenDesc)(token)));
+  throw (0, _syntaxError.syntaxError)(lexer.source, token.start, "Expected ".concat(kind, ", found ").concat(getTokenDesc(token)));
 }
 /**
  * If the next token is of the given kind, return that token after advancing
@@ -1452,7 +1452,7 @@ function expectKeyword(lexer, value) {
   if (token.kind === _tokenKind.TokenKind.NAME && token.value === value) {
     lexer.advance();
   } else {
-    throw (0, _syntaxError.syntaxError)(lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat((0, _lexer.getTokenDesc)(token)));
+    throw (0, _syntaxError.syntaxError)(lexer.source, token.start, "Expected \"".concat(value, "\", found ").concat(getTokenDesc(token)));
   }
 }
 /**
@@ -1479,7 +1479,7 @@ function expectOptionalKeyword(lexer, value) {
 
 function unexpected(lexer, atToken) {
   var token = atToken || lexer.token;
-  return (0, _syntaxError.syntaxError)(lexer.source, token.start, "Unexpected ".concat((0, _lexer.getTokenDesc)(token)));
+  return (0, _syntaxError.syntaxError)(lexer.source, token.start, "Unexpected ".concat(getTokenDesc(token)));
 }
 /**
  * Returns a possibly empty list of parse nodes, determined by
@@ -1516,4 +1516,13 @@ function many(lexer, openKind, parseFn, closeKind) {
   } while (!expectOptionalToken(lexer, closeKind));
 
   return nodes;
+}
+/**
+ * A helper function to describe a token as a string for debugging
+ */
+
+
+function getTokenDesc(token) {
+  var value = token.value;
+  return value ? "".concat(token.kind, " \"").concat(value, "\"") : token.kind;
 }
