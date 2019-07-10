@@ -6,7 +6,7 @@ import { Source } from './source';
 import { type GraphQLError } from '../error/GraphQLError';
 import { syntaxError } from '../error/syntaxError';
 import { type TokenKindEnum, TokenKind } from './tokenKind';
-import { type Lexer, getTokenDesc, createLexer } from './lexer';
+import { type Lexer, createLexer } from './lexer';
 import {
   type Location,
   type Token,
@@ -1567,4 +1567,12 @@ function many<T>(
     nodes.push(parseFn(lexer));
   } while (!expectOptionalToken(lexer, closeKind));
   return nodes;
+}
+
+/**
+ * A helper function to describe a token as a string for debugging
+ */
+function getTokenDesc(token: Token): string {
+  const value = token.value;
+  return value ? `${token.kind} "${value}"` : token.kind;
 }
