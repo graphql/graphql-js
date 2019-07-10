@@ -6,9 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.parse = parse;
 exports.parseValue = parseValue;
 exports.parseType = parseType;
-exports.parseConstValue = parseConstValue;
-exports.parseTypeReference = parseTypeReference;
-exports.parseNamedType = parseNamedType;
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 

@@ -513,7 +513,7 @@ function parseStringLiteral(lexer) {
   };
 }
 
-export function parseConstValue(lexer) {
+function parseConstValue(lexer) {
   return parseValueLiteral(lexer, true);
 }
 
@@ -611,7 +611,7 @@ function parseDirective(lexer, isConst) {
  */
 
 
-export function parseTypeReference(lexer) {
+function parseTypeReference(lexer) {
   var start = lexer.token;
   var type;
 
@@ -641,7 +641,8 @@ export function parseTypeReference(lexer) {
  * NamedType : Name
  */
 
-export function parseNamedType(lexer) {
+
+function parseNamedType(lexer) {
   var start = lexer.token;
   return {
     kind: Kind.NAMED_TYPE,
@@ -664,6 +665,7 @@ export function parseNamedType(lexer) {
  *   - EnumTypeDefinition
  *   - InputObjectTypeDefinition
  */
+
 
 function parseTypeSystemDefinition(lexer) {
   // Many definitions begin with a description and require a lookahead.
