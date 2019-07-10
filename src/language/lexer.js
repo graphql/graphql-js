@@ -113,14 +113,6 @@ export function isPunctuatorToken(token: Token) {
 }
 
 /**
- * A helper function to describe a token as a string for debugging
- */
-export function getTokenDesc(token: Token): string {
-  const value = token.value;
-  return value ? `${token.kind} "${value}"` : token.kind;
-}
-
-/**
  * Helper function for constructing the Token object.
  */
 function Tok(
