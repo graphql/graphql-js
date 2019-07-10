@@ -1489,11 +1489,11 @@ function any(lexer, openKind, parseFn, closeKind) {
 
 function many(lexer, openKind, parseFn, closeKind) {
   expectToken(lexer, openKind);
-  var nodes = [parseFn(lexer)];
+  var nodes = [];
 
-  while (!expectOptionalToken(lexer, closeKind)) {
+  do {
     nodes.push(parseFn(lexer));
-  }
+  } while (!expectOptionalToken(lexer, closeKind));
 
   return nodes;
 }
