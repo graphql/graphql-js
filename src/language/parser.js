@@ -1562,9 +1562,9 @@ function many<T>(
   closeKind: TokenKindEnum,
 ): Array<T> {
   expectToken(lexer, openKind);
-  const nodes = [parseFn(lexer)];
-  while (!expectOptionalToken(lexer, closeKind)) {
+  const nodes = [];
+  do {
     nodes.push(parseFn(lexer));
-  }
+  } while (!expectOptionalToken(lexer, closeKind));
   return nodes;
 }
