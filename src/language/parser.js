@@ -611,7 +611,7 @@ function parseStringLiteral(lexer: Lexer<*>): StringValueNode {
   };
 }
 
-export function parseConstValue(lexer: Lexer<*>): ValueNode {
+function parseConstValue(lexer: Lexer<*>): ValueNode {
   return parseValueLiteral(lexer, true);
 }
 
@@ -703,7 +703,7 @@ function parseDirective(lexer: Lexer<*>, isConst: boolean): DirectiveNode {
  *   - ListType
  *   - NonNullType
  */
-export function parseTypeReference(lexer: Lexer<*>): TypeNode {
+function parseTypeReference(lexer: Lexer<*>): TypeNode {
   const start = lexer.token;
   let type;
   if (expectOptionalToken(lexer, TokenKind.BRACKET_L)) {
@@ -730,7 +730,7 @@ export function parseTypeReference(lexer: Lexer<*>): TypeNode {
 /**
  * NamedType : Name
  */
-export function parseNamedType(lexer: Lexer<*>): NamedTypeNode {
+function parseNamedType(lexer: Lexer<*>): NamedTypeNode {
   const start = lexer.token;
   return {
     kind: Kind.NAMED_TYPE,
