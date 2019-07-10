@@ -33,8 +33,6 @@ import {
   type DirectiveNode,
   type TypeNode,
   type NamedTypeNode,
-  type ListTypeNode,
-  type NonNullTypeNode,
   type TypeSystemDefinitionNode,
   type SchemaDefinitionNode,
   type OperationTypeDefinitionNode,
@@ -709,20 +707,21 @@ function parseTypeReference(lexer: Lexer<*>): TypeNode {
   if (expectOptionalToken(lexer, TokenKind.BRACKET_L)) {
     type = parseTypeReference(lexer);
     expectToken(lexer, TokenKind.BRACKET_R);
-    type = ({
+    type = {
       kind: Kind.LIST_TYPE,
       type,
       loc: loc(lexer, start),
-    }: ListTypeNode);
+    };
   } else {
     type = parseNamedType(lexer);
   }
+
   if (expectOptionalToken(lexer, TokenKind.BANG)) {
-    return ({
+    return {
       kind: Kind.NON_NULL_TYPE,
       type,
       loc: loc(lexer, start),
-    }: NonNullTypeNode);
+    };
   }
   return type;
 }
