@@ -1,5 +1,8 @@
 // @flow strict
 
+// FIXME
+/* eslint-disable flowtype/no-existential-type */
+
 import objectEntries from '../polyfills/objectEntries';
 import defineToJSON from '../jsutils/defineToJSON';
 import defineToStringTag from '../jsutils/defineToStringTag';
