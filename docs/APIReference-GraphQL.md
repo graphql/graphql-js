@@ -17,7 +17,7 @@ var { graphql } = require('graphql'); // CommonJS
 
 ## Overview
 
-*Entry Point*
+_Entry Point_
 
 <ul class="apiIndex">
   <li>
@@ -28,7 +28,7 @@ var { graphql } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Schema*
+_Schema_
 
 <ul class="apiIndex">
   <li>
@@ -39,7 +39,7 @@ var { graphql } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Type Definitions*
+_Type Definitions_
 
 <ul class="apiIndex">
   <li>
@@ -92,7 +92,7 @@ var { graphql } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Scalars*
+_Scalars_
 
 <ul class="apiIndex">
   <li>
@@ -127,7 +127,7 @@ var { graphql } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Errors*
+_Errors_
 
 <ul class="apiIndex">
   <li>

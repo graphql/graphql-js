@@ -1,5 +1,4 @@
-JavaScript Utils
-----------------
+## JavaScript Utils
 
 This directory contains dependency-free JavaScript utility functions used
 throughout the codebase.

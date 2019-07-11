@@ -40,7 +40,7 @@ var root = {
 };
 
 // Run the GraphQL query '{ hello }' and print out the response
-graphql(schema, '{ hello }', root).then((response) => {
+graphql(schema, '{ hello }', root).then(response => {
   console.log(response);
 });
 ```
@@ -54,7 +54,11 @@ node server.js
 You should see the GraphQL response printed out:
 
 ```javascript
-{ data: { hello: 'Hello world!' } }
+{
+  data: {
+    hello: 'Hello world!';
+  }
+}
 ```
 
 Congratulations - you just executed a GraphQL query!

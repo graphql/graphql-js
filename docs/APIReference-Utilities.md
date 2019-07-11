@@ -17,7 +17,7 @@ var { introspectionQuery } = require('graphql'); // CommonJS
 
 ## Overview
 
-*Introspection*
+_Introspection_
 
 <ul class="apiIndex">
   <li>
@@ -34,7 +34,7 @@ var { introspectionQuery } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Schema Language*
+_Schema Language_
 
 <ul class="apiIndex">
   <li>
@@ -75,7 +75,7 @@ var { introspectionQuery } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Visitors*
+_Visitors_
 
 <ul class="apiIndex">
   <li>
@@ -86,7 +86,7 @@ var { introspectionQuery } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Value Validation*
+_Value Validation_
 
 <ul class="apiIndex">
   <li>
@@ -108,7 +108,7 @@ var { introspectionQuery } = require('graphql'); // CommonJS
 ### introspectionQuery
 
 ```js
-var introspectionQuery: string
+var introspectionQuery: string;
 ```
 
 A GraphQL query that queries a server's introspection system for enough
@@ -192,6 +192,7 @@ function astFromValue(
   type?: ?GraphQLType
 ): ?Value
 ```
+
 Produces a GraphQL Input Value AST given a JavaScript value.
 
 Optionally, a GraphQL type may be provided, which will be used to

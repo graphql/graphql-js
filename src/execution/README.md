@@ -1,5 +1,4 @@
-GraphQL Execution
------------------
+## GraphQL Execution
 
 The `graphql/execution` module is responsible for the execution phase of
 fulfilling a GraphQL request.

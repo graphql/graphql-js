@@ -40,7 +40,7 @@ class RandomDie {
     return 1 + Math.floor(Math.random() * this.numSides);
   }
 
-  roll({numRolls}) {
+  roll({ numRolls }) {
     var output = [];
     for (var i = 0; i < numRolls; i++) {
       output.push(this.rollOnce());
@@ -50,10 +50,10 @@ class RandomDie {
 }
 
 var root = {
-  getDie: function ({numSides}) {
+  getDie: function({ numSides }) {
     return new RandomDie(numSides || 6);
-  }
-}
+  },
+};
 ```
 
 For fields that don't use any arguments, you can use either properties on the object or instance methods. So for the example code above, both `numSides` and `rollOnce` can actually be used to implement GraphQL fields, so that code also implements the schema of:
@@ -100,7 +100,7 @@ class RandomDie {
     return 1 + Math.floor(Math.random() * this.numSides);
   }
 
-  roll({numRolls}) {
+  roll({ numRolls }) {
     var output = [];
     for (var i = 0; i < numRolls; i++) {
       output.push(this.rollOnce());
@@ -111,17 +111,20 @@ class RandomDie {
 
 // The root provides the top-level API endpoints
 var root = {
-  getDie: function ({numSides}) {
+  getDie: function({ numSides }) {
     return new RandomDie(numSides || 6);
-  }
-}
+  },
+};
 
 var app = express();
-app.use('/graphql', graphqlHTTP({
-  schema: schema,
-  rootValue: root,
-  graphiql: true,
-}));
+app.use(
+  '/graphql',
+  graphqlHTTP({
+    schema: schema,
+    rootValue: root,
+    graphiql: true,
+  }),
+);
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```

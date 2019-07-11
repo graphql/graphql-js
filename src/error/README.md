@@ -1,5 +1,4 @@
-GraphQL Errors
---------------
+## GraphQL Errors
 
 The `graphql/error` module is responsible for creating and formatting
 GraphQL errors.

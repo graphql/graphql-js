@@ -16,7 +16,7 @@ var { GraphQLSchema } = require('graphql'); // CommonJS
 
 ## Overview
 
-*Schema*
+_Schema_
 
 <ul class="apiIndex">
   <li>
@@ -27,7 +27,7 @@ var { GraphQLSchema } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Definitions*
+_Definitions_
 
 <ul class="apiIndex">
   <li>
@@ -80,7 +80,7 @@ var { GraphQLSchema } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Predicates*
+_Predicates_
 
 <ul class="apiIndex">
   <li>
@@ -114,7 +114,7 @@ var { GraphQLSchema } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Un-modifiers*
+_Un-modifiers_
 
 <ul class="apiIndex">
   <li>
@@ -131,7 +131,7 @@ var { GraphQLSchema } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Scalars*
+_Scalars_
 
 <ul class="apiIndex">
   <li>
@@ -228,7 +228,7 @@ var OddType = new GraphQLScalarType({
       return oddValue(parseInt(ast.value, 10));
     }
     return null;
-  }
+  },
 });
 
 function oddValue(value) {
@@ -305,7 +305,7 @@ When two types need to refer to each other, or a type needs to refer to
 itself in a field, you can use a function expression (aka a closure or a
 thunk) to supply the fields lazily.
 
-Note that resolver functions are provided the `source` object as the first parameter. 
+Note that resolver functions are provided the `source` object as the first parameter.
 However, if a resolver function is not provided, then the default resolver is
 used, which looks for a method on `source` of the same name as the field. If found,
 the method is called with `(args, context, info)`. Since it is a method on `source`,
@@ -322,10 +322,10 @@ var AddressType = new GraphQLObjectType({
     formatted: {
       type: GraphQLString,
       resolve(obj) {
-        return obj.number + ' ' + obj.street
-      }
-    }
-  }
+        return obj.number + ' ' + obj.street;
+      },
+    },
+  },
 });
 
 var PersonType = new GraphQLObjectType({
@@ -333,7 +333,7 @@ var PersonType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     bestFriend: { type: PersonType },
-  })
+  }),
 });
 ```
 
@@ -363,8 +363,8 @@ when the field is resolved.
 var EntityType = new GraphQLInterfaceType({
   name: 'Entity',
   fields: {
-    name: { type: GraphQLString }
-  }
+    name: { type: GraphQLString },
+  },
 });
 ```
 
@@ -394,7 +394,7 @@ to determine which type is actually used when the field is resolved.
 ```js
 var PetType = new GraphQLUnionType({
   name: 'Pet',
-  types: [ DogType, CatType ],
+  types: [DogType, CatType],
   resolveType(value) {
     if (value instanceof Dog) {
       return DogType;
@@ -402,7 +402,7 @@ var PetType = new GraphQLUnionType({
     if (value instanceof Cat) {
       return CatType;
     }
-  }
+  },
 });
 ```
 
@@ -452,8 +452,8 @@ var RGBType = new GraphQLEnumType({
   values: {
     RED: { value: 0 },
     GREEN: { value: 1 },
-    BLUE: { value: 2 }
-  }
+    BLUE: { value: 2 },
+  },
 });
 ```
 
@@ -508,7 +508,7 @@ var GeoPoint = new GraphQLInputObjectType({
     lat: { type: new GraphQLNonNull(GraphQLFloat) },
     lon: { type: new GraphQLNonNull(GraphQLFloat) },
     alt: { type: GraphQLFloat, defaultValue: 0 },
-  }
+  },
 });
 ```
 
@@ -532,7 +532,7 @@ var PersonType = new GraphQLObjectType({
   fields: () => ({
     parents: { type: new GraphQLList(Person) },
     children: { type: new GraphQLList(Person) },
-  })
+  }),
 });
 ```
 
@@ -557,7 +557,7 @@ var RowType = new GraphQLObjectType({
   name: 'Row',
   fields: () => ({
     id: { type: new GraphQLNonNull(String) },
-  })
+  }),
 });
 ```
 

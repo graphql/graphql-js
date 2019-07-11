@@ -28,13 +28,13 @@ So far, our resolver functions took no arguments. When a resolver takes argument
 
 ```javascript
 var root = {
-  rollDice: function (args) {
+  rollDice: function(args) {
     var output = [];
     for (var i = 0; i < args.numDice; i++) {
       output.push(1 + Math.floor(Math.random() * (args.numSides || 6)));
     }
     return output;
-  }
+  },
 };
 ```
 
@@ -42,13 +42,13 @@ It's convenient to use [ES6 destructuring assignment](https://developer.mozilla.
 
 ```javascript
 var root = {
-  rollDice: function ({numDice, numSides}) {
+  rollDice: function({ numDice, numSides }) {
     var output = [];
     for (var i = 0; i < numDice; i++) {
       output.push(1 + Math.floor(Math.random() * (numSides || 6)));
     }
     return output;
-  }
+  },
 };
 ```
 
@@ -70,21 +70,24 @@ var schema = buildSchema(`
 
 // The root provides a resolver function for each API endpoint
 var root = {
-  rollDice: function ({numDice, numSides}) {
+  rollDice: function({ numDice, numSides }) {
     var output = [];
     for (var i = 0; i < numDice; i++) {
       output.push(1 + Math.floor(Math.random() * (numSides || 6)));
     }
     return output;
-  }
+  },
 };
 
 var app = express();
-app.use('/graphql', graphqlHTTP({
-  schema: schema,
-  rootValue: root,
-  graphiql: true,
-}));
+app.use(
+  '/graphql',
+  graphqlHTTP({
+    schema: schema,
+    rootValue: root,
+    graphiql: true,
+  }),
+);
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```
@@ -114,12 +117,12 @@ fetch('/graphql', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
   body: JSON.stringify({
     query,
     variables: { dice, sides },
-  })
+  }),
 })
   .then(r => r.json())
   .then(data => console.log('data returned:', data));

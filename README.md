@@ -11,7 +11,6 @@ https://graphql.org/graphql-js/.
 
 Looking for help? Find resources [from the community](https://graphql.org/community/).
 
-
 ## Getting Started
 
 An overview of GraphQL in general is available in the
@@ -47,7 +46,7 @@ import {
   graphql,
   GraphQLSchema,
   GraphQLObjectType,
-  GraphQLString
+  GraphQLString,
 } from 'graphql';
 
 var schema = new GraphQLSchema({
@@ -58,10 +57,10 @@ var schema = new GraphQLSchema({
         type: GraphQLString,
         resolve() {
           return 'world';
-        }
-      }
-    }
-  })
+        },
+      },
+    },
+  }),
 });
 ```
 
@@ -76,13 +75,11 @@ Then, serve the result of a query against that type schema.
 var query = '{ hello }';
 
 graphql(schema, query).then(result => {
-
   // Prints
   // {
   //   data: { hello: "world" }
   // }
   console.log(result);
-
 });
 ```
 
@@ -94,7 +91,6 @@ it, reporting errors otherwise.
 var query = '{ boyhowdy }';
 
 graphql(schema, query).then(result => {
-
   // Prints
   // {
   //   errors: [
@@ -103,7 +99,6 @@ graphql(schema, query).then(result => {
   //   ]
   // }
   console.log(result);
-
 });
 ```
 

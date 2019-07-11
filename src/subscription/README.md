@@ -1,5 +1,4 @@
-GraphQL Subscription
------------------
+## GraphQL Subscription
 
 The `graphql/subscription` module is responsible for subscribing to updates on specific data.
 

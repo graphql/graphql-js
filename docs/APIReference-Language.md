@@ -16,7 +16,7 @@ var { Source } = require('graphql'); // CommonJS
 
 ## Overview
 
-*Source*
+_Source_
 
 <ul class="apiIndex">
   <li>
@@ -33,7 +33,7 @@ var { Source } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Lexer*
+_Lexer_
 
 <ul class="apiIndex">
   <li>
@@ -44,7 +44,7 @@ var { Source } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Parser*
+_Parser_
 
 <ul class="apiIndex">
   <li>
@@ -67,7 +67,7 @@ var { Source } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Visitor*
+_Visitor_
 
 <ul class="apiIndex">
   <li>
@@ -84,7 +84,7 @@ var { Source } = require('graphql'); // CommonJS
   </li>
 </ul>
 
-*Printer*
+_Printer_
 
 <ul class="apiIndex">
   <li>
@@ -224,7 +224,7 @@ var editedAST = visit(ast, {
     //   visitor.BREAK: stop visiting altogether
     //   null: delete this node
     //   any value: replace this node with the returned value
-  }
+  },
 });
 ```
 
@@ -233,17 +233,17 @@ instead provide functions named the same as the kinds of AST nodes, or
 enter/leave visitors at a named key, leading to four permutations of
 visitor API:
 
-1) Named visitors triggered when entering a node a specific kind.
+1. Named visitors triggered when entering a node a specific kind.
 
 ```js
 visit(ast, {
   Kind(node) {
     // enter the "Kind" node
-  }
-})
+  },
+});
 ```
 
-2) Named visitors that trigger upon entering and leaving a node of
+2. Named visitors that trigger upon entering and leaving a node of
    a specific kind.
 
 ```js
@@ -259,7 +259,7 @@ visit(ast, {
 })
 ```
 
-3) Generic visitors that trigger upon entering and leaving any node.
+3. Generic visitors that trigger upon entering and leaving any node.
 
 ```js
 visit(ast, {
@@ -268,25 +268,25 @@ visit(ast, {
   },
   leave(node) {
     // leave any node
-  }
-})
+  },
+});
 ```
 
-4) Parallel visitors for entering and leaving nodes of a specific kind.
+4. Parallel visitors for entering and leaving nodes of a specific kind.
 
 ```js
 visit(ast, {
   enter: {
     Kind(node) {
       // enter the "Kind" node
-    }
+    },
   },
   leave: {
     Kind(node) {
       // leave the "Kind" node
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ### BREAK

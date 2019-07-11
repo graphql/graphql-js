@@ -1,5 +1,4 @@
-Polyfills
----------
+## Polyfills
 
 This directory contains dependency-free polyfills for ES6 & ES7 functions used
 throughout the codebase.
