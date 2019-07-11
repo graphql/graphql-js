@@ -27,13 +27,13 @@ Both mutations and queries can be handled by root resolvers, so the root that im
 ```javascript
 var fakeDatabase = {};
 var root = {
-  setMessage: function ({message}) {
+  setMessage: function({ message }) {
     fakeDatabase.message = message;
     return message;
   },
-  getMessage: function () {
+  getMessage: function() {
     return fakeDatabase.message;
-  }
+  },
 };
 ```
 
@@ -101,7 +101,7 @@ var schema = buildSchema(`
 
 // If Message had any complex fields, we'd put them on this object.
 class Message {
-  constructor(id, {content, author}) {
+  constructor(id, { content, author }) {
     this.id = id;
     this.content = content;
     this.author = author;
@@ -112,20 +112,22 @@ class Message {
 var fakeDatabase = {};
 
 var root = {
-  getMessage: function ({id}) {
+  getMessage: function({ id }) {
     if (!fakeDatabase[id]) {
       throw new Error('no message exists with id ' + id);
     }
     return new Message(id, fakeDatabase[id]);
   },
-  createMessage: function ({input}) {
+  createMessage: function({ input }) {
     // Create a random id for our "database".
-    var id = require('crypto').randomBytes(10).toString('hex');
+    var id = require('crypto')
+      .randomBytes(10)
+      .toString('hex');
 
     fakeDatabase[id] = input;
     return new Message(id, input);
   },
-  updateMessage: function ({id, input}) {
+  updateMessage: function({ id, input }) {
     if (!fakeDatabase[id]) {
       throw new Error('no message exists with id ' + id);
     }
@@ -136,15 +138,17 @@ var root = {
 };
 
 var app = express();
-app.use('/graphql', graphqlHTTP({
-  schema: schema,
-  rootValue: root,
-  graphiql: true,
-}));
+app.use(
+  '/graphql',
+  graphqlHTTP({
+    schema: schema,
+    rootValue: root,
+    graphiql: true,
+  }),
+);
 app.listen(4000, () => {
   console.log('Running a GraphQL API server at localhost:4000/graphql');
 });
-
 ```
 
 To call a mutation, you must use the keyword `mutation` before your GraphQL query. To pass an input type, provide the data written as if it's a JSON object. For example, with the server defined above, you can create a new message and return the `id` of the new message with this operation:
@@ -175,7 +179,7 @@ fetch('/graphql', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
   body: JSON.stringify({
     query,
@@ -183,9 +187,9 @@ fetch('/graphql', {
       input: {
         author,
         content,
-      }
-    }
-  })
+      },
+    },
+  }),
 })
   .then(r => r.json())
   .then(data => console.log('data returned:', data));

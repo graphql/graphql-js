@@ -1,5 +1,4 @@
-GraphQL Validation
-------------------
+## GraphQL Validation
 
 The `graphql/validation` module fulfills the Validation phase of fulfilling a
 GraphQL result.

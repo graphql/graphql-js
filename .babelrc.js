@@ -9,14 +9,10 @@ module.exports = {
   ],
   env: {
     cjs: {
-      presets: [
-        ['@babel/preset-env', { modules: 'commonjs' }],
-      ],
+      presets: [['@babel/preset-env', { modules: 'commonjs' }]],
     },
     mjs: {
-      presets: [
-        ['@babel/preset-env', { modules: false }],
-      ],
+      presets: [['@babel/preset-env', { modules: false }]],
     },
   },
 };

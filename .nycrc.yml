@@ -1,9 +1,9 @@
 include:
-  - "src/"
+  - 'src/'
 exclude:
-  - "src/polyfills"
+  - 'src/polyfills'
 clean: true
-temp-directory: "coverage/tests"
-report-dir: "coverage/tests"
+temp-directory: 'coverage/tests'
+report-dir: 'coverage/tests'
 skip-full: true
 reporter: [json, html, text]

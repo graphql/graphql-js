@@ -1,5 +1,4 @@
-GraphQL Type System
--------------------
+## GraphQL Type System
 
 The `graphql/type` module is responsible for defining GraphQL types and schema.
 

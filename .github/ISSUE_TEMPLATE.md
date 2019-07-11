@@ -10,7 +10,7 @@ Please do not post general questions directly as GitHub issues. They may sit for
 
 Before filing a new issue, make sure an issue for your problem doesn't already exist.
 
-The best way to get a bug fixed is to provide a *pull request* with a simplified failing test case (or better yet, include a fix).
+The best way to get a bug fixed is to provide a _pull request_ with a simplified failing test case (or better yet, include a fix).
 
 # Feature requests
 
