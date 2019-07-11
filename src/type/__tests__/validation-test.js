@@ -55,7 +55,9 @@ const SomeInputObjectType = new GraphQLInputObjectType({
   },
 });
 
-function withModifiers<T: GraphQLNamedType>(types: Array<T>): Array<*> {
+function withModifiers<T: GraphQLNamedType>(
+  types: Array<T>,
+): Array<T | GraphQLList<T> | GraphQLNonNull<T | GraphQLList<T>>> {
   return [
     ...types,
     ...types.map(type => GraphQLList(type)),
@@ -64,7 +66,7 @@ function withModifiers<T: GraphQLNamedType>(types: Array<T>): Array<*> {
   ];
 }
 
-const outputTypes: Array<GraphQLOutputType> = withModifiers([
+const outputTypes = withModifiers([
   GraphQLString,
   SomeScalarType,
   SomeEnumType,
@@ -73,18 +75,16 @@ const outputTypes: Array<GraphQLOutputType> = withModifiers([
   SomeInterfaceType,
 ]);
 
-const notOutputTypes: Array<GraphQLInputType> = withModifiers([
-  SomeInputObjectType,
-]);
+const notOutputTypes = withModifiers([SomeInputObjectType]);
 
-const inputTypes: Array<GraphQLInputType> = withModifiers([
+const inputTypes = withModifiers([
   GraphQLString,
   SomeScalarType,
   SomeEnumType,
   SomeInputObjectType,
 ]);
 
-const notInputTypes: Array<GraphQLOutputType> = withModifiers([
+const notInputTypes = withModifiers([
   SomeObjectType,
   SomeUnionType,
   SomeInterfaceType,
