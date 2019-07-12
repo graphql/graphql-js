@@ -42,6 +42,20 @@ if (!GH_TOKEN) {
   process.exit(1);
 }
 
+if (!packageJSON.repository || typeof packageJSON.repository.url !== 'string') {
+  console.error('package.json is missing repository.url string!');
+  process.exit(1);
+}
+
+const match = /https:\/\/github.com\/([^/]+)\/([^/]+).git/.exec(
+  packageJSON.repository.url,
+);
+if (match == null) {
+  console.error('Can not extract organisation and repo name from repo URL!');
+  process.exit(1);
+}
+const [, githubOrg, githubRepo] = match;
+
 getChangeLog()
   .then(changelog => process.stdout.write(changelog))
   .catch(error => console.error(error));
@@ -120,7 +134,7 @@ function graphqlRequestImpl(query, variables, cb) {
     headers: {
       Authorization: 'bearer ' + GH_TOKEN,
       'Content-Type': 'application/json',
-      'User-Agent': 'graphql-js-changelog',
+      'User-Agent': 'gen-changelog',
     },
   });
 
@@ -200,7 +214,7 @@ async function batchCommitInfo(commits) {
 
   const response = await graphqlRequest(`
     {
-      repository(owner: "graphql", name: "graphql-js") {
+      repository(owner: "${githubOrg}", name: "${githubRepo}") {
         ${commitsSubQuery}
       }
     }
@@ -217,7 +231,7 @@ function commitsInfoToPRs(commits) {
   const prs = {};
   for (const commit of commits) {
     const associatedPRs = commit.associatedPullRequests.nodes.filter(
-      pr => pr.repository.nameWithOwner === 'graphql/graphql-js',
+      pr => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
     );
     if (associatedPRs.length === 0) {
       throw new Error(
