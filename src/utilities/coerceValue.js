@@ -1,6 +1,6 @@
 // @flow strict
 
-import { forEach, isCollection } from 'iterall';
+import { isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
@@ -19,6 +19,7 @@ import {
 } from '../type/definition';
 
 type CoercedValue = {|
+  +errorLimitReached: boolean | void,
   +errors: $ReadOnlyArray<GraphQLError> | void,
   +value: mixed,
 |};
@@ -38,6 +39,7 @@ export function coerceValue(
   blameNode?: ASTNode,
   path?: Path,
 ): CoercedValue {
+  const maxErrors = 50;
   // A value must be provided if the type is non-null.
   if (isNonNullType(type)) {
     if (value == null) {
@@ -108,7 +110,9 @@ export function coerceValue(
     if (isCollection(value)) {
       let errors;
       const coercedValue = [];
-      forEach((value: any), (itemValue, index) => {
+      const listValue: $ReadOnlyArray<mixed> = (value: any);
+      for (let index = 0; index < listValue.length; ++index) {
+        const itemValue = listValue[index];
         const coercedItem = coerceValue(
           itemValue,
           itemType,
@@ -117,10 +121,13 @@ export function coerceValue(
         );
         if (coercedItem.errors) {
           errors = add(errors, coercedItem.errors);
+          if (errors.length >= maxErrors) {
+            return ofErrors(errors.slice(0, maxErrors), true);
+          }
         } else if (!errors) {
           coercedValue.push(coercedItem.value);
         }
-      });
+      }
       return errors ? ofErrors(errors) : ofValue(coercedValue);
     }
     // Lists accept a non-list value as a list of one.
@@ -157,6 +164,9 @@ export function coerceValue(
               blameNode,
             ),
           );
+          if (errors.length >= maxErrors) {
+            return ofErrors(errors.slice(0, maxErrors), true);
+          }
         }
       } else {
         const coercedField = coerceValue(
@@ -167,6 +177,9 @@ export function coerceValue(
         );
         if (coercedField.errors) {
           errors = add(errors, coercedField.errors);
+          if (errors.length >= maxErrors) {
+            return ofErrors(errors.slice(0, maxErrors), true);
+          }
         } else if (!errors) {
           coercedValue[field.name] = coercedField.value;
         }
@@ -186,6 +199,9 @@ export function coerceValue(
             didYouMean(suggestions),
           ),
         );
+        if (errors.length >= maxErrors) {
+          return ofErrors(errors.slice(0, maxErrors), true);
+        }
       }
     }
 
@@ -198,11 +214,15 @@ export function coerceValue(
 }
 
 function ofValue(value) {
-  return { errors: undefined, value };
+  return { errorLimitReached: undefined, errors: undefined, value };
 }
 
-function ofErrors(errors) {
-  return { errors, value: undefined };
+function ofErrors(errors, errorLimitReached) {
+  return {
+    errorLimitReached: errorLimitReached == null ? false : errorLimitReached,
+    errors,
+    value: undefined,
+  };
 }
 
 function add(errors, moreErrors) {

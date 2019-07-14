@@ -16,11 +16,13 @@ import {
 
 function expectValue(result) {
   expect(result.errors).to.equal(undefined);
+  expect(result.errorLimitReached).to.equal(undefined);
   return expect(result.value);
 }
 
 function expectErrors(result) {
   expect(result.value).to.equal(undefined);
+  expect(result.errorLimitReached).to.not.equal(undefined);
   const messages = result.errors && result.errors.map(error => error.message);
   return expect(messages);
 }
@@ -255,11 +257,61 @@ describe('coerceValue', () => {
       ]);
     });
 
+    it('limits errors for too many invalid fields', () => {
+      const TestInputBigObjectConfig = {
+        name: 'TestInputBigObject',
+        fields: {},
+      };
+      const valueObject = {};
+      const errors = [];
+      for (let index = 0; index < 100; ++index) {
+        TestInputBigObjectConfig.fields[`field${index}`] = {
+          type: GraphQLNonNull(GraphQLInt),
+        };
+        valueObject[`field${index}`] = 'abc';
+        if (index < 50) {
+          errors.push(
+            `Expected type Int at value.field${index}. Int cannot represent non-integer value: "abc"`,
+          );
+        }
+      }
+      const TestInputBigObject = new GraphQLInputObjectType(
+        TestInputBigObjectConfig,
+      );
+      const result = coerceValue(valueObject, TestInputBigObject);
+      expectErrors(result).to.deep.equal(errors);
+      expect(result.errorLimitReached).to.equal(true);
+    });
+
     it('returns error for a missing required field', () => {
       const result = coerceValue({ bar: 123 }, TestInputObject);
       expectErrors(result).to.deep.equal([
         'Field value.foo of required type Int! was not provided.',
       ]);
+    });
+
+    it('limits errors for too many missing required fields', () => {
+      const TestInputBigObjectConfig = {
+        name: 'TestInputBigObject',
+        fields: {},
+      };
+      const errors = [];
+      for (let index = 0; index < 100; ++index) {
+        TestInputBigObjectConfig.fields[`field${index}`] = {
+          type: GraphQLNonNull(GraphQLInt),
+        };
+        if (index < 50) {
+          errors.push(
+            `Field value.field${index} of required type Int! was not provided.`,
+          );
+        }
+      }
+      const TestInputBigObject = new GraphQLInputObjectType(
+        TestInputBigObjectConfig,
+      );
+      const result = coerceValue({}, TestInputBigObject);
+      expectErrors(result).to.deep.equal(errors);
+      expect(result.errorLimitReached).to.equal(true);
     });
 
     it('returns error for an unknown field', () => {
@@ -270,6 +322,22 @@ describe('coerceValue', () => {
       expectErrors(result).to.deep.equal([
         'Field "unknownField" is not defined by type TestInputObject.',
       ]);
+    });
+
+    it('limits errors for too many unkown fields', () => {
+      const valueObject = { foo: 123 };
+      const errors = [];
+      for (let index = 0; index < 100; ++index) {
+        valueObject[`field${index}`] = 'string';
+        if (index < 50) {
+          errors.push(
+            `Field "field${index}" is not defined by type TestInputObject.`,
+          );
+        }
+      }
+      const result = coerceValue(valueObject, TestInputObject);
+      expectErrors(result).to.deep.equal(errors);
+      expect(result.errorLimitReached).to.equal(true);
     });
 
     it('returns error for a misspelled field', () => {
@@ -333,6 +401,22 @@ describe('coerceValue', () => {
     it('returns nested null for nested null values', () => {
       const result = coerceValue([42, [null], null], TestNestedList);
       expectValue(result).to.deep.equal([[42], [null], null]);
+    });
+
+    it('returns an error array limited to 50 errors and limit reached flag is true', () => {
+      const value = [];
+      const errors = [];
+      for (let index = 0; index < 100; ++index) {
+        value.push(['string']);
+        if (index < 50) {
+          errors.push(
+            `Expected type Int at value[${index}][0]. Int cannot represent non-integer value: "string"`,
+          );
+        }
+      }
+      const result = coerceValue(value, TestNestedList);
+      expectErrors(result).to.deep.equal(errors);
+      expect(result.errorLimitReached).to.equal(true);
     });
   });
 });

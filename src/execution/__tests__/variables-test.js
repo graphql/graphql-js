@@ -80,6 +80,22 @@ function fieldWithInputArg(inputArg) {
   };
 }
 
+function fieldsWithOneHundredInputArg(inputArg) {
+  const args = {};
+  for (let index = 0; index < 100; ++index) {
+    args[`input${index}`] = inputArg;
+  }
+  return {
+    type: GraphQLString,
+    args,
+    resolve(_, rargs) {
+      if ('input0' in rargs) {
+        return inspect(rargs.input0);
+      }
+    },
+  };
+}
+
 const TestType = new GraphQLObjectType({
   name: 'TestType',
   fields: {
@@ -103,6 +119,9 @@ const TestType = new GraphQLObjectType({
     fieldWithNestedInputObject: fieldWithInputArg({
       type: TestNestedInputObject,
       defaultValue: 'Hello World',
+    }),
+    fieldWithOneHundredInputs: fieldsWithOneHundredInputArg({
+      type: GraphQLNonNull(GraphQLString),
     }),
     list: fieldWithInputArg({ type: GraphQLList(GraphQLString) }),
     nnList: fieldWithInputArg({
@@ -715,6 +734,43 @@ describe('Execute: Handles inputs', () => {
         ],
       });
     });
+
+    it('limits errors when there are too many null values provided for non-nullable inputs', () => {
+      let queryFields = '';
+      let fieldArguments = '';
+      const valueObject = {};
+      const errors = [];
+      for (let index = 0; index < 100; ++index) {
+        queryFields += `$input${index}: String!`;
+        fieldArguments = `input${index}: $input${index}`;
+        if (index !== 99) {
+          queryFields += ',';
+          fieldArguments += ',';
+        }
+        valueObject[`input${index}`] = null;
+        if (index < 50) {
+          const column = index < 10 ? 16 + index * 17 : 16 + index * 18 - 10;
+          errors.push({
+            message: `Variable "$input${index}" of non-null type "String!" must not be null.`,
+            locations: [{ line: 2, column }],
+          });
+        }
+      }
+      errors.push({
+        message:
+          'Too many errors processing variables, error limit reached. Execution aborted.',
+      });
+      const doc = `
+        query (${queryFields}) {
+          fieldWithOneHundredInputs(${fieldArguments})
+        }
+      `;
+      const result = executeQuery(doc, valueObject);
+
+      expect(result).to.deep.equal({
+        errors,
+      });
+    });
   });
 
   describe('Handles lists and nullability', () => {
@@ -882,6 +938,32 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
+    it('limits errors when there are more than 50 errors of does not allow non-null lists of non-nulls to contain null.', () => {
+      const doc = `
+        query ($input: [String!]!) {
+          nnListNN(input: $input)
+        }
+      `;
+      const largeList = new Array(100).fill(null);
+      const result = executeQuery(doc, { input: largeList });
+
+      const expectedErrors = [];
+      for (let idx = 0; idx < 50; ++idx) {
+        expectedErrors.push({
+          message: `Variable "$input" got invalid value [null, null, null, null, null, null, null, null, null, null, ... 90 more items]; Expected non-nullable type String! not to be null at value[${idx}].`,
+          locations: [{ line: 2, column: 16 }],
+        });
+      }
+      expectedErrors.push({
+        message:
+          'Too many errors processing variables, error limit reached. Execution aborted.',
+      });
+
+      expect(result).to.deep.equal({
+        errors: expectedErrors,
+      });
+    });
+
     it('does not allow invalid types to be used as values', () => {
       const doc = `
         query ($input: TestType!) {
@@ -917,6 +999,43 @@ describe('Execute: Handles inputs', () => {
             locations: [{ line: 2, column: 24 }],
           },
         ],
+      });
+    });
+
+    it('limits errors when there are too many unknown types to be used as values', () => {
+      let queryFields = '';
+      let fieldArguments = '';
+      const valueObject = {};
+      const errors = [];
+      for (let index = 0; index < 100; ++index) {
+        queryFields += `$input${index}: UnknownType!`;
+        fieldArguments = `input${index}: $input${index}`;
+        if (index !== 99) {
+          queryFields += ',';
+          fieldArguments += ',';
+        }
+        valueObject[`input${index}`] = 'whoknows';
+        if (index < 50) {
+          const column = index < 10 ? 25 + index * 22 : 25 + index * 23 - 9;
+          errors.push({
+            message: `Variable "$input${index}" expected value of type "UnknownType!" which cannot be used as an input type.`,
+            locations: [{ line: 2, column }],
+          });
+        }
+      }
+      errors.push({
+        message:
+          'Too many errors processing variables, error limit reached. Execution aborted.',
+      });
+      const doc = `
+        query (${queryFields}) {
+          fieldWithOneHundredInputs(${fieldArguments})
+        }
+      `;
+      const result = executeQuery(doc, valueObject);
+
+      expect(result).to.deep.equal({
+        errors,
       });
     });
   });

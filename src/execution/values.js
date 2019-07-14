@@ -45,6 +45,8 @@ export function getVariableValues(
 ): CoercedVariableValues {
   const errors = [];
   const coercedValues = {};
+  const maxErrors = 50;
+  let errorLimitReached = false;
   for (let i = 0; i < varDefNodes.length; i++) {
     const varDefNode = varDefNodes[i];
     const varName = varDefNode.variable.name.value;
@@ -61,6 +63,10 @@ export function getVariableValues(
           varDefNode.type,
         ),
       );
+      if (errors.length === maxErrors) {
+        errorLimitReached = true;
+        break;
+      }
     } else {
       const hasValue = hasOwnProperty(inputs, varName);
       const value = hasValue ? inputs[varName] : undefined;
@@ -81,6 +87,10 @@ export function getVariableValues(
             varDefNode,
           ),
         );
+        if (errors.length === maxErrors) {
+          errorLimitReached = true;
+          break;
+        }
       } else if (hasValue) {
         if (value === null) {
           // If the explicit value `null` was provided, an entry in the coerced
@@ -92,12 +102,21 @@ export function getVariableValues(
           const coerced = coerceValue(value, varType, varDefNode);
           const coercionErrors = coerced.errors;
           if (coercionErrors) {
-            for (const error of coercionErrors) {
+            const reachesErrorLimit =
+              coercionErrors.length + errors.length >= maxErrors;
+            const publishedErrors = reachesErrorLimit
+              ? coercionErrors
+              : coercionErrors.slice(0, maxErrors - errors.length);
+            for (const error of publishedErrors) {
               error.message =
                 `Variable "$${varName}" got invalid value ${inspect(value)}; ` +
                 error.message;
             }
-            errors.push(...coercionErrors);
+            errors.push(...publishedErrors);
+            if (reachesErrorLimit || coerced.errorLimitReached) {
+              errorLimitReached = true;
+              break;
+            }
           } else {
             coercedValues[varName] = coerced.value;
           }
@@ -105,6 +124,14 @@ export function getVariableValues(
       }
     }
   }
+  if (errorLimitReached) {
+    errors.push(
+      new GraphQLError(
+        'Too many errors processing variables, error limit reached. Execution aborted.',
+      ),
+    );
+  }
+
   return errors.length === 0
     ? { errors: undefined, coerced: coercedValues }
     : { errors, coerced: undefined };
