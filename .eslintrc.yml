@@ -358,6 +358,7 @@ overrides:
     parserOptions:
       sourceType: script
     rules:
+      no-await-in-loop: off
       no-restricted-syntax: off
       no-console: off
       no-sync: off
