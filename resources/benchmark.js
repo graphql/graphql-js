@@ -16,17 +16,15 @@ const {
   mkdirRecursive,
   readdirRecursive,
 } = require('./utils');
+const { sampleModule } = require('./benchmark-fork');
 
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
 
-const minTime = 0.05 * NS_PER_SEC;
-// The maximum time a benchmark is allowed to run before finishing.
-const maxTime = 5 * NS_PER_SEC;
+// The maximum time in secounds a benchmark is allowed to run before finishing.
+const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
-const minSamples = 15;
-// The default number of times to execute a test on a benchmark's first cycle.
-const initCount = 10;
+const minSamples = 5;
 
 function LOCAL_DIR(...paths) {
   return path.join(__dirname, '..', ...paths);
@@ -97,42 +95,17 @@ function findFiles(cwd, pattern) {
   return out.split('\n').filter(Boolean);
 }
 
-function collectSamples(fn) {
-  clock(initCount, fn); // initial warm up
-
-  // Cycles a benchmark until a run `count` can be established.
-  // Resolve time span required to achieve a percent uncertainty of at most 1%.
-  // For more information see http://spiff.rit.edu/classes/phys273/uncert/uncert.html.
-  let count = initCount;
-  let clocked = 0;
-  while ((clocked = clock(count, fn)) < minTime) {
-    // Calculate how many more iterations it will take to achieve the `minTime`.
-    count += Math.ceil(((minTime - clocked) * count) / clocked);
-  }
-
-  let elapsed = 0;
+async function collectSamples(modulePath) {
   const samples = [];
 
   // If time permits, increase sample size to reduce the margin of error.
-  while (samples.length < minSamples || elapsed < maxTime) {
-    clocked = clock(count, fn);
+  const start = Date.now();
+  while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
+    const { clocked } = await sampleModule(modulePath);
     assert(clocked > 0);
-
-    elapsed += clocked;
-    // Compute the seconds per operation.
-    samples.push(clocked / count);
+    samples.push(clocked);
   }
-
   return samples;
-}
-
-// Clocks the time taken to execute a test per cycle (secs).
-function clock(count, fn) {
-  const start = process.hrtime.bigint();
-  for (let i = 0; i < count; ++i) {
-    fn();
-  }
-  return Number(process.hrtime.bigint() - start);
 }
 
 // T-Distribution two-tailed critical values for 95% confidence.
@@ -238,7 +211,7 @@ function maxBy(array, fn) {
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
-function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
+async function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
   const environments = revisions.map(revision => ({
     revision,
     distPath: prepareRevision(revision),
@@ -248,14 +221,16 @@ function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
     const results = [];
     for (let i = 0; i < environments.length; ++i) {
       const environment = environments[i];
-      const module = require(path.join(environment.distPath, benchmark));
+      const modulePath = path.join(environment.distPath, benchmark);
 
-      if (i) {
-        console.log('⏱️   ' + module.name);
+      if (i === 0) {
+        const { name } = await sampleModule(modulePath);
+        console.log('⏱️   ' + name);
       }
 
       try {
-        const samples = collectSamples(module.measure);
+        const samples = await collectSamples(modulePath);
+
         results.push({
           name: environment.revision,
           samples,
@@ -263,7 +238,7 @@ function prepareAndRunBenchmarks(benchmarkPatterns, revisions) {
         });
         process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
       } catch (error) {
-        console.log('  ' + module.name + ': ' + red(String(error)));
+        console.log('  ' + environment.revision + ': ' + red(String(error)));
       }
     }
     console.log('\n');
