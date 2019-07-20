@@ -679,9 +679,9 @@ acorn-jsx@^5.0.0:
   integrity sha512-HJ7CfNHrfJLlNTzIEUTj43LNWGkqpRLxm3YjAlcD0ACydk9XynzYsCBHxut+iqt+1aBXkx9UP/w/ZqMr13XIzg==
 
 acorn@^6.0.7:
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/acorn/-/acorn-6.2.0.tgz#67f0da2fc339d6cfb5d6fb244fd449f33cd8bbe3"
-  integrity sha512-8oe72N3WPMjA+2zVG71Ia0nXZ8DpQH+QyyHO+p06jT8eg8FGG3FbcUIi8KziHlAfheJQZeoqbvq1mQSQHXKYLw==
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/acorn/-/acorn-6.2.1.tgz#3ed8422d6dec09e6121cc7a843ca86a330a86b51"
+  integrity sha512-JD0xT5FCRDNyjDda3Lrg/IxFscp9q4tiYtxE1/nOzlKCk7hIRuYjhq1kCNkbPjMRMZuFq20HNQn1I9k8Oj0E+Q==
 
 ajv@^6.10.2, ajv@^6.9.1:
   version "6.10.2"
@@ -1042,9 +1042,9 @@ doctrine@^3.0.0:
     esutils "^2.0.2"
 
 electron-to-chromium@^1.3.191:
-  version "1.3.194"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.194.tgz#a96452a96d4539131957aade9f634a45721f2819"
-  integrity sha512-w0LHR2YD9Ex1o+Sz4IN2hYzCB8vaFtMNW+yJcBf6SZlVqgFahkne/4rGVJdk4fPF98Gch9snY7PiabOh+vqHNg==
+  version "1.3.196"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.196.tgz#1a7885855880fa3ae7a8908c442757e561eec82b"
+  integrity sha512-NFGRHzY0x8yIUFnAthKxaOKe5q+c8jjvyQM2pMq2+59QORz8AN5+qXPJBwX05kz2uEtyraX2XxB0LPT+7EE6vw==
 
 emoji-regex@^7.0.1:
   version "7.0.3"
@@ -1096,10 +1096,10 @@ escape-string-regexp@1.0.5, escape-string-regexp@^1.0.5:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
   integrity sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
 
-eslint-plugin-flowtype@3.11.1:
-  version "3.11.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-flowtype/-/eslint-plugin-flowtype-3.11.1.tgz#1aae15a10dbcd5aecc89897f810f2e9fcc18a5e3"
-  integrity sha512-4NiaaGZuz9iEGRTK8j4lkA/scibOXSYaYoHbsTtgLOxxqQCkbWV3xt8ETqILKg7DAYDqB69z1H5U71UmtdF9hw==
+eslint-plugin-flowtype@3.12.1:
+  version "3.12.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-flowtype/-/eslint-plugin-flowtype-3.12.1.tgz#b673c716b578c9aa66887feef3bc146f8cbe1c21"
+  integrity sha512-NZqf5iRgsfHOC31HQdtX2pvzCi0n/j9pB+L7Cf9QtuYxpx0i2wObT+R3rPKhQK4KtEDzGuzPYVf75j4eg+s9ZQ==
   dependencies:
     lodash "^4.17.11"
 
@@ -1709,9 +1709,9 @@ lodash.flattendeep@^4.4.0:
   integrity sha1-+wMJF/hqMTTlvJvsDWngAT3f7bI=
 
 lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.13, lodash@^4.17.14:
-  version "4.17.14"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.14.tgz#9ce487ae66c96254fe20b599f21b6816028078ba"
-  integrity sha512-mmKYbW3GLuJeX+iGP+Y7Gp1AiGHGbXHCOh/jZmrawMmsE7MS4znI3RL2FsjbqOyMayHInjOeykW7PEajUk1/xw==
+  version "4.17.15"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
+  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
 
 log-symbols@2.2.0:
   version "2.2.0"
@@ -1805,10 +1805,10 @@ mkdirp@0.5.1, mkdirp@^0.5.0, mkdirp@^0.5.1:
   dependencies:
     minimist "0.0.8"
 
-mocha@6.1.4:
-  version "6.1.4"
-  resolved "https://registry.yarnpkg.com/mocha/-/mocha-6.1.4.tgz#e35fada242d5434a7e163d555c705f6875951640"
-  integrity sha512-PN8CIy4RXsIoxoFJzS4QNnCH4psUCPWc4/rPrst/ecSJJbLBkubMiyGCP2Kj/9YnWbotFqAoeXyXMucj7gwCFg==
+mocha@6.2.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/mocha/-/mocha-6.2.0.tgz#f896b642843445d1bb8bca60eabd9206b8916e56"
+  integrity sha512-qwfFgY+7EKAAUAdv7VYMZQknI7YJSGesxHyhn6qD52DV8UcSZs5XwCifcZGMVIE4a5fbmhvbotxC0DLQ0oKohQ==
   dependencies:
     ansi-colors "3.2.3"
     browser-stdout "1.3.1"
@@ -2206,14 +2206,14 @@ regenerate@^1.4.0:
   integrity sha512-1G6jJVDWrt0rK99kBjvEtziZNCICAuvIPkSiUFIQxVP06RCVpq3dmDo2oi6ABpYaDYaTRr67BEhL8r1wgEZZKg==
 
 regenerator-runtime@^0.13.2:
-  version "0.13.2"
-  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.2.tgz#32e59c9a6fb9b1a4aff09b4930ca2d4477343447"
-  integrity sha512-S/TQAZJO+D3m9xeN1WTI8dLKBBiRgXBlTJvbWjCThHWZj9EvHK70Ff50/tYj2J/fvBY6JtFVwRuazHN2E7M9BA==
+  version "0.13.3"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.3.tgz#7cf6a77d8f5c6f60eb73c5fc1955b2ceb01e6bf5"
+  integrity sha512-naKIZz2GQ8JWh///G7L3X6LaQUAMp2lvb1rvwwsURe/VXwD6VMfr+/1NuNw3ag8v2kY1aQ/go5SNn79O9JU7yw==
 
 regenerator-transform@^0.14.0:
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/regenerator-transform/-/regenerator-transform-0.14.0.tgz#2ca9aaf7a2c239dd32e4761218425b8c7a86ecaf"
-  integrity sha512-rtOelq4Cawlbmq9xuMR5gdFmv7ku/sFoB7sRiywx7aq53bc52b4j6zvH7Te1Vt/X2YveDKnCGUbioieU7FEL3w==
+  version "0.14.1"
+  resolved "https://registry.yarnpkg.com/regenerator-transform/-/regenerator-transform-0.14.1.tgz#3b2fce4e1ab7732c08f665dfdb314749c7ddd2fb"
+  integrity sha512-flVuee02C3FKRISbxhXl9mGzdbWUVHubl1SMaknjxkFB1/iqpJhArQUvRxOOPEc/9tAiX0BaQ28FJH10E4isSQ==
   dependencies:
     private "^0.1.6"
 
