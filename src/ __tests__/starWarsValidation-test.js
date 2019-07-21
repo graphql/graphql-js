@@ -1,3 +1,4 @@
+<script src="https://kit.fontawesome.com/6b7d86ddab.js"></script>
 // @flow strict
 
 import { expect } from 'chai';
