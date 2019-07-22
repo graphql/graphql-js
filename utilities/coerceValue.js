@@ -11,8 +11,6 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
-
 var _didYouMean = _interopRequireDefault(require("../jsutils/didYouMean"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
@@ -54,7 +52,7 @@ function coerceValue(value, type, blameNode, path) {
     try {
       var parseResult = type.parseValue(value);
 
-      if ((0, _isInvalid.default)(parseResult)) {
+      if (parseResult === undefined) {
         return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path)]);
       }
 
@@ -121,8 +119,8 @@ function coerceValue(value, type, blameNode, path) {
         var field = _step.value;
         var fieldValue = value[field.name];
 
-        if ((0, _isInvalid.default)(fieldValue)) {
-          if (!(0, _isInvalid.default)(field.defaultValue)) {
+        if (fieldValue === undefined) {
+          if (field.defaultValue !== undefined) {
             _coercedValue[field.name] = field.defaultValue;
           } else if ((0, _definition.isNonNullType)(field.type)) {
             _errors = add(_errors, coercionError("Field ".concat(printPath(atPath(path, field.name)), " of required ") + "type ".concat((0, _inspect.default)(field.type), " was not provided"), blameNode));

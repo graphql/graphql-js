@@ -1,7 +1,6 @@
 import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
-import isInvalid from '../jsutils/isInvalid';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import suggestionList from '../jsutils/suggestionList';
@@ -37,7 +36,7 @@ export function coerceValue(value, type, blameNode, path) {
     try {
       var parseResult = type.parseValue(value);
 
-      if (isInvalid(parseResult)) {
+      if (parseResult === undefined) {
         return ofErrors([coercionError("Expected type ".concat(type.name), blameNode, path)]);
       }
 
@@ -104,8 +103,8 @@ export function coerceValue(value, type, blameNode, path) {
         var field = _step.value;
         var fieldValue = value[field.name];
 
-        if (isInvalid(fieldValue)) {
-          if (!isInvalid(field.defaultValue)) {
+        if (fieldValue === undefined) {
+          if (field.defaultValue !== undefined) {
             _coercedValue[field.name] = field.defaultValue;
           } else if (isNonNullType(field.type)) {
             _errors = add(_errors, coercionError("Field ".concat(printPath(atPath(path, field.name)), " of required ") + "type ".concat(inspect(field.type), " was not provided"), blameNode));
