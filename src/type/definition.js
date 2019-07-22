@@ -1,7 +1,7 @@
 // @flow strict
 
 // FIXME
-/* eslint-disable flowtype/no-existential-type */
+// flowlint deprecated-type:off
 
 import objectEntries from '../polyfills/objectEntries';
 import defineToJSON from '../jsutils/defineToJSON';
