@@ -3,7 +3,6 @@
 import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
-import isInvalid from '../jsutils/isInvalid';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import suggestionList from '../jsutils/suggestionList';
@@ -63,7 +62,7 @@ export function coerceValue(
     // the original error.
     try {
       const parseResult = type.parseValue(value);
-      if (isInvalid(parseResult)) {
+      if (parseResult === undefined) {
         return ofErrors([
           coercionError(`Expected type ${type.name}`, blameNode, path),
         ]);
@@ -145,8 +144,8 @@ export function coerceValue(
     // Ensure every defined field is valid.
     for (const field of objectValues(fields)) {
       const fieldValue = value[field.name];
-      if (isInvalid(fieldValue)) {
-        if (!isInvalid(field.defaultValue)) {
+      if (fieldValue === undefined) {
+        if (field.defaultValue !== undefined) {
           coercedValue[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
           errors = add(
