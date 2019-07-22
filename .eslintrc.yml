@@ -16,7 +16,7 @@ rules:
   flowtype/define-flow-type: error
   flowtype/newline-after-flow-annotation: [error, always]
   flowtype/no-dupe-keys: error
-  flowtype/no-existential-type: error
+  flowtype/no-existential-type: off # checked by Flow
   flowtype/no-flow-fix-me-comments: off # TODO
   flowtype/no-mixed: off
   flowtype/no-mutable-array: off
