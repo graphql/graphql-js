@@ -3,7 +3,6 @@
 import find from '../polyfills/find';
 import { GraphQLError } from '../error/GraphQLError';
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
 import keyMap from '../jsutils/keyMap';
 import { coerceValue } from '../utilities/coerceValue';
 import { typeFromAST } from '../utilities/typeFromAST';
@@ -82,25 +81,19 @@ export function getVariableValues(
           ),
         );
       } else if (hasValue) {
-        if (value === null) {
-          // If the explicit value `null` was provided, an entry in the coerced
-          // values must exist as the value `null`.
-          coercedValues[varName] = null;
-        } else {
-          // Otherwise, a non-null value was provided, coerce it to the expected
-          // type or report an error if coercion fails.
-          const coerced = coerceValue(value, varType, varDefNode);
-          const coercionErrors = coerced.errors;
-          if (coercionErrors) {
-            for (const error of coercionErrors) {
-              error.message =
-                `Variable "$${varName}" got invalid value ${inspect(value)}; ` +
-                error.message;
-            }
-            errors.push(...coercionErrors);
-          } else {
-            coercedValues[varName] = coerced.value;
+        // Otherwise, a non-null value was provided, coerce it to the expected
+        // type or report an error if coercion fails.
+        const coerced = coerceValue(value, varType, varDefNode);
+        const coercionErrors = coerced.errors;
+        if (coercionErrors) {
+          for (const error of coercionErrors) {
+            error.message =
+              `Variable "$${varName}" got invalid value ${inspect(value)}; ` +
+              error.message;
           }
+          errors.push(...coercionErrors);
+        } else {
+          coercedValues[varName] = coerced.value;
         }
       }
     }
@@ -175,31 +168,18 @@ export function getArgumentValues(
         );
       }
     } else if (hasValue) {
-      if (argumentNode.value.kind === Kind.NULL) {
-        // If the explicit value `null` was provided, an entry in the coerced
-        // values must exist as the value `null`.
-        coercedValues[name] = null;
-      } else if (argumentNode.value.kind === Kind.VARIABLE) {
-        const variableName = argumentNode.value.name.value;
-        invariant(variableValues, 'Must exist for hasValue to be true.');
-        // Note: This does no further checking that this variable is correct.
-        // This assumes that this query has been validated and the variable
-        // usage here is of the correct type.
-        coercedValues[name] = variableValues[variableName];
-      } else {
-        const valueNode = argumentNode.value;
-        const coercedValue = valueFromAST(valueNode, argType, variableValues);
-        if (coercedValue === undefined) {
-          // Note: ValuesOfCorrectType validation should catch this before
-          // execution. This is a runtime check to ensure execution does not
-          // continue with an invalid argument value.
-          throw new GraphQLError(
-            `Argument "${name}" has invalid value ${print(valueNode)}.`,
-            argumentNode.value,
-          );
-        }
-        coercedValues[name] = coercedValue;
+      const valueNode = argumentNode.value;
+      const coercedValue = valueFromAST(valueNode, argType, variableValues);
+      if (coercedValue === undefined) {
+        // Note: ValuesOfCorrectType validation should catch this before
+        // execution. This is a runtime check to ensure execution does not
+        // continue with an invalid argument value.
+        throw new GraphQLError(
+          `Argument "${name}" has invalid value ${print(valueNode)}.`,
+          argumentNode.value,
+        );
       }
+      coercedValues[name] = coercedValue;
     }
   }
   return coercedValues;
