@@ -71,6 +71,11 @@ describe('coerceValue', () => {
       expectValue(result).to.equal(null);
     });
 
+    it('returns no error for NaN result', () => {
+      const result = coerceValue({ value: NaN }, TestScalar);
+      expectValue(result).to.satisfy(Number.isNaN);
+    });
+
     it('returns an error for undefined result', () => {
       const result = coerceValue({ value: undefined }, TestScalar);
       expectErrors(result).to.deep.equal(['Expected type TestScalar.']);
@@ -140,9 +145,9 @@ describe('coerceValue', () => {
     });
 
     it('returns an error for an invalid field', () => {
-      const result = coerceValue({ foo: 'abc' }, TestInputObject);
+      const result = coerceValue({ foo: NaN }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Expected type Int at value.foo. Int cannot represent non-integer value: "abc"',
+        'Expected type Int at value.foo. Int cannot represent non-integer value: NaN',
       ]);
     });
 
@@ -184,7 +189,10 @@ describe('coerceValue', () => {
       new GraphQLInputObjectType({
         name: 'TestInputObject',
         fields: {
-          foo: { type: GraphQLInt, defaultValue },
+          foo: {
+            type: new GraphQLScalarType({ name: 'TestScalar' }),
+            defaultValue,
+          },
         },
       });
 
@@ -199,8 +207,15 @@ describe('coerceValue', () => {
     });
 
     it('returns null as value', () => {
-      const result = coerceValue({}, TestInputObject(7));
-      expectValue(result).to.deep.equal({ foo: 7 });
+      const result = coerceValue({}, TestInputObject(null));
+      expectValue(result).to.deep.equal({ foo: null });
+    });
+
+    it('returns NaN as value', () => {
+      const result = coerceValue({}, TestInputObject(NaN));
+      expectValue(result)
+        .to.have.property('foo')
+        .that.satisfy(Number.isNaN);
     });
   });
 
