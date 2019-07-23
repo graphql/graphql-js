@@ -130,13 +130,13 @@ function getVariableValues(schema, varDefNodes, inputs) {
 
 function getArgumentValues(def, node, variableValues) {
   var coercedValues = {};
-  var argDefs = def.args;
   var argNodes = node.arguments;
 
-  if (!argDefs || !argNodes) {
+  if (!argNodes) {
     return coercedValues;
   }
 
+  var argDefs = def.args;
   var argNodeMap = (0, _keyMap.default)(argNodes, function (arg) {
     return arg.name.value;
   });

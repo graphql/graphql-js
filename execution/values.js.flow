@@ -124,11 +124,11 @@ export function getArgumentValues(
   variableValues?: ?ObjMap<mixed>,
 ): { [argument: string]: mixed, ... } {
   const coercedValues = {};
-  const argDefs = def.args;
   const argNodes = node.arguments;
-  if (!argDefs || !argNodes) {
+  if (!argNodes) {
     return coercedValues;
   }
+  const argDefs = def.args;
   const argNodeMap = keyMap(argNodes, arg => arg.name.value);
   for (let i = 0; i < argDefs.length; i++) {
     const argDef = argDefs[i];

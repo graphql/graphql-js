@@ -294,14 +294,10 @@ function typeMapReducer(map, type) {
     try {
       for (var _iterator3 = objectValues(type.getFields())[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
         var field = _step3.value;
-
-        if (field.args) {
-          var fieldArgTypes = field.args.map(function (arg) {
-            return arg.type;
-          });
-          reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
-        }
-
+        var fieldArgTypes = field.args.map(function (arg) {
+          return arg.type;
+        });
+        reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
         reducedMap = typeMapReducer(reducedMap, field.type);
       }
     } catch (err) {
