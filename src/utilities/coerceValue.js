@@ -6,6 +6,7 @@ import inspect from '../jsutils/inspect';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import suggestionList from '../jsutils/suggestionList';
+import { type Path, addPath, pathToArray } from '../jsutils/Path';
 import { GraphQLError } from '../error/GraphQLError';
 import { type ASTNode } from '../language/ast';
 import {
@@ -21,8 +22,6 @@ type CoercedValue = {|
   +errors: $ReadOnlyArray<GraphQLError> | void,
   +value: mixed,
 |};
-
-type Path = {| +prev: Path | void, +key: string | number |};
 
 /**
  * Coerces a JavaScript value given a GraphQL Type.
@@ -108,12 +107,11 @@ export function coerceValue(
       let errors;
       const coercedValue = [];
       forEach((value: any), (itemValue, index) => {
-        const itemPath = { prev: path, key: index };
         const coercedItem = coerceValue(
           itemValue,
           itemType,
           blameNode,
-          itemPath,
+          addPath(path, index),
         );
         if (coercedItem.errors) {
           errors = add(errors, coercedItem.errors);
@@ -144,7 +142,7 @@ export function coerceValue(
 
     // Ensure every defined field is valid.
     for (const field of objectValues(fields)) {
-      const fieldPath = { prev: path, key: field.name };
+      const fieldPath = addPath(path, field.name);
       const fieldValue = value[field.name];
       if (fieldValue === undefined) {
         if (field.defaultValue !== undefined) {
@@ -215,14 +213,11 @@ function coercionError(message, blameNode, path, subMessage, originalError) {
 
   // Build a string describing the path into the value where the error was found
   if (path) {
-    const segmentStrings = [];
-    for (let currentPath = path; currentPath; currentPath = currentPath.prev) {
-      const { key } = currentPath;
-      segmentStrings.unshift(
-        typeof key === 'string' ? '.' + key : '[' + key.toString() + ']',
-      );
+    fullMessage += ' at value';
+    for (const key of pathToArray(path)) {
+      fullMessage +=
+        typeof key === 'string' ? '.' + key : '[' + key.toString() + ']';
     }
-    fullMessage += ' at value' + segmentStrings.join('');
   }
 
   fullMessage += subMessage ? '.' + subMessage : '.';
