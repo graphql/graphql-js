@@ -1,8 +1,9 @@
 import { isAsyncIterable } from 'iterall';
 import inspect from '../jsutils/inspect';
+import { addPath, pathToArray } from '../jsutils/Path';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
-import { addPath, assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError, responsePathAsArray } from '../execution/execute';
+import { assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError } from '../execution/execute';
 import mapAsyncIterator from './mapAsyncIterator';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 export function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
@@ -136,7 +137,7 @@ export function createSourceEventStream(schema, document, rootValue, contextValu
       // If eventStream is an Error, rethrow a located error.
       if (eventStream instanceof Error) {
         return {
-          errors: [locatedError(eventStream, fieldNodes, responsePathAsArray(path))]
+          errors: [locatedError(eventStream, fieldNodes, pathToArray(path))]
         };
       } // Assert field returned an event stream, otherwise yield an error.
 

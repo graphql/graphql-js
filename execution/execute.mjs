@@ -10,6 +10,7 @@ import isObjectLike from '../jsutils/isObjectLike';
 import memoize3 from '../jsutils/memoize3';
 import promiseForObject from '../jsutils/promiseForObject';
 import promiseReduce from '../jsutils/promiseReduce';
+import { addPath, pathToArray } from '../jsutils/Path';
 import { getOperationRootType } from '../utilities/getOperationRootType';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { Kind } from '../language/kinds';
@@ -85,37 +86,10 @@ function buildResponse(exeContext, data) {
   };
 }
 /**
- * Given a ResponsePath (found in the `path` entry in the information provided
- * as the last argument to a field resolver), return an Array of the path keys.
- */
-
-
-export function responsePathAsArray(path) {
-  var flattened = [];
-  var curr = path;
-
-  while (curr) {
-    flattened.push(curr.key);
-    curr = curr.prev;
-  }
-
-  return flattened.reverse();
-}
-/**
- * Given a ResponsePath and a key, return a new ResponsePath containing the
- * new key.
- */
-
-export function addPath(prev, key) {
-  return {
-    prev: prev,
-    key: key
-  };
-}
-/**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
  */
+
 
 export function assertValidExecutionArguments(schema, document, rawVariableValues) {
   !document ? invariant(0, 'Must provide document') : void 0; // If the schema used for execution is invalid, throw an error.
@@ -501,7 +475,7 @@ function completeValueCatchingError(exeContext, returnType, fieldNodes, info, pa
 }
 
 function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
-  var error = locatedError(asErrorInstance(rawError), fieldNodes, responsePathAsArray(path)); // If the field type is non-nullable, then it is resolved without any
+  var error = locatedError(asErrorInstance(rawError), fieldNodes, pathToArray(path)); // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
 
   if (isNonNullType(returnType)) {

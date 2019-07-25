@@ -4,6 +4,7 @@ import inspect from '../jsutils/inspect';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import suggestionList from '../jsutils/suggestionList';
+import { addPath, pathToArray } from '../jsutils/Path';
 import { GraphQLError } from '../error/GraphQLError';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 
@@ -68,11 +69,7 @@ export function coerceValue(value, type, blameNode, path) {
       var errors;
       var coercedValue = [];
       forEach(value, function (itemValue, index) {
-        var itemPath = {
-          prev: path,
-          key: index
-        };
-        var coercedItem = coerceValue(itemValue, itemType, blameNode, itemPath);
+        var coercedItem = coerceValue(itemValue, itemType, blameNode, addPath(path, index));
 
         if (coercedItem.errors) {
           errors = add(errors, coercedItem.errors);
@@ -105,10 +102,7 @@ export function coerceValue(value, type, blameNode, path) {
     try {
       for (var _iterator = objectValues(fields)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var field = _step.value;
-        var fieldPath = {
-          prev: path,
-          key: field.name
-        };
+        var fieldPath = addPath(path, field.name);
         var fieldValue = value[field.name];
 
         if (fieldValue === undefined) {
@@ -184,15 +178,30 @@ function coercionError(message, blameNode, path, subMessage, originalError) {
   var fullMessage = message; // Build a string describing the path into the value where the error was found
 
   if (path) {
-    var segmentStrings = [];
+    fullMessage += ' at value';
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
 
-    for (var currentPath = path; currentPath; currentPath = currentPath.prev) {
-      var _currentPath = currentPath,
-          key = _currentPath.key;
-      segmentStrings.unshift(typeof key === 'string' ? '.' + key : '[' + key.toString() + ']');
+    try {
+      for (var _iterator2 = pathToArray(path)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var key = _step2.value;
+        fullMessage += typeof key === 'string' ? '.' + key : '[' + key.toString() + ']';
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
     }
-
-    fullMessage += ' at value' + segmentStrings.join('');
   }
 
   fullMessage += subMessage ? '.' + subMessage : '.'; // Return a GraphQLError instance

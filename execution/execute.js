@@ -4,8 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.execute = execute;
-exports.responsePathAsArray = responsePathAsArray;
-exports.addPath = addPath;
 exports.assertValidExecutionArguments = assertValidExecutionArguments;
 exports.buildExecutionContext = buildExecutionContext;
 exports.collectFields = collectFields;
@@ -37,6 +35,8 @@ var _memoize = _interopRequireDefault(require("../jsutils/memoize3"));
 var _promiseForObject = _interopRequireDefault(require("../jsutils/promiseForObject"));
 
 var _promiseReduce = _interopRequireDefault(require("../jsutils/promiseReduce"));
+
+var _Path = require("../jsutils/Path");
 
 var _getOperationRootType = require("../utilities/getOperationRootType");
 
@@ -120,35 +120,6 @@ function buildResponse(exeContext, data) {
   } : {
     errors: exeContext.errors,
     data: data
-  };
-}
-/**
- * Given a ResponsePath (found in the `path` entry in the information provided
- * as the last argument to a field resolver), return an Array of the path keys.
- */
-
-
-function responsePathAsArray(path) {
-  var flattened = [];
-  var curr = path;
-
-  while (curr) {
-    flattened.push(curr.key);
-    curr = curr.prev;
-  }
-
-  return flattened.reverse();
-}
-/**
- * Given a ResponsePath and a key, return a new ResponsePath containing the
- * new key.
- */
-
-
-function addPath(prev, key) {
-  return {
-    prev: prev,
-    key: key
   };
 }
 /**
@@ -276,7 +247,7 @@ function executeOperation(exeContext, operation, rootValue) {
 function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields) {
   return (0, _promiseReduce.default)(Object.keys(fields), function (results, responseName) {
     var fieldNodes = fields[responseName];
-    var fieldPath = addPath(path, responseName);
+    var fieldPath = (0, _Path.addPath)(path, responseName);
     var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
 
     if (result === undefined) {
@@ -307,7 +278,7 @@ function executeFields(exeContext, parentType, sourceValue, path, fields) {
   for (var i = 0, keys = Object.keys(fields); i < keys.length; ++i) {
     var responseName = keys[i];
     var fieldNodes = fields[responseName];
-    var fieldPath = addPath(path, responseName);
+    var fieldPath = (0, _Path.addPath)(path, responseName);
     var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
 
     if (result !== undefined) {
@@ -546,7 +517,7 @@ function completeValueCatchingError(exeContext, returnType, fieldNodes, info, pa
 }
 
 function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
-  var error = (0, _locatedError.locatedError)(asErrorInstance(rawError), fieldNodes, responsePathAsArray(path)); // If the field type is non-nullable, then it is resolved without any
+  var error = (0, _locatedError.locatedError)(asErrorInstance(rawError), fieldNodes, (0, _Path.pathToArray)(path)); // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
 
   if ((0, _definition.isNonNullType)(returnType)) {
@@ -647,7 +618,7 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
   (0, _iterall.forEach)(result, function (item, index) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    var fieldPath = addPath(path, index);
+    var fieldPath = (0, _Path.addPath)(path, index);
     var completedItem = completeValueCatchingError(exeContext, itemType, fieldNodes, info, fieldPath, item);
 
     if (!containsPromise && (0, _isPromise.default)(completedItem)) {

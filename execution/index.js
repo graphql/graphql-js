@@ -3,6 +3,12 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+Object.defineProperty(exports, "responsePathAsArray", {
+  enumerable: true,
+  get: function get() {
+    return _Path.pathToArray;
+  }
+});
 Object.defineProperty(exports, "execute", {
   enumerable: true,
   get: function get() {
@@ -21,18 +27,14 @@ Object.defineProperty(exports, "defaultTypeResolver", {
     return _execute.defaultTypeResolver;
   }
 });
-Object.defineProperty(exports, "responsePathAsArray", {
-  enumerable: true,
-  get: function get() {
-    return _execute.responsePathAsArray;
-  }
-});
 Object.defineProperty(exports, "getDirectiveValues", {
   enumerable: true,
   get: function get() {
     return _values.getDirectiveValues;
   }
 });
+
+var _Path = require("../jsutils/Path");
 
 var _execute = require("./execute");
 

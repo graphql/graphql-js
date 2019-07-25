@@ -10,6 +10,8 @@ var _iterall = require("iterall");
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _Path = require("../jsutils/Path");
+
 var _GraphQLError = require("../error/GraphQLError");
 
 var _locatedError = require("../error/locatedError");
@@ -143,7 +145,7 @@ function createSourceEventStream(schema, document, rootValue, contextValue, vari
 
 
     var resolveFn = fieldDef.subscribe || exeContext.fieldResolver;
-    var path = (0, _execute.addPath)(undefined, responseName);
+    var path = (0, _Path.addPath)(undefined, responseName);
     var info = (0, _execute.buildResolveInfo)(exeContext, fieldDef, fieldNodes, type, path); // resolveFieldValueOrError implements the "ResolveFieldEventStream"
     // algorithm from GraphQL specification. It differs from
     // "ResolveFieldValue" due to providing a different `resolveFn`.
@@ -154,7 +156,7 @@ function createSourceEventStream(schema, document, rootValue, contextValue, vari
       // If eventStream is an Error, rethrow a located error.
       if (eventStream instanceof Error) {
         return {
-          errors: [(0, _locatedError.locatedError)(eventStream, fieldNodes, (0, _execute.responsePathAsArray)(path))]
+          errors: [(0, _locatedError.locatedError)(eventStream, fieldNodes, (0, _Path.pathToArray)(path))]
         };
       } // Assert field returned an event stream, otherwise yield an error.
 

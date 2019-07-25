@@ -1,2 +1,3 @@
-export { execute, defaultFieldResolver, defaultTypeResolver, responsePathAsArray } from './execute';
+export { pathToArray as responsePathAsArray } from '../jsutils/Path';
+export { execute, defaultFieldResolver, defaultTypeResolver } from './execute';
 export { getDirectiveValues } from './values';
