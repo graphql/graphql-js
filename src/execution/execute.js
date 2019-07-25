@@ -14,6 +14,7 @@ import promiseForObject from '../jsutils/promiseForObject';
 import promiseReduce from '../jsutils/promiseReduce';
 import { type ObjMap } from '../jsutils/ObjMap';
 import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
+import { type Path, addPath, pathToArray } from '../jsutils/Path';
 
 import { getOperationRootType } from '../utilities/getOperationRootType';
 import { typeFromAST } from '../utilities/typeFromAST';
@@ -32,7 +33,6 @@ import {
   type GraphQLFieldResolver,
   type GraphQLResolveInfo,
   type GraphQLTypeResolver,
-  type ResponsePath,
   type GraphQLList,
   isObjectType,
   isAbstractType,
@@ -236,30 +236,6 @@ function buildResponse(
 }
 
 /**
- * Given a ResponsePath (found in the `path` entry in the information provided
- * as the last argument to a field resolver), return an Array of the path keys.
- */
-export function responsePathAsArray(
-  path: ResponsePath,
-): $ReadOnlyArray<string | number> {
-  const flattened = [];
-  let curr = path;
-  while (curr) {
-    flattened.push(curr.key);
-    curr = curr.prev;
-  }
-  return flattened.reverse();
-}
-
-/**
- * Given a ResponsePath and a key, return a new ResponsePath containing the
- * new key.
- */
-export function addPath(prev: ResponsePath | void, key: string | number) {
-  return { prev, key };
-}
-
-/**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
  */
@@ -420,7 +396,7 @@ function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  path: ResponsePath | void,
+  path: Path | void,
   fields: ObjMap<Array<FieldNode>>,
 ): PromiseOrValue<ObjMap<mixed>> {
   return promiseReduce(
@@ -459,7 +435,7 @@ function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: mixed,
-  path: ResponsePath | void,
+  path: Path | void,
   fields: ObjMap<Array<FieldNode>>,
 ): PromiseOrValue<ObjMap<mixed>> {
   const results = Object.create(null);
@@ -639,7 +615,7 @@ function resolveField(
   parentType: GraphQLObjectType,
   source: mixed,
   fieldNodes: $ReadOnlyArray<FieldNode>,
-  path: ResponsePath,
+  path: Path,
 ): PromiseOrValue<mixed> {
   const fieldNode = fieldNodes[0];
   const fieldName = fieldNode.name.value;
@@ -685,7 +661,7 @@ export function buildResolveInfo(
   fieldDef: GraphQLField<mixed, mixed>,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   parentType: GraphQLObjectType,
-  path: ResponsePath,
+  path: Path,
 ): GraphQLResolveInfo {
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
@@ -751,7 +727,7 @@ function completeValueCatchingError(
   returnType: GraphQLOutputType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
-  path: ResponsePath,
+  path: Path,
   result: mixed,
 ): PromiseOrValue<mixed> {
   try {
@@ -788,7 +764,7 @@ function handleFieldError(rawError, fieldNodes, path, returnType, exeContext) {
   const error = locatedError(
     asErrorInstance(rawError),
     fieldNodes,
-    responsePathAsArray(path),
+    pathToArray(path),
   );
 
   // If the field type is non-nullable, then it is resolved without any
@@ -829,7 +805,7 @@ function completeValue(
   returnType: GraphQLOutputType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
-  path: ResponsePath,
+  path: Path,
   result: mixed,
 ): PromiseOrValue<mixed> {
   // If result is an Error, throw a located error.
@@ -922,7 +898,7 @@ function completeListValue(
   returnType: GraphQLList<GraphQLOutputType>,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
-  path: ResponsePath,
+  path: Path,
   result: mixed,
 ): PromiseOrValue<$ReadOnlyArray<mixed>> {
   invariant(
@@ -982,7 +958,7 @@ function completeAbstractValue(
   returnType: GraphQLAbstractType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
-  path: ResponsePath,
+  path: Path,
   result: mixed,
 ): PromiseOrValue<ObjMap<mixed>> {
   const resolveTypeFn = returnType.resolveType || exeContext.typeResolver;
@@ -1066,7 +1042,7 @@ function completeObjectValue(
   returnType: GraphQLObjectType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
   info: GraphQLResolveInfo,
-  path: ResponsePath,
+  path: Path,
   result: mixed,
 ): PromiseOrValue<ObjMap<mixed>> {
   // If there is an isTypeOf predicate function, call it with the
@@ -1119,7 +1095,7 @@ function collectAndExecuteSubfields(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
   fieldNodes: $ReadOnlyArray<FieldNode>,
-  path: ResponsePath,
+  path: Path,
   result: mixed,
 ): PromiseOrValue<ObjMap<mixed>> {
   // Collect sub-fields to execute to complete this value.

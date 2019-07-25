@@ -1,5 +1,7 @@
 // @flow strict
 
+export type { Path as ResponsePath } from '../jsutils/Path';
+
 export {
   // Predicate
   isSchema,
@@ -150,7 +152,6 @@ export type {
   GraphQLIsTypeOfFn,
   GraphQLObjectTypeConfig,
   GraphQLResolveInfo,
-  ResponsePath,
   GraphQLScalarTypeConfig,
   GraphQLTypeResolver,
   GraphQLUnionTypeConfig,

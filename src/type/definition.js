@@ -15,6 +15,7 @@ import keyValMap from '../jsutils/keyValMap';
 import mapValue from '../jsutils/mapValue';
 import isObjectLike from '../jsutils/isObjectLike';
 import { type ObjMap } from '../jsutils/ObjMap';
+import { type Path } from '../jsutils/Path';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 import {
@@ -859,17 +860,12 @@ export type GraphQLResolveInfo = {|
   +fieldNodes: $ReadOnlyArray<FieldNode>,
   +returnType: GraphQLOutputType,
   +parentType: GraphQLObjectType,
-  +path: ResponsePath,
+  +path: Path,
   +schema: GraphQLSchema,
   +fragments: ObjMap<FragmentDefinitionNode>,
   +rootValue: mixed,
   +operation: OperationDefinitionNode,
   +variableValues: { [variable: string]: mixed, ... },
-|};
-
-export type ResponsePath = {|
-  +prev: ResponsePath | void,
-  +key: string | number,
 |};
 
 export type GraphQLFieldConfig<
