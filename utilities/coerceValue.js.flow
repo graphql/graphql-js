@@ -108,11 +108,12 @@ export function coerceValue(
       let errors;
       const coercedValue = [];
       forEach((value: any), (itemValue, index) => {
+        const itemPath = { prev: path, key: index };
         const coercedItem = coerceValue(
           itemValue,
           itemType,
           blameNode,
-          atPath(path, index),
+          itemPath,
         );
         if (coercedItem.errors) {
           errors = add(errors, coercedItem.errors);
@@ -143,6 +144,7 @@ export function coerceValue(
 
     // Ensure every defined field is valid.
     for (const field of objectValues(fields)) {
+      const fieldPath = { prev: path, key: field.name };
       const fieldValue = value[field.name];
       if (fieldValue === undefined) {
         if (field.defaultValue !== undefined) {
@@ -151,9 +153,9 @@ export function coerceValue(
           errors = add(
             errors,
             coercionError(
-              `Field ${printPath(atPath(path, field.name))} of required ` +
-                `type ${inspect(field.type)} was not provided`,
+              `Field of required type ${inspect(field.type)} was not provided`,
               blameNode,
+              fieldPath,
             ),
           );
         }
@@ -162,7 +164,7 @@ export function coerceValue(
           fieldValue,
           field.type,
           blameNode,
-          atPath(path, field.name),
+          fieldPath,
         );
         if (coercedField.errors) {
           errors = add(errors, coercedField.errors);
@@ -208,17 +210,21 @@ function add(errors, moreErrors) {
   return (errors || []).concat(moreErrors);
 }
 
-function atPath(prev, key) {
-  return { prev, key };
-}
-
 function coercionError(message, blameNode, path, subMessage, originalError) {
-  const pathStr = printPath(path);
   let fullMessage = message;
 
-  if (pathStr) {
-    fullMessage += ' at ' + pathStr;
+  // Build a string describing the path into the value where the error was found
+  if (path) {
+    const segmentStrings = [];
+    for (let currentPath = path; currentPath; currentPath = currentPath.prev) {
+      const { key } = currentPath;
+      segmentStrings.unshift(
+        typeof key === 'string' ? '.' + key : '[' + key.toString() + ']',
+      );
+    }
+    fullMessage += ' at value' + segmentStrings.join('');
   }
+
   fullMessage += subMessage ? '.' + subMessage : '.';
 
   // Return a GraphQLError instance
@@ -230,18 +236,4 @@ function coercionError(message, blameNode, path, subMessage, originalError) {
     undefined,
     originalError,
   );
-}
-
-// Build a string describing the path into the value where the error was found
-function printPath(path) {
-  let pathStr = '';
-  let currentPath = path;
-  while (currentPath) {
-    pathStr =
-      (typeof currentPath.key === 'string'
-        ? '.' + currentPath.key
-        : '[' + String(currentPath.key) + ']') + pathStr;
-    currentPath = currentPath.prev;
-  }
-  return pathStr ? 'value' + pathStr : '';
 }

@@ -84,7 +84,11 @@ function coerceValue(value, type, blameNode, path) {
       var errors;
       var coercedValue = [];
       (0, _iterall.forEach)(value, function (itemValue, index) {
-        var coercedItem = coerceValue(itemValue, itemType, blameNode, atPath(path, index));
+        var itemPath = {
+          prev: path,
+          key: index
+        };
+        var coercedItem = coerceValue(itemValue, itemType, blameNode, itemPath);
 
         if (coercedItem.errors) {
           errors = add(errors, coercedItem.errors);
@@ -117,16 +121,20 @@ function coerceValue(value, type, blameNode, path) {
     try {
       for (var _iterator = (0, _objectValues.default)(fields)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var field = _step.value;
+        var fieldPath = {
+          prev: path,
+          key: field.name
+        };
         var fieldValue = value[field.name];
 
         if (fieldValue === undefined) {
           if (field.defaultValue !== undefined) {
             _coercedValue[field.name] = field.defaultValue;
           } else if ((0, _definition.isNonNullType)(field.type)) {
-            _errors = add(_errors, coercionError("Field ".concat(printPath(atPath(path, field.name)), " of required ") + "type ".concat((0, _inspect.default)(field.type), " was not provided"), blameNode));
+            _errors = add(_errors, coercionError("Field of required type ".concat((0, _inspect.default)(field.type), " was not provided"), blameNode, fieldPath));
           }
         } else {
-          var coercedField = coerceValue(fieldValue, field.type, blameNode, atPath(path, field.name));
+          var coercedField = coerceValue(fieldValue, field.type, blameNode, fieldPath);
 
           if (coercedField.errors) {
             _errors = add(_errors, coercedField.errors);
@@ -188,35 +196,22 @@ function add(errors, moreErrors) {
   return (errors || []).concat(moreErrors);
 }
 
-function atPath(prev, key) {
-  return {
-    prev: prev,
-    key: key
-  };
-}
-
 function coercionError(message, blameNode, path, subMessage, originalError) {
-  var pathStr = printPath(path);
-  var fullMessage = message;
+  var fullMessage = message; // Build a string describing the path into the value where the error was found
 
-  if (pathStr) {
-    fullMessage += ' at ' + pathStr;
+  if (path) {
+    var segmentStrings = [];
+
+    for (var currentPath = path; currentPath; currentPath = currentPath.prev) {
+      var _currentPath = currentPath,
+          key = _currentPath.key;
+      segmentStrings.unshift(typeof key === 'string' ? '.' + key : '[' + key.toString() + ']');
+    }
+
+    fullMessage += ' at value' + segmentStrings.join('');
   }
 
   fullMessage += subMessage ? '.' + subMessage : '.'; // Return a GraphQLError instance
 
   return new _GraphQLError.GraphQLError(fullMessage, blameNode, undefined, undefined, undefined, originalError);
-} // Build a string describing the path into the value where the error was found
-
-
-function printPath(path) {
-  var pathStr = '';
-  var currentPath = path;
-
-  while (currentPath) {
-    pathStr = (typeof currentPath.key === 'string' ? '.' + currentPath.key : '[' + String(currentPath.key) + ']') + pathStr;
-    currentPath = currentPath.prev;
-  }
-
-  return pathStr ? 'value' + pathStr : '';
 }
