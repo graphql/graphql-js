@@ -162,7 +162,7 @@ describe('coerceValue', () => {
     it('returns error for a missing required field', () => {
       const result = coerceValue({ bar: 123 }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Field value.foo of required type Int! was not provided.',
+        'Field of required type Int! was not provided at value.foo.',
       ]);
     });
 

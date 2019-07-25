@@ -393,7 +393,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value { a: "foo", b: "bar" }; Field value.c of required type String! was not provided.',
+                'Variable "$input" got invalid value { a: "foo", b: "bar" }; Field of required type String! was not provided at value.c.',
               locations: [{ line: 2, column: 16 }],
             },
           ],
@@ -412,12 +412,12 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value { na: { a: "foo" } }; Field value.na.c of required type String! was not provided.',
+                'Variable "$input" got invalid value { na: { a: "foo" } }; Field of required type String! was not provided at value.na.c.',
               locations: [{ line: 2, column: 18 }],
             },
             {
               message:
-                'Variable "$input" got invalid value { na: { a: "foo" } }; Field value.nb of required type String! was not provided.',
+                'Variable "$input" got invalid value { na: { a: "foo" } }; Field of required type String! was not provided at value.nb.',
               locations: [{ line: 2, column: 18 }],
             },
           ],
