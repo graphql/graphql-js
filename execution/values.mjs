@@ -21,63 +21,91 @@ import { isInputType, isNonNullType } from '../type/definition';
 export function getVariableValues(schema, varDefNodes, inputs) {
   var errors = [];
   var coercedValues = {};
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
 
-  for (var i = 0; i < varDefNodes.length; i++) {
-    var varDefNode = varDefNodes[i];
-    var varName = varDefNode.variable.name.value;
-    var varType = typeFromAST(schema, varDefNode.type);
+  try {
+    for (var _iterator = varDefNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var varDefNode = _step.value;
+      var varName = varDefNode.variable.name.value;
+      var varType = typeFromAST(schema, varDefNode.type);
 
-    if (!isInputType(varType)) {
-      // Must use input types for variables. This should be caught during
-      // validation, however is checked again here for safety.
-      errors.push(new GraphQLError("Variable \"$".concat(varName, "\" expected value of type ") + "\"".concat(print(varDefNode.type), "\" which cannot be used as an input type."), varDefNode.type));
-    } else {
-      var hasValue = hasOwnProperty(inputs, varName);
-      var value = hasValue ? inputs[varName] : undefined;
+      if (!isInputType(varType)) {
+        // Must use input types for variables. This should be caught during
+        // validation, however is checked again here for safety.
+        var varTypeStr = print(varDefNode.type);
+        errors.push(new GraphQLError("Variable \"$".concat(varName, "\" expected value of type \"").concat(varTypeStr, "\" which cannot be used as an input type."), varDefNode.type));
+        continue;
+      }
 
-      if (!hasValue && varDefNode.defaultValue) {
-        // If no value was provided to a variable with a default value,
-        // use the default value.
-        coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
-      } else if ((!hasValue || value === null) && isNonNullType(varType)) {
-        // If no value or a nullish value was provided to a variable with a
-        // non-null type (required), produce an error.
-        errors.push(new GraphQLError(hasValue ? "Variable \"$".concat(varName, "\" of non-null type ") + "\"".concat(inspect(varType), "\" must not be null.") : "Variable \"$".concat(varName, "\" of required type ") + "\"".concat(inspect(varType), "\" was not provided."), varDefNode));
-      } else if (hasValue) {
-        // Otherwise, a non-null value was provided, coerce it to the expected
-        // type or report an error if coercion fails.
-        var coerced = coerceValue(value, varType, varDefNode);
-        var coercionErrors = coerced.errors;
+      if (!hasOwnProperty(inputs, varName)) {
+        if (varDefNode.defaultValue) {
+          coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
+        }
 
-        if (coercionErrors) {
-          var _iteratorNormalCompletion = true;
-          var _didIteratorError = false;
-          var _iteratorError = undefined;
+        if (isNonNullType(varType)) {
+          var _varTypeStr = inspect(varType);
 
+          errors.push(new GraphQLError("Variable \"$".concat(varName, "\" of required type \"").concat(_varTypeStr, "\" was not provided."), varDefNode));
+        }
+
+        continue;
+      }
+
+      var value = inputs[varName];
+
+      if (value === null && isNonNullType(varType)) {
+        var _varTypeStr2 = inspect(varType);
+
+        errors.push(new GraphQLError("Variable \"$".concat(varName, "\" of non-null type \"").concat(_varTypeStr2, "\" must not be null."), varDefNode));
+        continue;
+      }
+
+      var coerced = coerceValue(value, varType, varDefNode);
+
+      if (coerced.errors) {
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = coerced.errors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var error = _step2.value;
+            error.message = "Variable \"$".concat(varName, "\" got invalid value ").concat(inspect(value), "; ") + error.message;
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
           try {
-            for (var _iterator = coercionErrors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var error = _step.value;
-              error.message = "Variable \"$".concat(varName, "\" got invalid value ").concat(inspect(value), "; ") + error.message;
+            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+              _iterator2.return();
             }
-          } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
           } finally {
-            try {
-              if (!_iteratorNormalCompletion && _iterator.return != null) {
-                _iterator.return();
-              }
-            } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
-              }
+            if (_didIteratorError2) {
+              throw _iteratorError2;
             }
           }
-
-          errors.push.apply(errors, coercionErrors);
-        } else {
-          coercedValues[varName] = coerced.value;
         }
+
+        errors.push.apply(errors, coerced.errors);
+        continue;
+      }
+
+      coercedValues[varName] = coerced.value;
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return != null) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
       }
     }
   }
@@ -101,61 +129,76 @@ export function getVariableValues(schema, varDefNodes, inputs) {
 
 export function getArgumentValues(def, node, variableValues) {
   var coercedValues = {};
-  var argNodes = node.arguments;
-
-  if (!argNodes) {
-    return coercedValues;
-  }
-
-  var argDefs = def.args;
-  var argNodeMap = keyMap(argNodes, function (arg) {
+  var argNodeMap = keyMap(node.arguments || [], function (arg) {
     return arg.name.value;
   });
+  var _iteratorNormalCompletion3 = true;
+  var _didIteratorError3 = false;
+  var _iteratorError3 = undefined;
 
-  for (var i = 0; i < argDefs.length; i++) {
-    var argDef = argDefs[i];
-    var name = argDef.name;
-    var argType = argDef.type;
-    var argumentNode = argNodeMap[name];
-    var hasValue = void 0;
-    var isNull = void 0;
+  try {
+    for (var _iterator3 = def.args[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+      var argDef = _step3.value;
+      var name = argDef.name;
+      var argType = argDef.type;
+      var argumentNode = argNodeMap[name];
 
-    if (argumentNode && argumentNode.value.kind === Kind.VARIABLE) {
-      var variableName = argumentNode.value.name.value;
-      hasValue = variableValues != null && hasOwnProperty(variableValues, variableName);
-      isNull = variableValues != null && variableValues[variableName] === null;
-    } else {
-      hasValue = argumentNode != null;
-      isNull = argumentNode != null && argumentNode.value.kind === Kind.NULL;
-    }
+      if (!argumentNode) {
+        if (argDef.defaultValue !== undefined) {
+          coercedValues[name] = argDef.defaultValue;
+        } else if (isNonNullType(argType)) {
+          throw new GraphQLError("Argument \"".concat(name, "\" of required type \"").concat(inspect(argType), "\" ") + 'was not provided.', node);
+        }
 
-    if (!hasValue && argDef.defaultValue !== undefined) {
-      // If no argument was provided where the definition has a default value,
-      // use the default value.
-      coercedValues[name] = argDef.defaultValue;
-    } else if ((!hasValue || isNull) && isNonNullType(argType)) {
-      // If no argument or a null value was provided to an argument with a
-      // non-null type (required), produce a field error.
-      if (isNull) {
-        throw new GraphQLError("Argument \"".concat(name, "\" of non-null type \"").concat(inspect(argType), "\" ") + 'must not be null.', argumentNode.value);
-      } else if (argumentNode && argumentNode.value.kind === Kind.VARIABLE) {
-        var _variableName = argumentNode.value.name.value;
-        throw new GraphQLError("Argument \"".concat(name, "\" of required type \"").concat(inspect(argType), "\" ") + "was provided the variable \"$".concat(_variableName, "\" which was not provided a runtime value."), argumentNode.value);
-      } else {
-        throw new GraphQLError("Argument \"".concat(name, "\" of required type \"").concat(inspect(argType), "\" ") + 'was not provided.', node);
+        continue;
       }
-    } else if (hasValue) {
+
       var valueNode = argumentNode.value;
+      var isNull = valueNode.kind === Kind.NULL;
+
+      if (valueNode.kind === Kind.VARIABLE) {
+        var variableName = valueNode.name.value;
+
+        if (variableValues == null || !hasOwnProperty(variableValues, variableName)) {
+          if (argDef.defaultValue !== undefined) {
+            coercedValues[name] = argDef.defaultValue;
+          } else if (isNonNullType(argType)) {
+            throw new GraphQLError("Argument \"".concat(name, "\" of required type \"").concat(inspect(argType), "\" ") + "was provided the variable \"$".concat(variableName, "\" which was not provided a runtime value."), valueNode);
+          }
+
+          continue;
+        }
+
+        isNull = variableValues[variableName] == null;
+      }
+
+      if (isNull && isNonNullType(argType)) {
+        throw new GraphQLError("Argument \"".concat(name, "\" of non-null type \"").concat(inspect(argType), "\" ") + 'must not be null.', valueNode);
+      }
+
       var coercedValue = valueFromAST(valueNode, argType, variableValues);
 
       if (coercedValue === undefined) {
         // Note: ValuesOfCorrectType validation should catch this before
         // execution. This is a runtime check to ensure execution does not
         // continue with an invalid argument value.
-        throw new GraphQLError("Argument \"".concat(name, "\" has invalid value ").concat(print(valueNode), "."), argumentNode.value);
+        throw new GraphQLError("Argument \"".concat(name, "\" has invalid value ").concat(print(valueNode), "."), valueNode);
       }
 
       coercedValues[name] = coercedValue;
+    }
+  } catch (err) {
+    _didIteratorError3 = true;
+    _iteratorError3 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+        _iterator3.return();
+      }
+    } finally {
+      if (_didIteratorError3) {
+        throw _iteratorError3;
+      }
     }
   }
 
