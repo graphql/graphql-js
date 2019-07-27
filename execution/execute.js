@@ -144,7 +144,6 @@ function assertValidExecutionArguments(schema, document, rawVariableValues) {
 
 
 function buildExecutionContext(schema, document, rootValue, contextValue, rawVariableValues, operationName, fieldResolver, typeResolver) {
-  var errors = [];
   var operation;
   var hasMultipleAssumedOperations = false;
   var fragments = Object.create(null);
@@ -170,31 +169,23 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
 
   if (!operation) {
     if (operationName) {
-      errors.push(new _GraphQLError.GraphQLError("Unknown operation named \"".concat(operationName, "\".")));
-    } else {
-      errors.push(new _GraphQLError.GraphQLError('Must provide an operation.'));
+      return [new _GraphQLError.GraphQLError("Unknown operation named \"".concat(operationName, "\"."))];
     }
-  } else if (hasMultipleAssumedOperations) {
-    errors.push(new _GraphQLError.GraphQLError('Must provide operation name if query contains multiple operations.'));
+
+    return [new _GraphQLError.GraphQLError('Must provide an operation.')];
   }
 
-  var variableValues;
-
-  if (operation) {
-    var coercedVariableValues = (0, _values.getVariableValues)(schema, operation.variableDefinitions || [], rawVariableValues || {});
-
-    if (coercedVariableValues.errors) {
-      errors.push.apply(errors, coercedVariableValues.errors);
-    } else {
-      variableValues = coercedVariableValues.coerced;
-    }
+  if (hasMultipleAssumedOperations) {
+    return [new _GraphQLError.GraphQLError('Must provide operation name if query contains multiple operations.')];
   }
 
-  if (errors.length !== 0) {
-    return errors;
+  var coercedVariableValues = (0, _values.getVariableValues)(schema, operation.variableDefinitions || [], rawVariableValues || {});
+
+  if (coercedVariableValues.errors) {
+    return coercedVariableValues.errors;
   }
 
-  !operation ? (0, _invariant.default)(0, 'Has operation if no errors.') : void 0;
+  var variableValues = coercedVariableValues.coerced;
   !variableValues ? (0, _invariant.default)(0, 'Has variables if no errors.') : void 0;
   return {
     schema: schema,
@@ -205,7 +196,7 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
     variableValues: variableValues,
     fieldResolver: fieldResolver || defaultFieldResolver,
     typeResolver: typeResolver || defaultTypeResolver,
-    errors: errors
+    errors: []
   };
 }
 /**

@@ -272,7 +272,6 @@ export function buildExecutionContext(
   fieldResolver: ?GraphQLFieldResolver<mixed, mixed>,
   typeResolver?: ?GraphQLTypeResolver<mixed, mixed>,
 ): $ReadOnlyArray<GraphQLError> | ExecutionContext {
-  const errors: Array<GraphQLError> = [];
   let operation: OperationDefinitionNode | void;
   let hasMultipleAssumedOperations = false;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -297,40 +296,30 @@ export function buildExecutionContext(
 
   if (!operation) {
     if (operationName) {
-      errors.push(
-        new GraphQLError(`Unknown operation named "${operationName}".`),
-      );
-    } else {
-      errors.push(new GraphQLError('Must provide an operation.'));
+      return [new GraphQLError(`Unknown operation named "${operationName}".`)];
     }
-  } else if (hasMultipleAssumedOperations) {
-    errors.push(
+    return [new GraphQLError('Must provide an operation.')];
+  }
+
+  if (hasMultipleAssumedOperations) {
+    return [
       new GraphQLError(
         'Must provide operation name if query contains multiple operations.',
       ),
-    );
+    ];
   }
 
-  let variableValues;
-  if (operation) {
-    const coercedVariableValues = getVariableValues(
-      schema,
-      operation.variableDefinitions || [],
-      rawVariableValues || {},
-    );
+  const coercedVariableValues = getVariableValues(
+    schema,
+    operation.variableDefinitions || [],
+    rawVariableValues || {},
+  );
 
-    if (coercedVariableValues.errors) {
-      errors.push(...coercedVariableValues.errors);
-    } else {
-      variableValues = coercedVariableValues.coerced;
-    }
+  if (coercedVariableValues.errors) {
+    return coercedVariableValues.errors;
   }
 
-  if (errors.length !== 0) {
-    return errors;
-  }
-
-  invariant(operation, 'Has operation if no errors.');
+  const variableValues = coercedVariableValues.coerced;
   invariant(variableValues, 'Has variables if no errors.');
 
   return {
@@ -342,7 +331,7 @@ export function buildExecutionContext(
     variableValues,
     fieldResolver: fieldResolver || defaultFieldResolver,
     typeResolver: typeResolver || defaultTypeResolver,
-    errors,
+    errors: [],
   };
 }
 
