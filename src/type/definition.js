@@ -555,13 +555,13 @@ export class GraphQLScalarType {
   extensionASTNodes: ?$ReadOnlyArray<ScalarTypeExtensionNode>;
 
   constructor(config: GraphQLScalarTypeConfig<*, *>): void {
+    const parseValue = config.parseValue || identityFunc;
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize || identityFunc;
-    this.parseValue = config.parseValue || identityFunc;
+    this.parseValue = parseValue;
     this.parseLiteral =
-      config.parseLiteral ||
-      (node => this.parseValue(valueFromASTUntyped(node)));
+      config.parseLiteral || (node => parseValue(valueFromASTUntyped(node)));
 
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
@@ -1155,7 +1155,7 @@ export class GraphQLEnumType /* <T> */ {
     this.description = config.description;
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
-    this._values = defineEnumValues(this, config.values);
+    this._values = defineEnumValues(this.name, config.values);
     this._valueLookup = new Map(
       this._values.map(enumValue => [enumValue.value, enumValue]),
     );
@@ -1232,22 +1232,22 @@ defineToStringTag(GraphQLEnumType);
 defineToJSON(GraphQLEnumType);
 
 function defineEnumValues(
-  type: GraphQLEnumType,
+  typeName: string,
   valueMap: GraphQLEnumValueConfigMap /* <T> */,
 ): Array<GraphQLEnumValue /* <T> */> {
   invariant(
     isPlainObj(valueMap),
-    `${type.name} values must be an object with value names as keys.`,
+    `${typeName} values must be an object with value names as keys.`,
   );
   return objectEntries(valueMap).map(([valueName, value]) => {
     invariant(
       isPlainObj(value),
-      `${type.name}.${valueName} must refer to an object with a "value" key ` +
+      `${typeName}.${valueName} must refer to an object with a "value" key ` +
         `representing an internal value but got: ${inspect(value)}.`,
     );
     invariant(
       !('isDeprecated' in value),
-      `${type.name}.${valueName} should provide "deprecationReason" instead of "isDeprecated".`,
+      `${typeName}.${valueName} should provide "deprecationReason" instead of "isDeprecated".`,
     );
     return {
       name: valueName,
