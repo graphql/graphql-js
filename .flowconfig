@@ -27,6 +27,9 @@ inexact-spread=error
 implicit-inexact-object=error
 unnecessary-optional-chain=error
 unnecessary-invariant=off
+signature-verification-failure=error
+uninitialized-instance-property=off
+non-array-spread=error
 
 [options]
 include_warnings=true
@@ -35,4 +38,5 @@ suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)?)\\)
 suppress_comment=\\(.\\|\n\\)*\\$DisableFlowOnNegativeTest
 
 [version]
-^0.102.0
+^0.104.0
+
