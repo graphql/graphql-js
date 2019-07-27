@@ -28,7 +28,7 @@ implicit-inexact-object=error
 unnecessary-optional-chain=error
 unnecessary-invariant=off
 signature-verification-failure=error
-uninitialized-instance-property=off
+uninitialized-instance-property=error
 non-array-spread=error
 
 [options]
