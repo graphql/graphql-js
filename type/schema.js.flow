@@ -165,17 +165,12 @@ export class GraphQLSchema {
     this.extensionASTNodes = config.extensionASTNodes;
 
     // Build type map now to detect any errors within this schema.
-    let initialTypes: Array<?GraphQLNamedType> = [
-      this.getQueryType(),
-      this.getMutationType(),
-      this.getSubscriptionType(),
+    const initialTypes: Array<?GraphQLNamedType> = [
+      this._queryType,
+      this._mutationType,
+      this._subscriptionType,
       __Schema,
-    ];
-
-    const types = config.types;
-    if (types) {
-      initialTypes = initialTypes.concat(types);
-    }
+    ].concat(config.types);
 
     // Keep track of all types referenced within the schema.
     let typeMap: TypeMap = Object.create(null);

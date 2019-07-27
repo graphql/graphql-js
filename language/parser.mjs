@@ -1,4 +1,5 @@
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import defineToJSON from '../jsutils/defineToJSON';
 import { Source } from './source';
 import { syntaxError } from '../error/syntaxError';
@@ -60,11 +61,7 @@ var Parser =
 function () {
   function Parser(source, options) {
     var sourceObj = typeof source === 'string' ? new Source(source) : source;
-
-    if (!(sourceObj instanceof Source)) {
-      throw new TypeError("Must provide Source. Received: ".concat(inspect(sourceObj)));
-    }
-
+    !(sourceObj instanceof Source) ? invariant(0, "Must provide Source. Received: ".concat(inspect(sourceObj))) : void 0;
     this._lexer = createLexer(sourceObj);
     this._options = options || {};
   }

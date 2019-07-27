@@ -109,13 +109,7 @@ function () {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes; // Build type map now to detect any errors within this schema.
 
-    var initialTypes = [this.getQueryType(), this.getMutationType(), this.getSubscriptionType(), __Schema];
-    var types = config.types;
-
-    if (types) {
-      initialTypes = initialTypes.concat(types);
-    } // Keep track of all types referenced within the schema.
-
+    var initialTypes = [this._queryType, this._mutationType, this._subscriptionType, __Schema].concat(config.types); // Keep track of all types referenced within the schema.
 
     var typeMap = Object.create(null); // First by deeply visiting all initial types.
 

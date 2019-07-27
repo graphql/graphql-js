@@ -418,15 +418,14 @@ var GraphQLScalarType =
 /*#__PURE__*/
 function () {
   function GraphQLScalarType(config) {
-    var _this = this;
-
+    var parseValue = config.parseValue || _identityFunc.default;
     this.name = config.name;
     this.description = config.description;
     this.serialize = config.serialize || _identityFunc.default;
-    this.parseValue = config.parseValue || _identityFunc.default;
+    this.parseValue = parseValue;
 
     this.parseLiteral = config.parseLiteral || function (node) {
-      return _this.parseValue((0, _valueFromASTUntyped.valueFromASTUntyped)(node));
+      return parseValue((0, _valueFromASTUntyped.valueFromASTUntyped)(node));
     };
 
     this.astNode = config.astNode;
@@ -800,7 +799,7 @@ function () {
     this.description = config.description;
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
-    this._values = defineEnumValues(this, config.values);
+    this._values = defineEnumValues(this.name, config.values);
     this._valueLookup = new Map(this._values.map(function (enumValue) {
       return [enumValue.value, enumValue];
     }));
@@ -885,13 +884,13 @@ exports.GraphQLEnumType = GraphQLEnumType;
 (0, _defineToStringTag.default)(GraphQLEnumType);
 (0, _defineToJSON.default)(GraphQLEnumType);
 
-function defineEnumValues(type, valueMap) {
-  !isPlainObj(valueMap) ? (0, _invariant.default)(0, "".concat(type.name, " values must be an object with value names as keys.")) : void 0;
+function defineEnumValues(typeName, valueMap) {
+  !isPlainObj(valueMap) ? (0, _invariant.default)(0, "".concat(typeName, " values must be an object with value names as keys.")) : void 0;
   return (0, _objectEntries.default)(valueMap).map(function (_ref2) {
     var valueName = _ref2[0],
         value = _ref2[1];
-    !isPlainObj(value) ? (0, _invariant.default)(0, "".concat(type.name, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat((0, _inspect.default)(value), ".")) : void 0;
-    !!('isDeprecated' in value) ? (0, _invariant.default)(0, "".concat(type.name, ".").concat(valueName, " should provide \"deprecationReason\" instead of \"isDeprecated\".")) : void 0;
+    !isPlainObj(value) ? (0, _invariant.default)(0, "".concat(typeName, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat((0, _inspect.default)(value), ".")) : void 0;
+    !!('isDeprecated' in value) ? (0, _invariant.default)(0, "".concat(typeName, ".").concat(valueName, " should provide \"deprecationReason\" instead of \"isDeprecated\".")) : void 0;
     return {
       name: valueName,
       description: value.description,

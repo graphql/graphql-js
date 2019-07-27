@@ -1,6 +1,7 @@
 // @flow strict
 
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import defineToJSON from '../jsutils/defineToJSON';
 import { Source } from './source';
 import { type GraphQLError } from '../error/GraphQLError';
@@ -171,11 +172,10 @@ class Parser {
 
   constructor(source: string | Source, options?: ParseOptions) {
     const sourceObj = typeof source === 'string' ? new Source(source) : source;
-    if (!(sourceObj instanceof Source)) {
-      throw new TypeError(
-        `Must provide Source. Received: ${inspect(sourceObj)}`,
-      );
-    }
+    invariant(
+      sourceObj instanceof Source,
+      `Must provide Source. Received: ${inspect(sourceObj)}`,
+    );
 
     this._lexer = createLexer(sourceObj);
     this._options = options || {};
