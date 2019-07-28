@@ -46,6 +46,8 @@ import {
   type GraphQLArgumentConfig,
   type GraphQLEnumValueConfig,
   type GraphQLInputFieldConfig,
+  type GraphQLFieldResolver,
+  type GraphQLScalarTypeConverters,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
@@ -72,6 +74,16 @@ import {
   GraphQLSchema,
 } from '../type/schema';
 
+export type TypeFieldResolver =
+  /* scalars */
+  | GraphQLScalarTypeConverters<any, any>
+  /* type and interface */
+  | ObjMap<GraphQLFieldResolver<mixed, mixed, mixed>>
+  /* enum */
+  | ObjMap<any>;
+
+export type TypeFieldResolverMap = ObjMap<TypeFieldResolver>;
+
 export type BuildSchemaOptions = {
   ...GraphQLSchemaValidationOptions,
 
@@ -92,6 +104,13 @@ export type BuildSchemaOptions = {
    */
   assumeValidSDL?: boolean,
 
+  /**
+   * Object map of object maps to resolver funtions.
+   *
+   * Default: undefined
+   */
+  resolvers?: TypeFieldResolverMap,
+
   ...
 };
 
@@ -99,16 +118,22 @@ export type BuildSchemaOptions = {
  * This takes the ast of a schema document produced by the parse function in
  * src/language/parser.js.
  *
- * If no schema definition is provided, then it will look for types named Query
- * and Mutation.
+ * If no schema definition is provided, then it will look for types named Query,
+ * Mutation and Subscription.
  *
- * Given that AST it constructs a GraphQLSchema. The resulting schema
- * has no resolve methods, so execution will use default resolvers.
+ * Given that AST it constructs a GraphQLSchema. The built schema will use
+ * resolve methods from `options.resolvers[typeName][fieldName]` if found.
+ * Otherwise it will use default resolvers.
  *
  * Accepts options as a second argument:
  *
  *    - commentDescriptions:
  *        Provide true to use preceding comments as the description.
+ *
+ *    - resolvers — map of named types
+ *      - Object, Interface — field resolvers
+ *      - Enum — External string → any internal value
+ *      - Scalars — serialize, parseValue, parseLiteral
  *
  */
 export function buildASTSchema(
@@ -243,7 +268,10 @@ export class ASTDefinitionBuilder {
     });
   }
 
-  buildField(field: FieldDefinitionNode): GraphQLFieldConfig<mixed, mixed> {
+  buildField(
+    field: FieldDefinitionNode,
+    typeName?: string,
+  ): GraphQLFieldConfig<mixed, mixed> {
     return {
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
@@ -251,6 +279,7 @@ export class ASTDefinitionBuilder {
       type: (this.getWrappedType(field.type): any),
       description: getDescription(field, this._options),
       args: keyByNameNode(field.arguments || [], arg => this.buildArg(arg)),
+      resolve: this._lookupResolverField(typeName, field.name.value),
       deprecationReason: getDeprecationReason(field),
       astNode: field,
     };
@@ -282,8 +311,12 @@ export class ASTDefinitionBuilder {
     };
   }
 
-  buildEnumValue(value: EnumValueDefinitionNode): GraphQLEnumValueConfig {
+  buildEnumValue(
+    value: EnumValueDefinitionNode,
+    typeName?: string,
+  ): GraphQLEnumValueConfig {
     return {
+      value: this._lookupResolverField(typeName, value.name.value),
       description: getDescription(value, this._options),
       deprecationReason: getDeprecationReason(value),
       astNode: value,
@@ -330,13 +363,15 @@ export class ASTDefinitionBuilder {
         ? () => interfaceNodes.map(ref => (this.getNamedType(ref): any))
         : [];
 
+    const name = astNode.name.value;
+
     const fields =
       fieldNodes && fieldNodes.length > 0
-        ? () => keyByNameNode(fieldNodes, field => this.buildField(field))
+        ? () => keyByNameNode(fieldNodes, field => this.buildField(field, name))
         : Object.create(null);
 
     return new GraphQLObjectType({
-      name: astNode.name.value,
+      name,
       description: getDescription(astNode, this._options),
       interfaces,
       fields,
@@ -346,14 +381,15 @@ export class ASTDefinitionBuilder {
 
   _makeInterfaceDef(astNode: InterfaceTypeDefinitionNode) {
     const fieldNodes = astNode.fields;
+    const name = astNode.name.value;
 
     const fields =
       fieldNodes && fieldNodes.length > 0
-        ? () => keyByNameNode(fieldNodes, field => this.buildField(field))
+        ? () => keyByNameNode(fieldNodes, field => this.buildField(field, name))
         : Object.create(null);
 
     return new GraphQLInterfaceType({
-      name: astNode.name.value,
+      name,
       description: getDescription(astNode, this._options),
       fields,
       astNode,
@@ -362,11 +398,14 @@ export class ASTDefinitionBuilder {
 
   _makeEnumDef(astNode: EnumTypeDefinitionNode) {
     const valueNodes = astNode.values || [];
+    const name = astNode.name.value;
 
     return new GraphQLEnumType({
-      name: astNode.name.value,
+      name,
       description: getDescription(astNode, this._options),
-      values: keyByNameNode(valueNodes, value => this.buildEnumValue(value)),
+      values: keyByNameNode(valueNodes, value =>
+        this.buildEnumValue(value, name),
+      ),
       astNode,
     });
   }
@@ -391,9 +430,17 @@ export class ASTDefinitionBuilder {
   }
 
   _makeScalarDef(astNode: ScalarTypeDefinitionNode) {
+    const name = astNode.name.value;
+    const resolver = ((this._lookupResolver(
+      name,
+    ): any): GraphQLScalarTypeConverters<any, any>);
+
     return new GraphQLScalarType({
-      name: astNode.name.value,
+      name,
       description: getDescription(astNode, this._options),
+      serialize: (resolver && resolver.serialize) || undefined,
+      parseValue: (resolver && resolver.parseValue) || undefined,
+      parseLiteral: (resolver && resolver.parseLiteral) || undefined,
       astNode,
     });
   }
@@ -409,6 +456,19 @@ export class ASTDefinitionBuilder {
         : Object.create(null),
       astNode: def,
     });
+  }
+
+  _lookupResolver(typeName: ?string) {
+    const opts = this._options;
+    return (
+      (typeName && opts && opts.resolvers && opts.resolvers[typeName]) ||
+      undefined
+    );
+  }
+
+  _lookupResolverField(typeName: ?string, key: string) {
+    const resolver = this._lookupResolver(typeName);
+    return (resolver && resolver[key]) || undefined;
   }
 }
 

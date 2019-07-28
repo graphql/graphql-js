@@ -614,15 +614,19 @@ export type GraphQLScalarLiteralParser<TInternal> = (
   variables: ?ObjMap<mixed>,
 ) => ?TInternal;
 
-export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
-  name: string,
-  description?: ?string,
+export type GraphQLScalarTypeConverters<TInternal, TExternal> = {|
   // Serializes an internal value to include in a response.
   serialize?: GraphQLScalarSerializer<TExternal>,
   // Parses an externally provided value to use as an input.
   parseValue?: GraphQLScalarValueParser<TInternal>,
   // Parses an externally provided literal value to use as an input.
   parseLiteral?: GraphQLScalarLiteralParser<TInternal>,
+|};
+
+export type GraphQLScalarTypeConfig<TInternal, TExternal> = {|
+  name: string,
+  ...GraphQLScalarTypeConverters<TInternal, TExternal>,
+  description?: ?string,
   astNode?: ?ScalarTypeDefinitionNode,
   extensionASTNodes?: ?$ReadOnlyArray<ScalarTypeExtensionNode>,
 |};

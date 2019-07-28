@@ -74,6 +74,86 @@ describe('Schema Builder', () => {
     });
   });
 
+  it('can lookup type resolvers', () => {
+    const schema = buildSchema(
+      `
+      type Query {
+        mult(a: Int!, b: Int!): Int!
+      }
+    `,
+      {
+        resolvers: {
+          Query: {
+            mult: (_: { ... }, { a, b }) => a * b,
+          },
+        },
+      },
+    );
+
+    expect(graphqlSync(schema, '{ mult(a: 3, b: 4) }', null)).to.deep.equal({
+      data: { mult: 12 },
+    });
+  });
+
+  it('can lookup enum values', () => {
+    const schema = buildSchema(
+      `
+      enum Color { RED, GREEN, BLUE }
+      type Query {
+        colors: [Color!]!
+      }
+    `,
+      {
+        resolvers: {
+          Query: {
+            colors: () => [4, 2, 1],
+          },
+          Color: {
+            RED: 1,
+            GREEN: 2,
+            BLUE: 4,
+          },
+        },
+      },
+    );
+
+    expect(graphqlSync(schema, '{ colors }', null)).to.deep.equal({
+      data: { colors: ['BLUE', 'GREEN', 'RED'] },
+    });
+  });
+
+  it('can define custom scalar converters', () => {
+    const schema = buildSchema(
+      `
+      scalar Uppercase
+      scalar Lowercase
+      type Query {
+        hello: Uppercase
+        lower(str: Lowercase!): String
+      }
+    `,
+      {
+        resolvers: {
+          Uppercase: {
+            serialize: (value: string) => value.toUpperCase(),
+          },
+          Lowercase: {
+            parseValue: (value: string) => value.toLowerCase(),
+          },
+          Query: {
+            lower: (_, { str }: { str: string, ... }) => str,
+          },
+        },
+      },
+    );
+
+    expect(
+      graphqlSync(schema, '{ hello lower(str: "World") }', { hello: 'hello' }),
+    ).to.deep.equal({
+      data: { hello: 'HELLO', lower: 'world' },
+    });
+  });
+
   it('Empty type', () => {
     const sdl = dedent`
       type EmptyType
