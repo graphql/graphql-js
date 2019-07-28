@@ -7,22 +7,20 @@ import dedent from '../../jsutils/dedent';
 
 import { DirectiveLocation } from '../../language/directiveLocation';
 
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLDirective } from '../../type/directives';
+import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
   assertObjectType,
-  GraphQLSchema,
-  GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
-  GraphQLString,
-  GraphQLInt,
-  GraphQLBoolean,
-  GraphQLList,
-  GraphQLNonNull,
-} from '../../';
-import { GraphQLDirective } from '../../type/directives';
+  GraphQLInputObjectType,
+} from '../../type/definition';
 
 import { buildSchema } from '../buildASTSchema';
 import { printSchema, printIntrospectionSchema } from '../schemaPrinter';

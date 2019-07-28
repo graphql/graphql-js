@@ -3,18 +3,20 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parseValue } from '../../language';
+import { parseValue } from '../../language/parser';
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+} from '../../type/scalars';
+import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLList,
   GraphQLNonNull,
-} from '../../type';
+} from '../../type/definition';
 
 import { valueFromAST } from '../valueFromAST';
 

@@ -3,7 +3,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { getNamedType, isCompositeType } from '../../type';
+import { getNamedType, isCompositeType } from '../../type/definition';
 import { TypeInfo } from '../../utilities/TypeInfo';
 
 import { Kind } from '../kinds';

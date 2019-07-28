@@ -3,9 +3,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language';
+import { parse } from '../../language/parser';
+
 import { validate } from '../../validation/validate';
-import { GraphQLSchema, GraphQLObjectType, GraphQLString } from '../../type';
+
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLObjectType } from '../../type/definition';
+
 import { graphqlSync } from '../../graphql';
 
 import { execute } from '../execute';

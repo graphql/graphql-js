@@ -7,36 +7,42 @@ import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
 
 import { Kind } from '../../language/kinds';
-import { parse, print, DirectiveLocation } from '../../language';
+import { parse } from '../../language/parser';
+import { print } from '../../language/printer';
+import { DirectiveLocation } from '../../language/directiveLocation';
 
-import { graphqlSync } from '../../';
+import { graphqlSync } from '../../graphql';
 
+import { GraphQLSchema } from '../../type/schema';
+import { validateSchema } from '../../type/validate';
 import {
   assertDirective,
+  GraphQLDirective,
+  specifiedDirectives,
+} from '../../type/directives';
+import {
+  GraphQLID,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLString,
+  GraphQLBoolean,
+} from '../../type/scalars';
+import {
   assertObjectType,
   assertInputObjectType,
   assertEnumType,
   assertUnionType,
   assertInterfaceType,
   assertScalarType,
-  GraphQLSchema,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
-  GraphQLID,
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
-  GraphQLBoolean,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLNonNull,
-  GraphQLList,
-  GraphQLDirective,
-  validateSchema,
-  specifiedDirectives,
-} from '../../type';
+} from '../../type/definition';
 
 import { printSchema } from '../schemaPrinter';
 import { extendSchema } from '../extendSchema';

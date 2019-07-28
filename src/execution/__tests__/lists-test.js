@@ -3,15 +3,15 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language';
+import { parse } from '../../language/parser';
+
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLString, GraphQLInt } from '../../type/scalars';
 import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
-} from '../../type';
+  GraphQLObjectType,
+} from '../../type/definition';
 
 import { execute } from '../execute';
 

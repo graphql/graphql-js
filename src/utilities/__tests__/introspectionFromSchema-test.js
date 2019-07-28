@@ -5,7 +5,9 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 
-import { GraphQLSchema, GraphQLObjectType, GraphQLString } from '../../type';
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLObjectType } from '../../type/definition';
 
 import { printSchema } from '../schemaPrinter';
 import { buildClientSchema } from '../buildClientSchema';

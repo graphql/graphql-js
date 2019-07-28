@@ -1,6 +1,8 @@
 // @flow strict
 
-import { parse, getIntrospectionQuery, buildSchema } from '../../';
+import { parse } from '../../language/parser';
+import { buildSchema } from '../../utilities/buildASTSchema';
+import { getIntrospectionQuery } from '../../utilities/introspectionQuery';
 
 import { validate } from '../validate';
 

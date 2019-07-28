@@ -1,6 +1,7 @@
 // @flow strict
 
-import { execute, parse } from '../../';
+import { parse } from '../../language/parser';
+import { execute } from '../../execution/execute';
 
 import { buildSchema } from '../buildASTSchema';
 import { getIntrospectionQuery } from '../introspectionQuery';

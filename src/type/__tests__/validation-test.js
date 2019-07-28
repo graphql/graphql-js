@@ -7,21 +7,21 @@ import inspect from '../../jsutils/inspect';
 
 import { parse } from '../../language/parser';
 
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLString } from '../../type/scalars';
 import {
   type GraphQLNamedType,
   type GraphQLInputType,
   type GraphQLOutputType,
-  GraphQLSchema,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLString,
-} from '../../';
+} from '../../type/definition';
 
 import { extendSchema } from '../../utilities/extendSchema';
 import { buildSchema } from '../../utilities/buildASTSchema';

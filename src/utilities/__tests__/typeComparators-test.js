@@ -3,17 +3,15 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLString, GraphQLInt, GraphQLFloat } from '../../type/scalars';
 import {
-  GraphQLSchema,
-  GraphQLString,
-  GraphQLInt,
-  GraphQLFloat,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
-} from '../../type';
+} from '../../type/definition';
 
 import { isEqualType, isTypeSubTypeOf } from '../typeComparators';
 

@@ -8,7 +8,7 @@ import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
 import inspect from '../../jsutils/inspect';
 
-import { GraphQLError } from '../../error';
+import { GraphQLError } from '../../error/GraphQLError';
 
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';

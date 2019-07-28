@@ -5,20 +5,18 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 
+import { printSchema } from '../../utilities/schemaPrinter';
+
+import { GraphQLSchema } from '../schema';
+import { GraphQLDirective } from '../directives';
+import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../scalars';
 import {
-  GraphQLSchema,
+  GraphQLList,
   GraphQLScalarType,
   GraphQLObjectType,
-  GraphQLInt,
-  GraphQLString,
-  GraphQLBoolean,
   GraphQLInterfaceType,
   GraphQLInputObjectType,
-  GraphQLDirective,
-  GraphQLList,
-} from '../';
-
-import { printSchema } from '../../utilities/schemaPrinter';
+} from '../definition';
 
 describe('Type System: Schema', () => {
   it('Define sample schema', () => {

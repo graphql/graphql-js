@@ -5,7 +5,9 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 
-import { Source, parse, print } from '../../language';
+import { parse } from '../../language/parser';
+import { print } from '../../language/printer';
+import { Source } from '../../language/source';
 
 import { concatAST } from '../concatAST';
 

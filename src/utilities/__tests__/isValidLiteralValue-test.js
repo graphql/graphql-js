@@ -3,8 +3,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parseValue } from '../../language';
-import { GraphQLInt } from '../../type';
+import { parseValue } from '../../language/parser';
+import { GraphQLInt } from '../../type/scalars';
 
 import { isValidLiteralValue } from '../isValidLiteralValue';
 

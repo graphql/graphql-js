@@ -3,7 +3,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../../';
+import { buildSchema } from '../../utilities/buildASTSchema';
 
 import {
   OverlappingFieldsCanBeMerged,
