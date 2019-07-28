@@ -1,11 +1,13 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   SingleFieldSubscriptions,
   singleFieldOnlyMessage,
 } from '../rules/SingleFieldSubscriptions';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(SingleFieldSubscriptions, queryStr);

@@ -1,10 +1,12 @@
 // @flow strict
 
 import { expect } from 'chai';
-import { execute } from '../execute';
 import { describe, it } from 'mocha';
+
 import { parse } from '../../language';
 import { GraphQLSchema, GraphQLObjectType, GraphQLString } from '../../type';
+
+import { execute } from '../execute';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({

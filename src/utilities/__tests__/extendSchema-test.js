@@ -1,15 +1,16 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
-import { buildSchema } from '../buildASTSchema';
-import { extendSchema } from '../extendSchema';
-import { parse, print, DirectiveLocation } from '../../language';
-import { printSchema } from '../schemaPrinter';
+
 import { Kind } from '../../language/kinds';
+import { parse, print, DirectiveLocation } from '../../language';
+
 import { graphqlSync } from '../../';
+
 import {
   assertDirective,
   assertObjectType,
@@ -36,6 +37,10 @@ import {
   validateSchema,
   specifiedDirectives,
 } from '../../type';
+
+import { printSchema } from '../schemaPrinter';
+import { extendSchema } from '../extendSchema';
+import { buildSchema } from '../buildASTSchema';
 
 // Test schema.
 const SomeScalarType = new GraphQLScalarType({ name: 'SomeScalar' });

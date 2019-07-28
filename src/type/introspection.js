@@ -1,9 +1,16 @@
 // @flow strict
 
 import objectValues from '../polyfills/objectValues';
+
 import inspect from '../jsutils/inspect';
-import { astFromValue } from '../utilities/astFromValue';
+
 import { print } from '../language/printer';
+import { DirectiveLocation } from '../language/directiveLocation';
+import { astFromValue } from '../utilities/astFromValue';
+
+import { type GraphQLSchema } from './schema';
+import { type GraphQLDirective } from './directives';
+import { GraphQLString, GraphQLBoolean } from './scalars';
 import {
   type GraphQLType,
   type GraphQLInputField,
@@ -25,10 +32,6 @@ import {
   isAbstractType,
   isNamedType,
 } from './definition';
-import { type GraphQLSchema } from './schema';
-import { type GraphQLDirective } from './directives';
-import { GraphQLString, GraphQLBoolean } from './scalars';
-import { DirectiveLocation } from '../language/directiveLocation';
 
 export const __Schema = new GraphQLObjectType({
   name: '__Schema',

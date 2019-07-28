@@ -4,7 +4,9 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
+
 import { Source } from '../../language';
+
 import { printSourceLocation } from '../printLocation';
 
 describe('printSourceLocation', () => {

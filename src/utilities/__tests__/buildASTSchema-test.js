@@ -2,12 +2,13 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import invariant from '../../jsutils/invariant';
-import { parse, print } from '../../language';
-import { printSchema } from '../schemaPrinter';
-import { buildASTSchema, buildSchema } from '../buildASTSchema';
+
 import dedent from '../../jsutils/dedent';
+import invariant from '../../jsutils/invariant';
+
+import { parse, print } from '../../language';
 import { Kind } from '../../language/kinds';
+
 import {
   assertDirective,
   assertObjectType,
@@ -27,6 +28,9 @@ import {
   GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
 } from '../../';
+
+import { printSchema } from '../schemaPrinter';
+import { buildASTSchema, buildSchema } from '../buildASTSchema';
 
 /**
  * This function does a full cycle of going from a string with the contents of

@@ -1,9 +1,11 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { valueFromASTUntyped } from '../valueFromASTUntyped';
+import { describe, it } from 'mocha';
+
 import { parseValue } from '../../language';
+
+import { valueFromASTUntyped } from '../valueFromASTUntyped';
 
 describe('valueFromASTUntyped', () => {
   function testCase(valueText, expected) {

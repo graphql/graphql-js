@@ -1,14 +1,18 @@
 // @flow strict
 
-import { TypeInfo } from './TypeInfo';
 import { type GraphQLError } from '../error/GraphQLError';
-import { type ValueNode } from '../language/ast';
+
 import { Kind } from '../language/kinds';
+import { type ValueNode } from '../language/ast';
 import { visit, visitWithTypeInfo } from '../language/visitor';
-import { type GraphQLInputType } from '../type/definition';
-import { GraphQLSchema } from '../type/schema';
+
 import { ValuesOfCorrectType } from '../validation/rules/ValuesOfCorrectType';
 import { ValidationContext } from '../validation/ValidationContext';
+
+import { type GraphQLInputType } from '../type/definition';
+import { GraphQLSchema } from '../type/schema';
+
+import { TypeInfo } from './TypeInfo';
 
 /**
  * Utility which determines if a value literal node is valid for an input type.

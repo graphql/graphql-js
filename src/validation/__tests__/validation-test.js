@@ -1,11 +1,14 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { testSchema } from './harness';
-import { validate, specifiedRules } from '../';
+import { describe, it } from 'mocha';
+
 import { parse } from '../../language';
 import { TypeInfo } from '../../utilities/TypeInfo';
+
+import { validate, specifiedRules } from '../';
+
+import { testSchema } from './harness';
 
 describe('Validate: Supports full validation', () => {
   it('validates queries', () => {

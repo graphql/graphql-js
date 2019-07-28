@@ -1,12 +1,15 @@
 // @flow strict
 
 import { forEach, isCollection } from 'iterall';
+
 import objectValues from '../polyfills/objectValues';
+
 import inspect from '../jsutils/inspect';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import suggestionList from '../jsutils/suggestionList';
 import { type Path, addPath, pathToArray } from '../jsutils/Path';
+
 import { GraphQLError } from '../error/GraphQLError';
 import { type ASTNode } from '../language/ast';
 import {

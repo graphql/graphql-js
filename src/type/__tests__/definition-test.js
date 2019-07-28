@@ -1,11 +1,13 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
 
 import inspect from '../../jsutils/inspect';
 import identityFunc from '../../jsutils/identityFunc';
+
 import { parseValue } from '../../language/parser';
+
 import {
   type GraphQLType,
   type GraphQLNullableType,

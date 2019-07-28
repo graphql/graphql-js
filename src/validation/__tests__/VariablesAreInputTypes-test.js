@@ -1,11 +1,13 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   VariablesAreInputTypes,
   nonInputTypeOnVarMessage,
 } from '../rules/VariablesAreInputTypes';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(VariablesAreInputTypes, queryStr);

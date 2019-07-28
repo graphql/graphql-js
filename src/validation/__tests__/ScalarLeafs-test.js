@@ -1,12 +1,14 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   ScalarLeafs,
   noSubselectionAllowedMessage,
   requiredSubselectionMessage,
 } from '../rules/ScalarLeafs';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(ScalarLeafs, queryStr);

@@ -2,11 +2,13 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { graphqlSync } from '../../graphql';
-import { execute } from '../execute';
+
 import { parse } from '../../language';
 import { validate } from '../../validation/validate';
 import { GraphQLSchema, GraphQLObjectType, GraphQLString } from '../../type';
+import { graphqlSync } from '../../graphql';
+
+import { execute } from '../execute';
 
 describe('Execute: synchronously when possible', () => {
   const schema = new GraphQLSchema({

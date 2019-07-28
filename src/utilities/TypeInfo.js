@@ -1,7 +1,12 @@
 // @flow strict
 
 import find from '../polyfills/find';
+
 import { Kind } from '../language/kinds';
+import { type ASTNode, type FieldNode } from '../language/ast';
+
+import { type GraphQLSchema } from '../type/schema';
+import { type GraphQLDirective } from '../type/directives';
 import {
   type GraphQLType,
   type GraphQLInputType,
@@ -22,14 +27,12 @@ import {
   getNullableType,
   getNamedType,
 } from '../type/definition';
-import { type GraphQLDirective } from '../type/directives';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection';
-import { type GraphQLSchema } from '../type/schema';
-import { type ASTNode, type FieldNode } from '../language/ast';
+
 import { typeFromAST } from './typeFromAST';
 
 /**

@@ -1,10 +1,10 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
 import dedent from '../../jsutils/dedent';
-import { buildClientSchema } from '../buildClientSchema';
-import { introspectionFromSchema } from '../introspectionFromSchema';
+
 import {
   buildSchema,
   printSchema,
@@ -19,6 +19,9 @@ import {
   GraphQLBoolean,
   GraphQLID,
 } from '../../';
+
+import { buildClientSchema } from '../buildClientSchema';
+import { introspectionFromSchema } from '../introspectionFromSchema';
 
 /**
  * This function does a full cycle of going from a string with the contents of

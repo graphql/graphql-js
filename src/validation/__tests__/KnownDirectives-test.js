@@ -1,14 +1,16 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
+
 import { buildSchema } from '../../utilities';
-import { expectValidationErrors, expectSDLValidationErrors } from './harness';
 
 import {
   KnownDirectives,
   unknownDirectiveMessage,
   misplacedDirectiveMessage,
 } from '../rules/KnownDirectives';
+
+import { expectValidationErrors, expectSDLValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(KnownDirectives, queryStr);

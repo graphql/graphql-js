@@ -2,7 +2,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { execute } from '../execute';
+
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -12,6 +12,8 @@ import {
   GraphQLList,
   GraphQLNonNull,
 } from '../../type';
+
+import { execute } from '../execute';
 
 // resolved() is shorthand for Promise.resolve()
 const resolved = Promise.resolve.bind(Promise);

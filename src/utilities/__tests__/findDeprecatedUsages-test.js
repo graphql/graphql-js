@@ -2,9 +2,11 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { findDeprecatedUsages } from '../findDeprecatedUsages';
+
 import { parse } from '../../language';
+
 import { buildSchema } from '../buildASTSchema';
+import { findDeprecatedUsages } from '../findDeprecatedUsages';
 
 describe('findDeprecatedUsages', () => {
   const schema = buildSchema(`

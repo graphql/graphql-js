@@ -1,5 +1,6 @@
 // @flow strict
 
+import { type GraphQLSchema } from '../type/schema';
 import {
   type GraphQLType,
   type GraphQLCompositeType,
@@ -8,7 +9,6 @@ import {
   isNonNullType,
   isAbstractType,
 } from '../type/definition';
-import { type GraphQLSchema } from '../type/schema';
 
 /**
  * Provided two types, return true if the types are equal (invariant).

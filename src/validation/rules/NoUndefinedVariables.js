@@ -1,8 +1,9 @@
 // @flow strict
 
-import { type ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import { type ASTVisitor } from '../../language/visitor';
+
+import { type ValidationContext } from '../ValidationContext';
 
 export function undefinedVarMessage(varName: string, opName: ?string): string {
   return opName

@@ -1,8 +1,10 @@
 // @flow strict
 
 import invariant from '../jsutils/invariant';
-import { type GraphQLError } from './GraphQLError';
+
 import { type SourceLocation } from '../language/location';
+
+import { type GraphQLError } from './GraphQLError';
 
 /**
  * Given a GraphQLError, format it according to the rules described by the

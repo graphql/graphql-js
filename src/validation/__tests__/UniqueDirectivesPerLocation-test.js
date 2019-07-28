@@ -1,18 +1,20 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
+
+import { parse } from '../../language/parser';
+import { extendSchema } from '../../utilities/extendSchema';
+
+import {
+  UniqueDirectivesPerLocation,
+  duplicateDirectiveMessage,
+} from '../rules/UniqueDirectivesPerLocation';
+
 import {
   testSchema,
   expectValidationErrorsWithSchema,
   expectSDLValidationErrors,
 } from './harness';
-
-import { parse } from '../../language/parser';
-import { extendSchema } from '../../utilities/extendSchema';
-import {
-  UniqueDirectivesPerLocation,
-  duplicateDirectiveMessage,
-} from '../rules/UniqueDirectivesPerLocation';
 
 const extensionSDL = `
   directive @directive on FIELD | FRAGMENT_DEFINITION

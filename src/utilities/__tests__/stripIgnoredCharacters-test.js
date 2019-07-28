@@ -5,9 +5,12 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
+
 import { parse, createLexer, Source } from '../../language';
-import { kitchenSinkQuery, kitchenSinkSDL } from '../../__fixtures__';
+
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
+
+import { kitchenSinkQuery, kitchenSinkSDL } from '../../__fixtures__';
 
 const ignoredTokens = [
   // UnicodeBOM ::

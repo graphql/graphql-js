@@ -3,7 +3,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { execute } from '../execute';
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -14,6 +13,8 @@ import {
   GraphQLString,
   GraphQLBoolean,
 } from '../../type';
+
+import { execute } from '../execute';
 
 class Dog {
   name: string;

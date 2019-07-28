@@ -1,9 +1,10 @@
 // @flow strict
 
+import EventEmitter from 'events';
+
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import EventEmitter from 'events';
 import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
 
 describe('eventEmitterAsyncIterator', () => {

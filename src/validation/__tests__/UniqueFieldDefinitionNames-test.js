@@ -1,13 +1,16 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
+
 import { buildSchema } from '../../utilities';
-import { expectSDLValidationErrors } from './harness';
+
 import {
   UniqueFieldDefinitionNames,
   duplicateFieldDefinitionNameMessage,
   existedFieldDefinitionNameMessage,
 } from '../rules/UniqueFieldDefinitionNames';
+
+import { expectSDLValidationErrors } from './harness';
 
 function expectSDLErrors(sdlStr, schema) {
   return expectSDLValidationErrors(schema, UniqueFieldDefinitionNames, sdlStr);

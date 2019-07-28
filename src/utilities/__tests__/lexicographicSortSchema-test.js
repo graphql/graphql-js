@@ -1,8 +1,10 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
 import dedent from '../../jsutils/dedent';
+
 import { printSchema } from '../schemaPrinter';
 import { buildSchema } from '../buildASTSchema';
 import { lexicographicSortSchema } from '../lexicographicSortSchema';

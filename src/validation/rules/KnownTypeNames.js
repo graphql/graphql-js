@@ -1,12 +1,10 @@
 // @flow strict
 
-import {
-  type ValidationContext,
-  type SDLValidationContext,
-} from '../ValidationContext';
-import { GraphQLError } from '../../error/GraphQLError';
-import suggestionList from '../../jsutils/suggestionList';
 import didYouMean from '../../jsutils/didYouMean';
+import suggestionList from '../../jsutils/suggestionList';
+
+import { GraphQLError } from '../../error/GraphQLError';
+
 import { type ASTNode } from '../../language/ast';
 import { type ASTVisitor } from '../../language/visitor';
 import {
@@ -14,7 +12,13 @@ import {
   isTypeSystemDefinitionNode,
   isTypeSystemExtensionNode,
 } from '../../language/predicates';
+
 import { specifiedScalarTypes } from '../../type/scalars';
+
+import {
+  type ValidationContext,
+  type SDLValidationContext,
+} from '../ValidationContext';
 
 export function unknownTypeMessage(
   typeName: string,

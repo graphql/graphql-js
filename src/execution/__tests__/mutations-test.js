@@ -2,9 +2,11 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { execute } from '../execute';
+
 import { parse } from '../../language';
 import { GraphQLSchema, GraphQLObjectType, GraphQLInt } from '../../type';
+
+import { execute } from '../execute';
 
 class NumberHolder {
   theNumber: number;

@@ -1,7 +1,7 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   ValuesOfCorrectType,
   badValueMessage,
@@ -9,6 +9,8 @@ import {
   requiredFieldMessage,
   unknownFieldMessage,
 } from '../rules/ValuesOfCorrectType';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(ValuesOfCorrectType, queryStr);

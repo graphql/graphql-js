@@ -2,8 +2,10 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { StarWarsSchema } from './starWarsSchema';
+
 import { graphql } from '../graphql';
+
+import { StarWarsSchema } from './starWarsSchema';
 
 describe('Star Wars Query Tests', () => {
   describe('Basic Queries', () => {

@@ -1,29 +1,45 @@
 // @flow strict
 
 import { forEach, isCollection } from 'iterall';
-import { GraphQLError } from '../error/GraphQLError';
-import { locatedError } from '../error/locatedError';
+
 import inspect from '../jsutils/inspect';
+import memoize3 from '../jsutils/memoize3';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import isPromise from '../jsutils/isPromise';
-import isObjectLike from '../jsutils/isObjectLike';
-import memoize3 from '../jsutils/memoize3';
-import promiseForObject from '../jsutils/promiseForObject';
-import promiseReduce from '../jsutils/promiseReduce';
 import { type ObjMap } from '../jsutils/ObjMap';
+import isObjectLike from '../jsutils/isObjectLike';
+import promiseReduce from '../jsutils/promiseReduce';
+import promiseForObject from '../jsutils/promiseForObject';
 import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { type Path, addPath, pathToArray } from '../jsutils/Path';
 
-import { getOperationRootType } from '../utilities/getOperationRootType';
-import { typeFromAST } from '../utilities/typeFromAST';
+import { GraphQLError } from '../error/GraphQLError';
+import { locatedError } from '../error/locatedError';
+
 import { Kind } from '../language/kinds';
 import {
-  getVariableValues,
-  getArgumentValues,
-  getDirectiveValues,
-} from './values';
+  type DocumentNode,
+  type OperationDefinitionNode,
+  type SelectionSetNode,
+  type FieldNode,
+  type FragmentSpreadNode,
+  type InlineFragmentNode,
+  type FragmentDefinitionNode,
+} from '../language/ast';
+
+import { assertValidSchema } from '../type/validate';
+import { type GraphQLSchema } from '../type/schema';
+import {
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+} from '../type/introspection';
+import {
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
+} from '../type/directives';
 import {
   type GraphQLObjectType,
   type GraphQLOutputType,
@@ -40,26 +56,15 @@ import {
   isListType,
   isNonNullType,
 } from '../type/definition';
-import { type GraphQLSchema } from '../type/schema';
+
+import { typeFromAST } from '../utilities/typeFromAST';
+import { getOperationRootType } from '../utilities/getOperationRootType';
+
 import {
-  SchemaMetaFieldDef,
-  TypeMetaFieldDef,
-  TypeNameMetaFieldDef,
-} from '../type/introspection';
-import {
-  GraphQLIncludeDirective,
-  GraphQLSkipDirective,
-} from '../type/directives';
-import { assertValidSchema } from '../type/validate';
-import {
-  type DocumentNode,
-  type OperationDefinitionNode,
-  type SelectionSetNode,
-  type FieldNode,
-  type FragmentSpreadNode,
-  type InlineFragmentNode,
-  type FragmentDefinitionNode,
-} from '../language/ast';
+  getVariableValues,
+  getArgumentValues,
+  getDirectiveValues,
+} from './values';
 
 /**
  * Terminology

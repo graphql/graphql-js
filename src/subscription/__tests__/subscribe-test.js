@@ -1,12 +1,12 @@
 // @flow strict
 
+import EventEmitter from 'events';
+
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import EventEmitter from 'events';
-import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
-import { createSourceEventStream, subscribe } from '../subscribe';
-import { GraphQLError } from '../../error';
+
 import { parse } from '../../language';
+import { GraphQLError } from '../../error';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -15,6 +15,10 @@ import {
   GraphQLInt,
   GraphQLString,
 } from '../../type';
+
+import { createSourceEventStream, subscribe } from '../subscribe';
+
+import eventEmitterAsyncIterator from './eventEmitterAsyncIterator';
 
 const EmailType = new GraphQLObjectType({
   name: 'Email',

@@ -1,6 +1,7 @@
 // @flow strict
 
 import inspect from '../jsutils/inspect';
+
 import { Source } from '../language/source';
 import { TokenKind } from '../language/tokenKind';
 import { createLexer, isPunctuatorToken } from '../language/lexer';

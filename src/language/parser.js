@@ -3,11 +3,15 @@
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import defineToJSON from '../jsutils/defineToJSON';
-import { Source } from './source';
-import { type GraphQLError } from '../error/GraphQLError';
+
 import { syntaxError } from '../error/syntaxError';
-import { type TokenKindEnum, TokenKind } from './tokenKind';
+import { type GraphQLError } from '../error/GraphQLError';
+
+import { Kind } from './kinds';
+import { Source } from './source';
 import { type Lexer, createLexer } from './lexer';
+import { DirectiveLocation } from './directiveLocation';
+import { type TokenKindEnum, TokenKind } from './tokenKind';
 import {
   type Location,
   type Token,
@@ -56,9 +60,6 @@ import {
   type EnumTypeExtensionNode,
   type InputObjectTypeExtensionNode,
 } from './ast';
-
-import { Kind } from './kinds';
-import { DirectiveLocation } from './directiveLocation';
 
 /**
  * Configuration options to control parser behavior

@@ -1,11 +1,13 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   NoUndefinedVariables,
   undefinedVarMessage,
 } from '../rules/NoUndefinedVariables';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(NoUndefinedVariables, queryStr);

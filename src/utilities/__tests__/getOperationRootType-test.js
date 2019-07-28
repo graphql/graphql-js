@@ -2,8 +2,9 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
 import invariant from '../../jsutils/invariant';
-import { getOperationRootType } from '../getOperationRootType';
+
 import {
   Kind,
   parse,
@@ -11,6 +12,8 @@ import {
   GraphQLObjectType,
   GraphQLString,
 } from '../../';
+
+import { getOperationRootType } from '../getOperationRootType';
 
 const queryType = new GraphQLObjectType({
   name: 'FooQuery',

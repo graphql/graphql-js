@@ -1,9 +1,11 @@
 // @flow strict
 
 import { type ObjMap } from '../jsutils/ObjMap';
+
 import { type GraphQLError } from '../error/GraphQLError';
-import { type ASTVisitor, visit, visitWithTypeInfo } from '../language/visitor';
+
 import { Kind } from '../language/kinds';
+import { type ASTVisitor, visit, visitWithTypeInfo } from '../language/visitor';
 import {
   type DocumentNode,
   type OperationDefinitionNode,
@@ -12,7 +14,9 @@ import {
   type FragmentSpreadNode,
   type FragmentDefinitionNode,
 } from '../language/ast';
+
 import { type GraphQLSchema } from '../type/schema';
+import { type GraphQLDirective } from '../type/directives';
 import {
   type GraphQLInputType,
   type GraphQLOutputType,
@@ -20,7 +24,7 @@ import {
   type GraphQLField,
   type GraphQLArgument,
 } from '../type/definition';
-import { type GraphQLDirective } from '../type/directives';
+
 import { TypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;

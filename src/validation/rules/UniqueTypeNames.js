@@ -1,9 +1,11 @@
 // @flow strict
 
-import { type SDLValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
+
 import { type ASTVisitor } from '../../language/visitor';
 import { type TypeDefinitionNode } from '../../language/ast';
+
+import { type SDLValidationContext } from '../ValidationContext';
 
 export function duplicateTypeNameMessage(typeName: string): string {
   return `There can be only one type named "${typeName}".`;

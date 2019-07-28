@@ -1,7 +1,7 @@
 // @flow strict
 
-import { type Source } from '../language/source';
 import { type Location } from '../language/ast';
+import { type Source } from '../language/source';
 import { type SourceLocation, getLocation } from '../language/location';
 
 /**

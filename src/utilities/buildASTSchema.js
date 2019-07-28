@@ -1,20 +1,20 @@
 // @flow strict
 
 import objectValues from '../polyfills/objectValues';
+
+import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
-import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
 import { type ObjMap } from '../jsutils/ObjMap';
-import { valueFromAST } from './valueFromAST';
-import { assertValidSDL } from '../validation/validate';
-import { dedentBlockStringValue } from '../language/blockString';
+
+import { Kind } from '../language/kinds';
+import { type Source } from '../language/source';
 import { TokenKind } from '../language/tokenKind';
 import { type ParseOptions, parse } from '../language/parser';
-import { type Source } from '../language/source';
-import { getDirectiveValues } from '../execution/values';
-import { Kind } from '../language/kinds';
-
+import { isTypeDefinitionNode } from '../language/predicates';
+import { dedentBlockStringValue } from '../language/blockString';
+import { type DirectiveLocationEnum } from '../language/directiveLocation';
 import {
   type DocumentNode,
   type NameNode,
@@ -35,10 +35,23 @@ import {
   type StringValueNode,
   type Location,
 } from '../language/ast';
-import { isTypeDefinitionNode } from '../language/predicates';
 
-import { type DirectiveLocationEnum } from '../language/directiveLocation';
+import { assertValidSDL } from '../validation/validate';
 
+import { getDirectiveValues } from '../execution/values';
+
+import { specifiedScalarTypes } from '../type/scalars';
+import { introspectionTypes } from '../type/introspection';
+import {
+  type GraphQLSchemaValidationOptions,
+  GraphQLSchema,
+} from '../type/schema';
+import {
+  GraphQLDirective,
+  GraphQLSkipDirective,
+  GraphQLIncludeDirective,
+  GraphQLDeprecatedDirective,
+} from '../type/directives';
 import {
   type GraphQLType,
   type GraphQLNamedType,
@@ -56,21 +69,7 @@ import {
   GraphQLNonNull,
 } from '../type/definition';
 
-import {
-  GraphQLDirective,
-  GraphQLSkipDirective,
-  GraphQLIncludeDirective,
-  GraphQLDeprecatedDirective,
-} from '../type/directives';
-
-import { introspectionTypes } from '../type/introspection';
-
-import { specifiedScalarTypes } from '../type/scalars';
-
-import {
-  type GraphQLSchemaValidationOptions,
-  GraphQLSchema,
-} from '../type/schema';
+import { valueFromAST } from './valueFromAST';
 
 export type BuildSchemaOptions = {
   ...GraphQLSchemaValidationOptions,

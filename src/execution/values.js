@@ -1,27 +1,32 @@
 // @flow strict
 
 import find from '../polyfills/find';
-import { GraphQLError } from '../error/GraphQLError';
-import inspect from '../jsutils/inspect';
+
 import keyMap from '../jsutils/keyMap';
-import { coerceValue } from '../utilities/coerceValue';
-import { typeFromAST } from '../utilities/typeFromAST';
-import { valueFromAST } from '../utilities/valueFromAST';
+import inspect from '../jsutils/inspect';
+import { type ObjMap } from '../jsutils/ObjMap';
+
+import { GraphQLError } from '../error/GraphQLError';
+
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
-import {
-  type GraphQLField,
-  isInputType,
-  isNonNullType,
-} from '../type/definition';
-import { type GraphQLDirective } from '../type/directives';
-import { type ObjMap } from '../jsutils/ObjMap';
-import { type GraphQLSchema } from '../type/schema';
 import {
   type FieldNode,
   type DirectiveNode,
   type VariableDefinitionNode,
 } from '../language/ast';
+
+import { type GraphQLSchema } from '../type/schema';
+import { type GraphQLDirective } from '../type/directives';
+import {
+  type GraphQLField,
+  isInputType,
+  isNonNullType,
+} from '../type/definition';
+
+import { coerceValue } from '../utilities/coerceValue';
+import { typeFromAST } from '../utilities/typeFromAST';
+import { valueFromAST } from '../utilities/valueFromAST';
 
 type CoercedVariableValues = {|
   errors: $ReadOnlyArray<GraphQLError> | void,

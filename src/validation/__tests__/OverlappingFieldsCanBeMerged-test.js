@@ -2,16 +2,18 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
 import { buildSchema } from '../../';
-import {
-  expectValidationErrors,
-  expectValidationErrorsWithSchema,
-} from './harness';
 
 import {
   OverlappingFieldsCanBeMerged,
   fieldsConflictMessage,
 } from '../rules/OverlappingFieldsCanBeMerged';
+
+import {
+  expectValidationErrors,
+  expectValidationErrorsWithSchema,
+} from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(OverlappingFieldsCanBeMerged, queryStr);
