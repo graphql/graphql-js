@@ -13,19 +13,19 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _astFromValue = require("../utilities/astFromValue");
-
 var _printer = require("../language/printer");
 
 var _blockString = require("../language/blockString");
 
-var _definition = require("../type/definition");
+var _introspection = require("../type/introspection");
 
 var _scalars = require("../type/scalars");
 
 var _directives = require("../type/directives");
 
-var _introspection = require("../type/introspection");
+var _definition = require("../type/definition");
+
+var _astFromValue = require("../utilities/astFromValue");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

@@ -1,13 +1,13 @@
 import objectEntries from '../polyfills/objectEntries';
-import isObjectLike from '../jsutils/isObjectLike';
-import { argsToArgsConfig, GraphQLNonNull } from './definition';
-import { GraphQLString, GraphQLBoolean } from './scalars';
-import defineToStringTag from '../jsutils/defineToStringTag';
-import defineToJSON from '../jsutils/defineToJSON';
-import instanceOf from '../jsutils/instanceOf';
-import invariant from '../jsutils/invariant';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
+import instanceOf from '../jsutils/instanceOf';
+import defineToJSON from '../jsutils/defineToJSON';
+import isObjectLike from '../jsutils/isObjectLike';
+import defineToStringTag from '../jsutils/defineToStringTag';
 import { DirectiveLocation } from '../language/directiveLocation';
+import { GraphQLString, GraphQLBoolean } from './scalars';
+import { argsToArgsConfig, GraphQLNonNull } from './definition';
 /**
  * Test if the given value is a GraphQL directive.
  */

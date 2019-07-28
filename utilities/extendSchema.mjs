@@ -7,18 +7,18 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
 import mapValue from '../jsutils/mapValue';
+import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
-import { ASTDefinitionBuilder } from './buildASTSchema';
-import { assertValidSDLExtension } from '../validation/validate';
-import { assertSchema, GraphQLSchema } from '../type/schema';
-import { isIntrospectionType } from '../type/introspection';
-import { isSpecifiedScalarType } from '../type/scalars';
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
 import { Kind } from '../language/kinds';
 import { isTypeDefinitionNode, isTypeExtensionNode } from '../language/predicates';
+import { assertValidSDLExtension } from '../validation/validate';
+import { GraphQLDirective } from '../type/directives';
+import { isSpecifiedScalarType } from '../type/scalars';
+import { isIntrospectionType } from '../type/introspection';
+import { assertSchema, GraphQLSchema } from '../type/schema';
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isListType, isNonNullType, isEnumType, isInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType } from '../type/definition';
+import { ASTDefinitionBuilder } from './buildASTSchema';
 
 /**
  * Produces a new schema given an existing schema and a document which may

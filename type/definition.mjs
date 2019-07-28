@@ -7,16 +7,16 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 // FIXME
 // flowlint deprecated-type:off
 import objectEntries from '../polyfills/objectEntries';
+import inspect from '../jsutils/inspect';
+import keyMap from '../jsutils/keyMap';
+import mapValue from '../jsutils/mapValue';
+import keyValMap from '../jsutils/keyValMap';
+import invariant from '../jsutils/invariant';
+import instanceOf from '../jsutils/instanceOf';
+import isObjectLike from '../jsutils/isObjectLike';
+import identityFunc from '../jsutils/identityFunc';
 import defineToJSON from '../jsutils/defineToJSON';
 import defineToStringTag from '../jsutils/defineToStringTag';
-import identityFunc from '../jsutils/identityFunc';
-import instanceOf from '../jsutils/instanceOf';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import keyMap from '../jsutils/keyMap';
-import keyValMap from '../jsutils/keyValMap';
-import mapValue from '../jsutils/mapValue';
-import isObjectLike from '../jsutils/isObjectLike';
 import { Kind } from '../language/kinds';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 export function isType(type) {

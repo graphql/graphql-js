@@ -11,11 +11,11 @@ var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
 var _GraphQLError = require("../../error/GraphQLError");
 
-var _typeComparators = require("../../utilities/typeComparators");
+var _definition = require("../../type/definition");
 
 var _typeFromAST = require("../../utilities/typeFromAST");
 
-var _definition = require("../../type/definition");
+var _typeComparators = require("../../utilities/typeComparators");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

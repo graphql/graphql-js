@@ -1,5 +1,5 @@
-import { GraphQLError } from '../error/GraphQLError';
 import invariant from '../jsutils/invariant';
+import { GraphQLError } from '../error/GraphQLError';
 var NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 /**
  * Upholds the spec rules about naming.

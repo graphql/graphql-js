@@ -15,9 +15,9 @@ var _schema = require("../type/schema");
 
 var _directives = require("../type/directives");
 
-var _definition = require("../type/definition");
-
 var _introspection = require("../type/introspection");
+
+var _definition = require("../type/definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

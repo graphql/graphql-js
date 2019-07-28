@@ -9,23 +9,23 @@ exports.getDirectiveValues = getDirectiveValues;
 
 var _find = _interopRequireDefault(require("../polyfills/find"));
 
-var _GraphQLError = require("../error/GraphQLError");
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
-
-var _coerceValue = require("../utilities/coerceValue");
-
-var _typeFromAST = require("../utilities/typeFromAST");
-
-var _valueFromAST = require("../utilities/valueFromAST");
+var _GraphQLError = require("../error/GraphQLError");
 
 var _kinds = require("../language/kinds");
 
 var _printer = require("../language/printer");
 
 var _definition = require("../type/definition");
+
+var _coerceValue = require("../utilities/coerceValue");
+
+var _typeFromAST = require("../utilities/typeFromAST");
+
+var _valueFromAST = require("../utilities/valueFromAST");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

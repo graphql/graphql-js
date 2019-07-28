@@ -1,9 +1,11 @@
 // @flow strict
 
-import { type ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
-import { type FragmentDefinitionNode } from '../../language/ast';
+
 import { type ASTVisitor } from '../../language/visitor';
+import { type FragmentDefinitionNode } from '../../language/ast';
+
+import { type ASTValidationContext } from '../ValidationContext';
 
 export function cycleErrorMessage(
   fragName: string,

@@ -14,11 +14,9 @@ exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
 
 var _iterall = require("iterall");
 
-var _GraphQLError = require("../error/GraphQLError");
-
-var _locatedError = require("../error/locatedError");
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+
+var _memoize = _interopRequireDefault(require("../jsutils/memoize3"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
@@ -30,29 +28,31 @@ var _isPromise = _interopRequireDefault(require("../jsutils/isPromise"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
 
-var _memoize = _interopRequireDefault(require("../jsutils/memoize3"));
+var _promiseReduce = _interopRequireDefault(require("../jsutils/promiseReduce"));
 
 var _promiseForObject = _interopRequireDefault(require("../jsutils/promiseForObject"));
 
-var _promiseReduce = _interopRequireDefault(require("../jsutils/promiseReduce"));
-
 var _Path = require("../jsutils/Path");
 
-var _getOperationRootType = require("../utilities/getOperationRootType");
+var _GraphQLError = require("../error/GraphQLError");
 
-var _typeFromAST = require("../utilities/typeFromAST");
+var _locatedError = require("../error/locatedError");
 
 var _kinds = require("../language/kinds");
 
-var _values = require("./values");
-
-var _definition = require("../type/definition");
+var _validate = require("../type/validate");
 
 var _introspection = require("../type/introspection");
 
 var _directives = require("../type/directives");
 
-var _validate = require("../type/validate");
+var _definition = require("../type/definition");
+
+var _typeFromAST = require("../utilities/typeFromAST");
+
+var _getOperationRootType = require("../utilities/getOperationRootType");
+
+var _values = require("./values");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

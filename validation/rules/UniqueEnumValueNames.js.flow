@@ -1,9 +1,10 @@
 // @flow strict
 
-import { type SDLValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import { type ASTVisitor } from '../../language/visitor';
 import { isEnumType } from '../../type/definition';
+
+import { type SDLValidationContext } from '../ValidationContext';
 
 export function duplicateEnumValueNameMessage(
   typeName: string,

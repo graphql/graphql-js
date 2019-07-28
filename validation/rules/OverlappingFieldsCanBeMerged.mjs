@@ -1,7 +1,7 @@
 import find from '../../polyfills/find';
 import objectEntries from '../../polyfills/objectEntries';
-import { GraphQLError } from '../../error/GraphQLError';
 import inspect from '../../jsutils/inspect';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import { getNamedType, isNonNullType, isLeafType, isObjectType, isListType, isInterfaceType } from '../../type/definition';

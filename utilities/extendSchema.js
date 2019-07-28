@@ -11,29 +11,29 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
-
 var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
-
-var _buildASTSchema = require("./buildASTSchema");
-
-var _validate = require("../validation/validate");
-
-var _schema = require("../type/schema");
-
-var _introspection = require("../type/introspection");
-
-var _scalars = require("../type/scalars");
-
-var _definition = require("../type/definition");
-
-var _directives = require("../type/directives");
 
 var _kinds = require("../language/kinds");
 
 var _predicates = require("../language/predicates");
+
+var _validate = require("../validation/validate");
+
+var _directives = require("../type/directives");
+
+var _scalars = require("../type/scalars");
+
+var _introspection = require("../type/introspection");
+
+var _schema = require("../type/schema");
+
+var _definition = require("../type/definition");
+
+var _buildASTSchema = require("./buildASTSchema");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

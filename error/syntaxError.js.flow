@@ -1,6 +1,7 @@
 // @flow strict
 
 import { type Source } from '../language/source';
+
 import { GraphQLError } from './GraphQLError';
 
 /**

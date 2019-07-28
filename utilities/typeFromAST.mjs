@@ -1,6 +1,16 @@
 import inspect from '../jsutils/inspect';
 import { Kind } from '../language/kinds';
 import { GraphQLList, GraphQLNonNull } from '../type/definition';
+/**
+ * Given a Schema and an AST node describing a type, return a GraphQLType
+ * definition which applies to that type. For example, if provided the parsed
+ * AST node for `[User]`, a GraphQLList instance will be returned, containing
+ * the type called "User" found in the schema. If a type called "User" is not
+ * found in the schema, then undefined will be returned.
+ */
+
+/* eslint-disable no-redeclare */
+
 export function typeFromAST(schema, typeNode) {
   /* eslint-enable no-redeclare */
   var innerType;

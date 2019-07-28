@@ -13,17 +13,17 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
-var _source = require("./source");
-
 var _syntaxError = require("../error/syntaxError");
-
-var _tokenKind = require("./tokenKind");
-
-var _lexer = require("./lexer");
 
 var _kinds = require("./kinds");
 
+var _source = require("./source");
+
+var _lexer = require("./lexer");
+
 var _directiveLocation = require("./directiveLocation");
+
+var _tokenKind = require("./tokenKind");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

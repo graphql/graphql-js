@@ -11,21 +11,21 @@ var _find = _interopRequireDefault(require("../polyfills/find"));
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
-
-var _definition = require("./definition");
-
-var _directives = require("./directives");
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _introspection = require("./introspection");
-
-var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
+var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
+
+var _introspection = require("./introspection");
+
+var _directives = require("./directives");
+
+var _definition = require("./definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

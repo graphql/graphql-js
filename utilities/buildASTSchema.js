@@ -10,39 +10,39 @@ exports.ASTDefinitionBuilder = void 0;
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
+var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
+
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
-
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
-var _valueFromAST = require("./valueFromAST");
-
-var _validate = require("../validation/validate");
-
-var _blockString = require("../language/blockString");
+var _kinds = require("../language/kinds");
 
 var _tokenKind = require("../language/tokenKind");
 
 var _parser = require("../language/parser");
 
-var _values = require("../execution/values");
-
-var _kinds = require("../language/kinds");
-
 var _predicates = require("../language/predicates");
 
-var _definition = require("../type/definition");
+var _blockString = require("../language/blockString");
 
-var _directives = require("../type/directives");
+var _validate = require("../validation/validate");
 
-var _introspection = require("../type/introspection");
+var _values = require("../execution/values");
 
 var _scalars = require("../type/scalars");
 
+var _introspection = require("../type/introspection");
+
 var _schema = require("../type/schema");
+
+var _directives = require("../type/directives");
+
+var _definition = require("../type/definition");
+
+var _valueFromAST = require("./valueFromAST");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

@@ -10,23 +10,23 @@ exports.specifiedDirectives = exports.GraphQLDeprecatedDirective = exports.DEFAU
 
 var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
 
-var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
-
-var _definition = require("./definition");
-
-var _scalars = require("./scalars");
-
-var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
-
-var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
-
-var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
+var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
+
+var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
+
+var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
+var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
 
 var _directiveLocation = require("../language/directiveLocation");
+
+var _scalars = require("./scalars");
+
+var _definition = require("./definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

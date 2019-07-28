@@ -2,9 +2,11 @@
 
 import invariant from '../jsutils/invariant';
 import isPromise from '../jsutils/isPromise';
-import { type GraphQLSchema } from '../type/schema';
-import { execute } from '../execution/execute';
+
 import { parse } from '../language/parser';
+import { execute } from '../execution/execute';
+import { type GraphQLSchema } from '../type/schema';
+
 import {
   type IntrospectionQuery,
   type IntrospectionOptions,

@@ -11,21 +11,21 @@ exports.ValuesOfCorrectType = ValuesOfCorrectType;
 
 var _objectValues = _interopRequireDefault(require("../../polyfills/objectValues"));
 
-var _GraphQLError = require("../../error/GraphQLError");
-
-var _printer = require("../../language/printer");
-
-var _definition = require("../../type/definition");
+var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
 
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
 var _isInvalid = _interopRequireDefault(require("../../jsutils/isInvalid"));
 
-var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
-
 var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
+
+var _GraphQLError = require("../../error/GraphQLError");
+
+var _printer = require("../../language/printer");
+
+var _definition = require("../../type/definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

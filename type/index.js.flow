@@ -10,7 +10,6 @@ export {
   // GraphQL Schema definition
   GraphQLSchema,
 } from './schema';
-
 export type { GraphQLSchemaConfig } from './schema';
 
 export {

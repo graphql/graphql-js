@@ -10,9 +10,9 @@ var _find = _interopRequireDefault(require("../../polyfills/find"));
 
 var _objectEntries = _interopRequireDefault(require("../../polyfills/objectEntries"));
 
-var _GraphQLError = require("../../error/GraphQLError");
-
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
+
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _kinds = require("../../language/kinds");
 

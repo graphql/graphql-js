@@ -18,9 +18,9 @@ var _locatedError = require("../error/locatedError");
 
 var _execute = require("../execution/execute");
 
-var _mapAsyncIterator = _interopRequireDefault(require("./mapAsyncIterator"));
-
 var _getOperationRootType = require("../utilities/getOperationRootType");
+
+var _mapAsyncIterator = _interopRequireDefault(require("./mapAsyncIterator"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

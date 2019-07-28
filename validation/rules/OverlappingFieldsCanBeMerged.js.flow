@@ -2,19 +2,22 @@
 
 import find from '../../polyfills/find';
 import objectEntries from '../../polyfills/objectEntries';
-import { type ValidationContext } from '../ValidationContext';
-import { GraphQLError } from '../../error/GraphQLError';
+
 import inspect from '../../jsutils/inspect';
 import { type ObjMap } from '../../jsutils/ObjMap';
+
+import { GraphQLError } from '../../error/GraphQLError';
+
+import { Kind } from '../../language/kinds';
+import { print } from '../../language/printer';
+import { type ASTVisitor } from '../../language/visitor';
 import {
   type SelectionSetNode,
   type FieldNode,
   type ArgumentNode,
   type FragmentDefinitionNode,
 } from '../../language/ast';
-import { Kind } from '../../language/kinds';
-import { print } from '../../language/printer';
-import { type ASTVisitor } from '../../language/visitor';
+
 import {
   type GraphQLNamedType,
   type GraphQLOutputType,
@@ -27,7 +30,10 @@ import {
   isListType,
   isInterfaceType,
 } from '../../type/definition';
+
 import { typeFromAST } from '../../utilities/typeFromAST';
+
+import { type ValidationContext } from '../ValidationContext';
 
 export function fieldsConflictMessage(
   responseName: string,

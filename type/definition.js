@@ -48,25 +48,25 @@ exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionT
 
 var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
 
-var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
-
-var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
-
-var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc"));
-
-var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
-
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
-var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
-
 var _mapValue = _interopRequireDefault(require("../jsutils/mapValue"));
 
+var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
+
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
+var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
+
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
+
+var _identityFunc = _interopRequireDefault(require("../jsutils/identityFunc"));
+
+var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
+
+var _defineToStringTag = _interopRequireDefault(require("../jsutils/defineToStringTag"));
 
 var _kinds = require("../language/kinds");
 

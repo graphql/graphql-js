@@ -9,9 +9,9 @@ var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
 
 var _isPromise = _interopRequireDefault(require("../jsutils/isPromise"));
 
-var _execute = require("../execution/execute");
-
 var _parser = require("../language/parser");
+
+var _execute = require("../execution/execute");
 
 var _introspectionQuery = require("./introspectionQuery");
 

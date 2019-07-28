@@ -8,19 +8,19 @@ exports.missingDirectiveArgMessage = missingDirectiveArgMessage;
 exports.ProvidedRequiredArguments = ProvidedRequiredArguments;
 exports.ProvidedRequiredArgumentsOnDirectives = ProvidedRequiredArgumentsOnDirectives;
 
-var _GraphQLError = require("../../error/GraphQLError");
-
-var _kinds = require("../../language/kinds");
-
 var _inspect = _interopRequireDefault(require("../../jsutils/inspect"));
 
 var _keyMap = _interopRequireDefault(require("../../jsutils/keyMap"));
 
-var _definition = require("../../type/definition");
+var _GraphQLError = require("../../error/GraphQLError");
+
+var _kinds = require("../../language/kinds");
 
 var _printer = require("../../language/printer");
 
 var _directives = require("../../type/directives");
+
+var _definition = require("../../type/definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

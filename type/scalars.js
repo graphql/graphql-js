@@ -14,9 +14,9 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
 
-var _definition = require("./definition");
-
 var _kinds = require("../language/kinds");
+
+var _definition = require("./definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

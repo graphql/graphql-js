@@ -1,13 +1,13 @@
 import find from '../polyfills/find';
-import { GraphQLError } from '../error/GraphQLError';
-import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
-import { coerceValue } from '../utilities/coerceValue';
-import { typeFromAST } from '../utilities/typeFromAST';
-import { valueFromAST } from '../utilities/valueFromAST';
+import inspect from '../jsutils/inspect';
+import { GraphQLError } from '../error/GraphQLError';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 import { isInputType, isNonNullType } from '../type/definition';
+import { coerceValue } from '../utilities/coerceValue';
+import { typeFromAST } from '../utilities/typeFromAST';
+import { valueFromAST } from '../utilities/valueFromAST';
 
 /**
  * Prepares an object map of variableValues of the correct type based on the

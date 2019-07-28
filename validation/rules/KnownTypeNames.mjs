@@ -1,6 +1,6 @@
-import { GraphQLError } from '../../error/GraphQLError';
-import suggestionList from '../../jsutils/suggestionList';
 import didYouMean from '../../jsutils/didYouMean';
+import suggestionList from '../../jsutils/suggestionList';
+import { GraphQLError } from '../../error/GraphQLError';
 import { isTypeDefinitionNode, isTypeSystemDefinitionNode, isTypeSystemExtensionNode } from '../../language/predicates';
 import { specifiedScalarTypes } from '../../type/scalars';
 export function unknownTypeMessage(typeName, suggestedTypes) {

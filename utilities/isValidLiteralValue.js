@@ -5,17 +5,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.isValidLiteralValue = isValidLiteralValue;
 
-var _TypeInfo = require("./TypeInfo");
-
 var _kinds = require("../language/kinds");
 
 var _visitor = require("../language/visitor");
 
-var _schema = require("../type/schema");
-
 var _ValuesOfCorrectType = require("../validation/rules/ValuesOfCorrectType");
 
 var _ValidationContext = require("../validation/ValidationContext");
+
+var _schema = require("../type/schema");
+
+var _TypeInfo = require("./TypeInfo");
 
 /**
  * Utility which determines if a value literal node is valid for an input type.

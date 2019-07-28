@@ -1,10 +1,10 @@
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
-import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
-import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType, isNamedType } from './definition';
-import { GraphQLString, GraphQLBoolean } from './scalars';
 import { DirectiveLocation } from '../language/directiveLocation';
+import { astFromValue } from '../utilities/astFromValue';
+import { GraphQLString, GraphQLBoolean } from './scalars';
+import { GraphQLObjectType, GraphQLEnumType, GraphQLList, GraphQLNonNull, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isAbstractType, isNamedType } from './definition';
 export var __Schema = new GraphQLObjectType({
   name: '__Schema',
   description: 'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.',

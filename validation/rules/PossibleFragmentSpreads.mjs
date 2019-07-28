@@ -1,8 +1,8 @@
 import inspect from '../../jsutils/inspect';
 import { GraphQLError } from '../../error/GraphQLError';
-import { doTypesOverlap } from '../../utilities/typeComparators';
-import { typeFromAST } from '../../utilities/typeFromAST';
 import { isCompositeType } from '../../type/definition';
+import { typeFromAST } from '../../utilities/typeFromAST';
+import { doTypesOverlap } from '../../utilities/typeComparators';
 export function typeIncompatibleSpreadMessage(fragName, parentType, fragType) {
   return "Fragment \"".concat(fragName, "\" cannot be spread here as objects of type \"").concat(parentType, "\" can never be of type \"").concat(fragType, "\".");
 }

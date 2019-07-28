@@ -2,14 +2,14 @@ import find from '../polyfills/find';
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import objectEntries from '../polyfills/objectEntries';
-import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument } from './definition';
-import { isDirective } from './directives';
-import { isIntrospectionType } from './introspection';
-import { assertSchema } from './schema';
 import inspect from '../jsutils/inspect';
 import { GraphQLError } from '../error/GraphQLError';
 import { isValidNameError } from '../utilities/assertValidName';
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
+import { isDirective } from './directives';
+import { isIntrospectionType } from './introspection';
+import { assertSchema } from './schema';
+import { isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isNamedType, isNonNullType, isInputType, isOutputType, isRequiredArgument } from './definition';
 /**
  * Implements the "Type Validation" sub-sections of the specification's
  * "Type System" section.

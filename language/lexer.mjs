@@ -1,7 +1,7 @@
 import defineToJSON from '../jsutils/defineToJSON';
-import { TokenKind } from './tokenKind';
 import { syntaxError } from '../error/syntaxError';
 import { dedentBlockStringValue } from './blockString';
+import { TokenKind } from './tokenKind';
 /**
  * Given a Source object, this returns a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time

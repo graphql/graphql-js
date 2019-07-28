@@ -3,13 +3,13 @@ import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 import isObjectLike from '../jsutils/isObjectLike';
-import { valueFromAST } from './valueFromAST';
 import { parseValue } from '../language/parser';
+import { GraphQLDirective } from '../type/directives';
+import { specifiedScalarTypes } from '../type/scalars';
+import { introspectionTypes, TypeKind } from '../type/introspection';
 import { GraphQLSchema } from '../type/schema';
 import { isInputType, isOutputType, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, assertNullableType, assertObjectType, assertInterfaceType } from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
-import { introspectionTypes, TypeKind } from '../type/introspection';
-import { specifiedScalarTypes } from '../type/scalars';
+import { valueFromAST } from './valueFromAST';
 
 /**
  * Build a GraphQLSchema for use by client tools.

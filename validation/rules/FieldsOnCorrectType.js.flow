@@ -1,11 +1,13 @@
 // @flow strict
 
-import { type ValidationContext } from '../ValidationContext';
-import { GraphQLError } from '../../error/GraphQLError';
-import suggestionList from '../../jsutils/suggestionList';
 import didYouMean from '../../jsutils/didYouMean';
+import suggestionList from '../../jsutils/suggestionList';
+
+import { GraphQLError } from '../../error/GraphQLError';
+
 import { type FieldNode } from '../../language/ast';
 import { type ASTVisitor } from '../../language/visitor';
+
 import { type GraphQLSchema } from '../../type/schema';
 import {
   type GraphQLOutputType,
@@ -13,6 +15,8 @@ import {
   isInterfaceType,
   isAbstractType,
 } from '../../type/definition';
+
+import { type ValidationContext } from '../ValidationContext';
 
 export function undefinedFieldMessage(
   fieldName: string,

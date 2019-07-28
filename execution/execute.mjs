@@ -1,24 +1,51 @@
 import { forEach, isCollection } from 'iterall';
-import { GraphQLError } from '../error/GraphQLError';
-import { locatedError } from '../error/locatedError';
 import inspect from '../jsutils/inspect';
+import memoize3 from '../jsutils/memoize3';
 import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import isPromise from '../jsutils/isPromise';
 import isObjectLike from '../jsutils/isObjectLike';
-import memoize3 from '../jsutils/memoize3';
-import promiseForObject from '../jsutils/promiseForObject';
 import promiseReduce from '../jsutils/promiseReduce';
+import promiseForObject from '../jsutils/promiseForObject';
 import { addPath, pathToArray } from '../jsutils/Path';
-import { getOperationRootType } from '../utilities/getOperationRootType';
-import { typeFromAST } from '../utilities/typeFromAST';
+import { GraphQLError } from '../error/GraphQLError';
+import { locatedError } from '../error/locatedError';
 import { Kind } from '../language/kinds';
-import { getVariableValues, getArgumentValues, getDirectiveValues } from './values';
-import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from '../type/definition';
+import { assertValidSchema } from '../type/validate';
 import { SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef } from '../type/introspection';
 import { GraphQLIncludeDirective, GraphQLSkipDirective } from '../type/directives';
-import { assertValidSchema } from '../type/validate';
+import { isObjectType, isAbstractType, isLeafType, isListType, isNonNullType } from '../type/definition';
+import { typeFromAST } from '../utilities/typeFromAST';
+import { getOperationRootType } from '../utilities/getOperationRootType';
+import { getVariableValues, getArgumentValues, getDirectiveValues } from './values';
+/**
+ * Terminology
+ *
+ * "Definitions" are the generic name for top-level statements in the document.
+ * Examples of this include:
+ * 1) Operations (such as a query)
+ * 2) Fragments
+ *
+ * "Operations" are a generic name for requests in the document.
+ * Examples of this include:
+ * 1) query,
+ * 2) mutation
+ *
+ * "Selections" are the definitions that can appear legally and at
+ * single level of the query. These include:
+ * 1) field references e.g "a"
+ * 2) fragment "spreads" e.g. "...c"
+ * 3) inline fragment "spreads" e.g. "...on Type { a }"
+ */
+
+/**
+ * Data that must be available at all points during query execution.
+ *
+ * Namely, schema of the type system that is currently executing,
+ * and the fragments defined in the query document
+ */
+
 export function execute(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.

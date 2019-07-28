@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ValidationContext = exports.SDLValidationContext = exports.ASTValidationContext = void 0;
 
-var _visitor = require("../language/visitor");
-
 var _kinds = require("../language/kinds");
+
+var _visitor = require("../language/visitor");
 
 var _TypeInfo = require("../utilities/TypeInfo");
 

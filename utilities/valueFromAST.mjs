@@ -1,10 +1,9 @@
 import objectValues from '../polyfills/objectValues';
-import inspect from '../jsutils/inspect';
 import keyMap from '../jsutils/keyMap';
+import inspect from '../jsutils/inspect';
 import isInvalid from '../jsutils/isInvalid';
 import { Kind } from '../language/kinds';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
-
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -25,6 +24,7 @@ import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType 
  * | NullValue            | null          |
  *
  */
+
 export function valueFromAST(valueNode, type, variables) {
   if (!valueNode) {
     // When there is no node, then there is also no value.

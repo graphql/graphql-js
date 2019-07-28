@@ -6,11 +6,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.unknownTypeMessage = unknownTypeMessage;
 exports.KnownTypeNames = KnownTypeNames;
 
-var _GraphQLError = require("../../error/GraphQLError");
+var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
 
 var _suggestionList = _interopRequireDefault(require("../../jsutils/suggestionList"));
 
-var _didYouMean = _interopRequireDefault(require("../../jsutils/didYouMean"));
+var _GraphQLError = require("../../error/GraphQLError");
 
 var _predicates = require("../../language/predicates");
 

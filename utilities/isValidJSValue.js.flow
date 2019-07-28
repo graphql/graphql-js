@@ -1,8 +1,9 @@
 // @flow strict
 
 /* istanbul ignore file */
-import { coerceValue } from './coerceValue';
 import { type GraphQLInputType } from '../type/definition';
+
+import { coerceValue } from './coerceValue';
 
 /**
  * Deprecated. Use coerceValue() directly for richer information.

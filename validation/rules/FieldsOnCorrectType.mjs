@@ -1,6 +1,6 @@
-import { GraphQLError } from '../../error/GraphQLError';
-import suggestionList from '../../jsutils/suggestionList';
 import didYouMean from '../../jsutils/didYouMean';
+import suggestionList from '../../jsutils/suggestionList';
+import { GraphQLError } from '../../error/GraphQLError';
 import { isObjectType, isInterfaceType, isAbstractType } from '../../type/definition';
 export function undefinedFieldMessage(fieldName, type, suggestedTypeNames, suggestedFieldNames) {
   var quotedTypeNames = suggestedTypeNames.map(function (x) {

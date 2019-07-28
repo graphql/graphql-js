@@ -4,20 +4,22 @@
 // flowlint deprecated-type:off
 
 import objectEntries from '../polyfills/objectEntries';
+
+import inspect from '../jsutils/inspect';
+import keyMap from '../jsutils/keyMap';
+import mapValue from '../jsutils/mapValue';
+import { type Path } from '../jsutils/Path';
+import keyValMap from '../jsutils/keyValMap';
+import { type ObjMap } from '../jsutils/ObjMap';
+import invariant from '../jsutils/invariant';
+import instanceOf from '../jsutils/instanceOf';
+import isObjectLike from '../jsutils/isObjectLike';
+import identityFunc from '../jsutils/identityFunc';
 import defineToJSON from '../jsutils/defineToJSON';
 import defineToStringTag from '../jsutils/defineToStringTag';
-import identityFunc from '../jsutils/identityFunc';
-import instanceOf from '../jsutils/instanceOf';
-import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
-import keyMap from '../jsutils/keyMap';
-import keyValMap from '../jsutils/keyValMap';
-import mapValue from '../jsutils/mapValue';
-import isObjectLike from '../jsutils/isObjectLike';
-import { type ObjMap } from '../jsutils/ObjMap';
-import { type Path } from '../jsutils/Path';
+import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
+
 import { Kind } from '../language/kinds';
-import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 import {
   type ScalarTypeDefinitionNode,
   type ObjectTypeDefinitionNode,
@@ -39,8 +41,10 @@ import {
   type FragmentDefinitionNode,
   type ValueNode,
 } from '../language/ast';
+
+import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
+
 import { type GraphQLSchema } from './schema';
-import { type PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 // Predicates & Assertions
 

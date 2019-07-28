@@ -1,15 +1,12 @@
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import defineToJSON from '../jsutils/defineToJSON';
-import { Source } from './source';
 import { syntaxError } from '../error/syntaxError';
-import { TokenKind } from './tokenKind';
-import { createLexer } from './lexer';
 import { Kind } from './kinds';
+import { Source } from './source';
+import { createLexer } from './lexer';
 import { DirectiveLocation } from './directiveLocation';
-/**
- * Configuration options to control parser behavior
- */
+import { TokenKind } from './tokenKind';
 
 /**
  * Given a GraphQL source, parses it into a Document.

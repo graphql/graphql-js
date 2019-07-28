@@ -7,9 +7,9 @@ exports.valueFromAST = valueFromAST;
 
 var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"));
 
-var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
-
 var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
+
+var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 

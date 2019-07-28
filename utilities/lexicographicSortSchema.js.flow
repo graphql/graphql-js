@@ -1,11 +1,14 @@
 // @flow strict
 
 import objectValues from '../polyfills/objectValues';
+
 import inspect from '../jsutils/inspect';
 import keyValMap from '../jsutils/keyValMap';
 import { type ObjMap } from '../jsutils/ObjMap';
+
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
+import { isIntrospectionType } from '../type/introspection';
 import {
   type GraphQLNamedType,
   GraphQLObjectType,
@@ -24,7 +27,6 @@ import {
   isEnumType,
   isInputObjectType,
 } from '../type/definition';
-import { isIntrospectionType } from '../type/introspection';
 
 /**
  * Sort GraphQLSchema.

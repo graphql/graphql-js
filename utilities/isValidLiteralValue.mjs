@@ -1,9 +1,9 @@
-import { TypeInfo } from './TypeInfo';
 import { Kind } from '../language/kinds';
 import { visit, visitWithTypeInfo } from '../language/visitor';
-import { GraphQLSchema } from '../type/schema';
 import { ValuesOfCorrectType } from '../validation/rules/ValuesOfCorrectType';
 import { ValidationContext } from '../validation/ValidationContext';
+import { GraphQLSchema } from '../type/schema';
+import { TypeInfo } from './TypeInfo';
 /**
  * Utility which determines if a value literal node is valid for an input type.
  *

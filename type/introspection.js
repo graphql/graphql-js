@@ -10,15 +10,15 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _astFromValue = require("../utilities/astFromValue");
-
 var _printer = require("../language/printer");
 
-var _definition = require("./definition");
+var _directiveLocation = require("../language/directiveLocation");
+
+var _astFromValue = require("../utilities/astFromValue");
 
 var _scalars = require("./scalars");
 
-var _directiveLocation = require("../language/directiveLocation");
+var _definition = require("./definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

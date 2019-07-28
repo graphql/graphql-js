@@ -1,21 +1,21 @@
 import objectValues from '../polyfills/objectValues';
+import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
-import keyMap from '../jsutils/keyMap';
 import keyValMap from '../jsutils/keyValMap';
-import { valueFromAST } from './valueFromAST';
-import { assertValidSDL } from '../validation/validate';
-import { dedentBlockStringValue } from '../language/blockString';
+import { Kind } from '../language/kinds';
 import { TokenKind } from '../language/tokenKind';
 import { parse } from '../language/parser';
-import { getDirectiveValues } from '../execution/values';
-import { Kind } from '../language/kinds';
 import { isTypeDefinitionNode } from '../language/predicates';
-import { GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull } from '../type/definition';
-import { GraphQLDirective, GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective } from '../type/directives';
-import { introspectionTypes } from '../type/introspection';
+import { dedentBlockStringValue } from '../language/blockString';
+import { assertValidSDL } from '../validation/validate';
+import { getDirectiveValues } from '../execution/values';
 import { specifiedScalarTypes } from '../type/scalars';
+import { introspectionTypes } from '../type/introspection';
 import { GraphQLSchema } from '../type/schema';
+import { GraphQLDirective, GraphQLSkipDirective, GraphQLIncludeDirective, GraphQLDeprecatedDirective } from '../type/directives';
+import { GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull } from '../type/definition';
+import { valueFromAST } from './valueFromAST';
 
 /**
  * This takes the ast of a schema document produced by the parse function in

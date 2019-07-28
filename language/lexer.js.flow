@@ -1,11 +1,13 @@
 // @flow strict
 
 import defineToJSON from '../jsutils/defineToJSON';
+
+import { syntaxError } from '../error/syntaxError';
+
 import { type Token } from './ast';
 import { type Source } from './source';
-import { type TokenKindEnum, TokenKind } from './tokenKind';
-import { syntaxError } from '../error/syntaxError';
 import { dedentBlockStringValue } from './blockString';
+import { type TokenKindEnum, TokenKind } from './tokenKind';
 
 /**
  * Given a Source object, this returns a Lexer for that source.

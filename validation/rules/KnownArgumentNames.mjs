@@ -4,9 +4,9 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import { GraphQLError } from '../../error/GraphQLError';
-import suggestionList from '../../jsutils/suggestionList';
 import didYouMean from '../../jsutils/didYouMean';
+import suggestionList from '../../jsutils/suggestionList';
+import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { specifiedDirectives } from '../../type/directives';
 export function unknownArgMessage(argName, fieldName, typeName, suggestedArgs) {

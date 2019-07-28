@@ -14,14 +14,6 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"));
 
-var _definition = require("./definition");
-
-var _directives = require("./directives");
-
-var _introspection = require("./introspection");
-
-var _schema = require("./schema");
-
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _GraphQLError = require("../error/GraphQLError");
@@ -29,6 +21,14 @@ var _GraphQLError = require("../error/GraphQLError");
 var _assertValidName = require("../utilities/assertValidName");
 
 var _typeComparators = require("../utilities/typeComparators");
+
+var _directives = require("./directives");
+
+var _introspection = require("./introspection");
+
+var _schema = require("./schema");
+
+var _definition = require("./definition");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

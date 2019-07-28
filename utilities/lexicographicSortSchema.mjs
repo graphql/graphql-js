@@ -9,8 +9,8 @@ import inspect from '../jsutils/inspect';
 import keyValMap from '../jsutils/keyValMap';
 import { GraphQLSchema } from '../type/schema';
 import { GraphQLDirective } from '../type/directives';
-import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
 import { isIntrospectionType } from '../type/introspection';
+import { GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, isListType, isNonNullType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
 /**
  * Sort GraphQLSchema.
  */

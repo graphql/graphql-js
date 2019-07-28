@@ -8,11 +8,11 @@ exports.isPunctuatorToken = isPunctuatorToken;
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
-var _tokenKind = require("./tokenKind");
-
 var _syntaxError = require("../error/syntaxError");
 
 var _blockString = require("./blockString");
+
+var _tokenKind = require("./tokenKind");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

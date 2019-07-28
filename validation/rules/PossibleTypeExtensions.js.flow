@@ -2,11 +2,13 @@
 
 import didYouMean from '../../jsutils/didYouMean';
 import suggestionList from '../../jsutils/suggestionList';
-import { type SDLValidationContext } from '../ValidationContext';
+
 import { GraphQLError } from '../../error/GraphQLError';
+
 import { Kind } from '../../language/kinds';
-import { isTypeDefinitionNode } from '../../language/predicates';
 import { type ASTVisitor } from '../../language/visitor';
+import { isTypeDefinitionNode } from '../../language/predicates';
+
 import {
   isScalarType,
   isObjectType,
@@ -15,6 +17,8 @@ import {
   isEnumType,
   isInputObjectType,
 } from '../../type/definition';
+
+import { type SDLValidationContext } from '../ValidationContext';
 
 export function extendingUnknownTypeMessage(
   typeName: string,

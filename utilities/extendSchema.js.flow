@@ -2,20 +2,34 @@
 
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
+
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
 import mapValue from '../jsutils/mapValue';
+import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
-import { ASTDefinitionBuilder } from './buildASTSchema';
+
+import { Kind } from '../language/kinds';
+import {
+  isTypeDefinitionNode,
+  isTypeExtensionNode,
+} from '../language/predicates';
+import {
+  type DocumentNode,
+  type DirectiveDefinitionNode,
+  type SchemaExtensionNode,
+  type SchemaDefinitionNode,
+} from '../language/ast';
+
 import { assertValidSDLExtension } from '../validation/validate';
+
+import { GraphQLDirective } from '../type/directives';
+import { isSpecifiedScalarType } from '../type/scalars';
+import { isIntrospectionType } from '../type/introspection';
 import {
   type GraphQLSchemaValidationOptions,
   assertSchema,
   GraphQLSchema,
 } from '../type/schema';
-import { isIntrospectionType } from '../type/introspection';
-import { isSpecifiedScalarType } from '../type/scalars';
-
 import {
   type GraphQLNamedType,
   isScalarType,
@@ -36,20 +50,7 @@ import {
   GraphQLInputObjectType,
 } from '../type/definition';
 
-import { GraphQLDirective } from '../type/directives';
-
-import { Kind } from '../language/kinds';
-
-import {
-  type DocumentNode,
-  type DirectiveDefinitionNode,
-  type SchemaExtensionNode,
-  type SchemaDefinitionNode,
-} from '../language/ast';
-import {
-  isTypeDefinitionNode,
-  isTypeExtensionNode,
-} from '../language/predicates';
+import { ASTDefinitionBuilder } from './buildASTSchema';
 
 type Options = {|
   ...GraphQLSchemaValidationOptions,

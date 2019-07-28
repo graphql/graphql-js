@@ -1,17 +1,21 @@
 // @flow strict
 
 import objectValues from '../polyfills/objectValues';
+
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 import isObjectLike from '../jsutils/isObjectLike';
-import { valueFromAST } from './valueFromAST';
+
 import { parseValue } from '../language/parser';
+
+import { GraphQLDirective } from '../type/directives';
+import { specifiedScalarTypes } from '../type/scalars';
+import { introspectionTypes, TypeKind } from '../type/introspection';
 import {
   type GraphQLSchemaValidationOptions,
   GraphQLSchema,
 } from '../type/schema';
-
 import {
   type GraphQLType,
   type GraphQLInputType,
@@ -32,12 +36,7 @@ import {
   assertInterfaceType,
 } from '../type/definition';
 
-import { GraphQLDirective } from '../type/directives';
-
-import { introspectionTypes, TypeKind } from '../type/introspection';
-
-import { specifiedScalarTypes } from '../type/scalars';
-
+import { valueFromAST } from './valueFromAST';
 import {
   type IntrospectionQuery,
   type IntrospectionType,

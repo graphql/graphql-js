@@ -2,8 +2,8 @@ import inspect from '../../jsutils/inspect';
 import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import { isNonNullType } from '../../type/definition';
-import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
+import { isTypeSubTypeOf } from '../../utilities/typeComparators';
 export function badVarPosMessage(varName, varType, expectedType) {
   return "Variable \"$".concat(varName, "\" of type \"").concat(varType, "\" used in position expecting type \"").concat(expectedType, "\".");
 }

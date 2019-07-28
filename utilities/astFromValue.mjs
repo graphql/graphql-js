@@ -5,8 +5,8 @@ import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import isObjectLike from '../jsutils/isObjectLike';
 import { Kind } from '../language/kinds';
-import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 import { GraphQLID } from '../type/scalars';
+import { isLeafType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
 /**
  * Produces a GraphQL Value AST given a JavaScript value.
  *

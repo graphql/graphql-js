@@ -4,8 +4,8 @@ import { addPath, pathToArray } from '../jsutils/Path';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 import { assertValidExecutionArguments, buildExecutionContext, buildResolveInfo, collectFields, execute, getFieldDef, resolveFieldValueOrError } from '../execution/execute';
-import mapAsyncIterator from './mapAsyncIterator';
 import { getOperationRootType } from '../utilities/getOperationRootType';
+import mapAsyncIterator from './mapAsyncIterator';
 export function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
   /* eslint-enable no-redeclare */
   // Extract arguments from object args if provided.

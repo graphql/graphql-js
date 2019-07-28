@@ -1,13 +1,17 @@
 import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
-import isObjectLike from '../jsutils/isObjectLike';
-import { isAbstractType, isObjectType, isInterfaceType, isUnionType, isInputObjectType, isWrappingType } from './definition';
-import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
 import inspect from '../jsutils/inspect';
-import { __Schema } from './introspection';
-import defineToStringTag from '../jsutils/defineToStringTag';
-import instanceOf from '../jsutils/instanceOf';
 import invariant from '../jsutils/invariant';
+import instanceOf from '../jsutils/instanceOf';
+import isObjectLike from '../jsutils/isObjectLike';
+import defineToStringTag from '../jsutils/defineToStringTag';
+import { __Schema } from './introspection';
+import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
+import { isAbstractType, isObjectType, isInterfaceType, isUnionType, isInputObjectType, isWrappingType } from './definition';
+/**
+ * Test if the given value is a GraphQL schema.
+ */
+
 // eslint-disable-next-line no-redeclare
 export function isSchema(schema) {
   return instanceOf(schema, GraphQLSchema);

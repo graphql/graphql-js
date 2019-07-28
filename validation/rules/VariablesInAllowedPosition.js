@@ -14,9 +14,9 @@ var _kinds = require("../../language/kinds");
 
 var _definition = require("../../type/definition");
 
-var _typeComparators = require("../../utilities/typeComparators");
-
 var _typeFromAST = require("../../utilities/typeFromAST");
+
+var _typeComparators = require("../../utilities/typeComparators");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

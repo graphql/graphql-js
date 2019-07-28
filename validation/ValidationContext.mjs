@@ -1,7 +1,7 @@
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
 
-import { visit, visitWithTypeInfo } from '../language/visitor';
 import { Kind } from '../language/kinds';
+import { visit, visitWithTypeInfo } from '../language/visitor';
 import { TypeInfo } from '../utilities/TypeInfo';
 
 /**

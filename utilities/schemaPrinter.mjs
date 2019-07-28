@@ -1,13 +1,13 @@
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
-import { astFromValue } from '../utilities/astFromValue';
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
+import { isIntrospectionType } from '../type/introspection';
 import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
 import { GraphQLDirective, DEFAULT_DEPRECATION_REASON, isSpecifiedDirective } from '../type/directives';
-import { isIntrospectionType } from '../type/introspection';
+import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType } from '../type/definition';
+import { astFromValue } from '../utilities/astFromValue';
 
 /**
  * Accepts options as a second argument:

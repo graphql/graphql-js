@@ -15,19 +15,19 @@ var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
 
-var _valueFromAST = require("./valueFromAST");
-
 var _parser = require("../language/parser");
+
+var _directives = require("../type/directives");
+
+var _scalars = require("../type/scalars");
+
+var _introspection = require("../type/introspection");
 
 var _schema = require("../type/schema");
 
 var _definition = require("../type/definition");
 
-var _directives = require("../type/directives");
-
-var _introspection = require("../type/introspection");
-
-var _scalars = require("../type/scalars");
+var _valueFromAST = require("./valueFromAST");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

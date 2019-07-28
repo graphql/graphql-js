@@ -1,8 +1,9 @@
 // @flow strict
 
+import invariant from '../jsutils/invariant';
+
 import { GraphQLError } from '../error/GraphQLError';
 import { type ASTNode } from '../language/ast';
-import invariant from '../jsutils/invariant';
 
 const NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 

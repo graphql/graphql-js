@@ -8,11 +8,11 @@ exports.graphqlSync = graphqlSync;
 
 var _isPromise = _interopRequireDefault(require("./jsutils/isPromise"));
 
-var _validate = require("./type/validate");
-
 var _parser = require("./language/parser");
 
-var _validate2 = require("./validation/validate");
+var _validate = require("./validation/validate");
+
+var _validate2 = require("./type/validate");
 
 var _execute = require("./execution/execute");
 
@@ -76,7 +76,7 @@ function graphqlImpl(args) {
       fieldResolver = args.fieldResolver,
       typeResolver = args.typeResolver; // Validate Schema
 
-  var schemaValidationErrors = (0, _validate.validateSchema)(schema);
+  var schemaValidationErrors = (0, _validate2.validateSchema)(schema);
 
   if (schemaValidationErrors.length > 0) {
     return {
@@ -96,7 +96,7 @@ function graphqlImpl(args) {
   } // Validate
 
 
-  var validationErrors = (0, _validate2.validate)(schema, document);
+  var validationErrors = (0, _validate.validate)(schema, document);
 
   if (validationErrors.length > 0) {
     return {

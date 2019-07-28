@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.assertValidName = assertValidName;
 exports.isValidNameError = isValidNameError;
 
-var _GraphQLError = require("../error/GraphQLError");
-
 var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
+var _GraphQLError = require("../error/GraphQLError");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

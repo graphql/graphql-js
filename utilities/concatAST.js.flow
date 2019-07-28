@@ -1,6 +1,7 @@
 // @flow strict
 
 import flatMap from '../polyfills/flatMap';
+
 import { type DocumentNode } from '../language/ast';
 
 /**

@@ -1,7 +1,7 @@
 import invariant from '../jsutils/invariant';
 import isPromise from '../jsutils/isPromise';
-import { execute } from '../execution/execute';
 import { parse } from '../language/parser';
+import { execute } from '../execution/execute';
 import { getIntrospectionQuery } from './introspectionQuery';
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
