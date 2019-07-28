@@ -4,9 +4,12 @@ import { inspect as nodeInspect } from 'util';
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
 import dedent from '../../jsutils/dedent';
 import inspect from '../../jsutils/inspect';
+
 import { GraphQLError } from '../../error';
+
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 import { createLexer, isPunctuatorToken } from '../lexer';

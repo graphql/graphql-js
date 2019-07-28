@@ -1,11 +1,15 @@
 // @flow strict
 
 import inspect from '../../jsutils/inspect';
-import { type ValidationContext } from '../ValidationContext';
+
 import { GraphQLError } from '../../error/GraphQLError';
+
 import { type FieldNode } from '../../language/ast';
-import { getNamedType, isLeafType } from '../../type/definition';
 import { type ASTVisitor } from '../../language/visitor';
+
+import { getNamedType, isLeafType } from '../../type/definition';
+
+import { type ValidationContext } from '../ValidationContext';
 
 export function noSubselectionAllowedMessage(
   fieldName: string,

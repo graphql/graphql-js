@@ -2,11 +2,13 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   FieldsOnCorrectType,
   undefinedFieldMessage,
 } from '../rules/FieldsOnCorrectType';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(FieldsOnCorrectType, queryStr);

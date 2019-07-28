@@ -2,9 +2,11 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { isValidLiteralValue } from '../isValidLiteralValue';
+
 import { parseValue } from '../../language';
 import { GraphQLInt } from '../../type';
+
+import { isValidLiteralValue } from '../isValidLiteralValue';
 
 describe('isValidLiteralValue', () => {
   it('Returns no errors for a valid value', () => {

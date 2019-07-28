@@ -1,13 +1,17 @@
 // @flow strict
 
 import { expect } from 'chai';
+
 import inspect from '../../jsutils/inspect';
+
 import { parse } from '../../language';
-import { validate, validateSDL } from '../validate';
+
+import { GraphQLScalarType } from '../../type/definition';
 import {
-  type ValidationRule,
-  type SDLValidationRule,
-} from '../ValidationContext';
+  GraphQLDirective,
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
+} from '../../type/directives';
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -23,12 +27,12 @@ import {
   GraphQLBoolean,
   GraphQLID,
 } from '../../type';
+
+import { validate, validateSDL } from '../validate';
 import {
-  GraphQLDirective,
-  GraphQLIncludeDirective,
-  GraphQLSkipDirective,
-} from '../../type/directives';
-import { GraphQLScalarType } from '../../type/definition';
+  type ValidationRule,
+  type SDLValidationRule,
+} from '../ValidationContext';
 
 const Being = new GraphQLInterfaceType({
   name: 'Being',

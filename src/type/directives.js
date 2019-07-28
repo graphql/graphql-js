@@ -1,24 +1,27 @@
 // @flow strict
 
 import objectEntries from '../polyfills/objectEntries';
+
+import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
+import instanceOf from '../jsutils/instanceOf';
+import defineToJSON from '../jsutils/defineToJSON';
 import isObjectLike from '../jsutils/isObjectLike';
+import defineToStringTag from '../jsutils/defineToStringTag';
+
+import { type DirectiveDefinitionNode } from '../language/ast';
+import {
+  DirectiveLocation,
+  type DirectiveLocationEnum,
+} from '../language/directiveLocation';
+
+import { GraphQLString, GraphQLBoolean } from './scalars';
 import {
   type GraphQLFieldConfigArgumentMap,
   type GraphQLArgument,
   argsToArgsConfig,
   GraphQLNonNull,
 } from './definition';
-import { GraphQLString, GraphQLBoolean } from './scalars';
-import defineToStringTag from '../jsutils/defineToStringTag';
-import defineToJSON from '../jsutils/defineToJSON';
-import instanceOf from '../jsutils/instanceOf';
-import invariant from '../jsutils/invariant';
-import inspect from '../jsutils/inspect';
-import { type DirectiveDefinitionNode } from '../language/ast';
-import {
-  DirectiveLocation,
-  type DirectiveLocationEnum,
-} from '../language/directiveLocation';
 
 /**
  * Test if the given value is a GraphQL directive.

@@ -4,6 +4,19 @@ import find from '../polyfills/find';
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import objectEntries from '../polyfills/objectEntries';
+
+import inspect from '../jsutils/inspect';
+
+import { GraphQLError } from '../error/GraphQLError';
+
+import { type ASTNode, type NamedTypeNode } from '../language/ast';
+
+import { isValidNameError } from '../utilities/assertValidName';
+import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
+
+import { isDirective } from './directives';
+import { isIntrospectionType } from './introspection';
+import { type GraphQLSchema, assertSchema } from './schema';
 import {
   type GraphQLObjectType,
   type GraphQLInterfaceType,
@@ -21,14 +34,6 @@ import {
   isOutputType,
   isRequiredArgument,
 } from './definition';
-import { isDirective } from './directives';
-import { isIntrospectionType } from './introspection';
-import { type GraphQLSchema, assertSchema } from './schema';
-import inspect from '../jsutils/inspect';
-import { GraphQLError } from '../error/GraphQLError';
-import { type ASTNode, type NamedTypeNode } from '../language/ast';
-import { isValidNameError } from '../utilities/assertValidName';
-import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's

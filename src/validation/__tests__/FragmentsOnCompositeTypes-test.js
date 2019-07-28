@@ -1,12 +1,14 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   FragmentsOnCompositeTypes,
   inlineFragmentOnNonCompositeErrorMessage,
   fragmentOnNonCompositeErrorMessage,
 } from '../rules/FragmentsOnCompositeTypes';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(FragmentsOnCompositeTypes, queryStr);

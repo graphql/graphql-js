@@ -1,13 +1,16 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectSDLValidationErrors } from './harness';
+
+import { buildSchema } from '../../utilities';
+
 import {
   LoneSchemaDefinition,
   schemaDefinitionNotAloneMessage,
   canNotDefineSchemaWithinExtensionMessage,
 } from '../rules/LoneSchemaDefinition';
-import { buildSchema } from '../../utilities';
+
+import { expectSDLValidationErrors } from './harness';
 
 function expectSDLErrors(sdlStr, schema) {
   return expectSDLValidationErrors(schema, LoneSchemaDefinition, sdlStr);

@@ -1,10 +1,12 @@
 // @flow strict
 
 import { GraphQLError } from '../error/GraphQLError';
+
 import {
   type OperationDefinitionNode,
   type OperationTypeDefinitionNode,
 } from '../language/ast';
+
 import { type GraphQLSchema } from '../type/schema';
 import { type GraphQLObjectType } from '../type/definition';
 

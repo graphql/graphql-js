@@ -5,6 +5,7 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
+
 import {
   Kind,
   parse,

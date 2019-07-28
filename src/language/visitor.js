@@ -1,8 +1,10 @@
 // @flow strict
 
 import inspect from '../jsutils/inspect';
-import { type ASTNode, type ASTKindToNode } from './ast';
+
 import { type TypeInfo } from '../utilities/TypeInfo';
+
+import { type ASTNode, type ASTKindToNode } from './ast';
 
 /**
  * A visitor is provided to visit, it contains the collection of

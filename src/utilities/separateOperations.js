@@ -1,7 +1,8 @@
 // @flow strict
 
-import { visit } from '../language/visitor';
 import { type ObjMap } from '../jsutils/ObjMap';
+
+import { visit } from '../language/visitor';
 import {
   type DocumentNode,
   type OperationDefinitionNode,

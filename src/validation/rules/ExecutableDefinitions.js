@@ -1,10 +1,12 @@
 // @flow strict
 
-import { type ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
+
 import { Kind } from '../../language/kinds';
-import { isExecutableDefinitionNode } from '../../language/predicates';
 import { type ASTVisitor } from '../../language/visitor';
+import { isExecutableDefinitionNode } from '../../language/predicates';
+
+import { type ASTValidationContext } from '../ValidationContext';
 
 export function nonExecutableDefinitionMessage(defName: string): string {
   return `The ${defName} definition is not executable.`;

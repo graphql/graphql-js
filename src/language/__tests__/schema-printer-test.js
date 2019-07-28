@@ -2,9 +2,12 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
+import dedent from '../../jsutils/dedent';
+
 import { parse } from '../parser';
 import { print } from '../printer';
-import dedent from '../../jsutils/dedent';
+
 import { kitchenSinkSDL } from '../../__fixtures__';
 
 describe('Printer: SDL document', () => {

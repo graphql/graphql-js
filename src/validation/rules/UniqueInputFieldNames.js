@@ -1,8 +1,9 @@
 // @flow strict
 
-import { type ASTValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import { type ASTVisitor } from '../../language/visitor';
+
+import { type ASTValidationContext } from '../ValidationContext';
 
 export function duplicateInputFieldMessage(fieldName: string): string {
   return `There can be only one input field named "${fieldName}".`;

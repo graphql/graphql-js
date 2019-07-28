@@ -1,11 +1,13 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   UniqueOperationNames,
   duplicateOperationNameMessage,
 } from '../rules/UniqueOperationNames';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(UniqueOperationNames, queryStr);

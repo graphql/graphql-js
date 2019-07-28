@@ -1,11 +1,13 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   VariablesInAllowedPosition,
   badVarPosMessage,
 } from '../rules/VariablesInAllowedPosition';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(VariablesInAllowedPosition, queryStr);

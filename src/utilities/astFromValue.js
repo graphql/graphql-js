@@ -3,12 +3,16 @@
 import { forEach, isCollection } from 'iterall';
 
 import objectValues from '../polyfills/objectValues';
+
 import inspect from '../jsutils/inspect';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import isObjectLike from '../jsutils/isObjectLike';
-import { type ValueNode } from '../language/ast';
+
 import { Kind } from '../language/kinds';
+import { type ValueNode } from '../language/ast';
+
+import { GraphQLID } from '../type/scalars';
 import {
   type GraphQLInputType,
   isLeafType,
@@ -17,7 +21,6 @@ import {
   isListType,
   isNonNullType,
 } from '../type/definition';
-import { GraphQLID } from '../type/scalars';
 
 /**
  * Produces a GraphQL Value AST given a JavaScript value.

@@ -1,11 +1,13 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   UniqueInputFieldNames,
   duplicateInputFieldMessage,
 } from '../rules/UniqueInputFieldNames';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(UniqueInputFieldNames, queryStr);

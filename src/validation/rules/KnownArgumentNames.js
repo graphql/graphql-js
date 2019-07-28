@@ -1,15 +1,19 @@
 // @flow strict
 
+import didYouMean from '../../jsutils/didYouMean';
+import suggestionList from '../../jsutils/suggestionList';
+
+import { GraphQLError } from '../../error/GraphQLError';
+
+import { Kind } from '../../language/kinds';
+import { type ASTVisitor } from '../../language/visitor';
+
+import { specifiedDirectives } from '../../type/directives';
+
 import {
   type ValidationContext,
   type SDLValidationContext,
 } from '../ValidationContext';
-import { GraphQLError } from '../../error/GraphQLError';
-import { type ASTVisitor } from '../../language/visitor';
-import suggestionList from '../../jsutils/suggestionList';
-import didYouMean from '../../jsutils/didYouMean';
-import { Kind } from '../../language/kinds';
-import { specifiedDirectives } from '../../type/directives';
 
 export function unknownArgMessage(
   argName: string,

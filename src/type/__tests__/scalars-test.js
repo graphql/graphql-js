@@ -1,7 +1,9 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
+import { parseValue as parseValueToAST } from '../../language/parser';
 
 import {
   GraphQLID,
@@ -10,7 +12,6 @@ import {
   GraphQLString,
   GraphQLBoolean,
 } from '../scalars';
-import { parseValue as parseValueToAST } from '../../language/parser';
 
 describe('Type System: Specified scalar types', () => {
   describe('GraphQLInt', () => {

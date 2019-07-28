@@ -2,11 +2,20 @@
 
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
+
 import inspect from '../jsutils/inspect';
-import { astFromValue } from '../utilities/astFromValue';
+
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
+
 import { type GraphQLSchema } from '../type/schema';
+import { isIntrospectionType } from '../type/introspection';
+import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
+import {
+  GraphQLDirective,
+  DEFAULT_DEPRECATION_REASON,
+  isSpecifiedDirective,
+} from '../type/directives';
 import {
   type GraphQLNamedType,
   type GraphQLScalarType,
@@ -22,13 +31,8 @@ import {
   isEnumType,
   isInputObjectType,
 } from '../type/definition';
-import { GraphQLString, isSpecifiedScalarType } from '../type/scalars';
-import {
-  GraphQLDirective,
-  DEFAULT_DEPRECATION_REASON,
-  isSpecifiedDirective,
-} from '../type/directives';
-import { isIntrospectionType } from '../type/introspection';
+
+import { astFromValue } from '../utilities/astFromValue';
 
 type Options = {|
   /**

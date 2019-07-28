@@ -1,17 +1,19 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
 
 import invariant from '../../jsutils/invariant';
+
+import { GraphQLInt } from '../../type/scalars';
 import {
-  GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
   GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
-} from '../../type';
+} from '../../type/definition';
+
 import { coerceValue } from '../coerceValue';
 
 function expectValue(result) {

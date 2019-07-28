@@ -1,6 +1,7 @@
 // @flow strict
 
 import isObjectLike from '../jsutils/isObjectLike';
+
 import { type ASTNode } from '../language/ast';
 import { type Source } from '../language/source';
 import { type SourceLocation, getLocation } from '../language/location';

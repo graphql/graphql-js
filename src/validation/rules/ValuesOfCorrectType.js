@@ -1,11 +1,19 @@
 // @flow strict
 
 import objectValues from '../../polyfills/objectValues';
-import { type ValidationContext } from '../ValidationContext';
+
+import keyMap from '../../jsutils/keyMap';
+import inspect from '../../jsutils/inspect';
+import isInvalid from '../../jsutils/isInvalid';
+import didYouMean from '../../jsutils/didYouMean';
+import suggestionList from '../../jsutils/suggestionList';
+
 import { GraphQLError } from '../../error/GraphQLError';
+
 import { type ValueNode } from '../../language/ast';
 import { print } from '../../language/printer';
 import { type ASTVisitor } from '../../language/visitor';
+
 import {
   isScalarType,
   isEnumType,
@@ -16,11 +24,8 @@ import {
   getNullableType,
   getNamedType,
 } from '../../type/definition';
-import inspect from '../../jsutils/inspect';
-import isInvalid from '../../jsutils/isInvalid';
-import keyMap from '../../jsutils/keyMap';
-import didYouMean from '../../jsutils/didYouMean';
-import suggestionList from '../../jsutils/suggestionList';
+
+import { type ValidationContext } from '../ValidationContext';
 
 export function badValueMessage(
   typeName: string,

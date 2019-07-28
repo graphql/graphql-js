@@ -1,9 +1,10 @@
 // @flow strict
 
-import inspect from '../../jsutils/inspect';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { execute } from '../execute';
+
+import inspect from '../../jsutils/inspect';
+
 import { parse } from '../../language';
 import {
   GraphQLSchema,
@@ -15,6 +16,8 @@ import {
   GraphQLScalarType,
   GraphQLEnumType,
 } from '../../type';
+
+import { execute } from '../execute';
 
 const TestComplexScalar = new GraphQLScalarType({
   name: 'ComplexScalar',

@@ -1,9 +1,10 @@
 // @flow strict
 
-import { bigSchemaSDL } from '../../__fixtures__';
-
 import { parse } from '../../';
+
 import { buildASTSchema } from '../buildASTSchema';
+
+import { bigSchemaSDL } from '../../__fixtures__';
 
 const schemaAST = parse(bigSchemaSDL);
 

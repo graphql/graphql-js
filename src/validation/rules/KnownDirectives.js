@@ -1,14 +1,17 @@
 // @flow strict
 
+import { GraphQLError } from '../../error/GraphQLError';
+
+import { Kind } from '../../language/kinds';
+import { type ASTVisitor } from '../../language/visitor';
+import { DirectiveLocation } from '../../language/directiveLocation';
+
+import { specifiedDirectives } from '../../type/directives';
+
 import {
   type ValidationContext,
   type SDLValidationContext,
 } from '../ValidationContext';
-import { GraphQLError } from '../../error/GraphQLError';
-import { Kind } from '../../language/kinds';
-import { DirectiveLocation } from '../../language/directiveLocation';
-import { type ASTVisitor } from '../../language/visitor';
-import { specifiedDirectives } from '../../type/directives';
 
 export function unknownDirectiveMessage(directiveName: string): string {
   return `Unknown directive "${directiveName}".`;

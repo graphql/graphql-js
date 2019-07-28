@@ -1,10 +1,15 @@
 // @flow strict
 
 import { isAsyncIterable } from 'iterall';
+
 import inspect from '../jsutils/inspect';
 import { addPath, pathToArray } from '../jsutils/Path';
+
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
+
+import { type DocumentNode } from '../language/ast';
+
 import {
   type ExecutionResult,
   assertValidExecutionArguments,
@@ -15,12 +20,13 @@ import {
   getFieldDef,
   resolveFieldValueOrError,
 } from '../execution/execute';
-import { type GraphQLSchema } from '../type/schema';
-import mapAsyncIterator from './mapAsyncIterator';
 
-import { type DocumentNode } from '../language/ast';
+import { type GraphQLSchema } from '../type/schema';
 import { type GraphQLFieldResolver } from '../type/definition';
+
 import { getOperationRootType } from '../utilities/getOperationRootType';
+
+import mapAsyncIterator from './mapAsyncIterator';
 
 export type SubscriptionArgs = {|
   schema: GraphQLSchema,

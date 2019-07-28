@@ -1,9 +1,11 @@
 // @flow strict
 
-import { type ASTValidationContext } from '../ValidationContext';
-import { type VariableDefinitionNode } from '../../language/ast';
 import { GraphQLError } from '../../error/GraphQLError';
+
 import { type ASTVisitor } from '../../language/visitor';
+import { type VariableDefinitionNode } from '../../language/ast';
+
+import { type ASTValidationContext } from '../ValidationContext';
 
 export function duplicateVariableMessage(variableName: string): string {
   return `There can be only one variable named "${variableName}".`;

@@ -2,8 +2,11 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
 import dedent from '../../jsutils/dedent';
+
 import { parse } from '../parser';
+
 import toJSONDeep from './toJSONDeep';
 import { kitchenSinkSDL } from '../../__fixtures__';
 

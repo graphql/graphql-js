@@ -1,10 +1,10 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
-import { printSchema } from '../../utilities/schemaPrinter';
+
 import {
   GraphQLSchema,
   GraphQLScalarType,
@@ -17,6 +17,8 @@ import {
   GraphQLDirective,
   GraphQLList,
 } from '../';
+
+import { printSchema } from '../../utilities/schemaPrinter';
 
 describe('Type System: Schema', () => {
   it('Define sample schema', () => {

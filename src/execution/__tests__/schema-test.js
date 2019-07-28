@@ -3,8 +3,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { execute } from '../execute';
 import { parse } from '../../language';
+
 import {
   GraphQLSchema,
   GraphQLObjectType,
@@ -15,6 +15,8 @@ import {
   GraphQLBoolean,
   GraphQLID,
 } from '../../type';
+
+import { execute } from '../execute';
 
 describe('Execute: Handles execution with a complex schema', () => {
   it('executes using a schema', () => {

@@ -2,6 +2,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
 import inspect from '../inspect';
 import nodejsCustomInspectSymbol from '../nodejsCustomInspectSymbol';
 

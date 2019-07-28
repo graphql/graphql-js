@@ -2,6 +2,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
 import didYouMean from '../didYouMean';
 
 describe('didYouMean', () => {

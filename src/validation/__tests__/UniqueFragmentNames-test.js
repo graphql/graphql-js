@@ -1,11 +1,13 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   UniqueFragmentNames,
   duplicateFragmentNameMessage,
 } from '../rules/UniqueFragmentNames';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(UniqueFragmentNames, queryStr);

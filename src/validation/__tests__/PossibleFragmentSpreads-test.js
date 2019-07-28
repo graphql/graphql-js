@@ -1,12 +1,14 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   PossibleFragmentSpreads,
   typeIncompatibleSpreadMessage,
   typeIncompatibleAnonSpreadMessage,
 } from '../rules/PossibleFragmentSpreads';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(PossibleFragmentSpreads, queryStr);

@@ -4,21 +4,19 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { GraphQLSchema } from '../../type';
+import {
+  GraphQLSkipDirective,
+  GraphQLIncludeDirective,
+  GraphQLDeprecatedDirective,
+} from '../../type/directives';
 
 import { buildSchema } from '../buildASTSchema';
-
 import {
   BreakingChangeType,
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
 } from '../findBreakingChanges';
-
-import {
-  GraphQLSkipDirective,
-  GraphQLIncludeDirective,
-  GraphQLDeprecatedDirective,
-} from '../../type/directives';
 
 describe('findBreakingChanges', () => {
   it('should detect if a type was removed or not', () => {

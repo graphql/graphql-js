@@ -1,8 +1,9 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { valueFromAST } from '../valueFromAST';
+import { describe, it } from 'mocha';
+
+import { parseValue } from '../../language';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -14,7 +15,8 @@ import {
   GraphQLID,
   GraphQLNonNull,
 } from '../../type';
-import { parseValue } from '../../language';
+
+import { valueFromAST } from '../valueFromAST';
 
 describe('valueFromAST', () => {
   function testCase(type, valueText, expected) {

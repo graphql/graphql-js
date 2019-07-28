@@ -1,5 +1,8 @@
 // @flow strict
 
+import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
 import {
   GraphQLInt,
   GraphQLID,
@@ -7,9 +10,6 @@ import {
   GraphQLString,
   GraphQLBoolean,
 } from '../';
-
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
 
 describe('Type System: Scalar coercion', () => {
   it('serializes output as Int', () => {

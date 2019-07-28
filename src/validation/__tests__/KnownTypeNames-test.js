@@ -1,13 +1,16 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
+
 import { buildSchema } from '../../utilities';
+
+import { KnownTypeNames, unknownTypeMessage } from '../rules/KnownTypeNames';
+
 import {
   expectValidationErrors,
   expectValidationErrorsWithSchema,
   expectSDLValidationErrors,
 } from './harness';
-import { KnownTypeNames, unknownTypeMessage } from '../rules/KnownTypeNames';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(KnownTypeNames, queryStr);

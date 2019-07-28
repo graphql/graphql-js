@@ -1,10 +1,13 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
 import dedent from '../../jsutils/dedent';
-import { separateOperations } from '../separateOperations';
+
 import { parse, print } from '../../language';
+
+import { separateOperations } from '../separateOperations';
 
 describe('separateOperations', () => {
   it('separates one AST into multiple, maintaining document order', () => {

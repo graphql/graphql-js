@@ -1,8 +1,9 @@
 // @flow strict
 
-import { type SDLValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
 import { type ASTVisitor } from '../../language/visitor';
+
+import { type SDLValidationContext } from '../ValidationContext';
 
 export function schemaDefinitionNotAloneMessage(): string {
   return 'Must provide only one schema definition.';

@@ -2,9 +2,10 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
 import inspect from '../../jsutils/inspect';
 import invariant from '../../jsutils/invariant';
-import { execute } from '../execute';
+
 import { Kind, parse } from '../../language';
 import {
   GraphQLSchema,
@@ -16,6 +17,8 @@ import {
   GraphQLString,
   GraphQLNonNull,
 } from '../../type';
+
+import { execute } from '../execute';
 
 describe('Execute: Handles basic execution tasks', () => {
   it('throws if no document is provided', () => {

@@ -4,14 +4,17 @@ import { inspect as nodeInspect } from 'util';
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { Kind } from '../kinds';
-import { TokenKind } from '../tokenKind';
-import { parse, parseValue, parseType } from '../parser';
-import { Source } from '../source';
+
 import dedent from '../../jsutils/dedent';
 import inspect from '../../jsutils/inspect';
-import toJSONDeep from './toJSONDeep';
+
+import { Kind } from '../kinds';
+import { Source } from '../source';
+import { TokenKind } from '../tokenKind';
+import { parse, parseValue, parseType } from '../parser';
+
 import { kitchenSinkQuery } from '../../__fixtures__';
+import toJSONDeep from './toJSONDeep';
 
 function expectSyntaxError(text, message, location) {
   expect(() => parse(text))

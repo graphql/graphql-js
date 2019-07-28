@@ -1,12 +1,17 @@
 // @flow strict
 
 import invariant from '../jsutils/invariant';
+
 import { type GraphQLError } from '../error/GraphQLError';
-import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
+
 import { type DocumentNode } from '../language/ast';
+import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
+
 import { type GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
+
 import { TypeInfo } from '../utilities/TypeInfo';
+
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
 import {
   type SDLValidationRule,

@@ -1,12 +1,16 @@
 // @flow strict
 
-import { type ValidationContext } from '../ValidationContext';
 import { GraphQLError } from '../../error/GraphQLError';
-import { type VariableDefinitionNode } from '../../language/ast';
+
 import { print } from '../../language/printer';
 import { type ASTVisitor } from '../../language/visitor';
+import { type VariableDefinitionNode } from '../../language/ast';
+
 import { isInputType } from '../../type/definition';
+
 import { typeFromAST } from '../../utilities/typeFromAST';
+
+import { type ValidationContext } from '../ValidationContext';
 
 export function nonInputTypeOnVarMessage(
   variableName: string,

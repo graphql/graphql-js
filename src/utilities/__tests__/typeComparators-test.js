@@ -1,7 +1,8 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
 import {
   GraphQLSchema,
   GraphQLString,
@@ -13,6 +14,7 @@ import {
   GraphQLInterfaceType,
   GraphQLUnionType,
 } from '../../type';
+
 import { isEqualType, isTypeSubTypeOf } from '../typeComparators';
 
 describe('typeComparators', () => {

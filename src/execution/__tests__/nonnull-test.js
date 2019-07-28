@@ -2,15 +2,17 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { execute } from '../execute';
+
 import { parse } from '../../language';
-import { buildSchema } from '../../utilities/buildASTSchema';
 import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLString,
   GraphQLNonNull,
 } from '../../type';
+import { buildSchema } from '../../utilities/buildASTSchema';
+
+import { execute } from '../execute';
 
 const syncError = new Error('sync');
 const syncNonNullError = new Error('syncNonNull');

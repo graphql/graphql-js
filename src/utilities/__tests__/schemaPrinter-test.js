@@ -1,10 +1,12 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
 import dedent from '../../jsutils/dedent';
-import { printSchema, printIntrospectionSchema } from '../schemaPrinter';
-import { buildSchema } from '../buildASTSchema';
+
+import { DirectiveLocation } from '../../language/directiveLocation';
+
 import {
   assertObjectType,
   GraphQLSchema,
@@ -21,7 +23,9 @@ import {
   GraphQLNonNull,
 } from '../../';
 import { GraphQLDirective } from '../../type/directives';
-import { DirectiveLocation } from '../../language/directiveLocation';
+
+import { buildSchema } from '../buildASTSchema';
+import { printSchema, printIntrospectionSchema } from '../schemaPrinter';
 
 function printForTest(schema) {
   const schemaText = printSchema(schema);

@@ -1,11 +1,13 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   LoneAnonymousOperation,
   anonOperationNotAloneMessage,
 } from '../rules/LoneAnonymousOperation';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(LoneAnonymousOperation, queryStr);

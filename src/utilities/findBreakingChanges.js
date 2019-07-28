@@ -1,10 +1,14 @@
 // @flow strict
 
 import objectValues from '../polyfills/objectValues';
+
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
+
 import { print } from '../language/printer';
+
+import { type GraphQLSchema } from '../type/schema';
 import {
   type GraphQLField,
   type GraphQLType,
@@ -27,7 +31,7 @@ import {
   isRequiredArgument,
   isRequiredInputField,
 } from '../type/definition';
-import { type GraphQLSchema } from '../type/schema';
+
 import { astFromValue } from './astFromValue';
 
 export const BreakingChangeType = Object.freeze({

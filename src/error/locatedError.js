@@ -1,7 +1,8 @@
 // @flow strict
 
-import { GraphQLError } from './GraphQLError';
 import { type ASTNode } from '../language/ast';
+
+import { GraphQLError } from './GraphQLError';
 
 /**
  * Given an arbitrary Error, presumably thrown while attempting to execute a

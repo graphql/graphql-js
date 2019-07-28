@@ -1,11 +1,13 @@
 // @flow strict
 
 import { describe, it } from 'mocha';
-import { expectValidationErrors } from './harness';
+
 import {
   ExecutableDefinitions,
   nonExecutableDefinitionMessage,
 } from '../rules/ExecutableDefinitions';
+
+import { expectValidationErrors } from './harness';
 
 function expectErrors(queryStr) {
   return expectValidationErrors(ExecutableDefinitions, queryStr);

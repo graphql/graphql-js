@@ -1,10 +1,13 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
 import dedent from '../../jsutils/dedent';
-import { concatAST } from '../concatAST';
+
 import { Source, parse, print } from '../../language';
+
+import { concatAST } from '../concatAST';
 
 describe('concatAST', () => {
   it('concats two ASTs together', () => {

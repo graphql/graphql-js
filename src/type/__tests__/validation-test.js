@@ -1,8 +1,12 @@
 // @flow strict
 
-import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
 import inspect from '../../jsutils/inspect';
+
+import { parse } from '../../language/parser';
+
 import {
   type GraphQLNamedType,
   type GraphQLInputType,
@@ -18,10 +22,11 @@ import {
   GraphQLNonNull,
   GraphQLString,
 } from '../../';
-import { parse } from '../../language/parser';
-import { validateSchema } from '../validate';
-import { buildSchema } from '../../utilities/buildASTSchema';
+
 import { extendSchema } from '../../utilities/extendSchema';
+import { buildSchema } from '../../utilities/buildASTSchema';
+
+import { validateSchema } from '../validate';
 
 const SomeScalarType = new GraphQLScalarType({ name: 'SomeScalar' });
 
