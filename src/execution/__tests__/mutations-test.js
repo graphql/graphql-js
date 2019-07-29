@@ -3,8 +3,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language';
-import { GraphQLSchema, GraphQLObjectType, GraphQLInt } from '../../type';
+import { parse } from '../../language/parser';
+
+import { GraphQLInt } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLObjectType } from '../../type/definition';
 
 import { execute } from '../execute';
 

@@ -5,17 +5,17 @@ import { describe, it } from 'mocha';
 
 import { missingFieldArgMessage } from '../../validation/rules/ProvidedRequiredArguments';
 
-import {
-  graphqlSync,
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLList,
-  GraphQLInputObjectType,
-  GraphQLString,
-  GraphQLEnumType,
-} from '../../';
-
+import { graphqlSync } from '../../graphql';
 import { getIntrospectionQuery } from '../../utilities/introspectionQuery';
+
+import { GraphQLSchema } from '../schema';
+import { GraphQLString } from '../scalars';
+import {
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLInputObjectType,
+  GraphQLEnumType,
+} from '../definition';
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {

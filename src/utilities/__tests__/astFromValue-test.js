@@ -4,16 +4,18 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
+  GraphQLID,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
-  GraphQLID,
+} from '../../type/scalars';
+import {
+  GraphQLList,
   GraphQLNonNull,
-} from '../../type';
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+} from '../../type/definition';
 
 import { astFromValue } from '../astFromValue';
 

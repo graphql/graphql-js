@@ -6,28 +6,34 @@ import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
 
-import { parse, print } from '../../language';
 import { Kind } from '../../language/kinds';
+import { parse } from '../../language/parser';
+import { print } from '../../language/printer';
 
+import { validateSchema } from '../../type/validate';
 import {
   assertDirective,
+  GraphQLSkipDirective,
+  GraphQLIncludeDirective,
+  GraphQLDeprecatedDirective,
+} from '../../type/directives';
+import {
+  GraphQLID,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLString,
+  GraphQLBoolean,
+} from '../../type/scalars';
+import {
   assertObjectType,
   assertInputObjectType,
   assertEnumType,
   assertUnionType,
   assertInterfaceType,
   assertScalarType,
-  graphqlSync,
-  validateSchema,
-  GraphQLID,
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
-  GraphQLBoolean,
-  GraphQLSkipDirective,
-  GraphQLIncludeDirective,
-  GraphQLDeprecatedDirective,
-} from '../../';
+} from '../../type/definition';
+
+import { graphqlSync } from '../../graphql';
 
 import { printSchema } from '../schemaPrinter';
 import { buildASTSchema, buildSchema } from '../buildASTSchema';

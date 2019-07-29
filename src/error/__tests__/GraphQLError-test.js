@@ -6,14 +6,12 @@ import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
 
-import {
-  Kind,
-  parse,
-  Source,
-  GraphQLError,
-  printError,
-  formatError,
-} from '../../';
+import { Kind } from '../../language/kinds';
+import { parse } from '../../language/parser';
+import { Source } from '../../language/source';
+
+import { formatError } from '../formatError';
+import { GraphQLError, printError } from '../GraphQLError';
 
 const source = new Source(dedent`
   {

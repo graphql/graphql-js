@@ -4,12 +4,24 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import {
-  GraphQLScalarType,
-  GraphQLBoolean,
+  GraphQLDirective,
+  GraphQLSkipDirective,
+  GraphQLIncludeDirective,
+  GraphQLDeprecatedDirective,
+  assertDirective,
+  isDirective,
+  isSpecifiedDirective,
+} from '../directives';
+import {
   GraphQLID,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
+  GraphQLBoolean,
+  isSpecifiedScalarType,
+} from '../scalars';
+import {
+  GraphQLScalarType,
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -17,13 +29,8 @@ import {
   GraphQLUnionType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLDirective,
-  GraphQLIncludeDirective,
-  GraphQLSkipDirective,
-  GraphQLDeprecatedDirective,
   isType,
   isScalarType,
-  isSpecifiedScalarType,
   isObjectType,
   isInterfaceType,
   isUnionType,
@@ -41,8 +48,6 @@ import {
   isNamedType,
   isRequiredArgument,
   isRequiredInputField,
-  isDirective,
-  isSpecifiedDirective,
   assertType,
   assertScalarType,
   assertObjectType,
@@ -60,10 +65,9 @@ import {
   assertWrappingType,
   assertNullableType,
   assertNamedType,
-  assertDirective,
   getNullableType,
   getNamedType,
-} from '../';
+} from '../definition';
 
 const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
 const InterfaceType = new GraphQLInterfaceType({

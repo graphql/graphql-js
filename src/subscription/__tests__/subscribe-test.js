@@ -5,16 +5,13 @@ import EventEmitter from 'events';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language';
-import { GraphQLError } from '../../error';
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLList,
-  GraphQLBoolean,
-  GraphQLInt,
-  GraphQLString,
-} from '../../type';
+import { parse } from '../../language/parser';
+
+import { GraphQLError } from '../../error/GraphQLError';
+
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLList, GraphQLObjectType } from '../../type/definition';
+import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../../type/scalars';
 
 import { createSourceEventStream, subscribe } from '../subscribe';
 

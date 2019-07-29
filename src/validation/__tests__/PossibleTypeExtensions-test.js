@@ -2,7 +2,7 @@
 
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../../utilities';
+import { buildSchema } from '../../utilities/buildASTSchema';
 
 import {
   PossibleTypeExtensions,

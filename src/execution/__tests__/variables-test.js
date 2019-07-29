@@ -5,17 +5,18 @@ import { describe, it } from 'mocha';
 
 import inspect from '../../jsutils/inspect';
 
-import { parse } from '../../language';
+import { parse } from '../../language/parser';
+
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLString } from '../../type/scalars';
 import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLInputObjectType,
   GraphQLList,
-  GraphQLString,
   GraphQLNonNull,
   GraphQLScalarType,
+  GraphQLObjectType,
+  GraphQLInputObjectType,
   GraphQLEnumType,
-} from '../../type';
+} from '../../type/definition';
 
 import { execute } from '../execute';
 

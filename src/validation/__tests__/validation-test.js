@@ -3,10 +3,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language';
+import { parse } from '../../language/parser';
 import { TypeInfo } from '../../utilities/TypeInfo';
 
-import { validate, specifiedRules } from '../';
+import { validate } from '../validate';
+import { specifiedRules } from '../specifiedRules';
 
 import { testSchema } from './harness';
 

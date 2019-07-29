@@ -3,7 +3,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { GraphQLDirective, GraphQLString, GraphQLInt } from '../';
+import { GraphQLDirective } from '../directives';
+import { GraphQLString, GraphQLInt } from '../scalars';
 
 describe('Type System: Directive', () => {
   it('defines a directive with no args', () => {

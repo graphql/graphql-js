@@ -4,16 +4,23 @@ import { expect } from 'chai';
 
 import inspect from '../../jsutils/inspect';
 
-import { parse } from '../../language';
+import { parse } from '../../language/parser';
 
-import { GraphQLScalarType } from '../../type/definition';
+import { GraphQLSchema } from '../../type/schema';
 import {
   GraphQLDirective,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
 } from '../../type/directives';
 import {
-  GraphQLSchema,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLString,
+  GraphQLBoolean,
+  GraphQLID,
+} from '../../type/scalars';
+import {
+  GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
@@ -21,12 +28,7 @@ import {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
-  GraphQLBoolean,
-  GraphQLID,
-} from '../../type';
+} from '../../type/definition';
 
 import { validate, validateSDL } from '../validate';
 import {

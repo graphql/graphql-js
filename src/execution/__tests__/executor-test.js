@@ -6,17 +6,17 @@ import { describe, it } from 'mocha';
 import inspect from '../../jsutils/inspect';
 import invariant from '../../jsutils/invariant';
 
-import { Kind, parse } from '../../language';
+import { Kind } from '../../language/kinds';
+import { parse } from '../../language/parser';
+
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLInt, GraphQLBoolean, GraphQLString } from '../../type/scalars';
 import {
-  GraphQLSchema,
+  GraphQLList,
+  GraphQLNonNull,
   GraphQLInterfaceType,
   GraphQLObjectType,
-  GraphQLList,
-  GraphQLBoolean,
-  GraphQLInt,
-  GraphQLString,
-  GraphQLNonNull,
-} from '../../type';
+} from '../../type/definition';
 
 import { execute } from '../execute';
 

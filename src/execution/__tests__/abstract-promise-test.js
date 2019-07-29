@@ -3,16 +3,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
 import {
-  graphql,
-  GraphQLSchema,
+  GraphQLList,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
-  GraphQLList,
-  GraphQLString,
-  GraphQLBoolean,
-} from '../../';
+} from '../../type/definition';
+
+import { graphql } from '../../graphql';
 
 class Dog {
   name: string;

@@ -1,6 +1,6 @@
 // @flow strict
 
-import { parse } from '../../';
+import { parse } from '../../language/parser';
 
 import { buildASTSchema } from '../buildASTSchema';
 

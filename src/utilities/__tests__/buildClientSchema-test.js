@@ -5,21 +5,24 @@ import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
 
+import { graphqlSync } from '../../graphql';
+
+import { GraphQLSchema } from '../../type/schema';
 import {
-  buildSchema,
-  printSchema,
-  graphqlSync,
   assertEnumType,
-  GraphQLSchema,
   GraphQLObjectType,
   GraphQLEnumType,
+} from '../../type/definition';
+import {
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
-} from '../../';
+} from '../../type/scalars';
 
+import { printSchema } from '../schemaPrinter';
+import { buildSchema } from '../buildASTSchema';
 import { buildClientSchema } from '../buildClientSchema';
 import { introspectionFromSchema } from '../introspectionFromSchema';
 

@@ -6,7 +6,9 @@ import { describe, it } from 'mocha';
 import dedent from '../../jsutils/dedent';
 import invariant from '../../jsutils/invariant';
 
-import { parse, createLexer, Source } from '../../language';
+import { parse } from '../../language/parser';
+import { Source } from '../../language/source';
+import { createLexer } from '../../language/lexer';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
 

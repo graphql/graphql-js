@@ -3,13 +3,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import {
-  graphqlSync,
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLInt,
-} from '../../';
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLInt, GraphQLString } from '../../type/scalars';
+
+import { graphqlSync } from '../../graphql';
 
 describe('Execute: resolve function', () => {
   function testSchema(testField) {

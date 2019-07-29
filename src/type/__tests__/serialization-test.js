@@ -9,7 +9,7 @@ import {
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
-} from '../';
+} from '../scalars';
 
 describe('Type System: Scalar coercion', () => {
   it('serializes output as Int', () => {

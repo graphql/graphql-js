@@ -3,16 +3,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import {
-  graphqlSync,
-  GraphQLSchema,
-  GraphQLEnumType,
-  GraphQLObjectType,
-  GraphQLInt,
-  GraphQLString,
-  GraphQLBoolean,
-  introspectionFromSchema,
-} from '../../';
+import { graphqlSync } from '../../graphql';
+import { introspectionFromSchema } from '../../utilities/introspectionFromSchema';
+
+import { GraphQLSchema } from '../schema';
+import { GraphQLEnumType, GraphQLObjectType } from '../definition';
+import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../scalars';
 
 const ColorType = new GraphQLEnumType({
   name: 'Color',
