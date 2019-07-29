@@ -174,15 +174,13 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
     return coercedVariableValues.errors;
   }
 
-  var variableValues = coercedVariableValues.coerced;
-  !variableValues ? invariant(0, 'Has variables if no errors.') : void 0;
   return {
     schema: schema,
     fragments: fragments,
     rootValue: rootValue,
     contextValue: contextValue,
     operation: operation,
-    variableValues: variableValues,
+    variableValues: coercedVariableValues.coerced,
     fieldResolver: fieldResolver || defaultFieldResolver,
     typeResolver: typeResolver || defaultTypeResolver,
     errors: []

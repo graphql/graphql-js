@@ -111,11 +111,9 @@ export function getVariableValues(schema, varDefNodes, inputs) {
   }
 
   return errors.length === 0 ? {
-    errors: undefined,
     coerced: coercedValues
   } : {
-    errors: errors,
-    coerced: undefined
+    errors: errors
   };
 }
 /**
