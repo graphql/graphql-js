@@ -28,10 +28,9 @@ import { coerceValue } from '../utilities/coerceValue';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
 
-type CoercedVariableValues = {|
-  errors: $ReadOnlyArray<GraphQLError> | void,
-  coerced: { [variable: string]: mixed, ... } | void,
-|};
+type CoercedVariableValues =
+  | {| errors: $ReadOnlyArray<GraphQLError> |}
+  | {| coerced: { [variable: string]: mixed, ... } |};
 
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -108,9 +107,7 @@ export function getVariableValues(
     coercedValues[varName] = coerced.value;
   }
 
-  return errors.length === 0
-    ? { errors: undefined, coerced: coercedValues }
-    : { errors, coerced: undefined };
+  return errors.length === 0 ? { coerced: coercedValues } : { errors };
 }
 
 /**
