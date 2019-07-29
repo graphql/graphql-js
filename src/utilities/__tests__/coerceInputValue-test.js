@@ -14,20 +14,29 @@ import {
   GraphQLInputObjectType,
 } from '../../type/definition';
 
-import { coerceValue } from '../coerceValue';
+import { coerceInputValue } from '../coerceInputValue';
 
 function expectValue(result) {
-  expect(result.errors).to.equal(undefined);
+  expect(result.errors).to.deep.equal([]);
   return expect(result.value);
 }
 
 function expectErrors(result) {
-  expect(result.value).to.equal(undefined);
-  const messages = result.errors && result.errors.map(error => error.message);
-  return expect(messages);
+  return expect(result.errors);
 }
 
-describe('coerceValue', () => {
+describe('coerceInputValue', () => {
+  function coerceValue(inputValue, type) {
+    const errors = [];
+
+    const value = coerceInputValue(inputValue, type, onError);
+    return { errors, value };
+
+    function onError(path, invalidValue, error) {
+      errors.push({ path, value: invalidValue, error: error.message });
+    }
+  }
+
   describe('for GraphQLNonNull', () => {
     const TestNonNull = new GraphQLNonNull(GraphQLInt);
 
@@ -39,14 +48,22 @@ describe('coerceValue', () => {
     it('returns an error for undefined value', () => {
       const result = coerceValue(undefined, TestNonNull);
       expectErrors(result).to.deep.equal([
-        'Expected non-nullable type Int! not to be null.',
+        {
+          error: 'Expected non-nullable type Int! not to be null.',
+          path: [],
+          value: undefined,
+        },
       ]);
     });
 
     it('returns an error for null value', () => {
       const result = coerceValue(null, TestNonNull);
       expectErrors(result).to.deep.equal([
-        'Expected non-nullable type Int! not to be null.',
+        {
+          error: 'Expected non-nullable type Int! not to be null.',
+          path: [],
+          value: null,
+        },
       ]);
     });
   });
@@ -57,7 +74,7 @@ describe('coerceValue', () => {
       parseValue(input) {
         invariant(typeof input === 'object' && input !== null);
         if (input.error != null) {
-          throw input.error;
+          throw new Error(input.error);
         }
         return input.value;
       },
@@ -80,14 +97,24 @@ describe('coerceValue', () => {
 
     it('returns an error for undefined result', () => {
       const result = coerceValue({ value: undefined }, TestScalar);
-      expectErrors(result).to.deep.equal(['Expected type TestScalar.']);
+      expectErrors(result).to.deep.equal([
+        {
+          error: 'Expected type TestScalar.',
+          path: [],
+          value: { value: undefined },
+        },
+      ]);
     });
 
     it('returns an error for undefined result', () => {
-      const error = new Error('Some error message');
-      const result = coerceValue({ error }, TestScalar);
+      const inputValue = { error: 'Some error message' };
+      const result = coerceValue(inputValue, TestScalar);
       expectErrors(result).to.deep.equal([
-        'Expected type TestScalar. Some error message',
+        {
+          error: 'Expected type TestScalar. Some error message',
+          path: [],
+          value: { error: 'Some error message' },
+        },
       ]);
     });
   });
@@ -112,16 +139,32 @@ describe('coerceValue', () => {
     it('returns an error for misspelled enum value', () => {
       const result = coerceValue('foo', TestEnum);
       expectErrors(result).to.deep.equal([
-        'Expected type TestEnum. Did you mean FOO?',
+        {
+          error: 'Expected type TestEnum. Did you mean FOO?',
+          path: [],
+          value: 'foo',
+        },
       ]);
     });
 
     it('returns an error for incorrect value type', () => {
       const result1 = coerceValue(123, TestEnum);
-      expectErrors(result1).to.deep.equal(['Expected type TestEnum.']);
+      expectErrors(result1).to.deep.equal([
+        {
+          error: 'Expected type TestEnum.',
+          path: [],
+          value: 123,
+        },
+      ]);
 
       const result2 = coerceValue({ field: 'value' }, TestEnum);
-      expectErrors(result2).to.deep.equal(['Expected type TestEnum.']);
+      expectErrors(result2).to.deep.equal([
+        {
+          error: 'Expected type TestEnum.',
+          path: [],
+          value: { field: 'value' },
+        },
+      ]);
     });
   });
 
@@ -142,29 +185,52 @@ describe('coerceValue', () => {
     it('returns an error for a non-object type', () => {
       const result = coerceValue(123, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Expected type TestInputObject to be an object.',
+        {
+          error: 'Expected type TestInputObject to be an object.',
+          path: [],
+          value: 123,
+        },
       ]);
     });
 
     it('returns an error for an invalid field', () => {
       const result = coerceValue({ foo: NaN }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Expected type Int at value.foo. Int cannot represent non-integer value: NaN',
+        {
+          error:
+            'Expected type Int. Int cannot represent non-integer value: NaN',
+          path: ['foo'],
+          value: NaN,
+        },
       ]);
     });
 
     it('returns multiple errors for multiple invalid fields', () => {
       const result = coerceValue({ foo: 'abc', bar: 'def' }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Expected type Int at value.foo. Int cannot represent non-integer value: "abc"',
-        'Expected type Int at value.bar. Int cannot represent non-integer value: "def"',
+        {
+          error:
+            'Expected type Int. Int cannot represent non-integer value: "abc"',
+          path: ['foo'],
+          value: 'abc',
+        },
+        {
+          error:
+            'Expected type Int. Int cannot represent non-integer value: "def"',
+          path: ['bar'],
+          value: 'def',
+        },
       ]);
     });
 
     it('returns error for a missing required field', () => {
       const result = coerceValue({ bar: 123 }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Field of required type Int! was not provided at value.foo.',
+        {
+          error: 'Field foo of required type Int! was not provided.',
+          path: [],
+          value: { bar: 123 },
+        },
       ]);
     });
 
@@ -174,14 +240,23 @@ describe('coerceValue', () => {
         TestInputObject,
       );
       expectErrors(result).to.deep.equal([
-        'Field "unknownField" is not defined by type TestInputObject.',
+        {
+          error: 'Field "unknownField" is not defined by type TestInputObject.',
+          path: [],
+          value: { foo: 123, unknownField: 123 },
+        },
       ]);
     });
 
     it('returns error for a misspelled field', () => {
       const result = coerceValue({ foo: 123, bart: 123 }, TestInputObject);
       expectErrors(result).to.deep.equal([
-        'Field "bart" is not defined by type TestInputObject. Did you mean bar?',
+        {
+          error:
+            'Field "bart" is not defined by type TestInputObject. Did you mean bar?',
+          path: [],
+          value: { foo: 123, bart: 123 },
+        },
       ]);
     });
   });
@@ -232,8 +307,18 @@ describe('coerceValue', () => {
     it('returns an error for an invalid input', () => {
       const result = coerceValue([1, 'b', true, 4], TestList);
       expectErrors(result).to.deep.equal([
-        'Expected type Int at value[1]. Int cannot represent non-integer value: "b"',
-        'Expected type Int at value[2]. Int cannot represent non-integer value: true',
+        {
+          error:
+            'Expected type Int. Int cannot represent non-integer value: "b"',
+          path: [1],
+          value: 'b',
+        },
+        {
+          error:
+            'Expected type Int. Int cannot represent non-integer value: true',
+          path: [2],
+          value: true,
+        },
       ]);
     });
 
@@ -245,7 +330,12 @@ describe('coerceValue', () => {
     it('returns an error for a non-list invalid value', () => {
       const result = coerceValue('INVALID', TestList);
       expectErrors(result).to.deep.equal([
-        'Expected type Int. Int cannot represent non-integer value: "INVALID"',
+        {
+          error:
+            'Expected type Int. Int cannot represent non-integer value: "INVALID"',
+          path: [],
+          value: 'INVALID',
+        },
       ]);
     });
 
@@ -281,6 +371,22 @@ describe('coerceValue', () => {
     it('returns nested null for nested null values', () => {
       const result = coerceValue([42, [null], null], TestNestedList);
       expectValue(result).to.deep.equal([[42], [null], null]);
+    });
+  });
+
+  describe('with default onError', () => {
+    it('throw error without path', () => {
+      expect(() => coerceInputValue(null, GraphQLNonNull(GraphQLInt))).to.throw(
+        'Invalid value null: Expected non-nullable type Int! not to be null.',
+      );
+    });
+
+    it('throw error with path', () => {
+      expect(() =>
+        coerceInputValue([null], GraphQLList(GraphQLNonNull(GraphQLInt))),
+      ).to.throw(
+        'Invalid value null at "value[0]": : Expected non-nullable type Int! not to be null.',
+      );
     });
   });
 });

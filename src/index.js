@@ -386,8 +386,10 @@ export {
   // the GraphQL type system.
   TypeInfo,
   // Coerces a JavaScript value to a GraphQL type, or produces errors.
+  coerceInputValue,
+  // @deprecated use coerceInputValue - will be removed in v15
   coerceValue,
-  // @deprecated use coerceValue - will be removed in v15
+  // @deprecated use coerceInputValue - will be removed in v15
   isValidJSValue,
   // @deprecated use validation - will be removed in v15
   isValidLiteralValue,

@@ -4,7 +4,9 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import inspect from '../../jsutils/inspect';
+import invariant from '../../jsutils/invariant';
 
+import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
 import { GraphQLSchema } from '../../type/schema';
@@ -19,6 +21,7 @@ import {
 } from '../../type/definition';
 
 import { execute } from '../execute';
+import { getVariableValues } from '../values';
 
 const TestComplexScalar = new GraphQLScalarType({
   name: 'ComplexScalar',
@@ -369,7 +372,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value { a: "foo", b: "bar", c: null }; Expected non-nullable type String! not to be null at value.c.',
+                'Variable "$input" got invalid value null at "input.c"; Expected non-nullable type String! not to be null.',
               locations: [{ line: 2, column: 16 }],
             },
           ],
@@ -397,7 +400,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value { a: "foo", b: "bar" }; Field of required type String! was not provided at value.c.',
+                'Variable "$input" got invalid value { a: "foo", b: "bar" }; Field c of required type String! was not provided.',
               locations: [{ line: 2, column: 16 }],
             },
           ],
@@ -416,12 +419,12 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value { na: { a: "foo" } }; Field of required type String! was not provided at value.na.c.',
+                'Variable "$input" got invalid value { a: "foo" } at "input.na"; Field c of required type String! was not provided.',
               locations: [{ line: 2, column: 18 }],
             },
             {
               message:
-                'Variable "$input" got invalid value { na: { a: "foo" } }; Field of required type String! was not provided at value.nb.',
+                'Variable "$input" got invalid value { na: { a: "foo" } }; Field nb of required type String! was not provided.',
               locations: [{ line: 2, column: 18 }],
             },
           ],
@@ -830,7 +833,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" got invalid value ["A", null, "B"]; Expected non-nullable type String! not to be null at value[1].',
+              'Variable "$input" got invalid value null at "input[1]"; Expected non-nullable type String! not to be null.',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -879,7 +882,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Variable "$input" got invalid value ["A", null, "B"]; Expected non-nullable type String! not to be null at value[1].',
+              'Variable "$input" got invalid value null at "input[1]"; Expected non-nullable type String! not to be null.',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -983,6 +986,44 @@ describe('Execute: Handles inputs', () => {
           fieldWithNonNullableStringInputAndDefaultArgumentValue:
             '"Hello World"',
         },
+      });
+    });
+  });
+
+  describe('getVariableValues: limit maximum number of coercion errors', () => {
+    it('when values are invalid', () => {
+      const doc = parse(`
+        query ($input: [String!]) {
+          listNN(input: $input)
+        }
+      `);
+      const operation = doc.definitions[0];
+      invariant(operation.kind === Kind.OPERATION_DEFINITION);
+
+      const result = getVariableValues(
+        schema,
+        operation.variableDefinitions || [],
+        { input: [0, 1, 2] },
+        { maxErrors: 2 },
+      );
+
+      expect(result).to.deep.equal({
+        errors: [
+          {
+            message:
+              'Variable "$input" got invalid value 0 at "input[0]"; Expected type String. String cannot represent a non string value: 0',
+            locations: [{ line: 2, column: 16 }],
+          },
+          {
+            message:
+              'Variable "$input" got invalid value 1 at "input[1]"; Expected type String. String cannot represent a non string value: 1',
+            locations: [{ line: 2, column: 16 }],
+          },
+          {
+            message:
+              'Too many errors processing variables, error limit reached. Execution aborted.',
+          },
+        ],
       });
     });
   });
