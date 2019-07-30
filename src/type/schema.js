@@ -4,7 +4,7 @@ import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import { type ObjMap } from '../jsutils/ObjMap';
 import isObjectLike from '../jsutils/isObjectLike';
@@ -46,10 +46,9 @@ export function isSchema(schema) {
 }
 
 export function assertSchema(schema: mixed): GraphQLSchema {
-  invariant(
-    isSchema(schema),
-    `Expected ${inspect(schema)} to be a GraphQL schema.`,
-  );
+  if (!isSchema(schema)) {
+    throw new Error(`Expected ${inspect(schema)} to be a GraphQL schema.`);
+  }
   return schema;
 }
 
@@ -141,17 +140,17 @@ export class GraphQLSchema {
 
       // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
-      invariant(isObjectLike(config), 'Must provide configuration object.');
-      invariant(
+      devAssert(isObjectLike(config), 'Must provide configuration object.');
+      devAssert(
         !config.types || Array.isArray(config.types),
         `"types" must be Array if provided but got: ${inspect(config.types)}.`,
       );
-      invariant(
+      devAssert(
         !config.directives || Array.isArray(config.directives),
         '"directives" must be Array if provided but got: ' +
           `${inspect(config.directives)}.`,
       );
-      invariant(
+      devAssert(
         !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames),
         '"allowedLegacyNames" must be Array if provided but got: ' +
           `${inspect(config.allowedLegacyNames)}.`,
@@ -329,11 +328,11 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
     return typeMapReducer(map, type.ofType);
   }
   if (map[type.name]) {
-    invariant(
-      map[type.name] === type,
-      'Schema must contain uniquely named types but contains multiple ' +
-        `types named "${type.name}".`,
-    );
+    if (map[type.name] !== type) {
+      throw new Error(
+        `Schema must contain uniquely named types but contains multiple types named "${type.name}".`,
+      );
+    }
     return map;
   }
   map[type.name] = type;
