@@ -9,7 +9,7 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
@@ -44,7 +44,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * the "errors" field of a server response before calling this function.
  */
 function buildClientSchema(introspection, options) {
-  (0, _isObjectLike.default)(introspection) && (0, _isObjectLike.default)(introspection.__schema) || (0, _invariant.default)(0, 'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' + (0, _inspect.default)(introspection)); // Get the schema from the introspection result.
+  (0, _isObjectLike.default)(introspection) && (0, _isObjectLike.default)(introspection.__schema) || (0, _devAssert.default)(0, 'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' + (0, _inspect.default)(introspection)); // Get the schema from the introspection result.
 
   var schemaIntrospection = introspection.__schema; // Iterate through all types, getting the type definition for each.
 
@@ -122,14 +122,22 @@ function buildClientSchema(introspection, options) {
 
   function getInputType(typeRef) {
     var type = getType(typeRef);
-    (0, _definition.isInputType)(type) || (0, _invariant.default)(0, 'Introspection must provide input type for arguments, but received: ' + (0, _inspect.default)(type) + '.');
-    return type;
+
+    if ((0, _definition.isInputType)(type)) {
+      return type;
+    }
+
+    throw new Error('Introspection must provide input type for arguments, but received: ' + (0, _inspect.default)(type) + '.');
   }
 
   function getOutputType(typeRef) {
     var type = getType(typeRef);
-    (0, _definition.isOutputType)(type) || (0, _invariant.default)(0, 'Introspection must provide output type for fields, but received: ' + (0, _inspect.default)(type) + '.');
-    return type;
+
+    if ((0, _definition.isOutputType)(type)) {
+      return type;
+    }
+
+    throw new Error('Introspection must provide output type for fields, but received: ' + (0, _inspect.default)(type) + '.');
   }
 
   function getObjectType(typeRef) {

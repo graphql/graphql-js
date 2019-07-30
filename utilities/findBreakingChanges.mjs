@@ -813,6 +813,8 @@ function typeKindName(type) {
 
 function stringifyValue(value, type) {
   var ast = astFromValue(value, type);
+
+  /* istanbul ignore next */
   ast != null || invariant(0);
   return print(ast);
 }

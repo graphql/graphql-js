@@ -1,4 +1,4 @@
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import { visit, visitInParallel, visitWithTypeInfo } from '../language/visitor';
 import { assertValidSchema } from '../type/validate';
 import { TypeInfo } from '../utilities/TypeInfo';
@@ -24,7 +24,7 @@ import { SDLValidationContext, ValidationContext } from './ValidationContext';
 export function validate(schema, documentAST) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedRules;
   var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new TypeInfo(schema);
-  documentAST || invariant(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
+  documentAST || devAssert(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
 
   assertValidSchema(schema);
   var context = new ValidationContext(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,

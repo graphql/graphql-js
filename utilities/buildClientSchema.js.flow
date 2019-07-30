@@ -3,7 +3,7 @@
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 import isObjectLike from '../jsutils/isObjectLike';
 
@@ -72,7 +72,7 @@ export function buildClientSchema(
   introspection: IntrospectionQuery,
   options?: Options,
 ): GraphQLSchema {
-  invariant(
+  devAssert(
     isObjectLike(introspection) && isObjectLike(introspection.__schema),
     'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' +
       inspect(introspection),
@@ -161,26 +161,28 @@ export function buildClientSchema(
 
   function getInputType(typeRef: IntrospectionInputTypeRef): GraphQLInputType {
     const type = getType(typeRef);
-    invariant(
-      isInputType(type),
+    if (isInputType(type)) {
+      return type;
+    }
+    throw new Error(
       'Introspection must provide input type for arguments, but received: ' +
         inspect(type) +
         '.',
     );
-    return type;
   }
 
   function getOutputType(
     typeRef: IntrospectionOutputTypeRef,
   ): GraphQLOutputType {
     const type = getType(typeRef);
-    invariant(
-      isOutputType(type),
+    if (isOutputType(type)) {
+      return type;
+    }
+    throw new Error(
       'Introspection must provide output type for fields, but received: ' +
         inspect(type) +
         '.',
     );
-    return type;
   }
 
   function getObjectType(

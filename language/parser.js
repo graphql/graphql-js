@@ -9,7 +9,7 @@ exports.parseType = parseType;
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _defineToJSON = _interopRequireDefault(require("../jsutils/defineToJSON"));
 
@@ -79,7 +79,7 @@ var Parser =
 function () {
   function Parser(source, options) {
     var sourceObj = typeof source === 'string' ? new _source.Source(source) : source;
-    sourceObj instanceof _source.Source || (0, _invariant.default)(0, "Must provide Source. Received: ".concat((0, _inspect.default)(sourceObj)));
+    sourceObj instanceof _source.Source || (0, _devAssert.default)(0, "Must provide Source. Received: ".concat((0, _inspect.default)(sourceObj)));
     this._lexer = (0, _lexer.createLexer)(sourceObj);
     this._options = options || {};
   }

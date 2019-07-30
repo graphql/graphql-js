@@ -14,7 +14,7 @@ var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
@@ -63,7 +63,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function buildASTSchema(documentAST, options) {
-  documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _invariant.default)(0, 'Must provide valid Document AST');
+  documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     (0, _validate.assertValidSDL)(documentAST);
@@ -105,7 +105,11 @@ function buildASTSchema(documentAST, options) {
 
   var astBuilder = new ASTDefinitionBuilder(options, function (typeName) {
     var type = typeMap[typeName];
-    type || (0, _invariant.default)(0, "Type \"".concat(typeName, "\" not found in document."));
+
+    if (type === undefined) {
+      throw new Error("Type \"".concat(typeName, "\" not found in document."));
+    }
+
     return type;
   });
   var typeMap = keyByNameNode(typeDefs, function (node) {

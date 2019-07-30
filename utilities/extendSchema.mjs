@@ -8,7 +8,7 @@ import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
 import mapValue from '../jsutils/mapValue';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 import { Kind } from '../language/kinds';
 import { isTypeDefinitionNode, isTypeExtensionNode } from '../language/predicates';
@@ -40,7 +40,7 @@ import { ASTDefinitionBuilder } from './buildASTSchema';
  */
 export function extendSchema(schema, documentAST, options) {
   assertSchema(schema);
-  documentAST && documentAST.kind === Kind.DOCUMENT || invariant(0, 'Must provide valid Document AST');
+  documentAST && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     assertValidSDLExtension(documentAST, schema);
@@ -101,7 +101,11 @@ export function extendSchema(schema, documentAST, options) {
   var schemaConfig = schema.toConfig();
   var astBuilder = new ASTDefinitionBuilder(options, function (typeName) {
     var type = typeMap[typeName];
-    type || invariant(0, "Unknown type: \"".concat(typeName, "\"."));
+
+    if (type === undefined) {
+      throw new Error("Unknown type: \"".concat(typeName, "\"."));
+    }
+
     return type;
   });
   var typeMap = keyValMap(typeDefs, function (node) {
@@ -239,7 +243,7 @@ export function extendSchema(schema, documentAST, options) {
 
   function getMergedDirectives() {
     var existingDirectives = schema.getDirectives().map(extendDirective);
-    existingDirectives || invariant(0, 'schema must have default directives');
+    existingDirectives || devAssert(0, 'schema must have default directives');
     return existingDirectives.concat(directiveDefs.map(function (node) {
       return astBuilder.buildDirective(node);
     }));

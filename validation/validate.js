@@ -8,7 +8,7 @@ exports.validateSDL = validateSDL;
 exports.assertValidSDL = assertValidSDL;
 exports.assertValidSDLExtension = assertValidSDLExtension;
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _visitor = require("../language/visitor");
 
@@ -41,7 +41,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function validate(schema, documentAST) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _specifiedRules.specifiedRules;
   var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new _TypeInfo.TypeInfo(schema);
-  documentAST || (0, _invariant.default)(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
+  documentAST || (0, _devAssert.default)(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema);
   var context = new _ValidationContext.ValidationContext(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,

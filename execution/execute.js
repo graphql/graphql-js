@@ -18,7 +18,7 @@ var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
 var _memoize = _interopRequireDefault(require("../jsutils/memoize3"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
@@ -129,11 +129,11 @@ function buildResponse(exeContext, data) {
 
 
 function assertValidExecutionArguments(schema, document, rawVariableValues) {
-  document || (0, _invariant.default)(0, 'Must provide document'); // If the schema used for execution is invalid, throw an error.
+  document || (0, _devAssert.default)(0, 'Must provide document'); // If the schema used for execution is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema); // Variables, if provided, must be an object.
 
-  rawVariableValues == null || (0, _isObjectLike.default)(rawVariableValues) || (0, _invariant.default)(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
+  rawVariableValues == null || (0, _isObjectLike.default)(rawVariableValues) || (0, _devAssert.default)(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -598,8 +598,11 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
 
 function completeListValue(exeContext, returnType, fieldNodes, info, path, result) {
-  (0, _iterall.isCollection)(result) || (0, _invariant.default)(0, "Expected Iterable, but did not find one for field ".concat(info.parentType.name, ".").concat(info.fieldName, ".")); // This is specified as a simple map, however we're optimizing the path
+  if (!(0, _iterall.isCollection)(result)) {
+    throw new _GraphQLError.GraphQLError("Expected Iterable, but did not find one for field ".concat(info.parentType.name, ".").concat(info.fieldName, "."));
+  } // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
+
 
   var itemType = returnType.ofType;
   var containsPromise = false;

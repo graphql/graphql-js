@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.assertValidName = assertValidName;
 exports.isValidNameError = isValidNameError;
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _GraphQLError = require("../error/GraphQLError");
 
@@ -32,7 +32,7 @@ function assertValidName(name) {
 
 
 function isValidNameError(name, node) {
-  typeof name === 'string' || (0, _invariant.default)(0, 'Expected string');
+  typeof name === 'string' || (0, _devAssert.default)(0, 'Expected string');
 
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new _GraphQLError.GraphQLError("Name \"".concat(name, "\" must not begin with \"__\", which is reserved by GraphQL introspection."), node);

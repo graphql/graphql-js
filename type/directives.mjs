@@ -1,6 +1,6 @@
 import objectEntries from '../polyfills/objectEntries';
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import defineToJSON from '../jsutils/defineToJSON';
 import isObjectLike from '../jsutils/isObjectLike';
@@ -17,7 +17,10 @@ export function isDirective(directive) {
   return instanceOf(directive, GraphQLDirective);
 }
 export function assertDirective(directive) {
-  isDirective(directive) || invariant(0, "Expected ".concat(inspect(directive), " to be a GraphQL directive."));
+  if (!isDirective(directive)) {
+    throw new Error("Expected ".concat(inspect(directive), " to be a GraphQL directive."));
+  }
+
   return directive;
 }
 /**
@@ -34,10 +37,10 @@ function () {
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
     this.astNode = config.astNode;
-    config.name || invariant(0, 'Directive must be named.');
-    Array.isArray(config.locations) || invariant(0, "@".concat(config.name, " locations must be an Array."));
+    config.name || devAssert(0, 'Directive must be named.');
+    Array.isArray(config.locations) || devAssert(0, "@".concat(config.name, " locations must be an Array."));
     var args = config.args || {};
-    isObjectLike(args) && !Array.isArray(args) || invariant(0, "@".concat(config.name, " args must be an object with argument names as keys."));
+    isObjectLike(args) && !Array.isArray(args) || devAssert(0, "@".concat(config.name, " args must be an object with argument names as keys."));
     this.args = objectEntries(args).map(function (_ref) {
       var argName = _ref[0],
           arg = _ref[1];

@@ -1,7 +1,7 @@
 import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 import { Kind } from '../language/kinds';
 import { TokenKind } from '../language/tokenKind';
@@ -34,7 +34,7 @@ import { valueFromAST } from './valueFromAST';
  *
  */
 export function buildASTSchema(documentAST, options) {
-  documentAST && documentAST.kind === Kind.DOCUMENT || invariant(0, 'Must provide valid Document AST');
+  documentAST && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     assertValidSDL(documentAST);
@@ -76,7 +76,11 @@ export function buildASTSchema(documentAST, options) {
 
   var astBuilder = new ASTDefinitionBuilder(options, function (typeName) {
     var type = typeMap[typeName];
-    type || invariant(0, "Type \"".concat(typeName, "\" not found in document."));
+
+    if (type === undefined) {
+      throw new Error("Type \"".concat(typeName, "\" not found in document."));
+    }
+
     return type;
   });
   var typeMap = keyByNameNode(typeDefs, function (node) {

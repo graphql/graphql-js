@@ -12,7 +12,7 @@ var _objectEntries = _interopRequireDefault(require("../polyfills/objectEntries"
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
-var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _instanceOf = _interopRequireDefault(require("../jsutils/instanceOf"));
 
@@ -36,7 +36,10 @@ function isDirective(directive) {
 }
 
 function assertDirective(directive) {
-  isDirective(directive) || (0, _invariant.default)(0, "Expected ".concat((0, _inspect.default)(directive), " to be a GraphQL directive."));
+  if (!isDirective(directive)) {
+    throw new Error("Expected ".concat((0, _inspect.default)(directive), " to be a GraphQL directive."));
+  }
+
   return directive;
 }
 /**
@@ -54,10 +57,10 @@ function () {
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
     this.astNode = config.astNode;
-    config.name || (0, _invariant.default)(0, 'Directive must be named.');
-    Array.isArray(config.locations) || (0, _invariant.default)(0, "@".concat(config.name, " locations must be an Array."));
+    config.name || (0, _devAssert.default)(0, 'Directive must be named.');
+    Array.isArray(config.locations) || (0, _devAssert.default)(0, "@".concat(config.name, " locations must be an Array."));
     var args = config.args || {};
-    (0, _isObjectLike.default)(args) && !Array.isArray(args) || (0, _invariant.default)(0, "@".concat(config.name, " args must be an object with argument names as keys."));
+    (0, _isObjectLike.default)(args) && !Array.isArray(args) || (0, _devAssert.default)(0, "@".concat(config.name, " args must be an object with argument names as keys."));
     this.args = (0, _objectEntries.default)(args).map(function (_ref) {
       var argName = _ref[0],
           arg = _ref[1];

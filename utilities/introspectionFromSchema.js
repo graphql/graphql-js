@@ -29,6 +29,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function introspectionFromSchema(schema, options) {
   var queryAST = (0, _parser.parse)((0, _introspectionQuery.getIntrospectionQuery)(options));
   var result = (0, _execute.execute)(schema, queryAST);
+
+  /* istanbul ignore next */
   !(0, _isPromise.default)(result) && !result.errors && result.data || (0, _invariant.default)(0);
   return result.data;
 }

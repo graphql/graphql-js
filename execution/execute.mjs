@@ -1,7 +1,7 @@
 import { forEach, isCollection } from 'iterall';
 import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import isPromise from '../jsutils/isPromise';
@@ -119,11 +119,11 @@ function buildResponse(exeContext, data) {
 
 
 export function assertValidExecutionArguments(schema, document, rawVariableValues) {
-  document || invariant(0, 'Must provide document'); // If the schema used for execution is invalid, throw an error.
+  document || devAssert(0, 'Must provide document'); // If the schema used for execution is invalid, throw an error.
 
   assertValidSchema(schema); // Variables, if provided, must be an object.
 
-  rawVariableValues == null || isObjectLike(rawVariableValues) || invariant(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
+  rawVariableValues == null || isObjectLike(rawVariableValues) || devAssert(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -583,8 +583,11 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
 
 function completeListValue(exeContext, returnType, fieldNodes, info, path, result) {
-  isCollection(result) || invariant(0, "Expected Iterable, but did not find one for field ".concat(info.parentType.name, ".").concat(info.fieldName, ".")); // This is specified as a simple map, however we're optimizing the path
+  if (!isCollection(result)) {
+    throw new GraphQLError("Expected Iterable, but did not find one for field ".concat(info.parentType.name, ".").concat(info.fieldName, "."));
+  } // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
+
 
   var itemType = returnType.ofType;
   var containsPromise = false;

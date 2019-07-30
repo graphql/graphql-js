@@ -1,7 +1,7 @@
 import find from '../polyfills/find';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import isObjectLike from '../jsutils/isObjectLike';
 import defineToStringTag from '../jsutils/defineToStringTag';
@@ -17,7 +17,10 @@ export function isSchema(schema) {
   return instanceOf(schema, GraphQLSchema);
 }
 export function assertSchema(schema) {
-  isSchema(schema) || invariant(0, "Expected ".concat(inspect(schema), " to be a GraphQL schema."));
+  if (!isSchema(schema)) {
+    throw new Error("Expected ".concat(inspect(schema), " to be a GraphQL schema."));
+  }
+
   return schema;
 }
 /**
@@ -98,10 +101,10 @@ function () {
       this.__validationErrors = undefined; // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
 
-      isObjectLike(config) || invariant(0, 'Must provide configuration object.');
-      !config.types || Array.isArray(config.types) || invariant(0, "\"types\" must be Array if provided but got: ".concat(inspect(config.types), "."));
-      !config.directives || Array.isArray(config.directives) || invariant(0, '"directives" must be Array if provided but got: ' + "".concat(inspect(config.directives), "."));
-      !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || invariant(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat(inspect(config.allowedLegacyNames), "."));
+      isObjectLike(config) || devAssert(0, 'Must provide configuration object.');
+      !config.types || Array.isArray(config.types) || devAssert(0, "\"types\" must be Array if provided but got: ".concat(inspect(config.types), "."));
+      !config.directives || Array.isArray(config.directives) || devAssert(0, '"directives" must be Array if provided but got: ' + "".concat(inspect(config.directives), "."));
+      !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || devAssert(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat(inspect(config.allowedLegacyNames), "."));
     }
 
     this.__allowedLegacyNames = config.allowedLegacyNames || [];
@@ -269,7 +272,10 @@ function typeMapReducer(map, type) {
   }
 
   if (map[type.name]) {
-    map[type.name] === type || invariant(0, 'Schema must contain uniquely named types but contains multiple ' + "types named \"".concat(type.name, "\"."));
+    if (map[type.name] !== type) {
+      throw new Error("Schema must contain uniquely named types but contains multiple types named \"".concat(type.name, "\"."));
+    }
+
     return map;
   }
 
