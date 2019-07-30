@@ -929,7 +929,6 @@ function completeListValue(
  * null if serialization is not possible.
  */
 function completeLeafValue(returnType: GraphQLLeafType, result: mixed): mixed {
-  invariant(returnType.serialize, 'Missing serialize method on type');
   const serializedResult = returnType.serialize(result);
   if (isInvalid(serializedResult)) {
     throw new Error(
