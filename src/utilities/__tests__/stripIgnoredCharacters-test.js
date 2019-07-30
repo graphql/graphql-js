@@ -4,7 +4,6 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
-import invariant from '../../jsutils/invariant';
 
 import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
@@ -61,41 +60,51 @@ const nonPunctuatorTokens = [
 function lexValue(str) {
   const lexer = createLexer(new Source(str));
   const value = lexer.advance().value;
-  invariant(lexer.advance().kind === '<EOF>');
+
+  /* istanbul ignore if */
+  if (lexer.advance().kind !== '<EOF>') {
+    throw new Error('Expected EOF');
+  }
   return value;
+}
+
+// Called only to make error messages for failing tests
+/* istanbul ignore next */
+function inspectStr(str) {
+  return (JSON.stringify(str) || '')
+    .replace(/^"|"$/g, '`')
+    .replace(/\\"/g, '"');
 }
 
 function expectStripped(docString) {
   return {
     toEqual(expected) {
       const stripped = stripIgnoredCharacters(docString);
-      invariant(
-        stripped === expected,
-        `Expected stripIgnoredCharacters(${inspectStr(docString)})\n` +
-          `\tto equal ${inspectStr(expected)}\n` +
-          `\tbut got  ${inspectStr(stripped)}`,
-      );
+
+      /* istanbul ignore if */
+      if (stripped !== expected) {
+        throw new Error(dedent`
+          Expected stripIgnoredCharacters(${inspectStr(docString)})
+            to equal ${inspectStr(expected)}
+            but got  ${inspectStr(stripped)}
+        `);
+      }
 
       const strippedTwice = stripIgnoredCharacters(stripped);
-      invariant(
-        stripped === strippedTwice,
-        `Expected stripIgnoredCharacters(${inspectStr(stripped)})\n` +
-          `\tto equal ${inspectStr(stripped)}\n` +
-          `\tbut got  ${inspectStr(strippedTwice)}`,
-      );
+
+      /* istanbul ignore if */
+      if (stripped !== strippedTwice) {
+        throw new Error(dedent`
+          Expected stripIgnoredCharacters(${inspectStr(stripped)})
+            to equal ${inspectStr(stripped)}
+            but got  ${inspectStr(strippedTwice)}
+        `);
+      }
     },
     toStayTheSame() {
       this.toEqual(docString);
     },
   };
-
-  function inspectStr(str) {
-    // Called only to make error messages for failing tests
-    /* istanbul ignore next */
-    return JSON.stringify(str)
-      .replace(/^"|"$/g, '`')
-      .replace(/\\"/g, '"');
-  }
 }
 
 describe('stripIgnoredCharacters', () => {
@@ -405,7 +414,14 @@ describe('stripIgnoredCharacters', () => {
       const strippedStr = stripIgnoredCharacters(blockStr);
       const strippedValue = lexValue(strippedStr);
 
-      invariant(originalValue === strippedValue);
+      /* istanbul ignore if */
+      if (originalValue !== strippedValue) {
+        throw new Error(dedent`
+          Expected lextOne(stripIgnoredCharacters(${inspectStr(blockStr)}))
+            to equal ${inspectStr(originalValue)}
+            but got  ${inspectStr(strippedValue)}
+        `);
+      }
       return expectStripped(blockStr);
     }
 
@@ -460,7 +476,14 @@ describe('stripIgnoredCharacters', () => {
         const strippedStr = stripIgnoredCharacters(testStr);
         const strippedValue = lexValue(strippedStr);
 
-        invariant(testValue === strippedValue);
+        /* istanbul ignore if */
+        if (testValue !== strippedValue) {
+          throw new Error(dedent`
+            Expected lextOne(stripIgnoredCharacters(${inspectStr(testStr)}))
+              to equal ${inspectStr(testValue)}
+              but got  ${inspectStr(strippedValue)}
+          `);
+        }
       }
     }
   });
