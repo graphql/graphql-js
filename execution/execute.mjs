@@ -610,7 +610,6 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
 
 
 function completeLeafValue(returnType, result) {
-  !returnType.serialize ? invariant(0, 'Missing serialize method on type') : void 0;
   var serializedResult = returnType.serialize(result);
 
   if (isInvalid(serializedResult)) {
