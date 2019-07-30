@@ -1,7 +1,7 @@
 // @flow strict
 
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import defineToJSON from '../jsutils/defineToJSON';
 
 import { syntaxError } from '../error/syntaxError';
@@ -173,7 +173,7 @@ class Parser {
 
   constructor(source: string | Source, options?: ParseOptions) {
     const sourceObj = typeof source === 'string' ? new Source(source) : source;
-    invariant(
+    devAssert(
       sourceObj instanceof Source,
       `Must provide Source. Received: ${inspect(sourceObj)}`,
     );

@@ -3,7 +3,7 @@
 import objectEntries from '../polyfills/objectEntries';
 
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import instanceOf from '../jsutils/instanceOf';
 import defineToJSON from '../jsutils/defineToJSON';
 import isObjectLike from '../jsutils/isObjectLike';
@@ -35,10 +35,11 @@ export function isDirective(directive) {
 }
 
 export function assertDirective(directive: mixed): GraphQLDirective {
-  invariant(
-    isDirective(directive),
-    `Expected ${inspect(directive)} to be a GraphQL directive.`,
-  );
+  if (!isDirective(directive)) {
+    throw new Error(
+      `Expected ${inspect(directive)} to be a GraphQL directive.`,
+    );
+  }
   return directive;
 }
 
@@ -61,14 +62,14 @@ export class GraphQLDirective {
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
     this.astNode = config.astNode;
-    invariant(config.name, 'Directive must be named.');
-    invariant(
+    devAssert(config.name, 'Directive must be named.');
+    devAssert(
       Array.isArray(config.locations),
       `@${config.name} locations must be an Array.`,
     );
 
     const args = config.args || {};
-    invariant(
+    devAssert(
       isObjectLike(args) && !Array.isArray(args),
       `@${config.name} args must be an object with argument names as keys.`,
     );

@@ -1,6 +1,6 @@
 // @flow strict
 
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { type ASTNode } from '../language/ast';
@@ -25,7 +25,7 @@ export function isValidNameError(
   name: string,
   node?: ASTNode | void,
 ): GraphQLError | void {
-  invariant(typeof name === 'string', 'Expected string');
+  devAssert(typeof name === 'string', 'Expected string');
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new GraphQLError(
       `Name "${name}" must not begin with "__", which is reserved by GraphQL introspection.`,

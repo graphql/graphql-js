@@ -14,8 +14,11 @@
  *  !<cond> ? invariant(0, ...) : undefined;
  */
 module.exports = function inlineInvariant(context) {
-  const replaceTemplate = context.template(`
+  const invariantTemplate = context.template(`
     (%%cond%%) || invariant(0, %%args%%)
+  `);
+  const assertTemplate = context.template(`
+    (%%cond%%) || devAssert(0, %%args%%)
   `);
 
   return {
@@ -24,22 +27,24 @@ module.exports = function inlineInvariant(context) {
         const node = path.node;
         const parent = path.parent;
 
-        if (!isAppropriateInvariantCall(node, parent)) {
+        if (
+          parent.type !== 'ExpressionStatement' ||
+          node.callee.type !== 'Identifier' ||
+          node.arguments.length === 0
+        ) {
           return;
         }
 
-        const [cond, args] = node.arguments;
-        path.replaceWith(replaceTemplate({ cond, args }));
+        const calleeName = node.callee.name;
+        if (calleeName === 'invariant') {
+          const [cond, args] = node.arguments;
+          path.addComment('leading', ' istanbul ignore next ');
+          path.replaceWith(invariantTemplate({ cond, args }));
+        } else if (calleeName === 'devAssert') {
+          const [cond, args] = node.arguments;
+          path.replaceWith(assertTemplate({ cond, args }));
+        }
       },
     },
   };
 };
-
-function isAppropriateInvariantCall(node, parent) {
-  return (
-    parent.type === 'ExpressionStatement' &&
-    node.callee.type === 'Identifier' &&
-    node.callee.name === 'invariant' &&
-    node.arguments.length > 0
-  );
-}

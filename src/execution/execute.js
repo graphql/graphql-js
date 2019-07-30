@@ -4,7 +4,7 @@ import { forEach, isCollection } from 'iterall';
 
 import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
 import isPromise from '../jsutils/isPromise';
@@ -249,13 +249,13 @@ export function assertValidExecutionArguments(
   document: DocumentNode,
   rawVariableValues: ?{ +[variable: string]: mixed, ... },
 ): void {
-  invariant(document, 'Must provide document');
+  devAssert(document, 'Must provide document');
 
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
 
   // Variables, if provided, must be an object.
-  invariant(
+  devAssert(
     rawVariableValues == null || isObjectLike(rawVariableValues),
     'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
   );
@@ -892,10 +892,11 @@ function completeListValue(
   path: Path,
   result: mixed,
 ): PromiseOrValue<$ReadOnlyArray<mixed>> {
-  invariant(
-    isCollection(result),
-    `Expected Iterable, but did not find one for field ${info.parentType.name}.${info.fieldName}.`,
-  );
+  if (!isCollection(result)) {
+    throw new GraphQLError(
+      `Expected Iterable, but did not find one for field ${info.parentType.name}.${info.fieldName}.`,
+    );
+  }
 
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.

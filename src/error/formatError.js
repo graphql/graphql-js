@@ -1,6 +1,6 @@
 // @flow strict
 
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 
 import { type SourceLocation } from '../language/location';
 
@@ -11,7 +11,7 @@ import { type GraphQLError } from './GraphQLError';
  * Response Format, Errors section of the GraphQL Specification.
  */
 export function formatError(error: GraphQLError): GraphQLFormattedError {
-  invariant(error, 'Received null or undefined error.');
+  devAssert(error, 'Received null or undefined error.');
   const message = error.message || 'An unknown error occurred.';
   const locations = error.locations;
   const path = error.path;

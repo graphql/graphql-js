@@ -4,7 +4,7 @@ import objectValues from '../polyfills/objectValues';
 
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 import { type ObjMap } from '../jsutils/ObjMap';
 
@@ -114,7 +114,7 @@ export function buildASTSchema(
   documentAST: DocumentNode,
   options?: BuildSchemaOptions,
 ): GraphQLSchema {
-  invariant(
+  devAssert(
     documentAST && documentAST.kind === Kind.DOCUMENT,
     'Must provide valid Document AST',
   );
@@ -139,7 +139,9 @@ export function buildASTSchema(
 
   const astBuilder = new ASTDefinitionBuilder(options, typeName => {
     const type = typeMap[typeName];
-    invariant(type, `Type "${typeName}" not found in document.`);
+    if (type === undefined) {
+      throw new Error(`Type "${typeName}" not found in document.`);
+    }
     return type;
   });
 

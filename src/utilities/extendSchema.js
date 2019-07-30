@@ -5,7 +5,7 @@ import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
 import mapValue from '../jsutils/mapValue';
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 
 import { Kind } from '../language/kinds';
@@ -98,7 +98,7 @@ export function extendSchema(
 ): GraphQLSchema {
   assertSchema(schema);
 
-  invariant(
+  devAssert(
     documentAST && documentAST.kind === Kind.DOCUMENT,
     'Must provide valid Document AST',
   );
@@ -152,7 +152,9 @@ export function extendSchema(
   const schemaConfig = schema.toConfig();
   const astBuilder = new ASTDefinitionBuilder(options, typeName => {
     const type = typeMap[typeName];
-    invariant(type, `Unknown type: "${typeName}".`);
+    if (type === undefined) {
+      throw new Error(`Unknown type: "${typeName}".`);
+    }
     return type;
   });
 
@@ -230,7 +232,7 @@ export function extendSchema(
 
   function getMergedDirectives(): Array<GraphQLDirective> {
     const existingDirectives = schema.getDirectives().map(extendDirective);
-    invariant(existingDirectives, 'schema must have default directives');
+    devAssert(existingDirectives, 'schema must have default directives');
 
     return existingDirectives.concat(
       directiveDefs.map(node => astBuilder.buildDirective(node)),

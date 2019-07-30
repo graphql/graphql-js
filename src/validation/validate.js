@@ -1,6 +1,6 @@
 // @flow strict
 
-import invariant from '../jsutils/invariant';
+import devAssert from '../jsutils/devAssert';
 
 import { type GraphQLError } from '../error/GraphQLError';
 
@@ -42,7 +42,7 @@ export function validate(
   rules?: $ReadOnlyArray<ValidationRule> = specifiedRules,
   typeInfo?: TypeInfo = new TypeInfo(schema),
 ): $ReadOnlyArray<GraphQLError> {
-  invariant(documentAST, 'Must provide document');
+  devAssert(documentAST, 'Must provide document');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
 
