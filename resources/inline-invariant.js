@@ -15,9 +15,7 @@
  */
 module.exports = function inlineInvariant(context) {
   const replaceTemplate = context.template(`
-    if (!%%cond%%) {
-      invariant(0, %%args%%);
-    }
+    (%%cond%%) || invariant(0, %%args%%)
   `);
 
   return {
@@ -39,9 +37,9 @@ module.exports = function inlineInvariant(context) {
 
 function isAppropriateInvariantCall(node, parent) {
   return (
+    parent.type === 'ExpressionStatement' &&
     node.callee.type === 'Identifier' &&
     node.callee.name === 'invariant' &&
-    node.arguments.length > 0 &&
-    parent.type === 'ExpressionStatement'
+    node.arguments.length > 0
   );
 }
