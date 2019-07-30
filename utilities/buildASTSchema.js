@@ -63,7 +63,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function buildASTSchema(documentAST, options) {
-  !(documentAST && documentAST.kind === _kinds.Kind.DOCUMENT) ? (0, _invariant.default)(0, 'Must provide valid Document AST') : void 0;
+  documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _invariant.default)(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     (0, _validate.assertValidSDL)(documentAST);
@@ -105,7 +105,7 @@ function buildASTSchema(documentAST, options) {
 
   var astBuilder = new ASTDefinitionBuilder(options, function (typeName) {
     var type = typeMap[typeName];
-    !type ? (0, _invariant.default)(0, "Type \"".concat(typeName, "\" not found in document.")) : void 0;
+    type || (0, _invariant.default)(0, "Type \"".concat(typeName, "\" not found in document."));
     return type;
   });
   var typeMap = keyByNameNode(typeDefs, function (node) {

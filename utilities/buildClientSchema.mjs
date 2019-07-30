@@ -24,7 +24,7 @@ import { valueFromAST } from './valueFromAST';
  * the "errors" field of a server response before calling this function.
  */
 export function buildClientSchema(introspection, options) {
-  !(isObjectLike(introspection) && isObjectLike(introspection.__schema)) ? invariant(0, 'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' + inspect(introspection)) : void 0; // Get the schema from the introspection result.
+  isObjectLike(introspection) && isObjectLike(introspection.__schema) || invariant(0, 'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' + inspect(introspection)); // Get the schema from the introspection result.
 
   var schemaIntrospection = introspection.__schema; // Iterate through all types, getting the type definition for each.
 
@@ -102,13 +102,13 @@ export function buildClientSchema(introspection, options) {
 
   function getInputType(typeRef) {
     var type = getType(typeRef);
-    !isInputType(type) ? invariant(0, 'Introspection must provide input type for arguments, but received: ' + inspect(type) + '.') : void 0;
+    isInputType(type) || invariant(0, 'Introspection must provide input type for arguments, but received: ' + inspect(type) + '.');
     return type;
   }
 
   function getOutputType(typeRef) {
     var type = getType(typeRef);
-    !isOutputType(type) ? invariant(0, 'Introspection must provide output type for fields, but received: ' + inspect(type) + '.') : void 0;
+    isOutputType(type) || invariant(0, 'Introspection must provide output type for fields, but received: ' + inspect(type) + '.');
     return type;
   }
 

@@ -36,7 +36,7 @@ function isDirective(directive) {
 }
 
 function assertDirective(directive) {
-  !isDirective(directive) ? (0, _invariant.default)(0, "Expected ".concat((0, _inspect.default)(directive), " to be a GraphQL directive.")) : void 0;
+  isDirective(directive) || (0, _invariant.default)(0, "Expected ".concat((0, _inspect.default)(directive), " to be a GraphQL directive."));
   return directive;
 }
 /**
@@ -54,10 +54,10 @@ function () {
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
     this.astNode = config.astNode;
-    !config.name ? (0, _invariant.default)(0, 'Directive must be named.') : void 0;
-    !Array.isArray(config.locations) ? (0, _invariant.default)(0, "@".concat(config.name, " locations must be an Array.")) : void 0;
+    config.name || (0, _invariant.default)(0, 'Directive must be named.');
+    Array.isArray(config.locations) || (0, _invariant.default)(0, "@".concat(config.name, " locations must be an Array."));
     var args = config.args || {};
-    !((0, _isObjectLike.default)(args) && !Array.isArray(args)) ? (0, _invariant.default)(0, "@".concat(config.name, " args must be an object with argument names as keys.")) : void 0;
+    (0, _isObjectLike.default)(args) && !Array.isArray(args) || (0, _invariant.default)(0, "@".concat(config.name, " args must be an object with argument names as keys."));
     this.args = (0, _objectEntries.default)(args).map(function (_ref) {
       var argName = _ref[0],
           arg = _ref[1];

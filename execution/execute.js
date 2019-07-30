@@ -129,11 +129,11 @@ function buildResponse(exeContext, data) {
 
 
 function assertValidExecutionArguments(schema, document, rawVariableValues) {
-  !document ? (0, _invariant.default)(0, 'Must provide document') : void 0; // If the schema used for execution is invalid, throw an error.
+  document || (0, _invariant.default)(0, 'Must provide document'); // If the schema used for execution is invalid, throw an error.
 
   (0, _validate.assertValidSchema)(schema); // Variables, if provided, must be an object.
 
-  !(rawVariableValues == null || (0, _isObjectLike.default)(rawVariableValues)) ? (0, _invariant.default)(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.') : void 0;
+  rawVariableValues == null || (0, _isObjectLike.default)(rawVariableValues) || (0, _invariant.default)(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -598,7 +598,7 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
 
 
 function completeListValue(exeContext, returnType, fieldNodes, info, path, result) {
-  !(0, _iterall.isCollection)(result) ? (0, _invariant.default)(0, "Expected Iterable, but did not find one for field ".concat(info.parentType.name, ".").concat(info.fieldName, ".")) : void 0; // This is specified as a simple map, however we're optimizing the path
+  (0, _iterall.isCollection)(result) || (0, _invariant.default)(0, "Expected Iterable, but did not find one for field ".concat(info.parentType.name, ".").concat(info.fieldName, ".")); // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
 
   var itemType = returnType.ofType;

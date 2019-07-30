@@ -834,7 +834,7 @@ function typeKindName(type) {
 
 function stringifyValue(value, type) {
   var ast = (0, _astFromValue.astFromValue)(value, type);
-  !(ast != null) ? (0, _invariant.default)(0) : void 0;
+  ast != null || (0, _invariant.default)(0);
   return (0, _printer.print)(ast);
 }
 

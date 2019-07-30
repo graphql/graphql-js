@@ -40,7 +40,7 @@ import { ASTDefinitionBuilder } from './buildASTSchema';
  */
 export function extendSchema(schema, documentAST, options) {
   assertSchema(schema);
-  !(documentAST && documentAST.kind === Kind.DOCUMENT) ? invariant(0, 'Must provide valid Document AST') : void 0;
+  documentAST && documentAST.kind === Kind.DOCUMENT || invariant(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     assertValidSDLExtension(documentAST, schema);
@@ -101,7 +101,7 @@ export function extendSchema(schema, documentAST, options) {
   var schemaConfig = schema.toConfig();
   var astBuilder = new ASTDefinitionBuilder(options, function (typeName) {
     var type = typeMap[typeName];
-    !type ? invariant(0, "Unknown type: \"".concat(typeName, "\".")) : void 0;
+    type || invariant(0, "Unknown type: \"".concat(typeName, "\"."));
     return type;
   });
   var typeMap = keyValMap(typeDefs, function (node) {
@@ -239,7 +239,7 @@ export function extendSchema(schema, documentAST, options) {
 
   function getMergedDirectives() {
     var existingDirectives = schema.getDirectives().map(extendDirective);
-    !existingDirectives ? invariant(0, 'schema must have default directives') : void 0;
+    existingDirectives || invariant(0, 'schema must have default directives');
     return existingDirectives.concat(directiveDefs.map(function (node) {
       return astBuilder.buildDirective(node);
     }));

@@ -35,7 +35,7 @@ function isSchema(schema) {
 }
 
 function assertSchema(schema) {
-  !isSchema(schema) ? (0, _invariant.default)(0, "Expected ".concat((0, _inspect.default)(schema), " to be a GraphQL schema.")) : void 0;
+  isSchema(schema) || (0, _invariant.default)(0, "Expected ".concat((0, _inspect.default)(schema), " to be a GraphQL schema."));
   return schema;
 }
 /**
@@ -117,10 +117,10 @@ function () {
       this.__validationErrors = undefined; // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
 
-      !(0, _isObjectLike.default)(config) ? (0, _invariant.default)(0, 'Must provide configuration object.') : void 0;
-      !(!config.types || Array.isArray(config.types)) ? (0, _invariant.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), ".")) : void 0;
-      !(!config.directives || Array.isArray(config.directives)) ? (0, _invariant.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), ".")) : void 0;
-      !(!config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames)) ? (0, _invariant.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.allowedLegacyNames), ".")) : void 0;
+      (0, _isObjectLike.default)(config) || (0, _invariant.default)(0, 'Must provide configuration object.');
+      !config.types || Array.isArray(config.types) || (0, _invariant.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), "."));
+      !config.directives || Array.isArray(config.directives) || (0, _invariant.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), "."));
+      !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || (0, _invariant.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.allowedLegacyNames), "."));
     }
 
     this.__allowedLegacyNames = config.allowedLegacyNames || [];
@@ -290,7 +290,7 @@ function typeMapReducer(map, type) {
   }
 
   if (map[type.name]) {
-    !(map[type.name] === type) ? (0, _invariant.default)(0, 'Schema must contain uniquely named types but contains multiple ' + "types named \"".concat(type.name, "\".")) : void 0;
+    map[type.name] === type || (0, _invariant.default)(0, 'Schema must contain uniquely named types but contains multiple ' + "types named \"".concat(type.name, "\"."));
     return map;
   }
 

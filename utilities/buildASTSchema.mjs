@@ -34,7 +34,7 @@ import { valueFromAST } from './valueFromAST';
  *
  */
 export function buildASTSchema(documentAST, options) {
-  !(documentAST && documentAST.kind === Kind.DOCUMENT) ? invariant(0, 'Must provide valid Document AST') : void 0;
+  documentAST && documentAST.kind === Kind.DOCUMENT || invariant(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     assertValidSDL(documentAST);
@@ -76,7 +76,7 @@ export function buildASTSchema(documentAST, options) {
 
   var astBuilder = new ASTDefinitionBuilder(options, function (typeName) {
     var type = typeMap[typeName];
-    !type ? invariant(0, "Type \"".concat(typeName, "\" not found in document.")) : void 0;
+    type || invariant(0, "Type \"".concat(typeName, "\" not found in document."));
     return type;
   });
   var typeMap = keyByNameNode(typeDefs, function (node) {

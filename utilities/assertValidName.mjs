@@ -19,7 +19,7 @@ export function assertValidName(name) {
  */
 
 export function isValidNameError(name, node) {
-  !(typeof name === 'string') ? invariant(0, 'Expected string') : void 0;
+  typeof name === 'string' || invariant(0, 'Expected string');
 
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {
     return new GraphQLError("Name \"".concat(name, "\" must not begin with \"__\", which is reserved by GraphQL introspection."), node);

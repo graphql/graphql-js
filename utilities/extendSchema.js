@@ -63,7 +63,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 function extendSchema(schema, documentAST, options) {
   (0, _schema.assertSchema)(schema);
-  !(documentAST && documentAST.kind === _kinds.Kind.DOCUMENT) ? (0, _invariant.default)(0, 'Must provide valid Document AST') : void 0;
+  documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _invariant.default)(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
     (0, _validate.assertValidSDLExtension)(documentAST, schema);
@@ -124,7 +124,7 @@ function extendSchema(schema, documentAST, options) {
   var schemaConfig = schema.toConfig();
   var astBuilder = new _buildASTSchema.ASTDefinitionBuilder(options, function (typeName) {
     var type = typeMap[typeName];
-    !type ? (0, _invariant.default)(0, "Unknown type: \"".concat(typeName, "\".")) : void 0;
+    type || (0, _invariant.default)(0, "Unknown type: \"".concat(typeName, "\"."));
     return type;
   });
   var typeMap = (0, _keyValMap.default)(typeDefs, function (node) {
@@ -262,7 +262,7 @@ function extendSchema(schema, documentAST, options) {
 
   function getMergedDirectives() {
     var existingDirectives = schema.getDirectives().map(extendDirective);
-    !existingDirectives ? (0, _invariant.default)(0, 'schema must have default directives') : void 0;
+    existingDirectives || (0, _invariant.default)(0, 'schema must have default directives');
     return existingDirectives.concat(directiveDefs.map(function (node) {
       return astBuilder.buildDirective(node);
     }));

@@ -23,7 +23,7 @@ export function isType(type) {
   return isScalarType(type) || isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type) || isInputObjectType(type) || isListType(type) || isNonNullType(type);
 }
 export function assertType(type) {
-  !isType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL type.")) : void 0;
+  isType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL type."));
   return type;
 }
 /**
@@ -35,7 +35,7 @@ export function isScalarType(type) {
   return instanceOf(type, GraphQLScalarType);
 }
 export function assertScalarType(type) {
-  !isScalarType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Scalar type.")) : void 0;
+  isScalarType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Scalar type."));
   return type;
 }
 // eslint-disable-next-line no-redeclare
@@ -43,7 +43,7 @@ export function isObjectType(type) {
   return instanceOf(type, GraphQLObjectType);
 }
 export function assertObjectType(type) {
-  !isObjectType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Object type.")) : void 0;
+  isObjectType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Object type."));
   return type;
 }
 // eslint-disable-next-line no-redeclare
@@ -51,7 +51,7 @@ export function isInterfaceType(type) {
   return instanceOf(type, GraphQLInterfaceType);
 }
 export function assertInterfaceType(type) {
-  !isInterfaceType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Interface type.")) : void 0;
+  isInterfaceType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Interface type."));
   return type;
 }
 // eslint-disable-next-line no-redeclare
@@ -59,7 +59,7 @@ export function isUnionType(type) {
   return instanceOf(type, GraphQLUnionType);
 }
 export function assertUnionType(type) {
-  !isUnionType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Union type.")) : void 0;
+  isUnionType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Union type."));
   return type;
 }
 // eslint-disable-next-line no-redeclare
@@ -67,7 +67,7 @@ export function isEnumType(type) {
   return instanceOf(type, GraphQLEnumType);
 }
 export function assertEnumType(type) {
-  !isEnumType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Enum type.")) : void 0;
+  isEnumType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Enum type."));
   return type;
 }
 // eslint-disable-next-line no-redeclare
@@ -75,7 +75,7 @@ export function isInputObjectType(type) {
   return instanceOf(type, GraphQLInputObjectType);
 }
 export function assertInputObjectType(type) {
-  !isInputObjectType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Input Object type.")) : void 0;
+  isInputObjectType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Input Object type."));
   return type;
 }
 // eslint-disable-next-line no-redeclare
@@ -83,7 +83,7 @@ export function isListType(type) {
   return instanceOf(type, GraphQLList);
 }
 export function assertListType(type) {
-  !isListType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL List type.")) : void 0;
+  isListType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL List type."));
   return type;
 }
 // eslint-disable-next-line no-redeclare
@@ -91,7 +91,7 @@ export function isNonNullType(type) {
   return instanceOf(type, GraphQLNonNull);
 }
 export function assertNonNullType(type) {
-  !isNonNullType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Non-Null type.")) : void 0;
+  isNonNullType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL Non-Null type."));
   return type;
 }
 /**
@@ -102,7 +102,7 @@ export function isInputType(type) {
   return isScalarType(type) || isEnumType(type) || isInputObjectType(type) || isWrappingType(type) && isInputType(type.ofType);
 }
 export function assertInputType(type) {
-  !isInputType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL input type.")) : void 0;
+  isInputType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL input type."));
   return type;
 }
 /**
@@ -113,7 +113,7 @@ export function isOutputType(type) {
   return isScalarType(type) || isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type) || isWrappingType(type) && isOutputType(type.ofType);
 }
 export function assertOutputType(type) {
-  !isOutputType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL output type.")) : void 0;
+  isOutputType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL output type."));
   return type;
 }
 /**
@@ -124,7 +124,7 @@ export function isLeafType(type) {
   return isScalarType(type) || isEnumType(type);
 }
 export function assertLeafType(type) {
-  !isLeafType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL leaf type.")) : void 0;
+  isLeafType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL leaf type."));
   return type;
 }
 /**
@@ -135,7 +135,7 @@ export function isCompositeType(type) {
   return isObjectType(type) || isInterfaceType(type) || isUnionType(type);
 }
 export function assertCompositeType(type) {
-  !isCompositeType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL composite type.")) : void 0;
+  isCompositeType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL composite type."));
   return type;
 }
 /**
@@ -146,7 +146,7 @@ export function isAbstractType(type) {
   return isInterfaceType(type) || isUnionType(type);
 }
 export function assertAbstractType(type) {
-  !isAbstractType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL abstract type.")) : void 0;
+  isAbstractType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL abstract type."));
   return type;
 }
 /**
@@ -229,7 +229,7 @@ export function isWrappingType(type) {
   return isListType(type) || isNonNullType(type);
 }
 export function assertWrappingType(type) {
-  !isWrappingType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL wrapping type.")) : void 0;
+  isWrappingType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL wrapping type."));
   return type;
 }
 /**
@@ -240,7 +240,7 @@ export function isNullableType(type) {
   return isType(type) && !isNonNullType(type);
 }
 export function assertNullableType(type) {
-  !isNullableType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL nullable type.")) : void 0;
+  isNullableType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL nullable type."));
   return type;
 }
 /* eslint-disable no-redeclare */
@@ -259,7 +259,7 @@ export function isNamedType(type) {
   return isScalarType(type) || isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type) || isInputObjectType(type);
 }
 export function assertNamedType(type) {
-  !isNamedType(type) ? invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL named type.")) : void 0;
+  isNamedType(type) || invariant(0, "Expected ".concat(inspect(type), " to be a GraphQL named type."));
   return type;
 }
 /* eslint-disable no-redeclare */
@@ -331,11 +331,11 @@ function () {
 
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
-    !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
-    !(config.serialize == null || typeof config.serialize === 'function') ? invariant(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar is also used as an input type, ensure \"parseValue\" and \"parseLiteral\" functions are also provided.")) : void 0;
+    typeof config.name === 'string' || invariant(0, 'Must provide name.');
+    config.serialize == null || typeof config.serialize === 'function' || invariant(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar is also used as an input type, ensure \"parseValue\" and \"parseLiteral\" functions are also provided."));
 
     if (config.parseLiteral) {
-      !(typeof config.parseValue === 'function' && typeof config.parseLiteral === 'function') ? invariant(0, "".concat(this.name, " must provide both \"parseValue\" and \"parseLiteral\" functions.")) : void 0;
+      typeof config.parseValue === 'function' && typeof config.parseLiteral === 'function' || invariant(0, "".concat(this.name, " must provide both \"parseValue\" and \"parseLiteral\" functions."));
     }
   }
 
@@ -411,8 +411,8 @@ function () {
     this.isTypeOf = config.isTypeOf;
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
-    !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
-    !(config.isTypeOf == null || typeof config.isTypeOf === 'function') ? invariant(0, "".concat(this.name, " must provide \"isTypeOf\" as a function, ") + "but got: ".concat(inspect(config.isTypeOf), ".")) : void 0;
+    typeof config.name === 'string' || invariant(0, 'Must provide name.');
+    config.isTypeOf == null || typeof config.isTypeOf === 'function' || invariant(0, "".concat(this.name, " must provide \"isTypeOf\" as a function, ") + "but got: ".concat(inspect(config.isTypeOf), "."));
   }
 
   var _proto2 = GraphQLObjectType.prototype;
@@ -457,19 +457,19 @@ defineToJSON(GraphQLObjectType);
 
 function defineInterfaces(config) {
   var interfaces = resolveThunk(config.interfaces) || [];
-  !Array.isArray(interfaces) ? invariant(0, "".concat(config.name, " interfaces must be an Array or a function which returns an Array.")) : void 0;
+  Array.isArray(interfaces) || invariant(0, "".concat(config.name, " interfaces must be an Array or a function which returns an Array."));
   return interfaces;
 }
 
 function defineFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
-  !isPlainObj(fieldMap) ? invariant(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object.")) : void 0;
+  isPlainObj(fieldMap) || invariant(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return mapValue(fieldMap, function (fieldConfig, fieldName) {
-    !isPlainObj(fieldConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object")) : void 0;
-    !!('isDeprecated' in fieldConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" instead of \"isDeprecated\".")) : void 0;
-    !(fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function') ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat(inspect(fieldConfig.resolve), ".")) : void 0;
+    isPlainObj(fieldConfig) || invariant(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object"));
+    !('isDeprecated' in fieldConfig) || invariant(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
+    fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function' || invariant(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat(inspect(fieldConfig.resolve), "."));
     var argsConfig = fieldConfig.args || {};
-    !isPlainObj(argsConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument names as keys.")) : void 0;
+    isPlainObj(argsConfig) || invariant(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument names as keys."));
     var args = objectEntries(argsConfig).map(function (_ref) {
       var argName = _ref[0],
           arg = _ref[1];
@@ -551,8 +551,8 @@ function () {
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.resolveType = config.resolveType;
     this._fields = defineFieldMap.bind(undefined, config);
-    !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
-    !(config.resolveType == null || typeof config.resolveType === 'function') ? invariant(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat(inspect(config.resolveType), ".")) : void 0;
+    typeof config.name === 'string' || invariant(0, 'Must provide name.');
+    config.resolveType == null || typeof config.resolveType === 'function' || invariant(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat(inspect(config.resolveType), "."));
   }
 
   var _proto3 = GraphQLInterfaceType.prototype;
@@ -619,8 +619,8 @@ function () {
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.resolveType = config.resolveType;
     this._types = defineTypes.bind(undefined, config);
-    !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
-    !(config.resolveType == null || typeof config.resolveType === 'function') ? invariant(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat(inspect(config.resolveType), ".")) : void 0;
+    typeof config.name === 'string' || invariant(0, 'Must provide name.');
+    config.resolveType == null || typeof config.resolveType === 'function' || invariant(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat(inspect(config.resolveType), "."));
   }
 
   var _proto4 = GraphQLUnionType.prototype;
@@ -656,7 +656,7 @@ defineToJSON(GraphQLUnionType);
 
 function defineTypes(config) {
   var types = resolveThunk(config.types) || [];
-  !Array.isArray(types) ? invariant(0, "Must provide Array of types or a function which returns such an array for Union ".concat(config.name, ".")) : void 0;
+  Array.isArray(types) || invariant(0, "Must provide Array of types or a function which returns such an array for Union ".concat(config.name, "."));
   return types;
 }
 
@@ -698,7 +698,7 @@ function () {
     this._nameLookup = keyMap(this._values, function (value) {
       return value.name;
     });
-    !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
+    typeof config.name === 'string' || invariant(0, 'Must provide name.');
   }
 
   var _proto5 = GraphQLEnumType.prototype;
@@ -775,12 +775,12 @@ defineToStringTag(GraphQLEnumType);
 defineToJSON(GraphQLEnumType);
 
 function defineEnumValues(typeName, valueMap) {
-  !isPlainObj(valueMap) ? invariant(0, "".concat(typeName, " values must be an object with value names as keys.")) : void 0;
+  isPlainObj(valueMap) || invariant(0, "".concat(typeName, " values must be an object with value names as keys."));
   return objectEntries(valueMap).map(function (_ref2) {
     var valueName = _ref2[0],
         value = _ref2[1];
-    !isPlainObj(value) ? invariant(0, "".concat(typeName, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat(inspect(value), ".")) : void 0;
-    !!('isDeprecated' in value) ? invariant(0, "".concat(typeName, ".").concat(valueName, " should provide \"deprecationReason\" instead of \"isDeprecated\".")) : void 0;
+    isPlainObj(value) || invariant(0, "".concat(typeName, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat(inspect(value), "."));
+    !('isDeprecated' in value) || invariant(0, "".concat(typeName, ".").concat(valueName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
     return {
       name: valueName,
       description: value.description,
@@ -821,7 +821,7 @@ function () {
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._fields = defineInputFieldMap.bind(undefined, config);
-    !(typeof config.name === 'string') ? invariant(0, 'Must provide name.') : void 0;
+    typeof config.name === 'string' || invariant(0, 'Must provide name.');
   }
 
   var _proto6 = GraphQLInputObjectType.prototype;
@@ -864,9 +864,9 @@ defineToJSON(GraphQLInputObjectType);
 
 function defineInputFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
-  !isPlainObj(fieldMap) ? invariant(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object.")) : void 0;
+  isPlainObj(fieldMap) || invariant(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return mapValue(fieldMap, function (fieldConfig, fieldName) {
-    !!('resolve' in fieldConfig) ? invariant(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but Input Types cannot define resolvers.")) : void 0;
+    !('resolve' in fieldConfig) || invariant(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but Input Types cannot define resolvers."));
     return _objectSpread({}, fieldConfig, {
       name: fieldName
     });

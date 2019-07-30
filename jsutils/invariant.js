@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = invariant;
 
+/* istanbul ignore file */
 function invariant(condition, message) {
   var booleanCondition = Boolean(condition);
-  /* istanbul ignore else */
 
   if (!booleanCondition) {
-    throw new Error(message);
+    throw new Error(message || 'Unexpected invariant triggered');
   }
 }

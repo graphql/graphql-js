@@ -5,7 +5,7 @@ import invariant from '../jsutils/invariant';
  * Response Format, Errors section of the GraphQL Specification.
  */
 export function formatError(error) {
-  !error ? invariant(0, 'Received null or undefined error.') : void 0;
+  error || invariant(0, 'Received null or undefined error.');
   var message = error.message || 'An unknown error occurred.';
   var locations = error.locations;
   var path = error.path;
