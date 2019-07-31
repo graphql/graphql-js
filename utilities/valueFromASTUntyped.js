@@ -7,6 +7,8 @@ exports.valueFromASTUntyped = valueFromASTUntyped;
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
@@ -66,8 +68,7 @@ function valueFromASTUntyped(valueNode, variables) {
       }
   } // Not reachable. All possible value nodes have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected value node: \"".concat((0, _inspect.default)(valueNode), "\"."));
+  (0, _invariant.default)(false, 'Unexpected value node: ' + (0, _inspect.default)(valueNode));
 }

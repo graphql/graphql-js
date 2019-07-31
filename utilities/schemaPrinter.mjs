@@ -1,6 +1,7 @@
 import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
 import { isIntrospectionType } from '../type/introspection';
@@ -115,14 +116,15 @@ export function printType(type, options) {
     return printUnion(type, options);
   } else if (isEnumType(type)) {
     return printEnum(type, options);
-  } else if (isInputObjectType(type)) {
-    return printInputObject(type, options);
-  } // Not reachable. All possible types have been considered.
+  } else
+    /* istanbul ignore else */
+    if (isInputObjectType(type)) {
+      return printInputObject(type, options);
+    } // Not reachable. All possible types have been considered.
+
 
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected type: \"".concat(inspect(type), "\"."));
+  invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
 function printScalar(type, options) {

@@ -1,6 +1,7 @@
 import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 import { Kind } from '../language/kinds';
@@ -34,9 +35,11 @@ import { valueFromAST } from './valueFromAST';
  *
  */
 export function buildASTSchema(documentAST, options) {
+  /* istanbul ignore next */
   documentAST && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+    /* istanbul ignore next */
     assertValidSDL(documentAST);
   }
 
@@ -283,10 +286,9 @@ function () {
         return this._makeInputObjectDef(astNode);
     } // Not reachable. All possible type definition nodes have been considered.
 
+
     /* istanbul ignore next */
-
-
-    throw new Error("Unexpected type definition node: \"".concat(inspect(astNode), "\"."));
+    invariant(false, 'Unexpected type definition node: ' + inspect(astNode));
   };
 
   _proto._makeTypeDef = function _makeTypeDef(astNode) {

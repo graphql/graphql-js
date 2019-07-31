@@ -7,6 +7,8 @@ exports.typeFromAST = typeFromAST;
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _kinds = require("../language/kinds");
 
 var _definition = require("../type/definition");
@@ -27,12 +29,12 @@ function typeFromAST(schema, typeNode) {
     return innerType && (0, _definition.GraphQLNonNull)(innerType);
   }
 
+  /* istanbul ignore else */
   if (typeNode.kind === _kinds.Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);
   } // Not reachable. All possible type nodes have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected type node: \"".concat((0, _inspect.default)(typeNode), "\"."));
+  (0, _invariant.default)(false, 'Unexpected type node: ' + (0, _inspect.default)(typeNode));
 }

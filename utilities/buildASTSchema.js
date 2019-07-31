@@ -14,6 +14,8 @@ var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _devAssert = _interopRequireDefault(require("../jsutils/devAssert"));
 
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
@@ -63,9 +65,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function buildASTSchema(documentAST, options) {
+  /* istanbul ignore next */
   documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
+    /* istanbul ignore next */
     (0, _validate.assertValidSDL)(documentAST);
   }
 
@@ -314,10 +318,9 @@ function () {
         return this._makeInputObjectDef(astNode);
     } // Not reachable. All possible type definition nodes have been considered.
 
+
     /* istanbul ignore next */
-
-
-    throw new Error("Unexpected type definition node: \"".concat((0, _inspect.default)(astNode), "\"."));
+    (0, _invariant.default)(false, 'Unexpected type definition node: ' + (0, _inspect.default)(astNode));
   };
 
   _proto._makeTypeDef = function _makeTypeDef(astNode) {

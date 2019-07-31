@@ -37,9 +37,15 @@ function () {
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
     this.astNode = config.astNode;
+
+    /* istanbul ignore next */
     config.name || devAssert(0, 'Directive must be named.');
+
+    /* istanbul ignore next */
     Array.isArray(config.locations) || devAssert(0, "@".concat(config.name, " locations must be an Array."));
     var args = config.args || {};
+
+    /* istanbul ignore next */
     isObjectLike(args) && !Array.isArray(args) || devAssert(0, "@".concat(config.name, " args must be an object with argument names as keys."));
     this.args = objectEntries(args).map(function (_ref) {
       var argName = _ref[0],
@@ -74,7 +80,10 @@ function () {
   return GraphQLDirective;
 }(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
+/* istanbul ignore next */
 defineToStringTag(GraphQLDirective);
+
+/* istanbul ignore next */
 defineToJSON(GraphQLDirective);
 
 /**

@@ -1,4 +1,5 @@
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import { Kind } from '../language/kinds';
 import { GraphQLList, GraphQLNonNull } from '../type/definition';
 /**
@@ -25,12 +26,12 @@ export function typeFromAST(schema, typeNode) {
     return innerType && GraphQLNonNull(innerType);
   }
 
+  /* istanbul ignore else */
   if (typeNode.kind === Kind.NAMED_TYPE) {
     return schema.getType(typeNode.name.value);
   } // Not reachable. All possible type nodes have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected type node: \"".concat(inspect(typeNode), "\"."));
+  invariant(false, 'Unexpected type node: ' + inspect(typeNode));
 }

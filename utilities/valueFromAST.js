@@ -11,6 +11,8 @@ var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
 
 var _kinds = require("../language/kinds");
@@ -205,6 +207,7 @@ function valueFromAST(valueNode, type, variables) {
     return enumValue.value;
   }
 
+  /* istanbul ignore else */
   if ((0, _definition.isScalarType)(type)) {
     // Scalars fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
@@ -224,10 +227,9 @@ function valueFromAST(valueNode, type, variables) {
     return result;
   } // Not reachable. All possible input types have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected input type: \"".concat((0, _inspect.default)(type), "\"."));
+  (0, _invariant.default)(false, 'Unexpected input type: ' + (0, _inspect.default)(type));
 } // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 

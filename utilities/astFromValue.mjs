@@ -1,6 +1,7 @@
 import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import isObjectLike from '../jsutils/isObjectLike';
@@ -55,6 +56,8 @@ export function astFromValue(value, type) {
 
     if (isCollection(value)) {
       var valuesNodes = [];
+
+      /* istanbul ignore next */
       forEach(value, function (item) {
         var itemNode = astFromValue(item, itemType);
 
@@ -120,6 +123,7 @@ export function astFromValue(value, type) {
     };
   }
 
+  /* istanbul ignore else */
   if (isLeafType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
@@ -175,10 +179,9 @@ export function astFromValue(value, type) {
     throw new TypeError("Cannot convert value to AST: ".concat(inspect(serialized)));
   } // Not reachable. All possible input types have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected input type: \"".concat(inspect(type), "\"."));
+  invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 /**
  * IntValue:

@@ -11,6 +11,8 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _isNullish = _interopRequireDefault(require("../jsutils/isNullish"));
 
 var _isInvalid = _interopRequireDefault(require("../jsutils/isInvalid"));
@@ -72,6 +74,8 @@ function astFromValue(value, type) {
 
     if ((0, _iterall.isCollection)(value)) {
       var valuesNodes = [];
+
+      /* istanbul ignore next */
       (0, _iterall.forEach)(value, function (item) {
         var itemNode = astFromValue(item, itemType);
 
@@ -137,6 +141,7 @@ function astFromValue(value, type) {
     };
   }
 
+  /* istanbul ignore else */
   if ((0, _definition.isLeafType)(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
@@ -192,10 +197,9 @@ function astFromValue(value, type) {
     throw new TypeError("Cannot convert value to AST: ".concat((0, _inspect.default)(serialized)));
   } // Not reachable. All possible input types have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected input type: \"".concat((0, _inspect.default)(type), "\"."));
+  (0, _invariant.default)(false, 'Unexpected input type: ' + (0, _inspect.default)(type));
 }
 /**
  * IntValue:

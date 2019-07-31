@@ -10,6 +10,8 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _printer = require("../language/printer");
 
 var _directiveLocation = require("../language/directiveLocation");
@@ -210,14 +212,15 @@ var __Type = new _definition.GraphQLObjectType({
             return TypeKind.INPUT_OBJECT;
           } else if ((0, _definition.isListType)(type)) {
             return TypeKind.LIST;
-          } else if ((0, _definition.isNonNullType)(type)) {
-            return TypeKind.NON_NULL;
-          } // Not reachable. All possible types have been considered.
+          } else
+            /* istanbul ignore else */
+            if ((0, _definition.isNonNullType)(type)) {
+              return TypeKind.NON_NULL;
+            } // Not reachable. All possible types have been considered.
+
 
           /* istanbul ignore next */
-
-
-          throw new Error("Unexpected type: \"".concat((0, _inspect.default)(type), "\"."));
+          (0, _invariant.default)(false, "Unexpected type: \"".concat((0, _inspect.default)(type), "\"."));
         }
       },
       name: {

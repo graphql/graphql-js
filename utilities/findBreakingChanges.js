@@ -822,14 +822,14 @@ function typeKindName(type) {
     return 'an Enum type';
   }
 
+  /* istanbul ignore else */
   if ((0, _definition.isInputObjectType)(type)) {
     return 'an Input type';
   } // Not reachable. All possible named types have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new TypeError("Unexpected type: ".concat((0, _inspect.default)(type), "."));
+  (0, _invariant.default)(false, 'Unexpected type: ' + (0, _inspect.default)(type));
 }
 
 function stringifyValue(value, type) {

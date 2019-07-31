@@ -3,6 +3,7 @@
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 
 import { print } from '../language/printer';
 import { DirectiveLocation } from '../language/directiveLocation';
@@ -208,8 +209,7 @@ export const __Type = new GraphQLObjectType({
           }
 
           // Not reachable. All possible types have been considered.
-          /* istanbul ignore next */
-          throw new Error(`Unexpected type: "${inspect((type: empty))}".`);
+          invariant(false, `Unexpected type: "${inspect((type: empty))}".`);
         },
       },
       name: {

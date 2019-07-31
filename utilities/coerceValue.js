@@ -11,6 +11,8 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _didYouMean = _interopRequireDefault(require("../jsutils/didYouMean"));
 
 var _isObjectLike = _interopRequireDefault(require("../jsutils/isObjectLike"));
@@ -85,6 +87,8 @@ function coerceValue(value, type, blameNode, path) {
     if ((0, _iterall.isCollection)(value)) {
       var errors;
       var coercedValue = [];
+
+      /* istanbul ignore next */
       (0, _iterall.forEach)(value, function (itemValue, index) {
         var coercedItem = coerceValue(itemValue, itemType, blameNode, (0, _Path.addPath)(path, index));
 
@@ -102,6 +106,7 @@ function coerceValue(value, type, blameNode, path) {
     return coercedItem.errors ? coercedItem : ofValue([coercedItem.value]);
   }
 
+  /* istanbul ignore else */
   if ((0, _definition.isInputObjectType)(type)) {
     if (!(0, _isObjectLike.default)(value)) {
       return ofErrors([coercionError("Expected type ".concat(type.name, " to be an object"), blameNode, path)]);
@@ -167,10 +172,9 @@ function coerceValue(value, type, blameNode, path) {
     return _errors ? ofErrors(_errors) : ofValue(_coercedValue);
   } // Not reachable. All possible input types have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected input type: \"".concat((0, _inspect.default)(type), "\"."));
+  (0, _invariant.default)(false, 'Unexpected input type: ' + (0, _inspect.default)(type));
 }
 
 function ofValue(value) {

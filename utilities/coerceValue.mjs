@@ -1,6 +1,7 @@
 import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import suggestionList from '../jsutils/suggestionList';
@@ -68,6 +69,8 @@ export function coerceValue(value, type, blameNode, path) {
     if (isCollection(value)) {
       var errors;
       var coercedValue = [];
+
+      /* istanbul ignore next */
       forEach(value, function (itemValue, index) {
         var coercedItem = coerceValue(itemValue, itemType, blameNode, addPath(path, index));
 
@@ -85,6 +88,7 @@ export function coerceValue(value, type, blameNode, path) {
     return coercedItem.errors ? coercedItem : ofValue([coercedItem.value]);
   }
 
+  /* istanbul ignore else */
   if (isInputObjectType(type)) {
     if (!isObjectLike(value)) {
       return ofErrors([coercionError("Expected type ".concat(type.name, " to be an object"), blameNode, path)]);
@@ -150,10 +154,9 @@ export function coerceValue(value, type, blameNode, path) {
     return _errors ? ofErrors(_errors) : ofValue(_coercedValue);
   } // Not reachable. All possible input types have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected input type: \"".concat(inspect(type), "\"."));
+  invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 
 function ofValue(value) {

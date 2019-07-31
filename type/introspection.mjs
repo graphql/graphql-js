@@ -1,5 +1,6 @@
 import objectValues from '../polyfills/objectValues';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import { print } from '../language/printer';
 import { DirectiveLocation } from '../language/directiveLocation';
 import { astFromValue } from '../utilities/astFromValue';
@@ -184,14 +185,15 @@ export var __Type = new GraphQLObjectType({
             return TypeKind.INPUT_OBJECT;
           } else if (isListType(type)) {
             return TypeKind.LIST;
-          } else if (isNonNullType(type)) {
-            return TypeKind.NON_NULL;
-          } // Not reachable. All possible types have been considered.
+          } else
+            /* istanbul ignore else */
+            if (isNonNullType(type)) {
+              return TypeKind.NON_NULL;
+            } // Not reachable. All possible types have been considered.
+
 
           /* istanbul ignore next */
-
-
-          throw new Error("Unexpected type: \"".concat(inspect(type), "\"."));
+          invariant(false, "Unexpected type: \"".concat(inspect(type), "\"."));
         }
       },
       name: {

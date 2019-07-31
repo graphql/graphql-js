@@ -41,8 +41,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function validate(schema, documentAST) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _specifiedRules.specifiedRules;
   var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new _TypeInfo.TypeInfo(schema);
+
+  /* istanbul ignore next */
   documentAST || (0, _devAssert.default)(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
 
+  /* istanbul ignore next */
   (0, _validate.assertValidSchema)(schema);
   var context = new _ValidationContext.ValidationContext(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
@@ -51,6 +54,7 @@ function validate(schema, documentAST) {
     return rule(context);
   })); // Visit the whole document with each instance of all provided rules.
 
+  /* istanbul ignore next */
   (0, _visitor.visit)(documentAST, (0, _visitor.visitWithTypeInfo)(typeInfo, visitor));
   return context.getErrors();
 } // @internal
@@ -62,6 +66,8 @@ function validateSDL(documentAST, schemaToExtend) {
   var visitors = rules.map(function (rule) {
     return rule(context);
   });
+
+  /* istanbul ignore next */
   (0, _visitor.visit)(documentAST, (0, _visitor.visitInParallel)(visitors));
   return context.getErrors();
 }

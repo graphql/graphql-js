@@ -24,6 +24,7 @@ import { valueFromAST } from './valueFromAST';
  * the "errors" field of a server response before calling this function.
  */
 export function buildClientSchema(introspection, options) {
+  /* istanbul ignore next */
   isObjectLike(introspection) && isObjectLike(introspection.__schema) || devAssert(0, 'Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ' + inspect(introspection)); // Get the schema from the introspection result.
 
   var schemaIntrospection = introspection.__schema; // Iterate through all types, getting the type definition for each.

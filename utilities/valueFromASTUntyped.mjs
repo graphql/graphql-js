@@ -1,4 +1,5 @@
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 import isInvalid from '../jsutils/isInvalid';
 import { Kind } from '../language/kinds';
@@ -54,8 +55,7 @@ export function valueFromASTUntyped(valueNode, variables) {
       }
   } // Not reachable. All possible value nodes have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected value node: \"".concat(inspect(valueNode), "\"."));
+  invariant(false, 'Unexpected value node: ' + inspect(valueNode));
 }

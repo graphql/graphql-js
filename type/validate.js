@@ -41,6 +41,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function validateSchema(schema) {
   // First check to ensure the provided value is in fact a GraphQLSchema.
+
+  /* istanbul ignore next */
   (0, _schema.assertSchema)(schema); // If this Schema has already been validated, return the previous results.
 
   if (schema.__validationErrors) {
@@ -49,8 +51,14 @@ function validateSchema(schema) {
 
 
   var context = new SchemaValidationContext(schema);
+
+  /* istanbul ignore next */
   validateRootTypes(context);
+
+  /* istanbul ignore next */
   validateDirectives(context);
+
+  /* istanbul ignore next */
   validateTypes(context); // Persist the results of validation before returning to ensure validation
   // does not run multiple times for this schema.
 
@@ -174,6 +182,7 @@ function validateDirectives(context) {
       } // Ensure they are named correctly.
 
 
+      /* istanbul ignore next */
       validateName(context, directive); // TODO: Ensure proper locations.
       // Ensure the arguments are valid.
 
@@ -187,6 +196,7 @@ function validateDirectives(context) {
           var arg = _step3.value;
           var argName = arg.name; // Ensure they are named correctly.
 
+          /* istanbul ignore next */
           validateName(context, arg); // Ensure they are unique per directive.
 
           if (argNames[argName]) {
@@ -277,27 +287,40 @@ function validateTypes(context) {
 
 
       if (!(0, _introspection.isIntrospectionType)(type)) {
+        /* istanbul ignore next */
         validateName(context, type);
       }
 
       if ((0, _definition.isObjectType)(type)) {
         // Ensure fields are valid
+
+        /* istanbul ignore next */
         validateFields(context, type); // Ensure objects implement the interfaces they claim to.
 
+        /* istanbul ignore next */
         validateObjectInterfaces(context, type);
       } else if ((0, _definition.isInterfaceType)(type)) {
         // Ensure fields are valid.
+
+        /* istanbul ignore next */
         validateFields(context, type);
       } else if ((0, _definition.isUnionType)(type)) {
         // Ensure Unions include valid member types.
+
+        /* istanbul ignore next */
         validateUnionMembers(context, type);
       } else if ((0, _definition.isEnumType)(type)) {
         // Ensure Enums have valid values.
+
+        /* istanbul ignore next */
         validateEnumValues(context, type);
       } else if ((0, _definition.isInputObjectType)(type)) {
         // Ensure Input Object fields are valid.
+
+        /* istanbul ignore next */
         validateInputFields(context, type); // Ensure Input Objects do not contain non-nullable circular references
 
+        /* istanbul ignore next */
         validateInputObjectCircularRefs(type);
       }
     }
@@ -332,6 +355,8 @@ function validateFields(context, type) {
     for (var _iterator5 = fields[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
       var field = _step5.value;
       // Ensure they are named correctly.
+
+      /* istanbul ignore next */
       validateName(context, field); // Ensure the type is an output type
 
       if (!(0, _definition.isOutputType)(field.type)) {
@@ -349,6 +374,7 @@ function validateFields(context, type) {
           var arg = _step6.value;
           var argName = arg.name; // Ensure they are named correctly.
 
+          /* istanbul ignore next */
           validateName(context, arg); // Ensure they are unique per field.
 
           if (argNames[argName]) {
@@ -423,6 +449,8 @@ function validateObjectInterfaces(context, object) {
       }
 
       implementedTypeNames[iface.name] = true;
+
+      /* istanbul ignore next */
       validateObjectImplementsInterface(context, object, iface);
     }
   } catch (err) {
@@ -625,6 +653,7 @@ function validateEnumValues(context, enumType) {
       var enumValue = _step12.value;
       var valueName = enumValue.name; // Ensure valid name.
 
+      /* istanbul ignore next */
       validateName(context, enumValue);
 
       if (valueName === 'true' || valueName === 'false' || valueName === 'null') {
@@ -663,6 +692,8 @@ function validateInputFields(context, inputObj) {
     for (var _iterator13 = fields[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
       var field = _step13.value;
       // Ensure they are named correctly.
+
+      /* istanbul ignore next */
       validateName(context, field); // Ensure the type is an input type
 
       if (!(0, _definition.isInputType)(field.type)) {
@@ -720,6 +751,7 @@ function createInputObjectCircularRefsValidator(context) {
           fieldPath.push(field);
 
           if (cycleIndex === undefined) {
+            /* istanbul ignore next */
             detectCycleRecursive(fieldType);
           } else {
             var cyclePath = fieldPath.slice(cycleIndex);

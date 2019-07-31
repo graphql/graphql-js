@@ -57,9 +57,15 @@ function () {
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
     this.astNode = config.astNode;
+
+    /* istanbul ignore next */
     config.name || (0, _devAssert.default)(0, 'Directive must be named.');
+
+    /* istanbul ignore next */
     Array.isArray(config.locations) || (0, _devAssert.default)(0, "@".concat(config.name, " locations must be an Array."));
     var args = config.args || {};
+
+    /* istanbul ignore next */
     (0, _isObjectLike.default)(args) && !Array.isArray(args) || (0, _devAssert.default)(0, "@".concat(config.name, " args must be an object with argument names as keys."));
     this.args = (0, _objectEntries.default)(args).map(function (_ref) {
       var argName = _ref[0],
@@ -96,7 +102,11 @@ function () {
 
 
 exports.GraphQLDirective = GraphQLDirective;
+
+/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLDirective);
+
+/* istanbul ignore next */
 (0, _defineToJSON.default)(GraphQLDirective);
 
 /**

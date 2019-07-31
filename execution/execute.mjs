@@ -1,6 +1,7 @@
 import { forEach, isCollection } from 'iterall';
 import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';
+import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
@@ -71,6 +72,7 @@ function executeImpl(args) {
       fieldResolver = args.fieldResolver,
       typeResolver = args.typeResolver; // If arguments are missing or incorrect, throw an error.
 
+  /* istanbul ignore next */
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
 
@@ -119,10 +121,13 @@ function buildResponse(exeContext, data) {
 
 
 export function assertValidExecutionArguments(schema, document, rawVariableValues) {
+  /* istanbul ignore next */
   document || devAssert(0, 'Must provide document'); // If the schema used for execution is invalid, throw an error.
 
+  /* istanbul ignore next */
   assertValidSchema(schema); // Variables, if provided, must be an object.
 
+  /* istanbul ignore next */
   rawVariableValues == null || isObjectLike(rawVariableValues) || devAssert(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
 }
 /**
@@ -314,6 +319,7 @@ export function collectFields(exeContext, runtimeType, selectionSet, fields, vis
             continue;
           }
 
+          /* istanbul ignore next */
           collectFields(exeContext, runtimeType, selection.selectionSet, fields, visitedFragmentNames);
           break;
         }
@@ -333,6 +339,7 @@ export function collectFields(exeContext, runtimeType, selectionSet, fields, vis
             continue;
           }
 
+          /* istanbul ignore next */
           collectFields(exeContext, runtimeType, fragment.selectionSet, fields, visitedFragmentNames);
           break;
         }
@@ -567,14 +574,14 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
   } // If field type is Object, execute and complete all sub-selections.
 
 
+  /* istanbul ignore else */
   if (isObjectType(returnType)) {
     return completeObjectValue(exeContext, returnType, fieldNodes, info, path, result);
   } // Not reachable. All possible output types have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Cannot complete value of unexpected output type: \"".concat(inspect(returnType), "\"."));
+  invariant(false, 'Cannot complete value of unexpected output type: ' + inspect(returnType));
 }
 /**
  * Complete a list value by completing each item in the list with the
@@ -592,6 +599,8 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
   var itemType = returnType.ofType;
   var containsPromise = false;
   var completedResults = [];
+
+  /* istanbul ignore next */
   forEach(result, function (item, index) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.

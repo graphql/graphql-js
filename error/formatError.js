@@ -14,6 +14,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Response Format, Errors section of the GraphQL Specification.
  */
 function formatError(error) {
+  /* istanbul ignore next */
   error || (0, _devAssert.default)(0, 'Received null or undefined error.');
   var message = error.message || 'An unknown error occurred.';
   var locations = error.locations;

@@ -26,6 +26,7 @@ function NoFragmentCycles(context) {
       return false;
     },
     FragmentDefinition: function FragmentDefinition(node) {
+      /* istanbul ignore next */
       detectCycleRecursive(node);
       return false;
     }
@@ -62,6 +63,7 @@ function NoFragmentCycles(context) {
           var spreadFragment = context.getFragment(spreadName);
 
           if (spreadFragment) {
+            /* istanbul ignore next */
             detectCycleRecursive(spreadFragment);
           }
         } else {

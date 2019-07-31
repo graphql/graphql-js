@@ -32,6 +32,7 @@ function assertValidName(name) {
 
 
 function isValidNameError(name, node) {
+  /* istanbul ignore next */
   typeof name === 'string' || (0, _devAssert.default)(0, 'Expected string');
 
   if (name.length > 1 && name[0] === '_' && name[1] === '_') {

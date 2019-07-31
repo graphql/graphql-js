@@ -13,6 +13,8 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _printer = require("../language/printer");
 
 var _blockString = require("../language/blockString");
@@ -136,14 +138,15 @@ function printType(type, options) {
     return printUnion(type, options);
   } else if ((0, _definition.isEnumType)(type)) {
     return printEnum(type, options);
-  } else if ((0, _definition.isInputObjectType)(type)) {
-    return printInputObject(type, options);
-  } // Not reachable. All possible types have been considered.
+  } else
+    /* istanbul ignore else */
+    if ((0, _definition.isInputObjectType)(type)) {
+      return printInputObject(type, options);
+    } // Not reachable. All possible types have been considered.
+
 
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected type: \"".concat((0, _inspect.default)(type), "\"."));
+  (0, _invariant.default)(false, 'Unexpected type: ' + (0, _inspect.default)(type));
 }
 
 function printScalar(type, options) {

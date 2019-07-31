@@ -9,6 +9,8 @@ var _objectValues = _interopRequireDefault(require("../polyfills/objectValues"))
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _invariant = _interopRequireDefault(require("../jsutils/invariant"));
+
 var _keyValMap = _interopRequireDefault(require("../jsutils/keyValMap"));
 
 var _schema = require("../type/schema");
@@ -23,7 +25,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { /* istanbul ignore next */ _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -135,20 +137,21 @@ function lexicographicSortSchema(schema) {
       return new _definition.GraphQLEnumType(_objectSpread({}, _config3, {
         values: sortObjMap(_config3.values)
       }));
-    } else if ((0, _definition.isInputObjectType)(type)) {
-      var _config4 = type.toConfig();
+    } else
+      /* istanbul ignore else */
+      if ((0, _definition.isInputObjectType)(type)) {
+        var _config4 = type.toConfig();
 
-      return new _definition.GraphQLInputObjectType(_objectSpread({}, _config4, {
-        fields: function fields() {
-          return sortInputFields(_config4.fields);
-        }
-      }));
-    } // Not reachable. All possible types have been considered.
+        return new _definition.GraphQLInputObjectType(_objectSpread({}, _config4, {
+          fields: function fields() {
+            return sortInputFields(_config4.fields);
+          }
+        }));
+      } // Not reachable. All possible types have been considered.
+
 
     /* istanbul ignore next */
-
-
-    throw new Error("Unexpected type: \"".concat((0, _inspect.default)(type), "\"."));
+    (0, _invariant.default)(false, 'Unexpected type: ' + (0, _inspect.default)(type));
   }
 }
 

@@ -1,6 +1,7 @@
 // @flow strict
 
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 
 import { Kind } from '../language/kinds';
 import {
@@ -52,6 +53,5 @@ export function typeFromAST(schema, typeNode) {
   }
 
   // Not reachable. All possible type nodes have been considered.
-  /* istanbul ignore next */
-  throw new Error(`Unexpected type node: "${inspect((typeNode: empty))}".`);
+  invariant(false, 'Unexpected type node: ' + inspect((typeNode: empty)));
 }

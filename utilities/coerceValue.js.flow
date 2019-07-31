@@ -5,6 +5,7 @@ import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import didYouMean from '../jsutils/didYouMean';
 import isObjectLike from '../jsutils/isObjectLike';
 import suggestionList from '../jsutils/suggestionList';
@@ -195,8 +196,7 @@ export function coerceValue(
   }
 
   // Not reachable. All possible input types have been considered.
-  /* istanbul ignore next */
-  throw new Error(`Unexpected input type: "${inspect((type: empty))}".`);
+  invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
 }
 
 function ofValue(value) {

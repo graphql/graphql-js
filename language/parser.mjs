@@ -58,6 +58,8 @@ var Parser =
 function () {
   function Parser(source, options) {
     var sourceObj = typeof source === 'string' ? new Source(source) : source;
+
+    /* istanbul ignore next */
     sourceObj instanceof Source || devAssert(0, "Must provide Source. Received: ".concat(inspect(sourceObj)));
     this._lexer = createLexer(sourceObj);
     this._options = options || {};
@@ -1514,6 +1516,7 @@ function Loc(startToken, endToken, source) {
 } // Print a simplified form when appearing in JSON/util.inspect.
 
 
+/* istanbul ignore next */
 defineToJSON(Loc, function () {
   return {
     start: this.start,

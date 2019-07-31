@@ -1,6 +1,7 @@
 import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import { Kind } from '../language/kinds';
 import { isScalarType, isEnumType, isInputObjectType, isListType, isNonNullType } from '../type/definition';
@@ -191,6 +192,7 @@ export function valueFromAST(valueNode, type, variables) {
     return enumValue.value;
   }
 
+  /* istanbul ignore else */
   if (isScalarType(type)) {
     // Scalars fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
@@ -210,10 +212,9 @@ export function valueFromAST(valueNode, type, variables) {
     return result;
   } // Not reachable. All possible input types have been considered.
 
+
   /* istanbul ignore next */
-
-
-  throw new Error("Unexpected input type: \"".concat(inspect(type), "\"."));
+  invariant(false, 'Unexpected input type: ' + inspect(type));
 } // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 

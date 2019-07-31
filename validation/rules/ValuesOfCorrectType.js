@@ -67,6 +67,7 @@ function ValuesOfCorrectType(context) {
       var type = (0, _definition.getNullableType)(context.getParentInputType());
 
       if (!(0, _definition.isListType)(type)) {
+        /* istanbul ignore next */
         isValidScalar(context, node);
         return false; // Don't traverse further.
       }
@@ -75,6 +76,7 @@ function ValuesOfCorrectType(context) {
       var type = (0, _definition.getNamedType)(context.getInputType());
 
       if (!(0, _definition.isInputObjectType)(type)) {
+        /* istanbul ignore next */
         isValidScalar(context, node);
         return false; // Don't traverse further.
       } // Ensure every required field exists.
@@ -125,6 +127,7 @@ function ValuesOfCorrectType(context) {
       var type = (0, _definition.getNamedType)(context.getInputType());
 
       if (!(0, _definition.isEnumType)(type)) {
+        /* istanbul ignore next */
         isValidScalar(context, node);
       } else if (!type.getValue(node.value)) {
         context.reportError(new _GraphQLError.GraphQLError(badEnumValueMessage(type.name, (0, _printer.print)(node), enumTypeSuggestion(type, node)), node));

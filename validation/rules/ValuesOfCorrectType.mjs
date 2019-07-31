@@ -41,6 +41,7 @@ export function ValuesOfCorrectType(context) {
       var type = getNullableType(context.getParentInputType());
 
       if (!isListType(type)) {
+        /* istanbul ignore next */
         isValidScalar(context, node);
         return false; // Don't traverse further.
       }
@@ -49,6 +50,7 @@ export function ValuesOfCorrectType(context) {
       var type = getNamedType(context.getInputType());
 
       if (!isInputObjectType(type)) {
+        /* istanbul ignore next */
         isValidScalar(context, node);
         return false; // Don't traverse further.
       } // Ensure every required field exists.
@@ -99,6 +101,7 @@ export function ValuesOfCorrectType(context) {
       var type = getNamedType(context.getInputType());
 
       if (!isEnumType(type)) {
+        /* istanbul ignore next */
         isValidScalar(context, node);
       } else if (!type.getValue(node.value)) {
         context.reportError(new GraphQLError(badEnumValueMessage(type.name, print(node), enumTypeSuggestion(type, node)), node));
