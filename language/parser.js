@@ -243,7 +243,7 @@ function () {
   ;
 
   _proto.parseVariableDefinitions = function parseVariableDefinitions() {
-    return this.peek(_tokenKind.TokenKind.PAREN_L) ? this.many(_tokenKind.TokenKind.PAREN_L, this.parseVariableDefinition, _tokenKind.TokenKind.PAREN_R) : [];
+    return this.optionalMany(_tokenKind.TokenKind.PAREN_L, this.parseVariableDefinition, _tokenKind.TokenKind.PAREN_R);
   }
   /**
    * VariableDefinition : Variable : Type DefaultValue? Directives[Const]?
@@ -336,7 +336,7 @@ function () {
 
   _proto.parseArguments = function parseArguments(isConst) {
     var item = isConst ? this.parseConstArgument : this.parseArgument;
-    return this.peek(_tokenKind.TokenKind.PAREN_L) ? this.many(_tokenKind.TokenKind.PAREN_L, item, _tokenKind.TokenKind.PAREN_R) : [];
+    return this.optionalMany(_tokenKind.TokenKind.PAREN_L, item, _tokenKind.TokenKind.PAREN_R);
   }
   /**
    * Argument[Const] : Name : Value[?Const]
@@ -865,7 +865,7 @@ function () {
       return [];
     }
 
-    return this.peek(_tokenKind.TokenKind.BRACE_L) ? this.many(_tokenKind.TokenKind.BRACE_L, this.parseFieldDefinition, _tokenKind.TokenKind.BRACE_R) : [];
+    return this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseFieldDefinition, _tokenKind.TokenKind.BRACE_R);
   }
   /**
    * FieldDefinition :
@@ -897,11 +897,7 @@ function () {
   ;
 
   _proto.parseArgumentDefs = function parseArgumentDefs() {
-    if (!this.peek(_tokenKind.TokenKind.PAREN_L)) {
-      return [];
-    }
-
-    return this.many(_tokenKind.TokenKind.PAREN_L, this.parseInputValueDef, _tokenKind.TokenKind.PAREN_R);
+    return this.optionalMany(_tokenKind.TokenKind.PAREN_L, this.parseInputValueDef, _tokenKind.TokenKind.PAREN_R);
   }
   /**
    * InputValueDefinition :
@@ -1025,7 +1021,7 @@ function () {
   ;
 
   _proto.parseEnumValuesDefinition = function parseEnumValuesDefinition() {
-    return this.peek(_tokenKind.TokenKind.BRACE_L) ? this.many(_tokenKind.TokenKind.BRACE_L, this.parseEnumValueDefinition, _tokenKind.TokenKind.BRACE_R) : [];
+    return this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseEnumValueDefinition, _tokenKind.TokenKind.BRACE_R);
   }
   /**
    * EnumValueDefinition : Description? EnumValue Directives[Const]?
@@ -1075,7 +1071,7 @@ function () {
   ;
 
   _proto.parseInputFieldsDefinition = function parseInputFieldsDefinition() {
-    return this.peek(_tokenKind.TokenKind.BRACE_L) ? this.many(_tokenKind.TokenKind.BRACE_L, this.parseInputValueDef, _tokenKind.TokenKind.BRACE_R) : [];
+    return this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseInputValueDef, _tokenKind.TokenKind.BRACE_R);
   }
   /**
    * TypeSystemExtension :
@@ -1134,7 +1130,7 @@ function () {
     this.expectKeyword('extend');
     this.expectKeyword('schema');
     var directives = this.parseDirectives(true);
-    var operationTypes = this.peek(_tokenKind.TokenKind.BRACE_L) ? this.many(_tokenKind.TokenKind.BRACE_L, this.parseOperationTypeDefinition, _tokenKind.TokenKind.BRACE_R) : [];
+    var operationTypes = this.optionalMany(_tokenKind.TokenKind.BRACE_L, this.parseOperationTypeDefinition, _tokenKind.TokenKind.BRACE_R);
 
     if (directives.length === 0 && operationTypes.length === 0) {
       throw this.unexpected();
@@ -1505,6 +1501,28 @@ function () {
     }
 
     return nodes;
+  }
+  /**
+   * Returns a list of parse nodes, determined by the parseFn.
+   * It can be empty only if open token is missing otherwise it will always
+   * return non-empty list that begins with a lex token of openKind and ends
+   * with a lex token of closeKind. Advances the parser to the next lex token
+   * after the closing token.
+   */
+  ;
+
+  _proto.optionalMany = function optionalMany(openKind, parseFn, closeKind) {
+    if (this.expectOptionalToken(openKind)) {
+      var nodes = [];
+
+      do {
+        nodes.push(parseFn.call(this));
+      } while (!this.expectOptionalToken(closeKind));
+
+      return nodes;
+    }
+
+    return [];
   }
   /**
    * Returns a non-empty list of parse nodes, determined by
