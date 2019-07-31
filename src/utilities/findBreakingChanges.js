@@ -512,8 +512,7 @@ function typeKindName(type: GraphQLNamedType): string {
   }
 
   // Not reachable. All possible named types have been considered.
-  /* istanbul ignore next */
-  throw new TypeError(`Unexpected type: ${inspect((type: empty))}.`);
+  invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 
 function stringifyValue(value: mixed, type: GraphQLInputType): string {

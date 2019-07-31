@@ -5,6 +5,7 @@ import { forEach, isCollection } from 'iterall';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import isNullish from '../jsutils/isNullish';
 import isInvalid from '../jsutils/isInvalid';
 import isObjectLike from '../jsutils/isObjectLike';
@@ -137,8 +138,7 @@ export function astFromValue(value: mixed, type: GraphQLInputType): ?ValueNode {
   }
 
   // Not reachable. All possible input types have been considered.
-  /* istanbul ignore next */
-  throw new Error(`Unexpected input type: "${inspect((type: empty))}".`);
+  invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
 }
 
 /**

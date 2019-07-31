@@ -3,6 +3,7 @@
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import keyValMap from '../jsutils/keyValMap';
 import { type ObjMap } from '../jsutils/ObjMap';
 
@@ -137,8 +138,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }
 
     // Not reachable. All possible types have been considered.
-    /* istanbul ignore next */
-    throw new Error(`Unexpected type: "${inspect((type: empty))}".`);
+    invariant(false, 'Unexpected type: ' + inspect((type: empty)));
   }
 }
 

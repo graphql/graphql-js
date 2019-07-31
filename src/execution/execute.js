@@ -4,6 +4,7 @@ import { forEach, isCollection } from 'iterall';
 
 import inspect from '../jsutils/inspect';
 import memoize3 from '../jsutils/memoize3';
+import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
 import isInvalid from '../jsutils/isInvalid';
 import isNullish from '../jsutils/isNullish';
@@ -872,11 +873,10 @@ function completeValue(
   }
 
   // Not reachable. All possible output types have been considered.
-  /* istanbul ignore next */
-  throw new Error(
-    `Cannot complete value of unexpected output type: "${inspect(
-      (returnType: empty),
-    )}".`,
+  invariant(
+    false,
+    'Cannot complete value of unexpected output type: ' +
+      inspect((returnType: empty)),
   );
 }
 

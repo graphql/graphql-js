@@ -4,6 +4,7 @@ import objectValues from '../polyfills/objectValues';
 
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import devAssert from '../jsutils/devAssert';
 import keyValMap from '../jsutils/keyValMap';
 import { type ObjMap } from '../jsutils/ObjMap';
@@ -313,9 +314,9 @@ export class ASTDefinitionBuilder {
     }
 
     // Not reachable. All possible type definition nodes have been considered.
-    /* istanbul ignore next */
-    throw new Error(
-      `Unexpected type definition node: "${inspect((astNode: empty))}".`,
+    invariant(
+      false,
+      'Unexpected type definition node: ' + inspect((astNode: empty)),
     );
   }
 

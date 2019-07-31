@@ -4,6 +4,7 @@ import flatMap from '../polyfills/flatMap';
 import objectValues from '../polyfills/objectValues';
 
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 
 import { print } from '../language/printer';
 import { printBlockString } from '../language/blockString';
@@ -173,8 +174,7 @@ export function printType(type: GraphQLNamedType, options?: Options): string {
   }
 
   // Not reachable. All possible types have been considered.
-  /* istanbul ignore next */
-  throw new Error(`Unexpected type: "${inspect((type: empty))}".`);
+  invariant(false, 'Unexpected type: ' + inspect((type: empty)));
 }
 
 function printScalar(type: GraphQLScalarType, options): string {
