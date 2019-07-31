@@ -327,13 +327,11 @@ class Parser {
    * VariableDefinitions : ( VariableDefinition+ )
    */
   parseVariableDefinitions(): Array<VariableDefinitionNode> {
-    return this.peek(TokenKind.PAREN_L)
-      ? this.many(
-          TokenKind.PAREN_L,
-          this.parseVariableDefinition,
-          TokenKind.PAREN_R,
-        )
-      : [];
+    return this.optionalMany(
+      TokenKind.PAREN_L,
+      this.parseVariableDefinition,
+      TokenKind.PAREN_R,
+    );
   }
 
   /**
@@ -430,9 +428,7 @@ class Parser {
    */
   parseArguments(isConst: boolean): Array<ArgumentNode> {
     const item = isConst ? this.parseConstArgument : this.parseArgument;
-    return this.peek(TokenKind.PAREN_L)
-      ? this.many(TokenKind.PAREN_L, item, TokenKind.PAREN_R)
-      : [];
+    return this.optionalMany(TokenKind.PAREN_L, item, TokenKind.PAREN_R);
   }
 
   /**
@@ -919,13 +915,11 @@ class Parser {
       this._lexer.advance();
       return [];
     }
-    return this.peek(TokenKind.BRACE_L)
-      ? this.many(
-          TokenKind.BRACE_L,
-          this.parseFieldDefinition,
-          TokenKind.BRACE_R,
-        )
-      : [];
+    return this.optionalMany(
+      TokenKind.BRACE_L,
+      this.parseFieldDefinition,
+      TokenKind.BRACE_R,
+    );
   }
 
   /**
@@ -955,10 +949,7 @@ class Parser {
    * ArgumentsDefinition : ( InputValueDefinition+ )
    */
   parseArgumentDefs(): Array<InputValueDefinitionNode> {
-    if (!this.peek(TokenKind.PAREN_L)) {
-      return [];
-    }
-    return this.many(
+    return this.optionalMany(
       TokenKind.PAREN_L,
       this.parseInputValueDef,
       TokenKind.PAREN_R,
@@ -1075,13 +1066,11 @@ class Parser {
    * EnumValuesDefinition : { EnumValueDefinition+ }
    */
   parseEnumValuesDefinition(): Array<EnumValueDefinitionNode> {
-    return this.peek(TokenKind.BRACE_L)
-      ? this.many(
-          TokenKind.BRACE_L,
-          this.parseEnumValueDefinition,
-          TokenKind.BRACE_R,
-        )
-      : [];
+    return this.optionalMany(
+      TokenKind.BRACE_L,
+      this.parseEnumValueDefinition,
+      TokenKind.BRACE_R,
+    );
   }
 
   /**
@@ -1128,9 +1117,11 @@ class Parser {
    * InputFieldsDefinition : { InputValueDefinition+ }
    */
   parseInputFieldsDefinition(): Array<InputValueDefinitionNode> {
-    return this.peek(TokenKind.BRACE_L)
-      ? this.many(TokenKind.BRACE_L, this.parseInputValueDef, TokenKind.BRACE_R)
-      : [];
+    return this.optionalMany(
+      TokenKind.BRACE_L,
+      this.parseInputValueDef,
+      TokenKind.BRACE_R,
+    );
   }
 
   /**
@@ -1181,13 +1172,11 @@ class Parser {
     this.expectKeyword('extend');
     this.expectKeyword('schema');
     const directives = this.parseDirectives(true);
-    const operationTypes = this.peek(TokenKind.BRACE_L)
-      ? this.many(
-          TokenKind.BRACE_L,
-          this.parseOperationTypeDefinition,
-          TokenKind.BRACE_R,
-        )
-      : [];
+    const operationTypes = this.optionalMany(
+      TokenKind.BRACE_L,
+      this.parseOperationTypeDefinition,
+      TokenKind.BRACE_R,
+    );
     if (directives.length === 0 && operationTypes.length === 0) {
       throw this.unexpected();
     }
@@ -1533,6 +1522,28 @@ class Parser {
       nodes.push(parseFn.call(this));
     }
     return nodes;
+  }
+
+  /**
+   * Returns a list of parse nodes, determined by the parseFn.
+   * It can be empty only if open token is missing otherwise it will always
+   * return non-empty list that begins with a lex token of openKind and ends
+   * with a lex token of closeKind. Advances the parser to the next lex token
+   * after the closing token.
+   */
+  optionalMany<T>(
+    openKind: TokenKindEnum,
+    parseFn: () => T,
+    closeKind: TokenKindEnum,
+  ): Array<T> {
+    if (this.expectOptionalToken(openKind)) {
+      const nodes = [];
+      do {
+        nodes.push(parseFn.call(this));
+      } while (!this.expectOptionalToken(closeKind));
+      return nodes;
+    }
+    return [];
   }
 
   /**
