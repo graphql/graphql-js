@@ -21,6 +21,7 @@ module.exports = function inlineInvariant(context) {
     (%%cond%%) || devAssert(0, %%args%%)
   `);
 
+  const t = context.types;
   return {
     visitor: {
       CallExpression(path) {
@@ -38,13 +39,35 @@ module.exports = function inlineInvariant(context) {
         const calleeName = node.callee.name;
         if (calleeName === 'invariant') {
           const [cond, args] = node.arguments;
-          path.addComment('leading', ' istanbul ignore next ');
-          path.replaceWith(invariantTemplate({ cond, args }));
+
+          // Check if it is unreachable invariant: "invariant(false, ...)"
+          if (cond.type === 'BooleanLiteral' && cond.value === false) {
+            addIstanbulIgnoreElse(path);
+          } else {
+            path.replaceWith(invariantTemplate({ cond, args }));
+          }
         } else if (calleeName === 'devAssert') {
           const [cond, args] = node.arguments;
           path.replaceWith(assertTemplate({ cond, args }));
         }
+
+        path.addComment('leading', ' istanbul ignore next ');
       },
     },
   };
+
+  function addIstanbulIgnoreElse(path) {
+    const parentStatement = path.getStatementParent();
+    const previousStatement =
+      parentStatement.container[parentStatement.key - 1];
+    if (previousStatement.type === 'IfStatement') {
+      let lastIf = previousStatement;
+      while (lastIf.alternate && lastIf.alternate.type === 'IfStatement') {
+        lastIf = lastIf.alternate;
+      }
+      if (lastIf.alternate == null) {
+        t.addComment(lastIf, 'leading', ' istanbul ignore else ');
+      }
+    }
+  }
 };

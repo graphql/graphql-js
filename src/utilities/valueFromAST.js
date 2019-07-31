@@ -4,6 +4,7 @@ import objectValues from '../polyfills/objectValues';
 
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
+import invariant from '../jsutils/invariant';
 import isInvalid from '../jsutils/isInvalid';
 import { type ObjMap } from '../jsutils/ObjMap';
 
@@ -160,8 +161,7 @@ export function valueFromAST(
   }
 
   // Not reachable. All possible input types have been considered.
-  /* istanbul ignore next */
-  throw new Error(`Unexpected input type: "${inspect((type: empty))}".`);
+  invariant(false, 'Unexpected input type: ' + inspect((type: empty)));
 }
 
 // Returns true if the provided valueNode is a variable which is not defined
