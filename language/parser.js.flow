@@ -19,7 +19,6 @@ import {
   type VariableNode,
   type DocumentNode,
   type DefinitionNode,
-  type ExecutableDefinitionNode,
   type OperationDefinitionNode,
   type OperationTypeNode,
   type VariableDefinitionNode,
@@ -217,6 +216,10 @@ class Parser {
    *   - ExecutableDefinition
    *   - TypeSystemDefinition
    *   - TypeSystemExtension
+   *
+   * ExecutableDefinition :
+   *   - OperationDefinition
+   *   - FragmentDefinition
    */
   parseDefinition(): DefinitionNode {
     if (this.peek(TokenKind.NAME)) {
@@ -224,8 +227,9 @@ class Parser {
         case 'query':
         case 'mutation':
         case 'subscription':
+          return this.parseOperationDefinition();
         case 'fragment':
-          return this.parseExecutableDefinition();
+          return this.parseFragmentDefinition();
         case 'schema':
         case 'scalar':
         case 'type':
@@ -239,32 +243,9 @@ class Parser {
           return this.parseTypeSystemExtension();
       }
     } else if (this.peek(TokenKind.BRACE_L)) {
-      return this.parseExecutableDefinition();
+      return this.parseOperationDefinition();
     } else if (this.peekDescription()) {
       return this.parseTypeSystemDefinition();
-    }
-
-    throw this.unexpected();
-  }
-
-  /**
-   * ExecutableDefinition :
-   *   - OperationDefinition
-   *   - FragmentDefinition
-   */
-  parseExecutableDefinition(): ExecutableDefinitionNode {
-    if (this.peek(TokenKind.NAME)) {
-      switch (this._lexer.token.value) {
-        case 'query':
-        case 'mutation':
-        case 'subscription':
-          return this.parseOperationDefinition();
-
-        case 'fragment':
-          return this.parseFragmentDefinition();
-      }
-    } else if (this.peek(TokenKind.BRACE_L)) {
-      return this.parseOperationDefinition();
     }
 
     throw this.unexpected();

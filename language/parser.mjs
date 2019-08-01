@@ -98,6 +98,10 @@ function () {
    *   - ExecutableDefinition
    *   - TypeSystemDefinition
    *   - TypeSystemExtension
+   *
+   * ExecutableDefinition :
+   *   - OperationDefinition
+   *   - FragmentDefinition
    */
   ;
 
@@ -107,8 +111,10 @@ function () {
         case 'query':
         case 'mutation':
         case 'subscription':
+          return this.parseOperationDefinition();
+
         case 'fragment':
-          return this.parseExecutableDefinition();
+          return this.parseFragmentDefinition();
 
         case 'schema':
         case 'scalar':
@@ -124,33 +130,9 @@ function () {
           return this.parseTypeSystemExtension();
       }
     } else if (this.peek(TokenKind.BRACE_L)) {
-      return this.parseExecutableDefinition();
+      return this.parseOperationDefinition();
     } else if (this.peekDescription()) {
       return this.parseTypeSystemDefinition();
-    }
-
-    throw this.unexpected();
-  }
-  /**
-   * ExecutableDefinition :
-   *   - OperationDefinition
-   *   - FragmentDefinition
-   */
-  ;
-
-  _proto.parseExecutableDefinition = function parseExecutableDefinition() {
-    if (this.peek(TokenKind.NAME)) {
-      switch (this._lexer.token.value) {
-        case 'query':
-        case 'mutation':
-        case 'subscription':
-          return this.parseOperationDefinition();
-
-        case 'fragment':
-          return this.parseFragmentDefinition();
-      }
-    } else if (this.peek(TokenKind.BRACE_L)) {
-      return this.parseOperationDefinition();
     }
 
     throw this.unexpected();
