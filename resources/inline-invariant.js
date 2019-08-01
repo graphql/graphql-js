@@ -46,12 +46,11 @@ module.exports = function inlineInvariant(context) {
           } else {
             path.replaceWith(invariantTemplate({ cond, args }));
           }
+          path.addComment('leading', ' istanbul ignore next ');
         } else if (calleeName === 'devAssert') {
           const [cond, args] = node.arguments;
           path.replaceWith(assertTemplate({ cond, args }));
         }
-
-        path.addComment('leading', ' istanbul ignore next ');
       },
     },
   };
@@ -60,14 +59,11 @@ module.exports = function inlineInvariant(context) {
     const parentStatement = path.getStatementParent();
     const previousStatement =
       parentStatement.container[parentStatement.key - 1];
-    if (previousStatement.type === 'IfStatement') {
-      let lastIf = previousStatement;
-      while (lastIf.alternate && lastIf.alternate.type === 'IfStatement') {
-        lastIf = lastIf.alternate;
-      }
-      if (lastIf.alternate == null) {
-        t.addComment(lastIf, 'leading', ' istanbul ignore else ');
-      }
+    if (
+      previousStatement.type === 'IfStatement' &&
+      previousStatement.alternate == null
+    ) {
+      t.addComment(previousStatement, 'leading', ' istanbul ignore else ');
     }
   }
 };
