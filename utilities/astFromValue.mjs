@@ -56,8 +56,6 @@ export function astFromValue(value, type) {
 
     if (isCollection(value)) {
       var valuesNodes = [];
-
-      /* istanbul ignore next */
       forEach(value, function (item) {
         var itemNode = astFromValue(item, itemType);
 

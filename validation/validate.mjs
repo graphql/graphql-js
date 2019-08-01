@@ -24,11 +24,8 @@ import { SDLValidationContext, ValidationContext } from './ValidationContext';
 export function validate(schema, documentAST) {
   var rules = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : specifiedRules;
   var typeInfo = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new TypeInfo(schema);
-
-  /* istanbul ignore next */
   documentAST || devAssert(0, 'Must provide document'); // If the schema used for validation is invalid, throw an error.
 
-  /* istanbul ignore next */
   assertValidSchema(schema);
   var context = new ValidationContext(schema, documentAST, typeInfo); // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
@@ -37,7 +34,6 @@ export function validate(schema, documentAST) {
     return rule(context);
   })); // Visit the whole document with each instance of all provided rules.
 
-  /* istanbul ignore next */
   visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
   return context.getErrors();
 } // @internal
@@ -48,8 +44,6 @@ export function validateSDL(documentAST, schemaToExtend) {
   var visitors = rules.map(function (rule) {
     return rule(context);
   });
-
-  /* istanbul ignore next */
   visit(documentAST, visitInParallel(visitors));
   return context.getErrors();
 }

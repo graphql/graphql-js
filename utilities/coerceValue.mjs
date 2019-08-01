@@ -69,8 +69,6 @@ export function coerceValue(value, type, blameNode, path) {
     if (isCollection(value)) {
       var errors;
       var coercedValue = [];
-
-      /* istanbul ignore next */
       forEach(value, function (itemValue, index) {
         var coercedItem = coerceValue(itemValue, itemType, blameNode, addPath(path, index));
 

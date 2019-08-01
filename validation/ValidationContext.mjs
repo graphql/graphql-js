@@ -151,7 +151,6 @@ function () {
 export var SDLValidationContext =
 /*#__PURE__*/
 function (_ASTValidationContext) {
-  /* istanbul ignore next */
   _inheritsLoose(SDLValidationContext, _ASTValidationContext);
 
   function SDLValidationContext(ast, schema) {
@@ -173,7 +172,6 @@ function (_ASTValidationContext) {
 export var ValidationContext =
 /*#__PURE__*/
 function (_ASTValidationContext2) {
-  /* istanbul ignore next */
   _inheritsLoose(ValidationContext, _ASTValidationContext2);
 
   function ValidationContext(schema, ast, typeInfo) {
@@ -199,8 +197,6 @@ function (_ASTValidationContext2) {
     if (!usages) {
       var newUsages = [];
       var typeInfo = new TypeInfo(this._schema);
-
-      /* istanbul ignore next */
       visit(node, visitWithTypeInfo(typeInfo, {
         VariableDefinition: function VariableDefinition() {
           return false;

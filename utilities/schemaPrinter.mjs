@@ -116,11 +116,9 @@ export function printType(type, options) {
     return printUnion(type, options);
   } else if (isEnumType(type)) {
     return printEnum(type, options);
-  } else
-    /* istanbul ignore else */
-    if (isInputObjectType(type)) {
-      return printInputObject(type, options);
-    } // Not reachable. All possible types have been considered.
+  } else if (isInputObjectType(type)) {
+    return printInputObject(type, options);
+  } // Not reachable. All possible types have been considered.
 
 
   /* istanbul ignore next */

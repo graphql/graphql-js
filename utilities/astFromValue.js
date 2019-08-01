@@ -74,8 +74,6 @@ function astFromValue(value, type) {
 
     if ((0, _iterall.isCollection)(value)) {
       var valuesNodes = [];
-
-      /* istanbul ignore next */
       (0, _iterall.forEach)(value, function (item) {
         var itemNode = astFromValue(item, itemType);
 

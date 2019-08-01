@@ -21,7 +21,6 @@ function separateOperations(documentAST) {
   var fromName;
   var idx = 0; // Populate metadata and build a dependency graph.
 
-  /* istanbul ignore next */
   (0, _visitor.visit)(documentAST, {
     OperationDefinition: function OperationDefinition(node) {
       fromName = opName(node);
@@ -46,8 +45,6 @@ function separateOperations(documentAST) {
     var operation = _operations[_i];
     var operationName = opName(operation);
     var dependencies = Object.create(null);
-
-    /* istanbul ignore next */
     collectTransitiveDependencies(dependencies, depGraph, operationName); // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
 
@@ -86,8 +83,6 @@ function collectTransitiveDependencies(collected, depGraph, fromName) {
 
       if (!collected[toName]) {
         collected[toName] = true;
-
-        /* istanbul ignore next */
         collectTransitiveDependencies(collected, depGraph, toName);
       }
     }

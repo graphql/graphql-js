@@ -84,7 +84,6 @@ function Tok(kind, start, end, line, column, prev, value) {
 } // Print a simplified form when appearing in JSON/util.inspect.
 
 
-/* istanbul ignore next */
 (0, _defineToJSON.default)(Tok, function () {
   return {
     kind: this.kind,

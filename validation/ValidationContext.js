@@ -163,7 +163,6 @@ exports.ASTValidationContext = ASTValidationContext;
 var SDLValidationContext =
 /*#__PURE__*/
 function (_ASTValidationContext) {
-  /* istanbul ignore next */
   _inheritsLoose(SDLValidationContext, _ASTValidationContext);
 
   function SDLValidationContext(ast, schema) {
@@ -188,7 +187,6 @@ exports.SDLValidationContext = SDLValidationContext;
 var ValidationContext =
 /*#__PURE__*/
 function (_ASTValidationContext2) {
-  /* istanbul ignore next */
   _inheritsLoose(ValidationContext, _ASTValidationContext2);
 
   function ValidationContext(schema, ast, typeInfo) {
@@ -214,8 +212,6 @@ function (_ASTValidationContext2) {
     if (!usages) {
       var newUsages = [];
       var typeInfo = new _TypeInfo.TypeInfo(this._schema);
-
-      /* istanbul ignore next */
       (0, _visitor.visit)(node, (0, _visitor.visitWithTypeInfo)(typeInfo, {
         VariableDefinition: function VariableDefinition() {
           return false;

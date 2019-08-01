@@ -33,8 +33,6 @@ function isValidLiteralValue(type, valueNode) {
   var typeInfo = new _TypeInfo.TypeInfo(emptySchema, undefined, type);
   var context = new _ValidationContext.ValidationContext(emptySchema, emptyDoc, typeInfo);
   var visitor = (0, _ValuesOfCorrectType.ValuesOfCorrectType)(context);
-
-  /* istanbul ignore next */
   (0, _visitor.visit)(valueNode, (0, _visitor.visitWithTypeInfo)(typeInfo, visitor));
   return context.getErrors();
 }

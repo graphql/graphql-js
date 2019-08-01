@@ -101,16 +101,9 @@ function () {
       this.__validationErrors = undefined; // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
 
-      /* istanbul ignore next */
       isObjectLike(config) || devAssert(0, 'Must provide configuration object.');
-
-      /* istanbul ignore next */
       !config.types || Array.isArray(config.types) || devAssert(0, "\"types\" must be Array if provided but got: ".concat(inspect(config.types), "."));
-
-      /* istanbul ignore next */
       !config.directives || Array.isArray(config.directives) || devAssert(0, '"directives" must be Array if provided but got: ' + "".concat(inspect(config.directives), "."));
-
-      /* istanbul ignore next */
       !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || devAssert(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat(inspect(config.allowedLegacyNames), "."));
     }
 
@@ -267,7 +260,6 @@ function () {
   return GraphQLSchema;
 }(); // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
-/* istanbul ignore next */
 defineToStringTag(GraphQLSchema);
 
 function typeMapReducer(map, type) {

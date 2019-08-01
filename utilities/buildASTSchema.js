@@ -65,11 +65,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  */
 function buildASTSchema(documentAST, options) {
-  /* istanbul ignore next */
   documentAST && documentAST.kind === _kinds.Kind.DOCUMENT || (0, _devAssert.default)(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
-    /* istanbul ignore next */
     (0, _validate.assertValidSDL)(documentAST);
   }
 

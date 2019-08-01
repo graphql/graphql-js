@@ -140,7 +140,6 @@ function findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, 
   // Note: this is the *only place* `collectConflictsWithin` is called.
 
 
-  /* istanbul ignore next */
   collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, fieldMap);
 
   if (fragmentNames.length !== 0) {
@@ -149,14 +148,12 @@ function findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentNames, 
     var comparedFragments = Object.create(null);
 
     for (var i = 0; i < fragmentNames.length; i++) {
-      /* istanbul ignore next */
       collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragments, comparedFragmentPairs, false, fieldMap, fragmentNames[i]); // (C) Then compare this fragment with all other fragments found in this
       // selection set to collect conflicts between fragments spread together.
       // This compares each item in the list of fragment names to every other
       // item in that same list (except for itself).
 
       for (var j = i + 1; j < fragmentNames.length; j++) {
-        /* istanbul ignore next */
         collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, false, fragmentNames[i], fragmentNames[j]);
       }
     }
@@ -191,12 +188,10 @@ function collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFiel
   // and the collection of fields represented by the given fragment.
 
 
-  /* istanbul ignore next */
   collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap, fieldMap2); // (E) Then collect any conflicts between the provided collection of fields
   // and any fragment names found in the given fragment.
 
   for (var i = 0; i < fragmentNames2.length; i++) {
-    /* istanbul ignore next */
     collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragments, comparedFragmentPairs, areMutuallyExclusive, fieldMap, fragmentNames2[i]);
   }
 } // Collect all conflicts found between two fragments, including via spreading in
@@ -232,19 +227,16 @@ function collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFra
   // (not including any nested fragments).
 
 
-  /* istanbul ignore next */
   collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, fieldMap2); // (G) Then collect conflicts between the first fragment and any nested
   // fragments spread in the second fragment.
 
   for (var j = 0; j < fragmentNames2.length; j++) {
-    /* istanbul ignore next */
     collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentName1, fragmentNames2[j]);
   } // (G) Then collect conflicts between the second fragment and any nested
   // fragments spread in the first fragment.
 
 
   for (var i = 0; i < fragmentNames1.length; i++) {
-    /* istanbul ignore next */
     collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentNames1[i], fragmentName2);
   }
 } // Find all conflicts found between two selection sets, including those found
@@ -264,7 +256,6 @@ function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNa
       fragmentNames2 = _getFieldsAndFragment3[1]; // (H) First, collect all conflicts between these two collections of field.
 
 
-  /* istanbul ignore next */
   collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, fieldMap2); // (I) Then collect conflicts between the first collection of fields and
   // those referenced by each fragment name associated with the second.
 
@@ -272,7 +263,6 @@ function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNa
     var comparedFragments = Object.create(null);
 
     for (var j = 0; j < fragmentNames2.length; j++) {
-      /* istanbul ignore next */
       collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, comparedFragments, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, fragmentNames2[j]);
     }
   } // (I) Then collect conflicts between the second collection of fields and
@@ -283,7 +273,6 @@ function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNa
     var _comparedFragments = Object.create(null);
 
     for (var i = 0; i < fragmentNames1.length; i++) {
-      /* istanbul ignore next */
       collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentNames, _comparedFragments, comparedFragmentPairs, areMutuallyExclusive, fieldMap2, fragmentNames1[i]);
     }
   } // (J) Also collect conflicts between any fragment names by the first and
@@ -293,7 +282,6 @@ function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentNa
 
   for (var _i2 = 0; _i2 < fragmentNames1.length; _i2++) {
     for (var _j = 0; _j < fragmentNames2.length; _j++) {
-      /* istanbul ignore next */
       collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentNames, comparedFragmentPairs, areMutuallyExclusive, fragmentNames1[_i2], fragmentNames2[_j]);
     }
   }
@@ -492,7 +480,6 @@ function getFieldsAndFragmentNames(context, cachedFieldsAndFragmentNames, parent
     var nodeAndDefs = Object.create(null);
     var fragmentNames = Object.create(null);
 
-    /* istanbul ignore next */
     _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeAndDefs, fragmentNames);
 
     cached = [nodeAndDefs, Object.keys(fragmentNames)];
@@ -549,7 +536,6 @@ function _collectFieldsAndFragmentNames(context, parentType, selectionSet, nodeA
           var typeCondition = selection.typeCondition;
           var inlineFragmentType = typeCondition ? (0, _typeFromAST.typeFromAST)(context.getSchema(), typeCondition) : parentType;
 
-          /* istanbul ignore next */
           _collectFieldsAndFragmentNames(context, inlineFragmentType, selection.selectionSet, nodeAndDefs, fragmentNames);
 
           break;
@@ -608,10 +594,8 @@ function () {
   };
 
   _proto.add = function add(a, b, areMutuallyExclusive) {
-    /* istanbul ignore next */
     _pairSetAdd(this._data, a, b, areMutuallyExclusive);
 
-    /* istanbul ignore next */
     _pairSetAdd(this._data, b, a, areMutuallyExclusive);
   };
 

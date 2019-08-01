@@ -120,16 +120,9 @@ function () {
       this.__validationErrors = undefined; // Otherwise check for common mistakes during construction to produce
       // clear and early error messages.
 
-      /* istanbul ignore next */
       (0, _isObjectLike.default)(config) || (0, _devAssert.default)(0, 'Must provide configuration object.');
-
-      /* istanbul ignore next */
       !config.types || Array.isArray(config.types) || (0, _devAssert.default)(0, "\"types\" must be Array if provided but got: ".concat((0, _inspect.default)(config.types), "."));
-
-      /* istanbul ignore next */
       !config.directives || Array.isArray(config.directives) || (0, _devAssert.default)(0, '"directives" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.directives), "."));
-
-      /* istanbul ignore next */
       !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || (0, _devAssert.default)(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat((0, _inspect.default)(config.allowedLegacyNames), "."));
     }
 
@@ -288,8 +281,6 @@ function () {
 
 
 exports.GraphQLSchema = GraphQLSchema;
-
-/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLSchema);
 
 function typeMapReducer(map, type) {

@@ -212,11 +212,9 @@ var __Type = new _definition.GraphQLObjectType({
             return TypeKind.INPUT_OBJECT;
           } else if ((0, _definition.isListType)(type)) {
             return TypeKind.LIST;
-          } else
-            /* istanbul ignore else */
-            if ((0, _definition.isNonNullType)(type)) {
-              return TypeKind.NON_NULL;
-            } // Not reachable. All possible types have been considered.
+          } else if ((0, _definition.isNonNullType)(type)) {
+            return TypeKind.NON_NULL;
+          } // Not reachable. All possible types have been considered.
 
 
           /* istanbul ignore next */

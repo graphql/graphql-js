@@ -76,7 +76,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { /* istanbul ignore next */ _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -314,10 +314,7 @@ GraphQLList.prototype.toString = function toString() {
 }; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
 
-/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLList);
-
-/* istanbul ignore next */
 (0, _defineToJSON.default)(GraphQLList);
 /**
  * Non-Null Type Wrapper
@@ -355,10 +352,7 @@ GraphQLNonNull.prototype.toString = function toString() {
 }; // Conditionally apply `[Symbol.toStringTag]` if `Symbol`s are supported
 
 
-/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLNonNull);
-
-/* istanbul ignore next */
 (0, _defineToJSON.default)(GraphQLNonNull);
 /**
  * These types wrap and modify other types
@@ -487,15 +481,10 @@ function () {
 
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
-
-    /* istanbul ignore next */
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
-
-    /* istanbul ignore next */
     config.serialize == null || typeof config.serialize === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"serialize\" function. If this custom Scalar is also used as an input type, ensure \"parseValue\" and \"parseLiteral\" functions are also provided."));
 
     if (config.parseLiteral) {
-      /* istanbul ignore next */
       typeof config.parseValue === 'function' && typeof config.parseLiteral === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide both \"parseValue\" and \"parseLiteral\" functions."));
     }
   }
@@ -523,11 +512,7 @@ function () {
 
 
 exports.GraphQLScalarType = GraphQLScalarType;
-
-/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLScalarType);
-
-/* istanbul ignore next */
 (0, _defineToJSON.default)(GraphQLScalarType);
 
 /**
@@ -578,11 +563,7 @@ function () {
     this.isTypeOf = config.isTypeOf;
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
-
-    /* istanbul ignore next */
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
-
-    /* istanbul ignore next */
     config.isTypeOf == null || typeof config.isTypeOf === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"isTypeOf\" as a function, ") + "but got: ".concat((0, _inspect.default)(config.isTypeOf), "."));
   }
 
@@ -625,38 +606,23 @@ function () {
 
 
 exports.GraphQLObjectType = GraphQLObjectType;
-
-/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLObjectType);
-
-/* istanbul ignore next */
 (0, _defineToJSON.default)(GraphQLObjectType);
 
 function defineInterfaces(config) {
   var interfaces = resolveThunk(config.interfaces) || [];
-
-  /* istanbul ignore next */
   Array.isArray(interfaces) || (0, _devAssert.default)(0, "".concat(config.name, " interfaces must be an Array or a function which returns an Array."));
   return interfaces;
 }
 
 function defineFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
-
-  /* istanbul ignore next */
   isPlainObj(fieldMap) || (0, _devAssert.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return (0, _mapValue.default)(fieldMap, function (fieldConfig, fieldName) {
-    /* istanbul ignore next */
     isPlainObj(fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field config must be an object"));
-
-    /* istanbul ignore next */
     !('isDeprecated' in fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
-
-    /* istanbul ignore next */
     fieldConfig.resolve == null || typeof fieldConfig.resolve === 'function' || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field resolver must be a function if ") + "provided, but got: ".concat((0, _inspect.default)(fieldConfig.resolve), "."));
     var argsConfig = fieldConfig.args || {};
-
-    /* istanbul ignore next */
     isPlainObj(argsConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " args must be an object with argument names as keys."));
     var args = (0, _objectEntries.default)(argsConfig).map(function (_ref) {
       var argName = _ref[0],
@@ -740,11 +706,7 @@ function () {
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.resolveType = config.resolveType;
     this._fields = defineFieldMap.bind(undefined, config);
-
-    /* istanbul ignore next */
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
-
-    /* istanbul ignore next */
     config.resolveType == null || typeof config.resolveType === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat((0, _inspect.default)(config.resolveType), "."));
   }
 
@@ -778,11 +740,7 @@ function () {
 
 
 exports.GraphQLInterfaceType = GraphQLInterfaceType;
-
-/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLInterfaceType);
-
-/* istanbul ignore next */
 (0, _defineToJSON.default)(GraphQLInterfaceType);
 
 /**
@@ -818,11 +776,7 @@ function () {
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this.resolveType = config.resolveType;
     this._types = defineTypes.bind(undefined, config);
-
-    /* istanbul ignore next */
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
-
-    /* istanbul ignore next */
     config.resolveType == null || typeof config.resolveType === 'function' || (0, _devAssert.default)(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat((0, _inspect.default)(config.resolveType), "."));
   }
 
@@ -856,17 +810,11 @@ function () {
 
 
 exports.GraphQLUnionType = GraphQLUnionType;
-
-/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLUnionType);
-
-/* istanbul ignore next */
 (0, _defineToJSON.default)(GraphQLUnionType);
 
 function defineTypes(config) {
   var types = resolveThunk(config.types) || [];
-
-  /* istanbul ignore next */
   Array.isArray(types) || (0, _devAssert.default)(0, "Must provide Array of types or a function which returns such an array for Union ".concat(config.name, "."));
   return types;
 }
@@ -909,8 +857,6 @@ function () {
     this._nameLookup = (0, _keyMap.default)(this._values, function (value) {
       return value.name;
     });
-
-    /* istanbul ignore next */
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
   }
 
@@ -986,24 +932,15 @@ function () {
 
 
 exports.GraphQLEnumType = GraphQLEnumType;
-
-/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLEnumType);
-
-/* istanbul ignore next */
 (0, _defineToJSON.default)(GraphQLEnumType);
 
 function defineEnumValues(typeName, valueMap) {
-  /* istanbul ignore next */
   isPlainObj(valueMap) || (0, _devAssert.default)(0, "".concat(typeName, " values must be an object with value names as keys."));
   return (0, _objectEntries.default)(valueMap).map(function (_ref2) {
     var valueName = _ref2[0],
         value = _ref2[1];
-
-    /* istanbul ignore next */
     isPlainObj(value) || (0, _devAssert.default)(0, "".concat(typeName, ".").concat(valueName, " must refer to an object with a \"value\" key ") + "representing an internal value but got: ".concat((0, _inspect.default)(value), "."));
-
-    /* istanbul ignore next */
     !('isDeprecated' in value) || (0, _devAssert.default)(0, "".concat(typeName, ".").concat(valueName, " should provide \"deprecationReason\" instead of \"isDeprecated\"."));
     return {
       name: valueName,
@@ -1045,8 +982,6 @@ function () {
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
     this._fields = defineInputFieldMap.bind(undefined, config);
-
-    /* istanbul ignore next */
     typeof config.name === 'string' || (0, _devAssert.default)(0, 'Must provide name.');
   }
 
@@ -1087,20 +1022,13 @@ function () {
 
 
 exports.GraphQLInputObjectType = GraphQLInputObjectType;
-
-/* istanbul ignore next */
 (0, _defineToStringTag.default)(GraphQLInputObjectType);
-
-/* istanbul ignore next */
 (0, _defineToJSON.default)(GraphQLInputObjectType);
 
 function defineInputFieldMap(config) {
   var fieldMap = resolveThunk(config.fields) || {};
-
-  /* istanbul ignore next */
   isPlainObj(fieldMap) || (0, _devAssert.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return (0, _mapValue.default)(fieldMap, function (fieldConfig, fieldName) {
-    /* istanbul ignore next */
     !('resolve' in fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but Input Types cannot define resolvers."));
     return _objectSpread({}, fieldConfig, {
       name: fieldName

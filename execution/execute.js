@@ -83,7 +83,6 @@ function executeImpl(args) {
       fieldResolver = args.fieldResolver,
       typeResolver = args.typeResolver; // If arguments are missing or incorrect, throw an error.
 
-  /* istanbul ignore next */
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
 
@@ -132,13 +131,10 @@ function buildResponse(exeContext, data) {
 
 
 function assertValidExecutionArguments(schema, document, rawVariableValues) {
-  /* istanbul ignore next */
   document || (0, _devAssert.default)(0, 'Must provide document'); // If the schema used for execution is invalid, throw an error.
 
-  /* istanbul ignore next */
   (0, _validate.assertValidSchema)(schema); // Variables, if provided, must be an object.
 
-  /* istanbul ignore next */
   rawVariableValues == null || (0, _isObjectLike.default)(rawVariableValues) || (0, _devAssert.default)(0, 'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.');
 }
 /**
@@ -332,7 +328,6 @@ function collectFields(exeContext, runtimeType, selectionSet, fields, visitedFra
             continue;
           }
 
-          /* istanbul ignore next */
           collectFields(exeContext, runtimeType, selection.selectionSet, fields, visitedFragmentNames);
           break;
         }
@@ -352,7 +347,6 @@ function collectFields(exeContext, runtimeType, selectionSet, fields, visitedFra
             continue;
           }
 
-          /* istanbul ignore next */
           collectFields(exeContext, runtimeType, fragment.selectionSet, fields, visitedFragmentNames);
           break;
         }
@@ -615,8 +609,6 @@ function completeListValue(exeContext, returnType, fieldNodes, info, path, resul
   var itemType = returnType.ofType;
   var containsPromise = false;
   var completedResults = [];
-
-  /* istanbul ignore next */
   (0, _iterall.forEach)(result, function (item, index) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.

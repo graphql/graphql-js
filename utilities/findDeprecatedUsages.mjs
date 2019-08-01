@@ -11,8 +11,6 @@ import { TypeInfo } from './TypeInfo';
 export function findDeprecatedUsages(schema, ast) {
   var errors = [];
   var typeInfo = new TypeInfo(schema);
-
-  /* istanbul ignore next */
   visit(ast, visitWithTypeInfo(typeInfo, {
     Field: function Field(node) {
       var fieldDef = typeInfo.getFieldDef();

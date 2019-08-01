@@ -35,11 +35,9 @@ import { valueFromAST } from './valueFromAST';
  *
  */
 export function buildASTSchema(documentAST, options) {
-  /* istanbul ignore next */
   documentAST && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
-    /* istanbul ignore next */
     assertValidSDL(documentAST);
   }
 

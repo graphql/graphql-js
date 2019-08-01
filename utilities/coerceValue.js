@@ -87,8 +87,6 @@ function coerceValue(value, type, blameNode, path) {
     if ((0, _iterall.isCollection)(value)) {
       var errors;
       var coercedValue = [];
-
-      /* istanbul ignore next */
       (0, _iterall.forEach)(value, function (itemValue, index) {
         var coercedItem = coerceValue(itemValue, itemType, blameNode, (0, _Path.addPath)(path, index));
 

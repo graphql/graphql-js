@@ -116,8 +116,6 @@ function subscribeImpl(args) {
 function createSourceEventStream(schema, document, rootValue, contextValue, variableValues, operationName, fieldResolver) {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
-
-  /* istanbul ignore next */
   (0, _execute.assertValidExecutionArguments)(schema, document, variableValues);
 
   try {

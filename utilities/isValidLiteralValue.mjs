@@ -21,8 +21,6 @@ export function isValidLiteralValue(type, valueNode) {
   var typeInfo = new TypeInfo(emptySchema, undefined, type);
   var context = new ValidationContext(emptySchema, emptyDoc, typeInfo);
   var visitor = ValuesOfCorrectType(context);
-
-  /* istanbul ignore next */
   visit(valueNode, visitWithTypeInfo(typeInfo, visitor));
   return context.getErrors();
 }

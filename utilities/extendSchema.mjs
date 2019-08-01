@@ -1,6 +1,6 @@
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { /* istanbul ignore next */ _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -40,14 +40,10 @@ import { ASTDefinitionBuilder } from './buildASTSchema';
  *
  */
 export function extendSchema(schema, documentAST, options) {
-  /* istanbul ignore next */
   assertSchema(schema);
-
-  /* istanbul ignore next */
   documentAST && documentAST.kind === Kind.DOCUMENT || devAssert(0, 'Must provide valid Document AST');
 
   if (!options || !(options.assumeValid || options.assumeValidSDL)) {
-    /* istanbul ignore next */
     assertValidSDLExtension(documentAST, schema);
   } // Collect the type definitions and extensions found in the document.
 
@@ -248,8 +244,6 @@ export function extendSchema(schema, documentAST, options) {
 
   function getMergedDirectives() {
     var existingDirectives = schema.getDirectives().map(extendDirective);
-
-    /* istanbul ignore next */
     existingDirectives || devAssert(0, 'schema must have default directives');
     return existingDirectives.concat(directiveDefs.map(function (node) {
       return astBuilder.buildDirective(node);
@@ -270,11 +264,9 @@ export function extendSchema(schema, documentAST, options) {
       return extendUnionType(type);
     } else if (isEnumType(type)) {
       return extendEnumType(type);
-    } else
-      /* istanbul ignore else */
-      if (isInputObjectType(type)) {
-        return extendInputObjectType(type);
-      } // Not reachable. All possible types have been considered.
+    } else if (isInputObjectType(type)) {
+      return extendInputObjectType(type);
+    } // Not reachable. All possible types have been considered.
 
 
     /* istanbul ignore next */

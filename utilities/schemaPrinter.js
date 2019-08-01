@@ -138,11 +138,9 @@ function printType(type, options) {
     return printUnion(type, options);
   } else if ((0, _definition.isEnumType)(type)) {
     return printEnum(type, options);
-  } else
-    /* istanbul ignore else */
-    if ((0, _definition.isInputObjectType)(type)) {
-      return printInputObject(type, options);
-    } // Not reachable. All possible types have been considered.
+  } else if ((0, _definition.isInputObjectType)(type)) {
+    return printInputObject(type, options);
+  } // Not reachable. All possible types have been considered.
 
 
   /* istanbul ignore next */

@@ -21,8 +21,6 @@ var _TypeInfo = require("./TypeInfo");
 function findDeprecatedUsages(schema, ast) {
   var errors = [];
   var typeInfo = new _TypeInfo.TypeInfo(schema);
-
-  /* istanbul ignore next */
   (0, _visitor.visit)(ast, (0, _visitor.visitWithTypeInfo)(typeInfo, {
     Field: function Field(node) {
       var fieldDef = typeInfo.getFieldDef();
