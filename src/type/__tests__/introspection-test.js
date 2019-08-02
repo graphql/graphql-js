@@ -3,6 +3,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import invariant from '../../jsutils/invariant';
+
 import { missingFieldArgMessage } from '../../validation/rules/ProvidedRequiredArguments';
 
 import { graphqlSync } from '../../graphql';
@@ -1400,14 +1402,10 @@ describe('Introspection', () => {
     const schema = new GraphQLSchema({ query: QueryRoot });
     const source = getIntrospectionQuery();
 
-    const calledForFields = {};
-    /* istanbul ignore next */
-    function fieldResolver(value, _1, _2, info) {
-      calledForFields[`${info.parentType.name}::${info.fieldName}`] = true;
-      return value;
+    function fieldResolver(_1, _2, _3, info) {
+      invariant(false, `Called on ${info.parentType.name}::${info.fieldName}`);
     }
 
     graphqlSync({ schema, source, fieldResolver });
-    expect(calledForFields).to.deep.equal({});
   });
 });

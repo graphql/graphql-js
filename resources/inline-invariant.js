@@ -60,6 +60,7 @@ module.exports = function inlineInvariant(context) {
     const previousStatement =
       parentStatement.container[parentStatement.key - 1];
     if (
+      previousStatement != null &&
       previousStatement.type === 'IfStatement' &&
       previousStatement.alternate == null
     ) {
