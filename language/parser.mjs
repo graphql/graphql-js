@@ -319,7 +319,7 @@ function () {
     return {
       kind: Kind.ARGUMENT,
       name: this.parseName(),
-      value: (this.expectToken(TokenKind.COLON), this.parseConstValue()),
+      value: (this.expectToken(TokenKind.COLON), this.parseValueLiteral(true)),
       loc: this.loc(start)
     };
   } // Implements the parsing rules in the Fragments section.
@@ -503,14 +503,6 @@ function () {
       block: token.kind === TokenKind.BLOCK_STRING,
       loc: this.loc(token)
     };
-  };
-
-  _proto.parseConstValue = function parseConstValue() {
-    return this.parseValueLiteral(true);
-  };
-
-  _proto.parseValueValue = function parseValueValue() {
-    return this.parseValueLiteral(false);
   }
   /**
    * ListValue[Const] :
@@ -520,8 +512,14 @@ function () {
   ;
 
   _proto.parseList = function parseList(isConst) {
+    var _this = this;
+
     var start = this._lexer.token;
-    var item = isConst ? this.parseConstValue : this.parseValueValue;
+
+    var item = function item() {
+      return _this.parseValueLiteral(isConst);
+    };
+
     return {
       kind: Kind.LIST,
       values: this.any(TokenKind.BRACKET_L, item, TokenKind.BRACKET_R),
@@ -536,12 +534,12 @@ function () {
   ;
 
   _proto.parseObject = function parseObject(isConst) {
-    var _this = this;
+    var _this2 = this;
 
     var start = this._lexer.token;
 
     var item = function item() {
-      return _this.parseObjectField(isConst);
+      return _this2.parseObjectField(isConst);
     };
 
     return {
@@ -873,7 +871,7 @@ function () {
     var defaultValue;
 
     if (this.expectOptionalToken(TokenKind.EQUALS)) {
-      defaultValue = this.parseConstValue();
+      defaultValue = this.parseValueLiteral(true);
     }
 
     var directives = this.parseDirectives(true);
