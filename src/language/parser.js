@@ -433,7 +433,7 @@ class Parser {
     return {
       kind: Kind.ARGUMENT,
       name: this.parseName(),
-      value: (this.expectToken(TokenKind.COLON), this.parseConstValue()),
+      value: (this.expectToken(TokenKind.COLON), this.parseValueLiteral(true)),
       loc: this.loc(start),
     };
   }
@@ -597,14 +597,6 @@ class Parser {
     };
   }
 
-  parseConstValue(): ValueNode {
-    return this.parseValueLiteral(true);
-  }
-
-  parseValueValue(): ValueNode {
-    return this.parseValueLiteral(false);
-  }
-
   /**
    * ListValue[Const] :
    *   - [ ]
@@ -612,7 +604,7 @@ class Parser {
    */
   parseList(isConst: boolean): ListValueNode {
     const start = this._lexer.token;
-    const item = isConst ? this.parseConstValue : this.parseValueValue;
+    const item = () => this.parseValueLiteral(isConst);
     return {
       kind: Kind.LIST,
       values: this.any(TokenKind.BRACKET_L, item, TokenKind.BRACKET_R),
@@ -949,7 +941,7 @@ class Parser {
     const type = this.parseTypeReference();
     let defaultValue;
     if (this.expectOptionalToken(TokenKind.EQUALS)) {
-      defaultValue = this.parseConstValue();
+      defaultValue = this.parseValueLiteral(true);
     }
     const directives = this.parseDirectives(true);
     return {
