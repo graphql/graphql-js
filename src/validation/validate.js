@@ -14,10 +14,10 @@ import { TypeInfo } from '../utilities/TypeInfo';
 
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
 import {
-  type SDLValidationRule,
-  type ValidationRule,
   SDLValidationContext,
+  type SDLValidationRule,
   ValidationContext,
+  type ValidationRule,
 } from './ValidationContext';
 
 /**
@@ -41,12 +41,22 @@ export function validate(
   documentAST: DocumentNode,
   rules?: $ReadOnlyArray<ValidationRule> = specifiedRules,
   typeInfo?: TypeInfo = new TypeInfo(schema),
+  onError?: (err: Error, ctx: ValidationContext) => void,
 ): $ReadOnlyArray<GraphQLError> {
   devAssert(documentAST, 'Must provide document');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
 
-  const context = new ValidationContext(schema, documentAST, typeInfo);
+  const context = new ValidationContext(
+    schema,
+    documentAST,
+    typeInfo,
+    function onErrorWithContext(err) {
+      if (onError) {
+        onError(err, this);
+      }
+    },
+  );
   // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.
   const visitor = visitInParallel(rules.map(rule => rule(context)));

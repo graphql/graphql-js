@@ -8,21 +8,21 @@ import { Kind } from '../language/kinds';
 import { type ASTVisitor, visit, visitWithTypeInfo } from '../language/visitor';
 import {
   type DocumentNode,
-  type OperationDefinitionNode,
-  type VariableNode,
-  type SelectionSetNode,
-  type FragmentSpreadNode,
   type FragmentDefinitionNode,
+  type FragmentSpreadNode,
+  type OperationDefinitionNode,
+  type SelectionSetNode,
+  type VariableNode,
 } from '../language/ast';
 
 import { type GraphQLSchema } from '../type/schema';
 import { type GraphQLDirective } from '../type/directives';
 import {
-  type GraphQLInputType,
-  type GraphQLOutputType,
+  type GraphQLArgument,
   type GraphQLCompositeType,
   type GraphQLField,
-  type GraphQLArgument,
+  type GraphQLInputType,
+  type GraphQLOutputType,
 } from '../type/definition';
 
 import { TypeInfo } from '../utilities/TypeInfo';
@@ -41,6 +41,7 @@ type VariableUsage = {|
  */
 export class ASTValidationContext {
   _ast: DocumentNode;
+  _onError: ?(err: Error) => void;
   _errors: Array<GraphQLError>;
   _fragments: ?ObjMap<FragmentDefinitionNode>;
   _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
@@ -49,16 +50,23 @@ export class ASTValidationContext {
     $ReadOnlyArray<FragmentDefinitionNode>,
   >;
 
-  constructor(ast: DocumentNode): void {
+  constructor(ast: DocumentNode, onError?: (err: Error) => void): void {
     this._ast = ast;
     this._errors = [];
     this._fragments = undefined;
     this._fragmentSpreads = new Map();
     this._recursivelyReferencedFragments = new Map();
+    this._onError = undefined;
+    if (onError) {
+      this._onError = onError.bind(this);
+    }
   }
 
   reportError(error: GraphQLError): void {
     this._errors.push(error);
+    if (this._onError) {
+      this._onError(error);
+    }
   }
 
   getErrors(): $ReadOnlyArray<GraphQLError> {
@@ -165,8 +173,9 @@ export class ValidationContext extends ASTValidationContext {
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
+    onError?: (err: Error) => void,
   ): void {
-    super(ast);
+    super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();

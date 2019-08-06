@@ -74,4 +74,29 @@ describe('Validate: Supports full validation', () => {
       'Cannot query field "isHousetrained" on type "Dog". Did you mean "isHousetrained"?',
     ]);
   });
+
+  it('properly calls onError callback when passed', () => {
+    const doc = parse(`
+      query {
+        cat {
+          name
+          someNonExistentField
+        }
+        dog {
+          name
+          anotherNonExistentField
+        }
+      }
+    `);
+
+    const expectedNumberOfErrors = 2;
+    let errorCount = 0;
+    validate(testSchema, doc, specifiedRules, undefined, (err, ctx) => {
+      expect(err).to.not.be.a('null');
+      expect(ctx).to.not.be.a('null');
+      expect(ctx.getErrors()).to.be.length(++errorCount);
+    });
+
+    expect(errorCount).to.be.equal(expectedNumberOfErrors);
+  });
 });
