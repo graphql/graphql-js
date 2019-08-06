@@ -125,7 +125,7 @@ function getObjectTag(object) {
   if (tag === 'Object' && typeof object.constructor === 'function') {
     var name = object.constructor.name;
 
-    if (typeof name === 'string') {
+    if (typeof name === 'string' && name !== '') {
       return name;
     }
   }
