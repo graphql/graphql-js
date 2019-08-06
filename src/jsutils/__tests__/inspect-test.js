@@ -177,5 +177,10 @@ describe('inspect', () => {
 
     (Foo.prototype: any)[Symbol.toStringTag] = 'Bar';
     expect(inspect([[new Foo()]])).to.equal('[[[Bar]]]');
+
+    const objectWithoutClassName = new (function() {
+      this.foo = 1;
+    })();
+    expect(inspect([[objectWithoutClassName]])).to.equal('[[[Object]]]');
   });
 });
