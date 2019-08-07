@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import { coerceValue } from './coerceValue';
 /**
- * Deprecated. Use coerceValue() directly for richer information.
+ * Deprecated. Use coerceInputValue() directly for richer information.
  *
  * This function will be removed in v15
  */

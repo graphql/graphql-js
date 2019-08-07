@@ -86,9 +86,12 @@ export { astFromValue } from './astFromValue';
 export { TypeInfo } from './TypeInfo';
 
 // Coerces a JavaScript value to a GraphQL type, or produces errors.
+export { coerceInputValue } from './coerceInputValue';
+
+// @deprecated use coerceInputValue - will be removed in v15.
 export { coerceValue } from './coerceValue';
 
-// @deprecated use coerceValue - will be removed in v15.
+// @deprecated use coerceInputValue - will be removed in v15.
 export { isValidJSValue } from './isValidJSValue';
 
 // @deprecated use validation - will be removed in v15

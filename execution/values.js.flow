@@ -5,6 +5,7 @@ import find from '../polyfills/find';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import { type ObjMap } from '../jsutils/ObjMap';
+import printPathArray from '../jsutils/printPathArray';
 
 import { GraphQLError } from '../error/GraphQLError';
 
@@ -24,9 +25,9 @@ import {
   isNonNullType,
 } from '../type/definition';
 
-import { coerceValue } from '../utilities/coerceValue';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
+import { coerceInputValue } from '../utilities/coerceInputValue';
 
 type CoercedVariableValues =
   | {| errors: $ReadOnlyArray<GraphQLError> |}
@@ -45,8 +46,36 @@ export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: $ReadOnlyArray<VariableDefinitionNode>,
   inputs: { +[variable: string]: mixed, ... },
+  options?: {| maxErrors?: number |},
 ): CoercedVariableValues {
+  const maxErrors = options && options.maxErrors;
   const errors = [];
+  try {
+    const coerced = coerceVariableValues(schema, varDefNodes, inputs, error => {
+      if (maxErrors != null && errors.length >= maxErrors) {
+        throw new GraphQLError(
+          'Too many errors processing variables, error limit reached. Execution aborted.',
+        );
+      }
+      errors.push(error);
+    });
+
+    if (errors.length === 0) {
+      return { coerced };
+    }
+  } catch (error) {
+    errors.push(error);
+  }
+
+  return { errors };
+}
+
+function coerceVariableValues(
+  schema: GraphQLSchema,
+  varDefNodes: $ReadOnlyArray<VariableDefinitionNode>,
+  inputs: { +[variable: string]: mixed, ... },
+  onError: GraphQLError => void,
+): { [variable: string]: mixed, ... } {
   const coercedValues = {};
   for (const varDefNode of varDefNodes) {
     const varName = varDefNode.variable.name.value;
@@ -55,7 +84,7 @@ export function getVariableValues(
       // Must use input types for variables. This should be caught during
       // validation, however is checked again here for safety.
       const varTypeStr = print(varDefNode.type);
-      errors.push(
+      onError(
         new GraphQLError(
           `Variable "$${varName}" expected value of type "${varTypeStr}" which cannot be used as an input type.`,
           varDefNode.type,
@@ -71,7 +100,7 @@ export function getVariableValues(
 
       if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
-        errors.push(
+        onError(
           new GraphQLError(
             `Variable "$${varName}" of required type "${varTypeStr}" was not provided.`,
             varDefNode,
@@ -84,7 +113,7 @@ export function getVariableValues(
     const value = inputs[varName];
     if (value === null && isNonNullType(varType)) {
       const varTypeStr = inspect(varType);
-      errors.push(
+      onError(
         new GraphQLError(
           `Variable "$${varName}" of non-null type "${varTypeStr}" must not be null.`,
           varDefNode,
@@ -93,21 +122,30 @@ export function getVariableValues(
       continue;
     }
 
-    const coerced = coerceValue(value, varType, varDefNode);
-    if (coerced.errors) {
-      for (const error of coerced.errors) {
-        error.message =
-          `Variable "$${varName}" got invalid value ${inspect(value)}; ` +
-          error.message;
-      }
-      errors.push(...coerced.errors);
-      continue;
-    }
-
-    coercedValues[varName] = coerced.value;
+    coercedValues[varName] = coerceInputValue(
+      value,
+      varType,
+      (path, invalidValue, error) => {
+        let prefix =
+          `Variable "$${varName}" got invalid value ` + inspect(invalidValue);
+        if (path.length > 0) {
+          prefix += ` at "${varName}${printPathArray(path)}"`;
+        }
+        onError(
+          new GraphQLError(
+            prefix + '; ' + error.message,
+            varDefNode,
+            undefined,
+            undefined,
+            undefined,
+            error.originalError,
+          ),
+        );
+      },
+    );
   }
 
-  return errors.length === 0 ? { coerced: coercedValues } : { errors };
+  return coercedValues;
 }
 
 /**

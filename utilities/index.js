@@ -117,6 +117,12 @@ Object.defineProperty(exports, "TypeInfo", {
     return _TypeInfo.TypeInfo;
   }
 });
+Object.defineProperty(exports, "coerceInputValue", {
+  enumerable: true,
+  get: function get() {
+    return _coerceInputValue.coerceInputValue;
+  }
+});
 Object.defineProperty(exports, "coerceValue", {
   enumerable: true,
   get: function get() {
@@ -241,6 +247,8 @@ var _valueFromASTUntyped = require("./valueFromASTUntyped");
 var _astFromValue = require("./astFromValue");
 
 var _TypeInfo = require("./TypeInfo");
+
+var _coerceInputValue = require("./coerceInputValue");
 
 var _coerceValue = require("./coerceValue");
 

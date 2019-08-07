@@ -81,7 +81,8 @@ valueFromASTUntyped, // Create a GraphQL language AST from a JavaScript value.
 astFromValue, // A helper to use within recursive-descent visitors which need to be aware of
 // the GraphQL type system.
 TypeInfo, // Coerces a JavaScript value to a GraphQL type, or produces errors.
-coerceValue, // @deprecated use coerceValue - will be removed in v15
+coerceInputValue, // @deprecated use coerceInputValue - will be removed in v15
+coerceValue, // @deprecated use coerceInputValue - will be removed in v15
 isValidJSValue, // @deprecated use validation - will be removed in v15
 isValidLiteralValue, // Concatenates multiple AST together.
 concatAST, // Separates an AST into an AST per Operation.

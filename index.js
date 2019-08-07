@@ -1023,6 +1023,12 @@ Object.defineProperty(exports, "TypeInfo", {
     return _utilities.TypeInfo;
   }
 });
+Object.defineProperty(exports, "coerceInputValue", {
+  enumerable: true,
+  get: function get() {
+    return _utilities.coerceInputValue;
+  }
+});
 Object.defineProperty(exports, "coerceValue", {
   enumerable: true,
   get: function get() {

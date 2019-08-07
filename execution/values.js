@@ -13,6 +13,8 @@ var _keyMap = _interopRequireDefault(require("../jsutils/keyMap"));
 
 var _inspect = _interopRequireDefault(require("../jsutils/inspect"));
 
+var _printPathArray = _interopRequireDefault(require("../jsutils/printPathArray"));
+
 var _GraphQLError = require("../error/GraphQLError");
 
 var _kinds = require("../language/kinds");
@@ -21,11 +23,11 @@ var _printer = require("../language/printer");
 
 var _definition = require("../type/definition");
 
-var _coerceValue = require("../utilities/coerceValue");
-
 var _typeFromAST = require("../utilities/typeFromAST");
 
 var _valueFromAST = require("../utilities/valueFromAST");
+
+var _coerceInputValue = require("../utilities/coerceInputValue");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -38,15 +40,41 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-function getVariableValues(schema, varDefNodes, inputs) {
+function getVariableValues(schema, varDefNodes, inputs, options) {
+  var maxErrors = options && options.maxErrors;
   var errors = [];
+
+  try {
+    var coerced = coerceVariableValues(schema, varDefNodes, inputs, function (error) {
+      if (maxErrors != null && errors.length >= maxErrors) {
+        throw new _GraphQLError.GraphQLError('Too many errors processing variables, error limit reached. Execution aborted.');
+      }
+
+      errors.push(error);
+    });
+
+    if (errors.length === 0) {
+      return {
+        coerced: coerced
+      };
+    }
+  } catch (error) {
+    errors.push(error);
+  }
+
+  return {
+    errors: errors
+  };
+}
+
+function coerceVariableValues(schema, varDefNodes, inputs, onError) {
   var coercedValues = {};
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;
 
   try {
-    for (var _iterator = varDefNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+    var _loop = function _loop() {
       var varDefNode = _step.value;
       var varName = varDefNode.variable.name.value;
       var varType = (0, _typeFromAST.typeFromAST)(schema, varDefNode.type);
@@ -55,8 +83,8 @@ function getVariableValues(schema, varDefNodes, inputs) {
         // Must use input types for variables. This should be caught during
         // validation, however is checked again here for safety.
         var varTypeStr = (0, _printer.print)(varDefNode.type);
-        errors.push(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" expected value of type \"").concat(varTypeStr, "\" which cannot be used as an input type."), varDefNode.type));
-        continue;
+        onError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" expected value of type \"").concat(varTypeStr, "\" which cannot be used as an input type."), varDefNode.type));
+        return "continue";
       }
 
       if (!hasOwnProperty(inputs, varName)) {
@@ -67,10 +95,10 @@ function getVariableValues(schema, varDefNodes, inputs) {
         if ((0, _definition.isNonNullType)(varType)) {
           var _varTypeStr = (0, _inspect.default)(varType);
 
-          errors.push(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of required type \"").concat(_varTypeStr, "\" was not provided."), varDefNode));
+          onError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of required type \"").concat(_varTypeStr, "\" was not provided."), varDefNode));
         }
 
-        continue;
+        return "continue";
       }
 
       var value = inputs[varName];
@@ -78,42 +106,25 @@ function getVariableValues(schema, varDefNodes, inputs) {
       if (value === null && (0, _definition.isNonNullType)(varType)) {
         var _varTypeStr2 = (0, _inspect.default)(varType);
 
-        errors.push(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of non-null type \"").concat(_varTypeStr2, "\" must not be null."), varDefNode));
-        continue;
+        onError(new _GraphQLError.GraphQLError("Variable \"$".concat(varName, "\" of non-null type \"").concat(_varTypeStr2, "\" must not be null."), varDefNode));
+        return "continue";
       }
 
-      var coerced = (0, _coerceValue.coerceValue)(value, varType, varDefNode);
+      coercedValues[varName] = (0, _coerceInputValue.coerceInputValue)(value, varType, function (path, invalidValue, error) {
+        var prefix = "Variable \"$".concat(varName, "\" got invalid value ") + (0, _inspect.default)(invalidValue);
 
-      if (coerced.errors) {
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-          for (var _iterator2 = coerced.errors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var error = _step2.value;
-            error.message = "Variable \"$".concat(varName, "\" got invalid value ").concat((0, _inspect.default)(value), "; ") + error.message;
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
-            }
-          }
+        if (path.length > 0) {
+          prefix += " at \"".concat(varName).concat((0, _printPathArray.default)(path), "\"");
         }
 
-        errors.push.apply(errors, coerced.errors);
-        continue;
-      }
+        onError(new _GraphQLError.GraphQLError(prefix + '; ' + error.message, varDefNode, undefined, undefined, undefined, error.originalError));
+      });
+    };
 
-      coercedValues[varName] = coerced.value;
+    for (var _iterator = varDefNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _ret = _loop();
+
+      if (_ret === "continue") continue;
     }
   } catch (err) {
     _didIteratorError = true;
@@ -130,11 +141,7 @@ function getVariableValues(schema, varDefNodes, inputs) {
     }
   }
 
-  return errors.length === 0 ? {
-    coerced: coercedValues
-  } : {
-    errors: errors
-  };
+  return coercedValues;
 }
 /**
  * Prepares an object map of argument values given a list of argument
@@ -151,13 +158,13 @@ function getArgumentValues(def, node, variableValues) {
   var argNodeMap = (0, _keyMap.default)(node.arguments || [], function (arg) {
     return arg.name.value;
   });
-  var _iteratorNormalCompletion3 = true;
-  var _didIteratorError3 = false;
-  var _iteratorError3 = undefined;
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
 
   try {
-    for (var _iterator3 = def.args[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-      var argDef = _step3.value;
+    for (var _iterator2 = def.args[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var argDef = _step2.value;
       var name = argDef.name;
       var argType = argDef.type;
       var argumentNode = argNodeMap[name];
@@ -207,16 +214,16 @@ function getArgumentValues(def, node, variableValues) {
       coercedValues[name] = coercedValue;
     }
   } catch (err) {
-    _didIteratorError3 = true;
-    _iteratorError3 = err;
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-        _iterator3.return();
+      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+        _iterator2.return();
       }
     } finally {
-      if (_didIteratorError3) {
-        throw _iteratorError3;
+      if (_didIteratorError2) {
+        throw _iteratorError2;
       }
     }
   }

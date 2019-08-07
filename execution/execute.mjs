@@ -169,7 +169,9 @@ export function buildExecutionContext(schema, document, rootValue, contextValue,
     return [new GraphQLError('Must provide operation name if query contains multiple operations.')];
   }
 
-  var coercedVariableValues = getVariableValues(schema, operation.variableDefinitions || [], rawVariableValues || {});
+  var coercedVariableValues = getVariableValues(schema, operation.variableDefinitions || [], rawVariableValues || {}, {
+    maxErrors: 50
+  });
 
   if (coercedVariableValues.errors) {
     return coercedVariableValues.errors;
