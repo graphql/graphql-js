@@ -15,7 +15,7 @@ export function addPath(prev: $ReadOnly<Path> | void, key: string | number) {
 /**
  * Given a Path, return an Array of the path keys.
  */
-export function pathToArray(path: $ReadOnly<Path>): Array<string | number> {
+export function pathToArray(path: ?$ReadOnly<Path>): Array<string | number> {
   const flattened = [];
   let curr = path;
   while (curr) {

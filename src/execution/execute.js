@@ -319,6 +319,7 @@ export function buildExecutionContext(
     schema,
     operation.variableDefinitions || [],
     rawVariableValues || {},
+    { maxErrors: 50 },
   );
 
   if (coercedVariableValues.errors) {
