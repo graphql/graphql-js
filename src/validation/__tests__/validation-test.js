@@ -7,7 +7,6 @@ import { parse } from '../../language/parser';
 import { TypeInfo } from '../../utilities/TypeInfo';
 
 import { validate } from '../validate';
-import { specifiedRules } from '../specifiedRules';
 
 import { testSchema } from './harness';
 
@@ -65,7 +64,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    const errors = validate(testSchema, doc, specifiedRules, typeInfo);
+    const errors = validate(testSchema, doc, undefined, typeInfo);
     const errorMessages = errors.map(err => err.message);
 
     expect(errorMessages).to.deep.equal([
