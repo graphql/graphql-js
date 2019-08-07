@@ -991,34 +991,55 @@ describe('Execute: Handles inputs', () => {
   });
 
   describe('getVariableValues: limit maximum number of coercion errors', () => {
-    it('when values are invalid', () => {
-      const doc = parse(`
-        query ($input: [String!]) {
-          listNN(input: $input)
-        }
-      `);
-      const operation = doc.definitions[0];
-      invariant(operation.kind === Kind.OPERATION_DEFINITION);
+    const doc = parse(`
+      query ($input: [String!]) {
+        listNN(input: $input)
+      }
+    `);
 
+    const operation = doc.definitions[0];
+    invariant(operation.kind === Kind.OPERATION_DEFINITION);
+    const { variableDefinitions } = operation;
+    invariant(variableDefinitions != null);
+
+    const inputValue = { input: [0, 1, 2] };
+
+    function invalidValueError(value, index) {
+      return {
+        message: `Variable "$input" got invalid value ${value} at "input[${index}]"; Expected type String. String cannot represent a non string value: ${value}`,
+        locations: [{ line: 2, column: 14 }],
+      };
+    }
+
+    it('when maxErrors is equal to number of errors', () => {
       const result = getVariableValues(
         schema,
-        operation.variableDefinitions || [],
-        { input: [0, 1, 2] },
+        variableDefinitions,
+        inputValue,
+        { maxErrors: 3 },
+      );
+
+      expect(result).to.deep.equal({
+        errors: [
+          invalidValueError(0, 0),
+          invalidValueError(1, 1),
+          invalidValueError(2, 2),
+        ],
+      });
+    });
+
+    it('when maxErrors is less than number of errors', () => {
+      const result = getVariableValues(
+        schema,
+        variableDefinitions,
+        inputValue,
         { maxErrors: 2 },
       );
 
       expect(result).to.deep.equal({
         errors: [
-          {
-            message:
-              'Variable "$input" got invalid value 0 at "input[0]"; Expected type String. String cannot represent a non string value: 0',
-            locations: [{ line: 2, column: 16 }],
-          },
-          {
-            message:
-              'Variable "$input" got invalid value 1 at "input[1]"; Expected type String. String cannot represent a non string value: 1',
-            locations: [{ line: 2, column: 16 }],
-          },
+          invalidValueError(0, 0),
+          invalidValueError(1, 1),
           {
             message:
               'Too many errors processing variables, error limit reached. Execution aborted.',
