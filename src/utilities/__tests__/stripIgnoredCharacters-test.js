@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import dedent from '../../jsutils/dedent';
+import invariant from '../../jsutils/invariant';
 
 import { parse } from '../../language/parser';
 import { Source } from '../../language/source';
@@ -61,10 +62,7 @@ function lexValue(str) {
   const lexer = createLexer(new Source(str));
   const value = lexer.advance().value;
 
-  /* istanbul ignore if */
-  if (lexer.advance().kind !== '<EOF>') {
-    throw new Error('Expected EOF');
-  }
+  invariant(lexer.advance().kind === '<EOF>', 'Expected EOF');
   return value;
 }
 
@@ -81,25 +79,25 @@ function expectStripped(docString) {
     toEqual(expected) {
       const stripped = stripIgnoredCharacters(docString);
 
-      /* istanbul ignore if */
-      if (stripped !== expected) {
-        throw new Error(dedent`
+      invariant(
+        stripped === expected,
+        dedent`
           Expected stripIgnoredCharacters(${inspectStr(docString)})
             to equal ${inspectStr(expected)}
             but got  ${inspectStr(stripped)}
-        `);
-      }
+        `,
+      );
 
       const strippedTwice = stripIgnoredCharacters(stripped);
 
-      /* istanbul ignore if */
-      if (stripped !== strippedTwice) {
-        throw new Error(dedent`
+      invariant(
+        stripped === strippedTwice,
+        dedent`
           Expected stripIgnoredCharacters(${inspectStr(stripped)})
             to equal ${inspectStr(stripped)}
             but got  ${inspectStr(strippedTwice)}
-        `);
-      }
+        `,
+      );
     },
     toStayTheSame() {
       this.toEqual(docString);
@@ -414,14 +412,14 @@ describe('stripIgnoredCharacters', () => {
       const strippedStr = stripIgnoredCharacters(blockStr);
       const strippedValue = lexValue(strippedStr);
 
-      /* istanbul ignore if */
-      if (originalValue !== strippedValue) {
-        throw new Error(dedent`
-          Expected lextOne(stripIgnoredCharacters(${inspectStr(blockStr)}))
-            to equal ${inspectStr(originalValue)}
-            but got  ${inspectStr(strippedValue)}
-        `);
-      }
+      invariant(
+        originalValue === strippedValue,
+        dedent`
+        Expected lextOne(stripIgnoredCharacters(${inspectStr(blockStr)}))
+          to equal ${inspectStr(originalValue)}
+          but got  ${inspectStr(strippedValue)}
+      `,
+      );
       return expectStripped(blockStr);
     }
 
@@ -476,14 +474,14 @@ describe('stripIgnoredCharacters', () => {
         const strippedStr = stripIgnoredCharacters(testStr);
         const strippedValue = lexValue(strippedStr);
 
-        /* istanbul ignore if */
-        if (testValue !== strippedValue) {
-          throw new Error(dedent`
+        invariant(
+          testValue === strippedValue,
+          dedent`
             Expected lextOne(stripIgnoredCharacters(${inspectStr(testStr)}))
               to equal ${inspectStr(testValue)}
               but got  ${inspectStr(strippedValue)}
-          `);
-        }
+          `,
+        );
       }
     }
   });

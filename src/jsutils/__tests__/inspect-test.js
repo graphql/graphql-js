@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import inspect from '../inspect';
+import invariant from '../invariant';
 import nodejsCustomInspectSymbol from '../nodejsCustomInspectSymbol';
 
 describe('inspect', () => {
@@ -35,10 +36,11 @@ describe('inspect', () => {
   });
 
   it('function', () => {
-    expect(inspect(/* istanbul ignore next */ () => 0)).to.equal('[function]');
+    expect(inspect(() => invariant(false))).to.equal('[function]');
 
-    /* istanbul ignore next */
-    function testFunc() {}
+    function testFunc() {
+      invariant(false);
+    }
     expect(inspect(testFunc)).to.equal('[function testFunc]');
   });
 
@@ -102,7 +104,7 @@ describe('inspect', () => {
   it('custom symbol inspect is take precedence', () => {
     const object = {
       inspect() {
-        return '<custom inspect>';
+        invariant(false);
       },
       [String(nodejsCustomInspectSymbol)]() {
         return '<custom symbol inspect>';
