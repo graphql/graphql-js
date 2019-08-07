@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = invariant;
 
-/* istanbul ignore file */
 function invariant(condition, message) {
   var booleanCondition = Boolean(condition);
 

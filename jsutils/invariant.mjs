@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 export default function invariant(condition, message) {
   var booleanCondition = Boolean(condition);
 
