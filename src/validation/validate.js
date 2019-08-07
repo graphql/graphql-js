@@ -14,10 +14,10 @@ import { TypeInfo } from '../utilities/TypeInfo';
 
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
 import {
-  SDLValidationContext,
   type SDLValidationRule,
-  ValidationContext,
   type ValidationRule,
+  SDLValidationContext,
+  ValidationContext,
 } from './ValidationContext';
 
 /**

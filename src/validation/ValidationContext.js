@@ -8,21 +8,21 @@ import { Kind } from '../language/kinds';
 import { type ASTVisitor, visit, visitWithTypeInfo } from '../language/visitor';
 import {
   type DocumentNode,
-  type FragmentDefinitionNode,
-  type FragmentSpreadNode,
   type OperationDefinitionNode,
-  type SelectionSetNode,
   type VariableNode,
+  type SelectionSetNode,
+  type FragmentSpreadNode,
+  type FragmentDefinitionNode,
 } from '../language/ast';
 
 import { type GraphQLSchema } from '../type/schema';
 import { type GraphQLDirective } from '../type/directives';
 import {
-  type GraphQLArgument,
-  type GraphQLCompositeType,
-  type GraphQLField,
   type GraphQLInputType,
   type GraphQLOutputType,
+  type GraphQLCompositeType,
+  type GraphQLField,
+  type GraphQLArgument,
 } from '../type/definition';
 
 import { TypeInfo } from '../utilities/TypeInfo';
