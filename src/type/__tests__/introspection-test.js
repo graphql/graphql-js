@@ -1357,7 +1357,7 @@ describe('Introspection', () => {
             },
             {
               description:
-                'Indicates this type is an interface. `fields` and `possibleTypes` are valid fields.',
+                'Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields.',
               name: 'INTERFACE',
             },
             {

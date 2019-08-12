@@ -181,14 +181,20 @@ function printScalar(type: GraphQLScalarType, options): string {
   return printDescription(options, type) + `scalar ${type.name}`;
 }
 
-function printObject(type: GraphQLObjectType, options): string {
+function printImplementedInterfaces(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+): string {
   const interfaces = type.getInterfaces();
-  const implementedInterfaces = interfaces.length
+  return interfaces.length
     ? ' implements ' + interfaces.map(i => i.name).join(' & ')
     : '';
+}
+
+function printObject(type: GraphQLObjectType, options): string {
   return (
     printDescription(options, type) +
-    `type ${type.name}${implementedInterfaces}` +
+    `type ${type.name}` +
+    printImplementedInterfaces(type) +
     printFields(options, type)
   );
 }
@@ -197,6 +203,7 @@ function printInterface(type: GraphQLInterfaceType, options): string {
   return (
     printDescription(options, type) +
     `interface ${type.name}` +
+    printImplementedInterfaces(type) +
     printFields(options, type)
   );
 }

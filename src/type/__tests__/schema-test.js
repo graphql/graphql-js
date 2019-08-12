@@ -181,6 +181,12 @@ describe('Type System: Schema', () => {
       const SomeInterface = new GraphQLInterfaceType({
         name: 'SomeInterface',
         fields: {},
+        interfaces: () => [AnotherInterface],
+      });
+
+      const AnotherInterface = new GraphQLInterfaceType({
+        name: 'AnotherInterface',
+        fields: {},
       });
 
       const SomeSubtype = new GraphQLObjectType({
@@ -192,6 +198,7 @@ describe('Type System: Schema', () => {
       const schema = new GraphQLSchema({ types: [SomeSubtype] });
 
       expect(schema.getType('SomeInterface')).to.equal(SomeInterface);
+      expect(schema.getType('AnotherInterface')).to.equal(AnotherInterface);
       expect(schema.getType('SomeSubtype')).to.equal(SomeSubtype);
     });
 

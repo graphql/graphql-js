@@ -365,10 +365,18 @@ export function extendSchema(
   ): GraphQLInterfaceType {
     const config = type.toConfig();
     const extensions = typeExtsMap[config.name] || [];
+    const interfaceNodes = flatMap(extensions, node => node.interfaces || []);
     const fieldNodes = flatMap(extensions, node => node.fields || []);
 
     return new GraphQLInterfaceType({
       ...config,
+      interfaces: () => [
+        ...type.getInterfaces().map(replaceNamedType),
+        // Note: While this could make early assertions to get the correctly
+        // typed values, that would throw immediately while type system
+        // validation with validateSchema() will produce more actionable results.
+        ...interfaceNodes.map(node => (astBuilder.getNamedType(node): any)),
+      ],
       fields: () => ({
         ...mapValue(config.fields, extendField),
         ...keyValMap(

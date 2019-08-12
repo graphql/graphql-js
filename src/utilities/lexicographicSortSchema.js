@@ -115,6 +115,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
       const config = type.toConfig();
       return new GraphQLInterfaceType({
         ...config,
+        interfaces: () => sortTypes(config.interfaces),
         fields: () => sortFields(config.fields),
       });
     } else if (isUnionType(type)) {

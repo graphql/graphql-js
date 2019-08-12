@@ -340,6 +340,61 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Print Hierarchical Interface', () => {
+    const FooType = new GraphQLInterfaceType({
+      name: 'Foo',
+      fields: { str: { type: GraphQLString } },
+    });
+
+    const BaazType = new GraphQLInterfaceType({
+      name: 'Baaz',
+      interfaces: [FooType],
+      fields: {
+        int: { type: GraphQLInt },
+        str: { type: GraphQLString },
+      },
+    });
+
+    const BarType = new GraphQLObjectType({
+      name: 'Bar',
+      fields: {
+        str: { type: GraphQLString },
+        int: { type: GraphQLInt },
+      },
+      interfaces: [FooType, BaazType],
+    });
+
+    const Query = new GraphQLObjectType({
+      name: 'Query',
+      fields: { bar: { type: BarType } },
+    });
+
+    const Schema = new GraphQLSchema({
+      query: Query,
+      types: [BarType],
+    });
+    const output = printForTest(Schema);
+    expect(output).to.equal(dedent`
+      interface Baaz implements Foo {
+        int: Int
+        str: String
+      }
+
+      type Bar implements Foo & Baaz {
+        str: String
+        int: Int
+      }
+
+      interface Foo {
+        str: String
+      }
+
+      type Query {
+        bar: Bar
+      }
+    `);
+  });
+
   it('Print Unions', () => {
     const FooType = new GraphQLObjectType({
       name: 'Foo',
@@ -723,7 +778,7 @@ describe('Type System Printer', () => {
         OBJECT
 
         """
-        Indicates this type is an interface. \`fields\` and \`possibleTypes\` are valid fields.
+        Indicates this type is an interface. \`fields\`, \`interfaces\`, and \`possibleTypes\` are valid fields.
         """
         INTERFACE
 
@@ -929,7 +984,7 @@ describe('Type System Printer', () => {
         # Indicates this type is an object. \`fields\` and \`interfaces\` are valid fields.
         OBJECT
 
-        # Indicates this type is an interface. \`fields\` and \`possibleTypes\` are valid fields.
+        # Indicates this type is an interface. \`fields\`, \`interfaces\`, and \`possibleTypes\` are valid fields.
         INTERFACE
 
         # Indicates this type is a union. \`possibleTypes\` is a valid field.

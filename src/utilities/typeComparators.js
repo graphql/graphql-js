@@ -4,6 +4,7 @@ import { type GraphQLSchema } from '../type/schema';
 import {
   type GraphQLType,
   type GraphQLCompositeType,
+  isInterfaceType,
   isObjectType,
   isListType,
   isNonNullType,
@@ -69,6 +70,16 @@ export function isTypeSubTypeOf(
   if (isListType(maybeSubType)) {
     // If superType is not a list, maybeSubType must also be not a list.
     return false;
+  }
+
+  // If superType and maybeSubType are both interfaces, check if the latter
+  // implements the former.
+  if (
+    isInterfaceType(superType) &&
+    isInterfaceType(maybeSubType) &&
+    schema.isImplementation(superType, maybeSubType)
+  ) {
+    return true;
   }
 
   // If superType type is an abstract type, maybeSubType type may be a currently

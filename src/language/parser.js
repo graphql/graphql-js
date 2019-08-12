@@ -964,12 +964,14 @@ class Parser {
     const description = this.parseDescription();
     this.expectKeyword('interface');
     const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseDirectives(true);
     const fields = this.parseFieldsDefinition();
     return {
       kind: Kind.INTERFACE_TYPE_DEFINITION,
       description,
       name,
+      interfaces,
       directives,
       fields,
       loc: this.loc(start),
@@ -1215,22 +1217,29 @@ class Parser {
 
   /**
    * InterfaceTypeExtension :
-   *   - extend interface Name Directives[Const]? FieldsDefinition
-   *   - extend interface Name Directives[Const]
+   *  - extend interface Name ImplementsInterfaces? Directives[Const]? FieldsDefinition
+   *  - extend interface Name ImplementsInterfaces? Directives[Const]
+   *  - extend interface Name ImplementsInterfaces
    */
   parseInterfaceTypeExtension(): InterfaceTypeExtensionNode {
     const start = this._lexer.token;
     this.expectKeyword('extend');
     this.expectKeyword('interface');
     const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseDirectives(true);
     const fields = this.parseFieldsDefinition();
-    if (directives.length === 0 && fields.length === 0) {
+    if (
+      interfaces.length === 0 &&
+      directives.length === 0 &&
+      fields.length === 0
+    ) {
       throw this.unexpected();
     }
     return {
       kind: Kind.INTERFACE_TYPE_EXTENSION,
       name,
+      interfaces,
       directives,
       fields,
       loc: this.loc(start),

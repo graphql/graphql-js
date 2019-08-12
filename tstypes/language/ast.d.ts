@@ -452,6 +452,7 @@ export interface InterfaceTypeDefinitionNode {
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly name: NameNode;
+  readonly interfaces?: ReadonlyArray<NamedTypeNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly fields?: ReadonlyArray<FieldDefinitionNode>;
 }
@@ -544,6 +545,7 @@ export interface InterfaceTypeExtensionNode {
   readonly kind: 'InterfaceTypeExtension';
   readonly loc?: Location;
   readonly name: NameNode;
+  readonly interfaces?: ReadonlyArray<NamedTypeNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly fields?: ReadonlyArray<FieldDefinitionNode>;
 }
