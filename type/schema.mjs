@@ -7,7 +7,7 @@ import isObjectLike from '../jsutils/isObjectLike';
 import defineToStringTag from '../jsutils/defineToStringTag';
 import { __Schema } from './introspection';
 import { GraphQLDirective, isDirective, specifiedDirectives } from './directives';
-import { isAbstractType, isObjectType, isInterfaceType, isUnionType, isInputObjectType, isWrappingType } from './definition';
+import { isAbstractType, isObjectType, isInterfaceType, isUnionType, isInputObjectType, getNamedType } from './definition';
 /**
  * Test if the given value is a GraphQL schema.
  */
@@ -267,36 +267,35 @@ function typeMapReducer(map, type) {
     return map;
   }
 
-  if (isWrappingType(type)) {
-    return typeMapReducer(map, type.ofType);
-  }
+  var namedType = getNamedType(type);
+  var seenType = map[namedType.name];
 
-  if (map[type.name]) {
-    if (map[type.name] !== type) {
-      throw new Error("Schema must contain uniquely named types but contains multiple types named \"".concat(type.name, "\"."));
+  if (seenType) {
+    if (seenType !== namedType) {
+      throw new Error("Schema must contain uniquely named types but contains multiple types named \"".concat(namedType.name, "\"."));
     }
 
     return map;
   }
 
-  map[type.name] = type;
+  map[namedType.name] = namedType;
   var reducedMap = map;
 
-  if (isUnionType(type)) {
-    reducedMap = type.getTypes().reduce(typeMapReducer, reducedMap);
+  if (isUnionType(namedType)) {
+    reducedMap = namedType.getTypes().reduce(typeMapReducer, reducedMap);
   }
 
-  if (isObjectType(type)) {
-    reducedMap = type.getInterfaces().reduce(typeMapReducer, reducedMap);
+  if (isObjectType(namedType)) {
+    reducedMap = namedType.getInterfaces().reduce(typeMapReducer, reducedMap);
   }
 
-  if (isObjectType(type) || isInterfaceType(type)) {
+  if (isObjectType(namedType) || isInterfaceType(namedType)) {
     var _iteratorNormalCompletion3 = true;
     var _didIteratorError3 = false;
     var _iteratorError3 = undefined;
 
     try {
-      for (var _iterator3 = objectValues(type.getFields())[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+      for (var _iterator3 = objectValues(namedType.getFields())[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
         var field = _step3.value;
         var fieldArgTypes = field.args.map(function (arg) {
           return arg.type;
@@ -320,13 +319,13 @@ function typeMapReducer(map, type) {
     }
   }
 
-  if (isInputObjectType(type)) {
+  if (isInputObjectType(namedType)) {
     var _iteratorNormalCompletion4 = true;
     var _didIteratorError4 = false;
     var _iteratorError4 = undefined;
 
     try {
-      for (var _iterator4 = objectValues(type.getFields())[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+      for (var _iterator4 = objectValues(namedType.getFields())[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
         var _field = _step4.value;
         reducedMap = typeMapReducer(reducedMap, _field.type);
       }

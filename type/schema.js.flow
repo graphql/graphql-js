@@ -32,7 +32,7 @@ import {
   isInterfaceType,
   isUnionType,
   isInputObjectType,
-  isWrappingType,
+  getNamedType,
 } from './definition';
 
 /**
@@ -324,39 +324,39 @@ function typeMapReducer(map: TypeMap, type: ?GraphQLType): TypeMap {
   if (!type) {
     return map;
   }
-  if (isWrappingType(type)) {
-    return typeMapReducer(map, type.ofType);
-  }
-  if (map[type.name]) {
-    if (map[type.name] !== type) {
+
+  const namedType = getNamedType(type);
+  const seenType = map[namedType.name];
+  if (seenType) {
+    if (seenType !== namedType) {
       throw new Error(
-        `Schema must contain uniquely named types but contains multiple types named "${type.name}".`,
+        `Schema must contain uniquely named types but contains multiple types named "${namedType.name}".`,
       );
     }
     return map;
   }
-  map[type.name] = type;
+  map[namedType.name] = namedType;
 
   let reducedMap = map;
 
-  if (isUnionType(type)) {
-    reducedMap = type.getTypes().reduce(typeMapReducer, reducedMap);
+  if (isUnionType(namedType)) {
+    reducedMap = namedType.getTypes().reduce(typeMapReducer, reducedMap);
   }
 
-  if (isObjectType(type)) {
-    reducedMap = type.getInterfaces().reduce(typeMapReducer, reducedMap);
+  if (isObjectType(namedType)) {
+    reducedMap = namedType.getInterfaces().reduce(typeMapReducer, reducedMap);
   }
 
-  if (isObjectType(type) || isInterfaceType(type)) {
-    for (const field of objectValues(type.getFields())) {
+  if (isObjectType(namedType) || isInterfaceType(namedType)) {
+    for (const field of objectValues(namedType.getFields())) {
       const fieldArgTypes = field.args.map(arg => arg.type);
       reducedMap = fieldArgTypes.reduce(typeMapReducer, reducedMap);
       reducedMap = typeMapReducer(reducedMap, field.type);
     }
   }
 
-  if (isInputObjectType(type)) {
-    for (const field of objectValues(type.getFields())) {
+  if (isInputObjectType(namedType)) {
+    for (const field of objectValues(namedType.getFields())) {
       reducedMap = typeMapReducer(reducedMap, field.type);
     }
   }
