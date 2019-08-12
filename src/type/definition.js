@@ -895,7 +895,7 @@ export type GraphQLField<
   TSource,
   TContext,
   TArgs = { [argument: string]: any, ... },
-> = {
+> = {|
   name: string,
   description: ?string,
   type: GraphQLOutputType,
@@ -905,17 +905,15 @@ export type GraphQLField<
   isDeprecated?: boolean,
   deprecationReason?: ?string,
   astNode?: ?FieldDefinitionNode,
-  ...
-};
+|};
 
-export type GraphQLArgument = {
+export type GraphQLArgument = {|
   name: string,
   type: GraphQLInputType,
   defaultValue?: mixed,
   description?: ?string,
   astNode?: ?InputValueDefinitionNode,
-  ...
-};
+|};
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean %checks {
   return isNonNullType(arg.type) && arg.defaultValue === undefined;
@@ -1273,15 +1271,14 @@ export type GraphQLEnumValueConfig /* <T> */ = {|
   astNode?: ?EnumValueDefinitionNode,
 |};
 
-export type GraphQLEnumValue /* <T> */ = {
+export type GraphQLEnumValue /* <T> */ = {|
   name: string,
   description: ?string,
   isDeprecated?: boolean,
   deprecationReason: ?string,
   astNode?: ?EnumValueDefinitionNode,
   value: any /* T */,
-  ...
-};
+|};
 
 /**
  * Input Object Type Definition
@@ -1392,14 +1389,13 @@ export type GraphQLInputFieldConfig = {|
 
 export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
-export type GraphQLInputField = {
+export type GraphQLInputField = {|
   name: string,
   type: GraphQLInputType,
   defaultValue?: mixed,
   description?: ?string,
   astNode?: ?InputValueDefinitionNode,
-  ...
-};
+|};
 
 export function isRequiredInputField(
   field: GraphQLInputField,
