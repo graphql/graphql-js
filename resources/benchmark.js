@@ -73,7 +73,8 @@ function babelBuild(dir) {
   rmdirRecursive('./benchmarkDist');
   mkdirRecursive('./benchmarkDist');
 
-  const babel = require('@babel/core');
+  const babelPath = path.join(dir, 'node_modules', '@babel', 'core');
+  const babel = require(babelPath);
   for (const filepath of readdirRecursive('./src')) {
     const srcPath = path.join('./src', filepath);
     const distPath = path.join('./benchmarkDist', filepath);
