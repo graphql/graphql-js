@@ -27,7 +27,6 @@ import {
   type GraphQLNamedType,
   type GraphQLAbstractType,
   type GraphQLObjectType,
-  isAbstractType,
   isObjectType,
   isInterfaceType,
   isUnionType,
@@ -202,8 +201,6 @@ export class GraphQLSchema {
             }
           }
         }
-      } else if (isAbstractType(type) && !this._implementations[type.name]) {
-        this._implementations[type.name] = [];
       }
     }
   }
@@ -234,24 +231,22 @@ export class GraphQLSchema {
     if (isUnionType(abstractType)) {
       return abstractType.getTypes();
     }
-    return this._implementations[abstractType.name];
+    return this._implementations[abstractType.name] || [];
   }
 
   isPossibleType(
     abstractType: GraphQLAbstractType,
     possibleType: GraphQLObjectType,
   ): boolean {
-    const possibleTypeMap = this._possibleTypeMap;
-
-    if (!possibleTypeMap[abstractType.name]) {
-      const possibleTypes = this.getPossibleTypes(abstractType);
-      possibleTypeMap[abstractType.name] = possibleTypes.reduce((map, type) => {
+    if (this._possibleTypeMap[abstractType.name] == null) {
+      const map = Object.create(null);
+      for (const type of this.getPossibleTypes(abstractType)) {
         map[type.name] = true;
-        return map;
-      }, Object.create(null));
+      }
+      this._possibleTypeMap[abstractType.name] = map;
     }
 
-    return Boolean(possibleTypeMap[abstractType.name][possibleType.name]);
+    return Boolean(this._possibleTypeMap[abstractType.name][possibleType.name]);
   }
 
   getDirectives(): $ReadOnlyArray<GraphQLDirective> {
