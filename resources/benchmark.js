@@ -102,9 +102,10 @@ async function collectSamples(modulePath) {
   // If time permits, increase sample size to reduce the margin of error.
   const start = Date.now();
   while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
-    const { clocked } = await sampleModule(modulePath);
+    const { clocked, memUsed } = await sampleModule(modulePath);
     assert(clocked > 0);
-    samples.push(clocked);
+    assert(memUsed > 0);
+    samples.push({ clocked, memUsed });
   }
   return samples;
 }
@@ -126,15 +127,18 @@ function computeStats(samples) {
 
   // Compute the sample mean (estimate of the population mean).
   let mean = 0;
-  for (const x of samples) {
-    mean += x;
+  let meanMemUsed = 0;
+  for (const { clocked, memUsed } of samples) {
+    mean += clocked;
+    meanMemUsed += memUsed;
   }
   mean /= samples.length;
+  meanMemUsed /= samples.length;
 
   // Compute the sample variance (estimate of the population variance).
   let variance = 0;
-  for (const x of samples) {
-    variance += Math.pow(x - mean, 2);
+  for (const { clocked } of samples) {
+    variance += Math.pow(clocked - mean, 2);
   }
   variance /= samples.length - 1;
 
@@ -157,8 +161,10 @@ function computeStats(samples) {
   const rme = (moe / mean) * 100 || 0;
 
   return {
+    memPerOp: Math.floor(meanMemUsed),
     ops: NS_PER_SEC / mean,
     deviation: rme,
+    numSamples: samples.length,
   };
 }
 
@@ -166,13 +172,17 @@ function beautifyBenchmark(results) {
   const nameMaxLen = maxBy(results, ({ name }) => name.length);
   const opsTop = maxBy(results, ({ ops }) => ops);
   const opsMaxLen = maxBy(results, ({ ops }) => beautifyNumber(ops).length);
+  const memPerOpMaxLen = maxBy(
+    results,
+    ({ memPerOp }) => beautifyBytes(memPerOp).length,
+  );
 
   for (const result of results) {
     printBench(result);
   }
 
   function printBench(bench) {
-    const { name, ops, deviation, samples } = bench;
+    const { name, memPerOp, ops, deviation, numSamples } = bench;
     console.log(
       '  ' +
         nameStr() +
@@ -182,7 +192,10 @@ function beautifyBenchmark(results) {
         grey('\xb1') +
         deviationStr() +
         cyan('%') +
-        grey(' (' + samples.length + ' runs sampled)'),
+        grey(' x ') +
+        memPerOpStr() +
+        '/op' +
+        grey(' (' + numSamples + ' runs sampled)'),
     );
 
     function nameStr() {
@@ -200,7 +213,17 @@ function beautifyBenchmark(results) {
       const colorFn = deviation > 5 ? red : deviation > 2 ? yellow : green;
       return colorFn(deviation.toFixed(2));
     }
+
+    function memPerOpStr() {
+      return beautifyBytes(memPerOp).padStart(memPerOpMaxLen);
+    }
   }
+}
+
+function beautifyBytes(bytes) {
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log2(bytes) / 10);
+  return beautifyNumber(bytes / Math.pow(2, i * 10)) + ' ' + sizes[i];
 }
 
 function beautifyNumber(num) {

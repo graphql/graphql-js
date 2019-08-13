@@ -11,7 +11,7 @@ function clock(count, fn) {
   for (let i = 0; i < count; ++i) {
     fn();
   }
-  return Number(process.hrtime.bigint() - start) / count;
+  return Number(process.hrtime.bigint() - start);
 }
 
 if (require.main === module) {
@@ -21,10 +21,14 @@ if (require.main === module) {
   const module = require(modulePath);
 
   clock(7, module.measure); // warm up
+  global.gc();
   process.nextTick(() => {
+    const memBaseline = process.memoryUsage().heapUsed;
+    const clocked = clock(module.count, module.measure);
     process.send({
       name: module.name,
-      clocked: clock(module.count, module.measure),
+      clocked: clocked / module.count,
+      memUsed: (process.memoryUsage().heapUsed - memBaseline) / module.count,
     });
   });
 }
@@ -44,6 +48,9 @@ function sampleModule(modulePath) {
       }
       reject(error || new Error('Forked process closed without error'));
     });
+  }).then(result => {
+    global.gc();
+    return result;
   });
 }
 

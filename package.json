@@ -28,7 +28,7 @@
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc npm run testonly",
     "lint": "eslint --cache --report-unused-disable-directives src resources",
-    "benchmark": "node --predictable ./resources/benchmark.js",
+    "benchmark": "node --noconcurrent_sweeping --expose-gc --predictable ./resources/benchmark.js",
     "prettier": "prettier --ignore-path .gitignore --write --list-different \"**/*.{js,md,json,yml}\"",
     "prettier:check": "prettier --ignore-path .gitignore --check \"**/*.{js,md,json,yml}\"",
     "check": "flow check",
