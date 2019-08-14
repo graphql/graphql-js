@@ -117,6 +117,7 @@ export function assertSchema(schema: mixed): GraphQLSchema {
 export class GraphQLSchema {
   astNode: ?SchemaDefinitionNode;
   extensionASTNodes: ?$ReadOnlyArray<SchemaExtensionNode>;
+
   _queryType: ?GraphQLObjectType;
   _mutationType: ?GraphQLObjectType;
   _subscriptionType: ?GraphQLObjectType;
@@ -156,14 +157,15 @@ export class GraphQLSchema {
       );
     }
 
+    this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
+
     this.__allowedLegacyNames = config.allowedLegacyNames || [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription;
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives || specifiedDirectives;
-    this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes;
 
     // Build type map now to detect any errors within this schema.
     const initialTypes: Array<?GraphQLNamedType> = [
@@ -266,11 +268,11 @@ export class GraphQLSchema {
     allowedLegacyNames: $ReadOnlyArray<string>,
   |} {
     return {
-      types: objectValues(this.getTypeMap()),
-      directives: this.getDirectives().slice(),
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
+      types: objectValues(this.getTypeMap()),
+      directives: this.getDirectives().slice(),
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || [],
       assumeValid: this.__validationErrors !== undefined,
