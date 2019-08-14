@@ -451,9 +451,9 @@ function () {
   function GraphQLObjectType(config) {
     this.name = config.name;
     this.description = config.description;
+    this.isTypeOf = config.isTypeOf;
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
-    this.isTypeOf = config.isTypeOf;
     this._fields = defineFieldMap.bind(undefined, config);
     this._interfaces = defineInterfaces.bind(undefined, config);
     typeof config.name === 'string' || devAssert(0, 'Must provide name.');
@@ -482,9 +482,9 @@ function () {
     return {
       name: this.name,
       description: this.description,
-      isTypeOf: this.isTypeOf,
       interfaces: this.getInterfaces(),
       fields: fieldsToFieldsConfig(this.getFields()),
+      isTypeOf: this.isTypeOf,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || []
     };
@@ -547,12 +547,12 @@ function isPlainObj(obj) {
 function fieldsToFieldsConfig(fields) {
   return mapValue(fields, function (field) {
     return {
+      description: field.description,
       type: field.type,
       args: argsToArgsConfig(field.args),
       resolve: field.resolve,
       subscribe: field.subscribe,
       deprecationReason: field.deprecationReason,
-      description: field.description,
       astNode: field.astNode
     };
   });
@@ -563,9 +563,9 @@ export function argsToArgsConfig(args) {
     return arg.name;
   }, function (arg) {
     return {
+      description: arg.description,
       type: arg.type,
       defaultValue: arg.defaultValue,
-      description: arg.description,
       astNode: arg.astNode
     };
   });
@@ -598,9 +598,9 @@ function () {
   function GraphQLInterfaceType(config) {
     this.name = config.name;
     this.description = config.description;
+    this.resolveType = config.resolveType;
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
-    this.resolveType = config.resolveType;
     this._fields = defineFieldMap.bind(undefined, config);
     typeof config.name === 'string' || devAssert(0, 'Must provide name.');
     config.resolveType == null || typeof config.resolveType === 'function' || devAssert(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat(inspect(config.resolveType), "."));
@@ -620,8 +620,8 @@ function () {
     return {
       name: this.name,
       description: this.description,
-      resolveType: this.resolveType,
       fields: fieldsToFieldsConfig(this.getFields()),
+      resolveType: this.resolveType,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || []
     };
@@ -666,9 +666,9 @@ function () {
   function GraphQLUnionType(config) {
     this.name = config.name;
     this.description = config.description;
+    this.resolveType = config.resolveType;
     this.astNode = config.astNode;
     this.extensionASTNodes = undefineIfEmpty(config.extensionASTNodes);
-    this.resolveType = config.resolveType;
     this._types = defineTypes.bind(undefined, config);
     typeof config.name === 'string' || devAssert(0, 'Must provide name.');
     config.resolveType == null || typeof config.resolveType === 'function' || devAssert(0, "".concat(this.name, " must provide \"resolveType\" as a function, ") + "but got: ".concat(inspect(config.resolveType), "."));
@@ -688,8 +688,8 @@ function () {
     return {
       name: this.name,
       description: this.description,
-      resolveType: this.resolveType,
       types: this.getTypes(),
+      resolveType: this.resolveType,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || []
     };
@@ -835,10 +835,10 @@ function defineEnumValues(typeName, valueMap) {
     return {
       name: valueName,
       description: value.description,
+      value: 'value' in value ? value.value : valueName,
       isDeprecated: Boolean(value.deprecationReason),
       deprecationReason: value.deprecationReason,
-      astNode: value.astNode,
-      value: 'value' in value ? value.value : valueName
+      astNode: value.astNode
     };
   });
 }
@@ -920,9 +920,9 @@ function defineInputFieldMap(config) {
     !('resolve' in fieldConfig) || devAssert(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but Input Types cannot define resolvers."));
     return {
       name: fieldName,
+      description: fieldConfig.description,
       type: fieldConfig.type,
       defaultValue: fieldConfig.defaultValue,
-      description: fieldConfig.description,
       astNode: fieldConfig.astNode
     };
   });

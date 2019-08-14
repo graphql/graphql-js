@@ -58,10 +58,10 @@ export class GraphQLDirective {
   constructor(config: GraphQLDirectiveConfig): void {
     this.name = config.name;
     this.description = config.description;
-
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable != null && config.isRepeatable;
     this.astNode = config.astNode;
+
     devAssert(config.name, 'Directive must be named.');
     devAssert(
       Array.isArray(config.locations),

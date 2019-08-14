@@ -107,14 +107,14 @@ function () {
       !config.allowedLegacyNames || Array.isArray(config.allowedLegacyNames) || devAssert(0, '"allowedLegacyNames" must be Array if provided but got: ' + "".concat(inspect(config.allowedLegacyNames), "."));
     }
 
+    this.astNode = config.astNode;
+    this.extensionASTNodes = config.extensionASTNodes;
     this.__allowedLegacyNames = config.allowedLegacyNames || [];
     this._queryType = config.query;
     this._mutationType = config.mutation;
     this._subscriptionType = config.subscription; // Provide specified directives (e.g. @include and @skip) by default.
 
-    this._directives = config.directives || specifiedDirectives;
-    this.astNode = config.astNode;
-    this.extensionASTNodes = config.extensionASTNodes; // Build type map now to detect any errors within this schema.
+    this._directives = config.directives || specifiedDirectives; // Build type map now to detect any errors within this schema.
 
     var initialTypes = [this._queryType, this._mutationType, this._subscriptionType, __Schema].concat(config.types); // Keep track of all types referenced within the schema.
 
@@ -262,11 +262,11 @@ function () {
 
   _proto.toConfig = function toConfig() {
     return {
-      types: objectValues(this.getTypeMap()),
-      directives: this.getDirectives().slice(),
       query: this.getQueryType(),
       mutation: this.getMutationType(),
       subscription: this.getSubscriptionType(),
+      types: objectValues(this.getTypeMap()),
+      directives: this.getDirectives().slice(),
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes || [],
       assumeValid: this.__validationErrors !== undefined,
