@@ -192,6 +192,10 @@ describe('Type System: Objects', () => {
       isDeprecated: true,
       name: 'bar',
       args: [],
+      astNode: undefined,
+      resolve: undefined,
+      subscribe: undefined,
+      description: undefined,
     });
   });
 
@@ -203,7 +207,17 @@ describe('Type System: Objects', () => {
       }),
     });
     expect(objType.getFields()).to.deep.equal({
-      f: { name: 'f', type: ScalarType, args: [], isDeprecated: false },
+      f: {
+        name: 'f',
+        type: ScalarType,
+        args: [],
+        isDeprecated: false,
+        deprecationReason: undefined,
+        astNode: undefined,
+        resolve: undefined,
+        subscribe: undefined,
+        description: undefined,
+      },
     });
   });
 
@@ -233,6 +247,11 @@ describe('Type System: Objects', () => {
           },
         ],
         isDeprecated: false,
+        deprecationReason: undefined,
+        astNode: undefined,
+        resolve: undefined,
+        subscribe: undefined,
+        description: undefined,
       },
     });
   });
@@ -625,7 +644,13 @@ describe('Type System: Input Objects', () => {
         },
       });
       expect(inputObjType.getFields()).to.deep.equal({
-        f: { name: 'f', type: ScalarType },
+        f: {
+          name: 'f',
+          description: undefined,
+          type: ScalarType,
+          defaultValue: undefined,
+          astNode: undefined,
+        },
       });
     });
 
@@ -637,7 +662,13 @@ describe('Type System: Input Objects', () => {
         }),
       });
       expect(inputObjType.getFields()).to.deep.equal({
-        f: { name: 'f', type: ScalarType },
+        f: {
+          name: 'f',
+          description: undefined,
+          type: ScalarType,
+          defaultValue: undefined,
+          astNode: undefined,
+        },
       });
     });
 

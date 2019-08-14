@@ -778,10 +778,15 @@ function defineFieldMap<TSource, TContext>(
     }));
 
     return {
-      ...fieldConfig,
-      isDeprecated: Boolean(fieldConfig.deprecationReason),
       name: fieldName,
+      description: fieldConfig.description,
+      type: fieldConfig.type,
       args,
+      resolve: fieldConfig.resolve,
+      subscribe: fieldConfig.subscribe,
+      isDeprecated: Boolean(fieldConfig.deprecationReason),
+      deprecationReason: fieldConfig.deprecationReason,
+      astNode: fieldConfig.astNode,
     };
   });
 }
@@ -1368,7 +1373,13 @@ function defineInputFieldMap(
       `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
     );
 
-    return { ...fieldConfig, name: fieldName };
+    return {
+      name: fieldName,
+      type: fieldConfig.type,
+      defaultValue: fieldConfig.defaultValue,
+      description: fieldConfig.description,
+      astNode: fieldConfig.astNode,
+    };
   });
 }
 
