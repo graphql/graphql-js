@@ -74,12 +74,8 @@ var _valueFromASTUntyped = require("../utilities/valueFromASTUntyped");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
+// FIXME
+// flowlint deprecated-type:off
 function isType(type) {
   return isScalarType(type) || isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type) || isInputObjectType(type) || isListType(type) || isNonNullType(type);
 }
@@ -635,11 +631,17 @@ function defineFieldMap(config) {
         astNode: arg.astNode
       };
     });
-    return _objectSpread({}, fieldConfig, {
-      isDeprecated: Boolean(fieldConfig.deprecationReason),
+    return {
       name: fieldName,
-      args: args
-    });
+      description: fieldConfig.description,
+      type: fieldConfig.type,
+      args: args,
+      resolve: fieldConfig.resolve,
+      subscribe: fieldConfig.subscribe,
+      isDeprecated: Boolean(fieldConfig.deprecationReason),
+      deprecationReason: fieldConfig.deprecationReason,
+      astNode: fieldConfig.astNode
+    };
   });
 }
 
@@ -1030,9 +1032,13 @@ function defineInputFieldMap(config) {
   isPlainObj(fieldMap) || (0, _devAssert.default)(0, "".concat(config.name, " fields must be an object with field names as keys or a function which returns such an object."));
   return (0, _mapValue.default)(fieldMap, function (fieldConfig, fieldName) {
     !('resolve' in fieldConfig) || (0, _devAssert.default)(0, "".concat(config.name, ".").concat(fieldName, " field has a resolve property, but Input Types cannot define resolvers."));
-    return _objectSpread({}, fieldConfig, {
-      name: fieldName
-    });
+    return {
+      name: fieldName,
+      type: fieldConfig.type,
+      defaultValue: fieldConfig.defaultValue,
+      description: fieldConfig.description,
+      astNode: fieldConfig.astNode
+    };
   });
 }
 
