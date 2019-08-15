@@ -462,7 +462,9 @@ export var SchemaMetaFieldDef = {
   resolve: function resolve(source, args, context, _ref4) {
     var schema = _ref4.schema;
     return schema;
-  }
+  },
+  deprecationReason: undefined,
+  astNode: undefined
 };
 export var TypeMetaFieldDef = {
   name: '__type',
@@ -470,13 +472,18 @@ export var TypeMetaFieldDef = {
   description: 'Request the type information of a single type.',
   args: [{
     name: 'name',
-    type: GraphQLNonNull(GraphQLString)
+    description: undefined,
+    type: GraphQLNonNull(GraphQLString),
+    defaultValue: undefined,
+    astNode: undefined
   }],
   resolve: function resolve(source, _ref5, context, _ref6) {
     var name = _ref5.name;
     var schema = _ref6.schema;
     return schema.getType(name);
-  }
+  },
+  deprecationReason: undefined,
+  astNode: undefined
 };
 export var TypeNameMetaFieldDef = {
   name: '__typename',
@@ -486,7 +493,9 @@ export var TypeNameMetaFieldDef = {
   resolve: function resolve(source, args, context, _ref7) {
     var parentType = _ref7.parentType;
     return parentType.name;
-  }
+  },
+  deprecationReason: undefined,
+  astNode: undefined
 };
 export var introspectionTypes = Object.freeze([__Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind]);
 export function isIntrospectionType(type) {

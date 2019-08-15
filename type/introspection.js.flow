@@ -438,14 +438,26 @@ export const SchemaMetaFieldDef: GraphQLField<mixed, mixed> = {
   description: 'Access the current type schema of this server.',
   args: [],
   resolve: (source, args, context, { schema }) => schema,
+  deprecationReason: undefined,
+  astNode: undefined,
 };
 
 export const TypeMetaFieldDef: GraphQLField<mixed, mixed> = {
   name: '__type',
   type: __Type,
   description: 'Request the type information of a single type.',
-  args: [{ name: 'name', type: GraphQLNonNull(GraphQLString) }],
+  args: [
+    {
+      name: 'name',
+      description: undefined,
+      type: GraphQLNonNull(GraphQLString),
+      defaultValue: undefined,
+      astNode: undefined,
+    },
+  ],
   resolve: (source, { name }, context, { schema }) => schema.getType(name),
+  deprecationReason: undefined,
+  astNode: undefined,
 };
 
 export const TypeNameMetaFieldDef: GraphQLField<mixed, mixed> = {
@@ -454,6 +466,8 @@ export const TypeNameMetaFieldDef: GraphQLField<mixed, mixed> = {
   description: 'The name of the current Object type at runtime.',
   args: [],
   resolve: (source, args, context, { parentType }) => parentType.name,
+  deprecationReason: undefined,
+  astNode: undefined,
 };
 
 export const introspectionTypes = Object.freeze([
