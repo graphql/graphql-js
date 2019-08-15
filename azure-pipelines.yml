@@ -1,0 +1,83 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+jobs:
+  - job: ubuntu_node_12
+
+    pool:
+      vmImage: 'ubuntu-16.04'
+
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '12.x'
+        displayName: 'Install Node.js'
+
+      - script: |
+          npm ci && npm run testonly
+        displayName: 'npm ci && npm run testonly'
+
+  - job: ubuntu_node_10
+
+    pool:
+      vmImage: 'ubuntu-16.04'
+
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '10.x'
+        displayName: 'Install Node.js'
+
+      - script: |
+          npm ci && npm run test:ci
+        displayName: 'npm ci && npm run test:ci'
+
+      - script: |
+          npm pack
+        workingDirectory: $(Build.SourcesDirectory)/dist
+        displayName: 'npm pack'
+
+      - task: CopyFiles@2
+        inputs:
+          sourceFolder: '$(Build.SourcesDirectory)/dist'
+          contents: '*.tgz'
+          targetFolder: $(Build.ArtifactStagingDirectory)/npm
+        displayName: 'Copy npm package'
+
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathtoPublish: '$(Build.ArtifactStagingDirectory)/npm'
+          artifactName: npm
+        displayName: 'Publish npm artifact'
+
+  - job: ubuntu_node_8
+
+    pool:
+      vmImage: 'ubuntu-16.04'
+
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '8.x'
+        displayName: 'Install Node.js'
+
+      - script: |
+          npm install && npm run testonly
+        displayName: 'npm install && npm run testonly'
+
+  - job: ubuntu_node_6
+
+    pool:
+      vmImage: 'ubuntu-16.04'
+
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '6.x'
+        displayName: 'Install Node.js'
+
+      - script: |
+          npm install && npm run testonly
+        displayName: 'npm install && npm run testonly'
