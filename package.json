@@ -39,6 +39,9 @@
     "version": "node resources/gen-version.js && npm test && git add src/version.js",
     "gitpublish": ". ./resources/gitpublish.sh"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "iterall": "^1.2.2"
   },
