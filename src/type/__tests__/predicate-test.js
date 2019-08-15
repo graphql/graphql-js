@@ -573,77 +573,87 @@ describe('Type predicates', () => {
   });
 
   describe('isRequiredArgument', () => {
-    it('returns true for required arguments', () => {
-      const requiredArg = {
+    function buildArg(config) {
+      return {
         name: 'someArg',
-        type: GraphQLNonNull(GraphQLString),
+        description: undefined,
+        defaultValue: undefined,
+        astNode: undefined,
+        ...config,
       };
+    }
+
+    it('returns true for required arguments', () => {
+      const requiredArg = buildArg({
+        type: GraphQLNonNull(GraphQLString),
+      });
       expect(isRequiredArgument(requiredArg)).to.equal(true);
     });
 
     it('returns false for optional arguments', () => {
-      const optArg1 = {
-        name: 'someArg',
+      const optArg1 = buildArg({
         type: GraphQLString,
-      };
+      });
       expect(isRequiredArgument(optArg1)).to.equal(false);
 
-      const optArg2 = {
-        name: 'someArg',
+      const optArg2 = buildArg({
         type: GraphQLString,
         defaultValue: null,
-      };
+      });
       expect(isRequiredArgument(optArg2)).to.equal(false);
 
-      const optArg3 = {
-        name: 'someArg',
+      const optArg3 = buildArg({
         type: GraphQLList(GraphQLNonNull(GraphQLString)),
-      };
+      });
       expect(isRequiredArgument(optArg3)).to.equal(false);
 
-      const optArg4 = {
-        name: 'someArg',
+      const optArg4 = buildArg({
         type: GraphQLNonNull(GraphQLString),
         defaultValue: 'default',
-      };
+      });
       expect(isRequiredArgument(optArg4)).to.equal(false);
     });
   });
 
   describe('isRequiredInputField', () => {
-    it('returns true for required input field', () => {
-      const requiredField = {
-        name: 'someField',
-        type: GraphQLNonNull(GraphQLString),
+    function buildInputField(config) {
+      return {
+        name: 'someInputField',
+        description: undefined,
+        defaultValue: undefined,
+        astNode: undefined,
+        ...config,
       };
+    }
+
+    it('returns true for required input field', () => {
+      const requiredField = buildInputField({
+        type: GraphQLNonNull(GraphQLString),
+      });
       expect(isRequiredInputField(requiredField)).to.equal(true);
     });
 
     it('returns false for optional input field', () => {
-      const optField1 = {
-        name: 'someField',
+      const optField1 = buildInputField({
         type: GraphQLString,
-      };
+      });
       expect(isRequiredInputField(optField1)).to.equal(false);
 
-      const optField2 = {
-        name: 'someField',
+      const optField2 = buildInputField({
         type: GraphQLString,
         defaultValue: null,
-      };
+      });
       expect(isRequiredInputField(optField2)).to.equal(false);
 
-      const optField3 = {
-        name: 'someField',
+      const optField3 = buildInputField({
         type: GraphQLList(GraphQLNonNull(GraphQLString)),
-      };
+      });
       expect(isRequiredInputField(optField3)).to.equal(false);
 
-      const optField4 = {
-        name: 'someField',
+      const optField4 = buildInputField({
         type: GraphQLNonNull(GraphQLString),
         defaultValue: 'default',
-      };
+      });
       expect(isRequiredInputField(optField4)).to.equal(false);
     });
   });
