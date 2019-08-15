@@ -909,16 +909,16 @@ export type GraphQLField<
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs>,
   isDeprecated?: boolean,
-  deprecationReason?: ?string,
-  astNode?: ?FieldDefinitionNode,
+  deprecationReason: ?string,
+  astNode: ?FieldDefinitionNode,
 |};
 
 export type GraphQLArgument = {|
   name: string,
-  description?: ?string,
+  description: ?string,
   type: GraphQLInputType,
-  defaultValue?: mixed,
-  astNode?: ?InputValueDefinitionNode,
+  defaultValue: mixed,
+  astNode: ?InputValueDefinitionNode,
 |};
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean %checks {
@@ -1284,9 +1284,9 @@ export type GraphQLEnumValue /* <T> */ = {|
   name: string,
   description: ?string,
   value: any /* T */,
-  isDeprecated?: boolean,
+  isDeprecated: boolean,
   deprecationReason: ?string,
-  astNode?: ?EnumValueDefinitionNode,
+  astNode: ?EnumValueDefinitionNode,
 |};
 
 /**
@@ -1407,10 +1407,10 @@ export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
 export type GraphQLInputField = {|
   name: string,
-  description?: ?string,
+  description: ?string,
   type: GraphQLInputType,
-  defaultValue?: mixed,
-  astNode?: ?InputValueDefinitionNode,
+  defaultValue: mixed,
+  astNode: ?InputValueDefinitionNode,
 |};
 
 export function isRequiredInputField(
