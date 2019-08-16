@@ -1,63 +1,61 @@
-// @flow strict
-
 import inspect from '../jsutils/inspect';
 import devAssert from '../jsutils/devAssert';
 import defineToJSON from '../jsutils/defineToJSON';
 
 import { syntaxError } from '../error/syntaxError';
-import { type GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from '../error/GraphQLError';
 
 import { Kind } from './kinds';
 import { Source } from './source';
-import { type Lexer, createLexer } from './lexer';
+import { Lexer, createLexer } from './lexer';
 import { DirectiveLocation } from './directiveLocation';
-import { type TokenKindEnum, TokenKind } from './tokenKind';
+import { TokenKindEnum, TokenKind } from './tokenKind';
 import {
-  type Location,
-  type Token,
-  type NameNode,
-  type VariableNode,
-  type DocumentNode,
-  type DefinitionNode,
-  type OperationDefinitionNode,
-  type OperationTypeNode,
-  type VariableDefinitionNode,
-  type SelectionSetNode,
-  type SelectionNode,
-  type FieldNode,
-  type ArgumentNode,
-  type FragmentSpreadNode,
-  type InlineFragmentNode,
-  type FragmentDefinitionNode,
-  type ValueNode,
-  type StringValueNode,
-  type ListValueNode,
-  type ObjectValueNode,
-  type ObjectFieldNode,
-  type DirectiveNode,
-  type TypeNode,
-  type NamedTypeNode,
-  type TypeSystemDefinitionNode,
-  type SchemaDefinitionNode,
-  type OperationTypeDefinitionNode,
-  type ScalarTypeDefinitionNode,
-  type ObjectTypeDefinitionNode,
-  type FieldDefinitionNode,
-  type InputValueDefinitionNode,
-  type InterfaceTypeDefinitionNode,
-  type UnionTypeDefinitionNode,
-  type EnumTypeDefinitionNode,
-  type EnumValueDefinitionNode,
-  type InputObjectTypeDefinitionNode,
-  type DirectiveDefinitionNode,
-  type TypeSystemExtensionNode,
-  type SchemaExtensionNode,
-  type ScalarTypeExtensionNode,
-  type ObjectTypeExtensionNode,
-  type InterfaceTypeExtensionNode,
-  type UnionTypeExtensionNode,
-  type EnumTypeExtensionNode,
-  type InputObjectTypeExtensionNode,
+  Location,
+  Token,
+  NameNode,
+  VariableNode,
+  DocumentNode,
+  DefinitionNode,
+  OperationDefinitionNode,
+  OperationTypeNode,
+  VariableDefinitionNode,
+  SelectionSetNode,
+  SelectionNode,
+  FieldNode,
+  ArgumentNode,
+  FragmentSpreadNode,
+  InlineFragmentNode,
+  FragmentDefinitionNode,
+  ValueNode,
+  StringValueNode,
+  ListValueNode,
+  ObjectValueNode,
+  ObjectFieldNode,
+  DirectiveNode,
+  TypeNode,
+  NamedTypeNode,
+  TypeSystemDefinitionNode,
+  SchemaDefinitionNode,
+  OperationTypeDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+  FieldDefinitionNode,
+  InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  UnionTypeDefinitionNode,
+  EnumTypeDefinitionNode,
+  EnumValueDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  DirectiveDefinitionNode,
+  TypeSystemExtensionNode,
+  SchemaExtensionNode,
+  ScalarTypeExtensionNode,
+  ObjectTypeExtensionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
 } from './ast';
 
 /**
@@ -69,7 +67,7 @@ export type ParseOptions = {
    * in the source that they correspond to. This configuration flag
    * disables that behavior for performance or testing.
    */
-  noLocation?: boolean,
+  noLocation?: boolean;
 
   /**
    * If enabled, the parser will parse empty fields sets in the Schema
@@ -79,7 +77,7 @@ export type ParseOptions = {
    * This option is provided to ease adoption of the final SDL specification
    * and will be removed in v16.
    */
-  allowLegacySDLEmptyFields?: boolean,
+  allowLegacySDLEmptyFields?: boolean;
 
   /**
    * If enabled, the parser will parse implemented interfaces with no `&`
@@ -89,7 +87,7 @@ export type ParseOptions = {
    * This option is provided to ease adoption of the final SDL specification
    * and will be removed in v16.
    */
-  allowLegacySDLImplementsInterfaces?: boolean,
+  allowLegacySDLImplementsInterfaces?: boolean;
 
   /**
    * EXPERIMENTAL:
@@ -107,9 +105,7 @@ export type ParseOptions = {
    * Note: this feature is experimental and may change or be removed in the
    * future.
    */
-  experimentalFragmentVariables?: boolean,
-
-  ...
+  experimentalFragmentVariables?: boolean;
 };
 
 /**
@@ -177,7 +173,7 @@ class Parser {
       `Must provide Source. Received: ${inspect(sourceObj)}`,
     );
 
-    this._lexer = createLexer(sourceObj);
+    this._lexer = createLexer(sourceObj, undefined);
     this._options = options || {};
   }
 
@@ -188,7 +184,7 @@ class Parser {
     const token = this.expectToken(TokenKind.NAME);
     return {
       kind: Kind.NAME,
-      value: ((token.value: any): string),
+      value: (token.value as any) as string,
       loc: this.loc(token),
     };
   }
@@ -543,14 +539,14 @@ class Parser {
         this._lexer.advance();
         return {
           kind: Kind.INT,
-          value: ((token.value: any): string),
+          value: (token.value as any) as string,
           loc: this.loc(token),
         };
       case TokenKind.FLOAT:
         this._lexer.advance();
         return {
           kind: Kind.FLOAT,
-          value: ((token.value: any): string),
+          value: (token.value as any) as string,
           loc: this.loc(token),
         };
       case TokenKind.STRING:
@@ -574,7 +570,7 @@ class Parser {
         this._lexer.advance();
         return {
           kind: Kind.ENUM,
-          value: ((token.value: any): string),
+          value: (token.value as any) as string,
           loc: this.loc(token),
         };
       case TokenKind.DOLLAR:
@@ -591,7 +587,7 @@ class Parser {
     this._lexer.advance();
     return {
       kind: Kind.STRING,
-      value: ((token.value: any): string),
+      value: (token.value as any) as string,
       block: token.kind === TokenKind.BLOCK_STRING,
       loc: this.loc(token),
     };
@@ -1426,7 +1422,7 @@ class Parser {
    * If the next token is of the given kind, return that token after advancing
    * the lexer. Otherwise, do not change the parser state and return undefined.
    */
-  expectOptionalToken(kind: TokenKindEnum): ?Token {
+  expectOptionalToken(kind: TokenKindEnum): Token | undefined {
     const token = this._lexer.token;
     if (token.kind === kind) {
       this._lexer.advance();
@@ -1469,7 +1465,7 @@ class Parser {
    * Helper function for creating an error when an unexpected lexed token
    * is encountered.
    */
-  unexpected(atToken?: ?Token): GraphQLError {
+  unexpected(atToken?: Token | undefined): GraphQLError {
     const token = atToken || this._lexer.token;
     return syntaxError(
       this._lexer.source,
