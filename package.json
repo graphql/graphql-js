@@ -6,6 +6,7 @@
   "private": true,
   "main": "index",
   "module": "index.mjs",
+  "types": "index.d.ts",
   "sideEffects": false,
   "homepage": "https://github.com/apollographql/graphql-js",
   "bugs": {
@@ -25,15 +26,17 @@
   "scripts": {
     "test": "npm run prettier:check && npm run lint && npm run check && npm run testonly",
     "test:ci": "npm run prettier:check && npm run lint -- --no-cache && npm run check && npm run testonly:cover && npm run build",
-    "testonly": "mocha --full-trace src/**/__tests__/**/*-test.js",
+    "testonly": "mocha -r ts-node/register --full-trace src/**/__tests__/**/*-test.js",
     "testonly:cover": "nyc npm run testonly",
     "lint": "eslint --cache --report-unused-disable-directives src resources",
     "benchmark": "node --noconcurrent_sweeping --expose-gc --predictable ./resources/benchmark.js",
     "prettier": "prettier --ignore-path .gitignore --write --list-different \"**/*.{js,md,json,yml}\"",
     "prettier:check": "prettier --ignore-path .gitignore --check \"**/*.{js,md,json,yml}\"",
-    "check": "flow check",
+    "check": "npm run check:flow && npm run check:tsc",
+    "check:flow": "flow check",
+    "check:tsc": "tsc",
     "check:cover": "node resources/check-cover.js && nyc report --nycrc-path .nycflowrc.yml",
-    "build": "node resources/build.js",
+    "build": "tsc -b tsconfig.build.json && node resources/build.js",
     "changelog": "node resources/gen-changelog.js",
     "preversion": ". ./resources/checkgit.sh",
     "version": "node resources/gen-version.js && npm test && git add src/version.js",
@@ -58,6 +61,8 @@
     "flow-bin": "0.105.1",
     "mocha": "6.2.0",
     "nyc": "14.1.1",
-    "prettier": "1.18.2"
+    "prettier": "1.18.2",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
   }
 }
